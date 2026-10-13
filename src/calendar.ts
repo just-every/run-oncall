@@ -1,7 +1,7 @@
 import { preview, type Schedule, type CoverageMember } from './family/response-operations/schedules'
 
 const escape=(text:string)=>text.replaceAll('\\','\\\\').replaceAll('\n','\\n').replaceAll(',','\\,').replaceAll(';','\\;').replaceAll('\r','')
-const date=(at:number)=>new Date(at).toISOString().replace(/[-:]/g,'').replace('.000','')
+const date=(at:number)=>new Date(Math.floor(at/1000)*1000).toISOString().replace(/[-:]/g,'').replace('.000','')
 // Fold by UTF-8 octets, so non-ASCII names remain valid calendar text.
 const fold=(line:string)=>{const rows:string[]=[];let current='';for(const char of line){if(new TextEncoder().encode(current+char).length>73){rows.push(current);current=' '+char}else current+=char}rows.push(current);return rows.join('\r\n')}
 export function calendar(schedule:Schedule,members:(CoverageMember & {name?:string})[],from:number,to:number):string {

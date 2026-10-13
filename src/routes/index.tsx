@@ -862,8 +862,8 @@ function Workspace() {
                 <Form
                   busy={w.busy}
                   label="Admit event"
-                  onSubmit={async (data) => {
-                    try {
+                  onSubmit={(data) =>
+                    w.run(async () => {
                       const selectedService = s.services.find(
                         (v) => v.id === data.service,
                       );
@@ -917,18 +917,13 @@ function Workspace() {
                       );
                       const result: any = await response.json();
                       if (!response.ok) throw Error(result.error);
-                      await w.refresh();
-                      w.setNotice(
-                        result.duplicate
-                          ? "Existing receipt returned"
-                          : "Event durably accepted",
-                      );
                       return result;
-                    } catch (e) {
-                      w.setError((e as Error).message);
-                      return null;
-                    }
-                  }}
+                    }, undefined, (result) =>
+                      result.duplicate
+                        ? "Existing receipt returned"
+                        : "Event durably accepted",
+                    )
+                  }
                 >
                   <Field name="source" label="Source ID" />
                   <Field name="secret" label="Source key" type="password" />

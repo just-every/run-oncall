@@ -33,14 +33,18 @@ export function useWorkspace() {
       setReady(true);
     });
   }, []);
-  async function run(path: string, data?: unknown) {
+  async function run(
+    path: string | (() => Promise<any>),
+    data?: unknown,
+    success: string | ((result: any) => string) = "Saved",
+  ) {
     setBusy(true);
     setError("");
     setNotice("");
     try {
-      const result = await request(path, data);
+      const result = await (typeof path === "function" ? path() : request(path, data));
       await refresh();
-      setNotice("Saved");
+      setNotice(typeof success === "function" ? success(result) : success);
       return result;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");
