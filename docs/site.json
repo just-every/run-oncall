@@ -140,6 +140,10 @@
       "reason": "Command contract shared by Run Edit Run seeds, for maintainers"
     },
     {
+      "source": "docs/checkpoints.md",
+      "reason": "Developer reference for the private checkpoint CLI and its session-file handling; owners read Export and restore"
+    },
+    {
       "source": "public/fonts/README.md",
       "reason": "Font licence and fallback notes kept beside the font files"
     },
