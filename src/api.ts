@@ -115,8 +115,10 @@ api.onError(async (error, c) => {
     return c.json({ error: error.message }, error.status as any);
   // Read fences return the kit code directly; mutation fences abort D1's
   // transaction with this named CHECK constraint. Both are expected refusals.
-  // Keep unrelated SQL and storage failures on the 503 path below.
-  const importCode = /^(?:D1_ERROR: )?CHECK constraint failed: IMPORT_ATOMIC_GUARD(?:: SQLITE_CONSTRAINT)?$/.test(error.message)
+  // D1 appends extended SQLite constraint details to this primary failure.
+  // Match the exact named CHECK, with a SQLite constraint-code boundary; leave
+  // unrelated SQL and storage failures on the 503 path below.
+  const importCode = /^(?:D1_ERROR: )?CHECK constraint failed: IMPORT_ATOMIC_GUARD(?:$|: SQLITE_CONSTRAINT(?:_CHECK)?\b)/.test(error.message)
     ? 'IMPORT_ATOMIC_GUARD' : error.message;
   if(c.req.path.startsWith('/api/move-in/') && /^[A-Z][A-Z0-9_]+$/.test(importCode)) {
     const conflict=/CONFLICT|GUARD|SUPERSEDED|BUSY/.test(importCode);
