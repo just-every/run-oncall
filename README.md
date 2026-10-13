@@ -10,6 +10,25 @@
 
 <p align="center"><a href="https://run-oncall.com">run-oncall.com</a> · <a href="https://justevery.com">Part of Just Every</a> · <a href="LICENSE">MIT licensed</a></p>
 
+<p align="center">
+  <a href="https://justevery.com/#vol-oncall"><img src=".github/assets/media/preview.gif" width="800" alt="Oncall: an override is typed and saved, and On call now switches from Priya Shah to Ana Ruiz"></a>
+</p>
+<p align="center"><a href="https://justevery.com/#vol-oncall"><b>Watch the full demo</b></a> · 48 seconds</p>
+
+<p align="center">
+  <img src=".github/assets/media/flow.webp" width="800" alt="On call now and next before the override, Priya Shah on primary, and after saving it, Ana Ruiz">
+</p>
+
+<p align="center">
+  <img src=".github/assets/media/screen-1.webp" width="800" alt="Oncall's schedule editor for Checkout on-call: timezone, rotation anchors, primary and backup responders, and previewed coverage windows"><br>
+  <sub>Rotations in your own time zone, with coverage previewed before you save.</sub>
+</p>
+
+<p align="center">
+  <img src=".github/assets/media/screen-2.webp" width="800" alt="An acknowledged incident, Checkout latency above 2 s: the append-only evidence and decisions timeline, runbook checklist and follow-up owners"><br>
+  <sub>A calm place to coordinate an incident, with an append-only record.</sub>
+</p>
+
 # Run it locally
 
 Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall), release 0.1.0.
