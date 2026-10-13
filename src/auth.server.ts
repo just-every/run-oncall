@@ -54,9 +54,12 @@ export async function authResponse(request: Request, original: Bindings): Promis
  if (url.pathname === '/signin' || url.pathname === '/signin/local') {
   if (!admitted(request, env.AUTH_ORIGIN)) return new Response('Not found', { status: 404, headers: privateHeaders })
   // Workspace passwords and restore mapping use the loopback-only API. Hosted
-  // installations enter through the declared native sign-in document instead.
-  if (url.pathname === '/signin/local' && !isLoopbackHost(url.hostname))
-   return new Response(null, { status: 303, headers: { ...privateHeaders, location: '/signin' } })
+  // compatibility links serve the same native sign-in document at this alias.
+  if (url.pathname === '/signin/local' && !isLoopbackHost(url.hostname)) {
+   if (!['GET', 'HEAD'].includes(request.method)) return new Response(null, { status: 405, headers: { ...privateHeaders, allow: 'GET, HEAD' } })
+   url.pathname = '/signin'
+   request = new Request(url, request)
+  }
  }
  // The outbox and key exchange answer only a local runtime holding RER_DEV_KEY;
  // the outbox also needs the key gate's cookie (or the rer harness's header).
