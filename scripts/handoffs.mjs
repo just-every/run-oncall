@@ -66,7 +66,7 @@ function sessionCookie(value) {
   return `oncall_session=${token}`;
 }
 async function readSession(path) {
-  if (!path) fail("Explicit --session-file is required; use paging.mjs login first");
+  if (!path) fail("Explicit --session-file is required; save the held login cookie privately");
   const info = await lstat(path);
   if (!info.isFile() || (info.mode & 0o777) !== 0o600 || (process.getuid && info.uid !== process.getuid()))
     fail("Session file must be regular, owned by you and chmod 600");
@@ -133,7 +133,7 @@ async function main() {
     catch { fail("Local server returned invalid JSON; no success confirmed. Inspect records before retrying. Handoff remains unsent."); }
   }
   const session = await request("/api/session");
-  if (!session.member) fail(session.setup ? "Initialize the local workspace first" : "Session is expired or revoked; use paging.mjs login again");
+  if (!session.member) fail(session.setup ? "Initialize the local workspace first" : "Session is expired or revoked; sign in again and update the private session file");
   const base = "/api/handoffs";
   let result;
   if (command === "list") result = await request(base);

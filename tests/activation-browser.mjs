@@ -6,10 +6,13 @@ import {spawn} from 'node:child_process'
 import {mkdir,writeFile,rm} from 'node:fs/promises'
 import {createServer} from 'node:net'
 import {chromium} from '@playwright/test'
+import {keyboardUser} from './keyboard.mjs'
+import {keyboardCoordination} from './keyboard-coordination.mjs'
+import {redact} from './diagnostics.mjs'
 
 const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
 const origin=`http://127.0.0.1:${port}`,env={...process.env,CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false'},children=[]
-const safe=value=>value.replace(/#rer-dev=[^\s"']+/g,'#rer-dev=[redacted]').replace(/\?token=[^\s"']+/g,'?token=[redacted]')
+const safe=value=>redact(value)
 async function command(args) {
  const child=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),...args],{env,stdio:['ignore','pipe','pipe']});children.push(child);let output='';child.stdout.on('data',c=>output+=c);child.stderr.on('data',c=>output+=c)
  const code=await new Promise(r=>child.once('exit',r));assert.equal(code,0,safe(output).slice(-2000));return output
@@ -30,17 +33,22 @@ try {
  await page.goto(link);await page.waitForURL(url=>url.pathname==='/setup'||url.pathname==='/'&&!url.hash,{timeout:60000})
  await page.goto(origin+'/setup');const confirm=page.getByRole('checkbox');if(await confirm.count()){await confirm.check();await page.getByRole('button',{name:'Finish setup'}).click()}
  await page.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
+ const key=keyboardUser(page)
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json());assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
- await page.getByRole('link',{name:'Services',exact:true}).click();await page.getByLabel('Service name',{exact:true}).fill('Checkout');await page.getByLabel('Runbook steps (one per line)').fill('Verify recovery');await page.getByRole('button',{name:'Create service',exact:true}).click();await page.getByRole('heading',{name:'Checkout',exact:true}).waitFor()
+ await key.activate(page.getByRole('link',{name:'Services',exact:true}));await key.text(page.getByLabel('Service name',{exact:true}),'Checkout');await key.text(page.getByLabel('Runbook steps (one per line)'),'Verify recovery');await key.activate(page.getByRole('button',{name:'Create service',exact:true}));await page.getByRole('heading',{name:'Checkout',exact:true}).waitFor()
  for(const width of [1440,390]) {
   await page.setViewportSize({width,height:1000})
-  await page.getByRole('link',{name:'Schedules',exact:true}).click();await page.getByRole('button',{name:'New schedule',exact:true}).click()
-  await page.getByLabel('Schedule ID',{exact:true}).fill('browser-'+width);await page.getByLabel('Schedule name',{exact:true}).fill('Checkout rota '+width)
-  await page.getByRole('button',{name:'Add primary responder',exact:false}).click();await page.getByLabel('Primary responder 1',{exact:true}).selectOption(session.member.id)
-  await page.getByRole('button',{name:'Save schedule',exact:true}).click();await page.getByText('Schedule saved',{exact:true}).waitFor()
-  await page.getByRole('button',{name:'Add interval',exact:false}).click();await page.getByLabel('Override 1 responder',{exact:true}).selectOption(session.member.id)
-  await page.getByRole('button',{name:'Save schedule',exact:true}).click();await page.getByText('Schedule saved',{exact:true}).waitFor()
-  await page.getByRole('button',{name:'Preview coverage',exact:true}).click();await page.getByText('Saved schedule preview evaluated; no delivery or timer was created',{exact:true}).waitFor()
+  await keyboardCoordination(page,context,width,link)
+  await key.activate(page.getByRole('link',{name:'Schedules',exact:true}));await key.activate(page.getByRole('button',{name:'New schedule',exact:true}),'Space')
+  await key.text(page.getByLabel('Schedule ID',{exact:true}),'browser-'+width);await key.text(page.getByLabel('Schedule name',{exact:true}),'Checkout rota '+width)
+  await key.activate(page.getByRole('button',{name:'Add primary responder',exact:false}));await key.option(page.getByLabel('Primary responder 1',{exact:true}),session.member.id)
+  await key.focusScreenshot(page.getByRole('button',{name:'Save schedule',exact:true}),`evidence/browser/keyboard-schedule-${width}.png`)
+  await page.keyboard.press('Enter');await page.getByText('Schedule saved',{exact:true}).waitFor()
+  await key.activate(page.getByRole('button',{name:'Add interval',exact:false}),'Space');await key.option(page.getByLabel('Override 1 responder',{exact:true}),session.member.id)
+  await key.focusScreenshot(page.getByRole('button',{name:'Save schedule',exact:true}),`evidence/browser/keyboard-override-${width}.png`)
+  await page.keyboard.press('Enter');await page.getByText('Schedule saved',{exact:true}).waitFor()
+  await key.focusScreenshot(page.getByRole('button',{name:'Preview coverage',exact:true}),`evidence/browser/keyboard-preview-${width}.png`)
+  await page.keyboard.press('Enter');await page.getByText('Saved schedule preview evaluated; no delivery or timer was created',{exact:true}).waitFor()
   const feed=page.getByRole('link',{name:/private ICS feed/});await feed.waitFor();assert.equal((await context.request.get(await feed.getAttribute('href'))).status(),200)
   await page.screenshot({path:`evidence/browser/schedules-${width}.png`,fullPage:true})
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'schedule viewport has no horizontal overflow')
@@ -69,7 +77,7 @@ try {
   const [replay]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/replay',{timeout:15000}),page.mouse.click(box.x+box.width/2,box.y+box.height/2)]);assert.equal(replay.status(),200)
   await page.getByLabel('Replay comparison',{exact:true}).waitFor()
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'routing viewport has no horizontal overflow')
-  console.log(`Browser journey ${width}: managed setup/dev owner identity, real service/schedule/override, coverage/ICS, reviewed paused import, pointer replay and responsive layout passed`)
+  console.log(`Browser journey ${width}: keyboard-only incident declaration, note, acknowledgement, real stale-write alert, literal hostile HTML, schedule/override/preview with focus screenshots; managed setup/dev owner identity, real service/schedule/override, coverage/ICS, reviewed paused import, pointer replay and responsive layout passed`)
  }
  assert.deepEqual(errors,[],'no browser application errors')
  await browser.close();browser=null
@@ -82,7 +90,7 @@ try {
  await command(['reset','--yes'])
  console.log('Managed production preview, signed-out authority and confirmed reset passed')
 }catch(error){
- if(browser){const page=browser.contexts()[0]?.pages()[0];await page?.screenshot({path:'evidence/browser/failure.png',fullPage:true});console.error('Browser failure at',new URL(page.url()).pathname);console.error((await page.locator('body').innerText()).slice(0,1800))}
+ if(browser){const page=browser.contexts()[0]?.pages()[0];await page?.screenshot({path:'evidence/browser/failure.png',fullPage:true});console.error('Browser failure at',new URL(page.url()).pathname);console.error(safe((await page.locator('body').innerText()).slice(0,1800)))}
  throw error
 }finally{
  await browser?.close()

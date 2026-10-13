@@ -339,12 +339,13 @@ api.post("/api/ingress/:source", async (c) => {
   } catch {
     fail("Invalid JSON");
   }
-  if (input.source !== c.req.param("source")) fail("Source identity mismatch");
-  if (!JSON.parse(source.scopes).includes(input.service))
+  const signal = signalInput(input);
+  if (signal.source !== c.req.param("source")) fail("Source identity mismatch");
+  if (!JSON.parse(source.scopes).includes(signal.service))
     fail("Source is not authorized for this service", 403);
   const state = await load(c.env.DB);
   const revision = state.revision;
-  const result = admit(state, input);
+  const result = admit(state, signal);
   if (!result.duplicate) await save(c.env.DB, state, revision, {
     sql: "EXISTS(SELECT 1 FROM sources WHERE id=? AND digest=? AND signing_secret IS ? AND scopes=?)",
     values: [c.req.param("source"), source.digest, source.signing_secret, source.scopes],

@@ -57,7 +57,7 @@ function changed(job: EscalationJob, at: number): EscalationJob {
 export function acknowledge(original: EscalationJob, actor: Member, at: number): EscalationJob {
   writable(original, at);
   if (!active(actor) || !original.steps.some(s => s.target === actor.id && s.attempts > 0)) fail("Only an active assigned responder may acknowledge", 403);
-  if (original.status !== "pending") fail("Escalation is not pending", 409);
+  if (!["pending", "paused"].includes(original.status)) fail("Escalation is already finished", 409);
   const job = changed(original, at); job.status = "acknowledged"; job.nextDue = null;
   history(job, "acknowledged", at, "Human acknowledgement", actor.id); return job;
 }
@@ -218,7 +218,7 @@ export function validateJob(input: any): EscalationJob {
       state = "pending"; due = s && prior && (["accepted", "delivered"].includes(prior.outcome) || counts[current] >= input.policy.maxAttempts)
         ? Math.max(h.at, s.deadline) : h.at; revision++;
     } else if (h.type === "acknowledged") {
-      if (state !== "pending" || !h.actor || !input.steps.some((s: EscalationStep) => s.target === h.actor && s.attempts > 0)) fail("Invalid human acknowledgement progression");
+      if (!["pending", "paused"].includes(state) || !h.actor || !input.steps.some((s: EscalationStep) => s.target === h.actor && s.attempts > 0)) fail("Invalid human acknowledgement progression");
       state = "acknowledged"; due = null; revision++;
     } else if (h.type === "cancelled") {
       if (!["pending", "paused"].includes(state) || !h.actor || h.reason === null) fail("Invalid cancellation progression");

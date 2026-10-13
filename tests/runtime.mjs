@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { awaitingCoordinationAuthority } from "./runtime-authority.mjs";
+import { heldWorkspace } from "./runtime-held-workspace.mjs";
 import { spawn, spawnSync } from "node:child_process";
 import { mkdtemp, rm, mkdir, readdir, copyFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -111,11 +113,11 @@ const ok = (r, status = 200) => {
 };
 try {
   const legacyDirectory=join(persist,'legacy-migrations');await mkdir(legacyDirectory);
-  for(const name of (await readdir('migrations/core')).filter(name=>/^000[1-6]_/.test(name)))await copyFile(join('migrations/core',name),join(legacyDirectory,name));
+  for(const name of (await readdir('migrations/core')).filter(name=>/^\d{4}_/.test(name) && Number(name.slice(0,4)) < 106))await copyFile(join('migrations/core',name),join(legacyDirectory,name));
   const legacyConfig=join(persist,'legacy.json');await writeFile(legacyConfig,JSON.stringify({name:'oncall-legacy',compatibility_date:'2026-09-08',d1_databases:[{binding:'DB',database_name:'oncall-local',database_id:'00000000-0000-0000-0000-000000000001',migrations_dir:legacyDirectory}]}));
   const initial = spawnSync(process.execPath, [...cli, "d1", "migrations", "apply", "DB", "--config",legacyConfig,"--local", "--persist-to", persist], {encoding:"utf8",env:{...process.env,CI:'true',WRANGLER_SEND_METRICS:'false'}});
   assert.equal(initial.status,0,initial.stderr);
-  const preserved = JSON.stringify({schemaVersion:1,revision:3,members:[{id:"prior-admin",name:"Prior Operator",role:"admin",active:true}],services:[{id:"prior-service",name:"Prior service",environment:"production",owner:"prior-admin",runbook:["Preserved owner instruction"],pager:""}],policies:[],events:[],alerts:[],incidents:[],audit:[{id:"prior-audit",at:"2026-10-01T00:00:00Z",actor:"prior-admin",kind:"service",text:"Prior-data custody"}]});
+  const preserved = JSON.stringify(heldWorkspace());
   sql("INSERT INTO workspace(id,revision,data) VALUES(1,3,'"+preserved.replaceAll("'","''")+"'); INSERT INTO credentials VALUES('prior-admin','prior-salt','"+pbkdf2Sync('local-testing-password','prior-salt',100000,32,'sha256').toString('hex')+"')");
   const oldSchedule={id:'prior-schedule',name:'Prior rota',service:'prior-service',revision:1,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:['prior-admin'],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]};
   const legacyTimer={id:'prior-timer',incident:'retained-orphan',service:'prior-service',revision:1,status:'pending',nextDue:1791710000000,createdAt:1791710000000,lastEvaluatedAt:1791710000000,currentStep:0,policy:{service:'prior-service',scheduleId:'prior-schedule',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule:oldSchedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at:1791710000000,actor:null,reason:null,attempt:null}]};
@@ -128,6 +130,13 @@ try {
   const priorState=ok(await request('/api/state',undefined,priorLogin.cookie));
   assert.deepEqual(priorState,JSON.parse(preserved),'held one-row fixture survives relational migration through HTTP');
   const upgradedTimer=ok(await request('/api/paging/state',undefined,priorLogin.cookie)).jobs.find(job=>job.id==='prior-timer');assert.equal(upgradedTimer.status,'paused');assert.equal(upgradedTimer.nextDue,null);assert.deepEqual(upgradedTimer.history.slice(0,-1),legacyTimer.history,'held timer history preserved while paused');
+  await stop();
+  migration();
+  await start();
+  const heldAgain = await request('/api/login', { name: 'Prior Operator', password: 'local-testing-password' });
+  ok(heldAgain);
+  assert.deepEqual(ok(await request('/api/state', undefined, heldAgain.cookie)), JSON.parse(preserved), 'all held arrays and history survive repeated migration and restart');
+  console.log('PASS held upgrade through pre-0106 SQL: full ordered members/services/policies/events/alerts/incidents/audit and nested history unchanged; held password works after upgrade and repeat migration/restart.');
   await stop();
   sql('DELETE FROM paging_jobs; DELETE FROM operator_members; DELETE FROM sessions; DELETE FROM credentials; DELETE FROM workspace_control; '+['members','services','policies','events','alerts','incidents','audit'].map(k=>'DELETE FROM oc_'+k).join(';'));
   migration();
@@ -292,7 +301,10 @@ try {
     return state.alerts.find(a => a.events.includes(stored.id)).id;
   };
   const admittedAlert = await receipt(first, event, false);
-  const repeated = ok(await request("/api/ingress/monitor", event, "", {
+  const equivalent = Object.fromEntries(Object.entries(event).map(([key, value]) => [key, ["intent", "severity", "observedAt"].includes(key) ? value : ` ${value} `]));
+  equivalent.observedAt = "2026-10-02T14:00:00+02:00";
+  equivalent.discarded = { raw: "not retained" };
+  const repeated = ok(await request("/api/ingress/monitor", equivalent, "", {
     authorization: "Bearer " + key,
   }));
   await receipt(repeated, event, true);
@@ -370,6 +382,7 @@ try {
       cookie,
     ),
   );
+  await awaitingCoordinationAuthority({ origin, request, cookie, incident: incident.id });
   const mutate = async (data) => {
     incident = ok(
       await request(

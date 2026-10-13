@@ -1,6 +1,6 @@
 # Calendar schedule semantics
 
-`core/schedules.ts` is original pure source. The edition supplies authenticated
+`src/family/response-operations/schedules.ts` is original pure source. The edition supplies authenticated
 authoring, persistence and retained membership/configuration snapshots. These
 functions read no clock, storage, credential, network or provider. Coverage is
 an explanation of configured ownership, never evidence of urgent delivery.
@@ -64,9 +64,11 @@ runtime's IANA database: determinism within that database is verified; results
 across changed databases are not promised. No imported enterprise schedule
 equivalence or production paging reliability is established by these tests.
 
-Focused verification: `node --experimental-strip-types --test
-tests/schedules.test.ts` from a composed edition. The suite exercises DST
-23/25-hour shifts, both repeated-hour choices and rejection, spring and date-line
-gaps, Lord Howe 30-minute shifts, Kathmandu 45-minute offset, slot retention,
-half-open overrides and overlap rejection, duplicated roles, validity edges,
-strict malformed-input rejection and bounded immutable historical previews.
+Focused verification: build the emitted Worker with `rer build`, then run
+`node tests/activation.mjs`. This public HTTP journey exercises schedule
+persistence, preview, now/next and the authenticated calendar feed. The broader
+DST, unavailable-slot and retained-history requirements above remain acceptance
+requirements; a test command or successful build alone does not prove them.
+`node tests/activation-browser.mjs` checks schedule authoring, overrides and
+coverage previews through native keyboard controls at desktop and phone widths.
+Its fresh clone uses committed HEAD, so commit changes before running it.

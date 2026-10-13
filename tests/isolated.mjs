@@ -21,8 +21,9 @@ export async function isolatedEntrypoint(url){
   return await new Promise(resolve=>{child.once('exit',code=>resolve(code??1));child.once('error',()=>resolve(1))})
  }finally{
   if(child&&child.exitCode===null){child.kill('SIGTERM');await new Promise(r=>child.once('exit',r))}
-  await mkdir(join(root,'evidence'),{recursive:true})
-  await cp(join(checkout,'evidence/browser'),join(root,'evidence/browser'),{recursive:true}).catch(error=>{if(error.code!=='ENOENT')throw error})
+  const evidence=process.env.ONCALL_BROWSER_EVIDENCE??join(dirname(root),'evidence/browser')
+  await mkdir(evidence,{recursive:true})
+  await cp(join(checkout,'evidence/browser'),evidence,{recursive:true}).catch(error=>{if(error.code!=='ENOENT')throw error})
   await rm(temp,{recursive:true,force:true})
  }
 }

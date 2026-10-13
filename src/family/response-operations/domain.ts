@@ -185,6 +185,8 @@ export function route(state: State, signal: Signal): Decision {
   };
 }
 export function signalInput(input: any): Signal {
+  if (!input || typeof input !== "object" || Array.isArray(input))
+    fail("Signal must be an object");
   if (
     !["trigger", "recover"].includes(input.intent) ||
     !["critical", "warning", "info"].includes(input.severity)

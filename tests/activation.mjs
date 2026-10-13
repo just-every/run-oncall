@@ -3,6 +3,8 @@ import {readFile,writeFile,mkdir,rm} from 'node:fs/promises'
 import {spawnSync} from 'node:child_process'
 import {createHash} from 'node:crypto'
 import {localWorker} from './worker.mjs'
+import {checkpointCli} from './checkpoint-cli.mjs'
+import {pagingHistory} from './paging-history.mjs'
 
 const w=await localWorker(),checks=[]
 const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'?r.value:JSON.stringify(r.value));return r.value}
@@ -288,6 +290,7 @@ try {
  ok(await L('/api/recovery/restore',{mode:'replace',checkpoint:{...big,handoffs:{...big.handoffs,records:clones}}}),429) // 1 MiB aggregate
  assert.deepEqual([ok(await L('/api/state')),ok(await L('/api/paging/state')),ok(await L('/api/handoffs'))],bigPrior,'aggregate refusal preserves the complete state')
  const own=await L('/api/recovery/restore',{mode:'replace',checkpoint:ok(await L('/api/recovery/checkpoint'))});ok(own) // reviewed records at either bound still restore and gain their holds
+ own.cookie=await checkpointCli(w,own.cookie)
  const sessionFile='.rer/local/handoff-session',cli=args=>spawnSync(process.execPath,['scripts/handoffs.mjs','--origin',w.origin,'--session-file',sessionFile,...args],{encoding:'utf8'})
  await mkdir('.rer/local',{recursive:true,mode:0o700});await writeFile(sessionFile,own.cookie,{mode:0o600})
  assert.equal(cli(['archive','.rer/local/handoffs.json']).status,0);{const r=cli(['restore','.rer/local/handoffs.json','--replace']);assert.equal(r.status,0,r.stderr)} // the private CLI exports and restores the archive
@@ -304,5 +307,8 @@ try {
  } finally { await fresh.close() }
  record('OC-016/017: checkpoint consistency, auth exclusion, atomic refusal under invalid/capacity/storage/concurrent writes, winner session, paused jobs and orphans, version 1, empty-target mapping, the 1 MiB aggregate, review identity/eligibility/hold/withdrawal and the private CLI passed')
  }
+ const last=await w.request('/api/login',{name:'Admin',password:'local-testing-password'});ok(last)
+ await pagingHistory(w,last.cookie)
+ record('OC-013/015: restored historical acknowledgement/cancellation append attribution without recovery; strict module references, retained callbacks and SQL rollback passed')
  console.log(`Activation passed: ${checks.length} requirement flow groups`)
 }finally{await w.close();await rm('.rer/local/handoff-session',{force:true});await rm('.rer/local/handoffs.json',{force:true})}

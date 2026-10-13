@@ -4,7 +4,7 @@ Implemented and verified on 2 October 2026: 24/24 emitted Worker/D1 and real CLI
 the browser-launch hold.
 
 TARGET.md intends reviewed Lamp handoffs and customer-impact links. Today
-`core/integrations.ts` returns an internal, ephemeral, unreviewed envelope with
+`src/family/response-operations/integrations.ts` returns an internal, ephemeral, unreviewed envelope with
 `reviewed-handoff-required`, `not-published`, `not-sent` and no provider actions.
 Add durable review of explicitly authored copy, initially for a Lamp draft,
 through authenticated local API and CLI. Preserve OC-006 and the existing

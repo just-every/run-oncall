@@ -17,7 +17,6 @@
     "deploy": "rer deploy",
     "test:runtime": "rer queue test:runtime -- sh -c \"node tests/runtime.mjs\"",
     "test:email-link": "rer queue test:email-link -- sh -c \"node tests/email-link.mjs\"",
-    "onboard": "node scripts/install.mjs",
     "build:app": "rer queue build:app -- sh -c \"vite build\"",
     "verify:app": "node tests/verify.mjs",
     "reset": "rer reset",
@@ -61,6 +60,11 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "workerd"
-    ]
+    ],
+    "overrides": {
+      "sharp": "0.35.5",
+      "source-map-js": "1.2.2",
+      "undici": "7.29.1"
+    }
   }
 }

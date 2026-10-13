@@ -26,4 +26,4 @@ jobs:
         if: always()
         with:
           name: oncall-browser-evidence
-          path: evidence/browser
+          path: ../evidence/browser
