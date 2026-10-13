@@ -20,9 +20,15 @@ export function keyboardUser(page) {
    await reach(locator)
    const options=await locator.locator('option').evaluateAll(items=>items.map(item=>({value:item.value,label:item.label}))),option=options.find(item=>item.value===value)
    assert.ok(option,'native select contains intended option')
-   // Native typeahead stays in the focused select. On macOS the arrow/Space
-   // popup belongs to AppKit, which renderer-directed browser keys cannot drive.
-   await page.keyboard.type(option.label)
+   // Repeating the initial character cycles native options with the same prefix.
+   // Keep this to key events: type(label) inserts non-keyboard characters (such
+   // as a middle dot) through the text editor rather than select typeahead.
+   const character=[...option.label.trimStart()][0]
+   assert.ok(character,'native select option has a typeahead character')
+   for(let count=0;count<options.length;count++) {
+    await page.keyboard.press(character)
+    if(await locator.inputValue()===value)break
+   }
    await page.keyboard.press('Tab');assert.equal(await locator.inputValue(),value)
   },
   async focusScreenshot(locator,path) {

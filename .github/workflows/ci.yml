@@ -22,8 +22,10 @@ jobs:
       - run: pnpm install --frozen-lockfile && pnpm exec rer install --non-interactive
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm exec rer verify --non-interactive
+        env:
+          ONCALL_BROWSER_EVIDENCE: ${{ runner.temp }}/oncall-browser-evidence
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: oncall-browser-evidence
-          path: ../evidence/browser
+          path: ${{ runner.temp }}/oncall-browser-evidence
