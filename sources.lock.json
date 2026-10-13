@@ -419,7 +419,7 @@
       "executable": false
     },
     "src/auth.server.ts": {
-      "sha256": "ba837f22b5f73d650ea78b8ff29f6209aa967b549fdad5457af68b2f7e6b7265",
+      "sha256": "b9e6e0c77d04dc40c395235eb39eac65a9a73fb5a0a1dbfa024495647262edbd",
       "executable": false
     },
     "src/base/deployment-health.ts": {
@@ -2307,7 +2307,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "e540fe7e8092bee5db2866c79ec59b2a1127bb202073f1d82a73d56318e51260",
+      "sha256": "bc569b95461e8fa4e48b10e860d24497ad55b76aa33037616a15b1295da155eb",
       "executable": false
     },
     "src/site/pages.tsx": {

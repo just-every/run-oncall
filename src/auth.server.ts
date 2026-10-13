@@ -1,8 +1,9 @@
 import { firstRunResponse } from './base/setup'
+import { admitted } from './base/setup-state'
 import { fontHead } from './brand/font-head'
 import { brandDocumentResponse } from './brand/document-response'
 import { themeFrame } from './base/theme-frame'
-import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, devNotFound, type AuthConfig } from './modules/operator-auth/index.mjs'
+import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, devNotFound, isLoopbackHost, type AuthConfig } from './modules/operator-auth/index.mjs'
 import { operatorMail } from './mail.server.mjs'
 import { createD1DevelopmentOutbox, createDevelopmentOutboxHandler } from './modules/mail/src/development/index.mjs'
 import branding from './branding.json'
@@ -50,6 +51,13 @@ async function html(body: string) {
 
 export async function authResponse(request: Request, original: Bindings): Promise<Response | null> {
  const env = runtimeBindings(original), url = new URL(request.url)
+ if (url.pathname === '/signin' || url.pathname === '/signin/local') {
+  if (!admitted(request, env.AUTH_ORIGIN)) return new Response('Not found', { status: 404, headers: privateHeaders })
+  // Workspace passwords and restore mapping use the loopback-only API. Hosted
+  // installations enter through the declared native sign-in document instead.
+  if (url.pathname === '/signin/local' && !isLoopbackHost(url.hostname))
+   return new Response(null, { status: 303, headers: { ...privateHeaders, location: '/signin' } })
+ }
  // The outbox and key exchange answer only a local runtime holding RER_DEV_KEY;
  // the outbox also needs the key gate's cookie (or the rer harness's header).
  if (url.pathname === '/__dev/outbox' || url.pathname === '/__dev/key') {
@@ -65,7 +73,7 @@ export async function authResponse(request: Request, original: Bindings): Promis
    defaultReturnTo: '/setup',
    links: async () => [
     // Held installations keep their workspace name-and-password accounts; their door is /signin/local.
-    ...(await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first() ? [{ href: '/signin/local', label: 'Sign in with a workspace password' }] : []),
+    ...(isLoopbackHost(url.hostname) && await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first() ? [{ href: '/signin/local', label: 'Sign in with a workspace password' }] : []),
     ...(env.MAIL_PROVIDER === 'development' && env.AUTH_LOCAL === 'true' ? [{ href: '/__dev/outbox', label: 'Open the local development outbox' }] : []),
    ],
   })(request)

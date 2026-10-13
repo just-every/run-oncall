@@ -17,6 +17,12 @@ export default {
     if(new URL(request.url).pathname==='/') {
       if(!admitted(request,bindings.AUTH_ORIGIN))return new Response('Not found',{status:404});
       if(!['GET','HEAD'].includes(request.method))return (await lobbyResponse(request,bindings,identity))!;
+      // No workspace authority is possible without a credential. Keep the public
+      // Lobby on its claim-state read instead of the local-only workspace API.
+      // Native local cookies carry a port, including dev/sign-in-as sessions.
+      const hasCredential=(request.headers.get('cookie')??'').split(';').some(cookie=>
+        /^(?:oncall_session|__Host-operator_session|operator_session_local(?:_\d+)?)=/.test(cookie.trim()));
+      if(!hasCredential)return (await lobbyResponse(request,bindings,identity))!;
       // The same current-member authority protects both native and held password sessions.
       const sessionUrl=new URL('/api/session',request.url);
       const session=await api.fetch(new Request(sessionUrl,{headers:request.headers}),env,execution);
