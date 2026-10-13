@@ -1,0 +1,109 @@
+/* The incidents board in Oncall's brand (12ui pick: evidence brand-oncall-s3 12ui/pick-app-incidents-F.png):
+   the list, the incident with its timeline and response, and the runbook, follow-ups and service context. */
+.board { display: grid; grid-template-columns: minmax(280px, 0.85fr) minmax(380px, 1.2fr) minmax(300px, 0.95fr); gap: 20px; align-items: start; }
+
+/* The list */
+.incidents { padding: 20px 16px 18px; }
+.list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 0 4px 16px; }
+.list-toolbar strong { font-size: 18px; font-weight: 700; }
+.search { display: flex; flex-direction: column; gap: 6px; margin: 0 4px 14px; font-size: 14px; font-weight: 600; color: var(--oc-ink-soft); }
+.search input { min-height: 42px; padding: 9px 12px; border: 1px solid var(--app-field-line); border-radius: 10px; background: var(--app-field); font-size: 15px; font-weight: 400; }
+.inline-form { margin: 0 4px 14px; padding: 16px; border: 1px solid var(--app-line); border-radius: 12px; background: var(--oc-paper); }
+.inline-form h2 { margin: 0; font-size: 17px; font-weight: 700; }
+.incident {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--app-line);
+  border-radius: 12px;
+  background: var(--oc-surface);
+  text-align: left;
+  font-weight: 400;
+}
+.incident:hover:not(:disabled) { border-color: #d9c4ab; }
+.incident.current { border-color: var(--oc-now); background: #fbece5; }
+.incident-top { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--oc-ink-soft); }
+.incident h3 { margin: 8px 0 4px; font-size: 17px; line-height: 1.35; font-weight: 680; overflow-wrap: anywhere; }
+.incident .service { margin: 0; color: var(--oc-muted); font-size: 14px; }
+.incident time { display: block; margin-top: 2px; color: var(--oc-muted); font-size: 14px; }
+.incident .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--oc-now); box-shadow: 0 0 0 3px var(--oc-now-wash); }
+.dot.green { background: #6f9a77; box-shadow: 0 0 0 3px var(--app-sage-wash); }
+.priority { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: var(--oc-paper-deep); color: var(--oc-ink-soft); font-size: 13px; font-weight: 600; }
+.sev-critical { background: var(--oc-now-wash); color: var(--oc-now-ink); }
+.sev-warning { background: var(--app-ochre-wash); color: var(--app-ochre-ink); }
+.sev-info { background: var(--oc-next-wash); color: var(--app-next-ink); }
+.state-resolved { background: var(--app-sage-wash); color: var(--app-sage-ink); }
+.state-recovered, .state-mitigating, .state-acknowledged { background: var(--oc-next-wash); color: var(--app-next-ink); }
+.state-declared { background: var(--oc-now-wash); color: var(--oc-now-ink); }
+.empty { padding: 26px 8px 8px; }
+.empty h2 { margin: 0 0 8px; font-size: 20px; line-height: 1.3; font-weight: 700; }
+.empty p { margin: 0 0 12px; color: var(--oc-muted); line-height: 1.6; }
+
+/* The incident */
+.detail { padding: 24px 24px 26px; overflow-wrap: anywhere; }
+.detail.empty { padding: 28px 26px; }
+.detail-heading { display: flex; align-items: center; gap: 10px; font-size: 17px; color: var(--oc-ink-soft); }
+.detail h2 { margin: 12px 0 6px; font-size: 24px; line-height: 1.25; font-weight: 720; letter-spacing: -0.02em; }
+.meta { margin: 4px 0; color: var(--oc-ink-soft); font-size: 15px; }
+.meta.row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; }
+.commander { font-weight: 620; color: var(--oc-ink); }
+.role-label { padding: 2px 10px; border-radius: 999px; background: var(--oc-now-wash); color: var(--oc-now-ink); font-size: 13px; font-weight: 600; }
+.team-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 20px; }
+.timeline { padding: 18px 18px 6px; border: 1px solid var(--app-line); border-radius: 12px; background: var(--oc-paper); }
+.section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 14px; font-size: 16px; font-weight: 700; }
+.lock { padding: 2px 10px; border: 1px solid var(--app-line); border-radius: 999px; background: var(--oc-surface); color: var(--oc-muted); font-size: 13px; font-weight: 550; }
+.events { list-style: none; margin: 0; padding: 0; }
+.event { position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 12px; padding: 0 0 16px; }
+.event:not(:last-child)::before { content: ""; position: absolute; left: 10px; top: 24px; bottom: 2px; width: 1px; background: #d8ccbb; }
+.event-symbol { width: 20px; height: 20px; margin-top: 2px; border-radius: 50%; border: 5px solid #9aa1a6; background: var(--oc-surface); font-size: 0; }
+.event:first-child .event-symbol { border-color: var(--oc-now); }
+.event-line { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.event-line strong { font-size: 15px; font-weight: 680; }
+.event-line time, .event time { flex: none; color: var(--oc-muted); font-size: 13px; white-space: nowrap; }
+.event p { margin: 4px 0 0; color: var(--oc-ink-soft); font-size: 15px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.event small { display: block; margin-top: 4px; color: var(--oc-muted); font-size: 13px; }
+.composer { margin-top: 6px; }
+.status { margin-top: 16px; padding: 18px; border: 1px solid var(--app-line); border-radius: 12px; background: var(--oc-paper); }
+.status h3 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 16px; font-weight: 700; }
+.status-mark { padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+.status > a { display: inline-block; margin-top: 12px; }
+.status > button { margin-top: 14px; }
+
+/* Runbook, follow-ups and service context */
+.right { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.runbook-owners, .context { padding: 22px 22px 20px; }
+.right h3 { margin: 0; font-size: 17px; font-weight: 700; }
+.right-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.right-title > span { color: var(--oc-muted); font-size: 14px; }
+.checklist { list-style: none; margin: 14px 0 0; padding: 0 0 18px; border-bottom: 1px solid var(--app-line); }
+.checklist li { display: flex; align-items: flex-start; gap: 12px; padding: 6px 0; font-size: 15px; }
+.checklist input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--oc-ink); cursor: pointer; }
+.checklist label { flex: 1; min-width: 0; cursor: pointer; }
+.owners-heading { margin-top: 20px; }
+.owners { list-style: none; margin: 12px 0 0; padding: 0; }
+.owner { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--app-line); }
+.owner .person { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.person-name { font-size: 15px; font-weight: 620; }
+.person-role { margin-top: 2px; color: var(--oc-muted); font-size: 14px; }
+.owner-status { flex: none; padding: 2px 10px; border-radius: 999px; background: var(--oc-paper-deep); font-size: 13px; font-weight: 600; }
+.context p { margin: 10px 0 0; color: var(--oc-ink-soft); line-height: 1.6; }
+.context a { display: inline-block; margin-top: 10px; }
+
+@media (max-width: 1399px) {
+  .board { grid-template-columns: minmax(270px, 0.9fr) minmax(360px, 1.25fr); }
+  .right { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+}
+@media (max-width: 899px) {
+  .board { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .right { grid-column: auto; display: flex; }
+}
+@media (max-width: 699px) {
+  .incidents { padding: 16px 12px 12px; }
+  .detail { padding: 20px 16px 22px; }
+  .detail h2 { font-size: 22px; }
+  .timeline, .status { padding: 16px 14px; }
+  .event-line { flex-direction: column; gap: 0; }
+  .runbook-owners, .context { padding: 20px 16px 18px; }
+}

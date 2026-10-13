@@ -1,0 +1,29 @@
+name: Oncall verification
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free unused runner SDKs for the 15 GiB disk guard
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          df -h / /tmp
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: corepack enable
+      - run: node scripts/rer.mjs install --non-interactive
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: node scripts/rer.mjs verify --non-interactive
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: oncall-browser-evidence
+          path: evidence/browser

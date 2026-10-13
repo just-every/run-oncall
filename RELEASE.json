@@ -1,0 +1,83 @@
+{
+  "version": "0.1.0",
+  "date": "2026-10-13",
+  "publicReleaseNotes": "First public release of Oncall: local rotas, overrides, now/next, a private ICS feed, recorded alert intake and incident coordination beside an existing pager, with a move-in kit for Opsgenie and PagerDuty exports. Paging is off and the existing pager stays authoritative. Run it on your own computer with `node scripts/rer.mjs install`, `setup` and `dev`; see README.md and docs/install.md.",
+  "contractChanges": {},
+  "extensionPointChanges": [],
+  "migrations": [
+    {
+      "id": "0001_initial.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0002_source_signatures.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0003_ingress_scope.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0004_transaction_identity.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0005_synthetic_escalations.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0006_reviewed_handoffs.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0101_owner.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0102_outbox.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0103_portability.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0104_first_run.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0105_identity_providers.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0106_relational_workspace.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0107_move_in_journal.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0108_pause_held_timers.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0109_operator_auth_providers.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0110_import_reversal_fence.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0111_import_retirement.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0112_erasure.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    }
+  ],
+  "breaking": false,
+  "agentUpdateInstructions": "This is the first public release; there is no earlier public version to update from. An installation held from before it upgrades in place through the unchanged migrations and the additive ones in filename order: back up first, preserve authored data, owner and account identities and every applied migration byte, and do not reset to upgrade. For a portable backup stop dev or preview and run node scripts/rer.mjs export --output exports/NAME.rer; restore only into an empty destination with node scripts/rer.mjs import --input exports/NAME.rer --yes after restoring the original private settings. node scripts/rer.mjs deploy --dry-run validates locally and makes no provider requests; actual deployment refuses until a hosted release with an independent standby is approved. Paging stays off. No live provider, deployment or paging acceptance is claimed."
+}

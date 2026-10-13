@@ -1,0 +1,7 @@
+{
+  "schema": 1,
+  "projectId": "just-every/run-oncall",
+  "name": "Oncall",
+  "sourceRepository": "https://github.com/just-every/run-oncall",
+  "license": "MIT"
+}

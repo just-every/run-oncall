@@ -1,0 +1,30 @@
+/* Oncall's brand tokens (evidence: brand-oncall-s1 BRAND.md). One place for the homepage, docs,
+   the local sign-in door and the app. Base's frames read only public/rer-theme.css, whose grammar
+   allows --rer-* tokens and @font-face rules, so these live here. */
+:root {
+  /* Ink on warm morning paper; colour only inside drawings and small state marks. */
+  --oc-font: 'Hanken Grotesk', 'Hanken Grotesk Fallback', Arial, sans-serif;
+  --oc-hand: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive; /* handwritten notes on drawings only */
+  --oc-paper: #f8f0e3;
+  --oc-paper-deep: #f1e5d3;
+  --oc-surface: #fdf8f0;
+  --oc-ink: #1d2a35;
+  --oc-ink-soft: #3a4651;
+  --oc-muted: #5b6670;
+  --oc-line: #e6d9c6;
+  --oc-now: #d48f7f;        /* rose clay: who is on now */
+  --oc-now-wash: #f3dcd3;
+  --oc-now-ink: #8a4434;
+  --oc-next: #8d9fc0;       /* dusk blue: who is next */
+  --oc-next-wash: #e2e7f0;
+  --oc-done: #6e9a7b;       /* sage: done, resolved */
+  --oc-done-wash: #e3ecdf;
+  --oc-done-ink: #2f5b3c;
+  --oc-rule: rgb(29 42 53 / 0.18);
+  --oc-brass: #b9873f;
+  --oc-shadow-card: 0 1px 2px rgb(92 64 38 / 0.06), 0 18px 40px -22px rgb(92 64 38 / 0.32);
+  --oc-radius-card: 14px;
+  --oc-radius-pill: 999px;
+  --oc-gutter: clamp(16px, 5vw, 72px);
+  --oc-max: 1440px;
+}

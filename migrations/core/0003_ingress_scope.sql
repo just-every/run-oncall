@@ -1,0 +1,1 @@
+ALTER TABLE sources ADD COLUMN scopes TEXT NOT NULL DEFAULT '[]';

@@ -1,0 +1,119 @@
+{
+  "id": "oncall",
+  "name": "Oncall",
+  "version": "0.1.0",
+  "maturity": "maintained-local",
+  "category": "operations",
+  "replaces": [
+    "PagerDuty",
+    "Opsgenie"
+  ],
+  "spine": {
+    "id": "schedule",
+    "record": "Service rota with calendar-day hand-offs and explicit coverage gaps"
+  },
+  "description": "Local rotas, overrides, now/next, private ICS, recorded alert intake and incident coordination beside an existing pager. Paging OFF.",
+  "capabilities": [
+    {
+      "id": "coordination",
+      "clauses": [
+        "OC-001",
+        "OC-002",
+        "OC-003",
+        "OC-004",
+        "OC-005",
+        "OC-006",
+        "OC-007",
+        "OC-008",
+        "OC-009",
+        "OC-010"
+      ]
+    },
+    {
+      "id": "rotas",
+      "clauses": [
+        "OC-011",
+        "OC-014",
+        "OC-020"
+      ]
+    },
+    {
+      "id": "paging-refusal",
+      "clauses": [
+        "OC-012",
+        "OC-013"
+      ]
+    },
+    {
+      "id": "upgrade-and-recovery",
+      "clauses": [
+        "OC-015",
+        "OC-016",
+        "OC-017",
+        "OC-019"
+      ]
+    },
+    {
+      "id": "maintained-installation",
+      "clauses": [
+        "OC-018"
+      ]
+    },
+    {
+      "id": "move-in",
+      "clauses": [
+        "OC-021",
+        "OC-022"
+      ]
+    }
+  ],
+  "nonGoals": [
+    "production paging",
+    "provider sends",
+    "hosted release without standby",
+    "autonomous remediation"
+  ],
+  "externals": [],
+  "env": [],
+  "deploy": {
+    "healthPath": "/health",
+    "publicPaths": [
+      "/",
+      "/health",
+      "/signin"
+    ],
+    "notes": "Hosted release refuses until a standby is approved; paging also requires a real-phone drill. Native owner sessions guard private APIs; local outbox is key-gated."
+  },
+  "extensionPoints": {
+    "contributions": [],
+    "policies": [],
+    "events": [],
+    "slots": [],
+    "adapters": []
+  },
+  "limits": {
+    "status": "unmeasured"
+  },
+  "accessibility": {
+    "level": "WCAG 2.2 AA",
+    "status": "target; unaudited"
+  },
+  "operatingCost": {
+    "status": "unmeasured"
+  },
+  "composition": {
+    "base": "base",
+    "family": "response-operations",
+    "edition": "oncall",
+    "modules": [
+      "job-queue",
+      "release",
+      "deploy-kit",
+      "mail",
+      "operator-auth",
+      "portability",
+      "import-kit"
+    ]
+  },
+  "paging": "OFF"
+}

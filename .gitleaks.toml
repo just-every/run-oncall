@@ -1,0 +1,11 @@
+[extend]
+useDefault = true
+
+# Historical proof manifests contain source SHA256 values keyed by filenames.
+# Keep credential rules active, including everywhere in these same files.
+[[rules]]
+id = "generic-api-key"
+[[rules.allowlists]]
+description = "Source-code SHA256 keyed by a literal source filename"
+regexTarget = "match"
+regexes = ['''^(?:[A-Za-z0-9_-]*api\.ts|secrets\.mjs|wrangler-auth\.mjs)["']\s*:\s*["'][a-f0-9]{64}["']$''']

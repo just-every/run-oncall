@@ -1,0 +1,46 @@
+/* The hands drawing (Handover.tsx). The stage is the drawing's own 1692 x 818 box; the badge words
+   are placed in percentages of it and sized in container units (1cqw = 16.92 drawing pixels), so
+   they stay on their badges at every width. Phones keep the badges big enough to read and crop
+   the hands at the sides instead of shrinking the words. */
+.oc-handover { position: relative; margin: 0; overflow-x: clip; }
+.oc-handover-stage { position: relative; container-type: inline-size; width: 100%; aspect-ratio: 1692 / 818; }
+.oc-handover-img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+
+/* The words on each badge, turned with it. Boxes are the badge faces measured on the drawing. */
+.oc-hb {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 2.72cqw;
+  text-align: center;
+  color: var(--oc-ink);
+}
+.oc-hb-now { left: 22.75%; top: 11.25%; width: 25.12%; height: 36.67%; rotate: 5deg; }
+.oc-hb-next { left: 48.88%; top: 36.43%; width: 25.3%; height: 42.79%; rotate: 11.5deg; }
+.oc-hb .oc-state { font-size: max(12px, 2.36cqw); padding: 0.3em 0.62em 0.36em; font-weight: 560; }
+.oc-hb strong { margin-top: 1.06cqw; font-size: max(16px, 3.43cqw); font-weight: 640; line-height: 1.1; letter-spacing: -0.03em; white-space: nowrap; }
+.oc-hb small { margin-top: 1.18cqw; max-width: 92%; font-size: max(12px, 1.42cqw); font-weight: 500; line-height: 1.3; text-wrap: balance; }
+.oc-hb time { margin-top: 1.3cqw; padding-top: 1.1cqw; min-width: 62%; border-top: 1px solid rgb(29 42 53 / 0.18); font-size: max(12px, 1.77cqw); font-weight: 560; font-variant-numeric: tabular-nums; }
+
+/* The two handwritten notes, as on the approved hero. */
+.oc-handover-note { font-size: max(18px, 3.19cqw); rotate: -7deg; white-space: nowrap; }
+.oc-handover-note .oc-note-arrow { width: 3.4cqw; height: 4.2cqw; }
+.oc-handover-note-now { left: 8.5%; top: -17%; }
+.oc-handover-note-now .oc-note-arrow { left: 22%; top: 104%; }
+.oc-handover-note-next { left: 77.5%; top: 9%; }
+.oc-handover-note-next .oc-note-arrow { left: 32%; right: auto; top: 102%; width: 3.6cqw; height: 6cqw; }
+
+/* Phones: the stage keeps 580px so the badges stay readable, centred on the badges, hands cropped. */
+@media (max-width: 599px) {
+  .oc-handover-stage { width: 580px; margin-left: calc(50% - 290px); }
+  /* The words keep their 12px floor, so the gaps between them close up to fit the badge. */
+  .oc-hb { padding-top: 1.6cqw; }
+  .oc-hb strong { margin-top: 0.5cqw; }
+  .oc-hb small { margin-top: 0.5cqw; line-height: 1.15; }
+  .oc-hb time { margin-top: 0.6cqw; padding-top: 0.5cqw; }
+  .oc-handover-note-now { left: 21%; top: -15%; }
+  .oc-handover-note-now .oc-note-arrow { display: none; }
+  .oc-handover-note-next { left: 25%; top: 62%; rotate: -5deg; }
+  .oc-handover-note-next .oc-note-arrow { display: none; }
+}

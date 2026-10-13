@@ -1,0 +1,383 @@
+{
+  "sections": [
+    {
+      "title": "Start here",
+      "pages": [
+        {
+          "slug": "overview",
+          "title": "Overview",
+          "source": "docs/overview.md",
+          "summary": "What Oncall keeps, how it sits beside your pager, and where to start."
+        },
+        {
+          "slug": "install",
+          "title": "Install and run",
+          "source": "docs/install.md",
+          "summary": "Run Oncall on your own computer, sign in as the owner and finish setup."
+        },
+        {
+          "slug": "team",
+          "title": "Team and sign-in",
+          "source": "docs/team.md",
+          "summary": "How people sign in, what admins, responders and viewers can do, and how to add someone."
+        }
+      ]
+    },
+    {
+      "title": "Use it",
+      "pages": [
+        {
+          "slug": "schedules",
+          "title": "Schedules and hand-overs",
+          "source": "docs/schedules.md",
+          "summary": "Set primary and backup rotations, hand-overs across clock changes, swaps and your calendar feed."
+        },
+        {
+          "slug": "incidents",
+          "title": "Incidents and alerts",
+          "source": "docs/incidents.md",
+          "summary": "Declare and work an incident, keep its timeline and follow-ups, and route alerts."
+        },
+        {
+          "slug": "move-in",
+          "title": "Move in from Opsgenie or PagerDuty",
+          "source": "docs/move-in.md",
+          "summary": "Bring your rota across from saved export files, review it, then apply or undo it."
+        }
+      ]
+    },
+    {
+      "title": "Your data",
+      "pages": [
+        {
+          "slug": "data",
+          "title": "Export and restore",
+          "source": "docs/data.md",
+          "summary": "Take everything with you, restore it into a new installation, or start over."
+        },
+        {
+          "slug": "limits",
+          "title": "What Oncall does not do",
+          "source": "docs/limits.md",
+          "summary": "Paging, decisions and outside accounts Oncall leaves alone, stated plainly."
+        },
+        {
+          "slug": "commands",
+          "title": "Command reference",
+          "source": "RUN-LOCALLY.md",
+          "summary": "Every local command, its flags and what it changes on your computer."
+        }
+      ]
+    }
+  ],
+  "githubOnly": [
+    {
+      "source": "ACCEPTANCE.md",
+      "reason": "Evidence gates for the contract clauses"
+    },
+    {
+      "source": "AGENTS.md",
+      "reason": "Contributor and coding-agent rules for working in this repository"
+    },
+    {
+      "source": "BRAND.md",
+      "reason": "Brand and visual rules for contributors and coding agents"
+    },
+    {
+      "source": "CHANGELOG.md",
+      "reason": "Release notes for developers"
+    },
+    {
+      "source": "CLAUDE.md",
+      "reason": "Contributor and coding-agent rules for working in this repository"
+    },
+    {
+      "source": "CONTRACT.md",
+      "reason": "Product requirement clauses for maintainers"
+    },
+    {
+      "source": "HANDOFF-STAGE.md",
+      "reason": "Design record of the reviewed-handoff API for maintainers"
+    },
+    {
+      "source": "HANDOFF-WORKFLOW.md",
+      "reason": "Design record of the reviewed-handoff API for maintainers"
+    },
+    {
+      "source": "HANDOVER.md",
+      "reason": "Maintainer notes on how this repository was activated"
+    },
+    {
+      "source": "MOVE-IN.md",
+      "reason": "Engineer notes on the importer's fixtures and named compatibility differences; owners read the move-in page"
+    },
+    {
+      "source": "NOTICE.md",
+      "reason": "Third-party source and licence notices kept beside the code"
+    },
+    {
+      "source": "ONBOARDING.md",
+      "reason": "Maintainer notes on how this repository was activated"
+    },
+    {
+      "source": "OPERATIONS.md",
+      "reason": "Operator and storage notes for maintainers; the owner steps are in the docs site"
+    },
+    {
+      "source": "README.md",
+      "reason": "Repository front page for maintainers; owners read the docs site, which covers the same steps"
+    },
+    {
+      "source": "RELEASE.md",
+      "reason": "How a release of this repository is cut and what its version means"
+    },
+    {
+      "source": "SCHEDULE-SEMANTICS.md",
+      "reason": "Developer reference for the schedule resolver; owners read Schedules and hand-overs"
+    },
+    {
+      "source": "SEED-COMMAND-CONTRACT.md",
+      "reason": "Command contract shared by Run Edit Run seeds, for maintainers"
+    },
+    {
+      "source": "public/fonts/README.md",
+      "reason": "Font licence and fallback notes kept beside the font files"
+    },
+    {
+      "source": "scripts/base-cli/cli/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/ai/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/container/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/dependencies/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/deploy-kit/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/erasure/CONTRACT.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/erasure/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/integrations/core/CONTRACT.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/integrations/core/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/job-queue/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/mail/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/mail/live-proof/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/mail/src/adapters/cloudflare/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/mail/src/adapters/messaging/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/mail/src/adapters/resend/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/mail/src/adapters/sendgrid/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/mail/src/doctor/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/mail/src/events/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/mail/src/inbound/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/operator-auth/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/operator-auth/conformance/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/operator-auth/docs/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/operator-auth/docs/native-accounts.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/operator-auth/docs/tanstack-start.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/operator-auth/docs/vite-spa.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/operator-auth/identity/oidc/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/owner-claim/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/portability/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/modules/release/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/operations/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-cli/scripts/publish-check/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "scripts/base-onboarding/README.md",
+      "reason": "Vendored Base command and onboarding tooling; documentation for maintainers of that tooling"
+    },
+    {
+      "source": "src/family/operations/README.md",
+      "reason": "Source module notes for developers"
+    },
+    {
+      "source": "src/family/response-operations/README.md",
+      "reason": "Source module notes for developers"
+    },
+    {
+      "source": "src/modules/dependencies/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/erasure/CONTRACT.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/erasure/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/import-kit/src/CONTRACT.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/import-kit/src/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/import-kit/src/d1/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/import-kit/src/readers/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/mail/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/mail/live-proof/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/mail/src/adapters/cloudflare/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/mail/src/adapters/messaging/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/mail/src/adapters/resend/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/mail/src/adapters/sendgrid/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/mail/src/doctor/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/mail/src/events/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/mail/src/inbound/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/operator-auth/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/operator-auth/conformance/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/operator-auth/docs/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/operator-auth/docs/native-accounts.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/operator-auth/docs/tanstack-start.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/operator-auth/docs/vite-spa.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/operator-auth/identity/oidc/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/owner-claim/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/portability/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+# Source notices
+
+Pinned Base runtime/tooling is MIT, with its original LICENSE retained. Original response-operations and edition code is MIT under that same local author licence. IBM Plex Mono 5.3.0 is bundled through @fontsource and licensed under SIL Open Font License 1.1; its package licence remains in the dependency distribution. React, Hono, TanStack and build/test dependencies retain their package licences. Generated 12ui imagery and prototype are original design-tool outputs; no incumbent artwork/code was copied. Oncall is maintained privately; these source notices do not reserve a public brand.

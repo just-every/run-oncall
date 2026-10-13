@@ -1,0 +1,148 @@
+/* The drawings below the hero, in the hero's language: clip-on badges, rota bands and one
+   handwritten note each. Real screens, real strings; colour only for state, inside the bands. */
+.oc-drawing { position: relative; margin: 0; }
+.oc-drawing p { margin: 0; }
+.oc-card-heading { margin: 0; font-size: 17px; font-weight: 680; letter-spacing: -0.015em; }
+.oc-chip { margin: 0; padding: 6px 12px; border-radius: 999px; background: var(--oc-paper-deep); font-size: 14px; font-weight: 600; }
+.oc-chip span { font-weight: 500; color: var(--oc-muted); margin-right: 4px; }
+
+/* Free: the licence on a clip-on badge (LICENSE lines 1, 5, 8 and 9). */
+.oc-licence { padding: 112px 0 40px; }
+.oc-licence-card { width: min(100%, 600px); margin-left: auto; padding: 40px 32px 24px; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 16px; }
+.oc-licence-title { padding-bottom: 16px; border-bottom: 1px solid var(--oc-line); font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
+.oc-licence-line { margin-top: 20px !important; line-height: 1.9; }
+.oc-licence-rights { margin-top: 4px !important; line-height: 2.15; }
+.oc-licence mark { padding: 3px 5px; border-radius: 5px; background: var(--oc-paper-deep); color: inherit; }
+.oc-licence-more { margin-top: 6px !important; color: var(--oc-muted); }
+.oc-licence-note { left: 0; top: 4px; width: 300px; }
+.oc-licence-note .oc-note-arrow { left: 58%; top: 70%; }
+
+/* Hand-overs: two weeks of the band, each window badge hanging on its hand-over. */
+.oc-windows { padding: 8px 0 24px; }
+.oc-windows-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--oc-line); }
+.oc-windows-band { --bar: 44px; margin-top: 76px; }
+.oc-windows-band .oc-band-handover > .oc-band-bar::after { bottom: -34px; }
+.oc-windows-band .oc-band-foot { justify-self: start; padding-top: 44px; translate: -50% 0; }
+/* The clock change, late in Tom's week: a dashed line up from the bar with its label on top. */
+.oc-clock-change { position: absolute; left: 81.5%; top: -50px; bottom: -6px; width: 0; display: flex; justify-content: center; align-items: flex-start; font-size: 14px; font-weight: 600; color: var(--oc-ink-soft); white-space: nowrap; }
+.oc-clock-change::before { content: ""; position: absolute; left: -0.75px; top: 24px; bottom: 0; border-left: 1.5px dashed var(--oc-ink-soft); }
+.oc-window { width: 200px; padding: 30px 18px 16px; }
+.oc-window-when { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--oc-muted); }
+.oc-window-when b { font-weight: 600; color: var(--oc-ink-soft); }
+.oc-window-when time { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--oc-ink); font-variant-numeric: tabular-nums; }
+.oc-window-who { display: grid; gap: 2px; margin-top: 10px !important; padding-top: 10px; border-top: 1px solid var(--oc-line); font-size: 14px; color: var(--oc-muted); }
+.oc-window-who b { font-size: 18px; font-weight: 640; color: var(--oc-ink); }
+.oc-windows-note { right: 0; bottom: 0; width: 210px; }
+.oc-windows-note .oc-note-arrow { right: 64%; bottom: 84%; }
+
+/* The rest: four small badges, each with its own band. */
+.oc-mini { padding: 34px 18px 18px; font-size: 13px; line-height: 1.35; }
+.oc-mini p { margin: 0; }
+.oc-mini-heading { font-weight: 650; }
+.oc-mini-heading small { font-size: 12px; font-weight: 500; color: var(--oc-muted); }
+.oc-mini-band { --bar: 22px; --seam: var(--oc-badge); margin: 18px 0 4px; }
+.oc-mini-band .oc-band-handover > .oc-band-bar::after {
+  top: -6px;
+  bottom: -6px;
+  background:
+    radial-gradient(circle at 6px 3px, var(--oc-ink) 3px, transparent 3.5px),
+    radial-gradient(circle at 6px calc(100% - 3px), var(--oc-ink) 3px, transparent 3.5px),
+    repeating-linear-gradient(to bottom, var(--oc-ink) 0 3px, transparent 3px 5px) center / 1.5px 100% no-repeat;
+}
+.oc-mini-band .oc-band-foot { padding-top: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.oc-mini-band + .oc-mini-heading { margin-top: 14px !important; padding-top: 12px; border-top: 1px solid var(--oc-line); }
+.oc-mini-n { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: 4px; border: 1px solid var(--oc-ink); border-radius: 50%; font-size: 12px; line-height: 1; font-weight: 650; }
+.oc-mini-band .oc-band-seg:only-child .oc-band-foot { text-align: left; }
+
+.oc-override { margin-top: 12px; }
+.oc-override-label { display: grid; justify-items: center; gap: 1px; margin-left: 37.5% !important; width: 33.3%; text-align: center; white-space: nowrap; }
+.oc-override-label b { font-weight: 620; }
+.oc-override-label span { color: var(--oc-muted); font-variant-numeric: tabular-nums; }
+.oc-override-label em { margin-top: 4px; padding: 1px 9px 2px; border: 1px solid var(--oc-ink); border-radius: 999px; font-size: 12px; font-style: normal; font-weight: 600; }
+.oc-override-band { margin-top: 10px; }
+.oc-override-band .oc-band-next > .oc-band-bar { margin-block: -5px; border-radius: 6px; box-shadow: 0 0 0 1.5px var(--oc-ink); }
+
+.oc-mini-link { display: flex; align-items: center; gap: 5px; padding: 7px 8px; border: 1px solid var(--oc-ink); border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px; }
+.oc-mini-link svg { flex: none; }
+.oc-week { position: relative; margin-top: 14px; }
+.oc-week-days { list-style: none; margin: 0; padding: 0 0 46px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); font-size: 12px; text-align: center; color: var(--oc-muted); }
+.oc-week-days li { display: grid; padding-bottom: 6px; border-left: 1px solid var(--oc-line); }
+.oc-week-days li:first-child { border-left: 0; }
+.oc-week-days b { font-size: 13px; font-weight: 650; color: var(--oc-ink); }
+/* Priya's shift starts at 09:00 on Monday (9/24 of the first day) and runs past Sunday. */
+.oc-week-shift {
+  position: absolute;
+  left: calc(100% / 7 * 9 / 24);
+  right: 0;
+  bottom: 8px;
+  padding: 5px 10px 6px;
+  border-radius: 999px 0 0 999px;
+  background: var(--oc-now);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.oc-week-shift b { font-weight: 650; }
+
+.oc-mini-title { display: flex; align-items: center; gap: 9px; font-weight: 650; }
+.oc-incident-band { margin-top: 12px; }
+.oc-incident-band .oc-band-head { justify-self: stretch; padding-bottom: 6px; font-size: 12px; }
+.oc-incident-ends { display: flex; justify-content: space-between; color: var(--oc-muted); font-weight: 600; }
+.oc-mini-split { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 12px !important; padding-top: 10px; border-top: 1px solid var(--oc-line); }
+.oc-mini-split span { font-size: 12px; color: var(--oc-muted); }
+.oc-mini-split b { font-weight: 620; }
+.oc-mini-check { display: flex; align-items: center; gap: 7px; margin-top: 10px !important; padding-top: 9px; border-top: 1px solid var(--oc-line); font-weight: 600; }
+.oc-mini-check span { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--oc-muted); }
+
+/* Moving in: the move-in kit's preview on a clip-on card, the two schedules lining up. */
+.oc-movein { padding: 96px 0 24px; }
+.oc-movein-card { width: min(100%, 520px); margin-inline: auto; padding: 40px 28px 30px; font-size: 15px; }
+.oc-movein-card p { margin: 0; }
+.oc-movein-title { font-size: 22px; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+.oc-movein-label { margin-top: 20px !important; font-size: 14px; color: var(--oc-muted); }
+.oc-movein-select {
+  margin-top: 6px !important;
+  padding: 10px 14px;
+  border: 1px solid var(--oc-line);
+  border-radius: 10px;
+  background: #fffdf8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' fill='none' stroke='%231d2a35' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center;
+}
+.oc-lineup { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px 14px; margin-top: 22px; }
+.oc-lineup-label { font-size: 13px; font-weight: 600; color: var(--oc-muted); }
+.oc-lineup-band { --bar: 30px; --seam: var(--oc-badge); }
+.oc-lineup-band .oc-band-handover > .oc-band-bar::after { top: -9px; bottom: -9px; }
+.oc-lineup-name { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; font-weight: 620; white-space: nowrap; }
+.oc-lineup-source .oc-band-seg { --seg: var(--oc-badge); }
+.oc-lineup-source .oc-band-bar { box-shadow: inset 0 0 0 1.5px var(--oc-ink-soft) !important; }
+.oc-movein .oc-card-heading { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--oc-line); }
+.oc-movein-counts { margin-top: 4px !important; font-size: 14px; color: var(--oc-muted); }
+.oc-movein-rows { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 6px; }
+.oc-movein-rows li { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 9px; background: #f5ecdd; font-weight: 560; }
+.oc-movein-rows span { color: var(--oc-muted); font-weight: 400; }
+.oc-movein-rows svg { margin-left: auto; color: var(--oc-ink); }
+.oc-movein-button { display: inline-block; margin-top: 20px !important; padding: 11px 20px; border-radius: 999px; background: var(--oc-ink); color: var(--oc-surface); font-weight: 620; }
+.oc-movein-note { left: 0; top: 0; width: 230px; }
+.oc-movein-note .oc-note-arrow { left: 62%; top: 76%; }
+
+@media (max-width: 899px) {
+  .oc-licence { padding-top: 104px; }
+  .oc-licence-card { margin-inline: auto; }
+  .oc-windows { padding-bottom: 112px; }
+}
+@media (max-width: 599px) {
+  .oc-drawing { display: flex; flex-direction: column; padding: 8px 0 0; }
+  .oc-licence-card { padding: 34px 18px 16px; font-size: 13px; }
+  .oc-licence-title { font-size: 18px; }
+  .oc-windows-band { --bar: 32px; margin-top: 64px; }
+  .oc-windows-band .oc-band-foot { translate: -22px 0; }
+  .oc-windows-band .oc-badge { --clip-x: 22px; }
+  .oc-window { width: 148px; padding: 28px 12px 12px; }
+  .oc-window-when { display: grid; gap: 0; }
+  .oc-window-when time { font-size: 24px; }
+  .oc-window-who b { font-size: 16px; }
+  .oc-window-who span { font-size: 12px; }
+  .oc-movein-card { padding: 36px 18px 22px; }
+  .oc-lineup { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .oc-lineup-band + .oc-lineup-label { margin-top: 8px; }
+}

@@ -1,0 +1,43 @@
+/* The closing drawing (BadgeRail.tsx). The stage is the drawing's own 1676 x 1150 box. The badge
+   words are placed in percentages of each badge face and sized in container units (1cqw = 16.76
+   drawing pixels), so they stay on their badges at every width and never go under 12px. Below the
+   desktop layout the stage keeps a minimum width and runs off the right edge instead of shrinking. */
+.oc-rail { position: relative; min-width: 0; margin: 0 calc(-1 * var(--bleed)) 0 0; }
+.oc-rail-stage { position: relative; container-type: inline-size; width: 100%; min-width: 560px; aspect-ratio: 1676 / 1150; }
+.oc-rail-img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+
+/* Each li is one badge face, measured on the drawing. */
+.oc-rail-badges { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
+.oc-rail-badges li { position: absolute; color: var(--oc-ink); text-align: center; }
+.oc-rail-b1 { left: 4.77%; top: 43.91%; width: 17.6%; height: 30.7%; }
+.oc-rail-b2 { left: 25.48%; top: 46.52%; width: 18.38%; height: 33.04%; }
+.oc-rail-b3 { left: 47.43%; top: 47.39%; width: 17.42%; height: 32.78%; }
+.oc-rail-b4 { left: 68.74%; top: 47.39%; width: 17.96%; height: 32.17%; }
+.oc-rail-badges li > * { position: absolute; left: 50%; translate: -50% -50%; margin: 0; white-space: nowrap; }
+
+.oc-rail-badges strong { top: var(--name, 53%); font-size: max(13px, 2.5cqw); font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
+.oc-rail-pill { top: var(--pill, 28%); font-size: max(12px, 2.3cqw); font-weight: 560; line-height: 1; letter-spacing: -0.01em; }
+.oc-rail-badges time { top: 82%; font-size: max(12px, 2.1cqw); font-weight: 500; font-variant-numeric: tabular-nums; }
+.oc-rail-rule { top: var(--rule, 69.5%); width: 4.6cqw; height: 0; border-top: 2px solid rgb(29 42 53 / 0.55); }
+
+.oc-rail-b1 { --pill: 29.7%; --name: 57.5%; }
+.oc-rail-b2 { --pill: 26.8%; --name: 53.2%; --rule: 69.5%; }
+.oc-rail-b3 { --name: 52.8%; --rule: 69.2%; }
+.oc-rail-b4 { --name: 53.8%; --rule: 70.5%; }
+
+/* The handwritten note under the first two badges, its arrow rising to Tom's. */
+.oc-rail-note { left: -14%; top: 74%; font-size: max(18px, 3.2cqw); rotate: -12deg; white-space: nowrap; }
+.oc-rail-note .oc-note-arrow { left: 100%; top: calc(80% - 22cqw); width: 24cqw; height: 24cqw; rotate: 12deg; transform-origin: 0 92%; pointer-events: none; }
+
+/* As the hero stacks: the drawing sits under the copy, a little narrower, running to the page edge. */
+@media (max-width: 1179px) {
+  .oc-rail { width: min(calc(100% + var(--bleed)), 760px); margin: 56px calc(-1 * var(--bleed)) 0 auto; }
+}
+/* The note would run off the left of the screen. */
+@media (max-width: 899px) {
+  .oc-rail-note { display: none; }
+}
+@media (max-width: 599px) {
+  /* Phones: the drawing keeps its readable size, starts at the copy's edge and runs off the right. */
+  .oc-rail { width: calc(100% + var(--bleed)); }
+}

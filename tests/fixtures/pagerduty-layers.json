@@ -1,0 +1,690 @@
+{
+  "users": {
+    "users": [
+      {
+        "id": "pd-alice",
+        "type": "user",
+        "summary": "Alice",
+        "name": "Alice",
+        "email": "alice@example.test",
+        "time_zone": "America/New_York",
+        "role": "user",
+        "contact_methods": [],
+        "notification_rules": [],
+        "teams": []
+      },
+      {
+        "id": "pd-bob",
+        "type": "user",
+        "summary": "Bob",
+        "name": "Bob",
+        "email": "bob@example.test",
+        "time_zone": "America/New_York",
+        "role": "user",
+        "contact_methods": [],
+        "notification_rules": [],
+        "teams": []
+      }
+    ],
+    "limit": 25,
+    "offset": 0,
+    "total": null,
+    "more": false
+  },
+  "schedules": [
+    {
+      "schedule": {
+        "id": "pd-history",
+        "type": "schedule",
+        "summary": "History rota",
+        "name": "History rota",
+        "time_zone": "UTC",
+        "description": "History rota",
+        "users": [
+          {
+            "id": "pd-alice",
+            "type": "user_reference",
+            "summary": "Alice",
+            "self": "https://api.pagerduty.com/users/pd-alice",
+            "html_url": "https://example.test/users/pd-alice"
+          },
+          {
+            "id": "pd-bob",
+            "type": "user_reference",
+            "summary": "Bob",
+            "self": "https://api.pagerduty.com/users/pd-bob",
+            "html_url": "https://example.test/users/pd-bob"
+          }
+        ],
+        "teams": [],
+        "escalation_policies": [],
+        "schedule_layers": [
+          {
+            "id": "L1",
+            "name": "Old week one",
+            "start": "2026-01-05T09:00:00Z",
+            "end": "2026-02-02T09:00:00Z",
+            "rotation_virtual_start": "2026-01-05T09:00:00Z",
+            "rotation_turn_length_seconds": 86400,
+            "users": [
+              {
+                "user": {
+                  "id": "pd-alice",
+                  "type": "user_reference",
+                  "summary": "Alice",
+                  "self": "https://api.pagerduty.com/users/pd-alice",
+                  "html_url": "https://example.test/users/pd-alice"
+                }
+              }
+            ],
+            "restrictions": [],
+            "rendered_coverage_percentage": 100
+          },
+          {
+            "id": "L2",
+            "name": "Old week two",
+            "start": "2026-02-02T09:00:00Z",
+            "end": "2026-03-01T09:00:00Z",
+            "rotation_virtual_start": "2026-02-02T09:00:00Z",
+            "rotation_turn_length_seconds": 86400,
+            "users": [
+              {
+                "user": {
+                  "id": "pd-bob",
+                  "type": "user_reference",
+                  "summary": "Bob",
+                  "self": "https://api.pagerduty.com/users/pd-bob",
+                  "html_url": "https://example.test/users/pd-bob"
+                }
+              },
+              {
+                "user": {
+                  "id": "pd-alice",
+                  "type": "user_reference",
+                  "summary": "Alice",
+                  "self": "https://api.pagerduty.com/users/pd-alice",
+                  "html_url": "https://example.test/users/pd-alice"
+                }
+              }
+            ],
+            "restrictions": [],
+            "rendered_coverage_percentage": 100
+          },
+          {
+            "id": "L3",
+            "name": "Current daily",
+            "start": "2026-03-02T09:00:00Z",
+            "end": null,
+            "rotation_virtual_start": "2026-03-02T09:00:00Z",
+            "rotation_turn_length_seconds": 86400,
+            "users": [
+              {
+                "user": {
+                  "id": "pd-alice",
+                  "type": "user_reference",
+                  "summary": "Alice",
+                  "self": "https://api.pagerduty.com/users/pd-alice",
+                  "html_url": "https://example.test/users/pd-alice"
+                }
+              },
+              {
+                "user": {
+                  "id": "pd-bob",
+                  "type": "user_reference",
+                  "summary": "Bob",
+                  "self": "https://api.pagerduty.com/users/pd-bob",
+                  "html_url": "https://example.test/users/pd-bob"
+                }
+              }
+            ],
+            "restrictions": [],
+            "rendered_coverage_percentage": 100
+          }
+        ],
+        "final_schedule": {
+          "name": "Final Schedule",
+          "rendered_schedule_entries": [
+            {
+              "start": "2026-03-02T09:00:00Z",
+              "end": "2026-03-03T09:00:00Z",
+              "user": {
+                "id": "pd-alice",
+                "type": "user_reference",
+                "summary": "Alice",
+                "self": "https://api.pagerduty.com/users/pd-alice",
+                "html_url": "https://example.test/users/pd-alice"
+              }
+            },
+            {
+              "start": "2026-03-03T09:00:00Z",
+              "end": "2026-03-04T09:00:00Z",
+              "user": {
+                "id": "pd-bob",
+                "type": "user_reference",
+                "summary": "Bob",
+                "self": "https://api.pagerduty.com/users/pd-bob",
+                "html_url": "https://example.test/users/pd-bob"
+              }
+            },
+            {
+              "start": "2026-03-04T09:00:00Z",
+              "end": "2026-03-05T09:00:00Z",
+              "user": {
+                "id": "pd-alice",
+                "type": "user_reference",
+                "summary": "Alice",
+                "self": "https://api.pagerduty.com/users/pd-alice",
+                "html_url": "https://example.test/users/pd-alice"
+              }
+            },
+            {
+              "start": "2026-03-05T09:00:00Z",
+              "end": "2026-03-06T09:00:00Z",
+              "user": {
+                "id": "pd-bob",
+                "type": "user_reference",
+                "summary": "Bob",
+                "self": "https://api.pagerduty.com/users/pd-bob",
+                "html_url": "https://example.test/users/pd-bob"
+              }
+            }
+          ],
+          "rendered_coverage_percentage": 100
+        }
+      }
+    },
+    {
+      "schedule": {
+        "id": "pd-overlap",
+        "type": "schedule",
+        "summary": "Overlapping history",
+        "name": "Overlapping history",
+        "time_zone": "UTC",
+        "description": "Overlapping history",
+        "users": [
+          {
+            "id": "pd-alice",
+            "type": "user_reference",
+            "summary": "Alice",
+            "self": "https://api.pagerduty.com/users/pd-alice",
+            "html_url": "https://example.test/users/pd-alice"
+          },
+          {
+            "id": "pd-bob",
+            "type": "user_reference",
+            "summary": "Bob",
+            "self": "https://api.pagerduty.com/users/pd-bob",
+            "html_url": "https://example.test/users/pd-bob"
+          }
+        ],
+        "teams": [],
+        "escalation_policies": [],
+        "schedule_layers": [
+          {
+            "id": "L4",
+            "name": "Ended later",
+            "start": "2026-01-05T09:00:00Z",
+            "end": "2026-03-10T09:00:00Z",
+            "rotation_virtual_start": "2026-01-05T09:00:00Z",
+            "rotation_turn_length_seconds": 86400,
+            "users": [
+              {
+                "user": {
+                  "id": "pd-alice",
+                  "type": "user_reference",
+                  "summary": "Alice",
+                  "self": "https://api.pagerduty.com/users/pd-alice",
+                  "html_url": "https://example.test/users/pd-alice"
+                }
+              }
+            ],
+            "restrictions": [],
+            "rendered_coverage_percentage": 100
+          },
+          {
+            "id": "L5",
+            "name": "Current",
+            "start": "2026-03-02T09:00:00Z",
+            "end": null,
+            "rotation_virtual_start": "2026-03-02T09:00:00Z",
+            "rotation_turn_length_seconds": 86400,
+            "users": [
+              {
+                "user": {
+                  "id": "pd-alice",
+                  "type": "user_reference",
+                  "summary": "Alice",
+                  "self": "https://api.pagerduty.com/users/pd-alice",
+                  "html_url": "https://example.test/users/pd-alice"
+                }
+              },
+              {
+                "user": {
+                  "id": "pd-bob",
+                  "type": "user_reference",
+                  "summary": "Bob",
+                  "self": "https://api.pagerduty.com/users/pd-bob",
+                  "html_url": "https://example.test/users/pd-bob"
+                }
+              }
+            ],
+            "restrictions": [],
+            "rendered_coverage_percentage": 100
+          }
+        ]
+      }
+    },
+    {
+      "schedule": {
+        "id": "pd-ny-match",
+        "type": "schedule",
+        "summary": "New York matched",
+        "name": "New York matched",
+        "time_zone": "America/New_York",
+        "description": "New York matched",
+        "users": [
+          {
+            "id": "pd-alice",
+            "type": "user_reference",
+            "summary": "Alice",
+            "self": "https://api.pagerduty.com/users/pd-alice",
+            "html_url": "https://example.test/users/pd-alice"
+          },
+          {
+            "id": "pd-bob",
+            "type": "user_reference",
+            "summary": "Bob",
+            "self": "https://api.pagerduty.com/users/pd-bob",
+            "html_url": "https://example.test/users/pd-bob"
+          }
+        ],
+        "teams": [],
+        "escalation_policies": [],
+        "schedule_layers": [
+          {
+            "id": "L6",
+            "name": "NY daily",
+            "start": "2026-03-05T09:00:00-05:00",
+            "end": null,
+            "rotation_virtual_start": "2026-03-05T09:00:00-05:00",
+            "rotation_turn_length_seconds": 86400,
+            "users": [
+              {
+                "user": {
+                  "id": "pd-alice",
+                  "type": "user_reference",
+                  "summary": "Alice",
+                  "self": "https://api.pagerduty.com/users/pd-alice",
+                  "html_url": "https://example.test/users/pd-alice"
+                }
+              },
+              {
+                "user": {
+                  "id": "pd-bob",
+                  "type": "user_reference",
+                  "summary": "Bob",
+                  "self": "https://api.pagerduty.com/users/pd-bob",
+                  "html_url": "https://example.test/users/pd-bob"
+                }
+              }
+            ],
+            "restrictions": [],
+            "rendered_coverage_percentage": 100
+          }
+        ],
+        "final_schedule": {
+          "name": "Final Schedule",
+          "rendered_schedule_entries": [
+            {
+              "start": "2026-03-05T14:00:00Z",
+              "end": "2026-03-06T14:00:00Z",
+              "user": {
+                "id": "pd-alice",
+                "type": "user_reference",
+                "summary": "Alice",
+                "self": "https://api.pagerduty.com/users/pd-alice",
+                "html_url": "https://example.test/users/pd-alice"
+              }
+            },
+            {
+              "start": "2026-03-06T14:00:00Z",
+              "end": "2026-03-07T14:00:00Z",
+              "user": {
+                "id": "pd-bob",
+                "type": "user_reference",
+                "summary": "Bob",
+                "self": "https://api.pagerduty.com/users/pd-bob",
+                "html_url": "https://example.test/users/pd-bob"
+              }
+            },
+            {
+              "start": "2026-03-07T14:00:00Z",
+              "end": "2026-03-08T13:00:00Z",
+              "user": {
+                "id": "pd-alice",
+                "type": "user_reference",
+                "summary": "Alice",
+                "self": "https://api.pagerduty.com/users/pd-alice",
+                "html_url": "https://example.test/users/pd-alice"
+              }
+            },
+            {
+              "start": "2026-03-08T13:00:00Z",
+              "end": "2026-03-09T13:00:00Z",
+              "user": {
+                "id": "pd-bob",
+                "type": "user_reference",
+                "summary": "Bob",
+                "self": "https://api.pagerduty.com/users/pd-bob",
+                "html_url": "https://example.test/users/pd-bob"
+              }
+            }
+          ],
+          "rendered_coverage_percentage": 100
+        }
+      }
+    },
+    {
+      "schedule": {
+        "id": "pd-ny-differs",
+        "type": "schedule",
+        "summary": "New York fixed 24 hours",
+        "name": "New York fixed 24 hours",
+        "time_zone": "America/New_York",
+        "description": "New York fixed 24 hours",
+        "users": [
+          {
+            "id": "pd-alice",
+            "type": "user_reference",
+            "summary": "Alice",
+            "self": "https://api.pagerduty.com/users/pd-alice",
+            "html_url": "https://example.test/users/pd-alice"
+          },
+          {
+            "id": "pd-bob",
+            "type": "user_reference",
+            "summary": "Bob",
+            "self": "https://api.pagerduty.com/users/pd-bob",
+            "html_url": "https://example.test/users/pd-bob"
+          }
+        ],
+        "teams": [],
+        "escalation_policies": [],
+        "schedule_layers": [
+          {
+            "id": "L7",
+            "name": "NY fixed",
+            "start": "2026-03-05T09:00:00-05:00",
+            "end": null,
+            "rotation_virtual_start": "2026-03-05T09:00:00-05:00",
+            "rotation_turn_length_seconds": 86400,
+            "users": [
+              {
+                "user": {
+                  "id": "pd-alice",
+                  "type": "user_reference",
+                  "summary": "Alice",
+                  "self": "https://api.pagerduty.com/users/pd-alice",
+                  "html_url": "https://example.test/users/pd-alice"
+                }
+              },
+              {
+                "user": {
+                  "id": "pd-bob",
+                  "type": "user_reference",
+                  "summary": "Bob",
+                  "self": "https://api.pagerduty.com/users/pd-bob",
+                  "html_url": "https://example.test/users/pd-bob"
+                }
+              }
+            ],
+            "restrictions": [],
+            "rendered_coverage_percentage": 100
+          }
+        ],
+        "final_schedule": {
+          "name": "Final Schedule",
+          "rendered_schedule_entries": [
+            {
+              "start": "2026-03-05T14:00:00Z",
+              "end": "2026-03-06T14:00:00Z",
+              "user": {
+                "id": "pd-alice",
+                "type": "user_reference",
+                "summary": "Alice",
+                "self": "https://api.pagerduty.com/users/pd-alice",
+                "html_url": "https://example.test/users/pd-alice"
+              }
+            },
+            {
+              "start": "2026-03-06T14:00:00Z",
+              "end": "2026-03-07T14:00:00Z",
+              "user": {
+                "id": "pd-bob",
+                "type": "user_reference",
+                "summary": "Bob",
+                "self": "https://api.pagerduty.com/users/pd-bob",
+                "html_url": "https://example.test/users/pd-bob"
+              }
+            },
+            {
+              "start": "2026-03-07T14:00:00Z",
+              "end": "2026-03-08T14:00:00Z",
+              "user": {
+                "id": "pd-alice",
+                "type": "user_reference",
+                "summary": "Alice",
+                "self": "https://api.pagerduty.com/users/pd-alice",
+                "html_url": "https://example.test/users/pd-alice"
+              }
+            },
+            {
+              "start": "2026-03-08T14:00:00Z",
+              "end": "2026-03-09T14:00:00Z",
+              "user": {
+                "id": "pd-bob",
+                "type": "user_reference",
+                "summary": "Bob",
+                "self": "https://api.pagerduty.com/users/pd-bob",
+                "html_url": "https://example.test/users/pd-bob"
+              }
+            }
+          ],
+          "rendered_coverage_percentage": 100
+        }
+      }
+    },
+    {
+      "schedule": {
+        "id": "pd-ny-nocross",
+        "type": "schedule",
+        "summary": "New York without an offset change",
+        "name": "New York without an offset change",
+        "time_zone": "America/New_York",
+        "description": "New York without an offset change",
+        "users": [
+          {
+            "id": "pd-alice",
+            "type": "user_reference",
+            "summary": "Alice",
+            "self": "https://api.pagerduty.com/users/pd-alice",
+            "html_url": "https://example.test/users/pd-alice"
+          },
+          {
+            "id": "pd-bob",
+            "type": "user_reference",
+            "summary": "Bob",
+            "self": "https://api.pagerduty.com/users/pd-bob",
+            "html_url": "https://example.test/users/pd-bob"
+          }
+        ],
+        "teams": [],
+        "escalation_policies": [],
+        "schedule_layers": [
+          {
+            "id": "L8",
+            "name": "NY January",
+            "start": "2026-01-05T09:00:00-05:00",
+            "end": null,
+            "rotation_virtual_start": "2026-01-05T09:00:00-05:00",
+            "rotation_turn_length_seconds": 86400,
+            "users": [
+              {
+                "user": {
+                  "id": "pd-alice",
+                  "type": "user_reference",
+                  "summary": "Alice",
+                  "self": "https://api.pagerduty.com/users/pd-alice",
+                  "html_url": "https://example.test/users/pd-alice"
+                }
+              },
+              {
+                "user": {
+                  "id": "pd-bob",
+                  "type": "user_reference",
+                  "summary": "Bob",
+                  "self": "https://api.pagerduty.com/users/pd-bob",
+                  "html_url": "https://example.test/users/pd-bob"
+                }
+              }
+            ],
+            "restrictions": [],
+            "rendered_coverage_percentage": 100
+          }
+        ],
+        "final_schedule": {
+          "name": "Final Schedule",
+          "rendered_schedule_entries": [
+            {
+              "start": "2026-01-05T14:00:00Z",
+              "end": "2026-01-06T14:00:00Z",
+              "user": {
+                "id": "pd-alice",
+                "type": "user_reference",
+                "summary": "Alice",
+                "self": "https://api.pagerduty.com/users/pd-alice",
+                "html_url": "https://example.test/users/pd-alice"
+              }
+            },
+            {
+              "start": "2026-01-06T14:00:00Z",
+              "end": "2026-01-07T14:00:00Z",
+              "user": {
+                "id": "pd-bob",
+                "type": "user_reference",
+                "summary": "Bob",
+                "self": "https://api.pagerduty.com/users/pd-bob",
+                "html_url": "https://example.test/users/pd-bob"
+              }
+            },
+            {
+              "start": "2026-01-07T14:00:00Z",
+              "end": "2026-01-08T14:00:00Z",
+              "user": {
+                "id": "pd-alice",
+                "type": "user_reference",
+                "summary": "Alice",
+                "self": "https://api.pagerduty.com/users/pd-alice",
+                "html_url": "https://example.test/users/pd-alice"
+              }
+            }
+          ],
+          "rendered_coverage_percentage": 100
+        }
+      }
+    },
+    {
+      "schedule": {
+        "id": "pd-ny-none",
+        "type": "schedule",
+        "summary": "New York no timeline",
+        "name": "New York no timeline",
+        "time_zone": "America/New_York",
+        "description": "New York no timeline",
+        "users": [
+          {
+            "id": "pd-alice",
+            "type": "user_reference",
+            "summary": "Alice",
+            "self": "https://api.pagerduty.com/users/pd-alice",
+            "html_url": "https://example.test/users/pd-alice"
+          },
+          {
+            "id": "pd-bob",
+            "type": "user_reference",
+            "summary": "Bob",
+            "self": "https://api.pagerduty.com/users/pd-bob",
+            "html_url": "https://example.test/users/pd-bob"
+          }
+        ],
+        "teams": [],
+        "escalation_policies": [],
+        "schedule_layers": [
+          {
+            "id": "L9",
+            "name": "NY untimed",
+            "start": "2026-03-05T09:00:00-05:00",
+            "end": null,
+            "rotation_virtual_start": "2026-03-05T09:00:00-05:00",
+            "rotation_turn_length_seconds": 86400,
+            "users": [
+              {
+                "user": {
+                  "id": "pd-alice",
+                  "type": "user_reference",
+                  "summary": "Alice",
+                  "self": "https://api.pagerduty.com/users/pd-alice",
+                  "html_url": "https://example.test/users/pd-alice"
+                }
+              },
+              {
+                "user": {
+                  "id": "pd-bob",
+                  "type": "user_reference",
+                  "summary": "Bob",
+                  "self": "https://api.pagerduty.com/users/pd-bob",
+                  "html_url": "https://example.test/users/pd-bob"
+                }
+              }
+            ],
+            "restrictions": [],
+            "rendered_coverage_percentage": 100
+          }
+        ]
+      }
+    }
+  ],
+  "escalation_policies": {
+    "escalation_policies": [
+      {
+        "id": "pd-hist-policy",
+        "type": "escalation_policy",
+        "summary": "History policy",
+        "name": "History policy",
+        "description": "",
+        "num_loops": 0,
+        "escalation_rules": [
+          {
+            "id": "R1",
+            "escalation_delay_in_minutes": 10,
+            "targets": [
+              {
+                "id": "pd-history",
+                "type": "schedule_reference",
+                "summary": "History rota",
+                "self": "https://api.pagerduty.com/schedules/pd-history",
+                "html_url": "https://example.test/schedules/pd-history"
+              }
+            ]
+          }
+        ],
+        "services": [],
+        "teams": []
+      }
+    ],
+    "limit": 25,
+    "offset": 0,
+    "total": null,
+    "more": false
+  }
+}

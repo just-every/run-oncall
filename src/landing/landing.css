@@ -1,0 +1,101 @@
+/* Oncall's public site (homepage, docs, sign-in door). Tokens live in src/brand/tokens.css (--oc-*). */
+.oc-landing {
+  font-family: var(--oc-font);
+  color: var(--oc-ink);
+  background: linear-gradient(100deg, #fbf5eb 0%, var(--oc-paper) 46%, #f1e8db 100%);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  /* How far the page edge sits past the content box on the right. The hands drawing runs to it, so the
+     blue sleeve leaves the screen instead of ending in a cut inside the page. */
+  --bleed: calc(var(--oc-gutter) + max(0px, (100vw - var(--oc-max)) / 2));
+}
+/* The homepage and the sign-in door sit on lighter paper so the flat shapes read. */
+.oc-home, .oc-door-page { background: linear-gradient(180deg, #fdfaf4 0%, var(--oc-surface) 100%); }
+.oc-landing *, .oc-landing *::before, .oc-landing *::after { box-sizing: border-box; }
+.oc-landing a { color: inherit; }
+.oc-landing :focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 4px; border-radius: 4px; }
+
+/* Header */
+.oc-header {
+  max-width: var(--oc-max);
+  margin: 0 auto;
+  padding: 26px var(--oc-gutter) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.oc-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 31px;
+  font-weight: 760;
+  letter-spacing: -0.035em;
+  text-decoration: none;
+}
+/* The badge has no circle to carry weight, so it stands taller than the text and sits on its baseline. */
+.oc-mark { flex: none; }
+.oc-wordmark .oc-mark { width: 1.22em; height: 1.22em; margin-bottom: -0.04em; }
+.oc-header nav { display: flex; align-items: center; gap: 36px; font-size: 17px; font-weight: 550; }
+.oc-header nav a:not(.oc-pill) { text-decoration: none; }
+.oc-header nav a:not(.oc-pill):hover { text-decoration: underline; text-underline-offset: 6px; }
+.oc-header nav a[aria-current="page"] { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 9px; }
+
+/* Buttons */
+.oc-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 20px 40px; margin-top: 40px; }
+.oc-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 0 32px;
+  border-radius: var(--oc-radius-pill);
+  background: var(--oc-ink);
+  color: var(--oc-surface) !important;
+  font-size: 20px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 10px 22px -14px rgb(29 42 53 / 0.7);
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.oc-pill:hover { background: #2a3a48; transform: translateY(-1px); box-shadow: 0 14px 26px -14px rgb(29 42 53 / 0.75); }
+.oc-pill-small {
+  min-height: 46px;
+  padding: 0 24px;
+  font-size: 17px;
+  background: transparent;
+  color: var(--oc-ink) !important;
+  border: 1.5px solid var(--oc-ink);
+  box-shadow: none;
+}
+.oc-pill-small:hover { background: rgb(29 42 53 / 0.06); box-shadow: none; transform: none; }
+.oc-link {
+  font-size: 19px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 8px;
+  text-decoration-color: rgb(29 42 53 / 0.45);
+}
+.oc-link:hover { text-decoration-color: var(--oc-now); }
+
+/* The header and buttons on narrower screens (the hero's own are in hero.css). */
+@media (max-width: 899px) {
+  .oc-header { padding-top: 18px; }
+}
+@media (max-width: 599px) {
+  .oc-wordmark { font-size: 26px; gap: 8px; }
+  .oc-header nav { gap: 18px; font-size: 16px; }
+  .oc-pill { min-height: 56px; padding: 0 28px; font-size: 18px; }
+  .oc-pill.oc-pill-small { min-height: 42px; padding: 0 18px; font-size: 16px; }
+  .oc-link { font-size: 18px; }
+}
+@media (max-width: 380px) {
+  .oc-header nav { gap: 14px; }
+  .oc-header nav a:not(.oc-pill):nth-child(2) { display: none; }
+}

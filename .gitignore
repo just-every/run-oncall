@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.output/
+.wrangler/
+.tanstack/
+.env*
+.dev.vars*
+.seed/
+.cache/
+*.tsbuildinfo
+
+.rer/local/
+
+exports/
+# Generated proof artifacts; plans and reports remain source.
+evidence/*.log
+evidence/browser/
+evidence/history-scan.json

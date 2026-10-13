@@ -1,0 +1,8 @@
+/* Base's no-script frames (sign-in, confirmation, /setup) take Oncall's tokens from rer-theme.css.
+   Base's sign-in page does not apply --rer-link, so its links would fall back to browser blue; this
+   gives them the brand's ink and spaces them from the button. Scoped to .rer-themed, which only
+   those frames carry. */
+.rer-themed main a { color: var(--rer-link, #1d2a35); font-weight: 600; text-decoration-thickness: 1.5px; text-underline-offset: 4px; text-decoration-color: rgb(29 42 53 / 0.4); }
+.rer-themed main a:hover { text-decoration-color: #d48f7f; }
+.rer-themed main form + p { margin-top: 24px; }
+.rer-themed main form + p + p { margin-top: -8px; }

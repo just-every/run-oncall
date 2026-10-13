@@ -1,0 +1,71 @@
+/* The rota band (Band.tsx). Colour is state only: rose now, dusk blue next, sage done, a light
+   neutral for later. Segments meet on a thin paper seam; hand-overs are a dashed ink line with a
+   dot on each edge of the bar. */
+.oc-band {
+  --bar: 40px;
+  --seam: var(--oc-surface);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: var(--cols);
+  grid-template-rows: auto var(--bar) auto;
+  color: var(--oc-ink);
+}
+.oc-band-seg { position: relative; display: grid; grid-row: 1 / -1; grid-template-rows: subgrid; min-width: 0; }
+.oc-band-done { --seg: color-mix(in srgb, var(--oc-done) 58%, #f3eee4); }
+.oc-band-now { --seg: var(--oc-now); }
+.oc-band-next { --seg: var(--oc-next); }
+.oc-band-later { --seg: #e4ddd0; }
+
+.oc-band-bar { position: relative; background: var(--seg); }
+.oc-band-seg:first-child > .oc-band-bar { border-radius: 999px 0 0 999px; }
+.oc-band-seg:last-child > .oc-band-bar { border-radius: 0 999px 999px 0; }
+.oc-band-seg:only-child > .oc-band-bar { border-radius: 999px; }
+.oc-band-seg + .oc-band-seg > .oc-band-bar { box-shadow: inset 2px 0 0 var(--seam); }
+
+/* The hand-over marker on the segment's starting edge. */
+.oc-band-handover > .oc-band-bar::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: -6px;
+  top: -11px;
+  bottom: -11px;
+  width: 12px;
+  background:
+    radial-gradient(circle at 6px 5px, var(--oc-ink) 4px, transparent 4.6px),
+    radial-gradient(circle at 6px calc(100% - 5px), var(--oc-ink) 4px, transparent 4.6px),
+    repeating-linear-gradient(to bottom, var(--oc-ink) 0 4px, transparent 4px 7px) center / 1.5px 100% no-repeat;
+}
+
+/* The time on the starting boundary sits centred on the marker; the band's first one starts flush. */
+.oc-band-head { align-self: end; justify-self: start; padding-bottom: 14px; translate: -50% 0; text-align: center; font-size: 14px; line-height: 1.3; }
+.oc-band-seg:first-child > .oc-band-head { translate: 0; text-align: left; }
+.oc-band-head:empty, .oc-band-foot:empty { padding: 0; }
+.oc-band-foot { padding-top: 14px; text-align: center; font-size: 15px; line-height: 1.3; }
+
+/* Phones: the band stands up, times on the left of each boundary, people to the right. */
+@media (max-width: 599px) {
+  .oc-band-stack { --bar: 16px; grid-template-columns: auto var(--bar) minmax(0, 1fr); grid-template-rows: none; column-gap: 14px; }
+  .oc-band-stack > .oc-band-seg { grid-column: 1 / -1; grid-row: auto; grid-template-columns: subgrid; grid-template-rows: none; min-height: 74px; }
+  .oc-band-stack .oc-band-head { grid-column: 1; grid-row: 1; align-self: start; justify-self: end; padding: 0; translate: 0 -50%; text-align: right; }
+  .oc-band-stack .oc-band-seg:first-child > .oc-band-head { translate: 0; }
+  .oc-band-stack .oc-band-bar { grid-column: 2; grid-row: 1; }
+  .oc-band-stack .oc-band-foot { grid-column: 3; grid-row: 1; align-self: center; padding: 0; text-align: left; }
+  .oc-band-stack > .oc-band-seg:first-child > .oc-band-bar { border-radius: 999px 999px 0 0; }
+  .oc-band-stack > .oc-band-seg:last-child > .oc-band-bar { border-radius: 0 0 999px 999px; }
+  .oc-band-stack > .oc-band-seg + .oc-band-seg > .oc-band-bar { box-shadow: inset 0 2px 0 var(--seam); }
+  .oc-band-stack .oc-band-handover > .oc-band-bar::after {
+    left: -11px;
+    right: -11px;
+    top: -6px;
+    bottom: auto;
+    width: auto;
+    height: 12px;
+    background:
+      radial-gradient(circle at 5px 6px, var(--oc-ink) 4px, transparent 4.6px),
+      radial-gradient(circle at calc(100% - 5px) 6px, var(--oc-ink) 4px, transparent 4.6px),
+      repeating-linear-gradient(to right, var(--oc-ink) 0 4px, transparent 4px 7px) center / 100% 1.5px no-repeat;
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "users": {
+    "data": [
+      {
+        "id": "alice",
+        "username": "alice@example.test",
+        "fullName": "Alice"
+      },
+      {
+        "id": "bob",
+        "username": "bob@example.test",
+        "fullName": "Bob",
+        "notificationRules": [
+          {
+            "name": "urgent SMS",
+            "condition": "critical",
+            "channel": "sms"
+          }
+        ]
+      }
+    ]
+  },
+  "schedules": {
+    "data": [
+      {
+        "id": "ops-daily",
+        "name": "Operations daily",
+        "timezone": "America/New_York",
+        "rotations": [
+          {
+            "name": "Daily handoff",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice"
+              },
+              {
+                "type": "user",
+                "id": "bob"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "subday",
+        "name": "Short shift",
+        "timezone": "UTC",
+        "rotations": [
+          {
+            "name": "Eight-hour shift",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "hourly",
+            "length": 8,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice"
+              },
+              {
+                "type": "user",
+                "id": "bob"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "restricted",
+        "name": "Business hours",
+        "timezone": "UTC",
+        "rotations": [
+          {
+            "name": "Weekdays",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice"
+              },
+              {
+                "type": "user",
+                "id": "bob"
+              }
+            ],
+            "timeRestriction": {
+              "type": "time-of-day",
+              "restrictions": [
+                {
+                  "startHour": 9,
+                  "endHour": 17
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": {
+    "data": [
+      {
+        "alias": "cover-alice",
+        "scheduleId": "ops-daily",
+        "startDate": "2026-03-08T13:00:00Z",
+        "endDate": "2026-03-08T15:00:00Z",
+        "user": {
+          "id": "alice",
+          "type": "user"
+        }
+      }
+    ]
+  },
+  "escalations": {
+    "data": [
+      {
+        "id": "ops-policy",
+        "name": "Primary escalation",
+        "rules": [
+          {
+            "condition": "if-not-acked",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "schedule",
+              "id": "ops-daily"
+            }
+          }
+        ]
+      },
+      {
+        "id": "repeating",
+        "name": "Repeat every five",
+        "repeat": {
+          "count": 3
+        },
+        "rules": [
+          {
+            "condition": "if-not-acked",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "schedule",
+              "id": "ops-daily"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "timelines": {
+    "data": {
+      "_parent": {
+        "id": "ops-daily",
+        "name": "Operations daily"
+      },
+      "startDate": "2026-03-07T14:00:00Z",
+      "endDate": "2026-03-10T13:00:00Z",
+      "finalTimeline": {
+        "rotations": [
+          {
+            "name": "Daily handoff",
+            "periods": [
+              {
+                "startDate": "2026-03-07T14:00:00Z",
+                "endDate": "2026-03-08T15:00:00Z",
+                "recipient": {
+                  "type": "user",
+                  "id": "alice"
+                }
+              },
+              {
+                "startDate": "2026-03-08T15:00:00Z",
+                "endDate": "2026-03-09T13:00:00Z",
+                "recipient": {
+                  "type": "user",
+                  "id": "bob"
+                }
+              },
+              {
+                "startDate": "2026-03-09T13:00:00Z",
+                "endDate": "2026-03-10T13:00:00Z",
+                "recipient": {
+                  "type": "user",
+                  "id": "alice"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

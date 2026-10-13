@@ -1,0 +1,184 @@
+{
+  "users": {
+    "data": [
+      {
+        "id": "alice",
+        "username": "alice@example.test",
+        "fullName": "Alice",
+        "timeZone": "America/New_York",
+        "locale": "en_US",
+        "role": {
+          "id": "admin",
+          "name": "Admin"
+        },
+        "blocked": false,
+        "verified": true,
+        "createdAt": "2026-01-05T10:00:00.000Z",
+        "userAddress": {
+          "country": "US",
+          "state": "NY",
+          "city": "New York",
+          "line": "1 Example Way",
+          "zipCode": "10001"
+        }
+      },
+      {
+        "id": "bob",
+        "username": "bob@example.test",
+        "fullName": "Bob",
+        "timeZone": "America/New_York",
+        "locale": "en_US",
+        "role": {
+          "id": "user",
+          "name": "User"
+        },
+        "blocked": false,
+        "verified": true,
+        "createdAt": "2026-01-06T10:00:00.000Z",
+        "notificationRules": [
+          {
+            "name": "urgent SMS",
+            "condition": "critical",
+            "channel": "sms"
+          }
+        ]
+      }
+    ],
+    "requestId": "8c2f1d0a-5b7e-4c21-9f11-0a1b2c3d4e5f",
+    "took": 0.032
+  },
+  "schedules": [
+    {
+      "data": {
+        "id": "ops-daily",
+        "name": "Operations daily",
+        "timezone": "America/New_York",
+        "rotations": [
+          {
+            "id": "ops-daily-r1",
+            "name": "Daily handoff",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice"
+              },
+              {
+                "type": "user",
+                "id": "bob"
+              }
+            ]
+          }
+        ],
+        "description": "Operations daily rota",
+        "enabled": true,
+        "ownerTeam": {
+          "id": "team-ops",
+          "name": "Ops"
+        }
+      },
+      "requestId": "8c2f1d0a-5b7e-4c21-9f11-0a1b2c3d4e5f",
+      "took": 0.032
+    }
+  ],
+  "overrides": [
+    {
+      "data": {
+        "alias": "cover-alice",
+        "_parent": {
+          "id": "ops-daily",
+          "name": "Operations daily",
+          "enabled": true
+        },
+        "user": {
+          "type": "user",
+          "id": "alice",
+          "username": "alice@example.test"
+        },
+        "startDate": "2026-03-08T13:00:00Z",
+        "endDate": "2026-03-08T15:00:00Z",
+        "rotations": []
+      },
+      "requestId": "8c2f1d0a-5b7e-4c21-9f11-0a1b2c3d4e5f",
+      "took": 0.032
+    }
+  ],
+  "escalations": [
+    {
+      "data": {
+        "id": "ops-policy",
+        "name": "Primary escalation",
+        "rules": [
+          {
+            "condition": "if-not-acked",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "schedule",
+              "id": "ops-daily"
+            }
+          }
+        ]
+      },
+      "requestId": "8c2f1d0a-5b7e-4c21-9f11-0a1b2c3d4e5f",
+      "took": 0.032
+    }
+  ],
+  "timelines": [
+    {
+      "data": {
+        "_parent": {
+          "id": "ops-daily",
+          "name": "Operations daily",
+          "enabled": true
+        },
+        "startDate": "2026-03-07T14:00:00Z",
+        "endDate": "2026-03-10T13:00:00Z",
+        "finalTimeline": {
+          "rotations": [
+            {
+              "name": "Daily handoff",
+              "periods": [
+                {
+                  "startDate": "2026-03-07T14:00:00Z",
+                  "endDate": "2026-03-08T15:00:00Z",
+                  "recipient": {
+                    "type": "user",
+                    "id": "alice"
+                  }
+                },
+                {
+                  "startDate": "2026-03-08T15:00:00Z",
+                  "endDate": "2026-03-09T13:00:00Z",
+                  "recipient": {
+                    "type": "user",
+                    "id": "bob"
+                  }
+                },
+                {
+                  "startDate": "2026-03-09T13:00:00Z",
+                  "endDate": "2026-03-10T13:00:00Z",
+                  "recipient": {
+                    "type": "user",
+                    "id": "alice"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expandable": [
+        "base",
+        "forwarding",
+        "override"
+      ],
+      "requestId": "8c2f1d0a-5b7e-4c21-9f11-0a1b2c3d4e5f",
+      "took": 0.032
+    }
+  ]
+}

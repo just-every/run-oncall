@@ -1,0 +1,84 @@
+/* The drawing vocabulary (Drawn.tsx), taken from the hero's hands: clip-on name badges, state pills
+   and handwritten notes. Colour only marks state: rose clay now, dusk blue next, sage done. */
+.oc-landing { --oc-badge: #fdf5e8; --oc-clip: #4a545c; }
+
+/* A clip-on name badge: cream card, ink outline, a dark clip with a hole over its top edge. */
+.oc-badge {
+  --tilt: 0deg;
+  position: relative;
+  margin: 0;
+  padding: 30px 22px 20px;
+  border: 2.5px solid var(--oc-ink);
+  border-radius: 14px;
+  background: var(--oc-badge);
+  color: var(--oc-ink);
+  rotate: var(--tilt);
+}
+.oc-badge-clip {
+  position: absolute;
+  left: var(--clip-x, 50%);
+  top: -21px;
+  width: 30px;
+  height: 40px;
+  translate: -50% 0;
+  border: 2.5px solid var(--oc-ink);
+  border-radius: 8px;
+  background: var(--oc-clip);
+}
+.oc-badge-clip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  translate: -50% 0;
+  border: 2px solid var(--oc-ink);
+  border-radius: 50%;
+  background: var(--oc-badge);
+}
+
+/* The state word: a rounded pill in its colour, ink text for contrast. */
+.oc-state { display: inline-block; padding: 0.16em 0.64em 0.22em; border-radius: 999px; font-weight: 620; line-height: 1.1; color: var(--oc-ink); white-space: nowrap; }
+.oc-state-now { background: var(--oc-now); }
+.oc-state-next { background: var(--oc-next); }
+
+/* Small state dots in running text. */
+.oc-dot { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.oc-dot-done { background: var(--oc-done); box-shadow: 0 0 0 3px var(--oc-done-wash); }
+
+/* Handwritten notes (Caveat, the only place it appears) with a curly ink arrow. */
+.oc-note {
+  position: absolute;
+  z-index: 4;
+  display: block;
+  font-family: var(--oc-hand);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: 0.01em;
+  color: var(--oc-ink-soft);
+  rotate: -6deg;
+}
+.oc-note-text { display: block; }
+.oc-note-arrow {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  overflow: visible;
+  fill: none;
+  stroke: var(--oc-ink-soft);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.oc-note-arrow path { vector-effect: non-scaling-stroke; }
+.oc-note-down-right .oc-note-arrow, .oc-note-hero-now .oc-note-arrow { left: 18%; top: 100%; }
+.oc-note-hero-next .oc-note-arrow { right: 18%; top: 100%; }
+.oc-note-up-left .oc-note-arrow { right: 30%; bottom: 100%; }
+
+/* Phones: section notes sit in the flow above their drawing, without the arrow. */
+@media (max-width: 599px) {
+  .oc-drawing .oc-note { position: static; order: -1; margin: 0 0 22px 4px; font-size: 24px; rotate: -3deg; }
+  .oc-drawing .oc-note-arrow { display: none; }
+}

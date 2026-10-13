@@ -1,0 +1,472 @@
+{
+  "users": {
+    "data": [
+      {
+        "id": "alice",
+        "username": "alice@example.test",
+        "fullName": "Alice"
+      },
+      {
+        "id": "bob",
+        "username": "bob@example.test",
+        "fullName": "Bob"
+      }
+    ],
+    "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+    "took": 0.021,
+    "totalCount": 2
+  },
+  "schedules": [
+    {
+      "data": {
+        "id": "ok-daily",
+        "name": "ok-daily",
+        "description": "ok-daily",
+        "timezone": "UTC",
+        "enabled": true,
+        "rotations": [
+          {
+            "id": "r-Daily",
+            "name": "Daily",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice",
+                "username": "alice@example.test"
+              },
+              {
+                "type": "user",
+                "id": "bob",
+                "username": "bob@example.test"
+              }
+            ]
+          }
+        ]
+      },
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    },
+    {
+      "data": {
+        "id": "ov-daily",
+        "name": "ov-daily",
+        "description": "ov-daily",
+        "timezone": "UTC",
+        "enabled": true,
+        "rotations": [
+          {
+            "id": "r-Override-target",
+            "name": "Override target",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice",
+                "username": "alice@example.test"
+              },
+              {
+                "type": "user",
+                "id": "bob",
+                "username": "bob@example.test"
+              }
+            ]
+          }
+        ]
+      },
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    },
+    {
+      "data": {
+        "id": "hourly",
+        "name": "hourly",
+        "description": "hourly",
+        "timezone": "UTC",
+        "enabled": true,
+        "rotations": [
+          {
+            "id": "r-Hourly",
+            "name": "Hourly",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "hourly",
+            "length": 8,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice",
+                "username": "alice@example.test"
+              }
+            ]
+          }
+        ]
+      },
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    },
+    {
+      "data": {
+        "id": "restricted-day",
+        "name": "restricted-day",
+        "description": "restricted-day",
+        "timezone": "UTC",
+        "enabled": true,
+        "rotations": [
+          {
+            "id": "r-Business-hours",
+            "name": "Business hours",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice",
+                "username": "alice@example.test"
+              }
+            ],
+            "timeRestriction": {
+              "type": "time-of-day",
+              "restriction": {
+                "startHour": 9,
+                "startMin": 0,
+                "endHour": 17,
+                "endMin": 0
+              }
+            }
+          }
+        ]
+      },
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    },
+    {
+      "data": {
+        "id": "restricted-week",
+        "name": "restricted-week",
+        "description": "restricted-week",
+        "timezone": "UTC",
+        "enabled": true,
+        "rotations": [
+          {
+            "id": "r-Weekdays",
+            "name": "Weekdays",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice",
+                "username": "alice@example.test"
+              }
+            ],
+            "timeRestriction": {
+              "type": "weekday-and-time-of-day",
+              "restrictions": [
+                {
+                  "startDay": "monday",
+                  "startHour": 9,
+                  "startMin": 0,
+                  "endDay": "friday",
+                  "endHour": 17,
+                  "endMin": 0
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    },
+    {
+      "data": {
+        "id": "concurrent",
+        "name": "concurrent",
+        "description": "concurrent",
+        "timezone": "UTC",
+        "enabled": true,
+        "rotations": [
+          {
+            "id": "r-Primary",
+            "name": "Primary",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice",
+                "username": "alice@example.test"
+              }
+            ]
+          },
+          {
+            "id": "r-Second",
+            "name": "Second",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "weekly",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "bob",
+                "username": "bob@example.test"
+              }
+            ]
+          }
+        ]
+      },
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    },
+    {
+      "data": {
+        "id": "team-slot",
+        "name": "team-slot",
+        "description": "team-slot",
+        "timezone": "UTC",
+        "enabled": true,
+        "rotations": [
+          {
+            "id": "r-Team",
+            "name": "Team",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "team",
+                "id": "team-ops",
+                "name": "Ops"
+              }
+            ]
+          }
+        ]
+      },
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    },
+    {
+      "data": {
+        "id": "empty-slot",
+        "name": "empty-slot",
+        "description": "empty-slot",
+        "timezone": "UTC",
+        "enabled": true,
+        "rotations": [
+          {
+            "id": "r-Gap",
+            "name": "Gap",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "alice",
+                "username": "alice@example.test"
+              },
+              {
+                "type": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    },
+    {
+      "data": {
+        "id": "nested",
+        "name": "nested",
+        "description": "nested",
+        "timezone": "UTC",
+        "enabled": true,
+        "rotations": [
+          {
+            "id": "r-Nested",
+            "name": "Nested",
+            "startDate": "2026-03-07T14:00:00Z",
+            "type": "daily",
+            "length": 1,
+            "participants": [
+              {
+                "type": "escalation",
+                "id": "esc-1",
+                "name": "Ops escalation"
+              }
+            ]
+          }
+        ]
+      },
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    }
+  ],
+  "overrides": [
+    {
+      "scheduleId": "ov-daily",
+      "data": [
+        {
+          "alias": "two-people",
+          "participants": [
+            {
+              "type": "user",
+              "id": "alice",
+              "username": "alice@example.test"
+            },
+            {
+              "type": "user",
+              "id": "bob",
+              "username": "bob@example.test"
+            }
+          ],
+          "startDate": "2026-03-08T13:00:00Z",
+          "endDate": "2026-03-08T15:00:00Z"
+        }
+      ],
+      "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+      "took": 0.021
+    }
+  ],
+  "escalations": {
+    "data": [
+      {
+        "id": "repeats",
+        "name": "Repeats",
+        "repeat": {
+          "waitInterval": 5,
+          "count": 3,
+          "resetRecipientStates": true,
+          "closeAlertAfterAll": false
+        },
+        "rules": [
+          {
+            "condition": "if-not-acked",
+            "notifyType": "default",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "schedule",
+              "id": "ok-daily",
+              "name": "ok-daily"
+            }
+          }
+        ]
+      },
+      {
+        "id": "not-closed",
+        "name": "Until closed",
+        "rules": [
+          {
+            "condition": "if-not-closed",
+            "notifyType": "default",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "schedule",
+              "id": "ok-daily",
+              "name": "ok-daily"
+            }
+          }
+        ]
+      },
+      {
+        "id": "notify-all",
+        "name": "Notify all",
+        "rules": [
+          {
+            "condition": "if-not-acked",
+            "notifyType": "all",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "schedule",
+              "id": "ok-daily",
+              "name": "ok-daily"
+            }
+          }
+        ]
+      },
+      {
+        "id": "direct-user",
+        "name": "Direct user",
+        "rules": [
+          {
+            "condition": "if-not-acked",
+            "notifyType": "default",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "user",
+              "id": "alice",
+              "username": "alice@example.test"
+            }
+          }
+        ]
+      },
+      {
+        "id": "three-steps",
+        "name": "Three steps",
+        "rules": [
+          {
+            "condition": "if-not-acked",
+            "notifyType": "default",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "schedule",
+              "id": "ok-daily",
+              "name": "ok-daily"
+            }
+          },
+          {
+            "condition": "if-not-acked",
+            "notifyType": "default",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "schedule",
+              "id": "ok-daily",
+              "name": "ok-daily"
+            }
+          },
+          {
+            "condition": "if-not-acked",
+            "notifyType": "default",
+            "delay": {
+              "timeAmount": 5,
+              "timeUnit": "minutes"
+            },
+            "recipient": {
+              "type": "schedule",
+              "id": "ok-daily",
+              "name": "ok-daily"
+            }
+          }
+        ]
+      }
+    ],
+    "requestId": "3d9a7c10-2e44-4b8a-8f60-5c1d2e3f4a5b",
+    "took": 0.021
+  }
+}
