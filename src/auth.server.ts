@@ -1,6 +1,6 @@
 import { firstRunResponse } from './base/setup'
-import { fontHead } from './base/font-head'
-import { fontDocumentResponse } from './base/font-response'
+import { fontHead } from './brand/font-head'
+import { brandDocumentResponse } from './brand/document-response'
 import { themeFrame } from './base/theme-frame'
 import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, devNotFound, type AuthConfig } from './modules/operator-auth/index.mjs'
 import { operatorMail } from './mail.server.mjs'
@@ -69,12 +69,12 @@ export async function authResponse(request: Request, original: Bindings): Promis
     ...(env.MAIL_PROVIDER === 'development' && env.AUTH_LOCAL === 'true' ? [{ href: '/__dev/outbox', label: 'Open the local development outbox' }] : []),
    ],
   })(request)
-  if (page) return fontDocumentResponse(page)
+  if (page) return brandDocumentResponse(page)
  }
- if (url.pathname.startsWith('/auth/')) return fontDocumentResponse(await createAuthHandler(operatorAuth(env))(request))
+ if (url.pathname.startsWith('/auth/')) return brandDocumentResponse(await createAuthHandler(operatorAuth(env))(request))
  if (url.pathname === '/setup' || url.pathname === '/app' || url.pathname.startsWith('/app/')) {
   const setup = await firstRunResponse(request, env, operatorAuth(env), { theme })
-  if (setup) return setup
+  if (setup) return brandDocumentResponse(setup)
  }
  if (url.pathname === '/app') return new Response(null,{status:303,headers:{location:'/'}})
  return null

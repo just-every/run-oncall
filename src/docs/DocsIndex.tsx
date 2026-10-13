@@ -1,11 +1,13 @@
+import { HydrationUnit } from "../base/hydration/unit";
+import type { SiteVariant } from "../landing/Site";
 import { DocsLayout } from './DocsLayout';
 import { docsLead, docsSections } from './pages';
 
 // /docs: every section and page with its one-line summary.
-export function DocsIndex() {
+export function DocsIndex({ variant }: { variant?: SiteVariant }) {
   return (
-    <DocsLayout>
-      <article className="docs-article">
+    <DocsLayout variant={variant}>
+      <HydrationUnit><article className="docs-article">
         <p className="docs-eyebrow">Docs</p>
         <h1>Oncall docs</h1>
         <p className="docs-summary">{docsLead}</p>
@@ -27,7 +29,7 @@ export function DocsIndex() {
           </section>
           );
         })}
-      </article>
+      </article></HydrationUnit>
     </DocsLayout>
   );
 }

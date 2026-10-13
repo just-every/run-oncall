@@ -2,7 +2,7 @@ import { cloudflare } from '@cloudflare/vite-plugin'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import { archiveOutputGuard } from './scripts/base-onboarding/archive-output.mjs'
+import { archiveOutputGuard } from '@runeditrun/rer/archive-output'
 import { docsSite } from './src/docs/build/plugin.ts'
 
 // Only `vite dev` loads the local-only entry and the checkout's dev key; a build

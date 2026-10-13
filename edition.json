@@ -1,4 +1,41 @@
 {
   "schemaVersion": 1,
-  "id": "just-every/run-oncall"
+  "id": "just-every/run-oncall",
+  "toolchain": {
+    "id": "runeditrun/edition-authoring",
+    "version": "1.1.0"
+  },
+  "components": [
+    {
+      "id": "runeditrun/base",
+      "role": "foundation",
+      "source": {
+        "kind": "local",
+        "paths": [
+          "src/base"
+        ],
+        "origin": {
+          "repository": "https://github.com/runeditrun/base.git",
+          "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+          "path": "foundation/runtime"
+        }
+      }
+    },
+    {
+      "id": "just-every/run-oncall",
+      "role": "edition",
+      "source": {
+        "kind": "local",
+        "paths": [
+          "src/routes",
+          "src/site",
+          "src/landing",
+          "src/docs",
+          "public",
+          "scripts",
+          "package.json"
+        ]
+      }
+    }
+  ]
 }

@@ -1,3 +1,4 @@
+import type { SiteVariant } from "./Site";
 import { Wordmark } from "./Mark";
 import { Handover } from "./Handover";
 import { Band, type Segment } from "./Band";
@@ -55,20 +56,20 @@ const rota: Segment[] = [
   { key: "ana-later", state: "later", handover: true, head: <Boundary day="Mon 26 Oct" time="09:00" />, foot: <Who name="Ana Ruiz" state="Later" /> },
 ];
 
-export function Hero() {
+export function Hero({ variant = "instance" }: { variant?: SiteVariant }) {
   return (
     <section className="oc-hero" aria-labelledby="oc-hero-title">
       <div className="oc-hero-copy">
-        <h1 id="oc-hero-title">Everyone knows who's on&nbsp;call.</h1>
-        <p className="oc-hero-sub">Oncall shows who's on now, who's next and exactly when they hand over.</p>
-        <div className="oc-actions">
-          <a className="oc-pill" href={sourceUrl}>Get the code</a>
+        <h1 id="oc-hero-title" data-intro>Everyone knows who's on&nbsp;call.</h1>
+        <p className="oc-hero-sub" data-intro>Oncall shows who's on now, who's next and exactly when they hand over.</p>
+        <div className="oc-actions" data-intro>
+          <a className="oc-pill" href={variant === "site" ? "/run" : sourceUrl}>{variant === "site" ? "Run Oncall" : "Get the code"}</a>
           <a className="oc-link" href={docsUrl}>Read the docs</a>
         </div>
-        <p className="oc-hero-free">100% free, open source alternative to <strong>PagerDuty</strong> and <strong>Opsgenie</strong></p>
+        <p className="oc-hero-free" data-intro>100% free, open source alternative to <strong>PagerDuty</strong> and <strong>Opsgenie</strong></p>
       </div>
-      <div className="oc-hero-art"><Handover /></div>
-      <Band className="oc-rota" stack label="Checkout rota, weekly in Europe/London" segments={rota} />
+      <div className="oc-hero-art" data-intro><Handover /></div>
+      <Band intro className="oc-rota" stack label="Checkout rota, weekly in Europe/London" segments={rota} />
     </section>
   );
 }

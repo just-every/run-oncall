@@ -5,7 +5,7 @@ Your schedules, incidents, team and history live in your own installation. You c
 ## Export everything
 
 ```sh
-node scripts/rer.mjs export --output exports/installation.rer
+rer export --output exports/installation.rer
 ```
 
 The archive holds everything Oncall keeps: services, schedules, incidents with their timelines and reviews, alerts, routing rules, the team and the move-in journal. Sign-in sessions, passwords and private settings are never in it. Stop `dev` first. Keep the archive private: imported pager files you moved in from may contain people's names and email addresses.
@@ -13,7 +13,7 @@ The archive holds everything Oncall keeps: services, schedules, incidents with t
 ## Restore into a new installation
 
 ```sh
-node scripts/rer.mjs import --input exports/installation.rer --yes
+rer import --input exports/installation.rer --yes
 ```
 
 Import checks the archive first and only restores into an empty installation, so it can never overwrite data by accident. Then run setup to choose the owner, sign in, and use **Map an archived administrator after restore** on the workspace password sign-in page to link your email to the administrator in the archive. Passwords do not travel with the archive.
@@ -25,7 +25,7 @@ Admins also have **Archive** in the app. **Portable workspace archive** download
 ## Start over
 
 ```sh
-node scripts/rer.mjs reset --yes
+rer reset --yes
 ```
 
 Reset deletes this installation's data, its owner and its private settings, and keeps the source code and your exports. Export first if you may want anything back.

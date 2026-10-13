@@ -1,7 +1,7 @@
 import { lstat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { relative } from 'node:path';
-import { RerError, refuse } from '../base-cli/cli/errors.mjs';
+import { RerError, refuse } from '@runeditrun/rer/errors';
 
 // Seeds declare their real bindings and data policy. The shared module owns the
 // archive format and atomic restore; the shared runner owns its native children.

@@ -1,3 +1,4 @@
+import type { SiteVariant } from "../Site";
 import "@fontsource/ibm-plex-mono/latin-400.css";
 import "@fontsource/ibm-plex-mono/latin-600.css";
 import { Badge, Note } from "../Drawn";
@@ -28,14 +29,14 @@ function LicenceBadge() {
   );
 }
 
-export function Free() {
+export function Free({ variant = "instance" }: { variant?: SiteVariant }) {
   return (
     <Section id="oc-free-title" eyebrow="Free" title="Free for the whole rota." drawing={<LicenceBadge />} className="oc-free">
       <p className="oc-section-line">Oncall is 100% free and open source. It's MIT licensed, so it's yours to use, change and run however you like.</p>
       <ul className="oc-promises">
         {promises.map(([icon, text]) => <li key={text}><span className="oc-icon-disc"><Icon name={icon} /></span>{text}</li>)}
       </ul>
-      <a className="oc-pill oc-pill-medium" href={sourceUrl}>Get the code</a>
+      <a className="oc-pill oc-pill-medium" href={variant === "site" ? "/run" : sourceUrl}>{variant === "site" ? "Run Oncall" : "Get the code"}</a>
     </Section>
   );
 }

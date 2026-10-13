@@ -2,12 +2,12 @@ import { pathToFileURL } from 'node:url';
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { createPortability, PortabilityError } from '../base-cli/modules/portability/index.mjs';
-import { exportArchive, importArchive, fileRecords } from '../base-cli/modules/portability/files.mjs';
-import { migrationReplay } from '../base-cli/modules/portability/migration-history.mjs';
-import { parseJsonc } from '../base-cli/cli/jsonc.mjs';
+import { createPortability, PortabilityError } from '@runeditrun/rer/modules/portability';
+import { exportArchive, importArchive, fileRecords } from '@runeditrun/rer/modules/portability/files';
+import { migrationReplay } from '@runeditrun/rer/modules/portability/migration-history';
+import { parseJsonc } from '@runeditrun/rer/jsonc';
 
-// Base's portability worker (scripts/base-cli/cli/portability-worker.mjs) plus
+// Base's portability worker (@runeditrun/rer/internal/cli/portability-worker.mjs) plus
 // Oncall's restore policy module, whose staged validation is code and cannot
 // travel inside the JSON policy Base's worker receives.
 

@@ -1,8 +1,5 @@
 import { MoveInWorkspace } from '../MoveInWorkspace';
 import { createFileRoute } from "@tanstack/react-router";
-import { createIsomorphicFn } from "@tanstack/react-start";
-import { getCookie } from "@tanstack/react-start/server";
-import { Home } from "../landing/Home";
 import { useEffect, useState } from "react";
 import { Field, Form } from "../forms";
 import { request, useWorkspace } from "../useWorkspace";
@@ -12,16 +9,7 @@ import { Mark } from "../landing/Mark";
 import { NavIcon } from "../app/NavIcon";
 import "../app/shell.css";
 import "../app/incidents.css";
-// A session cookie's presence (not its validity) decides whether the server
-// renders the homepage or the app's loading state; the session API still decides.
-const sessionCookies = ["oncall_session", "operator_session_local", "__Host-operator_session"];
-const sessionHint = createIsomorphicFn()
-  .server(() => sessionCookies.some((name) => getCookie(name) !== undefined))
-  .client(() => null);
-export const Route = createFileRoute("/")({
-  loader: () => ({ signedIn: sessionHint() }),
-  component: Workspace,
-});
+export const Route = createFileRoute("/")({ component: Workspace });
 const time = (value: string) =>
   new Date(value).toLocaleString([], {
     month: "short",
@@ -30,7 +18,6 @@ const time = (value: string) =>
     minute: "2-digit",
   });
 function Workspace() {
-  const { signedIn } = Route.useLoaderData();
   const w = useWorkspace();
   const [page, setPage] = useState("incidents");
   const [selected, setSelected] = useState("");
@@ -50,7 +37,7 @@ function Workspace() {
   const s = w.state;
   const actor = w.member;
   const activeIncidents = s?.incidents.filter((i) => i.state !== "resolved").length ?? 0;
-  const strandedSession = w.ready && !actor && signedIn === true;
+  const strandedSession = w.ready && !actor;
   useEffect(() => {
     if (strandedSession) location.replace("/signin/local");
   }, [strandedSession]);
@@ -95,7 +82,6 @@ function Workspace() {
       w.setError((e as Error).message);
     }
   }
-  if (!w.ready && signedIn === false) return <Home />;
   if (!w.ready)
     return (
       <main className="access">
@@ -104,18 +90,8 @@ function Workspace() {
         {w.error && <p role="alert">{w.error}</p>}
       </main>
     );
-  // Signed-out visitors get the homepage. A session cookie with no workspace member behind it is
-  // a restored owner who must map an archived administrator, or an expired workspace session:
-  // both belong at the workspace sign-in door.
   if (!actor)
-    return signedIn ? (
-      <main className="access">
-        <h1>Oncall</h1>
-        <p role="status">Opening sign-in…</p>
-      </main>
-    ) : (
-      <Home />
-    );
+    return <main className="access"><h1>Oncall</h1><p role="status">Opening sign-in…</p></main>;
   if (!s)
     return (
       <main>

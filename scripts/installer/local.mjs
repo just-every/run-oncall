@@ -1,10 +1,10 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { operatorInstaller, developmentTarget, previewTarget } from '../base-onboarding/operator-installer.mjs';
-import { selectLocalState } from '../base-onboarding/local/state.mjs';
-import { commandAdapter as createCommandAdapter } from '../base-cli/cli/adapter.mjs';
-import { refuse } from '../base-cli/cli/errors.mjs';
-import { ownerDeploy } from '../base-cli/cli/deploy.mjs';
+import { operatorInstaller, developmentTarget, previewTarget } from '@runeditrun/rer/operator-installer';
+import { selectLocalState } from '@runeditrun/rer/local/state';
+import { commandAdapter as createCommandAdapter } from '@runeditrun/rer/adapter';
+import { refuse } from '@runeditrun/rer/errors';
+import { ownerDeploy } from '@runeditrun/rer/deploy';
 import { productPortability } from './portability.mjs';
 import { portabilityPolicy } from '../../src/portability-policy.mjs';
 import * as model from './ui/seed.mjs';
@@ -22,6 +22,8 @@ const lifecycle = operatorInstaller({
 export const adapter = lifecycle;
 export const { install } = lifecycle;
 export const commandAdapter = createCommandAdapter(lifecycle, {
+ site: { entry: 'src/site/pages.tsx', output: 'dist/site', declaration: 'deploy-site.json', config: 'vite.site.config.ts' },
+ publicPages: ['/', '/docs', '/docs/install', '/signin/local'],
  dev: developmentTarget, preview: previewTarget, verify: ['pnpm', ['run', 'verify:app']], deploy: async (context) => { if (!context.options?.dryRun) { throw refuse('Hosted Oncall requires a standby and an approved release. Paging also requires a real-phone drill.'); } return ownerDeploy('deploy.json', lifecycle)(context); },
  portability: productPortability({ database: 'oncall-local', policyModule: 'scripts/installer/archive-policy.mjs', policy: portabilityPolicy, transient: ['local runtime caches and logs'] }),
  setup: { manifestFile: 'rer-setup.json' }, browserModule: 'scripts/installer/ui/seed.mjs',

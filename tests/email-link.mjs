@@ -1,4 +1,4 @@
-import {queuedEntrypoint} from '../scripts/base-onboarding/queued-entry.mjs';
+import {queuedEntrypoint} from '@runeditrun/rer/queued-entry';
 const queued=await queuedEntrypoint(import.meta.url,'verify:email-link');if(queued!==null)process.exit(queued);
 // The foundation's one end-to-end email-link test: the emitted Worker claims
 // the owner, mails a sign-in link to the key-gated development outbox, and the
@@ -36,7 +36,9 @@ try {
     try { ready = (await fetch(`${origin}/health`)).ok } catch { await new Promise(resolve => setTimeout(resolve, 250)) }
   }
   assert.ok(ready, 'emitted Worker became healthy')
+  assert.deepEqual(await (await fetch(origin+'/setup/state')).json(), {state:'unclaimed'});
   assert.equal((await post('/auth/bootstrap', { token: vars.SETUP_TOKEN, displayName: 'Owner' })).status, 303, 'owner claimed')
+  assert.deepEqual(await (await fetch(origin+'/setup/state')).json(), {state:'unclaimed'}, 'bootstrap alone does not confirm first run');
   assert.equal((await post('/auth/magic-link', { email: owner })).status, 202, 'sign-in link mailed')
   assert.equal((await fetch(`${origin}/__dev/outbox`)).status, 404, 'the outbox needs the key gate')
   const listing = await (await fetch(`${origin}/__dev/outbox`, { headers: key })).text()
@@ -52,6 +54,13 @@ try {
   const session = await fetch(`${origin}/auth/session`, { headers: { cookie } })
   assert.equal(session.status, 200)
   assert.equal((await session.json()).operator.email, owner)
+  assert.equal((await fetch(origin+'/setup',{headers:{cookie}})).status,200);
+  const finish=await fetch(origin+'/setup',{method:'POST',redirect:'manual',headers:{cookie,origin,'content-type':'application/x-www-form-urlencoded'},body:'confirm=yes'});
+  assert.equal(finish.status,303);
+  assert.equal(finish.headers.get('location'),'/app');
+  assert.deepEqual(await (await fetch(origin+'/setup/state')).json(),{state:'claimed'});
+  assert.match(await (await fetch(origin)).text(),/href="\/signin"/,'confirmed installation gives guests a sign-in door');
+  assert.match(await (await fetch(origin,{headers:{cookie}})).text(),/class="access"/,'validated native member opens the workspace');
   const oncallSession=await fetch(`${origin}/api/session`,{headers:{cookie}});assert.equal((await oncallSession.json()).member.role,'admin');assert.equal((await fetch(`${origin}/api/state`,{headers:{cookie}})).status,200);
   const checkpoint=await (await fetch(origin+'/api/recovery/checkpoint',{headers:{cookie}})).json(),restored=await post('/api/recovery/restore',{mode:'replace',checkpoint},cookie);assert.equal(restored.status,200)
   const derived=restored.headers.getSetCookie().map(line=>line.split(';')[0]).join('; '),combined=cookie+'; '+derived
@@ -60,8 +69,10 @@ try {
   const query=sql=>JSON.parse(execFileSync(process.execPath,[wrangler[0],'d1','execute','DB','--local','--persist-to',directory,...wrangler.slice(1),'--command',sql,'--json'],{encoding:'utf8',env:{...process.env,WRANGLER_SEND_METRICS:'false'},stdio:['ignore','pipe','pipe']}))[0].results
   const expires=query('SELECT MAX(expires_at) AS expires FROM oa_sessions')[0].expires;query('UPDATE oa_sessions SET expires_at=0')
   assert.equal((await fetch(origin+'/api/state',{headers:{cookie:combined}})).status,401,'restored session retains native expiry')
+  assert.match(await (await fetch(origin,{headers:{cookie:combined}})).text(),/href="\/signin"/,'expired native session receives the guest Lobby');
   query('UPDATE oa_sessions SET expires_at='+expires)
   assert.equal((await post('/auth/signout',{},cookie)).status,204);assert.equal((await fetch(`${origin}/api/state`,{headers:{cookie:combined}})).status,401,'revoked native session cannot read restored Oncall');
+  assert.match(await (await fetch(origin,{headers:{cookie:combined}})).text(),/href="\/signin"/,'revoked native session receives the guest Lobby');
   console.log('Email-link sign-in passed against the emitted Worker: claim, key-gated outbox, confirmation, session')
 } catch (error) {
   for (const value of Object.values(vars)) output = output.replaceAll(value, '[redacted]')

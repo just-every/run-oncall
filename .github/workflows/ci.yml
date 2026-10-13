@@ -19,9 +19,9 @@ jobs:
         with:
           node-version-file: .node-version
       - run: corepack enable
-      - run: node scripts/rer.mjs install --non-interactive
+      - run: pnpm install --frozen-lockfile && pnpm exec rer install --non-interactive
       - run: pnpm exec playwright install --with-deps chromium
-      - run: node scripts/rer.mjs verify --non-interactive
+      - run: pnpm exec rer verify --non-interactive
       - uses: actions/upload-artifact@v4
         if: always()
         with:

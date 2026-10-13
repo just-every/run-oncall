@@ -16,10 +16,10 @@ export type Segment = {
   inside?: ReactNode;
 };
 
-export function Band({ segments, label, stack = false, className = "" }: { segments: Segment[]; label: string; stack?: boolean; className?: string }) {
+export function Band({ segments, label, stack = false, className = "", intro = false }: { intro?: boolean; segments: Segment[]; label: string; stack?: boolean; className?: string }) {
   const cols = segments.map((s) => `minmax(0, ${s.span ?? 1}fr)`).join(" ");
   return (
-    <ol className={`oc-band${stack ? " oc-band-stack" : ""} ${className}`.trim()} aria-label={label} style={{ "--cols": cols } as CSSProperties}>
+    <ol data-intro={intro || undefined} className={`oc-band${stack ? " oc-band-stack" : ""} ${className}`.trim()} aria-label={label} style={{ "--cols": cols } as CSSProperties}>
       {segments.map((s) => (
         <li key={s.key} className={`oc-band-seg oc-band-${s.state}${s.handover ? " oc-band-handover" : ""}`}>
           <div className="oc-band-head">{s.head}</div>

@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url'
 import {isolatedEntrypoint} from './isolated.mjs'
 const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
 import assert from 'node:assert/strict'
@@ -10,7 +11,7 @@ const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r))
 const origin=`http://127.0.0.1:${port}`,env={...process.env,CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false'},children=[]
 const safe=value=>value.replace(/#rer-dev=[^\s"']+/g,'#rer-dev=[redacted]').replace(/\?token=[^\s"']+/g,'?token=[redacted]')
 async function command(args) {
- const child=spawn(process.execPath,['scripts/rer.mjs',...args],{env,stdio:['ignore','pipe','pipe']});children.push(child);let output='';child.stdout.on('data',c=>output+=c);child.stderr.on('data',c=>output+=c)
+ const child=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),...args],{env,stdio:['ignore','pipe','pipe']});children.push(child);let output='';child.stdout.on('data',c=>output+=c);child.stderr.on('data',c=>output+=c)
  const code=await new Promise(r=>child.once('exit',r));assert.equal(code,0,safe(output).slice(-2000));return output
 }
 let browser,dev
@@ -18,7 +19,7 @@ await mkdir('.rer/local',{recursive:true,mode:0o700});await mkdir('evidence/brow
 await writeFile('.rer/local/browser-answers.json',JSON.stringify({OWNER_EMAIL:'owner@example.test'}),{mode:0o600})
 try {
  await command(['setup','--answers','.rer/local/browser-answers.json','--port',String(port),'--non-interactive'])
- dev=spawn(process.execPath,['scripts/rer.mjs','dev','--port',String(port),'--idle-timeout','300','--non-interactive'],{env,stdio:['ignore','pipe','pipe']});children.push(dev)
+ dev=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),'dev','--port',String(port),'--idle-timeout','300','--non-interactive'],{env,stdio:['ignore','pipe','pipe']});children.push(dev)
  let output='';for(const stream of [dev.stdout,dev.stderr])stream.on('data',c=>output+=c)
  let link
  for(let n=0;n<600;n++){if(dev.exitCode!==null)throw Error(safe(output).slice(-2000));link=output.match(/RER_OPEN (http[^\s]+)/)?.[1];if(link)break;await new Promise(r=>setTimeout(r,250))}
@@ -74,7 +75,7 @@ try {
  await browser.close();browser=null
  await command(['dev','--stop'])
  // Exercise fixed production preview and verify that dev identity is absent.
- const preview=spawn(process.execPath,['scripts/rer.mjs','preview','--port',String(port),'--idle-timeout','120','--non-interactive'],{env,stdio:['ignore','pipe','pipe']});children.push(preview)
+ const preview=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),'preview','--port',String(port),'--idle-timeout','120','--non-interactive'],{env,stdio:['ignore','pipe','pipe']});children.push(preview)
  let ready='';for(const s of [preview.stdout,preview.stderr])s.on('data',c=>ready+=c)
  for(let n=0;n<600;n++){if(preview.exitCode!==null)throw Error(safe(ready).slice(-2000));if(ready.includes('RER_READY'))break;await new Promise(r=>setTimeout(r,250))}
  assert.ok(ready.includes('RER_READY'));assert.equal((await fetch(origin+'/api/state')).status,401);await command(['preview','--stop'])

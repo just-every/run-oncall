@@ -135,9 +135,8 @@ try {
   const home = await fetch(origin);
   assert.equal(home.status, 200);
   const homeDocument = await home.text();
-  assert.match(homeDocument, /<h1[^>]*id="oc-hero-title"/, "a signed-out visitor gets the server-rendered homepage");
-  assert.match(homeDocument, /href="\/signin"/, "the homepage offers sign-in");
-  assert.match(homeDocument, /href="\/docs"/, "the homepage links to the on-site docs");
+  assert.match(homeDocument, /href="\/setup"/, "an unclaimed guest can finish setup from the Lobby");
+  assert.match(await (await fetch(origin, { headers: { cookie: "oncall_session=forged" } })).text(), /href="\/setup"/, "forged sessions receive the guest Lobby");
   const docsIndex = await fetch(origin + "/docs");
   assert.equal(docsIndex.status, 200);
   const docPages = [...new Set([...(await docsIndex.text()).matchAll(/href="\/docs\/([a-z0-9-]+)"/g)].map((m) => m[1]))];
@@ -156,7 +155,11 @@ try {
   });
   const admin = ok(setup).member;
   let cookie = setup.cookie;
-  assert.doesNotMatch(await (await fetch(origin, { headers: { cookie } })).text(), /id="oc-hero-title"/, "a signed-in member opens the app, not the homepage");
+  assert.match(await (await fetch(origin, { headers: { cookie } })).text(), /class="access"/, "a validated password member opens the workspace");
+  sql('UPDATE sessions SET expires=0');
+  assert.match(await (await fetch(origin, { headers: { cookie } })).text(), /href="\/setup"/, "an expired password session receives the guest Lobby");
+  const freshLogin = await request('/api/login', { name: 'Admin', password: 'local-testing-password' });
+  ok(freshLogin); cookie = freshLogin.cookie;
   ok(
     await request("/api/setup", {
       name: "second",
@@ -570,6 +573,7 @@ try {
     401,
   );
   ok(await request("/api/logout", {}, cookie));
+  assert.match(await (await fetch(origin, { headers: { cookie } })).text(), /href="\/setup"/, "a revoked password session receives the guest Lobby");
   ok(await request("/api/state", undefined, cookie), 401);
   sql("ALTER TABLE workspace_control RENAME TO workspace_fault");
   ok(await request("/health"), 503);

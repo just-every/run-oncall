@@ -2,9 +2,8 @@
 
 Install the `rer` command once: `npx -y @runeditrun/rer cli install`, or the
 installer script on the RER site (`curl -fsSL https://runeditrun.com/install.sh | sh`).
-`rer` runs every verb with the checkout's own pinned copy: the vendored
-`scripts/rer.mjs`, the `OPERATIONS.json` argv and the `package.json` aliases
-remain the machine contract until package mode, and `rer` runs them.
+`rer` runs every verb with the checkout's exact `@runeditrun/rer` package pin.
+The `OPERATIONS.json` argv and `package.json` aliases name `rer VERB`.
 
 ## Launch with one command
 
@@ -115,7 +114,7 @@ first if it should be restored, and import only into an empty destination.
 Queue waits report immediately with a reason and numeric one-based position,
 then refresh about every 15 seconds while waiting. From the runnable project
 root, inspect the live queue with
-`node scripts/base-cli/modules/job-queue/cli.mjs status`.
+`node node_modules/@runeditrun/rer/modules/job-queue/cli.mjs status`.
 
 For the real owner mailbox, `setup` can prompt instead of receiving
 `--owner-email` on the command line. Setup builds the app, applies local

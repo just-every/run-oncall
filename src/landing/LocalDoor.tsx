@@ -1,3 +1,4 @@
+import { HydrationUnit } from "../base/hydration/unit";
 import { useEffect } from "react";
 import { Field, Form } from "../forms";
 import { useWorkspace } from "../useWorkspace";
@@ -15,7 +16,7 @@ export function LocalDoor() {
   return (
     <Site signIn={false} className="oc-door-page">
       <main id="main" className="oc-door">
-        <section className="oc-door-copy" aria-labelledby="oc-door-title">
+        <HydrationUnit><section className="oc-door-copy" aria-labelledby="oc-door-title">
           <h1 id="oc-door-title">{w.setup ? "Create your response workspace" : "Sign in"}</h1>
           <p className="oc-door-line">
             {w.setup ? "Choose a name and a password for the first administrator." : "Use the name and password from your Oncall workspace."}
@@ -39,10 +40,10 @@ export function LocalDoor() {
               <Field name="adminMapping" label="Archived administrator ID" />
             </Form>
           </details>
-        </section>
-        <div className="oc-door-board" aria-hidden="true">
+        </section></HydrationUnit>
+        <HydrationUnit><div className="oc-door-board" aria-hidden="true">
           <Handover notes={false} />
-        </div>
+        </div></HydrationUnit>
       </main>
     </Site>
   );

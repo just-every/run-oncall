@@ -1,10 +1,11 @@
+import { introGuardScript, introCss } from "../base/hydration/intro-guard";
 import {
   HeadContent,
   Outlet,
   Scripts,
   createRootRoute,
 } from "@tanstack/react-router";
-import { fontLinks } from "../base/font-head";
+import { fontLinks } from "../brand/font-head";
 import "../brand/tokens.css";
 
 export const Route = createRootRoute({
@@ -20,6 +21,8 @@ export const Route = createRootRoute({
   component: () => (
     <html lang="en">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: introGuardScript }} />
+        <style>{introCss}</style>
         <link rel="stylesheet" href="/rer-theme.css" />
         <HeadContent />
       </head>

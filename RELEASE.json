@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
   "date": "2026-10-13",
-  "publicReleaseNotes": "First public release of Oncall: local rotas, overrides, now/next, a private ICS feed, recorded alert intake and incident coordination beside an existing pager, with a move-in kit for Opsgenie and PagerDuty exports. Paging is off and the existing pager stays authoritative. Run it on your own computer with `node scripts/rer.mjs install`, `setup` and `dev`; see README.md and docs/install.md.",
+  "publicReleaseNotes": "First public release of Oncall: local rotas, overrides, now/next, a private ICS feed, recorded alert intake and incident coordination beside an existing pager, with a move-in kit for Opsgenie and PagerDuty exports. Paging is off and the existing pager stays authoritative. Run it on your own computer with `rer install`, `setup` and `dev`; see README.md and docs/install.md.",
   "contractChanges": {},
   "extensionPointChanges": [],
   "migrations": [
@@ -79,5 +79,5 @@
     }
   ],
   "breaking": false,
-  "agentUpdateInstructions": "This is the first public release; there is no earlier public version to update from. An installation held from before it upgrades in place through the unchanged migrations and the additive ones in filename order: back up first, preserve authored data, owner and account identities and every applied migration byte, and do not reset to upgrade. For a portable backup stop dev or preview and run node scripts/rer.mjs export --output exports/NAME.rer; restore only into an empty destination with node scripts/rer.mjs import --input exports/NAME.rer --yes after restoring the original private settings. node scripts/rer.mjs deploy --dry-run validates locally and makes no provider requests; actual deployment refuses until a hosted release with an independent standby is approved. Paging stays off. No live provider, deployment or paging acceptance is claimed."
+  "agentUpdateInstructions": "This is the first public release; there is no earlier public version to update from. An installation held from before it upgrades in place through the unchanged migrations and the additive ones in filename order: back up first, preserve authored data, owner and account identities and every applied migration byte, and do not reset to upgrade. For a portable backup stop dev or preview and run rer export --output exports/NAME.rer; restore only into an empty destination with rer import --input exports/NAME.rer --yes after restoring the original private settings. rer deploy --dry-run validates locally and makes no provider requests; actual deployment refuses until a hosted release with an independent standby is approved. Paging stays off. No live provider, deployment or paging acceptance is claimed."
 }

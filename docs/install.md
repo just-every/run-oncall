@@ -7,9 +7,9 @@ Oncall runs on your own computer with one command for each step. You need Node 2
 From the folder you cloned Oncall into:
 
 ```sh
-node scripts/rer.mjs install
-node scripts/rer.mjs setup
-node scripts/rer.mjs dev
+rer install
+rer setup
+rer dev
 ```
 
 1. **Install** fetches the exact locked dependencies. It changes nothing outside the folder.
@@ -29,7 +29,7 @@ While Oncall runs on your computer, no email leaves it. Sign-in links land in a 
 Press Ctrl-C in the terminal, or run:
 
 ```sh
-node scripts/rer.mjs dev --stop
+rer dev --stop
 ```
 
 Your schedules, incidents and team stay in the folder until you [export them](data.md) or reset the installation.
@@ -39,9 +39,9 @@ Your schedules, incidents and team stay in the folder until you [export them](da
 To set up without questions, put your answers in a private file inside the folder and pass it to setup:
 
 ```sh
-node scripts/rer.mjs setup --answers .seed/local-answers.json --non-interactive
+rer setup --answers .seed/local-answers.json --non-interactive
 ```
 
 The file is a JSON object keyed by the names in `rer-setup.json`, for example `{"OWNER_EMAIL":"you@example.com"}`. Keep it readable only by you.
 
-Every command, flag and what it changes is in the [command reference](../RUN-LOCALLY.md). `node scripts/rer.mjs describe` prints the same from the folder you are in.
+Every command, flag and what it changes is in the [command reference](../RUN-LOCALLY.md). `rer describe` prints the same from the folder you are in.

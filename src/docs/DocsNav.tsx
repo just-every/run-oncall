@@ -1,9 +1,10 @@
+import { HydrationUnit } from "../base/hydration/unit";
 import { docsSections } from './pages';
 
 // Every published page by section; the current one is marked. On phones it folds into "All docs".
 export function DocsNav({ current }: { current?: string }) {
   const list = (
-    <nav className="docs-nav" aria-label="Docs">
+    <HydrationUnit><nav className="docs-nav" aria-label="Docs">
       <a className="docs-nav-home" href="/docs" aria-current={current === undefined ? 'page' : undefined}>All docs</a>
       {docsSections.map(section => (
         <div className="docs-nav-section" key={section.title}>
@@ -17,13 +18,13 @@ export function DocsNav({ current }: { current?: string }) {
           </ul>
         </div>
       ))}
-    </nav>
+    </nav></HydrationUnit>
   );
   return (
     <>
       <div className="docs-sidebar">{list}</div>
       <details className="docs-menu">
-        <summary>All docs</summary>
+        <HydrationUnit><summary>All docs</summary></HydrationUnit>
         {list}
       </details>
     </>

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {readdir,readFile} from 'node:fs/promises'
 import {join} from 'node:path'
-import {serveHosted} from '../scripts/base-cli/cli/hosted-output.mjs'
+import {serveHosted} from '@runeditrun/rer/internal/cli/hosted-output.mjs'
 
 // Every page or file the app links, and every built HTML file, must answer when the build is served
 // the way rer deploy hosts it (the Worker runs before the static assets). A link that redirects and

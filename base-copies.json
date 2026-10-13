@@ -2,28 +2,70 @@
   "schemaVersion": 1,
   "copies": [
     {
+      "path": "public/fonts/outfit",
+      "originPath": "foundation/template/public/fonts/outfit",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "files": {
+        "public/fonts/outfit/LICENSE.txt": "0e5fcef5d93bfcae273c11c00f0bb453d3b5491860e1ac8b658767b7577c938f",
+        "public/fonts/outfit/outfit-latin-wght-normal.woff2": "6c18d579fd87c3776be068b762cbc83fde3acb543d49eabd3ade842eb987e887"
+      },
+      "modes": {
+        "public/fonts/outfit/LICENSE.txt": "100644",
+        "public/fonts/outfit/outfit-latin-wght-normal.woff2": "100644"
+      }
+    },
+    {
       "path": "src/base",
       "originPath": "foundation/runtime",
-      "revision": "479094f0b26a639a1868fa521004581ec8dbcb63",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "src/base/deployment-health.ts": "49f4dac80429ea7d9477b40799a6242f9af4870f3229df70d0ac1f635476b8b7",
         "src/base/dispatch.ts": "695ff1bf5bdcf65a429e3853eb80bcb477297c29e55221f6cad08dcff6ba610c",
+        "src/base/font-head.ts": "937fe339a397abee96e4279f2e310fa336eb30b2ec3aeb98f2c09ed0ba7d5dac",
         "src/base/font-response.ts": "55abc935a78085735ae5b7f2d441ee7a5a67d9c797417f9b5ac3c2449f8c91a8",
+        "src/base/hydration/intro-guard.ts": "abc289d53537b631ad6de323b9123c843aea7498aa50d429a4786d7819194fcd",
+        "src/base/hydration/README.md": "4b72e893c9437a1ddc516759c1bae121db8290a01addf02fc9edb04f8add6ba8",
+        "src/base/hydration/report.ts": "38792ad67dc33c9ccd9537bcfc41b7f21a57f0d6f6266d045cb71d70630cf3d7",
+        "src/base/hydration/unit.tsx": "932bf2aa40a05c76f3a2c25a121db282e17c7bc839f9c37cd102ffe7f4e7ceca",
+        "src/base/identity.ts": "be1347292694308cb7d3820f31644cd81f4ce15c533d24be5e6b9a954ae67573",
+        "src/base/lobby.ts": "8d596a71c38eca61c5c220a73dc3848cd303ea9c2d15c432e262e43019b0fe28",
         "src/base/page-style.ts": "58211f173d3b6d9245e80f217c2f3e4e743d59a559e63817865644a991215111",
         "src/base/rejected-response.ts": "5fe6ea3ac3d113f727431d898b56d4194fad39832c01d0e3cc5cd6d75eafe671",
+        "src/base/run-site.ts": "a9bf7a49e00918a694b8dc33f45584531cb6d99f76ac181a34d8ea1aed154241",
+        "src/base/setup-state.ts": "41d478a3d4d9280b8af8b0e47f51fc4ec45413b5fe141b3aba724b75f7ae0983",
         "src/base/setup.ts": "fe4d6792bdc370fe20a223a9add9c680c789ae80eedb46afc6deb90c86568a5b",
-        "src/base/static-assets.ts": "23d7936300dcec39065b01c8d1bb9a107d009c7de4f33c19751342b51453b49f",
-        "src/base/theme-frame.ts": "a655ce2984758fe1f692d178b7299bb89d612757b77adfa73fc7b0721792b4dd"
+        "src/base/static-assets.ts": "d6ed4098fbee2dc6d557eb1365e9a56b5f5435ad869357cb7d8472a8d0c70e76",
+        "src/base/theme-frame.ts": "3de5d84ebabbe4d6f80396903248ebebcd860c4b4a927d7cbbdd452f05ee4495"
       },
       "modes": {
         "src/base/deployment-health.ts": "100644",
         "src/base/dispatch.ts": "100644",
+        "src/base/font-head.ts": "100644",
         "src/base/font-response.ts": "100644",
+        "src/base/hydration/intro-guard.ts": "100644",
+        "src/base/hydration/README.md": "100644",
+        "src/base/hydration/report.ts": "100644",
+        "src/base/hydration/unit.tsx": "100644",
+        "src/base/identity.ts": "100644",
+        "src/base/lobby.ts": "100644",
         "src/base/page-style.ts": "100644",
         "src/base/rejected-response.ts": "100644",
+        "src/base/run-site.ts": "100644",
+        "src/base/setup-state.ts": "100644",
         "src/base/setup.ts": "100644",
         "src/base/static-assets.ts": "100644",
         "src/base/theme-frame.ts": "100644"
+      }
+    },
+    {
+      "path": "src/client.tsx",
+      "originPath": "foundation/template/src/client.tsx",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "files": {
+        "src/client.tsx": "4fee14f6b63bceec0df77131ffd959fc4d02e3c501982a1f4b5b30c96c1d936a"
+      },
+      "modes": {
+        "src/client.tsx": "100644"
       }
     },
     {
