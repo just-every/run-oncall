@@ -29,3 +29,7 @@ Read CONTRACT.md and ACCEPTANCE.md. This seed owns UI, API, storage, authenticat
 Keep released migrations immutable. New migrations must prove held-data upgrades. Never special-case inputs, weaken tests or create application mocks/fallbacks. Tests guard user-visible flows through emitted Worker HTTP or browser doors; data import/restore and authority require malformed-input, revocation, concurrency and rollback proof. Replace obsolete tests explicitly and report them. No pin tests. Run the tests you touched and the typecheck, then `rer verify` before proposing a change. Run one heavy job at a time, keep at least 15 GiB of disk free, and stop every process you start. Never print secrets.
 
 No deploy, provider or account call, or paging is authorized by this repository; the owner decides each one. Record plain commands and results with the change. Hosted coordination needs standby and portable target proof before release; paging additionally needs real-phone and provider-failure drills. Never promote synthetic receipts to delivery evidence.
+
+## Upstream module documentation
+
+Documentation under `src/base/` and `src/modules/` is carried with copied upstream source. Its test paths and commands describe the upstream module trees; those test directories are not shipped in this edition. For local verification, use this checkout's `package.json` scripts and files under the root `tests/` directory.

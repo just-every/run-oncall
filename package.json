@@ -11,7 +11,6 @@
     "dev": "rer dev",
     "preview": "rer preview",
     "typecheck": "tsc --noEmit",
-    "test:typecheck": "rer queue test:typecheck -- sh -c \"node --test tests/incremental-typecheck.test.mjs\"",
     "verify": "rer verify",
     "setup": "rer setup",
     "deploy": "rer deploy",
