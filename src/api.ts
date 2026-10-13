@@ -113,9 +113,14 @@ api.onError(async (error, c) => {
     return c.json({ error: error.message, code: error.code }, error.status as any);
   if (error instanceof Fault)
     return c.json({ error: error.message }, error.status as any);
-  if(c.req.path.startsWith('/api/move-in/') && /^[A-Z][A-Z0-9_]+$/.test(error.message)) {
-    const conflict=/CONFLICT|GUARD|SUPERSEDED|BUSY/.test(error.message);
-    return c.json({error:`The import journal refused this ${conflict?'change because imported data changed meanwhile':'request'}; check the job's state before trying again.`,code:error.message},conflict?409:400);
+  // Read fences return the kit code directly; mutation fences abort D1's
+  // transaction with this named CHECK constraint. Both are expected refusals.
+  // Keep unrelated SQL and storage failures on the 503 path below.
+  const importCode = /^(?:D1_ERROR: )?CHECK constraint failed: IMPORT_ATOMIC_GUARD(?:: SQLITE_CONSTRAINT)?$/.test(error.message)
+    ? 'IMPORT_ATOMIC_GUARD' : error.message;
+  if(c.req.path.startsWith('/api/move-in/') && /^[A-Z][A-Z0-9_]+$/.test(importCode)) {
+    const conflict=/CONFLICT|GUARD|SUPERSEDED|BUSY/.test(importCode);
+    return c.json({error:`The import journal refused this ${conflict?'change because imported data or current authority changed meanwhile':'request'}; check the job's state before trying again.`,code:importCode},conflict?409:400);
   }
   console.error("oncall request failure", error.name);
   return c.json(

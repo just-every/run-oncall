@@ -12,9 +12,14 @@ repository. Create the file with mode 0600 before inserting the cookie using a
 local editor; never put its value in a command, environment variable, chat or log.
 For held password installations the file contains `oncall_session=…`. For Base
 sign-in it contains `operator_session_local_PORT=…`, using the actual local port
-(`operator_session_local_80` is used for the default HTTP port). A Base-backed restore
-adds `oncall_session=…` and retains the Base cookie; keep both. The file accepts
-these cookies separated by `; `, without attributes such as Path or HttpOnly.
+(`operator_session_local_80` is used for the default HTTP port). If present, also
+save the matching `rer_dev_gate_PORT=…` cookie for that same port. This optional
+dev gate cookie never substitutes for the required Oncall or Base session. A
+Base-backed restore adds `oncall_session=…`; on successful rotation the CLI
+replaces only that cookie and retains every other supplied installation cookie,
+including the Base session and optional dev gate cookie. Keep them together. The
+file accepts these cookies separated by `; `, without attributes such as Path
+or HttpOnly.
 
 With the real origin and private paths substituted:
 

@@ -59,6 +59,20 @@ export async function checkpointCli(w,cookie) {
   let stdout='',stderr='';child.stdout.on('data',v=>stdout+=v);child.stderr.on('data',v=>stderr+=v)
   child.on('error',reject);child.on('exit',status=>{const result={status,stdout,stderr};runs.push(result);resolve(result)})
  })
+ // Classify stderr without echoing child output or any credential-bearing text.
+ const succeeds=async(args,label)=>{
+  const result=await cli(args)
+  const reason=[
+   ['Session file must contain','session-cookie validation refused'],
+   ['Session file must be','private session-file validation refused'],
+   ['Local file operation failed','local file operation failed'],
+   ['Local request failed','local transport failed'],
+   ['HTTP ','server refused checkpoint request'],
+   ['Session file is locked','session lock unavailable'],
+   ['Replacement succeeded','session rotation response invalid'],
+  ].find(([prefix])=>result.stderr.startsWith('checkpoint: '+prefix))?.[1]??'unclassified CLI failure'
+  assert.equal(result.status,0,`${label}: ${reason}`)
+ }
  const state=c=>w.request('/api/state',undefined,c),read=c=>checkpointReadback(w,c)
  const noEffects=async(c,prior)=>{
   assert.equal((await w.request(`/api/handoffs/${fixture.handoff}/export`,undefined,c)).status,409,'held approval cannot export')
@@ -70,7 +84,7 @@ export async function checkpointCli(w,cookie) {
   const before=await read(cookie),packet=ok(await w.request(`/api/handoffs/${fixture.handoff}/export`,undefined,cookie))
   assert.equal(packet.review.eligible,true);assert.equal(packet.transport,'unsent');assert.deepEqual(packet.providerActions,[])
   assert.deepEqual(packet.record,before.handoffs.records.find(r=>r.id===fixture.handoff))
-  assert.equal((await cli(['export',file])).status,0,'v2 CLI export succeeds')
+  await succeeds(['export',file],'v2 CLI export succeeds')
   assert.equal((await stat(file)).mode&0o777,0o600)
   const checkpoint=JSON.parse(await readFile(file,'utf8'));exported(checkpoint,before)
   const refused=async(args,sessionPath=session)=>{
@@ -90,13 +104,13 @@ export async function checkpointCli(w,cookie) {
   }
   checkpointSql(w,"CREATE TRIGGER checkpoint_cli_restore_failure BEFORE INSERT ON paging_callbacks BEGIN SELECT RAISE(ABORT,'INJECTED_STORAGE_FAILURE'); END")
   try{await refused(['restore',file,'--replace'])}finally{checkpointSql(w,'DROP TRIGGER checkpoint_cli_restore_failure')}
-  assert.equal((await cli(['restore',file,'--replace'])).status,0,'v2 CLI restore succeeds')
+  await succeeds(['restore',file,'--replace'],'v2 CLI restore succeeds')
   const rotated=(await readFile(session,'utf8')).trim()
   assert.ok(rotated!==cookie);assert.equal((await stat(session)).mode&0o777,0o600)
-  for(const base of cookie.split('; ').filter(c=>c.startsWith('operator_session_')))assert.ok(rotated.split('; ').includes(base),'Base-native restore retains its installation cookie')
+  for(const local of cookie.split('; ').filter(c=>!c.startsWith('oncall_session=')))assert.ok(rotated.split('; ').includes(local),'Base-native restore retains all installation cookies')
   const after=await read(rotated);assertCheckpointRestored(checkpoint,after);await noEffects(rotated,after)
   if(cookie.includes('oncall_session='))assert.equal((await state(cookie)).status,401,'old Oncall cookie loses authority')
-  const legacy=join(dir,'legacy.json');assert.equal((await cli(['export',legacy,'--version','1'])).status,0)
+  const legacy=join(dir,'legacy.json');await succeeds(['export',legacy,'--version','1'],'v1 CLI export succeeds')
   const v1=JSON.parse(await readFile(legacy,'utf8'));assert.equal(v1.handoffs,undefined);exported(v1,after)
   // Re-review our small record after export. Capped existing histories remain
   // held, while v1 must retain and hold this new approval in the destination.
@@ -110,10 +124,10 @@ export async function checkpointCli(w,cookie) {
   assert.equal((await cli(['restore',malformed,'--replace'])).status,1,'v1 also requires the current administrator mapping')
   assert.ok(await readFile(session,'utf8')===privateBefore,'v1 refusal preserves the session file')
   assert.deepEqual(await read(rotated),retained,'v1 refusal preserves all datasets and active authority')
-  assert.equal((await cli(['restore',legacy,'--replace'])).status,0)
+  await succeeds(['restore',legacy,'--replace'],'v1 CLI restore succeeds')
   const final=(await readFile(session,'utf8')).trim(),finalState=await read(final)
   assert.ok(final!==rotated);assert.equal((await stat(session)).mode&0o777,0o600)
-  for(const base of cookie.split('; ').filter(c=>c.startsWith('operator_session_')))assert.ok(final.split('; ').includes(base),'v1 retains the Base installation cookie')
+  for(const local of cookie.split('; ').filter(c=>!c.startsWith('oncall_session=')))assert.ok(final.split('; ').includes(local),'v1 retains all Base installation cookies')
   assertCheckpointRestored(v1,finalState,{records:retained.handoffs.records});await noEffects(final,finalState)
   assert.equal((await state(rotated)).status,401,'subsequent successful restore revokes the previous rotated session')
   for(const token of [cookie,rotated,final].flatMap(c=>c.split('; ').map(v=>v.split('=')[1])))

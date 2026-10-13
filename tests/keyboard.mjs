@@ -20,8 +20,12 @@ export function keyboardUser(page) {
    await reach(locator)
    const options=await locator.locator('option').evaluateAll(items=>items.map(item=>item.value)),index=options.indexOf(value)
    assert.ok(index>=0,'native select contains intended option')
+   // Open the native picker before navigating, then commit its highlighted
+   // option explicitly. On macOS, tabbing away can dismiss an uncommitted pick.
+   await page.keyboard.press('Space')
    await page.keyboard.press('Home')
    for(let step=0;step<index;step++)await page.keyboard.press('ArrowDown')
+   await page.keyboard.press('Enter')
    await page.keyboard.press('Tab');assert.equal(await locator.inputValue(),value)
   },
   async focusScreenshot(locator,path) {

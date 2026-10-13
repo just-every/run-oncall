@@ -16,15 +16,18 @@ function privateFile(info) {
   throw Error('Session file must be an owned, regular, unlinked mode-0600 file')
 }
 export function cookies(value,origin) {
- const input=value.trim(),port=new URL(origin).port
+ const input=value.trim(),port=new URL(origin).port||'80'
+ const native=`operator_session_local_${port}`,gate=`rer_dev_gate_${port}`
  const entries=input.includes('=')?input.split(';').map(v=>v.trim()):[`oncall_session=${input}`],seen=new Set()
  for(const entry of entries){
   const match=/^([A-Za-z0-9_]+)=([A-Za-z0-9_-]{16,200})$/.exec(entry)
-  if(!match||!['oncall_session',`operator_session_local_${port||'80'}`].includes(match[1])||seen.has(match[1]))
+  if(!match||!['oncall_session',native,gate].includes(match[1])||seen.has(match[1]))
    throw Error('Session file must contain local session cookies for this origin, or a held Oncall token')
   seen.add(match[1])
  }
- if(!entries.length)throw Error('Session file is empty')
+ // Native local sign-in also issues the port-bound dev gate cookie. Keep it
+ // private with the session, but never treat that gate alone as authentication.
+ if(!seen.has('oncall_session')&&!seen.has(native))throw Error('Session file must contain an Oncall or local Base session')
  return entries.join('; ')
 }
 export async function privateSession(path,origin) {

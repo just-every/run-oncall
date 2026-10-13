@@ -13,8 +13,8 @@ Usage: node scripts/checkpoint.mjs --origin URL --session-file FILE COMMAND
 Origin must be HTTP loopback, without credentials/path/query/fragment. Redirects
 are refused. Session file must be owned, regular, mode 0600, with no hard links.
 It contains a held oncall_session cookie/token or the installation's local Base
-session cookie; both cookies are retained after Base-backed restores. Never put
-credentials in arguments, environment variables or shell history.
+session cookie and optional port-bound dev gate; all are retained after restores.
+Never put credentials in arguments, environment variables or shell history.
 Exports use new mode-0600 files; existing files are refused. Restore serializes
 access to the session file, keeps it unchanged on server refusal, and replaces
 it privately with the successful rotated session. See docs/checkpoints.md for
