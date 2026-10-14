@@ -129,9 +129,9 @@ export function addresses(value) {
 }
 export function messageIds(value) {
   if (value == null || value === '') return [];
-  const source = unfold(value); const ids = source.match(/<[^<>\s]+>/g) ?? [];
-  if (!ids.length || source.replace(/<[^<>\s]+>/g, '').trim()) fail('invalid_inbound_thread');
-  return ids;
+  const source = unfold(value);
+  if (!/^(?:<[^<>\s]+>\s*)+$/.test(source)) fail('invalid_inbound_thread');
+  return source.match(/<[^<>\s]+>/g);
 }
 export function metadata(headers, from, to, subject) {
   const ids = messageIds(headers.get('message-id'));
