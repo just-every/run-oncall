@@ -30,8 +30,10 @@ try{
  const serviceRow=sql("SELECT data FROM oc_services WHERE id='transfer'")[0].data
  sql("UPDATE oc_services SET data='{\"id\":\"transfer\"}' WHERE id='transfer'");await m.command(['export','--output',invalidRecords,'--non-interactive']);sql("UPDATE oc_services SET data='"+serviceRow.replaceAll("'","''")+"' WHERE id='transfer'")
  await m.command(['reset','--yes','--non-interactive'])
+ const targetSchema=()=>sql("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT GLOB 'sqlite_*' AND name NOT GLOB '_cf_*' ORDER BY type,name"),emptyTarget=targetSchema()
+ assert.deepEqual(emptyTarget,[],'reset leaves an uninitialized target')
  await writeFile(corrupt,'{bad archive}',{mode:0o600});await m.command(['import','--input',corrupt,'--yes','--non-interactive'],2)
- assert.equal(sql('SELECT COUNT(*) AS n FROM oc_members')[0].n,0,'invalid transfer preserves empty target')
+ assert.deepEqual(targetSchema(),emptyTarget,'invalid transfer preserves the uninitialized target before migrations')
  await m.command(['import','--input',invalidRecords,'--yes','--non-interactive'],1)
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_members UNION ALL SELECT COUNT(*) FROM move_in_objects')[0].n,0,'valid-checksum invalid product records never publish')
  await m.command(['import','--input',archive,'--yes','--non-interactive'])
