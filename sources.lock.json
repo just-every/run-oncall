@@ -71,7 +71,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "073e57bf719f8bf49e31989449f8360ca366d480d3b941dcb6033adb3e26e87b",
+      "sha256": "122c70813a0807805dd0e5e17c4641f5c01981a7c93f38e1b144b22784eebd74",
       "executable": false
     },
     "BRAND.md": {
@@ -779,7 +779,7 @@
       "executable": false
     },
     "src/modules/dependencies/logout.mjs": {
-      "sha256": "3bfa236ead120187b96da5f05e94861da682eb8419954a97ac594ff2de49ceb0",
+      "sha256": "d2760dc2d9143094ddf9a883cf54f98ed7818c471e7ca99d5e195f524b2ae8b1",
       "executable": false
     },
     "src/modules/dependencies/native.mjs": {
@@ -1695,7 +1695,7 @@
       "executable": false
     },
     "src/modules/mail/src/inbound/headers.mjs": {
-      "sha256": "79673d562647f4e15e7fe10ca3b13241acd5b2cc25a651a32918cee45e02235c",
+      "sha256": "1d34b784793d5bb3d3b72c666caffc80457f800e5964770b74a4d0ef6d5a4818",
       "executable": false
     },
     "src/modules/mail/src/inbound/index.mjs": {
