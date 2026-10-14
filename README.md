@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://justevery.com/#vol-oncall"><img src=".github/assets/media/preview.gif" width="800" alt="Oncall: an override is typed and saved, and On call now switches from Priya Shah to Ana Ruiz"></a>
 </p>
-<p align="center"><a href="https://justevery.com/#vol-oncall"><b>Watch the full demo</b></a> · 48 seconds</p>
+<p align="center"><a href="https://justevery.com/#vol-oncall"><b>Watch the full demo</b></a> · 54 seconds</p>
 
 <p align="center">
   <img src=".github/assets/media/flow.webp" width="800" alt="On call now and next before the override, Priya Shah on primary, and after saving it, Ana Ruiz">
