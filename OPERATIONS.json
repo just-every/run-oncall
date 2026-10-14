@@ -87,7 +87,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "Deployment is held: actual Oncall deployment refuses before any provider request until an independent standby and approved hosted release exist. Paging also requires a real-phone drill. --dry-run builds and validates locally without provider requests."
+      "effects": "Application deployment is held: rer deploy refuses before any provider request until an independent standby and approved hosted release exist. Paging also requires a real-phone drill. --site publishes the separate Run site with provider credentials. --dry-run builds and validates the selected app or site locally without provider requests."
     },
     "export": {
       "argv": [
