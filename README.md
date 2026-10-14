@@ -33,7 +33,7 @@
 
 Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall), release 0.1.0.
 
-Use Node 22.20.0 and pnpm 10.12.4. From this checkout:
+Install the `rer` command once with `npx -y @runeditrun/rer cli install`. The runner selects Node 22.20.0 and pnpm 10.12.4 for this checkout; pnpm needs no separate installation. From this checkout:
 
 ```sh
 git clone https://github.com/just-every/run-oncall.git oncall
@@ -67,4 +67,13 @@ The Move-in kit reviews supplied Opsgenie exports first, then PagerDuty. Preview
 
 Held data upgrades in place through unchanged migrations 0001–0006 and additive migrations. Coordination now stores individual members, services, policies, events, alerts, incidents and audit entries in relational tables. Old password accounts remain usable; Base owner identity never silently takes over an existing workspace. For a held installation, continue using its password accounts until the owner explicitly links identity during a future identity migration. Do not reset to upgrade.
 
-Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md](OPERATIONS.md) and [RELEASE.md](RELEASE.md). The command is pinned as `@runeditrun/rer` 0.2.0. `base-copies.json` records each Base runtime/module copy and its own revision; `src/base` comes from Base 8981bc2c4d9e61feca5787c83b4ed44056659dd9. Source locks are generated with Base's edition-authoring command from this checkout. This repository is runnable source, without a composition step.
+Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md](OPERATIONS.md) and [RELEASE.md](RELEASE.md). The command is pinned as `@runeditrun/rer` 0.2.2. `base-copies.json` records each Base runtime/module copy and its own revision; `src/base` comes from Base 8981bc2c4d9e61feca5787c83b4ed44056659dd9. Source locks are generated with Base's edition-authoring command from this checkout. This repository is runnable source, without a composition step.
+
+Update this checkout without resetting its data:
+
+```sh
+git pull --ff-only
+rer deploy
+```
+
+The runner refreshes locked dependencies automatically. Oncall currently holds actual deployment before any provider request until the standby and release are approved; use `rer deploy --dry-run` to validate locally.

@@ -1,8 +1,10 @@
 import {validateRecoveryCheckpoint} from '../../src/family/response-operations/recovery.ts'
 import {holdHandoffsForRecovery} from '../../src/family/response-operations/handoffs.ts'
+import {portabilityPolicy} from '../../src/portability-policy.mjs'
 // Product restore policy runs inside Base portability's staging validation.
 // Imported timers become historical paused data before atomic publication.
-export const policy={
+export default {
+ ...portabilityPolicy,
  async validateStaged({db,tables,read}) {
   const control=(await read('workspace_control'))[0],paging=(await read('paging_control'))[0]
   const coordination={schemaVersion:1,revision:control?.revision??0}

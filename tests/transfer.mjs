@@ -32,7 +32,7 @@ try{
  await m.command(['reset','--yes','--non-interactive'])
  await writeFile(corrupt,'{bad archive}',{mode:0o600});await m.command(['import','--input',corrupt,'--yes','--non-interactive'],2)
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_members')[0].n,0,'invalid transfer preserves empty target')
- await m.command(['import','--input',invalidRecords,'--yes','--non-interactive'],1)
+ await m.command(['import','--input',invalidRecords,'--yes','--non-interactive'],4)
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_members UNION ALL SELECT COUNT(*) FROM move_in_objects')[0].n,0,'valid-checksum invalid product records never publish')
  await m.command(['import','--input',archive,'--yes','--non-interactive'])
  assert.equal(sql('SELECT COUNT(*) AS n FROM credentials UNION ALL SELECT COUNT(*) FROM sessions UNION ALL SELECT COUNT(*) FROM operator_members').every(r=>r.n===0),true,'credentials and authority do not travel')

@@ -1,6 +1,6 @@
 # Install and run
 
-Oncall runs on your own computer with one command for each step. You need Node 22.20.0 and pnpm 10.12.4; the commands pick the exact Node version for you when they can.
+Oncall runs on your own computer with one command for each step. Install the `rer` command once with `npx -y @runeditrun/rer cli install`. It selects the pinned Node and pnpm versions; pnpm needs no separate installation.
 
 ## Run it on your computer
 
@@ -45,3 +45,12 @@ rer setup --answers .seed/local-answers.json --non-interactive
 The file is a JSON object keyed by the names in `rer-setup.json`, for example `{"OWNER_EMAIL":"you@example.com"}`. Keep it readable only by you.
 
 Every command, flag and what it changes is in the [command reference](../RUN-LOCALLY.md). `rer describe` prints the same from the folder you are in.
+
+Update this checkout without resetting its data:
+
+```sh
+git pull --ff-only
+rer deploy
+```
+
+The runner refreshes locked dependencies automatically. Oncall currently holds actual deployment before any provider request until the standby and release are approved; use `rer deploy --dry-run` to validate locally.

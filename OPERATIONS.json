@@ -32,7 +32,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "See SEED-COMMAND-CONTRACT.md for setup effects."
+      "effects": "Build and migrate local state, save the first owner and private settings, and retain existing owner, secrets and data on repeat setup. No provider request."
     },
     "dev": {
       "argv": [
@@ -43,7 +43,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "See SEED-COMMAND-CONTRACT.md for dev effects."
+      "effects": "Run Oncall on a loopback address, applying local migrations and opening a private owner sign-in link. Email remains in the local outbox; --as signed-out uses ordinary sign-in; --stop stops the owned server."
     },
     "build": {
       "argv": [
@@ -87,7 +87,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "See SEED-COMMAND-CONTRACT.md for deploy effects."
+      "effects": "Deployment is held: actual Oncall deployment refuses before any provider request until an independent standby and approved hosted release exist. Paging also requires a real-phone drill. --dry-run builds and validates locally without provider requests."
     },
     "export": {
       "argv": [
@@ -98,7 +98,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "See SEED-COMMAND-CONTRACT.md for export effects."
+      "effects": "Write a private local archive of supported durable records and import journal; exclude sessions, credentials and private settings. Stop dev and preview first."
     },
     "import": {
       "argv": [
@@ -109,7 +109,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "See SEED-COMMAND-CONTRACT.md for import effects."
+      "effects": "Require an empty local destination and explicit --yes; atomically restore validated records and journal, pause pending timers and hold handoff approvals. Credentials and sessions never transfer; new owners must explicitly map an archived administrator identity."
     },
     "release": {
       "argv": [
@@ -186,7 +186,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "Serve fixed production output, preserve local owner and durable state, stop after idle timeout or explicit stop."
+      "effects": "Serve the built Oncall app on a loopback address with local state and owner sign-in. Email remains in the local outbox; --stop stops the owned server."
     }
   },
   "health": {

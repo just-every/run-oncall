@@ -37,8 +37,8 @@ with exit 3 and a message naming the field.
 
 ## Install for a real owner
 
-Use Node 22.20.0 and pnpm 10.12.4 for maintained first-party checkouts. To
-install with a real owner mailbox, run the verbs yourself from the runnable
+The runner selects Node 22.20.0 and pnpm 10.12.4; no separate pnpm
+installation is required. To install with a real owner mailbox, run the verbs yourself from the runnable
 edition's root: install locked dependencies, prepare its local owner, then start
 development:
 
@@ -199,7 +199,8 @@ After import, run setup to establish the owner and local configuration. Auth,
 outbox, private settings and transient runtime state are excluded. Remote
 transfer is unsupported by the maintained references and fails visibly.
 
-Real deployment uses the owner-account procedure and its private credentials.
+Actual Oncall deployment refuses before a provider request until an independent
+standby and hosted release are approved. Paging also requires a real-phone drill.
 `rer deploy --dry-run` validates and builds locally without a
 provider request. The default environment is `production`; select another with
 `--environment NAME`. Local validation does not establish provider acceptance,
@@ -214,21 +215,6 @@ private JSON `--answers FILE`. Dev and preview accept `--port`, `--host`,
 export/import accept their target, file and restore options. `check` accepts
 `--profile first-party`. Heavy commands accept `--no-queue` only when the
 original caller has `CI=true`. Release retains its own compatibility flags.
-
-The package-script aliases remain available from the same runnable root:
-
-```sh
-pnpm run deps
-pnpm run setup
-pnpm run dev
-```
-
-`deps` dispatches to `rer install`; forwarded flags follow `--`.
-
-Package aliases, when used, take the form `pnpm run VERB -- FLAGS`; use
-`pnpm run deploy -- --dry-run` because `pnpm deploy` is a different built-in
-command. `pnpm install --frozen-lockfile` is the equivalent dependency action
-to `rer install`.
 
 Local durable state is `.wrangler/state`; CLI bookkeeping is `.rer/local`,
 installer state is `.seed/installer`, and the default private settings file is
@@ -245,3 +231,12 @@ The first-party command profile is optional for independently authored
 projects. They may keep their own runtime, tools, installer, commands and
 provider choices. RER executes only their declared operations and does not
 impose Base pins, aliases, outbox or state layout.
+
+Update this checkout without resetting its data:
+
+```sh
+git pull --ff-only
+rer deploy
+```
+
+The runner refreshes locked dependencies automatically. Oncall currently holds actual deployment before any provider request until the standby and release are approved; use `rer deploy --dry-run` to validate locally.
