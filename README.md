@@ -76,4 +76,4 @@ git pull --ff-only
 rer deploy
 ```
 
-The runner refreshes locked dependencies automatically. Oncall currently holds actual deployment before any provider request until the standby and release are approved; use `rer deploy --dry-run` to validate locally.
+If `rer deploy` reports that the pinned package or dependencies need installing, run `rer install` and then `rer deploy` again. You do not need to install pnpm separately. Oncall currently holds actual deployment before any provider request until the standby and release are approved; use `rer deploy --dry-run` to validate locally.
