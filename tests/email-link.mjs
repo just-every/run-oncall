@@ -24,18 +24,23 @@ const vars = { AUTH_LOCAL: 'true', AUTH_ORIGIN: origin, OWNER_EMAIL: owner, SESS
 await writeFile(join(directory, 'local.env'), Object.entries(vars).map(([key, value]) => `${key}=${value}`).join('\n') + '\n', { mode: 0o600 })
 const wrangler = ['node_modules/wrangler/bin/wrangler.js', '--config', 'dist/server/wrangler.json']
 execFileSync(process.execPath, [wrangler[0], 'd1', 'migrations', 'apply', 'DB', '--local', '--persist-to', directory, ...wrangler.slice(1)], { stdio: 'ignore', env: { ...process.env, CI: 'true', WRANGLER_SEND_METRICS: 'false' } })
-const worker = spawn(process.execPath, [wrangler[0], 'dev', ...wrangler.slice(1), '--inspector-port', '0', '--local', '--persist-to', directory, '--ip', '127.0.0.1', '--port', String(port), '--env-file', join(directory, 'local.env')], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, WRANGLER_SEND_METRICS: 'false', CLOUDFLARE_INCLUDE_PROCESS_ENV: 'false', CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: 'true' } })
+const launch = () => spawn(process.execPath, [wrangler[0], 'dev', ...wrangler.slice(1), '--inspector-port', '0', '--local', '--persist-to', directory, '--ip', '127.0.0.1', '--port', String(port), '--env-file', join(directory, 'local.env')], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, WRANGLER_SEND_METRICS: 'false', CLOUDFLARE_INCLUDE_PROCESS_ENV: 'false', CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: 'true' } })
+let worker = launch()
 let output = ''
-for (const stream of [worker.stdout, worker.stderr]) stream.on('data', chunk => { output += chunk })
+const listen = () => { for (const stream of [worker.stdout, worker.stderr]) stream.on('data', chunk => { output += chunk }) }
+listen()
 const post = (path, body, cookie) => fetch(origin + path, { method: 'POST', redirect: 'manual', headers: { origin, 'content-type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) })
-const key = { 'x-rer-dev-key': vars.RER_DEV_KEY }
-try {
+const healthy = async () => {
   let ready = false
   for (let attempt = 0; attempt < 240 && !ready; attempt++) {
     if (worker.exitCode !== null) throw new Error('emitted Worker exited')
     try { ready = (await fetch(`${origin}/health`)).ok } catch { await new Promise(resolve => setTimeout(resolve, 250)) }
   }
   assert.ok(ready, 'emitted Worker became healthy')
+}
+const key = { 'x-rer-dev-key': vars.RER_DEV_KEY }
+try {
+  await healthy()
   assert.deepEqual(await (await fetch(origin+'/setup/state')).json(), {state:'unclaimed'});
   assert.equal((await post('/auth/bootstrap', { token: vars.SETUP_TOKEN, displayName: 'Owner' })).status, 303, 'owner claimed')
   assert.deepEqual(await (await fetch(origin+'/setup/state')).json(), {state:'unclaimed'}, 'bootstrap alone does not confirm first run');
@@ -73,6 +78,17 @@ try {
   query('UPDATE oa_sessions SET expires_at='+expires)
   assert.equal((await post('/auth/signout',{},cookie)).status,204);assert.equal((await fetch(`${origin}/api/state`,{headers:{cookie:combined}})).status,401,'revoked native session cannot read restored Oncall');
   assert.match(await (await fetch(origin,{headers:{cookie:combined}})).text(),/href="\/signin"/,'revoked native session receives the guest Lobby');
+  // rer retires SETUP_TOKEN once the owner is claimed: the claimed installation keeps serving without it.
+  worker.kill('SIGTERM')
+  await new Promise(resolve => worker.exitCode !== null ? resolve() : worker.once('exit', resolve))
+  delete vars.SETUP_TOKEN
+  await writeFile(join(directory, 'local.env'), Object.entries(vars).map(([key, value]) => `${key}=${value}`).join('\n') + '\n', { mode: 0o600 })
+  worker = launch()
+  listen()
+  await healthy()
+  assert.match(await (await fetch(origin)).text(), /href="\/signin"/, 'a claimed installation serves guests without SETUP_TOKEN')
+  assert.equal((await post('/auth/magic-link', { email: owner })).status, 202, 'sign-in still works without SETUP_TOKEN')
+  assert.equal((await post('/auth/bootstrap', { token: 'x'.repeat(64), displayName: 'Owner' })).status, 403, 'no token claims a claimed installation')
   console.log('Email-link sign-in passed against the emitted Worker: claim, key-gated outbox, confirmation, session')
 } catch (error) {
   for (const value of Object.values(vars)) output = output.replaceAll(value, '[redacted]')

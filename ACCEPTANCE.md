@@ -13,6 +13,6 @@ The flows below are acceptance requirements and verification entrypoints. Passin
 
 Public landing requires Base's publication scan on the exact tree before each push with zero findings, and the public repository's **Oncall verification** CI green on the exact merged head. Fetch and merge immediately before a fast-forward-only push. These publication and CI requirements are independent of local journeys; they do not establish hosted readiness.
 
-OC-018 uses published `rer` 0.2.2 and the effects declared in `OPERATIONS.json`: local servers bind loopback and actual Oncall deployment is held before provider requests. A successful local dry-run does not establish hosted readiness.
+OC-018 uses published `rer` 0.2.4 and the effects declared in `OPERATIONS.json`: local servers bind loopback and actual Oncall deployment is held before provider requests. A successful local dry-run does not establish hosted readiness.
 
 Obsolete synthetic-dispatch tests and the drill UI are removed because sending is no longer an accepted flow. Pure domain pin/structure tests are replaced by emitted public-flow proof; removal does not relax the preserved incident, archive or import guarantees.

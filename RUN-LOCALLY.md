@@ -37,8 +37,8 @@ with exit 3 and a message naming the field.
 
 ## Install for a real owner
 
-The runner selects Node 22.20.0 and pnpm 10.12.4; no separate pnpm
-installation is required. To install with a real owner mailbox, run the verbs yourself from the runnable
+`rer` provides the Node and pnpm versions the checkout pins; you install
+neither. To install with a real owner mailbox, run the verbs yourself from the runnable
 edition's root: install locked dependencies, prepare its local owner, then start
 development:
 
@@ -232,6 +232,8 @@ projects. They may keep their own runtime, tools, installer, commands and
 provider choices. RER executes only their declared operations and does not
 impose Base pins, aliases, outbox or state layout.
 
+## Update, host and remove
+
 Update this checkout without resetting its data:
 
 ```sh
@@ -239,4 +241,10 @@ git pull --ff-only
 rer deploy
 ```
 
-If `rer deploy` reports that the pinned package or dependencies need installing, run `rer install` and then `rer deploy` again. You do not need to install pnpm separately. Oncall currently holds actual deployment before any provider request until the standby and release are approved; use `rer deploy --dry-run` to validate locally.
+`rer` installs a pulled change of its own pin before it runs, so there is nothing to install by hand, and it provides the Node and pnpm versions this checkout pins. Hosting for a team is held: `rer deploy` refuses before any provider request until a hosted release with an independent standby is approved, and paging stays OFF until a real-phone drill passes. Use `rer deploy --dry-run` to build and validate locally. Once hosting is approved, `rer deploy` deploys to your own Cloudflare account (it reads `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` from the environment), claims the owner you set up automatically and removes its one-time setup token; there is no token to copy or delete, and you sign in at the app address with an emailed link. An update keeps that owner. To take a hosted installation down again, with the same credentials:
+
+```sh
+rer deploy --remove --yes
+```
+
+This deletes only what the deployment record says `rer deploy` created (the Worker, database and any queues), reads back that each is gone and touches nothing else. Your local folder and data stay.

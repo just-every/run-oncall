@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://justevery.com/#vol-oncall"><img src=".github/assets/media/preview.gif" width="800" alt="Oncall: an override is typed and saved, and On call now switches from Priya Shah to Ana Ruiz"></a>
 </p>
-<p align="center"><a href="https://justevery.com/#vol-oncall"><b>Watch the full demo</b></a> · 48 seconds</p>
+<p align="center"><a href="https://justevery.com/#vol-oncall"><b>Watch the full demo</b></a> · 54 seconds</p>
 
 <p align="center">
   <img src=".github/assets/media/flow.webp" width="800" alt="On call now and next before the override, Priya Shah on primary, and after saving it, Ana Ruiz">
@@ -33,7 +33,7 @@
 
 Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall), release 0.1.0.
 
-Install the `rer` command once with `npx -y @runeditrun/rer cli install`. The runner selects Node 22.20.0 and pnpm 10.12.4 for this checkout; pnpm needs no separate installation. From this checkout:
+Install the `rer` command once with `npx -y @runeditrun/rer cli install`. `rer` provides the Node and pnpm versions this checkout pins; you install neither. From this checkout:
 
 ```sh
 git clone https://github.com/just-every/run-oncall.git oncall
@@ -67,7 +67,9 @@ The Move-in kit reviews supplied Opsgenie exports first, then PagerDuty. Preview
 
 Held data upgrades in place through unchanged migrations 0001–0006 and additive migrations. Coordination now stores individual members, services, policies, events, alerts, incidents and audit entries in relational tables. Old password accounts remain usable; Base owner identity never silently takes over an existing workspace. For a held installation, continue using its password accounts until the owner explicitly links identity during a future identity migration. Do not reset to upgrade.
 
-Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md](OPERATIONS.md) and [RELEASE.md](RELEASE.md). The command is pinned as `@runeditrun/rer` 0.2.2. `base-copies.json` records each Base runtime/module copy and its own revision; `src/base` comes from Base 8981bc2c4d9e61feca5787c83b4ed44056659dd9. Source locks are generated with Base's edition-authoring command from this checkout. This repository is runnable source, without a composition step.
+Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md](OPERATIONS.md) and [RELEASE.md](RELEASE.md). The command is pinned as `@runeditrun/rer` 0.2.4. `base-copies.json` records each Base runtime/module copy and its own revision; `src/base` comes from Base 8981bc2c4d9e61feca5787c83b4ed44056659dd9. Source locks are generated with Base's edition-authoring command from this checkout. This repository is runnable source, without a composition step.
+
+## Update, host and remove
 
 Update this checkout without resetting its data:
 
@@ -76,4 +78,10 @@ git pull --ff-only
 rer deploy
 ```
 
-If `rer deploy` reports that the pinned package or dependencies need installing, run `rer install` and then `rer deploy` again. You do not need to install pnpm separately. Oncall currently holds actual deployment before any provider request until the standby and release are approved; use `rer deploy --dry-run` to validate locally.
+`rer` installs a pulled change of its own pin before it runs, so there is nothing to install by hand, and it provides the Node and pnpm versions this checkout pins. Hosting for a team is held: `rer deploy` refuses before any provider request until a hosted release with an independent standby is approved, and paging stays OFF until a real-phone drill passes. Use `rer deploy --dry-run` to build and validate locally. Once hosting is approved, `rer deploy` deploys to your own Cloudflare account (it reads `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` from the environment), claims the owner you set up automatically and removes its one-time setup token; there is no token to copy or delete, and you sign in at the app address with an emailed link. An update keeps that owner. To take a hosted installation down again, with the same credentials:
+
+```sh
+rer deploy --remove --yes
+```
+
+This deletes only what the deployment record says `rer deploy` created (the Worker, database and any queues), reads back that each is gone and touches nothing else. Your local folder and data stay.
