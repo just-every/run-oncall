@@ -5,7 +5,7 @@ export const run: RunData = {
   repository: 'https://github.com/just-every/run-oncall',
   clone: 'git clone https://github.com/just-every/run-oncall.git oncall',
   folder: 'oncall',
-  requirements: 'Needs Node 22 or later and pnpm 10.12.4, on macOS, Linux or Windows with WSL2.',
+  requirements: 'Needs Git and Node 22 or later, on macOS, Linux or Windows with WSL2. rer provides the pinned tooling.',
   licence: 'MIT',
   docs: true,
   hosted: [],

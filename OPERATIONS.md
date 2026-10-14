@@ -1,6 +1,6 @@
 # Operating Oncall
 
-README.md opens with the root command sequence. `describe` is authoritative for parser flags; `check` is structural, not a hosted health proof. Node 22.20.0 / pnpm 10.12.4. SQLite/D1 is the relational store; .wrangler/state is canonical local data, .dev.vars contains private settings, .rer/local is local key custody. Never commit these.
+README.md opens with the root command sequence. `describe` is authoritative for parser flags; `check` is structural, not a hosted health proof. `rer` provides the pinned Node and pnpm. SQLite/D1 is the relational store; .wrangler/state is canonical local data, .dev.vars contains private settings, .rer/local is local key custody. Never commit these.
 
 The protected API retains held password accounts and adds Base email/dev identity for new installations. All private HTTP mutations require same-origin requests and current member/session authority. Ingress credentials are scoped to services and grant no private read access. /setup and /signin use Base native handlers; no private Start function exists.
 

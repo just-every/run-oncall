@@ -1,6 +1,6 @@
 # Run it locally
 
-Install the `rer` command once with `npx -y @runeditrun/rer cli install`. The runner selects Node 22.20.0 and pnpm 10.12.4 for this checkout; pnpm needs no separate installation. From this checkout:
+Install the `rer` command once with `npx -y @runeditrun/rer cli install`. `rer` provides the Node and pnpm versions this checkout pins; you install neither. From this checkout:
 
 ```sh
 rer install

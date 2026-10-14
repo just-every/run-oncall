@@ -1,6 +1,6 @@
 # Install and run
 
-Oncall runs on your own computer with one command for each step. Install the `rer` command once with `npx -y @runeditrun/rer cli install`. It selects the pinned Node and pnpm versions; pnpm needs no separate installation.
+Oncall runs on your own computer with one command for each step. Install the `rer` command once with `npx -y @runeditrun/rer cli install`. It provides the Node and pnpm versions this checkout pins; you install neither.
 
 ## Run it on your computer
 
@@ -46,6 +46,8 @@ The file is a JSON object keyed by the names in `rer-setup.json`, for example `{
 
 Every command, flag and what it changes is in the [command reference](../RUN-LOCALLY.md). `rer describe` prints the same from the folder you are in.
 
+## Update, host and remove
+
 Update this checkout without resetting its data:
 
 ```sh
@@ -53,4 +55,10 @@ git pull --ff-only
 rer deploy
 ```
 
-If `rer deploy` reports that the pinned package or dependencies need installing, run `rer install` and then `rer deploy` again. You do not need to install pnpm separately. Oncall currently holds actual deployment before any provider request until the standby and release are approved; use `rer deploy --dry-run` to validate locally.
+`rer` installs a pulled change of its own pin before it runs, so there is nothing to install by hand, and it provides the Node and pnpm versions this checkout pins. Hosting for a team is held: `rer deploy` refuses before any provider request until a hosted release with an independent standby is approved, and paging stays OFF until a real-phone drill passes. Use `rer deploy --dry-run` to build and validate locally. Once hosting is approved, `rer deploy` deploys to your own Cloudflare account, claims the owner you set up automatically and removes its one-time setup token; there is no token to copy or delete, and you sign in at the app address with an emailed link. An update keeps that owner. To take a hosted installation down again:
+
+```sh
+rer deploy --remove --yes
+```
+
+This deletes only what the deployment record says `rer deploy` created (the Worker, database and any queues), reads back that each is gone and touches nothing else. Your local folder and data stay.
