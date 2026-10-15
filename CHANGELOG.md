@@ -1,5 +1,7 @@
 # Unreleased
 
+- Mark test credentials explicitly synthetic so hosted source admission accepts the fixtures.
+
 - After a schedule is made live, **Undo this import** now says the import can no longer be undone and the paused source stays as evidence, instead of suggesting an action Oncall does not offer.
 - The held workspace cookie is now `oncall_session_<port>`, so other apps or Oncall installs on the same loopback host never sign a person in or out. People signed in by password on 0.2.0 sign in once more after updating. Session files for the checkpoint and handoff scripts name the cookie `oncall_session_<port>=…`.
 - Pin `@runeditrun/rer` 0.2.20.

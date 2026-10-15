@@ -118,13 +118,13 @@ try {
   const initial = spawnSync(process.execPath, [...cli, "d1", "migrations", "apply", "DB", "--config",legacyConfig,"--local", "--persist-to", persist], {encoding:"utf8",env:{...process.env,CI:'true',WRANGLER_SEND_METRICS:'false'}});
   assert.equal(initial.status,0,initial.stderr);
   const preserved = JSON.stringify(heldWorkspace());
-  sql("INSERT INTO workspace(id,revision,data) VALUES(1,3,'"+preserved.replaceAll("'","''")+"'); INSERT INTO credentials VALUES('prior-admin','prior-salt','"+pbkdf2Sync('local-testing-password','prior-salt',100000,32,'sha256').toString('hex')+"')");
+  sql("INSERT INTO workspace(id,revision,data) VALUES(1,3,'"+preserved.replaceAll("'","''")+"'); INSERT INTO credentials VALUES('prior-admin','prior-salt','"+pbkdf2Sync('synthetic-local-testing-password','prior-salt',100000,32,'sha256').toString('hex')+"')");
   const oldSchedule={id:'prior-schedule',name:'Prior rota',service:'prior-service',revision:1,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:['prior-admin'],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]};
   const legacyTimer={id:'prior-timer',incident:'retained-orphan',service:'prior-service',revision:1,status:'pending',nextDue:1791710000000,createdAt:1791710000000,lastEvaluatedAt:1791710000000,currentStep:0,policy:{service:'prior-service',scheduleId:'prior-schedule',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule:oldSchedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at:1791710000000,actor:null,reason:null,attempt:null}]};
   sql("INSERT INTO paging_jobs VALUES('prior-timer','retained-orphan','prior-service',1,'pending',1791710000000,'prior','"+JSON.stringify(legacyTimer)+"')");
   migration();
   await start();
-  const priorLogin=await request('/api/login',{name:'Prior Operator',password:'local-testing-password'});
+  const priorLogin=await request('/api/login',{name:'Prior Operator',password:'synthetic-local-testing-password'});
   ok(priorLogin);
   const door=await fetch(origin+'/signin/local');assert.equal(door.status,200);assert.match(await door.text(),/name="password"/,'held password accounts keep their sign-in door');
   const priorState=ok(await request('/api/state',undefined,priorLogin.cookie));
@@ -133,7 +133,7 @@ try {
   await stop();
   migration();
   await start();
-  const heldAgain = await request('/api/login', { name: 'Prior Operator', password: 'local-testing-password' });
+  const heldAgain = await request('/api/login', { name: 'Prior Operator', password: 'synthetic-local-testing-password' });
   ok(heldAgain);
   assert.deepEqual(ok(await request('/api/state', undefined, heldAgain.cookie)), JSON.parse(preserved), 'all held arrays and history survive repeated migration and restart');
   console.log('PASS held upgrade through pre-0106 SQL: full ordered members/services/policies/events/alerts/incidents/audit and nested history unchanged; held password works after upgrade and repeat migration/restart.');
@@ -160,7 +160,7 @@ try {
   ok(await request("/api/state"), 401);
   const setup = await request("/api/setup", {
     name: "Admin",
-    password: "local-testing-password",
+    password: "synthetic-local-testing-password",
   });
   const admin = ok(setup).member;
   let cookie = setup.cookie;
@@ -173,12 +173,12 @@ try {
   ok(await request("/api/state", undefined, cookie), 200);
   sql('UPDATE sessions SET expires=0');
   assert.match(await (await fetch(origin, { headers: { cookie } })).text(), /href="\/setup"/, "an expired password session receives the guest Lobby");
-  const freshLogin = await request('/api/login', { name: 'Admin', password: 'local-testing-password' });
+  const freshLogin = await request('/api/login', { name: 'Admin', password: 'synthetic-local-testing-password' });
   ok(freshLogin); cookie = freshLogin.cookie;
   ok(
     await request("/api/setup", {
       name: "second",
-      password: "local-testing-password",
+      password: "synthetic-local-testing-password",
     }),
     409,
   );
@@ -199,14 +199,14 @@ try {
   const viewer = ok(
     await request(
       "/api/members",
-      { name: "Viewer", role: "viewer", password: "viewer-testing-password" },
+      { name: "Viewer", role: "viewer", password: "synthetic-viewer-testing-password" },
       cookie,
     ),
     201,
   );
   const vl = await request("/api/login", {
     name: "Viewer",
-    password: "viewer-testing-password",
+    password: "synthetic-viewer-testing-password",
   });
   ok(vl);
   const vc = vl.cookie;
@@ -215,7 +215,7 @@ try {
   ok(await request("/api/state", undefined, vc), 401);
   const vl2 = await request("/api/login", {
     name: "Viewer",
-    password: "viewer-testing-password",
+    password: "synthetic-viewer-testing-password",
   });
   ok(vl2);
   const currentViewerCookie = vl2.cookie;
@@ -587,7 +587,7 @@ try {
   ok(
     await request("/api/login", {
       name: "Viewer",
-      password: "viewer-testing-password",
+      password: "synthetic-viewer-testing-password",
     }),
     401,
   );
@@ -606,7 +606,7 @@ try {
   await start();
   const fresh = await request("/api/setup", {
     name: "New local admin",
-    password: "fresh-target-password",
+    password: "synthetic-fresh-target-password",
   });
   ok(fresh);
   const mapped = await request(
@@ -625,20 +625,20 @@ try {
   ok(
     await request("/api/login", {
       name: "Admin",
-      password: "local-testing-password",
+      password: "synthetic-local-testing-password",
     }),
     401,
   );
   ok(
     await request("/api/login", {
       name: "Admin",
-      password: "fresh-target-password",
+      password: "synthetic-fresh-target-password",
     }),
   );
   ok(
     await request("/api/login", {
       name: "Viewer",
-      password: "viewer-testing-password",
+      password: "synthetic-viewer-testing-password",
     }),
     401,
   );

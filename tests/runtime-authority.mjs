@@ -38,7 +38,7 @@ export async function heldMutation(origin, path, input, cookie, whileHeld) {
 
 export async function awaitingCoordinationAuthority({ origin, request, cookie, incident }) {
   const ok = (r, status = 200) => { assert.equal(r.status, status, JSON.stringify(r.value)); return r.value; };
-  const password = 'held-request-fixture-password';
+  const password = 'synthetic-held-request-fixture-password';
   const member = ok(await request('/api/members', { name: 'Held responder', role: 'responder', password }, cookie), 201);
   const login = async () => { const r = await request('/api/login', { name: member.name, password }); ok(r); return r.cookie; };
   const current = async () => ok(await request('/api/state', undefined, cookie));

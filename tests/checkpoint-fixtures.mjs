@@ -28,11 +28,11 @@ export async function checkpointFixtures(w,cookie) {
  const quote=v=>"'"+String(v).replaceAll("'","''")+"'",statements=[]
  for(const job of jobs){
   const receipt=job.steps[0].receipt,callback={id:job.id+'-callback',key:receipt.key,outcome:'delivered',at:at+1000,late:false,actor:actor.id}
-  statements.push(`INSERT INTO paging_jobs(id,incident,service,revision,status,next_due,write_token,data) VALUES(${[job.id,job.incident,job.service].map(quote).join(',')},${job.revision},'pending',${job.nextDue},'checkpoint-history-fixture',${quote(JSON.stringify(job))})`)
+  statements.push(`INSERT INTO paging_jobs(id,incident,service,revision,status,next_due,write_token,data) VALUES(${[job.id,job.incident,job.service].map(quote).join(',')},${job.revision},'pending',${job.nextDue},'synthetic-checkpoint-history-fixture',${quote(JSON.stringify(job))})`)
   statements.push(`INSERT INTO paging_receipts(id,job_id,data) VALUES(${[receipt.id,job.id,JSON.stringify(receipt)].map(quote).join(',')})`)
   statements.push(`INSERT INTO paging_callbacks(id,key,data) VALUES(${[callback.id,callback.key,JSON.stringify(callback)].map(quote).join(',')})`)
  }
- statements.push("UPDATE paging_control SET revision=revision+1,write_token='checkpoint-history-fixture' WHERE id=1")
+ statements.push("UPDATE paging_control SET revision=revision+1,write_token='synthetic-checkpoint-history-fixture' WHERE id=1")
  checkpointSql(w,statements.join(';'))
  const acknowledged=ok(await req(`/api/paging/jobs/${jobs[1].id}/ack`,{revision:jobs[1].revision,at:Date.now()}))
  assert.deepEqual(acknowledged.history.slice(0,-1),jobs[1].history)

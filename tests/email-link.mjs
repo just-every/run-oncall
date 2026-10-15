@@ -121,7 +121,7 @@ try {
       assert.equal((await context.cookies()).some(cookie => cookie.name === `oncall_session_${new URL(origin).port}`), false, 'browser confirmation clears the earlier installation cookie')
       assert.equal((await context.request.get(origin + '/api/state')).status(), 200)
       if (width === 1440) {
-        assert.equal((await context.request.post(origin + '/api/members', { headers: { origin }, data: { name: 'Password Member', password: 'member-testing-password', role: 'responder' } })).status(), 201)
+        assert.equal((await context.request.post(origin + '/api/members', { headers: { origin }, data: { name: 'Password Member', password: 'synthetic-member-testing-password', role: 'responder' } })).status(), 201)
       }
       const authSignout = page.waitForResponse(response => new URL(response.url()).pathname === '/auth/signout')
       await page.getByRole('button', { name: 'Sign out', exact: true }).click()
@@ -133,7 +133,7 @@ try {
       assert.equal((await context.request.get(origin + '/api/state')).status(), 401)
       await page.getByRole('link', { name: 'Sign in with a workspace password' }).click()
       await page.getByLabel('Name', { exact: true }).fill('Password Member')
-      await page.getByLabel('Password', { exact: true }).fill('member-testing-password')
+      await page.getByLabel('Password', { exact: true }).fill('synthetic-member-testing-password')
       await page.getByRole('button', { name: 'Sign in', exact: true }).click()
       await page.waitForURL(origin + '/')
       assert.equal((await (await context.request.get(origin + '/api/session')).json()).member.name, 'Password Member')

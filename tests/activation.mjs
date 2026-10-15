@@ -9,9 +9,9 @@ import {pagingHistory} from './paging-history.mjs'
 const w=await localWorker(),checks=[]
 const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'?r.value:JSON.stringify(r.value));return r.value}
 try {
- const initial=await w.request('/api/setup',{name:'Admin',password:'local-testing-password'}),admin=ok(initial).member,cookie=initial.cookie
+ const initial=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'}),admin=ok(initial).member,cookie=initial.cookie
  const req=(path,input)=>w.request(path,input,cookie),record=s=>{checks.push(s);console.log(s)}
- const a=ok(await req('/api/members',{name:'Alice',password:'local-testing-password',role:'responder'}),201),b=ok(await req('/api/members',{name:'Bob',password:'local-testing-password',role:'responder'}),201),viewer=ok(await req('/api/members',{name:'Viewer',password:'local-testing-password',role:'viewer'}),201)
+ const a=ok(await req('/api/members',{name:'Alice',password:'synthetic-local-testing-password',role:'responder'}),201),b=ok(await req('/api/members',{name:'Bob',password:'synthetic-local-testing-password',role:'responder'}),201),viewer=ok(await req('/api/members',{name:'Viewer',password:'synthetic-local-testing-password',role:'viewer'}),201)
  ok(await req('/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:admin.id,runbook:['Verify recovery'],pager:'https://pager.example.test'}))
  const schedule={id:'daily',name:'Daily hand-off',service:'checkout',revision:0,timezone:'America/New_York',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[a.id,b.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[b.id,a.id],ambiguity:'earlier'},overrides:[]}
  const saved=ok(await req('/api/paging/schedules',schedule))
@@ -34,7 +34,7 @@ try {
  for(const path of ['/api/delivery','/api/paging/jobs','/api/paging/tick','/api/paging/callbacks','/api/paging/jobs/old/resume'])ok(await req(path,{}),409)
  assert.equal(w.sql('SELECT COUNT(*) AS n FROM paging_receipts')[0].n,0)
  record('OC-012/013: every delivery/timer door refused and no receipt was created')
- const reader=await w.request('/api/login',{name:'Viewer',password:'local-testing-password'});ok(reader)
+ const reader=await w.request('/api/login',{name:'Viewer',password:'synthetic-local-testing-password'});ok(reader)
  const sources={}
  const atomicSource=await readFile('tests/fixtures/opsgenie.json','utf8'),atomicPreview=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source:atomicSource}))
  w.sql("CREATE TRIGGER injected_import_failure BEFORE INSERT ON move_in_objects WHEN NEW.kind='schedule' BEGIN SELECT RAISE(ABORT,'INJECTED_NATIVE_FAILURE'); END")
@@ -191,7 +191,7 @@ try {
  const pdPlan=ok(await req('/api/move-in/preview',{vendor:'pagerduty',source:sources.pagerduty})),held=ok(await req('/api/move-in/apply',{vendor:'pagerduty',source:sources.pagerduty,fingerprint:pdPlan.fingerprint,confirm:true}),409)
  assert.equal(held.code,'TARGET_REVISION_CONFLICT');for(const email of ['alice@example.test','bob@example.test'])assert.ok(held.error.includes(email),'the refusal names the people already imported')
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'changed source cannot replace committed native data')
- const revoked=await w.request('/api/login',{name:'Admin',password:'local-testing-password'});ok(revoked);ok(await w.request('/api/logout',{},revoked.cookie));ok(await w.request(`/api/move-in/${job.id}/resume`,{vendor:'opsgenie'},revoked.cookie),401)
+ const revoked=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(revoked);ok(await w.request('/api/logout',{},revoked.cookie));ok(await w.request(`/api/move-in/${job.id}/resume`,{vendor:'opsgenie'},revoked.cookie),401)
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'revoked session cannot resume or mutate imported data')
  record('OC-022: malformed/credential-bearing source refused; undo preserved a native edit')
  const checkpoint=ok(await req('/api/recovery/checkpoint')),prior=ok(await req('/api/state'))
@@ -206,8 +206,8 @@ try {
  {
  // OC-016/017 through the emitted Worker and the private handoff CLI. Each assertion names its contract requirement.
  const owner=replacement.cookie,O=(p,i)=>w.request(p,i,owner)
- ok(await O('/api/members',{name:'Rhea',password:'local-testing-password',role:'responder'}),201);ok(await O('/api/members',{name:'Vic',password:'local-testing-password',role:'viewer'}),201)
- const alice=await w.request('/api/login',{name:'Rhea',password:'local-testing-password'}),view=await w.request('/api/login',{name:'Vic',password:'local-testing-password'});ok(alice);ok(view)
+ ok(await O('/api/members',{name:'Rhea',password:'synthetic-local-testing-password',role:'responder'}),201);ok(await O('/api/members',{name:'Vic',password:'synthetic-local-testing-password',role:'viewer'}),201)
+ const alice=await w.request('/api/login',{name:'Rhea',password:'synthetic-local-testing-password'}),view=await w.request('/api/login',{name:'Vic',password:'synthetic-local-testing-password'});ok(alice);ok(view)
  const A=(p,i)=>w.request(p,i,alice.cookie),V=(p,i)=>w.request(p,i,view.cookie)
  let incident=ok(await A('/api/command',{type:'declare',service:'checkout',title:'Checkout errors',severity:'critical',summary:'Elevated errors',alerts:[]}))
  let source=ok(await A('/api/handoffs/context/'+incident.id))
@@ -273,7 +273,7 @@ try {
  const fromV1=await K('/api/recovery/restore',{mode:'replace',checkpoint:v1});ok(fromV1) // version 1 remains supported
  const L=(p,i)=>w.request(p,i,fromV1.cookie);assert.equal(ok(await L('/api/handoffs/h2')).record.id,'h2','version 1 restore retains handoff history')
  const archive=ok(await L('/api/handoffs/archive'))
- ok(await L('/api/members',{name:'Rex',password:'local-testing-password',role:'responder'}),201);ok(await w.request('/api/handoffs/restore',{mode:'replace',archive},(await w.request('/api/login',{name:'Rex',password:'local-testing-password'})).cookie),403) // only admins restore handoff archives
+ ok(await L('/api/members',{name:'Rex',password:'synthetic-local-testing-password',role:'responder'}),201);ok(await w.request('/api/handoffs/restore',{mode:'replace',archive},(await w.request('/api/login',{name:'Rex',password:'synthetic-local-testing-password'})).cookie),403) // only admins restore handoff archives
  ok(await L('/api/handoffs/restore',{mode:'replace',archive:{...archive,records:Array.from({length:65},(_,i)=>({...archive.records[0],id:'cap-'+i}))}}),400) // handoff capacity refuses
  assert.deepEqual(ok(await L('/api/handoffs/archive')),archive,'handoff refusal preserves the prior archive')
  let h3=ok(await L('/api/handoffs/prepare',{id:'h3',incident:incident.id,incidentRevision:incident.revision,serviceHash:ok(await L('/api/handoffs/context/'+incident.id)).serviceHash,payload:copy}),201).record
@@ -297,17 +297,17 @@ try {
  assert.ok(JSON.parse(cli(['inspect','h1']).stdout).result.record.status==='withdrawn','the CLI inspects retained history')
  const fresh=await localWorker()
  try { // the current password maps to an archived administrator only in an empty target
-  const setup=await fresh.request('/api/setup',{name:'Fresh',password:'fresh-testing-password'});ok(setup)
+  const setup=await fresh.request('/api/setup',{name:'Fresh',password:'synthetic-fresh-testing-password'});ok(setup)
   const moved=ok(await w.request('/api/recovery/checkpoint',undefined,own.cookie)),archived=moved.coordination.members.find(m=>m.active&&m.role==='admin')
   ok(await fresh.request('/api/recovery/restore',{mode:'replace',checkpoint:moved},setup.cookie),400) // mapping is explicit
   const mapped=await fresh.request('/api/recovery/restore',{mode:'replace',checkpoint:moved,adminMapping:archived.id},setup.cookie);ok(mapped)
   assert.deepEqual({...ok(await fresh.request('/api/state',undefined,mapped.cookie)),revision:moved.coordination.revision},moved.coordination,'the mapped restore replaces the empty target')
   ok(await fresh.request('/api/state',undefined,setup.cookie),401)
-  assert.equal(ok(await fresh.request('/api/login',{name:archived.name,password:'fresh-testing-password'})).member.id,archived.id,'the current password signs in as the mapped administrator')
+  assert.equal(ok(await fresh.request('/api/login',{name:archived.name,password:'synthetic-fresh-testing-password'})).member.id,archived.id,'the current password signs in as the mapped administrator')
  } finally { await fresh.close() }
  record('OC-016/017: checkpoint consistency, auth exclusion, atomic refusal under invalid/capacity/storage/concurrent writes, winner session, paused jobs and orphans, version 1, empty-target mapping, the 1 MiB aggregate, review identity/eligibility/hold/withdrawal and the private CLI passed')
  }
- const last=await w.request('/api/login',{name:'Admin',password:'local-testing-password'});ok(last)
+ const last=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(last)
  await pagingHistory(w,last.cookie)
  record('OC-013/015: restored historical acknowledgement/cancellation append attribution without recovery; strict module references, retained callbacks and SQL rollback passed')
  console.log(`Activation passed: ${checks.length} requirement flow groups`)
