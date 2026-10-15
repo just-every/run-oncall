@@ -1,13 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Form } from "../forms";
 import { request } from "../useWorkspace";
 
 type Administrator = { id: string; name: string };
 
 export function RestoredOwner({ onLinked }: { onLinked: () => Promise<void> }) {
+  const detailsRef = useRef<HTMLDetailsElement>(null);
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (detailsRef.current) setOpen(detailsRef.current.open);
+  }, []);
   return (
-    <details className="oc-door-restore" onToggle={(event) => setOpen(event.currentTarget.open)}>
+    <details ref={detailsRef} className="oc-door-restore" onToggle={(event) => setOpen(event.currentTarget.open)}>
       <summary>Map an archived administrator after restore</summary>
       <p>Sign in with the installation owner's email first, then choose your archived administrator. Held password installations cannot use this door.</p>
       {open && <AdministratorPicker onLinked={onLinked} />}
