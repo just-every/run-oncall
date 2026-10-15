@@ -22,4 +22,4 @@ Nothing you write in Oncall is sent to an AI model or any outside service. Sign-
 
 ## It runs on your computer today
 
-Oncall runs on your own computer. Running it for a whole team on a server waits on a tested standby: `rer deploy --dry-run` checks the build, and a real deploy refuses until then.
+Oncall runs on your own computer. Hosted Oncall is on hold until an independent standby paging host is ready and a hosted release is approved. Until then, `rer deploy` refuses before any provider request. Use `rer deploy --dry-run` to build and validate locally.
