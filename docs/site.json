@@ -96,6 +96,10 @@
       "reason": "Product requirement clauses for maintainers"
     },
     {
+      "source": "DEMO.md",
+      "reason": "How a contributor runs the throwaway local demo"
+    },
+    {
       "source": "HANDOFF-STAGE.md",
       "reason": "Design record of the reviewed-handoff API for maintainers"
     },
@@ -148,12 +152,20 @@
       "reason": "Font licence and fallback notes kept beside the font files"
     },
     {
+      "source": "src/base/hydration/README.md",
+      "reason": "Base runtime integration guidance for source maintainers."
+    },
+    {
       "source": "src/family/operations/README.md",
       "reason": "Source module notes for developers"
     },
     {
       "source": "src/family/response-operations/README.md",
       "reason": "Source module notes for developers"
+    },
+    {
+      "source": "src/modules/demo/README.md",
+      "reason": "Vendored Base module documentation for developers"
     },
     {
       "source": "src/modules/dependencies/README.md",
@@ -254,10 +266,6 @@
     {
       "source": "src/modules/portability/README.md",
       "reason": "Vendored Base module documentation for developers"
-    },
-    {
-      "source": "src/base/hydration/README.md",
-      "reason": "Base runtime integration guidance for source maintainers."
     }
   ]
 }

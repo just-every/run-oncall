@@ -10,6 +10,7 @@ dist/
 *.tsbuildinfo
 
 .rer/local/
+.rer/demo/
 
 exports/
 # Generated proof artifacts; plans and reports remain source.

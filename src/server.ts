@@ -1,3 +1,5 @@
+import { withDemo } from './modules/demo/index.mjs'
+import { seedDemo } from './demo'
 import start from '@tanstack/react-start/server-entry'
 import { dispatch } from './base/dispatch'
 import { staticAssetResponse } from './base/static-assets'
@@ -9,7 +11,7 @@ import { identity } from './identity'
 import { authResponse, runtimeBindings, operatorAuth, type Bindings } from './auth.server'
 import {receivedRequest} from './request-body'
 type Env=Bindings & {LOCAL_ONLY:string}
-export default {
+export default withDemo({
   async fetch(request,env,execution) {
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
     const bindings=runtimeBindings(env);
@@ -45,4 +47,4 @@ export default {
     }
     return response;
   },
-} satisfies ExportedHandler<Env>
+} satisfies ExportedHandler<Env>, { seed: seedDemo })
