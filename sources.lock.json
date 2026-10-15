@@ -127,7 +127,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "b835d8ef26e4963830aa393f3715a662ab6bd212d6b708912640f103fb897c9d",
+      "sha256": "14a3696246192f84846a65a15bb60953fe652ab9616e3a4e020c1df2aaae7074",
       "executable": false
     },
     "BRAND.md": {
@@ -147,7 +147,7 @@
       "executable": false
     },
     "DEMO.md": {
-      "sha256": "862ebe781e12c17498328c6a2a9748588edcef607ff80f6a449557c8885e8945",
+      "sha256": "3978ab59feccd79fb10f0b42321dfea4039fe390287b49eb47127b0636eb5389",
       "executable": false
     },
     "deploy-site.json": {

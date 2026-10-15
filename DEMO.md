@@ -11,4 +11,4 @@ Everything is relative to the moment the demo starts. The Demo bar on every page
 
 `rer demo --stop`, Ctrl-C, or its end (one hour) deletes `.rer/demo/<start>/`. The next `rer demo` starts afresh. The checkout's own `.wrangler/state` and private settings are never written.
 
-`src/demo.ts` (`seedDemo`) builds the data through the same domain functions the routes use. `src/modules/demo` is Base's demo module; `csp.mjs` sits beside it because this edition's operator-auth copy predates Base's `csp.mjs`, and the module's one import of it is the only adaptation (recorded in `edition.json`). A hosted demo is not part of this edition.
+`src/demo.ts` (`seedDemo`) builds the data through the same domain functions the routes use. `src/modules/demo` is Base's demo module; `csp.mjs` (Base's `modules/operator-auth/csp.mjs`, byte for byte) sits beside it because this edition's operator-auth copy predates it and must keep its one pinned revision; the module's import of it is the only adaptation. Both are covered by the `runeditrun/demo` component in `edition.json`. A hosted demo is not part of this edition.

@@ -69,17 +69,6 @@
       }
     },
     {
-      "path": "src/modules/demo/csp.mjs",
-      "originPath": "modules/operator-auth/csp.mjs",
-      "revision": "d5dde229df85d9fffe012800d34c09cb7ee94d74",
-      "files": {
-        "src/modules/demo/csp.mjs": "9bf6c5c5b2adcfc6f6c82a657af38346b8ec4e2344aea20b4d972a2564cffaed"
-      },
-      "modes": {
-        "src/modules/demo/csp.mjs": "100644"
-      }
-    },
-    {
       "path": "src/modules/demo/index.d.mts",
       "originPath": "modules/demo/index.d.mts",
       "revision": "d5dde229df85d9fffe012800d34c09cb7ee94d74",
