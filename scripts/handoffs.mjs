@@ -20,7 +20,7 @@ Usage: node scripts/handoffs.mjs --origin URL --session-file FILE COMMAND
 
 Both options are required. Origin must be HTTP loopback without credentials,
 paths, queries or fragments; redirects are rejected. Session files must be
-regular, owned by you, mode 0600, and contain only oncall_session=token or token.
+regular, owned by you, mode 0600, and contain only oncall_session_PORT=token or token.
 For a held installation, save its password-login cookie privately.
 For a new installation, use the browser reviewed-handoff API with its Base session.
 This CLI accepts no passwords, login command or environment-session fallback.
@@ -60,12 +60,13 @@ function identity(value) {
     fail("Invalid record or incident identity");
   return encodeURIComponent(value);
 }
-function sessionCookie(value) {
-  const token = value.trim().replace(/^oncall_session=/, "");
+function sessionCookie(value, origin) {
+  const name = `oncall_session_${new URL(origin).port || "80"}`;
+  const token = value.trim().replace(`${name}=`, "");
   if (!/^[A-Za-z0-9_-]{16,200}$/.test(token)) fail("Invalid local session cookie format");
-  return `oncall_session=${token}`;
+  return `${name}=${token}`;
 }
-async function readSession(path) {
+async function readSession(path, origin) {
   if (!path) fail("Explicit --session-file is required; save the held login cookie privately");
   const info = await lstat(path);
   if (!info.isFile() || (info.mode & 0o777) !== 0o600 || (process.getuid && info.uid !== process.getuid()))
@@ -75,7 +76,7 @@ async function readSession(path) {
     const opened = await handle.stat();
     if (!opened.isFile() || (opened.mode & 0o777) !== 0o600 || opened.size > 512 ||
         (process.getuid && opened.uid !== process.getuid())) fail("Unsafe session file");
-    return sessionCookie(await handle.readFile("utf8"));
+    return sessionCookie(await handle.readFile("utf8"), origin);
   } finally { await handle.close(); }
 }
 async function readJson(path) {
@@ -113,7 +114,7 @@ async function main() {
   const counts = { list: 0, inspect: 1, context: 1, prepare: 1, review: 2, withdraw: 2, export: 2, archive: 1, restore: 1 };
   if (!Object.hasOwn(counts, command) || counts[command] !== args.length) fail("Unknown command or wrong argument count; use --help");
   if (opt.replace !== (command === "restore")) fail("Restore requires --replace; --replace is only valid for restore");
-  const origin = localOrigin(opt.origin), cookie = await readSession(opt.sessionFile);
+  const origin = localOrigin(opt.origin), cookie = await readSession(opt.sessionFile, origin);
   process.stderr.write(`UNSENT LOCAL ONLY — ${origin}; no provider actions.\n`);
 
   async function request(path, body) {

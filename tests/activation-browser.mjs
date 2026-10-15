@@ -30,13 +30,13 @@ try {
  browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{})})
  const context=await browser.newContext({baseURL:origin,viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
  page.on('pageerror',error=>errors.push(error.message))
- await context.addCookies([{name:'oncall_session',value:'retired-installation-session',url:origin}])
+ await context.addCookies([{name:`oncall_session_${new URL(origin).port}`,value:'retired-installation-session',url:origin}])
  await page.goto(link);await page.waitForURL(url=>url.pathname==='/setup'||url.pathname==='/'&&!url.hash,{timeout:60000})
  await page.goto(origin+'/setup');const confirm=page.getByRole('checkbox');if(await confirm.count()){await confirm.check();await page.getByRole('button',{name:'Finish setup'}).click()}
  await page.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
  const key=keyboardUser(page)
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json());assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
- assert.equal((await context.cookies()).some(cookie=>cookie.name==='oncall_session'),false,'explicit local sign-in clears a previous installation cookie')
+ assert.equal((await context.cookies()).some(cookie=>cookie.name===`oncall_session_${new URL(origin).port}`),false,'explicit local sign-in clears a previous installation cookie')
  await key.activate(page.getByRole('link',{name:'Services',exact:true}));await key.text(page.getByLabel('Service name',{exact:true}),'Checkout');await key.text(page.getByLabel('Runbook steps (one per line)'),'Verify recovery');await key.activate(page.getByRole('button',{name:'Create service',exact:true}));await page.getByRole('heading',{name:'Checkout',exact:true}).waitFor()
  for(const width of [1440,390]) {
   await page.setViewportSize({width,height:1000})

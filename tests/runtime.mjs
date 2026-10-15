@@ -145,7 +145,7 @@ try {
   assert.equal(home.status, 200);
   const homeDocument = await home.text();
   assert.match(homeDocument, /href="\/setup"/, "an unclaimed guest can finish setup from the Lobby");
-  assert.match(await (await fetch(origin, { headers: { cookie: "oncall_session=forged" } })).text(), /href="\/setup"/, "forged sessions receive the guest Lobby");
+  assert.match(await (await fetch(origin, { headers: { cookie: `oncall_session_${new URL(origin).port}=forged` } })).text(), /href="\/setup"/, "forged sessions receive the guest Lobby");
   const docsIndex = await fetch(origin + "/docs");
   assert.equal(docsIndex.status, 200);
   const docPages = [...new Set([...(await docsIndex.text()).matchAll(/href="\/docs\/([a-z0-9-]+)"/g)].map((m) => m[1]))];
@@ -165,6 +165,12 @@ try {
   const admin = ok(setup).member;
   let cookie = setup.cookie;
   assert.match(await (await fetch(origin, { headers: { cookie } })).text(), /class="access"/, "a validated password member opens the workspace");
+  assert.match(cookie, new RegExp(`^oncall_session_${new URL(origin).port}=`), "the workspace cookie is named for this install's port");
+  const neighbour = cookie.replace(/^oncall_session_\d+=/, `oncall_session_${Number(new URL(origin).port) + 1}=`);
+  ok(await request("/api/state", undefined, neighbour), 401);
+  const neighbourLogout = await fetch(origin + "/api/logout", { method: "POST", headers: { origin, cookie: neighbour } });
+  assert.equal(neighbourLogout.headers.get("set-cookie")?.startsWith(cookie.split("=")[0] + "="), true, "sign-out only ever names this install's own cookie");
+  ok(await request("/api/state", undefined, cookie), 200);
   sql('UPDATE sessions SET expires=0');
   assert.match(await (await fetch(origin, { headers: { cookie } })).text(), /href="\/setup"/, "an expired password session receives the guest Lobby");
   const freshLogin = await request('/api/login', { name: 'Admin', password: 'local-testing-password' });

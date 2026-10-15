@@ -55,7 +55,7 @@ After the import has completed:
 
 Adoption preserves the source timezone, calendar hand-overs, validity and overrides. It refuses incomplete imports, missing or erased people, stale revisions, duplicate person mappings and schedule ID collisions. A concurrent member change, undo or erasure stops the write; reload and review again. Imported policies remain paused and paging stays off.
 
-Adoption is a native edit. **Undo this import** subsequently refuses with `NATIVE_EDIT_CONFLICT` and keeps the adopted schedule and the import. Edit the schedule under **Schedules**. Erasing an imported person affects the paused import and its journal, not the workspace members or the adopted native schedule; manage those separately.
+Adoption is a native edit. Once a schedule is live, **Undo this import** refuses with `NATIVE_EDIT_CONFLICT` ("made live, so this import can no longer be undone") and keeps the adopted schedule and the import. Edit the schedule under **Schedules**. Erasing an imported person affects the paused import and its journal, not the workspace members or the adopted native schedule; manage those separately.
 
 ## What the preview checks
 

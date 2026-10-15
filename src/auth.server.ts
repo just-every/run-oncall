@@ -7,6 +7,7 @@ import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, de
 import { operatorMail } from './mail.server.mjs'
 import { createD1DevelopmentOutbox, createDevelopmentOutboxHandler } from './modules/mail/src/development/index.mjs'
 import branding from './branding.json'
+import { sessionCookieLine } from './session-cookie'
 
 // The edition's declared theme (public/rer-theme.css), as Base frames link it.
 const theme = { href: '/rer-theme.css', productName: branding.name, accentColor: branding.primaryColor }
@@ -42,9 +43,9 @@ export function operatorAuth(env: Bindings) {
  return createOperatorAuth({ db: env.DB, config: authConfig(env), mailSender: operatorMail(env), clientIp: request => request.headers.get('CF-Connecting-IP') ?? '' })
 }
 
-export function clearWorkspaceSession(response: Response): Response {
+export function clearWorkspaceSession(response: Response, request: Request): Response {
  const headers = new Headers(response.headers)
- headers.append('set-cookie', 'oncall_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0')
+ headers.append('set-cookie', sessionCookieLine(request, '', 0))
  return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
 }
 
@@ -98,7 +99,7 @@ export async function authResponse(request: Request, original: Bindings): Promis
   // cookie. Ordinary requests must still reject rotated/revoked sessions.
   // Confirmation issues a native cookie on success; failed confirmations do not.
   if (url.pathname === '/auth/confirm' && request.method === 'POST' && response?.status === 303 && response.headers.has('set-cookie')) {
-   response = clearWorkspaceSession(response)
+   response = clearWorkspaceSession(response, request)
   }
   return brandDocumentResponse(response)
  }

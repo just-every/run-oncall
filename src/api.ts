@@ -15,6 +15,7 @@ import { prepareHandoffReplacement } from "./handoff-store";
 import { installHandoffs } from "./handoff-api";
 import { preparePagingImport } from "./family/response-operations/paging-archive";
 import { handoff } from "./family/response-operations/integrations";
+import { readSessionCookie, sessionCookieLine } from "./session-cookie";
 import {
   empty,
   command,
@@ -172,11 +173,7 @@ api.get("/api/session", async (c) => {
   return c.json({setup: (await load(c.env.DB)).members.length===0, member});
 });
 async function session(c: any, state: State): Promise<Member | null> {
-  const token = (c.req.header("cookie") ?? "")
-    .split(";")
-    .map((v: string) => v.trim())
-    .find((v: string) => v.startsWith("oncall_session="))
-    ?.slice(15);
+  const token = readSessionCookie(c.req.raw);
   if (!token) {
     const native = await nativeMember(c.env, c.req.raw);
     if (native) c.set('sessionDigest',native.digest);
@@ -218,10 +215,7 @@ async function issue(c: any, member: Member, credentials: { salt: string; digest
   return sessionResponse(c, token, member);
 }
 function sessionResponse(c: any, token: string, member: Member, details: Record<string, unknown> = {}) {
-  c.header(
-    "Set-Cookie",
-    `oncall_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200`,
-  );
+  c.header("Set-Cookie", sessionCookieLine(c.req.raw, token, 43200));
   return c.json({ ...details, member });
 }
 api.post("/api/setup", async (c) => {
@@ -283,19 +277,12 @@ api.post("/api/login", async (c) => {
   return issue(c, member, record, state.revision);
 });
 api.post("/api/logout", async (c) => {
-  const token = (c.req.header("cookie") ?? "")
-    .split(";")
-    .map((v) => v.trim())
-    .find((v) => v.startsWith("oncall_session="))
-    ?.slice(15);
+  const token = readSessionCookie(c.req.raw);
   if (token)
     await c.env.DB.prepare("DELETE FROM sessions WHERE token=?")
       .bind(await hash(token))
       .run();
-  c.header(
-    "Set-Cookie",
-    "oncall_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0",
-  );
+  c.header("Set-Cookie", sessionCookieLine(c.req.raw, "", 0));
   return c.json({ ok: true });
 });
 api.post("/api/ingress/:source", async (c) => {

@@ -43,7 +43,10 @@ export async function alreadyImported(db: D1Database, plan: ImportPlan, vendor: 
 
 /** NATIVE_EDIT_CONFLICT on undo: name what changed in Oncall after the import, which undo would otherwise overwrite. */
 export async function changedSinceImport(db: D1Database, job: string) {
- const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id FROM ik_provenance p LEFT JOIN move_in_objects o ON o.kind=p.target_kind AND o.id=p.target_id WHERE p.job_id=? AND p.reversed=0 AND (o.id IS NULL OR o.revision IS NOT json_extract(p.record_json,'$.appliedRevision')) ORDER BY p.target_kind,p.target_id`).bind(job).all<{ kind: string; id: string }>()
+ const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id,json_extract(o.data,'$.adopted') IS NOT NULL AS adopted FROM ik_provenance p LEFT JOIN move_in_objects o ON o.kind=p.target_kind AND o.id=p.target_id WHERE p.job_id=? AND p.reversed=0 AND (o.id IS NULL OR o.revision IS NOT json_extract(p.record_json,'$.appliedRevision')) ORDER BY p.target_kind,p.target_id`).bind(job).all<{ kind: string; id: string; adopted: number }>()
+ // An adopted schedule is a permanent native edit: the app offers no way to put it back.
+ const adopted = rows.results.filter(r => r.adopted)
+ if (adopted.length) return new Refusal(409, `${list(adopted.map(r => object(r.kind, r.id)))} ${adopted.length > 1 ? 'were' : 'was'} made live, so this import can no longer be undone; nothing was undone. The paused source stays as evidence.`, 'NATIVE_EDIT_CONFLICT')
  const changed = rows.results.map(r => object(r.kind, r.id))
  if (!changed.length) return new Refusal(409, 'Imported data changed while the undo was prepared; nothing was undone. Try the undo again.', 'NATIVE_EDIT_CONFLICT')
  return new Refusal(409, `${list(changed)} changed in Oncall after this import, so undoing it would overwrite ${changed.length > 1 ? 'those changes' : 'that change'}; nothing was undone. Put ${changed.length > 1 ? 'them' : 'it'} back as imported, or keep the import.`, 'NATIVE_EDIT_CONFLICT')

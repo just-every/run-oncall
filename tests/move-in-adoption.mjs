@@ -64,7 +64,7 @@ try {
  assert.match(ok(await req(`/api/schedules/${encodeURIComponent(schedule.id)}/calendar.ics?from=2026-03-08T13:00:00Z&to=2026-03-09T13:00:00Z`)),/BEGIN:VEVENT/)
  await w.stop();await w.start()
  const undo=ok(await req(`/api/move-in/${job.id}/undo`,{vendor:'opsgenie',confirm:true}),409)
- assert.equal(undo.code,'NATIVE_EDIT_CONFLICT')
+ assert.equal(undo.code,'NATIVE_EDIT_CONFLICT');assert.match(undo.error,/made live, so this import can no longer be undone/);assert.doesNotMatch(undo.error,/Put it back/)
  assert.deepEqual(ok(await req('/api/paging/state')).schedules,[schedule],'restart and import undo preserve adopted coverage')
  console.log('Move-in: explicit timing difference, named people, validated adoption, authority, concurrent publication, atomic rollback, now/next, ICS and protected undo passed')
 } finally {await w.close()}

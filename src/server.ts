@@ -10,6 +10,7 @@ import { lobbyResponse } from './base/lobby'
 import { identity } from './identity'
 import { authResponse, runtimeBindings, operatorAuth, type Bindings } from './auth.server'
 import {receivedRequest} from './request-body'
+import {readSessionCookie} from './session-cookie'
 type Env=Bindings & {LOCAL_ONLY:string}
 export default withDemo({
   async fetch(request,env,execution) {
@@ -24,8 +25,8 @@ export default withDemo({
       // No workspace authority is possible without a credential. Keep the public
       // Lobby on its claim-state read instead of the local-only workspace API.
       // Native local cookies carry a port, including dev/sign-in-as sessions.
-      const hasCredential=(request.headers.get('cookie')??'').split(';').some(cookie=>
-        /^(?:oncall_session|__Host-operator_session|operator_session_local(?:_\d+)?)=/.test(cookie.trim()));
+      const hasCredential=!!readSessionCookie(request)||(request.headers.get('cookie')??'').split(';').some(cookie=>
+        /^(?:__Host-operator_session|operator_session_local(?:_\d+)?)=/.test(cookie.trim()));
       if(!hasCredential)return (await lobbyResponse(request,bindings,identity))!;
       // The same current-member authority protects both native and held password sessions.
       const sessionUrl=new URL('/api/session',request.url);

@@ -15,19 +15,20 @@ function privateFile(info) {
  if(!info.isFile()||(info.mode&0o777)!==0o600||info.nlink!==1||(process.getuid&&info.uid!==process.getuid()))
   throw Error('Session file must be an owned, regular, unlinked mode-0600 file')
 }
+export const heldCookieName=origin=>`oncall_session_${new URL(origin).port||'80'}`
 export function cookies(value,origin) {
  const input=value.trim(),port=new URL(origin).port||'80'
- const native=`operator_session_local_${port}`,gate=`rer_dev_gate_${port}`
- const entries=input.includes('=')?input.split(';').map(v=>v.trim()):[`oncall_session=${input}`],seen=new Set()
+ const held=heldCookieName(origin),native=`operator_session_local_${port}`,gate=`rer_dev_gate_${port}`
+ const entries=input.includes('=')?input.split(';').map(v=>v.trim()):[`${held}=${input}`],seen=new Set()
  for(const entry of entries){
   const match=/^([A-Za-z0-9_]+)=([A-Za-z0-9_-]{16,200})$/.exec(entry)
-  if(!match||!['oncall_session',native,gate].includes(match[1])||seen.has(match[1]))
+  if(!match||![held,native,gate].includes(match[1])||seen.has(match[1]))
    throw Error('Session file must contain local session cookies for this origin, or a held Oncall token')
   seen.add(match[1])
  }
  // Native local sign-in also issues the port-bound dev gate cookie. Keep it
  // private with the session, but never treat that gate alone as authentication.
- if(!seen.has('oncall_session')&&!seen.has(native))throw Error('Session file must contain an Oncall or local Base session')
+ if(!seen.has(held)&&!seen.has(native))throw Error('Session file must contain an Oncall or local Base session')
  return entries.join('; ')
 }
 export async function privateSession(path,origin) {
@@ -49,10 +50,10 @@ export async function privateSession(path,origin) {
     await temp.writeFile(cookie+'\n');await temp.sync();await temp.truncate(0)
    },
    async rotate(response){
-    const rotated=response.headers.getSetCookie().map(v=>v.split(';')[0]).filter(v=>v.startsWith('oncall_session='))
+    const rotated=response.headers.getSetCookie().map(v=>v.split(';')[0]).filter(v=>v.startsWith(`${heldCookieName(origin)}=`))
     if(rotated.length!==1)throw Error('Replacement succeeded but returned no unique rotated session; sign in again')
     committed=true
-    const next=cookies([...cookie.split('; ').filter(v=>!v.startsWith('oncall_session=')),rotated[0]].join('; '),origin)
+    const next=cookies([...cookie.split('; ').filter(v=>!v.startsWith(`${heldCookieName(origin)}=`)),rotated[0]].join('; '),origin)
     const bytes=Buffer.from(next+'\n');await temp.write(bytes,0,bytes.length,0);await temp.truncate(bytes.length);await temp.sync()
     const current=await lstat(path);privateFile(current)
     if(current.dev!==info.dev||current.ino!==info.ino)throw Error('Session path changed during restore; rotated cookie retained privately in pending file')

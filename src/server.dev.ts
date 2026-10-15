@@ -15,7 +15,7 @@ export default {
   // Only a successful explicit identity switch retires a workspace cookie.
   // API requests must still reject sessions revoked by restore or logout.
   if(request.method === 'GET' && new URL(request.url).pathname === '/auth/dev/enter' && response.status === 303)
-   response = clearWorkspaceSession(response)
+   response = clearWorkspaceSession(response, request)
   return workspaceBadge(response,request,env,execution)
  },
 }
