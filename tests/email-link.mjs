@@ -54,9 +54,15 @@ try {
   const link = new URL(detail.match(/href="([^"]*\/auth\/confirm\?token=[^"]+)"/)[1].replaceAll('&amp;', '&'), origin)
   assert.equal(link.origin, origin)
   assert.equal((await fetch(link)).status, 200, 'confirmation page')
-  const confirmed = await post('/auth/confirm', { token: link.searchParams.get('token') })
+  const staleCookie = 'oncall_session=' + secret()
+  assert.equal((await (await fetch(origin+'/api/session',{headers:{cookie:staleCookie}})).json()).member,null,'an unknown installation cookie grants no identity')
+  const failedConfirmation = await post('/auth/confirm', { token: 'invalid' }, staleCookie)
+  assert.equal(failedConfirmation.status, 400)
+  assert.equal(failedConfirmation.headers.getSetCookie().some(line => line.startsWith('oncall_session=')), false, 'failed confirmation cannot clear a held workspace session')
+  const confirmed = await post('/auth/confirm', { token: link.searchParams.get('token') }, staleCookie)
   assert.equal(confirmed.status, 303)
-  const cookie = confirmed.headers.getSetCookie().map(line => line.split(';')[0]).join('; ')
+  assert.ok(confirmed.headers.getSetCookie().some(line => line.startsWith('oncall_session=;') && /Max-Age=0(?:;|$)/.test(line)), 'successful confirmation expires the old workspace cookie')
+  const cookie = confirmed.headers.getSetCookie().filter(line => !/Max-Age=0(?:;|$)/.test(line)).map(line => line.split(';')[0]).join('; ')
   const session = await fetch(`${origin}/auth/session`, { headers: { cookie } })
   assert.equal(session.status, 200)
   assert.equal((await session.json()).operator.email, owner)
@@ -68,9 +74,6 @@ try {
   assert.match(await (await fetch(origin)).text(),/href="\/signin"/,'confirmed installation gives guests a sign-in door');
   assert.match(await (await fetch(origin,{headers:{cookie}})).text(),/class="access"/,'validated native member opens the workspace');
   const oncallSession=await fetch(`${origin}/api/session`,{headers:{cookie}});assert.equal((await oncallSession.json()).member.role,'admin');assert.equal((await fetch(`${origin}/api/state`,{headers:{cookie}})).status,200);
-  const staleCookie = 'oncall_session=' + secret()
-  assert.equal((await (await fetch(origin+'/api/session',{headers:{cookie:staleCookie}})).json()).member,null,'an unknown installation cookie grants no identity')
-  assert.equal((await fetch(origin+'/api/state',{headers:{cookie:cookie+'; '+staleCookie}})).status,200,'an old installation cookie cannot mask a current email identity')
   const checkpoint=await (await fetch(origin+'/api/recovery/checkpoint',{headers:{cookie}})).json(),restored=await post('/api/recovery/restore',{mode:'replace',checkpoint},cookie);assert.equal(restored.status,200)
   const derived=restored.headers.getSetCookie().map(line=>line.split(';')[0]).join('; '),combined=cookie+'; '+derived
   assert.equal((await fetch(origin+'/api/state',{headers:{cookie:combined}})).status,200)
@@ -102,23 +105,24 @@ try {
     const messagePath = messages.match(/href="(\/__dev\/outbox\?message=[^"]+)"/)[1].replaceAll('&amp;', '&')
     const mail = await (await fetch(origin + messagePath, { headers: key })).text()
     const confirmation = new URL(mail.match(/href="([^"]*\/auth\/confirm\?token=[^"]+)"/)[1].replaceAll('&amp;', '&'), origin)
-    const signedIn = await post('/auth/confirm', { token: confirmation.searchParams.get('token') })
-    assert.equal(signedIn.status, 303)
-    if (width === 1440) {
-      const ownerCookie = signedIn.headers.getSetCookie().map(line => line.split(';')[0]).join('; ')
-      assert.equal((await post('/api/members', { name: 'Password Member', password: 'member-testing-password', role: 'responder' }, ownerCookie)).status, 201)
-    }
     const context = await browser.newContext({ viewport: { width, height: 900 } })
     try {
       // Keep the real derived cookie from the now-revoked earlier login. A
       // fresh email confirmation must still open the workspace in this browser.
-      await context.addCookies([...signedIn.headers.getSetCookie(), derived].map(line => {
+      await context.addCookies(derived.split('; ').map(line => {
         const pair = line.split(';')[0], index = pair.indexOf('=')
         return { name: pair.slice(0, index), value: pair.slice(index + 1), url: origin }
       }))
       const page = await context.newPage()
-      await page.goto(origin)
+      await page.goto(confirmation.href)
+      assert.ok((await context.cookies()).some(cookie => cookie.name === 'oncall_session'), 'previewing a sign-in link preserves the held workspace cookie')
+      await page.getByRole('button', { name: 'Confirm', exact: true }).click()
+      await page.waitForURL(origin + '/')
+      assert.equal((await context.cookies()).some(cookie => cookie.name === 'oncall_session'), false, 'browser confirmation clears the earlier installation cookie')
       assert.equal((await context.request.get(origin + '/api/state')).status(), 200)
+      if (width === 1440) {
+        assert.equal((await context.request.post(origin + '/api/members', { headers: { origin }, data: { name: 'Password Member', password: 'member-testing-password', role: 'responder' } })).status(), 201)
+      }
       const authSignout = page.waitForResponse(response => new URL(response.url()).pathname === '/auth/signout')
       await page.getByRole('button', { name: 'Sign out', exact: true }).click()
       assert.equal((await authSignout).status(), 204)

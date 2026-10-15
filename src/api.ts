@@ -177,30 +177,26 @@ async function session(c: any, state: State): Promise<Member | null> {
     .map((v: string) => v.trim())
     .find((v: string) => v.startsWith("oncall_session="))
     ?.slice(15);
-  const digest = token ? await hash(token) : null;
-  const row = digest ? await c.env.DB.prepare(
+  if (!token) {
+    const native = await nativeMember(c.env, c.req.raw);
+    if (native) c.set('sessionDigest',native.digest);
+    return native?.member ?? null;
+  }
+  const digest = await hash(token);
+  const row = await c.env.DB.prepare(
     "SELECT member,operator_session FROM oc_current_sessions WHERE token=? AND expires>?",
   )
     .bind(digest, Date.now())
-    .first() : null;
+    .first();
+  if(row?.operator_session){
+    const native=await nativeMember(c.env,c.req.raw);
+    if(!native||native.digest!==`native:${row.operator_session}`||native.member.id!==row.member)return null;
+  }
   const member = row
     ? (state.members.find((m) => m.id === row.member && m.active) ?? null)
     : null;
-  // A current password login remains the selected workspace identity. An old
-  // installation's cookie, expired session or revoked derived session must not
-  // hide a separately validated current email-link or local dev identity.
-  if (member && !row.operator_session) {
-    c.set("sessionDigest", digest);
-    return member;
-  }
-  const native = await nativeMember(c.env, c.req.raw);
-  if (!native) return null;
-  if (member && native.digest === `native:${row.operator_session}` && native.member.id === member.id) {
-    c.set("sessionDigest", digest);
-    return member;
-  }
-  c.set("sessionDigest", native.digest);
-  return native.member;
+  if (member) c.set("sessionDigest", digest);
+  return member;
 }
 async function authorizedState(c: any, admin = false): Promise<State> {
   const state = await load(c.env.DB);
