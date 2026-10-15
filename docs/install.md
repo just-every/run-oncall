@@ -76,6 +76,32 @@ Every command, flag and what it changes is in the [command reference](../RUN-LOC
 
 ## Update, host and remove
 
+### From 0.1.0
+
+Stop the old servers **before pulling**: 0.1.0 uses the checkout's runner, which the update removes.
+
+```sh
+node scripts/rer.mjs dev --stop
+node scripts/rer.mjs preview --stop
+```
+
+Install the `rer` command once, while you still have the old checkout:
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh
+```
+
+Open a new terminal if the installer asks you to, or use `npm install -g @runeditrun/rer`. Then, from this checkout on `main`:
+
+```sh
+git pull --ff-only
+rer dev
+```
+
+There are no new migrations in 0.2.0. Your data, owner and password accounts are kept. Do not reset to upgrade.
+
+### Later updates
+
 Update this checkout without resetting its data:
 
 ```sh

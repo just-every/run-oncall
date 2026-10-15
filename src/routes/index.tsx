@@ -179,8 +179,7 @@ function Workspace() {
           </div>
           <div className="header-status">
             <span className={`active-incident${activeIncidents ? "" : " none"}`}>
-              {activeIncidents} active
-              incidents
+              {activeIncidents} active {activeIncidents === 1 ? "incident" : "incidents"}
             </span>
             <button
               className="quiet"

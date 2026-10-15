@@ -1,3 +1,14 @@
+# 0.2.0 · 2026-10-15
+
+- Start locally with `rer dev` and confirm the owner on Finish setup; `rer demo` offers a throwaway local trial.
+- Make imported schedules live in Schedules with an explicit administrator mapping. An immediate (0-minute) Opsgenie first escalation step maps to 1 minute with the difference stated.
+- Sign in by owner email, retire stale installation cookies on explicit sign-in, and explicitly map an archived administrator after restoring an installation.
+- See now/next and the named time zone at the top of Schedules.
+- Get the verification-browser prerequisite and install command from `rer doctor`.
+- Upgrade from 0.1.0 by stopping its old runner before pulling, installing `rer`, then running `git pull --ff-only` and `rer dev`. Data, owner and password accounts are kept; no new migrations are added. Do not reset to upgrade.
+- Show “1 active incident” in the workspace header and pluralize other counts correctly.
+- Hosted Oncall remains on hold. Paging is OFF; keep the existing pager authoritative.
+
 # 0.1.0
 
 - Move-in: erasing a person now also tombstones and scrubs any retained record whose own source names their exact address anywhere (a schedule description, a contact-method address, notes or any other text), so no value of theirs stays in the import journal while a record naming only a longer address that contains theirs is kept and the rest of that import still undoes.

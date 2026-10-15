@@ -1,7 +1,7 @@
 {
-  "version": "0.1.0",
-  "date": "2026-10-13",
-  "publicReleaseNotes": "First public release of Oncall: local rotas, overrides, now/next, a private ICS feed, recorded alert intake and incident coordination beside an existing pager, with a move-in kit for Opsgenie and PagerDuty exports. Paging is off and the existing pager stays authoritative. Run it on your own computer with `rer install`, `setup` and `dev`; see README.md and docs/install.md.",
+  "version": "0.2.0",
+  "date": "2026-10-15",
+  "publicReleaseNotes": "Oncall 0.2.0 makes local startup a single `rer dev` command with a Finish setup page, and offers `rer demo` for a throwaway local trial. Imported schedules can be made live in Schedules with an explicit administrator mapping; an immediate (0-minute) Opsgenie first escalation step is stored as 1 minute with the difference stated. Owner email sign-in handles stale installation cookies, restored owners can explicitly map an archived administrator, and Schedules shows now/next and its named time zone at the top. `rer doctor` explains the verification-browser prerequisite. This release adds no migrations. Hosted Oncall stays on hold and paging stays OFF; keep your existing pager authoritative.",
   "contractChanges": {},
   "extensionPointChanges": [],
   "migrations": [
@@ -79,5 +79,5 @@
     }
   ],
   "breaking": false,
-  "agentUpdateInstructions": "This is the first public release; there is no earlier public version to update from. An installation held from before it upgrades in place through the unchanged migrations and the additive ones in filename order: back up first, preserve authored data, owner and account identities and every applied migration byte, and do not reset to upgrade. For a portable backup stop dev or preview and run rer export --output exports/NAME.rer; restore only into an empty destination with rer import --input exports/NAME.rer --yes after restoring the original private settings. rer deploy --dry-run validates locally and makes no provider requests; actual deployment refuses until a hosted release with an independent standby is approved. Paging stays off. No live provider, deployment or paging acceptance is claimed."
+  "agentUpdateInstructions": "To update from 0.1.0, stop the old servers before pulling: run `node scripts/rer.mjs dev --stop` and `node scripts/rer.mjs preview --stop` in the old checkout. Install the global rer command with `curl -fsSL https://runeditrun.com/install.sh | sh` (open a new terminal if instructed), or `npm install -g @runeditrun/rer`. Then, on main, run `git pull --ff-only` followed by `rer dev`. There are no new migrations in 0.2.0; keep all 18 applied migrations unchanged. The update preserves authored data, owner and password accounts; do not reset to upgrade. Back up first: while the old servers are stopped, `node scripts/rer.mjs export --output exports/NAME.rer` can export 0.1.0; later versions use `rer export --output exports/NAME.rer`. Restore only into an empty destination with `rer import --input exports/NAME.rer --yes` after restoring the original private settings. For updates after 0.1.0, stop with `rer dev --stop` and `rer preview --stop` before pulling, then run `rer dev`. No hosted deployment is needed. Hosted Oncall remains on hold until an independent standby paging host is ready and a hosted release is approved; actual deployment refuses before any provider request. Paging stays OFF. No live provider, deployment or paging acceptance is claimed."
 }
