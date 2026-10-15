@@ -2,6 +2,7 @@ import { planD1Import,createD1ImportJob,applyD1ImportBatches,resumeD1Import,undo
 import type { D1ImportContext } from '../modules/import-kit/src/d1/types'
 import { fileSource, type Vendor } from './source'
 import { mapping } from './mapping'
+import { installAdoption } from './adoption'
 import { targets } from './target'
 import { coverage } from '../family/response-operations/schedules'
 import { fail } from '../family/response-operations/domain'
@@ -20,7 +21,7 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
   if(typeof input.source!=='string')fail('Supply the saved export file as text')
   const source=await fileSource(input.vendor,input.source),map=mapping(input.vendor,source,Date.now())
   const plan=await planD1Import(source,map,ctx).catch(error=>{throw (error as Error).message==='DUPLICATE_TARGET'?duplicateTargets(source,map):error})
-  if(action==='preview')return c.json({fingerprint:plan.fingerprint,counts:plan.counts,diagnostics:plan.diagnostics,items:plan.entries.map(e=>({kind:e.source.kind,id:e.source.sourceId,location:e.source.location,name:(e.source.payload as any).name??e.source.sourceId,rejection:e.rejection,unmapped:e.unmapped,effects:e.effects})),paging:'OFF',writes:0})
+  if(action==='preview')return c.json({fingerprint:plan.fingerprint,counts:plan.counts,diagnostics:plan.diagnostics,items:plan.entries.map(e=>({kind:e.source.kind,id:e.source.sourceId,location:e.source.location,name:(e.source.payload as any).fullName??(e.source.payload as any).name??(e.source.payload as any).summary??(e.source.payload as any).username??(e.source.payload as any).email??e.source.sourceId,rejection:e.rejection,unmapped:e.unmapped,effects:e.effects})),paging:'OFF',writes:0})
   if(input.confirm!==true||input.fingerprint!==plan.fingerprint)fail('Review this exact preview and confirm before applying',409)
   const job=await createD1ImportJob(plan,{...ctx,reviewedFingerprint:input.fingerprint,operationKey:input.operationKey})
   try{return c.json(await applyD1ImportBatches(job.id,ctx))}
@@ -44,6 +45,7 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
   const users=rows.filter(r=>r.targetKind==='user').map(r=>({id:r.targetId,name:(r.value as any).name,active:true,role:'responder'}))
   return c.json({paused:true,paging:'OFF',coverage:coverage((row.value as any).schedule,users,Date.parse(input.at)),users})
  })
+ installAdoption(api,body)
  // Erasing a person is destructive and final: administrator only, exact email, typed confirmation.
  api.post('/api/move-in/erase',async(c:any)=>{
   const input=await body(c),ctx=context(c,'opsgenie')

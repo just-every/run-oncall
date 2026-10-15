@@ -8,6 +8,8 @@ Only an admin can use the **Move-in kit**, the screen with the arrows icon in th
 
 Oncall reads one JSON file. It is an object with one entry per kind of data, and each entry is either a list or the response the service gave you (the one with a `data` field). Both work.
 
+A [sanitized example Opsgenie bundle](https://github.com/just-every/run-oncall/blob/main/tests/fixtures/opsgenie.json) shows the file structure. Replace its sample records with your own saved responses.
+
 **From Opsgenie**, save these under these names:
 
 - `users`
@@ -39,7 +41,21 @@ The file can be up to 500 KB and 500 objects. It will hold your people's names a
 4. Read the **Compatibility review**. It counts what mapped, what was rejected and what came across with differences, then lists every object with its reason. Nothing is skipped quietly.
 5. If you are happy, press **Confirm paused import**. Oncall applies exactly the preview you reviewed, so if you pick a different file you preview again first.
 
-The people, schedules and escalation policies land in **Paused imported data**. They do not get a sign-in, they do not appear as live schedules and they page no one. If the import is interrupted, choose it under **Saved import journal** and press **Resume import**.
+The people, schedules and escalation policies land in **Paused imported data**. They do not get a sign-in or page anyone. Schedules stay out of live coverage until you explicitly adopt them below. If the import is interrupted, choose it under **Saved import journal** and press **Resume import**.
+
+## Make an imported schedule live
+
+After the import has completed:
+
+1. Under **Paused imported data**, press **Make schedule live** beside the schedule.
+2. Choose a service already in this workspace. Create it under **Services** first if needed.
+3. Match every imported person to a different, active responder or admin in this workspace. Create missing members under **Team** first. Oncall does not guess identities from names or grant access to imported people.
+4. Review those mappings and press **Confirm live schedule · paging OFF**.
+5. Open **Schedules**. The adopted rotation and its overrides now appear there, including now/next and the private calendar. Check the coverage and add a backup if needed.
+
+Adoption preserves the source timezone, calendar hand-overs, validity and overrides. It refuses incomplete imports, missing or erased people, stale revisions, duplicate person mappings and schedule ID collisions. A concurrent member change, undo or erasure stops the write; reload and review again. Imported policies remain paused and paging stays off.
+
+Adoption is a native edit. **Undo this import** subsequently refuses with `NATIVE_EDIT_CONFLICT` and keeps the adopted schedule and the import. Edit the schedule under **Schedules**. Erasing an imported person affects the paused import and its journal, not the workspace members or the adopted native schedule; manage those separately.
 
 ## What the preview checks
 
@@ -62,19 +78,19 @@ People are matched by their exact email, so someone whose address merely contain
 - **Opsgenie:** a schedule with one daily or weekly rotation of individual people, a hand-over at an exact calendar minute and no time restrictions.
 - **PagerDuty:** a schedule with one current layer whose turns are whole days. Layers that ended before it began are kept as named history in the review, never as coverage. A layer in UTC maps directly; a layer in a zone with clock changes (for example America/New_York) maps only when its `final_schedule` agrees with Oncall's answer across a clock change, and otherwise is rejected with the first instant they differ.
 - **Overrides:** one person each, not overlapping.
-- **Escalation policies:** one or two steps, each handing to a single schedule after an ordinary "if not acknowledged" delay in minutes, with no repeats.
+- **Escalation policies:** one or two steps, each handing to a single schedule after an ordinary "if not acknowledged" delay in minutes, with no repeats. A first step with an immediate (0-minute) notification maps to **1 minute** in the paused policy. The preview explicitly flags this timing change as non-equivalent; the original stays in the journal. No policy is activated. Later steps must wait at least 1 minute.
 
 Oncall keeps the primary rotation. The backup is shown as an explicit gap, because a single source rotation is never relabelled as backup. See [Schedules and hand-overs](schedules.md) to add one.
 
 ## What stays different
 
-These are named in the preview rather than approximated. A schedule or policy with any of them is rejected whole, and the reason is listed:
+Apart from the explicitly flagged 0-to-1-minute first-step mapping above, unsupported behavior is named in the preview rather than approximated. A schedule or policy with any of them is rejected whole, and the reason is listed:
 
 - turns shorter than a day, and PagerDuty schedules outside UTC without a timeline that shows they agree across a clock change
 - disabled Opsgenie schedules, since they put no one on call
 - two layers active together, a layer still running when its replacement starts later, nested schedules, teams, and empty slots
 - overrides with more than one person, and time restrictions
-- policies with more than two steps, repeats, other conditions, several people at once, or a person instead of a schedule
+- policies with more than two steps, zero-minute later steps, repeats, other conditions, several people at once, or a person instead of a schedule
 - any rotation or rule field Oncall does not know
 
 Some things are not moved at all: notification rules (kept as notes only, never switched on), routes and event rules, maintenance windows, and incident history.

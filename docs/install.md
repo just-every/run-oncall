@@ -22,7 +22,16 @@ The first time, Oncall opens **Finish setup**. Name and Email are read-only; a d
 
 Treat the `RER_OPEN` link like a password: it signs whoever opens it in as the owner. Open it only on this computer.
 
-In a terminal, dev stays running until you stop it. Without an interactive terminal it can start in the background and return after printing the ready links; `rer dev --stop` stops it.
+`rer dev` can detach and return after printing the ready links. The app keeps running in the background; `rer dev --stop` stops it. If it is running in the foreground, Ctrl-C stops it too.
+
+Before the first `rer verify`, stop dev and preview, then install its browser using the dependencies `rer dev` (or `rer install`) already installed:
+
+```sh
+node node_modules/@playwright/test/cli.js install chromium
+rer verify
+```
+
+This command uses Node directly; no global pnpm is needed. On Linux, add `--with-deps` to the browser install command if system libraries are missing. `rer doctor` reports a missing verification browser and prints this command. `rer check` is silent on success (exit 0); `rer check --json` prints the result.
 
 ## Sign-in emails on your computer
 
@@ -32,7 +41,7 @@ The outbox needs this checkout's dev-key cookie. A fresh browser that goes strai
 
 ## Stop and start again
 
-Press Ctrl-C in the terminal, or run:
+Stop the background server with the command below. For a foreground run, Ctrl-C also works:
 
 ```sh
 rer dev --stop
@@ -70,11 +79,13 @@ Every command, flag and what it changes is in the [command reference](../RUN-LOC
 Update this checkout without resetting its data:
 
 ```sh
+rer dev --stop
+rer preview --stop
 git pull --ff-only
-rer deploy
+rer dev
 ```
 
-`rer` installs a pulled change of its own pin before it runs, so there is nothing to install by hand, and it provides the Node and pnpm versions this checkout pins. Hosted Oncall is on hold until an independent standby paging host is ready and a hosted release is approved. Until then, `rer deploy` refuses before any provider request. Paging stays OFF until a real-phone drill passes. Use `rer deploy --dry-run` to build and validate locally. Once hosting is approved, `rer deploy` deploys to your own Cloudflare account (it reads `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` from the environment), claims the owner you set up automatically and removes its one-time setup token; there is no token to copy or delete, and you sign in at the app address with an emailed link. An update keeps that owner. To take a hosted installation down again, with the same credentials:
+This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. No hosted deployment is needed. `rer` installs a pulled change of its own pin before it runs, so there is nothing to install by hand, and it provides the Node and pnpm versions this checkout pins. Hosted Oncall is on hold until an independent standby paging host is ready and a hosted release is approved. Until then, `rer deploy` refuses before any provider request. Paging stays OFF until a real-phone drill passes. Use `rer deploy --dry-run` to build and validate locally. Once hosting is approved, `rer deploy` deploys to your own Cloudflare account (it reads `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` from the environment), claims the owner you set up automatically and removes its one-time setup token; there is no token to copy or delete, and you sign in at the app address with an emailed link. An update keeps that owner. To take a hosted installation down again, with the same credentials:
 
 ```sh
 rer deploy --remove --yes

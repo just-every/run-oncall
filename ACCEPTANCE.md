@@ -1,4 +1,10 @@
-# Activation acceptance
+# What you can do
+
+Run Oncall locally and finish setup; add team members and services with runbooks; see who is on call now and next, create named-zone rotations and overrides, and download a private ICS feed. Declare an incident, record notes and decisions, follow its runbook, assign follow-ups and complete a review. Record monitoring alerts, route and replay them, preview an Opsgenie or PagerDuty move-in, and explicitly adopt reviewed schedules. Sign in by owner email link or member password, then export and restore your installation without transferring credentials.
+
+Hosted operation is on hold. Paging is OFF: keep your existing pager authoritative.
+
+## Maintained verification flows
 
 The flows below are acceptance requirements and verification entrypoints. Passing evidence must name the exact commit and actual command result; this document alone records no new passing run. `rer verify` invokes the maintained local journeys. No paging/provider/standby claim is made.
 
@@ -11,8 +17,8 @@ The flows below are acceptance requirements and verification entrypoints. Passin
 7. OC-021–022: tests/activation.mjs tests both documented-shape fixtures, zero-write preview, rejected-rule accounting, paused apply, authorization, review mismatch, malformed/credential input, atomic rollback, restart/resume, idempotence and undo preserving native edits.
 8. tests/activation-browser.mjs runs setup/dev identity and real keyboard-only incident declaration, notes, acknowledgement, schedule/override/preview at 1440 and 390 from committed HEAD in a fresh clone. It captures visible focus, checks literal hostile HTML, and causes a real HTTP stale-revision rejection from a second session: the alert announces failure, no saved claim appears, and server state is unchanged. Existing pointer move-in/replay and overflow checks remain. Screenshot output is copied outside the checkout to `../evidence/browser` (or `ONCALL_BROWSER_EVIDENCE`). Acceptance requires the passing run and inspection of its screenshots.
 
-Public landing requires Base's publication scan on the exact tree before each push with zero findings, and the public repository's **Oncall verification** CI green on the exact merged head. Fetch and merge immediately before a fast-forward-only push. These publication and CI requirements are independent of local journeys; they do not establish hosted readiness.
+Public landing requires Base's publication scan on the exact tree before each push with zero findings, and the public repository's **Oncall verification** CI green on the exact merged head. Fetch and rebase immediately before a fast-forward-only push. These publication and CI requirements are independent of local journeys; they do not establish hosted readiness.
 
-OC-018 uses published `rer` 0.2.13 and the effects declared in `OPERATIONS.json`: local servers bind loopback and actual Oncall deployment is held before provider requests. A successful local dry-run does not establish hosted readiness.
+OC-018 uses the exact published `rer` version pinned in package.json and the effects declared in `OPERATIONS.json`: local servers bind loopback and actual Oncall deployment is held before provider requests. A successful local dry-run does not establish hosted readiness.
 
 Obsolete synthetic-dispatch tests and the drill UI are removed because sending is no longer an accepted flow. Pure domain pin/structure tests are replaced by emitted public-flow proof; removal does not relax the preserved incident, archive or import guarantees.

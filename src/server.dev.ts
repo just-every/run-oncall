@@ -5,5 +5,12 @@ import worker from './server'
 import { withDevIdentity } from './modules/operator-auth/dev/index.mjs'
 import { authConfig, runtimeBindings, type Bindings } from './auth.server'
 import { devPersonas } from './dev-personas'
+import { workspaceBadge } from './dev-badge'
 
-export default withDevIdentity<Bindings, typeof worker>(worker, { bindings: runtimeBindings, config: authConfig, personas: devPersonas })
+const dev = withDevIdentity<Bindings, typeof worker>(worker, { bindings: runtimeBindings, config: authConfig, personas: devPersonas })
+export default {
+ ...dev,
+ async fetch(request:Parameters<typeof dev.fetch>[0],env:Bindings,execution:ExecutionContext) {
+  return workspaceBadge(await dev.fetch(request,env,execution),request,env,execution)
+ },
+}

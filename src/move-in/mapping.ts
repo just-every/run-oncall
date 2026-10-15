@@ -64,7 +64,7 @@ export function mapping(vendor:Vendor,source:SourceBundle,now:number):ImportMapp
  }
  const effect=(kind:string,id:string,value:any):MappingResult=>({effects:[{targetKind:kind,targetId:id,value:{...value,paused:true,paging:false,login:false}}]})
  return {version:'oncall-move-in-1',map(record){
-  const value=record.payload as any,label=value?.name??value?.summary??record.sourceId
+  const value=record.payload as any,label=value?.fullName??value?.name??value?.summary??value?.username??value?.email??record.sourceId
   try {
    if(record.kind==='users') {
     const email=mailbox(value.email??value.username)
@@ -88,6 +88,7 @@ export function mapping(vendor:Vendor,source:SourceBundle,now:number):ImportMapp
     const steps=value.rules??value.escalation_rules
     if(!Array.isArray(steps)||!steps.length||steps.length>2)throw Error(`Policy ${label}: missing or more than two steps`)
     if((value.repeat?.count??value.num_loops??0)!==0||value.repeatEnabled)throw Error(`Policy ${label}: repeats are unsupported`)
+    const differences:{field:string;reason:string}[]=[]
     const normalized=steps.map((step:any,index:number)=>{
      if(step.condition&&step.condition!=='if-not-acked')throw Error(`Policy ${label} step ${index+1}: notification condition ${step.condition}`)
      if(step.timeRestriction||step.restrictions?.length)throw Error(`Policy ${label} step ${index+1}: time restrictions`)
@@ -97,14 +98,15 @@ export function mapping(vendor:Vendor,source:SourceBundle,now:number):ImportMapp
      if(!['schedule','schedule_reference'].includes(target.type)||!schedules.has(scheduleId)||errors.has(scheduleId))throw Error(`Policy ${label} step ${index+1}: direct user, nested or unmapped schedule ${scheduleId}`)
      const minutes=step.escalation_delay_in_minutes??step.delay?.timeAmount
      if(step.delay&&step.delay.timeUnit!=='minutes')throw Error(`Policy ${label} step ${index+1}: unsupported delay unit`)
-     if(!Number.isSafeInteger(minutes)||minutes<1)throw Error(`Policy ${label} step ${index+1}: delay must be a whole number of at least 1 minute; immediate (0-minute) steps are not supported by this import`)
+     if(!Number.isSafeInteger(minutes)||minutes<0||(minutes===0&&index!==0))throw Error(`Policy ${label} step ${index+1}: delay must be a whole number of at least 1 minute after the first step`)
+     if(minutes===0)differences.push({field:'rules.0.delay',reason:`Policy ${label}: immediate first notification (0 minutes) is mapped to 1 minute in the paused policy. This changes timing; it is not equivalent. The original remains in the journal. No policy is activated and paging stays OFF.`})
      const allowed=['id','condition','recipient','targets','delay','escalation_delay_in_minutes','notifyType','timeRestriction','restrictions']
      const unknown=Object.keys(step).filter(k=>!allowed.includes(k));if(unknown.length)throw Error(`Policy ${label} step ${index+1}: unmapped rules ${unknown.join(', ')}`)
      if(step.notifyType&&step.notifyType!=='default')throw Error(`Policy ${label} step ${index+1}: notifyType ${step.notifyType}`)
-     return {scheduleId:`${vendor}:${scheduleId}`,delayMinutes:minutes,condition:'if-not-acked'}
+     return {scheduleId:`${vendor}:${scheduleId}`,delayMinutes:Math.max(1,minutes),condition:'if-not-acked'}
     })
     const result=effect('policy',`${vendor}:${record.sourceId}`,{name:label,steps:normalized,sourceId:record.sourceId})
-    result.unmapped=Object.keys(value).filter(k=>!['id','name','rules','escalation_rules','num_loops','repeat','repeatEnabled'].includes(k)).map(field=>({field,reason:`Policy ${label}: metadata is retained only, not an active rule`}))
+    result.unmapped=[...differences,...Object.keys(value).filter(k=>!['id','name','rules','escalation_rules','num_loops','repeat','repeatEnabled'].includes(k)).map(field=>({field,reason:`Policy ${label}: metadata is retained only, not an active rule`}))]
     return result
    }
    return {effects:[],rejection:`${record.kind} ${label}: unsupported object (incident history, routes, event rules, maintenance windows and notification rules are not migrated)`}

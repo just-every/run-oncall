@@ -68,6 +68,9 @@ try {
   assert.match(await (await fetch(origin)).text(),/href="\/signin"/,'confirmed installation gives guests a sign-in door');
   assert.match(await (await fetch(origin,{headers:{cookie}})).text(),/class="access"/,'validated native member opens the workspace');
   const oncallSession=await fetch(`${origin}/api/session`,{headers:{cookie}});assert.equal((await oncallSession.json()).member.role,'admin');assert.equal((await fetch(`${origin}/api/state`,{headers:{cookie}})).status,200);
+  const staleCookie = 'oncall_session=' + secret()
+  assert.equal((await (await fetch(origin+'/api/session',{headers:{cookie:staleCookie}})).json()).member,null,'an unknown installation cookie grants no identity')
+  assert.equal((await fetch(origin+'/api/state',{headers:{cookie:cookie+'; '+staleCookie}})).status,200,'an old installation cookie cannot mask a current email identity')
   const checkpoint=await (await fetch(origin+'/api/recovery/checkpoint',{headers:{cookie}})).json(),restored=await post('/api/recovery/restore',{mode:'replace',checkpoint},cookie);assert.equal(restored.status,200)
   const derived=restored.headers.getSetCookie().map(line=>line.split(';')[0]).join('; '),combined=cookie+'; '+derived
   assert.equal((await fetch(origin+'/api/state',{headers:{cookie:combined}})).status,200)
@@ -101,20 +104,38 @@ try {
     const confirmation = new URL(mail.match(/href="([^"]*\/auth\/confirm\?token=[^"]+)"/)[1].replaceAll('&amp;', '&'), origin)
     const signedIn = await post('/auth/confirm', { token: confirmation.searchParams.get('token') })
     assert.equal(signedIn.status, 303)
+    if (width === 1440) {
+      const ownerCookie = signedIn.headers.getSetCookie().map(line => line.split(';')[0]).join('; ')
+      assert.equal((await post('/api/members', { name: 'Password Member', password: 'member-testing-password', role: 'responder' }, ownerCookie)).status, 201)
+    }
     const context = await browser.newContext({ viewport: { width, height: 900 } })
     try {
-      await context.addCookies(signedIn.headers.getSetCookie().map(line => {
+      // Keep the real derived cookie from the now-revoked earlier login. A
+      // fresh email confirmation must still open the workspace in this browser.
+      await context.addCookies([...signedIn.headers.getSetCookie(), derived].map(line => {
         const pair = line.split(';')[0], index = pair.indexOf('=')
         return { name: pair.slice(0, index), value: pair.slice(index + 1), url: origin }
       }))
       const page = await context.newPage()
       await page.goto(origin)
+      assert.equal((await context.request.get(origin + '/api/state')).status(), 200)
       const authSignout = page.waitForResponse(response => new URL(response.url()).pathname === '/auth/signout')
       await page.getByRole('button', { name: 'Sign out', exact: true }).click()
       assert.equal((await authSignout).status(), 204)
-      await page.getByRole('link', { name: 'Sign in', exact: true }).waitFor()
+      await page.waitForURL(origin + '/signin')
+      await page.getByLabel('Email', { exact: true }).waitFor()
       await page.reload()
-      await page.getByRole('link', { name: 'Sign in', exact: true }).waitFor()
+      await page.getByLabel('Email', { exact: true }).waitFor()
+      assert.equal((await context.request.get(origin + '/api/state')).status(), 401)
+      await page.getByRole('link', { name: 'Sign in with a workspace password' }).click()
+      await page.getByLabel('Name', { exact: true }).fill('Password Member')
+      await page.getByLabel('Password', { exact: true }).fill('member-testing-password')
+      await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+      await page.waitForURL(origin + '/')
+      assert.equal((await (await context.request.get(origin + '/api/session')).json()).member.name, 'Password Member')
+      await page.getByRole('button', { name: 'Sign out', exact: true }).click()
+      await page.waitForURL(origin + '/signin')
+      await page.getByLabel('Email', { exact: true }).waitFor()
       assert.equal((await context.request.get(origin + '/api/state')).status(), 401)
     } finally { await context.close() }
   }

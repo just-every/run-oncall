@@ -67,6 +67,7 @@
 .oc-door-reload { margin-top: 18px; padding: 4px 0; border: 0; background: none; color: var(--oc-ink); font: inherit; text-decoration: underline; cursor: pointer; }
 .oc-door-confirm input:focus-visible, .oc-door-reload:focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 3px; }
 .oc-door-board { position: relative; min-width: 0; margin: 96px calc(-1 * var(--bleed)) 0 0; }
+.oc-door-sample { margin: 0 0 16px; padding: 0 var(--oc-gutter); color: var(--oc-muted); font-size: 14px; text-align: center; }
 
 /* Tablet and phone, as the hero stacks: the form first, then the board up close. */
 @media (max-width: 1179px) {

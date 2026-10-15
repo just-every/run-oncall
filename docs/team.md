@@ -20,7 +20,7 @@ Roles are checked on every request, so a change takes effect on the next thing t
 
 ## Add someone
 
-An admin uses **Add local member** with the person's **Name**, a **Role** and an **Initial local password** of at least 12 characters, then shares the password with them directly. Oncall sends no invitations.
+An admin fills in **Add local member** with the person's **Name**, a **Role** and an **Initial local password** of at least 12 characters, then presses **Create member** and shares the password with them directly. Oncall sends no invitations.
 
 To change someone's access later, use **Update access** on their card. **Reset local password** sets a new password and signs them out everywhere.
 

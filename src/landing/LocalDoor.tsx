@@ -36,8 +36,9 @@ export function LocalDoor() {
           </div>
           <RestoredOwner onLinked={w.refresh} />
         </section></HydrationUnit>
-        <HydrationUnit><div className="oc-door-board" aria-hidden="true">
-          <Handover notes={false} />
+        <HydrationUnit><div className="oc-door-board">
+          <p className="oc-door-sample">Sample rota · illustrative names and times</p>
+          <div aria-hidden="true"><Handover notes={false} /></div>
         </div></HydrationUnit>
       </main>
     </Site>

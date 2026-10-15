@@ -196,5 +196,8 @@
   "acceptance": {
     "document": "ACCEPTANCE.md"
   },
-  "environmentSources": {}
+  "environmentSources": {},
+  "configuration": {
+    "module": "scripts/operations-config.mjs"
+  }
 }

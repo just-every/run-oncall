@@ -24,6 +24,7 @@ function Workspace() {
   const [selected, setSelected] = useState("");
   const [query, setQuery] = useState("");
   const [declare, setDeclare] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [replay, setReplay] = useState<any>(null);
   const [handoff, setHandoff] = useState<any>(null);
   const [archive, setArchive] = useState<any>(null);
@@ -48,8 +49,8 @@ function Workspace() {
   const activeIncidents = s?.incidents.filter((i) => i.state !== "resolved").length ?? 0;
   const strandedSession = w.ready && !actor;
   useEffect(() => {
-    if (strandedSession) location.replace("/signin/local");
-  }, [strandedSession]);
+    if (strandedSession && !signingOut) location.replace("/signin/local");
+  }, [strandedSession, signingOut]);
   const admin = actor?.role === "admin";
   const canEdit = actor?.role !== "viewer";
   const incident =
@@ -149,12 +150,19 @@ function Workspace() {
           <span className="avatar">{actor.name.slice(0, 2).toUpperCase()}</span>
           <span>{actor.name}</span>
           <span className="muted">{actor.role}</span>
-          <button disabled={w.busy} onClick={() => w.run(async () => {
-            await request("/api/logout", {});
-            const response = await fetch("/auth/signout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-            if (!response.ok) throw Error(`Sign out failed (${response.status}); try again`);
-            location.replace("/");
-          }, undefined, "")}>Sign out</button>
+          <button disabled={w.busy || signingOut} onClick={async () => {
+            setSigningOut(true);
+            w.setError("");
+            try {
+              await request("/api/logout", {});
+              const response = await fetch("/auth/signout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+              if (!response.ok) throw Error(`Sign out failed (${response.status}); try again`);
+              location.replace("/signin");
+            } catch (error) {
+              setSigningOut(false);
+              w.setError((error as Error).message);
+            }
+          }}>Sign out</button>
         </div>
       </aside>
       <main className="workspace" id="main">
@@ -307,10 +315,14 @@ function Workspace() {
                 <div className="empty">
                   <h2>Ready when something needs coordination</h2>
                   <p>
-                    Set up a service and its runbook, then declare a real
-                    incident. Incoming alerts never declare one automatically.
+                    {s.services.length
+                      ? "Your services are ready. Declare an incident when something needs coordination."
+                      : "Set up a service and its runbook, then declare a real incident."}
+                    {" "}Incoming alerts never declare one automatically.
                   </p>
-                  <a href="#services">Set up services →</a>
+                  {s.services.length ? (
+                    canEdit && <button onClick={() => setDeclare(true)}>Start an incident</button>
+                  ) : <a href="#services">Set up services →</a>}
                 </div>
               )}
             </section>
@@ -488,7 +500,7 @@ function Workspace() {
                       {incident.actions.map((a) => (
                         <li className="owner action-item" key={a.id}>
                           <span className="avatar">
-                            {name(a.owner).slice(0, 2)}
+                            {name(a.owner).slice(0, 2).toUpperCase()}
                           </span>
                           <div className="person">
                             <div className="person-name">{a.title}</div>
@@ -1136,7 +1148,10 @@ function Workspace() {
                 <p>
                   Exports preserve original identities, incidents, events,
                   decisions, runbooks, reviews and actions. Authentication
-                  secrets and sessions are excluded.
+                  secrets and sessions are excluded. This archive covers coordination
+                  records; schedules and overrides stay as they are when you replace it.
+                  Use <code>rer export --output exports/installation.rer</code> with
+                  Oncall stopped for a complete installation archive, including schedules.
                 </p>
                 <button
                   className="primary"
@@ -1150,8 +1165,8 @@ function Workspace() {
                 <p>
                   Restore replaces application data. All sessions, source
                   credentials and other member passwords are removed. Your
-                  current password remains the only authenticated authority. An
-                  empty installation can map it to an archive administrator.
+                  current sign-in remains the only authenticated authority. An
+                  empty installation can map that identity to an archive administrator.
                 </p>
                 <label className="field">
                   Choose archive JSON
@@ -1187,7 +1202,7 @@ function Workspace() {
                         m.id === actor.id && m.active && m.role === "admin",
                     ) && (
                       <label className="field">
-                        Map current password to archive administrator
+                        Map current sign-in to archive administrator
                         <select
                           value={mapping}
                           onChange={(e) => setMapping(e.target.value)}

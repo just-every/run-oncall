@@ -13,6 +13,8 @@ import {receivedRequest} from './request-body'
 type Env=Bindings & {LOCAL_ONLY:string}
 export default withDemo({
   async fetch(request,env,execution) {
+    if (new URL(request.url).pathname === '/favicon.ico' && ['GET', 'HEAD'].includes(request.method))
+      return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
     const bindings=runtimeBindings(env);
     const state=await setupStateResponse(request,bindings);if(state)return state;

@@ -98,7 +98,7 @@
 }
 @media (max-width: 899px) {
   .board { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .right { grid-column: auto; display: flex; }
+  .right { grid-column: auto; display: flex; align-items: stretch; }
 }
 @media (max-width: 699px) {
   .incidents { padding: 16px 12px 12px; }

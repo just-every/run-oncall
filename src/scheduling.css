@@ -38,7 +38,9 @@
 
 .scheduling-panel { padding: 22px 22px 20px; border: 1px solid var(--app-line); border-radius: 14px; background: var(--app-panel); box-shadow: var(--app-shadow); overflow-wrap: anywhere; }
 .scheduling-panel > h2 { margin-bottom: 14px; }
-.scheduling-workspace > .scheduling-panel + .scheduling-panel, .scheduling-now-next { margin-top: 18px; }
+.scheduling-workspace > .scheduling-panel + .scheduling-panel { margin-top: 18px; }
+.scheduling-now-next { margin-bottom: 18px; }
+.scheduling-summary { margin-top: 18px; }
 .scheduling-panel > p + .scheduling-field { margin-top: 14px; }
 .scheduling-panel > p + button { margin-top: 12px; }
 .scheduling-panel > button + h3 { margin-top: 20px; }
@@ -152,8 +154,8 @@
 .scheduling-now-role p.next::before { background: var(--oc-next); box-shadow: 0 0 0 3px var(--oc-next-wash); }
 .scheduling-now-role .handoff { margin-top: 10px !important; padding-top: 10px; border-top: 1px solid var(--app-line); color: var(--oc-ink-soft); font-size: 14px; overflow-wrap: anywhere; }
 .scheduling-feed { margin-top: 14px !important; }
-.scheduling-now-next > p { color: var(--oc-ink-soft); }
-.scheduling-now-next > h2:not(:first-child) { margin: 28px 0 6px; padding-top: 22px; border-top: 1px solid var(--app-line); }
+.scheduling-now-next > p, .scheduling-summary > p { color: var(--oc-ink-soft); }
+.scheduling-summary > h2 { margin: 28px 0 6px; padding-top: 22px; border-top: 1px solid var(--app-line); }
 .scheduling-escalation fieldset { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 16px; align-items: end; }
 .scheduling-escalation .scheduling-field > span::first-letter { text-transform: uppercase; }
 .scheduling-escalation button { grid-column: 1 / -1; justify-self: start; }

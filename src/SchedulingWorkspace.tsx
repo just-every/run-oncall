@@ -1,4 +1,4 @@
-import { ScheduleSummary } from './ScheduleSummary';
+import { ScheduleNowNext, ScheduleSummary } from './ScheduleSummary';
 import { cloneElement, isValidElement, useCallback, useEffect, useId, useRef, useState, type ComponentProps, type FormEvent, type ReactNode } from "react";
 import type { Member, State } from "./family/response-operations/domain";
 import type { Schedule, Rotation, Coverage, Override } from "./family/response-operations/schedules";
@@ -18,6 +18,7 @@ type PreviewResult = { scheduleId: string; timezone: string; revision: number; f
 type ReplayResult = { job: string; data: unknown };
 const titleCase = (value: string) => value[0].toUpperCase() + value.slice(1);
 const iso = (at: number) => new Date(at).toISOString();
+const utcDay = () => Math.floor(Date.now() / 86400000) * 86400000;
 const formatClock = (at: number | null) => at === null ? "None" : iso(at);
 const explain = (error: unknown) => error instanceof Error ? error.message : "Request failed; no success confirmed";
 const utcHint = "Enter UTC date and time. Your device timezone is not used; seconds and milliseconds are preserved.";
@@ -37,10 +38,10 @@ function utcClock(value: string, label: string): number {
   return at;
 }
 function newSchedule(service: string): Schedule {
-  const now = Date.now();
-  const rotation: Rotation = { anchorLocal: iso(now).slice(0, 16), periodDays: 1, members: [], ambiguity: "earlier" };
+  const start = utcDay();
+  const rotation: Rotation = { anchorLocal: iso(start).slice(0, 16), periodDays: 1, members: [], ambiguity: "earlier" };
   return { id: `schedule-${crypto.randomUUID().slice(0, 8)}`, name: "", service,
-    revision: 0, timezone: "UTC", validFrom: iso(now - 86400000), validUntil: null,
+    revision: 0, timezone: "UTC", validFrom: iso(start), validUntil: null,
     primary: { ...rotation, members: [] }, backup: { ...rotation, members: [] }, overrides: [] };
 }
 function Icon({ name }: { name: "calendar" | "clock" | "people" | "bolt" | "check" | "target" }) {
@@ -75,8 +76,8 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
   const [selectedSchedule, setSelectedSchedule] = useState("");
   const [draft, setDraft] = useState<Schedule | null>(null);
   const [preview, setPreview] = useState<PreviewResult | null>(null);
-  const [previewFrom, setPreviewFrom] = useState(() => iso(Date.now()));
-  const [previewTo, setPreviewTo] = useState(() => iso(Date.now() + 86400000));
+  const [previewFrom, setPreviewFrom] = useState(() => iso(utcDay()));
+  const [previewTo, setPreviewTo] = useState(() => iso(utcDay() + 86400000));
   const admin = actor.active && actor.role === "admin";
   const responder = actor.active && actor.role !== "viewer";
   const readGeneration = useRef(0);
@@ -206,12 +207,13 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
     {!data ? <div className="scheduling-panel scheduling-loading"><p>{error ? "Scheduling data could not be loaded." : "Loading saved scheduling records…"}</p><button type="button" onClick={refresh} disabled={busy}>Retry scheduling load</button></div> : <>
       <div className="scheduling-selection">
         <Field label="Schedule"><select value={selectedSchedule} onChange={e => chooseSchedule(e.target.value)} disabled={busy}><option value="">Choose a saved schedule</option>{data.schedules.map(s => <option key={s.id} value={s.id}>{s.name} · {serviceName(s.service)} · revision {s.revision}</option>)}</select></Field>
-        {admin && <button type="button" disabled={busy || !state.services.length} onClick={() => { setSelectedSchedule(""); setDraft(newSchedule(state.services[0].id)); setPreview(null); setError(""); setNotice(""); }}><span aria-hidden="true">＋ </span>New schedule</button>}
+        {admin && <button type="button" disabled={busy || !state.services.length} onClick={() => { const schedule = newSchedule(state.services[0].id); setSelectedSchedule(""); setDraft(schedule); setPreviewFrom(schedule.validFrom); setPreviewTo(iso(Date.parse(schedule.validFrom) + 86400000)); setPreview(null); setError(""); setNotice(""); }}><span aria-hidden="true">＋ </span>New schedule</button>}
         {!admin && <Tag>Read-only schedule configuration</Tag>}
       </div>
+      {savedSchedule && <ScheduleNowNext schedule={savedSchedule} state={state} request={request} />}
       <div className="scheduling-schedule-grid">
         <div className="scheduling-panel scheduling-editor">
-          <div className="scheduling-panel-heading"><Icon name="calendar" /><div><h2>{draft ? (draft.revision ? draft.name : "New schedule") : "Service schedules"}</h2><p>{draft ? `${serviceName(draft.service)} · ${draft.revision ? `editing revision ${draft.revision}` : "unsaved configuration"}` : "Own primary and backup calendar-day rotations."}</p></div><Tag tone="blue">Service</Tag></div>
+          <div className="scheduling-panel-heading"><Icon name="calendar" /><div><h2>{draft ? (draft.revision ? draft.name : "New schedule") : "Service schedules"}</h2><p>{draft ? `${serviceName(draft.service)} · ${draft.revision ? `${admin ? "editing" : "saved"} revision ${draft.revision}` : "unsaved configuration"}` : "Own primary and backup calendar-day rotations."}</p></div><Tag tone="blue">Service</Tag></div>
           {!draft ? <Empty title={data.schedules.length ? "Choose a schedule" : "No schedules yet"}><p>{admin ? "Create a schedule for a persisted service, then verify its coverage." : "An administrator can create schedules for your services."}</p>{!state.services.length && <a href="#services">Create a service first →</a>}<a href="#team">Manage responder access →</a></Empty> : <form onSubmit={saveSchedule}>
             <fieldset disabled={!admin || busy} className="scheduling-editor-fields">
               <div className="scheduling-form-grid three">
@@ -270,6 +272,6 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
         </aside>
       </div>
     </>}
-    {savedSchedule && <ScheduleSummary schedule={savedSchedule} state={state} admin={admin} request={request} onSaveStart={() => { setError(""); setNotice(""); }} onSaved={() => setNotice("Escalation data saved")} />}
+    {savedSchedule && <ScheduleSummary schedule={savedSchedule} admin={admin} request={request} onSaveStart={() => { setError(""); setNotice(""); }} onSaved={() => setNotice("Escalation data saved")} />}
   </section>;
 }

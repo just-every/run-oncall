@@ -58,7 +58,7 @@ export function mapSchedule(vendor:Vendor,input:any,emails:Map<string,string>,no
  const unknown=[...Object.keys(input).filter(k=>!keys.includes(k)),...(vendor==='opsgenie'?input.rotations:input.schedule_layers).flatMap((l:any)=>Object.keys(l).filter(k=>!layerKeys.includes(k)).map(k=>`rotation.${k}`))]
  if(unknown.length)throw Error(`${label}: unknown rotation/rule fields ${unknown.join(', ')}`)
  const unmapped=[{field:'backup',reason:'Source has one rotation; backup is an explicit gap. No backup authority is inferred.'}]
- for(const key of keys.filter(k=>!['id','name','timezone','time_zone','rotations','schedule_layers'].includes(k)))if(input[key]!==undefined)unmapped.push({field:key,reason:'Retained source metadata; not an active Oncall rule. Overrides must be supplied in the overrides export.'})
+ for(const key of keys.filter(k=>!['id','name','timezone','time_zone','rotations','schedule_layers'].includes(k)))if(input[key]!==undefined)unmapped.push({field:key,reason:'Retained source metadata; not an active Oncall rule.'})
  for(const ended of history)unmapped.push({field:'schedule_layers.history',reason:`Ended layer ${ended.name} (${ended.start} → ${ended.end}) is retained as history only; it is not concurrent coverage`})
  return {schedule,unmapped,history,zone}
 }
