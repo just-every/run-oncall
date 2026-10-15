@@ -14,7 +14,7 @@ export function ReplayComparison({ result, members }: { result: Result; members:
       <h3>{row.eventId}</h3>
       <h4>Historical decision</h4>{decision(row.historical, row.historicalEvaluation?.members ?? members)}
       <h4>Proposed decision</h4>{decision(row.proposed, members)}
-      <small>Evaluated {new Date(row.proposedEvaluation).toLocaleString()}</small>
+      <p><small>Evaluated {new Date(row.proposedEvaluation).toLocaleString()}</small></p>
     </article>)}
     {!result.decisions.length && <p>No events supplied. Choose accepted events or paste events using the documented JSON fields.</p>}
   </section>;
