@@ -13,9 +13,11 @@ Press **New schedule** and fill in:
 - **Timezone (IANA)**: a named zone such as `Europe/London` or `America/New_York`, so hand-overs follow the local clock.
 - **Valid from (UTC)** and, if the schedule ends, **Valid until (UTC, optional)**.
 
+Validity bounds take ISO 8601 UTC timestamps, such as `2026-10-15T07:00:00.000Z`. Override and coverage-preview date/time controls also use UTC, regardless of your device timezone; seconds and milliseconds are preserved.
+
 Then set each rotation:
 
-1. **Rotation anchor (local)**: the local date and time of the first hand-over, for example Monday 09:00.
+1. **Rotation anchor (local)**: the local date and time of the first hand-over, for example Monday 09:00. Enter the date and time on a clock in the schedule’s named zone. Hand-overs follow that zone through daylight-saving changes.
 2. **Interval (calendar days)**: how long each turn lasts, from 1 to 366 days. Seven days means a weekly rota.
 3. **Responders (in order)**: add people with **Add primary responder** or **Add backup responder** and put them in order with the arrows.
 

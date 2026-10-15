@@ -67,7 +67,11 @@ export async function authResponse(request: Request, original: Bindings): Promis
   const gate = env.MAIL_PROVIDER === 'development' ? devGate({ key: env.RER_DEV_KEY, origin: env.AUTH_ORIGIN, local: env.AUTH_LOCAL === 'true' }) : null
   if (!gate) return devNotFound()
   if (url.pathname === '/__dev/key') return await gate.exchange(request) ?? devNotFound()
-  if (!await gate.admits(request)) return devNotFound()
+  if (!await gate.admits(request)) {
+   if (!admitted(request, env.AUTH_ORIGIN) || !['GET', 'HEAD'].includes(request.method)) return devNotFound()
+   const page = await html('<h1>Open the local development outbox</h1><p>This browser needs the private link from the terminal running this checkout. Messages stay protected until you open it.</p><ol><li>In this checkout, run <code>rer dev --as signed-out</code>.</li><li>Open the <code>RER_OPEN</code> link it prints in this same browser.</li><li>Return to sign-in and choose <strong>Open the local development outbox</strong>.</li></ol><p>No external email is sent. Keep the terminal link private.</p><p><a href="/signin">Return to sign-in</a></p>')
+   return new Response(request.method === 'HEAD' ? null : page.body, { status: 404, headers: page.headers })
+  }
   return await createDevelopmentOutboxHandler({ local: true, origin: env.AUTH_ORIGIN, outbox: createD1DevelopmentOutbox({ db: env.DB }) })(request) ?? devNotFound()
  }
  // The shared server-rendered sign-in page: plain forms that work before any script.

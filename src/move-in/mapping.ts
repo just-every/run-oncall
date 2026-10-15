@@ -97,7 +97,7 @@ export function mapping(vendor:Vendor,source:SourceBundle,now:number):ImportMapp
      if(!['schedule','schedule_reference'].includes(target.type)||!schedules.has(scheduleId)||errors.has(scheduleId))throw Error(`Policy ${label} step ${index+1}: direct user, nested or unmapped schedule ${scheduleId}`)
      const minutes=step.escalation_delay_in_minutes??step.delay?.timeAmount
      if(step.delay&&step.delay.timeUnit!=='minutes')throw Error(`Policy ${label} step ${index+1}: unsupported delay unit`)
-     if(!Number.isSafeInteger(minutes)||minutes<1)throw Error(`Policy ${label} step ${index+1}: invalid delay`)
+     if(!Number.isSafeInteger(minutes)||minutes<1)throw Error(`Policy ${label} step ${index+1}: delay must be a whole number of at least 1 minute; immediate (0-minute) steps are not supported by this import`)
      const allowed=['id','condition','recipient','targets','delay','escalation_delay_in_minutes','notifyType','timeRestriction','restrictions']
      const unknown=Object.keys(step).filter(k=>!allowed.includes(k));if(unknown.length)throw Error(`Policy ${label} step ${index+1}: unmapped rules ${unknown.join(', ')}`)
      if(step.notifyType&&step.notifyType!=='default')throw Error(`Policy ${label} step ${index+1}: notifyType ${step.notifyType}`)

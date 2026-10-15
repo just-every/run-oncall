@@ -77,6 +77,8 @@
 .scheduling-override { margin-top: 14px; padding: 14px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper); }
 .scheduling-save { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 14px; padding: 14px 16px; border: 1px solid #d6e3d1; border-radius: 12px; background: #eef3ea; }
 .scheduling-save > div { display: flex; align-items: center; gap: 10px; color: var(--app-sage-ink); font-size: 15px; font-weight: 550; }
+.scheduling-save.unsaved { border-color: var(--app-line); background: var(--oc-paper-deep); }
+.scheduling-save.unsaved > div { color: var(--oc-ink-soft); }
 .scheduling-workspace .scheduling-primary { border-color: var(--oc-ink); background: var(--oc-ink); color: var(--oc-surface); }
 .scheduling-workspace .scheduling-primary:hover:not(:disabled) { background: #2a3a48; }
 .scheduling-reload { margin: 0 24px 22px; }

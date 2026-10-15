@@ -7,6 +7,7 @@ import { SchedulingWorkspace } from "../SchedulingWorkspace";
 import type { Incident } from "../family/response-operations/domain";
 import { Mark } from "../landing/Mark";
 import { NavIcon } from "../app/NavIcon";
+import { ReplayComparison } from "../app/ReplayComparison";
 import "../app/shell.css";
 import "../app/incidents.css";
 export const Route = createFileRoute("/")({ component: Workspace });
@@ -28,6 +29,14 @@ function Workspace() {
   const [archive, setArchive] = useState<any>(null);
   const [mapping, setMapping] = useState("");
   const [pendingSteps, setPendingSteps] = useState<Record<string, boolean>>({});
+  useEffect(() => { w.setNotice(""); w.setError(""); }, [page]);
+  useEffect(() => {
+    if (page !== "alerts") return;
+    const update = () => { if (document.visibilityState === "visible") void w.refresh().catch(e => w.setError(e.message)); };
+    const timer = window.setInterval(update, 10000);
+    window.addEventListener("focus", update);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", update); };
+  }, [page]);
   useEffect(() => {
     const update = () => setPage(location.hash.slice(1) || "incidents");
     update();
@@ -140,7 +149,12 @@ function Workspace() {
           <span className="avatar">{actor.name.slice(0, 2).toUpperCase()}</span>
           <span>{actor.name}</span>
           <span className="muted">{actor.role}</span>
-          <button onClick={async () => { await fetch("/api/logout", {method:"POST",headers:{"Content-Type":"application/json"},body:"{}"}); await fetch("/auth/signout", {method:"POST",redirect:"manual"}); location.reload(); }}>Sign out</button>
+          <button disabled={w.busy} onClick={() => w.run(async () => {
+            await request("/api/logout", {});
+            const response = await fetch("/auth/signout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+            if (!response.ok) throw Error(`Sign out failed (${response.status}); try again`);
+            location.replace("/");
+          }, undefined, "")}>Sign out</button>
         </div>
       </aside>
       <main className="workspace" id="main">
@@ -273,7 +287,7 @@ function Workspace() {
                         className={`dot ${i.state === "resolved" ? "green" : "red"}`}
                       />
                       <span>{i.id.slice(0, 8)}</span>
-                      <span className={`priority sev-${i.severity}`}>{i.severity}</span>
+                      <span className={`priority ${i.state === "resolved" ? "state-resolved" : `sev-${i.severity}`}`}>{i.severity} {i.state === "resolved" && "· resolved"}</span>
                     </div>
                     <h3>{i.title}</h3>
                     <p className="service">
@@ -304,7 +318,7 @@ function Workspace() {
               <>
                 <section className="panel detail">
                   <div className="detail-heading">
-                    <span className="dot" />
+                    <span className={`dot ${incident.state === "resolved" ? "green" : "red"}`} />
                     <span>{incident.id.slice(0, 8)}</span>
                     <span className={`priority sev-${incident.severity}`}>{incident.severity}</span>
                   </div>
@@ -421,7 +435,7 @@ function Workspace() {
                         }
                       }}
                     >
-                      Inspect pager / chat / Lamp handoff
+                      Inspect unsent pager / chat / status-page handoff
                     </button>
                     {handoff && <pre>{JSON.stringify(handoff, null, 2)}</pre>}
                   </section>
@@ -728,6 +742,7 @@ function Workspace() {
                 label="Compare decisions"
                 onSubmit={async (data) => {
                   try {
+                    w.setNotice(""); w.setError(""); setReplay(null);
                     const r = await request("/api/replay", {
                       events: JSON.parse(data.events),
                     });
@@ -747,9 +762,7 @@ function Workspace() {
                 />
               </Form>
               {replay && (
-                <pre aria-label="Replay comparison">
-                  {JSON.stringify(replay, null, 2)}
-                </pre>
+                  <ReplayComparison result={replay} members={s.members} />
               )}
             </section>
           </div>
@@ -760,7 +773,7 @@ function Workspace() {
               <h2>Alerts</h2>
               <p>
                 Signals remain separate from incidents. Recovery affects only
-                its lifecycle generation.
+                its lifecycle generation. This list refreshes every 10 seconds while visible; use Refresh for an immediate update.
               </p>
               {s.alerts.map((a) => (
                 <article className="service-card" key={a.id}>
@@ -956,7 +969,7 @@ function Workspace() {
                 </Form>
               </details>
               <p className="muted">
-                Endpoint: /api/ingress/SOURCE · 64 KiB limit · no external sends
+                Endpoint: /api/ingress/SOURCE · 64 KiB limit · no external sends · <a href="/docs/incidents#send-an-alert-event">JSON fields and curl example</a>
               </p>
             </section>
           </div>

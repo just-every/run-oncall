@@ -1,5 +1,5 @@
 import { ScheduleSummary } from './ScheduleSummary';
-import { cloneElement, isValidElement, useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { cloneElement, isValidElement, useCallback, useEffect, useId, useRef, useState, type ComponentProps, type FormEvent, type ReactNode } from "react";
 import type { Member, State } from "./family/response-operations/domain";
 import type { Schedule, Rotation, Coverage, Override } from "./family/response-operations/schedules";
 import type { EscalationPolicy, EscalationJob, SyntheticBehavior } from "./family/response-operations/escalation";
@@ -20,6 +20,14 @@ const titleCase = (value: string) => value[0].toUpperCase() + value.slice(1);
 const iso = (at: number) => new Date(at).toISOString();
 const formatClock = (at: number | null) => at === null ? "None" : iso(at);
 const explain = (error: unknown) => error instanceof Error ? error.message : "Request failed; no success confirmed";
+const utcHint = "Enter UTC date and time. Your device timezone is not used; seconds and milliseconds are preserved.";
+function UtcInput({ value, onChange, ...props }: Omit<ComponentProps<"input">, "value" | "onChange" | "type" | "step"> & { value: string; onChange: (value: string) => void }) {
+  return <input {...props} type="datetime-local" step="0.001" value={value.replace(/Z$/, "")} onChange={event => {
+    const entered = event.target.value;
+    const [clock, fraction = ""] = entered.split(".");
+    onChange(entered ? `${clock.length === 16 ? `${clock}:00` : clock}.${fraction.padEnd(3, "0")}Z` : "");
+  }} />;
+}
 function utcClock(value: string, label: string): number {
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value))
     throw Error(`${label} must be a UTC ISO timestamp ending in Z`);
@@ -194,7 +202,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
       <button type="button" disabled={busy} onClick={refresh}>Refresh scheduling</button>
     </div>
     <div className="scheduling-feedback" aria-live="polite" role="status">{notice}</div>
-    {error && <div className="scheduling-error" role="alert"><strong>Action needs attention</strong><p>{error}</p><span>Edits remain available. Refresh and reload the saved version before retrying a stale write.</span></div>}
+    {error && <div className="scheduling-error" role="alert"><strong>Action needs attention</strong><p>{error}</p><span>Edits remain available.</span></div>}
     {!data ? <div className="scheduling-panel scheduling-loading"><p>{error ? "Scheduling data could not be loaded." : "Loading saved scheduling records…"}</p><button type="button" onClick={refresh} disabled={busy}>Retry scheduling load</button></div> : <>
       <div className="scheduling-selection">
         <Field label="Schedule"><select value={selectedSchedule} onChange={e => chooseSchedule(e.target.value)} disabled={busy}><option value="">Choose a saved schedule</option>{data.schedules.map(s => <option key={s.id} value={s.id}>{s.name} · {serviceName(s.service)} · revision {s.revision}</option>)}</select></Field>
@@ -219,13 +227,13 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
               <div className="scheduling-rotations">
                 {(["primary", "backup"] as const).map(role => <section className="scheduling-rotation" key={role} aria-label={`${titleCase(role)} rotation`}>
                   <h3><Icon name="people" />{titleCase(role)} responders <small>(in order)</small></h3>
-                  <Field label={`${titleCase(role)} rotation anchor (local)`} hint={`Calendar minute in ${draft.timezone}; not a UTC instant.`}><input required type="datetime-local" value={draft[role].anchorLocal} onChange={e => patchRotation(role, { anchorLocal: e.target.value })} /></Field>
+                  <Field label={`${titleCase(role)} rotation anchor (local)`} hint={`Enter the date and time on a clock in ${draft.timezone}. Handovers follow this timezone, including daylight saving changes.`}><input required type="datetime-local" value={draft[role].anchorLocal} onChange={e => patchRotation(role, { anchorLocal: e.target.value })} /></Field>
                   <div className="scheduling-form-grid two">
                     <Field label={`${titleCase(role)} interval (calendar days)`}><input required type="number" min={1} max={366} value={draft[role].periodDays} onChange={e => patchRotation(role, { periodDays: Number(e.target.value) })} /></Field>
                     <Field label={`${titleCase(role)} repeated time handling`}><select value={draft[role].ambiguity} onChange={e => patchRotation(role, { ambiguity: e.target.value as Rotation["ambiguity"] })}><option value="earlier">Earlier occurrence</option><option value="later">Later occurrence</option><option value="reject">Reject</option></select></Field>
                   </div>
                   <ol className="scheduling-member-slots">{draft[role].members.map((id, index) => <li key={`${role}-${index}`}>
-                    <span className="scheduling-slot-index">{index + 1}.</span><span className="scheduling-avatar" aria-hidden="true">{memberName(id).slice(0, 2).toUpperCase()}</span>
+                    <span className="scheduling-slot-index">{index + 1}.</span><span className="scheduling-avatar" aria-hidden="true">{id ? memberName(id).slice(0, 2).toUpperCase() : <Icon name="people" />}</span>
                     <Field label={`${titleCase(role)} responder ${index + 1}`}><select required value={id} onChange={e => patchRotation(role, { members: draft[role].members.map((member, i) => i === index ? e.target.value : member) })}>{optionsForMember(id)}</select></Field>
                     <div className="scheduling-slot-actions"><button type="button" aria-label={`Move ${role} responder ${index + 1} up`} disabled={index === 0} onClick={() => moveSlot(role, index, -1)}>↑</button><button type="button" aria-label={`Move ${role} responder ${index + 1} down`} disabled={index === draft[role].members.length - 1} onClick={() => moveSlot(role, index, 1)}>↓</button><button type="button" aria-label={`Remove ${role} responder ${index + 1}`} onClick={() => patchRotation(role, { members: draft[role].members.filter((_, i) => i !== index) })}>×</button></div>
                   </li>)}</ol>
@@ -240,11 +248,11 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
                 {!draft.overrides.length && <p className="scheduling-muted">No overrides. Calendar rotations determine coverage.</p>}
                 {draft.overrides.map((override, index) => <div className="scheduling-override" key={index}>
                   <div className="scheduling-form-grid three"><Field label={`Override ${index + 1} ID`}><input required value={override.id} onChange={e => patchOverride(index, { id: e.target.value })} /></Field><Field label={`Override ${index + 1} role`}><select value={override.role} onChange={e => patchOverride(index, { role: e.target.value as Override["role"] })}><option value="primary">Primary</option><option value="backup">Backup</option></select></Field><Field label={`Override ${index + 1} responder`}><select value={override.member ?? ""} onChange={e => patchOverride(index, { member: e.target.value || null })}>{optionsForMember(override.member ?? "", true)}</select></Field></div>
-                  <div className="scheduling-form-grid two"><Field label={`Override ${index + 1} start (UTC)`}><input required value={override.start} onChange={e => patchOverride(index, { start: e.target.value })} /></Field><Field label={`Override ${index + 1} end (UTC)`}><input required value={override.end} onChange={e => patchOverride(index, { end: e.target.value })} /></Field></div>
+                  <div className="scheduling-form-grid two"><Field label={`Override ${index + 1} start (UTC)`} hint={utcHint}><UtcInput required value={override.start} onChange={start => patchOverride(index, { start })} /></Field><Field label={`Override ${index + 1} end (UTC)`} hint={utcHint}><UtcInput required value={override.end} onChange={end => patchOverride(index, { end })} /></Field></div>
                   <button type="button" aria-label={`Remove override ${index + 1}`} onClick={() => patchSchedule({ overrides: draft.overrides.filter((_, i) => i !== index) })}>Remove interval</button>
                 </div>)}
               </section>
-              {admin && <div className="scheduling-save"><div><Icon name="check" /><span>{draft.revision ? `Editing saved revision ${draft.revision}` : "New configuration is not saved"}</span></div><button className="scheduling-primary" type="submit">Save schedule</button></div>}
+              {admin && <div className={`scheduling-save${!draft.revision || dirty ? " unsaved" : ""}`}><div><Icon name={!draft.revision || dirty ? "clock" : "check"} /><span>{!draft.revision ? "New configuration is not saved" : dirty ? `Unsaved changes to revision ${draft.revision}` : `Editing saved revision ${draft.revision}`}</span></div><button className="scheduling-primary" type="submit">Save schedule</button></div>}
             </fieldset>
             {savedSchedule && <button type="button" disabled={busy} className="scheduling-reload" onClick={reloadSchedule}>Reload saved version</button>}
           </form>}
@@ -252,7 +260,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
         <aside className="scheduling-coverage-column">
           <section className="scheduling-panel scheduling-coverage"><h2><Icon name="calendar" />Coverage windows <Tag>{preview?.windows.length ?? 0}</Tag></h2>
             <p className="scheduling-muted">Preview the saved configuration; no timer or delivery is created.</p>
-            <form onSubmit={previewCoverage}><fieldset disabled={busy || !savedSchedule}><Field label="Preview from (UTC)"><input required value={previewFrom} onChange={e => setPreviewFrom(e.target.value)} /></Field><Field label="Preview to (UTC)"><input required value={previewTo} onChange={e => setPreviewTo(e.target.value)} /></Field><button type="submit">Preview coverage</button></fieldset></form>
+            <form onSubmit={previewCoverage}><fieldset disabled={busy || !savedSchedule}><Field label="Preview from (UTC)" hint={utcHint}><UtcInput required value={previewFrom} onChange={setPreviewFrom} /></Field><Field label="Preview to (UTC)" hint={utcHint}><UtcInput required value={previewTo} onChange={setPreviewTo} /></Field><button type="submit">Preview coverage</button></fieldset></form>
             {dirty && <p className="scheduling-warning">Unsaved edits are not included in this preview.</p>}
             {!preview ? <p className="scheduling-muted">Choose a saved schedule and evaluate a bounded time range to inspect coverage.</p> : <><p className="scheduling-muted">Assignments at preview start: {formatClock(preview.from)}</p><div className="scheduling-coverage-rows">{(["primary", "backup"] as const).map(role => <div key={role} className="scheduling-coverage-row"><Icon name="clock" /><div><strong>{titleCase(role)}</strong><span>{memberName(currentCoverage?.[role] ?? null)}</span><small>{preview.timezone}</small></div><Tag tone={currentCoverage?.[role] ? "good" : "warn"}>{currentCoverage?.[role] ? "Assigned" : "Gap"}</Tag></div>)}</div></>}
           </section>
@@ -262,6 +270,6 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
         </aside>
       </div>
     </>}
-    {savedSchedule && <ScheduleSummary schedule={savedSchedule} state={state} admin={admin} request={request} />}
+    {savedSchedule && <ScheduleSummary schedule={savedSchedule} state={state} admin={admin} request={request} onSaveStart={() => { setError(""); setNotice(""); }} onSaved={() => setNotice("Escalation data saved")} />}
   </section>;
 }

@@ -6,10 +6,11 @@ import { commandAdapter as createCommandAdapter } from '@runeditrun/rer/adapter'
 import { refuse } from '@runeditrun/rer/errors';
 import { ownerDeploy } from '@runeditrun/rer/deploy';
 import { localPortability } from '@runeditrun/rer/portability';
+import { labels } from '@runeditrun/rer/local-installer';
 import * as model from './ui/seed.mjs';
 
 export { selectLocalState };
-const lifecycle = operatorInstaller({
+const baseLifecycle = operatorInstaller({
  database: 'oncall-local', features: model.features,
  async prepare({ root, input, store }) {
   // export and import run prepare without answers; the saved branding stays.
@@ -18,6 +19,17 @@ const lifecycle = operatorInstaller({
   await writeFile(join(root, 'src/branding.json'), JSON.stringify({ name: input.APP_NAME, primaryColor: input.PRIMARY_COLOR }, null, 2) + '\n');
  },
 });
+const lifecycle = {
+ ...baseLifecycle,
+ run(root, input, store, onApp, signal, options = {}) {
+  if (options.verb !== 'setup') return baseLifecycle.run(root, input, store, onApp, signal, options);
+  const setupStore = Object.create(store);
+  setupStore.step = (label, ...args) => store.step(label === labels.complete
+   ? 'Local setup is ready. The temporary app stops when setup exits; run rer dev to start Oncall.'
+   : label, ...args);
+  return baseLifecycle.run(root, input, setupStore, onApp, signal, options);
+ },
+};
 export const adapter = lifecycle;
 export const { install } = lifecycle;
 export const commandAdapter = createCommandAdapter(lifecycle, {

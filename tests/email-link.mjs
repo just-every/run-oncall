@@ -10,6 +10,7 @@ import { randomBytes } from 'node:crypto'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { chromium } from '@playwright/test'
 
 // Each request closes its connection: a pooled one the local Worker closed while the test read D1 through wrangler would fail the next request before it is sent.
 const fetch = (url, init = {}) => globalThis.fetch(url, { ...init, headers: { ...init.headers, connection: 'close' } })
@@ -25,7 +26,7 @@ await writeFile(join(directory, 'local.env'), Object.entries(vars).map(([key, va
 const wrangler = ['node_modules/wrangler/bin/wrangler.js', '--config', 'dist/server/wrangler.json']
 execFileSync(process.execPath, [wrangler[0], 'd1', 'migrations', 'apply', 'DB', '--local', '--persist-to', directory, ...wrangler.slice(1)], { stdio: 'ignore', env: { ...process.env, CI: 'true', WRANGLER_SEND_METRICS: 'false' } })
 const launch = () => spawn(process.execPath, [wrangler[0], 'dev', ...wrangler.slice(1), '--inspector-port', '0', '--local', '--persist-to', directory, '--ip', '127.0.0.1', '--port', String(port), '--env-file', join(directory, 'local.env')], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, WRANGLER_SEND_METRICS: 'false', CLOUDFLARE_INCLUDE_PROCESS_ENV: 'false', CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: 'true' } })
-let worker = launch()
+let worker = launch(), browser
 let output = ''
 const listen = () => { for (const stream of [worker.stdout, worker.stderr]) stream.on('data', chunk => { output += chunk }) }
 listen()
@@ -89,12 +90,42 @@ try {
   assert.match(await (await fetch(origin)).text(), /href="\/signin"/, 'a claimed installation serves guests without SETUP_TOKEN')
   assert.equal((await post('/auth/magic-link', { email: owner })).status, 202, 'sign-in still works without SETUP_TOKEN')
   assert.equal((await post('/auth/bootstrap', { token: 'x'.repeat(64), displayName: 'Owner' })).status, 403, 'no token claims a claimed installation')
+  // Exercise the actual owner button: the route test above cannot catch a
+  // browser forgetting the auth endpoint's required JSON content type/body.
+  browser = await chromium.launch({ headless: true })
+  for (const width of [1440, 390]) {
+    if (width === 390) await post('/auth/magic-link', { email: owner })
+    const messages = await (await fetch(origin + '/__dev/outbox', { headers: key })).text()
+    const messagePath = messages.match(/href="(\/__dev\/outbox\?message=[^"]+)"/)[1].replaceAll('&amp;', '&')
+    const mail = await (await fetch(origin + messagePath, { headers: key })).text()
+    const confirmation = new URL(mail.match(/href="([^"]*\/auth\/confirm\?token=[^"]+)"/)[1].replaceAll('&amp;', '&'), origin)
+    const signedIn = await post('/auth/confirm', { token: confirmation.searchParams.get('token') })
+    assert.equal(signedIn.status, 303)
+    const context = await browser.newContext({ viewport: { width, height: 900 } })
+    try {
+      await context.addCookies(signedIn.headers.getSetCookie().map(line => {
+        const pair = line.split(';')[0], index = pair.indexOf('=')
+        return { name: pair.slice(0, index), value: pair.slice(index + 1), url: origin }
+      }))
+      const page = await context.newPage()
+      await page.goto(origin)
+      const authSignout = page.waitForResponse(response => new URL(response.url()).pathname === '/auth/signout')
+      await page.getByRole('button', { name: 'Sign out', exact: true }).click()
+      assert.equal((await authSignout).status(), 204)
+      await page.getByRole('link', { name: 'Sign in', exact: true }).waitFor()
+      await page.reload()
+      await page.getByRole('link', { name: 'Sign in', exact: true }).waitFor()
+      assert.equal((await context.request.get(origin + '/api/state')).status(), 401)
+    } finally { await context.close() }
+  }
+  await browser.close(); browser = null
   console.log('Email-link sign-in passed against the emitted Worker: claim, key-gated outbox, confirmation, session')
 } catch (error) {
   for (const value of Object.values(vars)) output = output.replaceAll(value, '[redacted]')
   console.error(output.slice(-4000))
   throw error
 } finally {
+  await browser?.close()
   worker.kill('SIGTERM')
   await new Promise(resolve => worker.exitCode !== null ? resolve() : worker.once('exit', resolve))
   await rm(directory, { recursive: true, force: true })

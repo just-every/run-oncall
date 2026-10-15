@@ -187,25 +187,29 @@ export function route(state: State, signal: Signal): Decision {
 export function signalInput(input: any): Signal {
   if (!input || typeof input !== "object" || Array.isArray(input))
     fail("Signal must be an object");
-  if (
-    !["trigger", "recover"].includes(input.intent) ||
-    !["critical", "warning", "info"].includes(input.severity)
-  )
-    fail("Invalid intent or severity");
-  if (!Number.isFinite(Date.parse(input.observedAt)))
-    fail("Invalid observation timestamp");
+  if (!["trigger", "recover"].includes(input.intent))
+    fail('"intent" must be "trigger" or "recover"');
+  if (!["critical", "warning", "info"].includes(input.severity))
+    fail('"severity" must be "critical", "warning" or "info"');
+  if (typeof input.observedAt !== "string" || !Number.isFinite(Date.parse(input.observedAt)))
+    fail('"observedAt" must be an ISO-8601 timestamp with a timezone');
+  if (!/(?:Z|[+-]\d{2}:\d{2})$/i.test(input.observedAt))
+    fail('"observedAt" must include a timezone (Z or an offset)');
+  let evidence: string;
+  try { evidence = link(input.evidence); }
+  catch { fail('"evidence" must be an HTTP or HTTPS URL, or empty'); }
   return {
-    source: text(input.source, "source", 100),
-    eventId: text(input.eventId, "event ID", 200),
-    service: text(input.service, "service", 100),
-    environment: text(input.environment, "environment", 100),
-    key: text(input.key, "dedup key", 200),
-    generation: text(input.generation, "lifecycle generation", 100),
+    source: text(input.source, '"source"', 100),
+    eventId: text(input.eventId, '"eventId"', 200),
+    service: text(input.service, '"service"', 100),
+    environment: text(input.environment, '"environment"', 100),
+    key: text(input.key, '"key"', 200),
+    generation: text(input.generation, '"generation"', 100),
     intent: input.intent,
     severity: input.severity,
-    title: text(input.title, "title", 300),
+    title: text(input.title, '"title"', 300),
     observedAt: new Date(input.observedAt).toISOString(),
-    evidence: link(input.evidence),
+    evidence,
   };
 }
 export function admit(state: State, input: any, at = new Date().toISOString()) {
@@ -228,7 +232,7 @@ export function admit(state: State, input: any, at = new Date().toISOString()) {
       (s) => s.id === signal.service && s.environment === signal.environment,
     )
   )
-    fail("Unknown service/environment");
+    fail('Unknown "service" / "environment" combination');
   if (state.events.length >= 10000)
     fail("Local event capacity reached; export before extending capacity", 429);
   const event: Event = {
@@ -433,7 +437,7 @@ export function command(
     };
     if (!next[incident.state].includes(input.state))
       fail("Invalid lifecycle transition");
-    description = text(input.summary, "transition summary", 3000);
+    description = `${incident.state} → ${input.state}: ${text(input.summary, "transition summary", 3000)}`;
     if (input.state === "acknowledged") incident.commander = actor.id;
     if (input.state === "recovered") {
       incident.recovery = link(input.evidence);

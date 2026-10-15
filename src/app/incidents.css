@@ -23,6 +23,7 @@
 }
 .incident:hover:not(:disabled) { border-color: #d9c4ab; }
 .incident.current { border-color: var(--oc-now); background: #fbece5; }
+.incident.current:has(.state-resolved) { border-color: #6f9a77; background: var(--app-sage-wash); }
 .incident-top { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--oc-ink-soft); }
 .incident h3 { margin: 8px 0 4px; font-size: 17px; line-height: 1.35; font-weight: 680; overflow-wrap: anywhere; }
 .incident .service { margin: 0; color: var(--oc-muted); font-size: 14px; }

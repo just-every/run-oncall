@@ -33,17 +33,23 @@
 
 Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall), release 0.1.0.
 
-Install the `rer` command once with `npx -y @runeditrun/rer cli install`. `rer` provides the Node and pnpm versions this checkout pins; you install neither. From this checkout:
+Install the `rer` command once:
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh
+```
+
+Or use `npm install -g @runeditrun/rer`. You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2; `rer` provides the checkout's pinned Node and pnpm tooling.
 
 ```sh
 git clone https://github.com/just-every/run-oncall.git oncall
 cd oncall
-rer install
-rer setup
 rer dev
 ```
 
-Setup asks for your owner mailbox. For unattended setup use a private answers file (`--answers PATH --non-interactive`). `dev` prints a private `RER_OPEN` link that opens as the owner; `--as signed-out` or `--login` uses ordinary sign-in. Email links appear in the key-gated local outbox; no external email is sent. `/setup` confirms the first owner. Stop with Ctrl-C or `rer dev --stop`; stop preview with `rer preview --stop` before building or verifying.
+`rer dev` installs everything, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at **Finish setup**. To choose your own owner mailbox before the first launch, use [explicit setup](docs/install.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
+
+Open the printed link on this computer. Email links appear in the key-gated local outbox; no external email is sent. For ordinary sign-in, use `rer dev --as signed-out` or `rer dev --login` and open the printed link first so the browser can access the outbox. Stop with Ctrl-C or `rer dev --stop`; stop preview with `rer preview --stop` before building or verifying.
 
 ```sh
 rer build
@@ -59,7 +65,7 @@ rer check
 
 Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. Configure a new owner, sign in, then explicitly map an archived administrator identity from the signed-out workspace; credentials never travel. Reset deletes local data and owner settings. A deploy dry run builds and validates locally without provider requests. Actual deployment refuses until a hosted release with an independent standby is approved. Paging remains OFF until a real-phone drill passes as well. Use `describe` for flags and `doctor` for missing local prerequisites.
 
-Oncall keeps rotas, schedules, overrides, incident coordination and recorded alert intake beside your existing pager. The existing pager stays authoritative. No SMS, voice, push or paging email is sent. The delivery adapter refuses plainly.
+Oncall keeps rotas, schedules, overrides, incident coordination and recorded alert intake beside your existing pager. The existing pager stays authoritative. No SMS, voice, push or paging email is sent. The delivery adapter refuses plainly. To connect monitoring, see the [alert intake JSON and curl example](docs/incidents.md#send-an-alert-event).
 
 Schedules use named IANA zones, calendar-day turns, explicit repeated-time rules and half-open UTC overrides. Inspect who is on call now and at the next hand-off, download a private seven-day ICS feed, and store primary/backup escalation delays as data. Coverage gaps remain visible.
 
@@ -69,7 +75,7 @@ Held data upgrades in place through unchanged migrations 0001–0006 and additiv
 
 To look around with realistic sample data, run `rer demo` after setup: a throwaway, signed-in copy where nothing can page, call, text or email ([DEMO.md](DEMO.md)).
 
-Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md](OPERATIONS.md) and [RELEASE.md](RELEASE.md). The command is pinned as `@runeditrun/rer` 0.2.13. `base-copies.json` records each Base runtime/module copy and its own revision; `src/base` comes from Base 8981bc2c4d9e61feca5787c83b4ed44056659dd9. Source locks are generated with Base's edition-authoring command from this checkout. This repository is runnable source, without a composition step.
+Read [CONTRACT.md](CONTRACT.md), [ACCEPTANCE.md](ACCEPTANCE.md), [OPERATIONS.md](OPERATIONS.md) and [RELEASE.md](RELEASE.md). The checkout declares its exact command version in `package.json` and the lockfile. `base-copies.json` records each Base runtime/module copy and its own revision; `src/base` comes from Base 8981bc2c4d9e61feca5787c83b4ed44056659dd9. Source locks are generated with Base's edition-authoring command from this checkout. This repository is runnable source, without a composition step.
 
 ## Update, host and remove
 

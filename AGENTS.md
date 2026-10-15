@@ -1,14 +1,22 @@
 # Run it locally
 
-Install the `rer` command once with `npx -y @runeditrun/rer cli install`. `rer` provides the Node and pnpm versions this checkout pins; you install neither. From this checkout:
+Install the `rer` command once:
 
 ```sh
-rer install
-rer setup
+curl -fsSL https://runeditrun.com/install.sh | sh
+```
+
+Or use `npm install -g @runeditrun/rer`. You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2; `rer` provides the checkout's pinned Node and pnpm tooling.
+
+From this checkout:
+
+```sh
 rer dev
 ```
 
-Setup asks for your owner mailbox. For unattended setup use a private answers file (`--answers PATH --non-interactive`). `dev` prints a private `RER_OPEN` link that opens as the owner; `--as signed-out` or `--login` uses ordinary sign-in. Email links appear in the key-gated local outbox; no external email is sent. `/setup` confirms the first owner. Stop with Ctrl-C or `rer dev --stop`; stop preview with `rer preview --stop` before building or verifying.
+`rer dev` installs everything, creates a local development owner and prints a private `RER_OPEN` link that opens as that owner. `/setup` confirms the read-only owner details. For a real mailbox, run `rer install` then `rer setup --owner-email you@example.com` before the first `rer dev`. Unattended setup uses a private answers file (`rer setup --answers PATH --non-interactive`); see [Install and run](docs/install.md#explicit-and-unattended-setup). Setup's temporary app stops before the command exits; run `rer dev` to keep serving the app.
+
+`--as signed-out` or `--login` uses ordinary sign-in. Open the printed link first to authorize this browser for the key-gated local outbox; no external email is sent. Stop with Ctrl-C or `rer dev --stop`; stop preview with `rer preview --stop` before building or verifying.
 
 ```sh
 rer build

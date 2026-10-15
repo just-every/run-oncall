@@ -1,7 +1,7 @@
 # Run it locally
 
-Install the `rer` command once: `npx -y @runeditrun/rer cli install`, or the
-installer script on the RER site (`curl -fsSL https://runeditrun.com/install.sh | sh`).
+Install the `rer` command once: `curl -fsSL https://runeditrun.com/install.sh | sh`,
+or `npm install -g @runeditrun/rer`.
 `rer` runs every verb with the checkout's exact `@runeditrun/rer` package pin.
 The `OPERATIONS.json` argv and `package.json` aliases name `rer VERB`.
 

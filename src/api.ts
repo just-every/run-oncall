@@ -347,9 +347,9 @@ api.post("/api/ingress/:source", async (c) => {
     fail("Invalid JSON");
   }
   const signal = signalInput(input);
-  if (signal.source !== c.req.param("source")) fail("Source identity mismatch");
+  if (signal.source !== c.req.param("source")) fail('"source" must match the source ID in the URL');
   if (!JSON.parse(source.scopes).includes(signal.service))
-    fail("Source is not authorized for this service", 403);
+    fail('"service" must be an internal service ID authorized for this source', 403);
   const state = await load(c.env.DB);
   const revision = state.revision;
   const result = admit(state, signal);
