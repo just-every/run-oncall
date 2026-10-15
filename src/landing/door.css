@@ -25,7 +25,7 @@
 .oc-door fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
 .oc-door .field { display: grid; gap: 8px; margin: 0 0 22px; }
 .oc-door .field > span { font-size: 13px; font-weight: 650; letter-spacing: 0.12em; text-transform: uppercase; color: var(--oc-muted); }
-.oc-door .field input {
+.oc-door .field input, .oc-door .field select {
   width: 100%;
   min-height: 52px;
   padding: 12px 16px;
@@ -36,7 +36,7 @@
   font: inherit;
   font-size: 17px;
 }
-.oc-door .field input:focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 2px; border-color: var(--oc-ink); }
+.oc-door .field input:focus-visible, .oc-door .field select:focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 2px; border-color: var(--oc-ink); }
 .oc-door .primary {
   min-height: 54px;
   margin-top: 6px;
@@ -60,6 +60,12 @@
 .oc-door-restore summary::before { content: ""; flex: none; width: 8px; height: 8px; margin: 0 4px 4px 4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform 160ms ease; }
 .oc-door-restore[open] summary::before { transform: rotate(225deg); margin-bottom: -2px; }
 .oc-door-restore p { margin: 12px 0 18px; color: var(--oc-muted); line-height: 1.55; }
+.oc-door-restore .oc-door-error { color: var(--oc-now-ink); }
+.oc-door-identity { overflow-wrap: anywhere; }
+.oc-door-confirm { display: flex; align-items: start; gap: 10px; margin: 0 0 18px; line-height: 1.5; }
+.oc-door-confirm input { flex: none; width: 20px; height: 20px; margin: 3px 0 0; accent-color: var(--oc-ink); }
+.oc-door-reload { margin-top: 18px; padding: 4px 0; border: 0; background: none; color: var(--oc-ink); font: inherit; text-decoration: underline; cursor: pointer; }
+.oc-door-confirm input:focus-visible, .oc-door-reload:focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 3px; }
 .oc-door-board { position: relative; min-width: 0; margin: 96px calc(-1 * var(--bleed)) 0 0; }
 
 /* Tablet and phone, as the hero stacks: the form first, then the board up close. */

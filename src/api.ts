@@ -1,4 +1,4 @@
-import { linkRestoredOwner } from './identity-link';
+import { linkRestoredOwner, restoredAdministrators } from './identity-link';
 import { loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
 import { nativeMember } from './native-member';
 import { installSchedules } from './schedule-api';
@@ -368,6 +368,7 @@ api.post("/api/ingress/:source", async (c) => {
     acceptedAt: result.event.acceptedAt,
   }, result.duplicate ? 200 : 201);
 });
+api.get("/api/identity-link/administrators",restoredAdministrators);
 api.post("/api/identity-link",async c=>linkRestoredOwner(c,await body(c)));
 api.use("/api/*", async (c, next) => {
   const state = await load(c.env.DB);

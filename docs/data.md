@@ -16,7 +16,9 @@ The archive holds everything Oncall keeps: services, schedules, incidents with t
 rer import --input exports/installation.rer --yes
 ```
 
-Import checks the archive first and only restores into an empty installation, so it can never overwrite data by accident. Then run setup to choose the owner, sign in, and use **Map an archived administrator after restore** on the workspace password sign-in page to link your email to the administrator in the archive. Passwords do not travel with the archive.
+Import checks the archive first and only restores into an empty installation, so it can never overwrite data by accident. Then run setup to choose the owner, sign in with the owner's email, and open **Map an archived administrator after restore** on the workspace password sign-in page. Choose your active archived administrator and confirm the identity to link it to your installation owner. Passwords do not travel with the archive.
+
+The chooser shows archived names and IDs so you can distinguish duplicate names. Archived member records do not contain email addresses; the chooser says **email not recorded**. The list is available only to the signed-in installation owner while the installation has no held passwords and no existing owner-to-member mapping. Mapping checks these conditions and the selected administrator's current active status again when you confirm. An installation with held passwords must keep using its existing workspace password access.
 
 ## The archive screen
 

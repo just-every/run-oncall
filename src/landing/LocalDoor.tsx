@@ -4,6 +4,7 @@ import { Field, Form } from "../forms";
 import { useWorkspace } from "../useWorkspace";
 import { Handover } from "./Handover";
 import { Site } from "./Site";
+import { RestoredOwner } from "./RestoredOwner";
 import "./door.css";
 
 // The workspace's own name-and-password door (/api/login, /api/setup and the restore mapping).
@@ -33,13 +34,7 @@ export function LocalDoor() {
             </Form>
             {w.error && <p className="oc-door-error" role="alert">{w.error}</p>}
           </div>
-          <details className="oc-door-restore">
-            <summary>Map an archived administrator after restore</summary>
-            <p>Sign in with the installation owner's email first, then explicitly map an archived administrator. Held password installations cannot use this door.</p>
-            <Form busy={w.busy} label="Confirm restored owner mapping" onSubmit={(data) => w.run("/api/identity-link", { adminMapping: data.adminMapping, confirm: true })}>
-              <Field name="adminMapping" label="Archived administrator ID" />
-            </Form>
-          </details>
+          <RestoredOwner onLinked={w.refresh} />
         </section></HydrationUnit>
         <HydrationUnit><div className="oc-door-board" aria-hidden="true">
           <Handover notes={false} />
