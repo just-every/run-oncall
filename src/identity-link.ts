@@ -30,7 +30,7 @@ export async function restoredAdministrators(c:any) {
  * password installations cannot be claimed through this door. */
 export async function linkRestoredOwner(c:any,input:any) {
  const native=await installationOwner(c)
- if(input.confirm!==true||typeof input.adminMapping!=='string')fail('Confirm an archived administrator identity')
+ if(input===null||typeof input!=='object'||Array.isArray(input)||input.confirm!==true||typeof input.adminMapping!=='string')fail('Confirm an archived administrator identity')
  const result=await c.env.DB.prepare(`INSERT INTO operator_members(operator_id,member_id) SELECT ?,? WHERE
    EXISTS(SELECT 1 FROM oc_members WHERE id=? AND json_extract(data,'$.active')=1 AND json_extract(data,'$.role')='admin') AND
    ${mappingGate}`).bind(native.operator.id,input.adminMapping,input.adminMapping,native.id,native.operator.id,Date.now()).run()
