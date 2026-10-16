@@ -135,7 +135,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "a17ed92259b9388a10237e0d1baf5c91c04fbf13fd921f12460b2e442649291f",
+      "sha256": "b25ce0cdb8ac46f587640822c07e10524c45cd1b0ccc7e9852884819ef5174a9",
       "executable": false
     },
     "BRAND.md": {
@@ -203,7 +203,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "6e3f6ce61875382df62e874bd6f5629b9eb303766148c2426fd829965deaf474",
+      "sha256": "bbd5eb24e81c2ad04518a7c8833ede78bfda856242bccde0c5e3cda501b43799",
       "executable": false
     },
     "docs/team.md": {
@@ -231,7 +231,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "10e1c2942b5d28d636cdaef6465353ec97d7a4c08cdd31827b9193f9d9bb612f",
+      "sha256": "3cfe15ecc957750ce101c2e56915d5d118c8d65a6ef05a6b82e36bde7f60eb50",
       "executable": false
     },
     "migrations/core/0001_initial.sql": {
@@ -320,6 +320,10 @@
     },
     "migrations/core/0116_owner_signin.sql": {
       "sha256": "98da904e768e35b43fb1be83d9dcc9c9b5d86ab3a795234ed5223c4fddc567d9",
+      "executable": false
+    },
+    "migrations/core/0117_owner_claim.sql": {
+      "sha256": "c3ffe653727bb4867b064dc2489df5013613f08f4b5998d2fe2b6a8485cdb815",
       "executable": false
     },
     "MOVE-IN.md": {

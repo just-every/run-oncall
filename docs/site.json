@@ -184,6 +184,10 @@
       "reason": "Vendored Base module documentation for developers"
     },
     {
+      "source": "src/modules/import-kit/src/door/README.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
       "source": "src/modules/import-kit/src/readers/README.md",
       "reason": "Vendored Base module documentation for developers"
     },
