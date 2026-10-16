@@ -10,6 +10,7 @@ import { lobbyResponse } from './base/lobby'
 import { identity } from './identity'
 import { authResponse, runtimeBindings, operatorAuth, type Bindings } from './auth.server'
 import {receivedRequest} from './request-body'
+import { workspaceDocument } from './workspace-document'
 import {readSessionCookie} from './session-cookie'
 type Env=Bindings
 export default withDemo({
@@ -18,6 +19,7 @@ export default withDemo({
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
     const bindings=runtimeBindings(env);
+    let workspace: unknown;
     const state=await setupStateResponse(request,bindings);if(state)return state;
     if(new URL(request.url).pathname==='/') {
       if(!admitted(request,bindings.AUTH_ORIGIN))return new Response('Not found',{status:404});
@@ -29,10 +31,12 @@ export default withDemo({
         /^(?:__Host-operator_session|operator_session_local(?:_\d+)?)=/.test(cookie.trim()));
       if(!hasCredential)return (await lobbyResponse(request,bindings,identity))!;
       // The same current-member authority protects both native and held password sessions.
-      const sessionUrl=new URL('/api/session',request.url);
+      const sessionUrl=new URL('/api/workspace',request.url);
       const session=await api.fetch(new Request(sessionUrl,{headers:request.headers}),env,execution);
       if(!session.ok)return session;
-      if(!(await session.json() as {member:unknown}).member) {
+      const current=await session.json() as {member:unknown};
+      if(current.member) workspace=current;
+      if(!current.member) {
         // A restored owner with no workspace mapping still needs the protected mapping door.
         if(bindings.SESSION_SECRET && bindings.OWNER_EMAIL && await operatorAuth(bindings).getSession(request))
           return new Response(null,{status:303,headers:{location:await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first()?'/signin/local':'/signin/local?restore=1','cache-control':'no-store'}});
@@ -46,7 +50,8 @@ export default withDemo({
     if(response.headers.get('content-type')?.startsWith('text/html')) {
       const headers=new Headers(response.headers);
       headers.set('cache-control','no-store, no-transform');
-      return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+      const document=new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+      return workspace ? workspaceDocument(document,workspace) : document;
     }
     return response;
   },

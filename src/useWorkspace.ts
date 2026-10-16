@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Member, State } from "./family/response-operations/domain";
 export async function request(path: string, data?: unknown): Promise<any> {
   const response = await fetch(path, {
@@ -21,15 +21,26 @@ export function useWorkspace() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   async function refresh() {
-    const session = await request("/api/session");
+    apply(await request("/api/workspace"));
+  }
+  function apply(session: {member: Member | null; demo?: boolean; setup: boolean; state: State | null}) {
     setMember(session.member);
     setDemo(session.demo === true);
     setSetup(session.setup);
-    if (session.member) setState(await request("/api/state"));
-    else setState(null);
+    setState(session.state);
     setReady(true);
   }
+  const initialized = useRef(false);
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+    const bootstrap = document.getElementById("oncall-workspace");
+    if (bootstrap) {
+      const snapshot = JSON.parse(bootstrap.textContent!);
+      bootstrap.remove();
+      apply(snapshot);
+      return;
+    }
     refresh().catch((e) => {
       setError(e.message);
       setReady(true);

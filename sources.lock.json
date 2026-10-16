@@ -519,7 +519,7 @@
       "executable": false
     },
     "src/api.ts": {
-      "sha256": "586c90c6d2220b831b2d01e1a480f53d9e96d3c2b9c060744193392ee5dddcad",
+      "sha256": "bfa062f92e1b46dc2a54c9606df5ce291c5eaf41c9b889f05b08b9a25970911e",
       "executable": false
     },
     "src/app/AlertsPanel.tsx": {
@@ -2591,7 +2591,7 @@
       "executable": false
     },
     "src/native-member.ts": {
-      "sha256": "3ffc3b28a393c8cfe4b41a80e2522ade3a9529d48b43307adbc09639d7d2ddca",
+      "sha256": "aaec252c0ee6a0c121e8ca80e461d78db829661702a5265911d2a4f8393e6280",
       "executable": false
     },
     "src/paging-api.ts": {
@@ -2651,7 +2651,7 @@
       "executable": false
     },
     "src/ScheduleSummary.tsx": {
-      "sha256": "ef67db21bf1f5417329706f8270b0bb5ec41aa405b7f974ed91ffa786934c12c",
+      "sha256": "7c2f512aa61a0b616c289d6b9e78f039ff69d1bff9784a2592c07d2f43c9bead",
       "executable": false
     },
     "src/scheduling.css": {
@@ -2659,7 +2659,7 @@
       "executable": false
     },
     "src/SchedulingWorkspace.tsx": {
-      "sha256": "28f7a34d759d76467cf7406ec80982e383ce49e2fda09eee8f35ec2bf1e062f9",
+      "sha256": "f7d7ca7405d8f1f24c60fd1d6443092e2db6dfaf37c484a664072780e2cffca8",
       "executable": false
     },
     "src/server.dev.ts": {
@@ -2667,7 +2667,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "62824b7fc6cf07dc366559859614dc9e163de6973fe800ae9e35c592715c2b85",
+      "sha256": "a0c42b175df79feb8ef1770bc216ad592683771fb6be279df28817baba045079",
       "executable": false
     },
     "src/session-cookie.ts": {
@@ -2683,7 +2683,11 @@
       "executable": false
     },
     "src/useWorkspace.ts": {
-      "sha256": "3e5c43920579611cae252c9f328d5bd05f21c3b64513485078528ad412ffec36",
+      "sha256": "0379255b138292228364e55da1bda919f83ad50ec611b3709bdb8eb642361d20",
+      "executable": false
+    },
+    "src/workspace-document.ts": {
+      "sha256": "1b9f35ddb302a1b1c2fcaeb2abbc5052a0ba9899f2923e44a4c5923dbe777f30",
       "executable": false
     },
     "src/workspace-store.ts": {

@@ -129,8 +129,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
     try {
       // Supersede an initial read before awaiting the coordination refresh too.
       ++readGeneration.current;
-      if (refreshWorkspace) await refreshWorkspace();
-      const latest = await load();
+      const [, latest] = await Promise.all([refreshWorkspace?.(), load()]);
       if (latest) setNotice("Scheduling records refreshed; unsaved edits are retained");
     }
     catch (failure) { setError(explain(failure)); }
@@ -273,6 +272,6 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
         </aside>
       </div>
     </>}
-    {savedSchedule && <ScheduleSummary schedule={savedSchedule} admin={admin} request={request} onSaveStart={() => { setError(""); setNotice(""); }} onSaved={() => setNotice("Escalation data saved")} />}
+    {savedSchedule && <ScheduleSummary schedule={savedSchedule} policies={data!.policies} admin={admin} request={request} onSaveStart={() => { setError(""); setNotice(""); }} onSaved={() => setNotice("Escalation data saved")} />}
   </section>;
 }
