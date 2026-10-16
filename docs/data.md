@@ -18,9 +18,9 @@ Install Oncall in the new checkout first with `rer install`, then copy your priv
 rer import --input exports/installation.rer --yes
 ```
 
-Import checks the archive first and only restores into an empty installation, so it can never overwrite data by accident. Then run setup to choose the owner, sign in with the owner's email, and open **Map an archived administrator after restore** on the workspace password sign-in page. Choose your active archived administrator and confirm the identity to link it to your installation owner. Passwords do not travel with the archive.
+Import checks the archive first and only restores into an empty installation, so it can never overwrite data by accident. Then run `rer setup --owner-email you@example.com` and `rer dev`. Open the private owner entry printed by dev and confirm the new installation owner. **Open your restored workspace** then asks you to map an archived administrator; it opens the chooser automatically. If you use email sign-in instead, real mail delivery must be configured first. Choose your active archived administrator and confirm the identity to link it to your installation owner. Passwords do not travel with the archive.
 
-The chooser shows archived names and IDs so you can distinguish duplicate names. Archived member records do not contain email addresses; the chooser says **email not recorded**. The list is available only to the signed-in installation owner while the installation has no held passwords and no existing owner-to-member mapping. Mapping checks these conditions and the selected administrator's current active status again when you confirm. An installation with held passwords must keep using its existing workspace password access.
+The chooser shows archived names and IDs so you can distinguish duplicate names. Archived member records do not contain email addresses; the chooser says **email not recorded**. The list is available only to the signed-in installation owner while the installation has no password accounts and no existing owner-to-member mapping. Mapping checks these conditions and the selected administrator's current active status again when you confirm. An installation with existing password accounts must keep using its existing workspace password access.
 
 ## The archive screen
 

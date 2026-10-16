@@ -28,7 +28,8 @@ ONCALL_REQUEST` : `curl --fail-with-body ${quote(endpoint)} \\
   -H "Authorization: Bearer \${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}" \\
   --data-binary ${quote(JSON.stringify(payload, null, 2))}`;
   return <div className="ingress-example">
-    <p>On the same computer, set the <code>ONCALL_SOURCE_KEY</code> environment variable privately to the key you copied, then run this {mode === 'signed' ? 'Node 22+' : 'curl'} request. The service ID, environment and local address are filled in for <strong>{service.name}</strong>. Save the source above before sending.</p>
+    <p>On the same computer, open a terminal and run <code>bash</code>. Run <code>read -rs ONCALL_SOURCE_KEY</code>, paste your copied key at the hidden prompt and press Enter. Then run <code>export ONCALL_SOURCE_KEY</code>. This keeps the key out of command history. Now run this {mode === 'signed' ? 'Node 22+' : 'curl'} request. Afterwards, run <code>unset ONCALL_SOURCE_KEY</code>.</p>
+    <p>The service ID, environment and local address are filled in for <strong>{service.name}</strong>. Save the source above before sending. For a first check without a terminal, expand <strong>Send a local integration event</strong> below.</p>
     <label className="field"><span>Example request</span><textarea readOnly value={example} rows={12} spellCheck={false} /></label>
     <button type="button" disabled={!origin || !source} onClick={async () => {
       try { await navigator.clipboard.writeText(example); setCopied('Request copied.'); }
