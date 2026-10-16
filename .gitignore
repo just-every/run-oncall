@@ -12,6 +12,7 @@ dist/
 .rer/local/
 .rer/demo/
 .rer/deploy/
+.rer/demo-host/
 
 exports/
 # Generated proof artifacts; plans and reports remain source.
