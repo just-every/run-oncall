@@ -31,7 +31,7 @@
 
 # Run it locally
 
-Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.2.0`, predates hosting; hosted coordination is currently available from `main` until the next release tag. See [Install and run](docs/install.md#host-for-your-team) for complete credentials and deployment instructions.
+Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.3.0`, includes hosted coordination. See [Install and run](docs/install.md#host-for-your-team) for complete credentials and deployment instructions.
 
 Install the `rer` command once:
 
@@ -110,7 +110,7 @@ git pull --ff-only
 rer dev
 ```
 
-There are no new migrations in 0.2.0. Your data, owner and password accounts are kept. Do not reset to upgrade.
+The update applies Oncall's additive migrations. Your data, owner and password accounts are kept; people who sign in with a workspace password sign in once more after updating to 0.3.0. Do not reset to upgrade.
 
 ### Later updates
 
@@ -127,7 +127,7 @@ This restarts the updated local app, applies migrations and keeps your owner, sc
 
 ### Host for your team
 
-Hosting is currently on `main`; `v0.2.0` predates it. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow [Install and run](docs/install.md#host-for-your-team) to prepare a real owner mailbox, obtain Cloudflare and SendGrid credentials with the required permissions, and save them in an owner-only `0600` file outside Git. The Install page includes each provider's menu path, verification steps and expected results.
+Hosting is in `v0.3.0` and later. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow [Install and run](docs/install.md#host-for-your-team) to prepare a real owner mailbox, obtain Cloudflare and SendGrid credentials with the required permissions, and save them in an owner-only `0600` file outside Git. The Install page includes each provider's menu path, verification steps and expected results.
 
 From the hosting checkout, with the private file prepared as described there:
 

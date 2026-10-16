@@ -1,7 +1,7 @@
 {
-  "version": "0.2.0",
-  "date": "2026-10-15",
-  "publicReleaseNotes": "Oncall 0.2.0 makes local startup a single `rer dev` command with a Finish setup page, and offers `rer demo` for a throwaway local trial. Imported schedules can be made live in Schedules with an explicit administrator mapping; an immediate (0-minute) Opsgenie first escalation step is stored as 1 minute with the difference stated. Owner email sign-in handles stale installation cookies, restored owners can explicitly map an archived administrator, and Schedules shows now/next and its named time zone at the top. `rer doctor` explains the verification-browser prerequisite. This release adds no migrations. Hosted Oncall stays on hold and paging stays OFF; keep your existing pager authoritative.",
+  "version": "0.3.0",
+  "date": "2026-10-16",
+  "publicReleaseNotes": "Oncall 0.3.0 is release 1 of hosted incident coordination beside your existing pager. Paging stays OFF and no standby is required. `rer deploy` claims the owner and retires the setup token; the owner signs in by emailed link through configured remote mail or a one-time `rer signin` link, and admin-created members sign in with their workspace name and password. Install and run gives complete Cloudflare and SendGrid credential steps, and Archive moves a local archive to a fresh hosted environment. Sign-in mail is never captured: the local development outbox is removed and local owner entry stays the private `RER_OPEN` link. The Move-in kit offers a downloadable read-only Opsgenie/PagerDuty exporter and re-imports a file after Undo, alert cards show severity, incidents declared from alerts keep it and an alert opens its one incident instead of a duplicate, and each install's held session cookie is named for its port. Migrations 0113–0116 are additive. Release 2 paging and independent standby are not built; keep your existing pager authoritative. Screenshot: .github/assets/release/oncall-0.3.0-incident-1440.png.",
   "contractChanges": {},
   "extensionPointChanges": [],
   "migrations": [
@@ -76,8 +76,24 @@
     {
       "id": "0112_erasure.sql",
       "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0113_retire_local_mail.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0114_import_preparation_steps.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0115_import_stream_sources.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0116_owner_signin.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
     }
   ],
   "breaking": false,
-  "agentUpdateInstructions": "To update from 0.1.0, stop the old servers before pulling: run `node scripts/rer.mjs dev --stop` and `node scripts/rer.mjs preview --stop` in the old checkout. Install the global rer command with `curl -fsSL https://runeditrun.com/install.sh | sh` (open a new terminal if instructed), or `npm install -g @runeditrun/rer`. Then, on main, run `git pull --ff-only` followed by `rer dev`. There are no new migrations in 0.2.0; keep all 18 applied migrations unchanged. The update preserves authored data, owner and password accounts; do not reset to upgrade. Back up first: while the old servers are stopped, `node scripts/rer.mjs export --output exports/NAME.rer` can export 0.1.0; later versions use `rer export --output exports/NAME.rer`. Restore only into an empty destination with `rer import --input exports/NAME.rer --yes` after restoring the original private settings. For updates after 0.1.0, stop with `rer dev --stop` and `rer preview --stop` before pulling, then run `rer dev`. No hosted deployment is needed. For hosted coordination, configure remote sign-in mail and run rer deploy with your Cloudflare credentials; rer claims the owner and retires the setup token. Open the app address and sign in by emailed link. Update an existing hosted installation with rer deploy, preserving its owner and data. Remove with rer deploy --remove --yes and confirm its empty readback. Paging stays OFF; keep your existing pager active. Independent standby and paging delivery are outside this release."
+  "agentUpdateInstructions": "To update from 0.2.0, stop with `rer dev --stop` and `rer preview --stop`, then run `git pull --ff-only` and `rer dev`. The update applies four additive migrations (0113–0116); keep all 22 applied migrations unchanged and do not reset to upgrade. Data, the owner and password accounts are kept. People who sign in with a workspace password sign in once more, because the held session cookie is now named `oncall_session_<port>`. Captured local sign-in mail is removed with the development outbox; open the app with the `RER_OPEN` link that `rer dev` prints. To update from 0.1.0, stop the old servers before pulling with `node scripts/rer.mjs dev --stop` and `node scripts/rer.mjs preview --stop`, install the global rer command with `curl -fsSL https://runeditrun.com/install.sh | sh` (or `npm install -g @runeditrun/rer`), then run `git pull --ff-only` and `rer dev`. Back up first with `rer export --output exports/NAME.rer` (0.1.0: `node scripts/rer.mjs export --output exports/NAME.rer` while its servers are stopped). Restore only into an empty destination with `rer import --input exports/NAME.rer --yes` after restoring the original private settings. For hosted coordination, follow Install and run → Host for your team: configure remote sign-in mail and run `rer deploy` with your Cloudflare credentials; rer claims the owner and retires the setup token. Open the app address and sign in by emailed link, or with `rer signin`. Update an existing hosted installation with `rer deploy`, preserving its owner and data. Remove with `rer deploy --remove --yes` and confirm its empty readback. Paging stays OFF; keep your existing pager active. Independent standby and paging delivery are outside this release."
 }

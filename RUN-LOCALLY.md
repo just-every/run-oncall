@@ -233,8 +233,7 @@ impose Base pins, aliases or state layout.
 
 ## Update, host and remove
 
-Hosted coordination is currently available on `main` until the next release tag;
-`v0.2.0` predates hosting. For first deployment, follow [Install and run](docs/install.md#host-for-your-team):
+Hosted coordination is in `v0.3.0` and later. For first deployment, follow [Install and run](docs/install.md#host-for-your-team):
 it includes real-owner setup, the Cloudflare account ID/token and SendGrid
 key/verified sender, exact provider menu paths, permissions and verification,
 and private `0600` credential-file creation. The examples below use that file.

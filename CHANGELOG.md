@@ -1,11 +1,17 @@
-# Unreleased
+# 0.3.0 · 2026-10-16
 
-- Mark test credentials explicitly synthetic so hosted source admission accepts the fixtures.
+Release 1 hosted incident coordination beside your existing pager. Paging stays OFF. Screenshot: [`.github/assets/release/oncall-0.3.0-incident-1440.png`](.github/assets/release/oncall-0.3.0-incident-1440.png).
 
-- After a schedule is made live, **Undo this import** now says the import can no longer be undone and the paused source stays as evidence, instead of suggesting an action Oncall does not offer.
+- Host coordination for your team with `rer deploy`, beside the existing pager, with paging OFF and no standby prerequisite. Deploy claims the owner automatically and retires the setup token. Hosted owner sign-in uses emailed links through a configured remote mail provider, and `rer signin` mints a one-time owner link. Admin-created members sign in at `/signin/local` with their workspace name and password, hosted and local. First-admin password bootstrap stays loopback-only. Remove a deployment with the same Cloudflare credentials using `rer deploy --remove --yes` and check the empty readback. Release 2 paging and independent standby are not built.
+- Install and run → Host for your team gives the Cloudflare and SendGrid menu paths, token permissions, sender verification and an owner-only `0600` credentials file. Archive explains how to move a local archive to a fresh hosted environment.
+- Sign-in mail is never captured. The local development outbox, its sign-in link and its stored messages are removed; migration 0113 drops the old table. Local owner entry stays the private `RER_OPEN` link from `rer dev`. The sign-in form fills in `login_hint`.
+- Move-in kit: download `oncall-export.mjs` for Opsgenie or PagerDuty (Node 22, a read-only key, GET requests only). The provider selector and the adoption and restored-administrator choices are labelled. The selected import row stays selected while adoption opens. After a schedule is made live, **Undo this import** says the import can no longer be undone and the paused source stays as evidence.
+- Move-in kit: after **Undo this import** finishes, the same file can be previewed and imported again as a new journal entry; a confirmation that races an undo says what to do next. The journal lists each import's provider, schedules, file and export date, and an Opsgenie HTTP 422 from the exporter explains a malformed key.
+- Alerts: alert cards show severity, and an incident declared from an alert keeps it. An alert already linked to an incident links to it instead of offering a second declaration, and the API refuses a duplicate with 409. The monitoring ingress example generates a fresh event ID and explains HTTP 409. Monitoring ingress explains private key entry step by step and offers a no-terminal form. The unsent pager, chat and status handoff is plain text.
 - The held workspace cookie is now `oncall_session_<port>`, so other apps or Oncall installs on the same loopback host never sign a person in or out. People signed in by password on 0.2.0 sign in once more after updating. Session files for the checkpoint and handoff scripts name the cookie `oncall_session_<port>=…`.
+- Test credentials are marked explicitly synthetic so hosted source admission accepts the fixtures.
+- Migrations 0113–0116 are additive: retire local mail storage, import preparation steps, import stream sources and one-time owner sign-in links. Keep every applied migration unchanged.
 - Pin `@runeditrun/rer` 0.2.27.
-- Enable release 1 hosted incident coordination beside the existing pager, with paging OFF and no standby prerequisite. Deploy claims the owner automatically; hosted email-link sign-in requires configured remote mail. Remove recorded resources with the same Cloudflare credentials using `rer deploy --remove --yes` and empty readback. Release 2 paging and independent standby are not built.
 
 # 0.2.0 · 2026-10-15
 

@@ -96,7 +96,7 @@ git pull --ff-only
 rer dev
 ```
 
-There are no new migrations in 0.2.0. Your data, owner and password accounts are kept. Do not reset to upgrade.
+The update applies Oncall's additive migrations. Your data, owner and password accounts are kept; people who sign in with a workspace password sign in once more after updating to 0.3.0. Do not reset to upgrade.
 
 ### Later local updates
 
@@ -115,7 +115,7 @@ This restarts the updated local app, applies migrations and keeps your owner, sc
 
 Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Release 2 paging and independent standby are not built. Keep the pager's routes and notification settings in place.
 
-**Hosting is on `main` until the next release tag. `v0.2.0` predates hosting.** Use a fresh checkout of `main` for the following steps; a checkout already set up with a development owner keeps that owner when setup runs again.
+**Hosting is in `v0.3.0` and later.** Use a fresh checkout of `main` for the following steps; a checkout already set up with a development owner keeps that owner when setup runs again.
 
 ```sh
 git clone --branch main https://github.com/just-every/run-oncall.git oncall-hosted
