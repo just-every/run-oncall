@@ -80,7 +80,7 @@ try {
   await page.getByLabel('Export JSON').setInputFiles({name:'opsgenie-export.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))})
   await page.getByRole('button',{name:'Preview import',exact:true}).click();await page.getByRole('heading',{name:'Compatibility review'}).waitFor()
   await page.getByRole('button',{name:'Confirm paused import',exact:true}).click();await page.getByRole('heading',{name:'Import journal'}).waitFor()
-  const imported=page.getByRole('listitem').filter({hasText:rota,has:page.getByRole('button',{name:'Make schedule live',exact:true})})
+  const imported=page.getByRole('listitem').filter({hasText:rota}).last()
   await imported.getByRole('button',{name:'Make schedule live',exact:true}).click()
   await imported.getByLabel('Service for '+rota,{exact:true}).selectOption({label:'Checkout'})
   await imported.getByLabel('Workspace member for Erase '+width,{exact:false}).selectOption(session.member.id)
