@@ -1,26 +1,315 @@
 # What you can do
 
-Run Oncall locally or host it in your own Cloudflare account and finish setup; add team members and services with runbooks; see who is on call now and next, create named-zone rotations and overrides, and download a private ICS feed. Declare an incident, record notes and decisions, follow its runbook, assign follow-ups and complete a review. Record monitoring alerts, route and replay them, preview an Opsgenie or PagerDuty move-in, and explicitly adopt reviewed schedules. Sign in by owner email link or an admin-created member's installation-local workspace name and password on the local or hosted app, then export and restore local installation data without transferring credentials.
+The target is a complete US-first on-call and incident-response product: real independent phone/SMS/push paging, durable escalation, correct coverage, native mobile response, monitoring/chat/phone integrations, recovery and post-incident follow-through, plus scoped agents. CONTRACT.md defines the destination, not a claim that it ships today.
 
-Release 1 supports hosted incident coordination alongside your existing pager. Paging stays OFF; an independent standby is not required for coordination. Release 2 paging and its independent standby are not built.
+Current release 1 supports local/hosted coordination beside an existing pager: members/services, copied runbooks, incidents, alerts/replay, owned actions/reviews, named-zone primary/backup rotations/overrides, private ICS, reviewed Opsgenie/PagerDuty file move-in and atomic checkpoints/handoffs. Production paging remains OFF and the existing pager authoritative. Independent standby is not required for coordination; release 2 paging, mobile and standby remain unbuilt. Demo simulations never prove delivery.
 
 ## Maintained verification flows
 
-The flows below are acceptance requirements and verification entrypoints. Passing evidence must name the exact commit and actual command result; this document alone records no new passing run. `rer verify` invokes the maintained local journeys. Local verification does not prove live mail delivery or hosted account operations; no paging or standby acceptance is claimed.
+The numbered flows are acceptance requirements through the product’s public doors. Status is assessed from source and maintained exercising tests at main `661e39e334c5ffcc263df5218bdd519e0e2aec09`, starting from the supplied audit at `61a02005ab5731c374e8db8af8fd451ae257e314` and re-reading changed paths. OC-055–065 and the sharpened journeys of existing clauses answer buyer review round 1, and OC-066–069 with further sharpened journeys answer buyer review round 2, and OC-070–071 with further sharpened journeys answer buyer review round 3, and OC-072 with further sharpened journeys answers buyer review round 4 (all 16 October 2026); all are assessed against the same unchanged application code. **done** is limited to the named implemented flow, **partial** means a subset, **missing** means no implementing flow. Each build round records the exact tested commit and actual result separately. Listing a future journey does not mean a new test exists or that it passed. No live mail/phone/provider/hosted account, native-device or standby result is inferred from local tests.
 
-1. OC-001–010: emitted HTTP coordination journey preserves event identity/generation, routing replay, roles/revocation, incident transitions, copied runbooks/follow-ups, strict atomic archive restore and visible failures. Existing held flow is retained in tests/runtime.mjs.
-2. OC-011,014,020: tests/activation.mjs exercises named-zone DST turns, exact hand-off and override endpoints, overlap refusal, unavailable member gaps, now/next, authenticated ICS and escalation configuration through HTTP.
-3. OC-012–015: delivery/timer/resume/callback paths refuse; intake records an event with no receipt/send; held module archives remain historical and restore pending timers paused.
-4. OC-016–017: tests/activation.mjs exercises the recovery checkpoint and reviewed-handoff requirements through the emitted Worker, D1 and the private handoff CLI. The test file names each OC-016/OC-017 requirement it proves.
-5. OC-018: command check/describe, install/setup/build/preview/reset/export/import/deploy dry-run, owner sign-in, dev identity and theme; Hosted acceptance exercises an ordinary emailed sign-in link independently of local dev identity.
-6. OC-019: tests/runtime.mjs seeds the actual held one-row SQL fixture before migrations, upgrades, signs in using its held password and compares the full state over HTTP; repeated migration is idempotent.
-7. OC-021–022: tests/activation.mjs tests both documented-shape fixtures, zero-write preview, rejected-rule accounting, paused apply, authorization, review mismatch, malformed/credential input, atomic rollback, restart/resume, idempotence and undo preserving native edits.
-8. tests/activation-browser.mjs runs setup/dev identity and real keyboard-only incident declaration, notes, acknowledgement, schedule/override/preview at 1440 and 390 from committed HEAD in a fresh clone. It captures visible focus, checks literal hostile HTML, and causes a real HTTP stale-revision rejection from a second session: the alert announces failure, no saved claim appears, and server state is unchanged. Existing pointer move-in/replay and overflow checks remain. Screenshot output is copied outside the checkout to `../evidence/browser` (or `ONCALL_BROWSER_EVIDENCE`). Acceptance requires the passing run and inspection of its screenshots.
+`rer verify` is the maintained full local entrypoint. Contract-document changes use the existing `rer check --profile first-party` validation; do not weaken checks, change IDs or treat a status/copy assertion as feature acceptance. Existing test files below are entrypoints, not promises that they cover every future requirement.
 
-Public landing requires Base's publication scan on the exact tree before each push with zero findings, and the public repository's **Oncall verification** CI green on the exact merged head. Fetch and rebase immediately before a fast-forward-only push. These publication and CI requirements are independent of local journeys; they do not establish hosted readiness.
+1. **OC-001 — Event identity and alerts. Status: partial.** POST signed and bearer events through /api/ingress/:source; repeat a normalized identity, conflict changed content, send recovery before trigger and after a newer generation, and inspect protected state. Verify grouping across multiple sources without merging service/environment boundaries.
 
-OC-018 uses the exact published `rer` version pinned in package.json (currently 0.2.27) and the effects declared in `OPERATIONS.json`. Local dev and preview bind loopback; hosted coordination serves protected application APIs at the deployed HTTPS origin. A successful local dry-run does not establish hosted readiness.
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Identity/generation and linked alerts are exercised; comprehensive grouping acceptance is not established.
 
-Release 1 hosted acceptance requires actual `rer deploy` success, `/health` matching the deployed source/version, automatic owner claim and setup-token retirement, configured remote-mail owner sign-in, administrator-created member password sign-in at `/signin/local`, protected incident coordination and persistent schedule/incident data after reload. Confirm that paging still refuses. Removal acceptance uses the same Cloudflare credentials and `rer deploy --remove --yes`, then empty readback for every recorded Worker, database and queue. Record actual results separately; this document does not assert these checks have passed.
+2. **OC-002 — Routing replay. Status: done.** Admit a severity-routed event, change policy, POST /api/replay and compare the immutable admission explanation with the proposed decision in submitted order; compare state before/after for zero writes.
 
-Obsolete synthetic-dispatch tests and the drill UI are removed because sending is no longer an accepted flow. Pure domain pin/structure tests are replaced by emitted public-flow proof; removal does not relax the preserved incident, archive or import guarantees.
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`.
+
+3. **OC-003 — Roles and authority. Status: done.** Use anonymous, expired, revoked, viewer, responder and admin sessions on reads, commands, sources and archives; revoke or downgrade while a real HTTP mutation is incomplete and prove no publication. Verify minimal intake receipts disclose no private routing data.
+
+   Existing implementation / exercising flow: `src/api.ts`; `src/auth.server.ts`; `tests/runtime.mjs`; `tests/runtime-authority.mjs`. Workspace-wide roles are implemented; team isolation and federation are separate targets in OC-023/039.
+
+4. **OC-004 — Incident state transitions. Status: done.** Declare from admitted alerts, acknowledge, reject stale concurrent changes, clear the source alert, refuse resolution without evidence and summary, then resolve and inspect the attributed timeline over HTTP.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Recovery attestation is a human claim, not independently measured customer recovery.
+
+5. **OC-005 — Copied runbooks. Status: done.** Declare an incident, edit its service runbook and confirm the copied incident steps remain unchanged; create an owned due-dated action, require completion evidence and retain unfinished work and review after resolution.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Alert-level runbook access and follow-up policies are targets in OC-023/036.
+
+6. **OC-006 — No outbound incident effects. Status: done.** Use coordination and handoff preparation/export on a normal installation; prove no paging receipt, production action, AI call or external publication occurs. Confirm draft exports remain unreviewed and source links confer no access.
+
+   Existing implementation / exercising flow: `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs`. This is the current-release safety boundary, not the final product boundary.
+
+7. **OC-007 — Native archive. Status: done.** Export through /api/archive; restore valid held records and reject malformed references/storage failures without losing prior data. Inspect event, incident, runbook, action, timeline and attribution identity and confirm authentication material is absent.
+
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. The full future paging archive is OC-052.
+
+8. **OC-008 — User-authored records kept. Status: done.** Submit over-limit and malformed intake, hostile structured text and runbook links; verify bounded refusal, literal display with no script execution/fetch, and preservation of authored history after restart/export.
+
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/activation-browser.mjs`. No automatic incident age/count deletion is implemented; complete retention controls are OC-040.
+
+9. **OC-009 — Accessible interface. Status: partial.** At 1440 and 390, use keyboard-only declaration, acknowledgement, notes, schedules, overrides and preview; inspect focus/labels, status announcements, literal hostile HTML and a real stale-write failure with no saved claim. Run axe-core with the WCAG 2.2 A and AA rule sets on every surface at 1440 and 390 in light and dark themes and record zero violations; complete the named VoiceOver/Safari, NVDA/Chrome, iOS VoiceOver and Android TalkBack journeys for acknowledge, snooze, reassign and schedule view with recorded outcomes; and publish the release's conformance report before any new target surface ships.
+
+   Existing implementation / exercising flow: `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/keyboard-coordination.mjs`; `tests/activation-browser.mjs`. Maintained keyboard/responsive journeys exist; full accessibility conformance is not established.
+
+10. **OC-010 — Health and honest commands. Status: partial.** Run check/describe and /health with storage available and unavailable; compare deployed identity to the actual build. Record local, hosted, provider and human-drill outcomes separately and test durable failure diagnostics for each new execution class.
+
+   Existing implementation / exercising flow: `src/api.ts`; `scripts/installer/seed.mjs`; `tests/hosted.mjs`; `tests/transfer.mjs`. Storage health and command journeys exist; independent pager health/capacity and live-provider proof do not.
+
+11. **OC-011 — Calendar-day rotations. Status: done.** Save primary/backup schedules and query HTTP preview across spring/fall DST, ambiguous/nonexistent minutes, override edges and overlap refusal; retain inactive/viewer/missing slots as gaps and detect duplicate primary/backup responders.
+
+   Existing implementation / exercising flow: `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs`.
+
+12. **OC-012 — Paging off. Status: done.** On a normal installation POST each delivery/job/tick/callback/resume door and confirm paging-OFF refusal with no receipt. Treat demo simulations as simulations. Native cutover additionally requires OC-026–029 and OC-038 real-phone/provider-failure acceptance.
+
+   Existing implementation / exercising flow: `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/demo.mjs`. No production paging authorization is created by this contract change.
+
+13. **OC-013 — Held history stays historical. Status: done.** Restore held synthetic jobs/receipts/callbacks, observe pending work paused, acknowledge or cancel with attribution, reject resume, and verify incident recovery remains unchanged.
+
+   Existing implementation / exercising flow: `src/family/response-operations/escalation.ts`; `src/paging-api.ts`; `tests/paging-history.mjs`; `tests/activation.mjs`.
+
+14. **OC-014 — Side-effect-free previews. Status: done.** Read now/next and schedule/routing previews, compare durable state and receipt counts, and confirm no timers or provider actions were created and historical synthetic data stays labelled.
+
+   Existing implementation / exercising flow: `src/schedule-api.ts`; `src/paging-api.ts`; `tests/activation.mjs`.
+
+15. **OC-015 — Strict module archives. Status: done.** Round-trip the strict module archive through protected HTTP; reject unknown fields, broken references and injected SQL failure atomically, retain callbacks and pause pending historical jobs.
+
+   Existing implementation / exercising flow: `src/family/response-operations/paging-archive.ts`; `src/paging-api.ts`; `tests/paging-history.mjs`; `tests/activation.mjs`.
+
+16. **OC-016 — Recovery checkpoint. Status: done.** Use /api/recovery/checkpoint and the private CLI to capture and restore both revisions; exercise malformed/capacity/storage failures and competing writes, identity mapping, orphan history and session revocation without revoking the winning restore session.
+
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/recovery.ts`; `scripts/checkpoint.mjs`; `tests/activation.mjs`; `tests/checkpoint-cli.mjs`.
+
+17. **OC-017 — Reviewed handoffs. Status: done.** Prepare, review, inspect and export exact handoff copy over protected HTTP; change source/revision, withdraw, restore v1/v2 and race writes. Verify eligibility/holds, stable action identities, append-only attribution and all storage bounds with no send authority.
+
+   Existing implementation / exercising flow: `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs`. Connected communication is a separate target in OC-034/051.
+
+18. **OC-018 — Maintained root commands. Status: partial.** Exercise documented setup/dev/build/preview/reset/archive/deploy dry-run, owner entry and member password sign-in. Hosted acceptance must actually deploy, retire setup authority, use a real emailed owner link, coordinate with a member after reload, and remove recorded resources with empty provider readback.
+
+   Existing implementation / exercising flow: `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/signin-browser.mjs`; `tests/activation-browser.mjs`. Local lifecycle, unavailable-mail refusal and hosted serving are exercised; these tests do not prove account deployment or inbox receipt.
+
+19. **OC-019 — Additive upgrade. Status: done.** Seed the held one-row SQL data, migrate, sign in with the held password and compare all entities, nested histories and original ordering through HTTP; repeat migration/restart without silent reassignment to Base identity.
+
+   Existing implementation / exercising flow: `src/workspace-store.ts`; `migrations/core/0106_relational_workspace.sql`; `tests/runtime.mjs`; `tests/runtime-held-workspace.mjs`.
+
+20. **OC-020 — Now/next and calendar feed. Status: done.** Read now/next and authenticated ICS for seven-day default and bounded explicit windows; verify primary/backup UTC boundaries, overrides and gaps, deny unauthenticated access and confirm admission starts no paging.
+
+   Existing implementation / exercising flow: `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation-browser.mjs`. Private ICS downloads support Google Calendar/Outlook import; persistent subscription credentials are OC-025.
+
+21. **OC-021 — Move-in preview. Status: done.** Follow provider export instructions, preview saved Opsgenie and PagerDuty list/detail bundles with zero writes, inspect exact rejected/unmapped rules and fingerprints, apply paused and explicitly map people/services before adopting native coverage.
+
+   Existing implementation / exercising flow: `src/move-in/api.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`; `tests/provider-export-browser.mjs`. Reviewed file migration is implemented; full incumbent cutover and other vendors are OC-038.
+
+22. **OC-022 — Resume and undo. Status: done.** Apply, interrupt/restart, resume and undo both vendor imports over HTTP; revoke authority at publication, inject SQL failure, replay unchanged/changed identities and preserve native edits as named undo conflicts.
+
+   Existing implementation / exercising flow: `src/move-in/api.ts`; `src/move-in/operation.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`.
+
+23. **OC-023 — Services, teams and ownership. Status: partial.** Create two teams and a dependent service through the UI/API, read the alert runbook, import a Backstage ownership change, deny a foreign-team user through direct/export/chat doors, and resolve an ownership conflict without losing incident history.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `tests/runtime.mjs`. Services, service runbooks and workspace roles ship; team scoping, dependencies, alert runbooks and Backstage do not.
+
+24. **OC-024 — Follow-the-sun, PTO and holiday coverage. Status: partial.** Build New York/Los Angeles/London handoffs, add a US holiday and approved PTO in Google and Outlook, inspect a DST weekend and uncovered interval, then apply a reviewed layer change and compare actual paging targets to the preview. During the New York-to-London handoff, page the London responder through their verified UK voice and SMS routes under OC-066, and see a shift held by a responder with only one verified route flagged as degraded in the preview.
+
+   Existing implementation / exercising flow: `src/family/response-operations/schedules.ts`; `src/schedule-api.ts`; `tests/activation.mjs`. Named-zone primary/backup rotations and overrides exist; follow-the-sun composition, holiday and PTO integration are missing.
+
+25. **OC-025 — Swaps, reminders and calendar subscriptions. Status: partial.** Request, accept and race two swaps, reject an unauthorized substitute, revoke a calendar subscription, view the effective rotation in Google/Outlook, and observe automatic change/reminder delivery plus a visible failed-notification outcome.
+
+   Existing implementation / exercising flow: `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`. Authenticated ICS downloads and manual overrides exist; swaps, reminders and persistent revocable subscriptions are missing.
+
+26. **OC-026 — Native US phone, SMS, push and email paging. Status: missing.** On registered US carrier phones, trigger a real alert and verify voice/DTMF, SMS replies/links, push and incident email, with intake-to-first-attempt measured against the OC-064 bar; send a low-urgency alert and verify only the responder's low-urgency rules fire. Disable Twilio then the second provider and the push path separately; prove an independent route reaches the responder. Reject forged/duplicate callbacks, expose uncertainty and opt-out, and record actual receipts and human acknowledgement rather than test-provider success. Repeat the provider-disable checks for a verified UK and a verified Canadian number under OC-066. Trigger two pages to one responder minutes apart and acknowledge the first by its SMS reply code; observe only that page acknowledged (OC-071).
+
+   Existing evidence: no implementing flow; this is required target acceptance. Only the paging refusal exists; no live providers, responder rules or carrier drill.
+
+27. **OC-027 — Durable escalation until acknowledged. Status: partial.** Trigger through the Events API, close the browser, cross a handoff and observe primary, secondary, repeat and round-robin pages, each first attempt within the OC-064 deadline-lateness bar of its persisted due time (a 5-minute escalation fires between 5:00 and 5:30 at p99) and none early. Recover the source before the first escalation deadline and observe no further notification and a recorded stopped-by-recovery outcome. Escalate one of two open pages by SMS reply code and observe only that page move to its next level. Restart workers at a deadline; race reassignment, acknowledgement, duplicate callbacks and acknowledgement expiry. Inspect one consistent obligation history, stopped jobs and the final failure path.
+
+   Existing implementation / exercising flow: `src/paging-api.ts`; `src/family/response-operations/escalation.ts`; `src/delivery.ts`; `tests/activation.mjs`. Inspectable policies and historical acknowledge/cancel exist; active timers, reassignment, repeat and round-robin execution are absent.
+
+28. **OC-028 — Independent standby and tested takeover. Status: missing.** During live phone drills remove the main site’s network, storage, identity and account access in turn, split the sites, duplicate intake and acknowledge at either site. Measure loss-to-takeover and takeover-to-first-provider-attempt times against the OC-064 bars (standby authority within 120 seconds of loss; first attempt for every due obligation within 60 seconds of takeover), verify fencing, role announcements and recovery/failback, and prove no acknowledged incident resumes. Publish measured results and operating instructions before cutover.
+
+   Existing evidence: no implementing flow; this is required target acceptance. One Cloudflare coordination deployment is not independent pager continuity.
+
+29. **OC-029 — Native iOS and Android responder apps. Status: missing.** On physical supported iPhone and Android devices, trigger with the screen locked and DND enabled after permission enrollment; observe urgent notification and one-tap server acknowledgement. Deny permissions, revoke a device and disconnect data; verify phone escalation, pending offline state, current schedule and an accepted swap without duplicate authority. Snooze for 15 minutes from the lock-screen notification and observe a re-page at expiry; trigger five pages together and observe one bundled push that opens exactly those five; complete acknowledge and reassign with VoiceOver and TalkBack.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Responsive web is implemented, but no native apps, entitlements or live critical-push acceptance exist.
+
+30. **OC-030 — Datadog, Prometheus and Grafana intake. Status: missing.** Use each provider’s supported test/send door then fire and recover a real rule; repeat/reorder a grouped webhook, reject forged auth and malformed payloads, and inspect one correct incident generation and public-door rejection diagnostics. Install one Alertmanager adapter on an OC-072 routed key and observe alerts with different `team` labels on their own services.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Generic scoped intake exists; none of these provider adapters is implemented.
+
+31. **OC-031 — AWS CloudWatch and SNS intake. Status: missing.** Subscribe a real authorized SNS topic, transition a CloudWatch alarm through ALARM/OK/INSUFFICIENT_DATA, duplicate/reorder notifications, rotate access, and refuse forged signatures, foreign topics and hostile confirmation URLs without network or state side effects.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No AWS adapter or subscription validation is implemented.
+
+32. **OC-032 — Error and uptime integrations with sibling products. Status: missing.** Trigger and recover via a real Sentry rule, Spool error group and Uptime monitor; replay each event, send a stale recovery and access a restricted context link. Verify correct grouping, source permission checks and a still-open incident until evidence-backed human resolution.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Only the generic event schema is implemented; no Sentry/Spool/Uptime connector acceptance exists.
+
+33. **OC-033 — Generic email and Events API. Status: partial.** Send signed and bearer API events plus a real inbound provider email; duplicate message IDs, revoke credentials, exceed limits, spoof senders and submit malformed MIME. Inspect accepted receipts, bounded quarantine/rejection diagnostics and no unauthorized read or incident mutation. Send a repeated failure subject and then a resolve-rule mail to an address in OC-070 custom-rule mode, and observe one generation whose paging stops by source recovery.
+
+   Existing implementation / exercising flow: `src/api.ts`; `tests/runtime.mjs`. Scoped signed/bearer Events API is exercised; inbound email is absent.
+
+34. **OC-034 — Slack and Microsoft Teams response. Status: missing.** In each real workspace/tenant declare an incident, observe the automatic channel and role assignment, acknowledge through a command/action and see the same web state. Replay a request, remove a grant/member, attempt cross-tenant access and break channel creation; verify denial, one state change and continued phone escalation.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Internal handoff drafts do not implement either collaboration app.
+
+35. **OC-035 — Incident bridges and live call routing. Status: missing.** Call the real US number across a handoff, answer and acknowledge, reach a London on-call responder's verified UK number by transfer, miss a call and reach secondary, fail each carrier and transfer a live call. Create Zoom and Teams bridges from incident actions, deny an unauthorized join/detail read, and inspect call/timeline/outcome records without exposing recordings to viewers without a grant.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No telephony routing or conferencing connector exists.
+
+36. **OC-036 — Post-incident review and completion policy. Status: partial.** Resolve with open critical work, generate review material, accept a correction and create a Jira, Linear, GitHub and GitLab follow-up. Advance due time with the browser shut, reopen a remote issue and revoke its connector; verify reminders, escalation, synchronization/conflicts and evidence-required completion without erasing history.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Attributed timelines, human review and owned evidenced follow-ups ship; priority policies, reminders and ticket connectors are missing.
+
+37. **OC-037 — Response analytics and fair on-call load. Status: missing.** Run a known sequence of resolved, open, never-acknowledged, late, repeated and imported incidents across DST and after-hours shifts; compare dashboard/CSV/API figures with source timelines and coverage hours, inspect an interruption-fairness imbalance and refuse foreign-team exports.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No response/load analytics or report export exists.
+
+38. **OC-038 — Complete incumbent migration and controlled cutover. Status: partial.** For each named incumbent migrate a representative export/account through preview, apply, restart, reconcile and undo, including custom policies, overrides, integration keys, custom email rules, business services, stakeholder subscriptions, Automation Actions and an open incident. Repoint an unmodified Datadog webhook and an Alertmanager `pagerduty_configs` receiver by URL only after key activation and confirm one alert generation per source. Import an account whose Alertmanager sends to one Event Orchestration key, activate it as an OC-072 routed key, and confirm each team's alert pages its own service with the URL as the only change. Resolve named mapping differences, compare coverage across a US DST change, rehearse parallel alert routing and rollback, then perform an authorized real-phone cutover under OC-026–029. Opsgenie migration has a dated readiness checklist for its announced 5 April 2027 shutdown; current provider/export availability must be checked at execution.
+
+   Existing implementation / exercising flow: `src/move-in/api.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`. Reviewed Opsgenie/PagerDuty schedule file move-in ships; JSM/VictorOps adapters, complete account reconciliation and live cutover do not.
+
+39. **OC-039 — Enterprise access and responder lifecycle. Status: partial.** Invite a responder, sign in through Google Workspace, Okta, Entra and a generic SAML provider under OC-069, require step-up to edit paging credentials, deprovision via SCIM while a write is in flight, and exercise documented emergency access during IdP loss. Verify immediate denial across web/mobile/chat/standby and a visible coverage gap.
+
+   Existing implementation / exercising flow: `src/auth.server.ts`; `src/api.ts`; `tests/runtime-authority.mjs`; `tests/signin-browser.mjs`. Native owner email links and admin-created local member passwords exist; invitations, federated identity, MFA and SCIM are not adopted product flows.
+
+40. **OC-040 — Retention, erasure and custody. Status: partial.** Erase an imported person including filenames, plans and indirect schedule references, then erase native contact/incident/connector data and inspect all local/standby/export copies and receipts. Restore with a later erasure journal, inject a failure and race a send; prove rollback or a visible incomplete state, explicit schedule gaps and no success before all owned custody is handled.
+
+   Existing implementation / exercising flow: `src/move-in/erasure.ts`; `src/portability-policy.mjs`; `tests/activation.mjs`. Exact imported-person erasure and custody/fence proof exist; general entity retention/erasure and standby reconciliation are incomplete.
+
+41. **OC-041 — Durable operational audit. Status: partial.** Change roles/schedules, admit an event, send and acknowledge, crash each worker class at its send boundary, erase its subject and export audit through a protected door. Compare state and audit atomically, retain uncertain outcomes and prove secrets/personal content are absent from the surviving anonymized records.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/family/response-operations/handoffs.ts`; `tests/runtime.mjs`; `tests/activation.mjs`. Attributed incident/handoff and coordination audit exist; complete secret-free administrative audit and all execution outcomes are not established.
+
+42. **OC-042 — Credential custody and declared external flows. Status: partial.** Configure and rotate each connector over a protected setup door, inspect authorized network traffic at its network edge and all persisted/exported representations, submit hostile URLs/redirects and revoked credentials, and prove only the chosen endpoint receives the minimum permitted content and secrets never travel in an archive or model request.
+
+   Existing implementation / exercising flow: `src/api.ts`; `src/auth.server.ts`; `src/mail.server.mjs`; `src/portability-policy.mjs`; `tests/runtime.mjs`. Current scoped intake, sign-in mail and authority exclusions exist; new provider encryption, network limits and model data controls are unimplemented.
+
+43. **OC-043 — Explainable grouping and event orchestration. Status: partial.** Send correlated and unrelated Datadog/Prometheus/error events across services, replay after changing policy, apply/expire maintenance and suppression with a browser closed, and restart during orchestration. Inspect retained originals and explanations, one intended action per identity and a visible unmatched/failure queue. Send events through an OC-072 routed key into a service with orchestration rules, and observe routing before the service rules, with both rule versions in the explanation.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `tests/runtime.mjs`. Exact-key grouping, severity suppression and replay exist; cross-source correlation, timed suppression and live orchestration are absent.
+
+44. **OC-044 — US operating boundaries and transparent cost. Status: partial.** Complete a US installation/dependency checklist, inspect a USD usage report and budget warning during a real paging obligation, hit an explicit capacity/provider quota refusal and observe the alternate/escalation outcome, then follow Lamp/Spool/Uptime links with independent access controls. Verify emergency guidance and advertised availability/regulated claims against the actual release evidence.
+
+   Existing implementation / exercising flow: `src/delivery.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Current release hold, structured bounds and explicit local capacity refusal exist; provider usage/budget and target integration acceptance do not.
+
+45. **OC-045 — Investigate before the responder opens the alert. Status: partial.** Trigger an incident with a causal recent deploy, a Spool error and a decoy deploy on an unrelated service; open the first notification's link at notification time and find the investigation already running, with the causal deploy and error cited as leading evidence ranked first and the decoy not cited as cause, while the OC-065 recent-changes panel lists both deploys. Run the held-out suite and compare its top-1 result with the bar. Supply contradictory/stale logs and hostile embedded instructions, revoke one source mid-run and compare citation/permission boundaries and durable incomplete/failure outcomes with no production writes.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Incident/alert/runbook context exists as in the audit; no investigator, telemetry or deploy connector is implemented.
+
+46. **OC-046 — Keep ownership and runbooks current from changes. Status: partial.** Change service ownership and a deploy/runbook reference in real connected sources, observe a proposed diff and review task, reject one and approve another after coverage preview. Change the source during approval and verify renewed review; inspect an older incident to prove its runbook and attribution did not change.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Services, copied runbooks and human follow-ups exist; change watching/proposals are missing.
+
+47. **OC-047 — Continuously rehearse coverage and standby readiness. Status: partial.** Revoke a contact, break a provider and stale the standby configuration; observe scheduled detection and a due drill request without a manual prompt. Run an authorized main-site outage drill with real phones, decline another, and compare displayed readiness with measured receipt/takeover outcomes and visible unresolved obligations.
+
+   Existing implementation / exercising flow: `src/schedule-api.ts`; `src/delivery.ts`; `tests/activation.mjs`. Now/next reveals static gaps and production sends refuse; continuous readiness and scheduled live drills are missing.
+
+48. **OC-048 — Bounded remediation with independent recovery evidence. Status: missing.** Investigate a reversible production fault, inspect and approve one bounded plan, attempt changed/expired/revoked approval, have a plan restricted to one named library action try to run another and see it refused, cancel mid-execution and restart after an uncertain result. Observe executor authority, bounded action/rollback and independent failing then passing recovery evidence before a responder resolves through OC-004.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No remediation planner, production executor or independent recovery integration exists.
+
+49. **OC-049 — Close the loop on recurrence. Status: partial.** Complete an evidenced follow-up, trigger a related recurrence after a deploy and observe a linked review and owned task without a prompt. Mark a ticket closed without evidence, leave another overdue, dispute the recurrence and verify human correction, continued escalation and unchanged original history.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Owned evidenced follow-ups and retained reviews exist; recurrence comparison and follow-through agents are missing.
+
+50. **OC-050 — Incident command, severity and response workflows. Status: partial.** Trigger a service template, request backup responders and assign/transfer commander/scribe/communications roles through web/chat. Merge related incidents, split an unrelated alert, miss an update deadline with the browser closed and inspect reminders, aliases and attributed timelines; reject unauthorized role and state mutations.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `tests/runtime.mjs`. Explicit incident declaration, commander acknowledgement and attributed changes exist; multiple response roles, merge/split and workflow automation are missing.
+
+51. **OC-051 — Reviewed Lamp and Statuspage communication. Status: partial.** Prepare a customer update, change its source before approval and refuse stale delivery; approve current copy and publish through real Lamp and Statuspage APIs. Replay, revoke credentials, withdraw and lose a response at the publication boundary; inspect exact copy, external readback and durable uncertainty with no false published state.
+
+   Existing implementation / exercising flow: `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `src/family/response-operations/integrations.ts`; `tests/activation.mjs`. Reviewed minimum handoffs and Lamp-compatible export exist; connected submission, status synchronization and reminders are missing.
+
+52. **OC-052 — Complete portable target archive and Base replacements. Status: partial.** Export a populated target installation via protected HTTP and rer CLI, compare every durable category, restore inactive on a fresh authorized installation, reconfigure local secrets and prove no send/action replay. Supply malformed/over-limit/erased/unknown records and inject storage/concurrency faults; preserve the full prior state. Deny optional author/AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.
+
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/recovery.ts`; `src/portability-policy.mjs`; `scripts/installer/archive-policy.mjs`; `tests/activation.mjs`; `tests/transfer.mjs`. Coordination/scheduling/handoff archives and authentication exclusions ship; complete future-product portability and baseline replacement acceptance remain unimplemented.
+
+53. **OC-053 — Public API, outbound events and reliable automation. Status: partial.** Create/acknowledge/reassign/resolve via a scoped API client, page through real records, hit limits and conflict stale edits. Observe signed outbound events, revoke a token/endpoint, fail and restart delivery, deduplicate a replay and inspect due/terminal/uncertain outcomes without double-changing incident state.
+
+   Existing implementation / exercising flow: `src/api.ts`; `src/paging-api.ts`; `tests/runtime.mjs`. Protected internal HTTP APIs and concurrency checks exist; versioned service-account APIs and outbound outbox/webhooks are absent.
+
+54. **OC-054 — Operational readiness and switching acceptance. Status: partial.** Operate the release at the OC-064 reference load and publish the measured values against its bars; stop each intake/timer/identity/storage/provider path, observe independent missed-deadline alarms and recover from backup. Inspect measured latencies/capacity and unanswered obligations, execute the buyer’s real-device cutover checklist and show unsupported/unproven rows accurately.
+
+   Existing implementation / exercising flow: `src/api.ts`; `src/delivery.ts`; `tests/runtime.mjs`; `tests/activation.mjs`. Storage health, local flows and honest paging refusal exist; end-to-end production readiness, independent watches and measured paging availability do not.
+
+55. **OC-055 — Drop-in PagerDuty, Opsgenie and Splunk On-Call intake. Status: missing.** Repoint an unmodified Datadog Webhooks monitor that uses the PagerDuty v2 payload, and an unmodified Alertmanager `pagerduty_configs` receiver, by changing only the URL. Fire, re-fire and resolve each one, and observe one alert generation per source and the escalation stopped by the resolve. Do the same with an Opsgenie Alert API create/close by alias and a Splunk On-Call CRITICAL/RECOVERY pair. Then send a resolve before any trigger, a trigger without a `dedup_key`, a forged or revoked key and a key for another service. Verify incumbent-shaped responses, no cross-service effect and protected-state receipts. Repeat the Alertmanager journey through one OC-072 routed key and observe each team's alert on its own service with its own generation.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Only the native `/api/ingress/:source` schema with a required generation exists; no PagerDuty, Opsgenie or Splunk On-Call compatible endpoint or derived generation is implemented.
+
+56. **OC-056 — Alert-only pages, and source recovery that stops paging. Status: partial.** Trigger an alert-only page and recover it before the first escalation deadline with the browser closed. Observe that no further notification goes out, that a stopped-by-recovery outcome is recorded, and that no incident is left needing manual resolution. Repeat under the "notify recovered" policy and observe exactly one recovery notice to each person already notified. Recover a declared incident's alerts and observe that paging stops, the incident stays open and awaiting resolution, the reminder fires, and resolution is refused without an OC-004 summary. Recover an email-triggered page with an OC-070 resolve-rule mail and observe the same stopped-by-recovery outcome.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Alerts are separate from declared incidents and source recovery closes only the matching alert generation; paging obligations, recovery-stopped outcomes and recovered notices are missing.
+
+57. **OC-057 — Urgency, support hours and per-urgency notification. Status: partial.** Send a `warning` to a support-hours service (New York, 09:00–17:00 Monday–Friday) at 03:00 New York time. Observe low urgency: only the responder's low-urgency rules fire, with no voice or SMS and no escalation past level one. At 09:00, observe the raise to high and the start of escalation. Send a `warning` at 11:00 and observe high urgency that escalates. Send a missing-severity event to a by-severity service and observe high. Re-trigger with a lower severity and observe no silent lowering. Lower urgency by hand and observe the attributed reason. Replay the policy across a DST change.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Per-service severity routing and suppression policy with replayable explanations exists; urgency, support hours, per-urgency notification rules and low-urgency escalation behaviour are missing.
+
+58. **OC-058 — Snooze and acknowledgement-timeout re-trigger. Status: missing.** Acknowledge, then snooze for 15 minutes from the browser and close it. Observe a re-page at the deadline, within the OC-064 lateness bar, to the current assignee. Repeat after a handoff and observe the page to the new on-call. Let an unsnoozed acknowledgement reach the service timeout, observe re-escalation from level one to the current on-call, and see each step on the timeline. Restart workers at the deadline and observe exactly one re-trigger. Recover the source mid-snooze and observe no re-page.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No snooze or acknowledgement-timeout deadline exists; paging is OFF.
+
+59. **OC-059 — Large and partly readable payloads still page. Status: missing.** Send a 300 KiB Alertmanager group of 200 alerts, and observe 200 alert events, a page and no refusal. Send a 600 KiB PagerDuty v2 event and a 3 MiB Alertmanager group. Observe an incomplete-intake alert that pages the service, an integration-owner notice, bounded evidence of what was dropped, and a 202 response with the truncation flag. Send an oversize unauthenticated request, observe a refusal diagnostic and no alert, and confirm no raw body is stored. Send a 3 MiB Alertmanager group to an OC-072 routed key with a record-unrouted catch-all, and observe the readable alerts paging their routed services and the incomplete-intake alert paging the integration owner.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Intake refuses requests over 64 KiB with 413 (`src/api.ts`); no provider bounds, group splitting or incomplete-intake alert exists.
+
+60. **OC-060 — Incident triage list: search, filters, "mine" and bulk actions. Status: partial.** During a 50-incident storm, filter by team, service, urgency and status, view "assigned to me" on web and mobile, and acknowledge all 50 in one action. Each incident's timeline shows the bulk operation ID. A viewer's bulk attempt is refused for every item. A stale revision on one incident fails visibly while the other 49 commit. Replay the operation and observe no second change. Bulk-resolve declared incidents without a summary and observe refusal. Confirm that a foreign team's incidents are neither listed nor selectable. Acknowledge a bundled SMS's items by its acknowledge-all code and observe the same per-item results and shared operation ID.
+
+   Existing implementation / exercising flow: `src/routes/index.tsx`; `tests/keyboard-coordination.mjs`; `tests/activation-browser.mjs`. A selectable incident list with active count exists; search, filters, "mine", saved views and bulk actions are missing.
+
+61. **OC-061 — Business services, stakeholder subscriptions and internal status. Status: missing.** A stakeholder subscribes to "Checkout". An incident on a supporting service turns "Checkout" degraded on the internal status view. The stakeholder is notified only through the approved update, by their chosen channel, and is denied the incident timeline, alerts and runbook over web, mobile, API and export doors. An unsubscribed stakeholder receives nothing. A private team's business service is invisible to stakeholders outside its scope. A manual status override is attributed.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No business services, stakeholder role, subscriptions or internal status view exist.
+
+62. **OC-062 — Configuration as code with Terraform and OpenTofu. Status: missing.** Convert a PagerDuty Terraform module with schedules, layers, an escalation policy, services, integrations and a business service, and read its mapping report. `plan` shows the intended diff and the coverage preview, and `apply` produces the same configuration the UI preview showed. Edit a managed object out of band in the UI, and observe drift in the next `plan`, or a refusal if edits are locked. Apply a stale plan and observe refusal. Confirm integration keys never appear in plan output. Convert a module with `pagerduty_event_orchestration_router` and `pagerduty_event_orchestration_unrouted`, and observe a routed key whose plan shows its scope, rule set and catch-all.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No Terraform/OpenTofu provider, dry-run plan endpoint, drift labelling or PagerDuty module converter exists.
+
+63. **OC-063 — Curated automation actions and named executors. Status: missing.** A responder runs a library diagnostic from Slack, and its bounded output appears in the incident timeline with attribution. A viewer is refused, and so is a responder outside the allowed team. Run a Kubernetes rollout restart through the runner and a GitHub Actions dispatch, then kill the runner mid-run and observe an uncertain outcome with no automatic rerun. An agent plan restricted to one named action cannot run another. Import a PagerDuty Automation Actions export and observe inactive entries with a mapping report.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No action library, runner or executor connector exists.
+
+64. **OC-064 — Stated paging timing bars and reference load. Status: missing.** Drive the reference load through the public intake doors, with provider fakes only at the paid network edge for timing and a real-phone sample for end-to-end receipt. Measure p50, p95, p99 and maximum for intake receipt, intake to first attempt, deadline lateness, stop-after-acknowledgement and provider acceptance (per channel, and per OC-066 country for SMS and voice), and compare each with its bar. Confirm that no deadline fires early and that a 5-minute escalation fires between 5:00 and 5:30 at p99, with OC-071 bundling on throughout the burst. Publish the measured values in the OC-054 readiness matrix.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No paging exists to measure; no reference-load harness or published measurements exist.
+
+65. **OC-065 — Change events and recent changes for responders. Status: missing.** Send a change through the PagerDuty-compatible change endpoint and a GitHub deployment webhook, one for the alerting service and one decoy for an unrelated service, plus one for a dependency. Trigger the alert and observe that no page is caused by any change event. The recent-changes panel lists the service's and the dependency's changes, labelled, and omits the unrelated decoy. A user without access to the service sees none of them. Replay a change event and observe one record.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No change-event intake or recent-changes panel exists.
+
+66. **OC-066 — International SMS and voice paging for follow-the-sun responders. Status: missing.** Enroll and verify a UK and a Canadian mobile number. During a New York-to-London handoff, trigger a high-urgency alert: the London responder receives the voice call and the SMS, acknowledges by SMS reply, and the timeline records each attempt with its provider and country. Disable the first provider for the UK and observe the second provider reach the same handset. Verify a number in a row without SMS replies and acknowledge from its link and by DTMF. Enroll a number from an unlisted country and observe refusal at verification with the "does not meet two-route coverage" warning and a degraded shift in the coverage preview. Compare the per-country provider-acceptance times with the OC-064 bar and the per-country USD charges with the usage report. Trigger three pages to the London responder together and acknowledge all of them from one bundled SMS reply code (OC-071).
+
+   Existing evidence: no implementing flow; this is required target acceptance. Only the paging refusal exists; no SMS/voice provider, country list, E.164 country check or sender registration exists in any country.
+
+67. **OC-067 — Service alert channels and chat on-call and page commands. Status: missing.** Connect #payments-alerts to the Payments service with a high-urgency-only filter. Trigger a low-urgency and a high-urgency alert-only page, and observe that only the high-urgency one is posted. Acknowledge it from the button and see the message and the web state update, then snooze and reassign it from the buttons and see each change in place and in the thread. See a viewer's button press refused with no state change, and replay a signed button payload with one state change. Run the on-call command across a handoff and compare its answer with now/next. Page the service from Slack and observe the escalation start. Archive the channel and observe a visible posting failure while the page still reaches the responder's phone.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No Slack/Teams app, service channel connection, interactive alert message or chat command exists.
+
+68. **OC-068 — Manual pages, responder requests and paging a person directly. Status: partial.** A responder on the Support team creates a high-urgency incident on "Payments" from the web, assigned to a named engineer, with no alert. The engineer is phoned within the OC-064 intake-to-first-attempt bar, and the notification names the creator. Not acknowledging escalates per that user-assignment rule, and the outcome is recorded. Create a policy-targeted page from the mobile app and through the API with a repeated idempotency key, and observe one incident paging that policy instead of the service's. Request a second responder from Slack, observe a separate page and acknowledgement, and decline a third request and see the requester notified. See a stakeholder's and a viewer's attempts refused with nothing created.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `tests/activation.mjs`; `tests/keyboard-coordination.mjs`. A current responder/admin declares an incident on a service with title, severity and impact summary and no alert, from the web form and `/api/command`, under server authority with an attributed timeline; urgency, user/policy targets, paging, user-assignment rules, responder requests, mobile/chat surfaces and per-team page permissions are missing.
+
+69. **OC-069 — Google Workspace, generic SAML and OIDC sign-in, and just-in-time accounts. Status: missing.** Sign in through Google Workspace and through a generic SAML provider (for example JumpCloud), from both the identity provider and the Oncall login page. See a first-time user created just in time with the default role and no paging coverage until they verify a destination. A user from another Google domain is refused, and so are a replayed SAML assertion and an unsigned one. Require SSO and observe that a password login is refused for everyone except the emergency administrator, whose sign-in is audited and notifies the other administrators. Sign in to the mobile app through the same Google connection.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Sign-in is native owner email links and admin-created local passwords (`src/auth.server.ts`); no Google, SAML or OIDC connection, just-in-time account or required-SSO setting exists.
+
+70. **OC-070 — Email integration modes, trigger and resolve rules. Status: missing.** On an address in subject-deduplication mode, send the same failure subject three times and observe one alert generation with three timeline entries and one page. Configure a custom trigger rule (subject matches `FAILED: (\S+)`) and a resolve rule (subject matches `OK: (\S+)`) that share the extracted key. Send `FAILED: nightly-db`, then `FAILED: nightly-web`, then `OK: nightly-db`. Observe two generations and two pages, then observe that the OK mail stops `nightly-db` paging with a stopped-by-source-recovery outcome while `nightly-web` keeps escalating. Send an OK mail with no open generation and observe a no-effect receipt. Send an unmatched mail under each fallback and observe a triggered alert, then a quarantined item shown to the integration owner. Send a mail whose subject drives a pathological regex and observe intake unaffected. Send the same key to a second service's address and observe no merge. Test a draft rule against saved mail and observe the would-be actions with zero writes. Import a PagerDuty service with custom email rules and an Opsgenie email integration with filters, and read the mapping report, which names each rule it could not convert.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No inbound email intake, email mode, trigger/resolve rule or key extraction exists; only the native API's caller-supplied generation is implemented (`src/family/response-operations/domain.ts`).
+
+71. **OC-071 — Notification bundling and per-message reply mapping. Status: missing.** On a real US handset, trigger 30 high-urgency pages to one responder within 60 seconds. Observe one bundled call and one bundled SMS, not 30 of each, within the OC-064 first-attempt bar, with the count and top items. Press 4 for acknowledge all and observe all 30 acknowledged, each timeline carrying the shared operation ID. Trigger two separate pages minutes apart and reply with the first SMS's acknowledge code: only the first page is acknowledged and the second keeps escalating. Reply a plain `ack` while both are open and observe the code list and no change. Reply to an already-acknowledged message and observe an explanatory answer and no state change. Escalate one item by reply and observe its next level paged. Trigger a low-urgency and a high-urgency page together and observe that the low-urgency item is not in the high-urgency call. Resolve all on a bundle with one declared incident and observe it acknowledged and named as needing a summary. Reassign one bundled item to someone else, then acknowledge all, and observe that item named as refused. Replay a signed reply callback and observe one change. Repeat the bundled SMS and its reply codes on the UK number under OC-066.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Paging is OFF and sends refuse (`src/delivery.ts`); no notification composition, bundling, SMS reply code or DTMF handling exists.
+
+72. **OC-072 — Routed intake keys that pick the service per event. Status: partial.** Import a PagerDuty account whose Alertmanager sends to one Event Orchestration integration key with three routing rules (`team=payments`, `team=search`, and dynamic routing on `custom_details.service`) and a catch-all. Activate the key and repoint the unmodified Alertmanager `pagerduty_configs` receiver by changing only its URL. Fire one alert per rule and one with an unmatched label. Observe each alert paging its own service's policy, and the unmatched alert recorded as unrouted, not paged and shown to the integration owner. Switch the catch-all to a named service, fire the unmatched label again, and observe it routed there. Confirm that every receipt and OC-002 explanation names the rule ID and its version. Send the same `dedup_key` routed to two services and observe two generations and no merge. Resolve one and observe only that service's paging stop. Dynamic-route to a service outside the key's scope and observe the event at the catch-all with the out-of-scope diagnostic. Replay a changed rule set and observe ordered decisions, the open-generation warning and zero writes; then publish from a stale base version and observe refusal. Send a 3 MiB Alertmanager group to the routed key with a record-unrouted catch-all: routed alerts page their services, and the incomplete-intake alert pages the integration owner. Repeat with an imported Opsgenie API integration routing by `responders`, and with a Splunk On-Call REST endpoint routing by routing key, and read each move report.
+
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. A native source credential is scoped to an explicit list of services (`/api/sources` scopes); each event names its service, an event for a service outside the scope is refused with 403, and alert identity includes the service, so the same key on two services never merges. Routed keys on the incumbent endpoints and adapters, ordered and dynamic routing rules, the catch-all and unrouted queue, rule versions in explanations, routing replay and import are missing.
+
+## Cross-cutting acceptance and release constraints
+
+`tests/activation-browser.mjs` runs setup/dev identity and real keyboard-only incident declaration, notes, acknowledgement, schedule/override/preview at 1440 and 390 from committed HEAD in a fresh clone. It captures visible focus, checks literal hostile HTML and causes a real HTTP stale-revision rejection from a second session: failure is announced, no saved claim appears and server state remains unchanged. Pointer move-in/replay and overflow checks remain. Screenshots are copied outside the checkout to `../evidence/browser` or `ONCALL_BROWSER_EVIDENCE`; acceptance requires inspecting the screenshots. Apply the same public-door keyboard, permission, failure and responsive checks to every added web surface; native physical-device acceptance is OC-029. No homepage/UI change is authorized by this contract round.
+
+For each automated obligation, verify it survives browser closure/restart, keeps an owner and due time, stops only at the specified condition and retains failed/uncertain outcomes. Network/provider fakes can prove protocol handling but cannot prove real delivery, carrier registration, mobile DND behavior, independent takeover or a human response. Those clauses require the live journeys above, performed with explicit account/drill authorization and minimum retained evidence without secrets.
+
+OC-018 uses the published rer version pinned by package.json and effects declared in OPERATIONS.json. Local dev/preview bind loopback. A deploy dry-run and hosted-output test do not prove account readiness. Release 1 hosted acceptance requires actual `rer deploy`, matching /health source/version, automatic owner claim/setup-token retirement, real remote-mail owner sign-in and member password sign-in at /signin/local, protected coordination and data persistence after reload. Confirm paging still refuses. Removal uses the same authorized Cloudflare credentials and `rer deploy --remove --yes`, then empty readback for recorded resources. Record actual results separately.
+
+Public landing requires Base’s publication scan on the exact tree before each push with zero findings, then the public repository’s Oncall verification CI green on the exact head. The lane merges after independent buyer review; this contract PR must not merge itself. Publication scan and CI do not establish hosted or pager readiness.
+
+Obsolete synthetic-dispatch tests and the drill UI were removed in the existing release because sending is not an accepted current flow. Their removal is historical, not a change in this contract round. Held history, archive, import and authority guarantees remain mandatory; future paging requires real delivery and standby proof rather than reinstating synthetic acceptance.
+
+## Clause status totals
+
+**18 done**, **31 partial**, **23 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
