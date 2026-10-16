@@ -69,6 +69,7 @@ export async function authResponse(request: Request, original: Bindings): Promis
   const page = await createSignInHandler(operatorAuth(env), {
    defaultReturnTo: '/setup',
    links: async () => [
+    ...(isLoopbackHost(url.hostname) ? [{ href: '/docs/install#sign-in-emails-on-your-computer', label: 'Local owner entry and sign-in email settings' }] : []),
     // Held installations keep their workspace name-and-password accounts; their door is /signin/local.
     ...(isLoopbackHost(url.hostname) && await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first() ? [{ href: '/signin/local', label: 'Sign in with a workspace password' }] : []),
    ],
