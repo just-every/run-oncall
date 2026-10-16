@@ -9,7 +9,7 @@ export function MoveInWorkspace({admin,request}:{admin:boolean;request:(path:str
  useEffect(()=>{if(admin)void run(load)},[admin,vendor])
  if(!admin)return <section className="panel"><h2>Move-in kit</h2><p>An administrator reviews and imports schedule exports.</p></section>
  return <section className="scheduling-workspace"><section className="scheduling-panel"><h2>Bring your schedules beside your pager</h2><p>Opsgenie first, then PagerDuty. Select saved export files. Preview writes nothing. Imports arrive paused. Review and make a schedule live below; paging stays OFF.</p>
- <label className="scheduling-field">Source<select value={vendor} onChange={e=>{setVendor(e.target.value);setPreview(null);setJob(null)}}><option value="opsgenie">Opsgenie</option><option value="pagerduty">PagerDuty</option></select></label>
+ <label className="scheduling-field"><span id="move-in-source">Source</span><select aria-labelledby="move-in-source" value={vendor} onChange={e=>{setVendor(e.target.value);setPreview(null);setJob(null)}}><option value="opsgenie">Opsgenie</option><option value="pagerduty">PagerDuty</option></select></label>
  <ExportHelp vendor={vendor}/>
  <label className="scheduling-field">Export JSON<input type="file" accept="application/json,.json" onChange={async e=>{const file=e.target.files?.[0];if(file){setSource(await file.text());setPreview(null);setJob(null)}}}/></label>
  <p>Choose the JSON bundle prepared above. Oncall never asks for your provider API key.</p>
