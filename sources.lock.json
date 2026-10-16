@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "c52b4ddbfad26af8c28cdcad563e101f44d5a455a4f8133ca7235408c752a844"
+    "sha256": "a13d7d0bcf174618923ca5d1134575c149ea6b57c89d1640c03c1ebf091ab372"
   },
   "components": [
     {
@@ -218,6 +218,10 @@
       "sha256": "2f5076ef027045b9e0e72df8aa61ca8551e54b1877d531656d6e7985b2c32324",
       "executable": false
     },
+    "management/integration/deployment-spec.json": {
+      "sha256": "6d07765c681de3cce86dd97f9e04a348e58908f90c96e47420e4aa9dcdeb2f9e",
+      "executable": false
+    },
     "migrations/core/0001_initial.sql": {
       "sha256": "aa7883c189dc8b0e95984ce34c6a966e7caca591a87019c32ae5e2940e31b608",
       "executable": false
@@ -315,11 +319,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "8228f74066aec919c3d16776b7280564c109d0cab06f9c9bfef0798939879a23",
+      "sha256": "9e00a3df3cf4311078f7821280455e17d0300f869cf8a7230bf662e183591c90",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "6135c36fdd3a583a6e1643d43ce11e4c1b44b759bf3f486cde5910aaadd12f9d",
+      "sha256": "b6206d35e93b9e67308d33d2d8a3af56133fb455d33218a2d997af77267227bf",
       "executable": false
     },
     "public/brand/badge-rail-1x.webp": {
@@ -436,6 +440,14 @@
     },
     "scripts/checkpoint.mjs": {
       "sha256": "707acb1d65ba825041e6feae7ec781583f3b3cd6baf98c7b900fe515d8e8dac3",
+      "executable": false
+    },
+    "scripts/deployment-spec-policy.json": {
+      "sha256": "935c02c6ddfb28fa2b2964063bf0901d4f9f1bd338fecdc560c39736c4728106",
+      "executable": false
+    },
+    "scripts/deployment-spec.mjs": {
+      "sha256": "57a5ee4e12923a5f0f26c228b54022247dadcd49671c9aba40e323af227087a7",
       "executable": false
     },
     "scripts/handoffs.mjs": {
@@ -2535,7 +2547,7 @@
       "executable": false
     },
     "tests/signin-browser.mjs": {
-      "sha256": "ce89e47049c45acc1ee98673be3195acfc585f832ae8c50c17fe7a6a6a937c35",
+      "sha256": "dc71faea9df49eea8e4ea01cc4f599638b232a3a8b184ea3ba340d252ebd343a",
       "executable": false
     },
     "tests/transfer.mjs": {

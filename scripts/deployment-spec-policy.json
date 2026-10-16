@@ -1,0 +1,10 @@
+{
+  "surfaces": {
+    "app": {
+      "path": "/",
+      "originVariable": "AUTH_ORIGIN",
+      "signIn": { "path": "/signin", "loginHint": true }
+    }
+  },
+  "recovery": "Hosted Oncall remains on hold until an independent standby and a hosted release are approved. Local recovery uses rer export and rer import; see docs/checkpoints.md."
+}

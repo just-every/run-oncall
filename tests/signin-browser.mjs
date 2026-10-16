@@ -2,13 +2,19 @@ import {isolatedEntrypoint} from './isolated.mjs'
 const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
 import assert from 'node:assert/strict'
 import {spawn} from 'node:child_process'
-import {mkdir,writeFile,rm} from 'node:fs/promises'
+import {mkdir,readFile,writeFile,rm} from 'node:fs/promises'
 import {fileURLToPath} from 'node:url'
 import {chromium} from '@playwright/test'
 import {managedSeed} from './managed.mjs'
 import {redact} from './diagnostics.mjs'
 
 const managed=await managedSeed(),owner='oncall.lead@example.com'
+const {surfaces:{app:{signIn}}}=JSON.parse(await readFile('management/integration/deployment-spec.json','utf8'))
+const openApp=email=>{
+ const url=new URL(signIn.path,managed.origin)
+ if(signIn.loginHint)url.searchParams.set('login_hint',email)
+ return url.href
+}
 const answers='.rer/local/signin-answers.json',env={...process.env,CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false'}
 let browser,dev
 await mkdir('.rer/local',{recursive:true,mode:0o700});await mkdir('evidence/browser',{recursive:true})
@@ -35,27 +41,27 @@ try {
  if(await confirmation.count()){await confirmation.check();await page.getByRole('button',{name:'Finish setup'}).click()}
  await page.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
  await page.getByRole('button',{name:'Sign out',exact:true}).click()
- await page.waitForURL(managed.origin+'/signin')
+ await page.waitForURL(managed.origin+signIn.path)
  assert.equal((await context.request.get(managed.origin+'/api/state')).status(),401)
  let submitted=0
  page.on('request',request=>{if(request.method()==='POST'&&new URL(request.url()).pathname==='/auth/magic-link')submitted++})
  for(const width of [1440,390]) {
   await page.setViewportSize({width,height:1000})
-  await page.goto(managed.origin+'/signin?login_hint='+encodeURIComponent(owner))
+  await page.goto(openApp(owner))
   const email=page.getByLabel('Email',{exact:true})
   assert.equal(await email.inputValue(),owner)
   await email.fill('relief.lead@example.com')
   assert.equal(await email.inputValue(),'relief.lead@example.com','a hint stays editable')
-  await page.goto(managed.origin+'/signin?login_hint='+encodeURIComponent(owner))
+  await page.goto(openApp(owner))
   assert.equal(await email.inputValue(),owner)
   assert.equal(submitted,0,'a hint never submits the form')
   await page.screenshot({path:`evidence/browser/signin-login-hint-${width}.png`,fullPage:true})
  }
  for(const hint of ['','invalid<address>']) {
-  await page.goto(managed.origin+'/signin?login_hint='+encodeURIComponent(hint))
+  await page.goto(openApp(hint))
   assert.equal(await page.getByLabel('Email',{exact:true}).inputValue(),'')
  }
- await page.goto(managed.origin+'/signin?login_hint='+encodeURIComponent(owner))
+ await page.goto(openApp(owner))
  await page.getByRole('button',{name:'Email a sign-in link',exact:true}).click()
  await page.getByRole('alert').waitFor()
  assert.equal(submitted,1,'only explicit submission requests delivery')
