@@ -6,7 +6,7 @@ Current release 1 supports local/hosted coordination beside an existing pager: m
 
 ## Maintained verification flows
 
-The numbered flows are acceptance requirements through the product’s public doors. Status is assessed from source and maintained exercising tests at main `661e39e334c5ffcc263df5218bdd519e0e2aec09`, starting from the supplied audit at `61a02005ab5731c374e8db8af8fd451ae257e314` and re-reading changed paths. **done** is limited to the named implemented flow, **partial** means a subset, **missing** means no implementing flow. Each build round records the exact tested commit and actual result separately. Listing a future journey does not mean a new test exists or that it passed. No live mail/phone/provider/hosted account, native-device or standby result is inferred from local tests.
+The numbered flows are acceptance requirements through the product’s public doors. Status is assessed from source and maintained exercising tests at main `661e39e334c5ffcc263df5218bdd519e0e2aec09`, starting from the supplied audit at `61a02005ab5731c374e8db8af8fd451ae257e314` and re-reading changed paths. OC-055–065 and the sharpened journeys of existing clauses answer buyer review round 1 (16 October 2026) and are assessed against the same unchanged application code. **done** is limited to the named implemented flow, **partial** means a subset, **missing** means no implementing flow. Each build round records the exact tested commit and actual result separately. Listing a future journey does not mean a new test exists or that it passed. No live mail/phone/provider/hosted account, native-device or standby result is inferred from local tests.
 
 `rer verify` is the maintained full local entrypoint. Contract-document changes use the existing `rer check --profile first-party` validation; do not weaken checks, change IDs or treat a status/copy assertion as feature acceptance. Existing test files below are entrypoints, not promises that they cover every future requirement.
 
@@ -42,7 +42,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/activation-browser.mjs`. No automatic incident age/count deletion is implemented; complete retention controls are OC-040.
 
-9. **OC-009 — Accessible interface. Status: partial.** At 1440 and 390, use keyboard-only declaration, acknowledgement, notes, schedules, overrides and preview; inspect focus/labels, status announcements, literal hostile HTML and a real stale-write failure with no saved claim. Check contrast, screen-reader operation and every new target surface before its release.
+9. **OC-009 — Accessible interface. Status: partial.** At 1440 and 390, use keyboard-only declaration, acknowledgement, notes, schedules, overrides and preview; inspect focus/labels, status announcements, literal hostile HTML and a real stale-write failure with no saved claim. Run axe-core with the WCAG 2.2 A and AA rule sets on every surface at 1440 and 390 in light and dark themes and record zero violations; complete the named VoiceOver/Safari, NVDA/Chrome, iOS VoiceOver and Android TalkBack journeys for acknowledge, snooze, reassign and schedule view with recorded outcomes; and publish the release's conformance report before any new target surface ships.
 
    Existing implementation / exercising flow: `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/keyboard-coordination.mjs`; `tests/activation-browser.mjs`. Maintained keyboard/responsive journeys exist; full accessibility conformance is not established.
 
@@ -110,19 +110,19 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`. Authenticated ICS downloads and manual overrides exist; swaps, reminders and persistent revocable subscriptions are missing.
 
-26. **OC-026 — Native US phone, SMS, push and email paging. Status: missing.** On registered US carrier phones, trigger a real alert and verify voice/DTMF, SMS replies/links, push and incident email. Disable Twilio then the second provider and the push path separately; prove an independent route reaches the responder. Reject forged/duplicate callbacks, expose uncertainty and opt-out, and record actual receipts and human acknowledgement rather than test-provider success.
+26. **OC-026 — Native US phone, SMS, push and email paging. Status: missing.** On registered US carrier phones, trigger a real alert and verify voice/DTMF, SMS replies/links, push and incident email, with intake-to-first-attempt measured against the OC-064 bar; send a low-urgency alert and verify only the responder's low-urgency rules fire. Disable Twilio then the second provider and the push path separately; prove an independent route reaches the responder. Reject forged/duplicate callbacks, expose uncertainty and opt-out, and record actual receipts and human acknowledgement rather than test-provider success.
 
    Existing evidence: no implementing flow; this is required target acceptance. Only the paging refusal exists; no live providers, responder rules or carrier drill.
 
-27. **OC-027 — Durable escalation until acknowledged. Status: partial.** Trigger through the Events API, close the browser, cross a handoff and observe primary, secondary, repeat and round-robin pages. Restart workers at a deadline; race reassignment, acknowledgement, duplicate callbacks and acknowledgement expiry. Inspect one consistent obligation history, stopped jobs and the final failure path.
+27. **OC-027 — Durable escalation until acknowledged. Status: partial.** Trigger through the Events API, close the browser, cross a handoff and observe primary, secondary, repeat and round-robin pages, each first attempt within the OC-064 deadline-lateness bar of its persisted due time (a 5-minute escalation fires between 5:00 and 5:30 at p99) and none early. Recover the source before the first escalation deadline and observe no further notification and a recorded stopped-by-recovery outcome. Restart workers at a deadline; race reassignment, acknowledgement, duplicate callbacks and acknowledgement expiry. Inspect one consistent obligation history, stopped jobs and the final failure path.
 
    Existing implementation / exercising flow: `src/paging-api.ts`; `src/family/response-operations/escalation.ts`; `src/delivery.ts`; `tests/activation.mjs`. Inspectable policies and historical acknowledge/cancel exist; active timers, reassignment, repeat and round-robin execution are absent.
 
-28. **OC-028 — Independent standby and tested takeover. Status: missing.** During live phone drills remove the main site’s network, storage, identity and account access in turn, split the sites, duplicate intake and acknowledge at either site. Measure loss-to-takeover and takeover-to-human-page times, verify fencing, role announcements and recovery/failback, and prove no acknowledged incident resumes. Publish measured results and operating instructions before cutover.
+28. **OC-028 — Independent standby and tested takeover. Status: missing.** During live phone drills remove the main site’s network, storage, identity and account access in turn, split the sites, duplicate intake and acknowledge at either site. Measure loss-to-takeover and takeover-to-first-provider-attempt times against the OC-064 bars (standby authority within 120 seconds of loss; first attempt for every due obligation within 60 seconds of takeover), verify fencing, role announcements and recovery/failback, and prove no acknowledged incident resumes. Publish measured results and operating instructions before cutover.
 
    Existing evidence: no implementing flow; this is required target acceptance. One Cloudflare coordination deployment is not independent pager continuity.
 
-29. **OC-029 — Native iOS and Android responder apps. Status: missing.** On physical supported iPhone and Android devices, trigger with the screen locked and DND enabled after permission enrollment; observe urgent notification and one-tap server acknowledgement. Deny permissions, revoke a device and disconnect data; verify phone escalation, pending offline state, current schedule and an accepted swap without duplicate authority.
+29. **OC-029 — Native iOS and Android responder apps. Status: missing.** On physical supported iPhone and Android devices, trigger with the screen locked and DND enabled after permission enrollment; observe urgent notification and one-tap server acknowledgement. Deny permissions, revoke a device and disconnect data; verify phone escalation, pending offline state, current schedule and an accepted swap without duplicate authority. Snooze for 15 minutes from the lock-screen notification and observe a re-page at expiry; complete acknowledge and reassign with VoiceOver and TalkBack.
 
    Existing evidence: no implementing flow; this is required target acceptance. Responsive web is implemented, but no native apps, entitlements or live critical-push acceptance exist.
 
@@ -158,7 +158,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing evidence: no implementing flow; this is required target acceptance. No response/load analytics or report export exists.
 
-38. **OC-038 — Complete incumbent migration and controlled cutover. Status: partial.** For each named incumbent migrate a representative export/account through preview, apply, restart, reconcile and undo, including custom policies, overrides and an open incident. Resolve named mapping differences, compare coverage across a US DST change, rehearse parallel alert routing and rollback, then perform an authorized real-phone cutover under OC-026–029. Opsgenie migration has a dated readiness checklist for its announced 5 April 2027 shutdown; current provider/export availability must be checked at execution.
+38. **OC-038 — Complete incumbent migration and controlled cutover. Status: partial.** For each named incumbent migrate a representative export/account through preview, apply, restart, reconcile and undo, including custom policies, overrides, integration keys, business services, stakeholder subscriptions, Automation Actions and an open incident. Repoint an unmodified Datadog webhook and an Alertmanager `pagerduty_configs` receiver by URL only after key activation and confirm one alert generation per source. Resolve named mapping differences, compare coverage across a US DST change, rehearse parallel alert routing and rollback, then perform an authorized real-phone cutover under OC-026–029. Opsgenie migration has a dated readiness checklist for its announced 5 April 2027 shutdown; current provider/export availability must be checked at execution.
 
    Existing implementation / exercising flow: `src/move-in/api.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`. Reviewed Opsgenie/PagerDuty schedule file move-in ships; JSM/VictorOps adapters, complete account reconciliation and live cutover do not.
 
@@ -186,7 +186,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/delivery.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Current release hold, structured bounds and explicit local capacity refusal exist; provider usage/budget and target integration acceptance do not.
 
-45. **OC-045 — Investigate before the responder opens the alert. Status: partial.** Trigger an incident with a recent deploy and Spool error, leave the browser closed and open it to an already-started evidence-backed investigation. Supply contradictory/stale logs and hostile embedded instructions, revoke one source mid-run and compare citation/permission boundaries and durable incomplete/failure outcomes with no production writes.
+45. **OC-045 — Investigate before the responder opens the alert. Status: partial.** Trigger an incident with a causal recent deploy, a Spool error and a decoy deploy on an unrelated service; open the first notification's link at notification time and find the investigation already running, with the causal deploy and error cited as leading evidence ranked first and the decoy not cited as cause, while the OC-065 recent-changes panel lists both deploys. Run the held-out suite and compare its top-1 result with the bar. Supply contradictory/stale logs and hostile embedded instructions, revoke one source mid-run and compare citation/permission boundaries and durable incomplete/failure outcomes with no production writes.
 
    Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Incident/alert/runbook context exists as in the audit; no investigator, telemetry or deploy connector is implemented.
 
@@ -198,7 +198,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/schedule-api.ts`; `src/delivery.ts`; `tests/activation.mjs`. Now/next reveals static gaps and production sends refuse; continuous readiness and scheduled live drills are missing.
 
-48. **OC-048 — Bounded remediation with independent recovery evidence. Status: missing.** Investigate a reversible production fault, inspect and approve one bounded plan, attempt changed/expired/revoked approval, cancel mid-execution and restart after an uncertain result. Observe executor authority, bounded action/rollback and independent failing then passing recovery evidence before a responder resolves through OC-004.
+48. **OC-048 — Bounded remediation with independent recovery evidence. Status: missing.** Investigate a reversible production fault, inspect and approve one bounded plan, attempt changed/expired/revoked approval, have a plan restricted to one named library action try to run another and see it refused, cancel mid-execution and restart after an uncertain result. Observe executor authority, bounded action/rollback and independent failing then passing recovery evidence before a responder resolves through OC-004.
 
    Existing evidence: no implementing flow; this is required target acceptance. No remediation planner, production executor or independent recovery integration exists.
 
@@ -222,9 +222,53 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/api.ts`; `src/paging-api.ts`; `tests/runtime.mjs`. Protected internal HTTP APIs and concurrency checks exist; versioned service-account APIs and outbound outbox/webhooks are absent.
 
-54. **OC-054 — Operational readiness and switching acceptance. Status: partial.** Operate the release with a realistic US team and alert load; stop each intake/timer/identity/storage/provider path, observe independent missed-deadline alarms and recover from backup. Inspect measured latencies/capacity and unanswered obligations, execute the buyer’s real-device cutover checklist and show unsupported/unproven rows accurately.
+54. **OC-054 — Operational readiness and switching acceptance. Status: partial.** Operate the release at the OC-064 reference load and publish the measured values against its bars; stop each intake/timer/identity/storage/provider path, observe independent missed-deadline alarms and recover from backup. Inspect measured latencies/capacity and unanswered obligations, execute the buyer’s real-device cutover checklist and show unsupported/unproven rows accurately.
 
    Existing implementation / exercising flow: `src/api.ts`; `src/delivery.ts`; `tests/runtime.mjs`; `tests/activation.mjs`. Storage health, local flows and honest paging refusal exist; end-to-end production readiness, independent watches and measured paging availability do not.
+
+55. **OC-055 — Drop-in PagerDuty, Opsgenie and Splunk On-Call intake. Status: missing.** Repoint an unmodified Datadog Webhooks monitor that uses the PagerDuty v2 payload, and an unmodified Alertmanager `pagerduty_configs` receiver, by changing only the URL. Fire, re-fire and resolve each one, and observe one alert generation per source and the escalation stopped by the resolve. Do the same with an Opsgenie Alert API create/close by alias and a Splunk On-Call CRITICAL/RECOVERY pair. Then send a resolve before any trigger, a trigger without a `dedup_key`, a forged or revoked key and a key for another service. Verify incumbent-shaped responses, no cross-service effect and protected-state receipts.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Only the native `/api/ingress/:source` schema with a required generation exists; no PagerDuty, Opsgenie or Splunk On-Call compatible endpoint or derived generation is implemented.
+
+56. **OC-056 — Alert-only pages, and source recovery that stops paging. Status: partial.** Trigger an alert-only page and recover it before the first escalation deadline with the browser closed. Observe that no further notification goes out, that a stopped-by-recovery outcome is recorded, and that no incident is left needing manual resolution. Repeat under the "notify recovered" policy and observe exactly one recovery notice to each person already notified. Recover a declared incident's alerts and observe that paging stops, the incident stays open and awaiting resolution, the reminder fires, and resolution is refused without an OC-004 summary.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Alerts are separate from declared incidents and source recovery closes only the matching alert generation; paging obligations, recovery-stopped outcomes and recovered notices are missing.
+
+57. **OC-057 — Urgency, support hours and per-urgency notification. Status: partial.** Send a `warning` to a support-hours service (New York, 09:00–17:00 Monday–Friday) at 03:00 New York time. Observe low urgency: only the responder's low-urgency rules fire, with no voice or SMS and no escalation past level one. At 09:00, observe the raise to high and the start of escalation. Send a `warning` at 11:00 and observe high urgency that escalates. Send a missing-severity event to a by-severity service and observe high. Re-trigger with a lower severity and observe no silent lowering. Lower urgency by hand and observe the attributed reason. Replay the policy across a DST change.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Per-service severity routing and suppression policy with replayable explanations exists; urgency, support hours, per-urgency notification rules and low-urgency escalation behaviour are missing.
+
+58. **OC-058 — Snooze and acknowledgement-timeout re-trigger. Status: missing.** Acknowledge, then snooze for 15 minutes from the browser and close it. Observe a re-page at the deadline, within the OC-064 lateness bar, to the current assignee. Repeat after a handoff and observe the page to the new on-call. Let an unsnoozed acknowledgement reach the service timeout, observe re-escalation from level one to the current on-call, and see each step on the timeline. Restart workers at the deadline and observe exactly one re-trigger. Recover the source mid-snooze and observe no re-page.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No snooze or acknowledgement-timeout deadline exists; paging is OFF.
+
+59. **OC-059 — Large and partly readable payloads still page. Status: missing.** Send a 300 KiB Alertmanager group of 200 alerts, and observe 200 alert events, a page and no refusal. Send a 600 KiB PagerDuty v2 event and a 3 MiB Alertmanager group. Observe an incomplete-intake alert that pages the service, an integration-owner notice, bounded evidence of what was dropped, and a 202 response with the truncation flag. Send an oversize unauthenticated request, observe a refusal diagnostic and no alert, and confirm no raw body is stored.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Intake refuses requests over 64 KiB with 413 (`src/api.ts`); no provider bounds, group splitting or incomplete-intake alert exists.
+
+60. **OC-060 — Incident triage list: search, filters, "mine" and bulk actions. Status: partial.** During a 50-incident storm, filter by team, service, urgency and status, view "assigned to me" on web and mobile, and acknowledge all 50 in one action. Each incident's timeline shows the bulk operation ID. A viewer's bulk attempt is refused for every item. A stale revision on one incident fails visibly while the other 49 commit. Replay the operation and observe no second change. Bulk-resolve declared incidents without a summary and observe refusal. Confirm that a foreign team's incidents are neither listed nor selectable.
+
+   Existing implementation / exercising flow: `src/routes/index.tsx`; `tests/keyboard-coordination.mjs`; `tests/activation-browser.mjs`. A selectable incident list with active count exists; search, filters, "mine", saved views and bulk actions are missing.
+
+61. **OC-061 — Business services, stakeholder subscriptions and internal status. Status: missing.** A stakeholder subscribes to "Checkout". An incident on a supporting service turns "Checkout" degraded on the internal status view. The stakeholder is notified only through the approved update, by their chosen channel, and is denied the incident timeline, alerts and runbook over web, mobile, API and export doors. An unsubscribed stakeholder receives nothing. A private team's business service is invisible to stakeholders outside its scope. A manual status override is attributed.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No business services, stakeholder role, subscriptions or internal status view exist.
+
+62. **OC-062 — Configuration as code with Terraform and OpenTofu. Status: missing.** Convert a PagerDuty Terraform module with schedules, layers, an escalation policy, services, integrations and a business service, and read its mapping report. `plan` shows the intended diff and the coverage preview, and `apply` produces the same configuration the UI preview showed. Edit a managed object out of band in the UI, and observe drift in the next `plan`, or a refusal if edits are locked. Apply a stale plan and observe refusal. Confirm integration keys never appear in plan output.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No Terraform/OpenTofu provider, dry-run plan endpoint, drift labelling or PagerDuty module converter exists.
+
+63. **OC-063 — Curated automation actions and named executors. Status: missing.** A responder runs a library diagnostic from Slack, and its bounded output appears in the incident timeline with attribution. A viewer is refused, and so is a responder outside the allowed team. Run a Kubernetes rollout restart through the runner and a GitHub Actions dispatch, then kill the runner mid-run and observe an uncertain outcome with no automatic rerun. An agent plan restricted to one named action cannot run another. Import a PagerDuty Automation Actions export and observe inactive entries with a mapping report.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No action library, runner or executor connector exists.
+
+64. **OC-064 — Stated paging timing bars and reference load. Status: missing.** Drive the reference load through the public intake doors, with provider fakes only at the paid network edge for timing and a real-phone sample for end-to-end receipt. Measure p50, p95, p99 and maximum for intake receipt, intake to first attempt, deadline lateness, stop-after-acknowledgement and provider acceptance, and compare each with its bar. Confirm that no deadline fires early and that a 5-minute escalation fires between 5:00 and 5:30 at p99. Publish the measured values in the OC-054 readiness matrix.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No paging exists to measure; no reference-load harness or published measurements exist.
+
+65. **OC-065 — Change events and recent changes for responders. Status: missing.** Send a change through the PagerDuty-compatible change endpoint and a GitHub deployment webhook, one for the alerting service and one decoy for an unrelated service, plus one for a dependency. Trigger the alert and observe that no page is caused by any change event. The recent-changes panel lists the service's and the dependency's changes, labelled, and omits the unrelated decoy. A user without access to the service sees none of them. Replay a change event and observe one record.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No change-event intake or recent-changes panel exists.
 
 ## Cross-cutting acceptance and release constraints
 
@@ -240,4 +284,4 @@ Obsolete synthetic-dispatch tests and the drill UI were removed in the existing 
 
 ## Clause status totals
 
-**18 done**, **26 partial**, **10 missing**; 54 clauses. Every OC-001–054 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
+**18 done**, **29 partial**, **18 missing**; 65 clauses. Every OC-001–065 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
