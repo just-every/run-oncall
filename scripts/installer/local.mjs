@@ -33,6 +33,7 @@ const lifecycle = {
 export const adapter = lifecycle;
 export const { install } = lifecycle;
 export const commandAdapter = createCommandAdapter(lifecycle, {
+ generatedOutputs: ['management/integration/deployment-spec.json'],
  site: { entry: 'src/site/pages.tsx', output: 'dist/site', declaration: 'deploy-site.json', config: 'vite.site.config.ts' },
  publicPages: ['/', '/docs', '/docs/install', '/signin/local'],
  dev: developmentTarget, preview: previewTarget, verify: ['pnpm', ['run', 'verify:app']], deploy: async (context) => { if (!context.options?.dryRun) { throw refuse('Hosted Oncall requires a standby and an approved release. Paging also requires a real-phone drill.'); } return ownerDeploy('deploy.json', lifecycle)(context); },
