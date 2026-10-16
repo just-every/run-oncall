@@ -10,7 +10,6 @@ import { sessionCookieLine } from './session-cookie'
 const theme = { href: '/rer-theme.css', productName: branding.name, accentColor: branding.primaryColor }
 
 export interface Bindings {
- LOCAL_ONLY: string
  DB: D1Database
  AUTH_ORIGIN: string
  AUTH_LOCAL?: string
@@ -51,13 +50,6 @@ export async function authResponse(request: Request, original: Bindings): Promis
  const env = runtimeBindings(original), url = new URL(request.url)
  if (url.pathname === '/signin' || url.pathname === '/signin/local') {
   if (!admitted(request, env.AUTH_ORIGIN)) return new Response('Not found', { status: 404, headers: privateHeaders })
-  // Workspace passwords and restore mapping use the loopback-only API. Hosted
-  // compatibility links serve the same native sign-in document at this alias.
-  if (url.pathname === '/signin/local' && !isLoopbackHost(url.hostname)) {
-   if (!['GET', 'HEAD'].includes(request.method)) return new Response(null, { status: 405, headers: { ...privateHeaders, allow: 'GET, HEAD' } })
-   url.pathname = '/signin'
-   request = new Request(url, request)
-  }
  }
  // Keep rer's private local owner-entry key exchange independent of mail.
  if (url.pathname === '/__dev/key') {
@@ -70,8 +62,8 @@ export async function authResponse(request: Request, original: Bindings): Promis
    defaultReturnTo: '/setup',
    links: async () => [
     ...(isLoopbackHost(url.hostname) ? [{ href: '/docs/install#sign-in-emails-on-your-computer', label: 'Local owner entry and sign-in email settings' }] : []),
-    // Held installations keep their workspace name-and-password accounts; their door is /signin/local.
-    ...(isLoopbackHost(url.hostname) && await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first() ? [{ href: '/signin/local', label: 'Sign in with a workspace password' }] : []),
+    // Workspace members use installation-local credentials on local and hosted apps.
+    ...(await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first() ? [{ href: '/signin/local', label: 'Sign in with a workspace password' }] : []),
    ],
   })(request)
   if (page) {

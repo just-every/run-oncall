@@ -1,6 +1,9 @@
 import { linkRestoredOwner, restoredAdministrators } from './identity-link';
 import { loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
 import { nativeMember } from './native-member';
+import { runtimeBindings, type Bindings } from './auth.server';
+import { admitted } from './base/setup-state';
+import { isLoopbackHost } from './modules/operator-auth/index.mjs';
 import { installSchedules } from './schedule-api';
 import { installMoveIn } from './move-in/api';
 import { Refusal } from './move-in/refusals';
@@ -29,7 +32,7 @@ import {
   type State,
   type Member,
 } from "./family/response-operations/domain";
-type Env = { DB: D1Database; LOCAL_ONLY: string; RER_DEPLOY_SOURCE?: string; RER_DEPLOY_FINGERPRINT?: string; RER_VERSION?: { id: string } };
+type Env = Bindings;
 const api = new Hono<{ Bindings: Env; Variables: { actor: Member; sessionDigest: string } }>();
 const hash = async (v: string) =>
   Array.from(
@@ -135,18 +138,17 @@ api.use("*", async (c, next) => {
   c.header("Cache-Control", "no-store");
   c.header("X-Content-Type-Options", "nosniff");
   const url = new URL(c.req.url);
-  // Health reports storage and which deployment answered, never private data,
-  // so a hosted health check reaches it; every other door stays loopback-only.
-  if (
-    c.req.path !== "/health" &&
-    (c.env.LOCAL_ONLY !== "true" ||
-      !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))
-  ) {
+  // Hosted and local coordination share the same current-member authority.
+  // Keep requests on the configured application origin, as the sign-in doors do.
+  if (c.req.path !== "/health" && !admitted(c.req.raw, runtimeBindings(c.env).AUTH_ORIGIN)) {
     await discardDeniedBody(c);
-    return c.json(
-      { error: "This incubation supports loopback local operation only" },
-      503,
-    );
+    return c.json({ error: "Not found" }, 404);
+  }
+  // The old first-admin password bootstrap belongs to local installations.
+  // A hosted first owner is claimed by rer and signs in through real mail.
+  if (c.req.path === "/api/setup" && !isLoopbackHost(url.hostname)) {
+    await discardDeniedBody(c);
+    return c.json({ error: "Not found" }, 404);
   }
   if (c.req.method !== "GET" && !c.req.path.startsWith("/api/ingress/")) {
     if (c.req.header("origin") !== url.origin) {
@@ -163,7 +165,7 @@ api.get("/health", async (c) => {
     status: "ok",
     storage: "available",
     paging: "not-provided",
-    target: "local-only",
+    target: "coordination",
     ...deploymentHealth(c.env),
   });
 });

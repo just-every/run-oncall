@@ -6,7 +6,7 @@ import { RequestExample } from './RequestExample';
 import './ingress.css';
 
 type Run = (path: string | (() => Promise<any>), data?: unknown, success?: string | ((value: any) => string)) => Promise<any>;
-export function LocalIngress({ admin, services, busy, run }: { admin: boolean; services: Service[]; busy: boolean; run: Run }) {
+export function MonitoringIngress({ admin, services, busy, run }: { admin: boolean; services: Service[]; busy: boolean; run: Run }) {
   const [source, setSource] = useState('monitoring');
   const [secret, setSecret] = useState('');
   const [mode, setMode] = useState('bearer');
@@ -20,8 +20,8 @@ export function LocalIngress({ admin, services, busy, run }: { admin: boolean; s
     catch { setCopyStatus('Clipboard unavailable. Select the key in the field and copy it.'); }
   }
   return <section className="panel padded ingress">
-    <h2>Local ingress</h2>
-    <p>Connect monitoring running on this computer. This release accepts events only at the local app address; a remote monitoring service cannot reach it. Hosted intake is owner-held until the standby paging host and hosted release are approved.</p>
+    <h2>Monitoring ingress</h2>
+    <p>Connect your monitoring to this installation’s app address. Hosted Oncall records alert events and coordinates incidents beside your existing pager. Keep that pager active: Oncall sends no pages and has no independent standby.</p>
     {!services.length ? <p><a href="#services">Create a service first</a> so Oncall knows what the signal affects.</p> : <>
       {admin ? <>
         <h3>1. Create a monitoring source</h3>
@@ -35,7 +35,7 @@ export function LocalIngress({ admin, services, busy, run }: { admin: boolean; s
           <label className="field"><span id="ingress-key-label">Source key (32+ characters)</span><input name="key" aria-labelledby="ingress-key-label" type="password" required minLength={32} maxLength={200} value={secret} onChange={e => { setSecret(e.target.value); changed(); }} aria-describedby="key-help" /><small id="key-help">Generate a random private key, then copy it to your sender's secret settings. Keep it out of source code and shared requests. Saving an existing Source ID replaces its key and access settings; update the sender too.</small></label>
           <div className="ingress-actions"><button type="button" onClick={() => { setSecret(Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join('')); changed(); }}>Generate key</button><button type="button" disabled={!secret} onClick={copyKey}>Copy key</button></div>
           <p role="status">{copyStatus}</p>
-          <label className="field"><span id="ingress-auth-label">Authentication</span><select name="mode" aria-labelledby="ingress-auth-label" value={mode} onChange={e => { setMode(e.target.value); changed(); }} aria-describedby="auth-help"><option value="bearer">Bearer token (recommended)</option><option value="signed">HMAC signature</option></select><small id="auth-help">Bearer sends the private key in the Authorization header and is the simplest local setup. HMAC keeps the key out of the request and signs its exact body with SHA-256 plus a timestamp within five minutes. Choose HMAC only if your sender can calculate that signature; the two modes are not interchangeable.</small></label>
+          <label className="field"><span id="ingress-auth-label">Authentication</span><select name="mode" aria-labelledby="ingress-auth-label" value={mode} onChange={e => { setMode(e.target.value); changed(); }} aria-describedby="auth-help"><option value="bearer">Bearer token (recommended)</option><option value="signed">HMAC signature</option></select><small id="auth-help">Bearer sends the private key in the Authorization header and is the simplest setup. HMAC keeps the key out of the request and signs its exact body with SHA-256 plus a timestamp within five minutes. Choose HMAC only if your sender can calculate that signature; the two modes are not interchangeable.</small></label>
           <label className="field"><span id="ingress-service-label">Allowed service</span><select name="service" aria-labelledby="ingress-service-label" value={service.id} onChange={e => { setServiceId(e.target.value); changed(); }}>{services.map(item => <option key={item.id} value={item.id}>{item.name} · {item.environment}</option>)}</select><small>Only this service may receive events with this key.</small></label>
         </Form>
         {saved && <p role="status">Source saved. Use its key with the request below, or send a test event here.</p>}

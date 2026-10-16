@@ -1,4 +1,4 @@
-import { LocalIngress } from '../integrations/LocalIngress';
+import { MonitoringIngress } from '../integrations/MonitoringIngress';
 import { MoveInWorkspace } from '../MoveInWorkspace';
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -173,7 +173,7 @@ function Workspace() {
               <h1>{page === "schedules" ? "Schedules" : page === "move-in" ? "Move-in kit" : "Oncall"}</h1>
               <span className="technical">
                 <span className="tiny-dot" />
-                Technical response · local workspace
+                Technical response · coordination
               </span>
             </div>
             <p className="subtitle">Coordinate · recover · learn</p>
@@ -850,7 +850,7 @@ function Workspace() {
                 ))}
               </details>
             </section>
-            <LocalIngress admin={admin} services={s.services} busy={w.busy} run={w.run} />
+            <MonitoringIngress admin={admin} services={s.services} busy={w.busy} run={w.run} />
           </div>
         )}
         {page === "reviews" && (

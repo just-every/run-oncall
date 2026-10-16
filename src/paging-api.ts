@@ -5,7 +5,6 @@ import { acknowledge, cancel, replay, validatePolicy, type EscalationJob } from 
 import { validatePagingArchive, preparePagingImport } from './family/response-operations/paging-archive'
 import { pagingSnapshot, commitPaging, putSchedule, putPolicy, putJob, replaceArchive, type PagingSnapshot } from './paging-store'
 
-type Env={DB:D1Database;LOCAL_ONLY:string}
 function exact(v:any,keys:string[]) {
   if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!keys.includes(k))) fail('Invalid or unknown scheduling request fields')
   return v

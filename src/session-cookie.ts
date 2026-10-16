@@ -12,4 +12,4 @@ export function readSessionCookie(request: Request) {
 }
 
 export const sessionCookieLine = (request: Request, token: string, maxAge: number) =>
- `${sessionCookieName(request)}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}`
+ `${sessionCookieName(request)}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}${new URL(request.url).protocol === 'https:' ? '; Secure' : ''}`

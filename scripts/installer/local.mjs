@@ -3,7 +3,6 @@ import { join } from 'node:path';
 import { operatorInstaller, developmentTarget, previewTarget } from '@runeditrun/rer/operator-installer';
 import { selectLocalState } from '@runeditrun/rer/local/state';
 import { commandAdapter as createCommandAdapter } from '@runeditrun/rer/adapter';
-import { refuse } from '@runeditrun/rer/errors';
 import { ownerDeploy } from '@runeditrun/rer/deploy';
 import { localPortability } from '@runeditrun/rer/portability';
 import { labels } from '@runeditrun/rer/local-installer';
@@ -36,7 +35,7 @@ export const commandAdapter = createCommandAdapter(lifecycle, {
  generatedOutputs: ['management/integration/deployment-spec.json'],
  site: { entry: 'src/site/pages.tsx', output: 'dist/site', declaration: 'deploy-site.json', config: 'vite.site.config.ts' },
  publicPages: ['/', '/docs', '/docs/install', '/signin/local'],
- dev: developmentTarget, preview: previewTarget, verify: ['pnpm', ['run', 'verify:app']], deploy: async (context) => { if (!context.options?.dryRun) { throw refuse('Hosted Oncall requires a standby and an approved release. Paging also requires a real-phone drill.'); } return ownerDeploy('deploy.json', lifecycle)(context); },
+ dev: developmentTarget, preview: previewTarget, verify: ['pnpm', ['run', 'verify:app']], deploy: ownerDeploy('deploy.json', lifecycle),
  portability: localPortability({ database: 'oncall-local', policyModule: 'scripts/installer/archive-policy.mjs', transient: ['local runtime caches and logs'] }),
  setup: { manifestFile: 'rer-setup.json' }, browserModule: 'scripts/installer/ui/seed.mjs',
  // Local dev identity: the local-only Worker entry, the build output rer build

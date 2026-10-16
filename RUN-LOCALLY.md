@@ -195,10 +195,11 @@ After import, run setup to establish the owner and local configuration. Auth,
 private settings and transient runtime state are excluded. Remote
 transfer is unsupported by the maintained references and fails visibly.
 
-Actual Oncall deployment refuses before a provider request until an independent
-standby and hosted release are approved. Paging also requires a real-phone drill.
-`rer deploy --dry-run` validates and builds locally without a
-provider request. The default environment is `production`; select another with
+Release 1 supports hosted incident coordination alongside the existing pager,
+with paging OFF and no independent standby prerequisite. Release 2 paging and
+independent standby are not built. `rer deploy` deploys coordination to the
+operator's Cloudflare account; see [hosting instructions](docs/install.md#host-for-your-team).
+`rer deploy --dry-run` validates and builds locally without a provider request. The default environment is `production`; select another with
 `--environment NAME`. Local validation does not establish provider acceptance,
 hosted health or mail delivery.
 
@@ -207,7 +208,7 @@ flags, aliases, pins, effects and local state without installing or running
 project commands. New verbs accept `--help`, `--cwd PATH`, `--non-interactive`
 and `--json`. Setup also accepts `--owner-name`, `--port`, `--host` and a
 private JSON `--answers FILE`. Dev and preview accept `--port`, `--host`,
-`--idle-timeout`, and `--stop`. Deploy accepts `--environment` and `--dry-run`;
+`--idle-timeout`, and `--stop`. Deploy accepts `--environment`, `--dry-run` and `--remove --yes`;
 export/import accept their target, file and restore options. `check` accepts
 `--profile first-party`. Heavy commands accept `--no-queue` only when the
 original caller has `CI=true`. Release retains its own compatibility flags.
@@ -237,10 +238,14 @@ git pull --ff-only
 rer deploy
 ```
 
-`rer` installs a pulled change of its own pin before it runs, so there is nothing to install by hand, and it provides the Node and pnpm versions this checkout pins. Hosting for a team is owner-held. A newcomer cannot enable it: the owner must approve the independent standby paging host and hosted release first. `rer deploy` refuses before any provider request until then, and paging stays OFF until a real-phone drill passes. Use `rer deploy --dry-run` to build and validate locally. Once hosting is approved, `rer deploy` deploys to your own Cloudflare account (it reads `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` from the environment), claims the owner you set up automatically and removes its one-time setup token; there is no token to copy or delete, and you sign in at the app address with an emailed link. An update keeps that owner. To take a hosted installation down again, with the same credentials:
+`rer` installs a pulled change of its own pin before it runs and provides the pinned Node and pnpm versions. For first deployment, prepare a real owner mailbox using `rer setup --owner-email you@example.com` before the checkout's first launch. Supply `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` privately for your Cloudflare account. The deployment declaration selects SendGrid: supply `SENDGRID_API_KEY` and `MAIL_FROM` from a verified sender for hosted email-link sign-in. See [Install and run](docs/install.md#host-for-your-team) for the complete first-deployment sequence.
+
+`rer deploy` applies hosted migrations, checks deployment identity, claims the configured owner automatically and retires its one-time setup token. Sign in at the returned HTTPS app address with an emailed link; local dev keys and owner-entry links do not work there. Updating keeps the hosted owner and data. Local and hosted databases are separate; deployment does not upload local records.
+
+To take a hosted installation down again, keep its deployment record and use the same Cloudflare credentials:
 
 ```sh
 rer deploy --remove --yes
 ```
 
-This deletes only what the deployment record says `rer deploy` created (the Worker, database and any queues), reads back that each is gone and touches nothing else. Your local folder and data stay.
+This deletes only what the deployment record says `rer deploy` created (the Worker, database and any queues), reads back that each is absent and touches nothing else. Successful removal requires that empty readback. Your local folder and local data stay.

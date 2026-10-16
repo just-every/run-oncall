@@ -11,7 +11,7 @@ import { identity } from './identity'
 import { authResponse, runtimeBindings, operatorAuth, type Bindings } from './auth.server'
 import {receivedRequest} from './request-body'
 import {readSessionCookie} from './session-cookie'
-type Env=Bindings & {LOCAL_ONLY:string}
+type Env=Bindings
 export default withDemo({
   async fetch(request,env,execution) {
     if (new URL(request.url).pathname === '/favicon.ico' && ['GET', 'HEAD'].includes(request.method))
@@ -23,7 +23,7 @@ export default withDemo({
       if(!admitted(request,bindings.AUTH_ORIGIN))return new Response('Not found',{status:404});
       if(!['GET','HEAD'].includes(request.method))return (await lobbyResponse(request,bindings,identity))!;
       // No workspace authority is possible without a credential. Keep the public
-      // Lobby on its claim-state read instead of the local-only workspace API.
+      // Lobby on its claim-state read instead of the private workspace API.
       // Native local cookies carry a port, including dev/sign-in-as sessions.
       const hasCredential=!!readSessionCookie(request)||(request.headers.get('cookie')??'').split(';').some(cookie=>
         /^(?:__Host-operator_session|operator_session_local(?:_\d+)?)=/.test(cookie.trim()));

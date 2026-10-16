@@ -5,7 +5,7 @@ import type { DocsPage, DocsPageMeta, DocsSection } from './types';
 
 export const docsSections: DocsSection[] = sections;
 export const docsPages: DocsPageMeta[] = sections.flatMap(section => section.pages);
-export const docsLead = 'Run Oncall on your own computer, set your rota, and coordinate incidents beside your existing pager.';
+export const docsLead = 'Run Oncall locally or in your own Cloudflare account. Set your rota and coordinate incidents beside your existing pager; paging stays OFF.';
 
 /** Whether `slug` is a published page; the docs route answers 404 for anything else. */
 export function hasDocsPage(slug: string): boolean {

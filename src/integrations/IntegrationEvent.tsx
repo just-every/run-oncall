@@ -4,7 +4,7 @@ import type { Service } from '../family/response-operations/domain';
 type Props = { source: string; secret: string; mode: string; service: Service; services: Service[]; busy: boolean; run: (path: string | (() => Promise<any>), data?: unknown, success?: string | ((value: any) => string)) => Promise<any> };
 export function IntegrationEvent({ source, secret, mode, service, services, busy, run }: Props) {
   return <details>
-    <summary>Send a local integration event</summary>
+    <summary>Send an integration event</summary>
     <p>Use the source you saved above. For a recovery, keep the same alert key and generation as its trigger, choose recover, and use a new event ID. To fire again after recovery, start a new generation.</p>
     <Form busy={busy} label="Admit event" onSubmit={data => run(async () => {
       const selected = services.find(item => item.id === data.service);

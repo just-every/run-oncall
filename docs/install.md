@@ -98,9 +98,7 @@ rer dev
 
 There are no new migrations in 0.2.0. Your data, owner and password accounts are kept. Do not reset to upgrade.
 
-### Later updates
-
-The application deployment declaration selects SendGrid. Supply `SENDGRID_API_KEY` and `MAIL_FROM` privately, using a sender verified by your SendGrid account. Local owner entry needs neither setting.
+### Later local updates
 
 Update this checkout without resetting its data:
 
@@ -111,10 +109,56 @@ git pull --ff-only
 rer dev
 ```
 
-This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. No hosted deployment is needed. `rer` installs a pulled change of its own pin before it runs, so there is nothing to install by hand, and it provides the Node and pnpm versions this checkout pins. Hosted Oncall is owner-held. A newcomer cannot enable hosting: the owner must approve an independent standby paging host and a hosted release first. Until then, `rer deploy` refuses before any provider request. Paging stays OFF until a real-phone drill passes. Use `rer deploy --dry-run` to build and validate locally. Once hosting is approved, `rer deploy` deploys to your own Cloudflare account (it reads `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` from the environment), claims the owner you set up automatically and removes its one-time setup token; there is no token to copy or delete, and you sign in at the app address with an emailed link. An update keeps that owner. To take a hosted installation down again, with the same credentials:
+This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. `rer` installs a pulled change of its own pin before it runs and provides the pinned Node and pnpm versions. Do not reset to upgrade.
+
+## Host for your team
+
+Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Release 2 paging and independent standby are not built. Keep the pager's routes and notification settings in place.
+
+Before first launch, choose a real owner mailbox in a checkout prepared for hosting:
+
+```sh
+rer install
+rer setup --owner-email you@example.com
+```
+
+Setup prepares the owner and private settings locally and stops its temporary app before returning. Repeating setup preserves the configured owner; it does not replace a development owner with a new email. Use a checkout configured for the real mailbox you intend to use on the hosted installation.
+
+Supply these environment variables privately to the deployment process:
+
+- `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` for your own Cloudflare account.
+- `SENDGRID_API_KEY` and `MAIL_FROM` for the remote sign-in mail provider. The deployment declaration selects SendGrid; use a sender verified by that account.
+
+A configured remote mail provider is required for hosted email-link sign-in. Local `RER_OPEN` owner entry requires no mail and does not work on the hosted app. Keep credentials out of Git, shell arguments and shared logs.
+
+```sh
+rer deploy --dry-run
+rer deploy
+```
+
+The dry run builds and validates locally without provider requests. `rer deploy` creates the hosted Worker and database, applies migrations and verifies the deployed identity at `/health`. It claims the configured owner automatically and retires its one-time setup token. There is no setup token to copy or delete.
+
+Open the app address returned by deployment, enter the owner email and press **Email a sign-in link**. Open the email on the same device and press **Confirm**. Complete **Finish setup** at `/setup` if shown. The owner uses native email links. Team members created by an admin use their workspace name and password at `/signin/local`, on the local or hosted app. These credentials belong to that installation; Oncall sends no invitations. Anonymous first-admin bootstrap is restricted to the local loopback app. See [Team and sign-in](team.md).
+
+Hosted D1 and your local database are separate stores. Deploy does not upload local schedules or incidents. The maintained `rer export` and `rer import` commands operate on local data; they do not transfer records to or from the hosted installation.
+
+### Update a hosted installation
+
+Keep the deployment record in this checkout and use the same Cloudflare credentials:
+
+```sh
+git pull --ff-only
+rer deploy
+```
+
+The command updates the hosted app and applies migrations, keeping its owner, schedules and incidents. Keep remote-mail configuration available for deployment and sign-in. Do not reset to upgrade.
+
+### Remove a hosted installation
+
+Keep the deployment record and use the same Cloudflare credentials:
 
 ```sh
 rer deploy --remove --yes
 ```
 
-This deletes only what the deployment record says `rer deploy` created (the Worker, database and any queues), reads back that each is gone and touches nothing else. Your local folder and data stay.
+This deletes only what the deployment record says `rer deploy` created (the Worker, database and any queues), then reads back that every recorded resource is absent. Successful removal requires that empty readback. Removal deletes the hosted database and its records. It touches nothing else; your local folder and local data stay.

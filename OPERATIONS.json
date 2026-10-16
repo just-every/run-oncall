@@ -87,7 +87,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "Application deployment is held: rer deploy refuses before any provider request until an independent standby and approved hosted release exist. Paging also requires a real-phone drill. --site publishes the separate Run site with provider credentials. --dry-run builds and validates the selected app or site locally without provider requests."
+      "effects": "Deploy incident coordination to your own Cloudflare account, claim the configured owner and retire its one-time setup token. Requires Cloudflare credentials and configured remote sign-in mail. Paging stays OFF; keep your existing pager active. --remove --yes deletes owned resources and reads back their absence. --site publishes the separate Run site. --dry-run builds and validates locally without provider requests."
     },
     "export": {
       "argv": [
@@ -180,7 +180,7 @@
   },
   "health": {
     "path": "/health",
-    "meaning": "The actual local Worker is serving."
+    "meaning": "The coordination Worker can read its database; this is not a paging delivery guarantee."
   },
   "acceptance": {
     "document": "ACCEPTANCE.md"

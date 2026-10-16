@@ -44,7 +44,7 @@
     {
       "name": "OWNER_EMAIL",
       "label": "Owner email",
-      "help": "The private RER_OPEN entry from rer dev signs in as this owner. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default.",
+      "help": "The owner of this installation. Hosted sign-in requires a configured remote mail provider and real credentials; rer deploy claims this owner automatically. Local rer dev also provides a private RER_OPEN owner entry.",
       "kind": "email",
       "required": true,
       "prefill": "account-email",

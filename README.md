@@ -3,7 +3,7 @@
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.webp">
       <source media="(prefers-color-scheme: light)" srcset=".github/assets/banner-light.webp">
-      <img src=".github/assets/banner-light.webp" width="100%" alt="Oncall: Everyone knows who's on call. 100% free, open source alternative to PagerDuty and Opsgenie.">
+      <img src=".github/assets/banner-light.webp" width="100%" alt="Oncall: Everyone knows who's on call. Free, open source incident coordination alongside your existing pager.">
     </picture>
   </a>
 </p>
@@ -72,7 +72,7 @@ rer verify
 
 This command uses Node directly; no global pnpm is needed. On Linux, add `--with-deps` to the browser install command if system libraries are missing. `rer doctor` reports a missing verification browser and prints this command. `rer check` is silent on success (exit 0); `rer check --json` prints the result.
 
-Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. If it refuses with `target_not_empty`, export any data you need to keep, stop dev and preview, then run `rer reset --yes` before importing into the now-empty installation. Configure a new owner, sign in, then explicitly map an archived administrator identity from the signed-out workspace; credentials never travel. Reset deletes local data and owner settings and keeps your exports; see [Export and restore](docs/data.md) for the in-place restore sequence. A deploy dry run builds and validates locally without provider requests. Hosting stays under the owner's control: a newcomer cannot enable it. The owner must approve an independent standby paging host and the hosted release. Until then, `rer deploy` refuses before any provider request. Paging remains OFF until a real-phone drill passes as well. Use `describe` for flags and `doctor` for missing local prerequisites.
+Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. If it refuses with `target_not_empty`, export any data you need to keep, stop dev and preview, then run `rer reset --yes` before importing into the now-empty installation. Configure a new owner, sign in, then explicitly map an archived administrator identity from the signed-out workspace; credentials never travel. Reset deletes local data and owner settings and keeps your exports; see [Export and restore](docs/data.md) for the in-place restore sequence. A deploy dry run builds and validates locally without provider requests. Release 1 supports hosted incident coordination alongside your existing pager. Paging stays OFF; an independent standby is not required for coordination. Release 2 paging and its independent standby are not built. See [hosting instructions](docs/install.md#host-for-your-team) for deployment, sign-in and removal. Use `describe` for flags and `doctor` for missing local prerequisites.
 
 Oncall keeps rotas, schedules, overrides, incident coordination and recorded alert intake beside your existing pager. The existing pager stays authoritative. No SMS, voice, push or paging email is sent. The delivery adapter refuses plainly. To connect monitoring, see the [alert intake JSON and curl example](docs/incidents.md#send-an-alert-event).
 
@@ -80,7 +80,7 @@ Schedules use named IANA zones, calendar-day turns, explicit repeated-time rules
 
 The Move-in kit reviews supplied Opsgenie exports first, then PagerDuty. Preview writes nothing; confirmed imports stay paused and grant no access or delivery authority. A durable Base import-kit journal supports resume and guarded undo. Read [MOVE-IN.md](MOVE-IN.md) for documented export shapes and compatibility limits.
 
-Held data upgrades in place through unchanged migrations 0001–0006 and additive migrations. Coordination now stores individual members, services, policies, events, alerts, incidents and audit entries in relational tables. Old password accounts remain usable; Base owner identity never silently takes over an existing workspace. For a held installation, continue using its password accounts until the owner explicitly links identity during a future identity migration. Do not reset to upgrade.
+Held data upgrades in place through unchanged migrations 0001–0006 and additive migrations. Coordination now stores individual members, services, policies, events, alerts, incidents and audit entries in relational tables. Old password accounts remain usable; Base owner identity never silently takes over an existing workspace. For a held installation, continue using its password accounts until the owner explicitly links identity during a future identity migration. On local and hosted apps, the configured owner uses email links and admin-created team members use their installation-local workspace name and password at `/signin/local`. Only anonymous first-admin bootstrap remains loopback-only. Do not reset to upgrade.
 
 To look around with realistic sample data, run `rer demo` after setup: a throwaway, signed-in copy where nothing can page, call, text or email ([DEMO.md](DEMO.md)).
 
@@ -123,7 +123,22 @@ git pull --ff-only
 rer dev
 ```
 
-This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. No hosted deployment is needed. `rer` installs a pulled change of its own pin before it runs, so there is nothing to install by hand, and it provides the Node and pnpm versions this checkout pins. Hosted Oncall is on hold until an independent standby paging host is ready and a hosted release is approved. Until then, `rer deploy` refuses before any provider request. Paging stays OFF until a real-phone drill passes. Use `rer deploy --dry-run` to build and validate locally. Once hosting is approved, `rer deploy` deploys to your own Cloudflare account (it reads `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` from the environment), claims the owner you set up automatically and removes its one-time setup token; there is no token to copy or delete, and you sign in at the app address with an emailed link. An update keeps that owner. To take a hosted installation down again, with the same credentials:
+This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. `rer` installs a pulled change of its own pin before it runs and provides the pinned Node and pnpm versions.
+
+### Host for your team
+
+Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Prepare a checkout for a real owner mailbox with `rer setup --owner-email you@example.com` before its first local launch; repeated setup preserves the existing owner. Supply `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` privately in your environment for your own Cloudflare account. The deployment selects SendGrid: also supply `SENDGRID_API_KEY` and `MAIL_FROM`, using a sender verified by your SendGrid account. A configured remote mail provider is required for hosted email-link sign-in.
+
+```sh
+rer deploy --dry-run
+rer deploy
+```
+
+`rer deploy` creates the hosted installation, applies migrations, verifies its deployment identity, claims the configured owner automatically and retires its one-time setup token. Open the app address and use **Email a sign-in link**, then open the email on the same device and press **Confirm**. Finish the owner confirmation at `/setup` if shown. There is no setup token to copy or delete. Local dev entry links do not work on the hosted app. Admin-created team members use their workspace name and password at `/signin/local`; Oncall sends no invitations. See [Install and run](docs/install.md#host-for-your-team) for the full sequence.
+
+Deployment uses a separate hosted database; it does not upload your local schedules or incidents. For later hosted updates, pull with `git pull --ff-only` and run `rer deploy` again with the same credentials. An update keeps the hosted owner and data.
+
+To take the hosted installation down again, keep its deployment record and use the same Cloudflare credentials:
 
 ```sh
 rer deploy --remove --yes

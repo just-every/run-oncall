@@ -2,7 +2,7 @@
   "id": "oncall",
   "name": "Oncall",
   "version": "0.2.0",
-  "maturity": "maintained-local",
+  "maturity": "maintained",
   "category": "operations",
   "replaces": [
     "PagerDuty",
@@ -12,7 +12,7 @@
     "id": "schedule",
     "record": "Service rota with calendar-day hand-offs and explicit coverage gaps"
   },
-  "description": "Local rotas, overrides, now/next, private ICS, recorded alert intake and incident coordination beside an existing pager. Paging OFF.",
+  "description": "Local or hosted rotas, overrides, now/next, private ICS, recorded alert intake and incident coordination beside an existing pager. Paging OFF.",
   "capabilities": [
     {
       "id": "coordination",
@@ -70,8 +70,8 @@
   "nonGoals": [
     "production paging",
     "provider sends",
-    "hosted release without standby",
-    "autonomous remediation"
+    "autonomous remediation",
+    "independent standby and paging delivery guarantees"
   ],
   "externals": [],
   "env": [],
@@ -82,7 +82,7 @@
       "/health",
       "/signin"
     ],
-    "notes": "Hosted release refuses until a standby is approved; paging also requires a real-phone drill. Native owner sessions guard private APIs. Local rer dev uses a private RER_OPEN owner entry; ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default."
+    "notes": "Hosted incident coordination beside your existing pager; paging OFF, no independent standby. Native owner sessions guard private APIs. rer deploy claims the configured owner and retires its setup token. Sign in through configured remote mail. Local rer dev uses a private RER_OPEN owner entry; no mail sender is configured by default."
   },
   "extensionPoints": {
     "contributions": [],

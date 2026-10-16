@@ -27,13 +27,13 @@ When an incident is resolved, **Reviews** keeps its postincident review (impact,
 
 ## Alerts and events
 
-**Alerts & events** collects signals from your own monitoring. An admin adds a source under **Local ingress** with a source key and the services it may report on. That key can only send signals: it cannot read anything in Oncall.
+**Alerts & events** collects signals from your own monitoring. An admin adds a source under **Monitoring ingress** with a source key and the services it may report on. That key can only send signals: it cannot read anything in Oncall.
 
 Signals are kept as they arrive, and repeats of the same alert are grouped. An alert never declares an incident on its own: a responder decides, with **Declare incident from alert**.
 
 ## Send an alert event
 
-This release accepts intake only on the local loopback app. Under **Alerts & events → Local ingress**, an admin chooses a **Source ID**, a private **Source key** (32–200 characters), an authentication mode and an **Allowed service**, then presses **Save scoped source**. Saving the same source again rotates its credential. Source credentials are excluded from archives and cannot read workspace data or act as a person.
+This release accepts scoped alert intake on the local app or your hosted HTTPS app. Intake records signals for coordination and never pages anyone. Under **Alerts & events → Monitoring ingress**, an admin chooses a **Source ID**, a private **Source key** (32–200 characters), an authentication mode and an **Allowed service**, then presses **Save scoped source**. Saving the same source again rotates its credential. Source credentials are excluded from archives and cannot read workspace data or act as a person.
 
 Send `POST /api/ingress/SOURCE` with a JSON object, at most 65,536 bytes (64 KiB). Replace `SOURCE` with the URL-encoded Source ID. The exact body keys are:
 
@@ -55,7 +55,7 @@ Text values are trimmed; their limits apply before trimming. Unknown fields are 
 
 To get the service UUID, open **Services** and copy the ID shown below the service's name and owner. You can also open `/api/state` in that signed-in browser and find its `id` in `services`. The **Allowed service** selector uses that ID automatically; an external sender must supply it explicitly.
 
-For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to the app's printed origin, `ONCALL_SERVICE_ID` to that UUID and `ONCALL_SOURCE_KEY` to the private credential in your shell. With a source named `monitoring` authorized for that service in `production`:
+For a source configured as **Bearer token**, set `ONCALL_ORIGIN` to your hosted HTTPS app origin or the local app's printed origin, `ONCALL_SERVICE_ID` to that UUID and `ONCALL_SOURCE_KEY` to the private credential in your shell. With a source named `monitoring` authorized for that service in `production`:
 
 ```sh
 curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/monitoring" \
@@ -82,7 +82,7 @@ Use the actual observation time for your own signal. To recover it, send the sam
 
 For **HMAC signature** mode, replace the bearer header with `x-oncall-timestamp` (decimal Unix seconds within five minutes of the server's clock) and `x-oncall-signature` (lowercase hexadecimal HMAC-SHA256 using the source key over `timestamp + "." + exact request body`). Sign the same UTF-8 bytes you send, including any whitespace or trailing newline. A bearer token does not authenticate a source configured for HMAC.
 
-A new event returns **201**; an identical retry of the same `source` + `eventId` returns the original receipt with **200** and `duplicate: true`. Changed normalized content under that identity returns **409**. Successful receipts contain only `duplicate`, `id`, `eventId`, `service`, `observedAt` and `acceptedAt`; they prove storage, not paging or delivery. Invalid fields or a mismatched environment return **400**, invalid credentials **401**, an unauthorized service **403**, an oversized body **413**, and the local 10,000-event capacity limit **429**. Do not retry a changed event under an already used ID.
+A new event returns **201**; an identical retry of the same `source` + `eventId` returns the original receipt with **200** and `duplicate: true`. Changed normalized content under that identity returns **409**. Successful receipts contain only `duplicate`, `id`, `eventId`, `service`, `observedAt` and `acceptedAt`; they prove storage, not paging or delivery. Invalid fields or a mismatched environment return **400**, invalid credentials **401**, an unauthorized service **403**, an oversized body **413**, and the 10,000-event capacity limit **429**. Do not retry a changed event under an already used ID.
 
 ## Routing and replay
 

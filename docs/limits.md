@@ -20,6 +20,6 @@ Moving in from Opsgenie or PagerDuty reads export files you saved yourself. Onca
 
 Nothing you write in Oncall is sent to an AI model. Local development has no mail sender configured by default. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; the app does not capture mail or print sign-in tokens. The private `RER_OPEN` owner entry printed by `rer dev` needs no email delivery.
 
-## It runs on your computer today
+## Hosted coordination keeps your existing pager
 
-Oncall runs on your own computer. Hosted Oncall is owner-held. A newcomer cannot enable hosting: the owner must approve an independent standby paging host and a hosted release first. Until then, `rer deploy` refuses before any provider request. Use `rer deploy --dry-run` to build and validate locally.
+Run Oncall locally or host release 1 in your own Cloudflare account with `rer deploy`. It coordinates incidents alongside your existing pager with paging OFF; no independent standby is required for coordination. Release 2 paging and independent standby are not built. Hosted email-link sign-in requires a configured remote mail provider. See [Install and run](install.md#host-for-your-team) for setup, deployment and removal. A local dry run does not establish hosted health or mail delivery.

@@ -13,7 +13,7 @@
           "slug": "install",
           "title": "Install and run",
           "source": "docs/install.md",
-          "summary": "Run Oncall on your own computer, sign in as the owner and finish setup."
+          "summary": "Run locally or deploy to your Cloudflare account, sign in by email, and remove your hosted installation."
         },
         {
           "slug": "team",
@@ -65,7 +65,7 @@
           "slug": "commands",
           "title": "Command reference",
           "source": "RUN-LOCALLY.md",
-          "summary": "Every local command, its flags and what it changes on your computer."
+          "summary": "Local and hosted commands, their flags and what they change."
         }
       ]
     }
