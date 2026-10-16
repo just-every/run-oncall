@@ -1,22 +1,16 @@
 # Install and run
 
-Install the `rer` command once:
-
-```sh
-curl -fsSL https://runeditrun.com/install.sh | sh
-```
-
-Or use `npm install -g @runeditrun/rer`. You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2; `rer` provides the checkout's pinned Node and pnpm tooling.
+You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2. `rer` provides the checkout's pinned Node and pnpm tooling.
 
 ## Run it on your computer
 
+One line installs the `rer` command, clones Oncall and starts it:
+
 ```sh
-git clone https://github.com/just-every/run-oncall.git oncall
-cd oncall
-rer dev
+npx -y @runeditrun/rer dev just-every/run-oncall
 ```
 
-`rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
+To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
 
 The first time, Oncall opens **Finish setup**. Name and Email are read-only; a default local owner is named **Owner**. Review the displayed email, tick *I confirm this owner account is ready to use* and press **Finish setup**. This screen confirms the owner; it does not edit their name or email. After that, Oncall opens straight into the app. To choose a real owner mailbox before first launch, use the explicit setup steps below.
 

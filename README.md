@@ -33,21 +33,13 @@
 
 Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.3.0`, includes hosted coordination. See [Install and run](docs/install.md#host-for-your-team) for complete credentials and deployment instructions.
 
-Install the `rer` command once:
+You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2. One line installs the `rer` command, clones Oncall and starts it; `rer` provides the checkout's pinned Node and pnpm tooling:
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh
+npx -y @runeditrun/rer dev just-every/run-oncall
 ```
 
-Or use `npm install -g @runeditrun/rer`. You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2; `rer` provides the checkout's pinned Node and pnpm tooling.
-
-```sh
-git clone https://github.com/just-every/run-oncall.git oncall
-cd oncall
-rer dev
-```
-
-`rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/install.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
+To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/install.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
 
 Open the printed link on this computer. `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building or verifying.
 
