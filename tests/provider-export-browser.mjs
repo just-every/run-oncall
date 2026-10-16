@@ -6,6 +6,18 @@ import {resolve} from 'node:path'
 // The browser's real download produces importable bundles; only the external provider HTTP edge is faked.
 export async function providerExport(page,context,width) {
  await context.grantPermissions(['clipboard-read','clipboard-write'])
+ // Follow the maintainer guide's real fragment to the served owner guide, then download its tool.
+ const maintainer=await readFile('MOVE-IN.md','utf8')
+ const reference=maintainer.match(/\]\((docs\/move-in\.md#[^)]+)\)/)
+ assert.ok(reference,'the maintainer guide links to the export instructions')
+ const guide=await context.newPage()
+ await guide.goto(new URL('/'+reference[1].replace('.md#','#'),page.url()).href)
+ const target=guide.locator(`[id="${new URL(guide.url()).hash.slice(1)}"]`)
+ await target.waitFor({state:'visible'})
+ const [documentedDownload]=await Promise.all([guide.waitForEvent('download'),guide.getByRole('link',{name:'Download oncall-export.mjs',exact:true}).click()])
+ assert.equal(await documentedDownload.failure(),null,'the linked guide provides a working exporter download')
+ await guide.screenshot({path:`evidence/browser/export-docs-${width}.png`,fullPage:true})
+ await guide.close()
  for(const vendor of ['pagerduty','opsgenie']) {
   await page.getByLabel('Source',{exact:true}).selectOption(vendor)
   const help=page.locator('.move-in-export-help')

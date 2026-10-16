@@ -33,15 +33,17 @@ const mentions = (value: any, email: string): boolean => typeof value === 'strin
 /** The retained records whose planned result names the person although their own source may not: a schedule absorbs override records, slots
  * and incumbent comparisons from other records, and a record whose effect is a schedule row the erasure rewrites. Keyed by source identity. */
 async function indirect(ctx: D1ImportContext, email: string, ids: ReadonlySet<string>, rewritten: ReadonlySet<string>) {
-  const found = new Set<string>()
+  const found = new Set<string>(), filenames = new Set<string>()
   const jobs = (await ctx.storage.database.prepare('SELECT * FROM ik_jobs WHERE destination=? ORDER BY id').bind(ctx.destination).all<any>()).results
-  for (const plan of (await loadPlans(jobs, ctx.storage.database, ctx.storage.targets.planCodec)).values())
+  for (const plan of (await loadPlans(jobs, ctx.storage.database, ctx.storage.targets.planCodec)).values()) {
+    for (const artifact of plan.source.artifacts) if (names(artifact.name, email)) filenames.add(artifact.name)
     for (const entry of plan.entries) {
       if (entry.erased) continue
       const result = { effects: entry.effects, unmapped: entry.unmapped, rejection: entry.rejection }
       if (refers(result, email, ids) || mentions(result, email) || entry.effects.some(effect => effect.targetKind === 'schedule' && rewritten.has(effect.targetId))) found.add(sourceKey(entry.source))
     }
-  return found
+  }
+  return {found, filenames}
 }
 const sourceKey = (record: { namespace: string; kind: string; sourceId: string }) => JSON.stringify([record.namespace, record.kind, record.sourceId])
 
@@ -93,7 +95,7 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
       { sql: "UPDATE move_in_objects SET revision=?,data=? WHERE kind='schedule' AND id=?", params: [`erased-${hex()}`, JSON.stringify(next), row.id] })
   }
   // A record names the person by any path (a typed field, any string in its own source, or its planned result such as a schedule's override, layer member or incumbent comparison): it is tombstoned too, so undo skips it as it skips a participant's.
-  const named = await indirect(ctx, email, ids, rewritten)
+  const {found:named, filenames} = await indirect(ctx, email, ids, rewritten)
   const related = {
     source: (record: any) => (record.kind === 'users' && mailOf(record.payload) === email) || refers(record.payload, email, ids) || mentions(record.payload, email) || named.has(sourceKey(record)),
     original(bytes: Uint8Array) {
@@ -103,7 +105,7 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
   }
   const checkpoint = (await portability.redactionStatements()).map(toD1Sql)
   let entry
-  try { entry = await retireD1ImportCustody({ target: { kind: 'user', id: email }, values: [email], related }, [...native?.statements ?? [], ...rewrite], ctx, checkpoint) }
+  try { entry = await retireD1ImportCustody({ target: { kind: 'user', id: email }, values: [email, ...filenames], related }, [...native?.statements ?? [], ...rewrite], ctx, checkpoint) }
   catch (error) { if (/CHECK constraint|IMPORT_ATOMIC_GUARD/.test(String((error as Error).message))) fail('Imported data changed while the erasure was prepared; nothing was erased. Retry.', 409); throw error }
   await reindex(ctx)
   if (native) await erasure.deleteBlobs(native.operationId)

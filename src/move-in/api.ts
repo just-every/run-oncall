@@ -1,4 +1,4 @@
-import { planD1Import,createD1ImportJob,applyD1ImportBatches,resumeD1Import,undoD1Import,readD1ImportJob } from '../modules/import-kit/src/d1/index'
+import { planD1Import,applyD1ImportBatches,resumeD1Import,undoD1Import,readD1ImportJob } from '../modules/import-kit/src/d1/index'
 import type { D1ImportContext } from '../modules/import-kit/src/d1/types'
 import { fileSource, type Vendor } from './source'
 import { mapping } from './mapping'
@@ -8,7 +8,9 @@ import { coverage } from '../family/response-operations/schedules'
 import { fail } from '../family/response-operations/domain'
 import { eraseImportedPerson } from './erasure'
 import { mailbox } from './rotations'
-import { duplicateTargets, alreadyImported, changedSinceImport } from './refusals'
+import { duplicateTargets, alreadyImported, changedSinceImport, Refusal } from './refusals'
+import { createMoveInJob } from './operation'
+import { readMoveInJournal } from './journal'
 
 export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  function context(c:any,vendor:Vendor):D1ImportContext {
@@ -19,13 +21,20 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  for(const action of ['preview','apply'])api.post(`/api/move-in/${action}`,async(c:any)=>{
   const input=await body(c,1024*1024),ctx=context(c,input.vendor)
   if(typeof input.source!=='string')fail('Supply the saved export file as text')
-  const source=await fileSource(input.vendor,input.source),map=mapping(input.vendor,source,Date.now())
+  const source=await fileSource(input.vendor,input.source,input.filename),map=mapping(input.vendor,source,Date.now())
   const plan=await planD1Import(source,map,ctx).catch(error=>{throw (error as Error).message==='DUPLICATE_TARGET'?duplicateTargets(source,map):error})
   if(action==='preview')return c.json({fingerprint:plan.fingerprint,counts:plan.counts,diagnostics:plan.diagnostics,items:plan.entries.map(e=>({kind:e.source.kind,id:e.source.sourceId,location:e.source.location,name:(e.source.payload as any).fullName??(e.source.payload as any).name??(e.source.payload as any).summary??(e.source.payload as any).username??(e.source.payload as any).email??e.source.sourceId,rejection:e.rejection,unmapped:e.unmapped,effects:e.effects})),paging:'OFF',writes:0})
   if(input.confirm!==true||input.fingerprint!==plan.fingerprint)fail('Review this exact preview and confirm before applying',409)
-  const job=await createD1ImportJob(plan,{...ctx,reviewedFingerprint:input.fingerprint,operationKey:input.operationKey})
+  const job=await createMoveInJob(plan,{...ctx,reviewedFingerprint:input.fingerprint},input.operationKey)
   try{return c.json(await applyD1ImportBatches(job.id,ctx))}
-  catch(error){throw (error as Error).message==='TARGET_REVISION_CONFLICT'?await alreadyImported(c.env.DB,plan,input.vendor,job.id):error}
+  catch(error){
+   if((error as Error).message==='TARGET_REVISION_CONFLICT')throw await alreadyImported(c.env.DB,plan,input.vendor,job.id)
+   if((error as Error).message==='IMPORT_ALREADY_REVERSING') {
+    const current=await readD1ImportJob(job.id,ctx),done=['undone','rolled_back'].includes(current.state)
+    throw new Refusal(409,done?'This import was undone while you confirmed it. Press Preview import, then Confirm paused import to import the same file again.':'This import is being undone or rolled back. Choose it in Saved import journal and continue the reversal until it finishes, then preview and confirm the file again.',done?'IMPORT_UNDONE':'IMPORT_REVERSAL_IN_PROGRESS')
+   }
+   throw error
+  }
  })
  for(const action of ['resume','undo','status'])api.post(`/api/move-in/:id/${action}`,async(c:any)=>{
   const input=await body(c),ctx=context(c,input.vendor)
@@ -36,7 +45,7 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  api.get('/api/move-in/jobs',async(c:any)=>{
   const ctx=context(c,c.req.query('vendor')??'opsgenie'),auth=ctx.authorization.predicate('read','oncall')
   const rows=await c.env.DB.prepare(`SELECT id FROM ik_jobs WHERE destination='oncall' AND namespace=? AND principal_id=? AND (${auth.sql}) ORDER BY rowid DESC`).bind(ctx.namespace,ctx.authorization.principalId,...auth.params!).all()
-  return c.json(await Promise.all(rows.results.map((row:any)=>readD1ImportJob(row.id,ctx))))
+  return c.json(await Promise.all(rows.results.map((row:any)=>readMoveInJournal(row.id,ctx))))
  })
  api.get('/api/move-in/objects',async(c:any)=>{const ctx=context(c,'opsgenie');const auth=ctx.authorization.predicate('read','oncall');const row=await c.env.DB.prepare(`SELECT CASE WHEN (${auth.sql}) THEN 1 ELSE 0 END AS ok`).bind(...auth.params!).first();if(!row?.ok)fail('Current admin required',403);return c.json(await targets.list(c.env.DB,'oncall'))})
  api.post('/api/move-in/coverage',async(c:any)=>{

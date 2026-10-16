@@ -37,4 +37,30 @@ export async function alertSeverity(page,context,width) {
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
  }
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'alert list fits viewport')
+ await singleIncidentPerAlert(page,context,width,service,source,key)
+}
+
+// One core flow: concurrent declarations, a retry and a reload all keep one incident per alert.
+async function singleIncidentPerAlert(page,context,width,service,source,key) {
+ const origin=new URL(page.url()).origin,title=`Checkout elevated error rate ${width}`
+ const event={source,eventId:'concurrent-trigger',service:service.id,environment:service.environment,key:'concurrent',generation:'g1',intent:'trigger',severity:'critical',title,observedAt:new Date().toISOString()}
+ assert.equal((await context.request.post('/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:event})).status(),201)
+ const state=await (await context.request.get('/api/state')).json()
+ const alert=state.alerts.find(alert=>alert.events.some(id=>state.events.some(event=>event.id===id&&event.eventId==='concurrent-trigger'&&event.source===source)))
+ const data={type:'declare',service:service.id,title,severity:'critical',summary:'Customers see failed checkout requests',alerts:[alert.id]}
+ const results=await Promise.all([0,1].map(()=>context.request.post('/api/command',{headers:{origin},data})))
+ assert.deepEqual(results.map(result=>result.status()).sort(),[200,409],'only one simultaneous declaration is saved')
+ assert.equal((await context.request.post('/api/command',{headers:{origin},data})).status(),409,'a repeated declaration is refused')
+ await page.reload()
+ const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true})})
+ const link=card.getByRole('link',{name:'Open incident: '+title,exact:true})
+ await link.waitFor()
+ assert.equal(await card.getByRole('button',{name:'Declare incident from alert',exact:true}).count(),0)
+ const saved=await (await context.request.get('/api/state')).json()
+ assert.equal(saved.incidents.filter(incident=>incident.alerts.includes(alert.id)).length,1)
+ await page.screenshot({path:`evidence/browser/alert-linked-incident-${width}.png`,fullPage:true})
+ await link.click()
+ await page.locator('.detail').getByRole('heading',{name:title,exact:true}).waitFor()
+ await page.screenshot({path:`evidence/browser/alert-linked-incident-open-${width}.png`,fullPage:true})
+ await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
 }

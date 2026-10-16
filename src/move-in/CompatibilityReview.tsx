@@ -1,0 +1,8 @@
+export function CompatibilityReview({preview,busy,hasJob,confirm}:{preview:any;busy:boolean;hasJob:boolean;confirm:()=>void}) {
+ const represented=preview.items.filter((item:any)=>item.kind==='overrides'&&!item.rejection).length
+ return <><h3>Compatibility review</h3>
+ <p>{preview.counts.unique} source objects · {preview.counts.mapped} mapped directly · {preview.counts.rejected} rejected · {preview.counts.unmapped} with differences or retained-only fields</p>
+ <p>These counts overlap: mapped or rejected objects can also have differences or fields kept only as evidence. “Mapped directly” counts objects that create a paused user, schedule or policy.{represented>0&&` ${represented} ${represented===1?'override is':'overrides are'} represented inside the paused schedule, so ${represented===1?'it does':'they do'} not add to the directly mapped count.`} Review the details below before confirming.</p>
+ <ul>{preview.items.map((item:any,index:number)=><li key={index}><strong>{item.kind}: {item.name}</strong>{item.rejection&&<p>{item.rejection}</p>}{item.effects?.filter((effect:any)=>effect.targetKind==='schedule').map((effect:any)=><p key={effect.targetId}>Equivalence: {effect.value.equivalence.status} {effect.value.equivalence.from} → {effect.value.equivalence.to}{effect.value.equivalence.differences.map((difference:string)=><span key={difference}>{difference}</span>)}</p>)}{item.unmapped.map((value:any,i:number)=><p key={i}>{value.field}: {value.reason}</p>)}</li>)}</ul>
+ <button disabled={busy||hasJob} onClick={confirm}>Confirm paused import</button></>
+}

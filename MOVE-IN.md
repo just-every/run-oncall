@@ -4,13 +4,25 @@ Oncall reads saved files only. Keep your existing pager authoritative. These tes
 
 ## Obtain the input
 
-The Move-in kit itself now contains source-specific **How to export** instructions before the file picker: read-only provider access, base URL and headers, GET paths, pagination, schedule IDs for override lists, and an empty bundle structure to fill with complete response bodies. The same steps and official references are in [Save your exports](docs/move-in.md#save-your-exports). This is a saved REST JSON workflow; calendar and CSV downloads do not contain the required rotation settings. Provider keys stay in the user's API client and never enter Oncall.
+In **Move-in kit**, choose **Opsgenie** or **PagerDuty** under **Source**, then expand **How to export from…** before the file picker. Download **oncall-export.mjs** and save it in Downloads with that exact name, without a `.txt` suffix. The panel explains how to create a read-only provider key and run the tool; the same steps and official references are in [Save your export with the downloadable tool](docs/move-in.md#save-your-export-with-the-downloadable-tool). You need Node.js 22 or later, an interactive terminal and internet access to your provider. No npm packages, API client or manual JSON assembly are needed. Calendar and CSV downloads do not contain the required rotation settings.
 
-Opsgenie: use a read-only API integration key with configuration access. GET `/v2/users?limit=100&offset=0`, `/v2/schedules?expand=rotation` (or each schedule detail), each `/v2/schedules/SCHEDULE_ID/overrides`, and `/v2/escalations`. Optionally GET each `/v2/schedules/SCHEDULE_ID/timeline?interval=2&intervalUnit=weeks`. Follow paging links until exhausted. For each override list, add its actual `scheduleId` beside `data`.
+Open Terminal on macOS/Linux or PowerShell on Windows, change to Downloads (`cd ~/Downloads`, or `cd "$HOME\Downloads"` in PowerShell), and run the command for your provider:
 
-PagerDuty: use a read-only REST key. GET all `/users` and `/schedules` list pages, each `/schedules/SCHEDULE_ID?since=SINCE&until=UNTIL` detail, each `/schedules/SCHEDULE_ID/overrides?since=SINCE&until=UNTIL&overflow=true`, and all `/escalation_policies` pages. Increase offset by the returned limit while `more` is true. Use an explicit ISO timestamp window; include a clock change for named-zone equivalence evidence. Add the actual `schedule_id` beside each overrides response. Only overrides in that window are exported.
+```sh
+node oncall-export.mjs opsgenie
+```
 
-Create one bundle as described below: each key contains an array of saved JSON response objects, separated by commas, not file paths. Keep each record once and preserve response envelopes, detailed rotations and the comparison timelines. Preview, confirm paused import, and explicitly map service and people for adoption remain separate actions. Paging stays OFF.
+or:
+
+```sh
+node oncall-export.mjs pagerduty
+```
+
+Answer the region and UTC comparison-date prompts, then paste only the read-only key at the hidden key prompt. Opsgenie needs configuration access; PagerDuty needs a REST key, not an Events API key. The key stays in the tool's memory and never enters Oncall. The tool makes only GET requests, follows pagination, collects schedule details and comparison timelines, joins overrides to their schedules, and omits credential fields. PagerDuty includes overrides only for the chosen window. For named-zone PagerDuty equivalence evidence, choose a window that includes a clock change.
+
+A successful run prints **Saved** and the full path to a new `opsgenie-export-DATE-TIME.json` or `pagerduty-export-DATE-TIME.json` in the current folder. Keep it private. If Opsgenie returns **HTTP 422**, the key may be malformed: copy the full key again without `GenieKey` or header text; if it persists, ask your administrator to check the key, region and configuration access. Failed collection saves no file; do not upload an export left from an earlier run. See the linked guide for other errors and size limits.
+
+Return to Move-in kit, select the matching source and choose the saved JSON under **Export JSON**. Preview, confirm paused import, and explicitly map service and people for adoption remain separate actions. Paging stays OFF. The response-shape reference below is for operators maintaining their own export tooling; the downloadable tool builds the bundle for you.
 
 ## Accepted response shapes
 

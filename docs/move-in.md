@@ -59,6 +59,7 @@ Return to **Move-in kit**, keep the matching **Source** selected, choose that fi
 If the tool stops:
 
 - **HTTP 401/403:** ask your administrator to check the key, account region, read permission and Opsgenie configuration access/team scope. PagerDuty Events keys do not work here.
+- **Opsgenie HTTP 422:** the key may be malformed. Copy the full API key again and paste only the key at the hidden prompt, without `GenieKey` or header text. If it persists, ask your administrator to check the key, account region and configuration access. No file was saved.
 - **HTTP 429:** wait a few minutes before running again.
 - **Network, response or pagination error:** check connectivity/provider status and rerun while source settings remain unchanged. No bundle is saved for these failures; do not select a file left from an earlier run.
 - **Export too large:** Oncall accepts at most **512 KiB and 500 records** (people, schedules, overrides, policies and timelines combined). The exporter stops rather than truncating. Ask your administrator for a smaller provider access scope; do not omit people referenced by rotations or overrides. A shorter comparison window may reduce timeline size.
@@ -101,7 +102,7 @@ An agreement is only about that window. It does not promise the next clock chang
 
 ## Undo
 
-Press **Undo this import** on an import in the journal to reverse it. Oncall removes what that import added and puts back what was there before. If anything it added has been changed since, Oncall keeps your change, stops with a conflict named `NATIVE_EDIT_CONFLICT` rather than overwrite it. The file you supplied stays in the journal as a record.
+Press **Undo this import** on an import in the journal to reverse it. Oncall removes what that import added and puts back what was there before. If anything it added has been changed since, Oncall keeps your change, stops with a conflict named `NATIVE_EDIT_CONFLICT` rather than overwrite it. The file you supplied stays in the journal as a record. Once the journal says **undone**, you can import the exact same file again: press **Preview import**, review it, then **Confirm paused import**. If you reloaded the page, choose the file first. The new import gets a separate journal entry. If undo is still in progress, choose that import in **Saved import journal** and press **Continue undo** until it finishes.
 
 ## Erase a person
 

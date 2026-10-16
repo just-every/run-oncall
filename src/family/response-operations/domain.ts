@@ -394,6 +394,11 @@ export function command(
       )
     )
       fail("Invalid linked alerts");
+    const linked = state.incidents.find((incident) =>
+      incident.alerts.some((id) => ids.includes(id)),
+    );
+    if (linked)
+      fail(`An incident already exists for this alert: ${linked.title}. Open it from Alerts & events.`, 409);
     const incident: Incident = {
       id: crypto.randomUUID(),
       title: text(input.title, "title", 300),

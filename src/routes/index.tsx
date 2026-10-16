@@ -586,7 +586,7 @@ function Workspace() {
                   <p>
                     {v.environment} · {name(v.owner)}
                   </p>
-                  <code>{v.id}</code>
+                  <p>Service ID for monitoring ingress: <code>{v.id}</code></p>
                   <ol>
                     {v.runbook.map((r, i) => (
                       <li key={i}>{r}</li>
@@ -770,7 +770,7 @@ function Workspace() {
         )}
         {page === "alerts" && (
           <div className="management-grid">
-            <AlertsPanel state={s} canEdit={canEdit} busy={w.busy} name={name} onDeclare={async data => {
+            <AlertsPanel state={s} canEdit={canEdit} busy={w.busy} name={name} onOpenIncident={setSelected} onDeclare={async data => {
               const created = await command(data);
               if (created) { setSelected(created.id); location.hash = "incidents"; }
             }} />

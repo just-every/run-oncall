@@ -5,9 +5,9 @@ const quote = (value: string) => "'" + value.replace(/'/g, "'\\''") + "'";
 export function RequestExample({ source, service, mode }: { source: string; service: Service; mode: string }) {
   const [origin, setOrigin] = useState('');
   const [copied, setCopied] = useState('');
-  const [observedAt] = useState(() => new Date().toISOString());
+  const [sample] = useState(() => ({ id: crypto.randomUUID(), observedAt: new Date().toISOString() }));
   useEffect(() => { setOrigin(location.origin); }, []);
-  const payload = { source, eventId: 'checkout-latency-001-trigger', service: service.id, environment: service.environment, key: 'checkout-latency', generation: 'checkout-latency-001', intent: 'trigger', severity: 'warning', title: 'Checkout latency above 2 seconds', observedAt, evidence: '' };
+  const payload = { source, eventId: `example-${service.id}-${sample.id}-trigger`, service: service.id, environment: service.environment, key: `${service.id}-latency`, generation: `example-${sample.id}`, intent: 'trigger', severity: 'warning', title: `${service.name} latency above 2 seconds`, observedAt: sample.observedAt, evidence: '' };
   const endpoint = origin + '/api/ingress/' + encodeURIComponent(source);
   const example = mode === 'signed' ? `node --input-type=module <<'ONCALL_REQUEST'
 import { createHmac } from 'node:crypto';
@@ -35,6 +35,6 @@ ONCALL_REQUEST` : `curl --fail-with-body ${quote(endpoint)} \\
       try { await navigator.clipboard.writeText(example); setCopied('Request copied.'); }
       catch { setCopied('Select the request above and copy it.'); }
     }}>Copy request</button><p role="status">{copied}</p>
-    <p>A new event returns HTTP 201; an identical retry returns 200. Use a new event ID and observation time for the next observation. Change the example's title and alert identifiers to match your monitor. HTTP 401 means the source, key or authentication mode does not match; 403 means the key is not allowed for that service.</p>
+    <p>A new event returns HTTP 201; copying this request again retries the same observation and returns 200. Reopening this page generates a new example event ID. Use a new event ID and observation time for the next observation. Change the example's title and alert identifiers to match your monitor. HTTP 409 means that event ID was already used with different content: restore the original request for a retry, or give a new observation a new event ID. HTTP 401 means the source, key or authentication mode does not match; 403 means the key is not allowed for that service.</p>
   </div>;
 }

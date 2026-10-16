@@ -11,6 +11,11 @@ export default {
  ...dev,
  async fetch(request:Parameters<typeof dev.fetch>[0],env:Bindings,execution:ExecutionContext) {
   let response = await dev.fetch(request,env,execution)
+  if (request.method === 'GET' && new URL(request.url).pathname === '/__dev/key' && response.headers.get('content-type')?.includes('text/html') && await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first()) {
+   response = new HTMLRewriter().on('main', { element(main) {
+    main.append('<p>Joining this workspace as a teammate? <a href="/signin/local">Sign in with a workspace password</a> supplied by your administrator.</p>', { html: true })
+   } }).transform(response)
+  }
   // Only a successful explicit identity switch retires a workspace cookie.
   // API requests must still reject sessions revoked by restore or logout.
   if(request.method === 'GET' && new URL(request.url).pathname === '/auth/dev/enter' && response.status === 303)

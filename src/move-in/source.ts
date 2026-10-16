@@ -33,11 +33,12 @@ function entries(vendor:Vendor,kind:string,body:any,pointer:string):Entry[] {
  return Array.isArray(items)?items.map((payload,index)=>({payload:join(payload),pointer:`${at}/${index}`})):[{payload:join(items),pointer:at}]
 }
 
-export async function fileSource(vendor:Vendor,raw:string) {
+export async function fileSource(vendor:Vendor,raw:string,filename?:unknown) {
  if(!['opsgenie','pagerduty'].includes(vendor))throw Error('Choose Opsgenie or PagerDuty')
+ if(filename!==undefined&&(typeof filename!=='string'||!filename.trim()||filename.length>255||/[\x00-\x1f\x7f/\\]/.test(filename)))fail('Supply the export filename without a folder path (at most 255 characters)')
  let parsed:unknown;try{parsed=JSON.parse(raw)}catch{}
  if(parsed&&typeof parsed==='object')refuseCredentials(parsed,'')
- return readFileSource({namespace:vendor,name:`${vendor}-export.json`,bytes:new TextEncoder().encode(raw),format:'json',parse(value:Json){
+ return readFileSource({namespace:vendor,name:typeof filename==='string'?filename:`${vendor}-export.json`,bytes:new TextEncoder().encode(raw),format:'json',parse(value:Json){
   if(!value||Array.isArray(value)||typeof value!=='object')throw Error('Export bundle must be an object')
   const records:ParsedRecord[]=[],count=new Map<string,number>()
   for(const [kind,response] of Object.entries(value))

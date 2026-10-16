@@ -47,7 +47,7 @@ export async function collectExport({ vendor, region, key, window, request = fet
   try { response = await request(url, { method: 'GET', headers, redirect: 'error', signal: AbortSignal.timeout(30000) }) }
   catch { throw Error(`Could not read ${label}. Check your network, account region and provider status, then run again. No file was saved.`) }
   if (!response.ok) {
-   const hint = response.status === 401 || response.status === 403 ? 'Ask your administrator to check the key, region, read and configuration permissions.' : response.status === 429 ? 'The provider rate limit was reached. Wait a few minutes before running again.' : 'Ask your provider administrator to check access and provider status.'
+   const hint = ops && response.status === 422 ? 'The API key may be malformed. Copy the full key again and paste only the key, without GenieKey or header text. If it persists, ask your administrator to check the key, region and configuration access.' : response.status === 401 || response.status === 403 ? 'Ask your administrator to check the key, region, read and configuration permissions.' : response.status === 429 ? 'The provider rate limit was reached. Wait a few minutes before running again.' : 'Ask your provider administrator to check access and provider status.'
    throw Error(`Reading ${label} failed (HTTP ${response.status}). ${hint} No file was saved.`)
   }
   let body
