@@ -172,7 +172,7 @@ api.get("/health", async (c) => {
 api.get("/api/session", async (c) => {
   const state = await load(c.env.DB);
   const member=await session(c,state);
-  return c.json({setup: (await load(c.env.DB)).members.length===0, member});
+  return c.json({setup: (await load(c.env.DB)).members.length===0, member, demo: c.env.RER_DEMO === "1"});
 });
 async function session(c: any, state: State): Promise<Member | null> {
   const token = readSessionCookie(c.req.raw);

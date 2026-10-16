@@ -1,7 +1,9 @@
 import { fail } from './errors.mjs';
 import { validateMessagingConfig, validateMessagingResult, identity, rfc3339 } from '../adapters/messaging/contract.mjs';
+import { validateRerConfig, validateRerMessage } from '../adapters/rer/contract.mjs';
+import { rerListHeaderField } from '../adapters/rer/list-headers.mjs';
 
-const providers = ['sendgrid', 'resend', 'cloudflare', 'messaging'];
+const providers = ['sendgrid', 'resend', 'cloudflare', 'rer', 'development', 'messaging'];
 const controls = /[\x00-\x1f\x7f]/;
 const fields = new Set(['deliveryId', 'from', 'to', 'subject', 'text', 'html', 'cc', 'bcc', 'replyTo', 'headers', 'attachments', 'unsubscribe', 'customArgs', 'asmGroupId', 'subscriptionTracking', 'kind', 'expiresAt']);
 const reservedHeaders = new Set(['x-sg-id', 'x-sg-eid', 'received', 'dkim-signature', 'content-type', 'content-transfer-encoding', 'mime-version', 'to', 'from', 'subject', 'reply-to', 'cc', 'bcc', 'return-path', 'sender']);
@@ -20,7 +22,7 @@ function bounded(value, limit, code, empty = false) {
 }
 
 export function validateConfig(config, dependencies = {}) {
-  keys(config, new Set(['provider', 'mode', 'apiKey', 'accountId', 'serviceOrigin', 'installId', 'kid', 'signingKey']), 'invalid_config');
+  keys(config, new Set(['provider', 'mode', 'apiKey', 'accountId', 'relayUrl', 'serviceOrigin', 'installId', 'kid', 'signingKey']), 'invalid_config');
   record(dependencies, 'invalid_dependencies');
   if (!providers.includes(config.provider)) fail('invalid_provider');
   if (!['production', 'development', 'test'].includes(config.mode)) fail('invalid_mode');
@@ -28,20 +30,27 @@ export function validateConfig(config, dependencies = {}) {
   if (dependencies.clock !== undefined && typeof dependencies.clock !== 'function') fail('invalid_clock');
   if (dependencies.timeoutMilliseconds !== undefined &&
       (!Number.isSafeInteger(dependencies.timeoutMilliseconds) || dependencies.timeoutMilliseconds <= 0)) fail('invalid_timeout');
+  if (config.provider === 'rer') validateRerConfig(config);
+  else if (config.relayUrl !== undefined) fail('unsupported_provider_setting');
   if (config.provider === 'messaging') return validateMessagingConfig(config, dependencies) ?? config;
   if (['serviceOrigin', 'installId', 'kid', 'signingKey'].some(field => config[field] !== undefined) || dependencies.serviceBinding !== undefined) fail('unsupported_provider_setting');
-  if (typeof config.apiKey !== 'string' || !config.apiKey.trim()) fail('api_key_required');
-  bounded(config.apiKey, 4096, 'invalid_api_key');
-  if (/\s/.test(config.apiKey)) fail('invalid_api_key');
-  if (config.provider === 'cloudflare') {
-    if (typeof config.accountId !== 'string' || !/^[a-f0-9]{32}$/i.test(config.accountId)) fail('cloudflare_account_required');
-  } else if (config.accountId !== undefined) fail('unsupported_account_id');
+  if (config.provider === 'development') {
+    if (config.mode !== 'development') fail('development_mode_required');
+    if (config.apiKey !== undefined || config.accountId !== undefined) fail('unsupported_development_config');
+  } else {
+    if (typeof config.apiKey !== 'string' || !config.apiKey.trim()) fail('api_key_required');
+    bounded(config.apiKey, 4096, 'invalid_api_key');
+    if (/\s/.test(config.apiKey)) fail('invalid_api_key');
+    if (config.provider === 'cloudflare') {
+      if (typeof config.accountId !== 'string' || !/^[a-f0-9]{32}$/i.test(config.accountId)) fail('cloudflare_account_required');
+    } else if (config.accountId !== undefined) fail('unsupported_account_id');
+  }
   return config;
 }
 
 export function parseAddress(value) {
   bounded(value, 998, 'invalid_address');
-  const match = value.trim().match(/^(?:([^<>]*)<([^<>]+)>|([^<>]+))$/u);
+  const match = value.trim().match(/^(?:(.*?)\s*<([^<>]+)>|([^<>]+))$/u);
   const email = (match?.[2] ?? match?.[3] ?? '').trim();
   // Conservative mailbox subset; never serialize multiple mailboxes as one.
   const parts = email.split('@');
@@ -50,11 +59,11 @@ export function parseAddress(value) {
       !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(parts[1])) fail('invalid_address');
   let name = match?.[1]?.trim();
   if (name?.startsWith('"') && name.endsWith('"')) name = name.slice(1, -1);
-  if (name && /[<>"\\\u2028\u2029]/.test(name)) fail('invalid_address');
+  if (name && /[<>"\\]/.test(name)) fail('invalid_address');
   return name ? { email, name } : { email };
 }
 
-export function validateHeaders(headers = {}) {
+export function validateHeaders(headers = {}, provider) {
   record(headers, 'invalid_headers');
   const names = new Set();
   for (const name of Reflect.ownKeys(headers)) {
@@ -62,6 +71,8 @@ export function validateHeaders(headers = {}) {
     const lower = name.toLowerCase();
     if (reservedHeaders.has(lower) || names.has(lower)) fail('reserved_or_duplicate_header');
     names.add(lower);
+    // These relay grammars allow separator tabs and report field-specific errors.
+    if (provider === 'rer' && rerListHeaderField(lower, headers[name])) continue;
     bounded(headers[name], 8192, 'invalid_header_value', true);
   }
   return headers;
@@ -120,14 +131,15 @@ export function validateMessage(message, provider) {
   bounded(message.subject, 998, 'invalid_subject', true);
   for (const field of ['text', 'html']) if (message[field] !== undefined && typeof message[field] !== 'string') fail('invalid_body');
   if (!message.text?.trim() && !message.html?.trim()) fail('body_required');
-  if (message.headers !== undefined) validateHeaders(message.headers);
+  if (message.headers !== undefined) validateHeaders(message.headers, provider);
   if (message.attachments !== undefined) {
     if (!Array.isArray(message.attachments)) fail('invalid_attachments');
     for (const attachment of message.attachments) validateAttachment(attachment);
   }
   if (message.unsubscribe !== undefined) validateUnsubscribe(message.unsubscribe);
+  if (provider === 'rer') validateRerMessage(message);
   const settings = ['customArgs', 'asmGroupId', 'subscriptionTracking'];
-  if (provider && !['sendgrid'].includes(provider) && settings.some(key => message[key] !== undefined)) fail('unsupported_provider_setting');
+  if (provider && !['sendgrid', 'development'].includes(provider) && settings.some(key => message[key] !== undefined)) fail('unsupported_provider_setting');
   if (message.asmGroupId !== undefined && (!Number.isSafeInteger(message.asmGroupId) || message.asmGroupId <= 0)) fail('invalid_asm_group');
   if (message.subscriptionTracking !== undefined && typeof message.subscriptionTracking !== 'boolean') fail('invalid_subscription_tracking');
   const args = message.customArgs ?? {};
@@ -149,8 +161,10 @@ export function encodeBase64(bytes) {
 export function validateSendResult(result, provider) {
   if (provider === 'messaging') return validateMessagingResult(result);
   keys(result, new Set(['provider', 'status', 'providerMessageId', 'code', 'recipientResults']), 'invalid_send_result');
-  if (!providers.includes(provider) || result.provider !== provider || !['accepted', 'rejected', 'rate_limited', 'uncertain'].includes(result.status)) fail('invalid_send_result');
+  if (!providers.includes(provider) || result.provider !== provider || !['accepted', 'rejected', 'rate_limited', 'uncertain', 'development'].includes(result.status)) fail('invalid_send_result');
+  if ((provider === 'development') !== (result.status === 'development')) fail('invalid_send_result');
   if (result.providerMessageId !== null) bounded(result.providerMessageId, 1024, 'invalid_provider_message_id');
+  if (result.status === 'development' && result.providerMessageId !== null) fail('invalid_send_result');
   if (result.code !== undefined && (typeof result.code !== 'string' || !/^[a-z][a-z0-9_]{0,63}$/.test(result.code))) fail('invalid_result_code');
   if (result.recipientResults !== undefined) {
     if (!Array.isArray(result.recipientResults)) fail('invalid_recipient_results');

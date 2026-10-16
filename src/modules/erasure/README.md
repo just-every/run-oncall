@@ -62,7 +62,14 @@ if (receipt.phase !== 'complete') await env.JOBS.send({ erasure: opened.id }); /
 `commit(id,{rows,until})` runs only the D1 phase: bounded atomic batches of at
 most `rows` dependents (default 500), leaves first, with the subject row last.
 Each deleted row's `erasureStatements` and `invalidateTransfersStatements()` go
-in the same batch. `deleteBlobs(id,{until})` runs only the blob phase, after the
+in the same batch.
+The first step collects and orders the whole plan and queues what it does not delete
+in the private scope table; each later step reads and verifies only its own slice, so the
+work of an erasure is linear in its rows, however many steps it takes. The queue is
+not trusted for completeness: once it is empty, one more step collects the graph again
+from the subject and every remembered parent, and anything written meanwhile is
+erased before the receipt says `complete`. Index the child columns an edge
+matches on (`on`), as foreign keys usually are, or each step scans that table. `deleteBlobs(id,{until})` runs only the blob phase, after the
 commit. `run` does both within the time budget. Every phase is safe to repeat,
 and a concurrent runner gets `erasure_busy` (409). The receipt says `complete`
 only after the completion transaction re-reads every declared dependent and audit path
@@ -170,9 +177,8 @@ the seed retires them in its own migration.
 ## Adopting
 
 Copy these files byte for byte to a folder the Worker build serves, such as
-`src/modules/erasure/`. A seed made by `rer` export also receives them under
-`scripts/base-cli/modules/erasure/`, but `vite dev` serves only `src`, `public`
-and `node_modules`, so runtime imports must not reach into `scripts/`. The
+`src/modules/erasure/`. `vite dev` serves only `src`, `public` and
+`node_modules`, so runtime imports must not reach into `scripts/`. The
 standalone default seed copies this module and portability into `src/modules/`.
 The files are:
 

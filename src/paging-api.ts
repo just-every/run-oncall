@@ -1,3 +1,5 @@
+import { demoEffect } from './modules/demo/index.mjs'
+import { sendDemoPage } from './demo-paging'
 import { deliver } from './delivery'
 import { fail, text, type Member } from './family/response-operations/domain'
 import { coverage, preview, validateSchedule } from './family/response-operations/schedules'
@@ -54,8 +56,8 @@ export function installPaging(api:any,body:(c:any,max?:number)=>Promise<any>) {
     const schedule=s.archive.schedules.find(x=>x.id===v.scheduleId);if(!schedule) fail('Unknown schedule',404)
     return c.json(preview(schedule,s.workspace.members,clock(v.from),clock(v.to)))
   })
-  api.post('/api/paging/jobs',()=>deliver())
-  api.post('/api/paging/tick',()=>deliver())
+  api.post('/api/paging/jobs',async(c:any)=>c.json(await demoEffect(deliver,()=>sendDemoPage(c,body))))
+  api.post('/api/paging/tick',async(c:any)=>c.json(await demoEffect(deliver,{status:'sent'})))
   for(const action of ['ack','cancel'] as const) api.post(`/api/paging/jobs/:id/${action}`,async(c:any)=>{
     const {s,m}=await context(c),v=exact(await body(c),action==='cancel'?['revision','at','reason']:['revision','at'])
     editable(m);const old=knownJob(s,c.req.param('id'));revision(old,v);const at=clock(v.at)
@@ -65,8 +67,8 @@ export function installPaging(api:any,body:(c:any,max?:number)=>Promise<any>) {
     return c.json(job)
   })
   api.get('/api/paging/jobs/:id/replay',async(c:any)=>{const {s}=await context(c);return c.json(replay(knownJob(s,c.req.param('id'))))})
-  api.post('/api/paging/callbacks',()=>deliver())
-  api.post('/api/paging/jobs/:id/resume',()=>deliver())
+  api.post('/api/paging/callbacks',async(c:any)=>c.json(await demoEffect(deliver,{status:'sent'})))
+  api.post('/api/paging/jobs/:id/resume',async(c:any)=>c.json(await demoEffect(deliver,{status:'sent'})))
   api.get('/api/paging/archive',async(c:any)=>{const {s}=await context(c,true);return c.json(validatePagingArchive(s.archive))})
   api.post('/api/paging/restore',async(c:any)=>{
     // Compact archive capacity is 4 MiB; its fixed replacement envelope is

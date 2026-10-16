@@ -1,14 +1,9 @@
 # Oncall demo
 
-After the ordinary `rer setup`, run `rer demo` (`rer dev --demo`) and open its private `RER_OPEN` link. It lands signed in as the owner on a realistic setup:
+Run `rer demo` and open its private `RER_OPEN` link. It opens signed in as Alex Morgan in **Oncall Demo**, with six teammates, Checkout API and Payments worker, weekly rotations, cover overrides, escalation policies, two resolved incidents and an open checkout incident with its paging trail. Dates are relative to the start of each demo.
 
-- a team of five responders and one viewer;
-- two services (Checkout API, Payments worker) with routing and escalation policies;
-- a weekly rota for each, with hand-offs on Monday morning, a past swap and an upcoming cover;
-- three incidents from the last ten days, one of them open and mitigating, with timeline, runbook progress and follow-ups.
+Acknowledge the open incident, or choose **Send test page** in its detail. Paging, SMS, voice, push and email complete through Base's demo effect guard and the incident timeline records the page as sent. No recipient or provider is contacted. Public reads and checks still run for real. There is no demo bar or captured-mail inbox. Ordinary installations retain the existing paging-OFF boundary.
 
-Everything is relative to the moment the demo starts. The Demo bar on every page says nothing is sent. Nothing can page, call or text: Base's demo guard refuses every non-loopback request, and Oncall's own delivery already refuses SMS, voice and push (paging is OFF). The only mail this app writes is operator sign-in and invitation mail; the demo captures it in the development outbox and lists it in the Demo bar.
+Stop with `rer demo --stop` or Ctrl-C. Each start has fresh data under `.rer/demo/`; edits do not survive another start and the owner's `.wrangler/state` stays untouched.
 
-`rer demo --stop`, Ctrl-C, or its end (one hour) deletes `.rer/demo/<start>/`. The next `rer demo` starts afresh. The checkout's own `.wrangler/state` and private settings are never written.
-
-`src/demo.ts` (`seedDemo`) builds the data through the same domain functions the routes use. `src/modules/demo` is Base's demo module; `csp.mjs` (Base's `modules/operator-auth/csp.mjs`, byte for byte) sits beside it because this edition's operator-auth copy predates it and must keep its one pinned revision; the module's import of it is the only adaptation. Both are covered by the `runeditrun/demo` component in `edition.json`. A hosted demo is not part of this edition.
+All copied Base source is pinned together to `rer-v0.2.27` in `base-copies.json`, with provenance in `edition.json` and `sources.lock.json`. `deploy-demo.json` and `.github/workflows/run-demo.yml` prepare the hosted demo. `rer deploy --demo --dry-run` on 0.2.27 still requires a container declaration. Container adoption is intentionally deferred: retry the dry run, native hosting and the homepage CTA after the native Worker runtime release.

@@ -9,6 +9,7 @@ import "./scheduling.css";
 type ModuleState = PagingArchive & { revision: number; workspaceRevision: number };
 type Props = {
   page: "schedules";
+  demo?: boolean;
   actor: Member;
   state: State;
   request: (path: string, data?: unknown) => Promise<any>;
@@ -68,7 +69,7 @@ function Empty({ title, children }: { title: string; children: ReactNode }) {
   return <div className="scheduling-empty"><Icon name="calendar" /><h3>{title}</h3>{children}</div>;
 }
 
-export function SchedulingWorkspace({ page, actor, state, request, refreshWorkspace }: Props) {
+export function SchedulingWorkspace({ page, actor, state, request, refreshWorkspace, demo }: Props) {
   const [data, setData] = useState<ModuleState | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -197,7 +198,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
   const currentCoverage = preview?.windows[0];
   const dirty = Boolean(draft && savedSchedule && JSON.stringify(draft) !== JSON.stringify(savedSchedule));
   return <section className="scheduling-workspace" aria-label="Schedule management">
-    <div className="scheduling-boundary"><Icon name="bolt" /><span><strong>Paging OFF.</strong> No provider sends. Your existing pager remains authoritative.</span></div>
+    {!demo && <div className="scheduling-boundary"><Icon name="bolt" /><span><strong>Paging OFF.</strong> No provider sends. Your existing pager remains authoritative.</span></div>}
     <div className="scheduling-toolbar">
       <p>{"Configure calendar rotations and inspect resolved UTC coverage."}</p>
       <button type="button" disabled={busy} onClick={refresh}>Refresh scheduling</button>

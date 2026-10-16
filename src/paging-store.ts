@@ -47,6 +47,7 @@ export async function commitPaging(db:D1Database,s:PagingSnapshot,archive:Paging
     ...mutation(token),
   ])
   if(result[0].meta.changes!==1) fail('Workspace or scheduling state changed; reload and retry',409)
+  return result
 }
 export function putSchedule(db:D1Database,s:Schedule,token:string) {
   return db.prepare(`INSERT INTO paging_schedules(id,revision,data) SELECT ?,?,? WHERE ${gate} ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,data=excluded.data`).bind(s.id,s.revision,JSON.stringify(s),token)

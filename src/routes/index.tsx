@@ -132,7 +132,7 @@ function Workspace() {
       <aside className="sidebar">
         <a href="#incidents" className="brand" aria-label="Oncall home">
           <Mark size={30} />
-          <span aria-hidden="true">Oncall</span>
+          <span data-rer-name>Oncall</span>
         </a>
         <nav className="navigation" aria-label="Workspace">
           {nav.map(([id, label]) => (
@@ -195,9 +195,9 @@ function Workspace() {
             </button>
           </div>
         </header>
-        <div className="authority">
+        {!w.demo && <div className="authority">
           Existing pager authoritative · paging OFF · schedules and coordination
-        </div>
+        </div>}
         <div role="status" className="notice" aria-live="polite">
           {w.busy ? "Saving…" : w.notice}
         </div>
@@ -213,7 +213,7 @@ function Workspace() {
         )}
         {page === "move-in" && <MoveInWorkspace admin={admin} request={request} />}
         {page === "schedules" && (
-          <SchedulingWorkspace page="schedules" actor={actor} state={s} request={request} refreshWorkspace={w.refresh} />
+          <SchedulingWorkspace page="schedules" actor={actor} state={s} request={request} refreshWorkspace={w.refresh} demo={w.demo} />
         )}
         {page === "incidents" && (
           <div className="board">
@@ -349,6 +349,11 @@ function Workspace() {
                     <span className={`tag state-${incident.state}`}>{incident.state}</span>
                     <span className="tag">Revision {incident.revision}</span>
                   </div>
+                  {w.demo && canEdit && incident.state !== "resolved" && (
+                    <button disabled={w.busy} onClick={() => w.run("/api/paging/jobs", { incident: incident.id }, "Test page sent")}>
+                      Send test page
+                    </button>
+                  )}
                   <section className="timeline">
                     <h3 className="section-title">
                       Evidence and decisions{" "}

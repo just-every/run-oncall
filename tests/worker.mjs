@@ -7,11 +7,11 @@ import {randomBytes} from 'node:crypto'
 import http from 'node:http'
 import {workerDiagnostics} from './diagnostics.mjs'
 
-export async function localWorker() {
+export async function localWorker(bindings = {}) {
  const dir=await mkdtemp(join(tmpdir(),'oncall-flow-')),socket=createServer()
  await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
  const origin=`http://127.0.0.1:${port}`,secret=()=>randomBytes(32).toString('hex')
- const vars={AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'owner@example.test',SESSION_SECRET:secret(),SETUP_TOKEN:secret(),MAIL_FROM:'auth@localhost.test',RER_DEV_KEY:secret()}
+ const vars={AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'owner@example.test',SESSION_SECRET:secret(),SETUP_TOKEN:secret(),MAIL_FROM:'auth@localhost.test',RER_DEV_KEY:secret(),...bindings}
  await writeFile(join(dir,'local.env'),Object.entries(vars).map(([k,v])=>`${k}=${v}`).join('\n'),{mode:0o600})
  const cli='node_modules/wrangler/bin/wrangler.js',env={...process.env,CI:'true',WRANGLER_SEND_METRICS:'false',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'true'}
  const statements=command=>JSON.parse(execFileSync(process.execPath,[cli,'d1','execute','DB','--local','--persist-to',dir,'--command',command,'--json'],{encoding:'utf8',env,stdio:['ignore','pipe','pipe'],maxBuffer:64*1024*1024})).map(r=>r.results)
@@ -29,10 +29,10 @@ export async function localWorker() {
   diagnostics.report('startup readiness failed');throw Error('Worker readiness failed')
  }
  // Each request opens its own connection: a pooled one the local Worker closed while the test read D1 would fail the next request before it is sent.
- const request=(path,input,cookie)=>new Promise((resolve,reject)=>{
+ const request=(path,input,cookie,extraHeaders={})=>new Promise((resolve,reject)=>{
   const transportFailure=error=>{diagnostics.report('HTTP transport failed');reject(error)}
   const body=input===undefined?undefined:Buffer.from(JSON.stringify(input))
-  const sent=http.request(origin+path,{method:body?'POST':'GET',agent:false,headers:{origin,'content-type':'application/json',...(cookie?{cookie}:{}),...(body?{'content-length':body.length}:{})}},res=>{
+  const sent=http.request(origin+path,{method:body?'POST':'GET',agent:false,headers:{origin,'content-type':'application/json',...(cookie?{cookie}:{}),...(body?{'content-length':body.length}:{}),...extraHeaders}},res=>{
    const chunks=[];res.on('data',c=>chunks.push(c));res.on('error',transportFailure);res.on('end',()=>{
     const raw=Buffer.concat(chunks).toString('utf8'),headers=new Headers();let value;try{value=JSON.parse(raw)}catch{value=raw}
     for(const [name,v] of Object.entries(res.headers))for(const item of [v].flat())headers.append(name,item)

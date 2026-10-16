@@ -2,6 +2,8 @@ import { pagingSnapshot, commitPaging, putSchedule } from './paging-store'
 import { coverage, validateSchedule } from './family/response-operations/schedules'
 import { fail } from './family/response-operations/domain'
 import { calendar } from './calendar'
+import { demoEffect } from './modules/demo/index.mjs'
+import { sendDemoPage } from './demo-paging'
 import { deliver } from './delivery'
 
 function clock(value:string|undefined) {
@@ -10,7 +12,7 @@ function clock(value:string|undefined) {
  return at
 }
 export function installSchedules(api:any,body:(c:any)=>Promise<any>) {
- api.post('/api/delivery',()=>deliver())
+ api.post('/api/delivery',async(c:any)=>c.json(await demoEffect(deliver,()=>sendDemoPage(c,body))))
  api.get('/api/schedules/:id/now-next',async(c:any)=>{
   const s=await pagingSnapshot(c.env.DB),schedule=s.archive.schedules.find(v=>v.id===c.req.param('id'))
   if(!schedule) fail('Unknown schedule',404)

@@ -180,14 +180,6 @@
       "reason": "Vendored Base module documentation for developers"
     },
     {
-      "source": "src/modules/import-kit/src/CONTRACT.md",
-      "reason": "Vendored Base module documentation for developers"
-    },
-    {
-      "source": "src/modules/import-kit/src/README.md",
-      "reason": "Vendored Base module documentation for developers"
-    },
-    {
       "source": "src/modules/import-kit/src/d1/README.md",
       "reason": "Vendored Base module documentation for developers"
     },
@@ -262,6 +254,10 @@
     {
       "source": "src/modules/portability/README.md",
       "reason": "Vendored Base module documentation for developers"
+    },
+    {
+      "source": "src/modules/operator-auth/README.md",
+      "reason": "Upstream authentication integration reference for seed maintainers."
     }
   ]
 }

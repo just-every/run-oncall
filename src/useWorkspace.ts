@@ -14,6 +14,7 @@ export async function request(path: string, data?: unknown): Promise<any> {
 export function useWorkspace() {
   const [state, setState] = useState<State | null>(null);
   const [member, setMember] = useState<Member | null>(null);
+  const [demo, setDemo] = useState(false);
   const [setup, setSetup] = useState(false);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
@@ -22,6 +23,7 @@ export function useWorkspace() {
   async function refresh() {
     const session = await request("/api/session");
     setMember(session.member);
+    setDemo(session.demo === true);
     setSetup(session.setup);
     if (session.member) setState(await request("/api/state"));
     else setState(null);
@@ -55,6 +57,7 @@ export function useWorkspace() {
   }
   return {
     state,
+    demo,
     member,
     setup,
     ready,

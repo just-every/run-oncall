@@ -30,15 +30,16 @@ function standIn(schedule: Schedule, members: Member[], at: number) {
  * A believable on-call setup, built through the same domain functions the
  * routes use: a team, two services with routing and escalation policies, weekly
  * rotations with overrides, and incidents from the last ten days (one open).
- * It records and sends nothing; paging stays off.
+ * Effects are completed by Base's demo guard; no provider is contacted.
  */
 export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: string; now: Date }) {
+  const started = performance.now()
   if (await env.DB.prepare('SELECT 1 FROM workspace_control WHERE id=1').first()) return
   const owner = await env.DB.prepare("SELECT id,display_name FROM oa_operators WHERE role='owner' AND status='active' ORDER BY created_at LIMIT 1").first<{ id: string; display_name: string }>()
   if (!owner) throw Error('Demo needs the owner before its workspace')
   const now = seededAt.getTime()
   const person = (name: string, role: Member['role']): Member => ({ id: crypto.randomUUID(), name, role, active: true })
-  const admin: Member = { id: owner.id, name: owner.display_name, role: 'admin', active: true }
+  const admin: Member = { id: owner.id, name: 'Alex Morgan', role: 'admin', active: true }
   const [priya, marcus, elena, sam] = [person('Priya Raman', 'responder'), person('Marcus Webb', 'responder'), person('Elena Rossi', 'responder'), person('Sam Okafor', 'responder')]
   const state: State = empty()
   state.members = [admin, priya, marcus, elena, sam, person('Jo Park', 'viewer')]
@@ -89,11 +90,11 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
   const live = signal('checkout-api', 'critical', 'checkout-5xx', 'g2', 'Checkout 5xx rate above 5% in eu-west', 'trigger', 38 * MIN, 'checkout/errors')
   const current = run(priya, { type: 'declare', service: 'checkout-api', severity: 'critical', title: 'Checkout errors in eu-west', summary: 'Customers in eu-west see failed payments at checkout.', alerts: [live.alert] }, 35 * MIN) as Incident
   const act = (actor: Member, input: object, offset: number) => run(actor, { incident: current.id, revision: current.revision, ...input }, offset)
-  act(priya, { type: 'transition', state: 'acknowledged', summary: 'Acknowledged; looking at the eu-west load balancer' }, 31 * MIN)
+  act(admin, { type: 'note', text: `Page sent to ${priya.name} via SMS, voice, push and email.` }, 34 * MIN)
   act(priya, { type: 'runbook', index: 0, done: true }, 28 * MIN)
   act(priya, { type: 'runbook', index: 1, done: true }, 24 * MIN)
   act(marcus, { type: 'note', text: 'Errors only in eu-west. A certificate rotation there finished just before the alert.' }, 20 * MIN)
-  act(priya, { type: 'transition', state: 'mitigating', summary: 'Shifting eu-west traffic to us-east while the certificate is reissued' }, 14 * MIN)
+  act(priya, { type: 'note', text: 'Preparing to shift eu-west traffic to us-east while the certificate is reissued.' }, 14 * MIN)
   act(priya, { type: 'action', title: 'Add certificate expiry to the pre-release checklist', owner: marcus.id, due: day(-3 * DAY) }, 6 * MIN)
   state.revision = 1
 
@@ -114,7 +115,7 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
   ])
 
   const token = crypto.randomUUID()
-  await env.DB.batch([
+  const workspaceWrites = await env.DB.batch([
     env.DB.prepare('INSERT OR IGNORE INTO workspace_control(id,revision,write_token) VALUES(1,?,?)').bind(state.revision, token),
     ...workspaceRows(env.DB, state, token),
     env.DB.prepare('INSERT OR IGNORE INTO oa_first_run(singleton,completed_by,completed_at) VALUES(1,?,?)').bind(owner.id, now),
@@ -122,5 +123,6 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
   ])
   const snapshot = await pagingSnapshot(env.DB)
   const policies = [checkout, payments].map(schedule => validatePolicy({ service: schedule.service, scheduleId: schedule.id, revision: 1, primaryWaitSeconds: 300, backupWaitSeconds: 300, retrySeconds: 60, maxAttempts: 3 }, schedule))
-  await commitPaging(env.DB, snapshot, { ...snapshot.archive, schedules: [checkout, payments], policies }, write => [...[checkout, payments].map(s => putSchedule(env.DB, s, write)), ...policies.map(p => putPolicy(env.DB, p, write))])
+  const pagingWrites = await commitPaging(env.DB, snapshot, { ...snapshot.archive, schedules: [checkout, payments], policies }, write => [...[checkout, payments].map(s => putSchedule(env.DB, s, write)), ...policies.map(p => putPolicy(env.DB, p, write))])
+  console.info(JSON.stringify({ event: 'oncall_demo_seed', rowsWritten: [...workspaceWrites, ...pagingWrites].reduce((sum, result) => sum + (result.meta.rows_written ?? 0), 0), elapsedMs: Math.round(performance.now() - started) }))
 }
