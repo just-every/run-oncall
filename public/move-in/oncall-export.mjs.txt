@@ -1,0 +1,165 @@
+#!/usr/bin/env node
+// Standalone Node 22+ exporter. No packages, uploads, provider writes or saved credentials.
+// Provider references and the supported import subset: /docs/move-in in your Oncall app.
+import { createInterface } from 'node:readline/promises'
+import { Writable } from 'node:stream'
+import { writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+
+const vendors = ['opsgenie', 'pagerduty']
+const credentialField = /^(?:password|passwd|secret|token|credentials?|authorization|cookie)$|(?:api|access|auth|integration|routing|service|signing|private|client|refresh|session)[_-]?(?:key|secret|token)$|^webhook[_-]?(?:url|secret)$|(?:http|web)[_-]?cal[_-]?url$|^ical[_-]?url$/i
+const day = 86400000
+
+export function exportWindow(start, end) {
+ const parse = value => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw Error('Use dates in YYYY-MM-DD format.')
+  const date = new Date(`${value}T00:00:00Z`)
+  if (!Number.isFinite(+date) || date.toISOString().slice(0, 10) !== value) throw Error('That calendar date does not exist.')
+  return date
+ }
+ const since = parse(start), until = parse(end), days = (+until - +since) / day
+ if (days < 1 || days > 31) throw Error('Choose an end date 1 to 31 days after the start date.')
+ return { since: since.toISOString(), until: until.toISOString(), days }
+}
+
+// Only credential fields are omitted. Unknown rotation/rule fields survive for the importer's review.
+function withoutCredentials(value, key, removed) {
+ if (typeof value === 'string' && value.includes(key)) throw Error('A response contains the API key in its data. No file was saved; ask your provider administrator for help.')
+ if (Array.isArray(value)) return value.map(item => withoutCredentials(item, key, removed))
+ if (!value || typeof value !== 'object') return value
+ return Object.fromEntries(Object.entries(value).flatMap(([field, child]) => {
+  if (credentialField.test(field)) { removed.count++; return [] }
+  return [[field, withoutCredentials(child, key, removed)]]
+ }))
+}
+
+export async function collectExport({ vendor, region, key, window, request = fetch, progress = () => {} }) {
+ if (!vendors.includes(vendor) || !['us', 'eu'].includes(region)) throw Error('Choose opsgenie or pagerduty, and region us or eu.')
+ if (typeof key !== 'string' || !key.trim() || /\s/.test(key)) throw Error('Paste only the API key, with no spaces or header text.')
+ const ops = vendor === 'opsgenie'
+ const base = `https://api.${region === 'eu' ? 'eu.' : ''}${vendor}.com`
+ const headers = { Authorization: ops ? `GenieKey ${key}` : `Token token=${key}`, Accept: ops ? 'application/json' : 'application/vnd.pagerduty+json;version=2' }
+ async function get(path, label) {
+  const url = new URL(path, base)
+  if (url.origin !== base || url.username || url.password || url.hash) throw Error('Provider returned an unsafe pagination link. No file was saved.')
+  let response
+  try { response = await request(url, { method: 'GET', headers, redirect: 'error', signal: AbortSignal.timeout(30000) }) }
+  catch { throw Error(`Could not read ${label}. Check your network, account region and provider status, then run again. No file was saved.`) }
+  if (!response.ok) {
+   const hint = response.status === 401 || response.status === 403 ? 'Ask your administrator to check the key, region, read and configuration permissions.' : response.status === 429 ? 'The provider rate limit was reached. Wait a few minutes before running again.' : 'Ask your provider administrator to check access and provider status.'
+   throw Error(`Reading ${label} failed (HTTP ${response.status}). ${hint} No file was saved.`)
+  }
+  let body
+  try { body = await response.json() } catch { throw Error(`Reading ${label} returned invalid JSON. No file was saved.`) }
+  if (!body || typeof body !== 'object' || body.error || body.errors || body.result === false) throw Error(`Reading ${label} returned an error response. No file was saved.`)
+  return { body, headers: response.headers }
+ }
+ async function list(path, kind, label) {
+  progress(`Reading ${label}…`)
+  const records = [], visited = new Set(), identities = new Set(), initial = new URL(path, base)
+  let next = initial.href
+  while (next) {
+   const url = new URL(next, base)
+   if (url.pathname !== initial.pathname || visited.has(url.href) || visited.size >= 100) throw Error(`Pagination for ${label} did not complete safely. No file was saved.`)
+   visited.add(url.href)
+   const { body, headers: responseHeaders } = await get(url, label)
+   const items = body[ops ? 'data' : kind]
+   if (!Array.isArray(items)) throw Error(`Reading ${label} returned no record list. No file was saved.`)
+   for (const item of items) {
+    const id = item?.id ?? item?.alias
+    if (id !== undefined && identities.has(String(id))) throw Error(`The provider repeated a ${label} record while paging. Run again while settings are unchanged.`)
+    if (id !== undefined) identities.add(String(id))
+    records.push(item)
+   }
+   if (ops) next = body.paging?.next || responseHeaders.get('x-paging-next') || null
+   else if (body.more === true) {
+    const limit = body.limit, offset = body.offset
+    if (!Number.isSafeInteger(limit) || limit < 1 || !Number.isSafeInteger(offset) || offset < 0 || !items.length) throw Error(`Reading ${label} returned invalid pagination. No file was saved.`)
+    url.searchParams.set('offset', String(offset + limit)); url.searchParams.set('limit', String(limit)); next = url.href
+   } else {
+    if (!ops && initial.searchParams.has('limit') && body.more !== false) throw Error(`Reading ${label} returned no pagination status. No file was saved.`)
+    next = null
+   }
+  }
+  return records
+ }
+ const users = await list(ops ? '/v2/users?limit=100&offset=0' : '/users?limit=100&offset=0', 'users', 'users')
+ const scheduleList = await list(ops ? '/v2/schedules' : '/schedules?limit=100&offset=0', 'schedules', 'schedules')
+ const bundle = { users, schedules: [], overrides: [], ...(ops ? { escalations: [], timelines: [] } : { escalation_policies: [] }) }
+ const dates = new URLSearchParams({ since: window.since, until: window.until })
+ for (const item of scheduleList) {
+  if (!item?.id) throw Error('A schedule has no ID. No file was saved.')
+  const path = `${ops ? '/v2' : ''}/schedules/${encodeURIComponent(item.id)}`
+  progress('Reading schedule details and overrides…')
+  const detail = (await get(ops ? path : `${path}?${dates}`, 'schedule details')).body
+  const schedule = detail[ops ? 'data' : 'schedule']
+  if (!schedule || String(schedule.id) !== String(item.id)) throw Error('Schedule detail is missing or belongs to another schedule. No file was saved.')
+  bundle.schedules.push(schedule)
+  const overrides = await list(ops ? `${path}/overrides` : `${path}/overrides?${dates}&overflow=true`, 'overrides', 'schedule overrides')
+  bundle.overrides.push(...overrides.map(value => ({ ...value, [ops ? 'scheduleId' : 'schedule_id']: item.id })))
+  if (ops) {
+   const query = new URLSearchParams({ date: window.since, interval: String(window.days), intervalUnit: 'days' })
+   const timeline = (await get(`${path}/timeline?${query}`, 'schedule timeline')).body.data
+   if (!timeline?.finalTimeline || String(timeline._parent?.id) !== String(item.id)) throw Error('The schedule timeline is missing or belongs to another schedule. No file was saved.')
+   bundle.timelines.push(timeline)
+  }
+ }
+ if (ops) bundle.escalations = await list('/v2/escalations', 'escalations', 'escalations')
+ else bundle.escalation_policies = await list('/escalation_policies?limit=100&offset=0', 'escalation_policies', 'escalation policies')
+ const removed = { count: 0 }, clean = withoutCredentials(bundle, key, removed)
+ const count = Object.values(clean).reduce((total, records) => total + records.length, 0)
+ const json = JSON.stringify(clean, null, 2) + '\n'
+ if (!count) throw Error('The account returned no exportable records. Check the key scope and region. No file was saved.')
+ if (count > 500 || Buffer.byteLength(json) > 512 * 1024) throw Error('This export exceeds Oncall’s 500-object or 512 KiB limit. No file was saved. Ask your administrator for a smaller provider access scope; do not truncate rotations or omit their people.')
+ return { json, count, removed: removed.count }
+}
+
+async function question(label, hidden = false) {
+ const silent = new Writable({ write(_chunk, _encoding, done) { done() } })
+ const rl = createInterface({ input: process.stdin, output: hidden ? silent : process.stdout, terminal: true, historySize: 0 })
+ // A closed prompt is never treated as Enter/default, including Ctrl-C during hidden input.
+ let answered = false
+ rl.on('SIGINT', () => { process.stderr.write('Export cancelled. No file was saved.\n'); process.exitCode = 1; rl.close() })
+ if (hidden) process.stdout.write(label)
+ try {
+  const value = await rl.question(hidden ? '' : label)
+  answered = true
+  return value.trim()
+ } finally {
+  rl.close()
+  if (hidden) process.stdout.write('\n')
+  if (!answered) process.exitCode = 1
+ }
+}
+
+async function main() {
+ if (Number(process.versions.node.split('.')[0]) < 22) throw Error('Install Node.js 22 or later, then run this command again.')
+ if (process.argv.length === 3 && ['--help', '-h'].includes(process.argv[2])) {
+  console.log('Usage: node oncall-export.mjs opsgenie|pagerduty\nRequires Node 22+ and an interactive terminal. Prompts for us/eu region, UTC comparison dates (1–31 days), and a hidden read-only API key.\nGET requests only; no packages or uploads. Collects all accessible records, follows pagination and joins schedule details/overrides.\nSaves PROVIDER-export-DATE-TIME.json in the current folder only after collection, credential removal and the 512 KiB/500-object checks succeed.\nUpload that file under Move-in kit → Export JSON → Preview import. Paging stays OFF.');
+  return
+ }
+ const vendor = process.argv[2]
+ if (!vendors.includes(vendor) || process.argv.length !== 3) throw Error('Usage: node oncall-export.mjs opsgenie  OR  node oncall-export.mjs pagerduty')
+ if (!process.stdin.isTTY || !process.stdout.isTTY) throw Error('Run in an interactive terminal so the key can be entered without echo. Do not pipe or redirect this command.')
+ console.log(`Oncall ${vendor} export: GET requests only. The API key stays in this process.`)
+ const region = (await question('Account region (us/eu) [us]: ')) || 'us'
+ if (!['us', 'eu'].includes(region)) throw Error('Region must be us or eu. Run again.')
+ const today = new Date().toISOString().slice(0, 10)
+ const start = (await question(`Comparison start, UTC date [${today}]: `)) || today
+ const defaultEnd = new Date(Date.parse(`${start}T00:00:00Z`) + 14 * day)
+ if (!Number.isFinite(+defaultEnd)) throw Error('Use a valid YYYY-MM-DD start date. Run again.')
+ const end = (await question(`Comparison end, UTC date [${defaultEnd.toISOString().slice(0, 10)}]: `)) || defaultEnd.toISOString().slice(0, 10)
+ const window = exportWindow(start, end)
+ const key = await question('Paste read-only API key (input hidden), then press Enter: ', true)
+ const result = await collectExport({ vendor, region, key, window, progress: line => console.log(line) })
+ const filename = resolve(`${vendor}-export-${new Date().toISOString().replaceAll(':', '-')}.json`)
+ try { await writeFile(filename, result.json, { flag: 'wx', mode: 0o600 }) }
+ catch { throw Error('Could not save the export. Check folder permissions and free disk space, then run again.') }
+ console.log(`Saved ${filename}\n${result.count} objects; ${result.removed} credential fields omitted.\nCoverage comparison: ${window.since} to ${window.until}.`)
+ console.log('Return to Move-in kit. Choose this file under Export JSON and press Preview import. Review every rejection and difference; export success does not establish compatibility. Paging stays OFF.')
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+ main().catch(error => { console.error(`Export stopped: ${error.message}`); process.exitCode = 1 })
+}

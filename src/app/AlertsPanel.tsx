@@ -1,0 +1,40 @@
+import type { Alert, State } from '../family/response-operations/domain';
+
+export function AlertsPanel({ state, canEdit, busy, name, onDeclare }: {
+  state: State; canEdit: boolean; busy: boolean; name: (id: string | null) => string;
+  onDeclare: (data: unknown) => Promise<void>;
+}) {
+  return <section className="panel padded">
+    <h2>Alerts</h2>
+    <p>Signals remain separate from incidents. Recovery affects only its lifecycle generation.
+      This list refreshes every 10 seconds while visible; use Refresh for an immediate update.</p>
+    <p>Severity is the highest trigger severity recorded for the alert. Declaring an incident keeps that severity.</p>
+    {state.alerts.map((alert: Alert) => {
+      const events = alert.events.map(id => state.events.find(event => event.id === id)).filter(event => event !== undefined);
+      const triggers = events.filter(event => event.intent === 'trigger');
+      const ranked = ['critical', 'warning', 'info'] as const;
+      const severity = ranked.find(level => (triggers.length ? triggers : events).some(event => event.severity === level));
+      const title = events[0]?.title;
+      return <article className="service-card" key={alert.id}>
+        <h3>{title}</h3>
+        {severity && <span className={`priority sev-${severity}`}>{severity}</span>}
+        <p>{state.services.find(service => service.id === alert.service)?.name} · {alert.environment} · {alert.state}</p>
+        <p>{alert.source} / {alert.key} / {alert.generation}</p>
+        <p>{alert.suppressed ? 'Suppressed' : name(alert.owner)} · {alert.events.length} events</p>
+        {canEdit && <button disabled={busy || !severity} onClick={() => onDeclare({
+          type: 'declare', service: alert.service, title, severity,
+          summary: 'Declared from alert; impact requires responder review', alerts: [alert.id],
+        })}>Declare incident from alert</button>}
+      </article>;
+    })}
+    {!state.alerts.length && <p>No admitted alerts. Configure a scoped source and send its first event.</p>}
+    <details>
+      <summary>Accepted event receipts ({state.events.length})</summary>
+      {state.events.map(event => <article className="receipt" key={event.id}>
+        <strong>{event.eventId} · {event.intent} · {event.severity}</strong>
+        <p>{event.decision.action}: {event.decision.reason}</p>
+        <p>{new Date(event.acceptedAt).toLocaleString()} · observed {new Date(event.observedAt).toLocaleString()} · {event.generation}</p>
+      </article>)}
+    </details>
+  </section>;
+}

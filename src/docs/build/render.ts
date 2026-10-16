@@ -42,6 +42,7 @@ function resolve(href: string, context: LinkContext): { href: string; anchor?: A
   if (page) return { href: page + (id ? `#${id}` : ''), anchor: id ? { href, slug: page.slice('/docs/'.length), id } : undefined };
   const kind = context.kind(target);
   if (!kind) return { problem: `links to ${href}, but ${target} does not exist` };
+  if (kind === 'file' && target.startsWith('public/')) return { href: `/${target.slice('public/'.length)}` };
   return { href: `${context.repository}/${kind === 'directory' ? 'tree' : 'blob'}/main/${target}${id ? `#${id}` : ''}` };
 }
 
@@ -85,7 +86,9 @@ export function renderMarkdown(markdown: string, context: LinkContext): Rendered
         if (result.anchor) anchors.push(result.anchor);
         const external = /^https?:/i.test(result.href);
         const titled = title ? ` title="${escapeHtml(title)}"` : '';
-        return `<a href="${escapeHtml(result.href)}"${titled}${external ? ' rel="noreferrer"' : ''}>${label}</a>`;
+        // Command-line source is served as text, never loaded as a browser module.
+        const download = !external && result.href.endsWith('.mjs.txt') ? ` download="${escapeHtml(posix.basename(result.href).slice(0, -4))}"` : '';
+        return `<a href="${escapeHtml(result.href)}"${titled}${download}${external ? ' rel="noreferrer"' : ''}>${label}</a>`;
       },
       image({ href }) {
         problems.push(`has an image (${href}); the docs publish text only`);

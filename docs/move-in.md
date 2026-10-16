@@ -4,80 +4,70 @@ You can bring your rota across from Opsgenie or PagerDuty without connecting Onc
 
 Only an admin can use the **Move-in kit**, the screen with the arrows icon in the app. Your pager stays in charge of waking people up: everything you move in arrives **paused**, and paging stays off.
 
-## Save your exports
+## Save your export with the downloadable tool
 
-The **Source** selector on Move-in kit shows **How to export from Opsgenie** or **How to export from PagerDuty**. Expand it for the complete preparation steps on that page, including provider links and a bundle structure. Oncall accepts a JSON bundle of API response bodies; a calendar (.ics) or CSV download does not contain the rotation settings it needs.
+In **Move-in kit**, choose **Opsgenie** or **PagerDuty** under **Source**, then expand **How to export from…**. That panel includes the download, runnable commands, provider key steps and troubleshooting. No API client, paging knowledge or manual JSON assembly is needed. Calendar (.ics) and CSV files do not contain the required rotation definitions.
 
-Use an API client to make the GET requests below: set the base URL and request headers, append each path, send the request, and save each successful JSON response **body** as a private `.json` file. Do not save request headers or credentials in your export. If the response is 401 or 403, ask your provider administrator to check access; do not bundle error responses.
+### Prepare a read-only API key
 
-### Opsgenie
+**Opsgenie:** ask your administrator to create a separate API integration named **Oncall export**:
 
-Ask your Opsgenie administrator for an [API integration key](https://docs.opsgenie.com/docs/api-integration) with configuration access. In [access settings](https://docs.opsgenie.com/docs/api-access-management), select **Limit to Read-Only Access** and leave **Restrict Access to Configurations** unselected.
+1. Open **Settings → Integrations → Add integration**, search for **API** and select it.
+2. Enter the name and select **Continue**. Expand **Steps to configure the integration** to locate the API key.
+3. In the integration's access settings, select **Limit to Read-Only Access** and leave **Restrict Access to Configurations** unselected. Save the settings, select **Turn on integration** and copy the key privately.
 
-Set the base URL to `https://api.opsgenie.com`, or `https://api.eu.opsgenie.com` for an EU account. Add the header `Authorization: GenieKey YOUR_API_KEY`, replacing the placeholder privately in your API client.
+On plans without Settings → Integrations, start at **Teams → your team → Integrations → Add integration** and follow the same API steps. A team integration can read only schedules that team can access. Have your administrator check that the key can read all intended users, schedules, overrides and escalations. See the official [integration setup](https://support.atlassian.com/opsgenie/docs/create-a-default-api-integration/) and [access settings](https://docs.opsgenie.com/docs/api-access-management).
 
-| Save under | GET path | What to keep |
-| --- | --- | --- |
-| `users` | `/v2/users?limit=100&offset=0` | Every referenced person's ID, username/email and name. [User API](https://docs.opsgenie.com/docs/user-api). |
-| `schedules` | `/v2/schedules?expand=rotation` | Expanded rotations. If absent, use `/v2/schedules/SCHEDULE_ID` for each schedule instead. Copy each schedule's `id` for the following requests. [Schedule API](https://docs.opsgenie.com/docs/schedule-api). |
-| `overrides` | `/v2/schedules/SCHEDULE_ID/overrides` | Repeat per schedule, replacing SCHEDULE_ID with its ID. Add `"scheduleId": "SCHEDULE_ID",` immediately after the saved response's opening `{`, using its actual ID, and leave `data` unchanged. [Override API](https://docs.opsgenie.com/docs/schedule-override-api). |
-| `escalations` | `/v2/escalations` | Rules and recipients. [Escalation API](https://docs.opsgenie.com/docs/escalation-api). |
-| `timelines` (optional) | `/v2/schedules/SCHEDULE_ID/timeline?interval=2&intervalUnit=weeks` | Repeat per schedule. Keep `_parent`, dates and `finalTimeline`. The window starts now; set `date` to an ISO timestamp for another window. [Timeline reference](https://docs.opsgenie.com/docs/schedule-api). |
+**PagerDuty:** ask an admin or account owner to open **Integrations → Developer Tools → API Access Keys → Create New API Key**. Enter **Oncall export** as its description, check **Read-only API Key**, and select **Create Key**. Copy the key privately before selecting **Close**; it is shown in full only once. This must be a REST API key; a service's Events API key cannot read configuration. See [PagerDuty's key instructions](https://support.pagerduty.com/main/docs/api-access-keys).
 
-For paginated lists, follow `paging.next` or the `X-Paging-Next` response header and save every page until no next page remains. See [Opsgenie pagination](https://docs.opsgenie.com/docs/pagination).
+Keep the key out of commands and files. Paste it only when the exporter asks for it at its hidden terminal prompt. The exporter keeps it in memory, makes only GET requests to the selected provider region, and never sends the key to Oncall.
 
-### PagerDuty
+### Download and run
 
-Ask your administrator for a read-only **REST API** key. In PagerDuty, open **Integrations → API Access Keys** (under Developer Tools), choose **Create New API Key**, enter a description, select **Read-only API Key**, and create it. See [API access keys](https://support.pagerduty.com/main/docs/api-access-keys). A service's Events API key cannot read these settings.
+You need **Node.js 22 or later**, an interactive terminal, and internet access to the provider. No npm packages are needed. Open Terminal on macOS/Linux or PowerShell on Windows and run `node --version`. If it is missing or below v22, install the current LTS from [nodejs.org](https://nodejs.org/en/download), then reopen the terminal.
 
-Set the base URL to `https://api.pagerduty.com`. Add `Authorization: Token token=YOUR_API_KEY` and `Accept: application/vnd.pagerduty+json;version=2` as request headers, replacing the key placeholder privately in the client.
+[Download oncall-export.mjs](../public/move-in/oncall-export.mjs.txt) from your running Oncall app and save it in **Downloads** with that exact name, without a `.txt` suffix. You can inspect the downloaded source in a text editor. Run these two lines in Terminal, using the command for your provider:
 
-Choose the period for coverage comparison and overrides. Replace SINCE and UNTIL below with ISO timestamps, for example `2026-10-16T00:00:00Z` and `2026-11-16T00:00:00Z`; URL-encode query values in the client. For a schedule in a zone with clock changes, include a clock change in the window: matching final coverage across it is required for import.
-
-| Save under | GET path | What to keep |
-| --- | --- | --- |
-| `users` | `/users?limit=100&offset=0` | All pages, including every referenced person's email. [List users](https://docs.pagerduty.com/developer/api/reference/rest/users/list-users). |
-| Use only to find IDs | `/schedules?limit=100&offset=0` | Read all pages; request each detail below rather than bundling this list as well. [List schedules](https://docs.pagerduty.com/developer/api/reference/rest/schedules/list-schedules). |
-| `schedules` | `/schedules/SCHEDULE_ID?since=SINCE&until=UNTIL` | Repeat per actual schedule ID. Keep `schedule_layers` and `final_schedule` in the whole response. [Schedule detail](https://docs.pagerduty.com/developer/api/reference/rest/schedules/get-schedule). |
-| `overrides` | `/schedules/SCHEDULE_ID/overrides?since=SINCE&until=UNTIL&overflow=true` | Repeat per schedule and use the same window. Add `"schedule_id": "SCHEDULE_ID",` after the response's opening `{`, using its actual schedule ID; leave `overrides` unchanged. `overflow=true` preserves full interval boundaries. Overrides outside this window are not included. [List overrides](https://docs.pagerduty.com/developer/api/reference/rest/schedules/list-schedule-overrides). |
-| `escalation_policies` | `/escalation_policies?limit=100&offset=0` | All pages, retaining `escalation_rules`. [List policies](https://docs.pagerduty.com/developer/api/reference/rest/escalation-policies/list-escalation-policies). |
-
-If a list response has `more: true`, repeat with `offset` increased by the returned `limit`. Save each page until `more: false`.
-
-### Assemble one JSON file
-
-Create a plain-text file named `opsgenie-export.json` or `pagerduty-export.json`. Start with the matching structure below. Inside each empty array paste the **entire response body**, including its outer braces. Separate multiple response bodies (pages or schedules) with commas. These entries are JSON objects, not filenames or quoted JSON strings. Leave an array empty only if there are no records, or for the optional Opsgenie timeline.
-
-Opsgenie:
-
-```json
-{
-  "users": [],
-  "schedules": [],
-  "overrides": [],
-  "escalations": [],
-  "timelines": []
-}
+```sh
+cd ~/Downloads
+node oncall-export.mjs opsgenie
 ```
 
-PagerDuty:
+or:
 
-```json
-{
-  "users": [],
-  "schedules": [],
-  "overrides": [],
-  "escalation_policies": []
-}
+```sh
+cd ~/Downloads
+node oncall-export.mjs pagerduty
 ```
 
-Keep each record once. For schedules, use expanded lists or individual details, never both for the same record. Keep the provider's response envelopes (`data` for Opsgenie; `users`, `schedule`, `overrides`, etc. for PagerDuty). Each bundle entry also accepts a single saved response or a direct record list. A [sanitized Opsgenie fixture](https://github.com/just-every/run-oncall/blob/main/tests/fixtures/opsgenie.json) illustrates the format with invented test people; it is not a customer export.
+In Windows PowerShell, replace the first line with `cd "$HOME\Downloads"`. If you saved the script in a different folder, change to that folder first. `node oncall-export.mjs --help` explains usage without requesting a key or contacting a provider.
 
-Override lists do not identify their schedule: the extra `scheduleId` or `schedule_id` field joins each saved list to its schedule. If the bundle holds only one schedule, the field may be omitted. With multiple schedules and no ID, the overrides and every schedule they could change are refused by name.
+Answer the prompts:
 
-Timelines and PagerDuty's `final_schedule` let Oncall compare its result with the source within the saved window. They do not establish coverage outside it. People are matched by email; a rotation or override naming someone absent from `users` is rejected.
+1. **Region:** `us` or `eu`. For Opsgenie, choose `eu` when your sign-in uses `app.eu.opsgenie.com`; for PagerDuty, choose `eu` when your account address contains `.eu.pagerduty.com`. Otherwise choose `us`. The tool chooses the corresponding `api.opsgenie.com`, `api.eu.opsgenie.com`, `api.pagerduty.com` or `api.eu.pagerduty.com` host.
+2. **Comparison start/end:** `YYYY-MM-DD`, meaning midnight UTC, with an exclusive end. Press Enter at each prompt for today through 14 days later, or choose a period of 1–31 days. For a PagerDuty schedule in a zone with clock changes, include a clock change so preview can check the required equivalence. For example, `2026-10-25` through `2026-11-08` spans New York's November clock change.
+3. **API key:** paste the read-only key and press Enter. No characters appear while you enter it; that is expected. Do not include `Authorization`, `GenieKey` or `Token token=` text.
 
-Leave keys, tokens, routing or integration keys, webhook URLs and calendar URLs out of the file. A credential-bearing field anywhere refuses the whole file and names the field. The file can be up to 500 KB and 500 objects. It holds names and email addresses, so keep it private.
+The exporter reads all people, schedules and policies accessible to the key. It follows provider pagination automatically, uses schedule details instead of duplicating list entries, and adds each override's schedule ID. Opsgenie includes all returned overrides and final timelines for the chosen period. PagerDuty includes final schedule coverage and overrides overlapping that period; `overflow=true` preserves full override boundaries. PagerDuty overrides outside the chosen period are not included. The tool omits credential fields, including calendar URLs, and reports the number omitted. Other response fields, including unknown rotation or rule settings, remain available for compatibility review.
+
+### Find the file, upload it and handle errors
+
+A successful run prints **Saved**, the full filename, object count and comparison window. The file is created in the folder where you ran the command, normally Downloads, with a name like `opsgenie-export-DATE-TIME.json` or `pagerduty-export-DATE-TIME.json`. Each run uses a new name. Keep it private: it contains names, email addresses and schedules. File permissions are owner-only on systems supporting Unix file modes.
+
+Return to **Move-in kit**, keep the matching **Source** selected, choose that file under **Export JSON**, and press **Preview import**. Export success means the file was collected; the preview decides which settings are compatible. Read every rejection, difference and coverage comparison before confirming. Ask your administrator to revoke the dedicated export key after use.
+
+If the tool stops:
+
+- **HTTP 401/403:** ask your administrator to check the key, account region, read permission and Opsgenie configuration access/team scope. PagerDuty Events keys do not work here.
+- **HTTP 429:** wait a few minutes before running again.
+- **Network, response or pagination error:** check connectivity/provider status and rerun while source settings remain unchanged. No bundle is saved for these failures; do not select a file left from an earlier run.
+- **Export too large:** Oncall accepts at most **512 KiB and 500 records** (people, schedules, overrides, policies and timelines combined). The exporter stops rather than truncating. Ask your administrator for a smaller provider access scope; do not omit people referenced by rotations or overrides. A shorter comparison window may reduce timeline size.
+- **Cannot find the script:** check that the terminal is in Downloads and the file is named exactly `oncall-export.mjs`. If the download has a duplicate suffix such as `(1)`, use that actual filename or rename it first.
+- **Cannot save:** check the folder's write permissions and free disk space, then run again.
+
+For operators maintaining their own export tooling, the bundle uses `users`, `schedules`, `overrides` and `escalations` plus `timelines` for Opsgenie, or `users`, `schedules`, `overrides` and `escalation_policies` for PagerDuty. Each value is a record array; saved provider response envelopes are also accepted. Each override must name its `scheduleId` (Opsgenie) or `schedule_id` (PagerDuty) when multiple schedules exist. Timelines retain `_parent.id`; PagerDuty schedule details retain `schedule_layers` and `final_schedule`. Every referenced person must appear in `users`. Credential-bearing fields anywhere refuse the file.
+
+Exporter references checked on 16 October 2026: Opsgenie's [pagination](https://docs.opsgenie.com/docs/pagination), [schedule details and timelines](https://docs.opsgenie.com/docs/schedule-api), [overrides](https://docs.opsgenie.com/docs/schedule-override-api) and [escalations](https://docs.opsgenie.com/docs/escalation-api); PagerDuty's [pagination](https://docs.pagerduty.com/developer/pagination), [schedule details](https://docs.pagerduty.com/developer/api/reference/rest/schedules/get-schedule), [overrides](https://docs.pagerduty.com/developer/api/reference/rest/schedules/list-schedule-overrides), [policies](https://docs.pagerduty.com/developer/api/reference/rest/escalation-policies/list-escalation-policies) and [regions](https://support.pagerduty.com/main/docs/service-regions).
 
 ## Preview, then import
 

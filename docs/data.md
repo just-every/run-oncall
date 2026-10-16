@@ -26,6 +26,18 @@ The chooser shows archived names and IDs so you can distinguish duplicate names.
 
 Admins also have **Archive** in the app. **Portable workspace archive** downloads the workspace's coordination records as a file. **Validate and replace from archive** puts a downloaded file back: Oncall checks it completely first, you type `REPLACE` to confirm, and a file that fails the check leaves your current workspace exactly as it was.
 
+### Transfer local coordination records to hosting
+
+The app's JSON archive can move coordination records between installations. It excludes schedules, overrides, authentication secrets and sessions. The `.rer` installation archive is for local `rer import` only.
+
+1. On the local app, open **Archive → Export original archive** and keep the downloaded JSON private.
+2. Export any records you need from the current hosted workspace. An archive from another installation cannot replace a workspace that already has services, incidents, events or additional members: administrator mapping needs an empty target.
+3. From your hosting checkout, use a new unused environment name: `rer deploy --environment move-in --env-file "$HOME/.config/oncall/production.env"`. [Install and run](install.md#host-for-your-team) explains how to prepare the owner and private credentials file. Choose another name if `move-in` exists already. Your existing hosted environment stays available.
+4. Open the new address, sign in as its owner and finish setup. Before creating services or members, open **Archive**, choose the local JSON, explicitly map your sign-in to an archived administrator, type `REPLACE` and press **Replace workspace with this archive**.
+5. After **Restored**, reset other members' passwords and recreate monitoring source keys. Recreate schedules under **Schedules**, or bring provider schedules through **Move-in kit**. Check **Incidents** and **Team** before using the new address.
+
+Restoring this hosted workspace's own archive works without mapping when the current active administrator is in it. A refused replacement leaves existing records unchanged. Deployment itself never uploads local records.
+
 ## Start over
 
 Stop both local servers before resetting:

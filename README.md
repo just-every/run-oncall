@@ -31,7 +31,7 @@
 
 # Run it locally
 
-Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall), release 0.2.0.
+Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.2.0`, predates hosting; hosted coordination is currently available from `main` until the next release tag. See [Install and run](docs/install.md#host-for-your-team) for complete credentials and deployment instructions.
 
 Install the `rer` command once:
 
@@ -58,7 +58,7 @@ rer verify
 rer export --output exports/installation.rer
 rer import --input exports/installation.rer --yes
 rer reset --yes
-rer deploy --dry-run
+rer deploy --environment production --dry-run
 rer describe
 rer check
 ```
@@ -127,21 +127,38 @@ This restarts the updated local app, applies migrations and keeps your owner, sc
 
 ### Host for your team
 
-Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Prepare a checkout for a real owner mailbox with `rer setup --owner-email you@example.com` before its first local launch; repeated setup preserves the existing owner. Supply `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` privately in your environment for your own Cloudflare account. The deployment selects SendGrid: also supply `SENDGRID_API_KEY` and `MAIL_FROM`, using a sender verified by your SendGrid account. A configured remote mail provider is required for hosted email-link sign-in.
+Hosting is currently on `main`; `v0.2.0` predates it. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow [Install and run](docs/install.md#host-for-your-team) to prepare a real owner mailbox, obtain Cloudflare and SendGrid credentials with the required permissions, and save them in an owner-only `0600` file outside Git. The Install page includes each provider's menu path, verification steps and expected results.
+
+From the hosting checkout, with the private file prepared as described there:
 
 ```sh
-rer deploy --dry-run
-rer deploy
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
-`rer deploy` creates the hosted installation, applies migrations, verifies its deployment identity, claims the configured owner automatically and retires its one-time setup token. Open the app address and use **Email a sign-in link**, then open the email on the same device and press **Confirm**. Finish the owner confirmation at `/setup` if shown. There is no setup token to copy or delete. Local dev entry links do not work on the hosted app. Admin-created team members use their workspace name and password at `/signin/local`; Oncall sends no invitations. See [Install and run](docs/install.md#host-for-your-team) for the full sequence.
+Use the same named environment for every later command; it defaults to `production` if omitted. Deployment creates the hosted installation, applies migrations, verifies deployment identity, claims the configured owner automatically and retires its one-time setup token. Open the returned address and use **Email a sign-in link**, then open the email on the same device and press **Confirm**. Finish the owner confirmation at `/setup` if shown. Local dev entry links do not work there. Admin-created team members use their workspace name and password at `/signin/local`; Oncall sends no invitations.
 
-Deployment uses a separate hosted database; it does not upload your local schedules or incidents. For later hosted updates, pull with `git pull --ff-only` and run `rer deploy` again with the same credentials. An update keeps the hosted owner and data.
-
-To take the hosted installation down again, keep its deployment record and use the same Cloudflare credentials:
+The deploying owner can recover access without email from the original checkout:
 
 ```sh
-rer deploy --remove --yes
+rer signin --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
-This deletes only what the deployment record says `rer deploy` created (the Worker, database and any queues), reads back that each is gone and touches nothing else. Your local folder and data stay.
+This prints a private, single-use owner link that expires within 15 minutes. Open it privately and press **Confirm**; do not record or share the output. It does not test mail delivery.
+
+Deployment uses a separate hosted database; it does not upload local schedules or incidents. Keep this checkout's `.rer/deploy/` records. For later hosted updates, pull `main` and deploy to the same environment:
+
+```sh
+git pull --ff-only
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
+```
+
+Updates keep the hosted owner and data. Existing hosted secrets are retained; [Install and run](docs/install.md#update-a-hosted-installation) explains explicit mail-key and sender changes.
+
+To remove the hosted installation and its database, keep its deployment records and use the same Cloudflare credentials and environment:
+
+```sh
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --remove --yes
+```
+
+Removal deletes only recorded resources created by this deployment and verifies each is absent. Your local folder and data stay.

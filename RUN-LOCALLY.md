@@ -178,7 +178,7 @@ rer verify
 rer reset --yes
 rer export --output exports/installation.rer
 rer import --input exports/installation.rer --yes
-rer deploy
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 rer describe
 ```
 
@@ -199,7 +199,7 @@ Release 1 supports hosted incident coordination alongside the existing pager,
 with paging OFF and no independent standby prerequisite. Release 2 paging and
 independent standby are not built. `rer deploy` deploys coordination to the
 operator's Cloudflare account; see [hosting instructions](docs/install.md#host-for-your-team).
-`rer deploy --dry-run` validates and builds locally without a provider request. The default environment is `production`; select another with
+`rer deploy --environment production --dry-run` validates and builds locally without a provider request. The default environment is `production`; select another with
 `--environment NAME`. Local validation does not establish provider acceptance,
 hosted health or mail delivery.
 
@@ -208,7 +208,9 @@ flags, aliases, pins, effects and local state without installing or running
 project commands. New verbs accept `--help`, `--cwd PATH`, `--non-interactive`
 and `--json`. Setup also accepts `--owner-name`, `--port`, `--host` and a
 private JSON `--answers FILE`. Dev and preview accept `--port`, `--host`,
-`--idle-timeout`, and `--stop`. Deploy accepts `--environment`, `--dry-run` and `--remove --yes`;
+`--idle-timeout`, and `--stop`. Deploy accepts `--environment`, `--env-file`, `--dry-run`, `--set-secret NAME`,
+`--unset-secret NAME` and `--remove --yes`; `rer signin` accepts
+`--environment` and `--env-file`;
 export/import accept their target, file and restore options. `check` accepts
 `--profile first-party`. Heavy commands accept `--no-queue` only when the
 original caller has `CI=true`. Release retains its own compatibility flags.
@@ -231,21 +233,79 @@ impose Base pins, aliases or state layout.
 
 ## Update, host and remove
 
-Update this checkout without resetting its data:
+Hosted coordination is currently available on `main` until the next release tag;
+`v0.2.0` predates hosting. For first deployment, follow [Install and run](docs/install.md#host-for-your-team):
+it includes real-owner setup, the Cloudflare account ID/token and SendGrid
+key/verified sender, exact provider menu paths, permissions and verification,
+and private `0600` credential-file creation. The examples below use that file.
+
+`--environment NAME` selects the hosted resources and deployment record; the
+default is `production`. Use the same name for deploy, sign-in, updates, secret
+changes and removal. Keep the deploying checkout and its `.rer/deploy/` records.
+
+```sh
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
+```
+
+`--env-file` reads an owned private regular file of `KEY=VALUE` lines, relative
+to the checkout or at an absolute path. File entries override process environment
+values for this command. It refuses symlinks, multiple hard links, foreign
+ownership and group/other permissions. Blank lines and `#` comment lines are
+allowed, with one optional pair of double quotes around a value; it performs no
+shell expansion. Keep local dev keys out of this file. The setup owner and fresh
+hosted session/setup secrets are supplied automatically where needed.
+
+The dry run validates and builds locally without provider requests. A successful
+real deploy applies hosted migrations, checks deployment identity at `/health`,
+claims the owner automatically and retires the one-time setup token. Open the
+returned HTTPS address, request an owner sign-in email, open it on the same
+device and press **Confirm**. Mailbox receipt and successful owner entry prove
+the mail flow; deployment success alone does not. Local dev keys and owner-entry
+links do not work there.
+
+The deploying owner can sign in without email:
+
+```sh
+rer signin --environment production --env-file "$HOME/.config/oncall/production.env"
+```
+
+This uses the Cloudflare credentials to write a one-time grant for the recorded
+owner into the hosted auth database. It prints a private link once, valid for
+one use within 15 minutes; its use is audited. Open it privately and press
+**Confirm**. Never redirect or share the output. Run from the original deploying checkout and use
+the environment named in its deployment record.
+
+Update this checkout from `main` without resetting its data:
 
 ```sh
 git pull --ff-only
-rer deploy
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
-`rer` installs a pulled change of its own pin before it runs and provides the pinned Node and pnpm versions. For first deployment, prepare a real owner mailbox using `rer setup --owner-email you@example.com` before the checkout's first launch. Supply `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` privately for your Cloudflare account. The deployment declaration selects SendGrid: supply `SENDGRID_API_KEY` and `MAIL_FROM` from a verified sender for hosted email-link sign-in. See [Install and run](docs/install.md#host-for-your-team) for the complete first-deployment sequence.
-
-`rer deploy` applies hosted migrations, checks deployment identity, claims the configured owner automatically and retires its one-time setup token. Sign in at the returned HTTPS app address with an emailed link; local dev keys and owner-entry links do not work there. Updating keeps the hosted owner and data. Local and hosted databases are separate; deployment does not upload local records.
-
-To take a hosted installation down again, keep its deployment record and use the same Cloudflare credentials:
+`rer` installs a pulled change of its own pin before it runs and provides the
+pinned Node and pnpm versions. Updates keep the hosted owner and data. Local
+and hosted databases are separate; deployment does not upload local records.
+Existing hosted secrets are preserved even if the file's values have changed.
+To rotate the mail credential or sender after editing the private file, run the
+applicable command and repeat the real email sign-in test:
 
 ```sh
-rer deploy --remove --yes
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_API_KEY
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --set-secret MAIL_FROM
 ```
 
-This deletes only what the deployment record says `rer deploy` created (the Worker, database and any queues), reads back that each is absent and touches nothing else. Successful removal requires that empty readback. Your local folder and local data stay.
+`MAIL_API_KEY` reads the file's `SENDGRID_API_KEY`; `MAIL_FROM` reads `MAIL_FROM`.
+These explicit changes update the Worker secret without rebuilding.
+
+Removal deletes the hosted database and its records. Use the same Cloudflare
+credentials, deployment record and environment:
+
+```sh
+rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --remove --yes
+```
+
+This deletes only recorded resources created by that deployment and reads back
+that each is absent. Successful removal requires that empty readback. Keep the
+record if any step fails and repeat the same command after fixing the reported
+cause. Your local folder and local data stay.

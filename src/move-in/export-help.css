@@ -6,3 +6,6 @@
 .move-in-export-help li { margin: 12px 0; }
 .move-in-export-help code { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
 .move-in-export-help pre { min-width: 0; margin: 12px 0; padding: 12px; border-radius: 8px; background: var(--app-field); }
+.move-in-export-help pre { overflow-x: auto; }
+.move-in-export-help button { margin-right: 10px; }
+.move-in-export-copy-status { font-size: 13px; }

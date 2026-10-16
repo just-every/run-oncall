@@ -26,7 +26,7 @@ export type Schedule = {
   backup: Rotation;
   overrides: Override[];
 };
-export type CoverageMember = { id: string; active: boolean; role: string };
+export type CoverageMember = { id: string; name?: string; active: boolean; role: string };
 export type CoverageWindow = {
   role: "primary" | "backup";
   member: string | null;
@@ -231,7 +231,7 @@ function evaluator(schedule: Schedule, members: CoverageMember[]) {
       if (window.member !== null) {
         const member = members.find(m => m.id === window.member);
         if (!member || !member.active || !["admin", "responder"].includes(member.role)) {
-          warnings.push(`${role}: member ${window.member} is ${!member ? "missing" : !member.active ? "inactive" : "not an authorized responder"}; slot is retained`);
+          warnings.push(`${role}: member ${member?.name ?? window.member} is ${!member ? "missing" : !member.active ? "inactive" : "not an authorized responder"}; slot is retained`);
           window.member = null;
           window.origin = "gap";
         }
@@ -239,7 +239,7 @@ function evaluator(schedule: Schedule, members: CoverageMember[]) {
       return { role, member: window.member, start: window.start === null ? null : new Date(window.start).toISOString(), end: window.end === null ? null : new Date(window.end).toISOString(), origin: window.origin };
     });
     if (windows[0].member !== null && windows[0].member === windows[1].member) {
-      warnings.push(`backup: same member ${windows[0].member} as primary; backup is unavailable`);
+      warnings.push(`backup: same member ${members.find(member => member.id === windows[0].member)?.name ?? windows[0].member} as primary; backup is unavailable`);
       windows[1].member = null;
       windows[1].origin = "gap";
       if (windows[0].start !== null) windows[1].start = windows[1].start === null ? windows[0].start : [windows[0].start, windows[1].start].sort()[1];

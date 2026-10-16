@@ -528,7 +528,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
       old.members.length !== 1
     )
       fail(
-        "Administrator identity mapping requires an empty target installation",
+        "This archive belongs to another installation. Mapping its administrator requires a target with only its initial administrator and no services, incidents or events. Export this workspace first, then deploy a new unused environment and restore there before adding records; Archive explains the steps. Nothing was replaced.",
       );
     const mapped = value.members.find(
       (m) => m.id === input.adminMapping && m.active && m.role === "admin",

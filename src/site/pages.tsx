@@ -33,6 +33,6 @@ export function sitePages({ styles }: SiteContext): SiteBuild {
       ...docsPages.map(page => ({ path: `/docs/${page.slug}`, html: document(...head(page.slug), <DocsArticle slug={page.slug} variant="site" />) })),
       { path: '/404', html: siteNotFoundHtml(identity, run) },
     ],
-    assets: ['rer-theme.css', 'fonts', 'brand'],
+    assets: ['rer-theme.css', 'fonts', 'brand', 'move-in/oncall-export.mjs.txt'],
   }
 }

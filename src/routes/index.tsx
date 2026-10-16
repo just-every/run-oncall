@@ -9,6 +9,9 @@ import type { Incident } from "../family/response-operations/domain";
 import { Mark } from "../landing/Mark";
 import { NavIcon } from "../app/NavIcon";
 import { ReplayComparison } from "../app/ReplayComparison";
+import { AlertsPanel } from "../app/AlertsPanel";
+import { ArchiveWorkspace } from "../app/ArchiveWorkspace";
+import { HandoffPreview } from "../app/HandoffPreview";
 import "../app/shell.css";
 import "../app/incidents.css";
 export const Route = createFileRoute("/")({ component: Workspace });
@@ -28,8 +31,6 @@ function Workspace() {
   const [signingOut, setSigningOut] = useState(false);
   const [replay, setReplay] = useState<any>(null);
   const [handoff, setHandoff] = useState<any>(null);
-  const [archive, setArchive] = useState<any>(null);
-  const [mapping, setMapping] = useState("");
   const [pendingSteps, setPendingSteps] = useState<Record<string, boolean>>({});
   useEffect(() => { w.setNotice(""); w.setError(""); }, [page]);
   useEffect(() => {
@@ -76,23 +77,6 @@ function Workspace() {
     incident
       ? command({ ...data, incident: incident.id, revision: incident.revision })
       : Promise.resolve(null);
-  async function download(path: string, filename: string) {
-    try {
-      const value = await request(path);
-      const blob = new Blob([JSON.stringify(value, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-      w.setNotice("Archive exported; authentication secrets are excluded");
-    } catch (e) {
-      w.setError((e as Error).message);
-    }
-  }
   if (!w.ready)
     return (
       <main className="access">
@@ -454,7 +438,7 @@ function Workspace() {
                     >
                       Inspect unsent pager / chat / status-page handoff
                     </button>
-                    {handoff && <pre>{JSON.stringify(handoff, null, 2)}</pre>}
+                    {handoff && <HandoffPreview value={handoff} />}
                   </section>
                 </section>
                 <aside className="right">
@@ -586,7 +570,7 @@ function Workspace() {
                 <h2>A calm place to coordinate</h2>
                 <p>
                   Incident history starts empty. Your own records persist across
-                  reloads and local restarts.
+                  reloads and application restarts.
                 </p>
               </section>
             )}
@@ -716,7 +700,7 @@ function Workspace() {
                     {p.severity}
                   </h3>
                   <p>
-                    {p.action} · {name(p.owner)} · version {p.version}
+                    {p.action}{p.action === "route" && <> · {name(p.owner)}</>} · version {p.version}
                   </p>
                   <p>{p.reason}</p>
                 </article>
@@ -786,75 +770,10 @@ function Workspace() {
         )}
         {page === "alerts" && (
           <div className="management-grid">
-            <section className="panel padded">
-              <h2>Alerts</h2>
-              <p>
-                Signals remain separate from incidents. Recovery affects only
-                its lifecycle generation. This list refreshes every 10 seconds while visible; use Refresh for an immediate update.
-              </p>
-              {s.alerts.map((a) => (
-                <article className="service-card" key={a.id}>
-                  <h3>{s.events.find((e) => e.id === a.events[0])?.title}</h3>
-                  <p>
-                    {s.services.find((v) => v.id === a.service)?.name} ·{" "}
-                    {a.environment} · {a.state}
-                  </p>
-                  <p>
-                    {a.source} / {a.key} / {a.generation}
-                  </p>
-                  <p>
-                    {a.suppressed ? "Suppressed" : name(a.owner)} ·{" "}
-                    {a.events.length} events
-                  </p>
-                  {canEdit && (
-                    <button
-                      onClick={async () => {
-                        const i = await command({
-                          type: "declare",
-                          service: a.service,
-                          title:
-                            s.events.find((e) => e.id === a.events[0])?.title ??
-                            "Incident",
-                          severity: "warning",
-                          summary:
-                            "Declared from alert; impact requires responder review",
-                          alerts: [a.id],
-                        });
-                        if (i) {
-                          setSelected(i.id);
-                          location.hash = "incidents";
-                        }
-                      }}
-                    >
-                      Declare incident from alert
-                    </button>
-                  )}
-                </article>
-              ))}
-              {!s.alerts.length && (
-                <p>
-                  No admitted alerts. Configure a scoped source and send its
-                  first event.
-                </p>
-              )}
-              <details>
-                <summary>Accepted event receipts ({s.events.length})</summary>
-                {s.events.map((e) => (
-                  <article className="receipt" key={e.id}>
-                    <strong>
-                      {e.eventId} · {e.intent}
-                    </strong>
-                    <p>
-                      {e.decision.action}: {e.decision.reason}
-                    </p>
-                    <p>
-                      {time(e.acceptedAt)} · observed {time(e.observedAt)} ·{" "}
-                      {e.generation}
-                    </p>
-                  </article>
-                ))}
-              </details>
-            </section>
+            <AlertsPanel state={s} canEdit={canEdit} busy={w.busy} name={name} onDeclare={async data => {
+              const created = await command(data);
+              if (created) { setSelected(created.id); location.hash = "incidents"; }
+            }} />
             <MonitoringIngress admin={admin} services={s.services} busy={w.busy} run={w.run} />
           </div>
         )}
@@ -1012,130 +931,14 @@ function Workspace() {
             )}
           </div>
         )}
-        {page === "archive" && (
-          <section className="panel padded">
-            <h2>Portable workspace archive</h2>
-            {admin ? (
-              <>
-                <p>
-                  Exports preserve original identities, incidents, events,
-                  decisions, runbooks, reviews and actions. Authentication
-                  secrets and sessions are excluded. This archive covers coordination
-                  records; schedules and overrides stay as they are when you replace it.
-                  Use <code>rer export --output exports/installation.rer</code> with
-                  Oncall stopped for a complete installation archive, including schedules.
-                </p>
-                <button
-                  className="primary"
-                  onClick={() =>
-                    download("/api/archive", "oncall-archive.json")
-                  }
-                >
-                  Export original archive
-                </button>
-                <h3>Validate and replace from archive</h3>
-                <p>
-                  Restore replaces application data. All sessions, source
-                  credentials and other member passwords are removed. Your
-                  current sign-in remains the only authenticated authority. An
-                  empty installation can map that identity to an archive administrator.
-                </p>
-                <label className="field">
-                  Choose archive JSON
-                  <input
-                    type="file"
-                    accept="application/json,.json"
-                    onChange={async (e) => {
-                      try {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        if (file.size > 2000000)
-                          throw Error("Archive exceeds 2 MB request limit");
-                        const value = JSON.parse(await file.text());
-                        setArchive(value);
-                        setMapping("");
-                        w.setError("");
-                      } catch (err) {
-                        w.setError((err as Error).message);
-                        setArchive(null);
-                      }
-                    }}
-                  />
-                </label>
-                {archive && (
-                  <div className="restore-preview">
-                    <p>
-                      Replacement: {archive.services?.length ?? "?"} services ·{" "}
-                      {archive.incidents?.length ?? "?"} incidents ·{" "}
-                      {archive.events?.length ?? "?"} events
-                    </p>
-                    {!archive.members?.some(
-                      (m: any) =>
-                        m.id === actor.id && m.active && m.role === "admin",
-                    ) && (
-                      <label className="field">
-                        Map current sign-in to archive administrator
-                        <select
-                          value={mapping}
-                          onChange={(e) => setMapping(e.target.value)}
-                        >
-                          <option value="">Choose explicitly</option>
-                          {archive.members
-                            ?.filter((m: any) => m.active && m.role === "admin")
-                            .map((m: any) => (
-                              <option key={m.id} value={m.id}>
-                                {m.name} · {m.id}
-                              </option>
-                            ))}
-                        </select>
-                      </label>
-                    )}
-                    <Form
-                      busy={w.busy}
-                      label="Replace workspace with this archive"
-                      onSubmit={async (data) => {
-                        if (data.confirm !== "REPLACE") {
-                          w.setError("Type REPLACE to confirm replacement");
-                          return null;
-                        }
-                        const result = await w.run("/api/restore", {
-                          mode: "replace",
-                          archive,
-                          adminMapping: mapping,
-                        });
-                        if (result) {
-                          setArchive(null);
-                          setReplay(null);
-                          setHandoff(null);
-                          setSelected("");
-                          w.setNotice(
-                            "Restored. Reset other passwords and recreate source keys.",
-                          );
-                        }
-                        return result;
-                      }}
-                    >
-                      <Field name="confirm" label="Type REPLACE to confirm" />
-                    </Form>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p>Archive authority is reserved to administrators.</p>
-            )}
-            <details>
-              <summary>Configuration audit ({s.audit.length})</summary>
-              {s.audit
-                .slice()
-                .reverse()
-                .map((e) => (
-                  <p key={e.id}>
-                    {time(e.at)} · {e.kind} · {e.text}
-                  </p>
-                ))}
-            </details>
-          </section>
-        )}
+        {page === "archive" && <>
+          <ArchiveWorkspace state={s} actor={actor} busy={w.busy} run={w.run} setError={w.setError} setNotice={w.setNotice}
+            onRestored={() => { setReplay(null); setHandoff(null); setSelected(""); }} />
+          <details className="panel padded">
+            <summary>Configuration audit ({s.audit.length})</summary>
+            {s.audit.slice().reverse().map(entry => <p key={entry.id}>{time(entry.at)} · {entry.kind} · {entry.text}</p>)}
+          </details>
+        </>}
       </main>
     </div>
   );

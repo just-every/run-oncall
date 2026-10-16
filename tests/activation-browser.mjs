@@ -8,6 +8,8 @@ import {createServer} from 'node:net'
 import {chromium} from '@playwright/test'
 import {keyboardUser} from './keyboard.mjs'
 import {keyboardCoordination} from './keyboard-coordination.mjs'
+import {alertSeverity} from './alert-severity-browser.mjs'
+import {providerExport} from './provider-export-browser.mjs'
 import {redact} from './diagnostics.mjs'
 
 const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
@@ -41,6 +43,7 @@ try {
  for(const width of [1440,390]) {
   await page.setViewportSize({width,height:1000})
   await keyboardCoordination(page,context,width,link)
+  await alertSeverity(page,context,width)
   await key.activate(page.getByRole('link',{name:'Schedules',exact:true}));await key.activate(page.getByRole('button',{name:'New schedule',exact:true}),'Space')
   await key.text(page.getByLabel('Schedule ID',{exact:true}),'browser-'+width);await key.text(page.getByLabel('Schedule name',{exact:true}),'Checkout rota '+width)
   await key.activate(page.getByRole('button',{name:'Add primary responder',exact:false}));await key.option(page.getByLabel('Primary responder 1',{exact:true}),session.member.id)
@@ -58,16 +61,8 @@ try {
   await page.screenshot({path:`evidence/browser/schedules-${width}.png`,fullPage:true})
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'schedule viewport has no horizontal overflow')
   await page.getByRole('link',{name:'Move-in kit',exact:true}).click()
-  // Read the provider-specific preparation steps in place, then use the supplied bundle structure.
-  for(const vendor of ['pagerduty','opsgenie']) {
-   await page.getByLabel('Source',{exact:true}).selectOption(vendor)
-   const help=page.locator('.move-in-export-help');await help.locator('summary').click()
-   await help.getByRole('heading',{name:/Assemble your bundle/}).waitFor()
-   assert.ok(await help.getByRole('link',{name:'Provider reference',exact:true}).count()>0,'export steps link to provider API references')
-   await page.screenshot({path:`evidence/browser/export-help-${vendor}-${width}.png`,fullPage:true})
-   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'expanded export instructions fit the viewport')
-  }
-  const bundle=JSON.parse(await page.locator('.move-in-export-help pre').innerText())
+  await providerExport(page,context,width)
+  const bundle={users:[],schedules:[],overrides:[],escalations:[],timelines:[]}
   await page.getByLabel('Export JSON').setInputFiles('tests/fixtures/opsgenie.json');await page.getByRole('button',{name:'Preview import',exact:true}).click();await page.getByRole('heading',{name:'Compatibility review'}).waitFor()
   assert.ok(await page.getByText(/Eight-hour shift/).count()>0)
   await page.screenshot({path:`evidence/browser/import-review-${width}.png`,fullPage:true})
