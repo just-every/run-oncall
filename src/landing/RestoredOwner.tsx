@@ -4,16 +4,18 @@ import { request } from "../useWorkspace";
 
 type Administrator = { id: string; name: string };
 
-export function RestoredOwner({ onLinked }: { onLinked: () => Promise<void> }) {
+export function RestoredOwner({ onLinked, autoOpen = false }: { onLinked: () => Promise<void>; autoOpen?: boolean }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (detailsRef.current) setOpen(detailsRef.current.open);
   }, []);
+  useEffect(() => { if (autoOpen && detailsRef.current) detailsRef.current.open = true; }, [autoOpen]);
   return (
     <details ref={detailsRef} className="oc-door-restore" onToggle={(event) => setOpen(event.currentTarget.open)}>
       <summary>Map an archived administrator after restore</summary>
-      <p>Sign in with the installation owner's email first, then choose your archived administrator. Held password installations cannot use this door.</p>
+      <p>Restoring brings back your team identities, but no passwords or sign-in sessions. Link the new installation owner to your own archived administrator to open the restored workspace. This requires an archive restored into an empty installation; existing workspaces with password accounts keep their usual sign-in.</p>
+      {!autoOpen && <p>First use the private owner entry from <code>rer dev</code>, or <a href="/signin">sign in with the owner's email</a> if email delivery is configured. Then return here, choose your administrator, and confirm that identity.</p>}
       {open && <AdministratorPicker onLinked={onLinked} />}
     </details>
   );

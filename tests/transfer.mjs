@@ -2,7 +2,7 @@ import {isolatedEntrypoint} from './isolated.mjs'
 const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
 import assert from 'node:assert/strict'
 import {execFileSync} from 'node:child_process'
-import {mkdir,readFile,writeFile,rm} from 'node:fs/promises'
+import {lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
 import {managedSeed} from './managed.mjs'
 import {checkpointCli} from './checkpoint-cli.mjs'
 
@@ -26,10 +26,13 @@ try{
  sql("INSERT INTO paging_jobs VALUES('held-pending','"+incident.id+"','transfer',1,'pending',"+at+",'fixture','"+JSON.stringify(pending).replaceAll("'","''")+"')")
  const prior=ok(await req('/api/state')),objects=ok(await req('/api/move-in/objects'))
  await m.command(['dev','--stop']);await m.command(['export','--output',archive,'--non-interactive'])
+ const exportedArchive=await readFile(archive)
  await m.command(['import','--input',archive,'--yes','--non-interactive'],4)
  const serviceRow=sql("SELECT data FROM oc_services WHERE id='transfer'")[0].data
  sql("UPDATE oc_services SET data='{\"id\":\"transfer\"}' WHERE id='transfer'");await m.command(['export','--output',invalidRecords,'--non-interactive']);sql("UPDATE oc_services SET data='"+serviceRow.replaceAll("'","''")+"' WHERE id='transfer'")
- await m.command(['reset','--yes','--non-interactive'])
+ await m.command(['reset','--yes'])
+ assert.ok((await readFile(archive)).equals(exportedArchive),'the documented reset preserves the exported archive for in-place restore')
+ for(const path of ['.dev.vars','.dev.vars.previous','.rer/local'])await assert.rejects(lstat(path),{code:'ENOENT'},'reset removes the previous owner and private settings')
  const targetSchema=()=>sql("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT GLOB 'sqlite_*' AND name NOT GLOB '_cf_*' ORDER BY type,name"),emptyTarget=targetSchema()
  assert.deepEqual(emptyTarget,[],'reset leaves an uninitialized target')
  await writeFile(corrupt,'{bad archive}',{mode:0o600});await m.command(['import','--input',corrupt,'--yes','--non-interactive'],2)

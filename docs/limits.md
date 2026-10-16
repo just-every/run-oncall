@@ -22,4 +22,4 @@ Nothing you write in Oncall is sent to an AI model. Local development has no mai
 
 ## It runs on your computer today
 
-Oncall runs on your own computer. Hosted Oncall is on hold until an independent standby paging host is ready and a hosted release is approved. Until then, `rer deploy` refuses before any provider request. Use `rer deploy --dry-run` to build and validate locally.
+Oncall runs on your own computer. Hosted Oncall is owner-held. A newcomer cannot enable hosting: the owner must approve an independent standby paging host and a hosted release first. Until then, `rer deploy` refuses before any provider request. Use `rer deploy --dry-run` to build and validate locally.

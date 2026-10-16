@@ -1,5 +1,5 @@
 import { HydrationUnit } from "../base/hydration/unit";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Field, Form } from "../forms";
 import { useWorkspace } from "../useWorkspace";
 import { Handover } from "./Handover";
@@ -11,6 +11,8 @@ import "./door.css";
 // Owners sign in by email at /signin; held password installations and restored owners come here.
 export function LocalDoor() {
   const w = useWorkspace();
+  const [restoring, setRestoring] = useState(false);
+  useEffect(() => { setRestoring(new URLSearchParams(location.search).get('restore') === '1'); }, []);
   useEffect(() => {
     if (w.member) location.assign("/");
   }, [w.member]);
@@ -18,12 +20,12 @@ export function LocalDoor() {
     <Site signIn={false} className="oc-door-page">
       <main id="main" className="oc-door">
         <HydrationUnit><section className="oc-door-copy" aria-labelledby="oc-door-title">
-          <h1 id="oc-door-title">{w.setup ? "Create your response workspace" : "Sign in"}</h1>
+          <h1 id="oc-door-title">{restoring ? "Open your restored workspace" : w.setup ? "Create your response workspace" : "Sign in"}</h1>
           <p className="oc-door-line">
-            {w.setup ? "Choose a name and a password for the first administrator." : "Use the name and password from your Oncall workspace."}
+            {restoring ? "Your installation owner is signed in. Choose which administrator in the archive is you; this gives your owner account access to the restored team and data." : w.setup ? "Choose a name and a password for the first administrator." : "Use the name and password from your Oncall workspace."}
           </p>
           <p className="oc-door-links"><a href="/signin">Owner email sign-in</a><span aria-hidden="true">·</span><a href="/setup">First-run setup</a></p>
-          <div className="oc-door-card">
+          {!restoring && <div className="oc-door-card">
             <Form
               busy={w.busy || !w.ready}
               label={w.setup ? "Create workspace" : "Sign in"}
@@ -33,8 +35,9 @@ export function LocalDoor() {
               <Field name="password" label="Password" type="password" />
             </Form>
             {w.error && <p className="oc-door-error" role="alert">{w.error}</p>}
-          </div>
-          <RestoredOwner onLinked={w.refresh} />
+          </div>}
+          <RestoredOwner onLinked={w.refresh} autoOpen={restoring} />
+          {restoring && <button type="button" className="oc-door-reload" onClick={() => setRestoring(false)}>Use a workspace password instead</button>}
         </section></HydrationUnit>
         <HydrationUnit><div className="oc-door-board">
           <p className="oc-door-sample">Sample rota · illustrative names and times</p>

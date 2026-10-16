@@ -6,32 +6,78 @@ Only an admin can use the **Move-in kit**, the screen with the arrows icon in th
 
 ## Save your exports
 
-Oncall reads one JSON file. It is an object with one entry per kind of data, and each entry is either a list or the response the service gave you (the one with a `data` field). Both work.
+The **Source** selector on Move-in kit shows **How to export from Opsgenie** or **How to export from PagerDuty**. Expand it for the complete preparation steps on that page, including provider links and a bundle structure. Oncall accepts a JSON bundle of API response bodies; a calendar (.ics) or CSV download does not contain the rotation settings it needs.
 
-A [sanitized example Opsgenie bundle](https://github.com/just-every/run-oncall/blob/main/tests/fixtures/opsgenie.json) shows the file structure. Replace its sample records with your own saved responses.
+Use an API client to make the GET requests below: set the base URL and request headers, append each path, send the request, and save each successful JSON response **body** as a private `.json` file. Do not save request headers or credentials in your export. If the response is 401 or 403, ask your provider administrator to check access; do not bundle error responses.
 
-**From Opsgenie**, save these under these names:
+### Opsgenie
 
-- `users`
-- `schedules`, with the rotations expanded (or save each schedule's detail response)
-- `overrides`, with the schedule's ID added as `scheduleId` beside `data`, because Opsgenie's override list does not say which schedule it belongs to. If the file holds only one schedule you can leave it out; with several schedules and no ID, the overrides and every schedule they could change are refused by name.
-- `escalations`
-- `timelines`, the final schedule timelines, as Opsgenie returned them
+Ask your Opsgenie administrator for an [API integration key](https://docs.opsgenie.com/docs/api-integration) with configuration access. In [access settings](https://docs.opsgenie.com/docs/api-access-management), select **Limit to Read-Only Access** and leave **Restrict Access to Configurations** unselected.
 
-**From PagerDuty**, save these:
+Set the base URL to `https://api.opsgenie.com`, or `https://api.eu.opsgenie.com` for an EU account. Add the header `Authorization: GenieKey YOUR_API_KEY`, replacing the placeholder privately in your API client.
 
-- `users`
-- `schedules`, each one as the detailed schedule that includes its `schedule_layers`. The list response alone is not enough if it leaves the layers out.
-- `overrides`, with the schedule's ID added as `schedule_id` beside `overrides` (the same rule as Opsgenie when it is left out)
-- `escalation_policies`
+| Save under | GET path | What to keep |
+| --- | --- | --- |
+| `users` | `/v2/users?limit=100&offset=0` | Every referenced person's ID, username/email and name. [User API](https://docs.opsgenie.com/docs/user-api). |
+| `schedules` | `/v2/schedules?expand=rotation` | Expanded rotations. If absent, use `/v2/schedules/SCHEDULE_ID` for each schedule instead. Copy each schedule's `id` for the following requests. [Schedule API](https://docs.opsgenie.com/docs/schedule-api). |
+| `overrides` | `/v2/schedules/SCHEDULE_ID/overrides` | Repeat per schedule, replacing SCHEDULE_ID with its ID. Add `"scheduleId": "SCHEDULE_ID",` immediately after the saved response's opening `{`, using its actual ID, and leave `data` unchanged. [Override API](https://docs.opsgenie.com/docs/schedule-override-api). |
+| `escalations` | `/v2/escalations` | Rules and recipients. [Escalation API](https://docs.opsgenie.com/docs/escalation-api). |
+| `timelines` (optional) | `/v2/schedules/SCHEDULE_ID/timeline?interval=2&intervalUnit=weeks` | Repeat per schedule. Keep `_parent`, dates and `finalTimeline`. The window starts now; set `date` to an ISO timestamp for another window. [Timeline reference](https://docs.opsgenie.com/docs/schedule-api). |
 
-Timelines are optional, and so is the `final_schedule` inside a PagerDuty schedule. They let Oncall check its answer against yours, which is worth doing (see below).
+For paginated lists, follow `paging.next` or the `X-Paging-Next` response header and save every page until no next page remains. See [Opsgenie pagination](https://docs.opsgenie.com/docs/pagination).
 
-People are matched by email address. A rotation or override that names someone who is not in your `users` is rejected, never filled in with a guess.
+### PagerDuty
 
-Leave keys, tokens, routing or integration keys, webhook URLs and calendar URLs out of the file. If any appears anywhere in it, Oncall refuses the whole file and names the field.
+Ask your administrator for a read-only **REST API** key. In PagerDuty, open **Integrations → API Access Keys** (under Developer Tools), choose **Create New API Key**, enter a description, select **Read-only API Key**, and create it. See [API access keys](https://support.pagerduty.com/main/docs/api-access-keys). A service's Events API key cannot read these settings.
 
-The file can be up to 500 KB and 500 objects. It will hold your people's names and email addresses, so keep it private.
+Set the base URL to `https://api.pagerduty.com`. Add `Authorization: Token token=YOUR_API_KEY` and `Accept: application/vnd.pagerduty+json;version=2` as request headers, replacing the key placeholder privately in the client.
+
+Choose the period for coverage comparison and overrides. Replace SINCE and UNTIL below with ISO timestamps, for example `2026-10-16T00:00:00Z` and `2026-11-16T00:00:00Z`; URL-encode query values in the client. For a schedule in a zone with clock changes, include a clock change in the window: matching final coverage across it is required for import.
+
+| Save under | GET path | What to keep |
+| --- | --- | --- |
+| `users` | `/users?limit=100&offset=0` | All pages, including every referenced person's email. [List users](https://docs.pagerduty.com/developer/api/reference/rest/users/list-users). |
+| Use only to find IDs | `/schedules?limit=100&offset=0` | Read all pages; request each detail below rather than bundling this list as well. [List schedules](https://docs.pagerduty.com/developer/api/reference/rest/schedules/list-schedules). |
+| `schedules` | `/schedules/SCHEDULE_ID?since=SINCE&until=UNTIL` | Repeat per actual schedule ID. Keep `schedule_layers` and `final_schedule` in the whole response. [Schedule detail](https://docs.pagerduty.com/developer/api/reference/rest/schedules/get-schedule). |
+| `overrides` | `/schedules/SCHEDULE_ID/overrides?since=SINCE&until=UNTIL&overflow=true` | Repeat per schedule and use the same window. Add `"schedule_id": "SCHEDULE_ID",` after the response's opening `{`, using its actual schedule ID; leave `overrides` unchanged. `overflow=true` preserves full interval boundaries. Overrides outside this window are not included. [List overrides](https://docs.pagerduty.com/developer/api/reference/rest/schedules/list-schedule-overrides). |
+| `escalation_policies` | `/escalation_policies?limit=100&offset=0` | All pages, retaining `escalation_rules`. [List policies](https://docs.pagerduty.com/developer/api/reference/rest/escalation-policies/list-escalation-policies). |
+
+If a list response has `more: true`, repeat with `offset` increased by the returned `limit`. Save each page until `more: false`.
+
+### Assemble one JSON file
+
+Create a plain-text file named `opsgenie-export.json` or `pagerduty-export.json`. Start with the matching structure below. Inside each empty array paste the **entire response body**, including its outer braces. Separate multiple response bodies (pages or schedules) with commas. These entries are JSON objects, not filenames or quoted JSON strings. Leave an array empty only if there are no records, or for the optional Opsgenie timeline.
+
+Opsgenie:
+
+```json
+{
+  "users": [],
+  "schedules": [],
+  "overrides": [],
+  "escalations": [],
+  "timelines": []
+}
+```
+
+PagerDuty:
+
+```json
+{
+  "users": [],
+  "schedules": [],
+  "overrides": [],
+  "escalation_policies": []
+}
+```
+
+Keep each record once. For schedules, use expanded lists or individual details, never both for the same record. Keep the provider's response envelopes (`data` for Opsgenie; `users`, `schedule`, `overrides`, etc. for PagerDuty). Each bundle entry also accepts a single saved response or a direct record list. A [sanitized Opsgenie fixture](https://github.com/just-every/run-oncall/blob/main/tests/fixtures/opsgenie.json) illustrates the format with invented test people; it is not a customer export.
+
+Override lists do not identify their schedule: the extra `scheduleId` or `schedule_id` field joins each saved list to its schedule. If the bundle holds only one schedule, the field may be omitted. With multiple schedules and no ID, the overrides and every schedule they could change are refused by name.
+
+Timelines and PagerDuty's `final_schedule` let Oncall compare its result with the source within the saved window. They do not establish coverage outside it. People are matched by email; a rotation or override naming someone absent from `users` is rejected.
+
+Leave keys, tokens, routing or integration keys, webhook URLs and calendar URLs out of the file. A credential-bearing field anywhere refuses the whole file and names the field. The file can be up to 500 KB and 500 objects. It holds names and email addresses, so keep it private.
 
 ## Preview, then import
 

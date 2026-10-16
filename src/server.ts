@@ -35,7 +35,7 @@ export default withDemo({
       if(!(await session.json() as {member:unknown}).member) {
         // A restored owner with no workspace mapping still needs the protected mapping door.
         if(bindings.SESSION_SECRET && bindings.OWNER_EMAIL && await operatorAuth(bindings).getSession(request))
-          return new Response(null,{status:303,headers:{location:'/signin/local','cache-control':'no-store'}});
+          return new Response(null,{status:303,headers:{location:await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first()?'/signin/local':'/signin/local?restore=1','cache-control':'no-store'}});
         const lobby=await lobbyResponse(request,bindings,identity);if(lobby)return lobby;
       }
     }

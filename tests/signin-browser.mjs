@@ -31,7 +31,7 @@ try {
   await new Promise(resolve=>setTimeout(resolve,250))
  }
  assert.ok(link,'rer offers the private owner entry')
- browser=await chromium.launch({headless:true})
+ browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']})
  const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage()
  const errors=[];page.on('pageerror',error=>errors.push(error.message))
  await page.goto(link)

@@ -1,5 +1,6 @@
 import { useEffect,useState } from 'react'
 import { MoveInAdoption } from './MoveInAdoption'
+import { ExportHelp } from './move-in/ExportHelp'
 
 export function MoveInWorkspace({admin,request}:{admin:boolean;request:(path:string,data?:unknown)=>Promise<any>}) {
  const [vendor,setVendor]=useState('opsgenie'),[source,setSource]=useState(''),[preview,setPreview]=useState<any>(null),[job,setJob]=useState<any>(null),[jobs,setJobs]=useState<any[]>([]),[rows,setRows]=useState<any[]>([]),[choices,setChoices]=useState<any>({services:[],members:[]}),[error,setError]=useState(''),[busy,setBusy]=useState(false),[erasing,setErasing]=useState(''),[typed,setTyped]=useState(''),[erased,setErased]=useState<any>(null)
@@ -9,8 +10,9 @@ export function MoveInWorkspace({admin,request}:{admin:boolean;request:(path:str
  if(!admin)return <section className="panel"><h2>Move-in kit</h2><p>An administrator reviews and imports schedule exports.</p></section>
  return <section className="scheduling-workspace"><section className="scheduling-panel"><h2>Bring your schedules beside your pager</h2><p>Opsgenie first, then PagerDuty. Select saved export files. Preview writes nothing. Imports arrive paused. Review and make a schedule live below; paging stays OFF.</p>
  <label className="scheduling-field">Source<select value={vendor} onChange={e=>{setVendor(e.target.value);setPreview(null);setJob(null)}}><option value="opsgenie">Opsgenie</option><option value="pagerduty">PagerDuty</option></select></label>
+ <ExportHelp vendor={vendor}/>
  <label className="scheduling-field">Export JSON<input type="file" accept="application/json,.json" onChange={async e=>{const file=e.target.files?.[0];if(file){setSource(await file.text());setPreview(null);setJob(null)}}}/></label>
- <p>Bundle the documented users, detailed schedules, overrides and escalations responses. See <a href="/docs/move-in">the export guide</a>. No API key is requested.</p>
+ <p>Choose the JSON bundle prepared above. Oncall never asks for your provider API key.</p>
  <button disabled={busy||!source} onClick={()=>run(async()=>setPreview(await request('/api/move-in/preview',{vendor,source})))}>Preview import</button>
  {error&&<p role="alert">{error}</p>}{busy&&<p role="status">Working…</p>}
  {preview&&<><h3>Compatibility review</h3><p>{preview.counts.mapped} mapped · {preview.counts.rejected} rejected · {preview.counts.unmapped} with differences</p><ul>{preview.items.map((item:any,index:number)=><li key={index}><strong>{item.kind}: {item.name}</strong>{item.rejection&&<p>{item.rejection}</p>}{item.effects?.filter((e:any)=>e.targetKind==='schedule').map((effect:any)=><p key={effect.targetId}>Equivalence: {effect.value.equivalence.status} {effect.value.equivalence.from} → {effect.value.equivalence.to}{effect.value.equivalence.differences.map((d:string)=><span key={d}>{d}</span>)}</p>)}{item.unmapped.map((v:any,i:number)=><p key={i}>{v.field}: {v.reason}</p>)}</li>)}</ul><button disabled={busy||Boolean(job)} onClick={()=>run(async()=>{const result=await request('/api/move-in/apply',{vendor,source,fingerprint:preview.fingerprint,confirm:true});setJob(result);await load()})}>Confirm paused import</button></>}

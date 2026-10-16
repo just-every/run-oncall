@@ -27,7 +27,7 @@ try {
  let link
  for(let n=0;n<600;n++){if(dev.exitCode!==null)throw Error(safe(output).slice(-2000));link=output.match(/RER_OPEN (http[^\s]+)/)?.[1];if(link)break;await new Promise(r=>setTimeout(r,250))}
  assert.ok(link,'managed dev emitted a private owner-open link')
- browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHANNEL?{channel:process.env.PLAYWRIGHT_CHANNEL}:{})})
+ browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']})
  const context=await browser.newContext({baseURL:origin,viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
  page.on('pageerror',error=>errors.push(error.message))
  await context.addCookies([{name:`oncall_session_${new URL(origin).port}`,value:'retired-installation-session',url:origin}])
@@ -57,16 +57,40 @@ try {
   assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'default ICS feed uses whole-second UTC times')
   await page.screenshot({path:`evidence/browser/schedules-${width}.png`,fullPage:true})
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'schedule viewport has no horizontal overflow')
-  await page.getByRole('link',{name:'Move-in kit',exact:true}).click();await page.getByLabel('Export JSON').setInputFiles('tests/fixtures/opsgenie.json');await page.getByRole('button',{name:'Preview import',exact:true}).click();await page.getByRole('heading',{name:'Compatibility review'}).waitFor()
+  await page.getByRole('link',{name:'Move-in kit',exact:true}).click()
+  // Read the provider-specific preparation steps in place, then use the supplied bundle structure.
+  for(const vendor of ['pagerduty','opsgenie']) {
+   await page.getByLabel('Source',{exact:true}).selectOption(vendor)
+   const help=page.locator('.move-in-export-help');await help.locator('summary').click()
+   await help.getByRole('heading',{name:/Assemble your bundle/}).waitFor()
+   assert.ok(await help.getByRole('link',{name:'Provider reference',exact:true}).count()>0,'export steps link to provider API references')
+   await page.screenshot({path:`evidence/browser/export-help-${vendor}-${width}.png`,fullPage:true})
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'expanded export instructions fit the viewport')
+  }
+  const bundle=JSON.parse(await page.locator('.move-in-export-help pre').innerText())
+  await page.getByLabel('Export JSON').setInputFiles('tests/fixtures/opsgenie.json');await page.getByRole('button',{name:'Preview import',exact:true}).click();await page.getByRole('heading',{name:'Compatibility review'}).waitFor()
   assert.ok(await page.getByText(/Eight-hour shift/).count()>0)
   await page.screenshot({path:`evidence/browser/import-review-${width}.png`,fullPage:true})
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'import viewport has no horizontal overflow')
   if(width===1440){await page.getByRole('button',{name:'Confirm paused import',exact:true}).click();await page.getByRole('heading',{name:'Import journal'}).waitFor();await page.getByRole('button',{name:'Undo this import',exact:true}).click();await page.locator('[role="status"] p').filter({hasText:/undone/}).waitFor()}
-  // Erasing an imported person from the paused data list: typed confirmation, an ordinary click, no overflow.
-  const email=`erase-${width}@example.test`
-  await page.getByLabel('Export JSON').setInputFiles({name:'erase.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({users:{data:[{id:'erase-'+width,username:email,fullName:'Erase '+width}]}}))})
+  // Follow the bundle instructions through paused import, explicit adoption, native coverage and erasure.
+  const email=`erase-${width}@example.test`,rota=`Move-in rota ${width}`,personId='erase-'+width
+  bundle.users.push({data:[{id:personId,username:email,fullName:'Erase '+width}]})
+  bundle.schedules.push({data:{id:'move-in-'+width,name:rota,timezone:'UTC',rotations:[{name:'Weekly',startDate:'2026-10-12T09:00:00Z',type:'weekly',length:1,participants:[{type:'user',id:personId}]}]}})
+  await page.getByLabel('Export JSON').setInputFiles({name:'opsgenie-export.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))})
   await page.getByRole('button',{name:'Preview import',exact:true}).click();await page.getByRole('heading',{name:'Compatibility review'}).waitFor()
   await page.getByRole('button',{name:'Confirm paused import',exact:true}).click();await page.getByRole('heading',{name:'Import journal'}).waitFor()
+  const imported=page.getByRole('listitem').filter({hasText:rota,has:page.getByRole('button',{name:'Make schedule live',exact:true})})
+  await imported.getByRole('button',{name:'Make schedule live',exact:true}).click()
+  await imported.getByLabel('Service for '+rota,{exact:true}).selectOption({label:'Checkout'})
+  await imported.getByLabel('Workspace member for Erase '+width,{exact:false}).selectOption(session.member.id)
+  await imported.getByRole('button',{name:'Confirm live schedule · paging OFF',exact:true}).click()
+  await page.getByRole('listitem').filter({hasText:rota}).getByRole('link',{name:'Schedules',exact:true}).click()
+  const adoptedOption=page.getByLabel('Schedule',{exact:true}).locator('option').filter({hasText:rota});await adoptedOption.waitFor({state:'attached'})
+  await page.getByLabel('Schedule',{exact:true}).selectOption(await adoptedOption.getAttribute('value'))
+  assert.equal(await page.getByLabel('Schedule name',{exact:true}).inputValue(),rota,'adopted coverage opens as a native schedule')
+  assert.equal(await page.getByLabel('Primary responder 1',{exact:true}).inputValue(),session.member.id,'explicit person mapping survives adoption')
+  await page.getByRole('link',{name:'Move-in kit',exact:true}).click()
   const person=page.getByRole('listitem').filter({hasText:`user: Erase ${width}`})
   await person.getByRole('button',{name:'Erase person',exact:true}).click()
   const typed=page.getByLabel(`Type "erase ${email}" to erase this person from imported data`);assert.equal(await person.getByRole('button',{name:'Erase permanently',exact:true}).isDisabled(),true,'erasing needs the typed confirmation')
@@ -82,7 +106,7 @@ try {
   const [replay]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/replay',{timeout:15000}),page.mouse.click(box.x+box.width/2,box.y+box.height/2)]);assert.equal(replay.status(),200)
   await page.getByLabel('Replay comparison',{exact:true}).waitFor()
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'routing viewport has no horizontal overflow')
-  console.log(`Browser journey ${width}: keyboard-only incident declaration, note, acknowledgement, real stale-write alert, literal hostile HTML, schedule/override/preview with focus screenshots; managed setup/dev owner identity, real service/schedule/override, coverage/ICS, reviewed paused import, pointer replay and responsive layout passed`)
+  console.log(`Browser journey ${width}: keyboard-only incident declaration, note, acknowledgement, real stale-write alert, literal hostile HTML, schedule/override/preview with focus screenshots; managed setup/dev owner identity, real service/schedule/override, coverage/ICS, provider export instructions through reviewed import and adoption, pointer replay and responsive layout passed`)
  }
  assert.deepEqual(errors,[],'no browser application errors')
  await browser.close();browser=null

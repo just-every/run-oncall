@@ -12,6 +12,8 @@ The archive holds everything Oncall keeps: services, schedules, incidents with t
 
 ## Restore into a new installation
 
+Install Oncall in the new checkout first with `rer install`, then copy your private archive into its `exports` directory:
+
 ```sh
 rer import --input exports/installation.rer --yes
 ```
@@ -26,8 +28,22 @@ Admins also have **Archive** in the app. **Portable workspace archive** download
 
 ## Start over
 
+Stop both local servers before resetting:
+
 ```sh
+rer dev --stop
+rer preview --stop
 rer reset --yes
 ```
 
 Reset deletes this installation's data, its owner and its private settings, and keeps the source code and your exports. Export first if you may want anything back.
+
+To restore in this same checkout, keep the exported file in `exports`, reset, then import it:
+
+```sh
+rer import --input exports/installation.rer --yes
+rer setup --owner-email you@example.com
+rer dev
+```
+
+Confirm the new owner and map an archived administrator as described above. An import that says `target_not_empty` has kept the existing installation; it has not replaced any records. Do not reset to upgrade Oncall.

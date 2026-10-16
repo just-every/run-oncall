@@ -1,3 +1,4 @@
+import { LocalIngress } from '../integrations/LocalIngress';
 import { MoveInWorkspace } from '../MoveInWorkspace';
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -399,13 +400,13 @@ function Workspace() {
                           mutate({ ...data, type: "transition" })
                         }
                       >
-                        <Field name="state" label="Next state">
+                        <Field key={incident.id + incident.state} name="state" label="Next state">
                           {(
                             {
                               declared: ["acknowledged"],
                               acknowledged: ["mitigating", "recovered"],
                               mitigating: ["recovered"],
-                              recovered: ["mitigating", "resolved"],
+                              recovered: ["resolved", "mitigating"],
                               resolved: [],
                             } as Record<string, string[]>
                           )[incident.state].map((v) => (
@@ -849,140 +850,7 @@ function Workspace() {
                 ))}
               </details>
             </section>
-            <section className="panel padded">
-              <h2>Local ingress</h2>
-              {admin && (
-                <>
-                  <p>
-                    Configure an intake-only source. Saving it again rotates the
-                    key. Signed secrets stay in local D1 and are excluded from
-                    archives.
-                  </p>
-                  <Form
-                    busy={w.busy}
-                    label="Save scoped source"
-                    onSubmit={(data) =>
-                      w.run("/api/sources", { ...data, scopes: [data.service] })
-                    }
-                  >
-                    <Field name="id" label="Source ID" />
-                    <Field
-                      name="key"
-                      label="Source key (32+ characters)"
-                      type="password"
-                    />
-                    <Field name="mode" label="Authentication">
-                      <option value="bearer">Bearer token</option>
-                      <option value="signed">HMAC signature</option>
-                    </Field>
-                    <Field name="service" label="Allowed service">
-                      {serviceOptions}
-                    </Field>
-                  </Form>
-                </>
-              )}
-              <details>
-                <summary>Send a local integration event</summary>
-                <Form
-                  busy={w.busy}
-                  label="Admit event"
-                  onSubmit={(data) =>
-                    w.run(async () => {
-                      const selectedService = s.services.find(
-                        (v) => v.id === data.service,
-                      );
-                      const payload = {
-                        source: data.source,
-                        eventId: data.eventId,
-                        key: data.key,
-                        generation: data.generation,
-                        service: data.service,
-                        environment: selectedService?.environment,
-                        intent: data.intent,
-                        severity: data.severity,
-                        title: data.title,
-                        observedAt: new Date().toISOString(),
-                        evidence: data.evidence,
-                      };
-                      const headers: Record<string, string> = {
-                        "Content-Type": "application/json",
-                      };
-                      if (data.mode === "signed") {
-                        const ts = String(Math.floor(Date.now() / 1000));
-                        const key = await crypto.subtle.importKey(
-                          "raw",
-                          new TextEncoder().encode(data.secret),
-                          { name: "HMAC", hash: "SHA-256" },
-                          false,
-                          ["sign"],
-                        );
-                        headers["x-oncall-timestamp"] = ts;
-                        headers["x-oncall-signature"] = Array.from(
-                          new Uint8Array(
-                            await crypto.subtle.sign(
-                              "HMAC",
-                              key,
-                              new TextEncoder().encode(
-                                ts + "." + JSON.stringify(payload),
-                              ),
-                            ),
-                          ),
-                        )
-                          .map((v) => v.toString(16).padStart(2, "0"))
-                          .join("");
-                      } else headers.Authorization = "Bearer " + data.secret;
-                      const response = await fetch(
-                        "/api/ingress/" + encodeURIComponent(data.source),
-                        {
-                          method: "POST",
-                          headers,
-                          body: JSON.stringify(payload),
-                        },
-                      );
-                      const result: any = await response.json();
-                      if (!response.ok) throw Error(result.error);
-                      return result;
-                    }, undefined, (result) =>
-                      result.duplicate
-                        ? "Existing receipt returned"
-                        : "Event durably accepted",
-                    )
-                  }
-                >
-                  <Field name="source" label="Source ID" />
-                  <Field name="secret" label="Source key" type="password" />
-                  <Field name="mode" label="Authentication">
-                    <option value="bearer">Bearer token</option>
-                    <option value="signed">HMAC signature</option>
-                  </Field>
-                  <Field name="service" label="Service">
-                    {serviceOptions}
-                  </Field>
-                  <Field name="eventId" label="Unique event ID" />
-                  <Field name="key" label="Deduplication key" />
-                  <Field name="generation" label="Lifecycle generation" />
-                  <Field name="intent" label="Lifecycle intent">
-                    <option>trigger</option>
-                    <option>recover</option>
-                  </Field>
-                  <Field name="severity" label="Severity">
-                    <option>warning</option>
-                    <option>critical</option>
-                    <option>info</option>
-                  </Field>
-                  <Field name="title" label="Signal title" />
-                  <Field
-                    name="evidence"
-                    label="Evidence URL"
-                    type="url"
-                    required={false}
-                  />
-                </Form>
-              </details>
-              <p className="muted">
-                Endpoint: /api/ingress/SOURCE · 64 KiB limit · no external sends · <a href="/docs/incidents#send-an-alert-event">JSON fields and curl example</a>
-              </p>
-            </section>
+            <LocalIngress admin={admin} services={s.services} busy={w.busy} run={w.run} />
           </div>
         )}
         {page === "reviews" && (

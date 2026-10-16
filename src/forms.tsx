@@ -1,4 +1,4 @@
-import type { FormEvent, ReactNode } from "react";
+import { useId, type FormEvent, type ReactNode } from "react";
 
 // The labelled field and the busy-aware form every app screen and the local sign-in door share.
 export function Field({
@@ -8,6 +8,7 @@ export function Field({
   required = true,
   value,
   children,
+  help,
 }: {
   name: string;
   label: string;
@@ -15,12 +16,14 @@ export function Field({
   required?: boolean;
   value?: string;
   children?: ReactNode;
+  help?: string;
 }) {
+  const helpId = useId();
   return (
     <label className="field">
-      <span>{label}</span>
+      <span id={helpId + '-label'}>{label}</span>
       {children ? (
-        <select name={name} required={required} defaultValue={value}>
+        <select name={name} required={required} defaultValue={value} aria-labelledby={helpId + '-label'} aria-describedby={help ? helpId : undefined}>
           {children}
         </select>
       ) : type === "textarea" ? (
@@ -29,6 +32,8 @@ export function Field({
           required={required}
           defaultValue={value}
           rows={3}
+          aria-labelledby={helpId + '-label'}
+          aria-describedby={help ? helpId : undefined}
         />
       ) : (
         <input
@@ -37,8 +42,11 @@ export function Field({
           required={required}
           defaultValue={value}
           minLength={type === "password" ? 12 : undefined}
+          aria-labelledby={helpId + '-label'}
+          aria-describedby={help ? helpId : undefined}
         />
       )}
+      {help && <small id={helpId}>{help}</small>}
     </label>
   );
 }

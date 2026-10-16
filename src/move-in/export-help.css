@@ -1,0 +1,8 @@
+.move-in-export-help { margin: 16px 0; padding: 14px 16px; border: 1px solid var(--app-line); border-radius: 10px; line-height: 1.55; }
+.move-in-export-help summary { cursor: pointer; font-weight: 600; }
+.move-in-export-help h3 { margin: 20px 0 10px; font-size: 16px; }
+.move-in-export-help p { margin: 10px 0; }
+.move-in-export-help ol { padding-left: 22px; }
+.move-in-export-help li { margin: 12px 0; }
+.move-in-export-help code { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.move-in-export-help pre { min-width: 0; margin: 12px 0; padding: 12px; border-radius: 8px; background: var(--app-field); }
