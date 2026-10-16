@@ -6,7 +6,7 @@ Current release 1 supports local/hosted coordination beside an existing pager: m
 
 ## Maintained verification flows
 
-The numbered flows are acceptance requirements through the product’s public doors. Status is assessed from source and maintained exercising tests at main `661e39e334c5ffcc263df5218bdd519e0e2aec09`, starting from the supplied audit at `61a02005ab5731c374e8db8af8fd451ae257e314` and re-reading changed paths. OC-055–065 and the sharpened journeys of existing clauses answer buyer review round 1 (16 October 2026) and are assessed against the same unchanged application code. **done** is limited to the named implemented flow, **partial** means a subset, **missing** means no implementing flow. Each build round records the exact tested commit and actual result separately. Listing a future journey does not mean a new test exists or that it passed. No live mail/phone/provider/hosted account, native-device or standby result is inferred from local tests.
+The numbered flows are acceptance requirements through the product’s public doors. Status is assessed from source and maintained exercising tests at main `661e39e334c5ffcc263df5218bdd519e0e2aec09`, starting from the supplied audit at `61a02005ab5731c374e8db8af8fd451ae257e314` and re-reading changed paths. OC-055–065 and the sharpened journeys of existing clauses answer buyer review round 1, and OC-066–069 with further sharpened journeys answer buyer review round 2 (both 16 October 2026); all are assessed against the same unchanged application code. **done** is limited to the named implemented flow, **partial** means a subset, **missing** means no implementing flow. Each build round records the exact tested commit and actual result separately. Listing a future journey does not mean a new test exists or that it passed. No live mail/phone/provider/hosted account, native-device or standby result is inferred from local tests.
 
 `rer verify` is the maintained full local entrypoint. Contract-document changes use the existing `rer check --profile first-party` validation; do not weaken checks, change IDs or treat a status/copy assertion as feature acceptance. Existing test files below are entrypoints, not promises that they cover every future requirement.
 
@@ -102,7 +102,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `tests/runtime.mjs`. Services, service runbooks and workspace roles ship; team scoping, dependencies, alert runbooks and Backstage do not.
 
-24. **OC-024 — Follow-the-sun, PTO and holiday coverage. Status: partial.** Build New York/Los Angeles/London handoffs, add a US holiday and approved PTO in Google and Outlook, inspect a DST weekend and uncovered interval, then apply a reviewed layer change and compare actual paging targets to the preview.
+24. **OC-024 — Follow-the-sun, PTO and holiday coverage. Status: partial.** Build New York/Los Angeles/London handoffs, add a US holiday and approved PTO in Google and Outlook, inspect a DST weekend and uncovered interval, then apply a reviewed layer change and compare actual paging targets to the preview. During the New York-to-London handoff, page the London responder through their verified UK voice and SMS routes under OC-066, and see a shift held by a responder with only one verified route flagged as degraded in the preview.
 
    Existing implementation / exercising flow: `src/family/response-operations/schedules.ts`; `src/schedule-api.ts`; `tests/activation.mjs`. Named-zone primary/backup rotations and overrides exist; follow-the-sun composition, holiday and PTO integration are missing.
 
@@ -110,7 +110,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`. Authenticated ICS downloads and manual overrides exist; swaps, reminders and persistent revocable subscriptions are missing.
 
-26. **OC-026 — Native US phone, SMS, push and email paging. Status: missing.** On registered US carrier phones, trigger a real alert and verify voice/DTMF, SMS replies/links, push and incident email, with intake-to-first-attempt measured against the OC-064 bar; send a low-urgency alert and verify only the responder's low-urgency rules fire. Disable Twilio then the second provider and the push path separately; prove an independent route reaches the responder. Reject forged/duplicate callbacks, expose uncertainty and opt-out, and record actual receipts and human acknowledgement rather than test-provider success.
+26. **OC-026 — Native US phone, SMS, push and email paging. Status: missing.** On registered US carrier phones, trigger a real alert and verify voice/DTMF, SMS replies/links, push and incident email, with intake-to-first-attempt measured against the OC-064 bar; send a low-urgency alert and verify only the responder's low-urgency rules fire. Disable Twilio then the second provider and the push path separately; prove an independent route reaches the responder. Reject forged/duplicate callbacks, expose uncertainty and opt-out, and record actual receipts and human acknowledgement rather than test-provider success. Repeat the provider-disable checks for a verified UK and a verified Canadian number under OC-066.
 
    Existing evidence: no implementing flow; this is required target acceptance. Only the paging refusal exists; no live providers, responder rules or carrier drill.
 
@@ -146,7 +146,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing evidence: no implementing flow; this is required target acceptance. Internal handoff drafts do not implement either collaboration app.
 
-35. **OC-035 — Incident bridges and live call routing. Status: missing.** Call the real US number across a handoff, answer and acknowledge, miss a call and reach secondary, fail each carrier and transfer a live call. Create Zoom and Teams bridges from incident actions, deny an unauthorized join/detail read, and inspect call/timeline/outcome records without exposing recordings to viewers without a grant.
+35. **OC-035 — Incident bridges and live call routing. Status: missing.** Call the real US number across a handoff, answer and acknowledge, reach a London on-call responder's verified UK number by transfer, miss a call and reach secondary, fail each carrier and transfer a live call. Create Zoom and Teams bridges from incident actions, deny an unauthorized join/detail read, and inspect call/timeline/outcome records without exposing recordings to viewers without a grant.
 
    Existing evidence: no implementing flow; this is required target acceptance. No telephony routing or conferencing connector exists.
 
@@ -162,7 +162,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/move-in/api.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`. Reviewed Opsgenie/PagerDuty schedule file move-in ships; JSM/VictorOps adapters, complete account reconciliation and live cutover do not.
 
-39. **OC-039 — Enterprise access and responder lifecycle. Status: partial.** Invite a responder, sign in through Okta and Entra, require step-up to edit paging credentials, deprovision via SCIM while a write is in flight, and exercise documented emergency access during IdP loss. Verify immediate denial across web/mobile/chat/standby and a visible coverage gap.
+39. **OC-039 — Enterprise access and responder lifecycle. Status: partial.** Invite a responder, sign in through Google Workspace, Okta, Entra and a generic SAML provider under OC-069, require step-up to edit paging credentials, deprovision via SCIM while a write is in flight, and exercise documented emergency access during IdP loss. Verify immediate denial across web/mobile/chat/standby and a visible coverage gap.
 
    Existing implementation / exercising flow: `src/auth.server.ts`; `src/api.ts`; `tests/runtime-authority.mjs`; `tests/signin-browser.mjs`. Native owner email links and admin-created local member passwords exist; invitations, federated identity, MFA and SCIM are not adopted product flows.
 
@@ -262,13 +262,29 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing evidence: no implementing flow; this is required target acceptance. No action library, runner or executor connector exists.
 
-64. **OC-064 — Stated paging timing bars and reference load. Status: missing.** Drive the reference load through the public intake doors, with provider fakes only at the paid network edge for timing and a real-phone sample for end-to-end receipt. Measure p50, p95, p99 and maximum for intake receipt, intake to first attempt, deadline lateness, stop-after-acknowledgement and provider acceptance, and compare each with its bar. Confirm that no deadline fires early and that a 5-minute escalation fires between 5:00 and 5:30 at p99. Publish the measured values in the OC-054 readiness matrix.
+64. **OC-064 — Stated paging timing bars and reference load. Status: missing.** Drive the reference load through the public intake doors, with provider fakes only at the paid network edge for timing and a real-phone sample for end-to-end receipt. Measure p50, p95, p99 and maximum for intake receipt, intake to first attempt, deadline lateness, stop-after-acknowledgement and provider acceptance (per channel, and per OC-066 country for SMS and voice), and compare each with its bar. Confirm that no deadline fires early and that a 5-minute escalation fires between 5:00 and 5:30 at p99. Publish the measured values in the OC-054 readiness matrix.
 
    Existing evidence: no implementing flow; this is required target acceptance. No paging exists to measure; no reference-load harness or published measurements exist.
 
 65. **OC-065 — Change events and recent changes for responders. Status: missing.** Send a change through the PagerDuty-compatible change endpoint and a GitHub deployment webhook, one for the alerting service and one decoy for an unrelated service, plus one for a dependency. Trigger the alert and observe that no page is caused by any change event. The recent-changes panel lists the service's and the dependency's changes, labelled, and omits the unrelated decoy. A user without access to the service sees none of them. Replay a change event and observe one record.
 
    Existing evidence: no implementing flow; this is required target acceptance. No change-event intake or recent-changes panel exists.
+
+66. **OC-066 — International SMS and voice paging for follow-the-sun responders. Status: missing.** Enroll and verify a UK and a Canadian mobile number. During a New York-to-London handoff, trigger a high-urgency alert: the London responder receives the voice call and the SMS, acknowledges by SMS reply, and the timeline records each attempt with its provider and country. Disable the first provider for the UK and observe the second provider reach the same handset. Verify a number in a row without SMS replies and acknowledge from its link and by DTMF. Enroll a number from an unlisted country and observe refusal at verification with the "does not meet two-route coverage" warning and a degraded shift in the coverage preview. Compare the per-country provider-acceptance times with the OC-064 bar and the per-country USD charges with the usage report.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Only the paging refusal exists; no SMS/voice provider, country list, E.164 country check or sender registration exists in any country.
+
+67. **OC-067 — Service alert channels and chat on-call and page commands. Status: missing.** Connect #payments-alerts to the Payments service with a high-urgency-only filter. Trigger a low-urgency and a high-urgency alert-only page, and observe that only the high-urgency one is posted. Acknowledge it from the button and see the message and the web state update, then snooze and reassign it from the buttons and see each change in place and in the thread. See a viewer's button press refused with no state change, and replay a signed button payload with one state change. Run the on-call command across a handoff and compare its answer with now/next. Page the service from Slack and observe the escalation start. Archive the channel and observe a visible posting failure while the page still reaches the responder's phone.
+
+   Existing evidence: no implementing flow; this is required target acceptance. No Slack/Teams app, service channel connection, interactive alert message or chat command exists.
+
+68. **OC-068 — Manual pages, responder requests and paging a person directly. Status: partial.** A responder on the Support team creates a high-urgency incident on "Payments" from the web, assigned to a named engineer, with no alert. The engineer is phoned within the OC-064 intake-to-first-attempt bar, and the notification names the creator. Not acknowledging escalates per that user-assignment rule, and the outcome is recorded. Create a policy-targeted page from the mobile app and through the API with a repeated idempotency key, and observe one incident paging that policy instead of the service's. Request a second responder from Slack, observe a separate page and acknowledgement, and decline a third request and see the requester notified. See a stakeholder's and a viewer's attempts refused with nothing created.
+
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `tests/activation.mjs`; `tests/keyboard-coordination.mjs`. A current responder/admin declares an incident on a service with title, severity and impact summary and no alert, from the web form and `/api/command`, under server authority with an attributed timeline; urgency, user/policy targets, paging, user-assignment rules, responder requests, mobile/chat surfaces and per-team page permissions are missing.
+
+69. **OC-069 — Google Workspace, generic SAML and OIDC sign-in, and just-in-time accounts. Status: missing.** Sign in through Google Workspace and through a generic SAML provider (for example JumpCloud), from both the identity provider and the Oncall login page. See a first-time user created just in time with the default role and no paging coverage until they verify a destination. A user from another Google domain is refused, and so are a replayed SAML assertion and an unsigned one. Require SSO and observe that a password login is refused for everyone except the emergency administrator, whose sign-in is audited and notifies the other administrators. Sign in to the mobile app through the same Google connection.
+
+   Existing evidence: no implementing flow; this is required target acceptance. Sign-in is native owner email links and admin-created local passwords (`src/auth.server.ts`); no Google, SAML or OIDC connection, just-in-time account or required-SSO setting exists.
 
 ## Cross-cutting acceptance and release constraints
 
@@ -284,4 +300,4 @@ Obsolete synthetic-dispatch tests and the drill UI were removed in the existing 
 
 ## Clause status totals
 
-**18 done**, **29 partial**, **18 missing**; 65 clauses. Every OC-001–065 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
+**18 done**, **30 partial**, **21 missing**; 69 clauses. Every OC-001–069 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
