@@ -1,7 +1,7 @@
 import { fail } from './errors.mjs';
 import { validateMessagingConfig, validateMessagingResult, identity, rfc3339 } from '../adapters/messaging/contract.mjs';
 
-const providers = ['sendgrid', 'resend', 'cloudflare', 'development', 'messaging'];
+const providers = ['sendgrid', 'resend', 'cloudflare', 'messaging'];
 const controls = /[\x00-\x1f\x7f]/;
 const fields = new Set(['deliveryId', 'from', 'to', 'subject', 'text', 'html', 'cc', 'bcc', 'replyTo', 'headers', 'attachments', 'unsubscribe', 'customArgs', 'asmGroupId', 'subscriptionTracking', 'kind', 'expiresAt']);
 const reservedHeaders = new Set(['x-sg-id', 'x-sg-eid', 'received', 'dkim-signature', 'content-type', 'content-transfer-encoding', 'mime-version', 'to', 'from', 'subject', 'reply-to', 'cc', 'bcc', 'return-path', 'sender']);
@@ -30,18 +30,12 @@ export function validateConfig(config, dependencies = {}) {
       (!Number.isSafeInteger(dependencies.timeoutMilliseconds) || dependencies.timeoutMilliseconds <= 0)) fail('invalid_timeout');
   if (config.provider === 'messaging') return validateMessagingConfig(config, dependencies) ?? config;
   if (['serviceOrigin', 'installId', 'kid', 'signingKey'].some(field => config[field] !== undefined) || dependencies.serviceBinding !== undefined) fail('unsupported_provider_setting');
-  if (config.provider === 'development') {
-    if (config.mode !== 'development') fail('development_mode_required');
-    if (config.apiKey !== undefined || config.accountId !== undefined) fail('unsupported_development_config');
-    if (!dependencies.outbox || typeof dependencies.outbox.put !== 'function') fail('development_outbox_required');
-  } else {
-    if (typeof config.apiKey !== 'string' || !config.apiKey.trim()) fail('api_key_required');
-    bounded(config.apiKey, 4096, 'invalid_api_key');
-    if (/\s/.test(config.apiKey)) fail('invalid_api_key');
-    if (config.provider === 'cloudflare') {
-      if (typeof config.accountId !== 'string' || !/^[a-f0-9]{32}$/i.test(config.accountId)) fail('cloudflare_account_required');
-    } else if (config.accountId !== undefined) fail('unsupported_account_id');
-  }
+  if (typeof config.apiKey !== 'string' || !config.apiKey.trim()) fail('api_key_required');
+  bounded(config.apiKey, 4096, 'invalid_api_key');
+  if (/\s/.test(config.apiKey)) fail('invalid_api_key');
+  if (config.provider === 'cloudflare') {
+    if (typeof config.accountId !== 'string' || !/^[a-f0-9]{32}$/i.test(config.accountId)) fail('cloudflare_account_required');
+  } else if (config.accountId !== undefined) fail('unsupported_account_id');
   return config;
 }
 
@@ -133,7 +127,7 @@ export function validateMessage(message, provider) {
   }
   if (message.unsubscribe !== undefined) validateUnsubscribe(message.unsubscribe);
   const settings = ['customArgs', 'asmGroupId', 'subscriptionTracking'];
-  if (provider && !['sendgrid', 'development'].includes(provider) && settings.some(key => message[key] !== undefined)) fail('unsupported_provider_setting');
+  if (provider && !['sendgrid'].includes(provider) && settings.some(key => message[key] !== undefined)) fail('unsupported_provider_setting');
   if (message.asmGroupId !== undefined && (!Number.isSafeInteger(message.asmGroupId) || message.asmGroupId <= 0)) fail('invalid_asm_group');
   if (message.subscriptionTracking !== undefined && typeof message.subscriptionTracking !== 'boolean') fail('invalid_subscription_tracking');
   const args = message.customArgs ?? {};
@@ -155,10 +149,8 @@ export function encodeBase64(bytes) {
 export function validateSendResult(result, provider) {
   if (provider === 'messaging') return validateMessagingResult(result);
   keys(result, new Set(['provider', 'status', 'providerMessageId', 'code', 'recipientResults']), 'invalid_send_result');
-  if (!providers.includes(provider) || result.provider !== provider || !['accepted', 'rejected', 'rate_limited', 'uncertain', 'development'].includes(result.status)) fail('invalid_send_result');
-  if ((provider === 'development') !== (result.status === 'development')) fail('invalid_send_result');
+  if (!providers.includes(provider) || result.provider !== provider || !['accepted', 'rejected', 'rate_limited', 'uncertain'].includes(result.status)) fail('invalid_send_result');
   if (result.providerMessageId !== null) bounded(result.providerMessageId, 1024, 'invalid_provider_message_id');
-  if (result.status === 'development' && result.providerMessageId !== null) fail('invalid_send_result');
   if (result.code !== undefined && (typeof result.code !== 'string' || !/^[a-z][a-z0-9_]{0,63}$/.test(result.code))) fail('invalid_result_code');
   if (result.recipientResults !== undefined) {
     if (!Array.isArray(result.recipientResults)) fail('invalid_recipient_results');

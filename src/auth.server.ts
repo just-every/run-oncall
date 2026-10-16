@@ -1,11 +1,8 @@
 import { firstRunResponse } from './base/setup'
 import { admitted } from './base/setup-state'
-import { fontHead } from './brand/font-head'
 import { brandDocumentResponse } from './brand/document-response'
-import { themeFrame } from './base/theme-frame'
-import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, devNotFound, isLoopbackHost, type AuthConfig } from './modules/operator-auth/index.mjs'
+import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, devNotFound, isLoopbackHost, normalizeEmail, type AuthConfig } from './modules/operator-auth/index.mjs'
 import { operatorMail } from './mail.server.mjs'
-import { createD1DevelopmentOutbox, createDevelopmentOutboxHandler } from './modules/mail/src/development/index.mjs'
 import branding from './branding.json'
 import { sessionCookieLine } from './session-cookie'
 
@@ -50,12 +47,6 @@ export function clearWorkspaceSession(response: Response, request: Request): Res
 }
 
 const privateHeaders = { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff', 'x-robots-tag': 'noindex, nofollow' }
-const escape = (value: string) => value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
-async function html(body: string) {
- const frame = await themeFrame(theme)
- return new Response(`<!doctype html><html lang="en"${frame.htmlClass}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(branding.name)}</title>${fontHead}${frame.head}</head><body><main>${frame.brand}${body}</main></body></html>`, { headers: { ...privateHeaders, 'content-type': 'text/html; charset=utf-8', 'content-security-policy': `default-src 'none'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; ${frame.policy}` } })
-}
-
 export async function authResponse(request: Request, original: Bindings): Promise<Response | null> {
  const env = runtimeBindings(original), url = new URL(request.url)
  if (url.pathname === '/signin' || url.pathname === '/signin/local') {
@@ -68,18 +59,10 @@ export async function authResponse(request: Request, original: Bindings): Promis
    request = new Request(url, request)
   }
  }
- // The outbox and key exchange answer only a local runtime holding RER_DEV_KEY;
- // the outbox also needs the key gate's cookie (or the rer harness's header).
- if (url.pathname === '/__dev/outbox' || url.pathname === '/__dev/key') {
-  const gate = env.MAIL_PROVIDER === 'development' ? devGate({ key: env.RER_DEV_KEY, origin: env.AUTH_ORIGIN, local: env.AUTH_LOCAL === 'true' }) : null
-  if (!gate) return devNotFound()
-  if (url.pathname === '/__dev/key') return await gate.exchange(request) ?? devNotFound()
-  if (!await gate.admits(request)) {
-   if (!admitted(request, env.AUTH_ORIGIN) || !['GET', 'HEAD'].includes(request.method)) return devNotFound()
-   const page = await html('<h1>Open the local development outbox</h1><p>This browser needs the private link from the terminal running this checkout. Messages stay protected until you open it.</p><ol><li>In this checkout, run <code>rer dev --as signed-out</code>.</li><li>Open the <code>RER_OPEN</code> link it prints in this same browser.</li><li>Return to sign-in and choose <strong>Open the local development outbox</strong>.</li></ol><p>No external email is sent. Keep the terminal link private.</p><p><a href="/signin">Return to sign-in</a></p>')
-   return new Response(request.method === 'HEAD' ? null : page.body, { status: 404, headers: page.headers })
-  }
-  return await createDevelopmentOutboxHandler({ local: true, origin: env.AUTH_ORIGIN, outbox: createD1DevelopmentOutbox({ db: env.DB }) })(request) ?? devNotFound()
+ // Keep rer's private local owner-entry key exchange independent of mail.
+ if (url.pathname === '/__dev/key') {
+  const gate = devGate({ key: env.RER_DEV_KEY, origin: env.AUTH_ORIGIN, local: env.AUTH_LOCAL === 'true' })
+  return await gate?.exchange(request) ?? devNotFound()
  }
  // The shared server-rendered sign-in page: plain forms that work before any script.
  if (url.pathname === '/signin') {
@@ -88,10 +71,16 @@ export async function authResponse(request: Request, original: Bindings): Promis
    links: async () => [
     // Held installations keep their workspace name-and-password accounts; their door is /signin/local.
     ...(isLoopbackHost(url.hostname) && await env.DB.prepare('SELECT 1 FROM credentials LIMIT 1').first() ? [{ href: '/signin/local', label: 'Sign in with a workspace password' }] : []),
-    ...(env.MAIL_PROVIDER === 'development' && env.AUTH_LOCAL === 'true' ? [{ href: '/__dev/outbox', label: 'Open the local development outbox' }] : []),
    ],
   })(request)
-  if (page) return brandDocumentResponse(page)
+  if (page) {
+   let hint = ''
+   try { hint = normalizeEmail(url.searchParams.get('login_hint')) } catch { /* Invalid hints leave the field empty. */ }
+   const document = hint && request.method === 'GET'
+    ? new HTMLRewriter().on('#signin-email', { element(input) { input.setAttribute('value', hint) } }).transform(page)
+    : page
+   return brandDocumentResponse(document)
+  }
  }
  if (url.pathname.startsWith('/auth/')) {
   let response = await createAuthHandler(operatorAuth(env))(request)

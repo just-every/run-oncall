@@ -82,7 +82,7 @@
       "/health",
       "/signin"
     ],
-    "notes": "Hosted release refuses until a standby is approved; paging also requires a real-phone drill. Native owner sessions guard private APIs; local outbox is key-gated."
+    "notes": "Hosted release refuses until a standby is approved; paging also requires a real-phone drill. Native owner sessions guard private APIs. Local rer dev uses a private RER_OPEN owner entry; ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default."
   },
   "extensionPoints": {
     "contributions": [],

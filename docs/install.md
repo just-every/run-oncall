@@ -35,9 +35,7 @@ This command uses Node directly; no global pnpm is needed. On Linux, add `--with
 
 ## Sign-in emails on your computer
 
-While Oncall runs on your computer, no email leaves it. Sign-in links land in a local outbox instead. To try ordinary sign-in, run `rer dev --as signed-out` and open its printed `RER_OPEN` link in the browser you will use. This authorizes that browser for the private outbox. Then request an email link and choose *Open the local development outbox*, open the newest message and follow its link. `rer dev --login` also prints a sign-in/outbox link.
-
-The outbox needs this checkout's dev-key cookie. A fresh browser that goes straight to the outbox sees instructions to run `rer dev --as signed-out` and open its printed link in that same browser first.
+`rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Use a real owner mailbox for that flow. After delivery is configured, request an email link on the sign-in page, open the email on the same device and press **Confirm**. The default `rer dev` owner entry above needs no email delivery.
 
 ## Stop and start again
 
@@ -101,6 +99,8 @@ rer dev
 There are no new migrations in 0.2.0. Your data, owner and password accounts are kept. Do not reset to upgrade.
 
 ### Later updates
+
+The application deployment declaration selects SendGrid. Supply `SENDGRID_API_KEY` and `MAIL_FROM` privately, using a sender verified by your SendGrid account. Local owner entry needs neither setting.
 
 Update this checkout without resetting its data:
 

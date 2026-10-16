@@ -14,9 +14,9 @@ From this checkout:
 rer dev
 ```
 
-`rer dev` installs everything, creates a local development owner and prints a private `RER_OPEN` link that opens as that owner. `/setup` confirms the read-only owner details. For a real mailbox, run `rer install` then `rer setup --owner-email you@example.com` before the first `rer dev`. Unattended setup uses a private answers file (`rer setup --answers PATH --non-interactive`); see [Install and run](docs/install.md#explicit-and-unattended-setup). Setup's temporary app stops before the command exits; run `rer dev` to keep serving the app.
+`rer dev` installs everything, creates a local development owner and prints a private `RER_OPEN` link that opens as that owner. On first launch, `/setup` confirms the read-only owner details; later launches open the app directly. For a real mailbox, run `rer install` then `rer setup --owner-email you@example.com` before the first `rer dev`. Unattended setup uses a private answers file (`rer setup --answers PATH --non-interactive`); see [Install and run](docs/install.md#explicit-and-unattended-setup). Setup's temporary app stops before the command exits; run `rer dev` to keep serving the app.
 
-`--as signed-out` or `--login` uses ordinary sign-in. Open the printed link first to authorize this browser for the key-gated local outbox; no external email is sent. Stop with Ctrl-C or `rer dev --stop`; stop preview with `rer preview --stop` before building or verifying.
+`rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop with Ctrl-C or `rer dev --stop`; stop preview with `rer preview --stop` before building or verifying.
 
 ```sh
 rer build

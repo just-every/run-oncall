@@ -16,9 +16,9 @@ Oncall sends no SMS, voice calls, push notifications or paging emails, and it ne
 
 Moving in from Opsgenie or PagerDuty reads export files you saved yourself. Oncall asks for no API key, makes no request to those services and turns nothing on there. Imported schedules arrive paused for you to review. See [Move in from Opsgenie or PagerDuty](move-in.md) for exactly which rota shapes come across and which are named as differences.
 
-## It does not call AI or outside services
+## It does not call AI
 
-Nothing you write in Oncall is sent to an AI model or any outside service. Sign-in emails on your own computer go to a local outbox.
+Nothing you write in Oncall is sent to an AI model. Local development has no mail sender configured by default. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; the app does not capture mail or print sign-in tokens. The private `RER_OPEN` owner entry printed by `rer dev` needs no email delivery.
 
 ## It runs on your computer today
 

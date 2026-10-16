@@ -232,10 +232,6 @@
       "reason": "Vendored Base module documentation for developers"
     },
     {
-      "source": "src/modules/operator-auth/README.md",
-      "reason": "Vendored Base module documentation for developers"
-    },
-    {
       "source": "src/modules/operator-auth/conformance/README.md",
       "reason": "Vendored Base module documentation for developers"
     },

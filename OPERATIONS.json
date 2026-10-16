@@ -43,7 +43,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "Run Oncall on a loopback address, applying local migrations and opening a private owner sign-in link. Email remains in the local outbox; --as signed-out uses ordinary sign-in; --stop stops the owned server."
+      "effects": "Run Oncall on a loopback address, applying local migrations and printing a private RER_OPEN owner entry. First launch confirms the read-only owner at /setup; later launches open the app. --as signed-out selects the signed-out persona; --login retains automatic owner entry for compatibility. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server."
     },
     "build": {
       "argv": [
@@ -122,17 +122,6 @@
       ],
       "effects": "See SEED-COMMAND-CONTRACT.md for release effects."
     },
-    "outbox": {
-      "argv": [
-        "rer",
-        "outbox"
-      ],
-      "inputs": [
-        "package.json",
-        "scripts/installer/local.mjs"
-      ],
-      "effects": "See SEED-COMMAND-CONTRACT.md for outbox effects."
-    },
     "doctor": {
       "argv": [
         "rer",
@@ -186,7 +175,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "Serve the built Oncall app on a loopback address with local state and owner sign-in. Email remains in the local outbox; --stop stops the owned server."
+      "effects": "Serve the built Oncall app on a loopback address with local state and owner sign-in. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server."
     }
   },
   "health": {
