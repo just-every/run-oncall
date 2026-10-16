@@ -63,8 +63,8 @@ function AdministratorPicker({ onLinked }: { onLinked: () => Promise<void> }) {
         {!error && administrators.length === 0 && <p role="status">No active archived administrators are available to map.</p>}
         {administrators.length > 0 && <Form busy={busy} label="Confirm restored owner mapping" onSubmit={link}>
           <label className="field">
-            <span>Archived administrator</span>
-            <select name="adminMapping" required value={selected} onChange={(event) => {
+            <span id="restored-administrator-label">Archived administrator</span>
+            <select aria-labelledby="restored-administrator-label" name="adminMapping" required value={selected} onChange={(event) => {
               setSelected(event.target.value);
               setConfirmed(false);
             }}>
