@@ -4,7 +4,7 @@ import { Handover } from "./Handover";
 import { Band, type Segment } from "./Band";
 import { Note } from "./Drawn";
 import "./hero.css";
-import { docsUrl, sourceUrl } from "./links";
+import { demoUrl, docsUrl, sourceUrl } from "./links";
 
 // The site header the homepage, the docs and the sign-in door share. `current` marks the docs;
 // the sign-in door leaves out its own Sign in pill.
@@ -64,6 +64,7 @@ export function Hero({ variant = "instance" }: { variant?: SiteVariant }) {
         <p className="oc-hero-sub" data-intro>Oncall shows who's on now, who's next and exactly when they hand over.</p>
         <div className="oc-actions" data-intro>
           <a className="oc-pill" href={variant === "site" ? "/run" : sourceUrl}>{variant === "site" ? "Run Oncall" : "Get the code"}</a>
+          {variant === "site" && <a className="oc-link" href={demoUrl}>Try the demo</a>}
           <a className="oc-link" href={docsUrl}>Read the docs</a>
         </div>
         <p className="oc-hero-free" data-intro>100% free, open source alternative to <strong>PagerDuty</strong> and <strong>Opsgenie</strong></p>

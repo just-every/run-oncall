@@ -855,7 +855,7 @@
       "executable": false
     },
     "src/landing/Hero.tsx": {
-      "sha256": "c2f7ab11b5b21ef1ab2532ebee99923e56b1c2d7d349eb6b2960a433cb929263",
+      "sha256": "3230d7204639d9715715897894cdec3dfa10fadfb3b92d7c4a7504750534f665",
       "executable": false
     },
     "src/landing/Home.tsx": {
@@ -871,7 +871,7 @@
       "executable": false
     },
     "src/landing/links.ts": {
-      "sha256": "506b0ddbf0f183a378b26c4d49dae9e27cb8ba63468fe9b128b41ddf48d280d6",
+      "sha256": "1aeb433e8d201c83a573947a0061de166125698668fbe8c749058a2b79a66db8",
       "executable": false
     },
     "src/landing/LocalDoor.tsx": {
@@ -899,7 +899,7 @@
       "executable": false
     },
     "src/landing/sections/Closing.tsx": {
-      "sha256": "4440200f4e47149470c5ec4dfc123ff6ab3dfeeb335703656c6175fe4041c2ac",
+      "sha256": "3c353c4f2196364beab2b0488464b74275dc0467422ba6bd5f007009d124c20b",
       "executable": false
     },
     "src/landing/sections/Footer.tsx": {
