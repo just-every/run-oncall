@@ -11,7 +11,7 @@ export function DocsLayout({ current, aside, children, variant }: { current?: st
   return (
     <Site current="docs" className="docs-site" variant={variant}>
       <div className="docs-grid">
-        <DocsNav current={current} />
+        <DocsNav current={current} variant={variant} />
         <main id="main" className="docs-main">{children}</main>
         <HydrationUnit><aside className="docs-aside">{aside}</aside></HydrationUnit>
       </div>

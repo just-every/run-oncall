@@ -1,8 +1,10 @@
 import { HydrationUnit } from "../base/hydration/unit";
+import type { SiteVariant } from "../landing/Site";
+import { contractUrl } from "../landing/links";
 import { docsSections } from './pages';
 
 // Every published page by section; the current one is marked. On phones it folds into "All docs".
-export function DocsNav({ current }: { current?: string }) {
+export function DocsNav({ current, variant }: { current?: string; variant?: SiteVariant }) {
   const list = (
     <HydrationUnit><nav className="docs-nav" aria-label="Docs">
       <a className="docs-nav-home" href="/docs" aria-current={current === undefined ? 'page' : undefined}>All docs</a>
@@ -18,6 +20,7 @@ export function DocsNav({ current }: { current?: string }) {
           </ul>
         </div>
       ))}
+      {variant === 'site' && <div className="docs-nav-section"><ul><li><a href={contractUrl}>Contract</a></li></ul></div>}
     </nav></HydrationUnit>
   );
   return (
