@@ -9,6 +9,10 @@
     {
       "id": "owner",
       "label": "First owner"
+    },
+    {
+      "id": "mail",
+      "label": "Sign-in email"
     }
   ],
   "dependencies": [
@@ -76,6 +80,134 @@
       "required": false,
       "default": "",
       "help": "Optional Auth install. Email links require real mail provider credentials; no sender is configured by default."
+    },
+    {
+      "name": "MAIL_PROVIDER",
+      "label": "Mail provider",
+      "kind": "select",
+      "required": true,
+      "default": "development",
+      "options": [
+        {
+          "value": "development",
+          "label": "Local development (no email)"
+        },
+        {
+          "value": "rer",
+          "label": "RER managed mail"
+        },
+        {
+          "value": "sendgrid",
+          "label": "SendGrid"
+        },
+        {
+          "value": "resend",
+          "label": "Resend"
+        },
+        {
+          "value": "cloudflare",
+          "label": "Cloudflare Email Sending"
+        }
+      ],
+      "group": "mail"
+    },
+    {
+      "name": "MAIL_FROM",
+      "label": "Sender address",
+      "kind": "text",
+      "required": false,
+      "presentations": [
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "rer"
+          },
+          "required": true
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "sendgrid"
+          },
+          "required": true
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "resend"
+          },
+          "required": true
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "cloudflare"
+          },
+          "required": true
+        }
+      ],
+      "group": "mail"
+    },
+    {
+      "name": "MAIL_RELAY_URL",
+      "label": "Managed mail relay URL",
+      "kind": "url",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      },
+      "group": "mail"
+    },
+    {
+      "name": "MAIL_API_KEY",
+      "label": "Mail API key",
+      "kind": "secret",
+      "input": "entered",
+      "ownerVisible": true,
+      "required": false,
+      "presentations": [
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "rer"
+          },
+          "required": true
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "sendgrid"
+          },
+          "required": true
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "resend"
+          },
+          "required": true
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "cloudflare"
+          },
+          "required": true
+        }
+      ],
+      "group": "mail"
+    },
+    {
+      "name": "MAIL_ACCOUNT_ID",
+      "label": "Cloudflare account ID",
+      "kind": "text",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "cloudflare"
+      },
+      "group": "mail"
     }
   ],
   "steps": [

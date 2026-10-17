@@ -151,7 +151,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "03fab87783ac1760d5a1624f736e6527e4880cf07ef1c348538187d674b74978",
+      "sha256": "b5292455bcfb6c30e268e6df9b3262bd23be36110d9d38a3fbca4a653bc3d84c",
       "executable": false
     },
     "DEMO.md": {
@@ -255,7 +255,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "cca1774d6fafafe15ec348057acd80a6913fe70aa1d2113124fff7f46821f24e",
+      "sha256": "b4df5f6ec5e5455bf6b147585d5751d12d184aa280f7c5cab429d561d37523c5",
       "executable": false
     },
     "migrations/core/0001_initial.sql": {
@@ -383,11 +383,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "4c8b367530af55ab4e7c16b16e1582730cf4126b1f07e6d2ea668e20ea047290",
+      "sha256": "bfc8ae47aead3c9e1a361316e501fd62d10632521e8974dd907783e9a0f90c50",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "de7f25bf2b5079b62595f05220eac05927d58c7e544f2159480a23ca2d546304",
+      "sha256": "656be1a8885c60a5e0e9b980222d4bffabb5d7a5fb1567bc0495772d477acab8",
       "executable": false
     },
     "public/brand/badge-rail-1x.webp": {
@@ -491,7 +491,7 @@
       "executable": false
     },
     "rer-setup.json": {
-      "sha256": "2ca2bd174c55fcb9bc36e918c5439448907d78514ed76aa86931074a6d94ce0e",
+      "sha256": "54c3bc9ad39669d2429f0212b05ff5a8ffa78b9e283b1762bf59f67b07be9f37",
       "executable": false
     },
     "RUN-LOCALLY.md": {
@@ -515,11 +515,11 @@
       "executable": false
     },
     "scripts/deployment-spec-policy.json": {
-      "sha256": "4c64b1b11834bcc0b3010f93c3ce20256144ffb7c04bd4cd3d0f8b344d947078",
+      "sha256": "afebfe5162e7419377083c1574689cecc90049fa8edca990d843cd8b9003f788",
       "executable": false
     },
     "scripts/deployment-spec.mjs": {
-      "sha256": "57a5ee4e12923a5f0f26c228b54022247dadcd49671c9aba40e323af227087a7",
+      "sha256": "09478f55b0e3fd2483a8155b9f53bf17d1eb9bf6f1739f7715768420ed568d21",
       "executable": false
     },
     "scripts/handoffs.mjs": {
@@ -611,7 +611,7 @@
       "executable": false
     },
     "src/auth.server.ts": {
-      "sha256": "0325984ac378a50001412298c1240179d486df037ff32febce7f6b71699a92da",
+      "sha256": "2b867d0eacc9aa55787f3447b56dd14d33d518cc79d9d094848bab76f3ef91f7",
       "executable": false
     },
     "src/base/actor.ts": {
@@ -1087,7 +1087,7 @@
       "executable": false
     },
     "src/mail.server.mjs": {
-      "sha256": "38f89f160456842d0fb90c4fd7229c1b5b91b8c60e2d392fd18ac0a726918389",
+      "sha256": "d8ef29f1989ffa22b0fec85f606cfad15cc149592d376798458186c0b25e3e50",
       "executable": false
     },
     "src/modules/d1-transport/index.d.mts": {
@@ -2252,6 +2252,10 @@
     },
     "src/modules/operator-auth/accounts/credentials.mjs": {
       "sha256": "2f3d762e2e16145d56d45ab1ce53797a2a05fa818f2a796f086effe4c49f3e02",
+      "executable": false
+    },
+    "src/modules/operator-auth/accounts/display-name.mjs": {
+      "sha256": "f4134112fb448f2baa75e9f7f4a4a54b90594ba14d64cc3bbcd0858afdaaadbb",
       "executable": false
     },
     "src/modules/operator-auth/accounts/editor-owner.mjs": {

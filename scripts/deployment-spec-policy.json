@@ -1,4 +1,6 @@
 {
+  "providerEffects": ["outbound-mail"],
+  "mail": { "providers": ["rer"] },
   "surfaces": {
     "app": {
       "path": "/",

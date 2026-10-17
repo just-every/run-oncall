@@ -3,6 +3,7 @@ import {dirname, resolve} from 'node:path';
 import {wranglerBindings} from '@runeditrun/rer/internal/modules/delivery-producer/bindings.mjs';
 import {collectMigrations, decodeUtf8, sourcePath} from '@runeditrun/rer/internal/modules/delivery-producer/migrations.mjs';
 import {validateDeclarations} from '@runeditrun/rer/internal/modules/delivery-producer/declarations.mjs';
+import {validateMailSetup} from '@runeditrun/rer/internal/modules/delivery-producer/mail.mjs';
 
 // Source metadata only: this does not publish an artifact or enable hosted deploys.
 // Generate after the real build so bindings and migration bytes describe its Worker.
@@ -13,10 +14,14 @@ const [build, deploy, setup, policy] = await Promise.all([
   json('scripts/deployment-spec-policy.json'),
 ]);
 const bindings = wranglerBindings(build);
+// Managed mail assigns these public inputs; owner-account deploys retain their
+// existing SendGrid declaration and MAIL_FROM environment input.
+const publicVariables = {...build.vars, ...deploy.vars, MAIL_FROM: '', MAIL_RELAY_URL: ''};
 const setupFields = new Map(setup.fields.map(field => [field.name, field]));
 const secretNames = setup.fields.filter(field => field.kind === 'secret' && field.required).map(field => field.name);
 const optionalSecretNames = (deploy.secrets ?? []).map(item => item.binding).filter(name =>
-  !secretNames.includes(name) && (!setupFields.has(name) || setupFields.get(name).kind === 'secret'));
+  !secretNames.includes(name) && !Object.hasOwn(publicVariables, name)
+  && (!setupFields.has(name) || setupFields.get(name).kind === 'secret'));
 const spec = {
   schema: 1,
   ...bindings,
@@ -25,13 +30,14 @@ const spec = {
   })), bindings.resources),
   compatibilityDate: build.compatibility_date,
   compatibilityFlags: build.compatibility_flags ?? [],
-  publicVariables: {...build.vars, ...deploy.vars},
+  publicVariables,
   secretNames, optionalSecretNames,
   schedules: build.triggers?.crons ?? [],
   healthPath: '/health',
   ...policy,
 };
 validateDeclarations(spec);
+validateMailSetup(spec.mail, setup);
 await mkdir('management/integration', {recursive: true});
 await writeFile('management/integration/deployment-spec.json', JSON.stringify(spec, null, 2) + '\n');
 console.log('Generated management/integration/deployment-spec.json from the built Worker and source policy.');
