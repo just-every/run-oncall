@@ -1,3 +1,4 @@
+import { reviewCommand, validateReviewFields, validateLifecycleEntry } from '../../reviews/review-controls.ts';
 import { dependencies, validateChangeArchive, type ChangeRecord, type ChangeSource } from "../../changes/model.ts";
 import { incidentControl, validateIncidentControls } from "./incident-controls.ts";
 import { validateTriageRecords, type TriageRecord } from "./triage.ts";
@@ -70,6 +71,8 @@ export type Entry = {
   kind: string;
   text: string;
   operationId?: string;
+  lifecycle?: {from: Incident["state"] | null; to: Incident["state"]; evidence?: string};
+  review?: {rootCause:string;impact:string;review:string;materialRevision:number;workspaceRevision:number};
 };
 export type Action = {
   id: string;
@@ -78,6 +81,11 @@ export type Action = {
   due: string;
   done: boolean;
   evidence: string;
+  priority?: "P1" | "P2" | "P3";
+  completionPolicy?: "evidence" | "human-review";
+  escalationRecipient?: string;
+  submission?: {by:string;at:string;evidence:string};
+  accepted?: {by:string;at:string};
 };
 export type Incident = {
   id: string;
@@ -94,6 +102,7 @@ export type Incident = {
   actions: Action[];
   recovery: string;
   review: string;
+  reviewAcceptance?: {rootCause:string;impact:string;by:string;at:string;materialRevision:number;workspaceRevision:number};
   assignee?: string | null;
   urgency?: "high" | "low";
   priority?: "P1" | "P2" | "P3" | "P4" | "P5" | null;
@@ -433,12 +442,7 @@ export function command(
       createdAt: at,
       alerts: ids,
       timeline: [
-        stamp(
-          actor.id,
-          "declared",
-          text(input.summary, "impact summary", 3000),
-          at,
-        ),
+        {...stamp(actor.id, "declared", text(input.summary, "impact summary", 3000), at), lifecycle:{from:null,to:"declared"}},
       ],
       runbook: service.runbook.map((text) => ({ text, done: false })),
       actions: [],
@@ -454,6 +458,14 @@ export function command(
     fail("Incident changed. Reload before applying your edit.", 409);
   const controlled = incidentControl(state, actor, incident, input, at);
   if (controlled) return incident;
+  const reviewResult = reviewCommand(state, actor, incident, input, at);
+  if (reviewResult !== null) {
+    incident.revision++;
+    const accepted = input.type === 'review' && input.accept === true ? incident.reviewAcceptance : null;
+    incident.timeline.push({...stamp(actor.id, input.type, reviewResult, at), ...(accepted ? {review:{rootCause:accepted.rootCause,impact:accepted.impact,review:incident.review,materialRevision:accepted.materialRevision,workspaceRevision:accepted.workspaceRevision}} : {})});
+    return incident;
+  }
+  let lifecycle: Entry['lifecycle'];
   let description = "";
   if (input.type === "note") {
     description = text(input.text, "note", 3000);
@@ -475,49 +487,16 @@ export function command(
     }
     if (input.state === "resolved" && !incident.recovery)
       fail("Recovery must be evidenced before resolution");
+    lifecycle={from:incident.state,to:input.state,...(input.state==='recovered'?{evidence:incident.recovery}:{})};
     incident.state = input.state;
   } else if (input.type === "runbook") {
     if (!Number.isInteger(input.index) || !incident.runbook[input.index])
       fail("Unknown runbook step");
     incident.runbook[input.index].done = Boolean(input.done);
     description = `Runbook ${input.index + 1}: ${input.done ? "completed" : "reopened"} — ${incident.runbook[input.index].text}`;
-  } else if (input.type === "action") {
-    if (
-      !state.members.some(
-        (m) => m.id === input.owner && m.active && m.role !== "viewer",
-      )
-    )
-      fail("Follow-up requires active responder");
-    if (
-      !/^\d{4}-\d{2}-\d{2}$/.test(input.due) ||
-      !Number.isFinite(Date.parse(input.due))
-    )
-      fail("Valid due date required");
-    const action: Action = {
-      id: crypto.randomUUID(),
-      title: text(input.title, "action", 500),
-      owner: input.owner,
-      due: input.due,
-      done: false,
-      evidence: "",
-    };
-    incident.actions.push(action);
-    description = `Follow-up: ${action.title} due ${action.due}`;
-  } else if (input.type === "complete") {
-    const action = incident.actions.find((a) => a.id === input.action);
-    if (!action) fail("Unknown follow-up");
-    action.evidence = link(input.evidence);
-    if (!action.evidence) fail("Completion evidence URL required");
-    action.done = true;
-    description = `Completed: ${action.title} — ${action.evidence}`;
-  } else if (input.type === "review") {
-    if (incident.state !== "resolved")
-      fail("Review requires resolved incident");
-    incident.review = text(input.text, "review", 10000);
-    description = "Postincident review updated";
   } else return fail("Unknown command");
   incident.revision++;
-  incident.timeline.push(stamp(actor.id, input.type, description, at));
+  incident.timeline.push({...stamp(actor.id, input.type, description, at), ...(lifecycle ? {lifecycle} : {})});
   return incident;
 }
 export function validateArchive(value: any): State {
@@ -546,7 +525,8 @@ export function validateArchive(value: any): State {
       fail("Invalid archive timestamp");
   };
   const entry = (e: any) => {
-    object(e, ["id", "at", "actor", "kind", "text"], ["operationId"]);
+    object(e, ["id", "at", "actor", "kind", "text"], ["operationId", "lifecycle", "review"]);
+    validateLifecycleEntry(e);
     if (e.operationId !== undefined) text(e.operationId, "operation ID", 100);
     text(e.id, "entry ID", 100);
     date(e.at);
@@ -752,7 +732,7 @@ export function validateArchive(value: any): State {
       "actions",
       "recovery",
       "review",
-    ], ["assignee", "urgency", "priority", "scribe", "communications"]);
+    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance"]);
     validateIncidentControls(i, value.members);
     text(i.title, "incident", 300);
     if (
@@ -792,7 +772,7 @@ export function validateArchive(value: any): State {
     }
     array(i.actions);
     for (const a of i.actions) {
-      object(a, ["id", "title", "owner", "due", "done", "evidence"]);
+      object(a, ["id", "title", "owner", "due", "done", "evidence"], ["priority", "completionPolicy", "escalationRecipient", "submission", "accepted"]);
       text(a.id, "action ID", 100);
       text(a.title, "action", 500);
       date(a.due);
@@ -808,6 +788,7 @@ export function validateArchive(value: any): State {
       fail("Invalid review");
   }
   value.audit.forEach(entry);
+  validateReviewFields(value);
   validateChangeArchive(value);
   if (value.triage !== undefined) validateTriageRecords(value.triage, value);
   return structuredClone(value);

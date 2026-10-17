@@ -1,3 +1,4 @@
+import { installReviews } from './reviews/api';
 import { installChangeIntake, installChangeManagement } from "./changes/api";
 import { pauseChangeSources } from "./changes/model";
 import { saveTriageItem } from "./triage-store";
@@ -384,6 +385,7 @@ api.use("/api/*", async (c, next) => {
   await next();
 });
 installChangeManagement(api, changeDeps);
+installReviews(api, authorizedState);
 installTriage(api, {body, state: authorizedState, save: (c, state, revision) => save(c.env.DB, state, revision, sessionGuard(c)), saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
 api.post("/api/command", async (c) => {

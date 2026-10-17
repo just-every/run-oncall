@@ -8,6 +8,7 @@ export const incidentUpdated = (i: Incident) => new Date(i.timeline.at(-1)?.at ?
 
 export function incidentControl(state: State, actor: Member, i: Incident, input: any, at: string): boolean {
   if (!['assign-role', 'reassign', 'set-priority', 'set-urgency', 'set-severity', 'bulk-acknowledge', 'bulk-resolve'].includes(input.type)) return false;
+  const previousState=i.state;
   let description: string;
   const reason = text(input.reason, 'Reason', 3000);
   if (input.type === 'assign-role' || input.type === 'reassign') {
@@ -48,6 +49,7 @@ export function incidentControl(state: State, actor: Member, i: Incident, input:
   }
   i.revision++;
   i.timeline.push({id: crypto.randomUUID(), at, actor: actor.id, kind: input.type, text: description,
+    ...(['bulk-acknowledge','bulk-resolve'].includes(input.type)?{lifecycle:{from:previousState,to:i.state,...(input.type==='bulk-resolve'?{evidence:i.recovery}:{})}}:{}),
     ...(input.operationId ? {operationId: text(input.operationId, 'Operation ID', 100)} : {})});
   return true;
 }

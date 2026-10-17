@@ -362,8 +362,8 @@ Judged from the code and tests at commit `661e39e334c5ffcc263df5218bdd519e0e2aec
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 18 | 4 | 0 | 22 |
-| Target and push further | 0 | 28 | 22 | 50 |
-| All | 18 | 32 | 22 | 72 |
+| Target and push further | 0 | 29 | 21 | 50 |
+| All | 18 | 33 | 21 | 72 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -402,8 +402,8 @@ Judged from the code and tests at commit `661e39e334c5ffcc263df5218bdd519e0e2aec
 | `OC-033` | Generic email and Events API | target | partial | `src/api.ts`; `tests/runtime.mjs` | Scoped signed/bearer Events API is exercised; inbound email is absent. |
 | `OC-034` | Slack and Microsoft Teams response | target | missing |  | No implementing flow. Internal handoff drafts do not implement either collaboration app. |
 | `OC-035` | Incident bridges and live call routing | target | missing |  | No implementing flow. No telephony routing or conferencing connector exists. |
-| `OC-036` | Post-incident review and completion policy | target | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Attributed timelines, human review and owned evidenced follow-ups ship; priority policies, reminders and ticket connectors are missing. |
-| `OC-037` | Response analytics and fair on-call load | target | missing |  | No implementing flow. No response/load analytics or report export exists. |
+| `OC-036` | Post-incident review and completion policy | target | partial | `src/reviews/material.ts`; `src/reviews/review-controls.ts`; `src/reviews/ReviewsWorkspace.tsx`; `tests/reviews.mjs`; `docs/reviews.md` | Generated source-attributed observations, literal human assertions, response source entries, changes and follow-ups remain separate from revision-bound human acceptance of root cause, impact and review. Accepted assessments retain immutable timeline snapshots. Priority, UTC due dates, manual escalation contacts and evidence/human-review completion policies ship; P1 evidence submission stays open until explicit acceptance. Automatic reminders/escalation, recurring review, hypotheses/chat context and remote ticket synchronization remain missing. Browser screenshots: work/sd-cp-oncall/shots/OC-036/. |
+| `OC-037` | Response analytics and fair on-call load | target | partial | `src/reviews/report.ts`; `src/reviews/api.ts`; `src/reviews/ResponseReport.tsx`; `tests/reviews.mjs`; `docs/reviews.md` | UTC declaration cohorts, service filters, sourced acknowledgement/resolution/human-attestation timings, means/percentiles/distributions and matching revision-bound CSV retain measured, censored and unknown cases with drilldown. Legacy timing derivations are labelled and legacy recovery evidence stays unknown. Real page/delivery, escalation/reassignment, after-hours, coverage-normalized fairness, import provenance and erasure-proof historical denominators remain missing. Browser screenshots: work/sd-cp-oncall/shots/OC-037/. |
 | `OC-038` | Complete incumbent migration and controlled cutover | target | partial | `src/move-in/api.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs` | Reviewed Opsgenie/PagerDuty schedule file move-in ships; JSM/VictorOps adapters, complete account reconciliation and live cutover do not. |
 | `OC-039` | Enterprise access and responder lifecycle | target | partial | `src/auth.server.ts`; `src/api.ts`; `tests/runtime-authority.mjs`; `tests/signin-browser.mjs` | Native owner email links and admin-created local member passwords exist; invitations, federated identity, MFA and SCIM are not adopted product flows. |
 | `OC-040` | Retention, erasure and custody | target | partial | `src/move-in/erasure.ts`; `src/portability-policy.mjs`; `tests/activation.mjs` | Exact imported-person erasure and custody/fence proof exist; general entity retention/erasure and standby reconciliation are incomplete. |

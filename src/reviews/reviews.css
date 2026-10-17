@@ -1,0 +1,61 @@
+.reviews-workspace { display: grid; gap: 20px; min-width: 0; }
+.review-heading { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 12px; }
+.review-heading h2, .review-heading h3 { flex: 1; min-width: 180px; margin: 0; }
+.review-filter-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(150px, .7fr); gap: 16px; }
+.review-meta { color: var(--oc-muted); font-size: 13px; overflow-wrap: anywhere; }
+.review-literal { white-space: pre-wrap; overflow-wrap: anywhere; }
+.review-snapshot, .followup-accept, .review-acceptance { margin: 16px 0; padding: 16px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper); overflow-wrap: anywhere; }
+.review-snapshot p { margin: 5px 0; }
+.review-snapshot h4, .review-acceptance h4 { margin: 0 0 8px; font-size: 16px; }
+.response-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 18px 0; }
+.response-metric { min-width: 0; border: 1px solid var(--app-line); border-radius: 10px; padding: 16px; }
+.response-metric h3 { margin: 0 0 12px; }
+.response-metrics h4 { margin: 0 0 8px; }
+.review-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; margin: 0; }
+.review-stat-grid dt { color: var(--oc-muted); font-size: 13px; }
+.review-stat-grid dd { margin: 0; font-size: 19px; font-weight: 650; overflow-wrap: anywhere; }
+.response-report .response-distribution { list-style: none; padding: 0; margin: 12px 0; }
+.response-distribution li { display: grid; grid-template-columns: minmax(0, 1fr) 24px; gap: 3px 8px; margin: 10px 0; font-size: 12px; }
+.response-distribution li > span:first-child { grid-column: 1 / -1; }
+.response-track { align-self: center; height: 8px; background: var(--oc-paper-deep); border-radius: 4px; overflow: hidden; }
+.response-track > span { display: block; height: 100%; background: var(--oc-ink-soft); }
+.response-source { font-size: 14px; overflow-wrap: anywhere; }
+.response-source p { margin: 6px 0; }
+.review-material { padding: 14px 0; border-top: 1px solid var(--app-line); border-bottom: 1px solid var(--app-line); }
+.review-material summary { overflow-wrap: anywhere; }
+.review-material-body { margin-top: 16px; }
+.review-material-body > details { padding: 10px 0; border-bottom: 1px solid var(--app-line); }
+.review-material dl { margin: 12px 0; }
+.review-material dt { font-weight: 650; margin-top: 10px; overflow-wrap: anywhere; }
+.review-material dd, .review-snapshot dd { margin: 3px 0 10px; overflow-wrap: anywhere; }
+.review-material .review-records { padding-left: 22px; }
+.review-records > li { padding: 12px 0; border-bottom: 1px solid var(--app-line); }
+.review-records > li:last-child { border-bottom: 0; }
+.review-record { padding: 18px 0; border-bottom: 1px solid var(--app-line); }
+.review-record:last-child { border-bottom: 0; }
+.review-record h3 { margin: 0; }
+.review-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.review-confirm { display: flex; align-items: flex-start; gap: 10px; margin: 8px 0 18px; font-size: 14px; }
+.review-confirm input { flex: none; width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--oc-ink); }
+.review-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.followups { min-width: 0; overflow-wrap: anywhere; }
+.followups .owners-heading { margin-top: 16px; }
+.followups .followup-list { list-style: none; padding: 0; margin: 12px 0; }
+.followup-item { padding: 16px 0; border-bottom: 1px solid var(--app-line); }
+.followup-item p { margin: 6px 0; }
+.followup-item p > .tag { margin-left: 8px; }
+.followup-accept { font-size: 14px; }
+.followup-create { margin-bottom: 0; }
+.review-rollup { list-style: none; padding: 0 !important; }
+.review-rollup li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--app-line); }
+.review-rollup li > div { flex: 1; min-width: 180px; overflow-wrap: anywhere; }
+@media (max-width: 1199px) {
+  .review-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .response-metrics { grid-template-columns: 1fr; }
+}
+@media (max-width: 699px) {
+  .review-filter-grid, .review-pair { grid-template-columns: 1fr; gap: 0; }
+  .review-snapshot, .followup-accept, .review-acceptance, .response-metric { padding: 14px; }
+  .review-heading { gap: 10px; }
+  .review-heading h2, .review-heading h3 { min-width: 150px; }
+}

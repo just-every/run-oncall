@@ -1,3 +1,5 @@
+import { ReviewsWorkspace } from '../reviews/ReviewsWorkspace';
+import { Followups } from '../reviews/Followups';
 import { RecentChanges } from "../changes/RecentChanges";
 import { ChangeSources } from "../changes/ChangeSources";
 import { ServiceDependencies } from "../changes/Dependencies";
@@ -31,6 +33,13 @@ function Workspace() {
   const w = useWorkspace();
   const [page, setPage] = useState("incidents");
   const [selected, setSelected] = useState("");
+  const selectIncident = (id: string) => {
+    setSelected(id);
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set("incident", id);
+    else url.searchParams.delete("incident");
+    window.history.replaceState(null, "", url);
+  };
   const [declare, setDeclare] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [replay, setReplay] = useState<any>(null);
@@ -45,7 +54,7 @@ function Workspace() {
     return () => { window.clearInterval(timer); window.removeEventListener("focus", update); };
   }, [page]);
   useEffect(() => {
-    const update = () => setPage(location.hash.slice(1) || "incidents");
+    const update = () => {setPage(location.hash.slice(1) || "incidents"); const id=new URLSearchParams(location.search).get("incident");if(id)setSelected(id);};
     update();
     window.addEventListener("hashchange", update);
     return () => window.removeEventListener("hashchange", update);
@@ -205,7 +214,7 @@ function Workspace() {
         )}
         {page === "incidents" && (
           <div className="board">
-            <IncidentTriage state={s} actor={actor} current={incident?.id} select={id => {setSelected(id); setHandoff(null); if (window.innerWidth < 900) requestAnimationFrame(() => document.querySelector(".detail")?.scrollIntoView({block: "start"}));}} busy={w.busy} run={w.run}>
+            <IncidentTriage state={s} actor={actor} current={incident?.id} select={id => {selectIncident(id); setHandoff(null); if (window.innerWidth < 900) requestAnimationFrame(() => document.querySelector(".detail")?.scrollIntoView({block: "start"}));}} busy={w.busy} run={w.run}>
               <div className="list-toolbar">
                 <strong>Incidents {s.incidents.length}</strong>
                 {canEdit && (
@@ -233,7 +242,7 @@ function Workspace() {
                           alerts: [],
                         });
                         if (i) {
-                          setSelected(i.id);
+                          selectIncident(i.id);
                           setDeclare(false);
                         }
                         return i;
@@ -446,69 +455,7 @@ function Workspace() {
                         declared.
                       </p>
                     )}
-                    <div className="right-title owners-heading">
-                      <h3>Follow-up owners</h3>
-                    </div>
-                    <ul className="owners">
-                      {incident.actions.map((a) => (
-                        <li className="owner action-item" key={a.id}>
-                          <span className="avatar">
-                            {name(a.owner).slice(0, 2).toUpperCase()}
-                          </span>
-                          <div className="person">
-                            <div className="person-name">{a.title}</div>
-                            <div className="person-role">
-                              {name(a.owner)} · due {a.due}
-                            </div>
-                            {a.done ? (
-                              <a
-                                href={a.evidence}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                Completion evidence →
-                              </a>
-                            ) : (
-                              canEdit && (
-                                <Form
-                                  busy={w.busy}
-                                  label="Complete with evidence"
-                                  onSubmit={(data) =>
-                                    mutate({
-                                      ...data,
-                                      type: "complete",
-                                      action: a.id,
-                                    })
-                                  }
-                                >
-                                  <Field
-                                    name="evidence"
-                                    label="Completion evidence"
-                                    type="url"
-                                  />
-                                </Form>
-                              )
-                            )}
-                          </div>
-                          <span className="owner-status">
-                            {a.done ? "Complete" : "Open"}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                    {canEdit && (
-                      <Form
-                        busy={w.busy}
-                        label="Add follow-up"
-                        onSubmit={(data) => mutate({ ...data, type: "action" })}
-                      >
-                        <Field name="title" label="Improvement action" />
-                        <Field name="owner" label="Owner">
-                          {memberOptions}
-                        </Field>
-                        <Field name="due" label="Due date" type="date" />
-                      </Form>
-                    )}
+                    <Followups incident={incident} members={s.members} busy={w.busy} canEdit={canEdit} mutate={mutate} />
                   </section>
                   <section className="panel context">
                     <h3>Service context</h3>
@@ -737,73 +684,14 @@ function Workspace() {
         )}
         {page === "alerts" && (
           <div className="management-grid">
-            <AlertsPanel state={s} canEdit={canEdit} busy={w.busy} name={name} onOpenIncident={setSelected} onDeclare={async data => {
+            <AlertsPanel state={s} canEdit={canEdit} busy={w.busy} name={name} onOpenIncident={selectIncident} onDeclare={async data => {
               const created = await command(data);
-              if (created) { setSelected(created.id); location.hash = "incidents"; }
+              if (created) { selectIncident(created.id); location.hash = "incidents"; }
             }} />
             <MonitoringIngress admin={admin} services={s.services} busy={w.busy} run={w.run} />
           </div>
         )}
-        {page === "reviews" && (
-          <section className="panel padded">
-            <h2>Reviews and open improvements</h2>
-            {s.incidents.length === 0 ? (
-              <p>Incident reviews and follow-ups appear here.</p>
-            ) : (
-              s.incidents.map((i) => (
-                <article className="review-card" key={i.id}>
-                  <h3>
-                    {i.title} <span className="tag">{i.state}</span>
-                  </h3>
-                  <p>{i.review || "No postincident review recorded."}</p>
-                  <ul>
-                    {i.actions.map((a) => (
-                      <li key={a.id}>
-                        {a.title} · {name(a.owner)} · due {a.due} ·{" "}
-                        {a.done ? (
-                          <a href={a.evidence} target="_blank" rel="noreferrer">
-                            Completed with evidence
-                          </a>
-                        ) : (
-                          "Open"
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    onClick={() => {
-                      setSelected(i.id);
-                      location.hash = "incidents";
-                    }}
-                  >
-                    Open incident
-                  </button>
-                  {canEdit && i.state === "resolved" && (
-                    <Form
-                      busy={w.busy}
-                      label="Save review"
-                      onSubmit={(data) =>
-                        command({
-                          ...data,
-                          type: "review",
-                          incident: i.id,
-                          revision: i.revision,
-                        })
-                      }
-                    >
-                      <Field
-                        name="text"
-                        label="Impact, contributing factors, response lessons and next verification"
-                        type="textarea"
-                        value={i.review}
-                      />
-                    </Form>
-                  )}
-                </article>
-              ))
-            )}
-          </section>
-        )}
+        {page === "reviews" && <ReviewsWorkspace state={s} busy={w.busy} canEdit={canEdit} command={command} onOpenIncident={id=>{selectIncident(id);location.hash="incidents"}} />}
         {page === "team" && (
           <div className="management-grid">
             <section className="panel padded">
@@ -900,7 +788,7 @@ function Workspace() {
         )}
         {page === "archive" && <>
           <ArchiveWorkspace state={s} actor={actor} busy={w.busy} run={w.run} setError={w.setError} setNotice={w.setNotice}
-            onRestored={() => { setReplay(null); setHandoff(null); setSelected(""); }} />
+            onRestored={() => { setReplay(null); setHandoff(null); selectIncident(""); }} />
           <details className="panel padded">
             <summary>Configuration audit ({s.audit.length})</summary>
             {s.audit.slice().reverse().map(entry => <p key={entry.id}>{time(entry.at)} · {entry.kind} · {entry.text}</p>)}

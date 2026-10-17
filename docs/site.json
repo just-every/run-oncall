@@ -45,6 +45,12 @@
           "summary": "Connect authenticated change senders and inspect recent changes beside services, alerts and incidents."
         },
         {
+          "slug": "reviews",
+          "title": "Reports and reviews",
+          "source": "docs/reviews.md",
+          "summary": "Understand response timings, inspect retained review material and accept evidenced improvements."
+        },
+        {
           "slug": "move-in",
           "title": "Move in from Opsgenie or PagerDuty",
           "source": "docs/move-in.md",

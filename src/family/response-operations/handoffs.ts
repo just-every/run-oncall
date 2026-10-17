@@ -1,4 +1,5 @@
 import { fail, link, type Entry, type Incident, type Member, type Service, type State } from "./domain.ts";
+import { validateLifecycleEntry } from "../../reviews/review-controls.ts";
 
 export type HandoffPayload = { audience: "internal" | "customer"; title: string; summary: string; evidenceLinks: string[]; impactLinks: string[] };
 export type HandoffSource = { incident: Pick<Incident, "id" | "revision" | "service" | "title" | "severity" | "state" | "recovery"> & { declaration: Entry }; service: Service };
@@ -88,14 +89,19 @@ function source(input: unknown): HandoffSource {
   if (!["critical", "warning", "info"].includes(i.severity) || !["declared", "acknowledged", "mitigating", "recovered", "resolved"].includes(i.state)) fail("Invalid handoff incident snapshot");
   snapshotText(i.recovery, "incident recovery", 2000, true); link(i.recovery);
   if (["recovered", "resolved"].includes(i.state) && !i.recovery) fail("Recovered handoff snapshot needs evidence");
-  const d = fields(i.declaration, ["id", "at", "actor", "kind", "text"]);
+  const d = fields(i.declaration, ["id", "at", "actor", "kind", "text"], ["lifecycle"]);
   snapshotText(d.id, "declaration ID"); snapshotText(d.actor, "declaration actor", 200); snapshotText(d.text, "declaration text", 10000);
   if (d.kind !== "declared" || typeof d.at !== "string" || !Number.isFinite(Date.parse(d.at))) fail("Invalid handoff declaration snapshot");
-  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"]);
+  validateLifecycleEntry(d);
+  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies"]);
   snapshotText(v.id, "service ID"); snapshotText(v.name, "service name", 200); snapshotText(v.environment, "environment"); snapshotText(v.owner, "service owner");
   snapshotText(v.pager, "pager link", 2000, true); link(v.pager);
   if (!Array.isArray(v.runbook) || v.runbook.length > 30) fail("Invalid handoff runbook snapshot");
   v.runbook.forEach((line: unknown) => snapshotText(line, "runbook", 500));
+  if (v.dependencies !== undefined) {
+    if (!Array.isArray(v.dependencies) || v.dependencies.length > 30 || new Set(v.dependencies).size !== v.dependencies.length || v.dependencies.includes(v.id)) fail("Invalid handoff dependency snapshot");
+    v.dependencies.forEach((id: unknown) => snapshotText(id, "dependency ID"));
+  }
   if (i.service !== v.id) fail("Handoff source incident/service mismatch");
   return structuredClone(s);
 }

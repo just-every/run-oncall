@@ -29,6 +29,8 @@ jobs:
             browser: false
           - lane: changes
             browser: false
+          - lane: reviews
+            browser: false
           - lane: adoption-demo
             browser: false
           - lane: signin
