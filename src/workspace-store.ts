@@ -1,8 +1,8 @@
 import { empty, fail, type State } from './family/response-operations/domain'
 
-const tables = {members:'oc_members', services:'oc_services', policies:'oc_policies', events:'oc_events', alerts:'oc_alerts', incidents:'oc_incidents', audit:'oc_audit', triage:'oc_triage', changes:'oc_changes', changeSources:'oc_change_sources'} as const
+const tables = {members:'oc_members', services:'oc_services', policies:'oc_policies', events:'oc_events', alerts:'oc_alerts', incidents:'oc_incidents', audit:'oc_audit', triage:'oc_triage', changes:'oc_changes', changeSources:'oc_change_sources', intakeSources:'oc_intake_sources', intakeReceipts:'oc_intake_receipts'} as const
 const collections = Object.keys(tables) as (keyof typeof tables)[]
-const optional = new Set(['triage', 'changes', 'changeSources'])
+const optional = new Set(['triage', 'changes', 'changeSources', 'intakeSources', 'intakeReceipts'])
 const rowsJson = (key: keyof typeof tables) => `json(COALESCE((SELECT json_group_array(json(data)) FROM (SELECT data FROM ${tables[key]} ORDER BY ordinal)),'[]'))`
 const core = `json_object('schemaVersion',1,'revision',revision,${collections.filter(key => !optional.has(key)).map(key => `'${key}',${rowsJson(key)}`).join(',')})`
 const document = collections.filter(key => optional.has(key)).reduce((result,key) => `json_patch(${result},CASE WHEN EXISTS(SELECT 1 FROM ${tables[key]}) THEN json_object('${key}',${rowsJson(key)}) ELSE '{}' END)`, core)

@@ -1,7 +1,8 @@
+import { compatiblePath } from '../intake/paths';
 // Hono owns declared HTTP surfaces; Start owns documents and server functions.
 // Keep Worker event handlers and named exports in the edition's server entry.
 export function isHonoRequest(pathname: string): boolean {
-  return pathname === '/v2/change/enqueue' || pathname === '/health' || pathname === '/api' || pathname.startsWith('/api/')
+  return compatiblePath(pathname) || pathname === '/v2/change/enqueue' || pathname === '/health' || pathname === '/api' || pathname.startsWith('/api/')
 }
 
 export function dispatch(

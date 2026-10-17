@@ -1,0 +1,76 @@
+import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
+import {localWorker} from './worker.mjs';
+
+// One real emitted-Worker journey. Provider request bodies are synthetic test
+// inputs built to their documented protocols; no live-sender claim is made.
+const w=await localWorker(),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const keys={pd:randomBytes(32).toString('hex'),og:randomBytes(32).toString('hex'),sp:randomBytes(32).toString('hex'),other:randomBytes(32).toString('hex')};
+let cookie;
+const request=(path,data)=>w.request(path,data,cookie);
+const external=async(path,data,headers={})=>{const r=await fetch(w.origin+path,{method:data===undefined?'GET':'POST',headers:{'content-type':'application/json',...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:r.status,value:await r.json()}};
+const pd=(action,key='checkout-latency',extra={})=>external('/v2/enqueue',{routing_key:keys.pd,event_action:action,dedup_key:key,...(action==='trigger'?{payload:{summary:'Checkout latency above two seconds',source:'checkout-monitor',severity:'critical',custom_details:{component:'checkout',token:'must-not-survive',echo:keys.pd}},links:[{href:'https://example.test/latency'},{href:'https://example.test/private?token=hidden'}]}:{}),...extra});
+const og=(action,alias='payments-db',extra={})=>external(action==='trigger'?'/v2/alerts':'/v2/alerts/'+encodeURIComponent(alias)+'/'+action+'?identifierType=alias',action==='trigger'?{alias,message:'Payments database connections exhausted',priority:'P4',tags:['team:payments'],...extra}:extra,{authorization:'GenieKey '+keys.og});
+const sp=(message_type,entity_id='search-cluster')=>external('/integrations/generic/20131114/alert/'+keys.sp+'/search',{message_type,entity_id,state_message:'Search replicas need attention',monitoring_tool:'cluster-monitor'});
+try {
+  cookie=(await w.request('/api/setup',{name:'Intake operator',password:'synthetic-intake-operator-password'})).cookie;
+  const actor=ok(await request('/api/session')).member;
+  for(const id of ['payments','search'])ok(await request('/api/command',{type:'service',id,name:id==='payments'?'Payments':'Search',environment:'production',owner:actor.id,runbook:['Inspect dependency health'],pager:''}));
+  ok(await request('/api/command',{type:'policy',service:'payments',severity:'*',action:'route',owner:actor.id,reason:'Payments primary'}));
+  const configure=(id,provider,service='payments',revision=0)=>request('/api/intake/sources',{id,name:id+' monitor',provider,service,key:keys[id],revision});
+  ok(await configure('pd','pagerduty'),201);ok(await configure('og','opsgenie'),201);ok(await configure('sp','splunk','search'),201);ok(await configure('other','pagerduty','search'),201);
+  const original=ok(await request('/api/state'));
+  const nativeKey=randomBytes(32).toString('hex');ok(await request('/api/sources',{id:'native',key:nativeKey,scopes:['payments']}));
+  const native={source:'native',eventId:'held-trigger',service:'payments',environment:'production',key:'held',generation:'held-cycle',intent:'trigger',severity:'warning',title:'Held native observation',observedAt:'2026-10-01T00:00:00Z',evidence:''};
+  ok(await external('/api/ingress/native',native,{authorization:'Bearer '+nativeKey}),201);
+  const nativeEvent=ok(await request('/api/state')).events.find(e=>e.eventId==='held-trigger');
+  const first=ok(await pd('trigger'),202);assert.equal(first.dedup_key,'checkout-latency');ok(await pd('trigger'),202);
+  let state=ok(await request('/api/state')),receipts=state.intakeReceipts.filter(r=>r.source==='pd');
+  assert.deepEqual(receipts.map(r=>r.outcome),['opened','deduplicated']);assert.equal(new Set(receipts.map(r=>r.generation)).size,1);
+  assert.equal(state.alerts.filter(a=>a.source==='intake:pd').length,1);assert.equal(state.events.find(e=>e.id===receipts[0].event).decision.owner,actor.id);
+  assert.ok(!JSON.stringify(state).includes(keys.pd));assert.ok(!JSON.stringify(state).includes('must-not-survive'));assert.deepEqual(receipts[0].links,['https://example.test/latency']);assert.equal(receipts[0].truncated,true);
+  const incident=ok(await request('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Checkout customer impact',summary:'Investigating latency',alerts:[receipts[0].alert]}));
+  ok(await pd('acknowledge'),202);assert.equal(ok(await request('/api/state')).incidents.find(i=>i.id===incident.id).state,'declared','source acknowledgement never becomes human acknowledgement');
+  ok(await pd('resolve'),202);ok(await pd('resolve'),202);ok(await pd('trigger'),202);
+  state=ok(await request('/api/state'));receipts=state.intakeReceipts.filter(r=>r.source==='pd');
+  assert.deepEqual(receipts.map(r=>r.outcome),['opened','deduplicated','acknowledged','recovered','no-effect','opened']);assert.notEqual(receipts[0].generation,receipts.at(-1).generation,'identical trigger can reopen after recovery');
+  assert.equal(state.incidents.find(i=>i.id===incident.id).state,'declared');
+  ok(await pd('resolve','before-trigger'),202);ok(await pd('trigger','before-trigger'),202);assert.equal(ok(await request('/api/state')).intakeReceipts.at(-1).outcome,'opened');
+  const a=ok(await pd('trigger',undefined,{dedup_key:undefined}),202),b=ok(await pd('trigger',undefined,{dedup_key:undefined}),202);assert.notEqual(a.dedup_key,b.dedup_key);
+  const v1={service_key:keys.pd,event_type:'trigger',incident_key:'legacy-monitor',description:'Legacy monitor failure',details:{region:'us-east'}};
+  ok(await external('/generic/2010-04-15/create_event.json',v1));ok(await external('/generic/2010-04-15/create_event.json',{...v1,event_type:'resolve'}));
+  const ogReceipt=ok(await og('trigger'),202);ok(await og('trigger'),202);ok(await og('notes','payments-db',{note:'Database owner investigating'}),202);ok(await og('acknowledge'),202);ok(await og('close'),202);
+  const status=ok(await external('/v2/alerts/requests/'+ogReceipt.requestId,undefined,{authorization:'GenieKey '+keys.og}));assert.equal(status.data.isSuccess,true);
+  ok(await external('/v2/alerts/requests/'+ogReceipt.requestId,undefined,{authorization:'GenieKey '+keys.sp}),401);
+  ok(await og('close','never-open'),202);
+  ok(await sp('INFO'));ok(await sp('CRITICAL'));ok(await sp('ACKNOWLEDGEMENT'));ok(await sp('RECOVERY'));
+  state=ok(await request('/api/state'));assert.equal(state.intakeReceipts.find(r=>r.source==='og').severity,'warning');assert.equal(state.intakeReceipts.find(r=>r.source==='sp').outcome,'no-effect');
+  assert.equal(state.alerts.filter(a=>a.source==='intake:sp').length,1);
+  // Service binding is taken from the credential, never from a supplied service.
+  ok(await pd('trigger','scope-probe',{service:'search'}),202);assert.equal(ok(await request('/api/state')).intakeReceipts.at(-1).service,'payments');
+  const beforeDenied=ok(await request('/api/archive'));
+  ok(await pd('trigger','forged',{routing_key:'forged'}),400);ok(await external('/v2/enqueue',null),400);ok(await external('/v2/enqueue',{routing_key:keys.sp,event_action:'trigger'}),400);
+  ok(await external('/api/state',undefined,{authorization:'Bearer '+keys.pd}),401);assert.deepEqual(ok(await request('/api/archive')),beforeDenied);
+  const simultaneous=await Promise.all([pd('trigger','concurrent'),pd('trigger','concurrent')]);assert.ok(simultaneous.some(r=>r.status===202));assert.ok(simultaneous.every(r=>[202,503].includes(r.status)));
+  for(const r of simultaneous)if(r.status===503)ok(await pd('trigger','concurrent'),202);
+  assert.equal(ok(await request('/api/state')).alerts.filter(a=>a.source==='intake:pd'&&a.key==='concurrent').length,1);
+  const beforeFailure=ok(await request('/api/archive'));
+  w.sql("CREATE TRIGGER reject_intake BEFORE INSERT ON oc_intake_receipts BEGIN SELECT RAISE(ABORT,'synthetic storage failure'); END");
+  ok(await pd('trigger','rollback'),503);w.sql('DROP TRIGGER reject_intake');assert.deepEqual(ok(await request('/api/archive')),beforeFailure);
+  // Rotate/revoke over the real management door, and preserve prior receipt custody.
+  const oldKey=keys.pd;keys.pd=randomBytes(32).toString('hex');ok(await configure('pd','pagerduty','payments',1));
+  ok(await external('/v2/enqueue',{routing_key:oldKey,event_action:'resolve',dedup_key:'checkout-latency'}),400);ok(await pd('trigger','new-key'),202);
+  ok(await request('/api/intake/sources/pd/revoke',{revision:2}));ok(await pd('trigger','revoked'),400);
+  const viewer=ok(await request('/api/members',{name:'Intake reader',role:'viewer',password:'synthetic-intake-reader-password'}),201),viewerCookie=(await w.request('/api/login',{name:viewer.name,password:'synthetic-intake-reader-password'})).cookie;
+  ok(await w.request('/api/intake/sources',{id:'viewer',name:'Denied',provider:'pagerduty',service:'payments',revision:0,key:keys.pd},viewerCookie),403);
+  const archive=ok(await request('/api/archive'));for(const key of [...Object.values(keys),oldKey,nativeKey])assert.ok(!JSON.stringify(archive).includes(key));
+  assert.equal(ok(await external('/api/ingress/native',native,{authorization:'Bearer '+nativeKey})).duplicate,true);
+  assert.deepEqual(archive.events.find(e=>e.eventId==='held-trigger'),nativeEvent,'native observations stay unchanged');
+  const malformed=structuredClone(archive);malformed.intakeReceipts[0].alert='unknown';ok(await request('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await request('/api/archive')),archive);
+  const restored=await request('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
+  state=ok(await request('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);ok(await og('trigger','after-restore'),401);
+  await w.stop();await w.start();assert.deepEqual(ok(await request('/api/state')).intakeReceipts,archive.intakeReceipts);
+  assert.deepEqual(state.incidents,archive.incidents);assert.equal(state.events.find(e=>e.eventId==='held-trigger').generation,'held-cycle');
+  assert.equal(state.members.length,original.members.length+1);
+  console.log('Compatible intake public Worker journey passed: provider lifecycles, authority, concurrency, rollback, key rotation/revoke, native integrity and inactive archive/restart');
+} finally {await w.close();}

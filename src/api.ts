@@ -1,3 +1,7 @@
+import { compatiblePath } from './intake/paths';
+import { installCompatibleIntake } from './intake/api';
+import { installIntakeManagement } from './intake/management';
+import { pauseIntakeSources } from './intake/model';
 import { installReviews } from './reviews/api';
 import { installChangeIntake, installChangeManagement } from "./changes/api";
 import { pauseChangeSources } from "./changes/model";
@@ -155,7 +159,7 @@ api.use("*", async (c, next) => {
     await discardDeniedBody(c);
     return c.json({ error: "Not found" }, 404);
   }
-  if (c.req.method !== "GET" && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && c.req.path !== "/v2/change/enqueue") {
+  if (c.req.method !== "GET" && !compatiblePath(c.req.path) && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && c.req.path !== "/v2/change/enqueue") {
     if (c.req.header("origin") !== url.origin) {
       await discardDeniedBody(c);
       return c.json({ error: "Same-origin request required" }, 403);
@@ -372,6 +376,7 @@ api.post("/api/ingress/:source", async (c) => {
 });
 const changeDeps = {body, load, state: authorizedState, save, guard: sessionGuard};
 installChangeIntake(api, changeDeps);
+installCompatibleIntake(api, changeDeps);
 api.get("/api/identity-link/administrators",restoredAdministrators);
 api.post("/api/identity-link",async c=>linkRestoredOwner(c,await body(c)));
 api.use("/api/*", async (c, next) => {
@@ -385,6 +390,7 @@ api.use("/api/*", async (c, next) => {
   await next();
 });
 installChangeManagement(api, changeDeps);
+installIntakeManagement(api, changeDeps);
 installReviews(api, authorizedState);
 installTriage(api, {body, state: authorizedState, save: (c, state, revision) => save(c.env.DB, state, revision, sessionGuard(c)), saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
@@ -453,6 +459,7 @@ api.post("/api/sources", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);
   const input = await body(c);
   const id = text(input.id, "source", 100);
+  if(id.startsWith("intake:"))fail("This source namespace is reserved for compatible integrations");
   const key = text(input.key, "source key", 200);
   if (key.length < 32) fail("Source key needs at least 32 characters");
   const state = await load(c.env.DB);
@@ -561,6 +568,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   const parent:{operator_session:string|null}|null=await c.env.DB.prepare('SELECT operator_session FROM oc_current_sessions WHERE token=?').bind(c.get('sessionDigest')).first();
   if(!parent)fail('Session expired or revoked',401);
   pauseChangeSources(value);
+  pauseIntakeSources(value);
   value.revision = old.revision + 1;
   const serialized = JSON.stringify(value);
   if (new TextEncoder().encode(serialized).length > 1000000)
@@ -571,6 +579,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
     ).bind(value.revision, restoreToken, old.revision, pagingRestore.revision, handoffRestore.revision, c.get("sessionDigest"), current.id, Date.now()),
     ...workspaceRows(c.env.DB,value,restoreToken),
     c.env.DB.prepare("DELETE FROM oc_change_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
+    c.env.DB.prepare("DELETE FROM oc_intake_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare(
       "UPDATE operator_members SET member_id=? WHERE member_id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)"
     ).bind(target,current.id,restoreToken),

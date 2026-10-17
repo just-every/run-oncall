@@ -55,6 +55,12 @@
           "title": "Move in from Opsgenie or PagerDuty",
           "source": "docs/move-in.md",
           "summary": "Bring your rota across from saved export files, review it, then apply or undo it."
+        },
+        {
+          "slug": "compatible-intake",
+          "title": "Compatible alert intake",
+          "source": "docs/compatible-intake.md",
+          "summary": "Connect existing PagerDuty, Opsgenie and Splunk-shaped senders with explicit lifecycle receipts and paging OFF."
         }
       ]
     },

@@ -24,14 +24,14 @@ export function ArchiveWorkspace({ state, actor, busy, run, setError, setNotice,
   return <section className="panel padded">
     <h2>Portable workspace archive</h2>
     {actor.role !== 'admin' ? <p>Archive authority is reserved to administrators.</p> : <>
-      <p>Exports preserve original identities, incidents, events, decisions, runbooks, reviews and actions.
+      <p>Exports preserve original identities, incidents, events, decisions, runbooks, reviews, actions, compatible integration definitions and intake receipts.
         Authentication secrets and sessions are excluded. This JSON archive covers coordination records;
         schedules and overrides stay as they are when you replace it.
         Use <code>rer export --output exports/installation.rer</code> with Oncall stopped for a complete local installation archive, including schedules.</p>
       <button className="primary" onClick={download}>Export original archive</button>
       <h3>Validate and replace from archive</h3>
       <p>Restore replaces coordination data. Other sessions, source credentials and other member passwords are removed.
-        Your current sign-in remains the only authenticated authority. An archive from another installation
+        Compatible and change integrations become inactive until their keys are configured again. Your current sign-in remains the only authenticated authority. An archive from another installation
         needs explicit administrator mapping, and the target must have only its initial administrator and no services, incidents or events.</p>
       <details open={blocked}>
         <summary>Move a local archive to hosting</summary>
@@ -56,7 +56,7 @@ export function ArchiveWorkspace({ state, actor, busy, run, setError, setNotice,
         } catch (error) { setError((error as Error).message); setArchive(null); }
       }} /></label>
       {archive && <div className="restore-preview">
-        <p>Replacement: {archive.services?.length ?? '?'} services · {archive.incidents?.length ?? '?'} incidents · {archive.events?.length ?? '?'} events</p>
+        <p>Replacement: {archive.services?.length ?? '?'} services · {archive.incidents?.length ?? '?'} incidents · {archive.events?.length ?? '?'} events · {archive.intakeReceipts?.length ?? 0} compatible intake receipts</p>
         {blocked ? <p role="alert">This archive belongs to another installation, and this workspace already has records or additional members. Nothing has been replaced. Follow “Move a local archive to hosting” above to restore into a new empty environment.</p> : <>
           {needsMapping && <label className="field">Map current sign-in to archive administrator<select value={mapping} onChange={event => setMapping(event.target.value)}>
             <option value="">Choose explicitly</option>

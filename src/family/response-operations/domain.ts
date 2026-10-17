@@ -1,3 +1,4 @@
+import { validateIntakeArchive, type IntakeSource, type IntakeReceipt } from '../../intake/model.ts';
 import { reviewCommand, validateReviewFields, validateLifecycleEntry } from '../../reviews/review-controls.ts';
 import { dependencies, validateChangeArchive, type ChangeRecord, type ChangeSource } from "../../changes/model.ts";
 import { incidentControl, validateIncidentControls } from "./incident-controls.ts";
@@ -122,6 +123,8 @@ export type State = {
   triage?: TriageRecord[];
   changes?: ChangeRecord[];
   changeSources?: ChangeSource[];
+  intakeSources?: IntakeSource[];
+  intakeReceipts?: IntakeReceipt[];
 };
 export const empty = (): State => ({
   schemaVersion: 1,
@@ -580,7 +583,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["triage", "changes", "changeSources"]);
+  ], ["triage", "changes", "changeSources", "intakeSources", "intakeReceipts"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   for (const key of [
@@ -790,6 +793,7 @@ export function validateArchive(value: any): State {
   value.audit.forEach(entry);
   validateReviewFields(value);
   validateChangeArchive(value);
+  validateIntakeArchive(value);
   if (value.triage !== undefined) validateTriageRecords(value.triage, value);
   return structuredClone(value);
 }

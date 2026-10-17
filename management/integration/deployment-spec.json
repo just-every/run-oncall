@@ -159,6 +159,12 @@
       "name": "0119_change_events.sql",
       "sha256": "c5b43b291cb1fb4bdf6a595be677416ba5c276bd68a2e57388a7d25b3fa6d949",
       "sql": "-- Change receipts and safe definitions travel; encrypted verification keys stay local.\nCREATE TABLE oc_changes (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_change_sources (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_change_credentials (source TEXT PRIMARY KEY, key_digest TEXT NOT NULL UNIQUE, ciphertext TEXT NOT NULL);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0120_compatible_intake.sql",
+      "sha256": "5fe80ebe0cf007e4a43781080b3bf52afd4e5b32a40821d594328147ff867d90",
+      "sql": "-- Receipts and safe integration definitions travel; verification hashes stay local.\nCREATE TABLE oc_intake_sources (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_intake_receipts (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_intake_credentials (source TEXT PRIMARY KEY, key_digest TEXT NOT NULL UNIQUE);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

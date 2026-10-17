@@ -39,7 +39,7 @@ export function AlertsPanel({ state, canEdit, busy, name, onDeclare, onOpenIncid
       {state.events.map(event => <article className="receipt" key={event.id}>
         <strong>{event.eventId} · {event.intent} · {event.severity}</strong>
         <p>{event.decision.action}: {event.decision.reason}</p>
-        <p>{new Date(event.acceptedAt).toLocaleString()} · observed {new Date(event.observedAt).toLocaleString()} · {event.generation}</p>
+        <p>{new Date(event.acceptedAt).toLocaleString()} · {state.intakeReceipts?.some(r=>r.event===event.id&&r.observedAt===null)?'source time not supplied':`observed ${new Date(event.observedAt).toLocaleString()}`} · {event.generation}</p>
       </article>)}
     </details>
   </section>;
