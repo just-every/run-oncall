@@ -555,7 +555,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "9a4c3e2cbe3fdf2a85d3159fc2dbe73da58559ff4553cd882268b9c521ed55fa",
+      "sha256": "ec808c0d65e9bf3d10f1c321dfb4d24f7b21eb2b67b76030380828ae097e54cf",
       "executable": false
     },
     "src/api.ts": {

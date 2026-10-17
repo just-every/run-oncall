@@ -12,7 +12,7 @@
     "id": "schedule",
     "record": "Service rota with calendar-day hand-offs and explicit coverage gaps"
   },
-  "description": "Local or hosted rotas, overrides, now/next, private ICS, recorded alert intake and incident coordination beside an existing pager. Paging OFF.",
+  "description": "Coordinate incident response and on-call schedules alongside your existing pager.",
   "capabilities": [
     {
       "id": "coordination",
