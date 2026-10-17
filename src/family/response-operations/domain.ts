@@ -3,6 +3,9 @@ import { reviewCommand, validateReviewFields, validateLifecycleEntry } from '../
 import { dependencies, validateChangeArchive, type ChangeRecord, type ChangeSource } from "../../changes/model.ts";
 import { incidentControl, validateIncidentControls } from "./incident-controls.ts";
 import { validateTriageRecords, type TriageRecord } from "./triage.ts";
+import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from '../../urgency/types.ts';
+import { admitAlertUrgency, declarationUrgency, serviceUrgency } from '../../urgency/model.ts';
+import { validateUrgencyArchive } from '../../urgency/archive.ts';
 export type Role = "admin" | "responder" | "viewer";
 export type Member = { id: string; name: string; role: Role; active: boolean };
 export type Service = {
@@ -13,6 +16,7 @@ export type Service = {
   runbook: string[];
   pager: string;
   dependencies?: string[];
+  urgencyRules?: UrgencyRule[];
 };
 export type Policy = {
   id: string;
@@ -47,6 +51,7 @@ export type Event = Signal & {
   id: string;
   acceptedAt: string;
   decision: Decision;
+  urgency?: UrgencyDecision;
   routingSnapshot: {
     policies: Policy[];
     members: Member[];
@@ -64,6 +69,9 @@ export type Alert = {
   events: string[];
   owner: string | null;
   suppressed: boolean;
+  urgency?: Urgency;
+  urgencyRevision?: number;
+  urgencyHistory?: AlertUrgencyEntry[];
 };
 export type Entry = {
   id: string;
@@ -243,7 +251,7 @@ export function admit(state: State, input: any, at = new Date().toISOString()) {
     (e) => e.source === signal.source && e.eventId === signal.eventId,
   );
   if (old) {
-    const { id, acceptedAt, decision, routingSnapshot, ...original } = old;
+    const { id, acceptedAt, decision, routingSnapshot, urgency, ...original } = old;
     if (JSON.stringify(original) !== JSON.stringify(signal))
       fail("Event identity already accepted with different content", 409);
     return {
@@ -265,6 +273,7 @@ export function admit(state: State, input: any, at = new Date().toISOString()) {
     id: crypto.randomUUID(),
     acceptedAt: at,
     decision: route(state, signal),
+    urgency: serviceUrgency(state, signal.service, signal.severity, at),
     routingSnapshot: {
       policies: structuredClone(state.policies),
       members: structuredClone(state.members),
@@ -279,6 +288,7 @@ export function admit(state: State, input: any, at = new Date().toISOString()) {
       a.key === signal.key &&
       a.generation === signal.generation,
   );
+  const created = !alert;
   if (!alert) {
     alert = {
       id: crypto.randomUUID(),
@@ -295,6 +305,7 @@ export function admit(state: State, input: any, at = new Date().toISOString()) {
     state.alerts.push(alert);
   }
   if (alert) {
+    admitAlertUrgency(state, alert, event, created);
     alert.events.push(event.id);
     if (signal.intent === "recover") alert.state = "recovered";
   }
@@ -330,6 +341,7 @@ export function command(
       : crypto.randomUUID();
     const previous = state.services.find(s => s.id === id);
     const service: Service = {
+      ...previous,
       id,
       name: text(input.name, "name", 200),
       environment: text(input.environment, "environment", 100),
@@ -452,6 +464,8 @@ export function command(
       recovery: "",
       review: "",
     };
+    const urgency = declarationUrgency(state, service, ids, input.severity, at);
+    if (urgency !== undefined) incident.urgency = urgency;
     state.incidents.unshift(incident);
     return incident;
   }
@@ -612,7 +626,7 @@ export function validateArchive(value: any): State {
   )
     fail("Duplicate member names");
   for (const s of value.services) {
-    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies"]);
+    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
     if (!hasMember(s.owner)) fail("Invalid service references");
@@ -649,7 +663,7 @@ export function validateArchive(value: any): State {
       "acceptedAt",
       "decision",
       "routingSnapshot",
-    ]);
+    ], ["urgency"]);
     signalInput(e);
     date(e.acceptedAt);
     if (
@@ -682,7 +696,7 @@ export function validateArchive(value: any): State {
       "events",
       "owner",
       "suppressed",
-    ]);
+    ], ["urgency", "urgencyRevision", "urgencyHistory"]);
     if (
       !value.services.some(
         (s: any) => s.id === a.service && s.environment === a.environment,
@@ -791,6 +805,7 @@ export function validateArchive(value: any): State {
       fail("Invalid review");
   }
   value.audit.forEach(entry);
+  validateUrgencyArchive(value);
   validateReviewFields(value);
   validateChangeArchive(value);
   validateIntakeArchive(value);

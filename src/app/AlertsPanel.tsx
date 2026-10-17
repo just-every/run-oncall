@@ -1,8 +1,10 @@
+import { AlertUrgency } from '../urgency/AlertUrgency';
+import type { IntakeRun } from '../intake/CompatibleTest';
 import { RecentChanges } from "../changes/RecentChanges";
 import type { Alert, State } from '../family/response-operations/domain';
 
-export function AlertsPanel({ state, canEdit, busy, name, onDeclare, onOpenIncident }: {
-  state: State; canEdit: boolean; busy: boolean; name: (id: string | null) => string;
+export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpenIncident }: {
+  state: State; canEdit: boolean; busy: boolean; run: IntakeRun; name: (id: string | null) => string;
   onDeclare: (data: unknown) => Promise<void>;
   onOpenIncident: (id: string) => void;
 }) {
@@ -24,7 +26,7 @@ export function AlertsPanel({ state, canEdit, busy, name, onDeclare, onOpenIncid
         <p>{state.services.find(service => service.id === alert.service)?.name} · {alert.environment} · {alert.state}</p>
         <p>{alert.source} / {alert.key} / {alert.generation}</p>
         <p>{alert.suppressed ? 'Suppressed' : name(alert.owner)} · {alert.events.length} events</p>
-        <details><summary>Service runbook</summary>{state.services.find(s=>s.id===alert.service)?.runbook.length ? <ol>{state.services.find(s=>s.id===alert.service)!.runbook.map((step,n)=><li key={n}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</details>
+        <AlertUrgency alert={alert} state={state} canEdit={canEdit} busy={busy} run={run}/><details><summary>Service runbook</summary>{state.services.find(s=>s.id===alert.service)?.runbook.length ? <ol>{state.services.find(s=>s.id===alert.service)!.runbook.map((step,n)=><li key={n}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</details>
         <RecentChanges service={alert.service} at={triggers[0]?.observedAt ?? events[0]?.observedAt} revision={state.revision} />
         {incidents.map(incident => <p key={incident.id}><a href="#incidents" onClick={() => onOpenIncident(incident.id)}>Open incident: {incident.title}</a> · {incident.state}</p>)}
         {canEdit && incidents.length === 0 && <button disabled={busy || !severity} onClick={() => onDeclare({

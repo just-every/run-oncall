@@ -1,4 +1,5 @@
 import { MonitoringWorkspace } from '../monitoring/MonitoringWorkspace';
+import { UrgencyPolicy } from '../urgency/UrgencyPolicy';
 import { CompatibleIngress } from '../intake/CompatibleIngress';
 import { RoutingWorkspace } from '../routing/RoutingWorkspace';
 import { ReviewsWorkspace } from '../reviews/ReviewsWorkspace';
@@ -512,6 +513,7 @@ function Workspace() {
                     </a>
                   )}
                   <RecentChanges service={v.id} revision={s.revision} />
+                  <UrgencyPolicy key={v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
                   {admin && <ServiceDependencies key={v.id} service={v} services={s.services} revision={s.revision} busy={w.busy} run={w.run} />}
                   {admin && (
                     <details>
@@ -690,7 +692,7 @@ function Workspace() {
         )}
         {page === "alerts" && (
           <div className="management-grid">
-            <AlertsPanel state={s} canEdit={canEdit} busy={w.busy} name={name} onOpenIncident={selectIncident} onDeclare={async data => {
+            <AlertsPanel state={s} canEdit={canEdit} run={w.run} busy={w.busy} name={name} onOpenIncident={selectIncident} onDeclare={async data => {
               const created = await command(data);
               if (created) { selectIncident(created.id); location.hash = "incidents"; }
             }} />

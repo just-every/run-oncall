@@ -73,6 +73,12 @@
           "title": "Monitoring providers",
           "source": "docs/monitoring-providers.md",
           "summary": "Configure Alertmanager, Grafana and Datadog receivers, inspect grouped lifecycles and retain incomplete-input evidence."
+        },
+        {
+          "slug": "urgency",
+          "title": "Urgency and support hours",
+          "source": "docs/urgency.md",
+          "summary": "Publish service urgency rules, preview support hours and keep attributed decisions on alerts."
         }
       ]
     },

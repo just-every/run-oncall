@@ -2,6 +2,8 @@ import { installMonitoringIntake } from './monitoring/api';
 import { compatiblePath, monitoringPath } from './intake/paths';
 import { installCompatibleIntake } from './intake/api';
 import { installRoutingManagement } from './routing/management';
+import { installUrgency } from './urgency/api';
+import { serviceUrgency } from './urgency/model';
 import { installIntakeManagement } from './intake/management';
 import { pauseIntakeSources } from './intake/model';
 import { installReviews } from './reviews/api';
@@ -395,6 +397,7 @@ api.use("/api/*", async (c, next) => {
 installChangeManagement(api, changeDeps);
 installIntakeManagement(api, changeDeps);
 installRoutingManagement(api, changeDeps);
+installUrgency(api, changeDeps);
 installReviews(api, authorizedState);
 installTriage(api, {body, state: authorizedState, save: (c, state, revision) => save(c.env.DB, state, revision, sessionGuard(c)), saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
@@ -411,6 +414,7 @@ api.post("/api/replay", async (c) => {
   const state = await authorizedState(c);
   if (!Array.isArray(input.events) || input.events.length > 200)
     fail("Replay needs up to 200 events");
+  const evaluatedAt = new Date().toISOString();
   return c.json({
     sideEffects: false,
     workspaceRevision: state.revision,
@@ -423,8 +427,10 @@ api.post("/api/replay", async (c) => {
         eventId: signal.eventId,
         historical: historical?.decision ?? null,
         historicalEvaluation: historical?.routingSnapshot ?? null,
+        historicalUrgency: historical?.urgency ?? null,
         proposed: route(state, signal),
-        proposedEvaluation: new Date().toISOString(),
+        proposedUrgency: serviceUrgency(state, signal.service, signal.severity, evaluatedAt),
+        proposedEvaluation: evaluatedAt,
       };
     }),
   });

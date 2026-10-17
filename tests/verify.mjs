@@ -7,7 +7,7 @@ const suites={
  runtime:['tests/runtime.mjs'],
  triage:['tests/triage.mjs'],
  changes:['tests/changes.mjs'],
- intake:['tests/intake.mjs','tests/routing.mjs','tests/monitoring.mjs'],
+ intake:['tests/intake.mjs','tests/routing.mjs','tests/monitoring.mjs','tests/urgency.mjs'],
  reviews:['tests/reviews.mjs'],
  activation:['tests/activation.mjs'],
  'adoption-demo':['tests/demo.mjs','tests/move-in-adoption.mjs'],

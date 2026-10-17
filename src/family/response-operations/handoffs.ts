@@ -1,5 +1,6 @@
 import { fail, link, type Entry, type Incident, type Member, type Service, type State } from "./domain.ts";
 import { validateLifecycleEntry } from "../../reviews/review-controls.ts";
+import { validateUrgencyRuleHistory } from '../../urgency/archive.ts';
 
 export type HandoffPayload = { audience: "internal" | "customer"; title: string; summary: string; evidenceLinks: string[]; impactLinks: string[] };
 export type HandoffSource = { incident: Pick<Incident, "id" | "revision" | "service" | "title" | "severity" | "state" | "recovery"> & { declaration: Entry }; service: Service };
@@ -93,7 +94,8 @@ function source(input: unknown): HandoffSource {
   snapshotText(d.id, "declaration ID"); snapshotText(d.actor, "declaration actor", 200); snapshotText(d.text, "declaration text", 10000);
   if (d.kind !== "declared" || typeof d.at !== "string" || !Number.isFinite(Date.parse(d.at))) fail("Invalid handoff declaration snapshot");
   validateLifecycleEntry(d);
-  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies"]);
+  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules"]);
+  if (v.urgencyRules !== undefined) validateUrgencyRuleHistory(v.urgencyRules);
   snapshotText(v.id, "service ID"); snapshotText(v.name, "service name", 200); snapshotText(v.environment, "environment"); snapshotText(v.owner, "service owner");
   snapshotText(v.pager, "pager link", 2000, true); link(v.pager);
   if (!Array.isArray(v.runbook) || v.runbook.length > 30) fail("Invalid handoff runbook snapshot");
