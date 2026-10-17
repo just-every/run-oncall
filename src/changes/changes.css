@@ -1,0 +1,19 @@
+.recent-changes { margin: 16px 0; padding: 14px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper); overflow-wrap: anywhere; }
+.recent-changes summary, .service-dependencies summary { cursor: pointer; font-weight: 650; }
+.recent-changes > label { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 14px 0; }
+.recent-changes input { width: 85px; min-height: 40px; background: var(--app-field); color: var(--oc-ink); border: 1px solid var(--app-field-line); border-radius: 8px; padding: 8px; }
+.change-list { list-style: none; padding: 0; margin: 0; }
+.change-list > li { border-top: 1px solid var(--app-line); padding: 14px 0; }
+.change-list strong { display: block; margin: 8px 0; }
+.change-list p { margin: 8px 0; }
+.change-list a { display: inline-block; margin: 0 12px 8px 0; }
+.change-list dt { font-size: 13px; color: var(--oc-muted); }
+.change-list dd { margin: 0 0 10px; white-space: pre-wrap; }
+.change-sources { min-width: 0; }
+.change-sources > ul { padding: 0; list-style: none; }
+.change-sources > ul > li { padding: 16px 0; border-bottom: 1px solid var(--app-line); overflow-wrap: anywhere; }
+.change-sources li button { margin: 4px 8px 4px 0; }
+.change-sources code { overflow-wrap: anywhere; }
+.service-dependencies { margin: 16px 0; }
+.dependency-choice { display: flex; gap: 10px; align-items: center; margin: 12px 0; }
+.dependency-choice input { accent-color: var(--oc-ink); }

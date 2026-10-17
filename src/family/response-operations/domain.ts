@@ -1,3 +1,4 @@
+import { dependencies, validateChangeArchive, type ChangeRecord, type ChangeSource } from "../../changes/model.ts";
 import { incidentControl, validateIncidentControls } from "./incident-controls.ts";
 import { validateTriageRecords, type TriageRecord } from "./triage.ts";
 export type Role = "admin" | "responder" | "viewer";
@@ -9,6 +10,7 @@ export type Service = {
   owner: string;
   runbook: string[];
   pager: string;
+  dependencies?: string[];
 };
 export type Policy = {
   id: string;
@@ -109,6 +111,8 @@ export type State = {
   incidents: Incident[];
   audit: Entry[];
   triage?: TriageRecord[];
+  changes?: ChangeRecord[];
+  changeSources?: ChangeSource[];
 };
 export const empty = (): State => ({
   schemaVersion: 1,
@@ -299,11 +303,20 @@ export function command(
   input: any,
   at = new Date().toISOString(),
 ) {
-  authority(state, actor, ["service", "policy", "member"].includes(input.type));
+  authority(state, actor, ["service", "service-dependencies", "policy", "member"].includes(input.type));
+  if (input.type === "service-dependencies") {
+    if (input.workspaceRevision !== state.revision) fail("Workspace changed. Reload dependencies before saving.", 409);
+    const service = state.services.find(s => s.id === input.service);
+    if (!service) fail("Unknown service", 404);
+    service.dependencies = dependencies(state, service.id, input.dependencies);
+    state.audit.push(stamp(actor.id, "service-dependencies", `Saved direct dependencies for ${service.name}`, at));
+    return service;
+  }
   if (input.type === "service") {
     const id = input.id
       ? text(input.id, "service ID", 100)
       : crypto.randomUUID();
+    const previous = state.services.find(s => s.id === id);
     const service: Service = {
       id,
       name: text(input.name, "name", 200),
@@ -313,6 +326,7 @@ export function command(
         text(x, "runbook step", 500),
       ),
       pager: link(input.pager),
+      ...(input.dependencies !== undefined ? {dependencies: dependencies(state, id, input.dependencies)} : previous?.dependencies !== undefined ? {dependencies: [...previous.dependencies]} : {}),
     };
     if (service.runbook.length > 30) fail("Maximum 30 runbook steps");
     if (
@@ -586,7 +600,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["triage"]);
+  ], ["triage", "changes", "changeSources"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   for (const key of [
@@ -615,7 +629,7 @@ export function validateArchive(value: any): State {
   )
     fail("Duplicate member names");
   for (const s of value.services) {
-    object(s, ["id", "name", "environment", "owner", "runbook", "pager"]);
+    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
     if (!hasMember(s.owner)) fail("Invalid service references");
@@ -794,6 +808,7 @@ export function validateArchive(value: any): State {
       fail("Invalid review");
   }
   value.audit.forEach(entry);
+  validateChangeArchive(value);
   if (value.triage !== undefined) validateTriageRecords(value.triage, value);
   return structuredClone(value);
 }

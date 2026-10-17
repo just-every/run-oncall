@@ -1,3 +1,4 @@
+import {pauseChangeSources} from '../../src/changes/model.ts'
 import {validateRecoveryCheckpoint} from '../../src/family/response-operations/recovery.ts'
 import {holdHandoffsForRecovery} from '../../src/family/response-operations/handoffs.ts'
 import {portabilityPolicy} from '../../src/portability-policy.mjs'
@@ -11,6 +12,9 @@ export default {
   for(const key of ['members','services','policies','events','alerts','incidents','audit'])coordination[key]=(await read('oc_'+key)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
   const triage=(tables.oc_triage ? await read('oc_triage') : []).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
   if(triage.length)coordination.triage=triage
+  for(const [key,table] of [['changes','oc_changes'],['changeSources','oc_change_sources']]){const records=tables[table]?(await read(table)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data)):[];if(records.length)coordination[key]=records}
+  pauseChangeSources(coordination)
+  if(tables.oc_change_sources)for(const row of await read('oc_change_sources')){const data=JSON.parse(row.data);data.active=false;await db.prepare('UPDATE "'+tables.oc_change_sources.replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(data),row.id).run()}
   const archive={schemaVersion:1,mode:'synthetic-only'}
   for(const key of ['schedules','policies','jobs','receipts','callbacks'])archive[key]=(await read('paging_'+key)).map(row=>JSON.parse(row.data))
   validateRecoveryCheckpoint({schemaVersion:1,kind:'oncall-recovery-checkpoint',capturedAt:new Date().toISOString(),workspaceRevision:coordination.revision,pagingRevision:paging?.revision??0,coordination,paging:archive})

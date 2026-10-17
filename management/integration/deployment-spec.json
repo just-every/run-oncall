@@ -153,6 +153,12 @@
       "name": "0118_incident_triage.sql",
       "sha256": "ea1d63e01a85f9223208a5b606700e37f8b89b5a3d5a7ffc44489e35ca5ce00a",
       "sql": "-- Additive optional coordination records. Held incident JSON and array order stay intact.\nCREATE TABLE oc_triage (\n  id TEXT PRIMARY KEY,\n  ordinal INTEGER NOT NULL,\n  data TEXT NOT NULL CHECK(json_valid(data))\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0119_change_events.sql",
+      "sha256": "c5b43b291cb1fb4bdf6a595be677416ba5c276bd68a2e57388a7d25b3fa6d949",
+      "sql": "-- Change receipts and safe definitions travel; encrypted verification keys stay local.\nCREATE TABLE oc_changes (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_change_sources (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_change_credentials (source TEXT PRIMARY KEY, key_digest TEXT NOT NULL UNIQUE, ciphertext TEXT NOT NULL);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

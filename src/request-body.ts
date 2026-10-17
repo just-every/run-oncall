@@ -4,7 +4,7 @@
 const maximum=1000000+5*1024*1024+1024
 export async function receivedRequest(request:Request):Promise<Request|Response>{
  const path=new URL(request.url).pathname
- if(!path.startsWith('/api/')||!request.body)return request
+ if((!path.startsWith('/api/')&&path!=='/v2/change/enqueue')||!request.body)return request
  const reader=request.body.getReader(),chunks:Uint8Array[]=[];let length=0
  try{
   for(;;){const {done,value}=await reader.read();if(done)break;length+=value.byteLength

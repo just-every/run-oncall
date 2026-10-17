@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {keyboardUser} from './keyboard.mjs'
 
-export async function keyboardCoordination(page,context,width,ownerLink) {
+export async function keyboardCoordination(page,context,width,ownerLink,openSession) {
  const key=keyboardUser(page)
  await key.activate(page.getByRole('link',{name:'Incidents',exact:true}))
  await key.activate(page.getByRole('button',{name:'Declare incident',exact:true}),'Space')
@@ -25,7 +25,9 @@ export async function keyboardCoordination(page,context,width,ownerLink) {
  // The browser keeps its earlier version, so its next ordinary UI write loses.
  const second=await context.browser().newContext({baseURL:new URL(page.url()).origin})
  try {
-  const secondPage=await second.newPage();await secondPage.goto(ownerLink)
+  const secondPage=await second.newPage()
+  if(openSession) await openSession(second,secondPage)
+  else await secondPage.goto(ownerLink)
   await secondPage.waitForURL(url=>url.pathname==='/'&&!url.hash,{timeout:60000})
   await secondPage.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
   const secondSession=await second.request.get('/api/session');assert.equal(secondSession.status(),200)

@@ -6,11 +6,8 @@ import {spawn} from 'node:child_process'
 import {mkdir,writeFile,rm} from 'node:fs/promises'
 import {createServer} from 'node:net'
 import {chromium} from '@playwright/test'
-import {keyboardUser} from './keyboard.mjs'
-import {keyboardCoordination} from './keyboard-coordination.mjs'
-import {alertSeverity} from './alert-severity-browser.mjs'
-import {providerExport} from './provider-export-browser.mjs'
 import {redact} from './diagnostics.mjs'
+import {productBrowserJourney} from './product-browser-journey.mjs'
 
 const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
 const origin=`http://127.0.0.1:${port}`,env={...process.env,CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false'},children=[]
@@ -36,73 +33,8 @@ try {
  await page.goto(link);await page.waitForURL(url=>url.pathname==='/setup'||url.pathname==='/'&&!url.hash,{timeout:60000})
  await page.goto(origin+'/setup');const confirm=page.getByRole('checkbox');if(await confirm.count()){await confirm.check();await page.getByRole('button',{name:'Finish setup'}).click()}
  await page.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
- const key=keyboardUser(page)
- const session=await page.evaluate(async()=>await (await fetch('/api/session')).json());assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
  assert.equal((await context.cookies()).some(cookie=>cookie.name===`oncall_session_${new URL(origin).port}`),false,'explicit local sign-in clears a previous installation cookie')
- await key.activate(page.getByRole('link',{name:'Services',exact:true}));await key.text(page.getByLabel('Service name',{exact:true}),'Checkout');await key.text(page.getByLabel('Runbook steps (one per line)'),'Verify recovery');await key.activate(page.getByRole('button',{name:'Create service',exact:true}));await page.getByRole('heading',{name:'Checkout',exact:true}).waitFor()
- for(const width of [1440,390]) {
-  await page.setViewportSize({width,height:1000})
-  await keyboardCoordination(page,context,width,link)
-  await alertSeverity(page,context,width)
-  await key.activate(page.getByRole('link',{name:'Schedules',exact:true}));await key.activate(page.getByRole('button',{name:'New schedule',exact:true}),'Space')
-  await key.text(page.getByLabel('Schedule ID',{exact:true}),'browser-'+width);await key.text(page.getByLabel('Schedule name',{exact:true}),'Checkout rota '+width)
-  await key.activate(page.getByRole('button',{name:'Add primary responder',exact:false}));await key.option(page.getByLabel('Primary responder 1',{exact:true}),session.member.id)
-  await key.focusScreenshot(page.getByRole('button',{name:'Save schedule',exact:true}),`evidence/browser/keyboard-schedule-${width}.png`)
-  await page.keyboard.press('Enter');await page.getByText('Schedule saved',{exact:true}).waitFor()
-  await key.activate(page.getByRole('button',{name:'Add interval',exact:false}),'Space');await key.option(page.getByLabel('Override 1 responder',{exact:true}),session.member.id)
-  await key.focusScreenshot(page.getByRole('button',{name:'Save schedule',exact:true}),`evidence/browser/keyboard-override-${width}.png`)
-  await page.keyboard.press('Enter');await page.getByText('Schedule saved',{exact:true}).waitFor()
-  await key.focusScreenshot(page.getByRole('button',{name:'Preview coverage',exact:true}),`evidence/browser/keyboard-preview-${width}.png`)
-  await page.keyboard.press('Enter');await page.getByText('Saved schedule preview evaluated; no delivery or timer was created',{exact:true}).waitFor()
-  const feed=page.getByRole('link',{name:/private ICS feed/});await feed.waitFor()
-  const calendar=await context.request.get(await feed.getAttribute('href'));assert.equal(calendar.status(),200)
-  const times=(await calendar.text()).split('\r\n').filter(line=>/^DT(STAMP|START|END):/.test(line))
-  assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'default ICS feed uses whole-second UTC times')
-  await page.screenshot({path:`evidence/browser/schedules-${width}.png`,fullPage:true})
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'schedule viewport has no horizontal overflow')
-  await page.getByRole('link',{name:'Move-in kit',exact:true}).click()
-  await providerExport(page,context,width)
-  const bundle={users:[],schedules:[],overrides:[],escalations:[],timelines:[]}
-  await page.getByLabel('Export JSON').setInputFiles('tests/fixtures/opsgenie.json');await page.getByRole('button',{name:'Preview import',exact:true}).click();await page.getByRole('heading',{name:'Compatibility review'}).waitFor()
-  assert.ok(await page.getByText(/Eight-hour shift/).count()>0)
-  await page.screenshot({path:`evidence/browser/import-review-${width}.png`,fullPage:true})
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'import viewport has no horizontal overflow')
-  if(width===1440){await page.getByRole('button',{name:'Confirm paused import',exact:true}).click();await page.getByRole('heading',{name:'Import journal'}).waitFor();await page.getByRole('button',{name:'Undo this import',exact:true}).click();await page.locator('[role="status"] p').filter({hasText:/undone/}).waitFor()}
-  // Follow the bundle instructions through paused import, explicit adoption, native coverage and erasure.
-  const email=`erase-${width}@example.test`,rota=`Move-in rota ${width}`,personId='erase-'+width
-  bundle.users.push({data:[{id:personId,username:email,fullName:'Erase '+width}]})
-  bundle.schedules.push({data:{id:'move-in-'+width,name:rota,timezone:'UTC',rotations:[{name:'Weekly',startDate:'2026-10-12T09:00:00Z',type:'weekly',length:1,participants:[{type:'user',id:personId}]}]}})
-  await page.getByLabel('Export JSON').setInputFiles({name:'opsgenie-export.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))})
-  await page.getByRole('button',{name:'Preview import',exact:true}).click();await page.getByRole('heading',{name:'Compatibility review'}).waitFor()
-  await page.getByRole('button',{name:'Confirm paused import',exact:true}).click();await page.getByRole('heading',{name:'Import journal'}).waitFor()
-  const imported=page.getByRole('listitem').filter({hasText:rota}).last()
-  await imported.getByRole('button',{name:'Make schedule live',exact:true}).click()
-  await imported.getByLabel('Service for '+rota,{exact:true}).selectOption({label:'Checkout'})
-  await imported.getByLabel('Workspace member for Erase '+width,{exact:false}).selectOption(session.member.id)
-  await imported.getByRole('button',{name:'Confirm live schedule · paging OFF',exact:true}).click()
-  await page.getByRole('listitem').filter({hasText:rota}).getByRole('link',{name:'Schedules',exact:true}).click()
-  const adoptedOption=page.getByLabel('Schedule',{exact:true}).locator('option').filter({hasText:rota});await adoptedOption.waitFor({state:'attached'})
-  await page.getByLabel('Schedule',{exact:true}).selectOption(await adoptedOption.getAttribute('value'))
-  assert.equal(await page.getByLabel('Schedule name',{exact:true}).inputValue(),rota,'adopted coverage opens as a native schedule')
-  assert.equal(await page.getByLabel('Primary responder 1',{exact:true}).inputValue(),session.member.id,'explicit person mapping survives adoption')
-  await page.getByRole('link',{name:'Move-in kit',exact:true}).click()
-  const person=page.getByRole('listitem').filter({hasText:`user: Erase ${width}`})
-  await person.getByRole('button',{name:'Erase person',exact:true}).click()
-  const typed=page.getByLabel(`Type "erase ${email}" to erase this person from imported data`);assert.equal(await person.getByRole('button',{name:'Erase permanently',exact:true}).isDisabled(),true,'erasing needs the typed confirmation')
-  await typed.fill('erase '+email)
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'erase control has no horizontal overflow')
-  await page.screenshot({path:`evidence/browser/erase-person-${width}.png`,fullPage:true})
-  await person.getByRole('button',{name:'Erase permanently',exact:true}).click()
-  await page.getByText(/^Erased\. Receipt /).waitFor();assert.equal(await person.count(),0,'the erased person leaves the paused data list')
-  await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel(/^Event JSON array/).fill(JSON.stringify([{source:'browser',eventId:'replay-'+width,service:'checkout',environment:'production',key:'browser',generation:'g1',intent:'trigger',severity:'critical',title:'Replay '+width,observedAt:'2026-10-12T00:00:00.000Z'}]))
-  // An ordinary pointer click where the button sits at the viewport's lower edge;
-  // anything covering it there (such as a fixed dev identity badge) takes the click.
-  const compare=page.getByRole('button',{name:'Compare decisions',exact:true});await compare.evaluate(button=>button.scrollIntoView({block:'end'}));const box=await compare.boundingBox()
-  const [replay]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/replay',{timeout:15000}),page.mouse.click(box.x+box.width/2,box.y+box.height/2)]);assert.equal(replay.status(),200)
-  await page.getByLabel('Replay comparison',{exact:true}).waitFor()
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'routing viewport has no horizontal overflow')
-  console.log(`Browser journey ${width}: keyboard-only incident declaration, note, acknowledgement, real stale-write alert, literal hostile HTML, schedule/override/preview with focus screenshots; managed setup/dev owner identity, real service/schedule/override, coverage/ICS, provider export instructions through reviewed import and adoption, pointer replay and responsive layout passed`)
- }
+ await productBrowserJourney(page,context,{ownerLink:link})
  assert.deepEqual(errors,[],'no browser application errors')
  await browser.close();browser=null
  await command(['dev','--stop'])

@@ -1,3 +1,5 @@
 # Source notices
 
 Pinned Base runtime/tooling is MIT, with its original LICENSE retained. Original response-operations and edition code is MIT under that same local author licence. IBM Plex Mono 5.3.0 is bundled through @fontsource and licensed under SIL Open Font License 1.1; its package licence remains in the dependency distribution. React, Hono, TanStack and build/test dependencies retain their package licences. Generated 12ui imagery and prototype are original design-tool outputs; no incumbent artwork/code was copied. Oncall is maintained privately; these source notices do not reserve a public brand.
+
+Recorded webhook fixtures in tests/fixtures/github-{deployment,release,unmerged-pr}.json come from octokit/webhooks payload-examples (MIT; octokit-LICENSE.txt). tests/fixtures/gitlab-deployment.json comes from GitLab's client-go testdata/webhooks/deployment.json (Apache-2.0; gitlab-LICENSE.txt). These are historical public example bodies, not live sender acceptance. Fixture source links and scope are in tests/fixtures/change-sources.md.

@@ -1,6 +1,7 @@
 import {isolatedEntrypoint} from './isolated.mjs'
 const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
 import assert from 'node:assert/strict'
+import {randomBytes} from 'node:crypto'
 import {execFileSync} from 'node:child_process'
 import {lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
 import {managedSeed} from './managed.mjs'
@@ -25,6 +26,9 @@ try{
  responseIncident=ok(await req('/api/command',{type:'assign-role',incident:incident.id,revision:responseIncident.revision,role:'scribe',member:member.id,reason:'Retain review attribution across installations'}))
  const bulk=ok(await req('/api/triage/bulk',{operationId:'portable-priority',action:'set-priority',items:[{id:incident.id,revision:responseIncident.revision}],priority:'P1',reason:'Preserve incident priority'}));assert.equal(bulk.results[0].ok,true)
  ok(await req('/api/triage/views',{name:'Open transfer work',query:{q:'authored',status:'open'}}))
+ const changeKey=randomBytes(32).toString('hex')
+ assert.equal((await req('/api/changes/sources',{id:'portable-ci',name:'Portable CI context',provider:'native',service:'transfer',repository:'',mode:'bearer',revision:0,key:changeKey})).status,201)
+ assert.equal((await fetch(m.origin+'/api/changes/ingress/portable-ci',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+changeKey},body:JSON.stringify({eventId:'portable-deploy',summary:'Retain deployment context',author:'transfer-ci',timestamp:new Date().toISOString()})})).status,201)
  const source=await readFile('tests/fixtures/opsgenie.json','utf8'),preview=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source}));let job=ok(await req('/api/move-in/apply',{vendor:'opsgenie',source,fingerprint:preview.fingerprint,confirm:true}));while(job.state!=='completed')job=ok(await req(`/api/move-in/${job.id}/resume`,{vendor:'opsgenie'}))
  const at=Date.parse('2026-10-11T09:00:00Z'),pending={id:'held-pending',incident:incident.id,service:'transfer',revision:1,status:'pending',nextDue:at,createdAt:at,lastEvaluatedAt:at,currentStep:0,policy:{service:'transfer',scheduleId:'transfer',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at,actor:null,reason:null,attempt:null}]}
  sql("INSERT INTO paging_jobs VALUES('held-pending','"+incident.id+"','transfer',1,'pending',"+at+",'fixture','"+JSON.stringify(pending).replaceAll("'","''")+"')")
@@ -52,7 +56,9 @@ try{
  sql("INSERT INTO credentials VALUES('"+member.id+"','fixture-salt','fixture-password-digest')")
  assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:member.id})).status,409,'held password data cannot be claimed by a new native owner')
  sql('DELETE FROM credentials')
- ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}));assert.deepEqual(ok(await req('/api/state')),prior,'all relational coordination and attribution restored')
+ ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}));assert.deepEqual(ok(await req('/api/state')),{...prior,changeSources:prior.changeSources.map(source=>({...source,active:false}))},'all relational coordination and attribution restored with source definitions explicitly inactive')
+ assert.equal(sql('SELECT COUNT(*) AS n FROM oc_change_credentials')[0].n,0,'change verification material is excluded from portable transfers')
+ assert.equal(ok(await req('/api/state')).changes[0].eventId,'portable-deploy','retained change identity survives portable transfer')
  assert.equal(ok(await req('/api/state')).triage.length,2,'saved views and replay-safe bulk receipts survive the portable archive')
  assert.deepEqual(ok(await req('/api/move-in/objects')),objects,'paused import data restored with revisions')
  assert.equal(ok(await req('/api/move-in/jobs?vendor=opsgenie')).some(j=>j.id===job.id),true,'durable journal restored')

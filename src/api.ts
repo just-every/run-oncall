@@ -1,3 +1,5 @@
+import { installChangeIntake, installChangeManagement } from "./changes/api";
+import { pauseChangeSources } from "./changes/model";
 import { saveTriageItem } from "./triage-store";
 import { installTriage, memberWorkspace } from "./triage-api";
 import { linkRestoredOwner, restoredAdministrators } from './identity-link';
@@ -152,7 +154,7 @@ api.use("*", async (c, next) => {
     await discardDeniedBody(c);
     return c.json({ error: "Not found" }, 404);
   }
-  if (c.req.method !== "GET" && !c.req.path.startsWith("/api/ingress/")) {
+  if (c.req.method !== "GET" && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && c.req.path !== "/v2/change/enqueue") {
     if (c.req.header("origin") !== url.origin) {
       await discardDeniedBody(c);
       return c.json({ error: "Same-origin request required" }, 403);
@@ -367,6 +369,8 @@ api.post("/api/ingress/:source", async (c) => {
     acceptedAt: result.event.acceptedAt,
   }, result.duplicate ? 200 : 201);
 });
+const changeDeps = {body, load, state: authorizedState, save, guard: sessionGuard};
+installChangeIntake(api, changeDeps);
 api.get("/api/identity-link/administrators",restoredAdministrators);
 api.post("/api/identity-link",async c=>linkRestoredOwner(c,await body(c)));
 api.use("/api/*", async (c, next) => {
@@ -379,6 +383,7 @@ api.use("/api/*", async (c, next) => {
   c.set("actor", actor);
   await next();
 });
+installChangeManagement(api, changeDeps);
 installTriage(api, {body, state: authorizedState, save: (c, state, revision) => save(c.env.DB, state, revision, sessionGuard(c)), saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
 api.post("/api/command", async (c) => {
@@ -553,6 +558,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   const sessionDigest = await hash(sessionToken);
   const parent:{operator_session:string|null}|null=await c.env.DB.prepare('SELECT operator_session FROM oc_current_sessions WHERE token=?').bind(c.get('sessionDigest')).first();
   if(!parent)fail('Session expired or revoked',401);
+  pauseChangeSources(value);
   value.revision = old.revision + 1;
   const serialized = JSON.stringify(value);
   if (new TextEncoder().encode(serialized).length > 1000000)
@@ -562,6 +568,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
       "UPDATE workspace_control SET revision=?,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)",
     ).bind(value.revision, restoreToken, old.revision, pagingRestore.revision, handoffRestore.revision, c.get("sessionDigest"), current.id, Date.now()),
     ...workspaceRows(c.env.DB,value,restoreToken),
+    c.env.DB.prepare("DELETE FROM oc_change_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare(
       "UPDATE operator_members SET member_id=? WHERE member_id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)"
     ).bind(target,current.id,restoreToken),

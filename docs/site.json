@@ -39,6 +39,12 @@
           "summary": "Declare and work an incident, keep its timeline and follow-ups, and route alerts."
         },
         {
+          "slug": "changes",
+          "title": "Changes and dependencies",
+          "source": "docs/changes.md",
+          "summary": "Connect authenticated change senders and inspect recent changes beside services, alerts and incidents."
+        },
+        {
           "slug": "move-in",
           "title": "Move in from Opsgenie or PagerDuty",
           "source": "docs/move-in.md",
@@ -262,6 +268,10 @@
     {
       "source": "src/modules/operator-auth/README.md",
       "reason": "Upstream authentication integration reference for seed maintainers."
+    },
+    {
+      "source": "tests/fixtures/change-sources.md",
+      "reason": "Provenance and license details for network-edge change intake fixtures used by maintainers."
     }
   ]
 }

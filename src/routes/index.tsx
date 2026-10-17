@@ -1,3 +1,6 @@
+import { RecentChanges } from "../changes/RecentChanges";
+import { ChangeSources } from "../changes/ChangeSources";
+import { ServiceDependencies } from "../changes/Dependencies";
 import { IncidentTriage } from "../app/IncidentTriage";
 import { IncidentResponseControls } from "../app/IncidentResponseControls";
 import { MonitoringIngress } from '../integrations/MonitoringIngress';
@@ -298,6 +301,7 @@ function Workspace() {
                     </button>
                   )}
                   <IncidentResponseControls key={incident.id} incident={incident} members={s.members} busy={w.busy} canEdit={canEdit} mutate={mutate} />
+                  <RecentChanges service={incident.service} at={incident.createdAt} revision={s.revision} expanded />
                   <section className="timeline">
                     <h3 className="section-title">
                       Evidence and decisions{" "}
@@ -557,6 +561,8 @@ function Workspace() {
                       Existing pager →
                     </a>
                   )}
+                  <RecentChanges service={v.id} revision={s.revision} />
+                  {admin && <ServiceDependencies key={v.id} service={v} services={s.services} revision={s.revision} busy={w.busy} run={w.run} />}
                   {admin && (
                     <details>
                       <summary>Edit service</summary>
@@ -604,6 +610,7 @@ function Workspace() {
                 <p>No services yet. Start with the system your team owns.</p>
               )}
             </section>
+            {admin && <ChangeSources state={s} busy={w.busy} run={w.run} />}
             {admin && (
               <section className="panel padded">
                 <h2>Add service</h2>
