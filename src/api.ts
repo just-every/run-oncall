@@ -1,5 +1,6 @@
 import { compatiblePath } from './intake/paths';
 import { installCompatibleIntake } from './intake/api';
+import { installRoutingManagement } from './routing/management';
 import { installIntakeManagement } from './intake/management';
 import { pauseIntakeSources } from './intake/model';
 import { installReviews } from './reviews/api';
@@ -391,6 +392,7 @@ api.use("/api/*", async (c, next) => {
 });
 installChangeManagement(api, changeDeps);
 installIntakeManagement(api, changeDeps);
+installRoutingManagement(api, changeDeps);
 installReviews(api, authorizedState);
 installTriage(api, {body, state: authorizedState, save: (c, state, revision) => save(c.env.DB, state, revision, sessionGuard(c)), saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));

@@ -61,6 +61,12 @@
           "title": "Compatible alert intake",
           "source": "docs/compatible-intake.md",
           "summary": "Connect existing PagerDuty, Opsgenie and Splunk-shaped senders with explicit lifecycle receipts and paging OFF."
+        },
+        {
+          "slug": "routed-intake",
+          "title": "Routed intake keys",
+          "source": "docs/routed-intake.md",
+          "summary": "Route compatible monitoring events to allowed services with versioned rules, replay and an unrouted queue."
         }
       ]
     },

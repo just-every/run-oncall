@@ -1,4 +1,5 @@
 import { fail, Fault, type State } from '../family/response-operations/domain.ts';
+import { routingInput } from '../routing/input';
 import { intakeHash } from './credentials';
 import { providerInput } from './providers';
 import { receiveCompatible } from './lifecycle';
@@ -27,7 +28,7 @@ export function installCompatibleIntake(api:any,deps:Dependencies) {
     const action=provider==='opsgenie'&&c.req.param('action')?({close:'recover',acknowledge:'acknowledge',notes:'note'} as const)[c.req.param('action') as 'close'|'acknowledge'|'notes']:undefined;
     if(action&&c.req.query('identifierType')!=='alias')fail('Use identifierType=alias for compatible alert actions');
     const input=providerInput(provider,payload,{secret:configured.key,...(action?{action,alias:c.req.param('identifier')}:{}) ,...(provider==='splunk'?{routingKey:c.req.param('routingKey')}:{})});
-    const receipt=receiveCompatible(state,source,provider,input);
+    const receipt=receiveCompatible(state,source,provider,input,new Date().toISOString(),source.routing?{input:routingInput(provider,payload,input,configured.key,provider==='splunk'?c.req.param('routingKey'):undefined)}:undefined);
     await deps.save(c.env.DB,state,revision,{sql:'EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=?)',values:[source.id,digest]});
     if(provider==='pagerduty-v2')return c.json({status:'success',message:'Event processed',dedup_key:receipt.key},202);
     if(provider==='pagerduty-v1')return c.json({status:'success',message:'Event processed',incident_key:receipt.key},200);

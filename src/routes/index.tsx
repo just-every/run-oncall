@@ -1,4 +1,5 @@
 import { CompatibleIngress } from '../intake/CompatibleIngress';
+import { RoutingWorkspace } from '../routing/RoutingWorkspace';
 import { ReviewsWorkspace } from '../reviews/ReviewsWorkspace';
 import { Followups } from '../reviews/Followups';
 import { RecentChanges } from "../changes/RecentChanges";
@@ -600,6 +601,8 @@ function Workspace() {
           </div>
         )}
         {page === "routing" && (
+          <>
+          <RoutingWorkspace state={s} admin={admin} busy={w.busy} run={w.run} />
           <div className="management-grid">
             <section className="panel padded">
               <h2>Coordination routing</h2>
@@ -682,6 +685,7 @@ function Workspace() {
               )}
             </section>
           </div>
+          </>
         )}
         {page === "alerts" && (
           <div className="management-grid">

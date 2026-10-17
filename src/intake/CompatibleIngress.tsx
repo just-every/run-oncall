@@ -14,6 +14,7 @@ function outcomeText(receipt: IntakeReceipt) {
     case 'acknowledged': return 'Source acknowledgement recorded as an integration claim; no human acknowledgement';
     case 'noted': return 'Source note recorded for the open generation';
     case 'no-effect': return 'No effect: no open generation matched this action';
+    case 'unrouted': return 'Retained unrouted; no service admitted';
   }
 }
 function IntakeReceipts({state, serviceName}: {state: State; serviceName: (id: string) => string}) {
@@ -27,7 +28,7 @@ function IntakeReceipts({state, serviceName}: {state: State; serviceName: (id: s
     <p role="status">Showing {visible.length} of {receipts.length} receipts{source ? ' for this source' : ''}, newest first (up to 20).</p>
     {!visible.length ? <p>No accepted compatible requests{source ? ' for this source' : ''} yet.</p> : <ol className="intake-list">{visible.map(receipt => <li key={receipt.id}>
       <strong>{outcomeText(receipt)}</strong>
-      <p>{sources.find(item => item.id === receipt.source)?.name ?? receipt.source} · {receipt.provider} · {serviceName(receipt.service)}</p>
+      <p>{sources.find(item => item.id === receipt.source)?.name ?? receipt.source} · {receipt.provider} · {receipt.service ? serviceName(receipt.service) : 'Unrouted'}</p>
       <p>{receipt.title || 'No title supplied for this action'}</p>
       <p>Source ID: <code>{receipt.source}</code> · Action: {receipt.action} · Outcome: {receipt.outcome}</p>
       <p>Alert key: <code>{receipt.key}</code></p>
@@ -38,6 +39,7 @@ function IntakeReceipts({state, serviceName}: {state: State; serviceName: (id: s
         {receipt.truncated && <p>Source context was truncated to the receiver’s stored limits.</p>}
         <h4>Source links (stored as text)</h4>{receipt.links.length ? <ul>{receipt.links.map((url, index) => <li key={index}><code>{url}</code></li>)}</ul> : <p>No source links supplied.</p>}
         <h4>Bounded source details</h4><pre>{JSON.stringify(receipt.details, null, 2)}</pre>
+        {receipt.routing&&<><h4>Routing before service orchestration</h4><pre>{JSON.stringify(receipt.routing,null,2)}</pre><a href="#routing">Open routing rules and unrouted queue</a></>}
       </details>
     </li>)}</ol>}
   </div>;
@@ -47,7 +49,7 @@ export function CompatibleIngress({state, admin, busy, run}: {state: State; admi
   const [origin, setOrigin] = useState('');
   const [id, setId] = useState(''), [name, setName] = useState(''), [provider, setProvider] = useState<IntakeProvider>('pagerduty');
   const [service, setService] = useState(''), [key, setKey] = useState(''), [status, setStatus] = useState(''), [copyStatus, setCopyStatus] = useState('');
-  const sources = state.intakeSources ?? [], previous = sources.find(item => item.id === id);
+  const sources = (state.intakeSources ?? []).filter(item=>!item.routing), previous = sources.find(item => item.id === id);
   const boundService = previous?.service ?? (service || state.services[0]?.id || '');
   const boundProvider = previous?.provider ?? provider;
   const serviceName = (serviceId: string) => state.services.find(item => item.id === serviceId)?.name ?? serviceId;

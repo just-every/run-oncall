@@ -1,0 +1,16 @@
+/* From the preserved 12ui C conversion: paper panels, numbered ordered rows,
+   scope summary, rose catch-all and a separate diagnostics panel. */
+.routing-workspace{display:grid;gap:16px;min-width:0;margin-bottom:24px;overflow-wrap:anywhere}
+.routing-heading,.routing-actions,.routing-rule summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.routing-heading{justify-content:space-between}.routing-heading h2{margin:0}.routing-heading p{margin:5px 0 0}
+.routing-overview{display:grid;grid-template-columns:1fr 1fr 1fr;padding:18px 0;gap:20px;border-block:1px solid var(--app-line);margin:18px 0}
+.routing-overview>div+div{border-left:1px solid var(--app-line);padding-left:20px}.routing-overview p{margin:5px 0}.routing-overview strong{display:block}
+.routing-rule{border:1px solid var(--app-line);border-radius:10px;padding:14px 16px;margin:8px 0;background:var(--app-field)}
+.routing-rule summary{min-height:32px;list-style:none}.routing-rule summary:after{content:'⌄';margin-left:auto}.routing-rule summary strong{flex:1}
+.routing-number{display:inline-grid;place-items:center;min-width:30px;height:30px;border-radius:50%;background:var(--oc-paper-deep);font-size:13px}.routing-rule fieldset{padding-top:16px}
+.routing-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}.routing-condition{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--app-line);margin-bottom:14px}.routing-condition>button{justify-self:start;grid-column:1/-1}
+.routing-catchall{padding:16px;background:var(--oc-now-wash);border:1px solid #e7c4b9;border-radius:10px;margin:18px 0}.routing-catchall .field{margin-bottom:0}
+.routing-scope{border:1px solid var(--app-line);border-radius:10px;padding:12px 16px;margin-bottom:16px}.routing-scope label{display:flex;align-items:center;gap:10px;min-height:36px}.routing-scope input{width:18px;height:18px}
+.routing-diagnostics article{border-top:1px solid var(--app-line);padding:14px 0}.routing-diagnostics article h4{margin:0}.routing-diagnostics article p{margin:6px 0}.routing-diagnostics .field{max-width:420px}
+.routing-replay{padding:16px;border:1px solid var(--app-line);border-radius:10px;margin:16px 0}.routing-replay li{padding:10px 0;border-bottom:1px solid var(--app-line)}
+@media(max-width:899px){.routing-overview{grid-template-columns:1fr;gap:12px}.routing-overview>div+div{border-left:0;padding-left:0;border-top:1px solid var(--app-line);padding-top:12px}.routing-condition,.routing-fields{grid-template-columns:1fr}.routing-condition{gap:0}.routing-heading{align-items:flex-start}.routing-rule{padding:12px}.routing-actions button{max-width:100%;white-space:normal}}
