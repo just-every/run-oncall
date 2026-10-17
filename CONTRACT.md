@@ -46,7 +46,7 @@ The approved 16 October scope governs these clauses. Release 1 remains hosted co
 
   **Acceptance evidence:** Export through /api/archive; restore valid held records and reject malformed references/storage failures without losing prior data. Inspect event, incident, runbook, action, timeline and attribution identity and confirm authentication material is absent.
 
-- **OC-008 — User-authored records kept.** No automatic deletion of user-authored incident records. Owner export/restore is supported. Ingress accepts bounded structured fields, no arbitrary raw body storage; native Events API request bytes max 64 KiB. Incumbent-compatible endpoints and provider adapters use the larger per-provider bounds of OC-059, and an authenticated over-limit request still raises a paging alert under OC-059 rather than only a refusal. No arbitrary remote fetching or runbook execution. Display user content as text, never HTML.
+- **OC-008 — User-authored records kept.** No automatic deletion of user-authored incident records. Owner export/restore is supported. Ingress accepts bounded structured fields, no arbitrary raw body storage; native Events API request bytes max 64 KiB. Incumbent-compatible endpoints and provider adapters use the larger per-provider bounds of OC-059. No arbitrary remote fetching or runbook execution. Display user content as text, never HTML.
 
   **Acceptance evidence:** Submit over-limit and malformed intake, hostile structured text and runbook links; verify bounded refusal, literal display with no script execution/fetch, and preservation of authored history after restart/export.
 
