@@ -5,7 +5,7 @@ import type { RoutingRule } from './types';
 export function RuleEditor({rule,index,services,onChange,onMove,onRemove,first,last,disabled}:{rule:RoutingRule;index:number;services:State['services'];onChange:(rule:RoutingRule)=>void;onMove:(delta:number)=>void;onRemove:()=>void;first:boolean;last:boolean;disabled:boolean}) {
   const uid=useId(),dynamic='field' in rule.target,[expanded,setExpanded]=useState(rule.id.startsWith('rule-'));
   return <details className="routing-rule" open={expanded} onToggle={e=>setExpanded(e.currentTarget.open)}>
-    <summary><span className="routing-number">{index+1}</span><strong>{rule.id || 'New rule'}</strong><span className="tag">{dynamic?'Dynamic':'Fixed service'}</span></summary>
+    <summary><span className="routing-number">{index+1}</span><span className="routing-rule-copy"><strong>{rule.id || 'New rule'}</strong><small>{rule.conditions.map(c=>`${c.field} ${c.op}${c.value===undefined?'':` ${c.value}`}`).join(rule.match==='all'?' · and · ':' · or · ')}</small></span><span className="routing-target">{'service' in rule.target?services.find(s=>'service' in rule.target&&s.id===rule.target.service)?.name:'Service from '+rule.target.field}</span><span className="tag">{dynamic?'Dynamic':'Fixed service'}</span></summary>
     <fieldset disabled={disabled}>
       <div className="routing-fields">
         <label className="field">Rule ID<input required maxLength={80} value={rule.id} onChange={e=>onChange({...rule,id:e.target.value})}/></label>

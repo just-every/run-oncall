@@ -6,7 +6,7 @@
 .routing-overview{display:grid;grid-template-columns:1fr 1fr 1fr;padding:18px 0;gap:20px;border-block:1px solid var(--app-line);margin:18px 0}
 .routing-overview>div+div{border-left:1px solid var(--app-line);padding-left:20px}.routing-overview p{margin:5px 0}.routing-overview strong{display:block}
 .routing-rule{border:1px solid var(--app-line);border-radius:10px;padding:14px 16px;margin:8px 0;background:var(--app-field)}
-.routing-rule summary{min-height:32px;list-style:none}.routing-rule summary:after{content:'⌄';margin-left:auto}.routing-rule summary strong{flex:1}
+.routing-rule summary{min-height:32px;list-style:none}.routing-rule summary:after{content:'⌄';margin-left:auto}.routing-rule-copy{flex:1;min-width:0}.routing-rule-copy strong,.routing-rule-copy small{display:block}.routing-rule-copy small{font-weight:400;color:var(--oc-muted);overflow-wrap:anywhere}.routing-target{flex:1;min-width:0;font-size:14px}
 .routing-number{display:inline-grid;place-items:center;min-width:30px;height:30px;border-radius:50%;background:var(--oc-paper-deep);font-size:13px}.routing-rule fieldset{padding-top:16px}
 .routing-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}.routing-condition{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--app-line);margin-bottom:14px}.routing-condition>button{justify-self:start;grid-column:1/-1}
 .routing-catchall{padding:16px;background:var(--oc-now-wash);border:1px solid #e7c4b9;border-radius:10px;margin:18px 0}.routing-catchall .field{margin-bottom:0}
