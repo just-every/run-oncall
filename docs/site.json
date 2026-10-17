@@ -67,6 +67,12 @@
           "title": "Routed intake keys",
           "source": "docs/routed-intake.md",
           "summary": "Route compatible monitoring events to allowed services with versioned rules, replay and an unrouted queue."
+        },
+        {
+          "slug": "monitoring-providers",
+          "title": "Monitoring providers",
+          "source": "docs/monitoring-providers.md",
+          "summary": "Configure Alertmanager, Grafana and Datadog receivers, inspect grouped lifecycles and retain incomplete-input evidence."
         }
       ]
     },

@@ -50,7 +50,11 @@ try {
   ok(await pd('trigger','scope-probe',{service:'search'}),202);assert.equal(ok(await request('/api/state')).intakeReceipts.at(-1).service,'payments');
   const beforeDenied=ok(await request('/api/archive'));
   ok(await pd('trigger','forged',{routing_key:'forged'}),400);ok(await external('/v2/enqueue',null),400);ok(await external('/v2/enqueue',{routing_key:keys.sp,event_action:'trigger'}),400);
-  ok(await external('/api/state',undefined,{authorization:'Bearer '+keys.pd}),401);assert.deepEqual(ok(await request('/api/archive')),beforeDenied);
+  ok(await external('/api/state',undefined,{authorization:'Bearer '+keys.pd}),401);
+  const afterDenied=ok(await request('/api/archive')),accepted=({revision,audit,...records})=>records;
+  assert.deepEqual(accepted(afterDenied),accepted(beforeDenied),'rejected intake changes no accepted product records');
+  assert.deepEqual(afterDenied.audit.slice(0,beforeDenied.audit.length),beforeDenied.audit);
+  assert.equal(afterDenied.audit.length-beforeDenied.audit.length,3);assert.ok(afterDenied.audit.slice(beforeDenied.audit.length).every(entry=>entry.kind==='intake-rejected'),'each refused credential remains visible to integration owners');
   const simultaneous=await Promise.all([pd('trigger','concurrent'),pd('trigger','concurrent')]);assert.ok(simultaneous.some(r=>r.status===202));assert.ok(simultaneous.every(r=>[202,503].includes(r.status)));
   for(const r of simultaneous)if(r.status===503)ok(await pd('trigger','concurrent'),202);
   assert.equal(ok(await request('/api/state')).alerts.filter(a=>a.source==='intake:pd'&&a.key==='concurrent').length,1);
