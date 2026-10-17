@@ -1,7 +1,7 @@
 import type { UrgencyDecision } from "../urgency/types";
 import type { Decision, Member } from "../family/response-operations/domain";
 
-type Result = { workspaceRevision: number; decisions: { eventId: string; historical: Decision | null; historicalEvaluation: { members: Member[] } | null; proposed: Decision; proposedEvaluation: string; historicalUrgency?: UrgencyDecision | null; proposedUrgency?: UrgencyDecision }[] };
+type Result = { workspaceRevision: number; decisions: { eventId: string; historical: Decision | null; historicalEvaluation: { members: Member[] } | null; proposed: Decision; proposedEvaluation: string; historicalUrgency?: UrgencyDecision | null; proposedUrgency?: UrgencyDecision | null }[] };
 
 export function ReplayComparison({ result, members }: { result: Result; members: Member[] }) {
   function decision(value: Decision | null, people: Member[]) {

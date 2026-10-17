@@ -429,7 +429,8 @@ api.post("/api/replay", async (c) => {
         historicalEvaluation: historical?.routingSnapshot ?? null,
         historicalUrgency: historical?.urgency ?? null,
         proposed: route(state, signal),
-        proposedUrgency: serviceUrgency(state, signal.service, signal.severity, evaluatedAt),
+        proposedUrgency: state.services.some(service => service.id === signal.service)
+          ? serviceUrgency(state, signal.service, signal.severity, evaluatedAt) : null,
         proposedEvaluation: evaluatedAt,
       };
     }),
