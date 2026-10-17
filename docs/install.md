@@ -1,6 +1,6 @@
 # Install and run
 
-You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2. `rer` provides the checkout's pinned Node and pnpm tooling.
+You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2 (without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall` brings its own). `rer` provides the checkout's pinned Node and pnpm tooling.
 
 ## Run it on your computer
 
@@ -43,7 +43,7 @@ Your schedules, incidents and team stay in the folder until you [export them](da
 
 ## Explicit and unattended setup
 
-To choose a real owner mailbox before the first launch, run:
+To choose a real owner mailbox before the first launch, run `npx -y @runeditrun/rer setup just-every/run-oncall` (set up only; in an interactive terminal it asks for your owner email), then `cd run-oncall && rer dev`. Or, from the checkout, one verb at a time:
 
 ```sh
 rer install
@@ -77,17 +77,11 @@ node scripts/rer.mjs dev --stop
 node scripts/rer.mjs preview --stop
 ```
 
-Install the `rer` command once, while you still have the old checkout:
-
-```sh
-curl -fsSL https://runeditrun.com/install.sh | sh
-```
-
-Open a new terminal if the installer asks you to, or use `npm install -g @runeditrun/rer`. Then, from this checkout on `main`:
+Then, from this checkout on `main`, update and start it with `npx`, which needs no separate install of `rer`:
 
 ```sh
 git pull --ff-only
-rer dev
+npx -y @runeditrun/rer dev
 ```
 
 The update applies Oncall's additive migrations. Your data, owner and password accounts are kept; people who sign in with a workspace password sign in once more after updating to 0.3.0. Do not reset to upgrade.
@@ -112,9 +106,8 @@ Release 1 supports hosted incident coordination alongside your team's existing p
 **Hosting is in `v0.3.0` and later.** Use a fresh checkout of `main` for the following steps; a checkout already set up with a development owner keeps that owner when setup runs again.
 
 ```sh
-git clone --branch main https://github.com/just-every/run-oncall.git oncall-hosted
+npx -y @runeditrun/rer install just-every/run-oncall --dir oncall-hosted
 cd oncall-hosted
-rer install
 rer setup --owner-email you@example.com
 ```
 

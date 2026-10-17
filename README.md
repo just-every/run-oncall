@@ -33,7 +33,7 @@
 
 Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.3.0`, includes hosted coordination. See [Install and run](docs/install.md#host-for-your-team) for complete credentials and deployment instructions.
 
-You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2. One line installs the `rer` command, clones Oncall and starts it; `rer` provides the checkout's pinned Node and pnpm tooling:
+You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2 (without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall` brings its own). One line installs the `rer` command, clones Oncall and starts it; `rer` provides the checkout's pinned Node and pnpm tooling:
 
 ```sh
 npx -y @runeditrun/rer dev just-every/run-oncall
@@ -89,17 +89,11 @@ node scripts/rer.mjs dev --stop
 node scripts/rer.mjs preview --stop
 ```
 
-Install the `rer` command once, while you still have the old checkout:
-
-```sh
-curl -fsSL https://runeditrun.com/install.sh | sh
-```
-
-Open a new terminal if the installer asks you to, or use `npm install -g @runeditrun/rer`. Then, from this checkout on `main`:
+Then, from this checkout on `main`, update and start it with `npx`, which needs no separate install of `rer`:
 
 ```sh
 git pull --ff-only
-rer dev
+npx -y @runeditrun/rer dev
 ```
 
 The update applies Oncall's additive migrations. Your data, owner and password accounts are kept; people who sign in with a workspace password sign in once more after updating to 0.3.0. Do not reset to upgrade.

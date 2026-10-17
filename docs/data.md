@@ -12,7 +12,7 @@ The archive holds everything Oncall keeps: services, schedules, incidents with t
 
 ## Restore into a new installation
 
-Install Oncall in the new checkout first with `rer install`, then copy your private archive into its `exports` directory:
+Fetch Oncall into the new checkout first with `npx -y @runeditrun/rer install just-every/run-oncall`, then `cd run-oncall` and copy your private archive into its `exports` directory:
 
 ```sh
 rer import --input exports/installation.rer --yes
