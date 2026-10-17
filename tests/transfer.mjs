@@ -21,6 +21,10 @@ try{
  assert.equal(prepared.status,201);const record=prepared.value.record
  ok(await req('/api/handoffs/archive-copy/review',{actionId:'archive-review',revision:record.revision,payloadHash:record.payloadHash,sourceHash:record.sourceHash,reason:'Reviewed exact copy'}))
  cookie=await checkpointCli(m,cookie)
+ let responseIncident=ok(await req('/api/state')).incidents.find(i=>i.id===incident.id)
+ responseIncident=ok(await req('/api/command',{type:'assign-role',incident:incident.id,revision:responseIncident.revision,role:'scribe',member:member.id,reason:'Retain review attribution across installations'}))
+ const bulk=ok(await req('/api/triage/bulk',{operationId:'portable-priority',action:'set-priority',items:[{id:incident.id,revision:responseIncident.revision}],priority:'P1',reason:'Preserve incident priority'}));assert.equal(bulk.results[0].ok,true)
+ ok(await req('/api/triage/views',{name:'Open transfer work',query:{q:'authored',status:'open'}}))
  const source=await readFile('tests/fixtures/opsgenie.json','utf8'),preview=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source}));let job=ok(await req('/api/move-in/apply',{vendor:'opsgenie',source,fingerprint:preview.fingerprint,confirm:true}));while(job.state!=='completed')job=ok(await req(`/api/move-in/${job.id}/resume`,{vendor:'opsgenie'}))
  const at=Date.parse('2026-10-11T09:00:00Z'),pending={id:'held-pending',incident:incident.id,service:'transfer',revision:1,status:'pending',nextDue:at,createdAt:at,lastEvaluatedAt:at,currentStep:0,policy:{service:'transfer',scheduleId:'transfer',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at,actor:null,reason:null,attempt:null}]}
  sql("INSERT INTO paging_jobs VALUES('held-pending','"+incident.id+"','transfer',1,'pending',"+at+",'fixture','"+JSON.stringify(pending).replaceAll("'","''")+"')")
@@ -49,6 +53,7 @@ try{
  assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:member.id})).status,409,'held password data cannot be claimed by a new native owner')
  sql('DELETE FROM credentials')
  ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}));assert.deepEqual(ok(await req('/api/state')),prior,'all relational coordination and attribution restored')
+ assert.equal(ok(await req('/api/state')).triage.length,2,'saved views and replay-safe bulk receipts survive the portable archive')
  assert.deepEqual(ok(await req('/api/move-in/objects')),objects,'paused import data restored with revisions')
  assert.equal(ok(await req('/api/move-in/jobs?vendor=opsgenie')).some(j=>j.id===job.id),true,'durable journal restored')
  const handoff=ok(await req('/api/handoffs/archive-copy'));assert.equal(handoff.record.held,true);assert.deepEqual(handoff.record.payload,record.payload);assert.equal((await req('/api/handoffs/archive-copy/export')).status,409,'restored approval cannot export until reviewed again')

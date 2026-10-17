@@ -1,3 +1,5 @@
+import { incidentControl, validateIncidentControls } from "./incident-controls.ts";
+import { validateTriageRecords, type TriageRecord } from "./triage.ts";
 export type Role = "admin" | "responder" | "viewer";
 export type Member = { id: string; name: string; role: Role; active: boolean };
 export type Service = {
@@ -65,6 +67,7 @@ export type Entry = {
   actor: string;
   kind: string;
   text: string;
+  operationId?: string;
 };
 export type Action = {
   id: string;
@@ -89,6 +92,11 @@ export type Incident = {
   actions: Action[];
   recovery: string;
   review: string;
+  assignee?: string | null;
+  urgency?: "high" | "low";
+  priority?: "P1" | "P2" | "P3" | "P4" | "P5" | null;
+  scribe?: string | null;
+  communications?: string | null;
 };
 export type State = {
   schemaVersion: 1;
@@ -100,6 +108,7 @@ export type State = {
   alerts: Alert[];
   incidents: Incident[];
   audit: Entry[];
+  triage?: TriageRecord[];
 };
 export const empty = (): State => ({
   schemaVersion: 1,
@@ -429,6 +438,8 @@ export function command(
   if (!incident) fail("Unknown incident", 404);
   if (input.revision !== incident.revision)
     fail("Incident changed. Reload before applying your edit.", 409);
+  const controlled = incidentControl(state, actor, incident, input, at);
+  if (controlled) return incident;
   let description = "";
   if (input.type === "note") {
     description = text(input.text, "note", 3000);
@@ -443,7 +454,7 @@ export function command(
     if (!next[incident.state].includes(input.state))
       fail("Invalid lifecycle transition");
     description = `${incident.state} → ${input.state}: ${text(input.summary, "transition summary", 3000)}`;
-    if (input.state === "acknowledged") incident.commander = actor.id;
+    if (input.state === "acknowledged") { incident.commander = actor.id; incident.assignee = actor.id; }
     if (input.state === "recovered") {
       incident.recovery = link(input.evidence);
       if (!incident.recovery) fail("Recovery evidence URL is required");
@@ -497,12 +508,12 @@ export function command(
 }
 export function validateArchive(value: any): State {
   if (!value || value.schemaVersion !== 1) fail("Unsupported archive");
-  const object = (v: any, keys: string[]) => {
+  const object = (v: any, keys: string[], optional: string[] = []) => {
     if (
       !v ||
       typeof v !== "object" ||
       Array.isArray(v) ||
-      Object.keys(v).some((k) => !keys.includes(k)) ||
+      Object.keys(v).some((k) => !keys.includes(k) && !optional.includes(k)) ||
       keys.some((k) => !(k in v))
     )
       fail("Invalid archive object fields");
@@ -521,7 +532,8 @@ export function validateArchive(value: any): State {
       fail("Invalid archive timestamp");
   };
   const entry = (e: any) => {
-    object(e, ["id", "at", "actor", "kind", "text"]);
+    object(e, ["id", "at", "actor", "kind", "text"], ["operationId"]);
+    if (e.operationId !== undefined) text(e.operationId, "operation ID", 100);
     text(e.id, "entry ID", 100);
     date(e.at);
     text(e.actor, "actor", 200);
@@ -574,7 +586,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ]);
+  ], ["triage"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   for (const key of [
@@ -726,7 +738,8 @@ export function validateArchive(value: any): State {
       "actions",
       "recovery",
       "review",
-    ]);
+    ], ["assignee", "urgency", "priority", "scribe", "communications"]);
+    validateIncidentControls(i, value.members);
     text(i.title, "incident", 300);
     if (
       !hasService(i.service) ||
@@ -781,5 +794,6 @@ export function validateArchive(value: any): State {
       fail("Invalid review");
   }
   value.audit.forEach(entry);
+  if (value.triage !== undefined) validateTriageRecords(value.triage, value);
   return structuredClone(value);
 }

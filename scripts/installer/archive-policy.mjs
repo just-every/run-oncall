@@ -9,6 +9,8 @@ export default {
   const control=(await read('workspace_control'))[0],paging=(await read('paging_control'))[0]
   const coordination={schemaVersion:1,revision:control?.revision??0}
   for(const key of ['members','services','policies','events','alerts','incidents','audit'])coordination[key]=(await read('oc_'+key)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
+  const triage=(tables.oc_triage ? await read('oc_triage') : []).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
+  if(triage.length)coordination.triage=triage
   const archive={schemaVersion:1,mode:'synthetic-only'}
   for(const key of ['schedules','policies','jobs','receipts','callbacks'])archive[key]=(await read('paging_'+key)).map(row=>JSON.parse(row.data))
   validateRecoveryCheckpoint({schemaVersion:1,kind:'oncall-recovery-checkpoint',capturedAt:new Date().toISOString(),workspaceRevision:coordination.revision,pagingRevision:paging?.revision??0,coordination,paging:archive})

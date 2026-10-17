@@ -1,0 +1,24 @@
+.triage-filters label, .saved-views label, .triage-bulk > label, .response-controls details > label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
+.triage-filters input, .triage-filters select, .saved-views input, .triage-bulk select, .response-controls select { width: 100%; min-width: 0; min-height: 42px; padding: 8px; border: 1px solid var(--app-field-line); border-radius: 8px; background: var(--app-field); color: var(--oc-ink); }
+.triage-filters .search { margin: 0 0 12px; }
+.triage-filters .triage-mine { flex-direction: row; align-items: center; margin-bottom: 12px; }
+.triage-mine input, .triage-check input { width: 18px; height: 18px; min-height: 0; accent-color: var(--oc-ink); }
+.triage-filter-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+.triage-filters details, .saved-views, .response-controls details { padding: 10px 0; border-top: 1px solid var(--app-line); }
+.triage-filters summary, .saved-views summary, .response-controls summary { cursor: pointer; }
+.triage-count { margin: 12px 0; font-size: 14px; color: var(--oc-muted); }
+.triage-selection, .saved-view { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.saved-views form { display: grid; gap: 10px; margin-top: 12px; }
+.triage-item { position: relative; }
+.triage-check { position: absolute; top: 14px; right: 10px; z-index: 1; display: grid; place-items: center; min-width: 32px; min-height: 32px; }
+.triage-item .incident-top { padding-right: 24px; flex-wrap: wrap; }
+.triage-bulk { border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper); padding: 12px; margin: 12px 0; overflow-wrap: anywhere; }
+.triage-bulk ul { padding-left: 18px; max-height: 240px; overflow-y: auto; }
+.triage-bulk p { font-size: 12px; }
+.response-controls { margin: 18px 0; padding: 16px; border: 1px solid var(--app-line); border-radius: 12px; }
+.response-controls h3 { margin: 0 0 12px; }
+.response-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; }
+.response-roles dt { font-size: 12px; color: var(--oc-muted); }
+.response-roles dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+.response-controls details > label { margin: 14px 0; }
+@media (min-width: 600px) and (max-width: 899px) { .triage-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

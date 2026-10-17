@@ -147,6 +147,12 @@
       "name": "0117_owner_claim.sql",
       "sha256": "c3ffe653727bb4867b064dc2489df5013613f08f4b5998d2fe2b6a8485cdb815",
       "sql": "-- Apply after operator-auth.sql as a new numbered migration. Never prune this ledger.\nCREATE TABLE oc_owner_claims (\n  singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n  jti TEXT NOT NULL UNIQUE,\n  installation_id TEXT NOT NULL,\n  email TEXT NOT NULL,\n  issued_at INTEGER NOT NULL,\n  expires_at INTEGER NOT NULL,\n  consumed_at INTEGER NOT NULL CHECK(consumed_at<expires_at),\n  operator_id TEXT NOT NULL,\n  session_id TEXT NOT NULL,\n  completed INTEGER NOT NULL DEFAULT 0 CHECK(completed IN (0,1))\n);\nCREATE TRIGGER oc_owner_claim_empty_store BEFORE INSERT ON oc_owner_claims\nWHEN EXISTS(SELECT 1 FROM oa_bootstrap) OR EXISTS(SELECT 1 FROM oa_operators)\nBEGIN\n  SELECT RAISE(ABORT, 'owner_claim_already_initialized');\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0118_incident_triage.sql",
+      "sha256": "ea1d63e01a85f9223208a5b606700e37f8b89b5a3d5a7ffc44489e35ca5ce00a",
+      "sql": "-- Additive optional coordination records. Held incident JSON and array order stay intact.\nCREATE TABLE oc_triage (\n  id TEXT PRIMARY KEY,\n  ordinal INTEGER NOT NULL,\n  data TEXT NOT NULL CHECK(json_valid(data))\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

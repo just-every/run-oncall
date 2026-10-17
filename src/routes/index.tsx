@@ -1,3 +1,5 @@
+import { IncidentTriage } from "../app/IncidentTriage";
+import { IncidentResponseControls } from "../app/IncidentResponseControls";
 import { MonitoringIngress } from '../integrations/MonitoringIngress';
 import { MoveInWorkspace } from '../MoveInWorkspace';
 import { createFileRoute } from "@tanstack/react-router";
@@ -26,7 +28,6 @@ function Workspace() {
   const w = useWorkspace();
   const [page, setPage] = useState("incidents");
   const [selected, setSelected] = useState("");
-  const [query, setQuery] = useState("");
   const [declare, setDeclare] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [replay, setReplay] = useState<any>(null);
@@ -201,7 +202,7 @@ function Workspace() {
         )}
         {page === "incidents" && (
           <div className="board">
-            <section className="panel incidents">
+            <IncidentTriage state={s} actor={actor} current={incident?.id} select={id => {setSelected(id); setHandoff(null); if (window.innerWidth < 900) requestAnimationFrame(() => document.querySelector(".detail")?.scrollIntoView({block: "start"}));}} busy={w.busy} run={w.run}>
               <div className="list-toolbar">
                 <strong>Incidents {s.incidents.length}</strong>
                 {canEdit && (
@@ -213,14 +214,6 @@ function Workspace() {
                   </button>
                 )}
               </div>
-              <label className="search">
-                Search
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  aria-label="Search incidents"
-                />
-              </label>
               {declare && (
                 <div className="inline-form">
                   <h2>Declare customer impact</h2>
@@ -261,40 +254,6 @@ function Workspace() {
                   )}
                 </div>
               )}
-              {s.incidents
-                .filter((i) =>
-                  i.title.toLowerCase().includes(query.toLowerCase()),
-                )
-                .map((i) => (
-                  <button
-                    key={i.id}
-                    className={`incident ${incident?.id === i.id ? "current" : ""}`}
-                    onClick={() => {
-                      setSelected(i.id);
-                      setHandoff(null);
-                    }}
-                  >
-                    <div className="incident-top">
-                      <span
-                        className={`dot ${i.state === "resolved" ? "green" : "red"}`}
-                      />
-                      <span>{i.id.slice(0, 8)}</span>
-                      <span className={`priority ${i.state === "resolved" ? "state-resolved" : `sev-${i.severity}`}`}>{i.severity} {i.state === "resolved" && "· resolved"}</span>
-                    </div>
-                    <h3>{i.title}</h3>
-                    <p className="service">
-                      {s.services.find((v) => v.id === i.service)?.name} ·{" "}
-                      {i.state}
-                    </p>
-                    <time>{time(i.createdAt)}</time>
-                    <div className="tags">
-                      <span className="tag">
-                        {i.actions.filter((a) => !a.done).length} open
-                        follow-ups
-                      </span>
-                    </div>
-                  </button>
-                ))}
               {!s.incidents.length && (
                 <div className="empty">
                   <h2>Ready when something needs coordination</h2>
@@ -309,7 +268,7 @@ function Workspace() {
                   ) : <a href="#services">Set up services →</a>}
                 </div>
               )}
-            </section>
+            </IncidentTriage>
             {incident ? (
               <>
                 <section className="panel detail">
@@ -338,6 +297,7 @@ function Workspace() {
                       Send test page
                     </button>
                   )}
+                  <IncidentResponseControls key={incident.id} incident={incident} members={s.members} busy={w.busy} canEdit={canEdit} mutate={mutate} />
                   <section className="timeline">
                     <h3 className="section-title">
                       Evidence and decisions{" "}
@@ -355,7 +315,7 @@ function Workspace() {
                               <time>{time(e.at)}</time>
                             </div>
                             <p>{e.text}</p>
-                            <small>{name(e.actor)}</small>
+                            <small>{name(e.actor)}{e.operationId && ` · Bulk operation ${e.operationId}`}</small>
                           </div>
                         </li>
                       ))}

@@ -1,3 +1,5 @@
+import { saveTriageItem } from "./triage-store";
+import { installTriage, memberWorkspace } from "./triage-api";
 import { linkRestoredOwner, restoredAdministrators } from './identity-link';
 import { loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
 import { nativeMember } from './native-member';
@@ -180,7 +182,7 @@ api.get("/api/workspace", async (c) => {
   if (!member) return c.json({setup: state.members.length === 0, member: null, demo: c.env.RER_DEMO === "1", state: null});
   c.set("actor", member);
   const current = await authorizedState(c);
-  return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", state: current});
+  return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", state: memberWorkspace(current, member)});
 });
 async function session(c: any, state: State): Promise<Member | null> {
   const token = readSessionCookie(c.req.raw);
@@ -377,7 +379,8 @@ api.use("/api/*", async (c, next) => {
   c.set("actor", actor);
   await next();
 });
-api.get("/api/state", async (c) => c.json(await authorizedState(c)));
+installTriage(api, {body, state: authorizedState, save: (c, state, revision) => save(c.env.DB, state, revision, sessionGuard(c)), saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
+api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
 api.post("/api/command", async (c) => {
   const input = await body(c);
   const state = await load(c.env.DB);
