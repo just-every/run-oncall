@@ -36,7 +36,7 @@ function formatter(timezone: string): Intl.DateTimeFormat {
   // Offset identifiers are not named IANA zones; Intl validates the remaining names.
   if (/^[+-]/.test(timezone)) fail('Urgency requires a named IANA timezone');
   try {
-    return new Intl.DateTimeFormat('en-US-u-ca-iso8601-nu-latn', {
+    return new Intl.DateTimeFormat('en-US-u-ca-gregory-nu-latn', {
       timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit',
       weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', era: 'short',
     });
@@ -76,7 +76,7 @@ export function evaluateUrgency(rule: UrgencyRule | undefined, severity: unknown
     const localMinute = Number(parts.hour) * 60 + Number(parts.minute), holiday = snapshot.holidays.includes(date);
     const inside = !holiday && snapshot.weekly.some(w => w.day === weekday && minute(w.start) <= localMinute && localMinute < minute(w.end));
     result = inside ? snapshot.inside : snapshot.outside;
-    explanation = `${inside ? 'Inside' : 'Outside'} support hours (${snapshot.timezone}${holiday ? ', holiday' : ''}) → ${result}`;
+    explanation = `${inside ? 'Inside' : 'Outside'} support hours (${snapshot.timezone}, ${date}${holiday ? ', holiday' : ''}) → ${result}`;
   } else {
     result = snapshot.mode;
     explanation = `Constant ${result}`;

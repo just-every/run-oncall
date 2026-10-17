@@ -90,7 +90,7 @@ try {
     ['2026-12-25T15:00:00Z','low'],['2026-11-01T03:59:59Z','high'],['2026-11-01T04:00:00Z','low'],
   ];
   const previews=await Promise.all(cases.map(([at])=>w.request('/api/urgency/preview',{service:'support',severity:'warning',at},viewerCookie)));
-  previews.forEach((r,i)=>{const {decision}=ok(r);assert.equal(decision.urgency,cases[i][1],cases[i][0]);assert.equal(decision.version,supportRule.version);});
+  previews.forEach((r,i)=>{const {decision}=ok(r);assert.equal(decision.urgency,cases[i][1],cases[i][0]+JSON.stringify(decision));assert.equal(decision.version,supportRule.version);});
   for(const [level,expected] of [['critical','high'],['error','high'],['warning','low'],['info','low'],[null,'high'],['unrecognized','high']]) {
     const preview=ok(await req('/api/urgency/preview',{service:'checkout',severity:level,at:'2026-11-02T14:00:00Z',rule:draft('severity')}));assert.equal(preview.decision.urgency,expected);
   }
