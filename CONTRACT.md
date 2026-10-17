@@ -6,6 +6,14 @@ Oncall owns the full on-call alerting and incident-response job: receive monitor
 
 The approved 16 October scope governs these clauses. Release 1 remains hosted coordination beside the existing pager, with production paging OFF. Writing a target does not activate providers, change the approved UI/homepage or waive the independent standby and real-phone cutover requirements. Existing IDs remain stable. Clauses OC-001–022 retain release guarantees; OC-023 onward completes the purchased job. A clause is **done** only within its stated limits and cited exercising flow; **partial** names the implemented subset; **missing** has no implementing flow. Acceptance evidence is the public journey required to complete the clause; merely listing it is not a passing run.
 
+## Product target
+
+| | |
+| --- | --- |
+| Category | On-call alerting and incident response |
+| Incumbents a buyer switches from | PagerDuty, Opsgenie / Jira Service Management, Splunk On-Call (VictorOps); the target also competes with incident.io On-call, Rootly and Resolve AI |
+| First buyer | A US software/IT operations team replacing PagerDuty, Opsgenie / Jira Service Management incident response, or Splunk On-Call (VictorOps); costs in USD |
+
 ## Preserved coordination guarantees
 
 - **OC-001 — Event identity and alerts.** Persist accepted events separately from alerts and human incidents. Repeated source event IDs return the original receipt; changed bytes with the same identity conflict. A deduplication key groups active alerts only within its source/service/environment; recovery affects the matching alert and never resolves an incident.
