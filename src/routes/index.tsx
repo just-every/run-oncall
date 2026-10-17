@@ -513,7 +513,7 @@ function Workspace() {
                     </a>
                   )}
                   <RecentChanges service={v.id} revision={s.revision} />
-                  <UrgencyPolicy key={v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
+                  <UrgencyPolicy key={'urgency:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
                   {admin && <ServiceDependencies key={v.id} service={v} services={s.services} revision={s.revision} busy={w.busy} run={w.run} />}
                   {admin && (
                     <details>
