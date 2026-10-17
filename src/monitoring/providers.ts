@@ -64,7 +64,7 @@ async function groupedEvent(provider: 'alertmanager' | 'grafana', alert: unknown
   const content = safe.clean({ provider, orgId, fingerprint, status: alert.status, labels, annotations,
     startsAt: start.identity, ...(end ? { endsAt: end.identity } : {}),
     ...select(alert, ['generatorURL', 'dashboardURL', 'panelURL', 'silenceURL', 'values']) });
-  const eventId = provider + ':' + await monitoringHash(content);
+  const eventId = provider + ':' + await monitoringHash({key,generation,intent,content});
   const details = safe.structured({ provider, fingerprint, startsAt: start.identity, ...(end ? { endsAt: end.identity } : {}),
     ...(orgId === null ? {} : { orgId }), labels, annotations, ...select(alert, ['values']),
     ...select(envelope, ['receiver', 'groupKey', 'groupLabels', 'commonLabels', 'commonAnnotations', 'externalURL', 'truncatedAlerts']) });
@@ -99,9 +99,9 @@ async function datadogEvent(payload: Data, secret: string): Promise<MonitoringEv
   const link = payload.link === undefined || payload.link === '' ? null : safe.safeURL(payload.link);
   const content = { provider: 'datadog', id, alert_id: monitor, alert_cycle_key: cycle, alert_scope: scope,
     alert_transition: transition, date: observedAt, tags, title: rawTitle, ...select(payload, ['body', 'alert_type', 'alert_priority', 'link']) };
-  const eventId = 'datadog:' + await monitoringHash(safe.clean(content));
   const key = 'datadog:' + await monitoringHash({ monitor, scope });
   const generation = 'datadog:' + await monitoringHash({ monitor, cycle });
+  const eventId = 'datadog:' + await monitoringHash({key,generation,id:await monitoringHash(id),content:safe.clean(content)});
   const details = safe.structured(content);
   const routingInput = safe.structured({ tags, alert_id: monitor, alert_scope: scope, alert_transition: transition,
     summary: title, source: 'datadog', severity: level, urgency: level === 'info' ? 'low' : 'high',

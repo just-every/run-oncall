@@ -3,6 +3,7 @@ import { Form } from '../forms';
 import type { IntakeSource } from './model';
 import type { CompatibleProvider } from './provider-types';
 
+export type CompatibleIntakeSource = IntakeSource & {provider:'pagerduty'|'opsgenie'|'splunk'};
 export type IntakeRun = (path: string | (() => Promise<any>), data?: any, message?: string) => Promise<any>;
 const protocols: {id: CompatibleProvider; name: string}[] = [
   {id: 'pagerduty-v2', name: 'PagerDuty Events v2'}, {id: 'pagerduty-v1', name: 'PagerDuty Events v1'},
@@ -60,7 +61,7 @@ async function send(provider: CompatibleProvider, secret: string, identity: stri
   return {status: response.status};
 }
 
-export function CompatibleTest({sources, serviceName, origin, busy, run}: {sources: IntakeSource[]; serviceName: (id: string) => string; origin: string; busy: boolean; run: IntakeRun}) {
+export function CompatibleTest({sources, serviceName, origin, busy, run}: {sources: CompatibleIntakeSource[]; serviceName: (id: string) => string; origin: string; busy: boolean; run: IntakeRun}) {
   const [provider, setProvider] = useState<CompatibleProvider>('pagerduty-v2');
   const [sourceId, setSourceId] = useState(''), [secret, setSecret] = useState(''), [identity, setIdentity] = useState('');
   const [title, setTitle] = useState('Service latency above 2 seconds'), [action, setAction] = useState('trigger');

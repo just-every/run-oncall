@@ -27,6 +27,7 @@ try {
  const beforeDenied=ok(await req('/api/archive'));ok(await send('am',first,'forged'),401);const denied=ok(await req('/api/archive'));assert.deepEqual(denied.events,beforeDenied.events);assert.deepEqual(denied.intakeReceipts,beforeDenied.intakeReceipts);assert.equal(denied.audit.at(-1).kind,'intake-rejected');
  const long=alert('long-context');long.annotations.description='x'.repeat(12000);long.labels.token='must-not-survive';long.labels.secretEcho=keys.am;
  ok(await send('am',group([long])),202);state=ok(await req('/api/state'));assert.ok(state.intakeReceipts.at(-1).truncated);assert.ok(!JSON.stringify(state).includes('must-not-survive'));assert.ok(!JSON.stringify(state).includes(keys.am));
+ const longIdentityResult=ok(await send('am',group([alert('f'.repeat(1200)+'a'),alert('f'.repeat(1200)+'b')])),202);assert.equal(longIdentityResult.receipts.length,2);assert.notEqual(longIdentityResult.receipts[0].id,longIdentityResult.receipts[1].id,'bounded context cannot merge distinct full provider identities');
  // The named contract group: 200 actual alerts in an approximately 300 KiB request.
  const storm=group(Array.from({length:200},(_,i)=>alert('storm-'+i)));storm.padding='x'.repeat(Math.max(0,300*1024-Buffer.byteLength(JSON.stringify(storm))));
  const beforeStorm=ok(await req('/api/state')),stormResult=ok(await send('am',storm),202);assert.equal(stormResult.receipts.length,200);state=ok(await req('/api/state'));assert.equal(state.events.length-beforeStorm.events.length,200);assert.equal(state.alerts.length-beforeStorm.alerts.length,200);
