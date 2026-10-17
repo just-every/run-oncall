@@ -470,7 +470,7 @@
     {
       "path": "src/modules/d1-transport",
       "originPath": "modules/d1-transport",
-      "revision": "33d0982c6f6dbf5fd41d2d37ca21855e36eb1045",
+      "revision": "0ed18342a1ca240f1ae698bb50e18385b6f509ec",
       "files": {
         "src/modules/d1-transport/index.d.mts": "b1dcfba529210c9237fa257faa0da8c9062bef946961ba8edeb8af7e171611f3",
         "src/modules/d1-transport/index.mjs": "a8a79a0c2673536e221facd892e688000bfae71485d864b4fff9801eb7aaf4a9"
@@ -598,7 +598,7 @@
     {
       "path": "src/modules/import-kit/schema",
       "originPath": "modules/import-kit/schema",
-      "revision": "33d0982c6f6dbf5fd41d2d37ca21855e36eb1045",
+      "revision": "0ed18342a1ca240f1ae698bb50e18385b6f509ec",
       "files": {
         "src/modules/import-kit/schema/importer-verification-receipt.schema.json": "710740a418fbd1fda5dd7a9017c247040c2bef98a6eadbec2a59220a5afa0ae7",
         "src/modules/import-kit/schema/importers.schema.json": "70ffac46763ab493388cad8fb0bc40946be819b8e8036274a7bff30cf3b4d9c3"
@@ -611,14 +611,14 @@
     {
       "path": "src/modules/import-kit/src",
       "originPath": "modules/import-kit/src",
-      "revision": "33d0982c6f6dbf5fd41d2d37ca21855e36eb1045",
+      "revision": "0ed18342a1ca240f1ae698bb50e18385b6f509ec",
       "files": {
-        "src/modules/import-kit/src/d1/apply.ts": "97190e9e8924fd0751d5f31c94f2a227705a6c5f3edda8672b70168fac2f6d8e",
+        "src/modules/import-kit/src/d1/apply.ts": "68ef23214fa11ca8fed729e4ef38661be5a7d3d14415c04cd6ab7d271839ce52",
         "src/modules/import-kit/src/d1/budget.ts": "98d13384a76b0d42fc3cd25bbaa4a6063250d6baa20ab5c8823eed55957ef0ec",
         "src/modules/import-kit/src/d1/compressed-plan.ts": "b96a798a51902178361933ac2509a7ccb549c932a778a7c3662b604f3b7a1430",
         "src/modules/import-kit/src/d1/creation.ts": "8f860e99f638efa3bb450da9ad1c8b975808034927639412e4a90f94d2864a7c",
         "src/modules/import-kit/src/d1/custody-state-schema.ts": "abd95460b9d732ec47f806c94c559c77a2e8b9967ef3286d7f0bc97c61b25966",
-        "src/modules/import-kit/src/d1/database.ts": "1e3c63e3aa832d9df3ee712c9a2d22e56fc73764c635c0de35918f9bbecc36fc",
+        "src/modules/import-kit/src/d1/database.ts": "9755dcfd5be863d4953076807db031ea0eabd1ce2eb402e4ca595917eaceb70c",
         "src/modules/import-kit/src/d1/erased-artifacts.ts": "e2766643f0653bef87672698295be3aecf9fd221f0455bba629de9c9503878bd",
         "src/modules/import-kit/src/d1/erased-custody.ts": "64792af544f4f618a5aaed4c5fefcd29db137a47f9aff53d2c70635aa24ab5cc",
         "src/modules/import-kit/src/d1/erased-plan.ts": "ef235b404003131e87af2eb07e8e39c3423c500a28dd9b2fee4b6f2d0eb24248",
@@ -695,8 +695,8 @@
         "src/modules/import-kit/src/d1/retirement-tally.ts": "fca5bf6b6728a8cc472796d285d5e4b5792e471536016fa416e9e4351d1b05b5",
         "src/modules/import-kit/src/d1/retirement.ts": "441e30eda04da8127d64fd79fc1e4a8175722dae99595051e9eb7fda53bcddc1",
         "src/modules/import-kit/src/d1/reversal-fence-schema.ts": "85850e6eee015c05355769fd4b933b8d8c2175711ca11081e46157bf58ad3cdb",
-        "src/modules/import-kit/src/d1/reversal-fence.ts": "5b0b3c50b29b55f016d7c46e83bc8c1eec6ef34bb5de2c05a5b7bea35cb7946e",
-        "src/modules/import-kit/src/d1/reverse.ts": "50ee46b4c728f7d2e627cd0b98722773ac9f31e92fdbbd2fb1cd59c99d720dbd",
+        "src/modules/import-kit/src/d1/reversal-fence.ts": "fbc9dcde629b75cf19c14f9f97cb18a8c0f040417016170c5cc7cf3d161457d4",
+        "src/modules/import-kit/src/d1/reverse.ts": "e179031882f2de156f8680c77d5e51dff14c825611732598670c6efd88f9d7a7",
         "src/modules/import-kit/src/d1/reviewed-source.ts": "fa3d5a6847476721b0d1d4a0ff3546e394f8d2ab6ecf4ce63a4598a131014b84",
         "src/modules/import-kit/src/d1/sets.ts": "f1a6572f8a5701fd3d72cf5793dcb0302dc05e7ef6f33c941636562291d179bd",
         "src/modules/import-kit/src/d1/staging-admission.ts": "dcf561f9098294c33b0d85c52d3a85d7737f203c5cd09d502db6244a2300b343",
@@ -1292,7 +1292,7 @@
     {
       "path": "src/modules/owner-claim",
       "originPath": "modules/owner-claim",
-      "revision": "33d0982c6f6dbf5fd41d2d37ca21855e36eb1045",
+      "revision": "0ed18342a1ca240f1ae698bb50e18385b6f509ec",
       "files": {
         "src/modules/owner-claim/idp.mjs": "edb09dfeb0b66849cd84b651099d46c6420d1dc3f270446ae96595d91754d3e6",
         "src/modules/owner-claim/index.d.mts": "33fc8d1b756cb2c0a4317ea4dbc29ae704dd137f76993278859d98ae5e9ad184",

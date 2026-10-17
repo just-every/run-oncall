@@ -1,10 +1,11 @@
 import { compare, crossesOffsetChange } from './equivalence';
-import type { ImportMapping, SourceBundle, SourceRecord, MappingResult } from '../modules/import-kit/src/types'
+import type { ImportMapping, SourceRecord, MappingResult } from '../modules/import-kit/src/types'
 import { validateSchedule } from '../family/response-operations/schedules'
 import { mailbox, mapSchedule, type Mapped } from './rotations'
 import type { Vendor } from './source'
 
-export function mapping(vendor:Vendor,source:SourceBundle,now:number):ImportMapping {
+type MappingRecord=Pick<SourceRecord,'kind'|'sourceId'|'payload'|'location'>
+export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:number):ImportMapping {
  const emails=new Map<string,string>()
  for(const row of source.records.filter(r=>r.kind==='users')) {
   const user=row.payload as any
@@ -21,7 +22,7 @@ export function mapping(vendor:Vendor,source:SourceBundle,now:number):ImportMapp
  const scheduleName=(id:string)=>(scheduleRows.find(r=>r.sourceId===id)?.payload as any)?.name??id
  // A saved override list names no schedule unless the file adds it beside the list; then it belongs to the bundle's only schedule, and with several it is unknown.
  const parentOf=(input:any)=>{const id=input.scheduleId??input.schedule_id??input._parent?.id;return id!==undefined?String(id):scheduleRows.length===1?scheduleRows[0].sourceId:undefined}
- const overrideErrors=new Map<string,string>(),place=(record:SourceRecord)=>record.location.pointer??record.sourceId
+ const overrideErrors=new Map<string,string>(),place=(record:MappingRecord)=>record.location.pointer??record.sourceId
  for(const row of source.records.filter(r=>r.kind==='overrides')) {
   const input=row.payload as any,alias=input.alias??input.id,id=parentOf(input)
   if(id===undefined) {
