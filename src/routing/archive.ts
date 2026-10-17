@@ -32,12 +32,12 @@ export function validateRoutingReceipt(state:State,source:IntakeSource,receipt:I
   }
   // Retain the historical name used by a dynamic name route, even after renames.
   const snapshot=route.dynamic?.serviceName&&receipt.service?{...state,services:state.services.map(s=>s.id===receipt.service?{...s,name:route.dynamic!.serviceName!}:s)}:state;
-  const expected=evaluateRouting(snapshot,source.id,source.routing,version,receipt.routingInput);
+  const expected=receipt.incomplete?{key:source.id,version:version.version,rule:null,kind:'catch-all',service:version.catchAll,evaluated:[],dynamic:undefined}:evaluateRouting(snapshot,source.id,source.routing,version,receipt.routingInput);
   if(JSON.stringify(expected.evaluated)!==JSON.stringify(route.evaluated)||expected.rule!==route.rule||JSON.stringify(expected.dynamic)!==JSON.stringify(route.dynamic))fail('Invalid routing rule evidence');
   if(route.kind==='readmission') {
     exact(route.readmission,['receipt','operationId','by']);
     const readmit=route.readmission!,original=state.intakeReceipts?.find(r=>r.id===readmit.receipt);
-    if(!original||original===receipt||original.source!==source.id||original.outcome!=='unrouted'||receipt.service===null||!state.members.some(m=>m.id===readmit.by)||typeof readmit.operationId!=='string'||!readmit.operationId.length||readmit.operationId.length>100||Date.parse(original.acceptedAt)>Date.parse(receipt.acceptedAt)||JSON.stringify(original.routingInput)!==JSON.stringify(receipt.routingInput)||['action','key','title','severity','priority','observedAt','sender','links','details','truncated'].some(k=>JSON.stringify(original[k as keyof IntakeReceipt])!==JSON.stringify(receipt[k as keyof IntakeReceipt])))fail('Invalid routing re-admission link');
+    if(!original||original===receipt||original.source!==source.id||original.outcome!=='unrouted'||receipt.service===null||!state.members.some(m=>m.id===readmit.by)||typeof readmit.operationId!=='string'||!readmit.operationId.length||readmit.operationId.length>100||Date.parse(original.acceptedAt)>Date.parse(receipt.acceptedAt)||JSON.stringify(original.routingInput)!==JSON.stringify(receipt.routingInput)||JSON.stringify(original.monitoring)!==JSON.stringify(receipt.monitoring)||JSON.stringify(original.incomplete)!==JSON.stringify(receipt.incomplete)||['action','key','title','severity','priority','observedAt','sender','links','details','truncated'].some(k=>JSON.stringify(original[k as keyof IntakeReceipt])!==JSON.stringify(receipt[k as keyof IntakeReceipt])))fail('Invalid routing re-admission link');
     if(state.intakeReceipts?.some(r=>r!==receipt&&r.source===source.id&&r.routing?.readmission?.operationId===readmit.operationId))fail('Duplicate routing re-admission operation');
   } else if(route.readmission!==undefined||expected.kind!==route.kind||expected.service!==route.service)fail('Invalid routing decision');
   if(route.serviceDecision!==null) {

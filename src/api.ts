@@ -1,4 +1,5 @@
-import { compatiblePath } from './intake/paths';
+import { installMonitoringIntake } from './monitoring/api';
+import { compatiblePath, monitoringPath } from './intake/paths';
 import { installCompatibleIntake } from './intake/api';
 import { installRoutingManagement } from './routing/management';
 import { installIntakeManagement } from './intake/management';
@@ -160,7 +161,7 @@ api.use("*", async (c, next) => {
     await discardDeniedBody(c);
     return c.json({ error: "Not found" }, 404);
   }
-  if (c.req.method !== "GET" && !compatiblePath(c.req.path) && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && c.req.path !== "/v2/change/enqueue") {
+  if (c.req.method !== "GET" && !compatiblePath(c.req.path) && !monitoringPath(c.req.path) && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && c.req.path !== "/v2/change/enqueue") {
     if (c.req.header("origin") !== url.origin) {
       await discardDeniedBody(c);
       return c.json({ error: "Same-origin request required" }, 403);
@@ -378,6 +379,7 @@ api.post("/api/ingress/:source", async (c) => {
 const changeDeps = {body, load, state: authorizedState, save, guard: sessionGuard};
 installChangeIntake(api, changeDeps);
 installCompatibleIntake(api, changeDeps);
+installMonitoringIntake(api, changeDeps);
 api.get("/api/identity-link/administrators",restoredAdministrators);
 api.post("/api/identity-link",async c=>linkRestoredOwner(c,await body(c)));
 api.use("/api/*", async (c, next) => {

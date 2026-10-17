@@ -1,10 +1,11 @@
-import { compatiblePath } from './intake/paths';
+import { compatiblePath, monitoringPath } from './intake/paths';
 // Consume bounded API transport bytes before asynchronous authority/storage.
 // The outer workerd proxy must not lose an unread upload when an early denial
 // returns. Preserve the exact bytes for scoped raw-body HMAC admission.
 const maximum=1000000+5*1024*1024+1024
 export async function receivedRequest(request:Request):Promise<Request|Response>{
  const path=new URL(request.url).pathname
+ if(compatiblePath(path)||monitoringPath(path))return request
  if((!path.startsWith('/api/')&&path!=='/v2/change/enqueue'&&!compatiblePath(path))||!request.body)return request
  const reader=request.body.getReader(),chunks:Uint8Array[]=[];let length=0
  try{

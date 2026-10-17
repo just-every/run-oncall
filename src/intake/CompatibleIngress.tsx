@@ -5,7 +5,7 @@ import type { IntakeProvider, IntakeReceipt, IntakeSource } from './model';
 import { CompatibleTest, type IntakeRun } from './CompatibleTest';
 import './intake.css';
 
-const providerNames = {pagerduty: 'PagerDuty', opsgenie: 'Opsgenie', splunk: 'Splunk On-Call'};
+const providerNames:Record<string,string> = {pagerduty: 'PagerDuty', opsgenie: 'Opsgenie', splunk: 'Splunk On-Call'};
 function outcomeText(receipt: IntakeReceipt) {
   switch (receipt.outcome) {
     case 'opened': return 'Opened a new alert generation';
@@ -49,7 +49,7 @@ export function CompatibleIngress({state, admin, busy, run}: {state: State; admi
   const [origin, setOrigin] = useState('');
   const [id, setId] = useState(''), [name, setName] = useState(''), [provider, setProvider] = useState<IntakeProvider>('pagerduty');
   const [service, setService] = useState(''), [key, setKey] = useState(''), [status, setStatus] = useState(''), [copyStatus, setCopyStatus] = useState('');
-  const sources = (state.intakeSources ?? []).filter(item=>!item.routing), previous = sources.find(item => item.id === id);
+  const sources = (state.intakeSources ?? []).filter(item=>!item.routing&&['pagerduty','opsgenie','splunk'].includes(item.provider)), previous = sources.find(item => item.id === id);
   const boundService = previous?.service ?? (service || state.services[0]?.id || '');
   const boundProvider = previous?.provider ?? provider;
   const serviceName = (serviceId: string) => state.services.find(item => item.id === serviceId)?.name ?? serviceId;

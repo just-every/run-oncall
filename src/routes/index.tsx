@@ -1,3 +1,4 @@
+import { MonitoringWorkspace } from '../monitoring/MonitoringWorkspace';
 import { CompatibleIngress } from '../intake/CompatibleIngress';
 import { RoutingWorkspace } from '../routing/RoutingWorkspace';
 import { ReviewsWorkspace } from '../reviews/ReviewsWorkspace';
@@ -694,6 +695,7 @@ function Workspace() {
               if (created) { selectIncident(created.id); location.hash = "incidents"; }
             }} />
             <CompatibleIngress state={s} admin={admin} busy={w.busy} run={w.run} />
+            <MonitoringWorkspace state={s} admin={admin} busy={w.busy} run={w.run} />
             <MonitoringIngress admin={admin} services={s.services} busy={w.busy} run={w.run} />
           </div>
         )}

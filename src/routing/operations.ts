@@ -1,4 +1,6 @@
 import { authority, fail, text } from '../family/response-operations/domain.ts';
+import { incompleteRouting } from '../monitoring/incomplete.ts';
+import { receiveMonitoring } from '../monitoring/admission.ts';
 import { receiveCompatible } from '../intake/lifecycle.ts';
 import { exact, routingRules } from './definition.ts';
 import { evaluateRouting } from './engine.ts';
@@ -42,11 +44,13 @@ export function installRoutingOperations(api:any,deps:RoutingDependencies) {
       if(previous.routing!.readmission!.receipt!==original.id||previous.service!==input.service)fail('Re-admission operation already used for another request',409);
       return c.json(previous);
     }
-    const at=new Date().toISOString(),explanation=evaluateRouting(state,source.id,source.routing,source.routing.versions.at(-1)!,original.routingInput);
+    const at=new Date().toISOString(),explanation=original.incomplete?incompleteRouting(source)!:evaluateRouting(state,source.id,source.routing,source.routing.versions.at(-1)!,original.routingInput);
     explanation.kind='readmission';explanation.service=input.service;explanation.readmission={receipt:original.id,operationId,by:actor.id};
     explanation.diagnostics.push(`Re-admitted retained receipt ${original.id} by ${actor.id} to ${input.service}`);
     const {action,key,title,severity,priority,observedAt,sender,links,details,truncated}=original;
-    const receipt=receiveCompatible(state,source,original.provider,{action,key,title,severity,priority,observedAt,sender,links:structuredClone(links),details:structuredClone(details),truncated},at,{input:original.routingInput,explanation});
+    const receipt=original.monitoring||original.incomplete
+      ?receiveMonitoring(state,source,{eventId:original.monitoring?.eventId??'incomplete:'+original.incomplete!.sha256,key,generation:original.monitoring?.sourceGeneration??'incomplete:'+original.incomplete!.sha256,intent:action==='recover'?'recover':'trigger',title,severity,observedAt:observedAt??at,details,links,routingInput:original.routingInput,truncated},{provider:original.provider,monitoring:original.monitoring,incomplete:original.incomplete,explanation,readmission:true},at).receipt
+      :receiveCompatible(state,source,original.provider as import('../intake/provider-types.ts').CompatibleProvider,{action,key,title,severity,priority,observedAt,sender,links:structuredClone(links),details:structuredClone(details),truncated},at,{input:original.routingInput,explanation});
     state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-readmitted',text:`Re-admitted ${original.id} as ${receipt.id} to ${receipt.service}`,operationId});
     await routingSave(c,deps,state);return c.json(receipt,201);
   });

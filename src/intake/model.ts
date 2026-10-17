@@ -1,12 +1,14 @@
 import { fail, link, text, type State } from '../family/response-operations/domain.ts';
 import { validateRoutingSource, validateRoutingReceipt } from '../routing/archive.ts';
 import type { RoutingDefinition, RoutingExplanation } from '../routing/types.ts';
+import { validateMonitoringReceipt } from '../monitoring/archive.ts';
+import type { MonitoringProvider, MonitoringMetadata, IncompleteEvidence } from '../monitoring/types.ts';
 import type { CompatibleInput, CompatibleProvider } from './provider-types.ts';
 
-export const intakeProviders = ['pagerduty', 'opsgenie', 'splunk'] as const;
+export const intakeProviders = ['pagerduty', 'opsgenie', 'splunk', 'alertmanager', 'grafana', 'datadog'] as const;
 export type IntakeProvider = typeof intakeProviders[number];
 export type IntakeSource = {id:string;name:string;provider:IntakeProvider;service:string;active:boolean;revision:number;createdBy:string;updatedAt:string;routing?:RoutingDefinition};
-export type IntakeReceipt = CompatibleInput & {id:string;source:string;provider:CompatibleProvider;service:string|null;generation:string|null;event:string|null;alert:string|null;acceptedAt:string;outcome:'opened'|'deduplicated'|'recovered'|'acknowledged'|'noted'|'no-effect'|'unrouted';routing?:RoutingExplanation;routingInput?:Record<string,unknown>};
+export type IntakeReceipt = CompatibleInput & {id:string;source:string;provider:CompatibleProvider|MonitoringProvider;service:string|null;generation:string|null;event:string|null;alert:string|null;acceptedAt:string;outcome:'opened'|'deduplicated'|'recovered'|'acknowledged'|'noted'|'no-effect'|'unrouted';routing?:RoutingExplanation;routingInput?:Record<string,unknown>;monitoring?:MonitoringMetadata;incomplete?:IncompleteEvidence};
 export const intakeSourceIdentity = (source:string) => 'intake:'+source;
 const date = (v:unknown) => typeof v==='string' && /(?:Z|[+-]\d{2}:\d{2})$/i.test(v) && Number.isFinite(Date.parse(v));
 function fields(v:any,keys:string[],optional:string[]=[]) {
@@ -25,7 +27,7 @@ export function validateIntakeArchive(state:State) {
     validateRoutingSource(state,s);
   }
   for(const r of state.intakeReceipts??[]) {
-    fields(r,['id','source','provider','service','generation','event','alert','acceptedAt','outcome','action','key','title','severity','priority','observedAt','sender','links','details','truncated'],['routing','routingInput']);
+    fields(r,['id','source','provider','service','generation','event','alert','acceptedAt','outcome','action','key','title','severity','priority','observedAt','sender','links','details','truncated'],['routing','routingInput','monitoring','incomplete']);
     text(r.id,'Intake receipt ID',100);text(r.key,'Intake key',200);
     if(typeof r.title!=='string'||r.title.length>300||typeof r.sender!=='string'||r.sender.length>200||r.action==='trigger'&&!r.title.trim())fail('Invalid intake text');
     const source=state.intakeSources?.find(s=>s.id===r.source&&(s.routing?r.service===null||s.routing.scope.includes(r.service):s.service===r.service));
@@ -38,8 +40,9 @@ export function validateIntakeArchive(state:State) {
     if(['trigger','recover'].includes(r.action)&&!['no-effect','unrouted'].includes(r.outcome)&&r.event===null)fail('Missing intake event');
     if(['acknowledge','note'].includes(r.action)&&r.event!==null)fail('Invalid intake action event');
     if((r.service===null)!==(r.outcome==='unrouted'))fail('Invalid unrouted receipt');
-    validateRoutingReceipt(state,source,r);
     if(!Array.isArray(r.links)||r.links.length>8||r.links.some(v=>!v||link(v)!==v))fail('Invalid intake links');
     if(!r.details||typeof r.details!=='object'||Array.isArray(r.details)||new TextEncoder().encode(JSON.stringify(r.details)).length>8192)fail('Invalid intake details');
+    validateRoutingReceipt(state,source,r);
+    validateMonitoringReceipt(state,source,r);
   }
 }
