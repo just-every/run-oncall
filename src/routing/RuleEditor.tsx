@@ -1,10 +1,10 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import type { State } from '../family/response-operations/domain';
 import type { RoutingRule } from './types';
 
 export function RuleEditor({rule,index,services,onChange,onMove,onRemove,first,last,disabled}:{rule:RoutingRule;index:number;services:State['services'];onChange:(rule:RoutingRule)=>void;onMove:(delta:number)=>void;onRemove:()=>void;first:boolean;last:boolean;disabled:boolean}) {
-  const uid=useId(),dynamic='field' in rule.target;
-  return <details className="routing-rule" open>
+  const uid=useId(),dynamic='field' in rule.target,[expanded,setExpanded]=useState(rule.id.startsWith('rule-'));
+  return <details className="routing-rule" open={expanded} onToggle={e=>setExpanded(e.currentTarget.open)}>
     <summary><span className="routing-number">{index+1}</span><strong>{rule.id || 'New rule'}</strong><span className="tag">{dynamic?'Dynamic':'Fixed service'}</span></summary>
     <fieldset disabled={disabled}>
       <div className="routing-fields">
