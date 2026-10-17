@@ -47,3 +47,34 @@ The protected HTTP doors are /api/move-in/preview, /apply, /:id/status, /:id/res
 Erasing a person: an administrator types the exact email of an imported person (matched exactly, ignoring case; a person whose address merely contains theirs is someone else and is left untouched), applied or still pending in a resumable import, and confirms by typing `erase <email>`. In one batch Oncall removes the paused imported user, clears their slot in imported schedule rotations (the slot keeps its index and becomes an explicit coverage gap; an override that named them becomes an empty interval), and erases them from import custody through Base's `retireD1ImportCustody` with the restore checkpoint, so every archive made before the erasure is refused whole by `rer import --journal LATER_ARCHIVE`. Imported records that name the person are tombstoned, whether their own source names the exact address anywhere (a schedule description, a contact-method address, notes or any other text; a longer address that merely contains theirs does not count) or a schedule names them only through another record (an override, a layer member, an incumbent comparison): a schedule that named them stays as already applied but its import can no longer undo it, and a pending record that names them is never imported. An import whose operation key was their email is retired whole. The answer carries the journal receipt id and says when a native member shares the email; that member is not changed. Repeating the request answers 404.
 
 Documentation read 13 October 2026. Opsgenie: [Schedule API](https://docs.opsgenie.com/docs/schedule-api) (lists, details and timeline), [Schedule Override API](https://docs.opsgenie.com/docs/schedule-override-api), [Escalation API](https://docs.opsgenie.com/docs/escalation-api). PagerDuty: [get a schedule](https://docs.pagerduty.com/developer/api/reference/rest/schedules/get-schedule), [list schedules](https://docs.pagerduty.com/developer/api/reference/rest/schedules/list-schedules), [create a schedule](https://docs.pagerduty.com/developer/api/reference/rest/schedules/create-schedule), [update a schedule](https://docs.pagerduty.com/developer/api/reference/rest/schedules/update-schedule), [list overrides](https://docs.pagerduty.com/developer/api/reference/rest/schedules/list-schedule-overrides), [get an escalation policy](https://docs.pagerduty.com/developer/api/reference/rest/escalation-policies/get-escalation-policy), [list escalation policies](https://docs.pagerduty.com/developer/api/reference/rest/escalation-policies/list-escalation-policies), [list users](https://docs.pagerduty.com/developer/api/reference/rest/users/list-users), [get a user](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user). The text of a layer's `end` was read from a mirror of PagerDuty's OpenAPI descriptions, [create schedule](https://docs.blinkops.com/docs/integrations/pagerduty/actions/create-schedule). Format support is fixture-proven; actual customer exports and a one-to-two-week mirror run remain future design-partner work.
+
+## Optional Business imports
+
+The installation owner can open `/auth/settings/identity` (Sign-in settings)
+with their owner sign-in and enable **Allow Business imports**. It starts off;
+`/api/rer/import/*` returns 404 until enabled. The row also permanently revokes a
+trusted grant key id. Disabling and re-enabling imports does not restore that key;
+configure a new trusted key id to grant access again. A workspace administrator's
+password session cannot change the installation owner's setting.
+
+Business uses Base's import door under the same server-owned installation,
+issuer, owner email and ES256 key ring configured for owner-claim. Its grant
+namespace must be `opsgenie` or `pagerduty`. Upload the exact saved-response JSON
+export described above, using the door's checksummed chunks. Planning runs the
+same credential rejection, response parsing and whole-bundle compatibility
+mapping as the manual importer, with the same 512 KiB / 500 record limits, and
+writes no native objects. It never activates paging, sign-in or delivery.
+
+The sequence is upload → plan → owner approval of the fingerprint → apply →
+reconcile → undo. Each request needs a fresh, short-lived action grant. Apply
+must bind the reviewed fingerprint and owner's approval record. Counts,
+source-id dispositions and native values are reconciled in the installation;
+original bytes remain here. In **Move-in kit → Saved import journal**, select
+the relevant source and import to see “approved via Business by … at …,
+fingerprint …” and use the existing **Undo this import** control. Undo preserves
+native edits. Key revocation stops Business access; the owner's journal and Undo
+remain available. [Base door protocol](src/modules/import-kit/src/door/README.md).
+
+The import-kit and sibling owner-claim / D1 transport copies are pinned in
+`base-copies.json` to Base's `rer-v0.2.50` release; Oncall's parser, mapping,
+paused target adapter and administrator import routes remain product-owned.

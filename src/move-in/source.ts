@@ -36,10 +36,19 @@ function entries(vendor:Vendor,kind:string,body:any,pointer:string):Entry[] {
 export async function fileSource(vendor:Vendor,raw:string,filename?:unknown) {
  if(!['opsgenie','pagerduty'].includes(vendor))throw Error('Choose Opsgenie or PagerDuty')
  if(filename!==undefined&&(typeof filename!=='string'||!filename.trim()||filename.length>255||/[\x00-\x1f\x7f/\\]/.test(filename)))fail('Supply the export filename without a folder path (at most 255 characters)')
+ // Preserve the manual door's named credential refusal before the shared
+ // reader deliberately replaces parser exceptions with a safe diagnostic.
  let parsed:unknown;try{parsed=JSON.parse(raw)}catch{}
  if(parsed&&typeof parsed==='object')refuseCredentials(parsed,'')
  return readFileSource({namespace:vendor,name:typeof filename==='string'?filename:`${vendor}-export.json`,bytes:new TextEncoder().encode(raw),format:'json',parse(value:Json){
+  return savedExportRecords(vendor,value)
+ }},{maxBytes:512*1024,maxRecordBytes:512*1024,maxRecords:500})
+}
+
+/** Both the saved-file UI and Business use the same parser and credential rules. */
+export function savedExportRecords(vendor:Vendor,value:Json):ParsedRecord[] {
   if(!value||Array.isArray(value)||typeof value!=='object')throw Error('Export bundle must be an object')
+  refuseCredentials(value,'')
   const records:ParsedRecord[]=[],count=new Map<string,number>()
   for(const [kind,response] of Object.entries(value))
    for(const {payload,pointer} of entries(vendor,kind,response,`/${escape(kind)}`)) {
@@ -48,5 +57,4 @@ export async function fileSource(vendor:Vendor,raw:string,filename?:unknown) {
    }
   if(!records.length)throw Error('The export bundle is empty')
   return records
- }},{maxBytes:512*1024,maxRecordBytes:512*1024,maxRecords:500})
 }
