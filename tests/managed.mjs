@@ -12,7 +12,7 @@ export async function managedSeed(){
  async function command(args,status=0){const run=spawnCommand(args),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));return run.output()}
  async function start(){const run=spawnCommand(['dev','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null)throw Error(safe(run.output()).slice(-1400));if(run.output().includes('RER_OPEN'))return;await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
  const owner=async()=>{const {header}=await signInAs({origin,key:await readDevKey(process.cwd())});return header}
- async function request(path,input,cookie){const response=await fetch(origin+path,{method:input===undefined?'GET':'POST',redirect:'manual',headers:{origin,'content-type':'application/json',...(cookie?{cookie}:{})},body:input===undefined?undefined:JSON.stringify(input)});const text=await response.text();let value;try{value=JSON.parse(text)}catch{value=text}return {status:response.status,value}}
+ async function request(path,input,cookie,extraHeaders={}){const response=await fetch(origin+path,{method:input===undefined?'GET':'POST',redirect:'manual',headers:{origin,'content-type':'application/json',...(cookie?{cookie}:{}),...extraHeaders},body:input===undefined?undefined:JSON.stringify(input)});const text=await response.text();let value;try{value=JSON.parse(text)}catch{value=text}return {status:response.status,value}}
  async function close(){for(const child of children)if(child.exitCode===null){child.kill('SIGTERM');await new Promise(r=>child.once('exit',r))}}
  return {port,origin,command,start,owner,request,close}
 }

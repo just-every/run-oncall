@@ -60,7 +60,7 @@ export async function providerExport(page,context,width) {
   assert.ok(!result.json.includes(key),'downloaded bundle excludes credentials')
   assert.equal(JSON.parse(result.json).users.length,users.length,'all pages survive assembly')
   await page.getByLabel('Export JSON').setInputFiles({name:vendor+'-export.json',mimeType:'application/json',buffer:Buffer.from(result.json)})
-  const [preview]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/move-in/preview'),page.getByRole('button',{name:'Preview import',exact:true}).click()])
+  const [preview]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/operator/import/plan'),page.getByRole('button',{name:'Preview import',exact:true}).click()])
   assert.equal(preview.status(),200,'downloaded exporter output is accepted by the actual importer')
   assert.ok((await preview.json()).items.some(item=>item.kind==='schedules'&&!item.rejection&&item.effects.some(effect=>effect.targetKind==='schedule')),'a schedule survives provider export and real compatibility review')
   await page.getByRole('heading',{name:'Compatibility review'}).waitFor()

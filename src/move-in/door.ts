@@ -7,9 +7,12 @@ import { targets } from './target'
 import { IMPORT_DOOR_KEY } from './door-key'
 
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
+/** The saved-export bounds both mounts read a bundle under. */
+export const DOOR_LIMITS = { maxBytes: 512 * 1024, maxRecordBytes: 512 * 1024, maxRecords: 500 }
 const sources: Record<Vendor, true> = { opsgenie: true, pagerduty: true }
 
-/** Oncall's one server-owned allow-list: one import namespace per vendor. A
+/** Oncall's one server-owned allow-list, shared by the owner's move-in screen
+ * (owner-door.ts) and Business: one import namespace per vendor. A
  * listed vendor gets fresh per-request state, because its mapping needs the whole
  * parsed bundle (users and overrides belong to schedules); anything else is null. */
 export function importSource(name: string): ImportDoorSource | null {
@@ -49,6 +52,6 @@ export async function importDoorResponse(request: Request, env: Bindings): Promi
   return Response.json({ error: setting?.enabled === 1 ? 'owner_workspace_required' : 'not_found' }, { status: setting?.enabled === 1 ? 409 : 404, headers })
  }
  const door = createImportDoorHandler({ database: env.DB, targets, claim, installationId: IMPORT_DOOR_KEY, ownerPrincipalId: owner.id,
-  destination: 'oncall', format: 'json', limits: { maxBytes: 512 * 1024, maxRecordBytes: 512 * 1024, maxRecords: 500 }, source: importSource })
+  destination: 'oncall', format: 'json', limits: DOOR_LIMITS, source: importSource })
  return door(request)
 }

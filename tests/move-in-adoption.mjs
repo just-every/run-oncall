@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
-import {localWorker} from './worker.mjs'
+import {localWorker,ownerDoor} from './worker.mjs'
 
 const w=await localWorker()
 const ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value}
 try {
  const owner=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'})
- const admin=ok(owner).member,req=(path,input)=>w.request(path,input,owner.cookie)
+ const admin=ok(owner).member,req=(path,input)=>w.request(path,input,owner.cookie),door=ownerDoor(w,owner.cookie)
  const alice=ok(await req('/api/members',{name:'Alice',password:'synthetic-local-testing-password',role:'responder'}),201)
  const bob=ok(await req('/api/members',{name:'Bob',password:'synthetic-local-testing-password',role:'responder'}),201)
  const viewer=ok(await req('/api/members',{name:'Viewer',password:'synthetic-local-testing-password',role:'viewer'}),201)
@@ -16,15 +16,14 @@ try {
  bundle.schedules.data[0].enabled=true
  bundle.escalations.data=bundle.escalations.data.slice(0,1)
  bundle.escalations.data[0].rules[0].delay.timeAmount=0
- const source=JSON.stringify(bundle),review=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source}))
+ const source=JSON.stringify(bundle),review=ok(await door.preview('opsgenie',source))
  assert.equal(review.items.find(i=>i.kind==='users').name,bundle.users.data[0].fullName,'preview identifies the person by name')
  const policy=review.items.find(i=>i.kind==='escalations')
  assert.equal(policy.rejection,undefined)
  assert.equal(policy.effects[0].value.steps[0].delayMinutes,1,'immediate source step has the documented paused mapping')
  assert.ok(policy.unmapped.some(d=>d.field==='rules.0.delay'&&/not equivalent/.test(d.reason)),'review makes the timing change explicit')
  assert.ok(review.items.find(i=>i.kind==='schedules').unmapped.every(d=>!d.reason.includes('Overrides must be supplied')))
- let job=ok(await req('/api/move-in/apply',{vendor:'opsgenie',source,fingerprint:review.fingerprint,confirm:true}))
- while(job.state!=='completed')job=ok(await req(`/api/move-in/${job.id}/resume`,{vendor:'opsgenie'}))
+ assert.equal(ok(await door.apply('opsgenie',review)).job.state,'completed')
  const imported=()=>req('/api/move-in/objects').then(ok)
  const row=(await imported()).find(o=>o.targetKind==='schedule')
  const input={id:row.targetId,revision:row.revision,service:'checkout',members:{'alice@example.test':alice.id,'bob@example.test':bob.id},confirm:true}
@@ -63,7 +62,7 @@ try {
  assert.equal(ok(await req(`/api/schedules/${encodeURIComponent(schedule.id)}/now-next?at=2026-03-08T15:00:00Z`)).now.primary,bob.id)
  assert.match(ok(await req(`/api/schedules/${encodeURIComponent(schedule.id)}/calendar.ics?from=2026-03-08T13:00:00Z&to=2026-03-09T13:00:00Z`)),/BEGIN:VEVENT/)
  await w.stop();await w.start()
- const undo=ok(await req(`/api/move-in/${job.id}/undo`,{vendor:'opsgenie',confirm:true}),409)
+ const undo=ok(await door.call('opsgenie','undo',{planId:review.planId}),409)
  assert.equal(undo.code,'NATIVE_EDIT_CONFLICT');assert.match(undo.error,/made live, so this import can no longer be undone/);assert.doesNotMatch(undo.error,/Put it back/)
  assert.deepEqual(ok(await req('/api/paging/state')).schedules,[schedule],'restart and import undo preserve adopted coverage')
  console.log('Move-in: explicit timing difference, named people, validated adoption, authority, concurrent publication, atomic rollback, now/next, ICS and protected undo passed')

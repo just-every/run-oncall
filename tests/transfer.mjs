@@ -5,6 +5,7 @@ import {randomBytes} from 'node:crypto'
 import {execFileSync} from 'node:child_process'
 import {lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
 import {managedSeed} from './managed.mjs'
+import {ownerDoor} from './worker.mjs'
 import {checkpointCli} from './checkpoint-cli.mjs'
 
 const m=await managedSeed(),ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
@@ -49,7 +50,7 @@ try{
  await reviewCommand({type:'complete',action:reviewedIncident.actions[0].id,evidence:'https://example.test/portable-action'})
  await reviewCommand({type:'accept-action',action:reviewedIncident.actions[0].id,reason:'Human reviewed completion evidence'})
  await reviewCommand({type:'review',accept:true,materialRevision:reviewedIncident.revision,materialWorkspaceRevision:ok(await req('/api/state')).revision,rootCause:'Human assessed migration gap',impact:'Delayed preserved-history workflows',text:'Accepted review and next verification retained across installation transfer'})
- const source=await readFile('tests/fixtures/opsgenie.json','utf8'),preview=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source}));let job=ok(await req('/api/move-in/apply',{vendor:'opsgenie',source,fingerprint:preview.fingerprint,confirm:true}));while(job.state!=='completed')job=ok(await req(`/api/move-in/${job.id}/resume`,{vendor:'opsgenie'}))
+ const source=await readFile('tests/fixtures/opsgenie.json','utf8'),door=ownerDoor(m,cookie),preview=ok(await door.preview('opsgenie',source)),job=ok(await door.apply('opsgenie',preview)).job;assert.equal(job.state,'completed')
  const at=Date.parse('2026-10-11T09:00:00Z'),pending={id:'held-pending',incident:incident.id,service:'transfer',revision:1,status:'pending',nextDue:at,createdAt:at,lastEvaluatedAt:at,currentStep:0,policy:{service:'transfer',scheduleId:'transfer',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at,actor:null,reason:null,attempt:null}]}
  sql("INSERT INTO paging_jobs VALUES('held-pending','"+incident.id+"','transfer',1,'pending',"+at+",'fixture','"+JSON.stringify(pending).replaceAll("'","''")+"')")
  const prior=ok(await req('/api/state')),objects=ok(await req('/api/move-in/objects'))

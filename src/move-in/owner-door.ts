@@ -1,0 +1,146 @@
+import { createImportOperatorHandler } from '../modules/import-kit/src/door/operator'
+import { loadSnapshot, planRow } from '../modules/import-kit/src/door/store'
+import { bundleBytes, uploadRow } from '../modules/import-kit/src/door/uploads'
+import type { DoorRequest } from '../modules/import-kit/src/door/types'
+import type { D1Sql } from '../modules/import-kit/src/d1/types'
+import type { ImportPlan } from '../modules/import-kit/src/types'
+import { runtimeBindings } from '../auth.server'
+import { Fault, type Member } from '../family/response-operations/domain'
+import { DOOR_LIMITS, importSource } from './door'
+import { IMPORT_DOOR_KEY } from './door-key'
+import { targets } from './target'
+import { fileSource, type Vendor } from './source'
+import { mapping } from './mapping'
+import { alreadyImported, changedSinceImport, duplicateTargets, Refusal } from './refusals'
+
+// The owner's move-in screen imports through Base's owner-session door, the
+// same pipeline and allow-list as Business: upload → plan → reviewed
+// fingerprint → apply → reconcile → undo. Oncall adds its review list and its
+// named refusals around the door's answers; the door does every write.
+const PREFIX = '/api/operator/import/'
+const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
+const vendorName = (vendor: string) => vendor === 'pagerduty' ? 'PagerDuty' : 'Opsgenie'
+const answer = (value: unknown, status = 200) => Response.json(value, { status, headers })
+const refusal = (fault: Fault) => answer(fault instanceof Refusal ? { error: fault.message, code: fault.code } : { error: fault.message }, fault.status)
+const code = async (response: Response) => (await response.clone().json().catch(() => ({})) as { error?: string }).error
+
+/** The current administrator's own session, checked in the same database as every write: Oncall's move-in authority. */
+export const adminSession = (digest: string, member: string): D1Sql => ({
+ sql: `EXISTS(SELECT 1 FROM oc_current_sessions s JOIN oc_members m ON m.id=s.member WHERE s.token=? AND s.member=? AND s.expires>? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin')`,
+ params: [digest, member, Date.now()],
+})
+
+/** Who approves an owner import in history: the signed-in owner's email, or a password administrator's workspace name. */
+async function approver(db: D1Database, member: Member) {
+ const row = await db.prepare('SELECT o.email FROM operator_members l JOIN oa_operators o ON o.id=l.operator_id WHERE l.member_id=?').bind(member.id).first<{ email: string }>()
+ return row?.email ?? member.name
+}
+
+/** Read-only access to this source's retained door rows, for the review list and refusals. */
+function reader(db: D1Database, vendor: Vendor, principal: string): DoorRequest {
+ return { options: { database: db, targets, destination: 'oncall', format: 'json', limits: DOOR_LIMITS, ownerPrincipalId: principal, ...importSource(vendor)! },
+  access: { action: 'status', installationId: IMPORT_DOOR_KEY, email: '', namespace: vendor, maxBytes: DOOR_LIMITS.maxBytes, maxChunks: 1024, maxRecords: DOOR_LIMITS.maxRecords },
+  via: 'operator', authority: { sql: '0' }, epoch: 0 }
+}
+
+async function body(request: Request): Promise<Record<string, unknown> | undefined> {
+ try { const text = await request.clone().text(); return text.length <= 100_000 ? JSON.parse(text) : undefined } catch { return undefined }
+}
+
+/** The compatibility review the move-in screen shows: every source object with its effects, differences and any rejection. */
+const review = (plan: ImportPlan) => plan.entries.map(entry => {
+ const value = entry.source.payload as any
+ return { kind: entry.source.kind, id: entry.source.sourceId, location: entry.source.location,
+  name: value?.fullName ?? value?.name ?? value?.summary ?? value?.username ?? value?.email ?? entry.source.sourceId,
+  rejection: entry.rejection, unmapped: entry.unmapped, effects: entry.effects }
+})
+
+/** A door plan that failed on the file itself, named as the saved-file reader names it: a credential field, unreadable JSON or two records that become one object. */
+async function sourceRefusal(read: DoorRequest, uploadId: string, vendor: Vendor): Promise<Fault | null> {
+ let text: string, name: string
+ try { const row = await uploadRow(read, uploadId); name = row.name; text = new TextDecoder().decode(await bundleBytes(read, row)) } catch { return null }
+ try { const source = await fileSource(vendor, text, name); return duplicateTargets(source, mapping(vendor, source, Date.now())) }
+ catch (error) {
+  if (error instanceof Fault) return error
+  const kit = (error as Error).message
+  return /^[A-Z][A-Z0-9_]+$/.test(kit) ? new Refusal(400, "The import journal refused this request; check the job's state before trying again.", kit) : null
+ }
+}
+
+/** The source's pending door plan, if any: whether it is this screen's own unconfirmed preview and whether an apply started. */
+async function pendingPlan(db: D1Database, vendor: string) {
+ return db.prepare(`SELECT n.pending_id AS id,EXISTS(SELECT 1 FROM move_in_previews v WHERE v.plan_id=n.pending_id) AS preview,
+  EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||n.pending_id) AS started
+  FROM ik_door_namespaces n WHERE n.installation_id=? AND n.namespace=? AND n.pending_id IS NOT NULL`).bind(IMPORT_DOOR_KEY, vendor).first<{ id: string; preview: number; started: number }>()
+}
+const forget = (db: D1Database, planId: unknown) => typeof planId === 'string' ? db.prepare('DELETE FROM move_in_previews WHERE plan_id=?').bind(planId).run() : null
+const jobOf = async (db: D1Database, planId: string) => (await db.prepare("SELECT id FROM ik_jobs WHERE destination='oncall' AND operation_key=?").bind('door:' + planId).first<{ id: string }>())?.id
+
+/** POST /api/operator/import/{uploads,plan,apply,status,reconcile,undo} with X-Import-Source naming a listed vendor. */
+export async function ownerImport(c: any): Promise<Response> {
+ const request: Request = c.req.raw, actor: Member = c.get('actor'), db: D1Database = c.env.DB
+ const vendor = request.headers.get('X-Import-Source') ?? '', source = importSource(vendor)
+ if (!source) return answer({ error: 'unknown_import_source' }, 400)
+ if (actor.role !== 'admin') return answer({ error: 'Current admin required' }, 403)
+ const session = adminSession(c.get('sessionDigest'), actor.id)
+ const door = createImportOperatorHandler({ database: db, targets, destination: 'oncall', format: 'json', limits: DOOR_LIMITS, ownerPrincipalId: actor.id,
+  installationId: IMPORT_DOOR_KEY, appOrigin: runtimeBindings(c.env).AUTH_ORIGIN, ownerEmail: await approver(db, actor), namespace: vendor,
+  authorize: async () => session, ...source })
+ const send = async (sent: Request) => (await door(sent)) ?? answer({ error: 'not_found' }, 404)
+ const action = new URL(request.url).pathname.slice(PREFIX.length), input = await body(request), read = reader(db, vendor as Vendor, actor.id)
+ if (action === 'plan') {
+  const again = request.clone() as unknown as Request, before = (await pendingPlan(db, vendor))?.id
+  let response = await send(request)
+  if (response.status === 409 && await code(response) === 'namespace_has_pending_import') {
+   const pending = await pendingPlan(db, vendor)
+   if (pending && pending.preview && !pending.started) {
+    // An unconfirmed preview of another file gives way to the next preview, as a preview always did.
+    const cancel = new Headers(request.headers); cancel.delete('content-length')
+    const cancelled = await send(new Request(new URL(PREFIX + 'undo', request.url), { method: 'POST', headers: cancel, body: JSON.stringify({ planId: pending.id }) }) as Request)
+    if (!cancelled.ok) return cancelled
+    await forget(db, pending.id)
+    response = await send(again)
+   } else if (pending) return refusal(new Refusal(409, pending.started
+    ? `An earlier ${vendorName(vendor)} import has not finished. Choose it in Saved import journal and resume or undo it, then preview this file again.`
+    : `Business has proposed a ${vendorName(vendor)} import that is waiting for approval. Approve or decline it in Business, then preview this file again.`, 'namespace_has_pending_import'))
+  }
+  if (response.status === 409 && await code(response) === 'catchup_required' && input && input.catchup === undefined) {
+   // A source that already holds an import plans the file as its catch-up: additions, replacements guarded by
+   // the import's own revisions, and gone records only listed.
+   const resend = new Headers(request.headers); resend.delete('content-length')
+   response = await send(new Request(request.url, { method: 'POST', headers: resend, body: JSON.stringify({ ...input, catchup: true }) }) as Request)
+  }
+  if (response.status === 409 && await code(response) === 'import_door_conflict' && typeof input?.uploadId === 'string') {
+   const named = await sourceRefusal(read, input.uploadId, vendor as Vendor)
+   if (named) return refusal(named)
+  }
+  if (!response.ok) return response
+  const plan = await response.json() as { planId: string }
+  // Only a plan this preview created is the screen's own; repeating a pending plan's file (Business's, say) adopts nothing.
+  if (plan.planId !== before) await db.prepare(`INSERT OR IGNORE INTO move_in_previews(plan_id) SELECT id FROM ik_door_plans WHERE id=? AND job_id IS NULL
+   AND NOT EXISTS(SELECT 1 FROM ik_jobs WHERE operation_key='door:'||?)`).bind(plan.planId, plan.planId).run()
+  const snapshot = await loadSnapshot(read, await planRow(read, plan.planId))
+  return answer({ ...plan, items: review(snapshot.plan) })
+ }
+ if (action === 'apply' && typeof input?.planId === 'string') {
+  // Name people or schedules another import already holds before the door starts a job that could only fail.
+  const held = await (async () => {
+   try { return await alreadyImported(db, (await loadSnapshot(read, await planRow(read, input.planId as string))).plan, vendor, await jobOf(db, input.planId as string)) }
+   catch { return null }
+  })()
+  if (held) return refusal(held)
+  const response = await send(request)
+  if (response.ok) await forget(db, input.planId)
+  return response
+ }
+ if (action === 'undo' && typeof input?.planId === 'string') {
+  const response = await send(request)
+  if (response.ok) await forget(db, input.planId)
+  if (response.status === 409 && await code(response) === 'import_door_conflict') {
+   const job = await jobOf(db, input.planId), named = job ? await changedSinceImport(db, job) : null
+   if (named) return refusal(named)
+  }
+  return response
+ }
+ return send(request)
+}

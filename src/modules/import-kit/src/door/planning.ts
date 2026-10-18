@@ -33,8 +33,11 @@ export async function plan(request: DoorRequest, input: Record<string, unknown>)
 }
 async function planUpload(request: DoorRequest, input: Record<string, unknown>, upload: UploadRow) {
   const current = await lineage(request);
+  // Oncall adaptation: a plan whose import was undone or rolled back has left the
+  // lineage, so the same bundle plans afresh as a new baseline instead of reusing it.
   const existing = await request.options.database.prepare(`SELECT p.* FROM ik_door_plans p WHERE installation_id=? AND namespace=? AND bundle_sha256=?
-    AND NOT EXISTS(SELECT 1 FROM ik_door_apply_failures f WHERE f.plan_id=p.id)`)
+    AND NOT EXISTS(SELECT 1 FROM ik_door_apply_failures f WHERE f.plan_id=p.id)
+    AND NOT EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||p.id AND j.state IN ('undone','rolled_back'))`)
     .bind(request.access.installationId,request.access.namespace,upload.bundle_sha256).first<DoorPlanRow>();
   if (existing) {
     if (!existing.complete) throw new DoorError('plan_staging_interrupted_cancel_and_replan',409,{planId:existing.id});

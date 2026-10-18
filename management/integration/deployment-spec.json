@@ -195,6 +195,12 @@
       "name": "0125_import_door_scopes.sql",
       "sha256": "4c5b78455ddf7b3e43482351e60304482bffd5798ef6352bf269b2d409f941b5",
       "sql": "-- import-kit importDoorScopesMigration (rer 0.2.61): one door namespace belongs to one destination.\nCREATE TABLE IF NOT EXISTS ik_door_scopes (\n    installation_id TEXT NOT NULL, namespace TEXT NOT NULL, destination TEXT NOT NULL,\n    PRIMARY KEY(installation_id,namespace));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0126_move_in_previews.sql",
+      "sha256": "0734d00c6618a39f3841e621381a5494ff683f9101f22981f97b3919aa8af959",
+      "sql": "-- Door plans the owner's move-in screen made as previews. While unconfirmed, a\n-- preview of another file in the same source replaces it, as previews always did;\n-- Business proposals are never listed here. Plan ids only, no source content.\nCREATE TABLE IF NOT EXISTS move_in_previews (plan_id TEXT PRIMARY KEY);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
