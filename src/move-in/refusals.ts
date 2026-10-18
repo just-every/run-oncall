@@ -26,10 +26,11 @@ export function duplicateTargets(source: SourceBundle, mapping: ImportMapping) {
  return new Refusal(400, `${clashes.map(c => `${list(c.records)} both become ${object(c.kind, c.id)}`).join('; ')}. Oncall matches people by email ignoring case and schedules by id, so it cannot tell them apart; give each a distinct email, or remove one, and preview again. Nothing was written.`, 'DUPLICATE_TARGET')
 }
 
+// A door import's kit job keeps an internal namespace (door:<hash>); its door plan names the vendor.
 type Held = { kind: string; id: string; job: string; namespace: string }
 async function holders(db: D1Database, effects: TargetEffect[], job?: string): Promise<Held[]> {
  const wanted = JSON.stringify(effects.map(e => [e.targetKind, e.targetId]))
- const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id,p.job_id AS job,j.namespace AS namespace FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.reversed=0 AND p.job_id IS NOT ? AND EXISTS(SELECT 1 FROM json_each(?) w WHERE json_extract(w.value,'$[0]')=p.target_kind AND json_extract(w.value,'$[1]')=p.target_id) ORDER BY p.target_kind,p.target_id`).bind(job ?? null, wanted).all<Held>()
+ const rows = await db.prepare(`SELECT p.target_kind AS kind,p.target_id AS id,p.job_id AS job,COALESCE((SELECT d.namespace FROM ik_door_plans d WHERE d.job_id=j.id OR 'door:'||d.id=j.operation_key LIMIT 1),j.namespace) AS namespace FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE p.destination='oncall' AND p.reversed=0 AND p.job_id IS NOT ? AND EXISTS(SELECT 1 FROM json_each(?) w WHERE json_extract(w.value,'$[0]')=p.target_kind AND json_extract(w.value,'$[1]')=p.target_id) ORDER BY p.target_kind,p.target_id`).bind(job ?? null, wanted).all<Held>()
  return rows.results
 }
 const vendorName = (namespace: string) => namespace === 'pagerduty' ? 'PagerDuty' : namespace === 'opsgenie' ? 'Opsgenie' : namespace

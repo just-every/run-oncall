@@ -20,8 +20,10 @@ import { alreadyImported, changedSinceImport, duplicateTargets, Refusal } from '
 const PREFIX = '/api/operator/import/'
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
 const vendorName = (vendor: string) => vendor === 'pagerduty' ? 'PagerDuty' : 'Opsgenie'
+const aVendor = (vendor: string) => vendor === 'pagerduty' ? 'a PagerDuty' : 'an Opsgenie'
 const answer = (value: unknown, status = 200) => Response.json(value, { status, headers })
-const refusal = (fault: Fault) => answer(fault instanceof Refusal ? { error: fault.message, code: fault.code } : { error: fault.message }, fault.status)
+// Every Oncall refusal carries its sentence and a code, so the screen shows the sentence exactly as written.
+const refusal = (fault: Fault) => answer({ error: fault.message, code: fault instanceof Refusal ? fault.code : 'SOURCE_REFUSED' }, fault.status)
 const code = async (response: Response) => (await response.clone().json().catch(() => ({})) as { error?: string }).error
 
 /** The current administrator's own session, checked in the same database as every write: Oncall's move-in authority. */
@@ -105,7 +107,7 @@ export async function ownerImport(c: any): Promise<Response> {
     if (!pending.started && (pending.preview || pending.withdrawn)) stale = pending.id
     else return refusal(new Refusal(409, pending.started
      ? `An earlier ${vendorName(vendor)} import has not finished. Choose it in Saved import journal and resume or undo it, then preview this file again.`
-     : `Business has proposed a ${vendorName(vendor)} import that is waiting for approval. Approve or decline it in Business, then preview this file again.`, 'namespace_has_pending_import'))
+     : `Business has proposed ${aVendor(vendor)} import that is waiting for approval. Approve or decline it in Business, then preview this file again.`, 'namespace_has_pending_import'))
    } else if (failure.error === 'snapshot_withdrawn' && typeof failure.details?.planId === 'string' && !await jobOf(db, failure.details.planId)) stale = failure.details.planId
    if (!stale) break
    const cancelled = await resend('undo', { planId: stale })

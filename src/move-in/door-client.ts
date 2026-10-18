@@ -32,9 +32,10 @@ export function doorClient(vendor: string) {
   const response = await fetch('/api/operator/import/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Import-Source': vendor }, body: JSON.stringify(body) })
   const value: any = await response.json().catch(() => ({}))
   if (response.ok) return value
-  // Oncall's own refusals carry a sentence and a code; the door's carry its code.
+  // Oncall's own refusals carry a sentence and a code, and a session or request refusal is a sentence: both show as written.
+  // The door's carry only its snake_case code, which the screen puts into words.
   const code = value.code ?? value.error ?? `http_${response.status}`
-  throw new DoorRefusal(value.code ? value.error : sentence(code, vendor), code)
+  throw new DoorRefusal(typeof value.error === 'string' && (value.code || !/^[a-z][a-z0-9_]*$/.test(value.error)) ? value.error : sentence(code, vendor), code)
  }
 }
 type Door = ReturnType<typeof doorClient>
