@@ -31,11 +31,27 @@
   padding: 12px 16px;
   border: 1px solid #d9c9b2;
   border-radius: 10px;
-  background: #fffdf8;
+  background-color: #fffdf8;
   color: var(--oc-ink);
   font: inherit;
   font-size: 17px;
 }
+/* Single-choice chevron; native list boxes keep their own appearance. */
+.oc-door select:not([multiple],[size]:not([size="1"])) {
+  --rer-select-ink: var(--rer-muted);
+  -webkit-appearance: none;
+  appearance: none;
+  padding-inline-end: 36px;
+  text-overflow: ellipsis;
+  background-image:
+    linear-gradient(to top right, transparent calc(50% - 1.1px), var(--rer-select-ink) calc(50% - .55px), var(--rer-select-ink) calc(50% + .55px), transparent calc(50% + 1.1px)),
+    linear-gradient(to top left, transparent calc(50% - 1.1px), var(--rer-select-ink) calc(50% - .55px), var(--rer-select-ink) calc(50% + .55px), transparent calc(50% + 1.1px));
+  background-repeat: no-repeat;
+  background-position: right 20px center, right 14px center;
+  background-size: 6px 6px;
+}
+.oc-door select:not([multiple],[size]:not([size="1"])):focus-visible { --rer-select-ink: var(--rer-text); }
+.oc-door select:not([multiple],[size]:not([size="1"])):disabled { --rer-select-ink: color-mix(in srgb, var(--rer-muted) 55%, transparent); }
 .oc-door .field input:focus-visible, .oc-door .field select:focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 2px; border-color: var(--oc-ink); }
 .oc-door .primary {
   min-height: 54px;

@@ -1,5 +1,5 @@
 .triage-filters label, .saved-views label, .triage-bulk > label, .response-controls details > label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
-.triage-filters input, .triage-filters select, .saved-views input, .triage-bulk select, .response-controls select { width: 100%; min-width: 0; min-height: 42px; padding: 8px; border: 1px solid var(--app-field-line); border-radius: 8px; background: var(--app-field); color: var(--oc-ink); }
+.triage-filters input, .triage-filters select, .saved-views input, .triage-bulk select, .response-controls select { width: 100%; min-width: 0; min-height: 42px; padding: 8px; border: 1px solid var(--app-field-line); border-radius: 8px; background-color: var(--app-field); color: var(--oc-ink); }
 .triage-filters .search { margin: 0 0 12px; }
 .triage-filters .triage-mine { flex-direction: row; align-items: center; margin-bottom: 12px; }
 .triage-mine input, .triage-check input { width: 18px; height: 18px; min-height: 0; accent-color: var(--oc-ink); }

@@ -124,10 +124,27 @@ fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
   padding: 9px 12px;
   border: 1px solid var(--app-field-line);
   border-radius: 10px;
-  background: var(--app-field);
+  background-color: var(--app-field);
   color: var(--oc-ink);
   font-size: 15px;
 }
+/* Single-choice chevron; native list boxes keep their own appearance. */
+select:not([multiple],[size]:not([size="1"])) {
+  --rer-select-ink: var(--rer-muted);
+  -webkit-appearance: none;
+  appearance: none;
+  padding-inline-end: 36px;
+  text-overflow: ellipsis;
+  background-image:
+    linear-gradient(to top right, transparent calc(50% - 1.1px), var(--rer-select-ink) calc(50% - .55px), var(--rer-select-ink) calc(50% + .55px), transparent calc(50% + 1.1px)),
+    linear-gradient(to top left, transparent calc(50% - 1.1px), var(--rer-select-ink) calc(50% - .55px), var(--rer-select-ink) calc(50% + .55px), transparent calc(50% + 1.1px));
+  background-repeat: no-repeat;
+  background-position: right 20px center, right 14px center;
+  background-size: 6px 6px;
+}
+select:not([multiple],[size]:not([size="1"])):focus-visible { --rer-select-ink: var(--rer-text); }
+select:not([multiple],[size]:not([size="1"])):disabled { --rer-select-ink: color-mix(in srgb, var(--rer-muted) 55%, transparent); }
+
 .field textarea { min-height: 96px; resize: vertical; }
 .field input[type="file"], .scheduling-field input[type="file"] { padding: 6px 8px; color: var(--oc-ink-soft); font-size: 14px; cursor: pointer; }
 :is(.field, .scheduling-field) input[type="file"]::file-selector-button {
