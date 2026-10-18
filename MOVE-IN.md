@@ -87,7 +87,7 @@ batch; plans, approvals and history captions stay, and reconciling a withdrawn
 import answers 410 `snapshot_withdrawn`.
 
 The import-kit, owner-claim, operator-auth and D1 transport copies are pinned in
-`base-copies.json` to Base's `rer-v0.2.61` release, with the kit and door
+`base-copies.json` to Base's `rer-v0.2.63` release, with the kit and door
 migrations 0122-0125; Oncall's parser, mapping, paused target adapter, review
 list and named refusals remain product-owned. One copied file is adapted,
 `src/modules/import-kit/src/door/planning.ts`, and its `base-copies.json` digest
