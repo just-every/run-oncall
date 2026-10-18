@@ -302,6 +302,10 @@
     {
       "source": "tests/fixtures/change-sources.md",
       "reason": "Provenance and license details for network-edge change intake fixtures used by maintainers."
+    },
+    {
+      "source": "src/modules/import-kit/src/door/ADOPTING.md",
+      "reason": "Vendored Base adoption guidance for seed maintainers"
     }
   ]
 }
