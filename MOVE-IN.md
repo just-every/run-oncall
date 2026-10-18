@@ -58,8 +58,14 @@ configure a new trusted key id to grant access again. A workspace administrator'
 password session cannot change the installation owner's setting.
 
 Business uses Base's import door under the same server-owned installation,
-issuer, owner email and ES256 key ring configured for owner-claim. Its grant
-namespace must be `opsgenie` or `pagerduty`. Upload the exact saved-response JSON
+issuer, owner email and ES256 key ring configured for owner-claim. Oncall keeps
+one server-owned allow-list of import namespaces, one per vendor: `opsgenie`
+and `pagerduty` (`importSource` in `src/move-in/door.ts`). Each grant's namespace
+is resolved through it after the grant is verified and before anything is
+written: a listed namespace is parsed by that vendor's own parser, and any other
+is refused with 403 `unknown_import_source`. Settings, lineage and history are
+kept under the permanent door key `oncall`, which never changes when RER assigns
+or changes the owner-claim installation id. Upload the exact saved-response JSON
 export described above, using the door's checksummed chunks. Planning runs the
 same credential rejection, response parsing and whole-bundle compatibility
 mapping as the manual importer, with the same 512 KiB / 500 record limits, and
@@ -75,6 +81,12 @@ fingerprint …” and use the existing **Undo this import** control. Undo prese
 native edits. Key revocation stops Business access; the owner's journal and Undo
 remain available. [Base door protocol](src/modules/import-kit/src/door/README.md).
 
-The import-kit and sibling owner-claim / D1 transport copies are pinned in
-`base-copies.json` to Base's `rer-v0.2.50` release; Oncall's parser, mapping,
-paused target adapter and administrator import routes remain product-owned.
+Erasing an imported person (above) with Business imports on or off also
+withdraws every retained door upload, chunk and plan snapshot whole, in the same
+batch; plans, approvals and history captions stay, and reconciling a withdrawn
+import answers 410 `snapshot_withdrawn`.
+
+The import-kit, owner-claim, operator-auth and D1 transport copies are pinned in
+`base-copies.json` to Base's `rer-v0.2.61` release, with the kit and door
+migrations 0122-0125; Oncall's parser, mapping, paused target adapter and
+administrator import routes remain product-owned.

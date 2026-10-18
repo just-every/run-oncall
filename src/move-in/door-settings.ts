@@ -2,6 +2,7 @@ import { writeImportDoorSettings, DoorError } from '../modules/import-kit/src/do
 import { operatorAuth, ownerClaimConfig, type Bindings } from '../auth.server'
 import { AuthError } from '../modules/operator-auth/index.mjs'
 import { readInput } from '../modules/operator-auth/input.mjs'
+import { IMPORT_DOOR_KEY } from './door-key'
 
 const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}
 const escape=(value:string)=>value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')
@@ -9,8 +10,8 @@ const escape=(value:string)=>value.replaceAll('&','&amp;').replaceAll('<','&lt;'
 export async function readImportSettings(env:Bindings) {
  const claim=ownerClaimConfig(env)
  if(!claim)return {configured:false,enabled:false,keys:[] as {kid:string;revoked:boolean}[]}
- const setting=await env.DB.prepare('SELECT enabled FROM ik_door_settings WHERE installation_id=?').bind(claim.installationId).first()
- const {results}=await env.DB.prepare('SELECT kid FROM ik_door_revoked_keys WHERE installation_id=?').bind(claim.installationId).all<{kid:string}>()
+ const setting=await env.DB.prepare('SELECT enabled FROM ik_door_settings WHERE installation_id=?').bind(IMPORT_DOOR_KEY).first()
+ const {results}=await env.DB.prepare('SELECT kid FROM ik_door_revoked_keys WHERE installation_id=?').bind(IMPORT_DOOR_KEY).all<{kid:string}>()
  return {configured:!!claim.installationId&&!!claim.issuer&&Object.keys(claim.publicKeys).length>0,enabled:setting?.enabled===1,
   keys:Object.keys(claim.publicKeys).map(kid=>({kid,revoked:results.some(row=>row.kid===kid)}))}
 }
@@ -44,7 +45,7 @@ export async function importSettingsResponse(request:Request,env:Bindings):Promi
   if(typeof enabled!=='boolean'||(input.revokeKid!==undefined&&typeof input.revokeKid!=='string'))throw new DoorError('invalid_settings',400)
   const kid=input.revokeKid
   if(kid&&!Object.hasOwn(claim.publicKeys,kid))throw new DoorError('unknown_grant_key',400)
-  await writeImportDoorSettings(env.DB,claim.installationId,{enabled,revokedKids:kid?[kid]:[]},{
+  await writeImportDoorSettings(env.DB,IMPORT_DOOR_KEY,{enabled,revokedKids:kid?[kid]:[]},{
    sql:`EXISTS(SELECT 1 FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id
     WHERE s.id=? AND s.operator_id=? AND s.revoked_at IS NULL AND s.expires_at>?
     AND s.operator_version=o.version AND o.role='owner' AND o.status='active')`,

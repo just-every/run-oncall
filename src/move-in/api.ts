@@ -12,7 +12,7 @@ import { duplicateTargets, alreadyImported, changedSinceImport, Refusal } from '
 import { createMoveInJob } from './operation'
 import { readMoveInJournal } from './journal'
 import { readImportDoorHistory } from '../modules/import-kit/src/door/index'
-import { ownerClaimConfig } from '../auth.server'
+import { IMPORT_DOOR_KEY } from './door-key'
 
 export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  function context(c:any,vendor:Vendor):D1ImportContext {
@@ -41,7 +41,7 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  for(const action of ['resume','undo','status'])api.post(`/api/move-in/:id/${action}`,async(c:any)=>{
   const input=await body(c),ctx=context(c,input.vendor)
   const door=await c.env.DB.prepare(`SELECT j.namespace FROM ik_jobs j JOIN ik_door_plans p ON p.job_id=j.id
-   WHERE j.id=? AND j.principal_id=? AND p.namespace=? AND p.installation_id=?`).bind(c.req.param('id'),ctx.authorization.principalId,input.vendor,c.env.RER_OWNER_CLAIM_INSTALLATION_ID??'').first()
+   WHERE j.id=? AND j.principal_id=? AND p.namespace=? AND p.installation_id=?`).bind(c.req.param('id'),ctx.authorization.principalId,input.vendor,IMPORT_DOOR_KEY).first()
   if(door)ctx.namespace=door.namespace
   if(action==='undo'&&input.confirm!==true)fail('Confirm import undo',409)
   try{return c.json(await (action==='resume'?resumeD1Import:action==='undo'?undoD1Import:readD1ImportJob)(c.req.param('id'),ctx))}
@@ -49,11 +49,10 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  })
  api.get('/api/move-in/jobs',async(c:any)=>{
   const ctx=context(c,c.req.query('vendor')??'opsgenie'),auth=ctx.authorization.predicate('read','oncall')
-  const installation=ownerClaimConfig(c.env)?.installationId
-  const history=installation?await readImportDoorHistory(c.env.DB,installation,auth):[]
+  const history=await readImportDoorHistory(c.env.DB,IMPORT_DOOR_KEY,auth)
   const rows=await c.env.DB.prepare(`SELECT j.id,j.namespace FROM ik_jobs j WHERE destination='oncall' AND principal_id=?
    AND (namespace=? OR EXISTS(SELECT 1 FROM ik_door_plans p WHERE p.job_id=j.id AND p.namespace=? AND p.installation_id=?))
-   AND (${auth.sql}) ORDER BY j.rowid DESC`).bind(ctx.authorization.principalId,ctx.namespace,ctx.namespace,installation??'',...auth.params!).all()
+   AND (${auth.sql}) ORDER BY j.rowid DESC`).bind(ctx.authorization.principalId,ctx.namespace,ctx.namespace,IMPORT_DOOR_KEY,...auth.params!).all()
   return c.json(await Promise.all(rows.results.map(async(row:any)=>({...await readMoveInJournal(row.id,{...ctx,namespace:row.namespace}),
    vendor:ctx.namespace,businessApproval:history.find(item=>'jobId' in item&&item.jobId===row.id)?.caption}))))
  })

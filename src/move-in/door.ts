@@ -1,44 +1,54 @@
-import { createImportDoorHandler, verifyImportGrant, DoorError } from '../modules/import-kit/src/door/index'
+import { createImportDoorHandler, type ImportDoorSource } from '../modules/import-kit/src/door/index'
 import type { ImportMapping, ParsedRecord } from '../modules/import-kit/src/types'
 import { ownerClaimConfig, type Bindings } from '../auth.server'
 import { mapping } from './mapping'
 import { savedExportRecords, type Vendor } from './source'
 import { targets } from './target'
+import { IMPORT_DOOR_KEY } from './door-key'
 
-/** The bearer door is separate from workspace-session HTTP admission. All kit
- * mutations still use Base's grant predicate and the owner's real member id. */
-export async function importDoorResponse(request:Request,env:Bindings):Promise<Response|null> {
- if(!new URL(request.url).pathname.startsWith('/api/rer/import/'))return null
- const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}
- try {
-  const claim=ownerClaimConfig(env)
-  const setting=claim&&await env.DB.prepare('SELECT enabled FROM ik_door_settings WHERE installation_id=?').bind(claim.installationId).first()
-  if(!claim||setting?.enabled!==1)return Response.json({error:'not_found'},{status:404,headers})
-  const token=request.headers.get('Authorization')
-  if(!token?.startsWith('Bearer '))throw new DoorError('grant_required',401)
-  const {grant}=await verifyImportGrant(token.slice(7),claim)
-  if(!['opsgenie','pagerduty'].includes(grant.namespace))throw new DoorError('unsupported_import_namespace',400)
-  const vendor=grant.namespace as Vendor
-  const owner=await env.DB.prepare(`SELECT m.id FROM oa_operators o JOIN operator_members l ON l.operator_id=o.id JOIN oc_members m ON m.id=l.member_id
-   WHERE o.role='owner' AND o.status='active' AND o.email=? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin'`).bind(claim.expectedEmail).first<{id:string}>()
-  if(!owner)throw new DoorError('owner_workspace_required',409)
-  // Parsing prepares a whole-bundle mapping. This state belongs to this one
-  // request, so users/overrides in concurrent vendor uploads cannot mix.
-  let prepared:ImportMapping|undefined
-  const parsed:ParsedRecord[]=[],now=Date.now()
-  return await createImportDoorHandler({database:env.DB,targets,claim,ownerPrincipalId:owner.id,destination:'oncall',format:'json',
-   limits:{maxBytes:512*1024,maxRecordBytes:512*1024,maxRecords:500},
-   parse(value){
-    const records=savedExportRecords(vendor,value)
-    parsed.push(...records)
-    return records
-   },
-   mapping:{version:'oncall-move-in-1',map(record){
-    prepared??=mapping(vendor,{records:parsed.map(item=>({...item,location:{artifact:'saved-export',pointer:item.pointer}}))},now)
-    return prepared.map(record)
-   }},
-  })(request)
- }catch(error){
-  return Response.json({error:error instanceof DoorError?error.code:'import_door_conflict'},{status:error instanceof DoorError?error.status:409,headers})
+const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
+const sources: Record<Vendor, true> = { opsgenie: true, pagerduty: true }
+
+/** Oncall's one server-owned allow-list: one import namespace per vendor. A
+ * listed vendor gets fresh per-request state, because its mapping needs the whole
+ * parsed bundle (users and overrides belong to schedules); anything else is null. */
+export function importSource(name: string): ImportDoorSource | null {
+ if (!Object.hasOwn(sources, name)) return null
+ const vendor = name as Vendor, parsed: ParsedRecord[] = [], now = Date.now()
+ let prepared: ImportMapping | undefined
+ return {
+  parse(value) {
+   const records = savedExportRecords(vendor, value)
+   parsed.push(...records)
+   return records
+  },
+  mapping: { version: 'oncall-move-in-1', map(record) {
+   prepared ??= mapping(vendor, { records: parsed.map(item => ({ ...item, location: { artifact: 'saved-export', pointer: item.pointer } })) }, now)
+   return prepared.map(record)
+  } },
  }
+}
+
+/** The active administrator member the configured owner signs in as: the
+ * principal of Oncall's ordinary import journal and undo. */
+async function ownerMember(env: Bindings, email: string) {
+ return env.DB.prepare(`SELECT m.id FROM oa_operators o JOIN operator_members l ON l.operator_id=o.id JOIN oc_members m ON m.id=l.member_id
+  WHERE o.role='owner' AND o.status='active' AND o.email=? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin'`).bind(email).first<{ id: string }>()
+}
+
+/** The Business grant mount. It answers 404 until a trusted key ring is configured
+ * and the owner opts in; the kit verifies each grant, then resolves its namespace
+ * through `importSource`, refusing an unlisted one with 403 unknown_import_source. */
+export async function importDoorResponse(request: Request, env: Bindings): Promise<Response | null> {
+ if (!new URL(request.url).pathname.startsWith('/api/rer/import/')) return null
+ const claim = ownerClaimConfig(env)
+ if (!claim) return Response.json({ error: 'not_found' }, { status: 404, headers })
+ const owner = await ownerMember(env, claim.expectedEmail)
+ if (!owner) {
+  const setting = await env.DB.prepare('SELECT enabled FROM ik_door_settings WHERE installation_id=?').bind(IMPORT_DOOR_KEY).first<{ enabled: number }>()
+  return Response.json({ error: setting?.enabled === 1 ? 'owner_workspace_required' : 'not_found' }, { status: setting?.enabled === 1 ? 409 : 404, headers })
+ }
+ const door = createImportDoorHandler({ database: env.DB, targets, claim, installationId: IMPORT_DOOR_KEY, ownerPrincipalId: owner.id,
+  destination: 'oncall', format: 'json', limits: { maxBytes: 512 * 1024, maxRecordBytes: 512 * 1024, maxRecords: 500 }, source: importSource })
+ return door(request)
 }
