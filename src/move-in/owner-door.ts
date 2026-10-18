@@ -67,11 +67,12 @@ async function sourceRefusal(read: DoorRequest, uploadId: string, vendor: Vendor
  }
 }
 
-/** The source's pending door plan, if any: whether it is this screen's own unconfirmed preview and whether an apply started. */
+/** The source's pending door plan, if any: whether it is this screen's own unconfirmed preview, whether an apply started and whether an erasure withdrew it. */
 async function pendingPlan(db: D1Database, vendor: string) {
  return db.prepare(`SELECT n.pending_id AS id,EXISTS(SELECT 1 FROM move_in_previews v WHERE v.plan_id=n.pending_id) AS preview,
-  EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||n.pending_id) AS started
-  FROM ik_door_namespaces n WHERE n.installation_id=? AND n.namespace=? AND n.pending_id IS NOT NULL`).bind(IMPORT_DOOR_KEY, vendor).first<{ id: string; preview: number; started: number }>()
+  EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||n.pending_id) AS started,
+  NOT EXISTS(SELECT 1 FROM ik_door_plan_chunks c WHERE c.plan_id=n.pending_id) AS withdrawn
+  FROM ik_door_namespaces n WHERE n.installation_id=? AND n.namespace=? AND n.pending_id IS NOT NULL`).bind(IMPORT_DOOR_KEY, vendor).first<{ id: string; preview: number; started: number; withdrawn: number }>()
 }
 const forget = (db: D1Database, planId: unknown) => typeof planId === 'string' ? db.prepare('DELETE FROM move_in_previews WHERE plan_id=?').bind(planId).run() : null
 const jobOf = async (db: D1Database, planId: string) => (await db.prepare("SELECT id FROM ik_jobs WHERE destination='oncall' AND operation_key=?").bind('door:' + planId).first<{ id: string }>())?.id
@@ -89,26 +90,33 @@ export async function ownerImport(c: any): Promise<Response> {
  const send = async (sent: Request) => (await door(sent)) ?? answer({ error: 'not_found' }, 404)
  const action = new URL(request.url).pathname.slice(PREFIX.length), input = await body(request), read = reader(db, vendor as Vendor, actor.id)
  if (action === 'plan') {
-  const again = request.clone() as unknown as Request, before = (await pendingPlan(db, vendor))?.id
+  const headers = new Headers(request.headers); headers.delete('content-length')
+  const resend = (path: string, value: unknown) => send(new Request(new URL(PREFIX + path, request.url), { method: 'POST', headers, body: JSON.stringify(value) }) as Request)
+  const before = (await pendingPlan(db, vendor))?.id
   let response = await send(request)
-  if (response.status === 409 && await code(response) === 'namespace_has_pending_import') {
-   const pending = await pendingPlan(db, vendor)
-   if (pending && pending.preview && !pending.started) {
-    // An unconfirmed preview of another file gives way to the next preview, as a preview always did.
-    const cancel = new Headers(request.headers); cancel.delete('content-length')
-    const cancelled = await send(new Request(new URL(PREFIX + 'undo', request.url), { method: 'POST', headers: cancel, body: JSON.stringify({ planId: pending.id }) }) as Request)
-    if (!cancelled.ok) return cancelled
-    await forget(db, pending.id)
-    response = await send(again)
-   } else if (pending) return refusal(new Refusal(409, pending.started
-    ? `An earlier ${vendorName(vendor)} import has not finished. Choose it in Saved import journal and resume or undo it, then preview this file again.`
-    : `Business has proposed a ${vendorName(vendor)} import that is waiting for approval. Approve or decline it in Business, then preview this file again.`, 'namespace_has_pending_import'))
+  // A plan that can never apply gives way to the next preview: this screen's own unconfirmed preview of another
+  // file, as a preview always did, or any unapplied plan an erasure withdrew. It is cancelled through the door.
+  for (let attempt = 0; attempt < 2 && [409, 410].includes(response.status); attempt++) {
+   const failure = await response.clone().json().catch(() => ({})) as { error?: string; details?: { planId?: unknown } }
+   let stale: string | undefined
+   if (failure.error === 'namespace_has_pending_import') {
+    const pending = await pendingPlan(db, vendor)
+    if (!pending) break
+    if (!pending.started && (pending.preview || pending.withdrawn)) stale = pending.id
+    else return refusal(new Refusal(409, pending.started
+     ? `An earlier ${vendorName(vendor)} import has not finished. Choose it in Saved import journal and resume or undo it, then preview this file again.`
+     : `Business has proposed a ${vendorName(vendor)} import that is waiting for approval. Approve or decline it in Business, then preview this file again.`, 'namespace_has_pending_import'))
+   } else if (failure.error === 'snapshot_withdrawn' && typeof failure.details?.planId === 'string' && !await jobOf(db, failure.details.planId)) stale = failure.details.planId
+   if (!stale) break
+   const cancelled = await resend('undo', { planId: stale })
+   if (!cancelled.ok) return cancelled
+   await forget(db, stale)
+   response = await resend('plan', input)
   }
   if (response.status === 409 && await code(response) === 'catchup_required' && input && input.catchup === undefined) {
    // A source that already holds an import plans the file as its catch-up: additions, replacements guarded by
    // the import's own revisions, and gone records only listed.
-   const resend = new Headers(request.headers); resend.delete('content-length')
-   response = await send(new Request(request.url, { method: 'POST', headers: resend, body: JSON.stringify({ ...input, catchup: true }) }) as Request)
+   response = await resend('plan', { ...input, catchup: true })
   }
   if (response.status === 409 && await code(response) === 'import_door_conflict' && typeof input?.uploadId === 'string') {
    const named = await sourceRefusal(read, input.uploadId, vendor as Vendor)

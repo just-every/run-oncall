@@ -89,8 +89,11 @@ import answers 410 `snapshot_withdrawn`.
 The import-kit, owner-claim, operator-auth and D1 transport copies are pinned in
 `base-copies.json` to Base's `rer-v0.2.61` release, with the kit and door
 migrations 0122-0125; Oncall's parser, mapping, paused target adapter, review
-list and named refusals remain product-owned. One copied file is adapted:
-`src/modules/import-kit/src/door/planning.ts` does not reuse a plan whose import
-was undone or rolled back, so the same file can be imported again after **Undo
-this import**; its `base-copies.json` digest is of the adapted bytes. Migration
+list and named refusals remain product-owned. One copied file is adapted,
+`src/modules/import-kit/src/door/planning.ts`, and its `base-copies.json` digest
+is of the adapted bytes: it does not reuse a plan whose import was undone or
+rolled back, so the same file can be imported again after **Undo this import**;
+and when an erasure has withdrawn the file of a source's live import, an
+administrator's next preview starts a new baseline beside it instead of a
+catch-up that could never be compared (Business catch-ups keep the door's 410). Migration
 0126 records which pending plans are the screen's own previews.

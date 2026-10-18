@@ -8,7 +8,7 @@ import type { DoorPlanRow, DoorRecord, DoorRequest, DoorSnapshot } from './types
 import { kitContext } from './authority.ts';
 import { importedTargets, recordKey } from './inventory.ts';
 import { DoorError } from './protocol.ts';
-import { lineage, loadSnapshot, planRow, saveSnapshot, sql, statement, transact } from './store.ts';
+import { assertion, lineage, loadSnapshot, planRow, saveSnapshot, sql, statement, transact } from './store.ts';
 import { bundleBytes, text, uploadRow, type UploadRow } from './uploads.ts';
 
 export function preview(snapshot: DoorSnapshot) {
@@ -48,7 +48,18 @@ async function planUpload(request: DoorRequest, input: Record<string, unknown>, 
     return preview(snapshot);
   }
   if (current.pending_id) throw new DoorError('namespace_has_pending_import',409);
-  const previous = current.head_id ? await loadSnapshot(request,await planRow(request,current.head_id)) : null;
+  // Oncall adaptation: an erasure withdrew the head's snapshot, so nothing can be
+  // compared with it. An owner-session plan retires it as the baseline and plans a
+  // new one; the kit's guards refuse any target an earlier import still holds.
+  let head = current.head_id ? await planRow(request,current.head_id) : null;
+  if (head && request.via === 'operator' && (await request.options.database.prepare('SELECT 1 FROM ik_door_plan_chunks WHERE plan_id=?').bind(head.id).first()) === null) {
+    await transact(request.options.database,request.authority,[
+      assertion(sql('NOT EXISTS(SELECT 1 FROM ik_door_plan_chunks WHERE plan_id=?)',head.id)),
+      sql('UPDATE ik_door_namespaces SET head_id=NULL WHERE installation_id=? AND namespace=? AND head_id=? AND pending_id IS NULL',request.access.installationId,request.access.namespace,head.id),
+    ]);
+    head = null;
+  }
+  const previous = head ? await loadSnapshot(request,head) : null;
   if (previous && input.catchup !== true) throw new DoorError('catchup_required',409);
   if (!previous && (input.catchup === true || request.access.catchup === 'bounded')) throw new DoorError('catchup_requires_baseline',409);
   // A catch-up reads the destination's whole native set, which a large destination

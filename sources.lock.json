@@ -135,7 +135,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "972ec333a756aee14dab5f5252cebcfcd7bdfdcfe4c5e838b3996c4b5c7b6725",
+      "sha256": "893fac9ac08b436708e81256a90f1606c775ee9fb0fc1fc52e0cacf8f303cc75",
       "executable": false
     },
     "BRAND.md": {
@@ -143,7 +143,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "4a9973f3427845d98bc2efd7eaade6ff147c75c3f5771a0569e0a8869e75d1f2",
+      "sha256": "5df892c778cb22f8d041d1215847ddd86565bf4ce91d4fac18696d98bb46e282",
       "executable": false
     },
     "CLAUDE.md": {
@@ -387,7 +387,7 @@
       "executable": false
     },
     "MOVE-IN.md": {
-      "sha256": "2d2080d2905c2d71618de1cb7328c2b9ddd0e44b1bb90db5a41abb1ae0ed36ac",
+      "sha256": "f13e57ca37b300030f0e0db5bb74eabe83e38ee1ceac5e8e71fe1984c2019eae",
       "executable": false
     },
     "NOTICE.md": {
@@ -1863,7 +1863,7 @@
       "executable": false
     },
     "src/modules/import-kit/src/door/planning.ts": {
-      "sha256": "362a4a2cee79b59211b6128293d33fb5bc726946e19edbddb6998b6b26050830",
+      "sha256": "b111eb57a141832e24989c9f561879abc16aa7b087d0000cd68e672140e1b4b8",
       "executable": false
     },
     "src/modules/import-kit/src/door/protocol.ts": {
@@ -2931,7 +2931,7 @@
       "executable": false
     },
     "src/move-in/erasure.ts": {
-      "sha256": "a89dee9a232baaaa3122a4fe3302b1b043eca35d72f735aa919f94bf084d3d19",
+      "sha256": "4e7981f653cdcb306b393694b210efd55af4cc71fa94cf4ad02595c0ffa25c42",
       "executable": false
     },
     "src/move-in/export-help.css": {
@@ -2955,7 +2955,7 @@
       "executable": false
     },
     "src/move-in/owner-door.ts": {
-      "sha256": "d54aae8e46521ae59c247446c8b375326c1a0592536d7c26166708c8efd633a7",
+      "sha256": "c2ccff1431b7d95e82ef25ead084978dff1b8e39cb7afe6805ed8525bc9fc843",
       "executable": false
     },
     "src/move-in/refusals.ts": {
@@ -3335,7 +3335,7 @@
       "executable": false
     },
     "tests/import-door.mjs": {
-      "sha256": "39b12f17c6d59bc8e30ea5d1f06730acd6b9ce3e7810d8f1b3014747b7c40393",
+      "sha256": "664c2ee3cc07687d6c51fea061da70ebb82156cba6fe5c028a81493405a1e5b8",
       "executable": false
     },
     "tests/intake.mjs": {

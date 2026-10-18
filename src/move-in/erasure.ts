@@ -139,8 +139,10 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
     },
   }
   const checkpoint = (await portability.redactionStatements()).map(toD1Sql)
+  // Every erasure commit drops in-flight transfer copies, which may hold the person; the native erasure already does when there is one.
+  const transfers = native ? [] : (await portability.invalidateTransfersStatements()).map(toD1Sql)
   let entry
-  try { entry = await retireD1ImportCustody({ target: { kind: 'user', id: email }, values: [email, ...filenames], related }, [...native?.statements ?? [], ...rewrite], ctx, checkpoint) }
+  try { entry = await retireD1ImportCustody({ target: { kind: 'user', id: email }, values: [email, ...filenames], related }, [...native?.statements ?? transfers, ...rewrite], ctx, checkpoint) }
   catch (error) { if (/CHECK constraint|IMPORT_ATOMIC_GUARD/.test(String((error as Error).message))) fail('Imported data changed while the erasure was prepared; nothing was erased. Retry.', 409); throw error }
   await reindex(ctx)
   if (native) await erasure.deleteBlobs(native.operationId)

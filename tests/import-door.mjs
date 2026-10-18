@@ -286,6 +286,12 @@ try {
  assert.ok(crewEntry.approval.startsWith('approved via Business by ')&&crewEntry.approval.includes(crewPlan.fingerprint),'the surviving import is still listed via Business')
  ok(await req('/auth/settings/imports',{enabled:true}))
  assert.equal(ok(await call('reconcile','opsgenie',{planId:crewPlan.planId}),410).error,'snapshot_withdrawn')
+ // The source's live import can no longer be compared with a new file, so the owner's next file starts a new baseline beside it.
+ const after=ok(await door.preview('opsgenie',JSON.stringify({users:{data:[{id:'u-new-0',username:'new@example.test',fullName:'New After Erasure'}]}})))
+ assert.deepEqual([after.summary.created,after.summary.updated,after.summary.gone],[1,0,0])
+ assert.equal(ok(await door.apply('opsgenie',after)).job.state,'completed')
+ assert.ok(ok(await req('/api/move-in/objects')).some(row=>row.targetId==='new@example.test'))
+ assert.equal(ok(await door.undo('opsgenie',after.planId)).job.state,'undone')
  console.log('Business import door: person erasure with door custody present answered 200 and withdrew every door copy')
  if(page) {
   await page.goto(w.origin+'/auth/settings/identity')
