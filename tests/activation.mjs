@@ -193,6 +193,7 @@ try {
  assert.equal(ok(await door.apply('opsgenie',preview)).job.state,'completed')
  w.sql("UPDATE move_in_objects SET data=json_set(data,'$.name','Native edit'),revision='native-edit' WHERE kind='user' AND id='alice@example.test'")
  const kept=ok(await door.call('opsgenie','undo',{planId:preview.planId}),409);assert.equal(kept.code,'NATIVE_EDIT_CONFLICT');assert.ok(kept.error.includes('alice@example.test'),'the refusal names the edited person')
+ assert.equal(w.sql(`SELECT state FROM ik_jobs WHERE operation_key='door:${preview.planId}'`)[0].state,'completed','a refused undo leaves the import completed')
  assert.equal(w.sql("SELECT json_extract(data,'$.name') AS name FROM move_in_objects WHERE id='alice@example.test'")[0].name,'Native edit')
  const changedSource=JSON.parse(sources.opsgenie);changedSource.users.data[0].fullName='Changed source identity';const changedText=JSON.stringify(changedSource),nativeBefore=w.sql('SELECT * FROM move_in_objects ORDER BY kind,id')
  // A changed file over a live import is its catch-up: the natively edited person is refused by name and nothing replaces them.

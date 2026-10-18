@@ -78,6 +78,9 @@ async function pendingPlan(db: D1Database, vendor: string) {
 }
 const forget = (db: D1Database, planId: unknown) => typeof planId === 'string' ? db.prepare('DELETE FROM move_in_previews WHERE plan_id=?').bind(planId).run() : null
 const jobOf = async (db: D1Database, planId: string) => (await db.prepare("SELECT id FROM ik_jobs WHERE destination='oncall' AND operation_key=?").bind('door:' + planId).first<{ id: string }>())?.id
+/** The job of this owner's own door plan in this source, if it started one. */
+const ownJob = async (db: D1Database, planId: string, vendor: string, principal: string) => (await db.prepare(`SELECT j.id FROM ik_door_plans d JOIN ik_jobs j ON j.operation_key='door:'||d.id
+ WHERE d.id=? AND d.installation_id=? AND d.namespace=? AND j.destination='oncall' AND j.principal_id=?`).bind(planId, IMPORT_DOOR_KEY, vendor, principal).first<{ id: string }>())?.id
 
 /** POST /api/operator/import/{uploads,plan,apply,status,reconcile,undo} with X-Import-Source naming a listed vendor. */
 export async function ownerImport(c: any): Promise<Response> {
@@ -144,6 +147,10 @@ export async function ownerImport(c: any): Promise<Response> {
   return response
  }
  if (action === 'undo' && typeof input?.planId === 'string') {
+  // Name what changed in Oncall since this owner's import before the door records reversal intent: a refused
+  // Undo leaves the import completed, as it always did. An edit that lands meanwhile is still named below.
+  const own = await ownJob(db, input.planId, vendor, actor.id), edited = own ? await changedSinceImport(db, own) : null
+  if (edited) return refusal(edited)
   const response = await send(request)
   if (response.ok) await forget(db, input.planId)
   if (response.status === 409 && await code(response) === 'import_door_conflict') {

@@ -47,13 +47,21 @@ function base64(bytes: Uint8Array) {
  return btoa(binary)
 }
 
+/** A file over the saved-export bound, said as the move-in screen always said it: past the 1 MiB request
+ * that once carried the file as text, "Request too large"; under it, the import journal's refusal. */
+function oversize(bytes: Uint8Array, name: string, vendor: string) {
+ const sent = new TextEncoder().encode(JSON.stringify({ vendor, source: new TextDecoder().decode(bytes), filename: name })).length
+ return sent > 1024 * 1024 ? 'Request too large' : "The import journal refused this request; check the job's state before trying again."
+}
+
 /** Upload the file's original bytes, then plan them (a source that already holds an import plans its catch-up). */
-export async function previewFile(door: Door, bytes: Uint8Array, name: string) {
+export async function previewFile(door: Door, bytes: Uint8Array, name: string, vendor: string) {
  const bundleSha256 = await hex(bytes), totalChunks = Math.ceil(bytes.length / CHUNK)
  let uploadId: string | undefined
  for (let index = 0; index < totalChunks; index++) {
   const chunk = bytes.subarray(index * CHUNK, (index + 1) * CHUNK)
-  uploadId = (await door('uploads', { uploadId, name, bundleSha256, totalBytes: bytes.length, totalChunks, index, chunkSha256: await hex(chunk), base64: base64(chunk) })).uploadId
+  try { uploadId = (await door('uploads', { uploadId, name, bundleSha256, totalBytes: bytes.length, totalChunks, index, chunkSha256: await hex(chunk), base64: base64(chunk) })).uploadId }
+  catch (error) { throw error instanceof DoorRefusal && error.code === 'quota_or_chunk_limit' ? new DoorRefusal(oversize(bytes, name, vendor), error.code) : error }
  }
  return door('plan', { uploadId })
 }

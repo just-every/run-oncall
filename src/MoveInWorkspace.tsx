@@ -17,7 +17,7 @@ export function MoveInWorkspace({admin,request}:{admin:boolean;request:(path:str
  <ExportHelp vendor={vendor}/>
  <label className="scheduling-field">Export JSON<input type="file" accept="application/json,.json" onChange={async e=>{const file=e.target.files?.[0];if(file){setSource(new Uint8Array(await file.arrayBuffer()));setFilename(file.name);setPreview(null);setJob(null)}}}/></label>
  <p>Choose the JSON bundle prepared above. Oncall never asks for your provider API key.</p>
- <button disabled={busy||!source} onClick={()=>run(async()=>{setJob(null);setPreview(null);setPreview(await previewFile(door,source!,filename))})}>Preview import</button>
+ <button disabled={busy||!source} onClick={()=>run(async()=>{setJob(null);setPreview(null);setPreview(await previewFile(door,source!,filename,vendor))})}>Preview import</button>
  {error&&<p role="alert">{error}</p>}{busy&&<p role="status">Working…</p>}
  {preview&&<CompatibilityReview preview={preview} busy={busy} hasJob={Boolean(job)} confirm={()=>void run(async()=>{setJob(await applyPlan(door,preview.planId,preview.fingerprint));await load()})}/>}
  <ImportJournal jobs={jobs} job={job} busy={busy} select={setJob} resume={()=>void run(async()=>{setJob(job.door?job.state==='rolling_back'?await undoPlan(door,job.door.planId):await applyPlan(door,job.door.planId,job.door.fingerprint):await request(`/api/move-in/${job.id}/resume`,{vendor}));await load()})} undo={()=>void run(async()=>{setJob(job.door?await undoPlan(door,job.door.planId):await request(`/api/move-in/${job.id}/undo`,{vendor,confirm:true}));await load()})}/>

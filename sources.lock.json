@@ -2927,7 +2927,7 @@
       "executable": false
     },
     "src/move-in/door-client.ts": {
-      "sha256": "09f379a77d63805eb4326439f532748c6203eef4b84fd194ea143295eadeb964",
+      "sha256": "ad5e5343e0348ae207f010f7d4cf7c711d24389703cc3a1400393b8b9d05a309",
       "executable": false
     },
     "src/move-in/door-key.ts": {
@@ -2971,7 +2971,7 @@
       "executable": false
     },
     "src/move-in/owner-door.ts": {
-      "sha256": "4a6bc8691b1de28b0021b054d487dd2226c7fbf6795b9b230cc90311273788d3",
+      "sha256": "2ef5806f0492d38ea822964955614a17714c6707ee7b5db6b7d7fd320fbd9d86",
       "executable": false
     },
     "src/move-in/refusals.ts": {
@@ -2995,7 +2995,7 @@
       "executable": false
     },
     "src/MoveInWorkspace.tsx": {
-      "sha256": "4f8e69e06954cf0c73cb4612904fa609a0283ba4e6c7e71663245c3e9204b2df",
+      "sha256": "7406c32b67d248df157bb433223e03aa9c70277cf0247b9c24a7c2f16b2bfb3d",
       "executable": false
     },
     "src/native-member.ts": {
@@ -3239,7 +3239,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "c8974960344aa98cb952ba08578fc69b8363c6a75315e8913046899eb5b41091",
+      "sha256": "e512a9ae6d7b08018e428391c689153f2d3f753f63355ab376c5acfef077535f",
       "executable": false
     },
     "tests/alert-severity-browser.mjs": {
