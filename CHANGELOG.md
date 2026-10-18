@@ -1,3 +1,7 @@
+# 0.3.1 · 2026-10-18
+
+Description only; no product change. The catalogue description is now "Coordinate incident response and on-call schedules alongside your existing pager.", the same sentence as main. The application, contract, migrations and configuration are identical to 0.3.0, so upgrading from 0.3.0 needs no migration, configuration or data step.
+
 # 0.3.0 · 2026-10-16
 
 Release 1 hosted incident coordination beside your existing pager. Paging stays OFF. Screenshot: [`.github/assets/release/oncall-0.3.0-incident-1440.png`](.github/assets/release/oncall-0.3.0-incident-1440.png).
