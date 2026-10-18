@@ -24,7 +24,7 @@
 .scheduling-selection > .scheduling-field { flex: 1; max-width: 640px; margin: 0; }
 .scheduling-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-size: 14px; line-height: 1.45; }
 .scheduling-field > span { font-weight: 600; color: var(--oc-ink-soft); }
-.scheduling-field :is(input, select, textarea) { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--app-field-line); border-radius: 10px; background: var(--app-field); color: var(--oc-ink); font-size: 15px; }
+.scheduling-field :is(input, select, textarea) { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--app-field-line); border-radius: 10px; background-color: var(--app-field); color: var(--oc-ink); font-size: 15px; }
 .scheduling-field input[readonly] { background: var(--oc-paper-deep); }
 .scheduling-field textarea { min-height: 72px; resize: vertical; }
 .scheduling-field small { color: var(--oc-muted); font-size: 13px; line-height: 1.5; }
@@ -65,7 +65,7 @@
 .scheduling-member-slots li { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; }
 .scheduling-member-slots .scheduling-field { flex: 1; margin: 0; }
 .scheduling-member-slots .scheduling-field > span { color: var(--oc-muted); font-size: 13px; font-weight: 550; }
-.scheduling-member-slots select, .scheduling-rotation select { padding-left: 10px; padding-right: 4px; font-size: 14px; }
+.scheduling-member-slots select, .scheduling-rotation select { padding-left: 10px; font-size: 14px; }
 .scheduling-slot-index { flex: none; width: 14px; color: var(--oc-muted); font-size: 14px; }
 .scheduling-avatar { flex: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--oc-now-wash); color: var(--oc-now-ink); font-size: 12px; font-weight: 650; }
 .scheduling-rotation + .scheduling-rotation .scheduling-avatar { background: var(--oc-next-wash); color: var(--app-next-ink); }
