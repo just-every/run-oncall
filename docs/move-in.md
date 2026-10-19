@@ -117,7 +117,7 @@ People are matched by their exact email, so someone whose address merely contain
 - **Overrides:** one person each, not overlapping.
 - **Escalation policies:** one or two steps, each handing to a single schedule after an ordinary "if not acknowledged" delay in minutes, with no repeats. A first step with an immediate (0-minute) notification maps to **1 minute** in the paused policy. The preview explicitly flags this timing change as non-equivalent; the original stays in the journal. No policy is activated. Later steps must wait at least 1 minute.
 
-Oncall keeps the primary rotation. The backup is shown as an explicit gap, because a single source rotation is never relabelled as backup. See [Schedules and hand-overs](schedules.md) to add one.
+Oncall keeps the primary rotation. The backup is shown as an explicit gap, because a single source rotation is never relabeled as backup. See [Schedules and hand-overs](schedules.md) to add one.
 
 ## What stays different
 

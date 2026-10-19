@@ -24,7 +24,7 @@ The catch-all either records the event in the unrouted queue or chooses one allo
 
 The key’s queue retains unmatched structured events without inventing a service or admitting an alert. An administrator can re-admit an event to an allowed service. This creates a new attributed receipt, preserves the original and uses an operation ID so a repeated request has one effect. It does not deliver a page.
 
-Trigger, acknowledgement, note and recovery all pass through the same service-selection rules. The same deduplication key routed to two services has separate generations. Recovery acts only on the currently selected service; a no-effect recovery names other services with open generations as a diagnostic. Source acknowledgement is an integration claim, separate from a human incident acknowledgement. Source recovery never resolves a declared incident.
+Trigger, acknowledgment, note and recovery all pass through the same service-selection rules. The same deduplication key routed to two services has separate generations. Recovery acts only on the currently selected service; a no-effect recovery names other services with open generations as a diagnostic. Source acknowledgment is an integration claim, separate from a human incident acknowledgment. Source recovery never resolves a declared incident.
 
 ## Archives and current limits
 
