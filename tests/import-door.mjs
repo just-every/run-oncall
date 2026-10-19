@@ -165,7 +165,7 @@ try {
  }
  // A credential field reaches the same refusal as the ordinary saved-file door.
  const bad=await upload('pagerduty',Buffer.from(JSON.stringify({users:{users:[{id:'refused',email:'refused@example.test',api_key:'synthetic-example-refused'}]}})))
- ok(await call('plan','pagerduty',{uploadId:bad}),409)
+ assert.equal(ok(await call('plan','pagerduty',{uploadId:bad}),422).error,'source_parser_failed')
  const retained=w.sql('SELECT COUNT(*) AS count FROM ik_door_uploads')[0].count
  assert.ok(retained>0,'original upload custody stays in this installation')
  // One server-owned allow-list resolves every grant's namespace: an unlisted one

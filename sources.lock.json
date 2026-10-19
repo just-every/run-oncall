@@ -507,7 +507,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "43d44deb75ee98950cd44427503dd20491ad6c1f1b7e2c67bf3de6d631325c74",
+      "sha256": "89f9aa1330d0ff4b6a1aec696787d4abb2ff5002e15ea4f89cb9f7473c1c2d3b",
       "executable": false
     },
     "RELEASE.json": {
@@ -3407,7 +3407,7 @@
       "executable": false
     },
     "tests/import-door.mjs": {
-      "sha256": "664c2ee3cc07687d6c51fea061da70ebb82156cba6fe5c028a81493405a1e5b8",
+      "sha256": "8c5e54c51f014ec60efad3cc251b8a1cc1dbf4e66ab43c05e6cc012918c0cb3e",
       "executable": false
     },
     "tests/intake.mjs": {
