@@ -102,6 +102,10 @@
       "sha256": "01e862b0ad09f3da2b6cc09aca897d351488e91520bac16762809e938e98511d",
       "executable": false
     },
+    ".github/assets/release/oncall-0.4.0-incident-1440.png": {
+      "sha256": "8fb13cc6e373a5b26bd99aaed0255373c5a55eacc9be25a24d19904b419c9128",
+      "executable": false
+    },
     ".github/workflows/run-demo.yml": {
       "sha256": "41365ec7c002e9451166313b085f9e64ed2e3ea002c27f3d5ead845bc9c302b2",
       "executable": false
@@ -127,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d56d561d3e2303e45b88191715ce0ef0c0ba6e9fc802919ab7f92677197195d5",
+      "sha256": "9f50410b9abe45d983c8ad6623e35025a100bb5bc1e5a953092d6bbb89347a50",
       "executable": false
     },
     "AGENTS.md": {
@@ -143,7 +147,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "5df892c778cb22f8d041d1215847ddd86565bf4ce91d4fac18696d98bb46e282",
+      "sha256": "4012e0b8e2cf9a9c77c617e3233b0c0b1f20821365a47ac6566a4356fb1dce52",
       "executable": false
     },
     "CLAUDE.md": {
@@ -151,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5c6d82d0145e64bcd58904baa1d40b5701928897145275f4f4a1618ccf775709",
+      "sha256": "fca594c2169277f941b21690ab726989470548b7cba978a3fa1dc7b80d911931",
       "executable": false
     },
     "DEMO.md": {
@@ -403,11 +407,11 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "5b3e68fb9a70c17c9e0f5b290335ead58ef660ea24d76fe8088ae2345b7b7cdc",
+      "sha256": "c4392c1159aa8af8a127b267310a04f29c973f0e5c8844a1fe2dffdd50ccf7ca",
       "executable": false
     },
     "package.json": {
-      "sha256": "86e4bca6dccc850adf17dc395af41c8c30f77c0fb4e2913c6d45cf1912b9e919",
+      "sha256": "dbbf8665a0668f4128b70ac6ca6f717b02facfa9637987d51b87739720275b68",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -499,15 +503,15 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "21e800941fe54a97f1c69ac1200b288bc9052135587da5450b87b826dabc7c9a",
+      "sha256": "f37d7f7663b93c05ab2e7d9b2e7bef0de97f03e809169fbf00cd60bbb0655efb",
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "2eda5b47f9277e31b7d595f640d076ee490609f17e220fc1411fcca982bc5e53",
+      "sha256": "f728a71f01780ea84dcaa514960c880f2a3f41d9add1e35407b43be313533291",
       "executable": false
     },
     "RELEASE.md": {
-      "sha256": "37443c8245fb49f0826af2c5fa5c7c2b68740a1806e2c7b7a0df4ea269356ae3",
+      "sha256": "fb074092dd1accd86d4010009262b5dcf3c23fae42ae8648231be6454455c39e",
       "executable": false
     },
     "rer-project.json": {
@@ -579,7 +583,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "ec808c0d65e9bf3d10f1c321dfb4d24f7b21eb2b67b76030380828ae097e54cf",
+      "sha256": "c8367599bbba1e8916045533505200e7b11e4461c274452d0401389557465b8a",
       "executable": false
     },
     "src/api.ts": {
@@ -2971,11 +2975,11 @@
       "executable": false
     },
     "src/move-in/owner-door.ts": {
-      "sha256": "2ef5806f0492d38ea822964955614a17714c6707ee7b5db6b7d7fd320fbd9d86",
+      "sha256": "162b86c54910c2912f28f4c757a3d8b27474d284c6fcdf5efdfad08a6702b086",
       "executable": false
     },
     "src/move-in/refusals.ts": {
-      "sha256": "ddd6136b42b1079ac8a99383815712e4a2e3b4e187337f2fcc021faf34798c4f",
+      "sha256": "4a59cee69927f39682a54a2397e432e50f58ddc730d9c1efa17c2278e7fa6615",
       "executable": false
     },
     "src/move-in/rotations.ts": {
@@ -3239,7 +3243,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "e512a9ae6d7b08018e428391c689153f2d3f753f63355ab376c5acfef077535f",
+      "sha256": "480eabd2eaaee8c3a5b9f39581cd9563ba78d55e8e74e570299511f12c721c56",
       "executable": false
     },
     "tests/alert-severity-browser.mjs": {
@@ -3363,7 +3367,7 @@
       "executable": false
     },
     "tests/keyboard-coordination.mjs": {
-      "sha256": "3140e028ebc764301bb4dc4ffabf2f7ba4dc6a5c7fb8d62387b1958f8d33db02",
+      "sha256": "934c85d7996ea4051e2c9201a919b7b2403302e6942eecc943d16ae6088a33c7",
       "executable": false
     },
     "tests/keyboard.mjs": {
@@ -3423,7 +3427,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "5daf27a3a35e2923b4efe21f0155b7ae81ab58cd0e797ffdf80a8e6c98a52282",
+      "sha256": "1168a3d56ec442ef831e8a87574e887c1b72caab884fa17615f8de160e7515c7",
       "executable": false
     },
     "tests/signin-browser.mjs": {

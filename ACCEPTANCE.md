@@ -310,6 +310,14 @@ Public landing requires Base’s publication scan on the exact tree before each 
 
 Obsolete synthetic-dispatch tests and the drill UI were removed in the existing release because sending is not an accepted current flow. Their removal is historical, not a change in this contract round. Held history, archive, import and authority guarantees remain mandatory; future paging requires real delivery and standby proof rather than reinstating synthetic acceptance.
 
+## Release gate: 0.4.0
+
+Run on 19 October 2026 against `f380227f4915f96a43a98515196600ed6f16468d`, by a reviewer who wrote none of its rounds, through the product's own pages. These are one-time release results, not maintained tests.
+
+- **Local, 1440 and 390:** members and a service with a three-step runbook created; a Europe/London primary/backup rotation handing over Mondays at 09:00 resolved to 08:00 UTC on 19 October and 09:00 UTC on 26 October, across the clock change; a cover interval resolved in the preview; now/next named who is on, who is next and the hand-over; the private calendar feed answered for the session and refused an anonymous request (401) and a 45-day window (400); an incident went from declaration through runbook 3/3, a note, acknowledgement, recovery with evidence and resolution with every entry kept; an Opsgenie schedule export went through preview, paused import and adoption into Schedules. Paging doors refused with the paging-OFF explanation (409) and an over-limit command was refused (413).
+- **Upgrade:** a 0.3.0 installation holding that data ran 0.4.0's `rer dev`; migrations 0117–0126 applied (32 in all) and every member, service, incident, timeline entry, schedule and import was kept, and the same journeys then passed on it at 1440 and 390.
+- **Hosted (Cloudflare, workers.dev):** `rer deploy` claimed the owner and retired the setup token; the owner signed in by a real emailed link (SendGrid, received in seconds with SPF, DKIM and DMARC pass); the same journeys passed at 1440 and 390. The hosted database was exported with `wrangler d1 export --remote`, the deployment removed (empty readback), deployed again and the export restored into the fresh empty database; every record matched, the owner signed in by email again and a member signed in by password. The deployment was then removed with empty readback.
+
 ## Clause status totals
 
 **19 done**, **35 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.

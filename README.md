@@ -31,7 +31,7 @@
 
 # Run it locally
 
-Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.3.0`, includes hosted coordination. See [Install and run](docs/install.md#host-for-your-team) for complete credentials and deployment instructions.
+Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.4.0`, includes hosted coordination. See [Install and run](docs/install.md#host-for-your-team) for complete credentials and deployment instructions.
 
 You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2 (without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall` brings its own). One line installs the `rer` command, clones Oncall and starts it; `rer` provides the checkout's pinned Node and pnpm tooling:
 

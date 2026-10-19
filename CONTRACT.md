@@ -381,7 +381,7 @@ The approved scope is the 16 October 2026 Oncall entry in LIST.json; the categor
 
 ## Status
 
-Judged from the code and tests at commit `f4d8273c60fca094fc59ecdb5c05b47425edbf87` (19 October 2026). The OC-001 exercising flow below is completed in this change.
+Judged from the code and tests at commit `f380227f4915f96a43a98515196600ed6f16468d` (19 October 2026). This is the code released as 0.4.0. Its release gate ran the published rota, now/next, calendar feed, incident, move-in, upgrade and hosted journeys on that code; a status still rests only on its cited flow, and the gate changed no status.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
@@ -408,7 +408,7 @@ Judged from the code and tests at commit `f4d8273c60fca094fc59ecdb5c05b47425edbf
 | `OC-015` | Strict module archives | published | done | `src/family/response-operations/paging-archive.ts`; `src/paging-api.ts`; `tests/paging-history.mjs`; `tests/activation.mjs` |  |
 | `OC-016` | Recovery checkpoint | published | done | `src/api.ts`; `src/family/response-operations/recovery.ts`; `scripts/checkpoint.mjs`; `tests/activation.mjs`; `tests/checkpoint-cli.mjs` |  |
 | `OC-017` | Reviewed handoffs | published | done | `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs` | Connected communication is a separate target in OC-034/051. |
-| `OC-018` | Maintained root commands | published | partial | `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/signin-browser.mjs`; `tests/activation-browser.mjs` | Local lifecycle, unavailable-mail refusal and hosted serving are exercised; these tests do not prove account deployment or inbox receipt. |
+| `OC-018` | Maintained root commands | published | partial | `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/signin-browser.mjs`; `tests/activation-browser.mjs` | Local lifecycle, unavailable-mail refusal and hosted serving are exercised; these tests do not prove account deployment or inbox receipt. The 0.4.0 release gate (19 October 2026) deployed to Cloudflare, retired the setup token, signed the owner in by a real emailed link, restored a hosted backup into a fresh deployment, signed a member in by password and removed the deployment with empty readback; no maintained test repeats those steps, and coordinating as a member on the hosted app was not exercised. |
 | `OC-019` | Additive upgrade | published | done | `src/workspace-store.ts`; `migrations/core/0106_relational_workspace.sql`; `tests/runtime.mjs`; `tests/runtime-held-workspace.mjs` |  |
 | `OC-020` | Now/next and calendar feed | published | done | `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation-browser.mjs` | Private ICS downloads support Google Calendar/Outlook import; persistent subscription credentials are OC-025. |
 | `OC-021` | Move-in preview | published | done | `src/move-in/owner-door.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`; `tests/provider-export-browser.mjs` | Reviewed file migration is implemented; full incumbent cutover and other vendors are OC-038. |
