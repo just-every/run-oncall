@@ -381,17 +381,17 @@ The approved scope is the 16 October 2026 Oncall entry in LIST.json; the categor
 
 ## Status
 
-Judged from the code and tests at commit `4b99b1b6bf540e7ce8db2d06a56d74222967155b` (19 October 2026). The OC-008 exercising flows below are completed in this change.
+Judged from the code and tests at commit `f4d8273c60fca094fc59ecdb5c05b47425edbf87` (19 October 2026). The OC-001 exercising flow below is completed in this change.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 18 | 4 | 0 | 22 |
+| Published | 19 | 3 | 0 | 22 |
 | Target and push further | 0 | 32 | 18 | 50 |
-| All | 18 | 36 | 18 | 72 |
+| All | 19 | 35 | 18 | 72 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
-| `OC-001` | Event identity and alerts | published | partial | `src/api.ts`; `src/intake/lifecycle.ts`; `tests/runtime.mjs`; `tests/intake.mjs` | Native explicit-generation identity and compatible receipt-ordered lifecycle are exercised. Compatible resolve-before-trigger is retained without a tombstone; repeated open triggers share a generation and identical post-recovery triggers reopen. Comprehensive cross-source grouping acceptance remains unproven. |
+| `OC-001` | Event identity and alerts | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `src/intake/lifecycle.ts`; `tests/runtime.mjs`; `tests/intake.mjs` | Named OC-001 HTTP assertions exercise signed/bearer identity, same-tuple grouping, four separate source/service/environment/generation alerts and archive links, recovery-before-trigger, delayed old-generation recovery and an unchanged declared incident. Compatible receipt-ordered resolve-before-trigger, open-trigger grouping and reopening after recovery are exercised in `tests/intake.mjs`. |
 | `OC-002` | Routing replay | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` |  |
 | `OC-003` | Roles and authority | published | done | `src/api.ts`; `src/auth.server.ts`; `tests/runtime.mjs`; `tests/runtime-authority.mjs` | Workspace-wide roles are implemented; team isolation and federation are separate targets in OC-023/039. |
 | `OC-004` | Incident state transitions | published | done | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Recovery attestation is a human claim, not independently measured customer recovery. |

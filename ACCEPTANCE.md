@@ -10,9 +10,9 @@ The numbered flows are acceptance requirements through the product’s public do
 
 `rer verify` is the maintained full local entrypoint. Contract-document changes use the existing `rer check --profile first-party` validation; do not weaken checks, change IDs or treat a status/copy assertion as feature acceptance. Existing test files below are entrypoints, not promises that they cover every future requirement.
 
-1. **OC-001 — Event identity and alerts. Status: partial.** POST signed and bearer events through /api/ingress/:source; repeat a normalized identity, conflict changed content, send recovery before trigger and after a newer generation, and inspect protected state. Verify grouping across multiple sources without merging service/environment boundaries.
+1. **OC-001 — Event identity and alerts. Status: done.** POST signed and bearer events through /api/ingress/:source; repeat a normalized identity, conflict changed content, send recovery before trigger and after a newer generation, and inspect protected state. Verify grouping across multiple sources without merging service/environment boundaries.
 
-   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Identity/generation and linked alerts are exercised; comprehensive grouping acceptance is not established.
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` (named OC-001 signed/bearer identities, same-tuple grouping, four separate source/service/environment/generation alerts, early and delayed recovery, no archive cross-links and unchanged human incidents); `tests/intake.mjs` (compatible receipt-ordered lifecycle).
 
 2. **OC-002 — Routing replay. Status: done.** Admit a severity-routed event, change policy, POST /api/replay and compare the immutable admission explanation with the proposed decision in submitted order; compare state before/after for zero writes.
 
@@ -312,4 +312,4 @@ Obsolete synthetic-dispatch tests and the drill UI were removed in the existing 
 
 ## Clause status totals
 
-**18 done**, **36 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
+**19 done**, **35 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.

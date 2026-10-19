@@ -266,10 +266,14 @@ try {
     type: "policy", service: privateService.id, severity: "*", action: "route",
     owner: admin.id, reason: "Private routing instruction outside the intake scope",
   }, cookie));
+  const stagingService = ok(await request("/api/command", {
+    type: "service", id: "checkout-staging", name: "Checkout staging",
+    environment: "staging", owner: admin.id, runbook: [], pager: "",
+  }, cookie));
   ok(
     await request(
       "/api/sources",
-      { id: "monitor", key, scopes: ["checkout"] },
+      { id: "monitor", key, scopes: ["checkout", stagingService.id] },
       cookie,
     ),
   );
@@ -359,11 +363,11 @@ try {
   ok(
     await request(
       "/api/sources",
-      { id: "signed", key: signedKey, mode: "signed", scopes: ["checkout"] },
+      { id: "signed", key: signedKey, mode: "signed", scopes: ["checkout", stagingService.id] },
       cookie,
     ),
   );
-  const se = { ...event, source: "signed", eventId: "signed-one" };
+  const se = { ...event, source: "signed" };
   const ts = String(Math.floor(Date.now() / 1000));
   const sig = createHmac("sha256", signedKey)
     .update(ts + "." + JSON.stringify(se))
@@ -375,7 +379,8 @@ try {
     }),
     201,
   );
-  await receipt(signed, se, false);
+  const signedAlert = await receipt(signed, se, false);
+  assert.notEqual(signedAlert, admittedAlert, "OC-001: the same event ID, key and generation in another source never merge");
   const signedRepeated = ok(await request("/api/ingress/signed", se, "", {
     "x-oncall-timestamp": ts, "x-oncall-signature": sig,
   }));
@@ -392,6 +397,36 @@ try {
     }),
     401,
   );
+  // OC-001: distinct events join only their exact source/service/environment/generation tuple.
+  const native = async signal => ok(await request("/api/ingress/monitor", signal, "", {
+    authorization: "Bearer " + key,
+  }), 201);
+  const joined = await native({ ...event, eventId: "same-tuple-trigger" });
+  const staged = { ...event, service: stagingService.id, environment: "staging" };
+  const earlyRecovery = await native({ ...staged, eventId: "staging-recovery-first", intent: "recover" });
+  const lateTrigger = await native({ ...staged, eventId: "staging-trigger-after-recovery" });
+  const newer = await native({ ...event, eventId: "newer-generation", generation: "release-2" });
+  const identityArchive = ok(await request("/api/archive", undefined, cookie));
+  const alertFor = receipt => identityArchive.alerts.find(alert => alert.events.includes(receipt.id));
+  const stagedAlert = alertFor(earlyRecovery), newerAlert = alertFor(newer);
+  const expectedMembership = new Map([
+    [admittedAlert, [first.id, joined.id]], [signedAlert, [signed.id]],
+    [stagedAlert.id, [earlyRecovery.id, lateTrigger.id]], [newerAlert.id, [newer.id]],
+  ]);
+  assert.equal(expectedMembership.size, 4, "OC-001: source, environment/service and generation boundaries each retain a separate alert");
+  assert.equal(identityArchive.alerts.filter(alert => alert.key === event.key).length, 4);
+  for (const [id, eventIds] of expectedMembership) {
+    const alert = identityArchive.alerts.find(item => item.id === id);
+    assert.deepEqual(alert.events, eventIds, "OC-001: distinct observations of one tuple join the same alert in order");
+    for (const eventId of eventIds) {
+      const stored = identityArchive.events.find(item => item.id === eventId);
+      assert.deepEqual([stored.source, stored.service, stored.environment, stored.key, stored.generation],
+        [alert.source, alert.service, alert.environment, alert.key, alert.generation], "OC-001: archive contains no cross-tuple event links");
+      assert.equal(identityArchive.alerts.filter(item => item.events.includes(eventId)).length, 1);
+    }
+    assert.equal(alert.state, id === stagedAlert.id ? "recovered" : "active",
+      "OC-001: recovery-before-trigger stays recovered and leaves the other tuples active");
+  }
   let incident = ok(
     await request(
       "/api/command",
@@ -460,6 +495,7 @@ try {
     state: "mitigating",
     summary: "Mitigation is being reviewed",
   });
+  const beforeSourceRecovery = ok(await request("/api/archive", undefined, cookie));
   ok(
     await request(
       "/api/ingress/monitor",
@@ -473,6 +509,13 @@ try {
     ok(await request("/api/state", undefined, cookie)).incidents[0].state,
     "mitigating",
   );
+  const afterSourceRecovery = ok(await request("/api/archive", undefined, cookie));
+  assert.deepEqual(afterSourceRecovery.incidents, beforeSourceRecovery.incidents,
+    "OC-001: source recovery never mutates the declared human incident");
+  assert.equal(afterSourceRecovery.alerts.find(alert => alert.id === admittedAlert).state, "recovered");
+  assert.deepEqual(afterSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
+    beforeSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
+    "OC-001: delayed recovery of the older generation leaves the newer generation, other source and staging alert unchanged");
   await mutate({
     type: "transition",
     state: "recovered",
