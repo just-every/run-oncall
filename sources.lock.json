@@ -131,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "b32a88e3f949058987ec72a3ca908161b2c5b8ccd6454e7a6418476da5653435",
+      "sha256": "c50ae61f45bb8bec4760829ac28869f584145a0fb23eb4feb8c37d2ce65163da",
       "executable": false
     },
     "AGENTS.md": {
@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "90e03f47854ee634b4473386a4d87876db527c77964e6310d493f3436e36615c",
+      "sha256": "02d50160492d940c0648781a0c37676e9e4dd2135fd75af93e2a33d58cbe2b1e",
       "executable": false
     },
     "DEMO.md": {
@@ -235,7 +235,7 @@
       "executable": false
     },
     "docs/urgency.md": {
-      "sha256": "f140037da3bf2999028a4e287f2e2b3ec994450ef8170f99de840e16f4e27427",
+      "sha256": "dcebc7a3206244900083e511b534574363619885d98cf59899a1179955d3e5cd",
       "executable": false
     },
     "edition.json": {
@@ -3243,7 +3243,7 @@
       "executable": false
     },
     "src/urgency/AlertUrgency.tsx": {
-      "sha256": "f5fd4b99cf4f664164b602b6de0365e11930d668ce41243c8ba177af17b903dd",
+      "sha256": "03b1090b4a4c618fcae4908939284a49955b4858b5352eef80fad08c89c2bbce",
       "executable": false
     },
     "src/urgency/api.ts": {
@@ -3259,7 +3259,11 @@
       "executable": false
     },
     "src/urgency/rules.ts": {
-      "sha256": "fe7bd16bb5b01cb62037967980ee9e1079f4e0f8545e8721d7e71692cfd70675",
+      "sha256": "ac8ecd4910af8af58d91de045f9cf7223df4483e445cc13826d2e39f5a4dae0a",
+      "executable": false
+    },
+    "src/urgency/support-hours.ts": {
+      "sha256": "21d36368c0aa4ded40c18d9159dddf5bcf89ecf3189b17d708999e42d77597b0",
       "executable": false
     },
     "src/urgency/types.ts": {
@@ -3267,7 +3271,7 @@
       "executable": false
     },
     "src/urgency/urgency.css": {
-      "sha256": "1b7aa8091e876f44170e7465f302d596338832f0d2636c87b0c4a38c63b0f96c",
+      "sha256": "d9c7ebb66b27f18433af2505215da43199fbda83f8e4d69f3a75f93b5504f3ce",
       "executable": false
     },
     "src/urgency/UrgencyPolicy.tsx": {
@@ -3467,7 +3471,7 @@
       "executable": false
     },
     "tests/reviews.mjs": {
-      "sha256": "699fe6ee5c2c2abeb4018d50972f5b640ede79817e32c5842abe92cb06111e20",
+      "sha256": "a7796ada9d519fc25791399d82fa184ecfb0d36b44db3ff32b34a88cacfe647e",
       "executable": false
     },
     "tests/routing.mjs": {
@@ -3503,7 +3507,7 @@
       "executable": false
     },
     "tests/urgency.mjs": {
-      "sha256": "d03c235fc5df865cbaa7cbe4255e5100d66819d9071845128e647a5d4311a1fa",
+      "sha256": "3ea700b7975ee0dcceab8d314be25c4c522c540d3e78554e4eb956e90d6f24a5",
       "executable": false
     },
     "tests/verify.mjs": {
