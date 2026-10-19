@@ -54,3 +54,14 @@ export async function changedSinceImport(db: D1Database, job: string) {
  if (!changed.length) return null
  return new Refusal(409, `${list(changed)} changed in Oncall after this import, so undoing it would overwrite ${changed.length > 1 ? 'those changes' : 'that change'}; nothing was undone. Put ${changed.length > 1 ? 'them' : 'it'} back as imported, or keep the import.`, 'NATIVE_EDIT_CONFLICT')
 }
+
+/** IMPORT_SUPERSEDED on undo: a later import (an owner catch-up, say) replaced records this one wrote, so this one
+ * undoes only after it; name that import by vendor and journal id. Null when no later import holds this one's records. */
+export async function supersededBy(db: D1Database, job: string) {
+ const rows = await db.prepare(`SELECT DISTINCT s.job_id AS job,COALESCE((SELECT d.namespace FROM ik_door_plans d WHERE d.job_id=j.id OR 'door:'||d.id=j.operation_key LIMIT 1),j.namespace) AS namespace
+  FROM ik_d1_history h JOIN (SELECT id,job_id FROM ik_provenance UNION ALL SELECT id,job_id FROM ik_d1_history) s ON s.id=h.successor_id JOIN ik_jobs j ON j.id=s.job_id
+  WHERE h.job_id=? AND s.job_id<>? ORDER BY s.job_id`).bind(job, job).all<{ job: string; namespace: string }>()
+ if (!rows.results.length) return null
+ const one = rows.results.length === 1
+ return new Refusal(409, `The later ${list(rows.results.map(r => `${vendorName(r.namespace)} import ${r.job}`))} replaced records from this one, so undo ${one ? 'that import' : 'those imports'} first in Saved import journal, then this one; nothing was undone.`, 'IMPORT_SUPERSEDED')
+}

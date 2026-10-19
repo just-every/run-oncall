@@ -1,5 +1,5 @@
 import { createImportOperatorHandler } from '../modules/import-kit/src/door/operator'
-import { loadSnapshot, planRow } from '../modules/import-kit/src/door/store'
+import { loadSnapshot, planRow, sql, transact } from '../modules/import-kit/src/door/store'
 import { bundleBytes, uploadRow } from '../modules/import-kit/src/door/uploads'
 import type { DoorRequest } from '../modules/import-kit/src/door/types'
 import type { D1Sql } from '../modules/import-kit/src/d1/types'
@@ -11,7 +11,7 @@ import { IMPORT_DOOR_KEY } from './door-key'
 import { targets } from './target'
 import { fileSource, type Vendor } from './source'
 import { mapping } from './mapping'
-import { alreadyImported, changedSinceImport, duplicateTargets, Refusal } from './refusals'
+import { alreadyImported, changedSinceImport, duplicateTargets, Refusal, supersededBy } from './refusals'
 
 // The owner's move-in screen imports through Base's owner-session door, the
 // same pipeline and allow-list as Business: upload → plan → reviewed
@@ -69,6 +69,24 @@ async function sourceRefusal(read: DoorRequest, uploadId: string, vendor: Vendor
  }
 }
 
+/** A file the preview refuses goes with its refusal: under the owner's session the upload and its chunks are
+ * withdrawn (as the door drops an upload holding an erased record), and the namespace binding that upload made
+ * when nothing else in the source holds it, so a refused preview leaves no row behind. */
+async function withdrawUpload(db: D1Database, session: D1Sql, vendor: string, uploadId: unknown) {
+ if (typeof uploadId !== 'string') return
+ const scope = [IMPORT_DOOR_KEY, vendor]
+ await transact(db, session, [
+  sql('DELETE FROM ik_door_chunks WHERE upload_id IN (SELECT id FROM ik_door_uploads WHERE id=? AND installation_id=? AND namespace=?)', uploadId, ...scope),
+  sql('DELETE FROM ik_door_uploads WHERE id=? AND installation_id=? AND namespace=?', uploadId, ...scope),
+  sql(`DELETE FROM ik_door_scopes WHERE installation_id=? AND namespace=? AND NOT EXISTS(SELECT 1 FROM ik_door_uploads WHERE installation_id=? AND namespace=?)
+   AND NOT EXISTS(SELECT 1 FROM ik_door_plans WHERE installation_id=? AND namespace=?)`, ...scope, ...scope, ...scope),
+ ])
+}
+
+/** Why Undo cannot run on this import yet, named before the door records reversal intent: a later import replaced
+ * its records (undo that one first), or something changed in Oncall since. Null when Undo can proceed. */
+const undoRefusal = async (db: D1Database, job: string) => await supersededBy(db, job) ?? await changedSinceImport(db, job)
+
 /** The source's pending door plan, if any: whether it is this screen's own unconfirmed preview, whether an apply started and whether an erasure withdrew it. */
 async function pendingPlan(db: D1Database, vendor: string) {
  return db.prepare(`SELECT n.pending_id AS id,EXISTS(SELECT 1 FROM move_in_previews v WHERE v.plan_id=n.pending_id) AS preview,
@@ -95,6 +113,8 @@ export async function ownerImport(c: any): Promise<Response> {
  const send = async (sent: Request) => (await door(sent)) ?? answer({ error: 'not_found' }, 404)
  const action = new URL(request.url).pathname.slice(PREFIX.length), input = await body(request), read = reader(db, vendor as Vendor, actor.id)
  if (action === 'plan') {
+  // Every refusal this preview names takes the file with it.
+  const refuse = async (fault: Fault) => { await withdrawUpload(db, session, vendor, input?.uploadId); return refusal(fault) }
   const headers = new Headers(request.headers); headers.delete('content-length')
   const resend = (path: string, value: unknown) => send(new Request(new URL(PREFIX + path, request.url), { method: 'POST', headers, body: JSON.stringify(value) }) as Request)
   const before = (await pendingPlan(db, vendor))?.id
@@ -108,7 +128,7 @@ export async function ownerImport(c: any): Promise<Response> {
     const pending = await pendingPlan(db, vendor)
     if (!pending) break
     if (!pending.started && (pending.preview || pending.withdrawn)) stale = pending.id
-    else return refusal(new Refusal(409, pending.started
+    else return refuse(new Refusal(409, pending.started
      ? `An earlier ${vendorName(vendor)} import has not finished. Choose it in Saved import journal and resume or undo it, then preview this file again.`
      : `Business has proposed ${aVendor(vendor)} import that is waiting for approval. Approve or decline it in Business, then preview this file again.`, 'namespace_has_pending_import'))
    } else if (failure.error === 'snapshot_withdrawn' && typeof failure.details?.planId === 'string' && !await jobOf(db, failure.details.planId)) stale = failure.details.planId
@@ -125,7 +145,7 @@ export async function ownerImport(c: any): Promise<Response> {
   }
   if (response.status === 409 && await code(response) === 'import_door_conflict' && typeof input?.uploadId === 'string') {
    const named = await sourceRefusal(read, input.uploadId, vendor as Vendor)
-   if (named) return refusal(named)
+   if (named) return refuse(named)
   }
   if (!response.ok) return response
   const plan = await response.json() as { planId: string }
@@ -147,14 +167,14 @@ export async function ownerImport(c: any): Promise<Response> {
   return response
  }
  if (action === 'undo' && typeof input?.planId === 'string') {
-  // Name what changed in Oncall since this owner's import before the door records reversal intent: a refused
-  // Undo leaves the import completed, as it always did. An edit that lands meanwhile is still named below.
-  const own = await ownJob(db, input.planId, vendor, actor.id), edited = own ? await changedSinceImport(db, own) : null
-  if (edited) return refusal(edited)
+  // Name a later import over this owner's import, or what changed in Oncall since it, before the door records
+  // reversal intent: a refused Undo leaves the import completed, as it always did. One that lands meanwhile is still named below.
+  const own = await ownJob(db, input.planId, vendor, actor.id), blocked = own ? await undoRefusal(db, own) : null
+  if (blocked) return refusal(blocked)
   const response = await send(request)
   if (response.ok) await forget(db, input.planId)
   if (response.status === 409 && await code(response) === 'import_door_conflict') {
-   const job = await jobOf(db, input.planId), named = job ? await changedSinceImport(db, job) : null
+   const job = await jobOf(db, input.planId), named = job ? await undoRefusal(db, job) : null
    if (named) return refusal(named)
   }
   return response

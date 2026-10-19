@@ -98,8 +98,14 @@ try {
  const layers=await refused('pagerduty','pagerduty-layers')
  named(reasons(layers),[/Concurrent\/layered rotations cannot be mapped: Ended later, Current/,/timeline differs: 2026-03-08T13:00:00\.000Z: incumbent alice@example\.test, Oncall bob@example\.test/,/has no UTC-offset change in America\/New_York/,/no final timeline supplied/])
  assert.equal(layers.items.find(i=>i.name==='History rota').unmapped.filter(u=>u.field==='schedule_layers.history').length,2,'ended layers are named history, not coverage')
- for(const [vendor,file,field] of [['opsgenie','credential-opsgenie','apiKey'],['pagerduty','credential-pagerduty','integration_key']]){const refused=ok(await door.preview(vendor,await readFile(`tests/fixtures/${file}.json`,'utf8')),400);assert.match(refused.error,new RegExp(`^Credential-bearing field "${field}"`));assert.ok(refused.code,'the refusal carries a code, so the screen shows its sentence as written')}
- record('OC-021: every shape Oncall cannot hold exactly was rejected by name with no effect; ended layers kept as history; credential-bearing keys refused')
+ // A refused preview writes zero rows, as before the door: its upload goes with the refusal, so no chunk keeps a refused key.
+ const rowCounts=()=>{const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%'").map(r=>r.name);return Object.fromEntries(w.statements(names.map(name=>`SELECT COUNT(*) AS n FROM "${name}"`).join(';')).map((rows,i)=>[names[i],rows[0].n]))}
+ // (A preview first gives way to the screen's own earlier unconfirmed preview, as a preview always did, so rows may go; none may be added.)
+ const wroteNothing=(before,message)=>{const after=rowCounts();assert.deepEqual(Object.keys(after).filter(t=>after[t]>before[t]),[],message);assert.equal(after.ik_door_uploads,before.ik_door_uploads,message);assert.equal(after.ik_door_chunks,before.ik_door_chunks,message)}
+ const chunksHolding=secret=>w.sql('SELECT base64 FROM ik_door_chunks').filter(c=>Buffer.from(c.base64,'base64').toString().includes(secret)).length
+ for(const [vendor,file,field] of [['opsgenie','credential-opsgenie','apiKey'],['pagerduty','credential-pagerduty','integration_key']]){const rows=rowCounts(),refused=ok(await door.preview(vendor,await readFile(`tests/fixtures/${file}.json`,'utf8')),400);assert.match(refused.error,new RegExp(`^Credential-bearing field "${field}"`));assert.ok(refused.code,'the refusal carries a code, so the screen shows its sentence as written')
+  assert.equal(chunksHolding('synthetic-fixture-credential'),0,`no ik_door_chunks row decodes to the refused ${field}`);wroteNothing(rows,'the refused preview wrote zero rows')}
+ record('OC-021: every shape Oncall cannot hold exactly was rejected by name with no effect; ended layers kept as history; credential-bearing keys refused and not kept')
  // Variants of the bare fixtures run preview, apply, coverage at a sample instant and undo: a refused schedule keeps every reason and is never imported, so it names no one.
  const variant=(vendor,change)=>{const value=JSON.parse(sources[vendor]);change(value);return JSON.stringify(value)}
  const layer=(id,name,start,end,user)=>({id,name,start,end,rotation_virtual_start:start,rotation_turn_length_seconds:86400,users:[{user:{id:user,type:'user_reference'}}],restrictions:[]})
@@ -120,8 +126,8 @@ try {
   assert.equal(ok(await door.undo(vendor,preview.planId)).job.state,'undone')
   assert.equal(w.sql('SELECT COUNT(*) AS n FROM move_in_objects')[0].n,0)
  }
- const twins=ok(await door.preview('opsgenie',variant('opsgenie',s=>s.users.data.push({id:'alice-again',username:'Alice@Example.test',fullName:'Alice Again'}))),400)
- assert.equal(twins.code,'DUPLICATE_TARGET');for(const who of ['alice@example.test','Alice Again (Alice@Example.test)'])assert.ok(twins.error.includes(who),'the refusal names both people')
+ const twinRows=rowCounts(),twins=ok(await door.preview('opsgenie',variant('opsgenie',s=>s.users.data.push({id:'alice-again',username:'Alice@Example.test',fullName:'Alice Again'}))),400)
+ assert.equal(twins.code,'DUPLICATE_TARGET');wroteNothing(twinRows,'a named refusal of the file wrote zero rows');for(const who of ['alice@example.test','Alice Again (Alice@Example.test)'])assert.ok(twins.error.includes(who),'the refusal names both people')
  record('OC-021: active layers, override lists without a schedule id, disabled schedules and unexported override users are matched or refused by name through apply, coverage and undo; case-only duplicate emails are named')
  // Erasure matches the person by exact identity: erasing al@example.test leaves sal@example.test's slot, coverage and the import's undo intact.
  const people=[['u-al-0','al@example.test','Al Erased'],['u-sal-0','sal@example.test','Sal Kept'],['u-kai-0','kai@example.test','Kai Kept']].map(([id,username,fullName])=>({id,username,fullName}))
@@ -206,7 +212,15 @@ try {
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'changed source cannot replace committed native data')
  const revoked=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(revoked);ok(await w.request('/api/logout',{},revoked.cookie));ok(await door.call('opsgenie','apply',{planId:preview.planId,reviewedFingerprint:preview.fingerprint},revoked.cookie),401)
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'revoked session cannot resume or mutate imported data')
- record('OC-022: malformed/credential-bearing source refused; undo preserved a native edit')
+ // A later catch-up that replaced records of the first import: Undo of the first names that import and undoes nothing; newest first undoes.
+ const laterSource=JSON.parse(changedText);laterSource.users.data[1].fullName='Renamed later at source'
+ const laterPlan=ok(await door.preview('opsgenie',JSON.stringify(laterSource)));assert.equal(ok(await door.apply('opsgenie',laterPlan)).job.state,'completed')
+ const laterJob=w.sql(`SELECT id FROM ik_jobs WHERE operation_key='door:${laterPlan.planId}'`)[0].id,layered=w.sql('SELECT * FROM move_in_objects ORDER BY kind,id')
+ const superseded=ok(await door.call('opsgenie','undo',{planId:preview.planId}),409);assert.equal(superseded.code,'IMPORT_SUPERSEDED')
+ assert.ok(superseded.error.includes(`later Opsgenie import ${laterJob} `),'the refusal names the later import by vendor and journal id');assert.match(superseded.error,/undo that import first in Saved import journal.*nothing was undone/)
+ assert.equal(w.sql(`SELECT state FROM ik_jobs WHERE operation_key='door:${preview.planId}'`)[0].state,'completed','the refused undo leaves the first import completed');assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),layered,'nothing was undone')
+ assert.equal(ok(await door.undo('opsgenie',laterPlan.planId)).job.state,'undone','the later import undoes first')
+ record('OC-022: malformed/credential-bearing source refused; undo preserved a native edit; undo under a later import named it and undid nothing')
  const checkpoint=ok(await req('/api/recovery/checkpoint')),prior=ok(await req('/api/state'))
  ok(await req('/api/recovery/restore',{mode:'replace',checkpoint:{...checkpoint,coordination:{...checkpoint.coordination,services:[{id:'invalid'}]}}}),400)
  assert.deepEqual(ok(await req('/api/state')),prior)
