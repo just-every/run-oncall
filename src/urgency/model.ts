@@ -36,6 +36,14 @@ export function admitAlertUrgency(state: State, alert: Alert, event: Event, crea
   append(state, alert, {id: `urgency:${event.id}`, at: event.acceptedAt, by: `source:${event.source}`,
     from: alert.urgency ?? null, to: decision.urgency, reason: decision.reason, ruleVersion: decision.version});
 }
+export const incompleteUrgencyReason = 'Incomplete intake is always high urgency, whatever the service rule decided';
+/** An incomplete-intake alert is high urgency under every service rule (OC-059), raised in its admission commit. */
+export function raiseIncompleteUrgency(state: State, alert: Alert, receipt: {id: string; event: string | null; acceptedAt: string}) {
+  const event = state.events.find(e => e.id === receipt.event);
+  if (!event || alertUrgency(state, alert) === 'high') return;
+  append(state, alert, {id: `incomplete:${receipt.id}`, at: receipt.acceptedAt, by: `source:${event.source}`,
+    from: alert.urgency ?? null, to: 'high', reason: incompleteUrgencyReason, ruleVersion: null});
+}
 export function changeAlertUrgency(state: State, actor: Member, alertId: string, input: unknown, at: string): {alert: Alert; changed: boolean} {
   authority(state, actor);
   const v = exact(input, ['revision', 'urgency', 'reason']), alert = state.alerts.find(a => a.id === alertId);

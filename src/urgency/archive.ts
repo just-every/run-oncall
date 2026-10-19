@@ -1,5 +1,5 @@
 import { fail, type State } from '../family/response-operations/domain.ts';
-import { exact, ruleAuditText, urgencyEntryText } from './model.ts';
+import { exact, incompleteUrgencyReason, ruleAuditText, urgencyEntryText } from './model.ts';
 import { validateUrgencyDecision, validateUrgencyRule, validateUrgencyTimestamp } from './rules.ts';
 import type { UrgencyRule } from './types.ts';
 
@@ -12,6 +12,7 @@ export function validateUrgencyRuleHistory(value: unknown): UrgencyRule[] {
 export function validateUrgencyArchive(state: State) {
   const services = new Map(state.services.map(s => [s.id, s])), events = new Map(state.events.map(e => [e.id, e]));
   const members = new Set(state.members.map(m => m.id)), audit = new Map(state.audit.map(e => [e.id, e]));
+  const receipts = new Map((state.intakeReceipts ?? []).map(r => [r.id, r]));
   const histories = new Map<string, UrgencyRule[]>();
   for (const service of state.services) {
     if (service.urgencyRules === undefined) continue;
@@ -52,7 +53,11 @@ export function validateUrgencyArchive(state: State) {
       const recorded = audit.get(entry.id);
       if (!recorded || recorded.kind !== 'alert-urgency' || recorded.actor !== entry.by || recorded.at !== entry.at ||
         recorded.text !== urgencyEntryText(alert, entry)) fail('Missing alert urgency audit attribution');
-      if (entry.ruleVersion === null) {
+      if (entry.id.startsWith('incomplete:')) {
+        const receipt = receipts.get(entry.id.slice('incomplete:'.length)), event = receipt?.event ? events.get(receipt.event) : undefined;
+        if (!receipt?.incomplete || receipt.alert !== alert.id || !event || entry.by !== `source:${event.source}` || entry.at !== receipt.acceptedAt ||
+          entry.to !== 'high' || entry.ruleVersion !== null || entry.reason !== incompleteUrgencyReason) fail('Invalid incomplete-intake urgency transition');
+      } else if (entry.ruleVersion === null) {
         if (!members.has(entry.by)) fail('Invalid human alert urgency attribution');
       } else {
         const event = events.get(entry.id.replace(/^urgency:/, ''));
