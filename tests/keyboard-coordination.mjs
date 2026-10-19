@@ -28,7 +28,8 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  assert.equal(await page.getByRole('link',{name:runbookText,exact:true}).count(),0,'OC-008: runbook URLs remain literal text')
  await key.text(page.getByLabel('Observation, decision or evidence',{exact:true}),hostile)
  await key.activate(page.getByRole('button',{name:'Add timeline note',exact:true}))
- await page.locator('.event p').filter({hasText:hostile}).waitFor()
+ // The runbook step's own entry also contains the hostile text: wait for the note itself.
+ await page.locator('.timeline').getByText(hostile,{exact:true}).waitFor()
  assert.equal(await page.locator('[data-hostile="oncall-probe"]').count(),0,'hostile content creates no HTML elements')
  assert.equal(await page.evaluate(()=>window.__oncallHostile),undefined,'hostile script/handler did not execute')
  assert.deepEqual(external,[],'hostile text triggers no external fetch');page.off('request',observe)
