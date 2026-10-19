@@ -147,7 +147,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "9a4f0a6c4294c2f36f3334df932842ebb352e249b42ac91b8a9c2476d7409090",
+      "sha256": "7f02fd952cbcaa40feaee47754150290b686234d5cd5c69bbc03b3e516239c98",
       "executable": false
     },
     "CLAUDE.md": {
@@ -2999,7 +2999,7 @@
       "executable": false
     },
     "src/move-in/owner-door.ts": {
-      "sha256": "162b86c54910c2912f28f4c757a3d8b27474d284c6fcdf5efdfad08a6702b086",
+      "sha256": "ea2621aedbe7f6a8ab441b31a0d2dc6475ebb752ee03b9dc48a84d42770d5939",
       "executable": false
     },
     "src/move-in/refusals.ts": {

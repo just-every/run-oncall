@@ -143,9 +143,14 @@ export async function ownerImport(c: any): Promise<Response> {
    // the import's own revisions, and gone records only listed.
    response = await resend('plan', { ...input, catchup: true })
   }
-  if (response.status === 409 && await code(response) === 'import_door_conflict' && typeof input?.uploadId === 'string') {
-   const named = await sourceRefusal(read, input.uploadId, vendor as Vendor)
-   if (named) return refuse(named)
+  if (!response.ok && typeof input?.uploadId === 'string') {
+   const failed = await code(response)
+   // Base names reader failures as source_* (422, or 413 for a bound).
+   // Keep this screen's field-specific refusal and remove its refused upload.
+   if ((response.status === 409 && failed === 'import_door_conflict') || ([413, 422].includes(response.status) && failed?.startsWith('source_'))) {
+    const named = await sourceRefusal(read, input.uploadId, vendor as Vendor)
+    if (named) return refuse(named)
+   }
   }
   if (!response.ok) return response
   const plan = await response.json() as { planId: string }
