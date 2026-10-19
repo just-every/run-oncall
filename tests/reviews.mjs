@@ -84,12 +84,12 @@ try{
  }
  const recovered=ok(await observe('queue-3','backlog-1','recover'),201);ok(await observe('queue-4','backlog-2'),201);
  const observed=new Date().toISOString(),window=new URLSearchParams({from:iso(start),to:iso(Date.now()+hour),service:'payments',at:observed});
- const fair=ok(await req('/api/reports/response?'+window)),range=(Date.parse(observed)-start)/1000,byId=id=>fair.load.responders.find(r=>r.member===id);
+ const fair=ok(await req('/api/reports/response?'+window)),rangeMs=Date.parse(observed)-start,range=rangeMs/1000,rest=(rangeMs-2*hour)/1000,byId=id=>fair.load.responders.find(r=>r.member===id);
  assert.equal(fair.cohort.count,5);assert.deepEqual([fair.load.acknowledged,fair.load.unacknowledged],[3,2],'unacknowledged incidents stay unattributed');
  assert.equal(fair.load.through,observed);assert.deepEqual(fair.load.schedules.map(s=>[s.id,s.revision]),[['payments-rota',1]]);
- assert.deepEqual([byId(actor.id).primarySeconds,byId(actor.id).backupSeconds],[7200,range-7200],'an override moves primary hours and the same member is never their own backup');
- assert.deepEqual([byId(shift.id).primarySeconds,byId(shift.id).backupSeconds],[range-7200,0]);
- assert.equal(byId(actor.id).per24PrimaryHours,12);assert.equal(byId(actor.id).loadToCoverage,(1/3)/(7200/range));assert.equal(byId(shift.id).acknowledgements,1);
+ assert.deepEqual([byId(actor.id).primarySeconds,byId(actor.id).backupSeconds],[7200,rest],'an override moves primary hours and the same member is never their own backup');
+ assert.deepEqual([byId(shift.id).primarySeconds,byId(shift.id).backupSeconds],[rest,0]);
+ assert.equal(byId(actor.id).per24PrimaryHours,12);assert.equal(byId(actor.id).loadToCoverage,(1/3)/(7200/(7200+rest)),'shares use the same summed scheduled seconds');assert.equal(byId(shift.id).acknowledgements,1);
  assert.deepEqual([byId(floater.id).acknowledgements,byId(floater.id).outsideCoverage,byId(floater.id).per24PrimaryHours,byId(floater.id).loadToCoverage],[1,1,null,null],'load without scheduled hours is visible, never a rate');
  assert.ok([actor.id,shift.id].every(id=>byId(id).outsideCoverage===0));
  assert.deepEqual(fair.load.services.map(s=>[s.service,s.primarySeconds,s.uncoveredPrimarySeconds,s.incidents]),[['payments',range,0,5]]);
