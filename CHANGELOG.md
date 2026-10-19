@@ -1,3 +1,9 @@
+# 0.4.1 · 2026-10-19
+
+A backup made by the previous version now restores. Updates rer and the vendored Base copies to 0.2.68, including retained-archive placement on Platform-installed databases and the correction that treats trigger creation as schema-only. Every applied migration remains unchanged. Main also carries migration 0127, which protects signed-source keys with installation-local custody, plus the completed recovery and health flows. Restore only into a fresh empty installation. Paging stays OFF.
+
+Product screenshot: [`.github/assets/release/oncall-0.4.0-incident-1440.png`](.github/assets/release/oncall-0.4.0-incident-1440.png).
+
 # 0.4.0 · 2026-10-19
 
 Incident coordination beside your existing pager, now with alert intake from the tools you already run, response roles, urgency, change context and reviews. Paging stays OFF. Screenshot: [`.github/assets/release/oncall-0.4.0-incident-1440.png`](.github/assets/release/oncall-0.4.0-incident-1440.png).
