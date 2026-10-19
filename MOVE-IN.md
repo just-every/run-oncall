@@ -82,18 +82,22 @@ native edits. Key revocation stops Business access; the owner's journal and Undo
 remain available. [Base door protocol](src/modules/import-kit/src/door/README.md).
 
 Erasing an imported person (above) with Business imports on or off also
-withdraws every retained door upload, chunk and plan snapshot whole, in the same
-batch; plans, approvals and history captions stay, and reconciling a withdrawn
-import answers 410 `snapshot_withdrawn`.
+withdraws every retained door upload, chunk, plan snapshot and Business archive
+of a tool's final export whole, in the same batch; plans, approvals, archive
+headers and history captions stay, reconciling a withdrawn import answers 410
+`snapshot_withdrawn`, and a restore-check of a withdrawn archive answers 410
+`archive_withdrawn`.
 
-The import-kit, owner-claim, operator-auth and D1 transport copies are pinned in
-`base-copies.json` to Base's `rer-v0.2.63` release, with the kit and door
-migrations 0122-0125; Oncall's parser, mapping, paused target adapter, review
-list and named refusals remain product-owned. One copied file is adapted,
-`src/modules/import-kit/src/door/planning.ts`, and its `base-copies.json` digest
-is of the adapted bytes: it does not reuse a plan whose import was undone or
-rolled back, so the same file can be imported again after **Undo this import**;
-and when an erasure has withdrawn the file of a source's live import, an
-administrator's next preview starts a new baseline beside it instead of a
-catch-up that could never be compared (Business catch-ups keep the door's 410). Migration
-0126 records which pending plans are the screen's own previews.
+Every Base copy, including the import-kit, owner-claim, operator-auth and D1
+transport, is pinned in `base-copies.json` to Base's `rer-v0.2.71` release and
+is byte-for-byte Base: no copied file is adapted, and `verify-base` reports no
+drift. The behaviour Oncall once adapted `door/planning.ts` for is now Base's
+own: a plan whose import was undone or rolled back is not reused, so the same
+file can be imported again after **Undo this import**, and when an erasure has
+withdrawn the file of a source's live import, an administrator's next preview
+starts a new baseline beside it instead of a catch-up that could never be
+compared (Business catch-ups keep the door's 410). The kit and door migrations
+are 0122-0125, with Base's door archive migration as 0128; Oncall's parser,
+mapping, paused target adapter, review list and named refusals remain
+product-owned. Migration 0126 records which pending plans are the screen's own
+previews.

@@ -91,6 +91,13 @@ async function inDoorCustody(db: D1Database, email: string, ids: Set<string>) {
     const body = (await db.prepare('SELECT body FROM ik_door_plan_chunks WHERE plan_id=? ORDER BY ordinal').bind(id).all<{ body: string }>()).results.map(chunk => chunk.body).join('')
     if (body && search(body)) found = true
   }
+  // A Business archive of a tool's final export keeps its own copy of the bytes after the upload goes.
+  const archives = (await db.prepare('SELECT id FROM ik_door_archives WHERE installation_id=? ORDER BY id').bind(IMPORT_DOOR_KEY).all<{ id: string }>()).results
+  for (const { id } of archives) {
+    const chunks = (await db.prepare('SELECT base64 FROM ik_door_archive_chunks WHERE archive_id=? ORDER BY ordinal').bind(id).all<{ base64: string }>()).results
+    const bytes = chunks.flatMap(chunk => [...atob(chunk.base64)].map(char => char.charCodeAt(0)))
+    if (bytes.length && search(new TextDecoder().decode(new Uint8Array(bytes)))) found = true
+  }
   return found
 }
 
