@@ -81,6 +81,7 @@ try {
   ok(await req('/api/command',{type:'member',id:responder.id,role:'responder',active:false}));
   const beforeRevoked=await archive();ok(await w.request(alertPath,{revision:alert.urgencyRevision,urgency:'low',reason:'Revoked actor'},responderCookie),401);assert.deepEqual(await archive(),beforeRevoked);
 
+  // OC-057 urgency rules, previews and human changes hold; support-start raising is labelled not automatic.
   const support=draft('support-hours',{weekly:[{day:0,start:'01:00',end:'03:00'},{day:1,start:'09:00',end:'17:00'},{day:5,start:'09:00',end:'17:00'},{day:6,start:'23:00',end:'24:00'}],holidays:['2026-12-25'],reason:'Staffed New York support hours'});
   const supportRule=ok(await publish('support',0,support),201),beforePreview=await archive();
   const cases=[
@@ -142,5 +143,6 @@ try {
   ok(await send(signal('credential-after-restore','critical')),401);
   await w.stop();await w.start();
   const restarted=await state();for(const collection of ['services','events','alerts','incidents','audit'])assert.deepEqual(restarted[collection],preserved[collection]);
+  console.log('PASS OC-057 urgency rules, previews and human changes hold; support-start raising is labelled not automatic');
   console.log('Urgency public Worker journey passed: immutable admission, severity raises, human edits and authority, DST/holiday previews, strict atomic archives, held records and restart');
 } finally {await w.close();}

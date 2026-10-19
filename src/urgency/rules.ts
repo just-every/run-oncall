@@ -1,5 +1,6 @@
 import { fail } from '../family/response-operations/domain.ts';
 import type { Urgency, UrgencyDecision, UrgencyRule, UrgencyWindow } from './types.ts';
+import { supportClock, supportHours } from './support-hours.ts';
 export type { Urgency, UrgencyDecision, UrgencyRule, UrgencyWindow } from './types.ts';
 
 function fields(value: unknown, keys: string[]): Record<string, unknown> {
@@ -35,12 +36,7 @@ function urgency(value: unknown): Urgency {
 function formatter(timezone: string): Intl.DateTimeFormat {
   // Offset identifiers are not named IANA zones; Intl validates the remaining names.
   if (/^[+-]/.test(timezone)) fail('Urgency requires a named IANA timezone');
-  try {
-    return new Intl.DateTimeFormat('en-US-u-ca-gregory-nu-latn', {
-      timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit',
-      weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', era: 'short',
-    });
-  } catch { return fail('Invalid urgency timezone'); }
+  try { return supportClock(timezone); } catch { return fail('Invalid urgency timezone'); }
 }
 export function validateUrgencyRule(value: unknown): UrgencyRule {
   const v = fields(value, ['version', 'mode', 'timezone', 'weekly', 'holidays', 'inside', 'outside', 'reason', 'by', 'at']);
@@ -69,12 +65,7 @@ export function evaluateUrgency(rule: UrgencyRule | undefined, severity: unknown
     result = severity === 'warning' || severity === 'info' ? 'low' : 'high';
     explanation = `By severity: ${severity === 'critical' || severity === 'error' || severity === 'warning' || severity === 'info' ? severity : 'unknown'} → ${result}`;
   } else if (snapshot.mode === 'support-hours') {
-    const parts = Object.fromEntries(formatter(snapshot.timezone).formatToParts(new Date(evaluatedAt)).map(p => [p.type, p.value]));
-    const year = parts.era === 'BC' ? 1 - Number(parts.year) : Number(parts.year);
-    const date = `${String(year).padStart(4, '0')}-${parts.month}-${parts.day}`;
-    const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(parts.weekday);
-    const localMinute = Number(parts.hour) * 60 + Number(parts.minute), holiday = snapshot.holidays.includes(date);
-    const inside = !holiday && snapshot.weekly.some(w => w.day === weekday && minute(w.start) <= localMinute && localMinute < minute(w.end));
+    const {inside, holiday, date} = supportHours(snapshot, formatter(snapshot.timezone), Date.parse(evaluatedAt));
     result = inside ? snapshot.inside : snapshot.outside;
     explanation = `${inside ? 'Inside' : 'Outside'} support hours (${snapshot.timezone}, ${date}${holiday ? ', holiday' : ''}) → ${result}`;
   } else {
