@@ -58,6 +58,10 @@ The approved 16 October scope governs these clauses. Release 1 remains hosted co
 
   **Acceptance evidence:** Run check/describe and /health with storage available and unavailable; compare deployed identity to the actual build. Record local, hosted, provider and human-drill outcomes separately and test durable failure diagnostics for each new execution class.
 
+  **Status:** done
+
+  **Implementation evidence:** `src/api.ts`; `src/base/deployment-health.ts`; `OPERATIONS.json`; `tests/runtime.mjs`; `tests/coordination-health.mjs`; `tests/hosted.mjs`; `tests/transfer.mjs`. **OC-010 coordination health, deployment identity and honest command effects survive storage failure** checks the emitted build identity, real database loss (503 with the same identity and no success), recovery with unchanged records, and read-only check/describe through the pinned executable. Hosted-mode production serving checks its supplied source/fingerprint/version separately from the one-time real Cloudflare release evidence in ACCEPTANCE.md. Command declarations distinguish local setup/dev/reset/transfer, provider deployment/removal and dry-run provider reads without writes. No pager health, independent availability, measured capacity or human-drill outcome is claimed. OC-026/027/028/029 inherit pager/timer/mobile/standby health; OC-064 owns paging measurements. Every new execution class under OC-030–035, OC-039, OC-045–048, OC-051, OC-053–054, OC-056–058 and OC-063–072 inherits durable failure diagnostics before shipping.
+
 ## Admission and authority refinements after independent review
 
 The public intake request keys, authentication modes, field limits, service-ID lookup and a curl example are documented in [Incidents and alerts](docs/incidents.md#send-an-alert-event).
@@ -385,9 +389,9 @@ Judged from the code and tests at commit `f380227f4915f96a43a98515196600ed6f1646
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 19 | 3 | 0 | 22 |
+| Published | 20 | 2 | 0 | 22 |
 | Target and push further | 1 | 31 | 18 | 50 |
-| All | 20 | 34 | 18 | 72 |
+| All | 21 | 33 | 18 | 72 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -400,7 +404,7 @@ Judged from the code and tests at commit `f380227f4915f96a43a98515196600ed6f1646
 | `OC-007` | Native archive | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | The full future paging archive is OC-052. |
 | `OC-008` | User-authored records kept | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/keyboard-coordination.mjs`; `tests/product-browser.mjs` | Native over-limit (65,537 UTF-8 bytes), malformed and incomplete structured intake and over-limit authenticated commands are refused without durable mutation. Authored incident/runbook/timeline/review/action records survive export, restore and restart. At 1440 and 390, hostile notes and copied runbook URLs remain literal text without execution or fetching. Complete retention controls are OC-040. |
 | `OC-009` | Accessible interface | published | partial | `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/keyboard-coordination.mjs`; `tests/activation-browser.mjs` | Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. |
-| `OC-010` | Health and honest commands | published | partial | `src/api.ts`; `scripts/installer/seed.mjs`; `tests/hosted.mjs`; `tests/transfer.mjs` | Storage health and command journeys exist; independent pager health/capacity and live-provider proof do not. |
+| `OC-010` | Health and honest commands | published | done | `src/api.ts`; `src/base/deployment-health.ts`; `OPERATIONS.json`; `tests/runtime.mjs`; `tests/coordination-health.mjs`; `tests/hosted.mjs`; `tests/transfer.mjs` | Coordination storage loss reports 503 with deployment identity and recovers without changed records. Local commands, hosted-mode serving and one-time provider evidence stay separate. Paging health/capacity are unclaimed and inherited by OC-026–029/064; new execution classes inherit durable failure diagnostics. |
 | `OC-011` | Calendar-day rotations | published | done | `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs` |  |
 | `OC-012` | Paging off | published | done | `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/demo.mjs` | No production paging authorization is created by this contract change. |
 | `OC-013` | Held history stays historical | published | done | `src/family/response-operations/escalation.ts`; `src/paging-api.ts`; `tests/paging-history.mjs`; `tests/activation.mjs` |  |

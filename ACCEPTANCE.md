@@ -46,9 +46,9 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/keyboard-coordination.mjs`; `tests/activation-browser.mjs`. Maintained keyboard/responsive journeys exist; full accessibility conformance is not established.
 
-10. **OC-010 — Health and honest commands. Status: partial.** Run check/describe and /health with storage available and unavailable; compare deployed identity to the actual build. Record local, hosted, provider and human-drill outcomes separately and test durable failure diagnostics for each new execution class.
+10. **OC-010 — Health and honest commands. Status: done.** Run check/describe and /health with storage available and unavailable; compare deployed identity to the actual build. Record local, hosted, provider and human-drill outcomes separately and test durable failure diagnostics for each new execution class.
 
-   Existing implementation / exercising flow: `src/api.ts`; `scripts/installer/seed.mjs`; `tests/hosted.mjs`; `tests/transfer.mjs`. Storage health and command journeys exist; independent pager health/capacity and live-provider proof do not.
+   Exercising flow: **OC-010 coordination health, deployment identity and honest command effects survive storage failure**, in `tests/runtime.mjs` / `tests/coordination-health.mjs`, compares the actual emitted source/artifact identity, removes the real control table, observes 503 without success, and restores storage with the same identity and unchanged complete archive. The pinned executable's check/describe remain read-only and available through the outage. `tests/transfer.mjs` exercises actual local setup/dev/export/import/reset effects; `tests/hosted.mjs` compares built hosted-mode source/fingerprint/version bindings and links. Deploy dry-run reads provider target/secret bindings with credentials and makes no provider writes; deployment/removal are separately declared effects. Local and hosted-mode outcomes are maintained tests. Actual Cloudflare/mail/removal results remain the dated one-time 0.4.0 release gate below, not a result of these tests. Provider paging, independent standby, human drills and timing/capacity measurements are unprovided/unmeasured. New pager/timer/mobile/standby health belongs to OC-026–029, measurements to OC-064, and new execution classes under OC-030–035/039/045–048/051/053–054/056–058/063–072 inherit durable failure diagnostics before shipping.
 
 11. **OC-011 — Calendar-day rotations. Status: done.** Save primary/backup schedules and query HTTP preview across spring/fall DST, ambiguous/nonexistent minutes, override edges and overlap refusal; retain inactive/viewer/missing slots as gaps and detect duplicate primary/backup responders.
 
@@ -320,4 +320,4 @@ Run on 19 October 2026 against `f380227f4915f96a43a98515196600ed6f16468d`, by a 
 
 ## Clause status totals
 
-**20 done**, **34 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
+**21 done**, **33 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.

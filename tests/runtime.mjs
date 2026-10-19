@@ -1,17 +1,20 @@
 import assert from "node:assert/strict";
 import { awaitingCoordinationAuthority } from "./runtime-authority.mjs";
+import { coordinationHealth } from "./coordination-health.mjs";
 import { heldWorkspace } from "./runtime-held-workspace.mjs";
-import { spawn, spawnSync } from "node:child_process";
-import { mkdtemp, rm, mkdir, readdir, copyFile, writeFile } from "node:fs/promises";
+import { spawn, spawnSync, execFileSync } from "node:child_process";
+import { mkdtemp, rm, mkdir, readdir, copyFile, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { createHmac, pbkdf2Sync } from "node:crypto";
+import { join, resolve } from "node:path";
+import { createHmac, pbkdf2Sync, createHash } from "node:crypto";
 import { createServer } from "node:net";
 // Each request closes its connection: a pooled one the local Worker closed while the test read D1 through wrangler would fail the next request before it is sent.
 const fetch = (url, init = {}) => globalThis.fetch(url, { ...init, headers: { ...init.headers, connection: "close" } });
 let persist = await mkdtemp(join(tmpdir(), "oncall-test-"));
 const port = await new Promise((resolve) => { const s = createServer().listen(0, "127.0.0.1", () => { const p = s.address().port; s.close(() => resolve(p)); }); });
 const origin = `http://127.0.0.1:${port}`;
+const buildConfig=JSON.parse(await readFile('dist/server/wrangler.json','utf8'));
+const deployment={sourceSha:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),fingerprint:createHash('sha256').update(await readFile(resolve('dist/server',buildConfig.main))).digest('hex'),versionId:null};
 let worker;
 let logs = "";
 const originalPersist = persist;
@@ -67,6 +70,10 @@ async function start() {
       String(port),
       "--inspector-port",
       "0",
+      "--var",
+      "RER_DEPLOY_SOURCE:"+deployment.sourceSha,
+      "--var",
+      "RER_DEPLOY_FINGERPRINT:"+deployment.fingerprint,
       "--persist-to",
       persist,
     ],
@@ -656,14 +663,10 @@ try {
     }),
     401,
   );
+  await coordinationHealth({origin,request,sql,deployment,cookie});
   ok(await request("/api/logout", {}, cookie));
   assert.match(await (await fetch(origin, { headers: { cookie } })).text(), /href="\/setup"/, "a revoked password session receives the guest Lobby");
   ok(await request("/api/state", undefined, cookie), 401);
-  sql("ALTER TABLE workspace_control RENAME TO workspace_fault");
-  ok(await request("/health"), 503);
-  ok(await request("/api/state", undefined, cookie), 503);
-  sql("ALTER TABLE workspace_fault RENAME TO workspace_control");
-  ok(await request("/health"));
   await stop();
   portablePersist = await mkdtemp(join(tmpdir(), "oncall-portable-"));
   persist = portablePersist;

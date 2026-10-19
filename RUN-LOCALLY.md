@@ -200,7 +200,7 @@ Release 1 supports hosted incident coordination alongside the existing pager,
 with paging OFF and no independent standby prerequisite. Release 2 paging and
 independent standby are not built. `rer deploy` deploys coordination to the
 operator's Cloudflare account; see [hosting instructions](docs/install.md#host-for-your-team).
-`rer deploy --environment production --dry-run` validates and builds locally without a provider request. The default environment is `production`; select another with
+`rer deploy --environment production --dry-run` validates and builds locally, then reads target secret bindings using Cloudflare credentials, without provider writes. The default environment is `production`; select another with
 `--environment NAME`. Local validation does not establish provider acceptance,
 hosted health or mail delivery.
 
@@ -256,7 +256,7 @@ allowed, with one optional pair of double quotes around a value; it performs no
 shell expansion. Keep local dev keys out of this file. The setup owner and fresh
 hosted session/setup secrets are supplied automatically where needed.
 
-The dry run validates and builds locally without provider requests. A successful
+The dry run validates and builds locally, then reads target secret bindings with Cloudflare credentials; it makes no provider writes. A successful
 real deploy applies hosted migrations, checks deployment identity at `/health`,
 claims the owner automatically and retires the one-time setup token. Open the
 returned HTTPS address, request an owner sign-in email, open it on the same

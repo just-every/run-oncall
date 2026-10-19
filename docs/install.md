@@ -178,7 +178,7 @@ rer deploy --environment production --env-file "$HOME/.config/oncall/production.
 
 Check each result:
 
-1. **Dry run:** exits successfully after local validation and build, with no provider requests. It does not test the token's permissions or email delivery.
+1. **Dry run:** validates and builds locally, then uses Cloudflare credentials to read the target Worker and secret bindings, without provider writes. Missing credentials, unreadable bindings or required secrets refuse. It does not establish deployment permissions, hosted health or email delivery.
 2. **Real deployment:** exits successfully and returns an HTTPS `workers.dev` app address. It creates the Worker and D1 database, applies migrations, verifies deployment identity at `/health`, claims the owner automatically and retires its setup token. There is no setup token to copy or delete. Opening `/health` at that address should return HTTP 200.
 3. **Email delivery and owner access:** open the app address, enter the configured owner email and press **Email a sign-in link**. Expect a real email from `MAIL_FROM`. Open it on the same device and press **Confirm**; expect to enter Oncall as the owner. Complete **Finish setup** at `/setup` if shown. A successful deployment alone is not evidence that the mailbox received mail.
 

@@ -173,14 +173,16 @@ api.use("*", async (c, next) => {
   if (c.res.status >= 400) await discardDeniedBody(c);
 });
 api.get("/health", async (c) => {
-  await c.env.DB.prepare("SELECT revision FROM workspace_control WHERE id=1").first();
-  return c.json({
-    status: "ok",
-    storage: "available",
-    paging: "not-provided",
-    target: "coordination",
-    ...deploymentHealth(c.env),
-  });
+  const identity = deploymentHealth(c.env);
+  const scope = { paging: "not-provided", target: "coordination" };
+  try {
+    await c.env.DB.prepare("SELECT revision FROM workspace_control WHERE id=1").first();
+    return c.json({ ...identity, ...scope, status: "ok", storage: "available" });
+  } catch (error) {
+    console.error("oncall health storage failure", error instanceof Error ? error.name : "Error");
+    return c.json({ ...identity, ...scope, ok: false, status: "unavailable", storage: "unavailable",
+      error: "Storage or server failure; no success confirmed" }, 503);
+  }
 });
 api.get("/api/session", async (c) => {
   const state = await load(c.env.DB);

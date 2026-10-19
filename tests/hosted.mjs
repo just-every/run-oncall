@@ -12,6 +12,10 @@ for(const file of (await walk('dist/client')).filter(f=>f.endsWith('.html')))lin
 assert.ok(links.size>0,'the app links at least one built file')
 const hosted=await serveHosted(process.cwd())
 try{
+ const health=await hosted.fetch('health');assert.equal(health.status,200)
+ const body=await health.json();assert.equal(body.ok,true);assert.equal(body.storage,'available');assert.equal(body.target,'coordination');assert.equal(body.paging,'not-provided')
+ assert.deepEqual(body.deployment,hosted.identity,'the built hosted Worker reports the exact supplied source, fingerprint and version identity')
+ console.log('OC-010 hosted-mode production output: deployment identity matches; no provider deployment, delivery, drill or capacity result inferred')
  for(const link of links) {
   let path=link.slice(1),status
   for(let hop=0;hop<3;hop++){const r=await hosted.fetch(path);await r.arrayBuffer();status=r.status;const next=r.headers.get('location');if(status<300||status>=400||!next)break;path=next.replace(/^\//,'')}
