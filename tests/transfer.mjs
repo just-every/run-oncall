@@ -38,6 +38,11 @@ try{
  const changeKey=randomBytes(32).toString('hex')
  assert.equal((await req('/api/changes/sources',{id:'portable-ci',name:'Portable CI context',provider:'native',service:'transfer',repository:'',mode:'bearer',revision:0,key:changeKey})).status,201)
  assert.equal((await fetch(m.origin+'/api/changes/ingress/portable-ci',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+changeKey},body:JSON.stringify({eventId:'portable-deploy',summary:'Retain deployment context',author:'transfer-ci',timestamp:new Date().toISOString()})})).status,201)
+ // OC-042: a held signed-source key and its installation-sealed form never travel in an archive.
+ const sourceKey=randomBytes(32).toString('hex')
+ ok(await req('/api/sources',{id:'portable-signed',key:sourceKey,mode:'signed',scopes:['transfer']}))
+ const sourceCustody=sql("SELECT signing_custody FROM sources WHERE id='portable-signed'")[0].signing_custody
+ assert.match(sourceCustody,/^v1\./,'the signed source key is held only as installation-sealed ciphertext')
  const intakeKey=randomBytes(32).toString('hex')
  assert.equal((await req('/api/routing/keys',{id:'portable-monitor',name:'Portable monitor',provider:'pagerduty',scope:['transfer','upstream'],owner:member.id,revision:0,key:intakeKey,rules:[],catchAll:'transfer'})).status,201)
  assert.equal((await fetch(m.origin+'/v2/enqueue',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({routing_key:intakeKey,event_action:'trigger',dedup_key:'portable-alert',payload:{summary:'Retain compatible lifecycle',source:'transfer-monitor',severity:'warning'}})})).status,202)
@@ -74,6 +79,8 @@ try{
  const importHistory=importRows()
  await m.close();await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
+ assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
+ for(const secret of [sourceKey,sourceCustody])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
  await m.command(['import','--input',archive,'--yes','--non-interactive'],4)
  const serviceRow=sql("SELECT data FROM oc_services WHERE id='transfer'")[0].data
  sql("UPDATE oc_services SET data='{\"id\":\"transfer\"}' WHERE id='transfer'");await m.command(['export','--output',invalidRecords,'--non-interactive']);sql("UPDATE oc_services SET data='"+serviceRow.replaceAll("'","''")+"' WHERE id='transfer'")
@@ -100,6 +107,8 @@ try{
  assert.deepEqual(ok(await req('/api/state')).intakeReceipts,prior.intakeReceipts,'compatible lifecycle and routing explanations survive portable transfer')
  assert.equal(ok(await req('/api/state')).intakeSources.find(source=>source.id==='portable-monitor').routing.versions[0].catchAll,'transfer','published routing definitions survive portable transfer')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_change_credentials')[0].n,0,'change verification material is excluded from portable transfers')
+ assert.equal(sql('SELECT COUNT(*) AS n FROM sources')[0].n,0,'native source keys are excluded from portable transfers')
+ assert.equal((await fetch(m.origin+'/api/ingress/portable-signed',{method:'POST',headers:{'content-type':'application/json'},body:'{}'})).status,401,'a restored installation holds no transferable source authority')
  assert.equal(ok(await req('/api/state')).changes[0].eventId,'portable-deploy','retained change identity survives portable transfer')
  assert.equal(ok(await req('/api/state')).triage.length,2,'saved views and replay-safe bulk receipts survive the portable archive')
  assert.deepEqual(ok(await req('/api/move-in/objects')),objects,'paused import data restored with revisions')

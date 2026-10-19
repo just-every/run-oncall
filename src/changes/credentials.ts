@@ -4,17 +4,22 @@ const hex = (value: ArrayBuffer) => Array.from(new Uint8Array(value), b => b.toS
 export const changeHash = async (value: string) => hex(await crypto.subtle.digest('SHA-256', bytes(value)));
 const base64 = (value: Uint8Array) => btoa(String.fromCharCode(...value));
 const unbase64 = (value: string) => Uint8Array.from(atob(value), c => c.charCodeAt(0));
-async function custodyKey(secret: string) {
-  if (!secret) fail('Installation key unavailable; finish setup before configuring change sources', 503);
-  return crypto.subtle.importKey('raw', await crypto.subtle.digest('SHA-256', bytes('oncall-change-credentials-v1:' + secret)), 'AES-GCM', false, ['encrypt', 'decrypt']);
+// Installation-local AES-GCM custody. Each held credential kind derives its own key from the installation secret.
+export type Custody = {label: string; unavailable: string; unreadable: string};
+export const changeCustody: Custody = {label: 'oncall-change-credentials-v1', unavailable: 'Installation key unavailable; finish setup before configuring change sources', unreadable: 'Change credential cannot be opened with this installation key; configure it again'};
+export const sourceCustody: Custody = {label: 'oncall-source-credentials-v1', unavailable: 'Installation key unavailable; finish setup before holding signed source keys', unreadable: 'Source signing key cannot be opened with this installation key; configure the source again'};
+async function custodyKey(secret: string, custody: Custody) {
+  if (!secret) fail(custody.unavailable, 503);
+  return crypto.subtle.importKey('raw', await crypto.subtle.digest('SHA-256', bytes(custody.label + ':' + secret)), 'AES-GCM', false, ['encrypt', 'decrypt']);
 }
-export async function sealChangeKey(value: string, secret: string) {
-  const iv = crypto.getRandomValues(new Uint8Array(12)), key = await custodyKey(secret);
+export async function sealCredential(value: string, secret: string, custody: Custody) {
+  const iv = crypto.getRandomValues(new Uint8Array(12)), key = await custodyKey(secret, custody);
   return 'v1.' + base64(iv) + '.' + base64(new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv}, key, bytes(value))));
 }
-export async function openChangeKey(value: string, secret: string) {
-  try {const [version, iv, ciphertext] = value.split('.'); if (version !== 'v1') throw Error('Unsupported custody'); return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unbase64(iv)}, await custodyKey(secret), unbase64(ciphertext)));}
-  catch {return fail('Change credential cannot be opened with this installation key; configure it again',503);}
+export async function openCredential(value: string, secret: string, custody: Custody) {
+  const key = await custodyKey(secret, custody);
+  try {const [version, iv, ciphertext] = value.split('.'); if (version !== 'v1') throw Error('Unsupported custody'); return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unbase64(iv)}, key, unbase64(ciphertext)));}
+  catch {return fail(custody.unreadable,503);}
 }
 export const equalSignature = (a: string, b: string) => {
   if (a.length !== b.length) return false;

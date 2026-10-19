@@ -2,7 +2,7 @@ import { workspaceWrite } from '../workspace-store';
 import { authority, fail, Fault, text, type State } from '../family/response-operations/domain';
 import { runtimeBindings } from '../auth.server';
 import { changeProviders, recentChanges, type ChangeSource, type ChangeRecord } from './model';
-import { changeHash, changeHmac, equalSignature, freshTimestamp, gitlabSigningKey, openChangeKey, sealChangeKey } from './credentials';
+import { changeHash, changeHmac, equalSignature, freshTimestamp, gitlabSigningKey, openCredential, sealCredential, changeCustody } from './credentials';
 import { providerChange } from './providers';
 
 type Dependencies = {body:(c:any,max?:number)=>Promise<any>; load:(db:D1Database)=>Promise<State>; state:(c:any,admin?:boolean)=>Promise<State>; save:(db:D1Database,state:State,revision:number,guard:{sql:string;values:(string|number|null)[]})=>Promise<void>; guard:(c:any)=>{sql:string;values:(string|number|null)[]}};
@@ -25,7 +25,7 @@ export function installChangeIntake(api:any, deps:Dependencies) {
       const bearer=headers.get('authorization')?.replace(/^Bearer /,'') ?? ''; verificationKey=bearer;
       if (!equalSignature(await changeHash(bearer),credential.key_digest)) fail('Invalid change credential',401);
     } else if (!compatible) {
-      const key=await openChangeKey(credential.ciphertext,runtimeBindings(c.env).SESSION_SECRET!);
+      const key=await openCredential(credential.ciphertext,runtimeBindings(c.env).SESSION_SECRET!,changeCustody);
       verificationKey=key;
       if (source.provider==='github') {
         if (!equalSignature(headers.get('x-hub-signature-256')??'', 'sha256='+await changeHmac(key,raw))) fail('Invalid GitHub signature',401);
@@ -70,7 +70,7 @@ export function installChangeManagement(api:any,deps:Dependencies) {
     if([source.id,source.name,source.service,source.repository].some(value=>value.includes(key)))fail('Keep the verification key out of source definitions');
     const digest=await changeHash(key),other=await c.env.DB.prepare('SELECT source FROM oc_change_credentials WHERE key_digest=? AND source<>?').bind(digest,id).first();if(other)fail('Use a different key for each change source',409);
     if(previous)state.changeSources![state.changeSources!.indexOf(previous)]=source;else(state.changeSources??=[]).push(source);
-    const ciphertext=await sealChangeKey(key,runtimeBindings(c.env).SESSION_SECRET!),guard=deps.guard(c),revision=state.revision,token=crypto.randomUUID();
+    const ciphertext=await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET!,changeCustody),guard=deps.guard(c),revision=state.revision,token=crypto.randomUUID();
     state.audit.push({id:crypto.randomUUID(),at:source.updatedAt,actor:actor.id,kind:'change-source',text:`Configured ${source.provider} change source ${source.id} on ${source.service}; revision ${source.revision}`});
     const result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,revision,guard,token),c.env.DB.prepare('INSERT INTO oc_change_credentials(source,key_digest,ciphertext) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,ciphertext=excluded.ciphertext').bind(id,digest,ciphertext,token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload and retry',409);

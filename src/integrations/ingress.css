@@ -4,3 +4,6 @@
 .ingress-example textarea { font-family: var(--oc-mono, monospace); font-size: 12px; line-height: 1.5; min-height: 260px; }
 .ingress code { overflow-wrap: anywhere; }
 .ingress details > summary { cursor: pointer; font-weight: 600; }
+.ingress-sources ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.ingress-sources li { padding: 12px; border: 1px solid var(--app-line); border-radius: 10px; overflow-wrap: anywhere; }
+.ingress-sources li p { margin: 0 0 8px; }

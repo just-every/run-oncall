@@ -6,7 +6,7 @@ import { spawn, spawnSync, execFileSync } from "node:child_process";
 import { mkdtemp, rm, mkdir, readdir, copyFile, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { createHmac, pbkdf2Sync, createHash } from "node:crypto";
+import { createHmac, pbkdf2Sync, createHash, randomBytes } from "node:crypto";
 import { createServer } from "node:net";
 // Each request closes its connection: a pooled one the local Worker closed while the test read D1 through wrangler would fail the next request before it is sent.
 const fetch = (url, init = {}) => globalThis.fetch(url, { ...init, headers: { ...init.headers, connection: "close" } });
@@ -55,6 +55,12 @@ function sql(command) {
   );
   assert.equal(r.status, 0, r.stderr + r.stdout);
 }
+const rows = (command) => {
+  const r = spawnSync(process.execPath, [...cli, "d1", "execute", "DB", "--local", "--persist-to", persist, "--command", command, "--json"], { encoding: "utf8" });
+  assert.equal(r.status, 0, "query failed");
+  return JSON.parse(r.stdout)[0].results;
+};
+const sessionSecret = randomBytes(32).toString("hex");
 async function start() {
   worker = spawn(
     process.execPath,
@@ -70,6 +76,8 @@ async function start() {
       String(port),
       "--inspector-port",
       "0",
+      "--var",
+      "SESSION_SECRET:"+sessionSecret,
       "--var",
       "RER_DEPLOY_SOURCE:"+deployment.sourceSha,
       "--var",
@@ -121,6 +129,79 @@ const ok = (r, status = 200) => {
   assert.equal(r.status, status, JSON.stringify(r.value));
   return r.value;
 };
+// OC-042 held signed-source custody survives upgrade, rotation, revocation and archive exclusion without secret echoes.
+async function heldSourceCustody(cookie, heldSignedKey, heldBearerKey, digest) {
+  const signal = (source, eventId, extra = {}) => ({ source, eventId, service: "prior-service", environment: "production", key: "custody",
+    generation: "upgrade", intent: "trigger", severity: "warning", title: "Held signed source after upgrade", observedAt: new Date().toISOString(), evidence: "", ...extra });
+  const signed = (key, value, source = "held-signed") => {
+    const raw = JSON.stringify(value), ts = String(Math.floor(Date.now() / 1000));
+    return rawRequest("/api/ingress/" + source, raw, "", { "x-oncall-timestamp": ts, "x-oncall-signature": createHmac("sha256", key).update(ts + "." + raw).digest("hex") });
+  };
+  const bearer = (key, value) => rawRequest("/api/ingress/held-bearer", JSON.stringify(value), "", { authorization: "Bearer " + key });
+  const held = rows("SELECT id,digest,signing_secret,signing_custody,scopes FROM sources ORDER BY id");
+  assert.deepEqual(held.map(({ id, digest, signing_secret, scopes }) => ({ id, digest, signing_secret, scopes })),
+    [{ id: "held-bearer", digest: digest(heldBearerKey), signing_secret: null, scopes: '["prior-service"]' }, { id: "held-signed", digest: digest(heldSignedKey), signing_secret: null, scopes: '["prior-service"]' }],
+    "the first request after upgrade clears every held plaintext key and keeps identities, digests and scopes");
+  assert.equal(held[0].signing_custody, null, "bearer sources keep only a digest");
+  assert.match(held[1].signing_custody, /^v1\.[A-Za-z0-9+/]+=*\.[A-Za-z0-9+/]+=*$/, "the held signing key is sealed under installation custody");
+  assert.ok(!held[1].signing_custody.includes(heldSignedKey));
+  const first = ok(await signed(heldSignedKey, signal("held-signed", "after-upgrade")), 201);
+  ok(await signed(randomBytes(32).toString("hex"), signal("held-signed", "wrong-key")), 401);
+  ok(await bearer(heldBearerKey, signal("held-bearer", "bearer-after-upgrade")), 201);
+  ok(await bearer(heldBearerKey, signal("held-bearer", "unscoped", { service: "a-service", environment: "staging" })), 403);
+  // Native admission keeps caller text, so an event carrying its own key is refused before anything is stored.
+  const echoes = [
+    await signed(heldSignedKey, signal("held-signed", "echo-title", { title: "Leaked " + heldSignedKey.toUpperCase() })),
+    await signed(heldSignedKey, signal("held-signed", "echo-link", { evidence: "https://example.test/check?token=" + encodeURIComponent(heldSignedKey) })),
+    await bearer(heldBearerKey, signal("held-bearer", "echo-" + heldBearerKey)),
+  ];
+  for (const echo of echoes) { assert.equal(echo.status, 400); assert.match(echo.value.error, /source key out of event content/); }
+  // A sealed key that cannot be opened refuses ingress visibly; plaintext can never be written back.
+  await stop();
+  const sealed = held[1].signing_custody, [version, iv, ciphertext] = sealed.split(".");
+  sql(`UPDATE sources SET signing_custody='${[version, iv, Buffer.from(ciphertext, "base64").map((b, n) => n === 0 ? b ^ 1 : b).toString("base64")].join(".")}' WHERE id='held-signed'`);
+  for (const write of [`INSERT INTO sources(id,digest,signing_secret,scopes) VALUES('plain','x','${"p".repeat(32)}','[]')`, `UPDATE sources SET signing_secret='${"p".repeat(32)}' WHERE id='held-bearer'`]) {
+    const refused = spawnSync(process.execPath, [...cli, "d1", "execute", "DB", "--local", "--persist-to", persist, "--command", write], { encoding: "utf8" });
+    assert.notEqual(refused.status, 0, "plaintext signing keys cannot be written after the custody migration");
+  }
+  await start();
+  const unreadable = await signed(heldSignedKey, signal("held-signed", "unreadable"));
+  assert.equal(unreadable.status, 503); assert.match(unreadable.value.error, /cannot be opened/);
+  // Rotation is one guarded statement: the earlier key stops admitting events when it commits.
+  const rotated = randomBytes(32).toString("hex"), raced = randomBytes(32).toString("hex");
+  const configure = (key) => request("/api/sources", { id: "held-signed", key, mode: "signed", scopes: ["prior-service"] }, cookie);
+  const saved = ok(await configure(rotated));
+  assert.deepEqual(saved, { id: "held-signed", authentication: "signed", credential: "encrypted in this installation; never returned", effect: "intake only; no read access" });
+  ok(await signed(heldSignedKey, signal("held-signed", "rotated-out")), 401);
+  ok(await signed(rotated, signal("held-signed", "rotated-in")), 201);
+  ok(await request("/api/sources", { id: "echo-" + rotated, key: rotated, mode: "signed", scopes: ["prior-service"] }, cookie), 400);
+  const [inFlight, rotation] = await Promise.all([signed(rotated, signal("held-signed", "in-flight")), configure(raced)]);
+  // Admission advances the workspace revision, so a rotation that lost the race asks for a reload.
+  if (rotation.status === 409) ok(await configure(raced)); else ok(rotation);
+  assert.ok([201, 401, 409].includes(inFlight.status), "an event racing rotation is admitted under the old key or refused, never half-stored");
+  ok(await signed(rotated, signal("held-signed", "after-race")), 401);
+  ok(await signed(raced, signal("held-signed", "after-race")), 201);
+  const listed = ok(await request("/api/sources", undefined, cookie));
+  assert.deepEqual(listed.sources, [
+    { id: "held-bearer", authentication: "bearer", custody: "digest only", scopes: ["prior-service"] },
+    { id: "held-signed", authentication: "signed", custody: "encrypted in this installation", scopes: ["prior-service"] },
+  ], "setup reads show secret-free definitions only");
+  ok(await request("/api/sources", undefined, ""), 401);
+  // Revocation removes the held key atomically; accepted history stays.
+  const revoked = ok(await request("/api/sources/held-signed/revoke", {}, cookie));
+  assert.equal(revoked.revoked, true);
+  ok(await signed(raced, signal("held-signed", "after-revoke")), 401);
+  ok(await request("/api/sources/held-signed/revoke", {}, cookie), 404);
+  const custody = rows("SELECT signing_custody FROM sources WHERE signing_custody IS NOT NULL").map(row => row.signing_custody);
+  const state = ok(await request("/api/state", undefined, cookie));
+  assert.ok(state.events.some(event => event.id === first.id), "events accepted before revocation remain");
+  assert.ok(!state.events.some(event => /^echo/.test(event.eventId)), "refused echoes leave no event");
+  const retained = [JSON.stringify(state), JSON.stringify(ok(await request("/api/archive", undefined, cookie))),
+    JSON.stringify(ok(await request("/api/recovery/checkpoint", undefined, cookie))), JSON.stringify(listed), JSON.stringify(saved)].join("\n").toLowerCase();
+  for (const secret of [heldSignedKey, heldBearerKey, rotated, raced, sealed, ...custody])
+    assert.ok(!retained.includes(secret.toLowerCase()), "no source key or custody value reaches workspace, audit, archive, checkpoint or setup reads");
+  console.log("PASS OC-042 held signed-source custody survives upgrade, rotation, revocation and archive exclusion without secret echoes");
+}
 try {
   const legacyDirectory=join(persist,'legacy-migrations');await mkdir(legacyDirectory);
   for(const name of (await readdir('migrations/core')).filter(name=>/^\d{4}_/.test(name) && Number(name.slice(0,4)) < 106))await copyFile(join('migrations/core',name),join(legacyDirectory,name));
@@ -132,7 +213,14 @@ try {
   const oldSchedule={id:'prior-schedule',name:'Prior rota',service:'prior-service',revision:1,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:['prior-admin'],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]};
   const legacyTimer={id:'prior-timer',incident:'retained-orphan',service:'prior-service',revision:1,status:'pending',nextDue:1791710000000,createdAt:1791710000000,lastEvaluatedAt:1791710000000,currentStep:0,policy:{service:'prior-service',scheduleId:'prior-schedule',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule:oldSchedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at:1791710000000,actor:null,reason:null,attempt:null}]};
   sql("INSERT INTO paging_jobs VALUES('prior-timer','retained-orphan','prior-service',1,'pending',1791710000000,'prior','"+JSON.stringify(legacyTimer)+"')");
+  // OC-042: an installation from before signing-key custody holds a signed source's key in plaintext.
+  const heldSignedKey = randomBytes(32).toString("hex"), heldBearerKey = randomBytes(32).toString("hex");
+  const digest = (value) => createHash("sha256").update(value).digest("hex");
+  sql(`INSERT INTO sources(id,digest,signing_secret,scopes) VALUES('held-signed','${digest(heldSignedKey)}','${heldSignedKey}','["prior-service"]'),('held-bearer','${digest(heldBearerKey)}',NULL,'["prior-service"]')`);
   migration();
+  assert.deepEqual(rows("SELECT id,signing_secret IS NOT NULL AS held,signing_custody FROM sources ORDER BY id"),
+    [{ id: "held-bearer", held: 0, signing_custody: null }, { id: "held-signed", held: 1, signing_custody: null }],
+    "OC-042: the SQL migration is additive and keeps the held key until the Worker can seal it");
   await start();
   const priorLogin=await request('/api/login',{name:'Prior Operator',password:'synthetic-local-testing-password'});
   ok(priorLogin);
@@ -147,8 +235,9 @@ try {
   ok(heldAgain);
   assert.deepEqual(ok(await request('/api/state', undefined, heldAgain.cookie)), JSON.parse(preserved), 'all held arrays and history survive repeated migration and restart');
   console.log('PASS held upgrade through pre-0106 SQL: full ordered members/services/policies/events/alerts/incidents/audit and nested history unchanged; held password works after upgrade and repeat migration/restart.');
+  await heldSourceCustody(heldAgain.cookie, heldSignedKey, heldBearerKey, digest);
   await stop();
-  sql('DELETE FROM paging_jobs; DELETE FROM operator_members; DELETE FROM sessions; DELETE FROM credentials; DELETE FROM workspace_control; '+['members','services','policies','events','alerts','incidents','audit'].map(k=>'DELETE FROM oc_'+k).join(';'));
+  sql('DELETE FROM sources; DELETE FROM paging_jobs; DELETE FROM operator_members; DELETE FROM sessions; DELETE FROM credentials; DELETE FROM workspace_control; '+['members','services','policies','events','alerts','incidents','audit'].map(k=>'DELETE FROM oc_'+k).join(';'));
   migration();
   await start();
   const home = await fetch(origin);

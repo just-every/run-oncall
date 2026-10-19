@@ -14,6 +14,7 @@ import { installTriage, memberWorkspace } from "./triage-api";
 import { linkRestoredOwner, restoredAdministrators } from './identity-link';
 import { loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
 import { nativeMember } from './native-member';
+import { installNativeSources, presentedSourceKey, refuseKeyEcho, sealHeldSourceKeys, type NativeSource } from './native-sources';
 import { runtimeBindings, type Bindings } from './auth.server';
 import { admitted } from './base/setup-state';
 import { isLoopbackHost } from './modules/operator-auth/index.mjs';
@@ -172,6 +173,11 @@ api.use("*", async (c, next) => {
   await next();
   if (c.res.status >= 400) await discardDeniedBody(c);
 });
+// Upgraded installations seal any held plaintext signing key before a request can read it.
+api.use("/api/*", async (c, next) => {
+  await sealHeldSourceKeys(c.env.DB, runtimeBindings(c.env).SESSION_SECRET);
+  await next();
+});
 api.get("/health", async (c) => {
   const identity = deploymentHealth(c.env);
   const scope = { paging: "not-provided", target: "coordination" };
@@ -315,43 +321,12 @@ api.post("/api/ingress/:source", async (c) => {
   if (new TextEncoder().encode(raw).length > 65536)
     fail("Request too large", 413);
   const source = await c.env.DB.prepare(
-    "SELECT digest,signing_secret,scopes FROM sources WHERE id=?",
+    "SELECT digest,signing_secret,signing_custody,scopes FROM sources WHERE id=?",
   )
     .bind(c.req.param("source"))
-    .first<{ digest: string; signing_secret: string | null; scopes: string }>();
+    .first<NativeSource>();
   if (!source) fail("Invalid source credential", 401);
-  if (source.signing_secret) {
-    const timestamp = c.req.header("x-oncall-timestamp") ?? "";
-    const signature = c.req.header("x-oncall-signature") ?? "";
-    if (
-      !/^\d+$/.test(timestamp) ||
-      Math.abs(Date.now() - Number(timestamp) * 1000) > 300000
-    )
-      fail("Stale or invalid signature timestamp", 401);
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(source.signing_secret),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"],
-    );
-    const expected = Array.from(
-      new Uint8Array(
-        await crypto.subtle.sign(
-          "HMAC",
-          key,
-          new TextEncoder().encode(timestamp + "." + raw),
-        ),
-      ),
-    )
-      .map((x) => x.toString(16).padStart(2, "0"))
-      .join("");
-    if (!safeEqual(signature, expected)) fail("Invalid source signature", 401);
-  } else {
-    const bearer = c.req.header("authorization")?.replace(/^Bearer /, "");
-    if (!bearer || !safeEqual(await hash(bearer), source.digest))
-      fail("Invalid source credential", 401);
-  }
+  const key = await presentedSourceKey(c, source, raw);
   let input: any;
   try {
     input = JSON.parse(raw);
@@ -360,14 +335,15 @@ api.post("/api/ingress/:source", async (c) => {
   }
   const signal = signalInput(input);
   if (signal.source !== c.req.param("source")) fail('"source" must match the source ID in the URL');
+  refuseKeyEcho(Object.values(signal), key);
   if (!JSON.parse(source.scopes).includes(signal.service))
     fail('"service" must be an internal service ID authorized for this source', 403);
   const state = await load(c.env.DB);
   const revision = state.revision;
   const result = admit(state, signal);
   if (!result.duplicate) await save(c.env.DB, state, revision, {
-    sql: "EXISTS(SELECT 1 FROM sources WHERE id=? AND digest=? AND signing_secret IS ? AND scopes=?)",
-    values: [c.req.param("source"), source.digest, source.signing_secret, source.scopes],
+    sql: "EXISTS(SELECT 1 FROM sources WHERE id=? AND digest=? AND signing_custody IS ? AND scopes=?)",
+    values: [c.req.param("source"), source.digest, source.signing_custody, source.scopes],
   });
   // Source credentials admit signals; they never grant workspace read access.
   // Project explicitly so new internal event fields cannot widen this receipt.
@@ -397,6 +373,7 @@ api.use("/api/*", async (c, next) => {
   await next();
 });
 installChangeManagement(api, changeDeps);
+installNativeSources(api, changeDeps);
 installIntakeManagement(api, changeDeps);
 installRoutingManagement(api, changeDeps);
 installUrgency(api, changeDeps);
@@ -467,44 +444,6 @@ api.post("/api/members", async (c) => {
   const results=await c.env.DB.batch([...writes,insert]);
   if(results[0].meta.changes!==1) fail('Workspace changed; reload',409);
   return c.json(member, 201);
-});
-api.post("/api/sources", async (c) => {
-  if (c.get("actor").role !== "admin") fail("Admin required", 403);
-  const input = await body(c);
-  const id = text(input.id, "source", 100);
-  if(id.startsWith("intake:"))fail("This source namespace is reserved for compatible integrations");
-  const key = text(input.key, "source key", 200);
-  if (key.length < 32) fail("Source key needs at least 32 characters");
-  const state = await load(c.env.DB);
-  if (
-    !Array.isArray(input.scopes) ||
-    input.scopes.length === 0 ||
-    input.scopes.some((id: string) => !state.services.some((s) => s.id === id))
-  )
-    fail("Choose explicit service scopes");
-  const actor = state.members.find(
-    (m) => m.id === c.get("actor").id && m.active && m.role === "admin",
-  );
-  if (!actor) fail("Current admin required", 403);
-  const authority = sessionGuard(c);
-  const saved = await c.env.DB.prepare(
-    `INSERT INTO sources(id,digest,signing_secret,scopes) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE revision=?) AND ${authority.sql} ON CONFLICT(id) DO UPDATE SET digest=excluded.digest,signing_secret=excluded.signing_secret,scopes=excluded.scopes`,
-  )
-    .bind(
-      id,
-      await hash(key),
-      input.mode === "signed" ? key : null,
-      JSON.stringify(input.scopes),
-      state.revision,
-      ...authority.values,
-    )
-    .run();
-  if (saved.meta.changes !== 1) fail("Authority changed; reload", 409);
-  return c.json({
-    id,
-    credential: "stored as hash",
-    effect: "intake only; no read access",
-  });
 });
 api.post("/api/password", async (c) => {
   const input = await body(c);
