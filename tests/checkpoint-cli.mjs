@@ -20,7 +20,9 @@ function exported(checkpoint,before) {
 // Only server-generated recovery clocks/identities may differ. Compare every
 // stored field and the entire attributed history prefix, including frozen data.
 export function assertCheckpointRestored(checkpoint,after,handoffs=checkpoint.handoffs) {
- assert.deepEqual({...after.coordination,revision:checkpoint.coordination.revision},checkpoint.coordination)
+ const inactive=structuredClone(checkpoint.coordination)
+ for(const key of ['changeSources','intakeSources'])if(inactive[key])inactive[key]=inactive[key].map(source=>({...source,active:false}))
+ assert.deepEqual({...after.coordination,revision:inactive.revision},inactive,'all coordination history survives; imported intake requires local reauthorization')
  assert.equal(after.paging.paging,'OFF');assert.equal(after.handoffs.delivery,'unsent')
  const expected=structuredClone(checkpoint.paging)
  expected.jobs=expected.jobs.map(job=>{
@@ -94,6 +96,7 @@ export async function checkpointCli(w,cookie) {
   }
   await refused(['export',file]) // export never overwrites
   await refused(['restore',file]) // replacement must be explicit
+  assert.equal((await w.request('/api/recovery/restore',{mode:'replace',checkpoint:JSON.parse(await readFile(file,'utf8'))})).status,401,'anonymous restore is denied')
   await chmod(session,0o644);await refused(['restore',file,'--replace'])
   await chmod(session,0o600);const link=join(dir,'session-link');await symlink(session,link)
   await refused(['restore',file,'--replace'],link)
@@ -102,6 +105,9 @@ export async function checkpointCli(w,cookie) {
   for(const invalid of [{...checkpoint,unknown:true},{...checkpoint,paging:{...checkpoint.paging,receipts:checkpoint.paging.receipts.slice(1)}},changedCopy]){
    await writeFile(malformed,JSON.stringify(invalid),{mode:0o600});await refused(['restore',malformed,'--replace'])
   }
+  const tooLarge=structuredClone(checkpoint)
+  tooLarge.coordination.services[0].runbook=['x'.repeat(1000001)]
+  await writeFile(malformed,JSON.stringify(tooLarge),{mode:0o600});await refused(['restore',malformed,'--replace'])
   checkpointSql(w,"CREATE TRIGGER checkpoint_cli_restore_failure BEFORE INSERT ON paging_callbacks BEGIN SELECT RAISE(ABORT,'INJECTED_STORAGE_FAILURE'); END")
   try{await refused(['restore',file,'--replace'])}finally{checkpointSql(w,'DROP TRIGGER checkpoint_cli_restore_failure')}
   await succeeds(['restore',file,'--replace'],'v2 CLI restore succeeds')
@@ -132,6 +138,12 @@ export async function checkpointCli(w,cookie) {
   assert.equal((await state(rotated)).status,401,'subsequent successful restore revokes the previous rotated session')
   for(const token of [cookie,rotated,final].flatMap(c=>c.split('; ').map(v=>v.split('=')[1])))
    assert.ok(!runs.some(r=>(r.stdout+r.stderr).includes(token)),'CLI output never discloses session values')
-  return final
+  const current=ok(await w.request('/api/recovery/checkpoint',undefined,final))
+  const race=await Promise.all([0,1].map(()=>w.request('/api/recovery/restore',{mode:'replace',checkpoint:current},final)))
+  const winner=race.find(r=>r.status===200),loser=race.find(r=>r!==winner)
+  assert.ok(winner&&[401,409].includes(loser.status),'exactly one concurrent checkpoint restore publishes')
+  const next=final.split('; ').filter(c=>!c.startsWith('oncall_session_')).concat(winner.cookie.split('; ').filter(c=>c.startsWith('oncall_session_'))).join('; ')
+  const afterRace=await read(next);assertCheckpointRestored(current,afterRace);await noEffects(next,afterRace)
+  return next
  }finally{await rm(dir,{recursive:true,force:true})}
 }

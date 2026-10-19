@@ -8,6 +8,8 @@ import {portabilityPolicy} from '../../src/portability-policy.mjs'
 export default {
  ...portabilityPolicy,
  async validateStaged({db,tables,read}) {
+  // Receiving opt-in is local authority; keep plans, approvals and replay journals as history.
+  if(tables.ik_door_settings)await db.prepare('UPDATE "'+tables.ik_door_settings.replaceAll('"','""')+'" SET enabled=0').run()
   const control=(await read('workspace_control'))[0],paging=(await read('paging_control'))[0]
   const coordination={schemaVersion:1,revision:control?.revision??0}
   for(const key of ['members','services','policies','events','alerts','incidents','audit'])coordination[key]=(await read('oc_'+key)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
