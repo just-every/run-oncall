@@ -6,6 +6,9 @@ import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, de
 import { operatorMail } from './mail.server.mjs'
 import branding from './branding.json'
 import { sessionCookieLine } from './session-cookie'
+import { importSettingsResponse, importSettingsRow, readImportSettings } from './move-in/door-settings'
+import type { OwnerClaimConfig } from './modules/owner-claim/index.mjs'
+import { rejectedResponse } from './base/rejected-response'
 
 // The edition's declared theme (public/rer-theme.css), as Base frames link it.
 const theme = { href: '/rer-theme.css', productName: branding.name, accentColor: branding.primaryColor }
@@ -45,6 +48,12 @@ export function operatorAuth(env: Bindings) {
  return createOperatorAuth({ db: env.DB, config: authConfig(env), mailSender: operatorMail(env), clientIp: request => request.headers.get('CF-Connecting-IP') ?? '' })
 }
 
+export function ownerClaimConfig(env:Bindings):OwnerClaimConfig|null {
+ if(!env.RER_OWNER_CLAIM_PUBLIC_KEYS)return null
+ return {issuer:env.RER_OWNER_CLAIM_ISSUER??'',installationId:env.RER_OWNER_CLAIM_INSTALLATION_ID??'',
+  appOrigin:env.AUTH_ORIGIN,expectedEmail:env.OWNER_EMAIL,publicKeys:JSON.parse(env.RER_OWNER_CLAIM_PUBLIC_KEYS)}
+}
+
 export function clearWorkspaceSession(response: Response, request: Request): Response {
  const headers = new Headers(response.headers)
  headers.append('set-cookie', sessionCookieLine(request, '', 0))
@@ -54,11 +63,10 @@ export function clearWorkspaceSession(response: Response, request: Request): Res
 const privateHeaders = { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff', 'x-robots-tag': 'noindex, nofollow' }
 export async function authResponse(request: Request, original: Bindings): Promise<Response | null> {
  const env = runtimeBindings(original), url = new URL(request.url)
- if (env.RER_OWNER_CLAIM_PUBLIC_KEYS) {
+ const claim=ownerClaimConfig(env)
+ if (claim) {
   const signed = await createOwnerClaimHandler({ db: env.DB, authConfig: authConfig(env),
-   clientIp: req => req.headers.get('CF-Connecting-IP') ?? '', issuer: env.RER_OWNER_CLAIM_ISSUER ?? '',
-   installationId: env.RER_OWNER_CLAIM_INSTALLATION_ID ?? '', appOrigin: env.AUTH_ORIGIN,
-   expectedEmail: env.OWNER_EMAIL, publicKeys: JSON.parse(env.RER_OWNER_CLAIM_PUBLIC_KEYS) })(request)
+   clientIp: req => req.headers.get('CF-Connecting-IP') ?? '', ...claim })(request)
   if (signed) return signed
  }
  if (url.pathname === '/signin' || url.pathname === '/signin/local') {
@@ -89,7 +97,13 @@ export async function authResponse(request: Request, original: Bindings): Promis
   }
  }
  if (url.pathname.startsWith('/auth/')) {
+  const settings=await importSettingsResponse(request,env)
+  if(settings)return rejectedResponse(request,settings)
   let response = await createAuthHandler(operatorAuth(env))(request)
+  if(url.pathname==='/auth/settings/identity'&&request.method==='GET'&&response?.ok&&response.headers.get('content-type')?.includes('text/html')) {
+   const row=importSettingsRow(await readImportSettings(env))
+   response=new HTMLRewriter().on('.secondary-link',{element(element){element.before(row,{html:true})}}).transform(response)
+  }
   // Only an explicit, successful new sign-in replaces the held workspace
   // cookie. Ordinary requests must still reject rotated/revoked sessions.
   // Confirmation issues a native cookie on success; failed confirmations do not.

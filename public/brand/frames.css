@@ -6,3 +6,5 @@
 .rer-themed main a:hover { text-decoration-color: #d48f7f; }
 .rer-themed main form + p { margin-top: 24px; }
 .rer-themed main form + p + p { margin-top: -8px; }
+.rer-themed .business-import-settings { margin-top: 28px; }
+.rer-themed .business-import-settings select { display: block; width: 100%; min-width: 0; margin: 8px 0 16px; padding: 12px 14px; border: 1px solid #64748b; border-radius: 10px; font: inherit; color: inherit; background: transparent; }

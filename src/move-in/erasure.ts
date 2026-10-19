@@ -8,6 +8,7 @@ import { portabilityPolicy } from '../portability-policy.mjs'
 import { validateSchedule } from '../family/response-operations/schedules'
 import { fail } from '../family/response-operations/domain'
 import { addressRanges } from './address-match'
+import { IMPORT_DOOR_KEY } from './door-key'
 
 /** The paused imported user object is the native entity an imported person lives in. */
 const person = defineErasure({ entity: 'move-in-person', root: { table: 'move_in_objects' } })
@@ -61,6 +62,38 @@ async function services(database: D1ImportContext['storage']['database']) {
   return { portability, erasure: createErasure({ db, buckets: {}, portability, declarations: [person] }) }
 }
 
+/** The vendor ids of every user object inside a value that carries the person's email or username. */
+function personIds(value: any, email: string, ids: Set<string>) {
+  if (Array.isArray(value)) { for (const item of value) personIds(item, email, ids); return }
+  if (!value || typeof value !== 'object') return
+  if (value.id !== undefined && ['email', 'username'].some(field => typeof value[field] === 'string' && value[field].trim().toLowerCase() === email)) ids.add(String(value.id))
+  for (const child of Object.values(value)) personIds(child, email, ids)
+}
+
+/** Whether the import door holds the person in a retained upload or plan snapshot that no kit job holds: Business's unplanned
+ * upload or unapproved plan. Each bundle is read whole, then searched like a kit original; the vendor ids found join `ids`. */
+async function inDoorCustody(db: D1Database, email: string, ids: Set<string>) {
+  const search = (text: string) => {
+    let value: unknown
+    try { value = JSON.parse(text) } catch { return names(text, email) }
+    personIds(value, email, ids)
+    return refers(value, email, ids) || mentions(value, email)
+  }
+  let found = false
+  const uploads = (await db.prepare('SELECT id FROM ik_door_uploads WHERE installation_id=? ORDER BY id').bind(IMPORT_DOOR_KEY).all<{ id: string }>()).results
+  for (const { id } of uploads) {
+    const chunks = (await db.prepare('SELECT base64 FROM ik_door_chunks WHERE upload_id=? ORDER BY ordinal').bind(id).all<{ base64: string }>()).results
+    const bytes = chunks.flatMap(chunk => [...atob(chunk.base64)].map(char => char.charCodeAt(0)))
+    if (bytes.length && search(new TextDecoder().decode(new Uint8Array(bytes)))) found = true
+  }
+  const plans = (await db.prepare('SELECT id FROM ik_door_plans WHERE installation_id=? ORDER BY id').bind(IMPORT_DOOR_KEY).all<{ id: string }>()).results
+  for (const { id } of plans) {
+    const body = (await db.prepare('SELECT body FROM ik_door_plan_chunks WHERE plan_id=? ORDER BY ordinal').bind(id).all<{ body: string }>()).results.map(chunk => chunk.body).join('')
+    if (body && search(body)) found = true
+  }
+  return found
+}
+
 export type PersonErasure = { receiptId: string; recordsErased: number; jobsRetired: number; streamsRetired: number; importedUser: 'removed' | 'not applied'; schedulesRewritten: number; nativeMember: 'kept' | 'none' }
 
 /** Severing related records rewrites a job's erasure index and leaves the job without its completeness receipt, which the next erasure refuses
@@ -77,7 +110,9 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
   if (applied?.sourceId !== undefined) ids.add(String(applied.sourceId))
   const mailOf = (record: any) => { try { return String(record.email ?? record.username ?? '').trim().toLowerCase() } catch { return '' } }
   await relatedSelection(ctx, { source(record) { if (record.kind === 'users' && mailOf(record.payload) === email) ids.add(String((record.payload as any).id ?? record.sourceId)); return false } })
-  const pending = ids.size > 0
+  // Door custody (an unplanned upload or a plan awaiting approval) counts as pending too: the erasure withdraws those bundles whole.
+  const held = await inDoorCustody(db as unknown as D1Database, email, ids)
+  const pending = ids.size > 0 || held
   if (!user && !pending) fail('No imported person has that email', 404)
   const { erasure, portability } = await services(db)
   const native = user ? await erasure.nativeStatements('move-in-person', { kind: 'user', id: email }) : null
@@ -104,8 +139,10 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
     },
   }
   const checkpoint = (await portability.redactionStatements()).map(toD1Sql)
+  // Every erasure commit drops in-flight transfer copies, which may hold the person; the native erasure already does when there is one.
+  const transfers = native ? [] : (await portability.invalidateTransfersStatements()).map(toD1Sql)
   let entry
-  try { entry = await retireD1ImportCustody({ target: { kind: 'user', id: email }, values: [email, ...filenames], related }, [...native?.statements ?? [], ...rewrite], ctx, checkpoint) }
+  try { entry = await retireD1ImportCustody({ target: { kind: 'user', id: email }, values: [email, ...filenames], related }, [...native?.statements ?? transfers, ...rewrite], ctx, checkpoint) }
   catch (error) { if (/CHECK constraint|IMPORT_ATOMIC_GUARD/.test(String((error as Error).message))) fail('Imported data changed while the erasure was prepared; nothing was erased. Retry.', 409); throw error }
   await reindex(ctx)
   if (native) await erasure.deleteBlobs(native.operationId)

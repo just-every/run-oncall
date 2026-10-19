@@ -1,3 +1,10 @@
+# Unreleased
+
+- Move-in kit: the screen imports through Base's import door, the same upload → plan → reviewed fingerprint → apply → reconcile → undo path Business uses, under one allow-list (Opsgenie, PagerDuty). Look, copy and steps are unchanged; the old `/api/move-in/preview` and `/apply` routes are removed. Imports made before keep their journal, resume and undo. The journal lists your imports (“approved by”) beside Business imports (“approved via Business by”).
+- Move-in kit: a file previewed while the source already holds an import is reviewed as that import's catch-up, and an unconfirmed preview gives way to the next one. A failed Business import offers no resume and the old journal route refuses to resume a door import.
+- Erasing a person also reaches someone held only in an uploaded file or an unapproved plan.
+- Adapted Base copy: `src/modules/import-kit/src/door/planning.ts` plans a file afresh after its earlier import was undone, so the same file can be imported again, and after an erasure withdrew a live import's file the next preview starts a new baseline instead of failing. Migration 0126 is additive.
+
 # 0.3.0 · 2026-10-16
 
 Release 1 hosted incident coordination beside your existing pager. Paging stays OFF. Screenshot: [`.github/assets/release/oncall-0.3.0-incident-1440.png`](.github/assets/release/oncall-0.3.0-incident-1440.png).

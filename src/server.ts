@@ -12,6 +12,7 @@ import { authResponse, runtimeBindings, operatorAuth, type Bindings } from './au
 import {receivedRequest} from './request-body'
 import { workspaceDocument } from './workspace-document'
 import {readSessionCookie} from './session-cookie'
+import {importDoorResponse} from './move-in/door'
 type Env=Bindings
 export default withDemo({
   async fetch(request,env,execution) {
@@ -45,6 +46,7 @@ export default withDemo({
     }
     const guide=guideResponse(request);if(guide)return guide;
     const received=await receivedRequest(request);if(received instanceof Response)return received;
+    const imports=await importDoorResponse(received,bindings);if(imports)return imports;
     const auth=await authResponse(received,env as Bindings); if(auth) return auth;
     const response=await dispatch(received,()=>api.fetch(received,env,execution),()=>start.fetch(received));
     if(response.headers.get('content-type')?.startsWith('text/html')) {

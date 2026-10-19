@@ -10,7 +10,7 @@ const suites={
  intake:['tests/intake.mjs','tests/routing.mjs','tests/monitoring.mjs','tests/urgency.mjs'],
  reviews:['tests/reviews.mjs'],
  activation:['tests/activation.mjs'],
- 'adoption-demo':['tests/demo.mjs','tests/move-in-adoption.mjs'],
+ 'adoption-demo':['tests/demo.mjs','tests/move-in-adoption.mjs','tests/import-door.mjs'],
  signin:['tests/signin-browser.mjs'],
  'product-browser':['tests/product-browser.mjs'],
  'managed-browser':['tests/activation-browser.mjs'],

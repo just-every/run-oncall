@@ -74,7 +74,7 @@ Exporter references checked on 16 October 2026: Opsgenie's [pagination](https://
 
 1. Open **Move-in kit** and choose **Opsgenie** or **PagerDuty** under **Source**.
 2. Choose your file under **Export JSON**.
-3. Press **Preview import**. This is a dry run: it writes nothing, however often you press it.
+3. Press **Preview import**. This is a dry run: it changes nothing in your workspace, however often you press it. Oncall keeps the file with its review in the import journal, so the import applies exactly what you reviewed. If this source already holds an import, the review shows what the new file adds or changes; people or schedules edited in Oncall since are refused by name, and anything missing from the file stays.
 4. Read the **Compatibility review**. It counts what mapped, what was rejected and what came across with differences, then lists every object with its reason. Nothing is skipped quietly.
 5. If you are happy, press **Confirm paused import**. Oncall applies exactly the preview you reviewed, so if you pick a different file you preview again first.
 

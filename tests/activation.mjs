@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {readFile,writeFile,mkdir,rm} from 'node:fs/promises'
 import {spawnSync} from 'node:child_process'
 import {createHash} from 'node:crypto'
-import {localWorker} from './worker.mjs'
+import {localWorker,ownerDoor} from './worker.mjs'
 import {checkpointCli} from './checkpoint-cli.mjs'
 import {pagingHistory} from './paging-history.mjs'
 
@@ -11,6 +11,8 @@ const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'
 try {
  const initial=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'}),admin=ok(initial).member,cookie=initial.cookie
  const req=(path,input)=>w.request(path,input,cookie),record=s=>{checks.push(s);console.log(s)}
+ // The move-in screen's transport: the owner-session import door.
+ const door=ownerDoor(w,cookie)
  const a=ok(await req('/api/members',{name:'Alice',password:'synthetic-local-testing-password',role:'responder'}),201),b=ok(await req('/api/members',{name:'Bob',password:'synthetic-local-testing-password',role:'responder'}),201),viewer=ok(await req('/api/members',{name:'Viewer',password:'synthetic-local-testing-password',role:'viewer'}),201)
  ok(await req('/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:admin.id,runbook:['Verify recovery'],pager:'https://pager.example.test'}))
  const schedule={id:'daily',name:'Daily hand-off',service:'checkout',revision:0,timezone:'America/New_York',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[a.id,b.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[b.id,a.id],ambiguity:'earlier'},overrides:[]}
@@ -36,17 +38,21 @@ try {
  record('OC-012/013: every delivery/timer door refused and no receipt was created')
  const reader=await w.request('/api/login',{name:'Viewer',password:'synthetic-local-testing-password'});ok(reader)
  const sources={}
- const atomicSource=await readFile('tests/fixtures/opsgenie.json','utf8'),atomicPreview=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source:atomicSource}))
+ const atomicSource=await readFile('tests/fixtures/opsgenie.json','utf8'),atomicPreview=ok(await door.preview('opsgenie',atomicSource))
  w.sql("CREATE TRIGGER injected_import_failure BEFORE INSERT ON move_in_objects WHEN NEW.kind='schedule' BEGIN SELECT RAISE(ABORT,'INJECTED_NATIVE_FAILURE'); END")
- ok(await req('/api/move-in/apply',{vendor:'opsgenie',source:atomicSource,fingerprint:atomicPreview.fingerprint,confirm:true,operationKey:'atomic-publication'}),503)
+ assert.equal(ok(await door.call('opsgenie','apply',{planId:atomicPreview.planId,reviewedFingerprint:atomicPreview.fingerprint}),409).error,'import_door_apply_constraint')
  assert.equal(w.sql('SELECT COUNT(*) AS n FROM move_in_objects')[0].n,0,'failed batch published no users or schedules')
  assert.equal(w.sql('SELECT COUNT(*) AS n FROM ik_batches')[0].n,0,'failed batch published no journal progress')
- const interrupted=ok(await req('/api/move-in/jobs?vendor=opsgenie'))[0];assert.equal(interrupted.checkpoint,0)
+ const interrupted=ok(await req('/api/move-in/jobs?vendor=opsgenie'))[0];assert.equal(interrupted.checkpoint,0);assert.equal(interrupted.state,'failed')
  w.sql('DROP TRIGGER injected_import_failure')
- ok(await w.request(`/api/move-in/${interrupted.id}/resume`,{vendor:'opsgenie'},reader.cookie),403)
- let resumed=ok(await req(`/api/move-in/${interrupted.id}/resume`,{vendor:'opsgenie'}));while(resumed.state!=='completed')resumed=ok(await req(`/api/move-in/${interrupted.id}/resume`,{vendor:'opsgenie'}))
- let reversed=ok(await req(`/api/move-in/${interrupted.id}/undo`,{vendor:'opsgenie',confirm:true}));while(reversed.state!=='undone')reversed=ok(await req(`/api/move-in/${interrupted.id}/resume`,{vendor:'opsgenie'}))
- record('OC-022: injected native SQL failure rolled back the complete batch and journal; authorized restart resumed and undid it')
+ // A failed door apply is terminal: no session resumes it, through the door or the old journal route.
+ ok(await door.call('opsgenie','apply',{planId:atomicPreview.planId,reviewedFingerprint:atomicPreview.fingerprint},reader.cookie),403)
+ assert.equal(ok(await door.call('opsgenie','apply',{planId:atomicPreview.planId,reviewedFingerprint:atomicPreview.fingerprint}),409).error,'import_door_plan_failed')
+ assert.equal(ok(await req(`/api/move-in/${interrupted.id}/resume`,{vendor:'opsgenie'}),409).code,'IMPORT_DOOR_JOB')
+ const replanned=ok(await door.preview('opsgenie',atomicSource));assert.notEqual(replanned.planId,atomicPreview.planId)
+ assert.equal(ok(await door.apply('opsgenie',replanned)).job.state,'completed')
+ assert.equal(ok(await door.undo('opsgenie',replanned.planId)).job.state,'undone')
+ record('OC-022: injected native SQL failure rolled back the complete batch and journal; the failed apply stayed refused and an authorized new preview of the same file applied and undid it')
  // Each documented response shape runs the whole guarantee: bare fixtures, saved responses (lists and single details) and PagerDuty layer history.
  const shapes=[
   {file:'opsgenie',vendor:'opsgenie',id:'opsgenie:ops-daily',at:'2026-03-08T13:00:00Z',primary:'alice@example.test'},
@@ -61,28 +67,30 @@ try {
  for(const {file,vendor,id,at,primary,like,rejected=true,also=[]} of shapes) {
   const source=await readFile(`tests/fixtures/${file}.json`,'utf8');if(file===vendor)sources[vendor]=source
   const before=w.sql('SELECT COUNT(*) AS n FROM ik_jobs UNION ALL SELECT COUNT(*) FROM ik_batches UNION ALL SELECT COUNT(*) FROM ik_d1_assertions UNION ALL SELECT COUNT(*) FROM move_in_objects')
-  const preview=ok(await req('/api/move-in/preview',{vendor,source}))
+  const preview=ok(await door.preview(vendor,source))
   for(const item of preview.items){let record=JSON.parse(source);for(const key of item.location.pointer.slice(1).split('/').map(s=>s.replaceAll('~1','/').replaceAll('~0','~')))record=record?.[key];assert.ok(record!==undefined,'review points into the actual supplied response envelope')}
   assert.ok(preview.counts.mapped>0);mapped[file]=preview.counts.mapped;if(like)assert.equal(preview.counts.mapped,mapped[like],'a saved response maps exactly what the bare fixture maps');assert.equal(preview.items.find(i=>i.effects.some(e=>e.targetKind==='schedule')).effects[0].value.equivalence.status,'equivalent-in-window');assert.equal(preview.counts.rejected>0,rejected);assert.ok(preview.items.filter(i=>i.rejection).every(i=>i.name&&i.rejection))
   assert.deepEqual(w.sql('SELECT COUNT(*) AS n FROM ik_jobs UNION ALL SELECT COUNT(*) FROM ik_batches UNION ALL SELECT COUNT(*) FROM ik_d1_assertions UNION ALL SELECT COUNT(*) FROM move_in_objects'),before)
-  ok(await w.request('/api/move-in/preview',{vendor,source},reader.cookie),403)
+  ok(await door.preview(vendor,source,reader.cookie),403)
   ok(await w.request('/api/move-in/erase',{email:'alice@example.test',confirmation:'erase alice@example.test'},reader.cookie),403)
   ok(await w.request('/api/move-in/erase',{email:'alice@example.test',confirmation:'erase alice@example.test'}),401)
-  ok(await req('/api/move-in/apply',{vendor,source,fingerprint:'changed-review',confirm:true}),409)
-  let job=ok(await req('/api/move-in/apply',{vendor,source,fingerprint:preview.fingerprint,confirm:true,operationKey:file+'-first'}))
+  ok(await door.call(vendor,'apply',{planId:preview.planId,reviewedFingerprint:'changed-review'}),400)
+  ok(await door.call(vendor,'apply',{planId:preview.planId,reviewedFingerprint:(preview.fingerprint[0]==='0'?'1':'0')+preview.fingerprint.slice(1)}),403)
+  const reviewed={planId:preview.planId,reviewedFingerprint:preview.fingerprint}
+  let job=ok(await door.call(vendor,'apply',reviewed)).job
   await w.stop();await w.start()
-  while(job.state!=='completed')job=ok(await req(`/api/move-in/${job.id}/resume`,{vendor}))
+  while(job.state!=='completed')job=ok(await door.call(vendor,'apply',reviewed)).job
   const objects=ok(await req('/api/move-in/objects'));assert.ok(objects.every(r=>r.value.paused&&r.value.paging===false&&r.value.login===false))
   assert.ok(w.sql("SELECT COUNT(*) AS n FROM ik_batches WHERE job_id='"+job.id+"'")[0].n>0)
   assert.ok(w.sql("SELECT sha256,size FROM ik_originals WHERE job_id='"+job.id+"' AND kind='artifact'").some(o=>o.sha256===createHash('sha256').update(source).digest('hex')&&o.size===Buffer.byteLength(source)),'the journal keeps the saved file\'s exact bytes')
-  const repeat=ok(await req('/api/move-in/apply',{vendor,source,fingerprint:preview.fingerprint,confirm:true,operationKey:file+'-first'}));assert.equal(repeat.id,job.id)
+  const repeat=ok(await door.call(vendor,'apply',reviewed)).job;assert.equal(repeat.id,job.id)
   for(const point of [{id,at,primary},...also]){const covered=ok(await req('/api/move-in/coverage',{vendor,id:point.id,at:point.at}));assert.equal(covered.coverage.primary,point.primary,`${file} ${point.id}`)}
-  let undo=ok(await req(`/api/move-in/${job.id}/undo`,{vendor,confirm:true}));while(undo.state!=='undone')undo=ok(await req(`/api/move-in/${job.id}/resume`,{vendor}))
+  assert.equal(ok(await door.undo(vendor,preview.planId)).job.state,'undone')
   assert.equal(w.sql('SELECT COUNT(*) AS n FROM move_in_objects')[0].n,0)
   record(`OC-021/022 ${file}: zero-write review, named rejections, paused apply, restart/resume, journal, idempotence, equivalence point and undo passed`)
  }
  // Everything Oncall's model cannot hold exactly stays rejected by name, never approximated.
- const refused=async(vendor,file)=>{const r=ok(await req('/api/move-in/preview',{vendor,source:await readFile(`tests/fixtures/${file}.json`,'utf8')}));assert.ok(r.items.filter(i=>i.rejection&&i.kind==='schedules').every(i=>i.effects.length===0),'a rejected schedule produces no effect');return r}
+ const refused=async(vendor,file)=>{const r=ok(await door.preview(vendor,await readFile(`tests/fixtures/${file}.json`,'utf8')));assert.ok(r.items.filter(i=>i.rejection&&i.kind==='schedules').every(i=>i.effects.length===0),'a rejected schedule produces no effect');return r}
  const reasons=r=>r.items.filter(i=>i.rejection).map(i=>i.rejection).join('\n')
  const named=(text,patterns)=>{for(const pattern of patterns)assert.match(text,pattern)}
  named(reasons(await refused('opsgenie','opsgenie-unsupported')),[/hourly rotation cannot map to calendar days/,/time restrictions are unsupported/,/Concurrent\/layered rotations cannot be mapped: Primary, Second/,/participant team cannot map/,/participant none cannot map/,/participant escalation cannot map/,/multiple override participants/,/repeats are unsupported/,/notification condition if-not-closed/,/notifyType all/,/direct user/,/more than two steps/])
@@ -90,8 +98,14 @@ try {
  const layers=await refused('pagerduty','pagerduty-layers')
  named(reasons(layers),[/Concurrent\/layered rotations cannot be mapped: Ended later, Current/,/timeline differs: 2026-03-08T13:00:00\.000Z: incumbent alice@example\.test, Oncall bob@example\.test/,/has no UTC-offset change in America\/New_York/,/no final timeline supplied/])
  assert.equal(layers.items.find(i=>i.name==='History rota').unmapped.filter(u=>u.field==='schedule_layers.history').length,2,'ended layers are named history, not coverage')
- for(const [vendor,file,field] of [['opsgenie','credential-opsgenie','apiKey'],['pagerduty','credential-pagerduty','integration_key']])assert.match(ok(await req('/api/move-in/preview',{vendor,source:await readFile(`tests/fixtures/${file}.json`,'utf8')}),400).error,new RegExp(`Credential-bearing field "${field}"`))
- record('OC-021: every shape Oncall cannot hold exactly was rejected by name with no effect; ended layers kept as history; credential-bearing keys refused')
+ // A refused preview writes zero rows, as before the door: its upload goes with the refusal, so no chunk keeps a refused key.
+ const rowCounts=()=>{const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%'").map(r=>r.name);return Object.fromEntries(w.statements(names.map(name=>`SELECT COUNT(*) AS n FROM "${name}"`).join(';')).map((rows,i)=>[names[i],rows[0].n]))}
+ // (A preview first gives way to the screen's own earlier unconfirmed preview, as a preview always did, so rows may go; none may be added.)
+ const wroteNothing=(before,message)=>{const after=rowCounts();assert.deepEqual(Object.keys(after).filter(t=>after[t]>before[t]),[],message);assert.equal(after.ik_door_uploads,before.ik_door_uploads,message);assert.equal(after.ik_door_chunks,before.ik_door_chunks,message)}
+ const chunksHolding=secret=>w.sql('SELECT base64 FROM ik_door_chunks').filter(c=>Buffer.from(c.base64,'base64').toString().includes(secret)).length
+ for(const [vendor,file,field] of [['opsgenie','credential-opsgenie','apiKey'],['pagerduty','credential-pagerduty','integration_key']]){const rows=rowCounts(),refused=ok(await door.preview(vendor,await readFile(`tests/fixtures/${file}.json`,'utf8')),400);assert.match(refused.error,new RegExp(`^Credential-bearing field "${field}"`));assert.ok(refused.code,'the refusal carries a code, so the screen shows its sentence as written')
+  assert.equal(chunksHolding('synthetic-fixture-credential'),0,`no ik_door_chunks row decodes to the refused ${field}`);wroteNothing(rows,'the refused preview wrote zero rows')}
+ record('OC-021: every shape Oncall cannot hold exactly was rejected by name with no effect; ended layers kept as history; credential-bearing keys refused and not kept')
  // Variants of the bare fixtures run preview, apply, coverage at a sample instant and undo: a refused schedule keeps every reason and is never imported, so it names no one.
  const variant=(vendor,change)=>{const value=JSON.parse(sources[vendor]);change(value);return JSON.stringify(value)}
  const layer=(id,name,start,end,user)=>({id,name,start,end,rotation_virtual_start:start,rotation_turn_length_seconds:86400,users:[{user:{id:user,type:'user_reference'}}],restrictions:[]})
@@ -105,21 +119,21 @@ try {
   {name:'override for a user not in the export',vendor:'opsgenie',change:s=>{s.overrides.data[0].user={type:'user',username:'ghost@example.test'};delete s.timelines},refused:{'cover-alice':/override user ghost@example\.test is not among the exported users/,'Operations daily':/Override cover-alice: override user ghost@example\.test/},samples:[{id:'opsgenie:ops-daily',at:'2026-03-08T13:30:00Z'}]},
  ]
  for(const {name,vendor,change,refused:expected,samples} of variants) {
-  const source=variant(vendor,change),preview=ok(await req('/api/move-in/preview',{vendor,source}))
+  const source=variant(vendor,change),preview=ok(await door.preview(vendor,source))
   for(const [item,reason] of Object.entries(expected)){const found=preview.items.find(i=>i.name===item);assert.match(found?.rejection??'',reason,`${name}: ${item}`);assert.equal(found.effects.length,0)}
-  let job=ok(await req('/api/move-in/apply',{vendor,source,fingerprint:preview.fingerprint,confirm:true}));while(job.state!=='completed')job=ok(await req(`/api/move-in/${job.id}/resume`,{vendor}))
+  assert.equal(ok(await door.apply(vendor,preview)).job.state,'completed')
   for(const point of samples){const covered=await req('/api/move-in/coverage',{vendor,id:point.id,at:point.at});if(point.primary)assert.equal(ok(covered).coverage.primary,point.primary,`${name} ${point.at}`);else assert.equal(covered.status,404,`${name}: the refused schedule was not imported`)}
-  let undo=ok(await req(`/api/move-in/${job.id}/undo`,{vendor,confirm:true}));while(undo.state!=='undone')undo=ok(await req(`/api/move-in/${job.id}/resume`,{vendor}))
+  assert.equal(ok(await door.undo(vendor,preview.planId)).job.state,'undone')
   assert.equal(w.sql('SELECT COUNT(*) AS n FROM move_in_objects')[0].n,0)
  }
- const twins=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source:variant('opsgenie',s=>s.users.data.push({id:'alice-again',username:'Alice@Example.test',fullName:'Alice Again'}))}),400)
- assert.equal(twins.code,'DUPLICATE_TARGET');for(const who of ['alice@example.test','Alice Again (Alice@Example.test)'])assert.ok(twins.error.includes(who),'the refusal names both people')
+ const twinRows=rowCounts(),twins=ok(await door.preview('opsgenie',variant('opsgenie',s=>s.users.data.push({id:'alice-again',username:'Alice@Example.test',fullName:'Alice Again'}))),400)
+ assert.equal(twins.code,'DUPLICATE_TARGET');wroteNothing(twinRows,'a named refusal of the file wrote zero rows');for(const who of ['alice@example.test','Alice Again (Alice@Example.test)'])assert.ok(twins.error.includes(who),'the refusal names both people')
  record('OC-021: active layers, override lists without a schedule id, disabled schedules and unexported override users are matched or refused by name through apply, coverage and undo; case-only duplicate emails are named')
  // Erasure matches the person by exact identity: erasing al@example.test leaves sal@example.test's slot, coverage and the import's undo intact.
  const people=[['u-al-0','al@example.test','Al Erased'],['u-sal-0','sal@example.test','Sal Kept'],['u-kai-0','kai@example.test','Kai Kept']].map(([id,username,fullName])=>({id,username,fullName}))
  const rotas=[['al-rota',['u-al-0','u-kai-0']],['sal-rota',['u-sal-0','u-kai-0']]].map(([id,members])=>({id,name:id,timezone:'UTC',rotations:[{name:id+' turn',startDate:'2026-03-07T10:00:00Z',type:'daily',length:1,participants:members.map(id=>({type:'user',id}))}]}))
- const crew=JSON.stringify({users:{data:people},schedules:{data:rotas}}),crewPreview=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source:crew}))
- let crewJob=ok(await req('/api/move-in/apply',{vendor:'opsgenie',source:crew,fingerprint:crewPreview.fingerprint,confirm:true}));while(crewJob.state!=='completed')crewJob=ok(await req(`/api/move-in/${crewJob.id}/resume`,{vendor:'opsgenie'}))
+ const crew=JSON.stringify({users:{data:people},schedules:{data:rotas}}),crewPreview=ok(await door.preview('opsgenie',crew))
+ assert.equal(ok(await door.apply('opsgenie',crewPreview)).job.state,'completed')
  const primary=async(id,at)=>ok(await req('/api/move-in/coverage',{vendor:'opsgenie',id:'opsgenie:'+id,at})).coverage.primary
  const salRow=()=>w.sql("SELECT revision,data FROM move_in_objects WHERE id='opsgenie:sal-rota'"),salBefore=salRow()
  const everything=()=>{const columns=Map.groupBy(w.sql("SELECT m.name AS t,p.name AS c FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%' AND m.name NOT LIKE '_cf_%' AND m.name NOT LIKE 'd1_%'"),r=>r.t);return JSON.stringify(w.statements([...columns].map(([t,cs])=>`SELECT ${cs.map(({c})=>`CAST("${c}" AS TEXT)`).join(',')} FROM "${t}"`).join(';')))}
@@ -129,7 +143,7 @@ try {
  assert.deepEqual(salRow(),salBefore,'the other person\'s schedule is untouched')
  assert.equal(await primary('sal-rota','2026-03-07T12:00:00Z'),'sal@example.test');assert.equal(await primary('al-rota','2026-03-07T12:00:00Z'),null,'the erased slot is an explicit gap');assert.equal(await primary('al-rota','2026-03-08T12:00:00Z'),'kai@example.test')
  assert.doesNotMatch(everything(),erasedValues,'no table keeps a value of the erased person')
- let crewUndo=ok(await req(`/api/move-in/${crewJob.id}/undo`,{vendor:'opsgenie',confirm:true}));while(crewUndo.state!=='undone')crewUndo=ok(await req(`/api/move-in/${crewJob.id}/resume`,{vendor:'opsgenie'}))
+ assert.equal(ok(await door.undo('opsgenie',crewPreview.planId)).job.state,'undone')
  assert.deepEqual(w.sql('SELECT kind,id FROM move_in_objects'),[{kind:'schedule',id:'opsgenie:al-rota'}],'undo removed everyone else; only the schedule the erasure rewrote stays applied')
  w.sql("DELETE FROM move_in_objects WHERE id='opsgenie:al-rota'")
  record('OC-022: erasing a person by exact email left a person whose email contains theirs scheduled, covered and undoable, and left no value of theirs behind')
@@ -162,9 +176,9 @@ try {
  const [pdTight,ogTight]=mentioned.map(entry=>apart(entry,'punct','y')),{overrides:_pdO,escalation_policies:_pdE,...pdTightBase}=pdTight.source,{overrides:_ogO,escalations:_ogE,...ogTightBase}=ogTight.source
  const punctuated=[{...pdTight,source:text('pagerduty','punct.example.test',pdTightBase,true,'y'),erased:lone('punct.example.test','\\bPEDy\\b'),overridden:false,rewritten:1,formIds:forms('').map((_,n)=>`PS-V${n}y`),longer:'ed@punct.example.test.invalid'},{...ogTight,source:text('opsgenie','punct.ops.example.test',ogTightBase,true,'y'),erased:lone('punct.ops.example.test','u-ed-opsy'),overridden:false,rewritten:1,formIds:forms('').map((_,n)=>`og-v${n}y`),longer:'ed@punct.ops.example.test.invalid'}]
  for(const {vendor,email,erased,ed,ted,kai,source:bundle,overridden=true,rewritten=2,formIds=[],longer} of [...mentioned,...textual,...punctuated]) {
-  const source=JSON.stringify(bundle),review=ok(await req('/api/move-in/preview',{vendor,source}))
+  const source=JSON.stringify(bundle),review=ok(await door.preview(vendor,source))
   if(overridden)assert.match(review.items.find(i=>i.name==='Direct page').rejection,/direct user/,'a policy paging the person directly stays rejected')
-  let importJob=ok(await req('/api/move-in/apply',{vendor,source,fingerprint:review.fingerprint,confirm:true}));while(importJob.state!=='completed')importJob=ok(await req(`/api/move-in/${importJob.id}/resume`,{vendor}))
+  assert.equal(ok(await door.apply(vendor,review)).job.state,'completed')
   const cover=async(id,at)=>ok(await req('/api/move-in/coverage',{vendor,id:`${vendor}:${id}`,at})).coverage.primary
   const tedMail=`ted@${email.split('@')[1]}`,samples=[[ed,'2026-06-01T12:00:00Z',email,null],[ed,'2026-06-02T12:00:00Z',kai],[ted,'2026-06-01T12:00:00Z',tedMail],[ted,'2026-06-02T12:00:00Z',kai],...overridden?[[ted,'2026-06-03T11:00:00Z',email,null],[ted,'2026-06-03T13:00:00Z',tedMail]]:[]]
   for(const [id,at,want] of samples)assert.equal(await cover(id,at),want,`${vendor} ${id} ${at} before erasure`)
@@ -174,26 +188,39 @@ try {
   assert.doesNotMatch(everything(),erased,`${vendor}: no table or retained plan keeps a value of the person named through an override, a notification rule, a policy, a description or another record's own field`)
   if(!overridden)assert.ok(everything().includes('sed@'+email.split('@')[1]),`${vendor}: an address that merely contains theirs stays in the records that name only it`)
   if(longer)for(const kept of [longer,'x'+email,email+'-x'])assert.ok(everything().includes(kept),`${vendor}: ${kept} is a different address and stays`)
-  let undo=ok(await req(`/api/move-in/${importJob.id}/undo`,{vendor,confirm:true}));while(undo.state!=='undone')undo=ok(await req(`/api/move-in/${importJob.id}/resume`,{vendor}))
+  assert.equal(ok(await door.undo(vendor,review.planId)).job.state,'undone')
   assert.deepEqual(w.sql('SELECT kind,id FROM move_in_objects ORDER BY id').map(r=>r.id),[`${vendor}:${ed}`,`${vendor}:${ted}`,...formIds.map(id=>`${vendor}:${id}`)].sort(),'undo removed the other people and policies; only the schedules the erasure rewrote or tombstoned stay applied')
   assert.doesNotMatch(everything(),erased,'undo restores no value of the erased person')
   w.sql('DELETE FROM move_in_objects')
  }
  record('OC-022: a person named only through an override, notification rules, a direct-user policy, a schedule description (beside punctuation, in URLs and mailto: links, percent-encoded or in other letter case) or a contact record (PagerDuty and Opsgenie) left no value in any table or plan; an address containing theirs stayed; coverage for others was unchanged and the rest of the import undid')
- for(const source of ['{bad json}',JSON.stringify({users:[{id:'unsafe',email:'a@example.test',apiKey:'fixture-secret'}]})])ok(await req('/api/move-in/preview',{vendor:'opsgenie',source}),400)
- const preview=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source:sources.opsgenie}))
- let job=ok(await req('/api/move-in/apply',{vendor:'opsgenie',source:sources.opsgenie,fingerprint:preview.fingerprint,confirm:true}));while(job.state!=='completed')job=ok(await req(`/api/move-in/${job.id}/resume`,{vendor:'opsgenie'}))
+ for(const source of ['{bad json}',JSON.stringify({users:[{id:'unsafe',email:'a@example.test',apiKey:'fixture-secret'}]})])ok(await door.preview('opsgenie',source),400)
+ const preview=ok(await door.preview('opsgenie',sources.opsgenie))
+ assert.equal(ok(await door.apply('opsgenie',preview)).job.state,'completed')
  w.sql("UPDATE move_in_objects SET data=json_set(data,'$.name','Native edit'),revision='native-edit' WHERE kind='user' AND id='alice@example.test'")
- const kept=ok(await req(`/api/move-in/${job.id}/undo`,{vendor:'opsgenie',confirm:true}),409);assert.equal(kept.code,'NATIVE_EDIT_CONFLICT');assert.ok(kept.error.includes('alice@example.test'),'the refusal names the edited person')
+ const kept=ok(await door.call('opsgenie','undo',{planId:preview.planId}),409);assert.equal(kept.code,'NATIVE_EDIT_CONFLICT');assert.ok(kept.error.includes('alice@example.test'),'the refusal names the edited person')
+ assert.equal(w.sql(`SELECT state FROM ik_jobs WHERE operation_key='door:${preview.planId}'`)[0].state,'completed','a refused undo leaves the import completed')
  assert.equal(w.sql("SELECT json_extract(data,'$.name') AS name FROM move_in_objects WHERE id='alice@example.test'")[0].name,'Native edit')
- const changedSource=JSON.parse(sources.opsgenie);changedSource.users.data[0].fullName='Changed source identity';const changedText=JSON.stringify(changedSource),changedPlan=ok(await req('/api/move-in/preview',{vendor:'opsgenie',source:changedText})),nativeBefore=w.sql('SELECT * FROM move_in_objects ORDER BY kind,id')
- ok(await req('/api/move-in/apply',{vendor:'opsgenie',source:changedText,fingerprint:changedPlan.fingerprint,confirm:true}),409)
- const pdPlan=ok(await req('/api/move-in/preview',{vendor:'pagerduty',source:sources.pagerduty})),held=ok(await req('/api/move-in/apply',{vendor:'pagerduty',source:sources.pagerduty,fingerprint:pdPlan.fingerprint,confirm:true}),409)
+ const changedSource=JSON.parse(sources.opsgenie);changedSource.users.data[0].fullName='Changed source identity';const changedText=JSON.stringify(changedSource),nativeBefore=w.sql('SELECT * FROM move_in_objects ORDER BY kind,id')
+ // A changed file over a live import is its catch-up: the natively edited person is refused by name and nothing replaces them.
+ const changedPlan=ok(await door.preview('opsgenie',changedText))
+ assert.match(changedPlan.items.find(i=>i.kind==='users'&&i.id===changedSource.users.data[0].id).rejection,/Native edit conflict/)
+ assert.equal(ok(await door.apply('opsgenie',changedPlan)).job.state,'completed')
+ const pdPlan=ok(await door.preview('pagerduty',sources.pagerduty)),held=ok(await door.call('pagerduty','apply',{planId:pdPlan.planId,reviewedFingerprint:pdPlan.fingerprint}),409)
  assert.equal(held.code,'TARGET_REVISION_CONFLICT');for(const email of ['alice@example.test','bob@example.test'])assert.ok(held.error.includes(email),'the refusal names the people already imported')
+ assert.match(held.error,/ already in Oncall from the Opsgenie import [0-9a-f]{8}-[0-9a-f-]{27}\b/,'the refusal names the holding import by its vendor');assert.doesNotMatch(held.error,/door:/,'no internal namespace reaches the owner')
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'changed source cannot replace committed native data')
- const revoked=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(revoked);ok(await w.request('/api/logout',{},revoked.cookie));ok(await w.request(`/api/move-in/${job.id}/resume`,{vendor:'opsgenie'},revoked.cookie),401)
+ const revoked=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(revoked);ok(await w.request('/api/logout',{},revoked.cookie));ok(await door.call('opsgenie','apply',{planId:preview.planId,reviewedFingerprint:preview.fingerprint},revoked.cookie),401)
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'revoked session cannot resume or mutate imported data')
- record('OC-022: malformed/credential-bearing source refused; undo preserved a native edit')
+ // A later catch-up that replaced records of the first import: Undo of the first names that import and undoes nothing; newest first undoes.
+ const laterSource=JSON.parse(changedText);laterSource.users.data[1].fullName='Renamed later at source'
+ const laterPlan=ok(await door.preview('opsgenie',JSON.stringify(laterSource)));assert.equal(ok(await door.apply('opsgenie',laterPlan)).job.state,'completed')
+ const laterJob=w.sql(`SELECT id FROM ik_jobs WHERE operation_key='door:${laterPlan.planId}'`)[0].id,layered=w.sql('SELECT * FROM move_in_objects ORDER BY kind,id')
+ const superseded=ok(await door.call('opsgenie','undo',{planId:preview.planId}),409);assert.equal(superseded.code,'IMPORT_SUPERSEDED')
+ assert.ok(superseded.error.includes(`later Opsgenie import ${laterJob} `),'the refusal names the later import by vendor and journal id');assert.match(superseded.error,/undo that import first in Saved import journal.*nothing was undone/)
+ assert.equal(w.sql(`SELECT state FROM ik_jobs WHERE operation_key='door:${preview.planId}'`)[0].state,'completed','the refused undo leaves the first import completed');assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),layered,'nothing was undone')
+ assert.equal(ok(await door.undo('opsgenie',laterPlan.planId)).job.state,'undone','the later import undoes first')
+ record('OC-022: malformed/credential-bearing source refused; undo preserved a native edit; undo under a later import named it and undid nothing')
  const checkpoint=ok(await req('/api/recovery/checkpoint')),prior=ok(await req('/api/state'))
  ok(await req('/api/recovery/restore',{mode:'replace',checkpoint:{...checkpoint,coordination:{...checkpoint.coordination,services:[{id:'invalid'}]}}}),400)
  assert.deepEqual(ok(await req('/api/state')),prior)
