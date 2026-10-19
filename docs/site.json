@@ -292,6 +292,10 @@
       "reason": "Vendored Base module documentation for developers"
     },
     {
+      "source": "src/modules/operator-auth/SCHEDULED-POLICY.md",
+      "reason": "Vendored Base module documentation for developers"
+    },
+    {
       "source": "src/modules/owner-claim/README.md",
       "reason": "Vendored Base module documentation for developers"
     },

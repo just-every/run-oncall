@@ -207,6 +207,12 @@
       "name": "0127_source_signing_custody.sql",
       "sha256": "d6879df0c06678b85db2322e09a0fd1d9b9d56ec48a2c53a62d0a0c3fe88a6f5",
       "sql": "-- OC-042: native signed-source keys are held only under installation-local AES-GCM custody.\n-- SQL cannot reach the installation key, so this step is additive: it keeps each held key where it is and\n-- the Worker seals and clears it in one guarded statement on its first API request (src/native-sources.ts).\n-- From here on no statement can write a plaintext key.\nALTER TABLE sources ADD COLUMN signing_custody TEXT;\nCREATE TRIGGER sources_signing_plaintext_insert BEFORE INSERT ON sources\nWHEN NEW.signing_secret IS NOT NULL\nBEGIN\n SELECT RAISE(ABORT, 'Signed source keys are held only under installation custody');\nEND;\nCREATE TRIGGER sources_signing_plaintext_update BEFORE UPDATE OF signing_secret ON sources\nWHEN NEW.signing_secret IS NOT NULL AND NEW.signing_secret IS NOT OLD.signing_secret\nBEGIN\n SELECT RAISE(ABORT, 'Signed source keys are held only under installation custody');\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0128_import_door_archive.sql",
+      "sha256": "6a99800f2320007a4e784d896c9cb2bd96a48992b137289b090a9214f36b9e13",
+      "sql": "-- Business archives of a tool's final export (import door `archive`); the header stays, erasure withdraws the bytes.\nCREATE TABLE IF NOT EXISTS ik_door_archives (\n    id TEXT PRIMARY KEY, installation_id TEXT NOT NULL, namespace TEXT NOT NULL,\n    upload_id TEXT NOT NULL, tool TEXT NOT NULL, taken_at TEXT NOT NULL, name TEXT NOT NULL,\n    bundle_sha256 TEXT NOT NULL, total_bytes INTEGER NOT NULL, total_chunks INTEGER NOT NULL,\n    counts_json TEXT NOT NULL, UNIQUE(installation_id,namespace,upload_id));\n\nCREATE TABLE IF NOT EXISTS ik_door_archive_chunks (\n    archive_id TEXT NOT NULL REFERENCES ik_door_archives(id), ordinal INTEGER NOT NULL,\n    sha256 TEXT NOT NULL, size INTEGER NOT NULL, base64 TEXT NOT NULL,\n    PRIMARY KEY(archive_id,ordinal));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
