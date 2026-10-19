@@ -11,7 +11,7 @@ const suites={
  reviews:['tests/reviews.mjs'],
  activation:['tests/activation.mjs'],
  'adoption-demo':['tests/demo.mjs','tests/move-in-adoption.mjs','tests/import-door.mjs'],
- signin:['tests/signin-browser.mjs'],
+ signin:['tests/signin-browser.mjs','tests/member-coordination-browser.mjs'],
  'product-browser':['tests/product-browser.mjs'],
  'managed-browser':['tests/activation-browser.mjs'],
  transfer:['tests/transfer.mjs'],

@@ -78,9 +78,9 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs`. Connected communication is a separate target in OC-034/051.
 
-18. **OC-018 — Maintained root commands. Status: partial.** Exercise documented setup/dev/build/preview/reset/archive/deploy dry-run, owner entry and member password sign-in. Hosted acceptance must actually deploy, retire setup authority, use a real emailed owner link, coordinate with a member after reload, and remove recorded resources with empty provider readback.
+18. **OC-018 — Maintained root commands. Status: done.** Exercise documented setup/dev/build/preview/reset/archive/deploy dry-run, owner entry and member password sign-in. Hosted acceptance must actually deploy, retire setup authority, use a real emailed owner link, coordinate with a member after reload, and remove recorded resources with empty provider readback.
 
-   Existing implementation / exercising flow: `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/signin-browser.mjs`; `tests/activation-browser.mjs`. Local lifecycle, unavailable-mail refusal and hosted serving are exercised; these tests do not prove account deployment or inbox receipt.
+   Exercising flow: **OC-018 real hosted member coordination persists after reload**, in `tests/member-coordination-browser.mjs`, runs the hosted member journey on the emitted production Worker: the owner claims through the setup token, creates a responder and a viewer, and declares an incident; the responder signs in by password at `/signin/local`, acknowledges and adds a note through the incident page, reloads at 1440 and 390 and reads both entries under their own name, while the stored entries name the member and the declaration stays the owner's. The viewer reads the same history with no controls and is refused a write (403). Signed-out, anonymous and revoked sessions get 401 and no workspace or history, a revoked member cannot sign in again, and paging refuses (409) for member and owner. `scripts/installer/seed.mjs`, `src/auth.server.ts`, `tests/transfer.mjs`, `tests/signin-browser.mjs` and `tests/activation-browser.mjs` exercise local lifecycle, unavailable-mail refusal and hosted serving. These tests do not prove account deployment or inbox receipt; the real-account results below are one-time evidence at their SHAs.
 
 19. **OC-019 — Additive upgrade. Status: done.** Seed the held one-row SQL data, migrate, sign in with the held password and compare all entities, nested histories and original ordering through HTTP; repeat migration/restart without silent reassignment to Base identity.
 
@@ -318,6 +318,16 @@ Run on 19 October 2026 against `f380227f4915f96a43a98515196600ed6f16468d`, by a 
 - **Upgrade:** a 0.3.0 installation holding that data ran 0.4.0's `rer dev`; migrations 0117–0126 applied (32 in all) and every member, service, incident, timeline entry, schedule and import was kept, and the same journeys then passed on it at 1440 and 390.
 - **Hosted (Cloudflare, workers.dev):** `rer deploy` claimed the owner and retired the setup token; the owner signed in by a real emailed link (SendGrid, received in seconds with SPF, DKIM and DMARC pass); the same journeys passed at 1440 and 390. The hosted database was exported with `wrangler d1 export --remote`, the deployment removed (empty readback), deployed again and the export restored into the fresh empty database; every record matched, the owner signed in by email again and a member signed in by password. The deployment was then removed with empty readback.
 
+## Hosted member coordination: OC-018
+
+Run on 19 October 2026 (10:07–10:09 UTC) against `cd1ef1c3748cbaa43bcda89470abba29e81a4a1a` on a real Cloudflare deployment (workers.dev), through the product's own pages. These are one-time account results, not maintained tests.
+
+- `rer deploy` claimed the configured owner and retired the setup token; `/health` reported that source, storage available and paging not provided. The owner signed in by a real emailed link (SendGrid, SPF, DKIM and DMARC pass) and created a responder and a viewer with workspace passwords, a service and an incident.
+- The responder signed in at `/signin/local`, acknowledged the incident and added a note, then reloaded at 1440 and 390: the acknowledged state and both entries stayed, under the responder's name; the stored entries name the responder and the declaration stays the owner's. The responder's session carried its own identity, separate from the owner's.
+- The viewer (a second password session) and the owner's email session read the same attributed history; the viewer was refused a write (403). Paging refused for responder and owner (409, paging OFF).
+- After sign-out, in a fresh anonymous browser, and in a live responder session after the owner revoked that member, protected state answered 401, the workspace was withheld and no incident history rendered; the revoked member could not sign in again (401), and the history was kept.
+- `rer deploy --remove --yes` removed the Worker and D1 database it had recorded and read back none remaining; the Cloudflare API then answered 404 for the Worker and listed no matching database.
+
 ## Clause status totals
 
-**22 done**, **32 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
+**23 done**, **31 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.

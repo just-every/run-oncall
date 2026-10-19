@@ -393,9 +393,9 @@ Judged from the code and tests at commit `f380227f4915f96a43a98515196600ed6f1646
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 20 | 2 | 0 | 22 |
+| Published | 21 | 1 | 0 | 22 |
 | Target and push further | 2 | 30 | 18 | 50 |
-| All | 22 | 32 | 18 | 72 |
+| All | 23 | 31 | 18 | 72 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -416,7 +416,7 @@ Judged from the code and tests at commit `f380227f4915f96a43a98515196600ed6f1646
 | `OC-015` | Strict module archives | published | done | `src/family/response-operations/paging-archive.ts`; `src/paging-api.ts`; `tests/paging-history.mjs`; `tests/activation.mjs` |  |
 | `OC-016` | Recovery checkpoint | published | done | `src/api.ts`; `src/family/response-operations/recovery.ts`; `scripts/checkpoint.mjs`; `tests/activation.mjs`; `tests/checkpoint-cli.mjs` |  |
 | `OC-017` | Reviewed handoffs | published | done | `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs` | Connected communication is a separate target in OC-034/051. |
-| `OC-018` | Maintained root commands | published | partial | `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/signin-browser.mjs`; `tests/activation-browser.mjs` | Local lifecycle, unavailable-mail refusal and hosted serving are exercised; these tests do not prove account deployment or inbox receipt. The 0.4.0 release gate (19 October 2026) deployed to Cloudflare, retired the setup token, signed the owner in by a real emailed link, restored a hosted backup into a fresh deployment, signed a member in by password and removed the deployment with empty readback; no maintained test repeats those steps, and coordinating as a member on the hosted app was not exercised. |
+| `OC-018` | Maintained root commands | published | done | `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/signin-browser.mjs`; `tests/member-coordination-browser.mjs`; `tests/activation-browser.mjs` | Local lifecycle, unavailable-mail refusal, hosted serving and **OC-018 real hosted member coordination persists after reload** (on the emitted production Worker) are maintained tests; they do not prove account deployment or inbox receipt. Real-account results are one-time evidence at their SHAs: the 0.4.0 release gate (19 October 2026, `f380227`) deployed, retired the setup token, signed the owner in by a real emailed link, restored a hosted backup, signed a member in by password and removed the deployment with empty readback; on 19 October 2026 at `cd1ef1c` a hosted deployment repeated deploy, owner claim and emailed owner sign-in, then a password member acknowledged and noted an incident, reloaded at 1440 and 390 with attribution kept, a viewer and the owner read it, signed-out, anonymous and revoked sessions got no workspace, paging refused (409), and removal read back empty. No maintained test repeats the account steps. |
 | `OC-019` | Additive upgrade | published | done | `src/workspace-store.ts`; `migrations/core/0106_relational_workspace.sql`; `tests/runtime.mjs`; `tests/runtime-held-workspace.mjs` |  |
 | `OC-020` | Now/next and calendar feed | published | done | `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation-browser.mjs` | Private ICS downloads support Google Calendar/Outlook import; persistent subscription credentials are OC-025. |
 | `OC-021` | Move-in preview | published | done | `src/move-in/owner-door.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`; `tests/provider-export-browser.mjs` | Reviewed file migration is implemented; full incumbent cutover and other vendors are OC-038. |
