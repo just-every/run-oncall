@@ -90,10 +90,13 @@ async function stop() {
   );
 }
 async function request(path, data, cookie = "", headers = {}) {
+  return rawRequest(path, data === undefined ? undefined : JSON.stringify(data), cookie, headers);
+}
+async function rawRequest(path, raw, cookie = "", headers = {}) {
   const response = await fetch(origin + path, {
-    method: data === undefined ? "GET" : "POST",
+    method: raw === undefined ? "GET" : "POST",
     headers: { origin, "content-type": "application/json", cookie, ...headers },
-    body: data === undefined ? undefined : JSON.stringify(data),
+    body: raw,
   });
   let value;
   try {
@@ -283,6 +286,21 @@ try {
     observedAt: "2026-10-02T12:00:00Z",
     evidence: "https://example.test/check",
   };
+  // OC-008: refused native intake and commands retain no raw body or partial records.
+  const beforeRefusedInput = ok(await request("/api/archive", undefined, cookie));
+  const oversizedEvent = { ...event, eventId: "over-limit", discarded: "" };
+  const paddingBytes = 65537 - Buffer.byteLength(JSON.stringify(oversizedEvent));
+  oversizedEvent.discarded = "é".repeat(Math.floor(paddingBytes / 2)) + "x".repeat(paddingBytes % 2);
+  const oversizedBody = JSON.stringify(oversizedEvent);
+  assert.equal(Buffer.byteLength(oversizedBody), 65537);
+  assert.ok(oversizedBody.length < 65536, "the native bound counts UTF-8 bytes, not characters");
+  ok(await rawRequest("/api/ingress/monitor", oversizedBody, "", { authorization: "Bearer " + key }), 413);
+  const malformedInput = ok(await rawRequest("/api/ingress/monitor", '{"source":', "", { authorization: "Bearer " + key }), 400);
+  assert.match(malformedInput.error, /invalid json/i);
+  ok(await request("/api/ingress/monitor", { source: "monitor" }, "", { authorization: "Bearer " + key }), 400);
+  ok(await rawRequest("/api/command", oversizedBody, cookie), 413);
+  assert.deepEqual(ok(await request("/api/archive", undefined, cookie)), beforeRefusedInput,
+    "OC-008: oversized, malformed and incomplete structured input changes no durable records");
   ok(await request("/api/ingress/monitor", event), 401);
   const first = ok(
     await request("/api/ingress/monitor", event, "", {
@@ -529,6 +547,8 @@ try {
   delete restored.revision;
   delete archive.revision;
   assert.deepEqual(restored, archive);
+  assert.deepEqual(restored.incidents.find(item => item.id === incident.id), incident,
+    "OC-008: export/restore preserves the complete authored incident, runbook, timeline, review and actions");
   ok(await request("/api/state", undefined, vc), 401);
   ok(
     await request(
@@ -577,6 +597,8 @@ try {
     ok(await request("/api/state", undefined, cookie)).incidents[0].review,
     incident.review,
   );
+  assert.deepEqual(ok(await request("/api/state", undefined, cookie)).incidents.find(item => item.id === incident.id), incident,
+    "OC-008: a Worker restart and repeated migrations preserve every authored incident field");
   ok(
     await request(
       "/api/command",

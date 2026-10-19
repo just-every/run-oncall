@@ -40,7 +40,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
 8. **OC-008 — User-authored records kept. Status: done.** Submit over-limit and malformed intake, hostile structured text and runbook links; verify bounded refusal, literal display with no script execution/fetch, and preservation of authored history after restart/export.
 
-   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/activation-browser.mjs`. No automatic incident age/count deletion is implemented; complete retention controls are OC-040.
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` (named OC-008 refusal and full authored-record persistence assertions); `tests/keyboard-coordination.mjs` via `tests/product-browser.mjs` (named OC-008 literal notes/runbook links at 1440 and 390). No automatic incident age/count deletion is implemented; complete retention controls are OC-040.
 
 9. **OC-009 — Accessible interface. Status: partial.** At 1440 and 390, use keyboard-only declaration, acknowledgement, notes, schedules, overrides and preview; inspect focus/labels, status announcements, literal hostile HTML and a real stale-write failure with no saved claim. Run axe-core with the WCAG 2.2 A and AA rule sets on every surface at 1440 and 390 in light and dark themes and record zero violations; complete the named VoiceOver/Safari, NVDA/Chrome, iOS VoiceOver and Android TalkBack journeys for acknowledge, snooze, reassign and schedule view with recorded outcomes; and publish the release's conformance report before any new target surface ships.
 
@@ -312,4 +312,4 @@ Obsolete synthetic-dispatch tests and the drill UI were removed in the existing 
 
 ## Clause status totals
 
-**18 done**, **31 partial**, **23 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
+**18 done**, **36 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.

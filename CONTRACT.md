@@ -381,13 +381,13 @@ The approved scope is the 16 October 2026 Oncall entry in LIST.json; the categor
 
 ## Status
 
-Judged from the code and tests at commit `4330f9bc1701d4ec14fc884f64860c73c932b725` (17 October 2026).
+Judged from the code and tests at commit `4b99b1b6bf540e7ce8db2d06a56d74222967155b` (19 October 2026). The OC-008 exercising flows below are completed in this change.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 17 | 5 | 0 | 22 |
+| Published | 18 | 4 | 0 | 22 |
 | Target and push further | 0 | 32 | 18 | 50 |
-| All | 17 | 37 | 18 | 72 |
+| All | 18 | 36 | 18 | 72 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -398,7 +398,7 @@ Judged from the code and tests at commit `4330f9bc1701d4ec14fc884f64860c73c932b7
 | `OC-005` | Copied runbooks | published | done | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Alert-level runbook access and follow-up policies are targets in OC-023/036. |
 | `OC-006` | No outbound incident effects | published | done | `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs` | This is the current-release safety boundary, not the final product boundary. |
 | `OC-007` | Native archive | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | The full future paging archive is OC-052. |
-| `OC-008` | User-authored records kept | published | partial | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/activation-browser.mjs` | No automatic incident age/count deletion is implemented; complete retention controls are OC-040. No test sends an over-limit or malformed native event, so the 64 KiB refusal in `src/api.ts` is unexercised, and no cited test shows hostile text displayed literally. |
+| `OC-008` | User-authored records kept | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/keyboard-coordination.mjs`; `tests/product-browser.mjs` | Native over-limit (65,537 UTF-8 bytes), malformed and incomplete structured intake and over-limit authenticated commands are refused without durable mutation. Authored incident/runbook/timeline/review/action records survive export, restore and restart. At 1440 and 390, hostile notes and copied runbook URLs remain literal text without execution or fetching. Complete retention controls are OC-040. |
 | `OC-009` | Accessible interface | published | partial | `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/keyboard-coordination.mjs`; `tests/activation-browser.mjs` | Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. |
 | `OC-010` | Health and honest commands | published | partial | `src/api.ts`; `scripts/installer/seed.mjs`; `tests/hosted.mjs`; `tests/transfer.mjs` | Storage health and command journeys exist; independent pager health/capacity and live-provider proof do not. |
 | `OC-011` | Calendar-day rotations | published | done | `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs` |  |
