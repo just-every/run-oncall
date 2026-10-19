@@ -2,7 +2,7 @@
 
 Oncall keeps your team's rota in one calm place: who is on call now, who is next, and exactly when they hand over. It also gives you a shared room for incidents, so the people on call can coordinate, write down what they decided and follow up afterwards.
 
-Oncall is 100% free and open source under the MIT licence. You run it yourself, and your data stays in your own installation.
+Oncall is 100% free and open source under the MIT license. You run it yourself, and your data stays in your own installation.
 
 ## What it keeps
 
