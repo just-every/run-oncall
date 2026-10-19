@@ -7,7 +7,7 @@
 .review-snapshot, .followup-accept, .review-acceptance { margin: 16px 0; padding: 16px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper); overflow-wrap: anywhere; }
 .review-snapshot p { margin: 5px 0; }
 .review-snapshot h4, .review-acceptance h4 { margin: 0 0 8px; font-size: 16px; }
-.response-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 18px 0; }
+.response-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; margin: 18px 0; }
 .response-metric { min-width: 0; border: 1px solid var(--app-line); border-radius: 10px; padding: 16px; }
 .response-metric h3 { margin: 0 0 12px; }
 .response-metrics h4 { margin: 0 0 8px; }
@@ -20,6 +20,12 @@
 .response-track { align-self: center; height: 8px; background: var(--oc-paper-deep); border-radius: 4px; overflow: hidden; }
 .response-track > span { display: block; height: 100%; background: var(--oc-ink-soft); }
 .response-source { font-size: 14px; overflow-wrap: anywhere; }
+.coverage-load { margin: 18px 0; }
+.alert-noise-stats { grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); margin: 12px 0; }
+.alert-noise-list { padding-left: 20px; overflow-wrap: anywhere; }
+.alert-noise-list li { margin: 8px 0; }
+.coverage-load-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 16px; margin: 12px 0 18px; }
+.coverage-load h5 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; font-size: 16px; overflow-wrap: anywhere; }
 .response-source p { margin: 6px 0; }
 .review-material { padding: 14px 0; border-top: 1px solid var(--app-line); border-bottom: 1px solid var(--app-line); }
 .review-material summary { overflow-wrap: anywhere; }

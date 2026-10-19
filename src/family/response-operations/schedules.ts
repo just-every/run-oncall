@@ -256,14 +256,11 @@ export function coverage(schedule: Schedule, members: CoverageMember[], at: numb
   return evaluator(validateSchedule(schedule), members)(at);
 }
 
-/** Half-open preview, containing the initial evaluation and every effective window boundary. */
-export function preview(schedule: Schedule, members: CoverageMember[], from: number, to: number): Coverage[] {
-  evaluationClock(from); evaluationClock(to, true);
-  if (to <= from || to - from > 31 * DAY) fail("Preview must be positive and at most 31 elapsed days");
+function walk(schedule: Schedule, members: CoverageMember[], from: number, to: number, limit: number, label: string): Coverage[] {
   const evaluate = evaluator(validateSchedule(schedule), members), result: Coverage[] = [];
   let at = from;
   while (at < to) {
-    if (result.length >= 200) fail("Preview exceeds 200 coverage boundaries");
+    if (result.length >= limit) fail(`${label} exceeds ${limit} coverage boundaries`);
     const value = evaluate(at);
     result.push(value);
     const ends = value.windows.map(w => w.end === null ? null : Date.parse(w.end))
@@ -272,4 +269,22 @@ export function preview(schedule: Schedule, members: CoverageMember[], from: num
     at = Math.min(...ends);
   }
   return result;
+}
+
+/** Half-open preview, containing the initial evaluation and every effective window boundary. */
+export function preview(schedule: Schedule, members: CoverageMember[], from: number, to: number): Coverage[] {
+  evaluationClock(from); evaluationClock(to, true);
+  if (to <= from || to - from > 31 * DAY) fail("Preview must be positive and at most 31 elapsed days");
+  return walk(schedule, members, from, to, 200, "Preview");
+}
+
+export type CoverageSpan = { start: number; end: number; coverage: Coverage };
+/** Contiguous coverage over [from,to), clipped to the supported years; each span holds one evaluation. */
+export function coverageSpans(schedule: Schedule, members: CoverageMember[], from: number, to: number): CoverageSpan[] {
+  const start = Math.max(from, MIN), end = Math.min(to, MAX);
+  if (end <= start) return [];
+  evaluationClock(start); evaluationClock(end, true);
+  // A year of daily hand-offs plus every allowed override stays far below this bound.
+  const values = walk(schedule, members, start, end, 20_000, "Coverage range");
+  return values.map((coverage, i) => ({ start: coverage.at, end: values[i + 1]?.at ?? end, coverage }));
 }

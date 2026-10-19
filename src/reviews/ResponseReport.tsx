@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { State } from '../family/response-operations/domain';
-import type { ResponseReport as Report } from './report';
+import type { ProjectedReport as Report } from './load';
+import { CoverageLoad } from './CoverageLoad';
+import { AlertNoise } from './AlertNoise';
 import { Field, Form } from '../forms';
 import { request } from '../useWorkspace';
 import { duration, DurationSource, utc } from './display';
 import './reviews.css';
 
-const metrics = [['mtta', 'Acknowledgement'], ['mttr', 'Resolution'], ['recovery', 'Human recovery attestation']] as const;
+const metrics = [['mtta', 'Acknowledgement'], ['mttr', 'Resolution'], ['recovery', 'Human recovery attestation'], ['sourceRecovery', 'Source-reported recovery']] as const;
 type Filters = {from: string; to: string; service: string};
 function parameters(filters: Filters) {
   const params = new URLSearchParams(filters);
@@ -32,7 +34,7 @@ export function ResponseReport({state}: {state: State}) {
   }
   useEffect(() => { void load(initial); return () => { sequence.current++; }; }, [initial]);
   const csv = report ? new URLSearchParams({from: report.cohort.from, to: report.cohort.to,
-    ...(report.cohort.service ? {service: report.cohort.service} : {}), at: report.generatedAt, revision:String(report.revision)}) : null;
+    ...(report.cohort.service ? {service: report.cohort.service} : {}), at: report.generatedAt, revision:String(report.revision), schedulingRevision:String(report.load.schedulingRevision)}) : null;
   return <section className="panel padded response-report" aria-busy={loading}>
     <div className="review-heading"><h2>Response report</h2>
       <button type="button" disabled={loading} onClick={() => void load(applied)}>{loading ? 'Loading report…' : 'Refresh report'}</button></div>
@@ -66,7 +68,7 @@ export function ResponseReport({state}: {state: State}) {
           }catch(error){setError((error as Error).message)}finally{setExporting(false)}
         }}>{exporting?'Preparing CSV…':'Export this cohort and observation time as CSV ↓'}</button>
       </div>
-      <p className="muted">Statistics use measured durations only. Censored durations are lower bounds; unknown durations are unavailable. This report does not measure real page delivery or responder fairness.</p>
+      <p className="muted">Statistics use measured durations only. Censored durations are lower bounds; unknown durations are unavailable. This report does not measure real page delivery; load below is normalised by scheduled, not worked, hours.</p>
       <div className="response-metrics">
         {metrics.map(([key, label]) => {
           const aggregate = report.aggregates[key];
@@ -82,6 +84,8 @@ export function ResponseReport({state}: {state: State}) {
           </article>;
         })}
       </div>
+      <AlertNoise noise={report.noise} />
+      <CoverageLoad load={report.load} />
       <details className="review-material"><summary>Definitions, source representation and limits</summary>
         <p>{report.cohort.inclusion}</p>
         <dl>{Object.entries(report.definitions).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl>

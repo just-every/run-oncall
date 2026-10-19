@@ -65,5 +65,54 @@ try{
  restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
  assert.deepEqual(ok(await req('/api/state')).incidents,archive.incidents,'structured lifecycle, human review and follow-up attribution survive archive replacement');
  await w.stop();await w.start();assert.equal(ok(await req('/api/reviews/'+incident.id+'/material')).accepted.rootCause,incident.reviewAcceptance.rootCause);
+ // OC-037 response report keeps unknown cases visible and normalises load by scheduled coverage.
+ const responder=async name=>({...ok(await req('/api/members',{name,role:'responder',password:'synthetic-load-testing-password'}),201),cookie:(await w.request('/api/login',{name,password:'synthetic-load-testing-password'})).cookie});
+ const shift=await responder('Shift responder'),floater=await responder('On-call floater');
+ const hour=3600000,start=Math.floor(Date.now()/hour)*hour-6*hour,iso=at=>new Date(at).toISOString();
+ const rota={id:'payments-rota',name:'Payments rota',service:'payments',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,
+  primary:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[shift.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[actor.id],ambiguity:'earlier'},
+  overrides:[{id:'lead-covers',role:'primary',start:iso(start),end:iso(start+2*hour),member:actor.id}]};
+ ok(await req('/api/paging/schedules',rota));
+ const queueKey=randomBytes(32).toString('hex');ok(await req('/api/sources',{id:'queue-monitor',key:queueKey,scopes:['payments']}));
+ const observe=(eventId,generation,intent='trigger')=>w.request('/api/ingress/queue-monitor',{source:'queue-monitor',eventId,service:'payments',environment:'production',key:'queue',generation,intent,severity:'warning',title:'Queue backlog',observedAt:new Date().toISOString(),evidence:'https://monitor.example.test/queue'},undefined,{authorization:'Bearer '+queueKey});
+ ok(await observe('queue-1','backlog-1'),201);ok(await observe('queue-2','backlog-1'),201);
+ const queueAlert=ok(await req('/api/state')).alerts.find(a=>a.source==='queue-monitor');
+ const declaredIds=[];
+ for(const [person,title,alerts] of [[shift,'Shift responder acknowledges during their primary shift',[queueAlert.id]],[floater,'Floater acknowledges without a schedule slot',[]]]){
+  const declared=ok(await req('/api/command',{type:'declare',service:'payments',severity:'warning',title,summary:'Load attribution',alerts}));declaredIds.push(declared.id);
+  ok(await w.request('/api/command',{type:'transition',incident:declared.id,revision:declared.revision,state:'acknowledged',summary:'Taking it'},person.cookie));
+ }
+ const recovered=ok(await observe('queue-3','backlog-1','recover'),201);ok(await observe('queue-4','backlog-2'),201);
+ const observed=new Date().toISOString(),window=new URLSearchParams({from:iso(start),to:iso(Date.now()+hour),service:'payments',at:observed});
+ const fair=ok(await req('/api/reports/response?'+window)),range=(Date.parse(observed)-start)/1000,byId=id=>fair.load.responders.find(r=>r.member===id);
+ assert.equal(fair.cohort.count,5);assert.deepEqual([fair.load.acknowledged,fair.load.unacknowledged],[3,2],'unacknowledged incidents stay unattributed');
+ assert.equal(fair.load.through,observed);assert.deepEqual(fair.load.schedules.map(s=>[s.id,s.revision]),[['payments-rota',1]]);
+ assert.deepEqual([byId(actor.id).primarySeconds,byId(actor.id).backupSeconds],[7200,range-7200],'an override moves primary hours and the same member is never their own backup');
+ assert.deepEqual([byId(shift.id).primarySeconds,byId(shift.id).backupSeconds],[range-7200,0]);
+ assert.equal(byId(actor.id).per24PrimaryHours,12);assert.equal(byId(actor.id).loadToCoverage,(1/3)/(7200/range));assert.equal(byId(shift.id).acknowledgements,1);
+ assert.deepEqual([byId(floater.id).acknowledgements,byId(floater.id).outsideCoverage,byId(floater.id).per24PrimaryHours,byId(floater.id).loadToCoverage],[1,1,null,null],'load without scheduled hours is visible, never a rate');
+ assert.ok([actor.id,shift.id].every(id=>byId(id).outsideCoverage===0));
+ assert.deepEqual(fair.load.services.map(s=>[s.service,s.primarySeconds,s.uncoveredPrimarySeconds,s.incidents]),[['payments',range,0,5]]);
+ const sourceRow=fair.incidents.find(i=>i.id===declaredIds[0]);assert.equal(sourceRow.sourceRecovery.status,'measured');assert.equal(sourceRow.sourceRecovery.sourceEntryId,recovered.id);assert.equal(sourceRow.sourceRecovery.sourceKind,'source-event');
+ assert.equal(fair.incidents.find(i=>i.id===incident.id).sourceRecovery.status,'censored','an active linked alert is a lower bound, never a recovery');
+ assert.equal(fair.incidents.find(i=>i.id===declaredIds[1]).sourceRecovery.status,'unknown','no linked alert means no source observation');
+ assert.deepEqual([fair.aggregates.sourceRecovery.measured,fair.aggregates.sourceRecovery.censored,fair.aggregates.sourceRecovery.unknown],[1,1,3]);
+ assert.deepEqual([fair.noise.alerts,fair.noise.triggers,fair.noise.repeatedAlerts,fair.noise.noisyKeys],[3,5,2,2]);
+ assert.deepEqual(fair.noise.noisy.map(k=>[k.key,k.alerts,k.triggers,k.active]),[['queue',2,3,1],['pool',1,2,1]],'repeat triggers and recurring generations rank the noisiest key first');
+ const csvQuery=new URLSearchParams(window);csvQuery.set('revision',String(fair.revision));csvQuery.set('schedulingRevision',String(fair.load.schedulingRevision));
+ const loadCsv=ok(await req('/api/reports/response.csv?'+csvQuery)),table=loadCsv.trim().split('\r\n').map(line=>[...line.matchAll(/"((?:[^"]|"")*)"/g)].map(m=>m[1].replaceAll('""','"')));
+ const column=name=>table[0].indexOf(name),loadRow=id=>table.find(r=>r[0]==='responder-load'&&r[column('loadSubjectId')]===id);
+ for(const r of fair.load.responders)assert.deepEqual(['scheduledPrimarySeconds','scheduledBackupSeconds','loadAcknowledgements','acknowledgementsOutsideCoverage','loadToCoverage'].map(c=>loadRow(r.member)[column(c)]),
+  [r.primarySeconds,r.backupSeconds,r.acknowledgements,r.outsideCoverage,r.loadToCoverage].map(v=>v===null?'':String(v)),'CSV load rows match the screen');
+ assert.equal(table.find(r=>r[column('incidentId')]===declaredIds[0])[column('sourceRecovery.sourceEntryId')],recovered.id);
+ assert.deepEqual(table.filter(r=>r[0]==='noisy-key').map(r=>[r[column('noiseKey')],r[column('noiseTriggers')]]),[['queue','3'],['pool','2']]);
+ ok(await req('/api/schedules/payments-rota/overrides',{revision:1,override:{id:'floater-covers',role:'primary',start:iso(start+2*hour),end:iso(start+3*hour),member:floater.id}}));
+ ok(await req('/api/reports/response.csv?'+csvQuery),409);
+ const changed=ok(await req('/api/reports/response?'+window));assert.equal(changed.load.schedules[0].revision,2);assert.equal(changed.load.responders.find(r=>r.member===floater.id).primarySeconds,3600,'a schedule change is visible as a new revision, never a silent rewrite');
+ ok(await req('/api/command',{type:'service',id:'search',name:'Search',environment:'production',owner:actor.id,runbook:[],pager:''}));
+ ok(await req('/api/paging/schedules',{...rota,id:'search-rota',name:'Search New York rota',service:'search',timezone:'America/New_York',primary:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[shift.id,floater.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}));
+ const dst=ok(await req('/api/reports/response?from=2026-03-07T14:00:00.000Z&to=2026-03-09T13:00:00.000Z&service=search'));
+ assert.deepEqual(dst.load.responders.map(r=>[r.member,r.primarySeconds]),[[floater.id,24*3600],[shift.id,23*3600]],'the spring-forward shift holds 23 scheduled hours');
+ console.log('PASS OC-037 response report keeps unknown cases visible and normalises load by scheduled coverage');
  console.log('Response learning: measured/censored/unknown reports and CSV, relapse drilldown, generated material, human review, prioritized evidence acceptance, authority and archive/restart passed');
 }finally{await w.close();}

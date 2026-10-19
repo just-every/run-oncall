@@ -1,6 +1,6 @@
-import { fail, type Entry, type Incident, type State } from '../family/response-operations/domain.ts';
+import { fail, type Entry, type Event, type Incident, type State } from '../family/response-operations/domain.ts';
 
-type SourceKind = 'structured' | 'legacy-derived';
+type SourceKind = 'structured' | 'legacy-derived' | 'source-event';
 export type ResponseDuration = {
   status: 'measured' | 'censored' | 'unknown'; seconds: number | null;
   sourceEntryId: string | null; sourceAt: string | null; sourceKind: SourceKind | null;
@@ -33,6 +33,8 @@ function marks(incident: Incident): Mark[] {
       ? [{entry, from: match[1], to: match[2], kind: 'legacy-derived'}] : [];
   });
 }
+/** The first explicit acknowledgement entry, the one acknowledgement time is measured to. */
+export const firstAcknowledgement = (incident: Incident) => marks(incident).find(m => m.to === 'acknowledged')?.entry;
 function value(status: ResponseDuration['status'], seconds: number | null, mark: Mark | undefined, reason: string): ResponseDuration {
   return {status, seconds, sourceEntryId: mark?.entry.id ?? null, sourceAt: mark?.entry.at ?? null,
     sourceKind: mark?.kind ?? null, reason, evidence: mark?.evidence ?? null};
@@ -40,7 +42,22 @@ function value(status: ResponseDuration['status'], seconds: number | null, mark:
 function evidence(value: string | undefined): boolean {
   try { return !!value && ['https:', 'http:'].includes(new URL(value).protocol); } catch { return false; }
 }
-function durations(incident: Incident, now: number) {
+function sourceRecovery(state: State, incident: Incident, start: number, problem: string | null, now: number): ResponseDuration {
+  const result = (status: ResponseDuration['status'], seconds: number | null, reason: string, event?: Event): ResponseDuration =>
+    ({status, seconds, sourceEntryId: event?.id ?? null, sourceAt: event?.acceptedAt ?? null, sourceKind: event ? 'source-event' : null, reason, evidence: event?.evidence || null});
+  if (problem) return result('unknown', null, problem);
+  const alerts = incident.alerts.map(id => state.alerts.find(a => a.id === id));
+  if (!alerts.length) return result('unknown', null, 'No linked alerts; no source can observe recovery');
+  if (alerts.some(a => !a)) return result('unknown', null, 'A linked alert is no longer retained');
+  if (alerts.some(a => a!.state === 'active')) return result('censored', (now - start) / 1000, 'A linked alert is still active at generatedAt; seconds is a lower bound');
+  const recoveries = alerts.map(a => a!.events.map(id => state.events.find(e => e.id === id)).filter(e => e?.intent === 'recover').at(-1));
+  if (recoveries.some(e => !e)) return result('unknown', null, 'A recovered alert has no retained source recovery event');
+  const last = recoveries.reduce((a, b) => clock(b!.acceptedAt) > clock(a!.acceptedAt) ? b : a)!, end = clock(last.acceptedAt);
+  if (!Number.isFinite(end) || end > now) return result('unknown', null, 'Source recovery time is invalid or in the future', last);
+  if (end < start) return result('unknown', null, 'Linked alerts recovered before declaration; source recovery cannot time this incident', last);
+  return result('measured', (end - start) / 1000, 'Declaration to acceptance of the last linked alert recovery its source reported; an automated observation, not a human attestation', last);
+}
+function durations(state: State, incident: Incident, now: number) {
   const lifecycle = marks(incident), start = clock(incident.createdAt);
   const declaration = lifecycle.find(m => m.to === 'declared' && m.from === null);
   const baseProblem = !Number.isFinite(start) ? 'Invalid declaration timestamp' : start > now ? 'Declaration is in the future' :
@@ -80,7 +97,7 @@ function durations(incident: Incident, now: number) {
     recovery = measured(recoveryMark);
     if (recovery.status === 'measured') recovery.reason = 'Human recovery attestation recorded at this entry; not independent telemetry verification';
   }
-  return {mtta, mttr, recovery};
+  return {mtta, mttr, recovery, sourceRecovery: sourceRecovery(state, incident, start, baseProblem, now)};
 }
 function aggregate(values: ResponseDuration[]) {
   const measured = values.filter(v => v.status === 'measured').map(v => v.seconds!).sort((a, b) => a - b);
@@ -110,7 +127,7 @@ export function responseReport(state: State, input: {from?: string; to?: string;
     .sort((a, b) => clock(a.createdAt) - clock(b.createdAt) || a.id.localeCompare(b.id))
     .map(i => ({id: i.id, title: i.title, service: i.service, serviceName: state.services.find(s => s.id === i.service)?.name ?? null,
       state: i.state, severity: i.severity, incidentRevision: i.revision, declaredAt: new Date(clock(i.createdAt)).toISOString(),
-      href: `/?incident=${encodeURIComponent(i.id)}#incidents`, ...durations(i, observed)}));
+      href: `/?incident=${encodeURIComponent(i.id)}#incidents`, ...durations(state, i, observed)}));
   return {revision: state.revision, generatedAt,
     cohort: {from: new Date(from).toISOString(), to: new Date(to).toISOString(), service: input.service ?? null,
       observationAt: generatedAt, count: incidents.length,
@@ -120,6 +137,7 @@ export function responseReport(state: State, input: {from?: string; to?: string;
       mtta: 'Declaration to first explicit acknowledgement; resolution never implies acknowledgement',
       mttr: 'Declaration to final resolution; unresolved incidents are right-censored at generatedAt',
       recovery: 'Declaration to last evidenced human recovery attestation after any later mitigation; not independently verified recovery',
+      sourceRecovery: 'Declaration to acceptance of the last recovery event reported by the sources of every linked alert; censored while a linked alert is active, unknown without linked alerts',
       statistics: 'Seconds; mean and nearest-rank p50/p90/p95 use measured values only. Total, measured, censored and unknown denominators remain visible. Histogram buckets are [fromSeconds,toSeconds), null upper bound means infinity',
       censored: 'Seconds is an observed lower bound, not a completed duration; source identifies the declaration entry',
       unknown: 'Seconds is null; no zero imputation. Invalid, future or pre-declaration endpoint timestamps are unknown',
@@ -127,31 +145,13 @@ export function responseReport(state: State, input: {from?: string; to?: string;
     },
     limitations: [
       'Real page volume, real delivery/missed delivery and escalation latency are unavailable; synthetic paging is never real delivery evidence.',
-      'Reassignment latency, after-hours interruptions, coverage hours and coverage-normalized responder/team/service fairness are unavailable.',
+      'Reassignment latency and after-hours interruptions are unavailable. Coverage hours are scheduled from current schedules, not worked hours (see the load basis).',
       'Imported-history provenance is unavailable; timeline source kind describes representation, not native versus imported origin.',
-      'Automated recovery telemetry is unavailable; human attestations do not establish independent recovery verification.',
+      'Source-reported recovery is what the monitoring sources reported, as accepted by Oncall; neither it nor a human attestation is independent verification of recovery.',
       'This is the current snapshot, not immutable historical custody: deleted/erased incidents cannot be reconstructed. Unassignable declaration timestamps are separately counted, not silently successful.',
     ],
-    aggregates: {mtta: aggregate(incidents.map(i => i.mtta)), mttr: aggregate(incidents.map(i => i.mttr)), recovery: aggregate(incidents.map(i => i.recovery))},
+    aggregates: {mtta: aggregate(incidents.map(i => i.mtta)), mttr: aggregate(incidents.map(i => i.mttr)), recovery: aggregate(incidents.map(i => i.recovery)), sourceRecovery: aggregate(incidents.map(i => i.sourceRecovery))},
     incidents};
 }
 export type ResponseReport = ReturnType<typeof responseReport>;
 
-function cell(value: unknown): string {
-  let text = value == null ? '' : String(value);
-  if (/^[\s\u0000-\u001f]*[=+@-]/u.test(text) || /^[\t\r\n]/u.test(text)) text = `'${text}`;
-  return `"${text.replaceAll('"', '""')}"`;
-}
-export function exportResponseCsv(report: ResponseReport): string {
-  const metrics = ['mtta', 'mttr', 'recovery'] as const;
-  const fields = ['status', 'seconds', 'sourceEntryId', 'sourceAt', 'sourceKind', 'reason', 'evidence'] as const;
-  const metadata = [report.revision, report.generatedAt, report.cohort.from, report.cohort.to,
-    report.cohort.service, report.cohort.observationAt, report.cohort.count, report.cohort.unassignableDeclarations];
-  const header = ['recordType', 'revision', 'generatedAt', 'cohortFrom', 'cohortTo', 'cohortService', 'observationAt', 'cohortCount', 'unassignableDeclarations',
-    'incidentId', 'title', 'serviceId', 'serviceName', 'state', 'severity', 'incidentRevision', 'declaredAt', 'drilldown',
-    ...metrics.flatMap(metric => fields.map(field => `${metric}.${field}`))];
-  const rows = report.incidents.map(i => ['incident', ...metadata, i.id, i.title, i.service, i.serviceName, i.state, i.severity,
-    i.incidentRevision, i.declaredAt, i.href, ...metrics.flatMap(metric => fields.map(field => i[metric][field]))]);
-  if (!rows.length) rows.push(['cohort', ...metadata, ...Array<string>(header.length - metadata.length - 1).fill('')]);
-  return [header, ...rows].map(row => row.map(cell).join(',')).join('\r\n') + '\r\n';
-}

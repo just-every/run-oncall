@@ -7,7 +7,7 @@ export function ReviewMaterial({material}: {material: Material}) {
     <p><strong>{material.notice}</strong></p>
     <p className="review-meta">Generated <time>{utc(material.generatedAt)}</time> · incident revision {material.incidentRevision} · workspace revision {material.workspaceRevision}</p>
     <details><summary>Recorded response durations</summary>
-      {material.response ? <div className="response-metrics">{(['mtta', 'mttr', 'recovery'] as const).map(key => <section key={key}><h4>{key === 'mtta' ? 'Acknowledgement' : key === 'mttr' ? 'Resolution' : 'Human recovery attestation'}</h4><DurationSource value={material.response![key]} /></section>)}</div> : <p>No response record could be assigned.</p>}
+      {material.response ? <div className="response-metrics">{(['mtta', 'mttr', 'recovery', 'sourceRecovery'] as const).map(key => <section key={key}><h4>{key === 'mtta' ? 'Acknowledgement' : key === 'mttr' ? 'Resolution' : key === 'recovery' ? 'Human recovery attestation' : 'Source-reported recovery'}</h4><DurationSource value={material.response![key]} /></section>)}</div> : <p>No response record could be assigned.</p>}
     </details>
     <details><summary>Reported source observations ({material.observations.length})</summary>
       <p>Retained source observations. Their presence does not establish incident cause, impact or recovery.</p>
