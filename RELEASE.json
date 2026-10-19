@@ -3,8 +3,9 @@
   "date": "2026-10-19",
   "publicReleaseNotes": "Oncall 0.4.1: a backup made by the previous version now restores. The retained backup from the currently listed version and a fresh export are checked against empty migrated databases, including installations managed by Platform. Updates the pinned rer runtime and vendored Base modules to 0.2.68. Paging stays OFF; keep your existing pager active. Product screenshot: .github/assets/release/oncall-0.4.0-incident-1440.png",
   "contractChanges": {
-    "OC-001-OC-022": "Published clauses keep their IDs and release guarantees, restated in the current contract format with a Status table; OC-008 leaves the larger incumbent-compatible intake bounds to OC-059.",
-    "OC-023-OC-072": "Added as target clauses for the complete on-call product; each is marked partial or missing in the Status table and is not a shipped claim."
+    "OC-010": "Includes the completed coordination-health and honest-command evidence already on main.",
+    "OC-042": "Includes installation-local signed-source custody and migration 0127 already on main.",
+    "OC-052": "Includes the completed portable recovery flow already on main. A backup made by the previous version now restores through the pinned Base implementation."
   },
   "extensionPointChanges": [],
   "migrations": [
