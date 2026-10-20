@@ -579,7 +579,7 @@
       "executable": false
     },
     "scripts/installer/audit-archive.mjs": {
-      "sha256": "dc2a55281a38301c4458afb763dae844b28c2a2b3f0e76b59d19441255a49c9d",
+      "sha256": "9c9d03f82b833396a54ab0044d2bfdcb9779c9a2aa27729361d489fc2ef17d85",
       "executable": false
     },
     "scripts/installer/local.mjs": {

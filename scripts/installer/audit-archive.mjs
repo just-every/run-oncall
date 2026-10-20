@@ -26,9 +26,10 @@ export async function auditStagedRestore(db,tables,read,{before,interrupted}) {
  await record('restore.installation','accepted')
  for(const name of ['oc_admin_audit','oc_import_lifecycle','ik_door_apply_failures'])if(tables[name]) {
   const copy=quote(tables[name]),meta=quote(tables[name]+'_meta')
+  const previousSource=name==='oc_admin_audit'?`SELECT MAX(ordinal) FROM ${copy}`:`SELECT MAX(rer_portability_source_rowid) FROM ${meta}`
   await db.prepare(`INSERT INTO ${meta}(rer_portability_row_order,rer_portability_copy_rowid,rer_portability_source_rowid,rer_portability_tombstone)
    SELECT COALESCE((SELECT MAX(rer_portability_row_order) FROM ${meta}),-1)+ROW_NUMBER() OVER(ORDER BY s.rowid),s.rowid,
-    COALESCE((SELECT MAX(rer_portability_source_rowid) FROM ${meta}),0)+ROW_NUMBER() OVER(ORDER BY s.rowid),NULL
+    COALESCE((${previousSource}),0)+ROW_NUMBER() OVER(ORDER BY s.rowid),NULL
    FROM ${copy} s WHERE NOT EXISTS(SELECT 1 FROM ${meta} m WHERE m.rer_portability_copy_rowid=s.rowid)`).run()
   if(name==='oc_admin_audit')await db.prepare(`UPDATE ${copy} SET ordinal=(SELECT rer_portability_source_rowid FROM ${meta} m WHERE m.rer_portability_copy_rowid=${copy}.rowid) WHERE ordinal IS NULL`).run()
  }
