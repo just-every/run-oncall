@@ -433,7 +433,7 @@ The approved scope is the 16 October 2026 Oncall entry in LIST.json; the categor
 
 ## Status
 
-Judged from the code and tests at commit `7bb8fce348eaadb5f851d26edd0ec4cc2720d67c` (20 October 2026), with the subsequent OC-041 implementation and named exercising flows below updating its status. The 0.4.0 release gate remains dated one-time evidence for its own published rota, now/next, calendar feed, incident, move-in, upgrade and hosted journeys; it does not establish later capabilities. Each status rests only on its exercising flow.
+Judged from the code and tests at commit `ccf1a487367d1c09b64d0c0790467a4d4209a3df` (20 October 2026). The 0.4.0 release gate remains dated one-time evidence for its own published rota, now/next, calendar feed, incident, move-in, upgrade and hosted journeys; it does not establish later capabilities. Each status rests only on its exercising flow.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
