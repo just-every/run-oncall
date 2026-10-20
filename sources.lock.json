@@ -131,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "44900871b999b568d32a0b823afb2c05f88689a47bf3ac94da2f39f4d70cb4b4",
+      "sha256": "3ea3e9a70a29349f8e8d7ba11afae4f8b884f5bac43fb1b5efdc742956de7d1e",
       "executable": false
     },
     "AGENTS.md": {
@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "08672492ce4c1bd805a470f88c9572341ed7d54eb5eefaef24f771e588f5b347",
+      "sha256": "4b4262bc7298facbf1fc06bcf823bcc2596db0408b60ae50d77b2c8cdb88d7a9",
       "executable": false
     },
     "DEMO.md": {
@@ -187,7 +187,7 @@
       "executable": false
     },
     "docs/compatible-intake.md": {
-      "sha256": "9ce377df8305bf0afcaab6736dcdadec8a95fe832846fbe1ef58bec85d3c6751",
+      "sha256": "aade98b9b7afa39377e82dc09787c5b17d4e145ffccff37bfc5df2b3f3b6f0b7",
       "executable": false
     },
     "docs/data.md": {
@@ -284,6 +284,30 @@
     },
     "evidence/email/erased-activity-390.png": {
       "sha256": "7f637f8af9a0aa6d0773de53829b02841dfa2c8cb44611b970551f9d78fb4e8a",
+      "executable": false
+    },
+    "evidence/email/hosted-activity-1440.png": {
+      "sha256": "ad9c3bccae72adf3f8f037ce3cd744e5a839c0350a8e0b3589672cdb297e9f4d",
+      "executable": false
+    },
+    "evidence/email/hosted-activity-390.png": {
+      "sha256": "bb9b78961fc21ef49dbfa770afb20481f90e749fd00aae5338814498aee67e4f",
+      "executable": false
+    },
+    "evidence/email/hosted-address-1440.png": {
+      "sha256": "4112ef093a3ad55a517c9238770b711df702eba19fdb3e1308ee162f87878d0c",
+      "executable": false
+    },
+    "evidence/email/hosted-address-390.png": {
+      "sha256": "95b28c0ee91782f1d0954badef4433ff9e6f1afae1676d5febde5d496f349efc",
+      "executable": false
+    },
+    "evidence/email/hosted-recovery-1440.png": {
+      "sha256": "08dacef5ebcc98c6f9d46ce8b1915b45b3eb6ec2d9fe278280936a2f47d78b9f",
+      "executable": false
+    },
+    "evidence/email/hosted-recovery-390.png": {
+      "sha256": "450450b9c65875fcc83175620ff3245c4abfd87163ddcd0c3142ed379fbb97a5",
       "executable": false
     },
     "evidence/email/quarantine-1440.png": {
