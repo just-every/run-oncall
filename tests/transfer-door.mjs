@@ -35,7 +35,8 @@ export function transferDoor(m) {
   async assertInactive(cookie,oldCookie,sql) {
    assert.equal(ok(await m.request('/auth/settings/imports',undefined,cookie)).enabled,false,'portable restore disables Business intake')
    const before=sql('SELECT * FROM ik_jobs ORDER BY id')
-   assert.deepEqual(before.find(j=>j.id===pendingJob.id).state,pendingJob.state)
+   assert.equal(before.find(j=>j.id===pendingJob.id).state,'failed','restored active work retains a durable interrupted outcome')
+   assert.equal(sql("SELECT state FROM oc_import_lifecycle WHERE job_id='"+pendingJob.id+"'")[0].state,'interrupted')
    assert.equal((await call('apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},oldGrant)).status,404,'the unconsumed old Business grant cannot execute restored work')
    assert.equal((await m.request('/api/operator/import/apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},oldCookie,{'X-Import-Source':'pagerduty'})).status,401,'restored sessions grant no authority')
    const fresh=await m.request('/api/operator/import/apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},cookie,{'X-Import-Source':'pagerduty'})
@@ -60,7 +61,7 @@ export function transferDoor(m) {
      await page.getByRole('link',{name:'Move-in kit',exact:true}).click()
      await page.getByLabel('Source',{exact:true}).selectOption('pagerduty')
      await page.getByLabel('Saved import journal',{exact:true}).selectOption(pendingJob.id)
-     await page.getByRole('status').filter({hasText:'Import journal'}).getByText(new RegExp(pendingJob.state)).first().waitFor()
+     await page.getByRole('status').filter({hasText:'Import journal'}).getByText(/failed/).first().waitFor()
      assert.equal(await page.getByRole('button',{name:'Resume import',exact:true}).count(),0,'restored Business work offers no session-based resume')
      await page.screenshot({path:`${directory}/OC-052-restored-pending-${width}.png`,fullPage:true})
      await page.getByRole('link',{name:'Archive',exact:true}).click()

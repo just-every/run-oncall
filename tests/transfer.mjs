@@ -77,7 +77,7 @@ try{
  const prior=ok(await req('/api/state')),objects=ok(await req('/api/move-in/objects'))
  const importTables=sql("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'ik_*' OR name GLOB 'move_in_*') ORDER BY name").map(r=>r.name)
  const importRows=()=>Object.fromEntries(statements(importTables.map(table=>'SELECT * FROM '+table).join(';')).map((rows,index)=>[importTables[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
- const importHistory=importRows()
+ const importHistory=importRows(),interruptedPlans=sql("SELECT plan_id FROM oc_import_lifecycle WHERE job_id IN (SELECT id FROM ik_jobs WHERE state IN ('queued','applying'))").map(row=>row.plan_id).filter(Boolean)
  await m.close();await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
@@ -119,7 +119,13 @@ try{
  const restoredAudit=new Map(ok(await req('/api/audit/export')).rows.map(row=>[row.id,row]))
  for(const row of permanentAudit)assert.deepEqual(restoredAudit.get(row.id),row,'OC-041 portable restore retains every permanent audit row unchanged')
  const restoredImports=importRows()
- for(const table of importTables)assert.deepEqual(restoredImports[table],table==='ik_door_settings'?importHistory[table].map(row=>({...row,enabled:0})):importHistory[table],table+' retains every import/provenance/plan/approval field')
+ for(const table of importTables) {
+  let expected=importHistory[table]
+  if(table==='ik_door_settings')expected=expected.map(row=>({...row,enabled:0}))
+  if(table==='ik_jobs')expected=expected.map(row=>['queued','applying'].includes(row.state)?{...row,state:'failed',error:'import_interrupted_restore',fence:row.fence+1,lease_token:null,lease_expires:null}:row)
+  if(table==='ik_door_apply_failures')expected=[...expected,...interruptedPlans.filter(id=>!expected.some(row=>row.plan_id===id)).map(plan_id=>({plan_id,reason_code:'import_interrupted_restore'}))].sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))
+  assert.deepEqual(restoredImports[table],expected,table+' retains every import/provenance/plan/approval field, with restored in-flight work explicitly interrupted')
+ }
  await business.assertInactive(cookie,oldCookie,sql)
  console.log('OC-052 portable restore: complete import history preserved and restored pending Business execution refused')
  await business.screens(cookie)

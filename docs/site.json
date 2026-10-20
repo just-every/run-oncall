@@ -92,6 +92,12 @@
           "summary": "Take everything with you, restore it into a new installation, or start over."
         },
         {
+          "slug": "audit",
+          "title": "Permanent operational audit",
+          "source": "docs/audit.md",
+          "summary": "Export safe attributed operations and retain their outcomes after erasure and interrupted imports."
+        },
+        {
           "slug": "limits",
           "title": "What Oncall does not do",
           "source": "docs/limits.md",
