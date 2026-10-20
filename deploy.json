@@ -36,6 +36,11 @@
       "binding": "MAIL_FROM",
       "environment": "MAIL_FROM",
       "verifyStandIn": "auth@example.test"
+    },
+    {
+      "binding": "INBOUND_EMAIL_DOMAIN",
+      "environment": "INBOUND_EMAIL_DOMAIN",
+      "optional": true
     }
   ]
 }

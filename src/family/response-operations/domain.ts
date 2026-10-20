@@ -1,3 +1,5 @@
+import { validateEmailArchive } from '../../email/archive';
+import type { EmailAddress, EmailVersion, EmailSample, EmailReceipt, EmailQuarantine } from '../../email/types';
 import { validateIntakeArchive, type IntakeSource, type IntakeReceipt } from '../../intake/model.ts';
 import { reviewCommand, validateReviewFields, validateLifecycleEntry } from '../../reviews/review-controls.ts';
 import { dependencies, validateChangeArchive, type ChangeRecord, type ChangeSource } from "../../changes/model.ts";
@@ -72,6 +74,7 @@ export type Alert = {
   urgency?: Urgency;
   urgencyRevision?: number;
   urgencyHistory?: AlertUrgencyEntry[];
+  priority?: "P1" | "P2" | "P3" | "P4" | "P5";
 };
 export type Entry = {
   id: string;
@@ -133,6 +136,11 @@ export type State = {
   changeSources?: ChangeSource[];
   intakeSources?: IntakeSource[];
   intakeReceipts?: IntakeReceipt[];
+  emailAddresses?: EmailAddress[];
+  emailRules?: EmailVersion[];
+  emailSamples?: EmailSample[];
+  emailReceipts?: EmailReceipt[];
+  emailQuarantine?: EmailQuarantine[];
 };
 export const empty = (): State => ({
   schemaVersion: 1,
@@ -245,8 +253,9 @@ export function signalInput(input: any): Signal {
     evidence,
   };
 }
-export function admit(state: State, input: any, at = new Date().toISOString()) {
+export function admit(state: State, input: any, at = new Date().toISOString(), exactKey = false) {
   const signal = signalInput(input);
+  if(exactKey)signal.key=input.key;
   const old = state.events.find(
     (e) => e.source === signal.source && e.eventId === signal.eventId,
   );
@@ -597,7 +606,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["triage", "changes", "changeSources", "intakeSources", "intakeReceipts"]);
+  ], ["triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   for (const key of [
@@ -696,7 +705,7 @@ export function validateArchive(value: any): State {
       "events",
       "owner",
       "suppressed",
-    ], ["urgency", "urgencyRevision", "urgencyHistory"]);
+    ], ["urgency", "urgencyRevision", "urgencyHistory", "priority"]);
     if (
       !value.services.some(
         (s: any) => s.id === a.service && s.environment === a.environment,
@@ -707,6 +716,7 @@ export function validateArchive(value: any): State {
       fail("Invalid alert references");
     text(a.generation, "generation", 100);
     bool(a.suppressed);
+    if(a.priority!==undefined&&!/^P[1-5]$/.test(a.priority))fail("Invalid alert priority");
     array(a.events);
     if (
       a.events.some(
@@ -809,6 +819,7 @@ export function validateArchive(value: any): State {
   validateReviewFields(value);
   validateChangeArchive(value);
   validateIntakeArchive(value);
+  validateEmailArchive(value);
   if (value.triage !== undefined) validateTriageRecords(value.triage, value);
   return structuredClone(value);
 }

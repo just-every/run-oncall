@@ -1,3 +1,4 @@
+import { receiveEmail } from './email/receive'
 import { auditedRequest } from './audit-request'
 import { withDemo } from './modules/demo/index.mjs'
 import { seedDemo } from './demo'
@@ -16,6 +17,7 @@ import {readSessionCookie} from './session-cookie'
 import {importDoorResponse} from './move-in/door'
 type Env=Bindings
 export default withDemo({
+  async email(message,env) { await receiveEmail(message,runtimeBindings(env)); },
   async fetch(request,original,execution) {
    return auditedRequest(request,original,async env => {
     if (new URL(request.url).pathname === '/favicon.ico' && ['GET', 'HEAD'].includes(request.method))

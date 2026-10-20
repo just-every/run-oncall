@@ -57,6 +57,9 @@ export function validateUrgencyArchive(state: State) {
         const receipt = receipts.get(entry.id.slice('incomplete:'.length)), event = receipt?.event ? events.get(receipt.event) : undefined;
         if (!receipt?.incomplete || receipt.alert !== alert.id || !event || entry.by !== `source:${event.source}` || entry.at !== receipt.acceptedAt ||
           entry.to !== 'high' || entry.ruleVersion !== null || entry.reason !== incompleteUrgencyReason) fail('Invalid incomplete-intake urgency transition');
+      } else if(entry.id.startsWith('email:')) {
+        const receipt=state.emailReceipts?.find(r=>r.id===entry.id.slice(6));
+        if(!receipt||receipt.alert!==alert.id||receipt.decision?.action!=='trigger'||receipt.decision.urgency!==entry.to||entry.by!=='source:email:'+receipt.address||entry.at!==receipt.at||entry.reason!==`Email rule ${receipt.decision.rule} version ${receipt.decision.version}`||entry.ruleVersion!==null||alert.events.indexOf(receipt.event!)>0&&entry.to!=='high')fail('Invalid email urgency transition');
       } else if (entry.ruleVersion === null) {
         if (!members.has(entry.by)) fail('Invalid human alert urgency attribution');
       } else {

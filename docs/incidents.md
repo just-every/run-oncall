@@ -101,3 +101,23 @@ Select up to 500 incidents individually, or select all matching after the displa
 `POST /api/triage/bulk` accepts an `operationId`, `action`, `items: [{id, revision}]`, and `reason`; resolution also requires `evidence`, reassignment uses `member` (or null), and the label actions use `priority` or `urgency`. Each item commits independently with current authority and the selected revision. The server processes a small bounded portion per request and returns cumulative `results`, `remaining` and `interrupted`; while `remaining` is positive and `interrupted` is false, continue with the exact same request and operation ID. The web interface does this as one action. An interrupted operation stays visible and resumes only when explicitly submitted again. This keeps each invocation within [D1’s query limits](https://developers.cloudflare.com/d1/platform/limits/). Keep and replay the same operation ID and exact content after an interrupted request: previously committed results are returned without another change. Reusing the identity with different content conflicts. For `allMatching: true`, include the query, `confirmedCount`, `workspaceRevision` and the complete matching item/revision list. The current count and snapshot must still match on first admission. Storage remains bounded by the installation's documented workspace profile; capacity failures are explicit per-item outcomes.
 
 The response ownership section assigns/transfers commander, scribe, communications and assignee to active responders, or leaves a role explicitly unassigned. These incident responsibilities never grant administrator or responder permissions. Every role/priority/urgency/severity change requires a reason and an incident revision. The timeline retains previous/new ownership, actor and bulk operation ID. Native archive/checkpoint and portable export include saved views, bulk outcomes and these response fields; restoring them does not start paging. The additive migration leaves held incident JSON and historical ordering unchanged.
+
+## Email alerts and source recovery
+
+**Alerts & events → Integration email** creates a service-scoped address with a versioned mode and trigger/resolve rules. [Set up Cloudflare Email Routing and email modes](compatible-intake.md#integration-email). Email intake is off until `INBOUND_EMAIL_DOMAIN` is configured. The private address is intake authority; the From address grants no account authority.
+
+Repeated subject-mode failures append to one derived generation and one recorded obligation. A custom `FAILED: (\S+)` trigger and `OK: (\S+)` resolve can both capture group 1: `FAILED: nightly-db` and `OK: nightly-db` act on the same key; `nightly-web` stays separate. Activity explains each mode, rule version, extracted key and outcome. Recovery says **stopped by source recovery** with its email receipt. Paging is OFF, so this is a labelled non-automatic state. A declared incident remains open for the responder's recovery evidence and resolution summary.
+
+For native Events API HMAC requests, save your JSON as `event.json`, set the scoped source key privately in `ONCALL_SOURCE_KEY`, and sign the exact bytes sent:
+
+```sh
+ONCALL_TIMESTAMP=$(date +%s)
+ONCALL_SIGNATURE=$(node --input-type=module -e 'import {readFileSync} from "node:fs"; import {createHmac} from "node:crypto"; process.stdout.write(createHmac("sha256",process.env.ONCALL_SOURCE_KEY).update(process.argv[1]+".").update(readFileSync("event.json")).digest("hex"))' "$ONCALL_TIMESTAMP")
+curl --fail-with-body "${ONCALL_ORIGIN}/api/ingress/monitoring" \
+  -H 'Content-Type: application/json' \
+  -H "x-oncall-timestamp: ${ONCALL_TIMESTAMP}" \
+  -H "x-oncall-signature: ${ONCALL_SIGNATURE}" \
+  --data-binary @event.json
+```
+
+The timestamp must be within five minutes. Rotate or revoke the source under Monitoring ingress; a rotated-out signature or bearer key stops working immediately. The stable `source` + `eventId` retry identity and explicit native `generation` differ from email's Message-ID retry identity and derived generations. Native input is limited to 64 KiB and the 10,000-event/storage capacity; it has no separate timed request-rate guarantee. Compatible and email limits are documented in their receiver reference. A receipt confirms stored coordination state, never provider delivery or paging.

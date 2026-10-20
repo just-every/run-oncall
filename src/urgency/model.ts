@@ -75,3 +75,9 @@ export function declarationUrgency(state: State, service: Service, ids: string[]
   if (!service.urgencyRules && !alerts.some(a => a.urgency !== undefined)) return undefined;
   return alerts.length ? (alerts.some(a => alertUrgency(state, a) === 'high') ? 'high' : 'low') : serviceUrgency(state, service.id, severity, at).urgency;
 }
+
+/** A versioned email rule can lower at first admission; a repeat can only raise. */
+export function emailAlertUrgency(state:State,alert:Alert,receipt:import('../email/types').EmailReceipt,to:Urgency,created:boolean) {
+  if(alert.urgency===to||!created&&to==='low')return;
+  append(state,alert,{id:'email:'+receipt.id,at:receipt.at,by:'source:email:'+receipt.address,from:alert.urgency??null,to,reason:`Email rule ${receipt.decision!.rule} version ${receipt.decision!.version}`,ruleVersion:null});
+}

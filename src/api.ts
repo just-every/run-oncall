@@ -1,3 +1,5 @@
+import { emailErasureFence } from './email/fence'
+import { installEmailManagement } from './email/api'
 import { auditIdentity, setAuditSubject } from './audit-store'
 import { auditInput } from './audit-request'
 import { installMonitoringIntake } from './monitoring/api';
@@ -381,6 +383,7 @@ api.use("/api/*", async (c, next) => {
 installChangeManagement(api, changeDeps);
 installNativeSources(api, changeDeps);
 installIntakeManagement(api, changeDeps);
+installEmailManagement(api, changeDeps);
 installRoutingManagement(api, changeDeps);
 installUrgency(api, changeDeps);
 installReviews(api, authorizedState);
@@ -498,6 +501,7 @@ api.post("/api/restore", async (c) => {
   const input = await body(c, 2000000);
   if (input.mode !== "replace") fail("Explicit replace mode required");
   const value = validateArchive(input.archive);
+  await emailErasureFence(c.env.DB,value);
   const snapshot = await recoverySnapshot(c.env.DB);
   const pagingRestore = await prepareCoordinationRestore(c.env.DB, Date.now(), snapshot);
   const held = await holdHandoffsForRecovery(snapshot.handoffs.archive, Date.now(), crypto.randomUUID(), "Coordination restore; current review required");
@@ -549,6 +553,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
       "UPDATE workspace_control SET revision=?,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)",
     ).bind(value.revision, restoreToken, old.revision, pagingRestore.revision, handoffRestore.revision, c.get("sessionDigest"), current.id, Date.now()),
     ...workspaceRows(c.env.DB,value,restoreToken),
+    c.env.DB.prepare("DELETE FROM oc_email_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_change_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_intake_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare(
@@ -597,6 +602,7 @@ api.post("/api/recovery/restore", async (c) => {
       (input.adminMapping !== undefined && (typeof input.adminMapping !== "string" || input.adminMapping.length > 100)))
     fail("Explicit checkpoint replacement and valid mapping required");
   const checkpoint = await validateAnyRecoveryCheckpoint(input.checkpoint);
+  await emailErasureFence(c.env.DB,checkpoint.coordination);
   const snapshot = await recoverySnapshot(c.env.DB);
   const imported = preparePagingImport(checkpoint.paging, Date.now());
   const replacement = prepareCheckpointReplacement(c.env.DB, snapshot, imported);

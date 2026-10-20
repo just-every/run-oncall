@@ -19,6 +19,7 @@ export interface Bindings {
  RER_OWNER_CLAIM_PUBLIC_KEYS?: string
  RER_OWNER_CLAIM_ISSUER?: string
  RER_OWNER_CLAIM_INSTALLATION_ID?: string
+ INBOUND_EMAIL_DOMAIN?: string
  DB: D1Database
  AUTH_ORIGIN: string
  AUTH_LOCAL?: string
