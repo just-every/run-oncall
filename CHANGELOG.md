@@ -1,3 +1,43 @@
+# 0.4.2 · 2026-10-20
+
+The move-in kit now runs Base's shared import door exactly as Base ships it. Updates `@runeditrun/rer` and every vendored Base module to 0.2.71. Paging stays OFF.
+
+Product screenshot: [`.github/assets/release/oncall-0.4.0-incident-1440.png`](.github/assets/release/oncall-0.4.0-incident-1440.png). The screens have not changed since 0.4.0.
+
+**What you get**
+
+- Move-in kit: the screen imports through Base's import door byte for byte, with no Oncall changes. Oncall's earlier `door/planning.ts` adaptation is now Base's own behavior: after **Undo this import** the same file can be imported again, and after an erasure has withdrawn a live import's file the next preview starts a new baseline. Oncall still owns its parsers, mapping, review list and named refusals; the look, copy and steps are unchanged.
+- The import door can keep an archive of a tool's final export (migration 0128). Erasing a person withdraws the archive's bytes together with the uploads, chunks and plan snapshots that hold them. Headers, plans, approvals and history captions stay.
+- Backup and restore use Base's 0.2.71 portability. Restore judges a migration's data statements by the table each one writes, and splits trigger bodies where SQLite itself ends them. A backup made by 0.4.1 restores into this release with every product row kept, both on a local install and on an installation whose database carries Platform's migration ledger.
+- Base modules: included operators keep their last sign-in time when sessions are scrubbed. The scheduled-policy documentation comes with the operator sign-in module.
+- Pin `@runeditrun/rer` 0.2.71.
+
+**Checked for this release** (20 October 2026, on the released code): locally at 1440 and 390 wide, and on a hosted Cloudflare deployment signed in by a real emailed link. We created members, a service with a runbook and a Europe/London primary/backup rotation with a cover interval, and saved the escalation policy for that rotation. We routed the service to the person on call and sent a PagerDuty-shaped alert through a service-bound compatible source; the alert arrived owned by that person. We declared an incident from it, and the on-call person signed in with their own password and acknowledged, recovered and resolved it. The sender's recovery closed the alert, and the schedule showed who takes over at the next hand-over. A 0.4.1 installation that held this data upgraded to 0.4.2 with every row kept. An archive made by 0.4.1 on a database carrying Platform's migration ledger restored into 0.4.2 with every row matching.
+
+**Not in this release**
+
+- Paging. Oncall does not call, text, push or escalate. A page request is refused with "Paging is OFF", and the escalation policy is stored as data only. Keep your existing pager. An alert is owned by the coordination owner named in **Routing & replay**, not looked up from the schedule, so update the routing rule when the rota changes hands. Release 2 paging and its independent standby are not built.
+- Swap requests, private teams, stakeholder status pages, Slack/Microsoft Teams, phone bridges, native mobile apps, AWS CloudWatch/SNS and inbound email intake (as in 0.4.0).
+
+**Known issues**
+
+- The provider receivers have been checked with local and PagerDuty-shaped requests only. A provider's own test/send button and a real firing and recovering rule are not yet part of the release checks.
+- Accessibility conformance is not established. Keyboard and phone-width journeys are maintained, but no screen-reader journeys have been run and no conformance report has been written.
+- The homepage's "alternative to PagerDuty and Opsgenie" is ahead of the code on paging (see above).
+
+**Back up first**
+
+- Local: `rer export --output exports/before-0.4.2.rer`. Restore only into an empty destination with `rer import --input exports/before-0.4.2.rer --yes`.
+- Hosted: `npx wrangler d1 export DATABASE --remote --output exports/DATABASE.sql` with the deploying `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, where `DATABASE` is the D1 name in `.rer/deploy/ENVIRONMENT.json`. Keep the file private.
+
+**Update**
+
+- Local: stop `rer dev` (Ctrl-C), `git pull --ff-only`, then `rer dev`. Hosted: from the checkout that deployed, `git pull --ff-only` then `rer deploy --environment ENVIRONMENT` with the same credentials. Do not reset to upgrade.
+
+**Migrations** (additive; keep all 34 applied migrations unchanged)
+
+- `0128_import_door_archive.sql`: the import door's archives of a tool's final export and their chunks. The tables start empty and no existing row changes.
+
 # 0.4.1 · 2026-10-19
 
 A backup made by the previous version now restores. Updates rer and the vendored Base copies to 0.2.68, including retained-archive placement on Platform-installed databases and the correction that treats trigger creation as schema-only. Every applied migration remains unchanged. Main also carries migration 0127, which protects signed-source keys with installation-local custody, plus the completed recovery and health flows. The move-in screen keeps its field-specific credential refusal and discards the refused upload with the upgraded shared import door. Restore only into a fresh empty installation. Paging stays OFF.
