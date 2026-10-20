@@ -1,13 +1,13 @@
-import { authority, fail, text, type State } from '../family/response-operations/domain';
-import { workspaceWrite } from '../workspace-store';
-import { auditIdentity, auditKind } from '../audit-store';
-import { changeHash } from '../changes/credentials';
-import { refuseKeyEcho } from '../native-sources';
+import { authority, fail, text, type State } from '../family/response-operations/domain.ts';
+import { workspaceWrite } from '../workspace-store.ts';
+import { auditIdentity, auditKind } from '../audit-store.ts';
+import { changeHash } from '../changes/credentials.ts';
+import { refuseKeyEcho } from '../native-sources.ts';
 import { createPortability } from '../modules/portability/index.mjs';
 import { portabilityPolicy } from '../portability-policy.mjs';
-import { emailDraft, decideEmail } from './rules';
-import { inboundDomain } from './receive';
-import type { EmailAddress, EmailVersion } from './types';
+import { emailDraft, decideEmail } from './rules.ts';
+import { inboundDomain } from './receive.ts';
+import type { EmailAddress, EmailVersion } from './types.ts';
 type Deps={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}};
 export function installEmailManagement(api:any,deps:Deps) {
   const current=async(c:any)=>{const state=await deps.state(c,true);authority(state,c.get('actor'),true);return state;};

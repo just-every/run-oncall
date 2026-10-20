@@ -1,6 +1,6 @@
-import { fail, text } from '../family/response-operations/domain';
-import { exact, routingPattern } from '../routing/definition';
-import { modes, type EmailVersion, type EmailRule, type EmailDecision, type EmailSample } from './types';
+import { fail, text } from '../family/response-operations/domain.ts';
+import { exact, routingPattern } from '../routing/definition.ts';
+import { modes, type EmailVersion, type EmailRule, type EmailDecision, type EmailSample } from './types.ts';
 export const normalizedSubject=(value:string)=>value.replace(/^(?:\s*(?:re|fwd|fw):\s*)+/i,'').trim().replace(/\s+/g,' ');
 export function emailDraft(input:any):Pick<EmailVersion,'mode'|'fallback'|'rules'> {
   if(!modes.includes(input.mode)||!['subject','quarantine'].includes(input.fallback)||!Array.isArray(input.rules)||input.rules.length>20)fail('Choose an email mode, fallback and up to 20 ordered rules');
