@@ -47,7 +47,7 @@ try {
   assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'revoked_address');
   assert.ok(!JSON.stringify(ok(await request('/api/archive'))).includes(local));
   ok(await external('/api/email',undefined,{authorization:'Bearer '+rotated}),401);
-  ok(await external('/api/command',{type:'declare',service:'payments',title:'Forged mail',severity:'critical',alerts:[]},{authorization:'Bearer '+rotated}),403);
+  ok(await external('/api/command',{type:'declare',service:'payments',title:'Forged mail',severity:'critical',alerts:[]},{authorization:'Bearer '+rotated,origin:w.origin}),401);
   const original=ok(await request('/api/state'));
   const nativeKey=randomBytes(32).toString('hex');ok(await request('/api/sources',{id:'native',key:nativeKey,scopes:['payments']}));
   const native={source:'native',eventId:'held-trigger',service:'payments',environment:'production',key:'held',generation:'held-cycle',intent:'trigger',severity:'warning',title:'Held native observation',observedAt:'2026-10-01T00:00:00Z',evidence:''};
