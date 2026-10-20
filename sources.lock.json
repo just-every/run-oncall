@@ -410,6 +410,10 @@
       "sha256": "763b53e17d4e04d9e79cd92b9196ed24bc0cbd89c571f4e71865e91a61a7e0f5",
       "executable": false
     },
+    "migrations/core/0131_inbound_email.sql": {
+      "sha256": "f8a56b7797293c8928af3da8f1fe29ad135f288573492fd740989d42eda5d5eb",
+      "executable": false
+    },
     "MOVE-IN.md": {
       "sha256": "1cc9d8a8ac1e0185a942db7ee6b7e021a4746c3be09a16bbc5917b824024028b",
       "executable": false
@@ -918,12 +922,64 @@
       "sha256": "62bfdad135366c364d486f1487d6e6c007f9f5c27086a321dc433a7806fccabc",
       "executable": false
     },
+    "src/email/api.ts": {
+      "sha256": "991b8b0531e1b2f61bc9e3fab30902c3a5371cf25adf901194dbce2ddb2dac10",
+      "executable": false
+    },
+    "src/email/archive.ts": {
+      "sha256": "ef5e813363057933344c546e0b22edc5b3ebcc6062b0d02d736e34749683db60",
+      "executable": false
+    },
+    "src/email/email.css": {
+      "sha256": "8105135a609cae3b00a7ec9a1d21baf4e30ab8e2d4df138e4907381e6c70dff1",
+      "executable": false
+    },
+    "src/email/EmailActivity.tsx": {
+      "sha256": "5263fab4ea2459cc23c9586fc8f4c94219c0003942f312bdeb865b600f0055cf",
+      "executable": false
+    },
+    "src/email/EmailRuleEditor.tsx": {
+      "sha256": "4bffd4b6489edb27817c50d506c0b7c86facf9e322cdd3d816b27974d32c34fa",
+      "executable": false
+    },
+    "src/email/EmailWorkspace.tsx": {
+      "sha256": "200dcab308a7f6fa3eaedf5ef5a6a5f32b32856fc927e6f790cf0428cb703e35",
+      "executable": false
+    },
+    "src/email/fence.ts": {
+      "sha256": "51a828b59c9615e550bad7deec374a4c974638cb12b293648cc95c423758063e",
+      "executable": false
+    },
+    "src/email/lifecycle.ts": {
+      "sha256": "c5e4d6dc7687dee318601a118fb906cc1cbc4e1455c21a9b042570a24d31dfe4",
+      "executable": false
+    },
+    "src/email/parse.d.mts": {
+      "sha256": "9468745840e404926f1b9ee0cde7d0061b6ef5ddae66dd77563f062eb3c7fae6",
+      "executable": false
+    },
+    "src/email/parse.mjs": {
+      "sha256": "e464500065404d3b4633673e9d21b37ad7c5066b3d322f13c30ac3f8dd053f5f",
+      "executable": false
+    },
+    "src/email/receive.ts": {
+      "sha256": "6c6161d7ca09c5d2a75abcc3592051ece397ea72c5528642a7e7e431d5cebcad",
+      "executable": false
+    },
+    "src/email/rules.ts": {
+      "sha256": "87293a1151ae7fbb55e9eba17619a9644a5b0175ea66709954e36f3c527e7391",
+      "executable": false
+    },
+    "src/email/types.ts": {
+      "sha256": "ab21fde765e2faabd4d32d57c5a2da74c9e3555dbd95e26ff953ef681837ad59",
+      "executable": false
+    },
     "src/family/operations/README.md": {
       "sha256": "84abac66e4a87409fe44223296a73279af8284cc6921e072ad751f1b8927e4c8",
       "executable": false
     },
     "src/family/response-operations/domain.ts": {
-      "sha256": "8cc5701f66a6165a8c83b01177b0c7563c925cc924a00336413054ab50c4a257",
+      "sha256": "a77db842c1721507c716b8b63a6e41da1dd9376655f0443451d8279102dd53d1",
       "executable": false
     },
     "src/family/response-operations/escalation.ts": {
@@ -3442,6 +3498,10 @@
       "sha256": "108d2a68696a24e65c58e13eaae81c314b756be9a5ba741ee6b56335a26a2b8e",
       "executable": false
     },
+    "tests/email-fixtures.mjs": {
+      "sha256": "11a91884b2d2668c2b2217dc0f455adf8d9a5f5fc38d3e805acba271687a5509",
+      "executable": false
+    },
     "tests/fixtures/change-sources.md": {
       "sha256": "c9bd34b6abc4f4f14e6f599df0f55598f844c0c4e43e47209b13e582fcbae3b3",
       "executable": false
@@ -3615,7 +3675,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "2dec6ffec827a3c4a7d6106ddb8ac1dc9b85d0ec3b72741b6d3706ec4f3669e2",
+      "sha256": "c991485c313d699ff2ad12e6abe725e89c730481e60b42b6ff8ae6cdec2d31cb",
       "executable": false
     },
     "tests/triage.mjs": {
@@ -3631,7 +3691,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "f9c670d0d241c1708cdc87142dd003cef90a7d5563771986212f0dcfcfc9e31b",
+      "sha256": "a0b7b060f8de7145b34af9808bfe3624e3ed18332abd83e3d743edaefe3e13cc",
       "executable": false
     },
     "tsconfig.json": {

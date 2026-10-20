@@ -225,7 +225,7 @@ export function route(state: State, signal: Signal): Decision {
     reason: policy.reason,
   };
 }
-export function signalInput(input: any): Signal {
+export function signalInput(input: any, exactKey = false): Signal {
   if (!input || typeof input !== "object" || Array.isArray(input))
     fail("Signal must be an object");
   if (!["trigger", "recover"].includes(input.intent))
@@ -244,7 +244,7 @@ export function signalInput(input: any): Signal {
     eventId: text(input.eventId, '"eventId"', 200),
     service: text(input.service, '"service"', 100),
     environment: text(input.environment, '"environment"', 100),
-    key: text(input.key, '"key"', 200),
+    key: exactKey && typeof input.key==='string' && input.key.length>0 && input.key.length<=200 ? input.key : text(input.key, '"key"', 200),
     generation: text(input.generation, '"generation"', 100),
     intent: input.intent,
     severity: input.severity,
@@ -254,8 +254,7 @@ export function signalInput(input: any): Signal {
   };
 }
 export function admit(state: State, input: any, at = new Date().toISOString(), exactKey = false) {
-  const signal = signalInput(input);
-  if(exactKey)signal.key=input.key;
+  const signal = signalInput(input,exactKey);
   const old = state.events.find(
     (e) => e.source === signal.source && e.eventId === signal.eventId,
   );
@@ -673,7 +672,7 @@ export function validateArchive(value: any): State {
       "decision",
       "routingSnapshot",
     ], ["urgency"]);
-    signalInput(e);
+    signalInput(e,e.source.startsWith("email:"));
     date(e.acceptedAt);
     if (
       !value.services.some(
