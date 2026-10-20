@@ -1,7 +1,7 @@
-import { admit, type State } from '../family/response-operations/domain';
-import { decideEmail } from './rules';
-import { emailAlertUrgency } from '../urgency/model';
-import type { EmailAddress, EmailReceipt, EmailSample, EmailVersion } from './types';
+import { admit, type State } from '../family/response-operations/domain.ts';
+import { decideEmail } from './rules.ts';
+import { emailAlertUrgency } from '../urgency/model.ts';
+import type { EmailAddress, EmailReceipt, EmailSample, EmailVersion } from './types.ts';
 export function applyEmail(state:State,address:EmailAddress,version:EmailVersion,sample:EmailSample,receipt:EmailReceipt) {
   const decision=decideEmail(version,sample,receipt.id);receipt.decision=decision;
   if(decision.action==='quarantine'){receipt.outcome='quarantined';receipt.diagnostic=decision.reason;return;}

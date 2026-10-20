@@ -1,5 +1,5 @@
-import { validateEmailArchive } from '../../email/archive';
-import type { EmailAddress, EmailVersion, EmailSample, EmailReceipt, EmailQuarantine } from '../../email/types';
+import { validateEmailArchive } from '../../email/archive.ts';
+import type { EmailAddress, EmailVersion, EmailSample, EmailReceipt, EmailQuarantine } from '../../email/types.ts';
 import { validateIntakeArchive, type IntakeSource, type IntakeReceipt } from '../../intake/model.ts';
 import { reviewCommand, validateReviewFields, validateLifecycleEntry } from '../../reviews/review-controls.ts';
 import { dependencies, validateChangeArchive, type ChangeRecord, type ChangeSource } from "../../changes/model.ts";

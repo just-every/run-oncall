@@ -1,12 +1,12 @@
 import type { Bindings } from '../auth.server';
-import { auditedDatabase } from '../audit-database';
-import { auditIdentity, auditOutcome, type AuditContext } from '../audit-store';
-import { loadWorkspace, workspaceWrite } from '../workspace-store';
-import { changeHash } from '../changes/credentials';
-import { fail } from '../family/response-operations/domain';
+import { auditedDatabase } from '../audit-database.ts';
+import { auditIdentity, auditOutcome, type AuditContext } from '../audit-store.ts';
+import { loadWorkspace, workspaceWrite } from '../workspace-store.ts';
+import { changeHash } from '../changes/credentials.ts';
+import { fail } from '../family/response-operations/domain.ts';
 import { parseEmail, emailDiagnostic } from './parse.mjs';
-import { applyEmail } from './lifecycle';
-import type { EmailReceipt } from './types';
+import { applyEmail } from './lifecycle.ts';
+import type { EmailReceipt } from './types.ts';
 export function inboundDomain(env:Pick<Bindings,'INBOUND_EMAIL_DOMAIN'>) {
   const value=env.INBOUND_EMAIL_DOMAIN?.trim().toLowerCase()??'';
   return /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$/.test(value)?value:null;

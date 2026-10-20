@@ -1,6 +1,6 @@
-import { fail, text, type State } from '../family/response-operations/domain';
-import { exact, routingDate } from '../routing/definition';
-import { emailDraft, decideEmail } from './rules';
+import { fail, text, type State } from '../family/response-operations/domain.ts';
+import { exact, routingDate } from '../routing/definition.ts';
+import { emailDraft, decideEmail } from './rules.ts';
 export function validateEmailArchive(state:State) {
   for(const key of ['emailAddresses','emailRules','emailSamples','emailReceipts','emailQuarantine'] as const) {
     const rows=state[key];if(rows!==undefined&&(!Array.isArray(rows)||rows.length>10000||rows.some(r=>!r||typeof r.id!=='string')||new Set(rows.map(r=>r.id)).size!==rows.length))fail('Invalid email archive identities');
