@@ -21,7 +21,7 @@ function exported(checkpoint,before) {
 // stored field and the entire attributed history prefix, including frozen data.
 export function assertCheckpointRestored(checkpoint,after,handoffs=checkpoint.handoffs) {
  const inactive=structuredClone(checkpoint.coordination)
- for(const key of ['changeSources','intakeSources'])if(inactive[key])inactive[key]=inactive[key].map(source=>({...source,active:false}))
+ for(const key of ['changeSources','intakeSources','emailAddresses'])if(inactive[key])inactive[key]=inactive[key].map(source=>({...source,active:false}))
  assert.deepEqual({...after.coordination,revision:inactive.revision},inactive,'all coordination history survives; imported intake requires local reauthorization')
  assert.equal(after.paging.paging,'OFF');assert.equal(after.handoffs.delivery,'unsent')
  const expected=structuredClone(checkpoint.paging)

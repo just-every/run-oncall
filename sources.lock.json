@@ -3479,7 +3479,7 @@
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
-      "sha256": "8d59073ac8d3c5091fb4f12acfeb04ab4f657fa2061f1dce45888e418ec518f5",
+      "sha256": "d3bbaf752af70061d8555bce3cc407ac23b4416258e863782defe85fa8f71f2f",
       "executable": false
     },
     "tests/checkpoint-fixtures.mjs": {
