@@ -5,7 +5,7 @@ import {randomBytes} from 'node:crypto'
 import {execFileSync} from 'node:child_process'
 import {lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
 import {managedSeed} from './managed.mjs'
-import {ownerDoor} from './worker.mjs'
+import {ownerDoor,localWorker} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 import {checkpointCli} from './checkpoint-cli.mjs'
 import {transferDoor} from './transfer-door.mjs'
@@ -37,7 +37,9 @@ try{
  const bulk=ok(await req('/api/triage/bulk',{operationId:'portable-priority',action:'set-priority',items:[{id:incident.id,revision:responseIncident.revision}],priority:'P1',reason:'Preserve incident priority'}));assert.equal(bulk.results[0].ok,true)
  ok(await req('/api/triage/views',{name:'Open transfer work',query:{q:'authored',status:'open'}}))
  const emailPart=localPart();assert.equal((await req('/api/email/addresses',{id:'portable-email',name:'Nightly archive monitor',localPart:emailPart,service:'transfer',owner:member.id,mode:'custom',fallback:'quarantine',rules:recoveryRules()})).status,201)
- await mail(m,emailPart,'FAILED: archive-db');await mail(m,emailPart,'Unknown archive mail')
+ await m.close();execFileSync('pnpm',['exec','vite','build'],{stdio:'pipe',maxBuffer:32*1024*1024})
+ const emailWorker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{persistTo:'.wrangler/state'});try{await mail(emailWorker,emailPart,'FAILED: archive-db');await mail(emailWorker,emailPart,'Unknown archive mail')}finally{await emailWorker.close()}
+ await m.start()
  assert.equal(ok(await req('/api/email')).samples.length,2)
  const changeKey=randomBytes(32).toString('hex')
  assert.equal((await req('/api/changes/sources',{id:'portable-ci',name:'Portable CI context',provider:'native',service:'transfer',repository:'',mode:'bearer',revision:0,key:changeKey})).status,201)

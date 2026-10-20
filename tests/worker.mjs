@@ -7,22 +7,23 @@ import {randomBytes,createHash} from 'node:crypto'
 import http from 'node:http'
 import {workerDiagnostics} from './diagnostics.mjs'
 
-export async function localWorker(bindings = {}) {
+export async function localWorker(bindings = {}, {persistTo} = {}) {
  const dir=await mkdtemp(join(tmpdir(),'oncall-flow-')),socket=createServer()
  await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
+ const persist=persistTo??dir;
  const origin=`http://127.0.0.1:${port}`,secret=()=>randomBytes(32).toString('hex')
  const vars={AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'owner@example.test',SESSION_SECRET:secret(),SETUP_TOKEN:secret(),MAIL_FROM:'auth@localhost.test',RER_DEV_KEY:secret(),...bindings}
  await writeFile(join(dir,'local.env'),Object.entries(vars).map(([k,v])=>`${k}=${v}`).join('\n'),{mode:0o600})
  const cli='node_modules/wrangler/bin/wrangler.js',env={...process.env,CI:'true',WRANGLER_SEND_METRICS:'false',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'true'}
- const statements=command=>JSON.parse(execFileSync(process.execPath,[cli,'d1','execute','DB','--local','--persist-to',dir,'--command',command,'--json'],{encoding:'utf8',env,stdio:['ignore','pipe','pipe'],maxBuffer:64*1024*1024})).map(r=>r.results)
+ const statements=command=>JSON.parse(execFileSync(process.execPath,[cli,'d1','execute','DB','--local','--persist-to',persist,'--command',command,'--json'],{encoding:'utf8',env,stdio:['ignore','pipe','pipe'],maxBuffer:64*1024*1024})).map(r=>r.results)
  const sql=command=>statements(command)[0]
- execFileSync(process.execPath,[cli,'d1','migrations','apply','DB','--local','--persist-to',dir],{env,stdio:'ignore'})
+ execFileSync(process.execPath,[cli,'d1','migrations','apply','DB','--local','--persist-to',persist],{env,stdio:'ignore'})
  let worker,diagnostics
  let failureHandler
  const stop=async()=>{if(worker&&worker.exitCode===null){worker.kill('SIGTERM');await new Promise(r=>worker.once('exit',r))}}
  const start=async()=>{
   diagnostics=workerDiagnostics({...env,...vars})
-  worker=spawn(process.execPath,[cli,'dev','--local','--config','dist/server/wrangler.json','--persist-to',dir,'--ip','127.0.0.1','--port',String(port),'--inspector-port','0','--env-file',join(dir,'local.env')],{env,stdio:['ignore','pipe','pipe']})
+  worker=spawn(process.execPath,[cli,'dev','--local','--config','dist/server/wrangler.json','--persist-to',persist,'--ip','127.0.0.1','--port',String(port),'--inspector-port','0','--env-file',join(dir,'local.env')],{env,stdio:['ignore','pipe','pipe']})
   let startupError;worker.once('error',error=>{startupError=error;diagnostics.report('startup process error')})
   diagnostics.attach(worker.stdout,'stdout');diagnostics.attach(worker.stderr,'stderr')
   for(let n=0;n<240;n++){if(startupError)throw Error('Worker process could not start');if(worker.exitCode!==null){diagnostics.report('startup exited');throw Error('Worker exited before readiness')};try{if((await fetch(origin+'/health')).ok)return}catch{}await new Promise(r=>setTimeout(r,250))}
