@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "4b4262bc7298facbf1fc06bcf823bcc2596db0408b60ae50d77b2c8cdb88d7a9",
+      "sha256": "3dafeb0820cd8731d1388cbd2aa2d470bc7c0217e387f3b7f9a1c038950a8bba",
       "executable": false
     },
     "DEMO.md": {
@@ -255,11 +255,11 @@
       "executable": false
     },
     "evidence/email/alert-generations-1440.png": {
-      "sha256": "07213d8fcfc17f6b114cc81074865e8b1b41bd36d1887c128fcff627a98bc13c",
+      "sha256": "dc1757b268e6a3ccb6fa27ff8fd06a001444b4e1aa24e417ffdb7b50cfe787c8",
       "executable": false
     },
     "evidence/email/alert-generations-390.png": {
-      "sha256": "7b0afc48a4537aacfd8658607655d031045f74b18aad5058991edba36e7acfe8",
+      "sha256": "558ba61b433b20d49b449e9fa7f883e8aa34b9fa7e6785a963fbc705a7360c64",
       "executable": false
     },
     "evidence/email/disabled-1440.png": {
@@ -287,19 +287,19 @@
       "executable": false
     },
     "evidence/email/draft-replay-1440.png": {
-      "sha256": "3addd33dced67a9ae284d8cc852510ef333473016123629651d77fd79848f461",
+      "sha256": "9ca4e273c5b36e52e79a300f13d5fb3b780813973f4e5179aaaa9454aa50d5a5",
       "executable": false
     },
     "evidence/email/draft-replay-390.png": {
-      "sha256": "515c7d79d6bf8cfba85509e7a72ca2d7aa6d13ed8de2dd3b1b2df16cfdd020de",
+      "sha256": "4d4734219218d369e86bf0c853a7c598bf5254ba3a93a5f019a96ca7e385aa12",
       "executable": false
     },
     "evidence/email/erased-activity-1440.png": {
-      "sha256": "e8f76ec53df6663c670504c3b37a7783aefd6a9ad972e5026a41d80f0ff58649",
+      "sha256": "d1bfe55d9aadaad96441e5b23254dcce418f68c4c5a62f0a2a98cbedf51bdbbc",
       "executable": false
     },
     "evidence/email/erased-activity-390.png": {
-      "sha256": "7f637f8af9a0aa6d0773de53829b02841dfa2c8cb44611b970551f9d78fb4e8a",
+      "sha256": "1414c525622d21ca236cca657d964b79c2b0619e161ff393daeb7392d79aada2",
       "executable": false
     },
     "evidence/email/hosted-activity-1440.png": {
@@ -327,31 +327,31 @@
       "executable": false
     },
     "evidence/email/quarantine-1440.png": {
-      "sha256": "6dc277d8d8368f686bde072e9703b668218cd01ae508d8f4238becfca0449610",
+      "sha256": "7c3b68188e2fcf00c32aa51c228ad63cd7929123d173768686c803c7b4ff667f",
       "executable": false
     },
     "evidence/email/quarantine-390.png": {
-      "sha256": "71fb87e91f52625d62c0ba52a68449d70d5fb872df858e3cdf14374e35334a61",
+      "sha256": "180cf0f11ef485794fb05072409ec79e52be66b693f062fb29131edf7bc6d756",
       "executable": false
     },
     "evidence/email/recovered-activity-1440.png": {
-      "sha256": "9c058fdbb401b8597831ececf730a29344156be30fe77b3386718252e37ab8f2",
+      "sha256": "407f93d81673a65b88800a0b8bf8624ed7795d753790397a9fc71778082b737c",
       "executable": false
     },
     "evidence/email/recovered-activity-390.png": {
-      "sha256": "ebe361b1e67abf98da8131f73084cc2a7dc02110673fbb82a8a66dec0f680c7f",
+      "sha256": "09175d5425efe86cd62ebce9d215e2288fc4569e6992af348508dba2f0db18ac",
       "executable": false
     },
     "evidence/email/revoked-activity-1440.png": {
-      "sha256": "d1c48542ca100cd9f170060f76740d8c138f339a220e9dc7e5973a3343c8cbc3",
+      "sha256": "40115986ebca44dcdb82cc4ef17a3cc00a00f3a19507e60a546ec81be0d1add4",
       "executable": false
     },
     "evidence/email/revoked-activity-390.png": {
-      "sha256": "b496db4f1757664a191b1c4188aaddd039fb847cc0cceb6b3721a5f5fe5120cb",
+      "sha256": "977781e703c03a2b2d30399fab8c495dd2b58077a673f16d3e71a547a44e606c",
       "executable": false
     },
     "evidence/email/rule-editor-1440.png": {
-      "sha256": "99aadf3b430eb0447e03b0a5523f78372c0abd6b685633239edf2bc4f933580b",
+      "sha256": "f284efeeda912b6f33a958c5dd44a5c967c9df913946cdfa804a9d3b4e73a427",
       "executable": false
     },
     "evidence/email/rule-editor-390.png": {
