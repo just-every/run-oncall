@@ -3095,7 +3095,7 @@
       "executable": false
     },
     "src/move-in/import-lifecycle-sql.mjs": {
-      "sha256": "a94ec3c32eff83298dd4ec1f58f9f13392d501a0d43fea94041879341186a20b",
+      "sha256": "01355771ec2d137f0b76d3faa4f54601b553a8d336b0d3af3a6b852677546262",
       "executable": false
     },
     "src/move-in/import-lifecycle.ts": {
