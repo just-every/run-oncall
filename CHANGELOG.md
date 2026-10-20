@@ -1,3 +1,10 @@
+# Unreleased
+
+## Inbound integration email
+
+- Added opt-in Cloudflare Email Routing intake, private revocable per-service addresses, four versioned email modes, ordered RE2 trigger/recovery rules, saved-mail draft replay, owner activity and quarantine.
+- Email generations retain one paging-OFF obligation, explicit source recovery and atomic secret-free permanent audit. Portable restore keeps email history inactive without keys; erasure fences older source copies. Additive migration 0131 preserves released data.
+
 # 0.4.2 · 2026-10-20
 
 The move-in kit now runs Base's shared import door exactly as Base ships it. Updates `@runeditrun/rer` and every vendored Base module to 0.2.71. Paging stays OFF.

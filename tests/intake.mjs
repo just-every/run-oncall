@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {localWorker} from './worker.mjs';
+import {localPart,mail} from './email-fixtures.mjs';
 
 // One real emitted-Worker journey. Provider request bodies are synthetic test
 // inputs built to their documented protocols; no live-sender claim is made.
-const w=await localWorker(),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const keys={pd:randomBytes(32).toString('hex'),og:randomBytes(32).toString('hex'),sp:randomBytes(32).toString('hex'),other:randomBytes(32).toString('hex')};
 let cookie;
 const request=(path,data)=>w.request(path,data,cookie);
@@ -19,6 +20,37 @@ try {
   ok(await request('/api/command',{type:'policy',service:'payments',severity:'*',action:'route',owner:actor.id,reason:'Payments primary'}));
   const configure=(id,provider,service='payments',revision=0)=>request('/api/intake/sources',{id,name:id+' monitor',provider,service,key:keys[id],revision});
   ok(await configure('pd','pagerduty'),201);ok(await configure('og','opsgenie'),201);ok(await configure('sp','splunk','search'),201);ok(await configure('other','pagerduty','search'),201);
+  // OC-033: real emitted email() door, with only Cloudflare delivery faked.
+  const local=localPart(),addressInput={id:'email-db',name:'Nightly database email',service:'payments',owner:actor.id,localPart:local,mode:'subject',fallback:'subject',rules:[]};
+  ok(await request('/api/email/addresses',addressInput),201);
+  for(const subject of ['  Re: FAILED nightly database  ','Fwd: FAILED   nightly database','FW: FAILED nightly database'])await mail(w,local,subject);
+  let emails=ok(await request('/api/email')),emailReceipts=emails.receipts.filter(r=>r.address==='email-db');
+  assert.deepEqual(emailReceipts.map(r=>r.outcome),['opened','deduplicated','deduplicated']);
+  assert.equal(new Set(emailReceipts.map(r=>r.generation)).size,1);assert.equal(new Set(emailReceipts.map(r=>r.obligation)).size,1);
+  assert.equal(ok(await request('/api/state')).alerts.find(a=>a.id===emailReceipts[0].alert).events.length,3);
+  const unique='duplicate-email';await mail(w,local,'Duplicate failure',{id:unique});await mail(w,local,'Duplicate failure',{id:unique});
+  emails=ok(await request('/api/email'));assert.equal(emails.receipts.filter(r=>r.address==='email-db').length,4);assert.equal(emails.receipts.at(-1).deliveries,2);
+  await mail(w,local,'Spoofed owner',{auth:'fail',from:'owner@example.test'});
+  await mail(w,local,'Oversize',{body:'x'.repeat(513*1024)});
+  await mail(w,local,'Malformed',{raw:`From: monitor@example.test\r\nTo: ${local}@inbound.example.test\r\nMessage-ID: <malformed@monitor.example.test>\r\nAuthentication-Results: mx.cloudflare.net; dmarc=pass header.from=example.test\r\nContent-Type: multipart/mixed; boundary=broken\r\n\r\n--broken\r\nContent-Type: text/plain\r\n\r\nnot closed`});
+  await mail(w,localPart(),'Unknown integration');
+  emails=ok(await request('/api/email'));assert.ok(emails.quarantine.some(q=>q.reason==='sender_authentication_failed'));assert.ok(emails.quarantine.some(q=>q.reason==='inbound_raw_limit'));assert.ok(emails.quarantine.some(q=>q.reason==='unknown_address'));assert.ok(emails.quarantine.length>=4);
+  const attachmentRaw=`From: monitor@example.test\r\nTo: ${local}@inbound.example.test\r\nMessage-ID: <attachments@monitor.example.test>\r\nSubject: Attachment failure\r\nAuthentication-Results: mx.cloudflare.net; dmarc=pass header.from=example.test\r\nContent-Type: multipart/mixed; boundary=parts\r\n\r\n--parts\r\nContent-Type: text/plain\r\n\r\nSafe monitor result\r\n--parts\r\nContent-Type: text/html\r\n\r\n<script>throw new Error('html_must_not_survive')</script>\r\n--parts\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment; filename=data.bin\r\n\r\nattachment_must_not_survive\r\n--parts--\r\n`;
+  await mail(w,local,'Attachment failure',{raw:attachmentRaw});assert.ok(!JSON.stringify(ok(await request('/api/email'))).includes('must_not_survive'));
+  await mail(w,local,'Attachment limit',{raw:attachmentRaw.replace('attachment_must_not_survive','b'.repeat(65*1024)).replace('<attachments@','<overattachment@')});assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'inbound_attachment_limit');
+  ok(await request('/api/command',{type:'service',id:'mail-map',name:'Nightly staging',environment:'staging',owner:actor.id,runbook:[],pager:''}));
+  const mapPart=localPart();ok(await request('/api/email/addresses',{...addressInput,id:'unmapped-mail',service:'mail-map',localPart:mapPart}),201);
+  ok(await request('/api/command',{type:'service',id:'mail-map',name:'Nightly staging',environment:'production',owner:actor.id,runbook:[],pager:''}));await mail(w,mapPart,'Wrong environment');assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'unmapped_service_environment');
+  const emailBeforeFailure=ok(await request('/api/archive'));
+  w.sql("CREATE TRIGGER reject_email_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.feature='email' BEGIN SELECT RAISE(ABORT,'synthetic email audit failure'); END");
+  await mail(w,local,'Must roll back');w.sql('DROP TRIGGER reject_email_audit');assert.deepEqual(ok(await request('/api/archive')),emailBeforeFailure);
+  const rotated=localPart();ok(await request('/api/email/addresses/email-db/rotate',{revision:1,localPart:rotated}));await mail(w,local,'Retired address');
+  assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'revoked_address');
+  await mail(w,rotated,'Fresh credential');ok(await request('/api/email/addresses/email-db/revoke',{revision:2}));await mail(w,rotated,'Revoked address');
+  assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'revoked_address');
+  assert.ok(!JSON.stringify(ok(await request('/api/archive'))).includes(local));
+  ok(await external('/api/email',undefined,{authorization:'Bearer '+rotated}),401);
+  ok(await external('/api/command',{type:'declare',service:'payments',title:'Forged mail',severity:'critical',alerts:[]},{authorization:'Bearer '+rotated}),403);
   const original=ok(await request('/api/state'));
   const nativeKey=randomBytes(32).toString('hex');ok(await request('/api/sources',{id:'native',key:nativeKey,scopes:['payments']}));
   const native={source:'native',eventId:'held-trigger',service:'payments',environment:'production',key:'held',generation:'held-cycle',intent:'trigger',severity:'warning',title:'Held native observation',observedAt:'2026-10-01T00:00:00Z',evidence:''};
@@ -67,14 +99,16 @@ try {
   ok(await request('/api/intake/sources/pd/revoke',{revision:2}));ok(await pd('trigger','revoked'),400);
   const viewer=ok(await request('/api/members',{name:'Intake reader',role:'viewer',password:'synthetic-intake-reader-password'}),201),viewerCookie=(await w.request('/api/login',{name:viewer.name,password:'synthetic-intake-reader-password'})).cookie;
   ok(await w.request('/api/intake/sources',{id:'viewer',name:'Denied',provider:'pagerduty',service:'payments',revision:0,key:keys.pd},viewerCookie),403);
+  ok(await w.request('/api/email',undefined,viewerCookie),403);ok(await w.request('/api/email/addresses/email-db/publish',{revision:3,mode:'subject',fallback:'subject',rules:[]},viewerCookie),403);assert.equal(ok(await w.request('/api/state',undefined,viewerCookie)).emailSamples,undefined);
+  const permanent=ok(await request('/api/audit/export'));for(const value of [local,rotated,'monitor@example.test','Nightly database email','Safe monitor result'])assert.ok(!JSON.stringify(permanent).includes(value));
   const archive=ok(await request('/api/archive'));for(const key of [...Object.values(keys),oldKey,nativeKey])assert.ok(!JSON.stringify(archive).includes(key));
   assert.equal(ok(await external('/api/ingress/native',native,{authorization:'Bearer '+nativeKey})).duplicate,true);
   assert.deepEqual(archive.events.find(e=>e.eventId==='held-trigger'),nativeEvent,'native observations stay unchanged');
   const malformed=structuredClone(archive);malformed.intakeReceipts[0].alert='unknown';ok(await request('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await request('/api/archive')),archive);
   const restored=await request('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
-  state=ok(await request('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);ok(await og('trigger','after-restore'),401);
+  state=ok(await request('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.ok(state.intakeSources.every(s=>!s.active));assert.ok(state.emailAddresses.every(a=>!a.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_email_credentials')[0].n,0);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);ok(await og('trigger','after-restore'),401);
   await w.stop();await w.start();assert.deepEqual(ok(await request('/api/state')).intakeReceipts,archive.intakeReceipts);
   assert.deepEqual(state.incidents,archive.incidents);assert.equal(state.events.find(e=>e.eventId==='held-trigger').generation,'held-cycle');
   assert.equal(state.members.length,original.members.length+1);
-  console.log('Compatible intake public Worker journey passed: provider lifecycles, authority, concurrency, rollback, key rotation/revoke, native integrity and inactive archive/restart');
+  console.log('OC-033 inbound email accepts, deduplicates, recovers and quarantines by address mode and rule without granting authority to the sender. Compatible intake: provider lifecycles, authority, concurrency, rollback, key rotation/revoke, native integrity and inactive archive/restart');
 } finally {await w.close();}

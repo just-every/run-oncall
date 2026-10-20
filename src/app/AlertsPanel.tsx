@@ -24,6 +24,7 @@ export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpen
         <h3>{title}</h3>
         {severity && <span className={`priority sev-${severity}`}>{severity}</span>}
         <p>{state.services.find(service => service.id === alert.service)?.name} · {alert.environment} · {alert.state}</p>
+        {alert.priority&&<p>Priority: {alert.priority}</p>}
         <p>{alert.source} / {alert.key} / {alert.generation}</p>
         <p>{alert.suppressed ? 'Suppressed' : name(alert.owner)} · {alert.events.length} events</p>
         <AlertUrgency alert={alert} state={state} canEdit={canEdit} busy={busy} run={run}/><details><summary>Service runbook</summary>{state.services.find(s=>s.id===alert.service)?.runbook.length ? <ol>{state.services.find(s=>s.id===alert.service)!.runbook.map((step,n)=><li key={n}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</details>

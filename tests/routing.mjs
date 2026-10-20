@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {localWorker} from './worker.mjs';
+import {localPart,mail,recoveryRules} from './email-fixtures.mjs';
 
 // One public Worker journey: real admission, replay, authority and archive doors.
-const w=await localWorker(),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const secret=()=>randomBytes(32).toString('hex'),keys={pd:secret(),og:secret(),sp:secret()};
 let cookie;
 const req=(path,data)=>w.request(path,data,cookie);
@@ -19,6 +20,29 @@ try {
  const actor=ok(await req('/api/session')).member;
  for(const id of ['payments','search','foreign'])ok(await req('/api/command',{type:'service',id,name:id,environment:'production',owner:actor.id,runbook:[],pager:''}));
  for(const service of ['payments','search'])ok(await req('/api/command',{type:'policy',service,severity:'*',action:service==='search'?'suppress':'route',owner:actor.id,reason:service==='search'?'Search maintenance coordination':'Payments owner'}));
+ const local=localPart(),second=localPart();
+ const emailCreate=(id,localPart,service,mode='custom',rules=recoveryRules())=>req('/api/email/addresses',{id,name:id+' integration',localPart,service,owner:actor.id,mode,fallback:'subject',rules});
+ ok(await emailCreate('nightly',local,'payments'),201);ok(await emailCreate('second',second,'search'),201);
+ for(const subject of ['FAILED: nightly-db','FAILED: nightly-web','OK: nightly-db','OK: missing'])await mail(w,local,subject);
+ let email=ok(await req('/api/email'));const db=email.receipts.find(r=>r.decision?.key==='nightly-db'),web=email.receipts.find(r=>r.decision?.key==='nightly-web');
+ assert.notEqual(db.generation,web.generation);assert.equal(email.receipts.at(-2).stop,'stopped by source recovery');assert.equal(email.receipts.at(-1).outcome,'no-effect');
+ let emailState=ok(await req('/api/state'));assert.equal(emailState.alerts.find(a=>a.id===db.alert).state,'recovered');assert.equal(emailState.alerts.find(a=>a.id===web.alert).state,'active');assert.equal(emailState.alerts.find(a=>a.id===web.alert).priority,'P1');
+ const declared=ok(await req('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Nightly customer impact',summary:'Source recovery is separate',alerts:[web.alert]}));
+ await mail(w,local,'OK: nightly-web');assert.equal(ok(await req('/api/state')).incidents.find(i=>i.id===declared.id).state,'declared');
+ await mail(w,second,'FAILED: nightly-db');assert.notEqual(ok(await req('/api/email')).receipts.at(-1).generation,db.generation);
+ await mail(w,local,'Unmatched failure');assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');
+ const draft={revision:1,mode:'custom',fallback:'quarantine',rules:recoveryRules()};
+ const beforeWorkspace=ok(await req('/api/archive')),beforeReplay=w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n;
+ const replay=ok(await req('/api/email/addresses/nightly/preview',{...draft,samples:email.samples.filter(s=>s.address==='nightly').map(s=>s.id)}));assert.equal(replay.sideEffects,false);assert.equal(replay.decisions.length,4);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n,beforeReplay);assert.deepEqual(ok(await req('/api/archive')),beforeWorkspace);
+ ok(await req('/api/email/addresses/nightly/publish',draft));await mail(w,local,'Unmatched quarantine');assert.equal(ok(await req('/api/email')).receipts.at(-1).diagnostic,'no_rule_matched');
+ const pathological={id:'linear',action:'trigger',match:'all',conditions:[{field:'text',op:'matches',value:'^(a+)+$'}],key:{field:'subject',kind:'markers',start:'[',end:']'}};
+ ok(await req('/api/email/addresses/nightly/publish',{revision:2,mode:'custom',fallback:'subject',rules:[pathological]}));await mail(w,local,'Pathological input',{body:'a'.repeat(128*1024)+'!'});assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');
+ for(const mode of ['single','each']){const part=localPart();ok(await emailCreate(mode,part,'payments',mode,[]),201);await mail(w,part,'First failure');await mail(w,part,'Other failure');const rows=ok(await req('/api/email')).receipts.filter(r=>r.address===mode);assert.equal(rows[0].generation===rows[1].generation,mode==='single');}
+ // Byte-for-byte extraction, including whitespace, and resolve rules in a default mode.
+ const markers=localPart(),markerRule={id:'marker-ok',action:'resolve',match:'all',conditions:[{field:'subject',op:'contains',value:'OK'}],key:{field:'subject',kind:'markers',start:'[',end:']'}};
+ ok(await emailCreate('markers',markers,'payments','subject',[markerRule]),201);await mail(w,markers,'failure');await mail(w,markers,'OK [ failure ]');assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'no-effect');
+ const eraseRevision=ok(await req('/api/email')).addresses.find(a=>a.id==='nightly').revision;
+ ok(await req('/api/email/addresses/nightly/erase',{revision:eraseRevision}));assert.ok(!ok(await req('/api/email')).samples.some(s=>s.address==='nightly'));ok(await req('/api/restore',{mode:'replace',archive:beforeWorkspace}),409);
  const create=(id,provider,key)=>req('/api/routing/keys',{id,name:id+' routed monitor',provider,scope:['payments','search'],owner:actor.id,key,revision:0,rules:[],catchAll:null});
  ok(await create('pd','pagerduty',keys.pd),201);
  const publish=(baseVersion,nextRules=rules,catchAll=null)=>req('/api/routing/keys/pd/publish',{baseVersion,rules:nextRules,catchAll});
@@ -74,5 +98,5 @@ try {
  const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
  state=ok(await req('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
  await w.stop();await w.start();assert.deepEqual(ok(await req('/api/state')).intakeReceipts,archive.intakeReceipts);
- console.log('Routed intake public Worker journey passed: scoped fixed/dynamic rules, per-service generations, suppression ordering, replay/no writes, stale publish, readmission, authority, rollback, rotation and inactive archive/restart');
+ console.log('OC-070 modes and rules map email onto derived generations. Routed intake: scoped fixed/dynamic rules, per-service generations, suppression ordering, replay/no writes, stale publish, readmission, authority, rollback, rotation and inactive archive/restart');
 } finally {await w.close();}

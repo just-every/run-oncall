@@ -1,0 +1,6 @@
+.email-workspace {min-width:0;overflow-wrap:anywhere}
+.email-workspace fieldset {min-width:0;margin:1rem 0;padding:1rem;border:1px solid var(--line,#ccc)}
+.email-workspace input,.email-workspace select {max-width:100%;min-width:0}
+.email-workspace pre {white-space:pre-wrap;overflow-wrap:anywhere;max-height:28rem;overflow:auto}
+.email-condition {border-bottom:1px solid var(--line,#ccc);padding-bottom:1rem;margin-bottom:1rem}
+.email-workspace .intake-actions {flex-wrap:wrap}

@@ -67,7 +67,7 @@ export function installNativeSources(api: any, deps: Dependencies) {
     const id = text(input.id, 'source', 100);
     auditIdentity(c.env.DB,{source:{kind:"source",id}});
     setAuditSubject(c.env.DB,"source",id);
-    if (id.startsWith('intake:')) fail('This source namespace is reserved for compatible integrations');
+    if (id.startsWith('intake:')||id.startsWith('email:')) fail('This source namespace is reserved for compatible integrations');
     const key = text(input.key, 'source key', 200);
     if (key.length < 32) fail('Source key needs at least 32 characters');
     const state = await currentAdmin(c, deps);

@@ -14,7 +14,7 @@ const date = (v:unknown) => typeof v==='string' && /(?:Z|[+-]\d{2}:\d{2})$/i.tes
 function fields(v:any,keys:string[],optional:string[]=[]) {
   if(!v||typeof v!=='object'||Array.isArray(v)||keys.some(k=>!Object.hasOwn(v,k))||Object.keys(v).some(k=>!keys.includes(k)&&!optional.includes(k)))fail('Invalid compatible intake archive fields');
 }
-export function pauseIntakeSources(state:State) {for(const source of state.intakeSources??[])source.active=false;return state;}
+export function pauseIntakeSources(state:State) {for(const address of state.emailAddresses??[])address.active=false;for(const source of state.intakeSources??[])source.active=false;return state;}
 export function validateIntakeArchive(state:State) {
   for(const key of ['intakeSources','intakeReceipts'] as const) {
     const records=state[key];

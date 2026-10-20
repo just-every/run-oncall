@@ -1,3 +1,4 @@
+import { EmailWorkspace } from '../email/EmailWorkspace';
 import { MonitoringWorkspace } from '../monitoring/MonitoringWorkspace';
 import { UrgencyPolicy } from '../urgency/UrgencyPolicy';
 import { CompatibleIngress } from '../intake/CompatibleIngress';
@@ -696,6 +697,7 @@ function Workspace() {
               const created = await command(data);
               if (created) { selectIncident(created.id); location.hash = "incidents"; }
             }} />
+            <EmailWorkspace state={s} admin={admin} busy={w.busy} run={w.run} />
             <CompatibleIngress state={s} admin={admin} busy={w.busy} run={w.run} />
             <MonitoringWorkspace state={s} admin={admin} busy={w.busy} run={w.run} />
             <MonitoringIngress admin={admin} services={s.services} busy={w.busy} run={w.run} />

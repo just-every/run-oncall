@@ -9,7 +9,7 @@ import { demoSockets } from './src/modules/demo/vite.mjs'
 // Only `vite dev` loads the local-only entry and the checkout's dev key; a build
 // keeps src/server.ts and never sees either (rer build checks its output).
 const local = (name: string) => process.env[name] ? { [name]: process.env[name] } : {}
-const serve = { main: './src/server.dev.ts', vars: { ...local('RER_DEV_ORIGIN'), ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY'), ...local('RER_DEMO'), ...local('RER_DEMO_EXPIRES') } }
+const serve = { main: './src/server.dev.ts', vars: { ...local('INBOUND_EMAIL_DOMAIN'), ...local('RER_DEV_ORIGIN'), ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY'), ...local('RER_DEMO'), ...local('RER_DEMO_EXPIRES') } }
 
 // `vite dev` serves only the folders the app is built from (and what they
 // import), never the rest of the checkout: not rer's private folders (the dev

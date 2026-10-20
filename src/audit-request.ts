@@ -19,7 +19,7 @@ function route(path: string): { feature: string; kind: string } {
   if (path === '/api/audit/export') return { feature: 'audit', kind: 'audit.export' }
   if (path.startsWith('/api/operator/import/')) return { feature: 'import-door', kind: importKind(path) }
   if (path.startsWith('/api/rer/import/')) return { feature: 'import-door', kind: importKind(path) }
-  const prefixes = ['identity-link','command','members','password','sources','paging','schedules','delivery','triage','handoffs','routing','urgency','changes','intake','monitoring','move-in','restore','recovery','setup','login','logout']
+  const prefixes = ['identity-link','command','members','password','sources','paging','schedules','delivery','triage','handoffs','routing','urgency','changes','intake','monitoring','email','move-in','restore','recovery','setup','login','logout']
   const feature = prefixes.find(value => path === `/api/${value}` || path.startsWith(`/api/${value}/`))
     ?? (path.startsWith('/auth/') || path.startsWith('/__dev/') ? 'access' : path.startsWith('/api/ingress/') || path.startsWith('/v2/') || path.startsWith('/integrations/') || path.startsWith('/generic/') ? 'ingest' : 'workspace')
   const operation = path.split('/').at(-1) ?? ''
@@ -38,7 +38,8 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
     const status = response.status
     // Successful write batches already carry their own entries. A refusal with no
     // state write, including paging OFF, still survives as an attributed attempt.
-    if (context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
+    const zeroWriteReplay = response.ok && /^\/api\/email\/addresses\/[^/]+\/preview$/.test(path);
+    if (!zeroWriteReplay && context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
       await audit.record(context.outcome ?? (status >= 500 ? 'failed' : status >= 400 ? 'refused' : 'accepted'))
     return response
   } catch {
