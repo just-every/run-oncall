@@ -1,4 +1,4 @@
-import { auditIdentity } from '../audit-store'
+import { auditIdentity, auditOutcome } from '../audit-store'
 import { authority, fail, text } from '../family/response-operations/domain.ts';
 import { incompleteRouting } from '../monitoring/incomplete.ts';
 import { receiveMonitoring } from '../monitoring/admission.ts';
@@ -18,7 +18,9 @@ export function installRoutingOperations(api:any,deps:RoutingDependencies) {
     if(!Number.isSafeInteger(input.baseVersion)||input.baseVersion<1)fail('A valid draft base version is required');
     if(input.baseVersion!==current.version) {
       state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-publish-refused',text:`Refused stale publish for ${source.id}: base ${input.baseVersion}; current ${current.version}`});
-      await routingSave(c,deps,state);fail('Routing base version is stale; reload and replay before publishing',409);
+      auditOutcome(c.env.DB,'refused');
+      try { await routingSave(c,deps,state); } finally { auditOutcome(c.env.DB); }
+      fail('Routing base version is stale; reload and replay before publishing',409);
     }
     if(source.routing.versions.length>=10000)fail('Routing version capacity reached; export before extending capacity',429);
     const version={version:current.version+1,...routingRules(source.routing.scope,input.rules,input.catchAll),publishedBy:actor.id,publishedAt:at};

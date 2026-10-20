@@ -325,8 +325,6 @@ api.post("/api/logout", async (c) => {
 });
 api.post("/api/ingress/:source", async (c) => {
   const raw = await c.req.text();
-  if (new TextEncoder().encode(raw).length > 65536)
-    fail("Request too large", 413);
   const source = await c.env.DB.prepare(
     "SELECT digest,signing_secret,signing_custody,scopes FROM sources WHERE id=?",
   )
@@ -334,6 +332,7 @@ api.post("/api/ingress/:source", async (c) => {
     .first<NativeSource>();
   if (!source) fail("Invalid source credential", 401);
   const key = await presentedSourceKey(c, source, raw);
+  if (new TextEncoder().encode(raw).length > 65536) fail("Request too large", 413);
   let input: any;
   try {
     input = JSON.parse(raw);

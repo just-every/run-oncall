@@ -1,3 +1,4 @@
+import { auditPrincipal } from './audit-principal'
 import { auditedDatabase } from './audit-database'
 import { auditKind, setAuditSubject, type AuditContext } from './audit-store'
 import type { Bindings } from './auth.server'
@@ -32,12 +33,13 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
   if(subject) context.subject={kind:'entity',id:decodeURIComponent(subject[1])}
   const audit = auditedDatabase(env.DB, context)
   try {
+    Object.assign(context,await auditPrincipal(request,env));
     const response = await handle({ ...env, DB: audit.db })
     const status = response.status
     // Successful write batches already carry their own entries. A refusal with no
     // state write, including paging OFF, still survives as an attributed attempt.
-    if (context.actor && (status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
-      await audit.record(status >= 500 ? 'failed' : status >= 400 ? 'refused' : 'accepted')
+    if (context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
+      await audit.record(context.outcome ?? (status >= 500 ? 'failed' : status >= 400 ? 'refused' : 'accepted'))
     return response
   } catch {
     // Never turn a failed audit commit into an apparently accepted state change.

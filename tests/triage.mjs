@@ -27,11 +27,15 @@ try {
   assert.equal(ok(await req('/api/triage/views')).views[0].id, view.id);
   // One selected revision becomes stale while the remaining 49 stay valid.
   ok(await req('/api/command', {type: 'note', incident: incidents[0].id, revision: 1, text: 'Confirmed elevated database latency'}));
+  const auditBefore=ok(await req('/api/audit/export')).rows,priorAuditIds=new Set(auditBefore.map(row=>row.id));
   const bulk = {operationId: 'storm-ack', action: 'acknowledge', reason: 'Payments response started', items: incidents.map(i => ({id: i.id, revision: i.revision}))};
   const result = ok(await req('/api/triage/bulk', bulk));
   assert.equal(result.results.filter(r => r.ok).length, 49);
   assert.ok(continuations > 0, 'one logical storm operation continues across bounded invocations');
   assert.match(result.results.find(r => r.id === incidents[0].id).error, /changed/i);
+  const bulkAudit=ok(await req('/api/audit/export')).rows.filter(row=>!priorAuditIds.has(row.id)&&row.kind==='triage.acknowledge');
+  assert.equal(bulkAudit.filter(row=>row.outcome==='accepted'&&row.workspaceAfter>row.workspaceBefore).length,50,'the reservation and 49 successful items commit their audit with state');
+  assert.equal(bulkAudit.filter(row=>row.outcome==='refused').length,1,'the stale item retains its own attributed refusal');
   assert.deepEqual(ok(await req('/api/triage/bulk', bulk)), result, 'same operation replays its original per-item outcomes');
   ok(await req('/api/triage/bulk', {...bulk, reason: 'different content'}), 409);
   const state = ok(await req('/api/state'));
@@ -59,8 +63,10 @@ try {
   assert.equal(ok(await req('/api/state')).incidents.find(i => i.id === target.id).state, 'resolved');
   const viewer = ok(await req('/api/members', {name: 'Storm observer', role: 'viewer', password: 'synthetic-observer-testing-password'}), 201);
   const viewerCookie = (await w.request('/api/login', {name: viewer.name, password: 'synthetic-observer-testing-password'})).cookie;
+  const beforeViewerAudit=new Set(ok(await req('/api/audit/export')).rows.map(row=>row.id));
   const denied = ok(await w.request('/api/triage/bulk', {...bulk, operationId: 'viewer-ack'}, viewerCookie));
   assert.equal(denied.results.length, 50); assert.ok(denied.results.every(r => !r.ok));
+  assert.ok(ok(await req('/api/audit/export')).rows.some(row=>!beforeViewerAudit.has(row.id)&&row.kind==='triage.acknowledge'&&row.outcome==='refused'&&row.beforeRevision===row.afterRevision),'a viewer bulk refusal is audited despite its HTTP 200 per-item receipt');
   assert.equal(ok(await w.request('/api/triage/views', undefined, viewerCookie)).views.length, 0);
   assert.ok(!(ok(await w.request('/api/workspace', undefined, viewerCookie)).state.triage ?? []).some(r => r.kind === 'view'), 'private bootstrap does not expose another person’s saved views');
   page = ok(await req('/api/triage?status=declared'));
@@ -93,5 +99,5 @@ try {
   await w.stop(); await w.start();
   const login = await w.request('/api/login', {name: 'Storm commander', password: 'synthetic-storm-testing-password'}); ok(login);
   assert.deepEqual(ok(await w.request('/api/state', undefined, login.cookie)).triage, archive.triage, 'durable receipts survive restart');
-  console.log('Triage storm: 50 incidents, 49 independent commits plus stale failure, replay, roles, queries, viewer denial, confirmed matching and archive/restart passed');
+  console.log('OC-041 triage accepted and refused items retain their own atomic audit outcomes; triage storm: 50 incidents, 49 independent commits plus stale failure, replay, roles, queries, viewer denial, confirmed matching and archive/restart passed');
 } finally {await w.close();}

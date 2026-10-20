@@ -11,9 +11,8 @@ type Credential = {source:string; key_digest:string; ciphertext:string};
 export function installChangeIntake(api:any, deps:Dependencies) {
   const receive = async (c:any, compatible=false) => {
     const raw = await c.req.text(), maximum = compatible ? 512*1024 : 2*1024*1024;
-    if (new TextEncoder().encode(raw).length > maximum) fail('Change request too large',413);
-    let payload:any; try {payload=JSON.parse(raw);} catch {return fail('Invalid JSON');}
-    if(!payload||typeof payload!=='object'||Array.isArray(payload))fail('Change must be a JSON object');
+    const parse=()=>{let value:any;try {value=JSON.parse(raw);}catch{return fail('Invalid JSON');}if(!value||typeof value!=='object'||Array.isArray(value))fail('Change must be a JSON object');return value;};
+    let payload:any=compatible?parse():undefined;
     let credential:Credential|null;
     if (compatible) credential=await c.env.DB.prepare('SELECT source,key_digest,ciphertext FROM oc_change_credentials WHERE key_digest=?').bind(await changeHash(text(payload.routing_key,'routing_key',200))).first();
     else credential=await c.env.DB.prepare('SELECT source,key_digest,ciphertext FROM oc_change_credentials WHERE source=?').bind(c.req.param('source')).first();
@@ -40,6 +39,8 @@ export function installChangeIntake(api:any, deps:Dependencies) {
       }
     }
     auditIdentity(c.env.DB,{actor:{kind:'change-source',id:source.id},source:{kind:'change-source',id:source.id}});
+    if (new TextEncoder().encode(raw).length > maximum) fail('Change request too large',413);
+    payload??=parse();
     const input=await providerChange(source,payload,headers,verificationKey);
     if (!input) return c.json({ignored:true,reason:'This signed event does not describe a supported change'},200);
     const fingerprint=await changeHash(JSON.stringify(input)), existing=state.changes?.find(change=>change.source===source.id&&change.eventId===input.eventId);

@@ -1,3 +1,4 @@
+import { auditKind, auditOutcome } from './audit-store'
 import { authority, command, fail, Fault, text, type Member, type State } from './family/response-operations/domain';
 import { matchingIncidents, triagePage, triageQuery, type BulkOperation, type BulkResult, type SavedView } from './family/response-operations/triage';
 
@@ -44,6 +45,7 @@ export function installTriage(api: any, deps: Dependencies) {
     const input = await deps.body(c, 256 * 1024);
     const id = text(input.operationId, 'Operation ID', 100);
     if (!['acknowledge', 'resolve', 'reassign', 'set-priority', 'set-urgency'].includes(input.action)) fail('Unsupported bulk action');
+    auditKind(c.env.DB, `triage.${input.action}`);
     if (!Array.isArray(input.items) || !input.items.length || input.items.length > (input.allMatching ? 1000 : 500)) fail('Choose 1–500 incidents, or confirm up to 1,000 matching incidents');
     const items = input.items.map((i: any) => ({id: text(i?.id, 'Incident ID', 100), revision: i?.revision}));
     if (new Set(items.map((i: any) => i.id)).size !== items.length || items.some((i: any) => !Number.isSafeInteger(i.revision) || i.revision < 1)) fail('Each selected incident needs one revision');
@@ -54,6 +56,7 @@ export function installTriage(api: any, deps: Dependencies) {
     let operation = (initial.triage ?? []).find(r => r.id === id);
     if (operation && (operation.kind !== 'bulk' || operation.actor !== actor.id || operation.fingerprint !== fingerprint)) fail('Operation ID conflicts with different content or actor', 409);
     if (initial.members.find(m => m.id === actor.id)?.role === 'viewer') {
+      auditOutcome(c.env.DB,'refused');
       const committed = operation?.kind === 'bulk' ? operation.results : [];
       return c.json({operationId: id, results: items.map((i: any) => committed.find(r => r.id === i.id) ?? {id: i.id, ok: false, error: 'Insufficient role'}), remaining: operation ? items.length - committed.length : 0, interrupted: true});
     }
@@ -100,6 +103,7 @@ export function installTriage(api: any, deps: Dependencies) {
           completed.set(item.id, result);
         }
       } catch (error) {
+        auditOutcome(c.env.DB,error instanceof Fault && error.status < 500 ? 'refused' : 'uncertain');
         interrupted = true;
         result = {id: item.id, ok: false, error: error instanceof Fault ? error.message : 'Storage failure; outcome unconfirmed. Replay this operation to inspect committed results.'};
       }

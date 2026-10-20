@@ -461,6 +461,7 @@ try {
   };
   // OC-008: refused native intake and commands retain no raw body or partial records.
   const beforeRefusedInput = ok(await request("/api/archive", undefined, cookie));
+  const beforeRefusalAudit = new Set((await auditExport(cookie)).rows.map(row => row.id));
   const oversizedEvent = { ...event, eventId: "over-limit", discarded: "" };
   const paddingBytes = 65537 - Buffer.byteLength(JSON.stringify(oversizedEvent));
   oversizedEvent.discarded = "é".repeat(Math.floor(paddingBytes / 2)) + "x".repeat(paddingBytes % 2);
@@ -472,6 +473,10 @@ try {
   assert.match(malformedInput.error, /invalid json/i);
   ok(await request("/api/ingress/monitor", { source: "monitor" }, "", { authorization: "Bearer " + key }), 400);
   ok(await rawRequest("/api/command", oversizedBody, cookie), 413);
+  ok(await rawRequest("/api/command", JSON.stringify({type:"note",padding:"x".repeat(7*1024*1024)}), cookie), 413);
+  const refusedInputAudit=(await auditExport(cookie)).rows.filter(row=>!beforeRefusalAudit.has(row.id)&&row.outcome==="refused");
+  assert.ok(refusedInputAudit.length>=5,"authenticated malformed and oversized requests, including the outer transport refusal, retain audit outcomes");
+  for(const row of refusedInputAudit)assert.deepEqual([row.workspaceBefore,row.beforeRevision],[row.workspaceAfter,row.afterRevision],"refused input changes no state or mutation revision");
   assert.deepEqual(ok(await request("/api/archive", undefined, cookie)), beforeRefusedInput,
     "OC-008: oversized, malformed and incomplete structured input changes no durable records");
   ok(await request("/api/ingress/monitor", event), 401);
