@@ -1,3 +1,4 @@
+import { auditIdentity } from './audit-store'
 import { createOwnerClaimHandler } from './modules/owner-claim/index.mjs'
 import { firstRunResponse } from './base/setup'
 import { admitted } from './base/setup-state'
@@ -97,6 +98,11 @@ export async function authResponse(request: Request, original: Bindings): Promis
   }
  }
  if (url.pathname.startsWith('/auth/')) {
+  const actor=await operatorAuth(env).getSession(request)
+  if(actor) {
+   const mapped=await env.DB.prepare('SELECT member_id FROM operator_members WHERE operator_id=?').bind(actor.operator.id).first<{member_id:string}>()
+   auditIdentity(env.DB,{actor:{kind:'member',id:mapped?.member_id??actor.operator.id}})
+  }
   const settings=await importSettingsResponse(request,env)
   if(settings)return rejectedResponse(request,settings)
   let response = await createAuthHandler(operatorAuth(env))(request)

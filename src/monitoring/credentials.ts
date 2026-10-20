@@ -1,3 +1,4 @@
+import { auditIdentity } from '../audit-store'
 import { fail, type State } from '../family/response-operations/domain.ts';
 import { intakeHash } from '../intake/credentials.ts';
 import type { IntakeSource } from '../intake/model.ts';
@@ -18,6 +19,7 @@ export async function intakeCredential(c:any,deps:IntakeDependencies,key:unknown
     await rejectIntake(c,deps,state,known??source,provider,'Invalid, revoked or wrong-provider credential');
     fail('Invalid integration credential',401);
   }
+  auditIdentity(c.env.DB,{actor:{kind:'intake-source',id:source.id},source:{kind:'intake-source',id:source.id}});
   return {state,source,digest,key:key as string};
 }
 export const credentialGuard=(source:IntakeSource,digest:string)=>({sql:'EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=?)',values:[source.id,digest]});

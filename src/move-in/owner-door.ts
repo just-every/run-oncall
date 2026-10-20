@@ -1,3 +1,4 @@
+import { auditIdentity } from '../audit-store'
 import { createImportOperatorHandler } from '../modules/import-kit/src/door/operator'
 import { loadSnapshot, planRow, sql, transact } from '../modules/import-kit/src/door/store'
 import { bundleBytes, uploadRow } from '../modules/import-kit/src/door/uploads'
@@ -12,6 +13,7 @@ import { targets } from './target'
 import { fileSource, type Vendor } from './source'
 import { mapping } from './mapping'
 import { alreadyImported, changedSinceImport, duplicateTargets, Refusal, supersededBy } from './refusals'
+import { expireInterruptedImports, importAttempt } from './import-lifecycle'
 
 // The owner's move-in screen imports through Base's owner-session door, the
 // same pipeline and allow-list as Business: upload → plan → reviewed
@@ -102,16 +104,26 @@ const ownJob = async (db: D1Database, planId: string, vendor: string, principal:
 
 /** POST /api/operator/import/{uploads,plan,apply,status,reconcile,undo} with X-Import-Source naming a listed vendor. */
 export async function ownerImport(c: any): Promise<Response> {
- const request: Request = c.req.raw, actor: Member = c.get('actor'), db: D1Database = c.env.DB
+ const request: Request = c.req.raw, actor: Member = c.get('actor'), base: D1Database = c.env.DB
  const vendor = request.headers.get('X-Import-Source') ?? '', source = importSource(vendor)
  if (!source) return answer({ error: 'unknown_import_source' }, 400)
  if (actor.role !== 'admin') return answer({ error: 'Current admin required' }, 403)
+ auditIdentity(base,{source:{kind:'import-source',id:vendor}})
+ await expireInterruptedImports(base)
+ const action = new URL(request.url).pathname.slice(PREFIX.length), input = await body(request)
+ if(typeof input?.planId==='string')auditIdentity(base,{subject:{kind:'import-plan',id:input.planId}})
+ const attempt = action === 'apply' && typeof input?.planId === 'string' ? importAttempt(base, { planId: input.planId }) : undefined
+ const db = (attempt?.database ?? base) as D1Database
  const session = adminSession(c.get('sessionDigest'), actor.id)
  const door = createImportOperatorHandler({ database: db, targets, destination: 'oncall', format: 'json', limits: DOOR_LIMITS, ownerPrincipalId: actor.id,
   installationId: IMPORT_DOOR_KEY, appOrigin: runtimeBindings(c.env).AUTH_ORIGIN, ownerEmail: await approver(db, actor), namespace: vendor,
   authorize: async () => session, ...source })
- const send = async (sent: Request) => (await door(sent)) ?? answer({ error: 'not_found' }, 404)
- const action = new URL(request.url).pathname.slice(PREFIX.length), input = await body(request), read = reader(db, vendor as Vendor, actor.id)
+ const send = async (sent: Request) => {
+  const response = (await door(sent)) ?? answer({ error: 'not_found' }, 404)
+  await attempt?.finish(response.ok)
+  return response
+ }
+ const read = reader(db, vendor as Vendor, actor.id)
  if (action === 'plan') {
   // Every refusal this preview names takes the file with it.
   const refuse = async (fault: Fault) => { await withdrawUpload(db, session, vendor, input?.uploadId); return refusal(fault) }

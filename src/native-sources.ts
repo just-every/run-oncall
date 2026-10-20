@@ -1,3 +1,4 @@
+import { auditIdentity, setAuditSubject } from './audit-store'
 import { fail, text, type State } from './family/response-operations/domain';
 import { changeHash, changeHmac, equalSignature, freshTimestamp, openCredential, sealCredential, sourceCustody } from './changes/credentials';
 import { runtimeBindings } from './auth.server';
@@ -27,12 +28,14 @@ export async function presentedSourceKey(c: any, source: NativeSource, raw: stri
   if (source.signing_custody === null) {
     const bearer = c.req.header('authorization')?.replace(/^Bearer /, '') ?? '';
     if (!bearer || !equalSignature(await changeHash(bearer), source.digest)) fail('Invalid source credential', 401);
+    auditIdentity(c.env.DB,{actor:{kind:"source",id:c.req.param("source")},source:{kind:"source",id:c.req.param("source")}});
     return bearer;
   }
   const timestamp = c.req.header('x-oncall-timestamp') ?? '';
   freshTimestamp(timestamp);
   const key = await openCredential(source.signing_custody, runtimeBindings(c.env).SESSION_SECRET, sourceCustody);
   if (!equalSignature(c.req.header('x-oncall-signature') ?? '', await changeHmac(key, timestamp + '.' + raw))) fail('Invalid source signature', 401);
+  auditIdentity(c.env.DB,{actor:{kind:"source",id:c.req.param("source")},source:{kind:"source",id:c.req.param("source")}});
   return key;
 }
 
@@ -62,6 +65,8 @@ export function installNativeSources(api: any, deps: Dependencies) {
     if (c.get('actor').role !== 'admin') fail('Admin required', 403);
     const input = await deps.body(c);
     const id = text(input.id, 'source', 100);
+    auditIdentity(c.env.DB,{source:{kind:"source",id}});
+    setAuditSubject(c.env.DB,"source",id);
     if (id.startsWith('intake:')) fail('This source namespace is reserved for compatible integrations');
     const key = text(input.key, 'source key', 200);
     if (key.length < 32) fail('Source key needs at least 32 characters');
@@ -80,6 +85,8 @@ export function installNativeSources(api: any, deps: Dependencies) {
   });
   api.post('/api/sources/:source/revoke', async (c: any) => {
     const state = await currentAdmin(c, deps), id = c.req.param('source');
+    auditIdentity(c.env.DB,{source:{kind:'source',id}});
+    setAuditSubject(c.env.DB,'source',id);
     await deps.body(c);
     if (!await c.env.DB.prepare('SELECT 1 FROM sources WHERE id=?').bind(id).first()) fail('Unknown source', 404);
     const authority = deps.guard(c);

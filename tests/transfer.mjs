@@ -73,6 +73,7 @@ try{
  const source=await readFile('tests/fixtures/opsgenie.json','utf8'),door=ownerDoor(m,cookie),preview=ok(await door.preview('opsgenie',source)),job=ok(await door.apply('opsgenie',preview)).job;assert.equal(job.state,'completed')
  const at=Date.parse('2026-10-11T09:00:00Z'),pending={id:'held-pending',incident:incident.id,service:'transfer',revision:1,status:'pending',nextDue:at,createdAt:at,lastEvaluatedAt:at,currentStep:0,policy:{service:'transfer',scheduleId:'transfer',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at,actor:null,reason:null,attempt:null}]}
  sql("INSERT INTO paging_jobs VALUES('held-pending','"+incident.id+"','transfer',1,'pending',"+at+",'fixture','"+JSON.stringify(pending).replaceAll("'","''")+"')")
+ const permanentAudit=ok(await req('/api/audit/export')).rows
  const prior=ok(await req('/api/state')),objects=ok(await req('/api/move-in/objects'))
  const importTables=sql("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'ik_*' OR name GLOB 'move_in_*') ORDER BY name").map(r=>r.name)
  const importRows=()=>Object.fromEntries(statements(importTables.map(table=>'SELECT * FROM '+table).join(';')).map((rows,index)=>[importTables[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
@@ -80,7 +81,8 @@ try{
  await m.close();await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
- for(const secret of [sourceKey,sourceCustody])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
+ assert.ok(!exportedArchive.includes('oc_audit_identities'),'revocable identity associations never travel in archives')
+ for(const secret of [sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
  await m.command(['import','--input',archive,'--yes','--non-interactive'],4)
  const serviceRow=sql("SELECT data FROM oc_services WHERE id='transfer'")[0].data
  sql("UPDATE oc_services SET data='{\"id\":\"transfer\"}' WHERE id='transfer'");await m.command(['export','--output',invalidRecords,'--non-interactive']);sql("UPDATE oc_services SET data='"+serviceRow.replaceAll("'","''")+"' WHERE id='transfer'")
@@ -114,6 +116,8 @@ try{
  assert.deepEqual(ok(await req('/api/move-in/objects')),objects,'paused import data restored with revisions')
  assert.equal(ok(await req('/api/move-in/jobs?vendor=opsgenie')).some(j=>j.id===job.id),true,'durable journal restored')
  const handoff=ok(await req('/api/handoffs/archive-copy'));assert.equal(handoff.record.held,true);assert.deepEqual(handoff.record.payload,record.payload);assert.equal((await req('/api/handoffs/archive-copy/export')).status,409,'restored approval cannot export until reviewed again')
+ const restoredAudit=new Map(ok(await req('/api/audit/export')).rows.map(row=>[row.id,row]))
+ for(const row of permanentAudit)assert.deepEqual(restoredAudit.get(row.id),row,'OC-041 portable restore retains every permanent audit row unchanged')
  const restoredImports=importRows()
  for(const table of importTables)assert.deepEqual(restoredImports[table],table==='ik_door_settings'?importHistory[table].map(row=>({...row,enabled:0})):importHistory[table],table+' retains every import/provenance/plan/approval field')
  await business.assertInactive(cookie,oldCookie,sql)
@@ -124,7 +128,11 @@ try{
  const erase=email=>req('/api/move-in/erase',{email,confirmation:'erase '+email})
  assert.equal((await m.request('/api/move-in/erase',{email:'alice@example.test',confirmation:'erase alice@example.test'})).status,401)
  assert.equal((await erase('nobody@example.test')).status,404)
+ const auditBeforeErasure=ok(await req('/api/audit/export')).rows
  const erased=ok(await erase('alice@example.test'));assert.ok(erased.receiptId)
+ const safeAudit=ok(await req('/api/audit/export')).rows,auditById=new Map(safeAudit.map(row=>[row.id,row]))
+ for(const row of auditBeforeErasure)assert.deepEqual(auditById.get(row.id),row,'subject erasure never rewrites permanent audit chronology')
+ for(const secret of ['alice@example.test',sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey])assert.ok(!JSON.stringify(safeAudit).includes(secret),'protected audit export holds no erased identity or secret')
  assert.equal((await erase('alice@example.test')).status,404,'repeating an erasure changes nothing')
  await m.close();await m.command(['export','--output',later,'--non-interactive']);await m.command(['reset','--yes','--non-interactive'])
  await m.command(['import','--input',archive,'--journal',later,'--yes','--non-interactive'],4)
@@ -133,5 +141,5 @@ try{
  assert.equal(sql("SELECT COUNT(*) AS n FROM move_in_objects WHERE id='alice@example.test'")[0].n,0)
  assert.equal(sql("SELECT COUNT(*) AS n FROM ik_jobs WHERE plan_json LIKE '%alice@example.test%'")[0].n,0)
  await m.command(['reset','--yes','--non-interactive'])
- console.log('OC-052 all current durable categories restore inactive without authority or replay: nonempty refusal, invalid-input rollback, full relational/history/journal restore, credential exclusion, paused timer, explicit new-owner mapping and held approval')
+ console.log('OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; OC-052 all current durable categories restore inactive without authority or replay: nonempty refusal, invalid-input rollback, full relational/history/journal restore, credential exclusion, paused timer, explicit new-owner mapping and held approval')
 }finally{await m.close();await rm(answers,{force:true});await rm(archive,{force:true});await rm(corrupt,{force:true});await rm(invalidRecords,{force:true});await rm(later,{force:true})}

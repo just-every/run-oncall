@@ -11,18 +11,28 @@ const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'
 try {
  const initial=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'}),admin=ok(initial).member,cookie=initial.cookie
  const req=(path,input)=>w.request(path,input,cookie),record=s=>{checks.push(s);console.log(s)}
+ // OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets.
+ const auditExport=async()=>{const exported=ok(await req('/api/audit/export'));assert.equal(exported.schemaVersion,1);assert.ok(Array.isArray(exported.rows));return exported.rows}
+ const auditedSchedule=async perform=>{
+  const workspaceBefore=ok(await req('/api/state')),pagingBefore=ok(await req('/api/paging/state')),prior=await auditExport(),ids=new Set(prior.map(row=>row.id))
+  const response=await perform(),workspaceAfter=ok(await req('/api/state')),pagingAfter=ok(await req('/api/paging/state'))
+  const added=(await auditExport()).filter(row=>!ids.has(row.id))
+  assert.ok(added.some(row=>row.outcome==='accepted'&&row.kind!=='audit.export'&&row.workspaceBefore===workspaceBefore.revision&&row.workspaceAfter===workspaceAfter.revision&&row.pagingBefore===pagingBefore.revision&&row.pagingAfter===pagingAfter.revision),
+   'the accepted schedule mutation and its audit entry commit the same workspace and paging revisions')
+  return response
+ }
  // The move-in screen's transport: the owner-session import door.
  const door=ownerDoor(w,cookie)
  const a=ok(await req('/api/members',{name:'Alice',password:'synthetic-local-testing-password',role:'responder'}),201),b=ok(await req('/api/members',{name:'Bob',password:'synthetic-local-testing-password',role:'responder'}),201),viewer=ok(await req('/api/members',{name:'Viewer',password:'synthetic-local-testing-password',role:'viewer'}),201)
  ok(await req('/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:admin.id,runbook:['Verify recovery'],pager:'https://pager.example.test'}))
  const schedule={id:'daily',name:'Daily hand-off',service:'checkout',revision:0,timezone:'America/New_York',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[a.id,b.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[b.id,a.id],ambiguity:'earlier'},overrides:[]}
- const saved=ok(await req('/api/paging/schedules',schedule))
+ const saved=ok(await auditedSchedule(()=>req('/api/paging/schedules',schedule)))
  const before=ok(await req('/api/schedules/daily/now-next?at=2026-03-08T12:59:59Z'))
  assert.equal(before.now.primary,a.id);assert.equal(before.next.primary.primary,b.id)
  assert.equal(before.now.windows[0].end,'2026-03-08T13:00:00.000Z')
  assert.equal(ok(await req('/api/schedules/daily/now-next?at=2026-03-08T13:00:00Z')).now.primary,b.id)
  const override={id:'cover',role:'primary',start:'2026-03-08T13:00:00.000Z',end:'2026-03-08T15:00:00.000Z',member:a.id}
- const changed=ok(await req('/api/schedules/daily/overrides',{revision:saved.revision,override}))
+ const changed=ok(await auditedSchedule(()=>req('/api/schedules/daily/overrides',{revision:saved.revision,override})))
  assert.equal(ok(await req('/api/schedules/daily/now-next?at=2026-03-08T13:00:00Z')).now.primary,a.id)
  assert.equal(ok(await req('/api/schedules/daily/now-next?at=2026-03-08T15:00:00Z')).now.primary,b.id)
  ok(await req('/api/schedules/daily/overrides',{revision:changed.revision,override:{...override,id:'overlap'}}),400)
@@ -33,10 +43,18 @@ try {
  ok(await req('/api/command',{type:'member',id:b.id,active:true,role:'responder'}))
  ok(await req('/api/paging/policies',{service:'checkout',scheduleId:'daily',revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}))
  record('OC-011/014/020: calendar-day DST hand-off, overrides, now/next, protected ICS and escalation data passed')
- for(const path of ['/api/delivery','/api/paging/jobs','/api/paging/tick','/api/paging/callbacks','/api/paging/jobs/old/resume'])ok(await req(path,{}),409)
+ const refusedPagingBefore=ok(await req('/api/paging/state')),refusedWorkspaceBefore=ok(await req('/api/state')),beforeRefusedPaging=await auditExport(),priorPagingAuditIds=new Set(beforeRefusedPaging.map(row=>row.id))
+ const pagingDoors=['/api/delivery','/api/paging/jobs','/api/paging/tick','/api/paging/callbacks','/api/paging/jobs/old/resume']
+ for(const path of pagingDoors)ok(await req(path,{}),409)
+ assert.deepEqual(ok(await req('/api/paging/state')),refusedPagingBefore,'delivery refusals leave complete paging state unchanged')
+ assert.deepEqual(ok(await req('/api/state')),refusedWorkspaceBefore,'delivery refusals leave complete workspace state unchanged')
+ const pagingRefusals=(await auditExport()).filter(row=>!priorPagingAuditIds.has(row.id)&&row.outcome==='refused')
+ assert.ok(pagingRefusals.length>=pagingDoors.length,'every refused paging door leaves an attributable refusal entry')
+ for(const row of pagingRefusals)assert.deepEqual([row.beforeRevision,row.workspaceBefore,row.pagingBefore,row.handoffBefore],[row.afterRevision,row.workspaceAfter,row.pagingAfter,row.handoffAfter],'a paging refusal advances no state or mutation revision')
  assert.equal(w.sql('SELECT COUNT(*) AS n FROM paging_receipts')[0].n,0)
- record('OC-012/013: every delivery/timer door refused and no receipt was created')
+ record('OC-012/013/041: every delivery/timer door refused, its audit retained unchanged revisions and no receipt was created')
  const reader=await w.request('/api/login',{name:'Viewer',password:'synthetic-local-testing-password'});ok(reader)
+ ok(await w.request('/api/audit/export',undefined,reader.cookie),403)
  const sources={}
  const atomicSource=await readFile('tests/fixtures/opsgenie.json','utf8'),atomicPreview=ok(await door.preview('opsgenie',atomicSource))
  w.sql("CREATE TRIGGER injected_import_failure BEFORE INSERT ON move_in_objects WHEN NEW.kind='schedule' BEGIN SELECT RAISE(ABORT,'INJECTED_NATIVE_FAILURE'); END")
@@ -53,6 +71,30 @@ try {
  assert.equal(ok(await door.apply('opsgenie',replanned)).job.state,'completed')
  assert.equal(ok(await door.undo('opsgenie',replanned.planId)).job.state,'undone')
  record('OC-022: injected native SQL failure rolled back the complete batch and journal; the failed apply stayed refused and an authorized new preview of the same file applied and undid it')
+ // A lost response after one accepted bounded batch is not permission to retry the remaining records.
+ const interruptedSource=JSON.stringify({users:{data:Array.from({length:25},(_,index)=>({id:'interrupted-'+index,username:`interrupted-${index}@example.test`,fullName:'Interrupted import person '+index}))}})
+ const interruptedPreview=ok(await door.preview('opsgenie',interruptedSource)),interruptionAuditBefore=await auditExport(),priorInterruptionIds=new Set(interruptionAuditBefore.map(row=>row.id))
+ w.sql("CREATE TRIGGER injected_import_exit BEFORE UPDATE OF state ON oc_import_lifecycle WHEN NEW.state='idle' AND OLD.state='active' BEGIN SELECT RAISE(ABORT,'INJECTED_WORKER_EXIT_AFTER_COMMIT'); END")
+ ok(await door.call('opsgenie','apply',{planId:interruptedPreview.planId,reviewedFingerprint:interruptedPreview.fingerprint}),503)
+ w.sql('DROP TRIGGER injected_import_exit')
+ const partialImport=ok(await req('/api/move-in/objects'))
+ assert.ok(partialImport.length>0&&partialImport.length<25,'one bounded batch committed before the response was lost; the remaining people were not applied')
+ w.sql(`UPDATE oc_import_lifecycle SET lease_expires=0 WHERE plan_id='${interruptedPreview.planId}'`)
+ const expired=ok(await door.call('opsgenie','status',{planId:interruptedPreview.planId}))
+ assert.equal(expired.job.state,'failed');assert.equal(expired.failureCode,'import_interrupted_lease')
+ assert.deepEqual(ok(await req('/api/move-in/objects')),partialImport,'publishing interruption keeps the accepted partial state and imports nobody else')
+ const interruptionAudit=(await auditExport()).filter(row=>!priorInterruptionIds.has(row.id)&&row.outcome==='interrupted')
+ assert.ok(interruptionAudit.length>0,'the expired accepted attempt publishes a durable interrupted audit outcome')
+ await w.stop();await w.start()
+ const durableInterruption=ok(await door.call('opsgenie','status',{planId:interruptedPreview.planId}))
+ assert.equal(durableInterruption.job.state,'failed');assert.equal(durableInterruption.failureCode,'import_interrupted_lease')
+ const auditAfterInterruptedRestart=new Map((await auditExport()).map(row=>[row.id,row]))
+ for(const row of interruptionAudit)assert.deepEqual(auditAfterInterruptedRestart.get(row.id),row,'Worker restart retains the interrupted audit outcome')
+ assert.equal(ok(await door.call('opsgenie','apply',{planId:interruptedPreview.planId,reviewedFingerprint:interruptedPreview.fingerprint}),409).error,'import_door_plan_failed')
+ assert.deepEqual(ok(await req('/api/move-in/objects')),partialImport,'a refused retry publishes no more imported effects')
+ assert.equal(ok(await door.undo('opsgenie',interruptedPreview.planId)).job.state,'rolled_back')
+ assert.deepEqual(ok(await req('/api/move-in/objects')),[],'explicit rollback removes the accepted partial effects')
+ record('OC-022/041: a lost response after an accepted import batch became durably interrupted with its audit, refused retry after restart, and retained its partial effects until explicit rollback')
  // Each documented response shape runs the whole guarantee: bare fixtures, saved responses (lists and single details) and PagerDuty layer history.
  const shapes=[
   {file:'opsgenie',vendor:'opsgenie',id:'opsgenie:ops-daily',at:'2026-03-08T13:00:00Z',primary:'alice@example.test'},
@@ -139,14 +181,21 @@ try {
  const everything=()=>{const columns=Map.groupBy(w.sql("SELECT m.name AS t,p.name AS c FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%' AND m.name NOT LIKE '_cf_%' AND m.name NOT LIKE 'd1_%'"),r=>r.t);return JSON.stringify(w.statements([...columns].map(([t,cs])=>`SELECT ${cs.map(({c})=>`CAST("${c}" AS TEXT)`).join(',')} FROM "${t}"`).join(';')))}
  const erasedValues=/(?<![\w.+-])al@example\.test|u-al-0|Al Erased/i
  assert.match(everything(),erasedValues,'the scan sees the person before erasure');assert.equal(await primary('al-rota','2026-03-07T12:00:00Z'),'al@example.test')
+ const auditBeforeErasure=await auditExport()
  const receipt=ok(await req('/api/move-in/erase',{email:'al@example.test',confirmation:'erase al@example.test'}));assert.equal(receipt.schedulesRewritten,1)
+ const auditAfterErasure=await auditExport(),afterErasureById=new Map(auditAfterErasure.map(row=>[row.id,row])),beforeErasureIds=new Set(auditBeforeErasure.map(row=>row.id))
+ for(const row of auditBeforeErasure)assert.deepEqual(afterErasureById.get(row.id),row,'erasure retains every existing audit entry unchanged')
+ const erasureAudit=auditAfterErasure.filter(row=>!beforeErasureIds.has(row.id)&&row.outcome==='accepted'&&row.kind!=='audit.export')
+ assert.ok(erasureAudit.some(row=>row.subject&&row.subject!=='al@example.test'),'erasure retains an attributable entry with a random subject alias')
+ assert.doesNotMatch(JSON.stringify(auditAfterErasure),erasedValues,'audit export retains no erased subject email, vendor identity or name')
+
  assert.deepEqual(salRow(),salBefore,'the other person\'s schedule is untouched')
  assert.equal(await primary('sal-rota','2026-03-07T12:00:00Z'),'sal@example.test');assert.equal(await primary('al-rota','2026-03-07T12:00:00Z'),null,'the erased slot is an explicit gap');assert.equal(await primary('al-rota','2026-03-08T12:00:00Z'),'kai@example.test')
  assert.doesNotMatch(everything(),erasedValues,'no table keeps a value of the erased person')
  assert.equal(ok(await door.undo('opsgenie',crewPreview.planId)).job.state,'undone')
  assert.deepEqual(w.sql('SELECT kind,id FROM move_in_objects'),[{kind:'schedule',id:'opsgenie:al-rota'}],'undo removed everyone else; only the schedule the erasure rewrote stays applied')
  w.sql("DELETE FROM move_in_objects WHERE id='opsgenie:al-rota'")
- record('OC-022: erasing a person by exact email left a person whose email contains theirs scheduled, covered and undoable, and left no value of theirs behind')
+ record('OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; OC-022 erasing a person by exact email retained audit history, left a person whose email contains theirs scheduled, covered and undoable, and left no value of theirs behind')
  // A person named in a schedule only through an override record, and in their own notification rules and a direct-user policy, leaves no value in any table or plan; the rest of the import still undoes.
  const delay={condition:'if-not-acked',delay:{timeAmount:5,timeUnit:'minutes'}},mentioned=[
   {vendor:'pagerduty',email:'ed@example.test',erased:/(?<![\w.+-])ed@example\.test|\bPED\b|Ed Erasable/i,ed:'PS-ED',ted:'PS-TED',kai:'kai2@example.test',source:{
@@ -210,7 +259,7 @@ try {
  assert.equal(held.code,'TARGET_REVISION_CONFLICT');for(const email of ['alice@example.test','bob@example.test'])assert.ok(held.error.includes(email),'the refusal names the people already imported')
  assert.match(held.error,/ already in Oncall from the Opsgenie import [0-9a-f]{8}-[0-9a-f-]{27}\b/,'the refusal names the holding import by its vendor');assert.doesNotMatch(held.error,/door:/,'no internal namespace reaches the owner')
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'changed source cannot replace committed native data')
- const revoked=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(revoked);ok(await w.request('/api/logout',{},revoked.cookie));ok(await door.call('opsgenie','apply',{planId:preview.planId,reviewedFingerprint:preview.fingerprint},revoked.cookie),401)
+ const revoked=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(revoked);ok(await w.request('/api/logout',{},revoked.cookie));ok(await door.call('opsgenie','apply',{planId:preview.planId,reviewedFingerprint:preview.fingerprint},revoked.cookie),401);ok(await w.request('/api/audit/export',undefined,revoked.cookie),401)
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),nativeBefore,'revoked session cannot resume or mutate imported data')
  // A later catch-up that replaced records of the first import: Undo of the first names that import and undoes nothing; newest first undoes.
  const laterSource=JSON.parse(changedText);laterSource.users.data[1].fullName='Renamed later at source'

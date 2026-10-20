@@ -1,3 +1,4 @@
+import { auditIdentity } from '../audit-store'
 import { workspaceWrite } from '../workspace-store';
 import { authority, fail, Fault, text, type State } from '../family/response-operations/domain';
 import { runtimeBindings } from '../auth.server';
@@ -38,6 +39,7 @@ export function installChangeIntake(api:any, deps:Dependencies) {
         if (!equalSignature(headers.get('x-oncall-signature')??'',await changeHmac(key,timestamp+'.'+raw))) fail('Invalid change signature',401);
       }
     }
+    auditIdentity(c.env.DB,{actor:{kind:'change-source',id:source.id},source:{kind:'change-source',id:source.id}});
     const input=await providerChange(source,payload,headers,verificationKey);
     if (!input) return c.json({ignored:true,reason:'This signed event does not describe a supported change'},200);
     const fingerprint=await changeHash(JSON.stringify(input)), existing=state.changes?.find(change=>change.source===source.id&&change.eventId===input.eventId);
@@ -72,6 +74,7 @@ export function installChangeManagement(api:any,deps:Dependencies) {
     if(previous)state.changeSources![state.changeSources!.indexOf(previous)]=source;else(state.changeSources??=[]).push(source);
     const ciphertext=await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET!,changeCustody),guard=deps.guard(c),revision=state.revision,token=crypto.randomUUID();
     state.audit.push({id:crypto.randomUUID(),at:source.updatedAt,actor:actor.id,kind:'change-source',text:`Configured ${source.provider} change source ${source.id} on ${source.service}; revision ${source.revision}`});
+    auditIdentity(c.env.DB,{source:{kind:'change-source',id},subject:{kind:'change-source',id}});
     const result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,revision,guard,token),c.env.DB.prepare('INSERT INTO oc_change_credentials(source,key_digest,ciphertext) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,ciphertext=excluded.ciphertext').bind(id,digest,ciphertext,token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload and retry',409);
     return c.json(source,previous?200:201);
@@ -82,6 +85,7 @@ export function installChangeManagement(api:any,deps:Dependencies) {
     source.active=false;source.revision++;source.updatedAt=new Date().toISOString();
     state.audit.push({id:crypto.randomUUID(),at:source.updatedAt,actor:c.get('actor').id,kind:'change-source-revoked',text:`Revoked change source ${source.id}; revision ${source.revision}`});
     const token=crypto.randomUUID();
+    auditIdentity(c.env.DB,{source:{kind:'change-source',id:source.id},subject:{kind:'change-source',id:source.id}});
     const result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),c.env.DB.prepare('DELETE FROM oc_change_credentials WHERE source=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(source.id,token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload and retry',409);
     return c.json(source);

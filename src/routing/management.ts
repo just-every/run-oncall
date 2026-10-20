@@ -1,3 +1,4 @@
+import { auditIdentity } from '../audit-store'
 import { workspaceWrite } from '../workspace-store.ts';
 import { authority, fail, text, type State } from '../family/response-operations/domain.ts';
 import { intakeHash } from '../intake/credentials.ts';
@@ -35,6 +36,7 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     if(await c.env.DB.prepare('SELECT id FROM sources WHERE id=?').bind('intake:'+id).first())fail('A held native source occupies this integration identity; choose another ID',409);
     if(previous)state.intakeSources![state.intakeSources!.indexOf(previous)]=source;else(state.intakeSources??=[]).push(source);
     state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-key',text:`Configured routed ${source.provider} key ${id}; revision ${source.revision}; rule version ${definition.versions.at(-1)!.version}`});
+    auditIdentity(c.env.DB,{source:{kind:'intake-source',id:source.id},subject:{kind:'intake-source',id:source.id}});
     const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest) SELECT ?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest').bind(id,digest,token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload',409);
     return c.json(source,previous?200:201);

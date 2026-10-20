@@ -1,3 +1,4 @@
+import { setAuditSubject } from './audit-store'
 import { fail, type State } from './family/response-operations/domain';
 import { checkWorkspaceSize } from './workspace-store';
 
@@ -13,6 +14,7 @@ export async function saveTriageItem(db: D1Database, state: State, revision: num
     .bind(state.revision, token, revision, ...authority.values, operationId, ...(incidentId ? [incidentId] : []))];
   if (incident) statements.push(db.prepare(`UPDATE oc_incidents SET data=? WHERE id=? AND ${gate}`).bind(JSON.stringify(incident), incident.id, token));
   statements.push(db.prepare(`UPDATE oc_triage SET data=? WHERE id=? AND ${gate}`).bind(JSON.stringify(operation), operationId, token));
+  setAuditSubject(db,'entity',incidentId??operationId);
   const result = await db.batch(statements);
   if (result[0].meta.changes !== 1) fail('Workspace or authority changed. Replay the same operation to inspect committed outcomes.', 409);
 }

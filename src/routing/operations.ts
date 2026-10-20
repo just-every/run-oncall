@@ -1,3 +1,4 @@
+import { auditIdentity } from '../audit-store'
 import { authority, fail, text } from '../family/response-operations/domain.ts';
 import { incompleteRouting } from '../monitoring/incomplete.ts';
 import { receiveMonitoring } from '../monitoring/admission.ts';
@@ -11,7 +12,9 @@ export function installRoutingOperations(api:any,deps:RoutingDependencies) {
   api.post('/api/routing/keys/:id/publish',async(c:any)=>{
     const input=await deps.body(c),state=await deps.state(c,true),actor=c.get('actor');authority(state,actor,true);
     exact(input,['baseVersion','rules','catchAll']);
-    const source=routingSource(state,c.req.param('id')),current=source.routing.versions.at(-1)!,at=new Date().toISOString();
+    const source=routingSource(state,c.req.param('id'));
+    auditIdentity(c.env.DB,{source:{kind:'intake-source',id:source.id},subject:{kind:'intake-source',id:source.id}});
+    const current=source.routing.versions.at(-1)!,at=new Date().toISOString();
     if(!Number.isSafeInteger(input.baseVersion)||input.baseVersion<1)fail('A valid draft base version is required');
     if(input.baseVersion!==current.version) {
       state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-publish-refused',text:`Refused stale publish for ${source.id}: base ${input.baseVersion}; current ${current.version}`});
@@ -26,7 +29,9 @@ export function installRoutingOperations(api:any,deps:RoutingDependencies) {
   api.post('/api/routing/keys/:id/preview',async(c:any)=>{
     const input=await deps.body(c),state=await deps.state(c,true),actor=c.get('actor');authority(state,actor,true);
     exact(input,['baseVersion','rules','catchAll'],['receiptIds','from','to']);
-    const source=routingSource(state,c.req.param('id')),current=source.routing.versions.at(-1)!;
+    const source=routingSource(state,c.req.param('id'));
+    auditIdentity(c.env.DB,{source:{kind:'intake-source',id:source.id},subject:{kind:'intake-source',id:source.id}});
+    const current=source.routing.versions.at(-1)!;
     if(input.baseVersion!==current.version)fail('Routing base version is stale; reload before replay',409);
     const draft={...current,...routingRules(source.routing.scope,input.rules,input.catchAll)};
     return c.json(previewRouting(state,source,draft,input));

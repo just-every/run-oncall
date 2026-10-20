@@ -12,6 +12,7 @@ import { readMoveInJournal } from './journal'
 import { readImportDoorHistory } from '../modules/import-kit/src/door/index'
 import { IMPORT_DOOR_KEY } from './door-key'
 import { adminSession, ownerImport } from './owner-door'
+import { expireInterruptedImports, importAttempt } from './import-lifecycle'
 
 export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  function context(c:any,vendor:Vendor):D1ImportContext {
@@ -25,16 +26,20 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  // A door import, the owner's or Business's, continues and undoes only through the door.
  for(const action of ['resume','undo','status'])api.post(`/api/move-in/:id/${action}`,async(c:any)=>{
   const input=await body(c),ctx=context(c,input.vendor)
+  await expireInterruptedImports(c.env.DB)
   const door=await c.env.DB.prepare(`SELECT j.namespace FROM ik_jobs j JOIN ik_door_plans p ON p.job_id=j.id
    WHERE j.id=? AND j.principal_id=? AND p.namespace=? AND p.installation_id=?`).bind(c.req.param('id'),ctx.authorization.principalId,input.vendor,IMPORT_DOOR_KEY).first()
   if(door&&action!=='status')throw new Refusal(409,'This import runs through the import door. Choose it in Saved import journal to undo it; a failed import needs a new preview and confirmation.','IMPORT_DOOR_JOB')
   if(door)ctx.namespace=door.namespace
   if(action==='undo'&&input.confirm!==true)fail('Confirm import undo',409)
-  try{return c.json(await (action==='resume'?resumeD1Import:action==='undo'?undoD1Import:readD1ImportJob)(c.req.param('id'),ctx))}
+  const attempt=action==='resume'?importAttempt(c.env.DB,{jobId:c.req.param('id')}):undefined
+  if(attempt)ctx.storage={...ctx.storage,database:attempt.database}
+  try{const result=await (action==='resume'?resumeD1Import:action==='undo'?undoD1Import:readD1ImportJob)(c.req.param('id'),ctx);await attempt?.finish(true);return c.json(result)}
   catch(error){throw (error as Error).message==='NATIVE_EDIT_CONFLICT'?await changedSinceImport(c.env.DB,c.req.param('id'))??error:error}
  })
  api.get('/api/move-in/jobs',async(c:any)=>{
   const ctx=context(c,c.req.query('vendor')??'opsgenie'),auth=ctx.authorization.predicate('read','oncall')
+  await expireInterruptedImports(c.env.DB)
   const history=await readImportDoorHistory(c.env.DB,IMPORT_DOOR_KEY,auth)
   const rows=await c.env.DB.prepare(`SELECT j.id,j.namespace FROM ik_jobs j WHERE destination='oncall' AND principal_id=?
    AND (namespace=? OR EXISTS(SELECT 1 FROM ik_door_plans p WHERE p.job_id=j.id AND p.namespace=? AND p.installation_id=?))

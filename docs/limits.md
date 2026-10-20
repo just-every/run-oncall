@@ -23,3 +23,11 @@ Nothing you write in Oncall is sent to an AI model. Local development has no mai
 ## Hosted coordination keeps your existing pager
 
 Run Oncall locally or host release 1 in your own Cloudflare account with `rer deploy`. It coordinates incidents alongside your existing pager with paging OFF; no independent standby is required for coordination. Release 2 paging and independent standby are not built. Hosted email-link sign-in requires a configured remote mail provider. See [Install and run](install.md#host-for-your-team) for setup, deployment and removal. A local dry run does not establish hosted health or mail delivery.
+
+## Related product boundaries
+
+Oncall keeps incident-linked follow-ups; payroll, general work/project management and monitoring/observability are separate product boundaries. Related RunEditRun siblings are [Envelope](https://github.com/just-every/run-envelope) for the payroll boundary, [Pegboard](https://github.com/just-every/run-pegboard) for general work/project management, and [Porthole](https://github.com/just-every/run-porthole) for monitoring/observability. These links identify separate product scope; they make no capability, integration or readiness claim.
+
+## Permanent audit and held history
+
+[Permanent operational audit](audit.md) retains safe operation kinds, times, outcomes and permanent random labels. It is separate from incident timelines, imported records and other operational content. Removing an audit identity association does not erase all those records; their custody and erasure remain explicit and scoped.

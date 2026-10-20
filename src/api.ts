@@ -1,3 +1,5 @@
+import { auditIdentity, setAuditSubject } from './audit-store'
+import { auditInput } from './audit-request'
 import { installMonitoringIntake } from './monitoring/api';
 import { compatiblePath, monitoringPath } from './intake/paths';
 import { installCompatibleIntake } from './intake/api';
@@ -102,7 +104,9 @@ async function body(c: any, max = 65536) {
   if (new TextEncoder().encode(raw).length > max)
     fail("Request too large", 413);
   try {
-    return JSON.parse(raw);
+    const input = JSON.parse(raw);
+    auditInput(c.env.DB, input, c.req.path);
+    return input;
   } catch {
     return fail("Invalid JSON");
   }
@@ -207,7 +211,7 @@ async function session(c: any, state: State): Promise<Member | null> {
   const token = readSessionCookie(c.req.raw);
   if (!token) {
     const native = await nativeMember(c.env, c.req.raw);
-    if (native) c.set('sessionDigest',native.digest);
+    if (native) { c.set('sessionDigest',native.digest); auditIdentity(c.env.DB,{actor:{kind:'member',id:native.member.id}}); }
     return native?.member ?? null;
   }
   const digest = await hash(token);
@@ -223,7 +227,7 @@ async function session(c: any, state: State): Promise<Member | null> {
   const member = row
     ? (state.members.find((m) => m.id === row.member && m.active) ?? null)
     : null;
-  if (member) c.set("sessionDigest", digest);
+  if (member) { c.set("sessionDigest", digest); auditIdentity(c.env.DB,{actor:{kind:"member",id:member.id}}); }
   return member;
 }
 async function authorizedState(c: any, admin = false): Promise<State> {
@@ -236,6 +240,7 @@ async function authorizedState(c: any, admin = false): Promise<State> {
   return state;
 }
 async function issue(c: any, member: Member, credentials: { salt: string; digest: string }, revision: number) {
+  auditIdentity(c.env.DB,{actor:{kind:"member",id:member.id}});
   const token = crypto.randomUUID() + crypto.randomUUID();
   // Password verification may yield while access is revoked or restored. The
   // captured membership revision and exact credential must still be current.
@@ -262,6 +267,7 @@ api.post("/api/setup", async (c) => {
     active: true,
   };
   state.members.push(member);
+  auditIdentity(c.env.DB,{actor:{kind:"member",id:member.id},subject:{kind:"member",id:member.id}});
   const salt = crypto.randomUUID();
   const digest = await password(pass, salt);
   try {
@@ -308,6 +314,7 @@ api.post("/api/login", async (c) => {
   return issue(c, member, record, state.revision);
 });
 api.post("/api/logout", async (c) => {
+  await session(c,await load(c.env.DB));
   const token = readSessionCookie(c.req.raw);
   if (token)
     await c.env.DB.prepare("DELETE FROM sessions WHERE token=?")
@@ -385,6 +392,7 @@ api.post("/api/command", async (c) => {
   const state = await load(c.env.DB);
   const revision = state.revision;
   const result = command(state, c.get("actor"), input);
+  if(input.type === "declare" && result && typeof result === "object" && "id" in result) setAuditSubject(c.env.DB,"entity",String(result.id));
   await save(c.env.DB, state, revision, sessionGuard(c));
   return c.json(result);
 });
@@ -434,6 +442,7 @@ api.post("/api/members", async (c) => {
     active: true,
   };
   state.members.push(member);
+  setAuditSubject(c.env.DB,"member",member.id);
   state.revision++;
   const salt = crypto.randomUUID();
   const digest = await password(pass, salt);
@@ -468,6 +477,17 @@ api.post("/api/password", async (c) => {
   ]);
   if (r[0].meta.changes !== 1) fail("Authority changed; reload", 409);
   return c.json({ changed: true });
+});
+api.get("/api/audit/export", async (c) => {
+  await authorizedState(c, true);
+  const guard = sessionGuard(c);
+  const rows = await c.env.DB.batch([
+    c.env.DB.prepare(`SELECT 1 AS allowed FROM oc_members m WHERE m.id=? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin' AND ${guard.sql}`).bind(c.get('actor').id,...guard.values),
+    c.env.DB.prepare(`SELECT id,kind,feature,actor,subject,source,at,before_revision AS beforeRevision,after_revision AS afterRevision,outcome,workspace_before AS workspaceBefore,workspace_after AS workspaceAfter,paging_before AS pagingBefore,paging_after AS pagingAfter,handoff_before AS handoffBefore,handoff_after AS handoffAfter FROM oc_admin_audit WHERE ${guard.sql} AND EXISTS(SELECT 1 FROM oc_members WHERE id=? AND json_extract(data,'$.role')='admin' AND json_extract(data,'$.active')=1) ORDER BY ordinal`).bind(...guard.values,c.get('actor').id),
+  ]);
+  if(!rows[0].results.length) fail('Current admin required',403);
+  c.header('Content-Disposition','attachment; filename="oncall-audit.json"');
+  return c.json({schemaVersion:1,rows:rows[1].results});
 });
 api.get("/api/archive", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);

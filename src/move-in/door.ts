@@ -5,6 +5,8 @@ import { mapping } from './mapping'
 import { savedExportRecords, type Vendor } from './source'
 import { targets } from './target'
 import { IMPORT_DOOR_KEY } from './door-key'
+import { auditIdentity } from '../audit-store'
+import { expireInterruptedImports, importAttempt } from './import-lifecycle'
 
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
 /** The saved-export bounds both mounts read a bundle under. */
@@ -51,7 +53,21 @@ export async function importDoorResponse(request: Request, env: Bindings): Promi
   const setting = await env.DB.prepare('SELECT enabled FROM ik_door_settings WHERE installation_id=?').bind(IMPORT_DOOR_KEY).first<{ enabled: number }>()
   return Response.json({ error: setting?.enabled === 1 ? 'owner_workspace_required' : 'not_found' }, { status: setting?.enabled === 1 ? 409 : 404, headers })
  }
- const door = createImportDoorHandler({ database: env.DB, targets, claim, installationId: IMPORT_DOOR_KEY, ownerPrincipalId: owner.id,
-  destination: 'oncall', format: 'json', limits: DOOR_LIMITS, source: importSource })
- return door(request)
+ let planId: unknown
+ if (new URL(request.url).pathname === '/api/rer/import/apply') {
+  try { const body = await request.clone().text(); if (body.length <= 100_000) planId = JSON.parse(body).planId } catch { /* The door owns input refusals. */ }
+ }
+ const attempt = typeof planId === 'string' ? importAttempt(env.DB, { planId }) : undefined
+ const door = createImportDoorHandler({ database: attempt?.database ?? env.DB, targets, claim, installationId: IMPORT_DOOR_KEY, ownerPrincipalId: owner.id,
+  destination: 'oncall', format: 'json', limits: DOOR_LIMITS, async source(namespace) {
+   const listed = importSource(namespace)
+   if (!listed) return null
+   // The kit calls this resolver only after signature, action and origin binding.
+   auditIdentity(env.DB, { actor: { kind: 'service', id: namespace }, source: { kind: 'import-source', id: namespace } })
+   await expireInterruptedImports(env.DB)
+   return listed
+  } })
+ const response = await door(request)
+ await attempt?.finish(response?.ok === true)
+ return response
 }

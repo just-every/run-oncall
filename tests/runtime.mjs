@@ -129,6 +129,32 @@ const ok = (r, status = 200) => {
   assert.equal(r.status, status, JSON.stringify(r.value));
   return r.value;
 };
+// OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets.
+async function auditExport(cookie) {
+  const exported = ok(await request("/api/audit/export", undefined, cookie));
+  assert.equal(exported.schemaVersion, 1);
+  assert.ok(Array.isArray(exported.rows));
+  return exported;
+}
+async function auditedMutation(cookie, perform) {
+  const before = ok(await request("/api/state", undefined, cookie));
+  const prior = await auditExport(cookie), ids = new Set(prior.rows.map(row => row.id));
+  const response = await perform();
+  const after = ok(await request("/api/state", undefined, cookie));
+  const added = (await auditExport(cookie)).rows.filter(row => !ids.has(row.id));
+  const committed = added.filter(row => row.outcome === "accepted" && row.kind !== "audit.export");
+  assert.ok(committed.some(row => row.workspaceBefore === before.revision && row.workspaceAfter === after.revision),
+    "accepted state and an audit entry expose the same committed workspace revisions");
+  for (const row of committed) {
+    assert.ok(row.afterRevision > row.beforeRevision, "an accepted mutation advances the audit clock");
+    assert.ok(Number.isFinite(Date.parse(row.at)), "audit entries carry a valid time");
+  }
+  return { response, committed, before, after };
+}
+function auditSqlRefused(command) {
+  const result = spawnSync(process.execPath, [...cli, "d1", "execute", "DB", "--local", "--persist-to", persist, "--command", command], { encoding: "utf8" });
+  assert.notEqual(result.status, 0, "audit history refuses SQL mutation");
+}
 // OC-042 held signed-source custody survives upgrade, rotation, revocation and archive exclusion without secret echoes.
 async function heldSourceCustody(cookie, heldSignedKey, heldBearerKey, digest) {
   const signal = (source, eventId, extra = {}) => ({ source, eventId, service: "prior-service", environment: "production", key: "custody",
@@ -217,7 +243,26 @@ try {
   const heldSignedKey = randomBytes(32).toString("hex"), heldBearerKey = randomBytes(32).toString("hex");
   const digest = (value) => createHash("sha256").update(value).digest("hex");
   sql(`INSERT INTO sources(id,digest,signing_secret,scopes) VALUES('held-signed','${digest(heldSignedKey)}','${heldSignedKey}','["prior-service"]'),('held-bearer','${digest(heldBearerKey)}',NULL,'["prior-service"]')`);
+  // Pause this same held-data journey on the released schema before applying the new audit migrations.
+  for (const name of (await readdir('migrations/core')).filter(name => /^\d{4}_/.test(name) && Number(name.slice(0, 4)) >= 106 && Number(name.slice(0, 4)) <= 128))
+    await copyFile(join('migrations/core', name), join(legacyDirectory, name));
+  const released = spawnSync(process.execPath, [...cli, "d1", "migrations", "apply", "DB", "--config", legacyConfig, "--local", "--persist-to", persist], { encoding: "utf8", env: { ...process.env, CI: 'true', WRANGLER_SEND_METRICS: 'false' } });
+  assert.equal(released.status, 0, "released-schema migrations apply before the additive upgrade");
+  const heldTables = rows("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").map(row => row.name);
+  const snapshotHeldTables = () => {
+    const command = heldTables.map(name => 'SELECT * FROM "' + name.replaceAll('"', '""') + '"').join(';');
+    const result = spawnSync(process.execPath, [...cli, "d1", "execute", "DB", "--local", "--persist-to", persist, "--command", command, "--json"], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    assert.equal(result.status, 0, "held application table snapshot succeeds");
+    const snapshot = JSON.parse(result.stdout).map(result => result.results.map(row => JSON.stringify(row)).sort());
+    assert.equal(snapshot.length, heldTables.length, "the snapshot covers every prior application table");
+    return snapshot;
+  };
+  const releasedRows = snapshotHeldTables();
   migration();
+  const upgradedRows = snapshotHeldTables();
+  for (const [index, name] of heldTables.entries())
+    assert.ok(JSON.stringify(upgradedRows[index]) === JSON.stringify(releasedRows[index]), "new audit migrations preserve every held row in " + name);
+  console.log(`PASS additive audit migration upgrade: ${heldTables.length} prior application tables and ${releasedRows.reduce((sum, table) => sum + table.length, 0)} held rows unchanged before Worker writes.`);
   assert.deepEqual(rows("SELECT id,signing_secret IS NOT NULL AS held,signing_custody FROM sources ORDER BY id"),
     [{ id: "held-bearer", held: 0, signing_custody: null }, { id: "held-signed", held: 1, signing_custody: null }],
     "OC-042: the SQL migration is additive and keeps the held key until the Worker can seal it");
@@ -324,6 +369,34 @@ try {
     403,
   );
   ok(await request("/api/archive", undefined, currentViewerCookie), 403);
+  ok(await request("/api/audit/export", undefined, currentViewerCookie), 403);
+  ok(await request("/api/audit/export"), 401);
+  const roleBefore = ok(await request("/api/state", undefined, cookie)), auditBefore = await auditExport(cookie);
+  const auditSqlBefore = rows("SELECT * FROM oc_admin_audit ORDER BY id");
+  sql("CREATE TRIGGER injected_audit_failure BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'INJECTED_AUDIT_FAILURE'); END");
+  ok(await request("/api/command", { type: "member", id: viewer.id, role: "responder", active: true }, cookie), 503);
+  assert.deepEqual(ok(await request("/api/state", undefined, cookie)), roleBefore,
+    "an audit insert failure rolls back the member role and workspace revision together");
+  assert.deepEqual(rows("SELECT * FROM oc_admin_audit ORDER BY id"), auditSqlBefore, "a failed audit insert publishes no partial history");
+  sql("DROP TRIGGER injected_audit_failure");
+  const afterAuditFault = new Map((await auditExport(cookie)).rows.map(row => [row.id, row]));
+  for (const row of auditBefore.rows) assert.deepEqual(afterAuditFault.get(row.id), row, "audit-write failure preserves all prior history");
+  const grant = await auditedMutation(cookie, () => request("/api/command", { type: "member", id: viewer.id, role: "responder", active: true }, cookie));
+  ok(grant.response);
+  assert.equal(grant.after.members.find(member => member.id === viewer.id).role, "responder");
+  const withdrawGrant = await auditedMutation(cookie, () => request("/api/command", { type: "member", id: viewer.id, role: "viewer", active: true }, cookie));
+  ok(withdrawGrant.response);
+  assert.equal(withdrawGrant.after.members.find(member => member.id === viewer.id).role, "viewer");
+  const grantEntry = grant.committed.find(row => row.subject), withdrawEntry = withdrawGrant.committed.find(row => row.subject);
+  assert.ok(grantEntry && withdrawEntry, "role changes identify their subject without retaining the member identity");
+  assert.equal(grantEntry.subject, withdrawEntry.subject, "the same subject keeps its random audit alias");
+  assert.equal(grantEntry.actor, withdrawEntry.actor, "the same actor keeps its random audit alias");
+  assert.notEqual(grantEntry.subject, viewer.id);assert.notEqual(grantEntry.actor, admin.id);
+  const heldAudit = await auditExport(cookie), heldAuditId = heldAudit.rows.at(-1).id.replaceAll("'", "''");
+  auditSqlRefused("UPDATE oc_admin_audit SET kind=kind WHERE id='" + heldAuditId + "'");
+  auditSqlRefused("DELETE FROM oc_admin_audit WHERE id='" + heldAuditId + "'");
+  const afterSqlRefusal = new Map((await auditExport(cookie)).rows.map(row => [row.id, row]));
+  for (const row of heldAudit.rows) assert.deepEqual(afterSqlRefusal.get(row.id), row, "SQL update/delete cannot change append-only history");
   const service = ok(
     await request(
       "/api/command",
@@ -382,7 +455,7 @@ try {
     generation: "release-1",
     intent: "trigger",
     severity: "critical",
-    title: "Old accounts cannot upgrade",
+    title: "Old accounts cannot upgrade; contact +61400123987",
     observedAt: "2026-10-02T12:00:00Z",
     evidence: "https://example.test/check",
   };
@@ -402,12 +475,13 @@ try {
   assert.deepEqual(ok(await request("/api/archive", undefined, cookie)), beforeRefusedInput,
     "OC-008: oversized, malformed and incomplete structured input changes no durable records");
   ok(await request("/api/ingress/monitor", event), 401);
-  const first = ok(
-    await request("/api/ingress/monitor", event, "", {
-      authorization: "Bearer " + key,
-    }),
-    201,
-  );
+  const admission = await auditedMutation(cookie, () => request("/api/ingress/monitor", event, "", {
+    authorization: "Bearer " + key,
+  }));
+  const first = ok(admission.response, 201);
+  assert.ok(admission.after.events.some(stored => stored.id === first.id), "the audited admission is visible in committed state");
+  const admittedSource = admission.committed.find(row => row.source)?.source;
+  assert.ok(admittedSource && admittedSource !== event.source, "intake identifies the source only by its random audit alias");
   const receipt = async (value, signal, duplicate) => {
     const state = ok(await request("/api/state", undefined, cookie));
     const stored = state.events.find(e => e.id === value.id);
@@ -548,11 +622,11 @@ try {
     );
     return incident;
   };
-  await mutate({
-    type: "transition",
-    state: "acknowledged",
-    summary: "Taking responsibility",
-  });
+  const acknowledgement = await auditedMutation(cookie, () => request("/api/command", {
+    incident: incident.id, revision: incident.revision, type: "transition", state: "acknowledged", summary: "Taking responsibility",
+  }, cookie));
+  incident = ok(acknowledgement.response);
+  assert.equal(acknowledgement.after.incidents.find(item => item.id === incident.id).state, "acknowledged");
   ok(
     await request(
       "/api/command",
@@ -642,7 +716,24 @@ try {
   const replay = ok(await request("/api/replay", { events: [event] }, cookie));
   assert.equal(replay.sideEffects, false);
   assert.deepEqual(ok(await request("/api/state", undefined, cookie)), before);
+  const rotatedNativeKey = randomBytes(32).toString("hex");
+  const rotation = await auditedMutation(cookie, () => request("/api/sources", {
+    id: "monitor", key: rotatedNativeKey, scopes: [service.id, stagingService.id],
+  }, cookie));ok(rotation.response);
+  ok(await request("/api/ingress/monitor", { ...event, eventId: "retired-native-key" }, "", { authorization: "Bearer " + key }), 401);
+  const revocation = await auditedMutation(cookie, () => request("/api/sources/monitor/revoke", {}, cookie));ok(revocation.response);
+  ok(await request("/api/ingress/monitor", { ...event, eventId: "revoked-native-key" }, "", { authorization: "Bearer " + rotatedNativeKey }), 401);
+  for (const mutation of [rotation, revocation])
+    assert.ok(mutation.committed.some(row => row.source === admittedSource), "rotation and revocation retain the admitted source's random audit alias");
+  const auditText = JSON.stringify(await auditExport(cookie)).toLowerCase();
+  const privateValues = ["Admin", "Viewer", "synthetic-local-testing-password", "synthetic-viewer-testing-password", key, signedKey, rotatedNativeKey,
+    event.title, incident.summary, "Taking responsibility", "+61400123987", cookie.split("=")[1], admin.id, viewer.id,
+    ...rows("SELECT salt,digest FROM credentials").flatMap(row => [row.salt, row.digest]),
+    ...rows("SELECT digest,signing_custody FROM sources").flatMap(row => [row.digest, row.signing_custody]).filter(Boolean)];
+  for (const value of privateValues) assert.ok(!auditText.includes(value.length < 10 ? JSON.stringify(value.toLowerCase()) : value.toLowerCase()), "audit export contains no names, passwords, messages, phones, tokens or credential material");
   const archive = ok(await request("/api/archive", undefined, cookie));
+  for (const alias of [grantEntry.actor, grantEntry.subject, admittedSource])
+    assert.ok(!JSON.stringify(archive).includes(alias), "workspace archives exclude audit aliases and their identity mappings");
   const invalid = structuredClone(archive);
   invalid.services[0].owner = "unknown";
   ok(
@@ -675,6 +766,7 @@ try {
     archive,
   );
   sql("DROP TRIGGER deny_session_revocation");
+  const auditBeforeRestore = await auditExport(cookie);
   const importReceipt = await request(
     "/api/restore",
     { mode: "replace", archive },
@@ -682,6 +774,8 @@ try {
   );
   ok(importReceipt);
   cookie = importReceipt.cookie;
+  const auditAfterRestore = new Map((await auditExport(cookie)).rows.map(row => [row.id, row]));
+  for (const row of auditBeforeRestore.rows) assert.deepEqual(auditAfterRestore.get(row.id), row, "restoring application state preserves permanent audit history");
   const restored = ok(await request("/api/archive", undefined, cookie));
   delete restored.revision;
   delete archive.revision;
@@ -756,6 +850,7 @@ try {
   ok(await request("/api/logout", {}, cookie));
   assert.match(await (await fetch(origin, { headers: { cookie } })).text(), /href="\/setup"/, "a revoked password session receives the guest Lobby");
   ok(await request("/api/state", undefined, cookie), 401);
+  ok(await request("/api/audit/export", undefined, cookie), 401);
   await stop();
   portablePersist = await mkdtemp(join(tmpdir(), "oncall-portable-"));
   persist = portablePersist;
@@ -813,7 +908,7 @@ try {
     }),
   );
   console.log(
-    "PASS emitted Worker + local D1: setup/session/roles/CSRF, scoped bearer and raw-body HMAC ingress, identities, concurrent CAS, incident/recovery/runbook/review/follow-up, replay purity, archive equality/rollback, session invalidation, restart and repeat migration, truthful handoffs.",
+    "PASS OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; emitted Worker + local D1: setup/session/roles/CSRF, scoped bearer and raw-body HMAC ingress, identities, concurrent CAS, incident/recovery/runbook/review/follow-up, replay purity, archive equality/rollback, session invalidation, restart and repeat migration, truthful handoffs.",
   );
 } finally {
   if (worker && worker.exitCode === null) await stop();

@@ -102,6 +102,8 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `tests/runtime.mjs`. Services, service runbooks and workspace roles ship; team scoping, dependencies, alert runbooks and Backstage do not.
 
+   OC-041 inheritance before shipping: exercise team-scoped audit export with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
 24. **OC-024 — Follow-the-sun, PTO and holiday coverage. Status: partial.** Build New York/Los Angeles/London handoffs, add a US holiday and approved PTO in Google and Outlook, inspect a DST weekend and uncovered interval, then apply a reviewed layer change and compare actual paging targets to the preview. During the New York-to-London handoff, page the London responder through their verified UK voice and SMS routes under OC-066, and see a shift held by a responder with only one verified route flagged as degraded in the preview.
 
    Existing implementation / exercising flow: `src/family/response-operations/schedules.ts`; `src/schedule-api.ts`; `tests/activation.mjs`. Named-zone primary/backup rotations and overrides exist; follow-the-sun composition, holiday and PTO integration are missing.
@@ -114,17 +116,25 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing evidence: no implementing flow; this is required target acceptance. Only the paging refusal exists; no live providers, responder rules or carrier drill.
 
+   OC-041 inheritance before shipping: exercise provider attempts and outcomes with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
 27. **OC-027 — Durable escalation until acknowledged. Status: partial.** Trigger through the Events API, close the browser, cross a handoff and observe primary, secondary, repeat and round-robin pages, each first attempt within the OC-064 deadline-lateness bar of its persisted due time (a 5-minute escalation fires between 5:00 and 5:30 at p99) and none early. Recover the source before the first escalation deadline and observe no further notification and a recorded stopped-by-recovery outcome. Leave a low-urgency alert of a support-hours service open across the support start and observe its attributed raise to high at that start, within the OC-064 lateness bar and never early, and escalation starting from it. Escalate one of two open pages by SMS reply code and observe only that page move to its next level. Restart workers at a deadline; race reassignment, acknowledgment, duplicate callbacks and acknowledgment expiry. Inspect one consistent obligation history, stopped jobs and the final failure path.
 
    Existing implementation / exercising flow: `src/paging-api.ts`; `src/family/response-operations/escalation.ts`; `src/delivery.ts`; `tests/activation.mjs`. Inspectable policies and historical acknowledge/cancel exist; active timers, reassignment, repeat and round-robin execution are absent.
+
+   OC-041 inheritance before shipping: exercise escalation workers and provider attempts with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 
 28. **OC-028 — Independent standby and tested takeover. Status: missing.** During live phone drills remove the main site’s network, storage, identity and account access in turn, split the sites, duplicate intake and acknowledge at either site. Measure loss-to-takeover and takeover-to-first-provider-attempt times against the OC-064 bars (standby authority within 120 seconds of loss; first attempt for every due obligation within 60 seconds of takeover), verify fencing, role announcements and recovery/failback, and prove no acknowledged incident resumes. Publish measured results and operating instructions before cutover.
 
    Existing evidence: no implementing flow; this is required target acceptance. One Cloudflare coordination deployment is not independent pager continuity.
 
+   OC-041 inheritance before shipping: exercise standby authority moves and dispatch with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
 29. **OC-029 — Native iOS and Android responder apps. Status: missing.** On physical supported iPhone and Android devices, trigger with the screen locked and DND enabled after permission enrollment; observe urgent notification and one-tap server acknowledgment. Deny permissions, revoke a device and disconnect data; verify phone escalation, pending offline state, current schedule and an accepted swap without duplicate authority. Snooze for 15 minutes from the lock-screen notification and observe a re-page at expiry; trigger five pages together and observe one bundled push that opens exactly those five; complete acknowledge and reassign with VoiceOver and TalkBack.
 
    Existing evidence: no implementing flow; this is required target acceptance. Responsive web is implemented, but no native apps, entitlements or live critical-push acceptance exist.
+
+   OC-041 inheritance before shipping: exercise mobile actions and device delivery with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 
 30. **OC-030 — Datadog, Prometheus and Grafana intake. Status: partial.** Use each provider’s supported test/send door then fire and recover a real rule; repeat/reorder a grouped webhook, reject forged auth and malformed payloads, and inspect one correct incident generation and public-door rejection diagnostics. Install one Alertmanager adapter on an OC-072 routed key and observe alerts with different `team` labels on their own services.
 
@@ -145,6 +155,8 @@ The numbered flows are acceptance requirements through the product’s public do
 34. **OC-034 — Slack and Microsoft Teams response. Status: missing.** In each real workspace/tenant declare an incident, observe the automatic channel and role assignment, acknowledge through a command/action and see the same web state. Replay a request, remove a grant/member, attempt cross-tenant access and break channel creation; verify denial, one state change and continued phone escalation.
 
    Existing evidence: no implementing flow; this is required target acceptance. Internal handoff drafts do not implement either collaboration app.
+
+   OC-041 inheritance before shipping: exercise chat grants, commands and delivery with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 
 35. **OC-035 — Incident bridges and live call routing. Status: missing.** Call the real US number across a handoff, answer and acknowledge, reach a London on-call responder's verified UK number by transfer, miss a call and reach secondary, fail each carrier and transfer a live call. Create Zoom and Teams bridges from incident actions, deny an unauthorized join/detail read, and inspect call/timeline/outcome records without exposing recordings to viewers without a grant.
 
@@ -170,9 +182,9 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/move-in/erasure.ts`; `src/portability-policy.mjs`; `tests/activation.mjs`. Exact imported-person erasure and custody/fence proof exist; general entity retention/erasure and standby reconciliation are incomplete.
 
-41. **OC-041 — Durable operational audit. Status: partial.** Change roles/schedules, admit an event, send and acknowledge, crash each worker class at its send boundary, erase its subject and export audit through a protected door. Compare state and audit atomically, retain uncertain outcomes and prove secrets/personal content are absent from the surviving anonymized records.
+41. **OC-041 — Durable operational audit. Status: done.** Exercise workspace and native member/access/password changes, native source/intake/change-key management and admission, schedules, paging refusals and historical acknowledgment/cancellation, triage bulk actions, handoffs, routing publication, move-in, import-door apply/resume and erasure. Inject an audit-write failure and prove accepted state and its audit entry either commit together in one D1 batch or both roll back. Inspect structured append-only entries separately from unchanged held operational history. Erase identity associations and export through protected `GET /api/audit/export`: permanent random actor/subject/source pseudonyms and immutable kind/time/outcome remain, are never reassigned and reveal no raw identities, hashes, credential labels, payload content or secrets. Refuse anonymous, revoked and viewer export; the owner acts as administrator until OC-023 team scope exists. Interrupt apply/resume and expire its durable lease; inspect the retained failed/interrupted/uncertain outcome and safe resume. Transfer permanent audit under OC-052 without restored identity or execution authority.
 
-   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/family/response-operations/handoffs.ts`; `tests/runtime.mjs`; `tests/activation.mjs`. Attributed incident/handoff and coordination audit exist; complete secret-free administrative audit and all execution outcomes are not established.
+   Exercising flow: **OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets**, extending `tests/runtime.mjs`, `tests/transfer.mjs` and `tests/activation.mjs`, through `src/audit-store.ts`, `src/audit-database.ts` and `src/audit-request.ts` with additive migrations 0129/0130. The current-flow proof covers atomic mutation/rollback, append-only storage, subject erasure and secret-free admin export, held-history preservation and interrupted import apply/resume. [Permanent operational audit](docs/audit.md) explains its limits. Future automation (OC-043/053/063), provider attempts (OC-026/027/064/066), agent grants/actions (OC-045–049), Lamp/Statuspage publication (OC-051), chat (OC-034/067), mobile (OC-029), standby (OC-028) and team-scoped export (OC-023) must each prove their own audit and durable crash/lease outcome before shipping. Their future execution is not established by this current-flow proof.
 
 42. **OC-042 — Credential custody and declared external flows. Status: done.** Configure and rotate each connector over a protected setup door, inspect authorized network traffic at its network edge and all persisted/exported representations, submit hostile URLs/redirects and revoked credentials, and prove only the chosen endpoint receives the minimum permitted content and secrets never travel in an archive or model request. Each inheriting capability repeats this evidence for its own credentials and recipients before shipping.
 
@@ -182,7 +194,9 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `tests/runtime.mjs`. Exact-key grouping, severity suppression and replay exist; cross-source correlation, timed suppression and live orchestration are absent.
 
-44. **OC-044 — US operating boundaries and transparent cost. Status: partial.** Complete a US installation/dependency checklist, inspect a USD usage report and budget warning during a real paging obligation, hit an explicit capacity/provider quota refusal and observe the alternate/escalation outcome, then follow Lamp/Spool/Uptime links with independent access controls. Verify emergency guidance and advertised availability/regulated claims against the actual release evidence.
+   OC-041 inheritance before shipping: exercise orchestration automation with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
+44. **OC-044 — US operating boundaries and transparent cost. Status: partial.** Complete a US installation/dependency checklist, inspect a USD usage report and budget warning during a real paging obligation, hit an explicit capacity/provider quota refusal and observe the alternate/escalation outcome, then follow Lamp/Spool/Uptime links with independent access controls. Verify emergency guidance and advertised availability/regulated claims against the actual release evidence. Related RunEditRun siblings are [Envelope](https://github.com/just-every/run-envelope) for the payroll boundary, [Pegboard](https://github.com/just-every/run-pegboard) for general work/project management, and [Porthole](https://github.com/just-every/run-porthole) for monitoring/observability. These links identify separate product scope; they make no capability, integration or readiness claim.
 
    Existing implementation / exercising flow: `src/delivery.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Current release hold, structured bounds and explicit local capacity refusal exist; provider usage/budget and target integration acceptance do not.
 
@@ -190,21 +204,31 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Incident/alert/runbook context exists as in the audit; no investigator, telemetry or deploy connector is implemented.
 
+   OC-041 inheritance before shipping: exercise investigation agent grants and actions with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
 46. **OC-046 — Keep ownership and runbooks current from changes. Status: partial.** Change service ownership and a deploy/runbook reference in real connected sources, observe a proposed diff and review task, reject one and approve another after coverage preview. Change the source during approval and verify renewed review; inspect an older incident to prove its runbook and attribution did not change.
 
    Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Services, copied runbooks and human follow-ups exist; change watching/proposals are missing.
+
+   OC-041 inheritance before shipping: exercise ownership/runbook agent grants and actions with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 
 47. **OC-047 — Continuously rehearse coverage and standby readiness. Status: partial.** Revoke a contact, break a provider and stale the standby configuration; observe scheduled detection and a due drill request without a manual prompt. Run an authorized main-site outage drill with real phones, decline another, and compare displayed readiness with measured receipt/takeover outcomes and visible unresolved obligations.
 
    Existing implementation / exercising flow: `src/schedule-api.ts`; `src/delivery.ts`; `tests/activation.mjs`. Now/next reveals static gaps and production sends refuse; continuous readiness and scheduled live drills are missing.
 
+   OC-041 inheritance before shipping: exercise readiness agent grants, actions and drills with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
 48. **OC-048 — Bounded remediation with independent recovery evidence. Status: missing.** Investigate a reversible production fault, inspect and approve one bounded plan, attempt changed/expired/revoked approval, have a plan restricted to one named library action try to run another and see it refused, cancel mid-execution and restart after an uncertain result. Observe executor authority, bounded action/rollback and independent failing then passing recovery evidence before a responder resolves through OC-004.
 
    Existing evidence: no implementing flow; this is required target acceptance. No remediation planner, production executor or independent recovery integration exists.
 
+   OC-041 inheritance before shipping: exercise remediation agent grants and executor actions with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
 49. **OC-049 — Close the loop on recurrence. Status: partial.** Complete an evidenced follow-up, trigger a related recurrence after a deploy and observe a linked review and owned task without a prompt. Mark a ticket closed without evidence, leave another overdue, dispute the recurrence and verify human correction, continued escalation and unchanged original history.
 
    Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Owned evidenced follow-ups and retained reviews exist; recurrence comparison and follow-through agents are missing.
+
+   OC-041 inheritance before shipping: exercise recurrence agent grants and actions with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 
 50. **OC-050 — Incident command, severity and response workflows. Status: partial.** Trigger a service template, request backup responders and assign/transfer commander/scribe/communications roles through web/chat. Merge related incidents, split an unrelated alert, miss an update deadline with the browser closed and inspect reminders, aliases and attributed timelines; reject unauthorized role and state mutations.
 
@@ -214,6 +238,8 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `src/family/response-operations/integrations.ts`; `tests/activation.mjs`. Reviewed minimum handoffs and Lamp-compatible export exist; connected submission, status synchronization and reminders are missing.
 
+   OC-041 inheritance before shipping: exercise Lamp/Statuspage publication with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
 52. **OC-052 — Complete portable target archive and Base replacements. Status: done.** Export a populated target installation via protected HTTP and rer CLI, compare every durable category, restore inactive on a fresh authorized installation, reconfigure local secrets and prove no send/action replay. Supply malformed/over-limit/erased/unknown records and inject storage/concurrency faults; preserve the full prior state. Deny optional author/AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.
 
    Exercising flow: **OC-052 all current durable categories restore inactive without authority or replay**, in `tests/transfer.mjs`, `tests/transfer-door.mjs` and `tests/checkpoint-cli.mjs`, with HTTP authorization/capacity/rollback/concurrency coverage in `tests/activation.mjs`. Populated urgency and admission/transition history, monitoring generations/incomplete evidence, routed lifecycle, response roles/reviews/actions, triage, changes, schedules, held delivery history and complete import upload/plan/approval/provenance/erasure journals survive. Business is enabled with a genuinely pending bounded apply before export; restore preserves its history, disables opt-in and refuses the old grant/session/approval without advancing work. Native/checkpoint and CLI refuse invalid/unknown/over-limit data and storage faults atomically; CLI also fences erased records, excludes credentials, requires fresh owner mapping and pauses timers/approvals. Every new durable category under OC-023–051 and OC-053–072 must satisfy the same obligations before shipping. This completion establishes current archives and their Base replacements, with no claim that future paging/connectors/agents exist.
@@ -221,6 +247,8 @@ The numbered flows are acceptance requirements through the product’s public do
 53. **OC-053 — Public API, outbound events and reliable automation. Status: partial.** Create/acknowledge/reassign/resolve via a scoped API client, page through real records, hit limits and conflict stale edits. Observe signed outbound events, revoke a token/endpoint, fail and restart delivery, deduplicate a replay and inspect due/terminal/uncertain outcomes without double-changing incident state.
 
    Existing implementation / exercising flow: `src/api.ts`; `src/paging-api.ts`; `tests/runtime.mjs`. Protected internal HTTP APIs and concurrency checks exist; versioned service-account APIs and outbound outbox/webhooks are absent.
+
+   OC-041 inheritance before shipping: exercise API automation and outbound outbox delivery with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 
 54. **OC-054 — Operational readiness and switching acceptance. Status: partial.** Operate the release at the OC-064 reference load and publish the measured values against its bars; stop each intake/timer/identity/storage/provider path, observe independent missed-deadline alarms and recover from backup. Inspect measured latencies/capacity and unanswered obligations, execute the buyer’s real-device cutover checklist and show unsupported/unproven rows accurately.
 
@@ -262,9 +290,13 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing evidence: no implementing flow; this is required target acceptance. No action library, runner or executor connector exists.
 
+   OC-041 inheritance before shipping: exercise library automation and executor actions with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
 64. **OC-064 — Stated paging timing bars and reference load. Status: missing.** Drive the reference load through the public intake doors, with provider fakes only at the paid network edge for timing and a real-phone sample for end-to-end receipt. Measure p50, p95, p99 and maximum for intake receipt, intake to first attempt, deadline lateness, stop-after-acknowledgment and provider acceptance (per channel, and per OC-066 country for SMS and voice), and compare each with its bar. Confirm that no deadline fires early and that a 5-minute escalation fires between 5:00 and 5:30 at p99, with OC-071 bundling on throughout the burst. Publish the measured values in the OC-054 readiness matrix.
 
    Existing evidence: no implementing flow; this is required target acceptance. No paging exists to measure; no reference-load harness or published measurements exist.
+
+   OC-041 inheritance before shipping: exercise provider attempts and timing outcomes with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 
 65. **OC-065 — Change events and recent changes for responders. Status: partial.** Send a change through the PagerDuty-compatible change endpoint and a GitHub deployment webhook, one for the alerting service and one decoy for an unrelated service, plus one for a dependency. Trigger the alert and observe that no page is caused by any change event. The recent-changes panel lists the service's and the dependency's changes, labeled, and omits the unrelated decoy. A user without access to the service sees none of them. Replay a change event and observe one record.
 
@@ -274,9 +306,13 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing evidence: no implementing flow; this is required target acceptance. Only the paging refusal exists; no SMS/voice provider, country list, E.164 country check or sender registration exists in any country.
 
+   OC-041 inheritance before shipping: exercise international provider attempts with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
+
 67. **OC-067 — Service alert channels and chat on-call and page commands. Status: missing.** Connect #payments-alerts to the Payments service with a high-urgency-only filter. Trigger a low-urgency and a high-urgency alert-only page, and observe that only the high-urgency one is posted. Acknowledge it from the button and see the message and the web state update, then snooze and reassign it from the buttons and see each change in place and in the thread. See a viewer's button press refused with no state change, and replay a signed button payload with one state change. Run the on-call command across a handoff and compare its answer with now/next. Page the service from Slack and observe the escalation start. Archive the channel and observe a visible posting failure while the page still reaches the responder's phone.
 
    Existing evidence: no implementing flow; this is required target acceptance. No Slack/Teams app, service channel connection, interactive alert message or chat command exists.
+
+   OC-041 inheritance before shipping: exercise chat commands and channel publication with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 
 68. **OC-068 — Manual pages, responder requests and paging a person directly. Status: partial.** A responder on the Support team creates a high-urgency incident on "Payments" from the web, assigned to a named engineer, with no alert. The engineer is phoned within the OC-064 intake-to-first-attempt bar, and the notification names the creator. Not acknowledging escalates per that user-assignment rule, and the outcome is recorded. Create a policy-targeted page from the mobile app and through the API with a repeated idempotency key, and observe one incident paging that policy instead of the service's. Request a second responder from Slack, observe a separate page and acknowledgment, and decline a third request and see the requester notified. See a stakeholder's and a viewer's attempts refused with nothing created.
 
@@ -330,4 +366,4 @@ Run on 19 October 2026 (10:07–10:09 UTC) against `cd1ef1c3748cbaa43bcda89470ab
 
 ## Clause status totals
 
-**26 done**, **28 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
+**27 done**, **27 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
