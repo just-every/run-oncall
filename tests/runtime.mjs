@@ -727,7 +727,7 @@ try {
     assert.ok(mutation.committed.some(row => row.source === admittedSource), "rotation and revocation retain the admitted source's random audit alias");
   const auditText = JSON.stringify(await auditExport(cookie)).toLowerCase();
   const privateValues = ["Admin", "Viewer", "synthetic-local-testing-password", "synthetic-viewer-testing-password", key, signedKey, rotatedNativeKey,
-    event.title, incident.summary, "Taking responsibility", "+61400123987", cookie.split("=")[1], admin.id, viewer.id,
+    event.title, "Sufficient exposure observed", "Taking responsibility", "+61400123987", cookie.split("=")[1], admin.id, viewer.id,
     ...rows("SELECT salt,digest FROM credentials").flatMap(row => [row.salt, row.digest]),
     ...rows("SELECT digest,signing_custody FROM sources").flatMap(row => [row.digest, row.signing_custody]).filter(Boolean)];
   for (const value of privateValues) assert.ok(!auditText.includes(value.length < 10 ? JSON.stringify(value.toLowerCase()) : value.toLowerCase()), "audit export contains no names, passwords, messages, phones, tokens or credential material");
