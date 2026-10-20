@@ -667,7 +667,7 @@
       "executable": false
     },
     "src/audit-request.ts": {
-      "sha256": "d9ceced9a72c31c386d8858a7ec19e23844bef8322f14ef395f7abebce88d18a",
+      "sha256": "c535d52794c237ed605b3f2c0ab54933c63c1e57457c7a8dd28b4877943d7397",
       "executable": false
     },
     "src/audit-store.ts": {
@@ -3159,7 +3159,7 @@
       "executable": false
     },
     "src/portability-policy.mjs": {
-      "sha256": "41981198d272253fe01c52984583457a81567bfd60d93ec8eb135abaebdc493e",
+      "sha256": "77de67fbbfca2c885a39b41adcd50bd1ec32e422d3eea531e4812eabb8058e48",
       "executable": false
     },
     "src/raw.d.ts": {
