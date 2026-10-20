@@ -672,7 +672,7 @@ export function validateArchive(value: any): State {
       "decision",
       "routingSnapshot",
     ], ["urgency"]);
-    signalInput(e,e.source.startsWith("email:"));
+    signalInput(e,typeof e.source==="string"&&e.source.startsWith("email:"));
     date(e.acceptedAt);
     if (
       !value.services.some(

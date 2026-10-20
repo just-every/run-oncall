@@ -30,7 +30,7 @@ try {
   assert.equal(ok(await request('/api/state')).alerts.find(a=>a.id===emailReceipts[0].alert).events.length,3);
   const unique='duplicate-email';await mail(w,local,'Duplicate failure',{id:unique});await mail(w,local,'Duplicate failure',{id:unique});
   emails=ok(await request('/api/email'));assert.equal(emails.receipts.filter(r=>r.address==='email-db').length,4);assert.equal(emails.receipts.at(-1).deliveries,2);
-  await mail(w,local,'Spoofed owner',{auth:'fail',from:'owner@example.test'});
+  await mail(w,local,'Spoofed owner',{id:'spoofed',auth:'fail',from:'owner@example.test'});await mail(w,local,'Spoofed owner',{id:'spoofed',auth:'fail',from:'owner@example.test'});assert.equal(ok(await request('/api/email')).receipts.at(-1).deliveries,2);
   await mail(w,local,'Oversize',{body:'x'.repeat(513*1024)});
   await mail(w,local,'Malformed',{raw:`From: monitor@example.test\r\nTo: ${local}@inbound.example.test\r\nMessage-ID: <malformed@monitor.example.test>\r\nAuthentication-Results: mx.cloudflare.net; dmarc=pass header.from=example.test\r\nContent-Type: multipart/mixed; boundary=broken\r\n\r\n--broken\r\nContent-Type: text/plain\r\n\r\nnot closed`});
   await mail(w,localPart(),'Unknown integration');
@@ -38,9 +38,6 @@ try {
   const attachmentRaw=`From: monitor@example.test\r\nTo: ${local}@inbound.example.test\r\nMessage-ID: <attachments@monitor.example.test>\r\nSubject: Attachment failure\r\nAuthentication-Results: mx.cloudflare.net; dmarc=pass header.from=example.test\r\nContent-Type: multipart/mixed; boundary=parts\r\n\r\n--parts\r\nContent-Type: text/plain\r\n\r\nSafe monitor result\r\n--parts\r\nContent-Type: text/html\r\n\r\n<script>throw new Error('html_must_not_survive')</script>\r\n--parts\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment; filename=data.bin\r\n\r\nattachment_must_not_survive\r\n--parts--\r\n`;
   await mail(w,local,'Attachment failure',{raw:attachmentRaw});assert.ok(!JSON.stringify(ok(await request('/api/email'))).includes('must_not_survive'));
   await mail(w,local,'Attachment limit',{raw:attachmentRaw.replace('attachment_must_not_survive','b'.repeat(65*1024)).replace('<attachments@','<overattachment@')});assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'inbound_attachment_limit');
-  ok(await request('/api/command',{type:'service',id:'mail-map',name:'Nightly staging',environment:'staging',owner:actor.id,runbook:[],pager:''}));
-  const mapPart=localPart();ok(await request('/api/email/addresses',{...addressInput,id:'unmapped-mail',service:'mail-map',localPart:mapPart}),201);
-  ok(await request('/api/command',{type:'service',id:'mail-map',name:'Nightly staging',environment:'production',owner:actor.id,runbook:[],pager:''}));await mail(w,mapPart,'Wrong environment');assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'unmapped_service_environment');
   const emailBeforeFailure=ok(await request('/api/archive'));
   w.sql("CREATE TRIGGER reject_email_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.feature='email' BEGIN SELECT RAISE(ABORT,'synthetic email audit failure'); END");
   await mail(w,local,'Must roll back');w.sql('DROP TRIGGER reject_email_audit');assert.deepEqual(ok(await request('/api/archive')),emailBeforeFailure);
@@ -110,5 +107,12 @@ try {
   await w.stop();await w.start();assert.deepEqual(ok(await request('/api/state')).intakeReceipts,archive.intakeReceipts);
   assert.deepEqual(state.incidents,archive.incidents);assert.equal(state.events.find(e=>e.eventId==='held-trigger').generation,'held-cycle');
   assert.equal(state.members.length,original.members.length+1);
+  // A restored historical address with a now-unmapped environment remains visible,
+  // and even a freshly rotated credential cannot grant it another environment.
+  const unmapped=ok(await request('/api/archive')),mapPart=localPart(),at=new Date().toISOString();
+  unmapped.emailAddresses.push({id:'unmapped-mail',name:'Historical staging monitor',service:'payments',environment:'staging',owner:actor.id,active:false,revision:1,at});
+  unmapped.emailRules.push({id:'unmapped-mode',address:'unmapped-mail',version:1,mode:'subject',fallback:'subject',rules:[],by:actor.id,at});
+  const unmappedRestore=await request('/api/restore',{mode:'replace',archive:unmapped});ok(unmappedRestore);cookie=unmappedRestore.cookie;
+  ok(await request('/api/email/addresses/unmapped-mail/rotate',{revision:1,localPart:mapPart}));await mail(w,mapPart,'Wrong environment');assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'unmapped_service_environment');
   console.log('OC-033 inbound email accepts, deduplicates, recovers and quarantines by address mode and rule without granting authority to the sender. Compatible intake: provider lifecycles, authority, concurrency, rollback, key rotation/revoke, native integrity and inactive archive/restart');
 } finally {await w.close();}
