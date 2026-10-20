@@ -108,7 +108,7 @@ The response ownership section assigns/transfers commander, scribe, communicatio
 
 Repeated subject-mode failures append to one derived generation and one recorded obligation. A custom `FAILED: (\S+)` trigger and `OK: (\S+)` resolve can both capture group 1: `FAILED: nightly-db` and `OK: nightly-db` act on the same key; `nightly-web` stays separate. Activity explains each mode, rule version, extracted key and outcome. Recovery says **stopped by source recovery** with its email receipt. Paging is OFF, so this is a labelled non-automatic state. A declared incident remains open for the responder's recovery evidence and resolution summary.
 
-For native Events API HMAC requests, save your JSON as `event.json`, set the scoped source key privately in `ONCALL_SOURCE_KEY`, and sign the exact bytes sent:
+For native Events API HMAC requests, save your JSON as `event.json`, export the scoped source key privately as `ONCALL_SOURCE_KEY`, and sign the exact bytes sent:
 
 ```sh
 ONCALL_TIMESTAMP=$(date +%s)

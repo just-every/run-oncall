@@ -225,6 +225,12 @@
       "name": "0130_import_audit_lifecycle.sql",
       "sha256": "763b53e17d4e04d9e79cd92b9196ed24bc0cbd89c571f4e71865e91a61a7e0f5",
       "sql": "-- A committed import attempt survives a lost Worker or response. No source\n-- records, names, addresses or bearer grants belong in this ledger.\nCREATE TABLE oc_import_lifecycle (\n    job_key TEXT PRIMARY KEY, job_id TEXT UNIQUE, plan_id TEXT UNIQUE,\n    state TEXT NOT NULL CHECK(state IN ('active','idle','completed','failed','interrupted')),\n    lease_token TEXT, lease_expires INTEGER,\n    accepted_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, reason_code TEXT);\n\nCREATE INDEX oc_import_lifecycle_expiry ON oc_import_lifecycle(state,lease_expires);\n\n-- Existing unfinished jobs get a bounded grace period on held-data upgrades.\nINSERT INTO oc_import_lifecycle(job_key,job_id,plan_id,state,lease_expires,accepted_at,updated_at)\n SELECT 'job:'||j.id,j.id,p.id,\n CASE WHEN j.state IN ('queued','applying') THEN 'active' WHEN j.state='failed' THEN 'failed'\n ELSE 'completed' END,\n CASE WHEN j.state IN ('queued','applying') THEN unixepoch()*1000+300000 ELSE NULL END,\n unixepoch()*1000,unixepoch()*1000\n FROM ik_jobs j LEFT JOIN ik_door_plans p ON j.operation_key='door:'||p.id;\n\nCREATE TRIGGER oc_import_accepted AFTER INSERT ON ik_jobs BEGIN\n INSERT OR IGNORE INTO oc_import_lifecycle(job_key,job_id,plan_id,state,lease_expires,accepted_at,updated_at)\n SELECT 'job:'||NEW.id,NEW.id,p.id,'active',unixepoch()*1000+300000,unixepoch()*1000,unixepoch()*1000\n FROM (SELECT 1) LEFT JOIN ik_door_plans p ON NEW.operation_key='door:'||p.id;\n UPDATE oc_import_lifecycle SET job_id=NEW.id WHERE plan_id IN\n  (SELECT id FROM ik_door_plans WHERE NEW.operation_key='door:'||id);\n UPDATE ik_door_plans SET job_id=NEW.id WHERE NEW.operation_key='door:'||id AND job_id IS NULL;\nEND;\n\n-- The kit permits retrying failed legacy jobs. An interrupted job instead needs\n-- explicit rollback/new review: it must never resume effects after restoration.\nCREATE TRIGGER oc_import_no_interrupted_replay BEFORE UPDATE OF state,checkpoint ON ik_jobs\n WHEN NEW.state IN ('queued','applying','completed') AND EXISTS\n (SELECT 1 FROM oc_import_lifecycle WHERE job_id=OLD.id AND state='interrupted')\n BEGIN SELECT RAISE(ABORT,'IMPORT_INTERRUPTED_REQUIRES_ROLLBACK'); END;\n\nCREATE TRIGGER oc_import_terminal AFTER UPDATE OF state ON ik_jobs\n WHEN NEW.state NOT IN ('queued','applying') BEGIN\n UPDATE oc_import_lifecycle SET\n  state=CASE WHEN state='interrupted' THEN state WHEN NEW.state='failed' THEN 'failed' ELSE 'completed' END,\n  reason_code=CASE WHEN state='interrupted' THEN reason_code WHEN NEW.state='failed' THEN 'import_apply_failed' ELSE NULL END,\n  lease_token=NULL,lease_expires=NULL,updated_at=unixepoch()*1000 WHERE job_id=NEW.id;\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0131_inbound_email.sql",
+      "sha256": "f8a56b7797293c8928af3da8f1fe29ad135f288573492fd740989d42eda5d5eb",
+      "sql": "-- Additive: released coordination, intake, audit and import rows are untouched.\nCREATE TABLE oc_email_addresses(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_email_rules(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_email_samples(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_email_receipts(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_email_quarantine(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\n-- Retired address digests retain attribution for refused delivery; no plaintext or read credential.\nCREATE TABLE oc_email_credentials(digest TEXT PRIMARY KEY, address TEXT NOT NULL, active INTEGER NOT NULL CHECK(active IN (0,1)));\n\n-- Installation-local erasure fence for direct JSON/checkpoint restore.\nCREATE TABLE oc_email_erased_samples(id TEXT PRIMARY KEY);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
@@ -242,7 +248,8 @@
     "SETUP_TOKEN"
   ],
   "optionalSecretNames": [
-    "MAIL_API_KEY"
+    "MAIL_API_KEY",
+    "INBOUND_EMAIL_DOMAIN"
   ],
   "schedules": [],
   "healthPath": "/health",
