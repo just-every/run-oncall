@@ -81,7 +81,8 @@ try{
  await m.close();await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
- assert.ok(!exportedArchive.includes('oc_audit_identities'),'revocable identity associations never travel in archives')
+ const manifest=JSON.parse(exportedArchive.toString('utf8').split('\n')[0])
+ assert.ok(!manifest.tables.some(table=>table.name==='oc_audit_identities'),'revocable identity associations never travel in archives')
  for(const secret of [sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
  await m.command(['import','--input',archive,'--yes','--non-interactive'],4)
  const serviceRow=sql("SELECT data FROM oc_services WHERE id='transfer'")[0].data

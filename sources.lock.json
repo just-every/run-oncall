@@ -575,7 +575,11 @@
       "executable": false
     },
     "scripts/installer/archive-policy.mjs": {
-      "sha256": "ae6f2e51aa9274637e12eb5f29be86b08be430b6f9e2c57e513c7a7a4a0fb161",
+      "sha256": "71f85ac73e5975df3772e508aed2a777d497ac138568c81609b9a513f5201156",
+      "executable": false
+    },
+    "scripts/installer/audit-archive.mjs": {
+      "sha256": "dc2a55281a38301c4458afb763dae844b28c2a2b3f0e76b59d19441255a49c9d",
       "executable": false
     },
     "scripts/installer/local.mjs": {
@@ -3607,7 +3611,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "c62ef2fa790a0fd860179e2b38cd4c7aed3ab63aa718b12db672a60676e198a5",
+      "sha256": "f7ca145fcf59d8cef4344793588bd1d5c6387de24833f564469478d83801beaa",
       "executable": false
     },
     "tests/triage.mjs": {

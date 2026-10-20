@@ -1,4 +1,4 @@
-import {interruptRestoredImports} from '../../src/move-in/import-lifecycle-sql.mjs'
+import {interruptStagedImports,auditStagedRestore} from './audit-archive.mjs'
 import {pauseIntakeSources} from '../../src/intake/model.ts'
 import {pauseChangeSources} from '../../src/changes/model.ts'
 import {validateRecoveryCheckpoint} from '../../src/family/response-operations/recovery.ts'
@@ -9,20 +9,7 @@ import {portabilityPolicy} from '../../src/portability-policy.mjs'
 export default {
  ...portabilityPolicy,
  async validateStaged({db,tables,read}) {
-  // Revocable identity links never travel. A restored active import has no execution authority.
-  // Stage every interruption before portability atomically publishes the restored database.
-  if(tables.oc_import_lifecycle) {
-   const staged=query=>query.replace(/\b(oc_import_lifecycle|ik_jobs|ik_door_plans|ik_door_apply_failures)\b/g,name=>'"'+tables[name].replaceAll('"','""')+'"')
-   const active=(await read('ik_jobs')).filter(job=>['queued','applying'].includes(job.state))
-   for(const query of interruptRestoredImports)await db.prepare(staged(query)).run()
-   // Permanent safe crash evidence is part of the same staged publication.
-   if(active.length&&tables.oc_admin_audit) {
-    const audit='"'+tables.oc_admin_audit.replaceAll('"','""')+'"'
-    const clock=(await read('oc_audit_clock'))[0]?.revision??0,workspace=(await read('workspace_control'))[0]?.revision??0,paging=(await read('paging_control'))[0]?.revision??0,handoff=(await read('handoff_state'))[0]?.revision??0
-    for(const job of active)await db.prepare(`INSERT INTO ${audit}(id,kind,feature,actor,subject,source,at,before_revision,after_revision,outcome,workspace_before,workspace_after,paging_before,paging_after,handoff_before,handoff_after) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-     .bind(crypto.randomUUID(),'import.restore','import-door','anon-'+crypto.randomUUID(),'anon-'+crypto.randomUUID(),'anon-'+crypto.randomUUID(),new Date().toISOString(),clock,clock,'interrupted',workspace,workspace,paging,paging,handoff,handoff).run()
-   }
-  }
+  const auditRestore=await interruptStagedImports(db,tables,read)
   // Receiving opt-in is local authority; keep plans, approvals and replay journals as history.
   if(tables.ik_door_settings)await db.prepare('UPDATE "'+tables.ik_door_settings.replaceAll('"','""')+'" SET enabled=0').run()
   const control=(await read('workspace_control'))[0],paging=(await read('paging_control'))[0]
@@ -51,6 +38,7 @@ export default {
   const handoff=(await read('handoff_state'))[0]
   const held=await holdHandoffsForRecovery(JSON.parse(handoff.data),Date.now(),crypto.randomUUID(),'Portable restore; review required')
   if(JSON.stringify(held)!==handoff.data){const table='"'+tables.handoff_state.replaceAll('"','""')+'"';await db.prepare(`UPDATE ${table} SET data=?,revision=revision+1 WHERE id=1`).bind(JSON.stringify(held)).run()}
+  await auditStagedRestore(db,tables,read,auditRestore)
   return true
  },
 }
