@@ -21,28 +21,27 @@ export async function receiveEmail(message:ForwardableEmailMessage,env:Bindings)
     const domain=inboundDomain(env);
     let reason=!domain?'inbound_domain_not_configured':message.to.split('@')[1]?.toLowerCase()!==domain?'unknown_address':!address?'unknown_address':!credential?.active||!address.active?'revoked_address':!state.services.some(s=>s.id===address.service&&s.environment===address.environment)?'unmapped_service_environment':!state.members.some(m=>m.id===address.owner&&m.active&&m.role==='admin')?'integration_owner_inactive':'';
     if((state.emailReceipts??[]).filter(r=>r.address===(address?.id??null)&&Date.parse(r.at)>Date.now()-60000).length>=60)reason='address_rate_limit';
-    const receipt:EmailReceipt={id:crypto.randomUUID(),address:address?.id??null,at,lastDelivery:at,messageDigest:null,deliveries:1,sample:null,decision:null,outcome:'refused',diagnostic:reason,alert:null,event:null,generation:null,obligation:null,stop:null};
+    const suppliedId=message.headers.get('message-id'),messageDigest=suppliedId&&suppliedId.length<=1000&&/^<[^<>\s]+>$/.test(suppliedId)?await changeHash((address?.id??digest)+'|'+suppliedId):null;
+    const previous=messageDigest?state.emailReceipts?.find(r=>r.address===(address?.id??null)&&r.messageDigest===messageDigest):undefined;
+    if(previous) {
+      previous.deliveries++;previous.lastDelivery=at;previous.lastDiagnostic=reason||'duplicate_message_id';auditOutcome(db,'refused');
+      const result=await db.batch(workspaceWrite(db,state,revision,{sql:'1=1',values:[]}));
+      if(result[0].meta.changes!==1)fail('Email admission changed; provider must retry',409);
+      message.setReject(previous.lastDiagnostic+'; original receipt retained');return;
+    }
+    const version=state.emailRules?.filter(v=>v.address===address?.id).at(-1);
+    if(!reason&&!version)reason='email_mode_missing';
+    const receipt:EmailReceipt={id:crypto.randomUUID(),address:address?.id??null,at,lastDelivery:at,lastDiagnostic:null,messageDigest,deliveries:1,sample:null,decision:version?{mode:version.mode,version:version.version,rule:null,key:null,action:'quarantine',reason:reason||'not_evaluated',severity:'warning'}:null,outcome:'refused',diagnostic:reason,alert:null,event:null,generation:null,obligation:null,stop:null};
     if(!reason) {
       let parsed:Awaited<ReturnType<typeof parseEmail>>|undefined;
       try {parsed=await parseEmail(message,message.to.split('@')[0]);}catch(error){reason=emailDiagnostic(error);}
       if(parsed) {
-        receipt.messageDigest=parsed.messageId?await changeHash(parsed.messageId):null;
-        const previous=receipt.messageDigest?state.emailReceipts?.find(r=>r.address===address!.id&&r.messageDigest===receipt.messageDigest):undefined;
-        if(previous) {
-          previous.deliveries++;previous.lastDelivery=at;
-          auditOutcome(db,'refused');
-          const result=await db.batch(workspaceWrite(db,state,revision,{sql:'1=1',values:[]}));
-          if(result[0].meta.changes!==1)fail('Email admission changed; provider must retry',409);
-          message.setReject('duplicate_message_id; original receipt retained');return;
-        }
         const sample={id:receipt.id,address:address!.id,subject:parsed.subject,text:parsed.text,sender:parsed.sender,at};
         (state.emailSamples??=[]).push(sample);receipt.sample=sample.id;
-        const version=state.emailRules?.filter(v=>v.address===address!.id).at(-1);
-        if(!version)reason='email_mode_missing';
-        else applyEmail(state,address!,version,sample,receipt);
+        applyEmail(state,address!,version!,sample,receipt);
       }
     }
-    if(reason){receipt.outcome='quarantined';receipt.diagnostic=reason;}
+    if(reason){receipt.outcome='quarantined';receipt.diagnostic=reason;if(receipt.decision)receipt.decision.reason=reason;}
     (state.emailReceipts??=[]).push(receipt);
     if(['quarantined','refused'].includes(receipt.outcome)) {
       (state.emailQuarantine??=[]).push({id:receipt.id,receipt:receipt.id,address:receipt.address,reason:receipt.diagnostic});
