@@ -97,7 +97,7 @@ try{
  await m.command(['import','--input',invalidRecords,'--yes','--non-interactive'],1)
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_members UNION ALL SELECT COUNT(*) FROM move_in_objects')[0].n,0,'valid-checksum invalid product records never publish')
  await m.command(['import','--input',archive,'--yes','--non-interactive'])
- assert.equal(sql('SELECT COUNT(*) AS n FROM credentials UNION ALL SELECT COUNT(*) FROM sessions UNION ALL SELECT COUNT(*) FROM operator_members').every(r=>r.n===0),true,'credentials and authority do not travel')
+ assert.equal(sql('SELECT COUNT(*) AS n FROM credentials UNION ALL SELECT COUNT(*) FROM sessions UNION ALL SELECT COUNT(*) FROM operator_members UNION ALL SELECT COUNT(*) FROM oc_audit_identities').every(r=>r.n===0),true,'credentials, authority and audit identity associations do not travel')
  const restoredJob=JSON.parse(sql("SELECT data FROM paging_jobs WHERE id='held-pending'")[0].data);assert.equal(restoredJob.status,'paused');assert.equal(restoredJob.nextDue,null);assert.deepEqual(restoredJob.history.slice(0,-1),pending.history)
  await mkdir('.rer/local',{recursive:true,mode:0o700});await writeFile(answers,JSON.stringify({OWNER_EMAIL:'new-owner@example.test'}),{mode:0o600});await m.command(['setup','--answers',answers,'--port',String(m.port),'--non-interactive']);await business.configure();await m.start();cookie=await m.owner()
  assert.equal(ok(await req('/api/session')).member,null,'new Base owner cannot silently claim restored identities')
@@ -119,6 +119,10 @@ try{
  const handoff=ok(await req('/api/handoffs/archive-copy'));assert.equal(handoff.record.held,true);assert.deepEqual(handoff.record.payload,record.payload);assert.equal((await req('/api/handoffs/archive-copy/export')).status,409,'restored approval cannot export until reviewed again')
  const restoredAudit=new Map(ok(await req('/api/audit/export')).rows.map(row=>[row.id,row]))
  for(const row of permanentAudit)assert.deepEqual(restoredAudit.get(row.id),row,'OC-041 portable restore retains every permanent audit row unchanged')
+ const restoreFact=[...restoredAudit.values()].find(row=>row.kind==='restore.installation'&&row.outcome==='accepted')
+ assert.ok(restoreFact,'the restored state publishes its own accepted audit fact')
+ assert.equal(restoreFact.workspaceAfter,prior.revision);assert.equal(restoreFact.handoffAfter,sql('SELECT revision FROM handoff_state')[0].revision,'restore audit records the final held handoff revision')
+ assert.ok([...restoredAudit.values()].some(row=>row.kind==='import.restore'&&row.outcome==='interrupted'),'restored pending import work publishes a permanent interrupted audit fact')
  const restoredImports=importRows()
  for(const table of importTables) {
   let expected=importHistory[table]
@@ -139,7 +143,7 @@ try{
  const erased=ok(await erase('alice@example.test'));assert.ok(erased.receiptId)
  const safeAudit=ok(await req('/api/audit/export')).rows,auditById=new Map(safeAudit.map(row=>[row.id,row]))
  for(const row of auditBeforeErasure)assert.deepEqual(auditById.get(row.id),row,'subject erasure never rewrites permanent audit chronology')
- for(const secret of ['alice@example.test',sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey])assert.ok(!JSON.stringify(safeAudit).includes(secret),'protected audit export holds no erased identity or secret')
+ for(const secret of ['alice@example.test','portable-signed','portable-ci','Portable CI context','portable-monitor','portable-alertmanager',sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey])assert.ok(!JSON.stringify(safeAudit).includes(secret),'protected audit export holds no erased identity or secret')
  assert.equal((await erase('alice@example.test')).status,404,'repeating an erasure changes nothing')
  await m.close();await m.command(['export','--output',later,'--non-interactive']);await m.command(['reset','--yes','--non-interactive'])
  await m.command(['import','--input',archive,'--journal',later,'--yes','--non-interactive'],4)

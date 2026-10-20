@@ -3407,7 +3407,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "8ff9775ccc0c709a8b809d942fa0e5e2b3d8b8f7e074ab32b592c38ec1232ad0",
+      "sha256": "f8c0335f6cb4faf5504f9f3776223aa3b66312e1b259dd18ac15cfe7ca8871ca",
       "executable": false
     },
     "tests/alert-severity-browser.mjs": {
@@ -3611,7 +3611,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "f7ca145fcf59d8cef4344793588bd1d5c6387de24833f564469478d83801beaa",
+      "sha256": "da56d6749ed5b8c657d51dbf395e31f539c8ccb505d2241c4daf1dd73c2c1442",
       "executable": false
     },
     "tests/triage.mjs": {

@@ -140,13 +140,16 @@ try {
  const layers=await refused('pagerduty','pagerduty-layers')
  named(reasons(layers),[/Concurrent\/layered rotations cannot be mapped: Ended later, Current/,/timeline differs: 2026-03-08T13:00:00\.000Z: incumbent alice@example\.test, Oncall bob@example\.test/,/has no UTC-offset change in America\/New_York/,/no final timeline supplied/])
  assert.equal(layers.items.find(i=>i.name==='History rota').unmapped.filter(u=>u.field==='schedule_layers.history').length,2,'ended layers are named history, not coverage')
- // A refused preview writes zero rows, as before the door: its upload goes with the refusal, so no chunk keeps a refused key.
+ // A refused preview retains safe audit metadata; its upload goes with the refusal, so no chunk keeps a refused key.
  const rowCounts=()=>{const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%'").map(r=>r.name);return Object.fromEntries(w.statements(names.map(name=>`SELECT COUNT(*) AS n FROM "${name}"`).join(';')).map((rows,i)=>[names[i],rows[0].n]))}
  // (A preview first gives way to the screen's own earlier unconfirmed preview, as a preview always did, so rows may go; none may be added.)
- const wroteNothing=(before,message)=>{const after=rowCounts();assert.deepEqual(Object.keys(after).filter(t=>after[t]>before[t]),[],message);assert.equal(after.ik_door_uploads,before.ik_door_uploads,message);assert.equal(after.ik_door_chunks,before.ik_door_chunks,message)}
+ const wroteNothing=(before,message)=>{const after=rowCounts();assert.deepEqual(Object.keys(after).filter(t=>!['oc_admin_audit','oc_audit_identities'].includes(t)&&after[t]>before[t]),[],message);assert.equal(after.ik_door_uploads,before.ik_door_uploads,message);assert.equal(after.ik_door_chunks,before.ik_door_chunks,message)
+  const added=after.oc_admin_audit-before.oc_admin_audit;assert.ok(added>0,'the refused preview retains its permanent audit')
+  assert.ok(w.sql(`SELECT outcome FROM oc_admin_audit ORDER BY ordinal DESC LIMIT ${added}`).some(row=>row.outcome==='refused'),'the new audit explicitly retains the refusal outcome')
+ }
  const chunksHolding=secret=>w.sql('SELECT base64 FROM ik_door_chunks').filter(c=>Buffer.from(c.base64,'base64').toString().includes(secret)).length
  for(const [vendor,file,field] of [['opsgenie','credential-opsgenie','apiKey'],['pagerduty','credential-pagerduty','integration_key']]){const rows=rowCounts(),refused=ok(await door.preview(vendor,await readFile(`tests/fixtures/${file}.json`,'utf8')),400);assert.match(refused.error,new RegExp(`^Credential-bearing field "${field}"`));assert.ok(refused.code,'the refusal carries a code, so the screen shows its sentence as written')
-  assert.equal(chunksHolding('synthetic-fixture-credential'),0,`no ik_door_chunks row decodes to the refused ${field}`);wroteNothing(rows,'the refused preview wrote zero rows')}
+  assert.equal(chunksHolding('synthetic-fixture-credential'),0,`no ik_door_chunks row decodes to the refused ${field}`);wroteNothing(rows,'the refused preview retained audit without import rows or bytes')}
  record('OC-021: every shape Oncall cannot hold exactly was rejected by name with no effect; ended layers kept as history; credential-bearing keys refused and not kept')
  // Variants of the bare fixtures run preview, apply, coverage at a sample instant and undo: a refused schedule keeps every reason and is never imported, so it names no one.
  const variant=(vendor,change)=>{const value=JSON.parse(sources[vendor]);change(value);return JSON.stringify(value)}
@@ -169,7 +172,7 @@ try {
   assert.equal(w.sql('SELECT COUNT(*) AS n FROM move_in_objects')[0].n,0)
  }
  const twinRows=rowCounts(),twins=ok(await door.preview('opsgenie',variant('opsgenie',s=>s.users.data.push({id:'alice-again',username:'Alice@Example.test',fullName:'Alice Again'}))),400)
- assert.equal(twins.code,'DUPLICATE_TARGET');wroteNothing(twinRows,'a named refusal of the file wrote zero rows');for(const who of ['alice@example.test','Alice Again (Alice@Example.test)'])assert.ok(twins.error.includes(who),'the refusal names both people')
+ assert.equal(twins.code,'DUPLICATE_TARGET');wroteNothing(twinRows,'a named file refusal retained audit without import rows or bytes');for(const who of ['alice@example.test','Alice Again (Alice@Example.test)'])assert.ok(twins.error.includes(who),'the refusal names both people')
  record('OC-021: active layers, override lists without a schedule id, disabled schedules and unexported override users are matched or refused by name through apply, coverage and undo; case-only duplicate emails are named')
  // Erasure matches the person by exact identity: erasing al@example.test leaves sal@example.test's slot, coverage and the import's undo intact.
  const people=[['u-al-0','al@example.test','Al Erased'],['u-sal-0','sal@example.test','Sal Kept'],['u-kai-0','kai@example.test','Kai Kept']].map(([id,username,fullName])=>({id,username,fullName}))
