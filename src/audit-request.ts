@@ -19,11 +19,12 @@ function route(path: string): { feature: string; kind: string } {
   if (path === '/api/audit/export') return { feature: 'audit', kind: 'audit.export' }
   if (path.startsWith('/api/operator/import/')) return { feature: 'import-door', kind: importKind(path) }
   if (path.startsWith('/api/rer/import/')) return { feature: 'import-door', kind: importKind(path) }
-  const prefixes = ['identity-link','command','members','password','sources','paging','schedules','delivery','triage','handoffs','routing','urgency','changes','intake','monitoring','email','move-in','restore','recovery','setup','login','logout']
+  const prefixes = ['identity-link','command','members','password','sources','paging','schedules','delivery','triage','handoffs','routing','urgency','changes','intake','monitoring','email','move-in','restore','recovery','setup','login','logout','service-accounts','webhooks','outbox']
+  if (path === '/api/v1' || path.startsWith('/api/v1/')) return { feature: 'service-api', kind: 'service-api.request' }
   const feature = prefixes.find(value => path === `/api/${value}` || path.startsWith(`/api/${value}/`))
     ?? (path.startsWith('/auth/') || path.startsWith('/__dev/') ? 'access' : path.startsWith('/api/ingress/') || path.startsWith('/v2/') || path.startsWith('/integrations/') || path.startsWith('/generic/') ? 'ingest' : 'workspace')
   const operation = path.split('/').at(-1) ?? ''
-  const operations = new Set(['publish','revoke','review','prepare','export','ack','cancel','resume','apply','erase','undo','approve','rotate','overrides','schedules','policies','jobs','tick','callbacks','bulk','views','archive','restore','key','confirm','logout','identity','imports'])
+  const operations = new Set(['publish','revoke','review','prepare','export','ack','cancel','resume','apply','erase','undo','approve','rotate','overrides','schedules','policies','jobs','tick','callbacks','bulk','views','archive','restore','key','confirm','logout','identity','imports','replay','dispatch'])
   return { feature, kind: `${feature}.${operations.has(operation) ? operation : 'request'}` }
 }
 export async function auditedRequest(request: Request, env: Bindings, handle: (env: Bindings) => Promise<Response>): Promise<Response> {

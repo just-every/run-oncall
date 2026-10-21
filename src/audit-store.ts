@@ -10,6 +10,7 @@ export function auditIdentity(db: D1Database, value: { actor?: AuditIdentity; su
   const context = contexts.get(db)
   if (context) Object.assign(context, value)
 }
+export function auditActor(db: D1Database) { return contexts.get(db)?.actor }
 export function setAuditSubject(db: D1Database, kind: string, id: string) { auditIdentity(db, { subject: { kind, id } }) }
 export function auditOutcome(db: D1Database, outcome?: AuditOutcome) {
   const context = contexts.get(db)

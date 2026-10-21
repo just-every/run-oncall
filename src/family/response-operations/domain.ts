@@ -8,6 +8,8 @@ import { validateTriageRecords, type TriageRecord } from "./triage.ts";
 import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from '../../urgency/types.ts';
 import { admitAlertUrgency, declarationUrgency, serviceUrgency } from '../../urgency/model.ts';
 import { validateUrgencyArchive } from '../../urgency/archive.ts';
+import { actorId, isServiceActorId, serviceActorRef, validateServiceApiArchive } from '../../service-api/model.ts';
+import type { OutboxOperation, ServiceAccount, WebhookEndpoint } from '../../service-api/types.ts';
 export type Role = "admin" | "responder" | "viewer";
 export type Member = { id: string; name: string; role: Role; active: boolean };
 export type Service = {
@@ -141,6 +143,10 @@ export type State = {
   emailSamples?: EmailSample[];
   emailReceipts?: EmailReceipt[];
   emailQuarantine?: EmailQuarantine[];
+  serviceAccounts?: ServiceAccount[];
+  webhookEndpoints?: WebhookEndpoint[];
+  /** Read-through archive projection of oc_outbox; never rewritten by a workspace save. */
+  outbox?: OutboxOperation[];
 };
 export const empty = (): State => ({
   schemaVersion: 1,
@@ -187,6 +193,12 @@ const stamp = (
   at: string,
 ): Entry => ({ id: crypto.randomUUID(), at, actor, kind, text: value });
 export function authority(state: State, actor: Member, admin = false) {
+  if (isServiceActorId(actor.id)) {
+    // A token never carries a human role: only the scoped API layer may act as a service account, and never as an administrator.
+    if (!state.serviceAccounts?.some(account => actorId(account.id) === actor.id && account.active)) fail("Access revoked", 401);
+    if (admin) fail("Insufficient role", 403);
+    return;
+  }
   const member = state.members.find((m) => m.id === actor.id && m.active);
   if (!member) fail("Access revoked", 401);
   if (member.role === "viewer" || (admin && member.role !== "admin"))
@@ -505,7 +517,12 @@ export function command(
     if (!next[incident.state].includes(input.state))
       fail("Invalid lifecycle transition");
     description = `${incident.state} → ${input.state}: ${text(input.summary, "transition summary", 3000)}`;
-    if (input.state === "acknowledged") { incident.commander = actor.id; incident.assignee = actor.id; }
+    if (input.state === "acknowledged") {
+      // A service account may acknowledge only on behalf of a named, active responder; responsibility is never a token's.
+      const responsible = isServiceActorId(actor.id) ? input.responsible : actor.id;
+      if (!state.members.some(m => m.id === responsible && m.active && m.role !== "viewer")) fail("Choose an active responder to take responsibility");
+      incident.commander = responsible; incident.assignee = responsible;
+    }
     if (input.state === "recovered") {
       incident.recovery = link(input.evidence);
       if (!incident.recovery) fail("Recovery evidence URL is required");
@@ -605,7 +622,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine"]);
+  ], ["triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "serviceAccounts", "webhookEndpoints", "outbox"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   for (const key of [
@@ -788,7 +805,7 @@ export function validateArchive(value: any): State {
       fail("Invalid incident alert references");
     array(i.timeline);
     i.timeline.forEach(entry);
-    if (i.timeline.some((e: any) => !hasMember(e.actor)))
+    if (i.timeline.some((e: any) => !hasMember(e.actor) && !serviceActorRef(value, e.actor)))
       fail("Invalid incident attribution");
     array(i.runbook);
     for (const r of i.runbook) {
@@ -819,6 +836,7 @@ export function validateArchive(value: any): State {
   validateChangeArchive(value);
   validateIntakeArchive(value);
   validateEmailArchive(value);
+  validateServiceApiArchive(value);
   if (value.triage !== undefined) validateTriageRecords(value.triage, value);
   return structuredClone(value);
 }

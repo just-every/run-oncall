@@ -1,6 +1,7 @@
 import { auditOutcome, setAuditSubject } from './audit-store'
 import { fail, type State } from './family/response-operations/domain';
 import { checkWorkspaceSize } from './workspace-store';
+import { enqueueStatements } from './service-api/outbox-sql';
 
 /** One independent incident + receipt transaction, without rewriting other entities. */
 export async function saveTriageItem(db: D1Database, state: State, revision: number, operationId: string,
@@ -14,6 +15,7 @@ export async function saveTriageItem(db: D1Database, state: State, revision: num
     .bind(state.revision, token, revision, ...authority.values, operationId, ...(incidentId ? [incidentId] : []))];
   if (incident) statements.push(db.prepare(`UPDATE oc_incidents SET data=? WHERE id=? AND ${gate}`).bind(JSON.stringify(incident), incident.id, token));
   statements.push(db.prepare(`UPDATE oc_triage SET data=? WHERE id=? AND ${gate}`).bind(JSON.stringify(operation), operationId, token));
+  if (incident) statements.push(...enqueueStatements(db, state, token, incident.id));
   const item=operation.kind==='bulk'?operation.results.at(-1):undefined;
   setAuditSubject(db,'entity',incidentId??item?.id??operationId);
   auditOutcome(db,item?.ok===false?'refused':undefined);

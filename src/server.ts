@@ -15,11 +15,13 @@ import {receivedRequest} from './request-body'
 import { workspaceDocument } from './workspace-document'
 import {readSessionCookie} from './session-cookie'
 import {importDoorResponse} from './move-in/door'
+import {takeDispatchDue} from './service-api/dispatch-hint'
+import {deliverInBackground} from './service-api/background'
 type Env=Bindings
 export default withDemo({
   async email(message,env) { await receiveEmail(message,runtimeBindings(env)); },
   async fetch(request,original,execution) {
-   return auditedRequest(request,original,async env => {
+   const answered=await auditedRequest(request,original,async env => {
     if (new URL(request.url).pathname === '/favicon.ico' && ['GET', 'HEAD'].includes(request.method))
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
@@ -61,5 +63,8 @@ export default withDemo({
     }
     return response;
    });
+   // Signed events queued by a committed change are delivered after the answer is sent, never inside it.
+   if(takeDispatchDue())execution.waitUntil(deliverInBackground(original))
+   return answered
   },
 } satisfies ExportedHandler<Env>, { seed: seedDemo })

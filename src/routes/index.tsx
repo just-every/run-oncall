@@ -7,6 +7,7 @@ import { ReviewsWorkspace } from '../reviews/ReviewsWorkspace';
 import { Followups } from '../reviews/Followups';
 import { RecentChanges } from "../changes/RecentChanges";
 import { ChangeSources } from "../changes/ChangeSources";
+import { ServiceAccess } from "../service-api/ServiceAccess";
 import { ServiceDependencies } from "../changes/Dependencies";
 import { IncidentTriage } from "../app/IncidentTriage";
 import { IncidentResponseControls } from "../app/IncidentResponseControls";
@@ -77,7 +78,8 @@ function Workspace() {
     s?.incidents.find((i) => i.id === selected) ?? s?.incidents[0];
   const service = s?.services.find((v) => v.id === incident?.service);
   const name = (id: string | null) =>
-    s?.members.find((m) => m.id === id)?.name ?? "Unassigned";
+    s?.members.find((m) => m.id === id)?.name ??
+    (id?.startsWith("sa:") ? (s?.serviceAccounts?.find((a) => "sa:" + a.id === id)?.name ?? "Service account") + " (service account)" : id === "erased-service-account" ? "Erased service account" : "Unassigned");
   const memberOptions = s?.members
     .filter((m) => m.active && m.role !== "viewer")
     .map((m) => (
@@ -564,6 +566,7 @@ function Workspace() {
               )}
             </section>
             {admin && <ChangeSources state={s} busy={w.busy} run={w.run} />}
+            {admin && <ServiceAccess state={s} busy={w.busy} run={w.run} />}
             {admin && (
               <section className="panel padded">
                 <h2>Add service</h2>

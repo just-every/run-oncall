@@ -3,6 +3,7 @@ import { operatorAuth, runtimeBindings, type Bindings } from './auth.server'
 import { changeHash, equalSignature } from './changes/credentials'
 import { readSessionCookie } from './session-cookie'
 import type { AuditIdentity } from './audit-store'
+import { tokenPrefix } from './service-api/credentials'
 
 /** Authenticate metadata before the bounded body reader can refuse an upload.
  * The ordinary handler still repeats its authority fence in the state transaction. */
@@ -23,6 +24,12 @@ export async function auditPrincipal(request: Request, env: Bindings): Promise<{
       const identity = { kind: type === 'ingress' ? 'source' : type === 'monitoring' ? 'intake-source' : 'change-source', id }
       return { actor: identity, source: identity }
     }
+  }
+  // A service-account token is a machine principal. It is attributed as itself, never as a member.
+  if (path.startsWith('/api/v1/')) {
+    const presented = bearer?.startsWith(tokenPrefix) && bearer.length <= 200 ? bearer : ''
+    const row = presented ? await env.DB.prepare('SELECT account FROM oc_api_credentials WHERE digest=?').bind(await changeHash(presented)).first<{ account: string }>() : null
+    return row ? { actor: { kind: 'service-account', id: row.account }, source: { kind: 'service-account', id: row.account } } : {}
   }
   const token = readSessionCookie(request)
   const native = async () => {

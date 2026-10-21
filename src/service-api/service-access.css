@@ -1,0 +1,4 @@
+.service-access-choices { border: 1px solid var(--app-line); border-radius: 10px; margin: 12px 0; padding: 10px 14px; min-width: 0; }
+.service-access-choices legend { font-weight: 650; padding: 0 6px; }
+.service-access-secret code { display: block; overflow-wrap: anywhere; user-select: all; padding: 10px; border: 1px solid var(--app-line); border-radius: 8px; background: var(--oc-paper); }
+.service-access li code { overflow-wrap: anywhere; }

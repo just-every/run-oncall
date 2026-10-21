@@ -1,4 +1,5 @@
 import {fail,link,text,type State,type Member,type Incident,type Action} from '../family/response-operations/domain.ts';
+import {serviceActorRef} from '../service-api/model.ts';
 const priorities=['P1','P2','P3'] as const;
 const responder=(state:State,id:string)=>state.members.some(m=>m.id===id&&m.active&&m.role!=='viewer');
 export function reviewCommand(state:State,actor:Member,incident:Incident,input:any,at:string):string|null {
@@ -33,7 +34,7 @@ export function reviewCommand(state:State,actor:Member,incident:Incident,input:a
  return null;
 }
 export function validateReviewFields(state:State){
- const member=(id:any)=>state.members.some(m=>m.id===id),date=(v:any)=>typeof v==='string'&&Number.isFinite(Date.parse(v));
+ const member=(id:any)=>state.members.some(m=>m.id===id)||serviceActorRef(state,id),date=(v:any)=>typeof v==='string'&&Number.isFinite(Date.parse(v));
  const exact=(v:any,keys:string[])=>v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===keys.length&&keys.every(k=>Object.hasOwn(v,k));
  for(const incident of state.incidents){
   const review=incident.reviewAcceptance;

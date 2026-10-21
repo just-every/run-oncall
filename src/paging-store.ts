@@ -25,9 +25,12 @@ function decodePagingRows(rows:D1Result<unknown>[]):PagingSnapshot {
 }
 /** Recovery alone joins communications; paging dispatch never depends on it. */
 export async function recoverySnapshot(db:D1Database) {
-  const tables=['paging_control','workspace','paging_schedules','paging_policies','paging_jobs','paging_receipts','paging_callbacks','handoff_state']
+  const tables=['paging_control','workspace','paging_schedules','paging_policies','paging_jobs','paging_receipts','paging_callbacks','handoff_state','oc_outbox']
   const rows=await db.batch(tables.map(table=>db.prepare(table==='workspace'?workspaceQuery:`SELECT * FROM ${table} ORDER BY rowid`)))
-  return {...decodePagingRows(rows),handoffs:await parseHandoffRow(rows[7].results[0])}
+  const snapshot=decodePagingRows(rows),outbox=rows[8].results.map((r:any)=>JSON.parse(r.data))
+  // Delivery history rides the checkpoint beside the coordination records it names.
+  if(outbox.length)snapshot.workspace.outbox=outbox
+  return {...snapshot,handoffs:await parseHandoffRow(rows[7].results[0])}
 }
 export function bound(archive:PagingArchive) {
   for(const [key,max] of Object.entries({schedules:64,policies:64,jobs:256,receipts:512,callbacks:2048}))

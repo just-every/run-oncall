@@ -4,6 +4,10 @@ import { auditTransaction, bindAuditContext, type AuditContext, type AuditOutcom
 const writes = (sql: string) => /^(?:INSERT|REPLACE|UPDATE|DELETE)\b/i.test(sql.replace(/\/\*[\s\S]*?\*\/|--[^\n]*/g, '').trim())
   || /^WITH\b[\s\S]*\b(?:INSERT|REPLACE|UPDATE|DELETE)\b/i.test(sql)
 
+const raw = new WeakMap<object, D1Database>()
+/** Throttling counters and lease heartbeats are operational state, not accepted product mutations; they alone bypass the audit batch. */
+export function rawDatabase(db: D1Database): D1Database { return raw.get(db) ?? db }
+
 /** Every application write, including a single-statement run/RETURNING, shares D1's batch rollback. */
 export function auditedDatabase(database: D1Database, context: AuditContext) {
   const originals = new WeakMap<object, { statement: D1PreparedStatement; sql: string }>()
@@ -50,5 +54,6 @@ export function auditedDatabase(database: D1Database, context: AuditContext) {
     return typeof value === 'function' ? value.bind(target) : value
   } })
   bindAuditContext(db, context)
+  raw.set(db, database)
   return { db, record: (outcome: AuditOutcome) => batch([], outcome) }
 }

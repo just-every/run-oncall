@@ -36,6 +36,10 @@ import { prepareHandoffReplacement } from "./handoff-store";
 import { installHandoffs } from "./handoff-api";
 import { preparePagingImport } from "./family/response-operations/paging-archive";
 import { handoff } from "./family/response-operations/integrations";
+import { installServiceApi } from "./service-api/v1";
+import { installServiceApiManagement } from "./service-api/owner-api";
+import { pauseServiceApi } from "./service-api/model.ts";
+import { loadOutbox, restoreStatements } from "./service-api/outbox-store";
 import { readSessionCookie, sessionCookieLine } from "./session-cookie";
 import {
   empty,
@@ -170,7 +174,7 @@ api.use("*", async (c, next) => {
     await discardDeniedBody(c);
     return c.json({ error: "Not found" }, 404);
   }
-  if (c.req.method !== "GET" && !compatiblePath(c.req.path) && !monitoringPath(c.req.path) && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && c.req.path !== "/v2/change/enqueue") {
+  if (c.req.method !== "GET" && !compatiblePath(c.req.path) && !monitoringPath(c.req.path) && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && !c.req.path.startsWith("/api/v1/") && c.req.path !== "/v2/change/enqueue") {
     if (c.req.header("origin") !== url.origin) {
       await discardDeniedBody(c);
       return c.json({ error: "Same-origin request required" }, 403);
@@ -368,6 +372,8 @@ const changeDeps = {body, load, state: authorizedState, save, guard: sessionGuar
 installChangeIntake(api, changeDeps);
 installCompatibleIntake(api, changeDeps);
 installMonitoringIntake(api, changeDeps);
+// Token-authenticated and versioned: it never reads the session cookie, so it sits before the session requirement.
+installServiceApi(api);
 api.get("/api/identity-link/administrators",restoredAdministrators);
 api.post("/api/identity-link",async c=>linkRestoredOwner(c,await body(c)));
 api.use("/api/*", async (c, next) => {
@@ -382,6 +388,7 @@ api.use("/api/*", async (c, next) => {
 });
 installChangeManagement(api, changeDeps);
 installNativeSources(api, changeDeps);
+installServiceApiManagement(api, {body, state: authorizedState, guard: sessionGuard});
 installIntakeManagement(api, changeDeps);
 installEmailManagement(api, changeDeps);
 installRoutingManagement(api, changeDeps);
@@ -494,11 +501,12 @@ api.get("/api/audit/export", async (c) => {
 api.get("/api/archive", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);
   c.header("Content-Disposition", 'attachment; filename="oncall-archive.json"');
-  return c.json(await authorizedState(c, true));
+  const state = await authorizedState(c, true), outbox = await loadOutbox(c.env.DB);
+  return c.json(outbox.length ? { ...state, outbox } : state);
 });
 api.post("/api/restore", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);
-  const input = await body(c, 2000000);
+  const input = await body(c, 4000000);
   if (input.mode !== "replace") fail("Explicit replace mode required");
   const value = validateArchive(input.archive);
   await emailErasureFence(c.env.DB,value);
@@ -544,6 +552,10 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   if(!parent)fail('Session expired or revoked',401);
   pauseChangeSources(value);
   pauseIntakeSources(value);
+  // Tokens, signing secrets, approvals and unfinished sends are installation-local authority: a restore keeps them as inactive history.
+  pauseServiceApi(value);
+  const outbox = value.outbox ?? [];
+  delete value.outbox;
   value.revision = old.revision + 1;
   const serialized = JSON.stringify(value);
   if (new TextEncoder().encode(serialized).length > 1000000)
@@ -556,6 +568,8 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
     c.env.DB.prepare("DELETE FROM oc_email_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_change_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_intake_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
+    ...["oc_api_credentials", "oc_webhook_credentials", "oc_api_idempotency", "oc_api_rate"].map(table => c.env.DB.prepare(`DELETE FROM ${table} WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)`).bind(restoreToken)),
+    ...restoreStatements(c.env.DB, outbox, restoreToken),
     c.env.DB.prepare(
       "UPDATE operator_members SET member_id=? WHERE member_id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)"
     ).bind(target,current.id,restoreToken),
