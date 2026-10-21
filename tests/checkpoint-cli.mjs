@@ -21,7 +21,14 @@ function exported(checkpoint,before) {
 // stored field and the entire attributed history prefix, including frozen data.
 export function assertCheckpointRestored(checkpoint,after,handoffs=checkpoint.handoffs) {
  const inactive=structuredClone(checkpoint.coordination)
- for(const key of ['changeSources','intakeSources','emailAddresses'])if(inactive[key])inactive[key]=inactive[key].map(source=>({...source,active:false}))
+ for(const key of ['changeSources','intakeSources','emailAddresses','apiClients','apiEndpoints'])if(inactive[key])inactive[key]=inactive[key].map(source=>({...source,active:false}))
+ if(inactive.apiOutbox)inactive.apiOutbox=inactive.apiOutbox.map(item=>{
+  const restored=after.coordination.apiOutbox.find(o=>o.id===item.id);assert.ok(restored)
+  if(!['queued','sending','failed'].includes(item.status))return {...item,authorized:false}
+  const event=restored.history.at(-1);assert.equal(event.reason,'restore-requires-authorization');assert.ok(Number.isFinite(Date.parse(event.at)))
+  assert.equal(event.status,item.status==='sending'?'uncertain':'interrupted')
+  return {...item,authorized:false,status:event.status,revision:item.revision+1,lease:null,leaseUntil:null,history:[...item.history,event]}
+ })
  assert.deepEqual({...after.coordination,revision:inactive.revision},inactive,'all coordination history survives; imported intake requires local reauthorization')
  assert.equal(after.paging.paging,'OFF');assert.equal(after.handoffs.delivery,'unsent')
  const expected=structuredClone(checkpoint.paging)

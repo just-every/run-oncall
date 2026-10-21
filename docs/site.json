@@ -79,6 +79,12 @@
           "title": "Urgency and support hours",
           "source": "docs/urgency.md",
           "summary": "Publish service urgency rules, preview support hours and keep attributed decisions on alerts."
+        },
+        {
+          "slug": "response-api",
+          "title": "Response API and outbound events",
+          "source": "docs/response-api.md",
+          "summary": "Scope machine clients, approve signed recipients, inspect durable failures and restore inactive."
         }
       ]
     },

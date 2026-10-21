@@ -42,5 +42,8 @@
       "environment": "INBOUND_EMAIL_DOMAIN",
       "optional": true
     }
+  ],
+  "crons": [
+    "* * * * *"
   ]
 }

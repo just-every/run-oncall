@@ -231,6 +231,12 @@
       "name": "0131_inbound_email.sql",
       "sha256": "f8a56b7797293c8928af3da8f1fe29ad135f288573492fd740989d42eda5d5eb",
       "sql": "-- Additive: released coordination, intake, audit and import rows are untouched.\nCREATE TABLE oc_email_addresses(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_email_rules(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_email_samples(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_email_receipts(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_email_quarantine(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\n-- Retired address digests retain attribution for refused delivery; no plaintext or read credential.\nCREATE TABLE oc_email_credentials(digest TEXT PRIMARY KEY, address TEXT NOT NULL, active INTEGER NOT NULL CHECK(active IN (0,1)));\n\n-- Installation-local erasure fence for direct JSON/checkpoint restore.\nCREATE TABLE oc_email_erased_samples(id TEXT PRIMARY KEY);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0132_scoped_automation.sql",
+      "sha256": "4fcd8119e7e867cc2a462a269a8b1bd1cbdf982e49ce80c000bb78f6854c8819",
+      "sql": "-- Additive definitions and exact operational history; credentials remain local.\nCREATE TABLE oc_api_clients (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_api_endpoints (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_api_operations (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_api_outbox (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_api_credentials (client TEXT PRIMARY KEY, digest TEXT NOT NULL UNIQUE, window INTEGER NOT NULL DEFAULT 0, requests INTEGER NOT NULL DEFAULT 0);\nCREATE TABLE oc_endpoint_credentials (endpoint TEXT PRIMARY KEY, custody TEXT NOT NULL);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
@@ -251,10 +257,13 @@
     "MAIL_API_KEY",
     "INBOUND_EMAIL_DOMAIN"
   ],
-  "schedules": [],
+  "schedules": [
+    "* * * * *"
+  ],
   "healthPath": "/health",
   "providerEffects": [
-    "outbound-mail"
+    "outbound-mail",
+    "signed-response-events"
   ],
   "mail": {
     "providers": [

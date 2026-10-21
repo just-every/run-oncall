@@ -921,3 +921,6 @@ try {
   if (portablePersist)
     await rm(portablePersist, { recursive: true, force: true });
 }
+
+// The scoped machine and outbound execution class extends the emitted-HTTP runtime journey.
+await import("./automation.mjs");

@@ -44,7 +44,7 @@ export function validateReviewFields(state:State){
    if(action.completionPolicy!==undefined&&!['evidence','human-review'].includes(action.completionPolicy))fail('Invalid completion policy');
    if(action.priority==='P1'&&action.completionPolicy!=='human-review')fail('P1 requires human review');
    if(action.escalationRecipient!==undefined&&!member(action.escalationRecipient))fail('Invalid escalation recipient');
-   for(const key of ['submission','accepted'] as const){const record=action[key];if(record!==undefined&&(!exact(record,key==='submission'?['by','at','evidence']:['by','at'])||!member(record.by)||!date(record.at)))fail('Invalid follow-up acceptance attribution');}
+   for(const key of ['submission','accepted'] as const){const record=action[key];if(record!==undefined&&(!exact(record,key==='submission'?['by','at','evidence']:['by','at'])||!(member(record.by)||key==='submission'&&state.apiClients?.some(c=>c.id===record.by)||key==='accepted'&&action.completionPolicy==='evidence'&&state.apiClients?.some(c=>c.id===record.by))||!date(record.at)))fail('Invalid follow-up acceptance attribution');}
    if(action.submission&&(!action.submission.evidence||link(action.submission.evidence)!==action.submission.evidence||action.evidence!==action.submission.evidence))fail('Invalid submitted evidence');
    if(action.accepted&&!action.done||action.completionPolicy==='human-review'&&action.done&&(!action.submission||!action.accepted))fail('Human-review completion requires evidence and acceptance');
   }

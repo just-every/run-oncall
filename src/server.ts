@@ -1,3 +1,5 @@
+import { dispatchOutbox } from './automation/dispatch'
+import { auditedDatabase } from './audit-database'
 import { receiveEmail } from './email/receive'
 import { auditedRequest } from './audit-request'
 import { withDemo } from './modules/demo/index.mjs'
@@ -17,6 +19,10 @@ import {readSessionCookie} from './session-cookie'
 import {importDoorResponse} from './move-in/door'
 type Env=Bindings
 export default withDemo({
+  async scheduled(_event,env) {
+    const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
+    for(let n=0;n<10;n++)if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;
+  },
   async email(message,env) { await receiveEmail(message,runtimeBindings(env)); },
   async fetch(request,original,execution) {
    return auditedRequest(request,original,async env => {

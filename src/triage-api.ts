@@ -3,7 +3,7 @@ import { authority, command, fail, Fault, text, type Member, type State } from '
 import { matchingIncidents, triagePage, triageQuery, type BulkOperation, type BulkResult, type SavedView } from './family/response-operations/triage';
 
 export function memberWorkspace(state: State, actor: Member): State {
-  if(actor.role!=='admin'){const {emailSamples,emailAddresses,emailRules,emailReceipts,emailQuarantine,...visible}=state;state=visible;}
+  if(actor.role!=='admin'){const {apiClients,apiEndpoints,apiOperations,apiOutbox,emailSamples,emailAddresses,emailRules,emailReceipts,emailQuarantine,...visible}=state;state=visible;}
   if (!state.triage) return state;
   return {...state, triage: state.triage.filter(r => r.kind !== 'view' || r.actor === actor.id)};
 }

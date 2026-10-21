@@ -1,3 +1,4 @@
+import { enqueueEvents, machineAuthority, validateAutomation, type Client, type Endpoint, type Operation, type Outbox } from '../../automation/model';
 import { validateEmailArchive } from '../../email/archive.ts';
 import type { EmailAddress, EmailVersion, EmailSample, EmailReceipt, EmailQuarantine } from '../../email/types.ts';
 import { validateIntakeArchive, type IntakeSource, type IntakeReceipt } from '../../intake/model.ts';
@@ -9,7 +10,7 @@ import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from '.
 import { admitAlertUrgency, declarationUrgency, serviceUrgency } from '../../urgency/model.ts';
 import { validateUrgencyArchive } from '../../urgency/archive.ts';
 export type Role = "admin" | "responder" | "viewer";
-export type Member = { id: string; name: string; role: Role; active: boolean };
+export type Member = { id: string; name: string; role: Role; active: boolean; machine?: true };
 export type Service = {
   id: string;
   name: string;
@@ -122,6 +123,10 @@ export type Incident = {
   communications?: string | null;
 };
 export type State = {
+  apiClients?: Client[];
+  apiEndpoints?: Endpoint[];
+  apiOperations?: Operation[];
+  apiOutbox?: Outbox[];
   schemaVersion: 1;
   revision: number;
   members: Member[];
@@ -187,6 +192,7 @@ const stamp = (
   at: string,
 ): Entry => ({ id: crypto.randomUUID(), at, actor, kind, text: value });
 export function authority(state: State, actor: Member, admin = false) {
+  if(actor.machine) { machineAuthority(state,actor); return; }
   const member = state.members.find((m) => m.id === actor.id && m.active);
   if (!member) fail("Access revoked", 401);
   if (member.role === "viewer" || (admin && member.role !== "admin"))
@@ -328,7 +334,21 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
   );
   return { event, alert: alert?.id ?? null, duplicate: false };
 }
-export function command(
+export function command(state:State,actor:Member,input:any,at=new Date().toISOString()) {
+  if(actor.machine) {
+    machineAuthority(state,actor);
+    if(!['service','declare','transition','reassign','assign-role','action','complete'].includes(input.type))fail('Machine action is not authorized',403);
+    if(input.type==='complete') {
+      const action=state.incidents.find(i=>i.id===input.incident)?.actions.find(a=>a.id===input.action);
+      if(action?.completionPolicy!=='evidence')fail('Human review requires a current human session',403);
+    }
+    if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&m.role!=='viewer'))fail('An explicit active responsible member is required; the client is not a human responder');
+  }
+  const result=applyCommand(state,actor,input,at);
+  if(result&&'timeline' in result)enqueueEvents(state,result as Incident,input,actor);
+  return result;
+}
+function applyCommand(
   state: State,
   actor: Member,
   input: any,
@@ -505,7 +525,7 @@ export function command(
     if (!next[incident.state].includes(input.state))
       fail("Invalid lifecycle transition");
     description = `${incident.state} → ${input.state}: ${text(input.summary, "transition summary", 3000)}`;
-    if (input.state === "acknowledged") { incident.commander = actor.id; incident.assignee = actor.id; }
+    if (input.state === "acknowledged") { incident.commander = actor.machine ? input.member : actor.id; incident.assignee = incident.commander; }
     if (input.state === "recovered") {
       incident.recovery = link(input.evidence);
       if (!incident.recovery) fail("Recovery evidence URL is required");
@@ -605,7 +625,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine"]);
+  ], ["triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   for (const key of [
@@ -788,7 +808,7 @@ export function validateArchive(value: any): State {
       fail("Invalid incident alert references");
     array(i.timeline);
     i.timeline.forEach(entry);
-    if (i.timeline.some((e: any) => !hasMember(e.actor)))
+    if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor)))
       fail("Invalid incident attribution");
     array(i.runbook);
     for (const r of i.runbook) {
@@ -819,6 +839,7 @@ export function validateArchive(value: any): State {
   validateChangeArchive(value);
   validateIntakeArchive(value);
   validateEmailArchive(value);
+  validateAutomation(value);
   if (value.triage !== undefined) validateTriageRecords(value.triage, value);
   return structuredClone(value);
 }

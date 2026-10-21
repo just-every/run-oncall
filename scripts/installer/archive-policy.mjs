@@ -1,3 +1,4 @@
+import {holdAutomation} from '../../src/automation/model.ts'
 import {interruptStagedImports,auditStagedRestore} from './audit-archive.mjs'
 import {pauseIntakeSources} from '../../src/intake/model.ts'
 import {pauseChangeSources} from '../../src/changes/model.ts'
@@ -17,8 +18,10 @@ export default {
   for(const key of ['members','services','policies','events','alerts','incidents','audit'])coordination[key]=(await read('oc_'+key)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
   const triage=(tables.oc_triage ? await read('oc_triage') : []).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
   if(triage.length)coordination.triage=triage
-  for(const [key,table] of [['changes','oc_changes'],['changeSources','oc_change_sources'],['intakeSources','oc_intake_sources'],['intakeReceipts','oc_intake_receipts'],['emailAddresses','oc_email_addresses'],['emailRules','oc_email_rules'],['emailSamples','oc_email_samples'],['emailReceipts','oc_email_receipts'],['emailQuarantine','oc_email_quarantine']]){const records=tables[table]?(await read(table)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data)):[];if(records.length)coordination[key]=records}
+  for(const [key,table] of [['apiClients','oc_api_clients'],['apiEndpoints','oc_api_endpoints'],['apiOperations','oc_api_operations'],['apiOutbox','oc_api_outbox'],['changes','oc_changes'],['changeSources','oc_change_sources'],['intakeSources','oc_intake_sources'],['intakeReceipts','oc_intake_receipts'],['emailAddresses','oc_email_addresses'],['emailRules','oc_email_rules'],['emailSamples','oc_email_samples'],['emailReceipts','oc_email_receipts'],['emailQuarantine','oc_email_quarantine']]){const records=tables[table]?(await read(table)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data)):[];if(records.length)coordination[key]=records}
   if(tables.oc_email_addresses)for(const row of await read('oc_email_addresses')){const data=JSON.parse(row.data);data.active=false;await db.prepare('UPDATE "'+tables.oc_email_addresses.replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(data),row.id).run()}
+  holdAutomation(coordination)
+  for(const [key,name] of [['apiClients','oc_api_clients'],['apiEndpoints','oc_api_endpoints'],['apiOutbox','oc_api_outbox']])if(tables[name])for(const row of coordination[key]??[])await db.prepare('UPDATE "'+tables[name].replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(row),row.id).run()
   pauseChangeSources(coordination)
   pauseIntakeSources(coordination)
   if(tables.oc_change_sources)for(const row of await read('oc_change_sources')){const data=JSON.parse(row.data);data.active=false;await db.prepare('UPDATE "'+tables.oc_change_sources.replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(data),row.id).run()}

@@ -1,3 +1,4 @@
+import { AutomationSettings } from '../automation/AutomationSettings';
 import { EmailWorkspace } from '../email/EmailWorkspace';
 import { MonitoringWorkspace } from '../monitoring/MonitoringWorkspace';
 import { UrgencyPolicy } from '../urgency/UrgencyPolicy';
@@ -77,7 +78,7 @@ function Workspace() {
     s?.incidents.find((i) => i.id === selected) ?? s?.incidents[0];
   const service = s?.services.find((v) => v.id === incident?.service);
   const name = (id: string | null) =>
-    s?.members.find((m) => m.id === id)?.name ?? "Unassigned";
+    s?.members.find((m) => m.id === id)?.name ?? (id?.startsWith("api-") ? "Service account" : "Unassigned");
   const memberOptions = s?.members
     .filter((m) => m.active && m.role !== "viewer")
     .map((m) => (
@@ -697,6 +698,7 @@ function Workspace() {
               const created = await command(data);
               if (created) { selectIncident(created.id); location.hash = "incidents"; }
             }} />
+            <AutomationSettings state={s} admin={admin} busy={w.busy} run={w.run} />
             <EmailWorkspace state={s} admin={admin} busy={w.busy} run={w.run} />
             <CompatibleIngress state={s} admin={admin} busy={w.busy} run={w.run} />
             <MonitoringWorkspace state={s} admin={admin} busy={w.busy} run={w.run} />

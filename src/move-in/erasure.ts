@@ -138,6 +138,23 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
       { sql: "INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM move_in_objects WHERE kind='schedule' AND id=? AND revision=? AND data=?) THEN 1 ELSE 0 END", params: [row.id, row.revision, row.data] },
       { sql: "UPDATE move_in_objects SET revision=?,data=? WHERE kind='schedule' AND id=?", params: [`erased-${hex()}`, JSON.stringify(next), row.id] })
   }
+  // Automation definitions may contain a person's display name. Sever those labels,
+  // revoke their local capabilities and advance the workspace fence atomically.
+  let automationChanged=false
+  const workspace=await db.prepare('SELECT revision FROM workspace_control WHERE id=1').first<{revision:number}>()
+  for(const [table,credential,field] of [['oc_api_clients','oc_api_credentials','client'],['oc_api_endpoints','oc_endpoint_credentials','endpoint']]) {
+    for(const row of (await db.prepare(`SELECT id,data FROM ${table}`).all<{id:string;data:string}>()).results) {
+      const value=JSON.parse(row.data)
+      if(!names(value.name,email))continue
+      value.name=without(value.name,email);value.active=false;value.revision++
+      rewrite.push({sql:`INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM ${table} WHERE id=? AND data=?) THEN 1 ELSE 0 END`,params:[row.id,row.data]},
+        {sql:`UPDATE ${table} SET data=? WHERE id=?`,params:[JSON.stringify(value),row.id]},
+        {sql:`DELETE FROM ${credential} WHERE ${field}=?`,params:[row.id]})
+      automationChanged=true
+    }
+  }
+  if(automationChanged)rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND revision=?) THEN 1 ELSE 0 END',params:[workspace!.revision]},
+    {sql:'UPDATE workspace_control SET revision=revision+1 WHERE id=1',params:[]})
   // A record names the person by any path (a typed field, any string in its own source, or its planned result such as a schedule's override, layer member or incumbent comparison): it is tombstoned too, so undo skips it as it skips a participant's.
   const {found:named, filenames} = await indirect(ctx, email, ids, rewritten)
   const related = {

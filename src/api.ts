@@ -1,3 +1,5 @@
+import { installVersionedApi, installAutomationManagement } from './automation/api'
+import { holdAutomation } from './automation/model'
 import { emailErasureFence } from './email/fence'
 import { installEmailManagement } from './email/api'
 import { auditIdentity, setAuditSubject } from './audit-store'
@@ -133,6 +135,7 @@ async function discardDeniedBody(c: any) {
 }
 api.onError(async (error, c) => {
   await discardDeniedBody(c);
+  if(c.req.path.startsWith("/api/v1/")) { const status=error instanceof Fault?error.status:503;return c.json({error:{code:({400:"invalid_request",401:"invalid_token",403:"insufficient_scope",404:"not_found",409:"conflict",413:"request_too_large",429:"rate_or_capacity_limit"} as Record<number,string>)[status]??"storage_unavailable",message:error instanceof Fault?error.message:"Storage unavailable; no success confirmed"}},status as any); }
   if (error instanceof Refusal)
     return c.json({ error: error.message, code: error.code }, error.status as any);
   if (error instanceof Fault)
@@ -170,7 +173,7 @@ api.use("*", async (c, next) => {
     await discardDeniedBody(c);
     return c.json({ error: "Not found" }, 404);
   }
-  if (c.req.method !== "GET" && !compatiblePath(c.req.path) && !monitoringPath(c.req.path) && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && c.req.path !== "/v2/change/enqueue") {
+  if (c.req.method !== "GET" && !c.req.path.startsWith("/api/v1/") && !compatiblePath(c.req.path) && !monitoringPath(c.req.path) && !c.req.path.startsWith("/api/ingress/") && !c.req.path.startsWith("/api/changes/ingress/") && c.req.path !== "/v2/change/enqueue") {
     if (c.req.header("origin") !== url.origin) {
       await discardDeniedBody(c);
       return c.json({ error: "Same-origin request required" }, 403);
@@ -365,6 +368,7 @@ api.post("/api/ingress/:source", async (c) => {
   }, result.duplicate ? 200 : 201);
 });
 const changeDeps = {body, load, state: authorizedState, save, guard: sessionGuard};
+installVersionedApi(api, changeDeps);
 installChangeIntake(api, changeDeps);
 installCompatibleIntake(api, changeDeps);
 installMonitoringIntake(api, changeDeps);
@@ -380,6 +384,7 @@ api.use("/api/*", async (c, next) => {
   c.set("actor", actor);
   await next();
 });
+installAutomationManagement(api, changeDeps);
 installChangeManagement(api, changeDeps);
 installNativeSources(api, changeDeps);
 installIntakeManagement(api, changeDeps);
@@ -542,6 +547,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   const sessionDigest = await hash(sessionToken);
   const parent:{operator_session:string|null}|null=await c.env.DB.prepare('SELECT operator_session FROM oc_current_sessions WHERE token=?').bind(c.get('sessionDigest')).first();
   if(!parent)fail('Session expired or revoked',401);
+  holdAutomation(value);
   pauseChangeSources(value);
   pauseIntakeSources(value);
   value.revision = old.revision + 1;
@@ -553,6 +559,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
       "UPDATE workspace_control SET revision=?,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)",
     ).bind(value.revision, restoreToken, old.revision, pagingRestore.revision, handoffRestore.revision, c.get("sessionDigest"), current.id, Date.now()),
     ...workspaceRows(c.env.DB,value,restoreToken),
+    ...["oc_api_credentials","oc_endpoint_credentials"].map(table=>c.env.DB.prepare(`DELETE FROM ${table} WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)`).bind(restoreToken)),
     c.env.DB.prepare("DELETE FROM oc_email_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_change_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_intake_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
