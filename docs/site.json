@@ -45,6 +45,12 @@
           "summary": "Connect authenticated change senders and inspect recent changes beside services, alerts and incidents."
         },
         {
+          "slug": "api",
+          "title": "API and outbound events",
+          "source": "docs/api.md",
+          "summary": "Scoped service-account tokens, the versioned API, signed outbound events and their delivery outbox."
+        },
+        {
           "slug": "reviews",
           "title": "Reports and reviews",
           "source": "docs/reviews.md",
