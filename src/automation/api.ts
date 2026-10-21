@@ -1,7 +1,7 @@
 import { command, fail, Fault, text, type State, type Member } from '../family/response-operations/domain';
 import { loadWorkspace, workspaceWrite } from '../workspace-store';
 import { auditIdentity, auditKind, setAuditSubject } from '../audit-store';
-import { changeHash, changeHmac, sealCredential, type Custody } from '../changes/credentials';
+import { changeHash, changeHmac, sealCredential, openCredential, type Custody } from '../changes/credentials';
 import { refuseKeyEcho } from '../native-sources';
 import { runtimeBindings } from '../auth.server';
 import { pagingSnapshot, putSchedule, bound } from '../paging-store';
@@ -40,7 +40,9 @@ export function installAutomationManagement(api:any,deps:Deps) {
   if(!client)fail('Unknown client',404);requireRevision(client.revision,input.revision);
   if(!['rotate','revoke'].includes(action))fail('Unknown client action',404);
   const key=action==='rotate'?secret(input.key):null;if(key)refuseKeyEcho([JSON.stringify(state)],key);
-  const digest=key?await changeHash(key):null;client.active=!!digest;client.revision++;
+  const digest=key?await changeHash(key):null;
+  if(digest&&(await c.env.DB.prepare('SELECT digest FROM oc_api_credentials WHERE client=?').bind(client.id).first())?.digest===digest)fail('Rotation requires a different private key',409);
+  client.active=!!digest;client.revision++;
   auditKind(c.env.DB,'automation.client-'+action);setAuditSubject(c.env.DB,'api-client',client.id);
   await commitAutomation(c,state,deps.guard(c),token=>[c.env.DB.prepare(`DELETE FROM oc_api_credentials WHERE client=? AND ${gate}`).bind(client.id,token),...(digest?[c.env.DB.prepare(`INSERT INTO oc_api_credentials(client,digest) SELECT ?,? WHERE ${gate}`).bind(client.id,digest,token)]:[])]);
   return c.json(client);
@@ -62,6 +64,11 @@ export function installAutomationManagement(api:any,deps:Deps) {
   if(!endpoint)fail('Unknown endpoint',404);requireRevision(endpoint.revision,input.revision);
   if(!['rotate','revoke'].includes(action))fail('Unknown endpoint action',404);
   const key=action==='rotate'?secret(input.key):null;if(key&&input.approve!==true)fail('Renew recipient authorization explicitly');if(key)refuseKeyEcho([JSON.stringify(state)],key);
+  if(key) {
+   const current=await c.env.DB.prepare('SELECT custody FROM oc_endpoint_credentials WHERE endpoint=?').bind(endpoint.id).first();let previous:string|undefined;
+   if(current)try{previous=await openCredential(current.custody,runtimeBindings(c.env).SESSION_SECRET,endpointCustody);}catch { /* Deliberate reprovisioning repairs unreadable local custody. */ }
+   if(previous===key)fail('Rotation requires a different private key',409);
+  }
   const custody=key?await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET,endpointCustody):null;
   endpoint.active=!!custody;endpoint.revision++;auditKind(c.env.DB,'automation.endpoint-'+action);
   await commitAutomation(c,state,deps.guard(c),token=>[c.env.DB.prepare(`DELETE FROM oc_endpoint_credentials WHERE endpoint=? AND ${gate}`).bind(endpoint.id,token),...(custody?[c.env.DB.prepare(`INSERT INTO oc_endpoint_credentials(endpoint,custody) SELECT ?,? WHERE ${gate}`).bind(endpoint.id,custody,token)]:[])]);

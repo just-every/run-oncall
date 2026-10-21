@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {randomBytes,createHmac,createHash} from 'node:crypto';
 import {automationRuntime} from './automation-runtime.mjs';
 const sign=(key,text)=>createHmac('sha256',key).update(text).digest('hex');
-const apiKey=randomBytes(32).toString('hex'),receiverKey=randomBytes(32).toString('hex'),seen=[],applied=new Set();let behavior='accepted',release,entered;
+const apiKey=randomBytes(32).toString('hex'),firstReceiverKey=randomBytes(32).toString('hex'),seen=[],applied=new Set();let receiverKey=firstReceiverKey,behavior='accepted',release,entered;
 const runtime=await automationRuntime(async request=>{
  const raw=await request.text(),body=JSON.parse(raw),timestamp=request.headers.get('x-oncall-timestamp');
  assert.equal(request.headers.get('x-oncall-signature'),sign(receiverKey,timestamp+'.'+raw));
@@ -29,7 +29,8 @@ try {
  const client=ok(await owner('/api/automation/clients',{name:'Synthetic client',key:apiKey,services:[service.id],permissions:allPermissions}),201);
  for(const url of ['http://8.8.8.8/a','https://127.0.0.1/a','https://10.0.0.1/a','https://169.254.169.254/a','https://localhost/a','https://8.8.8.8/a?token=bad','https://user@8.8.8.8/a'])ok(await owner('/api/automation/endpoints',{name:'Unsafe',key:receiverKey,client:client.id,services:[service.id],url,approve:true}),400);
  const receiverApiKey=randomBytes(32).toString('hex'),receiverClient=ok(await owner('/api/automation/clients',{name:'Receiving access',key:receiverApiKey,services:[service.id],permissions:['incidents:read']}),201);
- const endpoint=ok(await owner('/api/automation/endpoints',{name:'Synthetic receiver',key:receiverKey,client:receiverClient.id,services:[service.id],url:'https://8.8.8.8/events',approve:true}),201);
+ let endpoint=ok(await owner('/api/automation/endpoints',{name:'Synthetic receiver',key:receiverKey,client:receiverClient.id,services:[service.id],url:'https://8.8.8.8/events',approve:true}),201);
+ ok(await owner('/api/automation/clients/'+client.id+'/rotate',{revision:client.revision,key:apiKey}),409);ok(await owner('/api/automation/endpoints/'+endpoint.id+'/rotate',{revision:endpoint.revision,key:receiverKey,approve:true}),409);assert.equal((await state()).apiClients.find(c=>c.id===client.id).revision,1);assert.equal((await state()).apiEndpoints.find(e=>e.id===endpoint.id).revision,1);
  ok(await runtime.request('/api/v1/incidents'),401);ok(await runtime.request('/api/v1/incidents',undefined,cookie),401);
  const input={type:'declare',service:service.id,title:'Synthetic incident',summary:'Synthetic impact',severity:'warning'};
  const op=ok(await api('incidents',input,apiKey,'synthetic-oncall-repeat'),201);
@@ -61,6 +62,7 @@ try {
  await runtime.restart();const committedLogin=await runtime.request('/api/login',{name:'Synthetic Owner',password:'synthetic-oncall-owner-password'});ok(committedLogin);cookie=committedLogin.cookie;assert.deepEqual((await state()).apiOutbox,snapshot.apiOutbox,'restart after domain commit retains queued operations exactly');
  const scheduled=await fetch(runtime.origin+'/cdn-cgi/local/scheduled');assert.equal(scheduled.status,200);await scheduled.text();assert.ok((await state()).apiOutbox.every(o=>o.status==='sent'),'scheduled handler dispatches the durable batch without a browser');
  assert.equal(applied.size,9);assert.equal((await state()).incidents.length,4);
+ receiverKey=randomBytes(32).toString('hex');endpoint=ok(await owner('/api/automation/endpoints/'+endpoint.id+'/rotate',{revision:endpoint.revision,key:receiverKey,approve:true}));
  // Real foreign records never appear through direct IDs, pagination or linked mutations.
  let hidden=ok(await owner('/api/command',{...input,service:foreign.id,title:'Hidden incident'}));hidden=ok(await owner('/api/command',{type:'action',incident:hidden.id,revision:hidden.revision,title:'Hidden action',owner:admin.id,due:'2026-12-01'}));
  ok(await owner('/api/paging/schedules',{...schedule,id:'synthetic-oncall-hidden-schedule',service:foreign.id}));
@@ -118,7 +120,7 @@ try {
  // Populated native archive and checkpoint preserve exact history, omit credentials and restore inactive.
  ok(await owner('/api/command',{...input,title:'Queued at export'}));assert.equal((await state()).apiOutbox.at(-1).status,'queued');
  const archive=ok(await owner('/api/archive')),checkpoint=ok(await owner('/api/recovery/checkpoint'));
- for(const secret of [apiKey,receiverKey,readKey,rotatedKey,probeKey,receiverApiKey,savedCustody.custody])assert.ok(!JSON.stringify([archive,checkpoint,ok(await owner('/api/audit/export'))]).includes(secret));
+ for(const secret of [apiKey,firstReceiverKey,receiverKey,readKey,rotatedKey,probeKey,receiverApiKey,savedCustody.custody])assert.ok(!JSON.stringify([archive,checkpoint,ok(await owner('/api/audit/export'))]).includes(secret));
  assert.ok(archive.apiClients.find(c=>c.id===reader.id).lastUsed);
  const malformed=structuredClone(archive);malformed.apiOutbox[0].payload.secret='not-authorized';const retainedBefore=await state();ok(await owner('/api/restore',{mode:'replace',archive:malformed,adminMapping:admin.id}),400);assert.deepEqual((await state()).incidents,retainedBefore.incidents);assert.deepEqual((await state()).apiOutbox,retainedBefore.apiOutbox);
  const fresh=await automationRuntime();try{const setup2=await fresh.request('/api/setup',{name:'Fresh Owner',password:'synthetic-oncall-fresh-password'});const ck=setup2.cookie;ok(setup2);const restored=await fresh.request('/api/restore',{mode:'replace',archive,adminMapping:admin.id},ck);ok(restored);const held=ok(await fresh.request('/api/state',undefined,restored.cookie));assert.deepEqual(held.apiOperations,archive.apiOperations);assert.deepEqual(held.apiOutbox.map(o=>o.id),archive.apiOutbox.map(o=>o.id));assert.ok(held.apiClients.every(c=>!c.active));assert.ok(held.apiEndpoints.every(e=>!e.active));assert.ok(held.apiOutbox.every(o=>!o.authorized));for(const original of archive.apiOutbox){const received=held.apiOutbox.find(o=>o.id===original.id);assert.deepEqual(received.payload,original.payload);assert.deepEqual(received.history.slice(0,original.history.length),original.history);if(original.status==='queued'){assert.equal(received.status,'interrupted');assert.equal(received.history.at(-1).reason,'restore-requires-authorization');}else assert.equal(received.status,original.status);}assert.equal((await fresh.db.prepare('SELECT COUNT(*) AS n FROM oc_api_credentials').first()).n,0);assert.equal((await fresh.db.prepare('SELECT COUNT(*) AS n FROM oc_endpoint_credentials').first()).n,0);ok(await fresh.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+rotatedKey}),401);assert.equal(ok(await fresh.request('/api/automation/dispatch',{},restored.cookie)).processed,0);}finally{await fresh.close();}

@@ -4,7 +4,7 @@ An administrator configures service-account clients and approved recipients unde
 
 ## Client lifecycle and authority
 
-Generate a random key with at least 32 characters, copy it into your client's private secret store, then save the client with selected services and permissions. Creation and rotation accept the key once; no read, archive, audit or log returns it. Storage holds only its SHA-256 digest. Last use is visible. Revocation takes effect on subsequent requests and dispatch checks; rotation invalidates the old key and holds queued work under its former credential revision. The client's administrator must remain active. No token creates a human session or gives member-management, archive, review-acceptance or paging authority.
+Generate a random key with at least 32 characters, copy it into your client's private secret store, then save the client with selected services and permissions. Creation and rotation accept the key once; no read, archive, audit or log returns it. Storage holds only its SHA-256 digest. Last use is visible. Rotation refuses the currently configured key; supply a different random key. Revocation takes effect on subsequent requests and dispatch checks; rotation invalidates the old key and holds queued work under its former credential revision. The client's administrator must remain active. No token creates a human session or gives member-management, archive, review-acceptance or paging authority.
 
 Use `Authorization: Bearer <private-key>` on `/api/v1/…`. Cookie-only requests are refused. Session-protected management remains under `/api/automation`; it requires same-origin requests and a current administrator. Tokens do not enter those doors.
 

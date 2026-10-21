@@ -219,7 +219,7 @@
       "executable": false
     },
     "docs/response-api.md": {
-      "sha256": "9b82fc51483484bde685425c965b8ab355a06e673700620a95f3710633ce34c1",
+      "sha256": "d2dd28354faeb6a0d8a7adcfb221fe62f8788b9880ad98a9019f7a9be8a5ba38",
       "executable": false
     },
     "docs/reviews.md": {
@@ -811,7 +811,7 @@
       "executable": false
     },
     "src/automation/api.ts": {
-      "sha256": "4f63ff42b1d3113fe31c28e213efbcb733edec69ee900d417b1834b5596be305",
+      "sha256": "d303cabc17fec7653cd98f95cf19dcc09ef711a34f3c9d37cefe6ed76ce56207",
       "executable": false
     },
     "src/automation/AutomationSettings.tsx": {
@@ -3619,7 +3619,7 @@
       "executable": false
     },
     "tests/automation.mjs": {
-      "sha256": "2659f026e1af089c99d50b2a4586c94b67b3f18cbc8e870fa63327f90abd281f",
+      "sha256": "5cbe76e1e444e4bfde14d1a14945af9329eab91109daf5d93ab046b77204ff86",
       "executable": false
     },
     "tests/changes.mjs": {
