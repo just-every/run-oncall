@@ -132,7 +132,7 @@ export function installVersionedApi(api:any,deps:Deps) {
    return [...(state.intakeSources??[]).filter(s=>client.services.includes(s.service)).map(s=>({id:'intake:'+s.id,active:s.active,service:s.service,provider:s.provider})),
     ...(state.changeSources??[]).filter(s=>client.services.includes(s.service)).map(s=>({id:'change:'+s.id,active:s.active,service:s.service,provider:s.provider})),
     ...(state.emailAddresses??[]).filter(s=>client.services.includes(s.service)).map(s=>({id:'email:'+s.id,active:s.active,service:s.service,provider:'email'})),
-    ...native.filter((s:any)=>JSON.parse(s.scopes).every((id:string)=>client.services.includes(id))).map((s:any)=>({id:'native:'+s.id,active:true,services:JSON.parse(s.scopes),provider:'native'}))];
+    ...native.filter((s:any)=>{const grants=JSON.parse(s.scopes);return grants.length>0&&grants.every((id:string)=>client.services.includes(id));}).map((s:any)=>({id:'native:'+s.id,active:true,services:JSON.parse(s.scopes),provider:'native'}))];
   }
   return fail('Unknown API family',404);
  }
