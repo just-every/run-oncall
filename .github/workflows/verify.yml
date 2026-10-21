@@ -33,6 +33,10 @@ jobs:
             browser: false
           - lane: reviews
             browser: false
+          - lane: service-api
+            browser: false
+          - lane: service-access
+            browser: true
           - lane: adoption-demo
             browser: false
           - lane: signin

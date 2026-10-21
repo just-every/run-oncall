@@ -18,7 +18,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`.
 
-3. **OC-003 — Roles and authority. Status: done.** Use anonymous, expired, revoked, viewer, responder and admin sessions on reads, commands, sources and archives; revoke or downgrade while a real HTTP mutation is incomplete and prove no publication. Verify minimal intake receipts disclose no private routing data.
+3. **OC-003 — Roles and authority. Status: done. Override by OC-053 (21 October 2026):** service-account tokens scoped by an administrator may change incidents in their named services; they are never sessions and infer no human authority (`tests/service-api.mjs`). Use anonymous, expired, revoked, viewer, responder and admin sessions on reads, commands, sources and archives; revoke or downgrade while a real HTTP mutation is incomplete and prove no publication. Verify minimal intake receipts disclose no private routing data.
 
    Existing implementation / exercising flow: `src/api.ts`; `src/auth.server.ts`; `tests/runtime.mjs`; `tests/runtime-authority.mjs`. Workspace-wide roles are implemented; team isolation and federation are separate targets in OC-023/039.
 
@@ -30,7 +30,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `tests/runtime.mjs`. Alert-level runbook access and follow-up policies are targets in OC-023/036.
 
-6. **OC-006 — No outbound incident effects. Status: done.** Use coordination and handoff preparation/export on a normal installation; prove no paging receipt, production action, AI call or external publication occurs. Confirm draft exports remain unreviewed and source links confer no access.
+6. **OC-006 — No outbound incident effects. Status: done. Override by OC-053 (21 October 2026):** the only other outbound incident effect is a signed event to an administrator-approved endpoint; it is not a page or an acknowledgment (`tests/service-api-events.mjs`). Use coordination and handoff preparation/export on a normal installation; prove no paging receipt, production action, AI call or external publication occurs. Confirm draft exports remain unreviewed and source links confer no access.
 
    Existing implementation / exercising flow: `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs`. This is the current-release safety boundary, not the final product boundary.
 
@@ -246,9 +246,9 @@ The numbered flows are acceptance requirements through the product’s public do
 
    Exercising flow: **OC-052 all current durable categories restore inactive without authority or replay**, in `tests/transfer.mjs`, `tests/transfer-door.mjs` and `tests/checkpoint-cli.mjs`, with HTTP authorization/capacity/rollback/concurrency coverage in `tests/activation.mjs`. Populated urgency and admission/transition history, monitoring generations/incomplete evidence, routed lifecycle, response roles/reviews/actions, triage, changes, schedules, held delivery history and complete import upload/plan/approval/provenance/erasure journals survive. Business is enabled with a genuinely pending bounded apply before export; restore preserves its history, disables opt-in and refuses the old grant/session/approval without advancing work. Native/checkpoint and CLI refuse invalid/unknown/over-limit data and storage faults atomically; CLI also fences erased records, excludes credentials, requires fresh owner mapping and pauses timers/approvals. Every new durable category under OC-023–051 and OC-053–072 must satisfy the same obligations before shipping. This completion establishes current archives and their Base replacements, with no claim that future paging/connectors/agents exist.
 
-53. **OC-053 — Public API, outbound events and reliable automation. Status: partial.** Create/acknowledge/reassign/resolve via a scoped API client, page through real records, hit limits and conflict stale edits. Observe signed outbound events, revoke a token/endpoint, fail and restart delivery, deduplicate a replay and inspect due/terminal/uncertain outcomes without double-changing incident state.
+53. **OC-053 — Public API, outbound events and reliable automation. Status: done.** Create/acknowledge/reassign/resolve via a scoped API client, page through real records, hit limits and conflict stale edits. Observe signed outbound events, revoke a token/endpoint, fail and restart delivery, deduplicate a replay and inspect due/terminal/uncertain outcomes without double-changing incident state.
 
-   Existing implementation / exercising flow: `src/api.ts`; `src/paging-api.ts`; `tests/runtime.mjs`. Protected internal HTTP APIs and concurrency checks exist; versioned service-account APIs and outbound outbox/webhooks are absent.
+   Existing implementation / exercising flow: `src/service-api/`; `docs/api.md`; `tests/service-api.mjs`; `tests/service-api-events.mjs`; `tests/service-api-restore.mjs`; `tests/transfer.mjs`; `tests/service-access-browser.mjs`. **OC-053 scoped API and durable signed outbound events** exercises every API family with a scoped client, a receiver at the network edge for each event type and signature, retry/restart/uncertain/refused/terminal outcomes, deduplicated protected replay, revocation at dispatch, atomic rollback, erasure and inactive restore; the browser journey covers token, endpoint and outbox management at 1440 and 390. Delivery has no timer; no live paging or human response evidence is claimed.
 
    OC-041 inheritance before shipping: exercise API automation and outbound outbox delivery with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 
@@ -370,4 +370,4 @@ Run on 19 October 2026 (10:07–10:09 UTC) against `cd1ef1c3748cbaa43bcda89470ab
 
 ## Clause status totals
 
-**27 done**, **27 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
+**28 done**, **26 partial**, **18 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
