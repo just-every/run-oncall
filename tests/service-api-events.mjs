@@ -113,9 +113,9 @@ export async function events({w, edge, owner, admin, responder, A, bearer, decla
  edge.mode('fail500'); ok(await owner(`/api/command`, {type: 'transition', incident: human.id, revision: human.revision, state: 'acknowledged', summary: 'ack'})); await settle()
  const endpointOp = await newest('incident.acknowledged'); assert.equal(endpointOp.state, 'queued')
  ok(await owner(`/api/webhooks/${endpoint.id}/revoke`, {revision: endpoint.revision})); edge.mode('ok'); due(endpointOp.id)
- const afterRevoke = edge.seen.length; await dispatch(); assert.equal((await byId(endpointOp.id)).reason, 'endpoint-revoked'); assert.equal(edge.seen.length, afterRevoke)
+ const afterRevoke = edge.seen.length; await dispatch(); assert.equal((await byId(endpointOp.id)).reason, 'endpoint-inactive'); assert.equal(edge.seen.length, afterRevoke)
  // Approving again is a fresh deliberate act, and then replay delivers the very same operation.
- ok(await owner(`/api/outbox/${endpointOp.id}/replay`, {reason: 'before approval'})); await settle(); assert.equal((await byId(endpointOp.id)).reason, 'endpoint-revoked')
+ ok(await owner(`/api/outbox/${endpointOp.id}/replay`, {reason: 'before approval'})); await settle(); assert.equal((await byId(endpointOp.id)).reason, 'endpoint-inactive')
  const current = ok(await owner('/api/webhooks')).endpoints[0], approved = ok(await owner(`/api/webhooks/${endpoint.id}/rotate`, {revision: current.revision})); edge.secret('/hook', approved.signingSecret)
  ok(await owner(`/api/outbox/${endpointOp.id}/replay`, {reason: 'after approval'})); await settle(); assert.equal((await byId(endpointOp.id)).state, 'sent')
  assert.ok(edge.seen.at(-1).verified, 'the rotated secret signs the delivery')

@@ -27,7 +27,7 @@ async function audited(db: D1Database, endpoint: string, kind: string, outcome: 
 /** Every authority is read again at the moment of sending: the endpoint, its signing secret, its named owner, the token that caused the event and the data it names. */
 async function authorize(db: D1Database, env: Bindings, state: State, operation: OutboxOperation): Promise<Refusal | { endpoint: WebhookEndpoint; secret: string }> {
   const endpoint = state.webhookEndpoints?.find(candidate => candidate.id === operation.endpoint)
-  if (!endpoint?.active) return { reason: 'endpoint-revoked' }
+  if (!endpoint?.active) return { reason: 'endpoint-inactive' }
   const credential = await db.prepare('SELECT ciphertext FROM oc_webhook_credentials WHERE endpoint=?').bind(endpoint.id).first<{ ciphertext: string }>()
   if (!credential) return { reason: 'endpoint-not-approved' }
   if (!state.members.some(member => member.id === endpoint.owner && member.active && member.role === 'admin')) return { reason: 'owner-not-authorized' }

@@ -99,4 +99,5 @@ try {
  console.log('PASS OC-053 scoped service-account API: scope, idempotency, pagination, limits, concurrency and revocation')
  globalThis.__ctx={w,edge,owner,admin,responder,A,B,R,bearer,declare,key,ok,sleep,cookie,first}
  await (await import('./service-api-events.mjs')).events(globalThis.__ctx)
+ await (await import('./service-api-restore.mjs')).restore(globalThis.__ctx)
 } finally { await edge.close();await w.close() }

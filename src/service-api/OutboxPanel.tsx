@@ -4,7 +4,7 @@ import type { Run } from './ServiceAccess'
 
 const stateNames: Record<string, string> = { queued: 'Queued', sending: 'Sending', sent: 'Sent (the receiver answered 2xx)', failed: 'Failed', uncertain: 'Uncertain (the receiver may have it)', interrupted: 'Interrupted before sending', refused: 'Refused at dispatch', held: 'Held (restored; replay to resume)' }
 const reasons: Record<string, string> = {
-  'endpoint-revoked': 'the endpoint was revoked', 'endpoint-not-approved': 'the endpoint has no approved signing secret', 'owner-not-authorized': 'the named owner is no longer an administrator',
+  'endpoint-inactive': 'the endpoint is revoked or not approved', 'endpoint-not-approved': 'the endpoint has no approved signing secret', 'owner-not-authorized': 'the named owner is no longer an administrator',
   'endpoint-scope-changed': 'the endpoint no longer covers this event or service', 'data-access-changed': 'the incident is no longer available', 'token-revoked': 'the token that caused it was revoked',
   'token-scope-changed': 'the token no longer reaches this service', 'replay-authority-revoked': 'the administrator who replayed it lost authority', 'unsafe-endpoint': 'the endpoint address is not permitted',
   'credential-unreadable': 'the signing secret cannot be opened', 'rejected-by-receiver': 'the receiver rejected it', 'redirect-refused': 'the receiver answered with a redirect, which is never followed',
