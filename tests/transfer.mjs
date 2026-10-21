@@ -9,6 +9,7 @@ import {ownerDoor,localWorker} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 import {checkpointCli} from './checkpoint-cli.mjs'
 import {transferDoor} from './transfer-door.mjs'
+import {receiver} from './service-api-edge.mjs'
 
 const fetch=(url,input={})=>globalThis.fetch(url,{...input,headers:{...input.headers,connection:'close'}})
 
@@ -79,6 +80,15 @@ try{
  const source=await readFile('tests/fixtures/opsgenie.json','utf8'),door=ownerDoor(m,cookie),preview=ok(await door.preview('opsgenie',source)),job=ok(await door.apply('opsgenie',preview)).job;assert.equal(job.state,'completed')
  const at=Date.parse('2026-10-11T09:00:00Z'),pending={id:'held-pending',incident:incident.id,service:'transfer',revision:1,status:'pending',nextDue:at,createdAt:at,lastEvaluatedAt:at,currentStep:0,policy:{service:'transfer',scheduleId:'transfer',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at,actor:null,reason:null,attempt:null}]}
  sql("INSERT INTO paging_jobs VALUES('held-pending','"+incident.id+"','transfer',1,'pending',"+at+",'fixture','"+JSON.stringify(pending).replaceAll("'","''")+"')")
+ // OC-053: service accounts, endpoints and queued outbound events are durable records whose credentials and sends never travel.
+ const hook=await receiver();hook.mode('fail500')
+ const apiAccount=ok(await req('/api/service-accounts',{name:'Portable automation',services:['transfer'],permissions:['read','incidents:write'],revision:0}),201)
+ const apiEndpoint=ok(await req('/api/webhooks',{name:'Portable receiver',url:hook.url('/portable'),events:['incident.triggered'],services:['transfer'],revision:0}),201)
+ const apiDeclared=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiAccount.token,'idempotency-key':'portable-declare-1'},body:JSON.stringify({service:'transfer',severity:'warning',title:'Portable API incident',summary:'Queued event travels as history'})})
+ assert.equal(apiDeclared.status,201)
+ for(let n=0;n<40&&!hook.seen.length;n++)await new Promise(r=>setTimeout(r,250))
+ const queuedOperation=ok(await req('/api/outbox')).operations[0];assert.equal(queuedOperation.state,'queued')
+ await hook.close()
  const permanentAudit=ok(await req('/api/audit/export')).rows
  const prior=ok(await req('/api/state')),objects=ok(await req('/api/move-in/objects'))
  const importTables=sql("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'ik_*' OR name GLOB 'move_in_*') ORDER BY name").map(r=>r.name)
@@ -89,7 +99,7 @@ try{
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
  const manifest=JSON.parse(exportedArchive.toString('utf8').split('\n')[0])
  assert.ok(!manifest.tables.some(table=>table.name==='oc_audit_identities'),'revocable identity associations never travel in archives')
- for(const secret of [sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey,emailPart])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
+ for(const secret of [sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey,emailPart,apiAccount.token,apiEndpoint.signingSecret])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
  await m.command(['import','--input',archive,'--yes','--non-interactive'],4)
  const serviceRow=sql("SELECT data FROM oc_services WHERE id='transfer'")[0].data
  sql("UPDATE oc_services SET data='{\"id\":\"transfer\"}' WHERE id='transfer'");await m.command(['export','--output',invalidRecords,'--non-interactive']);sql("UPDATE oc_services SET data='"+serviceRow.replaceAll("'","''")+"' WHERE id='transfer'")
@@ -111,13 +121,18 @@ try{
  sql("INSERT INTO credentials VALUES('"+member.id+"','fixture-salt','fixture-password-digest')")
  assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:member.id})).status,409,'held password data cannot be claimed by a new native owner')
  sql('DELETE FROM credentials')
- ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}));assert.deepEqual(ok(await req('/api/state')),{...prior,changeSources:prior.changeSources.map(source=>({...source,active:false})),intakeSources:prior.intakeSources.map(source=>({...source,active:false})),emailAddresses:prior.emailAddresses.map(address=>({...address,active:false}))},'all relational coordination and attribution restored with source definitions explicitly inactive')
+ ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}));assert.deepEqual(ok(await req('/api/state')),{...prior,serviceAccounts:prior.serviceAccounts.map(account=>({...account,active:false})),webhookEndpoints:prior.webhookEndpoints.map(endpoint=>({...endpoint,active:false})),changeSources:prior.changeSources.map(source=>({...source,active:false})),intakeSources:prior.intakeSources.map(source=>({...source,active:false})),emailAddresses:prior.emailAddresses.map(address=>({...address,active:false}))},'all relational coordination and attribution restored with source definitions explicitly inactive')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_email_credentials')[0].n,0,'email address keys never transfer')
  assert.deepEqual(ok(await req('/api/email')).samples,prior.emailSamples,'saved mail, versioned rules, activity and quarantine survive inactive restore')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0,'compatible verification hashes are excluded from portable transfers')
  assert.deepEqual(ok(await req('/api/state')).intakeReceipts,prior.intakeReceipts,'compatible lifecycle and routing explanations survive portable transfer')
  assert.equal(ok(await req('/api/state')).intakeSources.find(source=>source.id==='portable-monitor').routing.versions[0].catchAll,'transfer','published routing definitions survive portable transfer')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_change_credentials')[0].n,0,'change verification material is excluded from portable transfers')
+ for(const table of ['oc_api_credentials','oc_webhook_credentials','oc_api_idempotency','oc_api_rate'])assert.equal(sql('SELECT COUNT(*) AS n FROM '+table)[0].n,0,table+' is installation-local authority and never travels')
+ assert.ok(!manifest.tables.some(table=>['oc_api_credentials','oc_webhook_credentials'].includes(table.name)))
+ const importedOperation=ok(await req('/api/outbox')).operations[0];assert.equal(importedOperation.id,queuedOperation.id,'delivery history keeps its operation identity');assert.equal(importedOperation.state,'held','an unfinished send is held until a fresh deliberate replay');assert.equal(JSON.stringify(importedOperation.payload),JSON.stringify(queuedOperation.payload))
+ assert.ok(ok(await req('/api/state')).serviceAccounts.every(account=>!account.active)&&ok(await req('/api/state')).webhookEndpoints.every(endpoint=>!endpoint.active),'restored accounts and endpoints are inactive history')
+ assert.equal((await fetch(m.origin+'/api/v1/me',{headers:{authorization:'Bearer '+apiAccount.token}})).status,401,'a restored installation holds no token authority')
  assert.equal(sql('SELECT COUNT(*) AS n FROM sources')[0].n,0,'native source keys are excluded from portable transfers')
  assert.equal((await fetch(m.origin+'/api/ingress/portable-signed',{method:'POST',headers:{'content-type':'application/json'},body:'{}'})).status,401,'a restored installation holds no transferable source authority')
  assert.equal(ok(await req('/api/state')).changes[0].eventId,'portable-deploy','retained change identity survives portable transfer')
