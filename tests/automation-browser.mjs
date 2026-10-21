@@ -3,8 +3,9 @@ import {mkdir} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {randomBytes} from 'node:crypto';
 import {chromium} from '@playwright/test';
-import {automationRuntime} from './automation-runtime.mjs';
-const runtime=await automationRuntime(),proof=process.env.ONCALL_BROWSER_EVIDENCE??resolve('../evidence/browser');
+import {automationRuntime,recordOwnedProcesses} from './automation-runtime.mjs';
+let receiverStatus=403;
+const runtime=await automationRuntime(()=>new Response(null,{status:receiverStatus})),proof=process.env.ONCALL_BROWSER_EVIDENCE??resolve('../evidence/browser');
 let browser;
 try {
  await mkdir(proof,{recursive:true});
@@ -13,6 +14,7 @@ try {
  assert.equal((await req('/api/command',{type:'service',id:'synthetic-oncall-browser',name:'Synthetic browser service',environment:'test',owner:owner.id,runbook:[],pager:''})).status,200);
  const viewer=await req('/api/members',{name:'Synthetic Viewer',role:'viewer',password:'synthetic-oncall-viewer-password'});assert.equal(viewer.status,201);
  browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']});
+ recordOwnedProcesses();
  console.log('Browser driver PID',process.pid,'runtime proof uses a fresh test-only context');
  for(const width of [1440,390]) {
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -38,6 +40,11 @@ try {
   await panel.scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal page overflow');
   assert.equal(await panel.getByLabel('Private client or endpoint key',{exact:true}).getAttribute('type'),'password');
   await panel.screenshot({path:join(proof,'automation-populated-'+width+'.png')});
+  receiverStatus=200;
+  const uncertain=await req('/api/command',{type:'assign-role',incident:incident.value.entity,revision:1,role:'scribe',member:owner.id,reason:'Unsigned receiver success is uncertain'});assert.equal(uncertain.status,200);
+  while((await req('/api/automation/dispatch',{})).value.processed){}
+  await page.reload();await panel.getByText('role · uncertain',{exact:true}).first().waitFor();await panel.screenshot({path:join(proof,'automation-uncertain-'+width+'.png')});receiverStatus=403;
+
   await page.goto(runtime.origin+'/?incident='+incident.value.entity+'#incidents');await page.locator('.timeline').getByText('Service account',{exact:true}).waitFor();await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
   assert.deepEqual(errors,[]);
   await context.close();

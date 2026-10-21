@@ -26,5 +26,8 @@ export function workspaceWrite(db:D1Database,state:State,revision:number,authori
 }
 
 export function checkWorkspaceSize(state: State) {
-  if(new TextEncoder().encode(JSON.stringify(state)).length>1000000) fail('Workspace storage profile exceeded; export before extending it',429)
+  // Outbox history has its own provenance/field bounds. Charging it to the
+  // authored workspace would let delivery backlog refuse human coordination.
+  const {apiOutbox,...workspace}=state
+  if(new TextEncoder().encode(JSON.stringify(workspace)).length>1000000) fail('Workspace storage profile exceeded; export before extending it',429)
 }

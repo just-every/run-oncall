@@ -7,6 +7,9 @@ export type Endpoint = {id:string;name:string;owner:string;client:string;service
 export type Operation = {id:string;client:string;key:string;request:string;service:string;resource:string;entity:string;revision:number;at:string};
 export type OutboxState = 'queued'|'sending'|'sent'|'failed'|'interrupted'|'uncertain'|'terminal';
 export type Outbox = {clientRevision:number;receiverRevision:number;endpointRevision:number;id:string;endpoint:string;client:string;owner:string;service:string;incident:string;event:EventType;entry:string;revision:number;at:string;due:string;attempts:number;status:OutboxState;lease:string|null;leaseUntil:string|null;authorized:boolean;history:{at:string;status:OutboxState;reason:string}[];payload:{operationId:string;type:EventType;service:string;incident:string;revision:number;state:Incident['state'];at:string}};
+// Delivery slots bound automatic work, not retained history or human coordination.
+export const deliveryCapacity = 1000;
+export const unfinishedDeliveries = (state:State) => (state.apiOutbox??[]).filter(o=>['queued','sending','failed'].includes(o.status)).length;
 export const activeOwner = (state:State,id:string) => state.members.some(m=>m.id===id&&m.active&&m.role==='admin');
 export function machineAuthority(state:State,actor:Member) {
  const client=state.apiClients?.find(c=>c.id===actor.id&&c.active);
@@ -26,15 +29,20 @@ export function enqueueEvents(state:State,incident:Incident,input:any,actor:Memb
  const event:EventType|undefined=input.type==='declare'?'trigger':input.type==='reassign'?'reassignment':input.type==='assign-role'?'role':['action','complete','accept-action'].includes(input.type)?'follow-up':input.type==='bulk-acknowledge'||input.type==='transition'&&input.state==='acknowledged'?'acknowledgment':input.type==='bulk-resolve'||input.type==='transition'&&input.state==='resolved'?'resolution':undefined;
  if(!event)return;
  const entry=incident.timeline.at(-1)!;
+ let pending=unfinishedDeliveries(state);
  for(const endpoint of state.apiEndpoints??[]) {
   const client=state.apiClients?.find(c=>c.id===endpoint.client&&c.active);
   if(!endpoint.active||!client||!client.permissions.includes('incidents:read')||!activeOwner(state,client.owner)||!activeOwner(state,endpoint.owner)||!endpoint.services.includes(incident.service)||!client.services.includes(incident.service))continue;
   // Machine-originated work is also fenced by its own originating client at dispatch.
   const origin=actor.machine?actor.id:client.id;
   const id=crypto.randomUUID(),at=entry.at;
-  (state.apiOutbox??=[]).push({clientRevision:state.apiClients!.find(c=>c.id===origin)!.revision,receiverRevision:client.revision,endpointRevision:endpoint.revision,id,endpoint:endpoint.id,client:origin,owner:endpoint.owner,service:incident.service,incident:incident.id,event,entry:entry.id,revision:1,at,due:at,attempts:0,status:'queued',lease:null,leaseUntil:null,authorized:true,history:[{at,status:'queued',reason:'domain-commit'}],payload:{operationId:id,type:event,service:incident.service,incident:incident.id,revision:incident.revision,state:incident.state,at}});
+  const status:OutboxState=pending<deliveryCapacity?'queued':'terminal';
+  const reason=status==='queued'?'domain-commit':'capacity-not-scheduled';
+  if(status==='queued')pending++;
+  (state.apiOutbox??=[]).push({clientRevision:state.apiClients!.find(c=>c.id===origin)!.revision,receiverRevision:client.revision,endpointRevision:endpoint.revision,id,endpoint:endpoint.id,client:origin,owner:endpoint.owner,service:incident.service,incident:incident.id,event,entry:entry.id,revision:1,at,due:at,attempts:0,status,lease:null,leaseUntil:null,authorized:true,history:[{at,status,reason}],payload:{operationId:id,type:event,service:incident.service,incident:incident.id,revision:incident.revision,state:incident.state,at}});
  }
- if((state.apiOutbox?.length??0)>1000)fail('Outbox capacity reached; no incident change accepted',429);
+ // The terminal capacity outcome is part of the same domain/audit transaction.
+ // It consumes no delivery slot, never sends automatically, and retains replay identity.
 }
 export function holdAutomation(state:State) {
  for(const client of state.apiClients??[])client.active=false;
@@ -53,7 +61,12 @@ const stamp=(v:any)=>typeof v==='string'&&Number.isFinite(Date.parse(v));
 const id=(v:any)=>typeof v==='string'&&v.length>0&&v.length<=100;
 const revision=(v:any)=>Number.isSafeInteger(v)&&v>=1;
 export function validateAutomation(state:State) {
- for(const key of ['apiClients','apiEndpoints','apiOperations','apiOutbox'] as const){const rows=state[key];if(rows!==undefined&&(!Array.isArray(rows)||rows.length>(key==='apiClients'?100:key==='apiEndpoints'?50:1000)||rows.some(r=>!r||!id(r.id))||new Set(rows.map(r=>r.id)).size!==rows.length))fail('Invalid automation archive identities');}
+ for(const key of ['apiClients','apiEndpoints','apiOperations'] as const){const rows=state[key];if(rows!==undefined&&(!Array.isArray(rows)||rows.length>(key==='apiClients'?100:key==='apiEndpoints'?50:1000)||rows.some(r=>!r||!id(r.id))||new Set(rows.map(r=>r.id)).size!==rows.length))fail('Invalid automation archive identities');}
+ // History is bounded by domain provenance: at most one outcome per endpoint
+ // and timeline entry, with the existing member/service/entry and field limits.
+ const outbox=state.apiOutbox??[];
+ const maxOutcomes=state.incidents.reduce((n,i)=>n+i.timeline.length,0)*(state.apiEndpoints?.length??0);
+ if(!Array.isArray(outbox)||outbox.length>maxOutcomes||outbox.some(o=>!o||!id(o.id))||new Set(outbox.map(o=>o.id)).size!==outbox.length||new Set(outbox.map(o=>JSON.stringify([o.endpoint,o.incident,o.entry]))).size!==outbox.length)fail('Invalid outbox archive identities or provenance bound');
  const services=(v:any)=>Array.isArray(v)&&v.length>0&&v.length<=64&&new Set(v).size===v.length&&v.every(s=>state.services.some(x=>x.id===s));
  const owner=(v:any)=>state.members.some(m=>m.id===v);
  for(const c of state.apiClients??[])if(!exact(c,['id','name','owner','services','permissions','active','revision','createdAt','lastUsed'])||!c.id.startsWith('api-')||!id(c.name)||!owner(c.owner)||!services(c.services)||!Array.isArray(c.permissions)||!c.permissions.length||new Set(c.permissions).size!==c.permissions.length||c.permissions.some(p=>!permissions.includes(p as any))||typeof c.active!=='boolean'||!revision(c.revision)||!stamp(c.createdAt)||c.lastUsed!==null&&!stamp(c.lastUsed))fail('Invalid API client archive');
@@ -62,7 +75,7 @@ export function validateAutomation(state:State) {
  for(const o of state.apiOperations??[])if(!exact(o,['id','client','key','request','service','resource','entity','revision','at'])||!state.apiClients?.some(c=>c.id===o.client)||!state.services.some(s=>s.id===o.service)||!['services','schedules','incidents','actions'].includes(o.resource)||!id(o.entity)||!revision(o.revision)||!stamp(o.at)||![/^[a-f0-9]{64}$/.test(o.key),/^[a-f0-9]{64}$/.test(o.request)].every(Boolean))fail('Invalid API operation history');
  for(const o of state.apiOutbox??[]) {
   const incident=state.incidents.find(i=>i.id===o.incident&&i.service===o.service);
-  if(!exact(o,['clientRevision','receiverRevision','endpointRevision','id','endpoint','client','owner','service','incident','event','entry','revision','at','due','attempts','status','lease','leaseUntil','authorized','history','payload'])||!revision(o.clientRevision)||!revision(o.receiverRevision)||!revision(o.endpointRevision)||!state.apiEndpoints?.some(e=>e.id===o.endpoint)||!state.apiClients?.some(c=>c.id===o.client)||!owner(o.owner)||!incident?.timeline.some(e=>e.id===o.entry)||!eventTypes.includes(o.event)||!revision(o.revision)||!stamp(o.at)||!stamp(o.due)||!Number.isSafeInteger(o.attempts)||o.attempts<0||o.attempts>5||!['queued','sending','sent','failed','interrupted','uncertain','terminal'].includes(o.status)||typeof o.authorized!=='boolean'||(o.status==='sending'?(o.lease===null||o.leaseUntil===null):(o.lease!==null||o.leaseUntil!==null))||o.lease!==null&&!id(o.lease)||o.leaseUntil!==null&&!stamp(o.leaseUntil)||!Array.isArray(o.history)||!o.history.length||o.history.length>100||o.history.some(h=>!exact(h,['at','status','reason'])||!stamp(h.at)||!['queued','sending','sent','failed','interrupted','uncertain','terminal'].includes(h.status)||!['domain-commit','restore-requires-authorization','dispatch','accepted','receiver-refused','receiver-failed','network-ambiguous','lease-expired','authority-revoked','protected-replay','budget-exhausted','credential-unavailable'].includes(h.reason))||o.history.at(-1)?.status!==o.status)fail('Invalid outbox history');
+  if(!exact(o,['clientRevision','receiverRevision','endpointRevision','id','endpoint','client','owner','service','incident','event','entry','revision','at','due','attempts','status','lease','leaseUntil','authorized','history','payload'])||!revision(o.clientRevision)||!revision(o.receiverRevision)||!revision(o.endpointRevision)||!state.apiEndpoints?.some(e=>e.id===o.endpoint)||!state.apiClients?.some(c=>c.id===o.client)||!owner(o.owner)||!incident?.timeline.some(e=>e.id===o.entry)||!eventTypes.includes(o.event)||!revision(o.revision)||!stamp(o.at)||!stamp(o.due)||!Number.isSafeInteger(o.attempts)||o.attempts<0||o.attempts>5||!['queued','sending','sent','failed','interrupted','uncertain','terminal'].includes(o.status)||typeof o.authorized!=='boolean'||(o.status==='sending'?(o.lease===null||o.leaseUntil===null):(o.lease!==null||o.leaseUntil!==null))||o.lease!==null&&!id(o.lease)||o.leaseUntil!==null&&!stamp(o.leaseUntil)||!Array.isArray(o.history)||!o.history.length||o.history.length>100||o.history.some(h=>!exact(h,['at','status','reason'])||!stamp(h.at)||!['queued','sending','sent','failed','interrupted','uncertain','terminal'].includes(h.status)||!['domain-commit','capacity-not-scheduled','restore-requires-authorization','dispatch','accepted','receiver-refused','receiver-failed','network-ambiguous','lease-expired','authority-revoked','protected-replay','budget-exhausted','credential-unavailable'].includes(h.reason))||o.history.at(-1)?.status!==o.status)fail('Invalid outbox history');
   const p=o.payload;if(!exact(p,['operationId','type','service','incident','revision','state','at'])||p.operationId!==o.id||p.type!==o.event||p.service!==o.service||p.incident!==o.incident||p.at!==o.at||!revision(p.revision)||p.revision>incident.revision||!['declared','acknowledged','mitigating','recovered','resolved'].includes(p.state))fail('Invalid frozen outbound payload');
  }
 }

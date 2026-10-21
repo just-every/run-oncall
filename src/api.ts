@@ -18,7 +18,7 @@ import { pauseChangeSources } from "./changes/model";
 import { saveTriageItem } from "./triage-store";
 import { installTriage, memberWorkspace } from "./triage-api";
 import { linkRestoredOwner, restoredAdministrators } from './identity-link';
-import { loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
+import { checkWorkspaceSize, loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
 import { nativeMember } from './native-member';
 import { installNativeSources, presentedSourceKey, refuseKeyEcho, sealHeldSourceKeys, type NativeSource } from './native-sources';
 import { runtimeBindings, type Bindings } from './auth.server';
@@ -551,9 +551,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   pauseChangeSources(value);
   pauseIntakeSources(value);
   value.revision = old.revision + 1;
-  const serialized = JSON.stringify(value);
-  if (new TextEncoder().encode(serialized).length > 1000000)
-    fail("Local workspace limit exceeded", 429);
+  checkWorkspaceSize(value);
   const r = await c.env.DB.batch([
     c.env.DB.prepare(
       "UPDATE workspace_control SET revision=?,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)",

@@ -72,6 +72,13 @@ try{
  const createdEndpoint=await req('/api/automation/endpoints',{name:'Portable receiver',client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true});assert.equal(createdEndpoint.status,201)
  const machine=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiKey,'idempotency-key':'synthetic-oncall-portable'},body:JSON.stringify({type:'declare',service:'transfer',title:'Portable machine incident',summary:'Retain operation and outbox identities',severity:'warning'})});assert.equal(machine.status,201)
  const machineOperation=await machine.json();assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOperation.entity&&o.status==='queued'))
+ // The same portable/erasure journey carries a full queue and capacity outcomes.
+ for(let n=1;n<50;n++)assert.equal((await req('/api/automation/endpoints',{name:'synthetic-oncall-portable-'+n,client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true})).status,201)
+ let capacityIncident=ok(await req('/api/state')).incidents.find(i=>i.id===machineOperation.entity)
+ for(let n=0;n<21;n++)capacityIncident=ok(await req('/api/command',{type:'assign-role',incident:capacityIncident.id,revision:capacityIncident.revision,role:'scribe',member:member.id,reason:'Synthetic portable capacity '+n}))
+ const capacityHistory=ok(await req('/api/state')).apiOutbox
+ assert.equal(capacityHistory.filter(o=>['queued','sending','failed'].includes(o.status)).length,1000)
+ assert.ok(capacityHistory.some(o=>o.status==='terminal'&&o.history[0].reason==='capacity-not-scheduled'&&o.attempts===0))
  cookie=await checkpointCli(m,cookie)
  console.log('OC-052 populated checkpoint: authority, bounds, storage rollback, concurrent restore and inactive receiving state passed')
  // Reauthorize locally after checkpoint recovery, so portable restore must
@@ -161,6 +168,8 @@ try{
  const auditBeforeErasure=ok(await req('/api/audit/export')).rows
  const erased=ok(await erase('alice@example.test'));assert.ok(erased.receiptId)
  assert.ok(!JSON.stringify(ok(await req('/api/state')).apiClients).includes('alice@example.test'),'erasure severs automation labels and authority')
+ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.history[0].reason==='capacity-not-scheduled'),'capacity history survives safe erasure')
+ assert.equal((await req('/api/automation/dispatch',{})).value.processed,0,'restored unfinished and capacity events remain held after erasure')
  const safeAudit=ok(await req('/api/audit/export')).rows,auditById=new Map(safeAudit.map(row=>[row.id,row]))
  for(const row of auditBeforeErasure)assert.deepEqual(auditById.get(row.id),row,'subject erasure never rewrites permanent audit chronology')
  for(const secret of [apiKey,endpointKey,'alice@example.test','portable-signed','portable-ci','Portable CI context','portable-monitor','portable-alertmanager',sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey])assert.ok(!JSON.stringify(safeAudit).includes(secret),'protected audit export holds no erased identity or secret')
