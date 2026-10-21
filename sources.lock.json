@@ -131,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1902261f4ce45c8304c8f06218f374deba79c86551bf97fca7ab7d9fe20e6e60",
+      "sha256": "35278060c30cfd3bbbde408c065cb9fbfdcc702c46ab45fd86ab927deb9bee45",
       "executable": false
     },
     "AGENTS.md": {
@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "334641995e73d16e3e359ccc737aa3e9e76f143379c048dc59940b674b6d9c2f",
+      "sha256": "f5eb28010eacc6ab7a0aee02bc2c0ea56132d76f316050614aaec97ffe99e017",
       "executable": false
     },
     "DEMO.md": {
@@ -699,7 +699,7 @@
       "executable": false
     },
     "scripts/installer/archive-policy.mjs": {
-      "sha256": "32c8d6f1326df32eecdb9f75d710cd1e3c8fafe87ee81f35399b8cae6ca64824",
+      "sha256": "678cbdd76f8d12d772f9c42ebf249b216f2a9e85aec7a9161b395d6822770834",
       "executable": false
     },
     "scripts/installer/audit-archive.mjs": {
@@ -3619,7 +3619,7 @@
       "executable": false
     },
     "tests/automation.mjs": {
-      "sha256": "fe4c039beef965cffaa2c03653def43a6a4cb64be514ac3a6d3760c0e517f269",
+      "sha256": "e178edc6a74d4a1ce6a3002ff4aa8daeec1c4fd5538b33d7aed01ad641806b62",
       "executable": false
     },
     "tests/changes.mjs": {
