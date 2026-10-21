@@ -82,8 +82,9 @@ try{
  sql("INSERT INTO paging_jobs VALUES('held-pending','"+incident.id+"','transfer',1,'pending',"+at+",'fixture','"+JSON.stringify(pending).replaceAll("'","''")+"')")
  // OC-053: service accounts, endpoints and queued outbound events are durable records whose credentials and sends never travel.
  const hook=await receiver();hook.mode('fail500')
- const apiAccount=ok(await req('/api/service-accounts',{name:'Portable automation',services:['transfer'],permissions:['read','incidents:write'],revision:0}),201)
- const apiEndpoint=ok(await req('/api/webhooks',{name:'Portable receiver',url:hook.url('/portable'),events:['incident.triggered'],services:['transfer'],revision:0}),201)
+ const created=async(path,data)=>{const r=await req(path,data);assert.equal(r.status,201,JSON.stringify(r.value));return r.value}
+ const apiAccount=await created('/api/service-accounts',{name:'Portable automation',services:['transfer'],permissions:['read','incidents:write'],revision:0})
+ const apiEndpoint=await created('/api/webhooks',{name:'Portable receiver',url:hook.url('/portable'),events:['incident.triggered'],services:['transfer'],revision:0})
  const apiDeclared=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiAccount.token,'idempotency-key':'portable-declare-1'},body:JSON.stringify({service:'transfer',severity:'warning',title:'Portable API incident',summary:'Queued event travels as history'})})
  assert.equal(apiDeclared.status,201)
  for(let n=0;n<40&&!hook.seen.length;n++)await new Promise(r=>setTimeout(r,250))
