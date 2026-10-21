@@ -8,7 +8,7 @@ import type { ApiPermission, ServiceAccount } from '../types.ts'
 import { ApiError } from './errors'
 
 export type Caller = { account: ServiceAccount; state: State; digest: string }
-export const limits = { read: 120, write: 30 } as const
+export const limits = { read: 120, write: 60 } as const
 const windowMs = 60000
 
 export function bearer(request: Request) {

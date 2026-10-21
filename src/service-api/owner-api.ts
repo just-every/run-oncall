@@ -23,9 +23,10 @@ const localInstallation = (c: any) => isLoopbackHost(new URL(runtimeBindings(c.e
 
 function scrubServiceActor(state: State, account: string) {
   const mark = actorId(account), swap = (value: string) => value === mark ? erasedActor : value
-  for (const entry of state.audit) entry.actor = swap(entry.actor)
+  const scrub = (entry: { actor: string; text: string }) => { entry.actor = swap(entry.actor); entry.text = entry.text.replaceAll(account, erasedActor) }
+  state.audit.forEach(scrub)
   for (const incident of state.incidents) {
-    for (const entry of incident.timeline) entry.actor = swap(entry.actor)
+    incident.timeline.forEach(scrub)
     for (const action of incident.actions) {
       if (action.submission) action.submission.by = swap(action.submission.by)
       if (action.accepted) action.accepted.by = swap(action.accepted.by)
