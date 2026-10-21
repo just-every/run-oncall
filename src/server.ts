@@ -20,8 +20,10 @@ import {importDoorResponse} from './move-in/door'
 type Env=Bindings
 export default withDemo({
   async scheduled(_event,env) {
-    const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
-    for(let n=0;n<10;n++)if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;
+    for(let n=0;n<10;n++) {
+      const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
+      if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;
+    }
   },
   async email(message,env) { await receiveEmail(message,runtimeBindings(env)); },
   async fetch(request,original,execution) {

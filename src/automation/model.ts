@@ -1,4 +1,4 @@
-import { fail, type State, type Incident, type Member } from '../family/response-operations/domain';
+import { fail, type State, type Incident, type Member } from '../family/response-operations/domain.ts';
 export const permissions = ['services:read','services:write','schedules:read','schedules:write','incidents:read','incidents:write','actions:read','actions:write','analytics:read','integrations:read'] as const;
 export const eventTypes = ['trigger','acknowledgment','reassignment','resolution','role','follow-up'] as const;
 export type EventType = typeof eventTypes[number];
@@ -53,7 +53,7 @@ const stamp=(v:any)=>typeof v==='string'&&Number.isFinite(Date.parse(v));
 const id=(v:any)=>typeof v==='string'&&v.length>0&&v.length<=100;
 const revision=(v:any)=>Number.isSafeInteger(v)&&v>=1;
 export function validateAutomation(state:State) {
- for(const key of ['apiClients','apiEndpoints','apiOperations','apiOutbox'] as const){const rows=state[key];if(rows!==undefined&&(!Array.isArray(rows)||rows.length>1000||rows.some(r=>!r||!id(r.id))||new Set(rows.map(r=>r.id)).size!==rows.length))fail('Invalid automation archive identities');}
+ for(const key of ['apiClients','apiEndpoints','apiOperations','apiOutbox'] as const){const rows=state[key];if(rows!==undefined&&(!Array.isArray(rows)||rows.length>(key==='apiClients'?100:key==='apiEndpoints'?50:1000)||rows.some(r=>!r||!id(r.id))||new Set(rows.map(r=>r.id)).size!==rows.length))fail('Invalid automation archive identities');}
  const services=(v:any)=>Array.isArray(v)&&v.length>0&&v.length<=64&&new Set(v).size===v.length&&v.every(s=>state.services.some(x=>x.id===s));
  const owner=(v:any)=>state.members.some(m=>m.id===v);
  for(const c of state.apiClients??[])if(!exact(c,['id','name','owner','services','permissions','active','revision','createdAt','lastUsed'])||!c.id.startsWith('api-')||!id(c.name)||!owner(c.owner)||!services(c.services)||!Array.isArray(c.permissions)||!c.permissions.length||new Set(c.permissions).size!==c.permissions.length||c.permissions.some(p=>!permissions.includes(p as any))||typeof c.active!=='boolean'||!revision(c.revision)||!stamp(c.createdAt)||c.lastUsed!==null&&!stamp(c.lastUsed))fail('Invalid API client archive');

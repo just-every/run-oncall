@@ -30,14 +30,15 @@ try {
   await page.screenshot({path:join(proof,'automation-conflict-'+width+'.png'),fullPage:true});
   await page.reload();await panel.getByRole('heading',{name:'Durable outbox',exact:true}).waitFor();
   // Approved recipient and actual refusal produce a durable terminal outcome on screen.
-  const key=randomBytes(32).toString('hex'),created=await req('/api/automation/clients',{name:'Synthetic sending client '+width,key,services:['synthetic-oncall-browser'],permissions:['incidents:read']});assert.equal(created.status,201);
+  const key=randomBytes(32).toString('hex'),created=await req('/api/automation/clients',{name:'Synthetic sending client '+width,key,services:['synthetic-oncall-browser'],permissions:['incidents:read','incidents:write']});assert.equal(created.status,201);
   const endpoint=await req('/api/automation/endpoints',{name:'Synthetic receiver '+width,client:created.value.id,key:randomBytes(32).toString('hex'),url:'https://8.8.8.8/events',services:['synthetic-oncall-browser'],approve:true});assert.equal(endpoint.status,201);
-  await req('/api/command',{type:'declare',service:'synthetic-oncall-browser',title:'Synthetic browser incident '+width,summary:'Visible outbox failure',severity:'warning'});
+  const incident=await runtime.request('/api/v1/incidents',{type:'declare',service:'synthetic-oncall-browser',title:'Synthetic browser incident '+width,summary:'Visible outbox failure',severity:'warning'},'',{authorization:'Bearer '+key,'idempotency-key':'synthetic-oncall-browser-'+width});assert.equal(incident.status,201);
   while((await req('/api/automation/dispatch',{})).value.processed){}
   await page.reload();await panel.getByText('trigger · terminal',{exact:true}).first().waitFor();
   await panel.scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal page overflow');
   assert.equal(await panel.getByLabel('Private client or endpoint key',{exact:true}).getAttribute('type'),'password');
   await panel.screenshot({path:join(proof,'automation-populated-'+width+'.png')});
+  await page.goto(runtime.origin+'/?incident='+incident.value.entity+'#incidents');await page.locator('.timeline').getByText('Service account',{exact:true}).waitFor();await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
   assert.deepEqual(errors,[]);
   await context.close();
   const denied=await browser.newContext({viewport:{width,height:1000}}),deniedPage=await denied.newPage();const login=await denied.request.post(runtime.origin+'/api/login',{headers:{origin:runtime.origin},data:{name:'Synthetic Viewer',password:'synthetic-oncall-viewer-password'}});assert.equal(login.status(),200);

@@ -158,7 +158,7 @@ export function installVersionedApi(api:any,deps:Deps) {
   if(!/^[A-Za-z0-9_-]+$/.test(key))fail('Use an opaque idempotency key');
   refuseKeyEcho([JSON.stringify(input),key],c.get('apiKey'));
   const request=await changeHash(JSON.stringify([family,input])),keyHash=await changeHash(key),prior=state.apiOperations?.find(o=>o.client===client.id&&o.key===keyHash);
-  if(prior){allowed(client,prior.service);if(prior.request!==request)fail('Idempotency key already names different input',409);return c.json(prior);}
+  if(prior){allowed(client,prior.service);if(prior.request!==request)fail('Idempotency key already names different input',409);await readFence(c);return c.json(prior);}
   const incident=state.incidents.find(i=>i.id===input.incident),service=family==='services'?input.id:family==='incidents'&&input.type==='declare'?input.service:family==='schedules'?input.service:incident?.service;
   allowed(client,service);if(!state.services.some(s=>s.id===service))fail('Record not found in this client scope',404);
   if(Array.isArray(input.dependencies)&&input.dependencies.some((s:string)=>!client.services.includes(s)))fail('Cross-service reference refused',404);
