@@ -1,6 +1,9 @@
+import {readNativeRequest} from '../native-request';
+import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
 import { auditIdentity } from '../audit-store';
+import { parseNativeRequest, retainNativeIncomplete } from '../native-incomplete';
 import { fail, signalInput, admit, type State } from '../family/response-operations/domain';
-import { presentedSourceKey, refuseKeyEcho, type NativeSource } from '../native-sources';
+import { refuseKeyEcho, type NativeSource } from '../native-sources';
 import { intakeHash } from '../intake/credentials';
 import { intakeSourceIdentity, type IntakeReceipt, type IntakeSource } from '../intake/model';
 import type { IntakeDependencies } from '../monitoring/credentials';
@@ -41,24 +44,30 @@ export function receiveNativeRouting(state:State,source:IntakeSource,signal:Retu
   return {receipt,duplicate:false};
 }
 
-export async function nativeRoutedIngress(c:any,deps:IntakeDependencies,raw:string) {
+export async function nativeRoutedIngress(c:any,deps:IntakeDependencies) {
   const identity=c.req.param('source');
-  if(!identity.startsWith('intake:'))fail('Invalid source credential',401);
+  if(!identity.startsWith('intake:')){await readNativeRequest(c);fail('Invalid source credential',401);}
   const state=await deps.load(c.env.DB),source=state.intakeSources?.find(s=>intakeSourceIdentity(s.id)===identity&&s.provider==='native'&&s.routing&&s.active);
   const credential=source?await c.env.DB.prepare('SELECT key_digest AS digest,signing_custody FROM oc_intake_credentials WHERE source=?').bind(source.id).first() as Omit<NativeSource,'scopes'|'signing_secret'>|null:null;
-  if(!source||!credential)fail('Invalid source credential',401);
+  if(!source||!credential){await readNativeRequest(c);fail('Invalid source credential',401);}
   if((source.authentication==='signed')!==(credential.signing_custody!==null))fail('Source key custody is incomplete',503);
-  const key=await presentedSourceKey(c,{...credential,signing_secret:null,scopes:JSON.stringify(source.routing!.scope)},raw);
+  const nativeBody=await readNativeRequest(c,{...credential,signing_secret:null,scopes:JSON.stringify(source.routing!.scope)}),key=nativeBody.key;
   auditIdentity(c.env.DB,{actor:{kind:'intake-source',id:source.id},source:{kind:'intake-source',id:source.id}});
-  if(new TextEncoder().encode(raw).length>65536)fail('Request too large',413);
-  let input:any;try {input=JSON.parse(raw);} catch {fail('Invalid JSON');}
-  const signal=signalInput(input);
-  if(signal.source!==identity)fail('"source" must match the source ID in the URL');
+  const authority={sql:'EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=? AND signing_custody IS ?)',values:[source.id,credential.digest,credential.signing_custody]};
+  const before=structuredClone(state),rate=await beginRate(c,deps,state,{id:'intake:'+source.id,name:source.name,owner:source.routing!.owner},authority);
+  const parsed=parseNativeRequest(nativeBody);
+  if(!parsed) {
+    const result=await retainNativeIncomplete(state,source,nativeBody,key);
+    if(!result.duplicate)await saveRate(c,deps,state,state.revision,rate,admittedCount(before,state));
+    return c.json({duplicate:result.duplicate,id:result.receipt.id,service:result.receipt.service,acceptedAt:result.receipt.acceptedAt,truncation:true,incomplete:{receipt:result.receipt.id}},202);
+  }
+  const {input,signal}=parsed;
+  if(signal.source!==identity)fail('"source" must match the source ID in the URL',403);
   refuseKeyEcho([JSON.stringify(input)],key);
   const routingInput=sanitizeRoutingInput({...input,summary:signal.title,source:signal.source,severity:signal.severity,event:{action:signal.intent,summary:signal.title,severity:signal.severity}},key);
   const fingerprint=await intakeHash(JSON.stringify({signal,routingInput}));
   const result=receiveNativeRouting(state,source,signal,fingerprint,routingInput);
-  if(!result.duplicate)await deps.save(c.env.DB,state,state.revision,{sql:'EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=? AND signing_custody IS ?)',values:[source.id,credential.digest,credential.signing_custody]});
+  if(!result.duplicate)await saveRate(c,deps,state,state.revision,rate,admittedCount(before,state));
   const receipt=result.receipt;
   return c.json({duplicate:result.duplicate,id:receipt.id,eventId:receipt.native!.eventId,service:receipt.service,observedAt:receipt.observedAt,acceptedAt:receipt.acceptedAt},result.duplicate?200:201);
 }

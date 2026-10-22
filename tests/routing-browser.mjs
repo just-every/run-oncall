@@ -20,6 +20,12 @@ export async function routingBrowser(page,context,width) {
  await page.getByLabel('Routed integration',{exact:true}).selectOption('native-browser-'+width);
  const rules=page.getByRole('region',{name:'Routing rules',exact:true});
  await rules.getByText('/api/ingress/intake:native-browser-'+width,{exact:true}).waitFor();
+ await key.activate(rules.getByText('Per-key rate allowance',{exact:true}));
+ await key.text(rules.getByLabel('Requests per minute',{exact:true}),'500');
+ await key.text(rules.getByLabel('New events per minute',{exact:true}),'100');
+ await key.activate(rules.getByRole('button',{name:'Save key allowance',exact:true}));
+ await page.getByRole('status').filter({hasText:'Key allowance saved'}).waitFor();
+ await rules.getByText('500 authenticated requests and 100 newly admitted events',{exact:false}).waitFor();
  await key.activate(rules.getByRole('button',{name:'Preview routing changes',exact:true}));
  await rules.getByText('No retained events yet.',{exact:false}).waitFor();
  await mkdir('evidence/browser',{recursive:true});

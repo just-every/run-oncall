@@ -1,3 +1,4 @@
+import {rateJourney,providerRateDoors} from './routing-rate.mjs';
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {nativeRouting} from './routing-native.mjs';
@@ -5,7 +6,7 @@ import {localWorker} from './worker.mjs';
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs';
 
 // One public Worker journey: real admission, replay, authority and archive doors.
-const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const secret=()=>randomBytes(32).toString('hex'),keys={pd:secret(),og:secret(),sp:secret()};
 let cookie;
 const req=(path,data)=>w.request(path,data,cookie);
@@ -97,10 +98,12 @@ try {
  ok(await req('/api/routing/keys',{id:'pd',name:source.name,provider:'pagerduty',scope:source.routing.scope,owner:actor.id,key:keys.pd,revision:source.revision}));
  ok(await external('/v2/enqueue',{routing_key:originalKey,event_action:'trigger',payload:{summary:'Revoked',source:'test',severity:'critical'}}),400);
  const native=await nativeRouting(w,cookie,actor);
+ await rateJourney(w,cookie,actor);
+ await providerRateDoors(w,cookie,actor);
  const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey])assert.ok(!JSON.stringify(archive).includes(key));
  const malformed=structuredClone(archive);malformed.intakeSources.find(s=>s.id==='pd').routing.versions[0].catchAll='foreign';ok(await req('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
- state=ok(await req('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
+ state=ok(await req('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.deepEqual(state.keyAllowances,archive.keyAllowances);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
  await w.stop();await w.start();assert.deepEqual(ok(await req('/api/state')).intakeReceipts,archive.intakeReceipts);
  console.log('OC-070 modes and rules map email onto derived generations. Routed intake: scoped fixed/dynamic rules, per-service generations, suppression ordering, replay/no writes, stale publish, readmission, authority, rollback, rotation and inactive archive/restart');
 } finally {await w.close();}

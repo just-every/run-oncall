@@ -1,10 +1,15 @@
 import { fail, type State } from '../family/response-operations/domain';
 import type { IntakeReceipt, IntakeSource } from '../intake/model';
 import { exact } from './definition';
+import { nativeIncompleteDetails } from '../native-incomplete-model';
 
 export function validateNativeRoutingReceipt(state:State,source:IntakeSource,receipt:IntakeReceipt) {
   if(source.provider!=='native') {
     if(receipt.native!==undefined)fail('Unexpected native routing identity');
+    return;
+  }
+  if(receipt.incomplete) {
+    if(receipt.native!==undefined||!source.routing||!nativeIncompleteDetails(receipt))fail('Invalid native incomplete custody');
     return;
   }
   exact(receipt.native,['eventId','sourceGeneration','fingerprint']);

@@ -23,7 +23,7 @@ export async function sealHeldSourceKeys(db: D1Database, secret: string | undefi
 }
 
 // Returns the verified key so admission can refuse to retain it.
-export async function presentedSourceKey(c: any, source: NativeSource, raw: string) {
+export async function presentedSourceKey(c: any, source: NativeSource, raw: string | {signature:string}) {
   if (source.signing_secret !== null) fail('Source key custody is incomplete; finish setup so this installation can hold the key', 503);
   if (source.signing_custody === null) {
     const bearer = c.req.header('authorization')?.replace(/^Bearer /, '') ?? '';
@@ -34,7 +34,7 @@ export async function presentedSourceKey(c: any, source: NativeSource, raw: stri
   const timestamp = c.req.header('x-oncall-timestamp') ?? '';
   freshTimestamp(timestamp);
   const key = await openCredential(source.signing_custody, runtimeBindings(c.env).SESSION_SECRET, sourceCustody);
-  if (!equalSignature(c.req.header('x-oncall-signature') ?? '', await changeHmac(key, timestamp + '.' + raw))) fail('Invalid source signature', 401);
+  if (!equalSignature(c.req.header('x-oncall-signature') ?? '', typeof raw==='string'?await changeHmac(key, timestamp + '.' + raw):raw.signature)) fail('Invalid source signature', 401);
   auditIdentity(c.env.DB,{actor:{kind:"source",id:c.req.param("source")},source:{kind:"source",id:c.req.param("source")}});
   return key;
 }

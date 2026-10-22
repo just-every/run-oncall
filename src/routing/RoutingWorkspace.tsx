@@ -1,3 +1,4 @@
+import {AllowanceForm} from '../intake-rate/AllowanceForm';
 import { useId, useState } from 'react';
 import { Form } from '../forms';
 import { request } from '../useWorkspace';
@@ -12,7 +13,7 @@ import './routing.css';
 
 type Props={state:State;admin:boolean;busy:boolean;run:IntakeRun};
 export function RoutingWorkspace(props:Props) {
-  const [selected,setSelected]=useState(''),uid=useId(),sources=(props.state.intakeSources??[]).filter(s=>s.routing);
+  const [selected,setSelected]=useState(''),uid=useId(),sources=(props.state.intakeSources??[]).filter(s=>s.routing&&!s.id.startsWith('native:'));
   const source=sources.find(s=>s.id===selected)??sources[0];
   return <div className="routing-workspace">
     {sources.length>0&&<label className="field"><span id={uid}>Routed integration</span><select aria-labelledby={uid} value={source?.id} onChange={e=>setSelected(e.target.value)}>{sources.map(s=><option key={s.id} value={s.id}>{s.name} · {s.active?'active':'inactive'}</option>)}</select></label>}
@@ -33,6 +34,7 @@ function RoutingKey({state,admin,busy,run,source}:Props&{source:IntakeSource}) {
       {error&&<p role="alert" className="error">{error}</p>}
       {base!==current.version&&<p role="alert">This draft is based on v{base}; v{current.version} is now published. Publishing this stale draft will be refused. <button type="button" onClick={()=>{setBase(current.version);setRules(structuredClone(current.rules));setCatchAll(current.catchAll);changed();}}>Reload published rules</button></p>}
       {source.provider==='native'&&<p>Native Events API · {source.authentication==='signed'?'HMAC signature':'Bearer token'} · <code>/api/ingress/intake:{source.id}</code>. The credential is never returned. <a href="/docs/routed-intake">Native sender instructions</a></p>}
+      <AllowanceForm state={state} id={'intake:'+source.id} admin={admin} busy={busy} run={run}/><ul aria-label="Throttle notices">{state.audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:'+source.id).slice(-5).map(a=><li key={a.id}>{a.text}</li>)}</ul>
       <h3>Routing rules</h3><p>Draft based on version {base}. Changes below take effect only after publication.</p>
       {!rules.length&&<p>No rules. Every event takes the catch-all decision.</p>}
       {rules.map((rule,i)=>admin?<RuleEditor key={i} rule={rule} index={i} services={services} disabled={busy} first={i===0} last={i===rules.length-1} onChange={value=>edit(i,value)} onRemove={()=>{setRules(rules.filter((_,n)=>n!==i));changed();}} onMove={delta=>{const next=[...rules];[next[i],next[i+delta]]=[next[i+delta],next[i]];setRules(next);changed();}}/>:<article className="routing-rule" key={i}><h4>{i+1}. {rule.id}</h4><p>{rule.match} conditions · {'service' in rule.target?services.find(s=>'service' in rule.target&&s.id===rule.target.service)?.name:'Dynamic service field '+rule.target.field}</p><pre tabIndex={0}>{JSON.stringify(rule.conditions,null,2)}</pre></article>)}

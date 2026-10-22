@@ -459,7 +459,7 @@ try {
     observedAt: "2026-10-02T12:00:00Z",
     evidence: "https://example.test/check",
   };
-  // OC-008: refused native intake and commands retain no raw body or partial records.
+  // OC-059: authenticated native bounds retain incomplete custody; refusals stay atomic.
   const beforeRefusedInput = ok(await request("/api/archive", undefined, cookie));
   const beforeRefusalAudit = new Set((await auditExport(cookie)).rows.map(row => row.id));
   const oversizedEvent = { ...event, eventId: "over-limit", discarded: "" };
@@ -468,17 +468,45 @@ try {
   const oversizedBody = JSON.stringify(oversizedEvent);
   assert.equal(Buffer.byteLength(oversizedBody), 65537);
   assert.ok(oversizedBody.length < 65536, "the native bound counts UTF-8 bytes, not characters");
-  ok(await rawRequest("/api/ingress/monitor", oversizedBody, "", { authorization: "Bearer " + key }), 413);
-  const malformedInput = ok(await rawRequest("/api/ingress/monitor", '{"source":', "", { authorization: "Bearer " + key }), 400);
-  assert.match(malformedInput.error, /invalid json/i);
-  ok(await request("/api/ingress/monitor", { source: "monitor" }, "", { authorization: "Bearer " + key }), 400);
+  ok(await rawRequest("/api/ingress/monitor", oversizedBody), 401);
+  assert.deepEqual(ok(await request("/api/archive", undefined, cookie)),beforeRefusedInput,"unauthenticated oversize has no custody");
+  const assertIncomplete = async (response,raw,expectedService) => {
+    const value=ok(response,202);assert.equal(value.truncation,true);
+    const state=ok(await request("/api/archive",undefined,cookie)),held=state.intakeReceipts.find(r=>r.id===value.incomplete.receipt);
+    assert.equal(held.service,expectedService);assert.equal(held.severity,"critical");assert.equal(held.truncated,true);
+    assert.equal(held.incomplete.bytes,Buffer.byteLength(raw));assert.equal(held.incomplete.sha256,createHash("sha256").update(raw).digest("hex"));
+    assert.deepEqual(held.incomplete.readableIds,[]);assert.equal(held.incomplete.dropped,null);
+    assert.ok(Buffer.from(held.details.nativePrefix.value,'base64').length<=65536);
+    assert.deepEqual(Buffer.from(held.details.nativePrefix.value,'base64'),Buffer.from(raw).subarray(0,65536));
+    assert.deepEqual(held.details.ownerNotice,{owner:admin.id,paging:"off",state:"recorded"});
+    assert.ok(state.audit.some(row=>row.kind==="intake-owner-notice"&&row.text.includes(held.id)));
+    assert.equal(held.native,undefined,"an untrusted prefix has no structured native event identity");
+    if(expectedService)assert.equal(state.alerts.find(a=>a.id===held.alert).urgency,"high");
+    else {assert.equal(held.outcome,"unrouted");assert.equal(held.alert,null);}
+    return {value,state,held};
+  };
+  const oversizeCustody=await assertIncomplete(await rawRequest("/api/ingress/monitor",oversizedBody,"",{authorization:"Bearer "+key}),oversizedBody,null);
+  assert.deepEqual(oversizeCustody.state.events,beforeRefusedInput.events,"a multi-service key never guesses a service from the prefix");
+  assert.equal(ok(await rawRequest("/api/ingress/monitor",oversizedBody,"",{authorization:"Bearer "+key}),202).id,oversizeCustody.value.id);
+  assert.deepEqual(ok(await request("/api/archive",undefined,cookie)),oversizeCustody.state,"an incomplete retry changes no state");
+  await assertIncomplete(await rawRequest("/api/ingress/monitor",'{"source":',"",{authorization:"Bearer "+key}),'{"source":',null);
+  await assertIncomplete(await request("/api/ingress/monitor",{source:"monitor"},"",{authorization:"Bearer "+key}),JSON.stringify({source:"monitor"}),null);
+  const singleScopeKey="synthetic-native-bounds-one-service-0001";
+  ok(await request("/api/sources",{id:"bounds-one",key:singleScopeKey,scopes:[stagingService.id]},cookie));
+  ok(await request("/api/urgency/services/"+stagingService.id,{baseVersion:0,mode:"low",timezone:"UTC",weekly:[],holidays:[],inside:"low",outside:"low",reason:"Incomplete custody must override low urgency"},cookie),201);
+  await assertIncomplete(await rawRequest("/api/ingress/bounds-one",oversizedBody,"",{authorization:"Bearer "+singleScopeKey}),oversizedBody,stagingService.id);
+  const hugeNativeBody='x'.repeat(7*1024*1024);
+  await assertIncomplete(await rawRequest("/api/ingress/bounds-one",hugeNativeBody,"",{authorization:"Bearer "+singleScopeKey}),hugeNativeBody,stagingService.id);
+  const afterCustody=ok(await request("/api/archive",undefined,cookie));
+  ok(await rawRequest("/api/ingress/monitor",'{"secret":"'+key.toUpperCase()+'"',"",{authorization:"Bearer "+key}),400);
+  ok(await rawRequest("/api/ingress/monitor",'{"secret":"'+[...key].map(char=>'\\u'+char.charCodeAt(0).toString(16).padStart(4,'0')).join('')+'"',"",{authorization:"Bearer "+key}),400);
   ok(await rawRequest("/api/command", oversizedBody, cookie), 413);
   ok(await rawRequest("/api/command", JSON.stringify({type:"note",padding:"x".repeat(7*1024*1024)}), cookie), 413);
   const refusedInputAudit=(await auditExport(cookie)).rows.filter(row=>!beforeRefusalAudit.has(row.id)&&row.outcome==="refused");
-  assert.ok(refusedInputAudit.length>=5,"authenticated malformed and oversized requests, including the outer transport refusal, retain audit outcomes");
+  assert.ok(refusedInputAudit.some(row=>row.kind.startsWith("command.")),"oversized commands retain refused audit outcomes");
   for(const row of refusedInputAudit)assert.deepEqual([row.workspaceBefore,row.beforeRevision],[row.workspaceAfter,row.afterRevision],"refused input changes no state or mutation revision");
-  assert.deepEqual(ok(await request("/api/archive", undefined, cookie)), beforeRefusedInput,
-    "OC-008: oversized, malformed and incomplete structured input changes no durable records");
+  assert.deepEqual(ok(await request("/api/archive", undefined, cookie)), afterCustody,
+    "refused commands and credential echoes change no durable records");
   ok(await request("/api/ingress/monitor", event), 401);
   const admission = await auditedMutation(cookie, () => request("/api/ingress/monitor", event, "", {
     authorization: "Bearer " + key,

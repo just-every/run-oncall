@@ -2,6 +2,7 @@ import { fail, link, text, type State } from '../family/response-operations/doma
 import { validateRoutingSource, validateRoutingReceipt } from '../routing/archive.ts';
 import type { RoutingDefinition, RoutingExplanation } from '../routing/types.ts';
 import { validateNativeRoutingReceipt } from '../routing/native-archive.ts';
+import { nativeIncompleteDetails } from '../native-incomplete-model';
 import { validateMonitoringReceipt } from '../monitoring/archive.ts';
 import type { MonitoringProvider, MonitoringMetadata, IncompleteEvidence } from '../monitoring/types.ts';
 import type { CompatibleInput, CompatibleProvider } from './provider-types.ts';
@@ -43,7 +44,7 @@ export function validateIntakeArchive(state:State) {
     if(['acknowledge','note'].includes(r.action)&&r.event!==null)fail('Invalid intake action event');
     if((r.service===null)!==(r.outcome==='unrouted'))fail('Invalid unrouted receipt');
     if(!Array.isArray(r.links)||r.links.length>8||r.links.some(v=>!v||link(v)!==v))fail('Invalid intake links');
-    if(!r.details||typeof r.details!=='object'||Array.isArray(r.details)||new TextEncoder().encode(JSON.stringify(r.details)).length>8192)fail('Invalid intake details');
+    if(!r.details||typeof r.details!=='object'||Array.isArray(r.details)||!nativeIncompleteDetails(r)&&new TextEncoder().encode(JSON.stringify(r.details)).length>8192)fail('Invalid intake details');
     validateRoutingReceipt(state,source,r);
     validateMonitoringReceipt(state,source,r);
     validateNativeRoutingReceipt(state,source,r);

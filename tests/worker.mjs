@@ -1,13 +1,13 @@
 import {spawn,execFileSync} from 'node:child_process'
-import {mkdtemp,rm,writeFile} from 'node:fs/promises'
+import {mkdtemp,rm,writeFile,readFile} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
-import {join} from 'node:path'
+import {join,resolve} from 'node:path'
 import {createServer} from 'node:net'
 import {randomBytes,createHash} from 'node:crypto'
 import http from 'node:http'
 import {workerDiagnostics} from './diagnostics.mjs'
 
-export async function localWorker(bindings = {}, {persistTo} = {}) {
+export async function localWorker(bindings = {}, {persistTo,clock=false} = {}) {
  const dir=await mkdtemp(join(tmpdir(),'oncall-flow-')),socket=createServer()
  await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
  const persist=persistTo??dir;
@@ -18,12 +18,22 @@ export async function localWorker(bindings = {}, {persistTo} = {}) {
  const statements=command=>JSON.parse(execFileSync(process.execPath,[cli,'d1','execute','DB','--local','--persist-to',persist,'--command',command,'--json'],{encoding:'utf8',env,stdio:['ignore','pipe','pipe'],maxBuffer:64*1024*1024})).map(r=>r.results)
  const sql=command=>statements(command)[0]
  execFileSync(process.execPath,[cli,'d1','migrations','apply','DB','--local','--persist-to',persist],{env,stdio:'ignore'})
+ let config='dist/server/wrangler.json',clockFiles=[];
+ if(clock){
+  const name='.test-clock-'+randomBytes(8).toString('hex'),wrapper=resolve('dist/server',name+'.js');
+  config=resolve('dist/server',name+'.json');clockFiles=[wrapper,config];
+  const built=JSON.parse(await readFile('dist/server/wrangler.json','utf8'));
+  await writeFile(wrapper,`import app from './${built.main}';
+const realNow=Date.now;let at;Date.now=()=>at??realNow();
+export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__test_clock'){at=Number(await request.text());return new Response('clock injected');}return app.fetch(request,env,ctx);}};`);
+  await writeFile(config,JSON.stringify({...built,main:name+'.js'}));
+ }
  let worker,diagnostics
  let failureHandler
  const stop=async()=>{if(worker&&worker.exitCode===null){worker.kill('SIGTERM');await new Promise(r=>worker.once('exit',r))}}
  const start=async()=>{
   diagnostics=workerDiagnostics({...env,...vars})
-  worker=spawn(process.execPath,[cli,'dev','--local','--config','dist/server/wrangler.json','--persist-to',persist,'--ip','127.0.0.1','--port',String(port),'--inspector-port','0','--env-file',join(dir,'local.env')],{env,stdio:['ignore','pipe','pipe']})
+  worker=spawn(process.execPath,[cli,'dev','--local','--config',config,'--persist-to',persist,'--ip','127.0.0.1','--port',String(port),'--inspector-port','0','--env-file',join(dir,'local.env')],{env,stdio:['ignore','pipe','pipe']})
   let startupError;worker.once('error',error=>{startupError=error;diagnostics.report('startup process error')})
   diagnostics.attach(worker.stdout,'stdout');diagnostics.attach(worker.stderr,'stderr')
   for(let n=0;n<240;n++){if(startupError)throw Error('Worker process could not start');if(worker.exitCode!==null){diagnostics.report('startup exited');throw Error('Worker exited before readiness')};try{if((await fetch(origin+'/health')).ok)return}catch{}await new Promise(r=>setTimeout(r,250))}
@@ -46,7 +56,7 @@ export async function localWorker(bindings = {}, {persistTo} = {}) {
  failureHandler=()=>diagnostics.report('test failure')
  process.once('uncaughtExceptionMonitor',failureHandler)
  process.once('exit',code=>{if(code!==0)failureHandler()})
- return {origin,vars,sql,statements,request,start,stop,close:async()=>{await stop();await rm(dir,{recursive:true,force:true})}}
+ return {origin,vars,sql,statements,request,start,stop,time:async at=>{if(!clock)throw Error('Clock not injected');const r=await fetch(origin+'/__test_clock',{method:'POST',body:String(at)});if(!r.ok)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
 }
 
 // The move-in screen's transport: the owner-session import door, one namespace per vendor. preview uploads the

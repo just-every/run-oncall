@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {randomBytes,createHmac} from 'node:crypto';
+import {randomBytes,createHmac,createHash} from 'node:crypto';
 
 // Continuation of routing.mjs's real emitted-Worker lifecycle, using its services.
 export async function nativeRouting(w,cookie,actor) {
@@ -12,7 +12,7 @@ export async function nativeRouting(w,cookie,actor) {
  ok(await create('native',bearer),201);ok(await create('signed-native',signed,'signed'),201);
  const event=(id,destination='payments',intent='trigger',source='native')=>({source:'intake:'+source,eventId:id,service:'sender-hint',environment:'sender-hint',key:'native-shared',generation:'native-cycle',intent,severity:'warning',title:'Regional checkout latency',observedAt:'2026-10-22T05:00:00Z',details:{destination}});
  const send=async(input,secret=bearer,mode='bearer',path='/api/ingress/'+input.source)=>{
-  const body=typeof input==='string'?input:JSON.stringify(input),timestamp=String(Math.floor(Date.now()/1000));
+  const body=typeof input==='string'||Buffer.isBuffer(input)?input:JSON.stringify(input),timestamp=String(Math.floor(Date.now()/1000));
   const headers=mode==='signed'?{'x-oncall-timestamp':timestamp,'x-oncall-signature':createHmac('sha256',secret).update(timestamp+'.'+body).digest('hex')}:{authorization:'Bearer '+secret};
   const response=await fetch(w.origin+path,{method:'POST',headers:{'content-type':'application/json',...headers},body});
   return {status:response.status,value:await response.json()};
@@ -49,16 +49,43 @@ export async function nativeRouting(w,cookie,actor) {
  ok(await send(event('forged'),key()),401);
  ok(await send({...event('echo'),details:{destination:'payments',echo:bearer}}),400);
  ok(await send(event('wrong-door'),bearer,'bearer','/api/monitoring/native'),401);
+ ok(await send({...event('wrong-audience'),source:'intake:another'},bearer,'bearer','/api/ingress/intake:native'),403);
  // Wrong-provider rejection retains its existing diagnostic, never an event.
  assert.deepEqual(ok(await req('/api/state')).events,untouched.events);
- const utf8=event('native-size');utf8.extra='é'.repeat(32769);ok(await send(utf8),413);
- ok(await send('{"source":',bearer,'bearer','/api/ingress/intake:native'),400);
+ const bounds=async(raw,secret,mode,path,service)=>{
+  const response=ok(await send(raw,secret,mode,path),202);assert.equal(response.truncation,true);
+  const state=ok(await req('/api/archive')),held=state.intakeReceipts.find(r=>r.id===response.incomplete.receipt);
+  assert.equal(held.provider,'native');assert.equal(held.service,service);assert.equal(held.severity,'critical');assert.equal(held.truncated,true);
+  assert.equal(held.incomplete.bytes,Buffer.byteLength(raw));assert.equal(held.incomplete.sha256,createHash('sha256').update(raw).digest('hex'));
+  assert.deepEqual(held.incomplete.readableIds,[]);assert.equal(held.incomplete.dropped,null);assert.equal(held.incomplete.unreadBytes,Buffer.byteLength(raw));
+  assert.ok(Buffer.from(held.details.nativePrefix.value,'base64').length<=65536);assert.deepEqual(Buffer.from(held.details.nativePrefix.value,'base64'),Buffer.from(raw).subarray(0,65536));
+  assert.deepEqual(held.routingInput,{incomplete:true});assert.equal(held.native,undefined);assert.equal(held.routing.kind,'catch-all');
+  assert.deepEqual(held.details.ownerNotice,{owner:actor.id,paging:'off',state:'recorded'});
+  assert.ok(state.audit.some(a=>a.kind==='intake-owner-notice'&&a.text.includes(held.id)));
+  if(service)assert.equal(state.alerts.find(a=>a.id===held.alert).urgency,'high');
+  else {assert.equal(held.outcome,'unrouted');assert.equal(held.alert,null);}
+  const again=ok(await send(raw,secret,mode,path),202);assert.equal(again.id,held.id);assert.equal(again.duplicate,true);
+  assert.deepEqual(ok(await req('/api/archive')),state,'incomplete retries preserve committed custody');
+  return held;
+ };
+ const utf8=event('native-size');utf8.extra='é'.repeat(32769);const oversized=JSON.stringify(utf8),beforeBounds=ok(await req('/api/archive'));
+ ok(await send(oversized,key(),'bearer','/api/ingress/intake:native'),401);
+ ok(await send(oversized,signed,'bearer','/api/ingress/intake:signed-native'),401);
+ assert.deepEqual(ok(await req('/api/archive')),beforeBounds,'unauthenticated and wrong-audience oversize creates no custody');
+ await bounds(oversized,bearer,'bearer','/api/ingress/intake:native','search');
+ await bounds('{"source":',bearer,'bearer','/api/ingress/intake:native','search');
+ await bounds(Buffer.from([123,255,0,1]),bearer,'bearer','/api/ingress/intake:native','search');
+ await bounds(oversized,signed,'signed','/api/ingress/intake:signed-native',null);
+ await bounds('{"source":',signed,'signed','/api/ingress/intake:signed-native',null);
+ const beforeEcho=ok(await req('/api/archive'));
+ for(const echo of [bearer.toUpperCase(),[...bearer].map(c=>'%'+c.charCodeAt(0).toString(16)).join(''),[...bearer].map(c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')).join('')])ok(await send('{"echo":"'+echo+'"',bearer,'bearer','/api/ingress/intake:native'),400);
+ assert.deepEqual(ok(await req('/api/archive')),beforeEcho,'credential spellings never reach retained prefixes');
  assert.equal((await w.request('/api/state',undefined,undefined,{authorization:'Bearer '+bearer})).status,401);
  const source=ok(await req('/api/state')).intakeSources.find(s=>s.id==='native');
  const rotate={id:source.id,name:source.name,provider:'native',scope:source.routing.scope,owner:actor.id,key:key(),revision:source.revision};
  const beforeFailure=ok(await req('/api/archive'));
  w.sql("CREATE TRIGGER native_audit_fail BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic native audit failure'); END");
- try {ok(await req('/api/routing/keys',rotate),503);ok(await send(event('audit-rollback')),503);}finally{w.sql('DROP TRIGGER native_audit_fail');}
+ try {ok(await req('/api/routing/keys',rotate),503);ok(await send(event('audit-rollback')),503);ok(await send('{"audit-failed":',bearer,'bearer','/api/ingress/intake:native'),503);}finally{w.sql('DROP TRIGGER native_audit_fail');}
  assert.deepEqual(ok(await req('/api/archive')),beforeFailure);
  ok(await req('/api/routing/keys',rotate));const old=bearer;bearer=rotate.key;
  ok(await send(event('rotated-out'),old),401);ok(await send(event('rotated-in')),201);

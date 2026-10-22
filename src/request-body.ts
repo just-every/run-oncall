@@ -5,7 +5,7 @@ import { compatiblePath, monitoringPath } from './intake/paths';
 const maximum=1000000+5*1024*1024+1024
 export async function receivedRequest(request:Request):Promise<Request|Response>{
  const path=new URL(request.url).pathname
- if(compatiblePath(path)||monitoringPath(path))return request
+ if(compatiblePath(path)||monitoringPath(path)||path.startsWith('/api/ingress/'))return request
  if((!path.startsWith('/api/')&&path!=='/v2/change/enqueue'&&!compatiblePath(path))||!request.body)return request
  const reader=request.body.getReader(),chunks:Uint8Array[]=[];let length=0
  try{

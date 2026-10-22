@@ -1,3 +1,6 @@
+import {readNativeRequest} from './native-request';
+import {beginRate,saveRate,admittedCount} from './intake-rate/admission';
+import {installAllowances} from './intake-rate/management';
 import { installVersionedApi, installAutomationManagement } from './automation/api'
 import { holdAutomation } from './automation/model'
 import { emailErasureFence } from './email/fence'
@@ -8,6 +11,7 @@ import { installMonitoringIntake } from './monitoring/api';
 import { compatiblePath, monitoringPath } from './intake/paths';
 import { installCompatibleIntake } from './intake/api';
 import { nativeRoutedIngress } from './routing/native';
+import { nativeIncompleteSource, parseNativeRequest, retainNativeIncomplete } from './native-incomplete';
 import { installRoutingManagement } from './routing/management';
 import { installUrgency } from './urgency/api';
 import { serviceUrgency } from './urgency/model';
@@ -21,7 +25,7 @@ import { installTriage, memberWorkspace } from "./triage-api";
 import { linkRestoredOwner, restoredAdministrators } from './identity-link';
 import { checkWorkspaceSize, loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
 import { nativeMember } from './native-member';
-import { installNativeSources, presentedSourceKey, refuseKeyEcho, sealHeldSourceKeys, type NativeSource } from './native-sources';
+import { installNativeSources, refuseKeyEcho, sealHeldSourceKeys, type NativeSource } from './native-sources';
 import { runtimeBindings, type Bindings } from './auth.server';
 import { admitted } from './base/setup-state';
 import { isLoopbackHost } from './modules/operator-auth/index.mjs';
@@ -330,33 +334,34 @@ api.post("/api/logout", async (c) => {
   return c.json({ ok: true });
 });
 api.post("/api/ingress/:source", async (c) => {
-  const raw = await c.req.text();
   const source = await c.env.DB.prepare(
     "SELECT digest,signing_secret,signing_custody,scopes FROM sources WHERE id=?",
   )
     .bind(c.req.param("source"))
     .first<NativeSource>();
-  if (!source) return nativeRoutedIngress(c,{load,save},raw);
-  const key = await presentedSourceKey(c, source, raw);
-  if (new TextEncoder().encode(raw).length > 65536) fail("Request too large", 413);
-  let input: any;
-  try {
-    input = JSON.parse(raw);
-  } catch {
-    fail("Invalid JSON");
+  if (!source) return nativeRoutedIngress(c,{load,save});
+  const nativeBody=await readNativeRequest(c,source),key=nativeBody.key;
+  const authority = {
+    sql: "EXISTS(SELECT 1 FROM sources WHERE id=? AND digest=? AND signing_custody IS ? AND scopes=?)",
+    values: [c.req.param("source"), source.digest, source.signing_custody, source.scopes],
+  };
+  const state = await load(c.env.DB), before=structuredClone(state);
+  const rate=await beginRate(c,{load,save},state,{id:'source:'+c.req.param('source'),name:c.req.param('source'),owner:state.members.find(m=>m.active&&m.role==='admin')!.id},authority);
+  const parsed = parseNativeRequest(nativeBody);
+  if (!parsed) {
+    const custody = await nativeIncompleteSource(state, c.req.param("source"), source);
+    const result = await retainNativeIncomplete(state, custody, nativeBody, key);
+    if (!result.duplicate) await saveRate(c,{load,save},state,state.revision,rate,admittedCount(before,state));
+    return c.json({duplicate:result.duplicate,id:result.receipt.id,service:result.receipt.service,acceptedAt:result.receipt.acceptedAt,truncation:true,incomplete:{receipt:result.receipt.id}},202);
   }
-  const signal = signalInput(input);
-  if (signal.source !== c.req.param("source")) fail('"source" must match the source ID in the URL');
+  const {signal} = parsed;
+  if (signal.source !== c.req.param("source")) fail('"source" must match the source ID in the URL',403);
   refuseKeyEcho(Object.values(signal), key);
   if (!JSON.parse(source.scopes).includes(signal.service))
     fail('"service" must be an internal service ID authorized for this source', 403);
-  const state = await load(c.env.DB);
   const revision = state.revision;
   const result = admit(state, signal);
-  if (!result.duplicate) await save(c.env.DB, state, revision, {
-    sql: "EXISTS(SELECT 1 FROM sources WHERE id=? AND digest=? AND signing_custody IS ? AND scopes=?)",
-    values: [c.req.param("source"), source.digest, source.signing_custody, source.scopes],
-  });
+  if (!result.duplicate) await saveRate(c,{load,save},state,revision,rate,admittedCount(before,state));
   // Source credentials admit signals; they never grant workspace read access.
   // Project explicitly so new internal event fields cannot widen this receipt.
   return c.json({
@@ -391,6 +396,7 @@ installNativeSources(api, changeDeps);
 installIntakeManagement(api, changeDeps);
 installEmailManagement(api, changeDeps);
 installRoutingManagement(api, changeDeps);
+installAllowances(api, changeDeps);
 installUrgency(api, changeDeps);
 installReviews(api, authorizedState);
 installTriage(api, {body, state: authorizedState, save: (c, state, revision) => save(c.env.DB, state, revision, sessionGuard(c)), saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
@@ -558,7 +564,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
       "UPDATE workspace_control SET revision=?,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)",
     ).bind(value.revision, restoreToken, old.revision, pagingRestore.revision, handoffRestore.revision, c.get("sessionDigest"), current.id, Date.now()),
     ...workspaceRows(c.env.DB,value,restoreToken),
-    ...["oc_api_credentials","oc_endpoint_credentials"].map(table=>c.env.DB.prepare(`DELETE FROM ${table} WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)`).bind(restoreToken)),
+    ...["oc_api_credentials","oc_endpoint_credentials","oc_key_rate_usage","oc_key_rate_notified"].map(table=>c.env.DB.prepare(`DELETE FROM ${table} WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)`).bind(restoreToken)),
     c.env.DB.prepare("DELETE FROM oc_email_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_change_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_intake_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),

@@ -1,3 +1,4 @@
+import {validateAllowances,type KeyAllowance} from '../../intake-rate/model';
 import { enqueueEvents, machineAuthority, validateAutomation, type Client, type Endpoint, type Operation, type Outbox } from '../../automation/model.ts';
 import { validateEmailArchive } from '../../email/archive.ts';
 import type { EmailAddress, EmailVersion, EmailSample, EmailReceipt, EmailQuarantine } from '../../email/types.ts';
@@ -123,6 +124,7 @@ export type Incident = {
   communications?: string | null;
 };
 export type State = {
+  keyAllowances?: KeyAllowance[];
   apiClients?: Client[];
   apiEndpoints?: Endpoint[];
   apiOperations?: Operation[];
@@ -625,7 +627,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
+  ], ["keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   for (const key of [
@@ -644,6 +646,7 @@ export function validateArchive(value: any): State {
     )
       fail("Invalid archive identities");
   }
+  validateAllowances(value);
   value.members.forEach(member);
   if (!value.members.some((m: any) => m.active && m.role === "admin"))
     fail("Archive needs an active administrator");
