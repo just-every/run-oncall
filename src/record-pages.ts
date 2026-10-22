@@ -1,3 +1,4 @@
+import {alertPageSummaries} from './record-summaries';
 import {fail} from './family/response-operations/domain';
 import {tables,type Collection} from './workspace-tables';
 const supported=new Set(['alerts','events','intakeReceipts','audit']);
@@ -21,10 +22,7 @@ export function installRecordPages(api:any,authorize:(c:any,admin?:boolean)=>Pro
    c.env.DB.prepare(`SELECT r.id,r.ordinal,r.data FROM ${tables[key]} r WHERE ${pageWhere} ORDER BY r.ordinal DESC,r.id DESC LIMIT ?`).bind(...pageValues,limit+1),
   ]);
   const rows=result[2].results as Row[],more=rows.length>limit,held=rows.slice(0,limit),items=held.map(r=>JSON.parse(r.data)),last=held.at(-1),extra:any={};
-  if(key==='alerts'){
-   const summaries=await c.env.DB.prepare(`SELECT a.id,(SELECT json_extract(e.data,'$.title') FROM oc_events e WHERE e.id=json_extract(a.data,'$.events[0]')) AS title,(SELECT MAX(CASE json_extract(e.data,'$.severity') WHEN 'critical' THEN 3 WHEN 'warning' THEN 2 ELSE 1 END) FROM json_each(json_extract(a.data,'$.events')) j JOIN oc_events e ON e.id=j.value WHERE json_extract(e.data,'$.intent')='trigger') AS severity,(SELECT json_extract(e.data,'$.observedAt') FROM oc_events e WHERE e.id=json_extract(a.data,'$.events[#-1]')) AS observedAt FROM oc_alerts a WHERE a.id IN (SELECT value FROM json_each(?))`).bind(JSON.stringify(items.map(a=>a.id))).all();
-   extra.summaries=Object.fromEntries(summaries.results.map((r:any)=>[r.id,{title:r.title,severity:({1:'info',2:'warning',3:'critical'} as any)[r.severity]??null,observedAt:r.observedAt}]));
-  }
+  if(key==='alerts')extra.summaries=await alertPageSummaries(c.env.DB,items.map(a=>a.id));
   if(key==='intakeReceipts'){
    const ids=JSON.stringify(items.map(r=>r.id));
    extra.readmitted=(await c.env.DB.prepare("SELECT DISTINCT json_extract(data,'$.routing.readmission.receipt') AS id FROM oc_intake_receipts WHERE json_extract(data,'$.routing.readmission.receipt') IN (SELECT value FROM json_each(?))").bind(ids).all()).results.map((r:any)=>r.id);
