@@ -31,7 +31,10 @@ node scripts/checkpoint.mjs --origin http://127.0.0.1:3000 --session-file /priva
 Export requires a new destination and writes mode 0600. It reads all datasets
 and their revisions in one server storage snapshot. `export NEW_FILE --version 1`
 exports the supported two-dataset legacy envelope; version 2 also contains
-reviewed handoffs. Export never includes credentials.
+reviewed handoffs. Export never includes credentials. It carries retained native
+prefix bytes within the existing restore request limit; an installation whose
+intake custody is larger reports 413 and uses the streaming portable
+export and import (`rer export`, `rer import`) instead.
 
 Restore is destructive replacement, explicitly requested by `--replace`. The
 server validates the complete envelope, references and capacity before atomic
