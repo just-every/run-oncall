@@ -17,11 +17,11 @@ export async function rateJourney(w,cookie,actor) {
  // Documented default boundary, not an assertion about a configuration constant.
  for(let i=0;i<120;i++)ok(await send(event(i)),201);
  const protectedState=()=>{return req('/api/state').then(r=>{const {audit,revision,...value}=ok(r);return value;});};
- const held=await protectedState();let blocked=await send(event(120));ok(blocked,429);assert.equal(blocked.headers.get('retry-after'),'60');assert.deepEqual(await protectedState(),held);
+ const held=await protectedState(),heldEventUsage=w.sql("SELECT SUM(events) AS n FROM oc_key_rate_usage WHERE key_id='intake:rate-main'")[0].n;let blocked=await send(event(120));ok(blocked,429);assert.equal(w.sql("SELECT SUM(events) AS n FROM oc_key_rate_usage WHERE key_id='intake:rate-main'")[0].n,heldEventUsage);assert.equal(blocked.headers.get('retry-after'),'60');assert.deepEqual(await protectedState(),held);
  ok(await send(event('other','rate-second'),second),201);
  let state=ok(await req('/api/state'));assert.equal(state.audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:rate-main').length,1);
  // Rotation retains the record's usage; forged/revoked keys consume none.
- const replacement=secret();ok(await configure('rate-main',replacement,1));ok(await send(event('old')),401);key=replacement;
+ const replacement=secret();ok(await configure('rate-main',replacement,1));const beforeForged=w.sql("SELECT * FROM oc_key_rate_usage WHERE key_id='intake:rate-main' ORDER BY at");ok(await send(event('old')),401);assert.deepEqual(w.sql("SELECT * FROM oc_key_rate_usage WHERE key_id='intake:rate-main' ORDER BY at"),beforeForged);key=replacement;
  blocked=await send(event('rotated'));ok(blocked,429);assert.equal(blocked.headers.get('retry-after'),'60');
  // Existing receipt retries use no new-event slots, but each request counts.
  const usageBefore=w.sql("SELECT SUM(requests) AS n FROM oc_key_rate_usage WHERE key_id='intake:rate-main'")[0].n;

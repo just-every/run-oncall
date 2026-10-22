@@ -83,10 +83,10 @@ export async function nativeRouting(w,cookie,actor) {
  assert.equal((await w.request('/api/state',undefined,undefined,{authorization:'Bearer '+bearer})).status,401);
  const source=ok(await req('/api/state')).intakeSources.find(s=>s.id==='native');
  const rotate={id:source.id,name:source.name,provider:'native',scope:source.routing.scope,owner:actor.id,key:key(),revision:source.revision};
- const beforeFailure=ok(await req('/api/archive'));
+ const beforeFailure=ok(await req('/api/archive')),beforeUsage=w.sql('SELECT * FROM oc_key_rate_usage ORDER BY key_id,at');
  w.sql("CREATE TRIGGER native_audit_fail BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic native audit failure'); END");
  try {ok(await req('/api/routing/keys',rotate),503);ok(await send(event('audit-rollback')),503);ok(await send('{"audit-failed":',bearer,'bearer','/api/ingress/intake:native'),503);}finally{w.sql('DROP TRIGGER native_audit_fail');}
- assert.deepEqual(ok(await req('/api/archive')),beforeFailure);
+ assert.deepEqual(ok(await req('/api/archive')),beforeFailure);assert.deepEqual(w.sql('SELECT * FROM oc_key_rate_usage ORDER BY key_id,at'),beforeUsage);
  ok(await req('/api/routing/keys',rotate));const old=bearer;bearer=rotate.key;
  ok(await send(event('rotated-out'),old),401);ok(await send(event('rotated-in')),201);
  const signedSource=ok(await req('/api/state')).intakeSources.find(s=>s.id==='signed-native');

@@ -3851,11 +3851,11 @@
       "executable": false
     },
     "tests/routing-native.mjs": {
-      "sha256": "82c4972e6ab6d05029f23f71a0914b7d5863bdd1a0a57c15335d0f1dc6a89d88",
+      "sha256": "232fbee9bfe5436d5661adb10881507a8f932db0c16d979d41b973b7dc368fa1",
       "executable": false
     },
     "tests/routing-rate.mjs": {
-      "sha256": "c7f73b38373a3489c24520ba2aa8d85f21e828476993bdaf24fba1987421e312",
+      "sha256": "ddb112cc95bd7040a90d3ee29f75f44c58a108a7f8102ab291d77360e8a120a6",
       "executable": false
     },
     "tests/routing.mjs": {
