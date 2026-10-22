@@ -187,6 +187,7 @@ export function installVersionedApi(api:any,deps:Deps) {
   const operation:Operation={id:crypto.randomUUID(),client:client.id,key:keyHash,request,service,resource:family,entity:result.id,revision:result.revision??1,at:new Date().toISOString()};
   (state.apiOperations??=[]).push(operation);if(state.apiOperations.length>1000)fail('API operation history capacity reached',429);
   auditKind(c.env.DB,'automation.'+family);setAuditSubject(c.env.DB,'entity',result.id);
+  if(family==='incidents'&&input.type==='transition'&&input.state==='acknowledged')auditIdentity(c.env.DB,{namedMember:{kind:'member',id:input.member}});
   await commitAutomation(c,state,c.get('apiGuard'),extra);return c.json(operation,201);
  });
  api.all('/api/v1/*',(c:any)=>c.json({error:{code:'not_found',message:'Unknown versioned API route'}},404));

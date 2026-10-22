@@ -4,7 +4,7 @@ Oncall keeps two kinds of history. Incident timelines, copied runbooks, reviewed
 
 ## Identity and content
 
-Actor, subject and source labels are permanent random pseudonyms. They are not names, source-key labels or hashes of identities or credentials. Identity associations live separately: erasure deletes those associations and leaves the immutable operation kind, time, outcome and unlinkable labels. A deleted label is never reassigned to a recreated member, source or other subject, and earlier history is never attributed to a new actor.
+Actor, subject and source labels are permanent random pseudonyms. A machine acknowledgment also records its named responder under the same random member-label scheme, separately from its service-account actor and incident subject. Reassignment and resolution do not rewrite that fact; erasure deletes the member association, never the permanent label. They are not names, source-key labels or hashes of identities or credentials. Identity associations live separately: erasure deletes those associations and leaves the immutable operation kind, time, outcome and unlinkable labels. A deleted label is never reassigned to a recreated member, source or other subject, and earlier history is never attributed to a new actor.
 
 The permanent audit excludes raw identities, hashes, credential labels, tokens, passwords, telephone destinations, message text, payload content and telemetry secrets. It uses allowlisted operation and outcome labels. Operational history may still contain authored content or imported personal data; deleting an audit association alone does not erase that material. General entity erasure and standby reconciliation remain tracked under OC-040 and OC-028.
 

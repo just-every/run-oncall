@@ -47,6 +47,12 @@ try {
   while((await req('/api/automation/dispatch',{})).value.processed){}
   await page.reload();await panel.getByText('role · uncertain',{exact:true}).first().waitFor();await panel.screenshot({path:join(proof,'automation-uncertain-'+width+'.png')});receiverStatus=403;
 
+  const memberA=(await req('/api/members',{name:'synthetic-oncall-responder-'+width,role:'responder',password:'synthetic-oncall-responder-password'})).value;
+  const memberB=(await req('/api/members',{name:'synthetic-oncall-reassigned-'+width,role:'responder',password:'synthetic-oncall-responder-password'})).value;
+  const machine=async(input,n)=>runtime.request('/api/v1/incidents',input,'',{authorization:'Bearer '+key,'idempotency-key':'synthetic-oncall-attribution-'+width+'-'+n});
+  assert.equal((await machine({type:'transition',incident:incident.value.entity,revision:uncertain.value.revision,state:'acknowledged',member:memberA.id,summary:'Explicit machine responsibility'},1)).status,201);
+  assert.equal((await machine({type:'reassign',incident:incident.value.entity,revision:uncertain.value.revision+1,member:memberB.id,reason:'Subsequent assignment'},2)).status,201);
+  assert.equal((await req('/api/state')).value.incidents.find(i=>i.id===incident.value.entity).assignee,memberB.id);
   // The existing Archive screen refuses a source captured before label erasure.
   const email='synthetic-oncall-'+width+'@example.test',label=email+' automation',door=ownerDoor(runtime,cookie);
   const plan=await door.preview('opsgenie',JSON.stringify({users:{data:[{id:'synthetic-oncall-'+width,username:email,fullName:'synthetic-oncall-'+width}]}}));assert.equal(plan.status,200);assert.equal((await door.apply('opsgenie',plan.value)).status,200);
@@ -60,16 +66,16 @@ try {
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-erasure-refusal-'+width+'.png'),fullPage:true});
   const archiveAxe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(archiveAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
 
-  await page.goto(runtime.origin+'/?incident='+incident.value.entity+'#incidents');await page.locator('.timeline').getByText('Service account',{exact:true}).waitFor();await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
+  await page.goto(runtime.origin+'/?incident='+incident.value.entity+'#incidents');await page.locator('.timeline').getByText('Service account',{exact:true}).first().waitFor();const named=page.locator('.timeline .event').filter({hasText:memberA.name});assert.equal(await named.count(),1);await named.getByText('Service account',{exact:true}).waitFor();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
   const timelineAxe=await new AxeBuilder({page}).include('.timeline').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(timelineAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
   await page.goto(runtime.origin+'/#alerts');await panel.getByRole('heading',{name:'Durable outbox',exact:true}).waitFor();const panelAxe=await new AxeBuilder({page}).include('#response-api').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(panelAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
   assert.deepEqual(errors,[]);
-  for(const [slug,anchor] of [['data','subject-erasure-fences'],['response-api','durable-delivery-and-recovery']]){const response=await page.goto(runtime.origin+'/docs/'+slug+'#'+anchor);assert.equal(response.status(),200);await page.locator('.docs-article').waitFor();await page.locator('#'+anchor).scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-docs-'+slug+'-'+width+'.png')});}
+  for(const [slug,anchor] of [['data','subject-erasure-fences'],['response-api','version-1-http-reference'],['audit','identity-and-content']]){const response=await page.goto(runtime.origin+'/docs/'+slug+'#'+anchor);assert.equal(response.status(),200);await page.locator('.docs-article').waitFor();await page.locator('#'+anchor).scrollIntoViewIfNeeded();if(slug==='response-api')await page.locator('.docs-body > p').filter({hasText:'The timeline attributes'}).scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-docs-'+slug+'-'+width+'.png')});}
   await context.close();
   const denied=await browser.newContext({viewport:{width,height:1000}}),deniedPage=await denied.newPage();const login=await denied.request.post(runtime.origin+'/api/login',{headers:{origin:runtime.origin},data:{name:'Synthetic Viewer',password:'synthetic-oncall-viewer-password'}});assert.equal(login.status(),200);
   await deniedPage.goto(runtime.origin+'/#alerts');await deniedPage.locator('#response-api').getByText('An administrator manages clients, recipients and delivery failures.',{exact:true}).waitFor();assert.equal(await deniedPage.locator('#response-api').getByRole('button').count(),0);
   assert.equal((await denied.request.get(runtime.origin+'/api/automation')).status(),403);
   await deniedPage.screenshot({path:join(proof,'automation-denied-'+width+'.png'),fullPage:true});await denied.close();
  }
- console.log('PASS OC-053 integration settings keyboard, empty, populated, denied and real stale-write/terminal failures at 1440 and 390');
+ console.log('PASS OC-053 settings management, restore refusal and permanent machine attribution after reassignment at 1440 and 390');
 }finally{await browser?.close();await runtime.close();}

@@ -86,7 +86,7 @@ export type Entry = {
   kind: string;
   text: string;
   operationId?: string;
-  lifecycle?: {from: Incident["state"] | null; to: Incident["state"]; evidence?: string};
+  lifecycle?: {from: Incident["state"] | null; to: Incident["state"]; evidence?: string; member?: string | null};
   review?: {rootCause:string;impact:string;review:string;materialRevision:number;workspaceRevision:number};
 };
 export type Action = {
@@ -536,7 +536,7 @@ function applyCommand(
     }
     if (input.state === "resolved" && !incident.recovery)
       fail("Recovery must be evidenced before resolution");
-    lifecycle={from:incident.state,to:input.state,...(input.state==='recovered'?{evidence:incident.recovery}:{})};
+    lifecycle={from:incident.state,to:input.state,...(input.state==='recovered'?{evidence:incident.recovery}:{}),...(actor.machine&&input.state==='acknowledged'?{member:input.member}:{})};
     incident.state = input.state;
   } else if (input.type === "runbook") {
     if (!Number.isInteger(input.index) || !incident.runbook[input.index])
@@ -817,6 +817,7 @@ export function validateArchive(value: any): State {
       fail("Invalid incident alert references");
     array(i.timeline);
     i.timeline.forEach(entry);
+    if(i.timeline.some((e:any)=>e.lifecycle?.member!=null&&!hasMember(e.lifecycle.member)))fail("Invalid named responder reference");
     if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor)))
       fail("Invalid incident attribution");
     array(i.runbook);

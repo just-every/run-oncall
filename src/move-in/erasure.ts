@@ -154,6 +154,17 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
       automationChanged=true
     }
   }
+  // Timeline display references are erasable; the permanent audit's random
+  // named-member label is retained, with its identity association severed.
+  const memberIds=new Set<string>([email,...ids]);
+  for(const row of (await db.prepare("SELECT id,data FROM oc_members").all<{id:string;data:string}>()).results)if(names(JSON.parse(row.data).name,email))memberIds.add(row.id)
+  for(const row of (await db.prepare("SELECT l.member_id FROM operator_members l JOIN oa_operators o ON o.id=l.operator_id WHERE lower(o.email)=?").bind(email).all<{member_id:string}>()).results)memberIds.add(row.member_id)
+  for(const row of (await db.prepare('SELECT id,data FROM oc_incidents').all<{id:string;data:string}>()).results){
+    const incident=JSON.parse(row.data);let changed=false
+    for(const entry of incident.timeline)if(entry.lifecycle?.member&&memberIds.has(entry.lifecycle.member)){entry.lifecycle.member=null;changed=true}
+    if(changed){incident.revision++;rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_incidents WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
+      {sql:'UPDATE oc_incidents SET data=? WHERE id=?',params:[JSON.stringify(incident),row.id]});automationChanged=true}
+  }
   if(automationChanged)rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND revision=?) THEN 1 ELSE 0 END',params:[workspace!.revision]},
     {sql:'UPDATE workspace_control SET revision=revision+1 WHERE id=1',params:[]})
   // A record names the person by any path (a typed field, any string in its own source, or its planned result such as a schedule's override, layer member or incumbent comparison): it is tombstoned too, so undo skips it as it skips a participant's.
@@ -171,7 +182,7 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
   let entry
   // The immutable audit labels stay, but erasure severs every identity lookup
   // for this imported person in the same commit as their retained records.
-  const unlink = forgetAuditIdentityQueries([email, ...ids])
+  const unlink = forgetAuditIdentityQueries([...memberIds])
   try { entry = await retireD1ImportCustody({ target: { kind: 'user', id: email }, values: [email, ...filenames], related }, [...native?.statements ?? transfers, ...rewrite, ...unlink], ctx, checkpoint) }
   catch (error) { if (/CHECK constraint|IMPORT_ATOMIC_GUARD/.test(String((error as Error).message))) fail('Imported data changed while the erasure was prepared; nothing was erased. Retry.', 409); throw error }
   // Follow-up index maintenance must not recreate the erased identity link.
