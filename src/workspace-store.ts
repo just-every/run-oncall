@@ -31,6 +31,7 @@ export function decodeWorkspace(rows:WorkspaceRow[]):State {
  const data=control?JSON.parse(control.data):{};state.revision=data.revision??0;
  if(!Number.isSafeInteger(state.revision)||state.revision<0)fail('Stored workspace revision is inconsistent',503);
  for(const row of rows){if(row.collection==='control')continue;const key=row.collection as Collection,value=JSON.parse(row.data);((state as any)[key]??=[]).push(value);held.get(key)!.set(value.id,{ordinal:row.ordinal,data:row.data});}
+ for(const key of collections)if((data.stats?.[key]?.count??0)>0&&(state as any)[key]===undefined)(state as any)[key]=[];
  origins.set(state,{rows:held,stats:data.stats??{},complete:!!data.complete});return state;
 }
 async function loadQueries(db:D1Database,queries:string[]):Promise<State> {
