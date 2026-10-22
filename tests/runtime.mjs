@@ -461,7 +461,6 @@ try {
   };
   // OC-059: authenticated native bounds retain incomplete custody; refusals stay atomic.
   const beforeRefusedInput = ok(await request("/api/archive", undefined, cookie));
-  const beforeRefusalAudit = new Set((await auditExport(cookie)).rows.map(row => row.id));
   const oversizedEvent = { ...event, eventId: "over-limit", discarded: "" };
   const paddingBytes = 65537 - Buffer.byteLength(JSON.stringify(oversizedEvent));
   oversizedEvent.discarded = "é".repeat(Math.floor(paddingBytes / 2)) + "x".repeat(paddingBytes % 2);
@@ -498,13 +497,19 @@ try {
   const hugeNativeBody='x'.repeat(7*1024*1024);
   await assertIncomplete(await rawRequest("/api/ingress/bounds-one",hugeNativeBody,"",{authorization:"Bearer "+singleScopeKey}),hugeNativeBody,stagingService.id);
   const afterCustody=ok(await request("/api/archive",undefined,cookie));
-  ok(await rawRequest("/api/ingress/monitor",'{"secret":"'+key.toUpperCase()+'"',"",{authorization:"Bearer "+key}),400);
-  ok(await rawRequest("/api/ingress/monitor",'{"secret":"'+[...key].map(char=>'\\u'+char.charCodeAt(0).toString(16).padStart(4,'0')).join('')+'"',"",{authorization:"Bearer "+key}),400);
-  ok(await rawRequest("/api/command", oversizedBody, cookie), 413);
-  ok(await rawRequest("/api/command", JSON.stringify({type:"note",padding:"x".repeat(7*1024*1024)}), cookie), 413);
-  const refusedInputAudit=(await auditExport(cookie)).rows.filter(row=>!beforeRefusalAudit.has(row.id)&&row.outcome==="refused");
-  assert.ok(refusedInputAudit.some(row=>row.kind.startsWith("command.")),"oversized commands retain refused audit outcomes");
-  for(const row of refusedInputAudit)assert.deepEqual([row.workspaceBefore,row.beforeRevision],[row.workspaceAfter,row.afterRevision],"refused input changes no state or mutation revision");
+  const refusedInput = async (perform,status,kind,actorKind,actorId) => {
+    const ids=new Set((await auditExport(cookie)).rows.map(row=>row.id));
+    ok(await perform(),status);
+    const actor=rows(`SELECT label FROM oc_audit_identities WHERE kind='${actorKind}' AND entity_id='${actorId.replaceAll("'","''")}'`)[0].label;
+    const attempts=(await auditExport(cookie)).rows.filter(row=>!ids.has(row.id)&&row.kind===kind&&row.outcome==='refused');
+    assert.equal(attempts.length,1,'each retained refusal has its own attributed operation outcome');
+    assert.equal(attempts[0].actor,actor);
+    assert.deepEqual([attempts[0].workspaceBefore,attempts[0].beforeRevision],[attempts[0].workspaceAfter,attempts[0].afterRevision],'refused input changes no coordination state or mutation revision');
+  };
+  await refusedInput(() => rawRequest("/api/ingress/monitor",'{"secret":"'+key.toUpperCase()+'"',"",{authorization:"Bearer "+key}),400,"ingest.request","source","monitor");
+  await refusedInput(() => rawRequest("/api/ingress/monitor",'{"secret":"'+[...key].map(char=>'\\u'+char.charCodeAt(0).toString(16).padStart(4,'0')).join('')+'"',"",{authorization:"Bearer "+key}),400,"ingest.request","source","monitor");
+  await refusedInput(() => rawRequest("/api/command", oversizedBody, cookie),413,"command.request","member",admin.id);
+  await refusedInput(() => rawRequest("/api/command", JSON.stringify({type:"note",padding:"x".repeat(7*1024*1024)}), cookie),413,"command.request","member",admin.id);
   assert.deepEqual(ok(await request("/api/archive", undefined, cookie)), afterCustody,
     "refused commands and credential echoes change no durable records");
   ok(await request("/api/ingress/monitor", event), 401);

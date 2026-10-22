@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomBytes,createHmac,createHash} from 'node:crypto';
+import {localWorker} from './worker.mjs';
 
 // Continuation of routing.mjs's real emitted-Worker lifecycle, using its services.
 export async function nativeRouting(w,cookie,actor) {
@@ -77,6 +78,8 @@ export async function nativeRouting(w,cookie,actor) {
  await bounds(Buffer.from([123,255,0,1]),bearer,'bearer','/api/ingress/intake:native','search');
  await bounds(oversized,signed,'signed','/api/ingress/intake:signed-native',null);
  await bounds('{"source":',signed,'signed','/api/ingress/intake:signed-native',null);
+ assert.equal(w.sql("SELECT COUNT(*) AS n FROM oc_intake_receipts WHERE json_type(data,'$.details.nativePrefix.value')='text'")[0].n,0,'new prefixes are held independently of receipt metadata');
+ assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_native_prefixes p LEFT JOIN oc_intake_receipts r ON r.id=p.id WHERE r.id IS NULL')[0].n,0);
  const beforeEcho=ok(await req('/api/archive'));
  for(const echo of [bearer.toUpperCase(),[...bearer].map(c=>'%'+c.charCodeAt(0).toString(16)).join(''),[...bearer].map(c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')).join('')])ok(await send('{"echo":"'+echo+'"',bearer,'bearer','/api/ingress/intake:native'),400);
  assert.deepEqual(ok(await req('/api/archive')),beforeEcho,'credential spellings never reach retained prefixes');
@@ -96,4 +99,70 @@ export async function nativeRouting(w,cookie,actor) {
  assert.equal(w.sql("SELECT signing_custody IS NOT NULL AS held FROM oc_intake_credentials WHERE source='native'")[0].held,0);
  console.log('Native routed public journey: bearer/HMAC, immutable retries, scope, per-service recovery, unrouted/readmission, zero-write replay, stale publication, audit rollback, rotation/revocation and secret-free checkpoint passed');
  return {bearer,signed};
+}
+
+// Intake custody is bounded by the 10,000-receipt count, never by the 1 MB authored profile or by one key.
+// Its own Worker keeps the later archive/restore journeys independent of 10,000 held receipts.
+export async function nativeCapacity() {
+ const w=await localWorker({},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+ const key=()=>randomBytes(32).toString('hex'),body=n=>`synthetic-oncall-${n}:`+'x'.repeat(70000);
+ try {
+  let cookie=(await w.request('/api/setup',{name:'Capacity owner',password:'synthetic-capacity-owner-password'})).cookie;
+  const req=(path,data)=>w.request(path,data,cookie),actor=ok(await req('/api/session')).member;
+  for(const id of ['payments','search']){ok(await req('/api/command',{type:'service',id,name:id,environment:'production',owner:actor.id,runbook:[],pager:''}));ok(await req('/api/command',{type:'policy',service:id,severity:'*',action:'route',owner:actor.id,reason:'Owner'}));}
+  const keys={a:key(),b:key(),pd:key()},declare=n=>req('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Synthetic human declaration '+n,summary:'Capacity',alerts:[]});
+  const configure=async suffix=>{
+   ok(await req('/api/sources',{id:'capacity-a',key:keys.a,scopes:['payments']}));ok(await req('/api/sources',{id:'capacity-b',key:keys.b,scopes:['search']}));
+   ok(await req('/api/routing/keys',{id:'capacity-pd'+suffix,name:'Capacity PagerDuty',provider:'pagerduty',scope:['payments'],owner:actor.id,key:keys.pd,revision:0,catchAll:'payments'}),201);
+  };
+  const post=async(id,secret,raw)=>{const response=await fetch(w.origin+'/api/ingress/'+id,{method:'POST',headers:{authorization:'Bearer '+secret,'content-type':'application/json'},body:raw});return {status:response.status,value:await response.json(),headers:response.headers};};
+  const pager=async n=>{const response=await fetch(w.origin+'/v2/enqueue',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({routing_key:keys.pd,event_action:'trigger',dedup_key:'capacity-'+n,payload:{summary:'Capacity '+n,source:'capacity',severity:'warning'}})});return {status:response.status,value:await response.json()};};
+  await w.time(Date.now());await configure('');
+  // Separated prefixes travel with archive restore; restoring an earlier archive removes later custody rows with their receipts.
+  for(let n=1;n<=4;n++)ok(await post('capacity-a',keys.a,body(n)),202);
+  const earlier=ok(await req('/api/archive'));
+  for(let n=5;n<=8;n++)ok(await post('capacity-a',keys.a,body(n)),202);
+  assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_native_prefixes')[0].n,8);
+  const restored=await req('/api/restore',{mode:'replace',archive:earlier});ok(restored);cookie=restored.cookie;
+  const prefixes=w.sql('SELECT id,prefix FROM oc_native_prefixes ORDER BY id');
+  assert.deepEqual(prefixes.map(row=>row.id),earlier.intakeReceipts.map(r=>r.id).sort(),'restore keeps only the restored receipts\' prefixes');
+  for(const row of prefixes)assert.equal(row.prefix,earlier.intakeReceipts.find(r=>r.id===row.id).details.nativePrefix.value,'restored prefix bytes are equal');
+  assert.ok(ok(await req('/api/state')).intakeSources.every(s=>!s.active),'restore leaves integrations inactive');
+  assert.equal(w.sql('SELECT COUNT(*) AS n FROM sources')[0].n,0,'restore carries no service credential');
+  ok(await post('capacity-a',keys.a,body(9)),401);
+  // Authored records are unchanged by custody, and sender traffic never refuses a human write.
+  keys.a=key();keys.b=key();keys.pd=key();await configure('-restored');
+  const authored=()=>JSON.stringify(w.sql("SELECT 'm' AS t,data FROM oc_members UNION ALL SELECT 's',data FROM oc_services UNION ALL SELECT 'p',data FROM oc_policies UNION ALL SELECT 'i',data FROM oc_incidents UNION ALL SELECT 'a',data FROM oc_audit WHERE json_extract(data,'$.actor') NOT LIKE 'source:%' "));
+  const before=authored();
+  for(let n=10;n<=40;n++)ok(await post('capacity-a',keys.a,body(n)),202);
+  assert.ok(w.sql('SELECT SUM(length(prefix)) AS n FROM oc_native_prefixes')[0].n>2000000,'held prefixes exceed the authored profile several times over');
+  assert.equal(authored(),before,'custody changes no authored record');
+  ok(await post('capacity-b',keys.b,body(41)),202);ok(await pager(1),202);ok(await declare(1));
+  const held=ok(await post('capacity-a',keys.a,body(10)),202);assert.equal(held.duplicate,true);
+  // The derived intake budget (10,000 x the largest receipt footprint) is far above what held receipts occupy, so the count binds.
+  const profile=await import('../src/workspace-profile.ts'),heldState=ok(await req('/api/state'));
+  assert.ok(profile.intakeBytes(heldState)/heldState.intakeReceipts.length<profile.intakeReceiptFootprint&&profile.intakeBudgetBytes===profile.intakeReceiptCapacity*profile.intakeReceiptFootprint);
+  const archive=await req('/api/archive');assert.equal(archive.status,413);assert.match(archive.value.error,/streaming portable export/);
+  // Throttle notices are intake accounting: thousands of them leave human writes unaffected.
+  w.sql("WITH RECURSIVE n(i) AS (SELECT 0 UNION ALL SELECT i+1 FROM n WHERE i<3999) INSERT INTO oc_audit(id,ordinal,data) SELECT 'synthetic-oncall-notice-'||i,1000000+i,json_object('id','synthetic-oncall-notice-'||i,'at','2026-10-22T00:00:00.000Z','actor','source:intake:capacity-a','kind','intake-throttled','text',printf('%0400d',i)) FROM n");
+  ok(await declare(2));
+  // At the true boundary: 9,999 held plus one is accepted, then every key is refused by capacity while humans are not.
+  const count=w.sql('SELECT COUNT(*) AS n FROM oc_intake_receipts')[0].n;
+  w.sql(`WITH RECURSIVE n(i) AS (SELECT 0 UNION ALL SELECT i+1 FROM n WHERE i<${9998-count}) INSERT INTO oc_intake_receipts(id,ordinal,data) SELECT 'synthetic-oncall-held-'||i,100000+i,json_object('id','synthetic-oncall-held-'||i) FROM n`);
+  assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_receipts')[0].n,9999);
+  ok(await post('capacity-a',keys.a,body(1000)),202);
+  const usage=()=>w.sql("SELECT COALESCE(SUM(requests),0) AS n FROM oc_key_rate_usage WHERE key_id='source:capacity-a'")[0].n,usageBefore=usage();
+  for(const refused of [await post('capacity-a',keys.a,body(1001)),await post('capacity-b',keys.b,body(1002)),await post('capacity-b',keys.b,'{"source":')]) {
+   assert.equal(refused.status,429);assert.match(refused.value.error,/Local intake receipt capacity reached; export before extending capacity/);assert.equal(refused.headers.get('retry-after'),null);
+  }
+  const compatible=await pager(2);assert.equal(compatible.status,429);assert.match(JSON.stringify(compatible.value),/Local intake receipt capacity reached/);
+  assert.equal(usage(),usageBefore+1,'a capacity refusal still counts toward its key allowance');
+  assert.equal(ok(await post('capacity-a',keys.a,body(1000)),202).duplicate,true,'a retry of held custody returns the original');
+  ok(await declare(3));
+  // Per-key exhaustion remains a separate refusal with a real Retry-After.
+  const state=ok(await req('/api/state'));ok(await req('/api/intake/allowances',{id:'source:capacity-a',requests:usage()+1,events:120,revision:state.revision}));
+  ok(await post('capacity-a',keys.a,body(1000)),202);
+  const limited=await post('capacity-a',keys.a,body(1000));assert.equal(limited.status,429);assert.match(limited.headers.get('retry-after')??'',/^\d+$/);assert.match(limited.value.error,/allowance exceeded/);
+  console.log('PASS native custody partition: restore carries exact prefixes, 70 KB custody beyond the authored profile, other keys and humans unaffected, 10,000 boundary and separate rate refusal');
+ } finally {await w.close();}
 }

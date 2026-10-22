@@ -249,6 +249,12 @@
       "name": "0134_key_allowances.sql",
       "sha256": "e3bccf1e3a372a123a8b31e59befa6b8d6f9af2c11bd2341cdb92acae1c80391",
       "sql": "-- Per-record policy survives archives; short-lived usage never carries credentials.\nCREATE TABLE oc_key_allowances(id TEXT PRIMARY KEY,ordinal INTEGER NOT NULL,data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_key_rate_usage(key_id TEXT NOT NULL,at INTEGER NOT NULL,requests INTEGER NOT NULL DEFAULT 0,events INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(key_id,at));\nCREATE TABLE oc_key_rate_notified(key_id TEXT PRIMARY KEY,at INTEGER NOT NULL);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0135_native_prefix_custody.sql",
+      "sha256": "124267e3ff088e305e9f796092610bf2f0191714ec4b58276c90752143a31b29",
+      "sql": "-- Exact native evidence is independent of the authored-workspace profile.\n-- An insert-only backfill permits supported portable upgrades from Start/Base.\nCREATE TABLE oc_native_prefixes (\n id TEXT PRIMARY KEY,\n bytes INTEGER NOT NULL CHECK(bytes BETWEEN 0 AND 65536),\n request_sha256 TEXT NOT NULL CHECK(length(request_sha256)=64),\n prefix TEXT NOT NULL CHECK(length(prefix)<=87384)\n);\nINSERT INTO oc_native_prefixes(id,bytes,request_sha256,prefix)\n SELECT id,min(65536,json_extract(data,'$.incomplete.bytes')),\n json_extract(data,'$.incomplete.sha256'),json_extract(data,'$.details.nativePrefix.value')\n FROM oc_intake_receipts WHERE json_extract(data,'$.provider')='native'\n AND json_type(data,'$.details.nativePrefix.value')='text';\n-- Held receipts keep encoding, length and request hash; the bytes live only in the table above.\nUPDATE oc_intake_receipts SET data=json_set(data,'$.details.nativePrefix',json_object('encoding','base64','bytes',min(65536,json_extract(data,'$.incomplete.bytes')),'sha256',json_extract(data,'$.incomplete.sha256')))\n WHERE json_extract(data,'$.provider')='native' AND json_type(data,'$.details.nativePrefix.value')='text';\n-- Removing a receipt removes its exact evidence in the same transaction.\nCREATE TRIGGER oc_native_prefix_erasure AFTER DELETE ON oc_intake_receipts\n BEGIN DELETE FROM oc_native_prefixes WHERE id=OLD.id; END;\nCREATE INDEX oc_audit_order ON oc_audit(ordinal);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

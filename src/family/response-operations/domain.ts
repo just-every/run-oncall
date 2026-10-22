@@ -639,7 +639,10 @@ export function validateArchive(value: any): State {
     "incidents",
     "audit",
   ]) {
-    array(value[key]);
+    // Intake audit and once-per-window owner notices are retained history;
+    // their count is not an authored-record allocation or an eviction policy.
+    if(key==='audit') { if(!Array.isArray(value[key]))fail("Invalid archive array"); }
+    else array(value[key]);
     if (
       value[key].some((v: any) => !v || typeof v.id !== "string") ||
       new Set(value[key].map((v: any) => v.id)).size !== value[key].length

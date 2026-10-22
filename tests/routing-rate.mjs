@@ -30,11 +30,41 @@ export async function rateJourney(w,cookie,actor) {
  state=ok(await req('/api/state'));assert.equal(state.audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:rate-main').length,1);
  await w.time(now+59999);blocked=await send(event('too-early'));ok(blocked,429);assert.equal(blocked.headers.get('retry-after'),'1');
  await w.time(now+60000);ok(await send(event('recovered')),201);
+ // Concurrent first throttles race a real unrelated-key admission. A winner
+ // must leave exactly one owner-visible notice, and storage failure cannot lie.
+ now+=120000;await w.time(now);
+ state=ok(await req('/api/state'));ok(await req('/api/intake/allowances',{id:'intake:rate-main',requests:600,events:1,revision:state.revision}));
+ ok(await send(event('notice-fill')),201);
+ const noticeCount=()=>req('/api/state').then(r=>ok(r).audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:rate-main'));
+ const priorNotices=(await noticeCount()).length;
+ const raced=await Promise.all([send(event('notice-race')),send(event('notice-other','rate-second'),second)]);
+ ok(raced[0],429);assert.ok([201,409].includes(raced[1].status));
+ const simultaneous=await Promise.all([send(event('notice-first')),send(event('notice-second'))]);simultaneous.forEach(r=>ok(r,429));
+ const notices=await noticeCount();assert.equal(notices.length,priorNotices+1);assert.match(notices.at(-1).text,/key Rate boundary rate-main throttled at 1 events/);
+ // A throttled key racing another key's admissions, window after window: the sender is told 429 and
+ // the owner is told exactly once for that window; a lost revision race never loses the notice.
+ const stormWindows=8;
+ for(let n=0;n<stormWindows;n++) {
+  now+=120000;await w.time(now);ok(await send(event('storm-fill-'+n)),201);
+  const lane=async id=>{const out=[];for(let i=0;i<6;i++)out.push(await send(event(`storm-${n}-${id}-${i}`,'rate-second'),second));return out;};
+  const [over]=await Promise.all([new Promise(r=>setTimeout(r,Math.random()*40)).then(()=>send(event('storm-over-'+n))),lane('x'),lane('y')]);
+  ok(over,429);assert.ok(Number(over.headers.get('retry-after'))>0);
+  const at=new Date(now).toISOString();
+  assert.equal((await noticeCount()).filter(a=>a.at===at).length,1,'one owner notice per throttled window under racing admissions');
+ }
+ now+=60000;await w.time(now);ok(await send(event('notice-next-window')),201);
+ const beforeNoticeFailure=ok(await req('/api/archive'));
+ w.sql("CREATE TRIGGER notice_failure BEFORE INSERT ON oc_audit WHEN json_extract(NEW.data,'$.kind')='intake-throttled' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-notice-failure'); END");
+ try{ok(await send(event('notice-failed')),503);}finally{w.sql('DROP TRIGGER notice_failure');}
+ assert.deepEqual(ok(await req('/api/archive')),beforeNoticeFailure);
+ ok(await send(event('notice-retry')),429);assert.equal((await noticeCount()).length,priorNotices+2+stormWindows);
+ // Resume the original boundary sequence in a fresh window.
+ now+=60000;await w.time(now);ok(await send(event('notice-final-fill')),201);
  // A lower owner-configured event allowance refuses before grouped mutation.
  state=ok(await req('/api/state'));ok(await req('/api/intake/allowances',{id:'intake:rate-main',requests:600,events:1,revision:state.revision}));
  const grouped={...event('grouped'),key:'rate-recovered'};ok(await send(grouped),201);
  const beforeRefusal=await protectedState();ok(await send(event('new-window-full')),429);assert.deepEqual(await protectedState(),beforeRefusal);
- assert.equal(ok(await req('/api/state')).audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:rate-main').length,2);
+ assert.equal(ok(await req('/api/state')).audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:rate-main').length,priorNotices+3+stormWindows);
  // Request throttle happens before grouping; the held group's event count stays fixed.
  state=ok(await req('/api/state'));ok(await req('/api/intake/allowances',{id:'intake:rate-main',requests:1,events:1,revision:state.revision}));
  const groupedHeld=await protectedState();ok(await send({...grouped,eventId:'throttled-group-observation'}),429);assert.deepEqual(await protectedState(),groupedHeld);

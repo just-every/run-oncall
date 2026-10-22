@@ -1,7 +1,7 @@
 import {rateJourney,providerRateDoors} from './routing-rate.mjs';
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
-import {nativeRouting} from './routing-native.mjs';
+import {nativeRouting,nativeCapacity} from './routing-native.mjs';
 import {localWorker} from './worker.mjs';
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs';
 
@@ -103,7 +103,8 @@ try {
  const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey])assert.ok(!JSON.stringify(archive).includes(key));
  const malformed=structuredClone(archive);malformed.intakeSources.find(s=>s.id==='pd').routing.versions[0].catchAll='foreign';ok(await req('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
- state=ok(await req('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.deepEqual(state.keyAllowances,archive.keyAllowances);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
- await w.stop();await w.start();assert.deepEqual(ok(await req('/api/state')).intakeReceipts,archive.intakeReceipts);
+ state=ok(await req('/api/state'));assert.deepEqual(ok(await req('/api/archive')).intakeReceipts,archive.intakeReceipts);assert.deepEqual(state.keyAllowances,archive.keyAllowances);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
+ await w.stop();await w.start();assert.deepEqual(ok(await req('/api/archive')).intakeReceipts,archive.intakeReceipts);
  console.log('OC-070 modes and rules map email onto derived generations. Routed intake: scoped fixed/dynamic rules, per-service generations, suppression ordering, replay/no writes, stale publish, readmission, authority, rollback, rotation and inactive archive/restart');
 } finally {await w.close();}
+await nativeCapacity();

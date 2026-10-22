@@ -1,4 +1,5 @@
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
+import { intakeReceiptCapacity } from '../workspace-profile.ts';
 import { intakeSourceIdentity, type IntakeReceipt, type IntakeSource } from './model.ts';
 import type { CompatibleInput, CompatibleProvider } from './provider-types.ts';
 import type { RoutingExplanation } from '../routing/types.ts';
@@ -8,7 +9,7 @@ import { sanitizeRoutingInput } from '../routing/input.ts';
 type RoutingAdmission={input:Record<string,unknown>;explanation?:RoutingExplanation};
 // Service selection precedes identity and the existing per-service lifecycle.
 export function receiveCompatible(state:State,source:IntakeSource,provider:CompatibleProvider,input:CompatibleInput,at=new Date().toISOString(),routing?:RoutingAdmission):IntakeReceipt {
-  if((state.intakeReceipts?.length??0)>=10000)fail('Local intake receipt capacity reached; export before extending capacity',429);
+  if((state.intakeReceipts?.length??0)>=intakeReceiptCapacity)fail('Local intake receipt capacity reached; export before extending capacity',429);
   const routingInput=source.routing?structuredClone(routing?.input??sanitizeRoutingInput({summary:input.title,source:input.sender,severity:input.severity,details:input.details})):undefined;
   const explanation=source.routing?structuredClone(routing?.explanation??evaluateRouting(state,source.id,source.routing,source.routing.versions.at(-1)!,routingInput!)):undefined;
   const selected=explanation?explanation.service:source.service;

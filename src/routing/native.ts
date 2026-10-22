@@ -1,4 +1,5 @@
 import {readNativeRequest} from '../native-request';
+import { intakeReceiptCapacity } from '../workspace-profile.ts';
 import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
 import { auditIdentity } from '../audit-store';
 import { parseNativeRequest, retainNativeIncomplete } from '../native-incomplete';
@@ -19,7 +20,7 @@ export function receiveNativeRouting(state:State,source:IntakeSource,signal:Retu
     if(previous.native!.fingerprint!==fingerprint)fail('Event identity already accepted with different content',409);
     return {receipt:previous,duplicate:true};
   }
-  if((state.intakeReceipts?.length??0)>=10000)fail('Local intake receipt capacity reached; export before extending capacity',429);
+  if((state.intakeReceipts?.length??0)>=intakeReceiptCapacity)fail('Local intake receipt capacity reached; export before extending capacity',429);
   const routing=structuredClone(explanation??evaluateRouting(state,source.id,source.routing!,source.routing!.versions.at(-1)!,routingInput));
   if(routing.service!==null&&!source.routing!.scope.includes(routing.service))fail('Routing service outside key scope',403);
   const at=new Date().toISOString(),service=routing.service===null?null:state.services.find(s=>s.id===routing.service);

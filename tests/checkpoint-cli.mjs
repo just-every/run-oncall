@@ -7,7 +7,7 @@ import {checkpointFixtures,checkpointSql} from './checkpoint-fixtures.mjs'
 
 const ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
 export async function checkpointReadback(w,cookie) {
- const [coordination,paging,handoffs]=await Promise.all(['/api/state','/api/paging/state','/api/handoffs'].map(async path=>ok(await w.request(path,undefined,cookie))))
+ const [coordination,paging,handoffs]=await Promise.all(['/api/archive','/api/paging/state','/api/handoffs'].map(async path=>ok(await w.request(path,undefined,cookie))))
  return {coordination,paging,handoffs}
 }
 function pagingArchive({revision,workspaceRevision,paging,...archive}) {return archive}

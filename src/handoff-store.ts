@@ -1,4 +1,4 @@
-import { workspaceQuery } from './workspace-store'
+import { workspaceQueries, decodeWorkspace } from './workspace-store'
 import { fail, type State } from './family/response-operations/domain';
 import { boundHandoffArchive, validateHandoffArchive, holdHandoffsForRecovery, type HandoffArchive } from './family/response-operations/handoffs';
 
@@ -27,17 +27,13 @@ export const parseHandoffRow = decodeHandoffRow;
 
 export async function handoffSnapshot(db: D1Database): Promise<HandoffSnapshot> {
   const rows = await db.batch([
-    db.prepare(workspaceQuery),
+    ...workspaceQueries.map(query=>db.prepare(query)),
     db.prepare('SELECT * FROM handoff_state WHERE id=1'),
   ]);
-  const workspace: any = rows[0].results[0];
-  if (!workspace) fail('Create the local workspace first', 409);
-  let state: State;
-  try { state = JSON.parse(workspace.data); }
-  catch { return fail('Stored workspace is invalid', 503); }
-  if (!Number.isSafeInteger(workspace.revision) || workspace.revision < 0 || state.revision !== workspace.revision)
-    fail('Stored workspace revisions are inconsistent', 503);
-  return { workspace: state, ...await decodeHandoffRow(rows[1].results[0]) };
+  const workspaceRows=rows.slice(0,workspaceQueries.length).flatMap(row=>row.results);
+  if (!workspaceRows.some((r:any)=>r.collection==='control')) fail('Create the local workspace first', 409);
+  const state = decodeWorkspace(workspaceRows as any);
+  return { workspace: state, ...await decodeHandoffRow(rows.at(-1)!.results[0]) };
 }
 
 /** The full record, immutable copy and attributed history change together under CAS. */

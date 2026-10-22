@@ -1,6 +1,7 @@
 import {BatchAllowanceFault} from './fault';
 import {fail,type State} from '../family/response-operations/domain';
 import {workspaceWrite} from '../workspace-store';
+import {checkIntakeBudget} from '../workspace-profile';
 import {defaultAllowance,type KeyAllowance} from './model';
 import type {IntakeDependencies} from '../monitoring/credentials';
 
@@ -22,12 +23,20 @@ function retryAfter(rows:Sample[],field:'requests'|'events',required:number,limi
 async function throttle(c:any,deps:IntakeDependencies,rate:RateAdmission,rows:Sample[],field:'requests'|'events',required:number):Promise<never> {
  const retry=retryAfter(rows,field,required,rate.policy[field],rate.at);
  if(retry!==undefined)c.header('Retry-After',String(retry));
- const current=await deps.load(c.env.DB),last=await c.env.DB.prepare('SELECT at FROM oc_key_rate_notified WHERE key_id=?').bind(rate.key.id).first() as {at:number}|null;
- if(!last||last.at<=rate.at-windowMs){
-  const count=rows.reduce((n,r)=>n+r[field],0);
-  current.audit.push({id:crypto.randomUUID(),at:new Date(rate.at).toISOString(),actor:'source:'+rate.key.id,kind:'intake-throttled',text:`Integration owner ${rate.key.owner}: key ${rate.key.name} throttled at ${count} ${field} in the rolling minute; ${required} requested; coordination notice recorded; paging remains OFF`});
-  const token=crypto.randomUUID(),guard={sql:`(${rate.guard.sql}) AND NOT EXISTS(SELECT 1 FROM oc_key_rate_notified WHERE key_id=? AND at>?)`,values:[...rate.guard.values,rate.key.id,rate.at-windowMs]};
-  await c.env.DB.batch([...workspaceWrite(c.env.DB,current,current.revision,guard,token),c.env.DB.prepare('INSERT INTO oc_key_rate_notified(key_id,at) SELECT ?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(key_id) DO UPDATE SET at=excluded.at').bind(rate.key.id,rate.at,token)]);
+ // The owner notice claims its window and appends directly in one guarded batch.
+ // It does not replace a stale workspace snapshot: unrelated admissions can win
+ // their own revision without silently discarding this key's notice.
+ const count=rows.reduce((n,r)=>n+r[field],0),token=crypto.randomUUID();
+ const notice={id:crypto.randomUUID(),at:new Date(rate.at).toISOString(),actor:'source:'+rate.key.id,kind:'intake-throttled',text:`Integration owner ${rate.key.owner}: key ${rate.key.name} throttled at ${count} ${field} in the rolling minute; ${required} requested; coordination notice recorded; paging remains OFF`};
+ const result=await c.env.DB.batch([
+  c.env.DB.prepare(`UPDATE workspace_control SET revision=revision+1,write_token=? WHERE id=1 AND (${rate.guard.sql}) AND NOT EXISTS(SELECT 1 FROM oc_key_rate_notified WHERE key_id=? AND at>?)`).bind(token,...rate.guard.values,rate.key.id,rate.at-windowMs),
+  c.env.DB.prepare('INSERT INTO oc_audit(id,ordinal,data) SELECT ?,COALESCE((SELECT MAX(ordinal)+1 FROM oc_audit),0),? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND write_token=?)').bind(notice.id,JSON.stringify(notice),token),
+  c.env.DB.prepare('INSERT INTO oc_key_rate_notified(key_id,at) SELECT ?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND write_token=?) ON CONFLICT(key_id) DO UPDATE SET at=excluded.at').bind(rate.key.id,rate.at,token),
+ ]);
+ if(result[0].meta.changes!==1) {
+  // Only a window already claimed by a competing throttle may return 429.
+  const held=await c.env.DB.prepare(`SELECT 1 AS held FROM oc_key_rate_notified WHERE key_id=? AND at>? AND (${rate.guard.sql})`).bind(rate.key.id,rate.at-windowMs,...rate.guard.values).first();
+  if(!held)fail('Notice or credential changed; retry the request',409);
  }
  if(retry===undefined)throw new BatchAllowanceFault(required,rate.policy.events);
  fail(`Key ${field} allowance exceeded; retry after ${retry} seconds`,429);
@@ -48,6 +57,7 @@ export async function beginRate(c:any,deps:IntakeDependencies,state:State,key:Ra
 export async function saveRate(c:any,deps:IntakeDependencies,state:State,revision:number,rate:RateAdmission,newEvents:number) {
  const rows=await samples(c.env.DB,rate);
  if(rows.reduce((n,r)=>n+r.events,0)+newEvents>rate.policy.events)await throttle(c,deps,rate,rows,'events',newEvents);
+ checkIntakeBudget(state);
  const token=crypto.randomUUID(),guard={sql:`(${rate.guard.sql}) AND COALESCE((SELECT SUM(events) FROM oc_key_rate_usage WHERE key_id=? AND at>?),0)+?<=?`,values:[...rate.guard.values,rate.key.id,rate.at-windowMs,newEvents,rate.policy.events]};
  const result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,revision,guard,token),c.env.DB.prepare('INSERT INTO oc_key_rate_usage(key_id,at,requests,events) SELECT ?,?,0,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(key_id,at) DO UPDATE SET events=events+excluded.events').bind(rate.key.id,rate.at,newEvents,token)]);
  if(result[0].meta.changes!==1)fail('Admission changed; retry the request',409);

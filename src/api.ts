@@ -1,3 +1,4 @@
+import {hydrateNativePrefixes,requireNativePrefixValues} from './native-prefix-store';
 import {rateFaultBody} from './intake-rate/fault';
 import {readNativeRequest} from './native-request';
 import {beginRate,saveRate,admittedCount} from './intake-rate/admission';
@@ -100,6 +101,8 @@ const safeEqual = (a: string, b: string) => {
   return diff === 0;
 };
 const load = loadWorkspace;
+// JSON custody doors keep their request limits; larger installations use the streaming portable export.
+const archiveRestoreLimit = 2000000, checkpointRestoreLimit = 1000000 + 5 * 1024 * 1024 + 1024;
 type WriteGuard = { sql: string; values: (string | number | null)[] };
 function sessionGuard(c: any): WriteGuard {
   return { sql: "EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)",
@@ -507,13 +510,14 @@ api.get("/api/audit/export", async (c) => {
 api.get("/api/archive", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);
   c.header("Content-Disposition", 'attachment; filename="oncall-archive.json"');
-  return c.json(await authorizedState(c, true));
+  return c.json(await hydrateNativePrefixes(c.env.DB,await authorizedState(c, true),archiveRestoreLimit));
 });
 api.post("/api/restore", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);
-  const input = await body(c, 2000000);
+  const input = await body(c, archiveRestoreLimit);
   if (input.mode !== "replace") fail("Explicit replace mode required");
   const value = validateArchive(input.archive);
+  requireNativePrefixValues(value);
   await emailErasureFence(c.env.DB,value);
   const snapshot = await recoverySnapshot(c.env.DB);
   const pagingRestore = await prepareCoordinationRestore(c.env.DB, Date.now(), snapshot);
@@ -601,6 +605,7 @@ api.get("/api/recovery/checkpoint", async (c) => {
     fail("Current admin required", 403);
   const version = c.req.query("version") ?? "2";
   if (!["1", "2"].includes(version)) fail("Unsupported recovery checkpoint version");
+  await hydrateNativePrefixes(c.env.DB,snapshot.workspace,checkpointRestoreLimit-new TextEncoder().encode(JSON.stringify([snapshot.archive,snapshot.handoffs.archive])).length);
   const checkpoint = version === "1"
     ? createRecoveryCheckpoint(snapshot.workspace, snapshot.archive, snapshot.revision, Date.now())
     : await createRecoveryCheckpointV2(snapshot.workspace, snapshot.archive, snapshot.revision, snapshot.handoffs.archive, snapshot.handoffs.revision, Date.now());
@@ -609,12 +614,13 @@ api.get("/api/recovery/checkpoint", async (c) => {
 });
 api.post("/api/recovery/restore", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);
-  const input = await body(c, 1000000 + 5 * 1024 * 1024 + 1024);
+  const input = await body(c, checkpointRestoreLimit);
   if (!input || typeof input !== "object" || Array.isArray(input) ||
       Object.keys(input).some(key => !["mode", "checkpoint", "adminMapping"].includes(key)) || input.mode !== "replace" ||
       (input.adminMapping !== undefined && (typeof input.adminMapping !== "string" || input.adminMapping.length > 100)))
     fail("Explicit checkpoint replacement and valid mapping required");
   const checkpoint = await validateAnyRecoveryCheckpoint(input.checkpoint);
+  requireNativePrefixValues(checkpoint.coordination);
   await emailErasureFence(c.env.DB,checkpoint.coordination);
   const snapshot = await recoverySnapshot(c.env.DB);
   const imported = preparePagingImport(checkpoint.paging, Date.now());
