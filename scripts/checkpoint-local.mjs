@@ -86,7 +86,11 @@ export async function request(origin,cookie,path,body) {
  let response
  try{response=await fetch(origin+path,{method:body===undefined?'GET':'POST',redirect:'error',headers:{origin,cookie,accept:'application/json',...(body===undefined?{}:{'content-type':'application/json'})},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(30000)})}
  catch{throw Error('Local request failed; outcome is unconfirmed. Inspect the installation before another restore')}
- if(!response.ok)throw Error(`HTTP ${response.status}: checkpoint request refused; session file unchanged`)
+ if(!response.ok){
+  const refusal=await response.json().catch(()=>null)
+  if(response.status===409&&refusal?.code==='subject_erasure_fence')throw Error('HTTP 409: subject erasure fence refuses this checkpoint; use a current source; session file unchanged')
+  throw Error(`HTTP ${response.status}: checkpoint request refused; session file unchanged`)
+ }
  return response
 }
 export async function newExport(path,read) {

@@ -1,3 +1,4 @@
+import { requireErasureFence, erasureFenceCondition, fenceValues } from './erasure-fence'
 import {hydrateNativePrefixes,requireNativePrefixValues} from './native-prefix-store';
 import {rateFaultBody} from './intake-rate/fault';
 import {readNativeRequest} from './native-request';
@@ -148,7 +149,7 @@ api.onError(async (error, c) => {
   if (error instanceof Refusal)
     return c.json({ error: error.message, code: error.code }, error.status as any);
   if (error instanceof Fault)
-    return c.json({ error: error.message, ...rateFaultBody(error) }, error.status as any);
+    return c.json({ error: error.message, ...('code' in error && error.code === 'subject_erasure_fence' ? {code:error.code} : {}), ...rateFaultBody(error) }, error.status as any);
   // Read fences return the kit code directly; mutation fences abort D1's
   // transaction with this named CHECK constraint. Both are expected refusals.
   // D1 appends extended SQLite constraint details to this primary failure.
@@ -519,6 +520,7 @@ api.post("/api/restore", async (c) => {
   const value = validateArchive(input.archive);
   requireNativePrefixValues(value);
   await emailErasureFence(c.env.DB,value);
+  await requireErasureFence(c.env.DB,value);
   const snapshot = await recoverySnapshot(c.env.DB);
   const pagingRestore = await prepareCoordinationRestore(c.env.DB, Date.now(), snapshot);
   const held = await holdHandoffsForRecovery(snapshot.handoffs.archive, Date.now(), crypto.randomUUID(), "Coordination restore; current review required");
@@ -554,6 +556,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
       fail("Map the current password to an archive administrator explicitly");
     target = mapped.id;
   }
+  await requireErasureFence(c.env.DB,value);
   const restoreToken = crypto.randomUUID();
   const sessionToken = crypto.randomUUID() + crypto.randomUUID();
   const sessionDigest = await hash(sessionToken);
@@ -566,8 +569,8 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   checkWorkspaceSize(value);
   const r = await c.env.DB.batch([
     c.env.DB.prepare(
-      "UPDATE workspace_control SET revision=?,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)",
-    ).bind(value.revision, restoreToken, old.revision, pagingRestore.revision, handoffRestore.revision, c.get("sessionDigest"), current.id, Date.now()),
+      "UPDATE workspace_control SET revision=?,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?) AND "+erasureFenceCondition,
+    ).bind(value.revision, restoreToken, old.revision, pagingRestore.revision, handoffRestore.revision, c.get("sessionDigest"), current.id, Date.now(), fenceValues(value)),
     ...workspaceRows(c.env.DB,value,restoreToken),
     ...["oc_api_credentials","oc_endpoint_credentials","oc_key_rate_usage","oc_key_rate_notified"].map(table=>c.env.DB.prepare(`DELETE FROM ${table} WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)`).bind(restoreToken)),
     c.env.DB.prepare("DELETE FROM oc_email_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
@@ -595,8 +598,10 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
       "INSERT INTO sessions(token,member,expires,operator_session) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND write_token=?) AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND write_token=?) AND EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND write_token=?)",
     ).bind(sessionDigest, target, Date.now() + 43200000,parent.operator_session, restoreToken, restoreToken, restoreToken),
   ]);
-  if (r[0].meta.changes !== 1)
+  if (r[0].meta.changes !== 1) {
+    await requireErasureFence(c.env.DB,value);
     fail("Workspace changed; reload before restore", 409);
+  }
   return sessionResponse(c, sessionToken, value.members.find((m) => m.id === target)!, details);
 }
 api.get("/api/recovery/checkpoint", async (c) => {
@@ -622,6 +627,7 @@ api.post("/api/recovery/restore", async (c) => {
   const checkpoint = await validateAnyRecoveryCheckpoint(input.checkpoint);
   requireNativePrefixValues(checkpoint.coordination);
   await emailErasureFence(c.env.DB,checkpoint.coordination);
+  await requireErasureFence(c.env.DB,checkpoint.coordination);
   const snapshot = await recoverySnapshot(c.env.DB);
   const imported = preparePagingImport(checkpoint.paging, Date.now());
   const replacement = prepareCheckpointReplacement(c.env.DB, snapshot, imported);

@@ -1,6 +1,34 @@
 import assert from 'node:assert/strict';
 import {randomBytes,createHmac,createHash} from 'node:crypto';
 import {automationRuntime} from './automation-runtime.mjs';
+import {readFile} from 'node:fs/promises';
+import {ownerDoor} from './worker.mjs';
+// Older sources must never restore an erased automation label through either HTTP door.
+const erasureRuntime=await automationRuntime();
+try {
+ const setup=await erasureRuntime.request('/api/setup',{name:'synthetic-oncall-erasure-owner',password:'synthetic-oncall-erasure-password'});assert.equal(setup.status,200);
+ let cookie=setup.cookie;
+ const request=(p,d)=>erasureRuntime.request(p,d,cookie),value=async p=>{const r=await request(p);assert.equal(r.status,200);return r.value;};
+ const service=await request('/api/command',{type:'service',id:'synthetic-oncall-erasure',name:'synthetic-oncall-erasure',environment:'test',owner:setup.value.member.id,runbook:[],pager:''});assert.equal(service.status,200);
+ const door=ownerDoor(erasureRuntime,cookie),plan=await door.preview('opsgenie',await readFile('tests/fixtures/opsgenie.json','utf8'));assert.equal(plan.status,200);assert.equal((await door.apply('opsgenie',plan.value)).status,200);
+ const label='alice@example.test automation';
+ const client=await request('/api/automation/clients',{name:label,key:randomBytes(32).toString('hex'),services:[service.value.id],permissions:['incidents:read']});assert.equal(client.status,201);
+ const checkpoint=await value('/api/recovery/checkpoint'),legacy=await value('/api/recovery/checkpoint?version=1'),archive=await value('/api/archive');
+ assert.equal((await request('/api/move-in/erase',{email:'alice@example.test',confirmation:'erase alice@example.test'})).status,200);
+ const before=await value('/api/state');
+ for(const [path,input] of [['/api/recovery/restore',{mode:'replace',checkpoint}],['/api/recovery/restore',{mode:'replace',checkpoint:legacy}],['/api/restore',{mode:'replace',archive}]]) {
+  const result=await request(path,input);
+  console.log(JSON.stringify({witness:'automation-erasure-fence',path,status:result.status,labelReturned:JSON.stringify((await erasureRuntime.request('/api/state',undefined,result.cookie??cookie)).value).includes(label)}));
+  assert.equal(result.status,409,'older source is refused whole by the erasure fence');assert.match(result.value.error,/erasure fence/i);assert.ok(!JSON.stringify(result.value).includes('alice@example.test'));
+  assert.deepEqual(await value('/api/state'),before);
+ }
+ for(const path of ['/api/state','/api/archive','/api/recovery/checkpoint','/api/automation','/api/audit/export'])assert.ok(!JSON.stringify(await value(path)).includes(label));
+ for(const version of [2,1]){const current=await value('/api/recovery/checkpoint?version='+version),restored=await request('/api/recovery/restore',{mode:'replace',checkpoint:current});assert.equal(restored.status,200);cookie=restored.cookie;}
+ assert.ok(!JSON.stringify(await value('/api/state')).includes(label));
+ const again=await request('/api/recovery/restore',{mode:'replace',checkpoint});assert.equal(again.status,409,'successful current restore retains the fence');
+ console.log('PASS OC-053 erasure fence: stale native archive and checkpoint refused atomically; current checkpoint restores and retains custody');
+} finally {await erasureRuntime.close();}
+
 const sign=(key,text)=>createHmac('sha256',key).update(text).digest('hex');
 const apiKey=randomBytes(32).toString('hex'),firstReceiverKey=randomBytes(32).toString('hex'),seen=[],applied=new Set();let receiverKey=firstReceiverKey,behavior='accepted',release,entered;
 const runtime=await automationRuntime(async request=>{

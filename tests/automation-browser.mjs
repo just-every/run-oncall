@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {randomBytes} from 'node:crypto';
+import AxeBuilder from '@axe-core/playwright';
+import {ownerDoor} from './worker.mjs';
 import {chromium} from '@playwright/test';
 import {automationRuntime,recordOwnedProcesses} from './automation-runtime.mjs';
 let receiverStatus=403;
@@ -45,8 +47,24 @@ try {
   while((await req('/api/automation/dispatch',{})).value.processed){}
   await page.reload();await panel.getByText('role · uncertain',{exact:true}).first().waitFor();await panel.screenshot({path:join(proof,'automation-uncertain-'+width+'.png')});receiverStatus=403;
 
+  // The existing Archive screen refuses a source captured before label erasure.
+  const email='synthetic-oncall-'+width+'@example.test',label=email+' automation',door=ownerDoor(runtime,cookie);
+  const plan=await door.preview('opsgenie',JSON.stringify({users:{data:[{id:'synthetic-oncall-'+width,username:email,fullName:'synthetic-oncall-'+width}]}}));assert.equal(plan.status,200);assert.equal((await door.apply('opsgenie',plan.value)).status,200);
+  assert.equal((await req('/api/automation/clients',{name:label,key:randomBytes(32).toString('hex'),services:['synthetic-oncall-browser'],permissions:['incidents:read']})).status,201);
+  const oldArchive=(await req('/api/archive')).value;assert.equal((await req('/api/move-in/erase',{email,confirmation:'erase '+email})).status,200);
+  const afterErasure=(await req('/api/state')).value;
+  await page.goto(runtime.origin+'/#archive');await page.getByLabel('Choose archive JSON').setInputFiles({name:'synthetic-oncall-old.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(oldArchive))});
+  await page.getByLabel('Type REPLACE to confirm').fill('REPLACE');
+  const refusal=page.waitForResponse(r=>r.url().endsWith('/api/restore')&&r.request().method()==='POST');await page.getByRole('button',{name:'Replace workspace with this archive',exact:true}).click();assert.equal((await refusal).status(),409);
+  await page.getByRole('alert').waitFor();assert.deepEqual((await req('/api/state')).value,afterErasure);assert.ok(!JSON.stringify(afterErasure).includes(label));
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-erasure-refusal-'+width+'.png'),fullPage:true});
+  const archiveAxe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(archiveAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+
   await page.goto(runtime.origin+'/?incident='+incident.value.entity+'#incidents');await page.locator('.timeline').getByText('Service account',{exact:true}).waitFor();await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
+  const timelineAxe=await new AxeBuilder({page}).include('.timeline').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(timelineAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  await page.goto(runtime.origin+'/#alerts');await panel.getByRole('heading',{name:'Durable outbox',exact:true}).waitFor();const panelAxe=await new AxeBuilder({page}).include('#response-api').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(panelAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
   assert.deepEqual(errors,[]);
+  for(const [slug,anchor] of [['data','subject-erasure-fences'],['response-api','durable-delivery-and-recovery']]){const response=await page.goto(runtime.origin+'/docs/'+slug+'#'+anchor);assert.equal(response.status(),200);await page.locator('.docs-article').waitFor();await page.locator('#'+anchor).scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-docs-'+slug+'-'+width+'.png')});}
   await context.close();
   const denied=await browser.newContext({viewport:{width,height:1000}}),deniedPage=await denied.newPage();const login=await denied.request.post(runtime.origin+'/api/login',{headers:{origin:runtime.origin},data:{name:'Synthetic Viewer',password:'synthetic-oncall-viewer-password'}});assert.equal(login.status(),200);
   await deniedPage.goto(runtime.origin+'/#alerts');await deniedPage.locator('#response-api').getByText('An administrator manages clients, recipients and delivery failures.',{exact:true}).waitFor();assert.equal(await deniedPage.locator('#response-api').getByRole('button').count(),0);

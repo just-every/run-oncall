@@ -1,3 +1,4 @@
+import { syncErasureFences } from '../erasure-fence'
 import { createErasure, defineErasure, toD1Sql } from '../modules/erasure/index.mjs'
 import { createPortability } from '../modules/portability/index.mjs'
 import { retireD1ImportCustody, upgradeD1ImportErasureIndex } from '../modules/import-kit/src/d1/index'
@@ -164,7 +165,7 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
       try { const original = JSON.parse(raw); return refers(original, email, ids) || mentions(original, email) } catch { return names(raw, email) }
     },
   }
-  const checkpoint = (await portability.redactionStatements()).map(toD1Sql)
+  const checkpoint = [...(await portability.redactionStatements()).map(toD1Sql),{sql:syncErasureFences,params:[]}]
   // Every erasure commit drops in-flight transfer copies, which may hold the person; the native erasure already does when there is one.
   const transfers = native ? [] : (await portability.invalidateTransfersStatements()).map(toD1Sql)
   let entry

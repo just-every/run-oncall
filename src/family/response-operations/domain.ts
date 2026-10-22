@@ -1,3 +1,4 @@
+import { validateErasureFences, type ErasureFence } from '../../erasure-fence.ts'
 import {validateAllowances,type KeyAllowance} from '../../intake-rate/model.ts';
 import { enqueueEvents, machineAuthority, validateAutomation, type Client, type Endpoint, type Operation, type Outbox } from '../../automation/model.ts';
 import { validateEmailArchive } from '../../email/archive.ts';
@@ -124,6 +125,7 @@ export type Incident = {
   communications?: string | null;
 };
 export type State = {
+  erasureFences?: ErasureFence[];
   keyAllowances?: KeyAllowance[];
   apiClients?: Client[];
   apiEndpoints?: Endpoint[];
@@ -627,9 +629,10 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
+  ], ["erasureFences", "keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
+  if(value.erasureFences!==undefined)validateErasureFences(value.erasureFences);
   for (const key of [
     "members",
     "services",

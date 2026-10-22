@@ -42,6 +42,12 @@ The app's JSON archive can move coordination records between installations. It e
 
 Restoring this hosted workspace's own archive works without mapping when the current active administrator is in it. A refused replacement leaves existing records unchanged. Deployment itself never uploads local records.
 
+## Subject erasure fences
+
+Native archives, both recovery checkpoint versions and the private checkpoint CLI carry the durable portability erasure digests and epochs. Once an installation knows a subject erasure, it refuses an older source whole with an erasure-fence error. Nothing is replaced, no label returns and no session rotates. A checkpoint made after erasure can restore; replacement preserves the fence. Legacy sources without fence metadata are refused wherever a later fence is known. No erased name or address appears in the fence or its refusal.
+
+Installation export/import carries the same fence records and the portability journal. When moving to an empty installation, supply the later archive with `rer import --input exports/older.rer --journal exports/current.rer --yes` to enforce a later erasure against the older source. An empty installation cannot know an erasure it has never received. Vendor move-in and saved vendor bundles carry vendor records, not native automation definitions.
+
 ## Start over
 
 Stop both local servers before resetting:

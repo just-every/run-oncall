@@ -1,3 +1,4 @@
+import { restoreErasureFences } from './erasure-fence'
 import { storedReceipt, nativePrefixWrites } from './native-prefix-store'
 import { authoredWorkspace } from './workspace-profile'
 import { empty, fail, type State } from './family/response-operations/domain'
@@ -6,7 +7,7 @@ const tables = {keyAllowances:'oc_key_allowances',apiClients:'oc_api_clients',ap
 const collections = Object.keys(tables) as (keyof typeof tables)[]
 // D1 batch reads share one transaction. Individual records avoid a whole-
 // workspace SQL cell and do not depend on SQLite's compound-SELECT limit.
-export const workspaceQueries = ["SELECT 'control' AS collection,0 AS ordinal,json_object('revision',revision) AS data FROM workspace_control WHERE id=1",...collections.map(key=>`SELECT '${key}' AS collection,ordinal,data AS data FROM ${tables[key]} ORDER BY ordinal`)]
+export const workspaceQueries = ["SELECT 'erasureFences' AS collection,0 AS ordinal,json_object('id',id,'epoch',epoch) AS data FROM oc_erasure_fences ORDER BY id","SELECT 'control' AS collection,0 AS ordinal,json_object('revision',revision) AS data FROM workspace_control WHERE id=1",...collections.map(key=>`SELECT '${key}' AS collection,ordinal,data AS data FROM ${tables[key]} ORDER BY ordinal`)]
 type Snapshot=Map<string,{ordinal:number;data:string}>
 const snapshots=new WeakMap<State,Map<string,Snapshot>>()
 export function decodeWorkspace(rows:{collection:string;ordinal:number;data:string}[]):State {
@@ -16,6 +17,7 @@ export function decodeWorkspace(rows:{collection:string;ordinal:number;data:stri
   if(!Number.isSafeInteger(state.revision)||state.revision<0)fail('Stored workspace revision is inconsistent',503)
   for(const row of rows) {
     if(row.collection==='control')continue
+    if(row.collection==='erasureFences'){(state.erasureFences??=[]).push(JSON.parse(row.data));continue}
     const key=row.collection as keyof typeof tables,value=JSON.parse(row.data)
     ;((state as any)[key]??=[]).push(value)
     previous.get(key)!.set(value.id,{ordinal:row.ordinal,data:row.data})
@@ -40,7 +42,7 @@ export function workspaceRows(db:D1Database,state:State,token:string):D1Prepared
     for(let i=0;i<changed.length;i+=32)writes.push(db.prepare(`INSERT INTO ${tables[key]}(id,ordinal,data) SELECT json_extract(value,'$.id'),json_extract(value,'$.ordinal'),json_extract(value,'$.data') FROM json_each(?) WHERE ${gate} ON CONFLICT(id) DO UPDATE SET ordinal=excluded.ordinal,data=excluded.data WHERE ordinal<>excluded.ordinal OR data<>excluded.data`).bind(JSON.stringify(changed.slice(i,i+32)),token))
     return writes
   })
-  return [...statements,...nativePrefixWrites(db,state.intakeReceipts??[],token,previous&&new Set(previous.get('intakeReceipts')?.keys()))]
+  return [...statements,restoreErasureFences(db,state,token),...nativePrefixWrites(db,state.intakeReceipts??[],token,previous&&new Set(previous.get('intakeReceipts')?.keys()))]
 }
 export function workspaceWrite(db:D1Database,state:State,revision:number,authority:{sql:string;values:(string|number|null)[]},token=crypto.randomUUID()) {
   state.revision = revision + 1

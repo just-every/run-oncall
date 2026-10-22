@@ -154,3 +154,19 @@ export async function checkpointCli(w,cookie) {
   return next
  }finally{await rm(dir,{recursive:true,force:true})}
 }
+
+// Continue the existing transfer journey through the private CLI after erasure.
+export async function checkpointErasureCli(w,cookie,erase) {
+ const dir=await mkdtemp(join(tmpdir(),'oncall-erasure-checkpoint-')),session=join(dir,'session'),old=join(dir,'old.json'),current=join(dir,'current.json');
+ const cli=args=>new Promise((resolve,reject)=>{const child=spawn(process.execPath,['scripts/checkpoint.mjs','--origin',w.origin,'--session-file',session,...args],{stdio:['ignore','pipe','pipe']});let output='';for(const pipe of [child.stdout,child.stderr])pipe.on('data',v=>output+=v);child.on('error',reject);child.on('exit',status=>resolve({status,output}));});
+ try {
+  await writeFile(session,cookie,{mode:0o600});assert.equal((await cli(['export',old])).status,0);
+  await erase();const before=await checkpointReadback(w,cookie);
+  const refused=await cli(['restore',old,'--replace']);const visible=await w.request('/api/state',undefined,(await readFile(session,'utf8')).trim());console.log(JSON.stringify({witness:'CLI-erasure-fence',exit:refused.status,labelReturned:JSON.stringify(visible.value).includes('alice@example.test automation')}));assert.equal(refused.status,1);assert.match(refused.output,/erasure fence/i);assert.ok(!refused.output.includes('alice@example.test'));
+  assert.equal(await readFile(session,'utf8'),cookie);assert.deepEqual(await checkpointReadback(w,cookie),before);
+  assert.equal((await cli(['export',current])).status,0);assert.equal((await cli(['restore',current,'--replace'])).status,0);
+  const next=(await readFile(session,'utf8')).trim();assertCheckpointRestored(JSON.parse(await readFile(current,'utf8')),await checkpointReadback(w,next));
+  assert.equal((await cli(['restore',old,'--replace'])).status,1,'current CLI restore retains the erasure fence');
+  console.log('PASS OC-053 CLI erasure fence: older checkpoint refuses without dataset/session changes; current checkpoint restores');return next;
+ } finally {await rm(dir,{recursive:true,force:true});}
+}

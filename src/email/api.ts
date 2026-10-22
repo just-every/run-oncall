@@ -1,3 +1,4 @@
+import { syncErasureFences } from '../erasure-fence'
 import { authority, fail, text, type State } from '../family/response-operations/domain.ts';
 import { workspaceWrite } from '../workspace-store.ts';
 import { auditIdentity, auditKind } from '../audit-store.ts';
@@ -62,7 +63,7 @@ export function installEmailManagement(api:any,deps:Deps) {
       state.emailQuarantine=(state.emailQuarantine??[]).filter(q=>q.address!==address.id);
       for(const r of state.emailReceipts??[])if(r.address===address.id)r.sample=null;
       address.active=false;address.revision++;
-      await commit(c,state,token=>[...fence,...transfers,...erased.map(id=>c.env.DB.prepare('INSERT OR IGNORE INTO oc_email_erased_samples(id) SELECT ? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(id,token)),c.env.DB.prepare('UPDATE oc_email_credentials SET active=0 WHERE address=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(address.id,token)]);
+      await commit(c,state,token=>[...fence,c.env.DB.prepare(syncErasureFences),...transfers,...erased.map(id=>c.env.DB.prepare('INSERT OR IGNORE INTO oc_email_erased_samples(id) SELECT ? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(id,token)),c.env.DB.prepare('UPDATE oc_email_credentials SET active=0 WHERE address=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(address.id,token)]);
       return c.json({erased:'saved mail and quarantine',receipts:'retained operational history',address});
     }
     if(!['rotate','revoke'].includes(action))fail('Unknown address action',404);

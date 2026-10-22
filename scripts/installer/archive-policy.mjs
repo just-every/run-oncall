@@ -17,6 +17,8 @@ export default {
   const control=(await read('workspace_control'))[0],paging=(await read('paging_control'))[0]
   const coordination={schemaVersion:1,revision:control?.revision??0}
   for(const key of ['members','services','policies','events','alerts','incidents','audit'])coordination[key]=(await read('oc_'+key)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
+  const erasureFences=tables.oc_erasure_fences?await read('oc_erasure_fences'):[]
+  if(erasureFences.length)coordination.erasureFences=erasureFences.sort((a,b)=>a.id.localeCompare(b.id))
   const triage=(tables.oc_triage ? await read('oc_triage') : []).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
   if(triage.length)coordination.triage=triage
   for(const [key,table] of [['keyAllowances','oc_key_allowances'],['apiClients','oc_api_clients'],['apiEndpoints','oc_api_endpoints'],['apiOperations','oc_api_operations'],['apiOutbox','oc_api_outbox'],['changes','oc_changes'],['changeSources','oc_change_sources'],['intakeSources','oc_intake_sources'],['intakeReceipts','oc_intake_receipts'],['emailAddresses','oc_email_addresses'],['emailRules','oc_email_rules'],['emailSamples','oc_email_samples'],['emailReceipts','oc_email_receipts'],['emailQuarantine','oc_email_quarantine']]){const records=tables[table]?(await read(table)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data)):[];if(records.length)coordination[key]=records}

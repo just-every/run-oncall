@@ -7,7 +7,7 @@ import {lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
 import {managedSeed} from './managed.mjs'
 import {ownerDoor,localWorker} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
-import {checkpointCli} from './checkpoint-cli.mjs'
+import {checkpointCli,checkpointErasureCli} from './checkpoint-cli.mjs'
 import {transferDoor} from './transfer-door.mjs'
 
 const fetch=(url,input={})=>globalThis.fetch(url,{...input,headers:{...input.headers,connection:'close'}})
@@ -187,7 +187,7 @@ try{
  assert.equal((await m.request('/api/move-in/erase',{email:'alice@example.test',confirmation:'erase alice@example.test'})).status,401)
  assert.equal((await erase('nobody@example.test')).status,404)
  const auditBeforeErasure=ok(await req('/api/audit/export')).rows
- const erased=ok(await erase('alice@example.test'));assert.ok(erased.receiptId)
+ let erased;cookie=await checkpointErasureCli(m,cookie,async()=>{erased=ok(await erase('alice@example.test'));assert.ok(erased.receiptId)});
  assert.ok(!JSON.stringify(ok(await req('/api/state')).apiClients).includes('alice@example.test'),'erasure severs automation labels and authority')
  assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.history[0].reason==='capacity-not-scheduled'),'capacity history survives safe erasure')
  assert.equal((await req('/api/automation/dispatch',{})).value.processed,0,'restored unfinished and capacity events remain held after erasure')
@@ -195,10 +195,13 @@ try{
  for(const row of auditBeforeErasure)assert.deepEqual(auditById.get(row.id),row,'subject erasure never rewrites permanent audit chronology')
  for(const secret of [apiKey,endpointKey,'alice@example.test','portable-signed','portable-ci','Portable CI context','portable-monitor','portable-alertmanager',sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey])assert.ok(!JSON.stringify(safeAudit).includes(secret),'protected audit export holds no erased identity or secret')
  assert.equal((await erase('alice@example.test')).status,404,'repeating an erasure changes nothing')
+ const retainedErasureFences=sql('SELECT id,epoch FROM oc_erasure_fences ORDER BY id')
  await m.close();await m.command(['export','--output',later,'--non-interactive']);await m.command(['reset','--yes','--non-interactive'])
  await m.command(['import','--input',archive,'--journal',later,'--yes','--non-interactive'],4)
- assert.equal(sql('SELECT COUNT(*) AS n FROM move_in_objects UNION ALL SELECT COUNT(*) FROM ik_jobs')[0].n,0,'the refused older archive restored nothing')
+ assert.ok(Object.values(sql('SELECT (SELECT COUNT(*) FROM move_in_objects) AS imported,(SELECT COUNT(*) FROM ik_jobs) AS jobs,(SELECT COUNT(*) FROM oc_api_clients) AS clients,(SELECT COUNT(*) FROM oc_api_endpoints) AS endpoints,(SELECT COUNT(*) FROM oc_api_operations) AS operations,(SELECT COUNT(*) FROM oc_api_outbox) AS outbox')[0]).every(count=>count===0),'the refused older archive restores no import or automation record')
  await m.command(['import','--input',later,'--yes','--non-interactive'])
+ assert.ok(retainedErasureFences.length);assert.deepEqual(sql('SELECT id,epoch FROM oc_erasure_fences ORDER BY id'),retainedErasureFences,'current installation archive preserves every durable subject erasure fence exactly')
+ assert.ok(!sql('SELECT data FROM oc_api_clients UNION ALL SELECT data FROM oc_api_endpoints').some(row=>row.data.includes('alice@example.test')),'erased automation labels stay absent after current portable restore')
  assert.equal(sql("SELECT COUNT(*) AS n FROM move_in_objects WHERE id='alice@example.test'")[0].n,0)
  assert.equal(sql("SELECT COUNT(*) AS n FROM ik_jobs WHERE plan_json LIKE '%alice@example.test%'")[0].n,0)
  await m.command(['reset','--yes','--non-interactive'])
