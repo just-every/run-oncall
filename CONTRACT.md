@@ -463,7 +463,7 @@ The approved scope is the 16 October 2026 Oncall entry in LIST.json; the categor
 
 ## Status
 
-Judged from the code and tests at commit `747afed2d31fe0b11a6d1cbecaf1d8cfce814ba5` (23 October 2026). The 0.4.0 release gate remains dated one-time evidence for its own published rota, now/next, calendar feed, incident, move-in, upgrade and hosted journeys; it does not establish later capabilities. Each status rests only on its exercising flow. OC-053 remains partial after both bounded repairs; no code gap remains for this round. DONE awaits ct's independent exact-head transfer and portable CLI gate. Current row totals are 28 done, 27 partial and 18 missing of 73.
+Judged from the code and tests at commit `a0fa143ed8e283d3d4af2511b39ff422d8210501` (23 October 2026). The 0.4.0 release gate remains dated one-time evidence for its own published rota, now/next, calendar feed, incident, move-in, upgrade and hosted journeys; it does not establish later capabilities. Each status rests only on its exercising flow. OC-053 remains partial after both bounded repairs; no code gap remains for this round. DONE awaits ct's independent exact-head transfer and portable CLI gate. Current row totals are 28 done, 27 partial and 18 missing of 73.
 
 Current totals are 28 done / 27 partial / 18 missing. OC-059’s table/acceptance status is corrected from done to partial under CT’s 22 October native-bounds ruling; its clause body was already partial. Native/rate local candidate proof does not promote OC-059 or OC-072, and does not replace the fresh independent security and CT landing reviews.
 
