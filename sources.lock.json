@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "1eefbded29d228292adb03dd0415e8502966f5bb29623a4f7edcdf5f9ef9d8fe",
+      "sha256": "e6570b2884fd92ce131fd574343c21b730cd6947e96e8e4b921934ed435bfc4a",
       "executable": false
     },
     "DEMO.md": {
@@ -3431,7 +3431,11 @@
       "executable": false
     },
     "src/record-pages.ts": {
-      "sha256": "e2011d7ea9b162867bdeee781af26b74d446e55a6c7436bd2959de8e6536b2e9",
+      "sha256": "870bab5e0b7fc1b7b6f8af46f59be198f02ca9544178032dae402d29937cdb8d",
+      "executable": false
+    },
+    "src/record-summaries.ts": {
+      "sha256": "244e80f101cce5f09c0115aeac94be60440025de5063991748a9e00b2036e44c",
       "executable": false
     },
     "src/request-body.ts": {
