@@ -1,4 +1,4 @@
-import {validateAllowances,type KeyAllowance} from '../../intake-rate/model';
+import {validateAllowances,type KeyAllowance} from '../../intake-rate/model.ts';
 import { enqueueEvents, machineAuthority, validateAutomation, type Client, type Endpoint, type Operation, type Outbox } from '../../automation/model.ts';
 import { validateEmailArchive } from '../../email/archive.ts';
 import type { EmailAddress, EmailVersion, EmailSample, EmailReceipt, EmailQuarantine } from '../../email/types.ts';

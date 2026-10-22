@@ -42,7 +42,12 @@ export async function nativeIncompleteSource(state:State,identity:string,credent
   if(!scope.length||scope.some(id=>!state.services.some(service=>service.id===id)))fail('Native source scope is unavailable',503);
   const id='native:'+await intakeHash(JSON.stringify({identity,scope}));
   const previous=state.intakeSources?.find(source=>source.id===id);
-  if(previous)return previous;
+  if(previous) {
+    const version=previous.routing?.versions.at(-1);
+    if(!version||previous.provider!=='native'||JSON.stringify(previous.routing?.scope)!==JSON.stringify(scope)||version?.catchAll!==(scope.length===1?scope[0]:null)||version.rules.length)
+      fail('Held native incomplete custody does not match this credential scope',409);
+    return previous;
+  }
   if((state.intakeSources?.length??0)>=10000)fail('Local intake source capacity reached; export before extending capacity',429);
   const owner=state.members.find(member=>member.active&&member.role==='admin'&&!member.machine);
   if(!owner)fail('Native incomplete intake needs an active installation administrator',503);

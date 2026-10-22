@@ -1,7 +1,7 @@
-import { fail, type State } from '../family/response-operations/domain';
-import type { IntakeReceipt, IntakeSource } from '../intake/model';
-import { exact } from './definition';
-import { nativeIncompleteDetails } from '../native-incomplete-model';
+import { fail, type State } from '../family/response-operations/domain.ts';
+import type { IntakeReceipt, IntakeSource } from '../intake/model.ts';
+import { exact } from './definition.ts';
+import { nativeIncompleteDetails } from '../native-incomplete-model.ts';
 
 export function validateNativeRoutingReceipt(state:State,source:IntakeSource,receipt:IntakeReceipt) {
   if(source.provider!=='native') {

@@ -16,7 +16,7 @@ export async function routingSave(c:any,deps:RoutingDependencies,state:State) {
 }
 export function routingSource(state:State,id:string) {
   const source=state.intakeSources?.find(s=>s.id===id&&s.routing);
-  if(!source)fail('Unknown routed key',404);
+  if(!source||id.startsWith('native:'))fail('Unknown routed key',404);
   return source as IntakeSource & {routing:NonNullable<IntakeSource['routing']>};
 }
 export function installRoutingManagement(api:any,deps:RoutingDependencies) {

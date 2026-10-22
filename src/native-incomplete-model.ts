@@ -1,4 +1,4 @@
-import type {IntakeReceipt} from './intake/model';
+import type {IntakeReceipt} from './intake/model.ts';
 /** Ordinary details stay under 8 KiB; only native custody may retain 64 KiB of bytes. */
 export function nativeIncompleteDetails(receipt:IntakeReceipt):boolean {
  if(receipt.provider!=='native'||!receipt.incomplete||!receipt.details||typeof receipt.details!=='object'||Array.isArray(receipt.details))return false;

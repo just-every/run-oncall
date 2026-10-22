@@ -1,4 +1,4 @@
-import {fail,type State} from '../family/response-operations/domain';
+import {fail,type State} from '../family/response-operations/domain.ts';
 export type KeyAllowance={id:string;requests:number;events:number};
 export const defaultAllowance={requests:600,events:120};
 export const allowanceCeiling={requests:6000,events:1200};

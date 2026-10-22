@@ -2,7 +2,7 @@ import { fail, link, text, type State } from '../family/response-operations/doma
 import { validateRoutingSource, validateRoutingReceipt } from '../routing/archive.ts';
 import type { RoutingDefinition, RoutingExplanation } from '../routing/types.ts';
 import { validateNativeRoutingReceipt } from '../routing/native-archive.ts';
-import { nativeIncompleteDetails } from '../native-incomplete-model';
+import { nativeIncompleteDetails } from '../native-incomplete-model.ts';
 import { validateMonitoringReceipt } from '../monitoring/archive.ts';
 import type { MonitoringProvider, MonitoringMetadata, IncompleteEvidence } from '../monitoring/types.ts';
 import type { CompatibleInput, CompatibleProvider } from './provider-types.ts';
