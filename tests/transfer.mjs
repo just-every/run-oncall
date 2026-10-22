@@ -66,6 +66,9 @@ try{
  await reviewCommand({type:'complete',action:reviewedIncident.actions[0].id,evidence:'https://example.test/portable-action'})
  await reviewCommand({type:'accept-action',action:reviewedIncident.actions[0].id,reason:'Human reviewed completion evidence'})
  await reviewCommand({type:'review',accept:true,materialRevision:reviewedIncident.revision,materialWorkspaceRevision:ok(await req('/api/state')).revision,rootCause:'Human assessed migration gap',impact:'Delayed preserved-history workflows',text:'Accepted review and next verification retained across installation transfer'})
+ // Hold external cron injection during exact-state checkpoint assertions. The
+ // real HTTP/Worker/storage carrier stays active; no application flag is changed.
+ await m.close();await m.startHttp()
  // OC-053 extends this populated transfer journey with machine history and pending egress.
  const apiKey=randomBytes(32).toString('hex'),endpointKey=randomBytes(32).toString('hex')
  const createdClient=await req('/api/automation/clients',{name:'alice@example.test automation',key:apiKey,services:['transfer'],permissions:['incidents:read','incidents:write']});assert.equal(createdClient.status,201);const apiClient=createdClient.value
@@ -80,6 +83,8 @@ try{
  assert.equal(capacityHistory.filter(o=>['queued','sending','failed'].includes(o.status)).length,1000)
  assert.ok(capacityHistory.some(o=>o.status==='terminal'&&o.history[0].reason==='capacity-not-scheduled'&&o.attempts===0))
  cookie=await checkpointCli(m,cookie)
+ const heldBeforeTick=ok(await req('/api/state')),heldTick=await fetch(m.origin+'/cdn-cgi/local/scheduled');assert.equal(heldTick.status,200);await heldTick.text();assert.deepEqual(ok(await req('/api/state')),heldBeforeTick,'an actual scheduled handler cannot resume restored outbox work')
+ await m.close();await m.start()
  console.log('OC-052 populated checkpoint: authority, bounds, storage rollback, concurrent restore and inactive receiving state passed')
  // Reauthorize locally after checkpoint recovery, so portable restore must
  // independently turn active integration definitions back into inactive history.

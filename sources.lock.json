@@ -3755,7 +3755,7 @@
       "executable": false
     },
     "tests/managed.mjs": {
-      "sha256": "2ae8ca23624aa2d492aa647fa1b594ea267b58980b0b3a63fb02dd4489b1cf65",
+      "sha256": "5e2de50695cdb53802abca7c1d8bbbbda5cd448e70ed11c1e53c76d862226fed",
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
@@ -3823,7 +3823,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "ac6f1f550c5090f9e804793b6f60974ae9e29a4156b489459a13c78f9b702d06",
+      "sha256": "a1348e77af8c3cbf5f33bc5f9310058dd96b1bd066d90e1f9f1328b48a187e9d",
       "executable": false
     },
     "tests/triage.mjs": {
