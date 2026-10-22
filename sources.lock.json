@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "cf03dad434568d3b16102cd26d28fa2d8563bdeb9edc506251685b0faa528b47",
+      "sha256": "2e1f52a7d17ada46cd23fb8d0955fa3e01ad4d9e193a2e2908f16e82cf289f66",
       "executable": false
     },
     "DEMO.md": {
@@ -1131,7 +1131,7 @@
       "executable": false
     },
     "src/erasure-fence.ts": {
-      "sha256": "93fd2189d0d692a1659b68b3942da8824e5c6357293f47de18b83d28def2e3c1",
+      "sha256": "187b628491791872303c002ca80be12c6651b4cf97f3d6c8431f34c865280270",
       "executable": false
     },
     "src/family/operations/README.md": {
@@ -3667,7 +3667,7 @@
       "executable": false
     },
     "src/workspace-store.ts": {
-      "sha256": "785133dacc674efcd04306a68198d846f154e5ce6fd24a360b0dc4bbd0cd13f7",
+      "sha256": "3ba4dd4c3d529e6921ce7c0e6d2b23fbd46b67cbacef4b892ac0106d25a6c539",
       "executable": false
     },
     "tests/activation-browser.mjs": {
@@ -3691,7 +3691,7 @@
       "executable": false
     },
     "tests/automation.mjs": {
-      "sha256": "4b00c8cdc23413b8c2357f2973e64ddab6d21944ff598c7a586cddc465b03ca6",
+      "sha256": "364c0ad57e7d72663f78caf6fb07aea9b98c1e33af5512769b2643bf5ae7f4b3",
       "executable": false
     },
     "tests/changes.mjs": {
