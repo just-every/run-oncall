@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "1af8a0b0251868163aae7d753efc536e1f0498ecc6b1879185599153f13e3471",
+      "sha256": "ff318adecfdf4151131a0a09d1da3f4e13da7922aa3e0ae7f0c9cb6567062105",
       "executable": false
     },
     "DEMO.md": {
@@ -3695,7 +3695,7 @@
       "executable": false
     },
     "src/workspace-store.ts": {
-      "sha256": "b1d88ae32524d81fe091657be9286e5f1acf5d49936930b42bfb1112508308fe",
+      "sha256": "4f6ebca8f377181dbd8ebe08354779caa035ecaeb14e74121bffb89080422ba6",
       "executable": false
     },
     "src/workspace-tables.ts": {
