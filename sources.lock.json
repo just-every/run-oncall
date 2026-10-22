@@ -131,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d7b4b13716cc0983ce458f9adff12153026c25485064bae17f7d1a5201e66ae8",
+      "sha256": "1befed79d8fd4bb43a45264f84d3a9441510c0889b69d10d90e894379620ae9d",
       "executable": false
     },
     "AGENTS.md": {
@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5d11cf4207fe0c590179c017a1eee3e2e0eae176396753544f6d773f7b9b98e0",
+      "sha256": "4e502ab19694e5d4d5c2220139e9746a02be6c6e1b70884b3f8c349037d75e8d",
       "executable": false
     },
     "DEMO.md": {
@@ -227,7 +227,7 @@
       "executable": false
     },
     "docs/routed-intake.md": {
-      "sha256": "2359ecae7e5c0cf1f4ff450d623da65c9365bd7484eb92fcbae4765f457a46d7",
+      "sha256": "2a5a94d890df20d9884e7a613668e968393bcc758a18055a08dd1d4f4679f758",
       "executable": false
     },
     "docs/schedules.md": {
@@ -743,7 +743,7 @@
       "executable": false
     },
     "src/api.ts": {
-      "sha256": "01c92336f9c01fbae2ed4a4cc8438a10c256c0c6089cd189bb3b966649612ed6",
+      "sha256": "7a9805ab7956b75f442333a93d15f9bdeec8b7cec36b3a3f20049d3cabb38f50",
       "executable": false
     },
     "src/app/AlertsPanel.tsx": {
@@ -1191,11 +1191,15 @@
       "executable": false
     },
     "src/intake-rate/admission.ts": {
-      "sha256": "dce03497c8979f44ade0f1a064c2b1c74fbde0520201c7dca271e61c332c6259",
+      "sha256": "e1c1ccb0798a1f8f54a85060bd845180be0940f0ae82892d696015c3f1348fb5",
       "executable": false
     },
     "src/intake-rate/AllowanceForm.tsx": {
       "sha256": "bc7fa211cc768bad03c47111c6bf94cac39b2cbd3e5a7384aea0cf351f3bc06b",
+      "executable": false
+    },
+    "src/intake-rate/fault.ts": {
+      "sha256": "2f474067ab404ec9a2995c3a0766e632ce73cbc982ef7ef8a3bad34880a57469",
       "executable": false
     },
     "src/intake-rate/management.ts": {
@@ -1207,7 +1211,7 @@
       "executable": false
     },
     "src/intake/api.ts": {
-      "sha256": "c3fcdf1d37d78f9db5a57df082edd17829752f15b8aacd3f0a5be8553c6a8ae7",
+      "sha256": "51e0c3de5f0e46c22f323c3d9ecdf4f770c4b44ed0d28f0aa5d3541fc562fcfa",
       "executable": false
     },
     "src/intake/CompatibleIngress.tsx": {
@@ -3207,7 +3211,7 @@
       "executable": false
     },
     "src/monitoring/api.ts": {
-      "sha256": "e24069e65ad125581413c444bc86c6482bba48147a254c1fd4781bb1c642ea5c",
+      "sha256": "93d85db65340d0426eb551c4e33cd928843347bf5482aa432142290a1f979518",
       "executable": false
     },
     "src/monitoring/archive.ts": {
@@ -3851,7 +3855,7 @@
       "executable": false
     },
     "tests/routing-rate.mjs": {
-      "sha256": "67de30a966df3a4324a5d4b8ab9cd3228665fa1d4eaf794c210344fb5a51321d",
+      "sha256": "c7f73b38373a3489c24520ba2aa8d85f21e828476993bdaf24fba1987421e312",
       "executable": false
     },
     "tests/routing.mjs": {

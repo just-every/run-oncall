@@ -1,3 +1,4 @@
+import {BatchAllowanceFault} from './fault';
 import {fail,type State} from '../family/response-operations/domain';
 import {workspaceWrite} from '../workspace-store';
 import {defaultAllowance,type KeyAllowance} from './model';
@@ -28,7 +29,8 @@ async function throttle(c:any,deps:IntakeDependencies,rate:RateAdmission,rows:Sa
   const token=crypto.randomUUID(),guard={sql:`(${rate.guard.sql}) AND NOT EXISTS(SELECT 1 FROM oc_key_rate_notified WHERE key_id=? AND at>?)`,values:[...rate.guard.values,rate.key.id,rate.at-windowMs]};
   await c.env.DB.batch([...workspaceWrite(c.env.DB,current,current.revision,guard,token),c.env.DB.prepare('INSERT INTO oc_key_rate_notified(key_id,at) SELECT ?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(key_id) DO UPDATE SET at=excluded.at').bind(rate.key.id,rate.at,token)]);
  }
- fail(retry===undefined?'Key event allowance cannot fit this batch; split the request or ask an administrator to raise its allowance':`Key ${field} allowance exceeded; retry after ${retry} seconds`,429);
+ if(retry===undefined)throw new BatchAllowanceFault(required,rate.policy.events);
+ fail(`Key ${field} allowance exceeded; retry after ${retry} seconds`,429);
 }
 /** Called only after authentication; rejected payloads and duplicates count too. */
 export async function beginRate(c:any,deps:IntakeDependencies,state:State,key:RateKey,guard:Guard):Promise<RateAdmission> {

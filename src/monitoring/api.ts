@@ -1,3 +1,4 @@
+import {rateFaultBody} from '../intake-rate/fault';
 import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
 import { fail, Fault } from '../family/response-operations/domain.ts';
 import { normalizeMonitoring } from './providers.ts';
@@ -30,7 +31,7 @@ export function installMonitoringIntake(api:any,deps:IntakeDependencies) {
       return c.json({status:'accepted',receipts,truncation:incomplete||result.truncated,...(held?{incomplete:{receipt:held.receipt.id}}:{})},202);
     } catch(error) {
       if(!(error instanceof Fault))throw error;
-      return c.json({error:error.message},error.status===409?503:error.status);
+      return c.json({error:error.message,...rateFaultBody(error)},error.status===409?503:error.status);
     }
   });
 }

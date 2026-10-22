@@ -1,3 +1,4 @@
+import {rateFaultBody} from './intake-rate/fault';
 import {readNativeRequest} from './native-request';
 import {beginRate,saveRate,admittedCount} from './intake-rate/admission';
 import {installAllowances} from './intake-rate/management';
@@ -144,7 +145,7 @@ api.onError(async (error, c) => {
   if (error instanceof Refusal)
     return c.json({ error: error.message, code: error.code }, error.status as any);
   if (error instanceof Fault)
-    return c.json({ error: error.message }, error.status as any);
+    return c.json({ error: error.message, ...rateFaultBody(error) }, error.status as any);
   // Read fences return the kit code directly; mutation fences abort D1's
   // transaction with this named CHECK constraint. Both are expected refusals.
   // D1 appends extended SQLite constraint details to this primary failure.

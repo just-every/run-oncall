@@ -1,3 +1,4 @@
+import {rateFaultBody} from '../intake-rate/fault';
 import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
 import { fail, Fault } from '../family/response-operations/domain.ts';
 import { providerInput } from './providers';
@@ -38,9 +39,9 @@ export function installCompatibleIntake(api:any,deps:IntakeDependencies) {
     try{return await receive(c,provider)}catch(error){
       if(!(error instanceof Fault))throw error;
       const busy=error.status===409,status=busy?503:error.status;
-      if(provider.startsWith('pagerduty'))return c.json({status:'invalid event',message:busy?'Admission changed; retry the request':'Event object is invalid',errors:[error.message]},(status===429?429:status>=500?status:400));
-      if(provider==='opsgenie')return c.json({message:error.message,code:status*100},status===413?400:status);
-      return c.json({result:'error',message:error.message},status);
+      if(provider.startsWith('pagerduty'))return c.json({status:'invalid event',message:busy?'Admission changed; retry the request':'Event object is invalid',errors:[error.message],...rateFaultBody(error)},(status===429?429:status>=500?status:400));
+      if(provider==='opsgenie')return c.json({message:error.message,code:status*100,...rateFaultBody(error)},status===413?400:status);
+      return c.json({result:'error',message:error.message,...rateFaultBody(error)},status);
     }
   };
   api.post('/v2/enqueue',wrapped('pagerduty-v2'));
@@ -57,7 +58,7 @@ export function installCompatibleIntake(api:any,deps:IntakeDependencies) {
       const receipt=state.intakeReceipts?.find(r=>r.id===c.req.param('requestId')&&r.source===source.id);
       if(!receipt)return c.json({message:'Request not found',code:40400},404);
       return c.json({data:{action:receipt.action==='trigger'?'Create':receipt.action==='recover'?'Close':receipt.action==='note'?'AddNote':'Acknowledge',processedAt:receipt.acceptedAt,isSuccess:true,status:receipt.outcome,alias:receipt.key},requestId:receipt.id,took:0});
-    }catch(error){if(error instanceof Fault)return c.json({message:error.message,code:error.status*100},error.status);throw error;}
+    }catch(error){if(error instanceof Fault)return c.json({message:error.message,code:error.status*100,...rateFaultBody(error)},error.status);throw error;}
   });
   api.post('/integrations/generic/20131114/alert/:endpointKey/:routingKey',wrapped('splunk'));
 }

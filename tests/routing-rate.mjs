@@ -72,6 +72,15 @@ export async function providerRateDoors(w,cookie,actor) {
   const after=ok(await req('/api/archive'));assert.deepEqual(after.events,before.events);assert.deepEqual(after.alerts,before.alerts);assert.deepEqual(after.intakeReceipts,before.intakeReceipts);
   if(provider==='opsgenie'){const status=await fetch(w.origin+'/v2/alerts/requests/'+first.value.requestId,{headers});assert.equal(status.status,429);}
  }
+ const batchKey=randomBytes(32).toString('hex');
+ ok(await req('/api/routing/keys',{id:'rate-batch',name:'Atomic group rate boundary',provider:'alertmanager',scope:['payments'],owner:actor.id,key:batchKey,revision:0,catchAll:'payments'}),201);
+ ok(await req('/api/intake/allowances',{id:'intake:rate-batch',requests:600,events:2,revision:ok(await req('/api/state')).revision}));
+ const batch=monitoring('alertmanager','batch-first');batch.alerts=Array.from({length:3},(_,i)=>monitoring('alertmanager','batch-'+i).alerts[0]);
+ const held=ok(await req('/api/archive'));
+ const batchReply=await fetch(w.origin+'/api/monitoring/rate-batch',{method:'POST',headers:{authorization:'Bearer '+batchKey,'content-type':'application/json'},body:JSON.stringify(batch)});
+ assert.equal(batchReply.status,429);assert.equal(batchReply.headers.get('retry-after'),null);
+ const batchRefusal=await batchReply.json();assert.equal(batchRefusal.rateLimit.code,'batch_exceeds_allowance');assert.equal(batchRefusal.rateLimit.batchCount,3);assert.equal(batchRefusal.rateLimit.allowance,2);assert.match(batchRefusal.rateLimit.instruction,/Split/);
+ const refused=ok(await req('/api/archive'));assert.deepEqual(refused.events,held.events);assert.deepEqual(refused.alerts,held.alerts);assert.deepEqual(refused.intakeReceipts,held.intakeReceipts);
  const state=ok(await req('/api/state')),policy={id:'intake:limit-grafana',requests:2,events:2,revision:state.revision};
  const observer=ok(await req('/api/members',{name:'Rate observer',role:'viewer',password:'synthetic-rate-observer-password'}),201);
  const login=await w.request('/api/login',{name:observer.name,password:'synthetic-rate-observer-password'});ok(login);
