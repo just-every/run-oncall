@@ -7,6 +7,7 @@ import { auditInput } from './audit-request'
 import { installMonitoringIntake } from './monitoring/api';
 import { compatiblePath, monitoringPath } from './intake/paths';
 import { installCompatibleIntake } from './intake/api';
+import { nativeRoutedIngress } from './routing/native';
 import { installRoutingManagement } from './routing/management';
 import { installUrgency } from './urgency/api';
 import { serviceUrgency } from './urgency/model';
@@ -335,7 +336,7 @@ api.post("/api/ingress/:source", async (c) => {
   )
     .bind(c.req.param("source"))
     .first<NativeSource>();
-  if (!source) fail("Invalid source credential", 401);
+  if (!source) return nativeRoutedIngress(c,{load,save},raw);
   const key = await presentedSourceKey(c, source, raw);
   if (new TextEncoder().encode(raw).length > 65536) fail("Request too large", 413);
   let input: any;

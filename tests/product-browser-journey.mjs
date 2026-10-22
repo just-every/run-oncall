@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import {routingBrowser} from './routing-browser.mjs';
 import {keyboardUser} from './keyboard.mjs'
 import {keyboardCoordination} from './keyboard-coordination.mjs'
 import {alertSeverity} from './alert-severity-browser.mjs'
@@ -17,6 +18,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession}
   await alertSeverity(page,context,width)
   await productSchedule(page,context,width,session)
   await productImport(page,context,width,session)
+  await routingBrowser(page,context,width)
   await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel(/^Event JSON array/).fill(JSON.stringify([{source:'browser',eventId:'replay-'+width,service:'checkout',environment:'production',key:'browser',generation:'g1',intent:'trigger',severity:'critical',title:'Replay '+width,observedAt:'2026-10-12T00:00:00.000Z'}]))
   // An ordinary pointer click where the button sits at the viewport's lower edge;
   // anything covering it there (such as a fixed dev identity badge) takes the click.

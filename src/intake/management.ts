@@ -11,7 +11,7 @@ export function installIntakeManagement(api:any,deps:Dependencies) {
     const id=text(input.id,'Integration ID',80),previous=state.intakeSources?.find(s=>s.id===id);
     if(!/^[a-zA-Z0-9_-]+$/.test(id))fail('Use letters, numbers, hyphens or underscores for the integration ID');
     if(input.revision!==(previous?.revision??0))fail('Integration changed; reload before saving',409);
-    if(!intakeProviders.includes(input.provider)||!state.services.some(s=>s.id===input.service))fail('Choose a supported provider and service');
+    if(input.provider==='native'||!intakeProviders.includes(input.provider)||!state.services.some(s=>s.id===input.service))fail('Choose a supported provider and service');
     if(previous?.routing)fail('Use routed key management to rotate this key');
     if(previous&&(previous.service!==input.service||previous.provider!==input.provider))fail('Service and provider bindings are immutable; create another integration');
     const key=text(input.key,'Integration key',200);if(key.length<32)fail('Integration key needs at least 32 characters');

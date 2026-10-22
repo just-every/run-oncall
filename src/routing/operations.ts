@@ -1,3 +1,4 @@
+import { receiveNativeRouting } from './native';
 import { auditIdentity, auditOutcome } from '../audit-store'
 import { authority, fail, text } from '../family/response-operations/domain.ts';
 import { incompleteRouting } from '../monitoring/incomplete.ts';
@@ -55,7 +56,9 @@ export function installRoutingOperations(api:any,deps:RoutingDependencies) {
     explanation.kind='readmission';explanation.service=input.service;explanation.readmission={receipt:original.id,operationId,by:actor.id};
     explanation.diagnostics.push(`Re-admitted retained receipt ${original.id} by ${actor.id} to ${input.service}`);
     const {action,key,title,severity,priority,observedAt,sender,links,details,truncated}=original;
-    const receipt=original.monitoring||original.incomplete
+    const receipt=original.native
+      ?receiveNativeRouting(state,source,{source:'intake:'+source.id,eventId:original.native.eventId,service:input.service,environment:state.services.find(s=>s.id===input.service)!.environment,key,generation:original.native.sourceGeneration,intent:action==='recover'?'recover':'trigger',title,severity,observedAt:observedAt!,evidence:links[0]??''},original.native.fingerprint,original.routingInput,explanation).receipt
+      :original.monitoring||original.incomplete
       ?receiveMonitoring(state,source,{eventId:original.monitoring?.eventId??'incomplete:'+original.incomplete!.sha256,key,generation:original.monitoring?.sourceGeneration??'incomplete:'+original.incomplete!.sha256,intent:action==='recover'?'recover':'trigger',title,severity,observedAt:observedAt??at,details,links,routingInput:original.routingInput,truncated},{provider:original.provider,monitoring:original.monitoring,incomplete:original.incomplete,explanation,readmission:true},at).receipt
       :receiveCompatible(state,source,original.provider as import('../intake/provider-types.ts').CompatibleProvider,{action,key,title,severity,priority,observedAt,sender,links:structuredClone(links),details:structuredClone(details),truncated},at,{input:original.routingInput,explanation});
     state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-readmitted',text:`Re-admitted ${original.id} as ${receipt.id} to ${receipt.service}`,operationId});

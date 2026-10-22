@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
+import {nativeRouting} from './routing-native.mjs';
 import {localWorker} from './worker.mjs';
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs';
 
@@ -95,7 +96,8 @@ try {
  const originalKey=keys.pd;keys.pd=secret();const source=ok(await req('/api/state')).intakeSources.find(s=>s.id==='pd');
  ok(await req('/api/routing/keys',{id:'pd',name:source.name,provider:'pagerduty',scope:source.routing.scope,owner:actor.id,key:keys.pd,revision:source.revision}));
  ok(await external('/v2/enqueue',{routing_key:originalKey,event_action:'trigger',payload:{summary:'Revoked',source:'test',severity:'critical'}}),400);
- const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),originalKey])assert.ok(!JSON.stringify(archive).includes(key));
+ const native=await nativeRouting(w,cookie,actor);
+ const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey])assert.ok(!JSON.stringify(archive).includes(key));
  const malformed=structuredClone(archive);malformed.intakeSources.find(s=>s.id==='pd').routing.versions[0].catchAll='foreign';ok(await req('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
  state=ok(await req('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);

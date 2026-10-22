@@ -27,6 +27,7 @@ export function previewRouting(state:State,source:IntakeSource,draft:RoutingVers
     if(input.event&&typeof input.event==='object'&&!Array.isArray(input.event))(input.event as Record<string,unknown>).action='recover';
     if(receipt.provider==='pagerduty-v2')input.event_action='resolve';
     if(receipt.provider==='pagerduty-v1')input.event_type='resolve';
+    if(receipt.provider==='native')input.intent='recover';
     if(receipt.provider==='splunk')input.message_type='RECOVERY';
     const proposed=evaluateRouting(state,source.id,source.routing!,draft,input);
     if(proposed.service===alert.service)continue;

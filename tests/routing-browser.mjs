@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import {randomBytes} from 'node:crypto';
+import {mkdir} from 'node:fs/promises';
+import {keyboardUser} from './keyboard.mjs';
+
+export async function routingBrowser(page,context,width) {
+ const key=keyboardUser(page);
+ await page.getByRole('link',{name:'Routing & replay',exact:true}).click();
+ const create=page.locator('.routing-create');
+ await key.activate(create.locator('summary'));
+ await key.text(create.getByLabel('Routed key ID',{exact:true}),'native-browser-'+width);
+ await key.text(create.getByLabel('Routed key name',{exact:true}),'Checkout monitor '+width);
+ await key.option(create.getByLabel('Routed provider',{exact:true}),'native');
+ await key.option(create.getByLabel('Native authentication',{exact:true}),'signed');
+ await key.activate(create.getByRole('checkbox').first(),'Space');
+ await key.activate(create.getByRole('button',{name:'Generate routed key',exact:true}));
+ await key.activate(create.getByRole('button',{name:'Create routed key',exact:true}));
+ await page.getByRole('status').filter({hasText:'Routed key created'}).waitFor();
+ assert.equal(await create.getByLabel(/^Private routed key/).inputValue(),'');
+ await page.getByLabel('Routed integration',{exact:true}).selectOption('native-browser-'+width);
+ const rules=page.getByRole('region',{name:'Routing rules',exact:true});
+ await rules.getByText('/api/ingress/intake:native-browser-'+width,{exact:true}).waitFor();
+ await key.activate(rules.getByRole('button',{name:'Preview routing changes',exact:true}));
+ await rules.getByText('No retained events yet.',{exact:false}).waitFor();
+ await mkdir('evidence/browser',{recursive:true});
+ await rules.screenshot({path:'evidence/browser/native-routing-empty-'+width+'.png'});
+ const state=await page.evaluate(async()=>await(await fetch('/api/state')).json()),source=state.intakeSources.find(s=>s.id==='native-browser-'+width);
+ const published=await context.request.post('/api/routing/keys/'+source.id+'/publish',{headers:{origin:new URL(page.url()).origin},data:{baseVersion:1,rules:[],catchAll:source.routing.scope[0]}});assert.equal(published.status(),201);
+ await key.activate(rules.getByRole('button',{name:'Publish routing rules',exact:true}));
+ await page.getByRole('alert').filter({hasText:'Routing base version is stale'}).waitFor();
+ await page.screenshot({path:'evidence/browser/native-routing-stale-'+width+'.png',fullPage:true});
+ await page.reload();await page.getByRole('link',{name:'Routing & replay',exact:true}).click();
+ await page.getByLabel('Routed integration',{exact:true}).selectOption(source.id);
+ await key.activate(rules.getByText('Rotate or revoke this key',{exact:true}));
+ await key.text(rules.getByLabel(/^Replacement private key/),randomBytes(32).toString('hex'));
+ await key.activate(rules.getByRole('button',{name:'Rotate routed key',exact:true}));
+ await page.getByRole('status').filter({hasText:'Routed key rotated'}).waitFor();
+ assert.equal(await rules.getByLabel(/^Replacement private key/).inputValue(),'');
+ await key.activate(rules.getByRole('button',{name:'Revoke routed key',exact:true}));
+ await page.getByRole('status').filter({hasText:'Routed key revoked'}).waitFor();
+ assert.ok(await rules.getByRole('button',{name:'Revoke routed key',exact:true}).isDisabled());
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await rules.screenshot({path:'evidence/browser/native-routing-revoked-'+width+'.png'});
+}

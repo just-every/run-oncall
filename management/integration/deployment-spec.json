@@ -237,6 +237,12 @@
       "name": "0132_scoped_automation.sql",
       "sha256": "4fcd8119e7e867cc2a462a269a8b1bd1cbdf982e49ce80c000bb78f6854c8819",
       "sql": "-- Additive definitions and exact operational history; credentials remain local.\nCREATE TABLE oc_api_clients (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_api_endpoints (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_api_operations (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_api_outbox (id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE TABLE oc_api_credentials (client TEXT PRIMARY KEY, digest TEXT NOT NULL UNIQUE, window INTEGER NOT NULL DEFAULT 0, requests INTEGER NOT NULL DEFAULT 0);\nCREATE TABLE oc_endpoint_credentials (endpoint TEXT PRIMARY KEY, custody TEXT NOT NULL);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0133_native_routed_keys.sql",
+      "sha256": "bc848633b3bf061c36ca165faafaf616429d340c54d67cd8ddb5f106457bd8db",
+      "sql": "-- Native routed signing keys use the same installation-local encrypted custody as native service keys.\n-- Portable/checkpoint restore deletes all receiving credentials; definitions and receipts remain inactive.\nALTER TABLE oc_intake_credentials ADD COLUMN signing_custody TEXT;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
