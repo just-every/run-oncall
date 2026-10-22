@@ -10,10 +10,7 @@ export async function rateJourney(w,cookie,actor) {
  const configure=(id,value,revision=0)=>req('/api/routing/keys',{id,name:'Rate boundary '+id,provider:'native',scope:['payments'],owner:actor.id,key:value,revision,catchAll:'payments'});
  ok(await configure('rate-main',key),201);ok(await configure('rate-second',second),201);
  const event=(id,source='rate-main')=>({source:'intake:'+source,eventId:'rate-'+id,service:'hint',environment:'hint',key:'rate-'+id,generation:'window',intent:'trigger',severity:'warning',title:'Payment timeout',observedAt:new Date(now).toISOString()});
- const send=async(input,value=key,path='/api/ingress/'+input.source)=>{
-  const response=await fetch(w.origin+path,{method:'POST',headers:{authorization:'Bearer '+value,'content-type':'application/json'},body:typeof input==='string'?input:JSON.stringify(input)});
-  return {status:response.status,value:await response.json(),headers:response.headers};
- };
+ const send=(input,value=key,path='/api/ingress/'+input.source)=>w.send(path,typeof input==='string'?input:JSON.stringify(input),{authorization:'Bearer '+value,'content-type':'application/json'});
  // Documented default boundary, not an assertion about a configuration constant.
  for(let i=0;i<120;i++)ok(await send(event(i)),201);
  const protectedState=()=>{return req('/api/state').then(r=>{const {audit,revision,...value}=ok(r);return value;});};
@@ -96,20 +93,20 @@ export async function providerRateDoors(w,cookie,actor) {
   else if(provider==='splunk'){path='/integrations/generic/20131114/alert/'+key+'/payments';body={message_type:'CRITICAL',entity_id:id,state_message:'Rate boundary'};}
   else if(native){path='/api/ingress/'+id;headers.authorization='Bearer '+key;body={source:id,eventId:id,service:'payments',environment:'production',key:id,generation:'rate',intent:'trigger',severity:'warning',title:'Rate boundary',observedAt:new Date().toISOString()};}
   else {path='/api/monitoring/'+id;headers.authorization='Bearer '+key;body=monitoring(provider,id);}
-  const send=async()=>{const r=await fetch(w.origin+path,{method:'POST',headers:{'content-type':'application/json',...headers},body:JSON.stringify(body)});return {status:r.status,value:await r.json(),headers:r.headers};};
+  const send=()=>w.send(path,JSON.stringify(body),{'content-type':'application/json',...headers});
   const first=await send();assert.ok([200,201,202].includes(first.status),JSON.stringify(first.value));
   const before=ok(await req('/api/archive')),denied=await send();ok(denied,429);assert.ok(Number(denied.headers.get('retry-after'))>0);
   const after=ok(await req('/api/archive'));assert.deepEqual(after.events,before.events);assert.deepEqual(after.alerts,before.alerts);assert.deepEqual(after.intakeReceipts,before.intakeReceipts);
-  if(provider==='opsgenie'){const status=await fetch(w.origin+'/v2/alerts/requests/'+first.value.requestId,{headers});assert.equal(status.status,429);}
+  if(provider==='opsgenie'){const status=await w.send('/v2/alerts/requests/'+first.value.requestId,undefined,headers,'GET');assert.equal(status.status,429);}
  }
  const batchKey=randomBytes(32).toString('hex');
  ok(await req('/api/routing/keys',{id:'rate-batch',name:'Atomic group rate boundary',provider:'alertmanager',scope:['payments'],owner:actor.id,key:batchKey,revision:0,catchAll:'payments'}),201);
  ok(await req('/api/intake/allowances',{id:'intake:rate-batch',requests:600,events:2,revision:ok(await req('/api/state')).revision}));
  const batch=monitoring('alertmanager','batch-first');batch.alerts=Array.from({length:3},(_,i)=>monitoring('alertmanager','batch-'+i).alerts[0]);
  const held=ok(await req('/api/archive'));
- const batchReply=await fetch(w.origin+'/api/monitoring/rate-batch',{method:'POST',headers:{authorization:'Bearer '+batchKey,'content-type':'application/json'},body:JSON.stringify(batch)});
+ const batchReply=await w.send('/api/monitoring/rate-batch',JSON.stringify(batch),{authorization:'Bearer '+batchKey,'content-type':'application/json'});
  assert.equal(batchReply.status,429);assert.equal(batchReply.headers.get('retry-after'),null);
- const batchRefusal=await batchReply.json();assert.equal(batchRefusal.rateLimit.code,'batch_exceeds_allowance');assert.equal(batchRefusal.rateLimit.batchCount,3);assert.equal(batchRefusal.rateLimit.allowance,2);assert.match(batchRefusal.rateLimit.instruction,/Split/);
+ const batchRefusal=batchReply.value;assert.equal(batchRefusal.rateLimit.code,'batch_exceeds_allowance');assert.equal(batchRefusal.rateLimit.batchCount,3);assert.equal(batchRefusal.rateLimit.allowance,2);assert.match(batchRefusal.rateLimit.instruction,/Split/);
  const refused=ok(await req('/api/archive'));assert.deepEqual(refused.events,held.events);assert.deepEqual(refused.alerts,held.alerts);assert.deepEqual(refused.intakeReceipts,held.intakeReceipts);
  const state=ok(await req('/api/state')),policy={id:'intake:limit-grafana',requests:2,events:2,revision:state.revision};
  const observer=ok(await req('/api/members',{name:'Rate observer',role:'viewer',password:'synthetic-rate-observer-password'}),201);

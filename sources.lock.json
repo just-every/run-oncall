@@ -3867,11 +3867,11 @@
       "executable": false
     },
     "tests/routing-native.mjs": {
-      "sha256": "0cf3c1ab81ef2dd41237fb04d03354403be35b0d2fae912d9819e7fe08bacffd",
+      "sha256": "5c7ee3c8d23064d1127d0909fabf25ee1909fba68d00ffbed5397cad73bff38f",
       "executable": false
     },
     "tests/routing-rate.mjs": {
-      "sha256": "28870461109b420e8a3efa32f431c119a6a977cfbef483c5f81ecdaaa1e0edfd",
+      "sha256": "c914769e21994415c9e596f36ba61a098543ec2b6678aa269993ec5f65f1b8f3",
       "executable": false
     },
     "tests/routing.mjs": {
@@ -3915,7 +3915,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "3dcfb4a9fdcace77a430a33d4b9c33ed2e850176447cfa37ce08961b2caaf66d",
+      "sha256": "01c93ff5c75fdf3ea223d80ac92319d3ca3c2d7ece0745a532ff30c27e8c4405",
       "executable": false
     },
     "tsconfig.json": {

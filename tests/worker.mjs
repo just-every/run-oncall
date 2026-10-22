@@ -52,11 +52,24 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
   })
   sent.on('error',transportFailure);sent.end(body)
  })
+ // A sender's raw body (string or bytes) takes its own connection for the same reason, as does the injected clock.
+ const send=(path,raw,headers={},method='POST')=>new Promise((resolve,reject)=>{
+  const transportFailure=error=>{diagnostics.report('HTTP transport failed');reject(error)}
+  const body=raw===undefined?undefined:Buffer.from(raw)
+  const sent=http.request(origin+path,{method,agent:false,headers:{...headers,...(body?{'content-length':body.length}:{})}},res=>{
+   const chunks=[];res.on('data',c=>chunks.push(c));res.on('error',transportFailure);res.on('end',()=>{
+    const text=Buffer.concat(chunks).toString('utf8'),received=new Headers();let value;try{value=JSON.parse(text)}catch{value=text}
+    for(const [name,v] of Object.entries(res.headers))for(const item of [v].flat())received.append(name,item)
+    resolve({status:res.statusCode,value,headers:received})
+   })
+  })
+  sent.on('error',transportFailure);sent.end(body)
+ })
  try{await start()}catch(error){await stop();await rm(dir,{recursive:true,force:true});throw error}
  failureHandler=()=>diagnostics.report('test failure')
  process.once('uncaughtExceptionMonitor',failureHandler)
  process.once('exit',code=>{if(code!==0)failureHandler()})
- return {origin,vars,sql,statements,request,start,stop,time:async at=>{if(!clock)throw Error('Clock not injected');const r=await fetch(origin+'/__test_clock',{method:'POST',body:String(at)});if(!r.ok)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
+ return {origin,vars,sql,statements,request,send,start,stop,time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
 }
 
 // The move-in screen's transport: the owner-session import door, one namespace per vendor. preview uploads the

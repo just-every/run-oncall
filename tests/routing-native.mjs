@@ -15,8 +15,8 @@ export async function nativeRouting(w,cookie,actor) {
  const send=async(input,secret=bearer,mode='bearer',path='/api/ingress/'+input.source)=>{
   const body=typeof input==='string'||Buffer.isBuffer(input)?input:JSON.stringify(input),timestamp=String(Math.floor(Date.now()/1000));
   const headers=mode==='signed'?{'x-oncall-timestamp':timestamp,'x-oncall-signature':createHmac('sha256',secret).update(timestamp+'.'+body).digest('hex')}:{authorization:'Bearer '+secret};
-  const response=await fetch(w.origin+path,{method:'POST',headers:{'content-type':'application/json',...headers},body});
-  return {status:response.status,value:await response.json()};
+  const response=await w.send(path,body,{'content-type':'application/json',...headers});
+  return {status:response.status,value:response.value};
  };
  const input=event('native-payments'),receipt=ok(await send(input),201);
  assert.deepEqual(Object.keys(receipt).sort(),['duplicate','id','eventId','service','observedAt','acceptedAt'].sort());
@@ -115,8 +115,8 @@ export async function nativeCapacity() {
    ok(await req('/api/sources',{id:'capacity-a',key:keys.a,scopes:['payments']}));ok(await req('/api/sources',{id:'capacity-b',key:keys.b,scopes:['search']}));
    ok(await req('/api/routing/keys',{id:'capacity-pd'+suffix,name:'Capacity PagerDuty',provider:'pagerduty',scope:['payments'],owner:actor.id,key:keys.pd,revision:0,catchAll:'payments'}),201);
   };
-  const post=async(id,secret,raw)=>{const response=await fetch(w.origin+'/api/ingress/'+id,{method:'POST',headers:{authorization:'Bearer '+secret,'content-type':'application/json'},body:raw});return {status:response.status,value:await response.json(),headers:response.headers};};
-  const pager=async n=>{const response=await fetch(w.origin+'/v2/enqueue',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({routing_key:keys.pd,event_action:'trigger',dedup_key:'capacity-'+n,payload:{summary:'Capacity '+n,source:'capacity',severity:'warning'}})});return {status:response.status,value:await response.json()};};
+  const post=(id,secret,raw)=>w.send('/api/ingress/'+id,raw,{authorization:'Bearer '+secret,'content-type':'application/json'});
+  const pager=n=>w.send('/v2/enqueue',JSON.stringify({routing_key:keys.pd,event_action:'trigger',dedup_key:'capacity-'+n,payload:{summary:'Capacity '+n,source:'capacity',severity:'warning'}}),{'content-type':'application/json'});
   await w.time(Date.now());await configure('');
   // Separated prefixes travel with archive restore; restoring an earlier archive removes later custody rows with their receipts.
   for(let n=1;n<=4;n++)ok(await post('capacity-a',keys.a,body(n)),202);
