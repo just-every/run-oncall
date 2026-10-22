@@ -376,4 +376,4 @@ Run on 19 October 2026 (10:07–10:09 UTC) against `cd1ef1c3748cbaa43bcda89470ab
 
 ## Clause status totals
 
-**29 done**, **26 partial**, **17 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
+**28 done**, **27 partial**, **17 missing**; 72 clauses. Every OC-001–072 clause has a journey above; the final CONTRACT.md table is the implementation evidence index.
