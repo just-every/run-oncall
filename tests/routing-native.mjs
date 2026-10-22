@@ -154,14 +154,20 @@ export async function nativeCapacity({persistTo}={}) {
   let sequence=10000;
   const doors=[{name:'native-incomplete-retry',run:()=>post('capacity-a',keys.a,body(10)),status:202},{name:'compatible-admission',run:()=>pager(sequence++),status:202},{name:'monitoring-retry',run:monitoring,status:202},{name:'incidents',run:()=>req('/api/triage'),status:200},{name:'alerts',run:()=>req('/api/state'),status:200},{name:'audit-page',run:()=>req('/api/audit/export?limit=25'),status:200}];
   seedReceipts(w,250);const small=await capacitySamples(w,doors,'small');
-  seedReceipts(w,9991);const large=await capacitySamples(w,doors,'capacity');
+  seedReceipts(w,9990);
+  const originalGroup=JSON.parse(w.sql("SELECT data FROM oc_alerts WHERE json_extract(data,'$.key')='capacity-1' ORDER BY ordinal LIMIT 1")[0].data);
+  ok(await pager(1),202);
+  const grouped=JSON.parse(w.sql("SELECT data FROM oc_intake_receipts WHERE json_extract(data,'$.key')='capacity-1' ORDER BY ordinal DESC LIMIT 1")[0].data);
+  assert.equal(grouped.alert,originalGroup.id,'compatible admission finds an open generation outside the recent page');
+  assert.equal(grouped.generation,originalGroup.generation);
+  const large=await capacitySamples(w,doors,'capacity');
   assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_receipts')[0].n,9999);
   ok(await post('capacity-a',keys.a,body(1000)),202);
   const exact=await capacitySamples(w,doors.map(d=>d.name==='compatible-admission'?{...d,name:'compatible-capacity-refusal',status:429}:d),'exact-capacity',{warm:false});assert.equal(exact.before,10000);assert.equal(exact.after,10000);
   // Public cursor pages expose all held history while each response remains bounded.
   for(const collection of ['alerts','events','intakeReceipts','audit']) {
    const first=ok(await req('/api/records/'+collection+'?limit=25'));
-   assert.equal(first.items.length,25);assert.ok(first.total>=10000&&first.nextCursor);
+   assert.equal(first.items.length,25);assert.equal(first.total,w.sql('SELECT COUNT(*) AS n FROM '+({alerts:'oc_alerts',events:'oc_events',intakeReceipts:'oc_intake_receipts',audit:'oc_audit'})[collection])[0].n);assert.ok(first.nextCursor);
    const next=ok(await req('/api/records/'+collection+'?limit=25&cursor='+encodeURIComponent(first.nextCursor)));
    assert.equal(next.items.length,25);assert.equal(next.total,first.total);assert.ok(next.items.every(item=>!first.items.some(previous=>previous.id===item.id)));
   }
