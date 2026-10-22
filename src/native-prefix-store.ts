@@ -1,6 +1,6 @@
-import { fail, type State } from './family/response-operations/domain';
-import type { IntakeReceipt } from './intake/model';
-import { nativeIncompleteDetails, nativePrefixMaximum, nativePrefixReference } from './native-incomplete-model';
+import { fail, type State } from './family/response-operations/domain.ts';
+import type { IntakeReceipt } from './intake/model.ts';
+import { nativeIncompleteDetails, nativePrefixMaximum, nativePrefixReference } from './native-incomplete-model.ts';
 
 /** A stored receipt keeps encoding, length and request hash; the bytes live in oc_native_prefixes. */
 export function storedReceipt(receipt:IntakeReceipt):IntakeReceipt {

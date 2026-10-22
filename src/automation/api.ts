@@ -1,3 +1,4 @@
+import {selectWorkspaceIds} from '../workspace-selection';
 import { command, fail, Fault, text, type State, type Member } from '../family/response-operations/domain';
 import { loadWorkspace, workspaceWrite } from '../workspace-store';
 import { auditIdentity, auditKind, setAuditSubject } from '../audit-store';
@@ -182,6 +183,7 @@ export function installVersionedApi(api:any,deps:Deps) {
    if(family==='services') {const current=state.services.find(s=>s.id===service)!;if(input.etag!==await changeHash(JSON.stringify(projectService(current,client))))fail('Service changed; supply its current etag',409);}
    const permitted=family==='services'?['service']:family==='actions'?['action','complete']:['declare','transition','reassign','assign-role'];
    if(!permitted.includes(input.type))fail('Action is not available in this API family',403);
+   if(Array.isArray(input.alerts))await selectWorkspaceIds(c.env.DB,state,'alerts',input.alerts);
    result=command(state,actor,input);
   }
   const operation:Operation={id:crypto.randomUUID(),client:client.id,key:keyHash,request,service,resource:family,entity:result.id,revision:result.revision??1,at:new Date().toISOString()};

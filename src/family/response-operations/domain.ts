@@ -1,3 +1,4 @@
+import {countRows} from '../../workspace-accounting.ts';
 import {validateAllowances,type KeyAllowance} from '../../intake-rate/model.ts';
 import { enqueueEvents, machineAuthority, validateAutomation, type Client, type Endpoint, type Operation, type Outbox } from '../../automation/model.ts';
 import { validateEmailArchive } from '../../email/archive.ts';
@@ -282,7 +283,7 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     )
   )
     fail('Unknown "service" / "environment" combination');
-  if (state.events.length >= 10000)
+  if (countRows(state, 'events') >= 10000)
     fail("Local event capacity reached; export before extending capacity", 429);
   const event: Event = {
     ...signal,

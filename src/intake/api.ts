@@ -1,3 +1,4 @@
+import {selectIntakeAdmission,selectIncompleteIntake,selectWorkspaceIds} from '../workspace-selection.ts';
 import {rateFaultBody} from '../intake-rate/fault';
 import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
 import { fail, Fault } from '../family/response-operations/domain.ts';
@@ -17,14 +18,18 @@ export function installCompatibleIntake(api:any,deps:IntakeDependencies) {
     const key=provider==='pagerduty-v2'?payload.routing_key:provider==='pagerduty-v1'?payload.service_key:provider==='opsgenie'?(c.req.header('authorization')??'').replace(/^GenieKey /,''):c.req.param('endpointKey');
     const configured=await intakeCredential(c,deps,key,provider.startsWith('pagerduty')?'pagerduty':provider);
     const {state,source,digest}=configured,revision=state.revision;
-    const rate=await beginRate(c,deps,state,{id:"intake:"+source.id,name:source.name,owner:source.routing?.owner??source.createdBy},credentialGuard(source,digest)),before=structuredClone(state);
+    const rate=await beginRate(c,deps,state,{id:"intake:"+source.id,name:source.name,owner:source.routing?.owner??source.createdBy},credentialGuard(source,digest));
     const action=provider==='opsgenie'&&c.req.param('action')?({close:'recover',acknowledge:'acknowledge',notes:'note'} as const)[c.req.param('action') as 'close'|'acknowledge'|'notes']:undefined;
     if(action&&c.req.query('identifierType')!=='alias')fail('Use identifierType=alias for compatible alert actions');
     let input:ReturnType<typeof providerInput>|undefined,diagnostic:string|undefined;
     try {input=providerInput(provider,payload,{secret:configured.key,...(action?{action,alias:c.req.param('identifier')}:{}) ,...(provider==='splunk'?{routingKey:c.req.param('routingKey')}:{})});}
     catch(error) {if(!(error instanceof Fault))throw error;diagnostic=error.message;}
-    const receipt=input?receiveCompatible(state,source,provider,input,new Date().toISOString(),source.routing?{input:routingInput(provider,payload,input,configured.key,provider==='splunk'?c.req.param('routingKey'):undefined)}:undefined):undefined;
+    const routed=input&&source.routing?{input:routingInput(provider,payload,input,configured.key,provider==='splunk'?c.req.param('routingKey'):undefined)}:undefined;
     const incomplete=request.incomplete||!input;
+    if(input)await selectIntakeAdmission(c.env.DB,state,source,{key:input.key,routingInput:routed?.input});
+    if(incomplete)await selectIncompleteIntake(c.env.DB,state,source,request.sha256);
+    const before=structuredClone(state);
+    const receipt=input?receiveCompatible(state,source,provider,input,new Date().toISOString(),routed):undefined;
     const rawIdentity=provider==='pagerduty-v2'?payload.dedup_key:provider==='pagerduty-v1'?payload.incident_key:provider==='opsgenie'?c.req.param('identifier')??payload.alias:payload.entity_id;
     const readable=receipt?[receipt.key]:typeof rawIdentity==='string'&&rawIdentity? [monitoringSanitizer(configured.key).bound(rawIdentity,200)]:[];
     const held=incomplete?retainIncomplete(state,source,provider,incompleteEvidence(request,readable,input?0:1,diagnostic?[diagnostic]:[])):undefined;
@@ -55,6 +60,7 @@ export function installCompatibleIntake(api:any,deps:IntakeDependencies) {
     try {
       const key=(c.req.header('authorization')??'').replace(/^GenieKey /,''),{state,source,digest}=await intakeCredential(c,deps,key,'opsgenie');
       await beginRate(c,deps,state,{id:'intake:'+source.id,name:source.name,owner:source.routing?.owner??source.createdBy},credentialGuard(source,digest));
+      await selectWorkspaceIds(c.env.DB,state,'intakeReceipts',[c.req.param('requestId')]);
       const receipt=state.intakeReceipts?.find(r=>r.id===c.req.param('requestId')&&r.source===source.id);
       if(!receipt)return c.json({message:'Request not found',code:40400},404);
       return c.json({data:{action:receipt.action==='trigger'?'Create':receipt.action==='recover'?'Close':receipt.action==='note'?'AddNote':'Acknowledge',processedAt:receipt.acceptedAt,isSuccess:true,status:receipt.outcome,alias:receipt.key},requestId:receipt.id,took:0});

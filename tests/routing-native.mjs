@@ -158,6 +158,13 @@ export async function nativeCapacity({persistTo}={}) {
   assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_receipts')[0].n,9999);
   ok(await post('capacity-a',keys.a,body(1000)),202);
   const exact=await capacitySamples(w,doors.map(d=>d.name==='compatible-admission'?{...d,name:'compatible-capacity-refusal',status:429}:d),'exact-capacity',{warm:false});assert.equal(exact.before,10000);assert.equal(exact.after,10000);
+  // Public cursor pages expose all held history while each response remains bounded.
+  for(const collection of ['alerts','events','intakeReceipts','audit']) {
+   const first=ok(await req('/api/records/'+collection+'?limit=25'));
+   assert.equal(first.items.length,25);assert.ok(first.total>=10000&&first.nextCursor);
+   const next=ok(await req('/api/records/'+collection+'?limit=25&cursor='+encodeURIComponent(first.nextCursor)));
+   assert.equal(next.items.length,25);assert.equal(next.total,first.total);assert.ok(next.items.every(item=>!first.items.some(previous=>previous.id===item.id)));
+  }
   const usage=()=>w.sql("SELECT COALESCE(SUM(requests),0) AS n FROM oc_key_rate_usage WHERE key_id='source:capacity-a'")[0].n,usageBefore=usage();
   for(const refused of [await post('capacity-a',keys.a,body(1001)),await post('capacity-b',keys.b,body(1002)),await post('capacity-b',keys.b,'{"source":')]) {
    assert.equal(refused.status,429);assert.match(refused.value.error,/Local intake receipt capacity reached; export before extending capacity/);assert.equal(refused.headers.get('retry-after'),null);

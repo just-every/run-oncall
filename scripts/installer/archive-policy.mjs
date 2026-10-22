@@ -15,6 +15,8 @@ export default {
   // Receiving opt-in is local authority; keep plans, approvals and replay journals as history.
   if(tables.ik_door_settings)await db.prepare('UPDATE "'+tables.ik_door_settings.replaceAll('"','""')+'" SET enabled=0').run()
   const control=(await read('workspace_control'))[0],paging=(await read('paging_control'))[0]
+  // Staged restore changes rows with destination triggers suspended; totals are rebuilt once after publication.
+  if(control&&Object.hasOwn(control,'storage_stats'))await db.prepare('UPDATE "'+tables.workspace_control.replaceAll('"','""')+'" SET storage_stats=NULL').run()
   const coordination={schemaVersion:1,revision:control?.revision??0}
   for(const key of ['members','services','policies','events','alerts','incidents','audit'])coordination[key]=(await read('oc_'+key)).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))
   const triage=(tables.oc_triage ? await read('oc_triage') : []).sort((a,b)=>a.ordinal-b.ordinal).map(row=>JSON.parse(row.data))

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Form } from '../forms';
+import { useRecordPage } from '../useRecordPage';
+import { RecordPager } from '../app/RecordPager';
 import type { State } from '../family/response-operations/domain';
 import type { IntakeProvider, IntakeReceipt, IntakeSource } from './model';
 import { CompatibleTest, type IntakeRun, type CompatibleIntakeSource } from './CompatibleTest';
@@ -20,13 +22,14 @@ function outcomeText(receipt: IntakeReceipt) {
 function IntakeReceipts({state, serviceName}: {state: State; serviceName: (id: string) => string}) {
   const [source, setSource] = useState('');
   const sources = state.intakeSources ?? [];
-  const receipts = (state.intakeReceipts ?? []).filter(item => !source || item.source === source).reverse().sort((a, b) => b.acceptedAt.localeCompare(a.acceptedAt));
-  const visible = receipts.slice(0, 20);
+  const pager = useRecordPage('intakeReceipts', state.revision, { source });
+  const visible = pager.data?.items ?? [];
   return <div className="intake-receipts"><h3>Compatible intake receipts</h3>
     <p>Accepted requests record their outcomes here. An acceptance is not delivery or paging evidence. Source recovery does not resolve a declared incident.</p>
     <label className="field"><span id="intake-receipt-filter-label">Filter receipts by source</span><select aria-labelledby="intake-receipt-filter-label" value={source} onChange={e => setSource(e.target.value)}><option value="">All compatible sources</option>{sources.map(item => <option key={item.id} value={item.id}>{item.name} · {item.id}</option>)}</select></label>
-    <p role="status">Showing {visible.length} of {receipts.length} receipts{source ? ' for this source' : ''}, newest first (up to 20).</p>
-    {!visible.length ? <p>No accepted compatible requests{source ? ' for this source' : ''} yet.</p> : <ol className="intake-list">{visible.map(receipt => <li key={receipt.id}>
+    <RecordPager pager={pager} label={source ? 'receipts for this source' : 'compatible intake receipts'} />
+    {pager.data?.total === 0 && <p>No accepted compatible requests{source ? ' for this source' : ''} yet.</p>}
+    {!!visible.length && <ol className="intake-list">{visible.map(receipt => <li key={receipt.id}>
       <strong>{outcomeText(receipt)}</strong>
       <p>{sources.find(item => item.id === receipt.source)?.name ?? receipt.source} · {receipt.provider} · {receipt.service ? serviceName(receipt.service) : 'Unrouted'}</p>
       <p>{receipt.title || 'No title supplied for this action'}</p>

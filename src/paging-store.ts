@@ -1,4 +1,5 @@
-import { workspaceQueries, decodeWorkspace } from './workspace-store'
+import { workspaceQueries, fullWorkspaceQueries, decodeWorkspace } from './workspace-store'
+import {ensureAccounting,guardWorkspaceExport} from './workspace-accounting'
 import { parseHandoffRow } from './handoff-store'
 import { fail, type State } from './family/response-operations/domain'
 import { pause, type EscalationJob, type SyntheticReceipt } from './family/response-operations/escalation'
@@ -8,6 +9,7 @@ import type { PagingArchive, PagingCallback } from './family/response-operations
 
 export type PagingSnapshot = { revision:number, workspace:State, archive:PagingArchive }
 export async function pagingSnapshot(db:D1Database):Promise<PagingSnapshot> {
+  await ensureAccounting(db)
   const tables=['paging_control','workspace','paging_schedules','paging_policies','paging_jobs','paging_receipts','paging_callbacks']
   const rows=await db.batch(tables.flatMap(table=>table==='workspace'?workspaceQueries.map(query=>db.prepare(query)):[db.prepare(`SELECT * FROM ${table} ORDER BY rowid`)]))
   return decodePagingRows(rows)
@@ -24,9 +26,12 @@ function decodePagingRows(rows:D1Result<unknown>[]):PagingSnapshot {
   return { revision:control.revision,workspace:state,archive:{schemaVersion:1,mode:'synthetic-only',schedules:values(2),policies:values(3),jobs:values(4),receipts:values(5),callbacks:values(6)} }
 }
 /** Recovery alone joins communications; paging dispatch never depends on it. */
-export async function recoverySnapshot(db:D1Database) {
+export async function recoverySnapshot(db:D1Database,limit?:number) {
+  await ensureAccounting(db)
+  if(limit!==undefined)await guardWorkspaceExport(db,limit)
+  const queries=limit===undefined?workspaceQueries:fullWorkspaceQueries
   const tables=['paging_control','workspace','paging_schedules','paging_policies','paging_jobs','paging_receipts','paging_callbacks','handoff_state']
-  const rows=await db.batch(tables.flatMap(table=>table==='workspace'?workspaceQueries.map(query=>db.prepare(query)):[db.prepare(`SELECT * FROM ${table} ORDER BY rowid`)]))
+  const rows=await db.batch(tables.flatMap(table=>table==='workspace'?queries.map(query=>db.prepare(query)):[db.prepare(`SELECT * FROM ${table} ORDER BY rowid`)]))
   return {...decodePagingRows(rows),handoffs:await parseHandoffRow(rows.at(-1)!.results[0])}
 }
 export function bound(archive:PagingArchive) {

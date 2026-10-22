@@ -1,3 +1,4 @@
+import {selectWorkspaceIds} from '../workspace-selection';
 import { fail, type State } from '../family/response-operations/domain.ts';
 import { changeAlertUrgency, draftFields, exact, publishedUrgency, publishUrgency } from './model.ts';
 import { evaluateUrgency, validateUrgencyRule } from './rules.ts';
@@ -17,6 +18,7 @@ export function installUrgency(api: any, deps: Dependencies) {
   });
   api.post('/api/urgency/alerts/:id', async (c: any) => {
     const input = await deps.body(c), state = await deps.state(c), revision = state.revision;
+    await selectWorkspaceIds(c.env.DB,state,'alerts',[c.req.param('id')]);
     const result = changeAlertUrgency(state, c.get('actor'), c.req.param('id'), input, new Date().toISOString());
     if (result.changed) await deps.save(c.env.DB, state, revision, deps.guard(c));
     return c.json(result.alert);

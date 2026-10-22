@@ -1,3 +1,4 @@
+import {countRows} from '../workspace-accounting.ts';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
 import { intakeSourceIdentity, type IntakeReceipt, type IntakeSource } from '../intake/model.ts';
@@ -14,7 +15,7 @@ export function receiveMonitoring(state:State,source:IntakeSource,input:Monitori
   const service=routing?routing.service:source.service;
   const prior=!options.readmission?state.intakeReceipts?.find(r=>r.source===source.id&&r.service===service&&!r.routing?.readmission&&(options.incomplete?r.incomplete?.sha256===options.incomplete.sha256:r.monitoring?.eventId===input.eventId)):undefined;
   if(prior)return {receipt:prior,duplicate:true};
-  if((state.intakeReceipts?.length??0)>=intakeReceiptCapacity)fail('Local intake receipt capacity reached; export before extending capacity',429);
+  if(countRows(state,'intakeReceipts')>=intakeReceiptCapacity)fail('Local intake receipt capacity reached; export before extending capacity',429);
   const id=crypto.randomUUID(),identity=intakeSourceIdentity(source.id);
   let event:string|null=null,alert:string|null=null,generation:string|null=null,outcome:IntakeReceipt['outcome']='unrouted';
   if(service!==null) {

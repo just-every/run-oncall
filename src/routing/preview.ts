@@ -4,10 +4,13 @@ import type { RoutingPreview, RoutingVersion } from './types.ts';
 import { evaluateRouting } from './engine.ts';
 import { routingDate } from './definition.ts';
 
-export function previewRouting(state:State,source:IntakeSource,draft:RoutingVersion,input:any):RoutingPreview {
+export function validateRoutingPreviewInput(input:any) {
   if(input.receiptIds!==undefined&&(!Array.isArray(input.receiptIds)||input.receiptIds.length>10000||input.receiptIds.some((id:unknown)=>typeof id!=='string')||new Set(input.receiptIds).size!==input.receiptIds.length))fail('Choose up to 10,000 distinct receipt IDs');
   if(input.from!==undefined&&!routingDate(input.from)||input.to!==undefined&&!routingDate(input.to)||input.from&&input.to&&Date.parse(input.from)>Date.parse(input.to))fail('Choose a valid routing replay time window');
   if(input.receiptIds!==undefined&&(input.from!==undefined||input.to!==undefined))fail('Choose receipt IDs or a time window');
+}
+export function previewRouting(state:State,source:IntakeSource,draft:RoutingVersion,input:any):RoutingPreview {
+  validateRoutingPreviewInput(input);
   const all=(state.intakeReceipts??[]).filter(r=>r.source===source.id),ids=input.receiptIds as string[]|undefined;
   if(ids?.some(id=>!all.some(r=>r.id===id)))fail('Replay receipt does not belong to this routed key');
   const receipts=all.filter(r=>(!ids||ids.includes(r.id))&&(!input.from||Date.parse(r.acceptedAt)>=Date.parse(input.from))&&(!input.to||Date.parse(r.acceptedAt)<=Date.parse(input.to))).sort((a,b)=>a.acceptedAt.localeCompare(b.acceptedAt));

@@ -249,8 +249,10 @@ try {
   const released = spawnSync(process.execPath, [...cli, "d1", "migrations", "apply", "DB", "--config", legacyConfig, "--local", "--persist-to", persist], { encoding: "utf8", env: { ...process.env, CI: 'true', WRANGLER_SEND_METRICS: 'false' } });
   assert.equal(released.status, 0, "released-schema migrations apply before the additive upgrade");
   const heldTables = rows("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").map(row => row.name);
+  // Preserve every prior column while allowing additive schema columns.
+  const heldColumns=new Map(heldTables.map(name=>[name,rows('PRAGMA table_info("'+name.replaceAll('"','""')+'")').map(column=>column.name)]));
   const snapshotHeldTables = () => {
-    const command = heldTables.map(name => 'SELECT * FROM "' + name.replaceAll('"', '""') + '"').join(';');
+    const command = heldTables.map(name => 'SELECT '+heldColumns.get(name).map(column=>'"'+column.replaceAll('"','""')+'"').join(',')+' FROM "' + name.replaceAll('"', '""') + '"').join(';');
     const result = spawnSync(process.execPath, [...cli, "d1", "execute", "DB", "--local", "--persist-to", persist, "--command", command, "--json"], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
     assert.equal(result.status, 0, "held application table snapshot succeeds");
     const snapshot = JSON.parse(result.stdout).map(result => result.results.map(row => JSON.stringify(row)).sort());

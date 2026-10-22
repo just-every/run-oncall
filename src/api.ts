@@ -1,3 +1,6 @@
+import {installRecordPages} from './record-pages';
+import {installAuditExport} from './audit-export';
+import {selectWorkspaceIds,selectNativeSignal,selectIncompleteIntake,selectNativeIncompleteSource} from './workspace-selection';
 import {hydrateNativePrefixes,requireNativePrefixValues} from './native-prefix-store';
 import {rateFaultBody} from './intake-rate/fault';
 import {readNativeRequest} from './native-request';
@@ -13,7 +16,7 @@ import { installMonitoringIntake } from './monitoring/api';
 import { compatiblePath, monitoringPath } from './intake/paths';
 import { installCompatibleIntake } from './intake/api';
 import { nativeRoutedIngress } from './routing/native';
-import { nativeIncompleteSource, parseNativeRequest, retainNativeIncomplete } from './native-incomplete';
+import { nativeIncompleteIdentity, nativeIncompleteSource, parseNativeRequest, retainNativeIncomplete } from './native-incomplete';
 import { installRoutingManagement } from './routing/management';
 import { installUrgency } from './urgency/api';
 import { serviceUrgency } from './urgency/model';
@@ -25,7 +28,7 @@ import { pauseChangeSources } from "./changes/model";
 import { saveTriageItem } from "./triage-store";
 import { installTriage, memberWorkspace } from "./triage-api";
 import { linkRestoredOwner, restoredAdministrators } from './identity-link';
-import { checkWorkspaceSize, loadWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
+import { checkWorkspaceSize, loadWorkspace, loadIntakeWorkspace, loadCompleteWorkspace, workspaceWrite, workspaceRows } from './workspace-store';
 import { nativeMember } from './native-member';
 import { installNativeSources, refuseKeyEcho, sealHeldSourceKeys, type NativeSource } from './native-sources';
 import { runtimeBindings, type Bindings } from './auth.server';
@@ -221,7 +224,7 @@ api.get("/api/workspace", async (c) => {
   const current = await authorizedState(c);
   return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", state: memberWorkspace(current, member)});
 });
-async function session(c: any, state: State): Promise<Member | null> {
+async function session(c: any, state?: State): Promise<Member | null> {
   const token = readSessionCookie(c.req.raw);
   if (!token) {
     const native = await nativeMember(c.env, c.req.raw);
@@ -239,7 +242,7 @@ async function session(c: any, state: State): Promise<Member | null> {
     if(!native||native.digest!==`native:${row.operator_session}`||native.member.id!==row.member)return null;
   }
   const member = row
-    ? (state.members.find((m) => m.id === row.member && m.active) ?? null)
+    ? (state?state.members.find((m) => m.id === row.member && m.active) ?? null:await c.env.DB.prepare("SELECT data FROM oc_members WHERE id=? AND json_extract(data,'$.active')=1").bind(row.member).first().then((r:any)=>r?JSON.parse(r.data):null))
     : null;
   if (member) { c.set("sessionDigest", digest); auditIdentity(c.env.DB,{actor:{kind:"member",id:member.id}}); }
   return member;
@@ -328,7 +331,7 @@ api.post("/api/login", async (c) => {
   return issue(c, member, record, state.revision);
 });
 api.post("/api/logout", async (c) => {
-  await session(c,await load(c.env.DB));
+  await session(c);
   const token = readSessionCookie(c.req.raw);
   if (token)
     await c.env.DB.prepare("DELETE FROM sessions WHERE token=?")
@@ -343,17 +346,20 @@ api.post("/api/ingress/:source", async (c) => {
   )
     .bind(c.req.param("source"))
     .first<NativeSource>();
-  if (!source) return nativeRoutedIngress(c,{load,save});
+  if (!source) return nativeRoutedIngress(c,{load:loadIntakeWorkspace,save});
   const nativeBody=await readNativeRequest(c,source),key=nativeBody.key;
   const authority = {
     sql: "EXISTS(SELECT 1 FROM sources WHERE id=? AND digest=? AND signing_custody IS ? AND scopes=?)",
     values: [c.req.param("source"), source.digest, source.signing_custody, source.scopes],
   };
-  const state = await load(c.env.DB), before=structuredClone(state);
+  const state = await loadIntakeWorkspace(c.env.DB);
   const rate=await beginRate(c,{load,save},state,{id:'source:'+c.req.param('source'),name:c.req.param('source'),owner:state.members.find(m=>m.active&&m.role==='admin')!.id},authority);
   const parsed = parseNativeRequest(nativeBody);
   if (!parsed) {
+    await selectNativeIncompleteSource(c.env.DB,state,await nativeIncompleteIdentity(c.req.param("source"),source));
     const custody = await nativeIncompleteSource(state, c.req.param("source"), source);
+    await selectIncompleteIntake(c.env.DB,state,custody,nativeBody.sha256);
+    const before=structuredClone(state);
     const result = await retainNativeIncomplete(state, custody, nativeBody, key);
     if (!result.duplicate) await saveRate(c,{load,save},state,state.revision,rate,admittedCount(before,state));
     return c.json({duplicate:result.duplicate,id:result.receipt.id,service:result.receipt.service,acceptedAt:result.receipt.acceptedAt,truncation:true,incomplete:{receipt:result.receipt.id}},202);
@@ -363,7 +369,8 @@ api.post("/api/ingress/:source", async (c) => {
   refuseKeyEcho(Object.values(signal), key);
   if (!JSON.parse(source.scopes).includes(signal.service))
     fail('"service" must be an internal service ID authorized for this source', 403);
-  const revision = state.revision;
+  await selectNativeSignal(c.env.DB,state,signal);
+  const before=structuredClone(state),revision = state.revision;
   const result = admit(state, signal);
   if (!result.duplicate) await saveRate(c,{load,save},state,revision,rate,admittedCount(before,state));
   // Source credentials admit signals; they never grant workspace read access.
@@ -380,13 +387,12 @@ api.post("/api/ingress/:source", async (c) => {
 const changeDeps = {body, load, state: authorizedState, save, guard: sessionGuard};
 installVersionedApi(api, changeDeps);
 installChangeIntake(api, changeDeps);
-installCompatibleIntake(api, changeDeps);
-installMonitoringIntake(api, changeDeps);
+installCompatibleIntake(api, {...changeDeps,load:loadIntakeWorkspace});
+installMonitoringIntake(api, {...changeDeps,load:loadIntakeWorkspace});
 api.get("/api/identity-link/administrators",restoredAdministrators);
 api.post("/api/identity-link",async c=>linkRestoredOwner(c,await body(c)));
 api.use("/api/*", async (c, next) => {
-  const state = await load(c.env.DB);
-  const actor = await session(c, state);
+  const actor = await session(c);
   if (!actor) {
     await discardDeniedBody(c);
     return c.json({ error: "Sign in required" }, 401);
@@ -409,6 +415,7 @@ api.post("/api/command", async (c) => {
   const input = await body(c);
   const state = await load(c.env.DB);
   const revision = state.revision;
+  if(Array.isArray(input.alerts))await selectWorkspaceIds(c.env.DB,state,'alerts',input.alerts);
   const result = command(state, c.get("actor"), input);
   if(input.type === "declare" && result && typeof result === "object" && "id" in result) setAuditSubject(c.env.DB,"entity",String(result.id));
   await save(c.env.DB, state, revision, sessionGuard(c));
@@ -419,6 +426,7 @@ api.post("/api/replay", async (c) => {
   const state = await authorizedState(c);
   if (!Array.isArray(input.events) || input.events.length > 200)
     fail("Replay needs up to 200 events");
+  for(const event of input.events)await selectNativeSignal(c.env.DB,state,signalInput(event));
   const evaluatedAt = new Date().toISOString();
   return c.json({
     sideEffects: false,
@@ -496,21 +504,12 @@ api.post("/api/password", async (c) => {
   if (r[0].meta.changes !== 1) fail("Authority changed; reload", 409);
   return c.json({ changed: true });
 });
-api.get("/api/audit/export", async (c) => {
-  await authorizedState(c, true);
-  const guard = sessionGuard(c);
-  const rows = await c.env.DB.batch([
-    c.env.DB.prepare(`SELECT 1 AS allowed FROM oc_members m WHERE m.id=? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin' AND ${guard.sql}`).bind(c.get('actor').id,...guard.values),
-    c.env.DB.prepare(`SELECT id,kind,feature,actor,subject,source,at,before_revision AS beforeRevision,after_revision AS afterRevision,outcome,workspace_before AS workspaceBefore,workspace_after AS workspaceAfter,paging_before AS pagingBefore,paging_after AS pagingAfter,handoff_before AS handoffBefore,handoff_after AS handoffAfter FROM oc_admin_audit WHERE ${guard.sql} AND EXISTS(SELECT 1 FROM oc_members WHERE id=? AND json_extract(data,'$.role')='admin' AND json_extract(data,'$.active')=1) ORDER BY ordinal`).bind(...guard.values,c.get('actor').id),
-  ]);
-  if(!rows[0].results.length) fail('Current admin required',403);
-  c.header('Content-Disposition','attachment; filename="oncall-audit.json"');
-  return c.json({schemaVersion:1,rows:rows[1].results});
-});
+installRecordPages(api,authorizedState);
+installAuditExport(api,authorizedState,sessionGuard);
 api.get("/api/archive", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);
   c.header("Content-Disposition", 'attachment; filename="oncall-archive.json"');
-  return c.json(await hydrateNativePrefixes(c.env.DB,await authorizedState(c, true),archiveRestoreLimit));
+  return c.json(await hydrateNativePrefixes(c.env.DB,await loadCompleteWorkspace(c.env.DB,archiveRestoreLimit),archiveRestoreLimit));
 });
 api.post("/api/restore", async (c) => {
   if (c.get("actor").role !== "admin") fail("Admin required", 403);
@@ -600,7 +599,8 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   return sessionResponse(c, sessionToken, value.members.find((m) => m.id === target)!, details);
 }
 api.get("/api/recovery/checkpoint", async (c) => {
-  const snapshot = await recoverySnapshot(c.env.DB);
+  await authorizedState(c,true);
+  const snapshot = await recoverySnapshot(c.env.DB,checkpointRestoreLimit);
   if (!snapshot.workspace.members.some(m => m.id === c.get("actor").id && m.active && m.role === "admin"))
     fail("Current admin required", 403);
   const version = c.req.query("version") ?? "2";

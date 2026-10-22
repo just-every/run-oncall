@@ -1,3 +1,4 @@
+import {countRows} from './workspace-accounting.ts';
 import {Buffer} from 'node:buffer';
 import type {NativeRequest} from './native-request';
 import { fail, Fault, signalInput, type State } from './family/response-operations/domain';
@@ -37,10 +38,14 @@ function refuseRetainedCredential(raw:string,key:string) {
 /** Ordinary credentials have no workspace source; retain their custody using the
  * existing integration collections, without minting another credential. Scope
  * changes create another immutable snapshot so old receipts stay valid. */
+export async function nativeIncompleteIdentity(identity:string,credential:NativeSource):Promise<string> {
+  const scope=[...new Set<string>(JSON.parse(credential.scopes))].sort();
+  return 'native:'+await intakeHash(JSON.stringify({identity,scope}));
+}
 export async function nativeIncompleteSource(state:State,identity:string,credential:NativeSource):Promise<IntakeSource> {
   const scope=[...new Set<string>(JSON.parse(credential.scopes))].sort();
   if(!scope.length||scope.some(id=>!state.services.some(service=>service.id===id)))fail('Native source scope is unavailable',503);
-  const id='native:'+await intakeHash(JSON.stringify({identity,scope}));
+  const id=await nativeIncompleteIdentity(identity,credential);
   const previous=state.intakeSources?.find(source=>source.id===id);
   if(previous) {
     const version=previous.routing?.versions.at(-1);
@@ -48,7 +53,7 @@ export async function nativeIncompleteSource(state:State,identity:string,credent
       fail('Held native incomplete custody does not match this credential scope',409);
     return previous;
   }
-  if((state.intakeSources?.length??0)>=10000)fail('Local intake source capacity reached; export before extending capacity',429);
+  if(countRows(state,'intakeSources')>=10000)fail('Local intake source capacity reached; export before extending capacity',429);
   const owner=state.members.find(member=>member.active&&member.role==='admin'&&!member.machine);
   if(!owner)fail('Native incomplete intake needs an active installation administrator',503);
   const at=new Date().toISOString();

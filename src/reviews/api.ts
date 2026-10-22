@@ -17,7 +17,7 @@ export function installReviews(api:any,authorizedState:(c:any)=>Promise<State>){
   if(revision!==undefined&&String(state.revision)!==revision)fail('Workspace changed; refresh the report before exporting',409);
   if(schedulingRevision!==undefined&&String(s.revision)!==schedulingRevision)fail('Schedules changed; refresh the report before exporting',409);
   const report=responseReport(state,input,at??new Date().toISOString());
-  return {...report,load:coverageLoad(state,{revision:s.revision,schedules:s.archive.schedules},report),noise:alertNoise(state,report)};
+  return {...report,load:coverageLoad(state,{revision:s.revision,schedules:s.archive.schedules},report),noise:await alertNoise(c.env.DB,report)};
  };
  api.get('/api/reports/response',async(c:any)=>c.json(await project(c)));
  api.get('/api/reports/response.csv',async(c:any)=>{

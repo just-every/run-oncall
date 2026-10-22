@@ -1,3 +1,5 @@
+import {selectWorkspaceWhere,selectWorkspaceIds} from '../workspace-selection.ts';
+import {decideEmail} from './rules.ts';
 import type { Bindings } from '../auth.server';
 import { auditedDatabase } from '../audit-database.ts';
 import { auditIdentity, auditOutcome, type AuditContext } from '../audit-store.ts';
@@ -38,6 +40,8 @@ export async function receiveEmail(message:ForwardableEmailMessage,env:Bindings)
       if(parsed) {
         const sample={id:receipt.id,address:address!.id,subject:parsed.subject,text:parsed.text,sender:parsed.sender,at};
         (state.emailSamples??=[]).push(sample);receipt.sample=sample.id;
+        const decision=decideEmail(version!,sample,receipt.id);
+        if(decision.key){const rows=await selectWorkspaceWhere(db,state,'alerts',"id IN (SELECT id FROM oc_alerts WHERE json_extract(data,'$.source')=? AND json_extract(data,'$.service')=? AND json_extract(data,'$.environment')=? AND json_extract(data,'$.key')=? AND json_extract(data,'$.state')='active' ORDER BY ordinal,id LIMIT 1)",['email:'+address!.id,address!.service,address!.environment,decision.key]);await selectWorkspaceIds(db,state,'alerts',rows.map(row=>JSON.parse(row.data).id));}
         applyEmail(state,address!,version!,sample,receipt);
       }
     }

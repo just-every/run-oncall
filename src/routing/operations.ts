@@ -1,3 +1,5 @@
+import {selectIntakeAdmission} from '../workspace-selection.ts';
+import {selectReadmissionReceipts,selectRoutingPreview} from './selection.ts';
 import { receiveNativeRouting } from './native';
 import { auditIdentity, auditOutcome } from '../audit-store'
 import { authority, fail, text } from '../family/response-operations/domain.ts';
@@ -37,6 +39,7 @@ export function installRoutingOperations(api:any,deps:RoutingDependencies) {
     const current=source.routing.versions.at(-1)!;
     if(input.baseVersion!==current.version)fail('Routing base version is stale; reload before replay',409);
     const draft={...current,...routingRules(source.routing.scope,input.rules,input.catchAll)};
+    await selectRoutingPreview(c.env.DB,state,source,input);
     return c.json(previewRouting(state,source,draft,input));
   });
   api.post('/api/routing/keys/:id/readmit',async(c:any)=>{
@@ -45,6 +48,7 @@ export function installRoutingOperations(api:any,deps:RoutingDependencies) {
     const source=routingSource(state,c.req.param('id')),operationId=text(input.operationId,'Re-admission operation ID',100);
     if(operationId!==input.operationId)fail('Use an exact re-admission operation ID');
     if(!source.routing.scope.includes(input.service))fail('Re-admission service is outside key scope');
+    await selectReadmissionReceipts(c.env.DB,state,source.id,input.receipt,operationId);
     const original=state.intakeReceipts?.find(r=>r.id===input.receipt&&r.source===source.id&&r.outcome==='unrouted');
     if(!original?.routingInput)fail('Choose a retained unrouted receipt for this key',404);
     const previous=state.intakeReceipts?.find(r=>r.source===source.id&&r.routing?.readmission?.operationId===operationId);
@@ -52,6 +56,7 @@ export function installRoutingOperations(api:any,deps:RoutingDependencies) {
       if(previous.routing!.readmission!.receipt!==original.id||previous.service!==input.service)fail('Re-admission operation already used for another request',409);
       return c.json(previous);
     }
+    await selectIntakeAdmission(c.env.DB,state,source,{key:original.key,generation:original.native?.sourceGeneration??original.monitoring?.sourceGeneration??(original.incomplete?'incomplete:'+original.incomplete.sha256:undefined),eventId:original.native?'native-readmit:'+operationId:original.monitoring?.eventId,kind:original.native?'native':original.monitoring?'monitoring':undefined,intent:original.action==='recover'?'recover':'trigger',service:input.service});
     const at=new Date().toISOString(),explanation=original.incomplete?incompleteRouting(source)!:evaluateRouting(state,source.id,source.routing,source.routing.versions.at(-1)!,original.routingInput);
     explanation.kind='readmission';explanation.service=input.service;explanation.readmission={receipt:original.id,operationId,by:actor.id};
     explanation.diagnostics.push(`Re-admitted retained receipt ${original.id} by ${actor.id} to ${input.service}`);

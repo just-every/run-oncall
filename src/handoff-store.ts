@@ -1,3 +1,4 @@
+import {ensureAccounting} from './workspace-accounting'
 import { workspaceQueries, decodeWorkspace } from './workspace-store'
 import { fail, type State } from './family/response-operations/domain';
 import { boundHandoffArchive, validateHandoffArchive, holdHandoffsForRecovery, type HandoffArchive } from './family/response-operations/handoffs';
@@ -26,6 +27,7 @@ export async function decodeHandoffRow(row: any): Promise<{ revision: number; ar
 export const parseHandoffRow = decodeHandoffRow;
 
 export async function handoffSnapshot(db: D1Database): Promise<HandoffSnapshot> {
+  await ensureAccounting(db);
   const rows = await db.batch([
     ...workspaceQueries.map(query=>db.prepare(query)),
     db.prepare('SELECT * FROM handoff_state WHERE id=1'),

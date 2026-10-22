@@ -23,6 +23,7 @@ import { Mark } from "../landing/Mark";
 import { NavIcon } from "../app/NavIcon";
 import { ReplayComparison } from "../app/ReplayComparison";
 import { AlertsPanel } from "../app/AlertsPanel";
+import { AuditPanel } from "../app/AuditPanel";
 import { ArchiveWorkspace } from "../app/ArchiveWorkspace";
 import { HandoffPreview } from "../app/HandoffPreview";
 import "../app/shell.css";
@@ -803,10 +804,7 @@ function Workspace() {
         {page === "archive" && <>
           <ArchiveWorkspace state={s} actor={actor} busy={w.busy} run={w.run} setError={w.setError} setNotice={w.setNotice}
             onRestored={() => { setReplay(null); setHandoff(null); selectIncident(""); }} />
-          <details className="panel padded">
-            <summary>Configuration audit ({s.audit.length})</summary>
-            {s.audit.slice().reverse().map(entry => <p key={entry.id}>{time(entry.at)} · {entry.kind} · {entry.text}</p>)}
-          </details>
+          <AuditPanel revision={s.revision} />
         </>}
       </main>
     </div>
