@@ -41,9 +41,9 @@ export async function capacitySamples(w,doors,label,{warm=true}={}) {
  const report={label,before,after:receiptCount(w),samples};console.log('OC-073 SAMPLES '+JSON.stringify(report));return report;
 }
 export function assertCapacitySamples(small,large,exact) {
- const rows=[];for(const [door,samples] of Object.entries(small.samples))for(const field of ['ms','rssMiB']){const baseline=samples.map(s=>s[field]),held=large.samples[door].map(s=>s[field]),min=Math.min(...baseline),max=Math.max(...baseline),spread=max-min;rows.push({door,field,smallMin:min,smallMax:max,spread,largeMax:Math.max(...held),limit:max+spread});}
+ const rows=[];for(const run of [large,exact])for(const [door,samples] of Object.entries(small.samples))for(const field of ['ms','rssMiB']){const measured=run===exact&&door==='compatible-admission'?'compatible-capacity-refusal':door,baseline=samples.map(s=>s[field]),held=run.samples[measured].map(s=>s[field]),min=Math.min(...baseline),max=Math.max(...baseline),spread=max-min;rows.push({population:run.label,door:measured,field,smallMin:min,smallMax:max,spread,largeMax:Math.max(...held),limit:max+spread});}
  console.log('OC-073 COMPARISON '+JSON.stringify({small:[small.before,small.after],large:[large.before,large.after],exact,rows}));
- const failures=rows.filter(r=>r.largeMax>r.limit).map(r=>`${r.door} ${r.field}: ${r.largeMax} > calibrated ${r.limit}`);
+ const failures=rows.filter(r=>r.largeMax>r.limit).map(r=>`${r.population} ${r.door} ${r.field}: ${r.largeMax} > calibrated ${r.limit}`);
  for(const run of [small,large,exact])for(const [door,samples] of Object.entries(run.samples))if(samples.some(s=>s.rssMiB>128))failures.push(`${run.label} ${door} workerd RSS exceeded Workers 128 MiB`);
  assert.deepEqual(failures,[],'OC-073 time/memory must stay within the small-population spread and Workers memory bound');
 }
