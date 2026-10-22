@@ -32,7 +32,11 @@ export async function rateJourney(w,cookie,actor) {
  now+=120000;await w.time(now);
  state=ok(await req('/api/state'));ok(await req('/api/intake/allowances',{id:'intake:rate-main',requests:600,events:1,revision:state.revision}));
  ok(await send(event('notice-fill')),201);
- const noticeCount=()=>req('/api/state').then(r=>ok(r).audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:rate-main'));
+ const noticeCount=async()=>{
+  const notices=[];let cursor;
+  do{const page=ok(await req('/api/records/audit?limit=100'+(cursor?'&cursor='+encodeURIComponent(cursor):'')));notices.push(...page.items.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:rate-main'));cursor=page.nextCursor;}while(cursor);
+  return notices.reverse();
+ };
  const priorNotices=(await noticeCount()).length;
  const raced=await Promise.all([send(event('notice-race')),send(event('notice-other','rate-second'),second)]);
  ok(raced[0],429);assert.ok([201,409].includes(raced[1].status));
@@ -61,7 +65,7 @@ export async function rateJourney(w,cookie,actor) {
  state=ok(await req('/api/state'));ok(await req('/api/intake/allowances',{id:'intake:rate-main',requests:600,events:1,revision:state.revision}));
  const grouped={...event('grouped'),key:'rate-recovered'};ok(await send(grouped),201);
  const beforeRefusal=await protectedState();ok(await send(event('new-window-full')),429);assert.deepEqual(await protectedState(),beforeRefusal);
- assert.equal(ok(await req('/api/state')).audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:rate-main').length,priorNotices+3+stormWindows);
+ assert.equal((await noticeCount()).length,priorNotices+3+stormWindows);
  // Request throttle happens before grouping; the held group's event count stays fixed.
  state=ok(await req('/api/state'));ok(await req('/api/intake/allowances',{id:'intake:rate-main',requests:1,events:1,revision:state.revision}));
  const groupedHeld=await protectedState();ok(await send({...grouped,eventId:'throttled-group-observation'}),429);assert.deepEqual(await protectedState(),groupedHeld);
