@@ -15,6 +15,9 @@ try {
  const client=await request('/api/automation/clients',{name:label,key:randomBytes(32).toString('hex'),services:[service.value.id],permissions:['incidents:read']});assert.equal(client.status,201);
  const checkpoint=await value('/api/recovery/checkpoint'),legacy=await value('/api/recovery/checkpoint?version=1'),archive=await value('/api/archive');
  assert.equal((await request('/api/move-in/erase',{email:'alice@example.test',confirmation:'erase alice@example.test'})).status,200);
+ // Receiving an older installation archive can leave custody only in the original journal.
+ // The current-checkpoint round trip below then materializes the same fence in the mirror.
+ await erasureRuntime.db.prepare('DELETE FROM oc_erasure_fences').run();
  const before=await value('/api/state');
  for(const [path,input] of [['/api/recovery/restore',{mode:'replace',checkpoint}],['/api/recovery/restore',{mode:'replace',checkpoint:legacy}],['/api/restore',{mode:'replace',archive}]]) {
   const result=await request(path,input);
@@ -26,7 +29,7 @@ try {
  for(const version of [2,1]){const current=await value('/api/recovery/checkpoint?version='+version),restored=await request('/api/recovery/restore',{mode:'replace',checkpoint:current});assert.equal(restored.status,200);cookie=restored.cookie;}
  assert.ok(!JSON.stringify(await value('/api/state')).includes(label));
  const again=await request('/api/recovery/restore',{mode:'replace',checkpoint});assert.equal(again.status,409,'successful current restore retains the fence');
- console.log('PASS OC-053 erasure fence: stale native archive and checkpoint refused atomically; current checkpoint restores and retains custody');
+ console.log('PASS OC-053 erasure fence: legacy journal and native custody refuse stale archive/checkpoints atomically; current checkpoint restores and retains custody');
 } finally {await erasureRuntime.close();}
 
 const sign=(key,text)=>createHmac('sha256',key).update(text).digest('hex');

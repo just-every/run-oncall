@@ -7,7 +7,13 @@ export const syncErasureFences = `INSERT INTO oc_erasure_fences(id,epoch)
  SELECT j.tombstone,MAX(e.epoch) FROM rer_portability_journal j
  JOIN rer_portability_epochs e ON e.source=j.source GROUP BY j.tombstone
  ON CONFLICT(id) DO UPDATE SET epoch=MAX(epoch,excluded.epoch)`
-export const erasureFenceCondition = `NOT EXISTS(SELECT 1 FROM oc_erasure_fences f
+// Older portable installations have the original journal but no mirror rows.
+// Read both in the same snapshot; neither custody source may lower the other.
+export const erasureFencesQuery = `SELECT id,MAX(epoch) AS epoch FROM (
+ SELECT id,epoch FROM oc_erasure_fences
+ UNION ALL SELECT j.tombstone AS id,e.epoch FROM rer_portability_journal j
+ JOIN rer_portability_epochs e ON e.source=j.source) GROUP BY id`
+export const erasureFenceCondition = `NOT EXISTS(SELECT 1 FROM (${erasureFencesQuery}) f
  WHERE NOT EXISTS(SELECT 1 FROM json_each(?) incoming
  WHERE json_extract(incoming.value,'$.id')=f.id AND json_extract(incoming.value,'$.epoch')>=f.epoch))`
 export const fenceValues = (state: State) => JSON.stringify(state.erasureFences ?? [])
