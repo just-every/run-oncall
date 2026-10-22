@@ -463,7 +463,7 @@ The approved scope is the 16 October 2026 Oncall entry in LIST.json; the categor
 
 ## Status
 
-Judged from the code and tests at commit `f0b33119608f07a4ff5831ce6e46831da9f83f61` (23 October 2026). The 0.4.0 release gate remains dated one-time evidence for its own published rota, now/next, calendar feed, incident, move-in, upgrade and hosted journeys; it does not establish later capabilities. Each status rests only on its exercising flow. OC-053 remains partial after the subject-erasure restore repair; the remaining code Gap is permanent named-responder attribution. Current row totals are 28 done, 27 partial and 18 missing of 73.
+Judged from the code and tests at commit `64cdbdb446fe430a7bcf52c91a55b76ec30722a7` (23 October 2026). The 0.4.0 release gate remains dated one-time evidence for its own published rota, now/next, calendar feed, incident, move-in, upgrade and hosted journeys; it does not establish later capabilities. Each status rests only on its exercising flow. OC-053 remains partial after the subject-erasure restore repair; the remaining code Gap is permanent named-responder attribution. Current row totals are 28 done, 27 partial and 18 missing of 73.
 
 Current totals are 28 done / 27 partial / 18 missing. OC-059’s table/acceptance status is corrected from done to partial under CT’s 22 October native-bounds ruling; its clause body was already partial. Native/rate local candidate proof does not promote OC-059 or OC-072, and does not replace the fresh independent security and CT landing reviews.
 
