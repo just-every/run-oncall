@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7b9f0e1457d51ee4e1941e82f49a3f3c6f72138ce81f010f75df72204f25796d",
+      "sha256": "1af8a0b0251868163aae7d753efc536e1f0498ecc6b1879185599153f13e3471",
       "executable": false
     },
     "DEMO.md": {
@@ -3911,7 +3911,7 @@
       "executable": false
     },
     "tests/routing-native.mjs": {
-      "sha256": "f5069c22f82fb1c769c3e38900cbbe7aeff09375d68129fab8b8854fff510d48",
+      "sha256": "49479c4c7bcbd1ce6caa7250624710191ed51ffbf0ce7ad6f8674c0734d99b0e",
       "executable": false
     },
     "tests/routing-rate.mjs": {
