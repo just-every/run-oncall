@@ -69,7 +69,7 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
  failureHandler=()=>diagnostics.report('test failure')
  process.once('uncaughtExceptionMonitor',failureHandler)
  process.once('exit',code=>{if(code!==0)failureHandler()})
- return {origin,vars,sql,statements,request,send,start,stop,time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
+ return {origin,vars,sql,statements,request,send,start,stop,get pid(){return worker.pid},time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
 }
 
 // The move-in screen's transport: the owner-session import door, one namespace per vendor. preview uploads the

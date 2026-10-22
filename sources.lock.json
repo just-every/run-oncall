@@ -3686,6 +3686,10 @@
       "sha256": "72c598c3be2eecf4442f5de20171301be8e985c287ce5a38a8e5e04289b4c3f2",
       "executable": false
     },
+    "tests/capacity-samples.mjs": {
+      "sha256": "cd6c16cbbbe6b2b248d9771aa2fd6cb9805676ed290d560284c2374c3377bb7c",
+      "executable": false
+    },
     "tests/changes.mjs": {
       "sha256": "5e4ad32bd992d3d4f5d13129a9e344ae26d430724d5a6c919e4e6883f2c7a0b5",
       "executable": false
@@ -3867,7 +3871,7 @@
       "executable": false
     },
     "tests/routing-native.mjs": {
-      "sha256": "5c7ee3c8d23064d1127d0909fabf25ee1909fba68d00ffbed5397cad73bff38f",
+      "sha256": "0dbb4abb4f5dbc319285551e8bfcee6f4a3bbc5ee7cb0a9584f2db70d927b946",
       "executable": false
     },
     "tests/routing-rate.mjs": {
@@ -3915,7 +3919,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "01c93ff5c75fdf3ea223d80ac92319d3ca3c2d7ece0745a532ff30c27e8c4405",
+      "sha256": "a104cd2c739beb3df4be0add07404455f24d2c7172d2630c68893e49b93f6a95",
       "executable": false
     },
     "tsconfig.json": {

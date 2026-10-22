@@ -1,3 +1,4 @@
+import {seedReceipts,receiptCount,capacitySamples,assertCapacitySamples} from './capacity-samples.mjs';
 import assert from 'node:assert/strict';
 import {randomBytes,createHmac,createHash} from 'node:crypto';
 import {localWorker} from './worker.mjs';
@@ -103,14 +104,14 @@ export async function nativeRouting(w,cookie,actor) {
 
 // Intake custody is bounded by the 10,000-receipt count, never by the 1 MB authored profile or by one key.
 // Its own Worker keeps the later archive/restore journeys independent of 10,000 held receipts.
-export async function nativeCapacity() {
- const w=await localWorker({},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+export async function nativeCapacity({persistTo}={}) {
+ const w=await localWorker({},{clock:true,persistTo}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
  const key=()=>randomBytes(32).toString('hex'),body=n=>`synthetic-oncall-${n}:`+'x'.repeat(70000);
  try {
   let cookie=(await w.request('/api/setup',{name:'Capacity owner',password:'synthetic-capacity-owner-password'})).cookie;
   const req=(path,data)=>w.request(path,data,cookie),actor=ok(await req('/api/session')).member;
   for(const id of ['payments','search']){ok(await req('/api/command',{type:'service',id,name:id,environment:'production',owner:actor.id,runbook:[],pager:''}));ok(await req('/api/command',{type:'policy',service:id,severity:'*',action:'route',owner:actor.id,reason:'Owner'}));}
-  const keys={a:key(),b:key(),pd:key()},declare=n=>req('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Synthetic human declaration '+n,summary:'Capacity',alerts:[]});
+  const keys={a:key(),b:key(),pd:key(),am:key()},declare=n=>req('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Synthetic human declaration '+n,summary:'Capacity',alerts:[]});
   const configure=async suffix=>{
    ok(await req('/api/sources',{id:'capacity-a',key:keys.a,scopes:['payments']}));ok(await req('/api/sources',{id:'capacity-b',key:keys.b,scopes:['search']}));
    ok(await req('/api/routing/keys',{id:'capacity-pd'+suffix,name:'Capacity PagerDuty',provider:'pagerduty',scope:['payments'],owner:actor.id,key:keys.pd,revision:0,catchAll:'payments'}),201);
@@ -146,11 +147,17 @@ export async function nativeCapacity() {
   // Throttle notices are intake accounting: thousands of them leave human writes unaffected.
   w.sql("WITH RECURSIVE n(i) AS (SELECT 0 UNION ALL SELECT i+1 FROM n WHERE i<3999) INSERT INTO oc_audit(id,ordinal,data) SELECT 'synthetic-oncall-notice-'||i,1000000+i,json_object('id','synthetic-oncall-notice-'||i,'at','2026-10-22T00:00:00.000Z','actor','source:intake:capacity-a','kind','intake-throttled','text',printf('%0400d',i)) FROM n");
   ok(await declare(2));
-  // At the true boundary: 9,999 held plus one is accepted, then every key is refused by capacity while humans are not.
-  const count=w.sql('SELECT COUNT(*) AS n FROM oc_intake_receipts')[0].n;
-  w.sql(`WITH RECURSIVE n(i) AS (SELECT 0 UNION ALL SELECT i+1 FROM n WHERE i<${9998-count}) INSERT INTO oc_intake_receipts(id,ordinal,data) SELECT 'synthetic-oncall-held-'||i,100000+i,json_object('id','synthetic-oncall-held-'||i) FROM n`);
+  // OC-073: valid linked custody, three real intake doors and three protected read doors.
+  ok(await req('/api/intake/sources',{id:'synthetic-oncall-monitor',name:'synthetic-oncall-monitor',provider:'alertmanager',service:'payments',key:keys.am,revision:0}),201);
+  const monitoring=()=>w.send('/api/monitoring/synthetic-oncall-monitor',JSON.stringify({version:'4',status:'firing',alerts:[{status:'firing',fingerprint:'synthetic-oncall-monitor',labels:{alertname:'Checkout latency',severity:'warning'},annotations:{summary:'Checkout latency'},startsAt:'2026-10-22T00:00:00Z'}]}),{authorization:'Bearer '+keys.am,'content-type':'application/json'});
+  ok(await monitoring(),202);
+  let sequence=10000;
+  const doors=[{name:'native-incomplete-retry',run:()=>post('capacity-a',keys.a,body(10)),status:202},{name:'compatible-admission',run:()=>pager(sequence++),status:202},{name:'monitoring-retry',run:monitoring,status:202},{name:'incidents',run:()=>req('/api/triage'),status:200},{name:'alerts',run:()=>req('/api/state'),status:200},{name:'audit-page',run:()=>req('/api/audit/export?limit=25'),status:200}];
+  seedReceipts(w,250);const small=await capacitySamples(w,doors,'small');
+  seedReceipts(w,9991);const large=await capacitySamples(w,doors,'capacity');
   assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_receipts')[0].n,9999);
   ok(await post('capacity-a',keys.a,body(1000)),202);
+  const exact=await capacitySamples(w,doors.map(d=>d.name==='compatible-admission'?{...d,name:'compatible-capacity-refusal',status:429}:d),'exact-capacity',{warm:false});assert.equal(exact.before,10000);assert.equal(exact.after,10000);
   const usage=()=>w.sql("SELECT COALESCE(SUM(requests),0) AS n FROM oc_key_rate_usage WHERE key_id='source:capacity-a'")[0].n,usageBefore=usage();
   for(const refused of [await post('capacity-a',keys.a,body(1001)),await post('capacity-b',keys.b,body(1002)),await post('capacity-b',keys.b,'{"source":')]) {
    assert.equal(refused.status,429);assert.match(refused.value.error,/Local intake receipt capacity reached; export before extending capacity/);assert.equal(refused.headers.get('retry-after'),null);
@@ -163,6 +170,7 @@ export async function nativeCapacity() {
   const state=ok(await req('/api/state'));ok(await req('/api/intake/allowances',{id:'source:capacity-a',requests:usage()+1,events:120,revision:state.revision}));
   ok(await post('capacity-a',keys.a,body(1000)),202);
   const limited=await post('capacity-a',keys.a,body(1000));assert.equal(limited.status,429);assert.match(limited.headers.get('retry-after')??'',/^\d+$/);assert.match(limited.value.error,/allowance exceeded/);
+  assertCapacitySamples(small,large,exact);
   console.log('PASS native custody partition: restore carries exact prefixes, 70 KB custody beyond the authored profile, other keys and humans unaffected, 10,000 boundary and separate rate refusal');
  } finally {await w.close();}
 }
