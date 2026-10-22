@@ -346,7 +346,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
 73. **OC-073 — Intake stays inside the Workers memory limit at stated receipt capacity. Status: missing.** Hold the stated receipt capacity with its events, alerts and audit, then use native, compatible and monitoring intake and the incident, alert and audit views. Observe that request time and memory do not grow with held receipts and stay inside 128 MB, first locally and then on a hosted Worker before the capacity is stated as hosted.
 
-   Exercising flow: none yet.
+   Exercising flow: `tests/routing.mjs` → `nativeCapacity` now holds linked events, alerts, receipts and audit at small, near-capacity and exactly 10,000 populations, drives three intake and three protected read doors, and checks cursor pages. The local request-time/RSS assertion fails, including RSS above 128 MiB; push and hosted proof remain absent. Status stays missing until the required exact-head push assertion passes.
 
 ## Cross-cutting acceptance and release constraints
 
