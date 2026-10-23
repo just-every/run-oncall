@@ -1,5 +1,5 @@
-import { authority, fail, text, type Incident, type Member, type State } from '../family/response-operations/domain';
-import { serviceUrgency } from '../urgency/model';
+import { authority, fail, text, type Incident, type Member, type State } from '../family/response-operations/domain.ts';
+import { serviceUrgency } from '../urgency/model.ts';
 import type { RecordedResponseObligation } from '../alert-obligation';
 import type { AssignmentRule, ResponseTarget } from './types';
 export type PolicyContext = {policies:{service:string;revision:number}[];eligible:Record<string,string[]>};

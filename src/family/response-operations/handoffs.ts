@@ -1,4 +1,4 @@
-import {validateAssignmentHistory} from '../../manual-pages/archive';
+import {validateAssignmentHistory} from '../../manual-pages/archive.ts';
 import { fail, link, type Entry, type Incident, type Member, type Service, type State } from "./domain.ts";
 import { validateLifecycleEntry } from "../../reviews/review-controls.ts";
 import { validateUrgencyRuleHistory } from '../../urgency/archive.ts';

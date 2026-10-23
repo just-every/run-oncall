@@ -1,5 +1,5 @@
-import { manualCommand, finishManualRecords, type PolicyContext } from '../../manual-pages/model';
-import { validateManualRecords } from '../../manual-pages/archive';
+import { manualCommand, finishManualRecords, type PolicyContext } from '../../manual-pages/model.ts';
+import { validateManualRecords } from '../../manual-pages/archive.ts';
 import type { AssignmentRule, ManualPage, ResponderRequest } from '../../manual-pages/types';
 import type { BusinessService } from '../../business-status/types.ts';
 import { validateBusinessStatus } from '../../business-status/archive.ts';

@@ -21,10 +21,10 @@ export function ManualDeclare({state,busy,submit}:{state:State;busy:boolean;subm
 }
 export function UserAssignment({service,state,busy,submit}:{service:Service;state:State;busy:boolean;submit:(data:any)=>Promise<any>}){
  const {policies,error}=usePolicies(),rule=assignmentRule(state,service.id);
- return <details><summary>User-assignment rule</summary><p>{rule.mode==='repeat'?'Repeat to the user':'Escalate to the policy'} after {rule.minutes} minutes · version {rule.version}. Recorded setting only; automatic action unavailable.</p>{error&&<p role="alert">{error}</p>}<Form busy={busy} disabled={policies===null} label={'Save user assignment for '+service.name} onSubmit={data=>submit({...data,type:'user-assignment',service:service.id,baseVersion:rule.version,minutes:Number(data.minutes)})}>
+ return <details><summary>User-assignment rule</summary><p>{rule.mode==='repeat'?'Repeat to the user':'Escalate to the policy'} after {rule.minutes} minutes · version {rule.version}. Recorded setting only; automatic action unavailable.</p>{error&&<p role="alert">{error}</p>}<Form key={rule.version} busy={busy} disabled={policies===null} label={'Save user assignment for '+service.name} onSubmit={data=>submit({...data,type:'user-assignment',service:service.id,baseVersion:rule.version,minutes:Number(data.minutes)})}>
  <Field name="mode" label="User-assignment outcome" value={rule.mode}><option value="escalate">Escalate to policy</option><option value="repeat">Repeat to user</option></Field>
  <Field name="minutes" label="Assignment delay (minutes)" type="number" value={String(rule.minutes)}/>
- <Field name="policy" label="Assignment policy" value={rule.policy} required={false}>{(policies??[]).map(p=><option key={p.service} value={p.service}>{state.services.find(s=>s.id===p.service)?.name} · version {p.revision}</option>)}</Field>
+ <Field name="policy" label="Assignment policy" value={rule.policy} required={false}>{!(policies??[]).some(p=>p.service===rule.policy)&&<option value={rule.policy}>No policy configured</option>}{(policies??[]).map(p=><option key={p.service} value={p.service}>{state.services.find(s=>s.id===p.service)?.name} · version {p.revision}</option>)}</Field>
  </Form></details>;
 }
 export function ResponderRequests({incident,state,actor,busy,submit}:{incident:Incident;state:State;actor:Member;busy:boolean;submit:(data:any)=>Promise<any>}){
