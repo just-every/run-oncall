@@ -1,3 +1,7 @@
+import { publishIncidentTemplate, instantiateIncidentTemplate, checklistCommand, validateIncidentTemplateArchive } from '../../incident-workflows/template.ts';
+import type { IncidentTemplate, TemplateSnapshot } from '../../incident-workflows/types-template.ts';
+import { relationCommand, validateIncidentRelations, incidentAlertLinkAllowed } from '../../incident-workflows/relations.ts';
+import type { IncidentRelations } from '../../incident-workflows/relations.ts';
 import type { ResponsePolicy, AutomaticDeclaration, IncidentSourceRecovery } from '../../response-policy/types.ts';
 import { refreshIncidentRecovery } from '../../response-policy/model.ts';
 import { validateResponseArchive, validResponseSourceEntry } from '../../response-policy/archive.ts';
@@ -27,6 +31,7 @@ export type Service = {
   dependencies?: string[];
   urgencyRules?: UrgencyRule[];
   responsePolicies?: ResponsePolicy[];
+  incidentTemplates?: IncidentTemplate[];
 };
 export type Policy = {
   id: string;
@@ -109,7 +114,9 @@ export type Action = {
   submission?: {by:string;at:string;evidence:string};
   accepted?: {by:string;at:string};
 };
-export type Incident = {
+export type Incident = IncidentRelations & {
+  template?: TemplateSnapshot;
+  sourceRecoveryHistory?: (IncidentSourceRecovery & {alerts:string[]})[];
   automaticDeclaration?: AutomaticDeclaration;
   sourceRecovery?: IncidentSourceRecovery;
   id: string;
@@ -358,7 +365,14 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
     }
     if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&m.role!=='viewer'))fail('An explicit active responsible member is required; the client is not a human responder');
   }
+  const beforeLinks = ['merge-incidents','split-incident'].includes(input.type) ? state.incidents.map(i=>({id:i.id,alerts:[...i.alerts],marker:i.sourceRecovery?structuredClone(i.sourceRecovery):undefined})) : [];
   const result=applyCommand(state,actor,input,at);
+  for (const prior of beforeLinks) {
+    const changed=state.incidents.find(i=>i.id===prior.id)!;
+    if(JSON.stringify(prior.alerts)===JSON.stringify(changed.alerts))continue;
+    if(prior.marker){(changed.sourceRecoveryHistory??=[]).push({...prior.marker,alerts:prior.alerts});delete changed.sourceRecovery;}
+    refreshIncidentRecovery(state,changed,at,undefined,actor);
+  }
   if(result&&'timeline' in result) {enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
   return result;
 }
@@ -369,6 +383,9 @@ function applyCommand(
   at = new Date().toISOString(),
 ) {
   authority(state, actor, ["service", "service-dependencies", "policy", "member"].includes(input.type));
+  if (input.type === 'service-template') return publishIncidentTemplate(state,actor,input,at);
+  if (input.type === 'template-check') return checklistCommand(state,actor,input,at);
+  const related=relationCommand(state,actor,input,at);if(related)return related;
   if (input.type === "service-dependencies") {
     if (input.workspaceRevision !== state.revision) fail("Workspace changed. Reload dependencies before saving.", 409);
     const service = state.services.find(s => s.id === input.service);
@@ -508,11 +525,13 @@ function applyCommand(
     };
     const urgency = declarationUrgency(state, service, ids, input.severity, at);
     if (urgency !== undefined) incident.urgency = urgency;
+    instantiateIncidentTemplate(state,incident,input.incidentType);
     state.incidents.unshift(incident);
     return incident;
   }
   const incident = state.incidents.find((i) => i.id === input.incident);
   if (!incident) fail("Unknown incident", 404);
+  if (incident.mergedInto) fail("This incident is a retained alias; open the merged incident",409);
   if (input.revision !== incident.revision)
     fail("Incident changed. Reload before applying your edit.", 409);
   const controlled = incidentControl(state, actor, incident, input, at);
@@ -673,7 +692,7 @@ export function validateArchive(value: any): State {
   )
     fail("Duplicate member names");
   for (const s of value.services) {
-    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies"]);
+    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "incidentTemplates"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
     if (!hasMember(s.owner)) fail("Invalid service references");
@@ -798,7 +817,7 @@ export function validateArchive(value: any): State {
       "actions",
       "recovery",
       "review",
-    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance", "automaticDeclaration", "sourceRecovery"]);
+    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance", "automaticDeclaration", "sourceRecovery", "sourceRecoveryHistory", "template", "mergedInto", "mergedSources", "splitFrom"]);
     validateIncidentControls(i, value.members);
     text(i.title, "incident", 300);
     if (
@@ -821,7 +840,7 @@ export function validateArchive(value: any): State {
       i.alerts.some(
         (id: any) =>
           !value.alerts.some(
-            (a: any) => a.id === id && (a.service === i.service || a.service===null&&value.intakeSources?.some((source:any)=>a.source==='intake:'+source.id&&source.routing?.scope.includes(i.service))),
+            (a: any) => a.id === id && incidentAlertLinkAllowed(value,i,a),
           ),
       )
     )
@@ -856,6 +875,8 @@ export function validateArchive(value: any): State {
   }
   value.audit.forEach(entry);
   validateUrgencyArchive(value);
+  validateIncidentRelations(value);
+  validateIncidentTemplateArchive(value);
   validateResponseArchive(value);
   validateReviewFields(value);
   validateChangeArchive(value);

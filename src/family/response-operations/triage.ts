@@ -1,3 +1,4 @@
+import { mergedTimeline, retainedIncidentSources } from '../../incident-workflows/relations.ts';
 import { fail, text, type Incident, type Member, type State } from './domain.ts';
 import { incidentAssignee, incidentUpdated, incidentUrgency } from './incident-controls.ts';
 
@@ -32,9 +33,10 @@ export function triageQuery(value: Record<string, unknown>): TriageQuery {
 export function matchingIncidents(state: State, actor: Member, query: TriageQuery): Incident[] {
   const terms = query.q?.toLocaleLowerCase().split(/\s+/).filter(Boolean) ?? [];
   const matches = state.incidents.filter(i => {
+    if(i.mergedInto)return false;
     const service = state.services.find(s => s.id === i.service);
     const keys = i.alerts.map(id => state.alerts.find(a => a.id === id)?.key ?? '');
-    const haystack = [i.title, service?.name, service?.environment, ...keys, ...i.timeline.map(e => e.text)].join(' ').toLocaleLowerCase();
+    const haystack = [i.title, service?.name, service?.environment, ...keys, ...mergedTimeline(state,i).map(e=>e.text),...retainedIncidentSources(state,i).map(source=>source.title)].join(' ').toLocaleLowerCase();
     if (!terms.every(term => haystack.includes(term))) return false;
     if (query.status && (query.status === 'open' ? i.state === 'resolved' : i.state !== query.status)) return false;
     if (query.severity && i.severity !== query.severity || query.urgency && incidentUrgency(i) !== query.urgency) return false;

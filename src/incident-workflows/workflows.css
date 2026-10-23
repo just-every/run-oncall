@@ -1,0 +1,20 @@
+.incident-workflows { min-width: 0; overflow-wrap: anywhere; }
+.incident-workflows h4 { margin: 16px 0 8px; font-size: 15px; }
+.incident-workflows p { line-height: 1.5; }
+.incident-workflows details { margin-top: 12px; }
+.incident-workflows details > form { margin-top: 14px; }
+.incident-workflows .workflow-options { display: flex; flex-direction: column; gap: 12px; margin: 0 0 14px; padding: 12px; border: 1px solid var(--app-line); border-radius: 8px; }
+.incident-workflows .workflow-choice { display: flex; align-items: flex-start; gap: 10px; font-weight: 400; line-height: 1.45; }
+.incident-workflows .workflow-choice input { flex: none; width: 18px; height: 18px; min-height: 0; margin-top: 3px; accent-color: var(--oc-ink); }
+.incident-workflows .workflow-choice span { min-width: 0; }
+.incident-workflows small { display: block; margin-top: 3px; color: var(--oc-muted); font-size: 13px; font-weight: 400; }
+.incident-workflows .workflow-help { color: var(--oc-muted); font-size: 13px; }
+.incident-workflows .workflow-checklist { border-bottom: 0; padding-bottom: 0; }
+.workflow-history { padding-left: 20px; }
+.workflow-history li { margin: 10px 0; }
+.workflow-template-editor { display: grid; gap: 12px; }
+.workflow-template-editor .field { margin: 0; }
+.workflow-template-row { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 8px; }
+.workflow-template-row .field { flex: 1 1 190px; min-width: 0; }
+.workflow-template-row button { flex: none; }
+.workflow-template-actions { display: flex; flex-wrap: wrap; gap: 8px; }

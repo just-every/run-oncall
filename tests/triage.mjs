@@ -89,6 +89,126 @@ try {
   assert.ok(stopped.results.filter(r => !started.results.some(old => old.id === r.id)).every(r => !r.ok));
   assert.deepEqual(ok(await req('/api/state')), beforeDenied, 'a downgraded continuation commits no further changes');
 
+  // OC-050: service workflow definitions freeze at declaration; merge/split retain human custody.
+  const workflowState = async () => ok(await req('/api/state'));
+  const workflowIncident = async id => (await workflowState()).incidents.find(i => i.id === id);
+  const workflowService = ok(await req('/api/command', {type: 'service', name: 'Workflow response', environment: 'production', owner: actor.id, runbook: [], pager: ''}));
+  const templateDraft = {type: 'service-template', service: workflowService.id, baseVersion: 0, severityWording: {critical: 'Customer transactions blocked', warning: 'Customer transactions delayed', info: 'Investigation only'}, impactPrompt: 'Which customer transactions are affected?', incidentTypes: ['Database', 'Dependency'], checklist: [{id: 'customer-check', text: 'Verify a customer transaction'}, {id: 'owner-check', text: 'Identify the dependency owner'}], reason: 'Publish the response workflow'};
+  const workflowRollback = async input => {
+    const before = ok(await req('/api/archive'));
+    const beforeAudit = w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE feature='command' AND workspace_after>workspace_before")[0].n;
+    w.sql("CREATE TRIGGER reject_workflow_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.feature='command' AND NEW.workspace_after>NEW.workspace_before BEGIN SELECT RAISE(ABORT,'synthetic-oncall-workflow-audit'); END");
+    try {ok(await req('/api/command', input), 503);} finally {w.sql('DROP TRIGGER reject_workflow_audit');}
+    assert.equal(w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE feature='command' AND workspace_after>workspace_before")[0].n, beforeAudit);
+    assert.deepEqual(ok(await req('/api/archive')), before, input.type + ' audit failure publishes no definition, incident, relation, alert movement or timeline');
+  };
+  await workflowRollback(templateDraft);
+  const publishedTemplate = ok(await req('/api/command', templateDraft));
+  assert.equal(publishedTemplate.by, actor.id); assert.ok(Number.isFinite(Date.parse(publishedTemplate.at)));
+  assert.deepEqual((await workflowState()).services.find(s => s.id === workflowService.id).incidentTemplates, [publishedTemplate]);
+  ok(await req('/api/command', templateDraft), 409);
+  const declaration = {type: 'declare', service: workflowService.id, severity: 'critical', title: 'Database workflow response', summary: 'Customer checkouts cannot complete', incidentType: 'Database'};
+  ok(await req('/api/command', {...declaration, incidentType: 'Unpublished type'}), 400);
+  ok(await req('/api/command', {...declaration, service: service.id}), 400);
+  let workflowTarget = ok(await req('/api/command', declaration));
+  assert.deepEqual(workflowTarget.template, {service: workflowService.id, ...publishedTemplate, incidentType: declaration.incidentType, checklist: templateDraft.checklist.map(item => ({...item, done: false, history: []}))});
+  const checklist = i => ({type: 'template-check', incident: i.id, revision: i.revision, item: 'customer-check', done: true});
+  ok(await req('/api/command', checklist(workflowTarget)), 403, 'an unassigned declaration has no commander');
+  workflowTarget = ok(await req('/api/command', {type: 'transition', incident: workflowTarget.id, revision: workflowTarget.revision, state: 'acknowledged', summary: 'Commander takes response ownership'}));
+  await workflowRollback(checklist(workflowTarget));
+  workflowTarget = ok(await req('/api/command', checklist(workflowTarget)));
+  assert.equal(workflowTarget.template.checklist[0].done, true);
+  assert.deepEqual(workflowTarget.template.checklist[0].history.map(h => ({by: h.by, done: h.done})), [{by: actor.id, done: true}]);
+  ok(await req('/api/command', {...checklist(workflowTarget), revision: workflowTarget.revision - 1}), 409);
+  for (const fields of [{item: 'missing-item'}, {done: 'yes'}]) ok(await req('/api/command', {...checklist(workflowTarget), ...fields}), 400);
+  ok(await req('/api/command', {type: 'member', id: backup.id, role: 'responder', active: true}));
+  const workflowResponder = (await w.request('/api/login', {name: backup.name, password: passwords.scribe})).cookie;
+  ok(await w.request('/api/command', checklist(workflowTarget), workflowResponder), 403);
+  ok(await w.request('/api/command', {...templateDraft, baseVersion: publishedTemplate.version}, workflowResponder), 403);
+  workflowTarget = ok(await req('/api/command', {type: 'assign-role', incident: workflowTarget.id, revision: workflowTarget.revision, role: 'commander', member: backup.id, reason: 'Transfer customer validation responsibility'}));
+  ok(await req('/api/command', checklist(workflowTarget)), 403, 'administrator cannot tick another commander’s checklist');
+  workflowTarget = ok(await w.request('/api/command', {...checklist(workflowTarget), done: false}, workflowResponder));
+  workflowTarget = ok(await w.request('/api/command', checklist(workflowTarget), workflowResponder));
+  assert.deepEqual(workflowTarget.template.checklist[0].history.map(h => ({by: h.by, done: h.done})), [{by: actor.id, done: true}, {by: backup.id, done: false}, {by: backup.id, done: true}]);
+  workflowTarget = ok(await w.request('/api/command', {type: 'note', incident: workflowTarget.id, revision: workflowTarget.revision, text: 'Decision: validate checkout before declaring customer recovery'}, workflowResponder));
+  assert.equal(workflowTarget.timeline.at(-1).actor, backup.id);
+  const frozenTemplate = structuredClone(workflowTarget.template);
+  const newerTemplate = ok(await req('/api/command', {...templateDraft, baseVersion: publishedTemplate.version, impactPrompt: 'Which regions have customer impact?', checklist: [{id: 'regional-check', text: 'Check every impacted region'}], reason: 'Refine future response workflows'}));
+  assert.equal(newerTemplate.version, publishedTemplate.version + 1);
+  assert.deepEqual((await workflowIncident(workflowTarget.id)).template, frozenTemplate, 'republishing cannot rewrite an active incident’s wording, selected type or completed checklist');
+  let workflowSource = ok(await req('/api/command', {...declaration, title: 'Dependency investigation', incidentType: 'Dependency'}));
+  assert.equal(workflowSource.template.version, newerTemplate.version); assert.equal(workflowSource.template.impactPrompt, newerTemplate.impactPrompt);
+  workflowSource = ok(await req('/api/command', {type: 'assign-role', incident: workflowSource.id, revision: workflowSource.revision, role: 'scribe', member: backup.id, reason: 'Keep the dependency decision record'}));
+  workflowSource = ok(await req('/api/command', {type: 'note', incident: workflowSource.id, revision: workflowSource.revision, text: 'Dependency investigation decision: retain separate follow-up custody'}));
+  workflowSource = ok(await req('/api/command', {type: 'action', incident: workflowSource.id, revision: workflowSource.revision, title: 'Review dependency saturation', owner: backup.id, escalationRecipient: actor.id, due: '2026-12-01', priority: 'P2', completionPolicy: 'human-review'}));
+  const workflowKey = randomBytes(32).toString('hex'), workflowSourceId = 'workflow-' + randomBytes(8).toString('hex');
+  ok(await req('/api/sources', {id: workflowSourceId, key: workflowKey, scopes: [workflowService.id]}));
+  const workflowAlerts = [];
+  for (let n = 0; n < 2; n++) {
+    const receipt = ok(await w.request('/api/ingress/' + workflowSourceId, {source: workflowSourceId, eventId: 'workflow-' + n, service: workflowService.id, environment: 'production', key: 'workflow-' + n, generation: 'workflow-' + n, intent: 'trigger', severity: 'warning', title: 'Dependency signal ' + n, observedAt: '2026-10-17T09:00:00Z', evidence: ''}, undefined, {authorization: 'Bearer ' + workflowKey}), 201);
+    workflowAlerts.push((await workflowState()).alerts.find(a => a.events.includes(receipt.id)).id);
+  }
+  // A third source carries actual alert membership into the canonical target.
+  const signalIncident = ok(await req('/api/command', {...declaration, title: 'Linked dependency signals', alerts: workflowAlerts}));
+  const sourceBeforeMerge = structuredClone(workflowSource), targetBeforeMerge = structuredClone(workflowTarget);
+  const merge = {type: 'merge-incidents', incident: workflowTarget.id, revision: workflowTarget.revision, sources: [{id: workflowSource.id, revision: workflowSource.revision}, {id: signalIncident.id, revision: signalIncident.revision}], reason: 'One customer failure shares the dependency cause'};
+  const split = i => ({type: 'split-incident', incident: i.id, revision: i.revision, alerts: [workflowAlerts[0]], title: 'Independent dependency failure', summary: 'Investigate one signal independently', reason: 'One generation has a separate cause'});
+  const beforeWorkflowAuthority = ok(await req('/api/archive'));
+  for (const input of [templateDraft, checklist(workflowTarget), merge, split(workflowTarget)]) {
+    ok(await w.request('/api/command', input), 401);
+    ok(await w.request('/api/command', input, viewerCookie), 403);
+  }
+  assert.deepEqual(ok(await req('/api/archive')), beforeWorkflowAuthority, 'anonymous and viewer workflow commands change no held records');
+  const workflowApiKey = randomBytes(32).toString('hex');
+  const workflowClient = ok(await req('/api/automation/clients', {name: 'Workflow history reader', key: workflowApiKey, services: [workflowService.id], permissions: ['incidents:read', 'incidents:write']}), 201);
+  for (const input of [checklist(workflowTarget), merge, split(workflowTarget)]) ok(await w.request('/api/v1/incidents', input, undefined, {authorization: 'Bearer ' + workflowApiKey, 'idempotency-key': 'workflow-refusal-' + input.type}), 403);
+  const beforeRelationRefusals = ok(await req('/api/archive'));
+  ok(await req('/api/command', {...merge, revision: merge.revision - 1}), 409);
+  ok(await req('/api/command', {...merge, sources: [merge.sources[1], {...merge.sources[0], revision: workflowSource.revision - 1}]}), 409);
+  assert.deepEqual(ok(await req('/api/archive')), beforeRelationRefusals, 'a stale later merge source cannot partially alias an earlier source');
+  await workflowRollback(merge);
+  const competingMerges = await Promise.all([w.request('/api/command', merge, workflowResponder), w.request('/api/command', merge, workflowResponder)]);
+  assert.deepEqual(competingMerges.map(r => r.status).sort(), [200, 409], 'concurrent merge attempts create one canonical relation');
+  workflowTarget = ok(competingMerges.find(r => r.status === 200));
+  assert.equal(workflowTarget.state, targetBeforeMerge.state); assert.equal(workflowTarget.commander, backup.id);
+  assert.deepEqual(workflowTarget.template, frozenTemplate); assert.deepEqual(new Set(workflowTarget.alerts), new Set(workflowAlerts));
+  assert.deepEqual(new Set(workflowTarget.mergedSources), new Set([workflowSource.id, signalIncident.id]));
+  workflowSource = await workflowIncident(workflowSource.id);
+  assert.deepEqual(workflowSource.mergedInto, {target: workflowTarget.id, by: backup.id, at: workflowSource.mergedInto.at, reason: merge.reason});
+  assert.equal(workflowSource.state, sourceBeforeMerge.state); assert.equal(workflowSource.scribe, sourceBeforeMerge.scribe);
+  assert.deepEqual(workflowSource.actions, sourceBeforeMerge.actions); assert.deepEqual(workflowSource.timeline.slice(0, sourceBeforeMerge.timeline.length), sourceBeforeMerge.timeline);
+  assert.ok(workflowTarget.timeline.some(e => e.kind === 'merge')); assert.ok(workflowSource.timeline.some(e => e.kind === 'merge'));
+  assert.equal(ok(await req('/api/triage?service=' + workflowService.id)).total, 1, 'merged sources remain readable records but leave the active triage queue');
+  const canonicalAlias = await w.request('/api/v1/incidents/' + workflowSource.id, undefined, undefined, {authorization: 'Bearer ' + workflowApiKey});
+  assert.equal(ok(canonicalAlias).id, workflowTarget.id); assert.equal(canonicalAlias.headers.get('content-location'), '/api/v1/incidents/' + workflowTarget.id);
+  assert.deepEqual(ok(canonicalAlias).mergedSources, workflowTarget.mergedSources);
+
+  ok(await req('/api/command', checklist(workflowSource)), 409);
+  ok(await req('/api/command', {...split(workflowSource), alerts: [workflowAlerts[0]]}), 409);
+  ok(await req('/api/command', {...merge, revision: workflowTarget.revision, sources: [{id: workflowSource.id, revision: workflowSource.revision}]}), 409);
+  const beforeSplitRefusals = ok(await req('/api/archive'));
+  ok(await req('/api/command', {...split(workflowTarget), revision: workflowTarget.revision - 1}), 409);
+  ok(await req('/api/command', {...split(workflowTarget), alerts: ['unknown-alert']}), 400);
+  assert.deepEqual(ok(await req('/api/archive')), beforeSplitRefusals);
+  await workflowRollback(split(workflowTarget));
+  const competingSplits = await Promise.all([w.request('/api/command', split(workflowTarget), workflowResponder), w.request('/api/command', split(workflowTarget), workflowResponder)]);
+  assert.deepEqual(competingSplits.map(r => r.status).sort(), [200, 409], 'concurrent splits move a generation exactly once');
+  const workflowChild = ok(competingSplits.find(r => r.status === 200));
+  workflowTarget = await workflowIncident(workflowTarget.id);
+  assert.equal(workflowChild.state, workflowTarget.state, 'split preserves lifecycle without declaring or resolving response work');
+  assert.deepEqual(workflowChild.alerts, [workflowAlerts[0]]); assert.deepEqual(workflowTarget.alerts, [workflowAlerts[1]]);
+  assert.deepEqual(workflowChild.splitFrom, {incident: workflowTarget.id, by: backup.id, at: workflowChild.splitFrom.at, reason: split(workflowTarget).reason, alerts: [workflowAlerts[0]]});
+  assert.deepEqual(workflowTarget.template, frozenTemplate); assert.deepEqual((await workflowIncident(signalIncident.id)).alerts, workflowAlerts, 'the merged alias retains its original signal provenance');
+  const resolvedWorkflow = ok(await req('/api/command', {type: 'bulk-resolve', incident: workflowChild.id, revision: workflowChild.revision, reason: 'Independent customer recovery verified', evidence: 'https://example.test/workflow-recovery'}));
+  ok(await w.request('/api/command', checklist(resolvedWorkflow), workflowResponder), 409);
+  for (const input of [split(resolvedWorkflow), {...merge, incident: workflowTarget.id, revision: workflowTarget.revision, sources: [{id: resolvedWorkflow.id, revision: resolvedWorkflow.revision}]}]) ok(await req('/api/command', input), 409);
+  w.sql("UPDATE sessions SET expires=0 WHERE member='" + backup.id + "'");
+  ok(await w.request('/api/command', checklist(workflowTarget), workflowResponder), 401);
+  const revokedWorkflowResponder = (await w.request('/api/login', {name: backup.name, password: passwords.scribe})).cookie;
+  ok(await req('/api/command', {type: 'member', id: backup.id, role: 'responder', active: false}));
+  ok(await w.request('/api/command', checklist(workflowTarget), revokedWorkflowResponder), 401);
+  ok(await req('/api/command', {type: 'member', id: backup.id, role: 'viewer', active: true}));
+
   // OC-056: one generation owns one truthful, non-automatic obligation at every intake door.
   let fixture = 0; const synthetic = () => 'synthetic-oncall-' + ++fixture;
   const recoveryService = ok(await req('/api/command', {type: 'service', id: synthetic(), name: synthetic(), environment: 'production', owner: actor.id, runbook: [], pager: ''}));
@@ -234,13 +354,22 @@ try {
   assert.equal(responseState.alerts.find(a => a.events.includes(unmatched.id)).obligation.policy.mode, 'alert-only', 'a nonmatching rule preserves the explicit default');
 
   const archive = ok(await req('/api/archive'));
-  for (const credential of [keys.native, keys.pd, keys.am, local, ...Object.values(passwords)]) assert.ok(!JSON.stringify(archive).includes(credential), 'archive excludes intake, email and login authority');
+  for (const credential of [keys.native, keys.pd, keys.am, local, workflowKey, workflowApiKey, ...Object.values(passwords)]) assert.ok(!JSON.stringify(archive).includes(credential), 'archive excludes intake, email and login authority');
   const bad = structuredClone(archive); bad.incidents[0].scribe = 'unknown-responder';
   ok(await req('/api/restore', {mode: 'replace', archive: bad}), 400);
   assert.deepEqual(ok(await req('/api/archive')), archive, 'invalid role references preserve all prior data');
   const orphan = structuredClone(archive); orphan.triage.find(r => r.kind === 'bulk').results.find(r => r.ok).id = 'missing-incident';
   ok(await req('/api/restore', {mode: 'replace', archive: orphan}), 400);
   assert.deepEqual(ok(await req('/api/archive')), archive, 'orphan bulk outcomes cannot replace valid state');
+  for (const mutate of [
+    value => {value.incidents.find(i => i.id === workflowSource.id).mergedInto.target = 'missing-incident';},
+    value => {value.incidents.find(i => i.id === workflowChild.id).splitFrom.alerts = ['missing-alert'];},
+    value => {value.incidents.find(i => i.id === workflowTarget.id).template.checklist[0].history[0].by = 'missing-member';},
+  ]) {
+    const malformedWorkflow = structuredClone(archive); mutate(malformedWorkflow);
+    ok(await req('/api/restore', {mode: 'replace', archive: malformedWorkflow}), 400);
+    assert.deepEqual(ok(await req('/api/archive')), archive, 'invalid workflow provenance cannot replace held data');
+  }
   const restored = await req('/api/restore', {mode: 'replace', archive}); ok(restored);
   const restoredState = ok(await w.request('/api/state', undefined, restored.cookie));
   assert.deepEqual(restoredState.triage, archive.triage, 'restore retains saved views and durable bulk outcomes');
@@ -250,6 +379,8 @@ try {
   assert.deepEqual(restoredState.emailReceipts, archive.emailReceipts);
   assert.ok(restoredState.intakeSources.filter(s => [pdSource, amSource].includes(s.id)).every(s => !s.active));
   assert.equal(restoredState.emailAddresses.find(a => a.id === emailAddress).active, false);
+  assert.equal(restoredState.apiClients.find(c => c.id === workflowClient.id).active, false);
+  ok(await w.request('/api/v1/incidents/' + workflowSource.id, undefined, undefined, {authorization: 'Bearer ' + workflowApiKey}), 401, 'restored workflow history conveys no machine authority');
   ok(await native({...linkedInput, eventId: synthetic()}), 401); ok(await pd('trigger', synthetic()), 400);
   assert.equal((await mail(w, local, 'FAILED: ' + synthetic())).status, 400, 'restored email has no authorized receiving address');
   const inactiveState = ok(await w.request('/api/state', undefined, restored.cookie));
@@ -258,6 +389,8 @@ try {
   const login = await w.request('/api/login', {name: 'Storm commander', password: passwords.owner}); ok(login);
   assert.deepEqual(ok(await w.request('/api/state', undefined, login.cookie)).triage, archive.triage, 'durable receipts survive restart');
   assert.deepEqual(ok(await w.request('/api/state', undefined, login.cookie)).alerts, archive.alerts, 'OC-056 stopped obligations and no-sender notice history survive restart');
+  assert.deepEqual(ok(await w.request('/api/state', undefined, login.cookie)).incidents, archive.incidents, 'OC-050 template snapshots, checklist attribution, aliases and split custody survive inactive restore and restart');
+  console.log('PASS OC-050: versioned service templates freeze complete declaration snapshots; commander-only checklist history survives role transfer, decisions retain authors, merges preserve source timelines/roles/actions and aliases, splits move selected alerts without lifecycle changes, concurrent merge/split commit once, stale/viewer/anonymous/machine/expired/revoked/state refusals and audit-failure rollback preserve exact state, malformed provenance refuses restore, and archive/restore/restart retain workflow custody. Paging remains OFF.');
   console.log('PASS OC-056: native, PagerDuty-compatible before/after source acknowledgment, Alertmanager and email recover exact canonical obligations without human summaries; retry/late traffic preserve stop receipts, policy versions freeze silent/nonautomatic no-sender notices, declared incidents retain current-commander no-timer reminders and require summary plus evidence, urgency/severity/orchestration rules explicitly declare incidents, stale/anonymous/expired/revoked/nonadmin edits fail, audit failure rolls back recovery atomically, and archive/restore/restart retain history without credentials or sends. Paging remains OFF.');
   console.log('OC-041 triage accepted and refused items retain their own atomic audit outcomes; triage storm: 50 incidents, 49 independent commits plus stale failure, replay, roles, queries, viewer denial, confirmed matching and archive/restart passed');
 } finally {await w.close();}

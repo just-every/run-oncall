@@ -1,3 +1,6 @@
+import { IncidentWorkflows } from '../incident-workflows/Controls';
+import { ServiceTemplateSettings } from '../incident-workflows/TemplateSettings';
+import { resolveIncidentAlias } from '../incident-workflows/relations';
 import { AutomationSettings } from '../automation/AutomationSettings';
 import { EmailWorkspace } from '../email/EmailWorkspace';
 import { MonitoringWorkspace } from '../monitoring/MonitoringWorkspace';
@@ -68,15 +71,16 @@ function Workspace() {
   }, []);
   const s = w.state;
   const actor = w.member;
-  const activeIncidents = s?.incidents.filter((i) => i.state !== "resolved").length ?? 0;
+  const activeIncidents = s?.incidents.filter((i) => i.state !== "resolved" && !i.mergedInto).length ?? 0;
   const strandedSession = w.ready && !actor;
   useEffect(() => {
     if (strandedSession && !signingOut) location.replace("/signin/local");
   }, [strandedSession, signingOut]);
   const admin = actor?.role === "admin";
   const canEdit = actor?.role !== "viewer";
-  const incident =
-    s?.incidents.find((i) => i.id === selected) ?? s?.incidents[0];
+  const selectedIncident=s?.incidents.find(i=>i.id===selected)??s?.incidents.find(i=>!i.mergedInto);
+  const incident=s&&selectedIncident?resolveIncidentAlias(s,selectedIncident.id):undefined;
+  useEffect(()=>{if(selectedIncident?.mergedInto&&incident)selectIncident(incident.id);},[selectedIncident?.id,selectedIncident?.mergedInto?.target,incident?.id]);
   const service = s?.services.find((v) => v.id === incident?.service);
   const name = (id: string | null) =>
     s?.members.find((m) => m.id === id)?.name ?? (id?.startsWith("api-") ? "Service account" : "Unassigned");
@@ -259,6 +263,7 @@ function Workspace() {
                       <Field name="service" label="Service">
                         {serviceOptions}
                       </Field>
+                      <Field name="incidentType" label="Incident type (service template)"><option value="">Service template default</option>{[...new Set(s.services.flatMap(service=>service.incidentTemplates?.at(-1)?.incidentTypes??[]))].map(type=><option key={type}>{type}</option>)}</Field>
                       <Field name="severity" label="Severity">
                         <option>critical</option>
                         <option>warning</option>
@@ -276,12 +281,12 @@ function Workspace() {
               <section className="padded" aria-label="My commander reminders">
                 <h2>My commander reminders</h2>
                 <p>Open incidents awaiting your resolution as commander, regardless of assignee.</p>
-                {s.incidents.filter(item => item.state !== "resolved" && item.sourceRecovery?.reminder.state === "recorded" && item.sourceRecovery.reminder.commander === actor.id).map(item => <article key={item.id}>
+                {s.incidents.filter(item => item.state !== "resolved" && !item.mergedInto && item.sourceRecovery?.reminder.state === "recorded" && item.sourceRecovery.reminder.commander === actor.id).map(item => <article key={item.id}>
                   <button onClick={() => {selectIncident(item.id); setHandoff(null);}}>{item.title}</button>
                   <p>all alerts recovered — awaiting resolution</p>
                   <p>{item.sourceRecovery!.reminder.label} · non-automatic · Commander: {name(item.sourceRecovery!.reminder.commander)}</p>
                 </article>)}
-                {!s.incidents.some(item => item.state !== "resolved" && item.sourceRecovery?.reminder.state === "recorded" && item.sourceRecovery.reminder.commander === actor.id) && <p>No open commander reminders.</p>}
+                {!s.incidents.some(item => item.state !== "resolved" && !item.mergedInto && item.sourceRecovery?.reminder.state === "recorded" && item.sourceRecovery.reminder.commander === actor.id) && <p>No open commander reminders.</p>}
               </section>
               {!s.incidents.length && (
                 <div className="empty">
@@ -333,6 +338,7 @@ function Workspace() {
                     <p>Commander reminder: {name(incident.sourceRecovery.reminder.commander)} · {incident.sourceRecovery.reminder.state} · {incident.sourceRecovery.reminder.label} · non-automatic.</p>
                     <p>Source recovery does not resolve this incident. Record recovery evidence and a resolution summary.</p>
                   </section>}
+                  <IncidentWorkflows state={s} incident={incident} member={actor} send={command} />
                   <IncidentResponseControls key={incident.id} incident={incident} members={s.members} busy={w.busy} canEdit={canEdit} mutate={mutate} />
                   <RecentChanges service={incident.service} at={incident.createdAt} revision={s.revision} expanded />
                   <section className="timeline">
@@ -535,6 +541,7 @@ function Workspace() {
                   )}
                   <RecentChanges service={v.id} revision={s.revision} />
                   <ResponsePolicy key={'response:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
+                  <ServiceTemplateSettings state={s} service={v} member={actor} send={command} />
                   <UrgencyPolicy key={'urgency:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
                   {admin && <ServiceDependencies key={v.id} service={v} services={s.services} revision={s.revision} busy={w.busy} run={w.run} />}
                   {admin && (

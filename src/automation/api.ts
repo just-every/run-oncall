@@ -1,3 +1,5 @@
+import { resolveIncidentAlias } from '../incident-workflows/relations.ts';
+import { incidentWithinServices } from '../incident-workflows/scope.ts';
 import { command, fail, Fault, text, type State, type Member } from '../family/response-operations/domain';
 import { loadWorkspace, workspaceWrite } from '../workspace-store';
 import { auditIdentity, auditKind, setAuditSubject } from '../audit-store';
@@ -129,7 +131,7 @@ export function installVersionedApi(api:any,deps:Deps) {
  const allowed=(client:Client,service:string)=>{if(!client.services.includes(service))fail('Record not found in this client scope',404);};
  const projectService=(s:any,c:Client)=>({...s,dependencies:(s.dependencies??[]).filter((id:string)=>c.services.includes(id))});
  async function records(c:any,family:string,state:State,client:Client) {
-  const services=state.services.filter(s=>client.services.includes(s.id)),incidents=state.incidents.filter(i=>client.services.includes(i.service));
+  const services=state.services.filter(s=>client.services.includes(s.id)),incidents=state.incidents.filter(i=>!i.mergedInto&&incidentWithinServices(state,i,client.services));
   if(family==='services')return services.map(s=>projectService(s,client));
   if(family==='incidents')return incidents;
   if(family==='actions')return incidents.flatMap(i=>i.actions.map(a=>({...a,incident:i.id,service:i.service,revision:i.revision})));
@@ -157,7 +159,12 @@ export function installVersionedApi(api:any,deps:Deps) {
    await readFence(c);return c.json({data:page,nextCursor});
   });
   api.get('/api/v1/'+family+'/:id',async(c:any)=>{
-   const {state,client}=await context(c,family+':read'),row=(await records(c,family,state,client)).find((r:any)=>r.id===c.req.param('id'));
+   const {state,client}=await context(c,family+':read');
+   const requested=family==='incidents'?state.incidents.find(i=>i.id===c.req.param('id')):undefined;
+   if(requested&&!incidentWithinServices(state,requested,client.services))fail('Record not found in this client scope',404);
+   const canonical=requested?resolveIncidentAlias(state,requested.id):undefined;
+   const row=(await records(c,family,state,client)).find((r:any)=>r.id===(canonical?.id??c.req.param('id')));
+   if(requested?.mergedInto&&row)c.header('Content-Location','/api/v1/incidents/'+row.id);
    if(!row)fail('Record not found in this client scope',404);c.header('ETag','"'+await changeHash(JSON.stringify(row))+'"');await readFence(c);return c.json(row);
   });
  }

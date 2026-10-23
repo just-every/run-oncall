@@ -1,3 +1,4 @@
+import { instantiateIncidentTemplate } from '../incident-workflows/template.ts';
 import { recordAlertObligation } from '../alert-obligation.ts';
 import { enqueueEvents } from '../automation/model.ts';
 import { authority, fail, type Alert, type Entry, type Event, type Incident, type Member, type State } from '../family/response-operations/domain.ts';
@@ -78,11 +79,13 @@ export function finishResponseAdmission(state: State, alert: Alert, event: Event
     state: 'declared', commander: null, revision: 1, createdAt: event.acceptedAt, alerts: [alert.id], timeline: [entry],
     runbook: service.runbook.map(text => ({text, done: false})), actions: [], recovery: '', review: '', urgency: alert.urgency ?? 'high',
     automaticDeclaration: {alert: alert.id, event: event.id, receipt: receiptId, policyVersion: policy.version, rule: obligation.policy.rule, by: policy.by}};
+  instantiateIncidentTemplate(state,incident);
   state.incidents.unshift(incident);
   enqueueEvents(state, incident, {type: 'declare'}, author);
 }
 
 export function refreshIncidentRecovery(state: State, incident: Incident, at: string, receiptId?: string, actor?: Member | string) {
+  if(incident.mergedInto)return;
   const linked = state.alerts.filter(a => incident.alerts.includes(a.id));
   if (!linked.length || linked.length !== incident.alerts.length || linked.some(a => a.state !== 'recovered')) return;
   if (incident.sourceRecovery) {

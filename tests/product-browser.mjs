@@ -212,6 +212,47 @@ async function responsePolicyBrowser(page,context) {
  }
 }
 
+async function incidentWorkflowBrowser(page,context) {
+ const origin=new URL(page.url()).origin;
+ const req=async(path,data,status=200)=>{const r=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});assert.equal(r.status(),status,`OC-050 ${path}`);return r.json()};
+ const {member}=await req('/api/session');
+ const capture=async(name,width,focus)=>{
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`OC-050 ${name} fits ${width}`);
+  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  await page.screenshot({path:`evidence/browser/oc050-${name}-${width}.png`,fullPage:true});await focus.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc050-${name}-focus-${width}.png`});
+ };
+ const submit=async(button)=>{const response=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST');await button.click();assert.equal((await response).status(),200)};
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:1000});const serviceId='workflow-'+width,serviceName='Checkout incident workflow '+width;
+  await req('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Check replica health before changing customer traffic.'],pager:''});
+  await page.getByRole('link',{name:'Services',exact:true}).click();await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  const service=page.getByRole('article').filter({has:page.getByRole('heading',{name:serviceName,exact:true,level:3})}),settings=service.getByRole('region',{name:'Response template for '+serviceName});
+  await settings.getByRole('button',{name:'Create response template',exact:true}).click();
+  await settings.getByLabel('Critical severity wording',{exact:true}).fill('Checkout unavailable');await settings.getByLabel('Warning severity wording',{exact:true}).fill('Checkout degraded');await settings.getByLabel('Info severity wording',{exact:true}).fill('Customer impact under investigation');
+  await settings.getByLabel('Impact prompt',{exact:true}).fill('Which checkout paths and customers are affected?');await settings.getByLabel('Incident types (one per line)',{exact:true}).fill('Database failure\nTraffic saturation');
+  await settings.getByRole('button',{name:'Add checklist item',exact:true}).click();await settings.getByLabel('Checklist item 1',{exact:true}).fill('Confirm customer checkout recovery');await settings.getByLabel('Reason for template change',{exact:true}).fill('Keep checkout response consistent across shifts.');
+  await submit(settings.getByRole('button',{name:'Publish response template',exact:true}));await settings.getByText(/^Version 1 · published by/).waitFor();await capture('template',width,settings);
+  await page.getByRole('link',{name:'Incidents',exact:true}).click();await page.getByRole('button',{name:'Declare incident',exact:true}).click();
+  const form=page.locator('form').filter({has:page.getByRole('button',{name:'Declare',exact:true})});const targetTitle='Checkout customer impact '+width;
+  await form.getByLabel('Incident title',{exact:true}).fill(targetTitle);await form.getByLabel('Service',{exact:true}).selectOption(serviceId);await form.getByLabel('Incident type (service template)',{exact:true}).selectOption('Database failure');await form.getByLabel('Severity',{exact:true}).selectOption('warning');await form.getByLabel('Customer impact and current evidence',{exact:true}).fill('Customers observe slower checkout; response team is investigating.');await submit(form.getByRole('button',{name:'Declare',exact:true}));
+  await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();let state=await req('/api/state'),target=state.incidents.find(i=>i.title===targetTitle);assert.equal(target.template.incidentType,'Database failure');
+  await req('/api/command',{type:'transition',incident:target.id,revision:target.revision,state:'acknowledged',summary:'Commander coordinates checkout response'});
+  const sourceId='synthetic-oncall-workflow-'+width,key=randomBytes(32).toString('hex');await req('/api/sources',{id:sourceId,key,mode:'bearer',scopes:[serviceId]});
+  const alerts=[];for(const keyName of ['checkout-replica','unrelated-batch']){const r=await context.request.post('/api/ingress/'+sourceId,{headers:{origin,authorization:'Bearer '+key},data:{source:sourceId,eventId:keyName+'-'+width,service:serviceId,environment:'production',key:keyName,generation:'cycle-'+width,intent:'trigger',severity:'warning',title:keyName+' investigation',observedAt:new Date().toISOString(),evidence:''}});assert.equal(r.status(),201);alerts.push((await r.json()).alert)}
+  const sourceTitle='Replica and batch investigation '+width;let source=await req('/api/command',{type:'declare',service:serviceId,severity:'warning',title:sourceTitle,summary:'Investigate related source alerts before separating the batch group.',alerts});source=await req('/api/command',{type:'note',incident:source.id,revision:source.revision,text:'Replica lag was observed before customer impact.'});
+  await page.getByRole('button',{name:'Refresh',exact:true}).click();const workflow=page.getByRole('region',{name:'Incident workflows',exact:true});
+  const checklist=workflow.getByRole('checkbox',{name:'Confirm customer checkout recovery',exact:false});const tick=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST');await checklist.check();assert.equal((await tick).status(),200);await capture('checklist',width,workflow);
+  await workflow.getByText('Merge related incidents into this incident',{exact:true}).click();await workflow.locator('label').filter({hasText:sourceTitle}).getByRole('checkbox').check();await workflow.getByLabel('Reason for merging',{exact:true}).fill('The replica investigation explains the same checkout impact.');await submit(workflow.getByRole('button',{name:'Merge selected incidents',exact:true}));
+  await workflow.getByText('Retained source incidents',{exact:true}).waitFor();await workflow.locator('summary').filter({hasText:sourceTitle}).click();await workflow.getByText('Replica lag was observed before customer impact.',{exact:true}).waitFor();await capture('merge',width,workflow);
+  await page.goto(origin+'/?incident='+encodeURIComponent(source.id)+'#incidents');await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();await page.waitForURL(url=>url.searchParams.get('incident')===target.id);await capture('alias',width,page.locator('.detail'));
+  await workflow.getByText('Split unrelated alerts into a new incident',{exact:true}).click();await workflow.locator('label').filter({hasText:'unrelated-batch'}).getByRole('checkbox').check();await workflow.getByLabel('New incident title',{exact:true}).fill('Independent batch delay '+width);await workflow.getByLabel('New incident impact summary',{exact:true}).fill('Batch processing is separate from checkout customer impact.');await workflow.getByLabel('Reason for splitting',{exact:true}).fill('The batch alert is unrelated to the replica incident.');await submit(workflow.getByRole('button',{name:'Split selected alerts',exact:true}));
+  state=await req('/api/state');const child=state.incidents.find(i=>i.title==='Independent batch delay '+width);assert.equal(child.state,'acknowledged');assert.equal(state.incidents.find(i=>i.id===target.id).state,'acknowledged');assert.equal(child.splitFrom.incident,target.id);assert.equal(child.template.version,1);
+  await page.goto(origin+'/?incident='+child.id+'#incidents');await page.locator('.detail').getByRole('heading',{name:child.title,exact:true}).waitFor();await capture('split',width,workflow);
+ }
+ console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440/390; overflow, axe and hydration checked');
+}
+
 // Production Worker + real local D1, without starting a managed rer dev server.
 const worker=await localWorker()
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
@@ -240,6 +281,7 @@ try {
  await incompleteIntakeBrowser(page,context)
  console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440/390; overflow, axe and hydration checked')
  await responsePolicyBrowser(page,context)
+ await incidentWorkflowBrowser(page,context)
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440/390; overflow, axe and hydration checked')
  assert.deepEqual(errors,[],'no browser application errors')
  console.log('Emitted Worker product browser journey passed at desktop and mobile widths')
