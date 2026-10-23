@@ -4019,11 +4019,11 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "e2061d89f673e5f433b3076352a31576c5d2c869a3649aab1a3fa95e2a54dc97",
+      "sha256": "d3b3515b55a18c459f6e96b744c7d29c1664b32264b03979b769d5b343a5bf86",
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "a09f19eb426581058f24565788b96b1aab4c86a68936499e4b6ccfcafea20930",
+      "sha256": "b049381fb01d058c6cff154b83652c5bc6f21c6e436f127692d4d723707cb8f7",
       "executable": false
     },
     "tests/urgency.mjs": {
