@@ -1,6 +1,10 @@
+import {identityLimit,cleanIdentity} from './identity-bounds';
 import { fail, Fault, link } from '../family/response-operations/domain.ts';
 import type { CompatibleInput, CompatibleOptions, CompatibleProvider } from './provider-types.ts';
 export type { CompatibleInput, CompatibleOptions, CompatibleProvider } from './provider-types.ts';
+
+export class IdentityFault extends Fault {constructor(message:string){super(400,message)}}
+function identityFail(message:string):never {throw new IdentityFault(message)}
 
 type ObjectValue = Record<string, unknown>;
 const object = (value: unknown): value is ObjectValue => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -26,7 +30,7 @@ function timestamp(value: unknown, unixSeconds = false): string | null {
 /** Provider bodies become bounded context, never stored raw request bodies. */
 export function providerInput(provider: CompatibleProvider, payload: unknown, options: CompatibleOptions = {}): CompatibleInput {
   if (!object(payload)) fail('Event must be a JSON object');
-  if (options.action !== undefined && !['recover', 'acknowledge', 'note'].includes(options.action)) fail('Invalid compatible action');
+  if (options.action !== undefined && !['recover', 'acknowledge', 'note'].includes(options.action)) identityFail('Invalid compatible action');
   let truncated = false;
   const scrub = (value: string) => options.secret ? value.replaceAll(options.secret, '[redacted]') : value;
   const bounded = (value: string, maximum: number): string => {
@@ -97,7 +101,8 @@ export function providerInput(provider: CompatibleProvider, payload: unknown, op
   let titleName = 'summary', senderName = 'source', senderRequired = false;
   if (provider === 'pagerduty-v2' || provider === 'pagerduty-v1') {
     const v2 = provider === 'pagerduty-v2', eventAction = v2 ? payload.event_action : payload.event_type;
-    if (eventAction !== 'trigger' && eventAction !== 'resolve' && eventAction !== 'acknowledge') fail(`${v2 ? 'event_action' : 'event_type'} must be trigger, acknowledge or resolve`);
+    if(eventAction===undefined)fail(`${v2?'event_action':'event_type'} is required`);
+    if (eventAction !== 'trigger' && eventAction !== 'resolve' && eventAction !== 'acknowledge') identityFail(`${v2 ? 'event_action' : 'event_type'} must be trigger, acknowledge or resolve`);
     action = eventAction === 'resolve' ? 'recover' : eventAction;
     keyValue = v2 ? payload.dedup_key : payload.incident_key; keyName = v2 ? 'dedup_key' : 'incident_key';
     if (v2) {
@@ -134,15 +139,17 @@ export function providerInput(provider: CompatibleProvider, payload: unknown, op
     for (const name of ['description', 'entity', 'user', 'note']) retain(name, payload[name]);
     retain('responders', payload.responders, 'array'); retain('teams', payload.teams, 'array');
   } else if (provider === 'splunk') {
-    if (typeof payload.message_type !== 'string') fail('message_type is required');
+    if(payload.message_type===undefined)fail('message_type is required');
+    if (typeof payload.message_type !== 'string') identityFail('message_type must be text');
     const messageType = payload.message_type.toUpperCase();
     const actions = {CRITICAL: 'trigger', WARNING: 'trigger', INFO: 'note', ACKNOWLEDGEMENT: 'acknowledge', RECOVERY: 'recover'} as const;
-    if (!Object.hasOwn(actions, messageType)) fail('message_type must be CRITICAL, WARNING, INFO, ACKNOWLEDGEMENT or RECOVERY');
+    if (!Object.hasOwn(actions, messageType)) identityFail('message_type must be CRITICAL, WARNING, INFO, ACKNOWLEDGEMENT or RECOVERY');
     action = actions[messageType as keyof typeof actions]; keyValue = payload.entity_id; keyName = 'entity_id';
     title = payload.entity_display_name ?? payload.state_message; titleName = 'entity_display_name'; sender = payload.monitoring_tool; senderName = 'monitoring_tool'; observedAt = payload.timestamp;
     severity = messageType === 'WARNING' ? 'warning' : messageType === 'INFO' ? 'info' : 'critical';
     for (const name of ['entity_display_name', 'state_message', 'entity_state', 'monitoring_tool']) retain(name, payload[name]);
     retain('details', payload.details, 'object'); retain('custom_fields', payload.custom_fields, 'object');
+    if(options.routingKey!==undefined&&(options.routingKey.length>200||!cleanIdentity(options.routingKey)))identityFail('Splunk routing label exceeds 200 characters or contains invalid characters');
     retain('route', options.routingKey);
     const annotations = Object.fromEntries(Object.entries(payload).filter(([name]) => name.startsWith('vo_annotate.')));
     if (Object.keys(annotations).length) retain('annotations', annotations);
@@ -154,10 +161,10 @@ export function providerInput(provider: CompatibleProvider, payload: unknown, op
     key = crypto.randomUUID();
   } else {
     // Do not truncate identities: these incumbents can exceed the native key cap.
-    if (typeof keyValue !== 'string' || !keyValue.trim()) fail(`${keyName} must be non-empty text`);
-    if (keyValue.length > 200) fail(`${keyName} exceeds Oncall's current native key limit of 200 characters`);
-    if (options.secret && keyValue.includes(options.secret)) fail(`${keyName} must not contain the integration credential`);
-    if(keyValue!==keyValue.trim())fail(`${keyName} cannot begin or end with whitespace in the current native identity profile`);
+    if (typeof keyValue !== 'string' || !keyValue.trim()) identityFail(`${keyName} must be non-empty text`);
+    if (keyValue.length > identityLimit(provider)) identityFail(`${keyName} exceeds the ${identityLimit(provider)} character identity limit`);
+    if(!cleanIdentity(keyValue))identityFail(`${keyName} cannot contain controls, malformed Unicode or surrounding whitespace`);
+    if (options.secret && keyValue.includes(options.secret)) identityFail(`${keyName} must not contain the integration credential`);
     key = keyValue;
   }
   if (provider === 'splunk' && title === undefined) title = key;

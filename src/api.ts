@@ -581,6 +581,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
     ...["oc_api_credentials","oc_endpoint_credentials","oc_key_rate_usage","oc_key_rate_notified"].map(table=>c.env.DB.prepare(`DELETE FROM ${table} WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)`).bind(restoreToken)),
     c.env.DB.prepare("DELETE FROM oc_email_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_change_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
+    c.env.DB.prepare("DELETE FROM oc_incumbent_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare("DELETE FROM oc_intake_credentials WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(restoreToken),
     c.env.DB.prepare(
       "UPDATE operator_members SET member_id=? WHERE member_id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)"

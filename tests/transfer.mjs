@@ -151,6 +151,13 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
   assert.equal(ok(await door.apply(vendor,reviewed)).job.state,'completed')
  }
  assert.equal(ok(await req('/api/move-in/objects')).filter(row=>row.targetKind==='integration'&&row.value.active===false&&row.value.incumbentKey==='not supplied').length,3)
+ // OC-055 portable custody: held incumbent and native hashes never travel.
+ const incumbentObject=ok(await req('/api/move-in/objects')).find(row=>row.targetKind==='integration'&&row.value.provider==='splunk')
+ const incumbentKey=randomBytes(32).toString('hex')
+ const supplyResult=await req('/api/intake/incumbent',{importedId:incumbentObject.targetId,importedRevision:incumbentObject.revision,id:'synthetic-oncall-portable-incumbent',service:'transfer',name:'Synthetic portable incumbent',revision:0,key:incumbentKey});assert.equal(supplyResult.status,201);const supplied=supplyResult.value
+ const activated=ok(await req('/api/intake/sources/synthetic-oncall-portable-incumbent/activate-incumbent',{revision:supplied.source.revision,confirmed:true}))
+ const incumbentHash=sql("SELECT key_digest FROM oc_incumbent_credentials WHERE source='synthetic-oncall-portable-incumbent'")[0].key_digest
+ assert.equal(activated.source.active,true)
  const at=Date.parse('2026-10-11T09:00:00Z'),pending={id:'held-pending',incident:incident.id,service:'transfer',revision:1,status:'pending',nextDue:at,createdAt:at,lastEvaluatedAt:at,currentStep:0,policy:{service:'transfer',scheduleId:'transfer',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at,actor:null,reason:null,attempt:null}]}
  sql("INSERT INTO paging_jobs VALUES('held-pending','"+incident.id+"','transfer',1,'pending',"+at+",'fixture','"+JSON.stringify(pending).replaceAll("'","''")+"')")
  const permanentAudit=ok(await req('/api/audit/export')).rows
@@ -163,7 +170,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
  const manifest=JSON.parse(exportedArchive.toString('utf8').split('\n')[0])
  assert.ok(!manifest.tables.some(table=>table.name==='oc_audit_identities'),'revocable identity associations never travel in archives')
- for(const secret of [...Object.values(fleetChangeKeys),fleetGrafanaKey,fleetSigningKey,fleetSigningCustody,nativeRoutedKey,sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey,emailPart,apiKey,endpointKey])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
+ for(const secret of [incumbentKey,incumbentHash,activated.nativeKey,...Object.values(fleetChangeKeys),fleetGrafanaKey,fleetSigningKey,fleetSigningCustody,nativeRoutedKey,sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey,emailPart,apiKey,endpointKey])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
  await m.command(['import','--input',archive,'--yes','--non-interactive'],4)
  const serviceRow=sql("SELECT data FROM oc_services WHERE id='transfer'")[0].data
  sql("UPDATE oc_services SET data='{\"id\":\"transfer\"}' WHERE id='transfer'");await m.command(['export','--output',invalidRecords,'--non-interactive']);sql("UPDATE oc_services SET data='"+serviceRow.replaceAll("'","''")+"' WHERE id='transfer'")
@@ -191,6 +198,8 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_email_credentials')[0].n,0,'email address keys never transfer')
  assert.deepEqual(ok(await req('/api/email')).samples,prior.emailSamples,'saved mail, versioned rules, activity and quarantine survive inactive restore')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0,'compatible verification hashes are excluded from portable transfers')
+ assert.equal(sql('SELECT COUNT(*) AS n FROM oc_incumbent_credentials')[0].n,0,'OC-055 restored integration has no incumbent hash or binding digest')
+ assert.equal(ok(await req('/api/intake/sources/synthetic-oncall-portable-incumbent/incumbent')).keySupplied,false)
  assert.deepEqual(ok(await req('/api/state')).intakeReceipts,prior.intakeReceipts,'compatible lifecycle and routing explanations survive portable transfer')
  assert.equal(ok(await req('/api/state')).intakeSources.find(source=>source.id==='portable-monitor').routing.versions[0].catchAll,'transfer','published routing definitions survive portable transfer')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_api_credentials')[0].n,0,'service-account digests do not transfer');assert.equal(sql('SELECT COUNT(*) AS n FROM oc_endpoint_credentials')[0].n,0,'outbound signing custody does not transfer')

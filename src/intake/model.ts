@@ -1,3 +1,4 @@
+import {identityLimit} from './identity-bounds';
 import { fail, link, text, type State } from '../family/response-operations/domain.ts';
 import { validateRoutingSource, validateRoutingReceipt } from '../routing/archive.ts';
 import type { RoutingDefinition, RoutingExplanation } from '../routing/types.ts';
@@ -31,7 +32,7 @@ export function validateIntakeArchive(state:State) {
   }
   for(const r of state.intakeReceipts??[]) {
     fields(r,['id','source','provider','service','generation','event','alert','acceptedAt','outcome','action','key','title','severity','priority','observedAt','sender','links','details','truncated'],['routing','routingInput','monitoring','incomplete','native']);
-    text(r.id,'Intake receipt ID',100);text(r.key,'Intake key',200);
+    text(r.id,'Intake receipt ID',100);text(r.key,'Intake key',identityLimit(r.provider));
     if(typeof r.title!=='string'||r.title.length>300||typeof r.sender!=='string'||r.sender.length>200||r.action==='trigger'&&!r.title.trim())fail('Invalid intake text');
     const source=state.intakeSources?.find(s=>s.id===r.source&&(s.routing?r.service===null||s.routing.scope.includes(r.service):s.service===r.service));
     if(!source||!(source.provider==='pagerduty'?['pagerduty-v1','pagerduty-v2'].includes(r.provider):source.provider===r.provider)||!date(r.acceptedAt)||r.observedAt!==null&&!date(r.observedAt)||!['trigger','recover','acknowledge','note'].includes(r.action)||!['critical','warning','info'].includes(r.severity)||r.priority!==null&&!['P1','P2','P3','P4','P5'].includes(r.priority)||typeof r.truncated!=='boolean')fail('Invalid intake receipt');

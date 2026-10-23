@@ -76,11 +76,11 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
     if(['splunk','jsm','betterstack'].includes(vendor))for(const contact of importedContacts(value))result.unmapped!.push({field:'phone_numbers',reason:`Contact ${contact.number}: E.164 retained, unverified; number is unlisted for paging until a maintained country list and verification establish coverage; does not meet two-route coverage. No paging route is created.`})
     return result
    }
-   if(record.kind==='integrations'&&['splunk','jsm','betterstack'].includes(vendor)) {
+   if(record.kind==='integrations') {
     // Keep personal labels in erasable journal custody, not in a new native identity.
     const id=record.sourceId,kind=value.type??value.kind??'unknown'
     if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id)||typeof kind!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(kind))throw Error('integration identifier or kind cannot be represented safely; original retained for resolution')
-    const provider=vendor==='splunk'?'splunk':vendor==='jsm'&&kind==='API'?'opsgenie':null
+    const provider=vendor==='splunk'&&kind==='REST'?'splunk':(vendor==='jsm'||vendor==='opsgenie')&&kind==='API'?'opsgenie':vendor==='pagerduty'&&['generic_events_api_inbound_integration','events_api_v1_inbound_integration','events_api_v2_inbound_integration'].includes(kind)?'pagerduty':null
     return {...effect('integration',`${vendor}:${id}`,{sourceId:id,vendor,kind,provider,active:false,incumbentKey:'not supplied'}),unmapped:[{field:'integration',reason:`Inactive ${kind} integration ${id}; incumbent key: not supplied. No endpoint or send authority is activated. Original settings and labels remain in the journal.`}]}
    }
    if(record.kind==='schedules') {

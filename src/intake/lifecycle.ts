@@ -1,3 +1,4 @@
+import {identityLimit} from './identity-bounds';
 import { finishResponseAdmission } from '../response-policy/model.ts';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
@@ -28,7 +29,7 @@ export function receiveCompatible(state:State,source:IntakeSource,provider:Compa
   let outcome:IntakeReceipt['outcome']='no-effect';
   if(input.action==='trigger'||input.action==='recover'&&open) {
     generation??=crypto.randomUUID();
-    const result=admit(state,{source:identity,eventId:id,service:service.id,environment:service.environment,key:input.key,generation,intent:input.action==='trigger'?'trigger':'recover',severity:input.severity,title:input.title||state.events.find(e=>open?.events.includes(e.id)&&e.intent==='trigger')!.title,observedAt:input.observedAt??at,evidence:input.links[0]??''},at);
+    const result=admit(state,{source:identity,eventId:id,service:service.id,environment:service.environment,key:input.key,generation,intent:input.action==='trigger'?'trigger':'recover',severity:input.severity,title:input.title||state.events.find(e=>open?.events.includes(e.id)&&e.intent==='trigger')!.title,observedAt:input.observedAt??at,evidence:input.links[0]??''},at,false,identityLimit(provider));
     alert=result.alert;event=result.event.id;
     outcome=input.action==='recover'?'recovered':open?'deduplicated':'opened';
   } else if(open) outcome=input.action==='acknowledge'?'acknowledged':'noted';

@@ -1,7 +1,7 @@
 import {rateFaultBody} from '../intake-rate/fault';
 import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
 import { fail, Fault } from '../family/response-operations/domain.ts';
-import { providerInput } from './providers';
+import { providerInput, IdentityFault } from './providers';
 import { receiveCompatible } from './lifecycle';
 import type { CompatibleProvider } from './provider-types';
 import { routingInput } from '../routing/input';
@@ -22,7 +22,7 @@ export function installCompatibleIntake(api:any,deps:IntakeDependencies) {
     if(action&&c.req.query('identifierType')!=='alias')fail('Use identifierType=alias for compatible alert actions');
     let input:ReturnType<typeof providerInput>|undefined,diagnostic:string|undefined;
     try {input=providerInput(provider,payload,{secret:configured.key,...(action?{action,alias:c.req.param('identifier')}:{}) ,...(provider==='splunk'?{routingKey:c.req.param('routingKey')}:{})});}
-    catch(error) {if(!(error instanceof Fault))throw error;diagnostic=error.message;}
+    catch(error) {if(error instanceof IdentityFault||!(error instanceof Fault))throw error;diagnostic=error.message;}
     const receipt=input?receiveCompatible(state,source,provider,input,new Date().toISOString(),source.routing?{input:routingInput(provider,payload,input,configured.key,provider==='splunk'?c.req.param('routingKey'):undefined)}:undefined):undefined;
     const incomplete=request.incomplete||!input;
     const rawIdentity=provider==='pagerduty-v2'?payload.dedup_key:provider==='pagerduty-v1'?payload.incident_key:provider==='opsgenie'?c.req.param('identifier')??payload.alias:payload.entity_id;
