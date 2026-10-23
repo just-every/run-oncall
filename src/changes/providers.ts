@@ -37,7 +37,8 @@ export async function providerChange(source: ChangeSource, payload: any, headers
     eventId = ''; // The compatible schema has no caller-supplied change identity.
   } else if (source.provider === 'github') {
     if (![String(payload.repository?.id), String(payload.repository?.full_name).toLowerCase()].includes(source.repository.toLowerCase())) fail('Repository is outside this source binding',403);
-    eventId = text(headers.get('x-github-delivery'),'GitHub delivery ID',200);
+    // The delivery header is required but unsigned; only the signed body identifies the event.
+    text(headers.get('x-github-delivery'),'GitHub delivery ID',200); eventId = 'github:' + await changeHash(JSON.stringify(payload));
     const event = headers.get('x-github-event');
     if (event === 'deployment') {
       const data = payload.deployment; if (!data) fail('Missing deployment');

@@ -63,6 +63,9 @@ try {
   ok(await send('pagerduty',{routing_key:'invalid',payload:{summary:'refuse'}}),400);
   ok(await send('pagerduty',null),400);ok(await send('native',{eventId:'bad-summary',summary:true}),400);
   ok(await send('github',deployment),201);ok(await send('github',deployment));
+  // The signed body, not the unsigned delivery header, identifies a GitHub event: a resent body stays one change.
+  assert.equal(ok(await send('github',deployment,{'x-github-delivery':'synthetic-oncall-5'})).duplicate,true);
+  assert.equal(ok(await req('/api/state')).changes.filter(c=>c.source==='github').length,1);
   ok(await send('github',{...deployment,repository:{...deployment.repository,id:99,full_name:'other/repo'}},{'x-hub-signature-256':'sha256='+hmac(keys.github,JSON.stringify({...deployment,repository:{...deployment.repository,id:99,full_name:'other/repo'}}))}),403);
   ok(await send('github',deployment,{'x-hub-signature-256':'sha256=forged'}),401);
   // Historical recorded repositories differ: each exact fixture gets its own binding.
