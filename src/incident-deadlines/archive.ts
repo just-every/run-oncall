@@ -6,7 +6,7 @@ export function validateTimeoutHistory(rows:any) {
  if(!Array.isArray(rows)||!rows.length||rows.length>100)fail('Invalid timeout policy history');
  rows.forEach((r,n)=>{shape(r,['version','minutes','by','at']);if(r.version!==n+1||!Number.isSafeInteger(r.minutes)||r.minutes<0||r.minutes>1440||typeof r.by!=='string'||!date(r.at))fail('Invalid timeout policy');});
 }
-export function validDeadlineEntry(incident:Incident,entry:Entry) {return entry.actor===deadlineActor&&entry.kind==='deadline-fired'&&incident.deadlines?.some(d=>d.state==='fired'&&entry.id==='deadline-fired:'+d.id&&entry.at===d.endedAt&&entry.text===`${d.kind} due ${d.dueAt}: ${d.outcome}; paging OFF`);}
+export function validDeadlineEntry(incident:Incident,entry:Entry) {return entry.actor===deadlineActor&&['deadline-fired','deadline-cancelled'].includes(entry.kind)&&incident.deadlines?.some(d=>d.state===(entry.kind==='deadline-fired'?'fired':'cancelled')&&entry.id===entry.kind+':'+d.id&&entry.at===d.endedAt&&entry.text===`${d.kind}: ${d.minutes} minutes, due ${d.dueAt}: ${d.outcome}; paging OFF`);}
 export function validateDeadlines(state:State) {
  const member=(id:string)=>state.members.some(m=>m.id===id)||state.apiClients?.some(c=>c.id===id);
  for(const s of state.services)if(s.ackTimeouts!==undefined){validateTimeoutHistory(s.ackTimeouts);if(s.ackTimeouts.some(r=>!member(r.by)))fail('Invalid timeout author');}
