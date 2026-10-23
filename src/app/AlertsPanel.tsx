@@ -18,17 +18,18 @@ export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpen
       const triggers = events.filter(event => event.intent === 'trigger');
       const ranked = ['critical', 'warning', 'info'] as const;
       const severity = ranked.find(level => (triggers.length ? triggers : events).some(event => event.severity === level));
-      const title = events[0]?.title;
+      const title = events[0]?.title??state.intakeReceipts?.find(r=>r.alert===alert.id)?.title;
       const incidents = state.incidents.filter(incident => incident.alerts.includes(alert.id));
       return <article className="service-card" key={alert.id}>
         <h3>{title}</h3>
         {severity && <span className={`priority sev-${severity}`}>{severity}</span>}
-        <p>{state.services.find(service => service.id === alert.service)?.name} · {alert.environment} · {alert.state}</p>
+        <p>{state.services.find(service => service.id === alert.service)?.name??'Integration unrouted queue'} · {alert.environment} · {alert.state}</p>
+        {alert.obligation&&<p>Paging obligation: {alert.obligation.state} · {alert.obligation.target.kind==='user'?'Integration owner: '+name(alert.obligation.target.id):'Service policy'} · {alert.obligation.urgency} urgency · paging OFF; non-automatic.</p>}
         {alert.priority&&<p>Priority: {alert.priority}</p>}
         <p>{alert.source} / {alert.key} / {alert.generation}</p>
         <p>{alert.suppressed ? 'Suppressed' : name(alert.owner)} · {alert.events.length} events</p>
-        <AlertUrgency alert={alert} state={state} canEdit={canEdit} busy={busy} run={run}/><details><summary>Service runbook</summary>{state.services.find(s=>s.id===alert.service)?.runbook.length ? <ol>{state.services.find(s=>s.id===alert.service)!.runbook.map((step,n)=><li key={n}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</details>
-        <RecentChanges service={alert.service} at={triggers[0]?.observedAt ?? events[0]?.observedAt} revision={state.revision} />
+        <AlertUrgency alert={alert} state={state} canEdit={canEdit&&alert.service!==null} busy={busy} run={run}/><details><summary>Service runbook</summary>{state.services.find(s=>s.id===alert.service)?.runbook.length ? <ol>{state.services.find(s=>s.id===alert.service)!.runbook.map((step,n)=><li key={n}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</details>
+        <RecentChanges service={alert.service!} at={triggers[0]?.observedAt ?? events[0]?.observedAt} revision={state.revision} />
         {incidents.map(incident => <p key={incident.id}><a href="#incidents" onClick={() => onOpenIncident(incident.id)}>Open incident: {incident.title}</a> · {incident.state}</p>)}
         {canEdit && incidents.length === 0 && <button disabled={busy || !severity} onClick={() => onDeclare({
           type: 'declare', service: alert.service, title, severity,

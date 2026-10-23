@@ -1,3 +1,4 @@
+import { recordAlertObligation, validateAlertObligation, type AlertObligation } from '../../alert-obligation';
 import { validateErasureFences, type ErasureFence } from '../../erasure-fence.ts'
 import {validateAllowances,type KeyAllowance} from '../../intake-rate/model.ts';
 import { enqueueEvents, machineAuthority, validateAutomation, type Client, type Endpoint, type Operation, type Outbox } from '../../automation/model.ts';
@@ -66,7 +67,8 @@ export type Event = Signal & {
 export type Alert = {
   id: string;
   source: string;
-  service: string;
+  service: string | null;
+  obligation?: AlertObligation;
   environment: string;
   key: string;
   generation: string;
@@ -326,6 +328,7 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     admitAlertUrgency(state, alert, event, created);
     alert.events.push(event.id);
     if (signal.intent === "recover") alert.state = "recovered";
+    recordAlertObligation(alert, event.id);
   }
   state.events.push(event);
   state.audit.push(
@@ -733,15 +736,16 @@ export function validateArchive(value: any): State {
       "events",
       "owner",
       "suppressed",
-    ], ["urgency", "urgencyRevision", "urgencyHistory", "priority"]);
+    ], ["urgency", "urgencyRevision", "urgencyHistory", "priority", "obligation"]);
     if (
-      !value.services.some(
+      !(a.service===null ? a.environment==='' && a.events.length===0 && value.intakeReceipts?.some((r:any)=>r.alert===a.id&&r.incomplete&&r.service===null&&r.source===a.source.slice(7)&&r.key===a.key&&r.generation===a.generation) : value.services.some(
         (s: any) => s.id === a.service && s.environment === a.environment,
-      ) ||
+      )) ||
       !["active", "recovered"].includes(a.state) ||
       (a.owner !== null && !hasMember(a.owner))
     )
       fail("Invalid alert references");
+    validateAlertObligation(value,a);
     text(a.generation, "generation", 100);
     bool(a.suppressed);
     if(a.priority!==undefined&&!/^P[1-5]$/.test(a.priority))fail("Invalid alert priority");

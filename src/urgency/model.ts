@@ -1,3 +1,4 @@
+import { recordAlertObligation } from '../alert-obligation';
 import { authority, fail, type Alert, type Event, type Member, type Service, type State } from '../family/response-operations/domain.ts';
 import { evaluateUrgency, validateUrgencyRule } from './rules.ts';
 import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from './types.ts';
@@ -33,21 +34,24 @@ function append(state: State, alert: Alert, entry: AlertUrgencyEntry) {
 export function admitAlertUrgency(state: State, alert: Alert, event: Event, created: boolean) {
   const decision = event.urgency!;
   if (!created && (event.intent !== 'trigger' || alert.state !== 'active' || decision.urgency !== 'high' || alertUrgency(state, alert) === 'high')) return;
-  append(state, alert, {id: `urgency:${event.id}`, at: event.acceptedAt, by: `source:${event.source}`,
+  append(state, alert, {id: `urgency:${event.id}`, at: event.acceptedAt, by: `source:${event?.source??alert.source}`,
     from: alert.urgency ?? null, to: decision.urgency, reason: decision.reason, ruleVersion: decision.version});
 }
 export const incompleteUrgencyReason = 'Incomplete intake is always high urgency, whatever the service rule decided';
 /** An incomplete-intake alert is high urgency under every service rule (OC-059), raised in its admission commit. */
 export function raiseIncompleteUrgency(state: State, alert: Alert, receipt: {id: string; event: string | null; acceptedAt: string}) {
   const event = state.events.find(e => e.id === receipt.event);
-  if (!event || alertUrgency(state, alert) === 'high') return;
-  append(state, alert, {id: `incomplete:${receipt.id}`, at: receipt.acceptedAt, by: `source:${event.source}`,
+  if (alert.urgency === 'high') return;
+  if (!event && alert.service!==null) return;
+  append(state, alert, {id: `incomplete:${receipt.id}`, at: receipt.acceptedAt, by: `source:${event?.source??alert.source}`,
     from: alert.urgency ?? null, to: 'high', reason: incompleteUrgencyReason, ruleVersion: null});
+  recordAlertObligation(alert);
 }
 export function changeAlertUrgency(state: State, actor: Member, alertId: string, input: unknown, at: string): {alert: Alert; changed: boolean} {
   authority(state, actor);
   const v = exact(input, ['revision', 'urgency', 'reason']), alert = state.alerts.find(a => a.id === alertId);
   if (!alert) fail('Unknown alert', 404);
+  if(alert.service===null)fail('Incomplete unrouted alerts remain high urgency until assigned to a service',409);
   if (v.revision !== (alert.urgencyRevision ?? 0)) fail('Alert urgency changed; reload before saving', 409);
   if (v.urgency !== 'high' && v.urgency !== 'low') fail('Choose high or low urgency');
   if (typeof v.reason !== 'string' || !v.reason.trim() || v.reason.length > 500) fail('An urgency reason of at most 500 characters is required');

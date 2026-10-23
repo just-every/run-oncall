@@ -55,7 +55,7 @@ export function validateUrgencyArchive(state: State) {
         recorded.text !== urgencyEntryText(alert, entry)) fail('Missing alert urgency audit attribution');
       if (entry.id.startsWith('incomplete:')) {
         const receipt = receipts.get(entry.id.slice('incomplete:'.length)), event = receipt?.event ? events.get(receipt.event) : undefined;
-        if (!receipt?.incomplete || receipt.alert !== alert.id || !event || entry.by !== `source:${event.source}` || entry.at !== receipt.acceptedAt ||
+        if (!receipt?.incomplete || receipt.alert !== alert.id || (alert.service!==null&&!event) || entry.by !== `source:${event?.source??alert.source}` || entry.at !== receipt.acceptedAt ||
           entry.to !== 'high' || entry.ruleVersion !== null || entry.reason !== incompleteUrgencyReason) fail('Invalid incomplete-intake urgency transition');
       } else if(entry.id.startsWith('email:')) {
         const receipt=state.emailReceipts?.find(r=>r.id===entry.id.slice(6));
@@ -74,6 +74,6 @@ export function validateUrgencyArchive(state: State) {
       identities.add(entry.id); previous = entry.to; previousAt = Date.parse(entry.at);
     }
     if (previous !== alert.urgency) fail('Alert urgency differs from its history');
-    if (!services.has(alert.service)) fail('Invalid alert urgency service');
+    if (alert.service!==null&&!services.has(alert.service)) fail('Invalid alert urgency service');
   }
 }

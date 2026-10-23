@@ -1,3 +1,4 @@
+import { recordAlertObligation } from '../alert-obligation';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
 import { intakeSourceIdentity, type IntakeReceipt, type IntakeSource } from '../intake/model.ts';
@@ -24,6 +25,11 @@ export function receiveMonitoring(state:State,source:IntakeSource,input:Monitori
     generation=input.generation;event=result.event.id;alert=result.alert;
     outcome=input.intent==='recover'?'recovered':previous?'deduplicated':'opened';
     if(routing)routing.serviceDecision={event,...structuredClone(result.event.decision)};
+  }
+  if(service===null&&options.incomplete) {
+    const queued:import('../family/response-operations/domain').Alert={id:crypto.randomUUID(),source:identity,service:null,environment:'',key:input.key,generation:input.generation,state:'active',events:[],owner:source.routing!.owner,suppressed:false};
+    state.alerts.push(queued);alert=queued.id;generation=input.generation;
+    recordAlertObligation(queued);
   }
   const receipt:IntakeReceipt={id,source:source.id,provider:options.provider,service,generation,event,alert,acceptedAt:at,outcome,action:input.intent==='recover'?'recover':'trigger',key:input.key,title:input.title,severity:input.severity,priority:null,observedAt:input.observedAt,sender:source.provider,links:structuredClone(input.links),details:structuredClone(input.details),truncated:input.truncated,...(routing?{routing,routingInput}:{}),...(options.monitoring?{monitoring:structuredClone(options.monitoring)}:{}),...(options.incomplete?{incomplete:structuredClone(options.incomplete)}:{})};
   (state.intakeReceipts??=[]).push(receipt);
