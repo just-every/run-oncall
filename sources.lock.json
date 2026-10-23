@@ -131,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "f56a326db1ea2c69ac0b3cb178c80029601c618b744816e5cbb57b078b34608a",
+      "sha256": "41ed7f726600d85bd72bb104afcb97c0e05985ee347810cedfa46e8b113399ab",
       "executable": false
     },
     "AGENTS.md": {
@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "50fdf6dae20baa16207f0b7a731bc628beff908786dd24441b4e2eb5af796557",
+      "sha256": "108259673c6bccdee2a8cd02dff3d1c21fa883ae14b3e9b29dc68f1d4c09fe42",
       "executable": false
     },
     "DEMO.md": {
@@ -195,7 +195,7 @@
       "executable": false
     },
     "docs/incidents.md": {
-      "sha256": "d7c254c35cd9feb1e75874cd192fefd711e019f9501dcd0c4f78dd52704fdd31",
+      "sha256": "d94de11696efc61b08aa812101690c3eba44c54a75682d48596348e3aa696979",
       "executable": false
     },
     "docs/install.md": {
@@ -723,7 +723,7 @@
       "executable": false
     },
     "scripts/installer/archive-policy.mjs": {
-      "sha256": "a63ef8c441f0776ba4b939e80be490a5ff021591689198529c9385a8e28753f8",
+      "sha256": "99d7a2f40e100bc30361b98e5e9174829da9936f7803cd2eb2313f1aad33966f",
       "executable": false
     },
     "scripts/installer/audit-archive.mjs": {
@@ -763,11 +763,11 @@
       "executable": false
     },
     "src/alert-obligation.ts": {
-      "sha256": "e282f6f26b9a91c960c12fb8f7a7f5809da39101a9718a166b58519a8a395226",
+      "sha256": "8ef1d89feec42cd016d1f969496197908c2f04d708fce253963244ec643a576c",
       "executable": false
     },
     "src/api.ts": {
-      "sha256": "5fca6dcf645fb63f09903201fa215a790ffb8ab874d90809314d7f7bb76eb43c",
+      "sha256": "91b4c935ce234ed80a2b0350297153e74f947e193e3cdd4341e6fb8dcea664fb",
       "executable": false
     },
     "src/app/AlertsPanel.tsx": {
@@ -835,7 +835,7 @@
       "executable": false
     },
     "src/audit-request.ts": {
-      "sha256": "557a8cbc59e6f293f3239a7a61061e675108e7f17e5bf9fe42f9ad8bed38b592",
+      "sha256": "f66fbef218d04ded5d418805448642f308590a86c32eba9ae81458a379e32001",
       "executable": false
     },
     "src/audit-store.ts": {
@@ -851,7 +851,7 @@
       "executable": false
     },
     "src/automation/api.ts": {
-      "sha256": "811a9fb560dc6740d020e781ef64792263cf4a2e3ec39db21a7293132e40640e",
+      "sha256": "df109e47f477263ccd09264095a122f8c5f1b771da7fd0f176aeae2bec781f05",
       "executable": false
     },
     "src/automation/AutomationSettings.tsx": {
@@ -863,7 +863,7 @@
       "executable": false
     },
     "src/automation/model.ts": {
-      "sha256": "90d0753387aaa947db3eae725c15fc6c23f5fa47900b712412a4a082f6efdd9a",
+      "sha256": "2a894e058f6bcc3ed2eb9eb272c2af3bf478d2c717df8d4702449e971a2639f5",
       "executable": false
     },
     "src/base/actor.ts": {
@@ -1179,7 +1179,7 @@
       "executable": false
     },
     "src/family/response-operations/domain.ts": {
-      "sha256": "b9493520efd9b0fda009199e298657535cc5494c654f59434a43d721edd02665",
+      "sha256": "4393f41be19f78d82f466868f52ee630ab5236098b9184308ee8d3f6a2302117",
       "executable": false
     },
     "src/family/response-operations/escalation.ts": {
@@ -1448,6 +1448,26 @@
     },
     "src/mail.server.mjs": {
       "sha256": "d8ef29f1989ffa22b0fec85f606cfad15cc149592d376798458186c0b25e3e50",
+      "executable": false
+    },
+    "src/manual-pages/archive.ts": {
+      "sha256": "fbe235a66a99ea8cff15d5ef1bfce771cee753924c3eb12fb78c4f505d2968ec",
+      "executable": false
+    },
+    "src/manual-pages/context.ts": {
+      "sha256": "bdd7ace4fb0084bcc2e58474e2940fe9f1a70863d0475c8b186e38c3cbb0137f",
+      "executable": false
+    },
+    "src/manual-pages/Controls.tsx": {
+      "sha256": "7d7be351f9643022def961935fa9ab6436bfdc4b04059f1e25cccd41df5b265d",
+      "executable": false
+    },
+    "src/manual-pages/model.ts": {
+      "sha256": "64542716c06f2c4e9d4410b930654872b31f309af1c46d42032091c533267a51",
+      "executable": false
+    },
+    "src/manual-pages/types.ts": {
+      "sha256": "7cbc078c613bf0adc31f4fea6918a4449b9577f5323b616ac5090aca174e36d8",
       "executable": false
     },
     "src/modules/d1-transport/index.d.mts": {
@@ -3355,7 +3375,7 @@
       "executable": false
     },
     "src/move-in/erasure.ts": {
-      "sha256": "0b6459ed379e027016b299033c66324873d102cf04a8224b11ef28fa7060f2bc",
+      "sha256": "7009ba9340e5d620269c5916ac7d09ac266466715aaac91481eae9d30eb49e8f",
       "executable": false
     },
     "src/move-in/export-help.css": {
@@ -3571,7 +3591,7 @@
       "executable": false
     },
     "src/routes/index.tsx": {
-      "sha256": "9766a53a61516dc836ecf0e231ffa4d669e274d7dc6881d0226eeac2201196a7",
+      "sha256": "b31ad9d7e7ea0df46b42bfd467b69c47f419099121bdc484e5a5cc1e0d450db8",
       "executable": false
     },
     "src/routes/signin.local.tsx": {
@@ -3743,7 +3763,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "f8c0335f6cb4faf5504f9f3776223aa3b66312e1b259dd18ac15cfe7ca8871ca",
+      "sha256": "a085f9aa5d6aa707e917e2b5ba4a85f2426d9b368e949fac1a1d21346f6dd57e",
       "executable": false
     },
     "tests/alert-severity-browser.mjs": {
@@ -3767,7 +3787,7 @@
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
-      "sha256": "fbac8a3a82c6d2abedc7b5dcfef41772aecadcc6f21b139128d56c240d42554d",
+      "sha256": "94e49275b622cc68fbfc66db026e572dcd7da9fe80e3feb2e05fe92789dbaa49",
       "executable": false
     },
     "tests/checkpoint-fixtures.mjs": {
@@ -3887,7 +3907,7 @@
       "executable": false
     },
     "tests/keyboard-coordination.mjs": {
-      "sha256": "2e216b6c64f2f3f94e534575605f0c3e6925a6453a621c72f307513129530a25",
+      "sha256": "1e93f64e7818b469c9ee3a706543a63a05d28fc0b171b143650ef23e862896a1",
       "executable": false
     },
     "tests/keyboard.mjs": {
@@ -3899,7 +3919,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "8696ea74b958a3c7ae3c11905abf1a0d7cb392ecb3eaecf97b4a8fbd116aab7f",
+      "sha256": "0dbf0156dcca560db2a4ca1d069ab48945b8640a0d43da2e2a62ebba022f8f48",
       "executable": false
     },
     "tests/monitoring.mjs": {
@@ -3975,11 +3995,11 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "18e6015dfd531bbf37304ce29906b19ee89327a757681813598fe7fb5a433367",
+      "sha256": "6a43e67e76ad9f3871264ab0c2bd08ee8f686c43e6cba7bd07a2227c1cda0440",
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "2bfa93850cafede00029a8de1e5e5e2d2882fa6b5b6f591beb0b35fb27ea3c9c",
+      "sha256": "b5440164906dda817112710437871f255a4823100e7e2a2c56615a85cd9c2691",
       "executable": false
     },
     "tests/urgency.mjs": {
