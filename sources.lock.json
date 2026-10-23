@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7da94983c5532cb9bff535e0098a8fce0e0bef56ff1e5c2ad5b947850d9193ff",
+      "sha256": "c6a1c4e0a9df0a44fb023c33bd232aa7fdbce1d2fb2e45c2e2722dd875cf7aab",
       "executable": false
     },
     "DEMO.md": {
@@ -811,7 +811,7 @@
       "executable": false
     },
     "src/app/tooltip.css": {
-      "sha256": "d1c38a6234fa5229fee9f0a9e033b89edc28c74a81192a99984f1819a79ceb36",
+      "sha256": "fc7f52b667f2fd9431475beb7384a2e36a7dba3223d2463be9b2f8e21a7fc038",
       "executable": false
     },
     "src/app/Tooltip.tsx": {
@@ -3899,7 +3899,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "f9ad9d771d34993433f9c082ddec833be257c7b7f3aea70d53017480dc6e68ce",
+      "sha256": "8696ea74b958a3c7ae3c11905abf1a0d7cb392ecb3eaecf97b4a8fbd116aab7f",
       "executable": false
     },
     "tests/monitoring.mjs": {
