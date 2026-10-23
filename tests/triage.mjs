@@ -220,6 +220,12 @@ try {
   const recoveredSplit=ok(await req('/api/command',{type:'split-incident',incident:workflowTarget.id,revision:workflowTarget.revision,alerts:[additionalAlert.id],title:'Recovered separate source',summary:'Keep the recovered source as separate human response work',reason:'Preserve independent response ownership'}));
   workflowTarget=await workflowIncident(workflowTarget.id);assert.equal(recoveredSplit.state,workflowTarget.state);assert.ok(recoveredSplit.sourceRecovery);assert.equal(workflowTarget.sourceRecoveryHistory.length,2);
   ok(await req('/api/archive'));
+  const otherWorkflowService=ok(await req('/api/command',{type:'service',name:'Independent dependency service',environment:'production',owner:actor.id,runbook:[],pager:''}));
+  const foreignSource=ok(await req('/api/command',{type:'declare',service:otherWorkflowService.id,severity:'warning',title:'Cross-service dependency investigation',summary:'Retain its separate service grant while merging',alerts:[]}));
+  workflowTarget=ok(await req('/api/command',{type:'merge-incidents',incident:workflowTarget.id,revision:workflowTarget.revision,sources:[{id:foreignSource.id,revision:foreignSource.revision}],reason:'Coordinate the related dependency while preserving API service boundaries'}));
+  for(const id of [workflowTarget.id,foreignSource.id])ok(await w.request('/api/v1/incidents/'+id,undefined,undefined,{authorization:'Bearer '+workflowApiKey}),404);
+  const allWorkflowKey=randomBytes(32).toString('hex');ok(await req('/api/automation/clients',{name:'Full workflow lineage reader',key:allWorkflowKey,services:[workflowService.id,otherWorkflowService.id],permissions:['incidents:read']}),201);
+  assert.equal(ok(await w.request('/api/v1/incidents/'+foreignSource.id,undefined,undefined,{authorization:'Bearer '+allWorkflowKey})).id,workflowTarget.id,'aliases resolve only when every original service remains granted');
   w.sql("UPDATE sessions SET expires=0 WHERE member='" + backup.id + "'");
   ok(await w.request('/api/command', checklist(workflowTarget), workflowResponder), 401);
   const revokedWorkflowResponder = (await w.request('/api/login', {name: backup.name, password: passwords.scribe})).cookie;
