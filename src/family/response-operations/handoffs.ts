@@ -94,7 +94,7 @@ function source(input: unknown): HandoffSource {
   if (["recovered", "resolved"].includes(i.state) && !i.recovery) fail("Recovered handoff snapshot needs evidence");
   const d = fields(i.declaration, ["id", "at", "actor", "kind", "text"], ["lifecycle", "metadata"]);
   snapshotText(d.id, "declaration ID"); snapshotText(d.actor, "declaration actor", 200); snapshotText(d.text, "declaration text", 10000);
-  if (d.kind !== "declared" || typeof d.at !== "string" || !Number.isFinite(Date.parse(d.at))) fail("Invalid handoff declaration snapshot");
+  if (!["declared", "split"].includes(d.kind) || d.kind === "split" && (!d.lifecycle || d.lifecycle.from !== null) || typeof d.at !== "string" || !Number.isFinite(Date.parse(d.at))) fail("Invalid handoff declaration snapshot");
   validateLifecycleEntry(d);
   if (d.metadata !== undefined) {
     const m = fields(d.metadata, ['event', 'policyVersion', 'rule']);
