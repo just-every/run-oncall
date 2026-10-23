@@ -47,8 +47,7 @@ try {
   await page.screenshot({path:`${captureDirectory}/signin-owner-name-${width}.png`,fullPage:true})
  }
  await page.goto(worker.origin+'/setup')
- const confirmation=page.getByRole('checkbox')
- if(await confirmation.count()){await confirmation.check();await page.getByRole('button',{name:'Finish setup'}).click()}
+ await page.waitForURL(worker.origin+'/')
  await page.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
  await page.getByRole('button',{name:'Sign out',exact:true}).click()
  await page.waitForURL(worker.origin+signIn.path)
