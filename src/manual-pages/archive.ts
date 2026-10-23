@@ -21,6 +21,6 @@ export function holdManualRecords(state:State) {
 export function eraseManualMember(incident:State['incidents'][number],id:string) {
  incident.responders=incident.responders?.filter(member=>member!==id);
  if(incident.manualPage?.creator===id)delete incident.manualPage;
- else if(incident.manualPage)incident.manualPage.obligations=incident.manualPage.obligations.filter(o=>o.creator!==id&&!(o.target.kind==='user'&&o.target.id===id));
+ else if(incident.manualPage){const before=incident.manualPage.obligations.length;incident.manualPage.obligations=incident.manualPage.obligations.filter(o=>o.creator!==id&&!(o.target.kind==='user'&&o.target.id===id));if(before!==incident.manualPage.obligations.length)incident.manualPage.fingerprint='';}
  if(incident.responderRequests)incident.responderRequests=incident.responderRequests.filter(r=>r.requester!==id&&r.response?.by!==id&&!(r.obligation.target.kind==='user'&&r.obligation.target.id===id));
 }
