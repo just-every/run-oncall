@@ -37,11 +37,18 @@ try {
    assert.equal(forward.status(),303,'signed-in owner forwards from /signin')
    assert.equal(forward.headers().location,location)
   }
+  const auditBefore=new Set((await (await context.request.get(worker.origin+'/api/audit/export')).json()).rows.map(row=>row.id))
+  const oldName=worker.sql("SELECT data FROM oc_members WHERE id='"+initialMember.id+"'")[0].data
   const corrected='synthetic-oncall-'+width
   const changed=await context.request.post(worker.origin+'/setup',{form:{displayName:corrected,confirm:'yes'},headers:{origin:worker.origin},maxRedirects:0})
   assert.equal(changed.status(),303)
+  worker.sql("CREATE TRIGGER synthetic_owner_name_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='member.owner-name' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-owner-name-audit'); END")
+  try {assert.equal((await context.request.get(worker.origin+'/api/state')).status(),503);assert.equal(worker.sql("SELECT data FROM oc_members WHERE id='"+initialMember.id+"'")[0].data,oldName,'audit failure rolls back the name and workspace mutation')} finally {worker.sql('DROP TRIGGER synthetic_owner_name_audit')}
   const state=await context.request.get(worker.origin+'/api/state')
   assert.equal((await state.json()).members.find(member=>member.id===initialMember.id).name,corrected,'later setup correction follows into the mapped member')
+  const auditAfter=(await (await context.request.get(worker.origin+'/api/audit/export')).json()).rows.filter(row=>!auditBefore.has(row.id)&&row.kind==='member.owner-name'&&row.outcome==='accepted')
+  assert.equal(auditAfter.length,1,'one attributed owner-name synchronization commits with its audit')
+  assert.equal(auditAfter[0].workspaceAfter,auditAfter[0].workspaceBefore+1)
   await page.goto(worker.origin+'/app')
   await page.locator('.profile').getByText(corrected,{exact:true}).waitFor()
   await page.screenshot({path:`${captureDirectory}/signin-owner-name-${width}.png`,fullPage:true})

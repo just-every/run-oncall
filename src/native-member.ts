@@ -36,6 +36,7 @@ export async function nativeMember(env:Bindings,request:Request):Promise<{member
     const state=await loadWorkspace(env.DB),mapped=state.members.find(row=>row.id===member.id)
     if(!mapped?.active)return null
     mapped.name=native.operator.displayName
+    auditIdentity(env.DB,{actor:{kind:'member',id:member.id},subject:{kind:'member',id:member.id}})
     auditKind(env.DB,'member.owner-name')
     await env.DB.batch(workspaceWrite(env.DB,state,state.revision,{
       sql:`EXISTS(SELECT 1 FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id WHERE s.id=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.role='owner' AND o.status='active' AND o.version=s.operator_version AND o.display_name=?)`,
