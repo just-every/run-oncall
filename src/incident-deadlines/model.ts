@@ -4,8 +4,10 @@ import type {IncidentDeadline} from './types.ts';
 export const deadlineActor='system:incident-deadlines';
 const pending=(i:Incident)=>(i.deadlines??[]).filter(d=>d.state==='pending');
 export function cancelDeadlines(incident:Incident,at:string,reason:string,actor=deadlineActor) {
- for(const d of pending(incident)){d.state='cancelled';d.endedAt=at;d.outcome=reason;incident.timeline.push({id:'deadline-cancelled:'+d.id,actor,at,kind:'deadline-cancelled',text:`${d.kind}: ${d.minutes} minutes, due ${d.dueAt}: ${d.outcome}; paging OFF`});}
- for(const d of incident.deadlines??[])if(d.obligation?.state==='recorded'){d.obligation.state='stopped';d.obligation.outcome=reason;}
+ let changed=false;
+ for(const d of pending(incident)){changed=true;d.state='cancelled';d.endedAt=at;d.outcome=reason;incident.timeline.push({id:'deadline-cancelled:'+d.id,actor,at,kind:'deadline-cancelled',text:`${d.kind}: ${d.minutes} minutes, due ${d.dueAt}: ${d.outcome}; paging OFF`});}
+ for(const d of incident.deadlines??[])if(d.obligation?.state==='recorded'){changed=true;d.obligation.state='stopped';d.obligation.outcome=reason;}
+ if(changed)incident.revision++;
 }
 function record(state:State,incident:Incident,actor:Member,kind:IncidentDeadline['kind'],minutes:number,at:string,context:PolicyContext) {
  if((incident.deadlines?.length??0)>=500)fail('Deadline history capacity reached',429);
@@ -25,7 +27,7 @@ export function deadlineCommand(state:State,actor:Member,input:any,at:string,con
   if(!Number.isSafeInteger(input.minutes)||input.minutes<0||input.minutes>1440)fail('Timeout must be off (0) or 1–1440 minutes');
   if((service.ackTimeouts?.length??0)>=100)fail('Timeout policy history capacity reached',429);
   (service.ackTimeouts??=[]).push({version:(previous?.version??0)+1,minutes:input.minutes,by:actor.id,at});
-  if(input.minutes===0)for(const i of state.incidents.filter(i=>i.service===service.id))for(const d of pending(i).filter(d=>d.kind==='acknowledgment-timeout')){d.state='cancelled';d.endedAt=at;d.outcome='Timeout policy turned off';}
+  if(input.minutes===0)for(const i of state.incidents.filter(i=>i.service===service.id))for(const d of pending(i).filter(d=>d.kind==='acknowledgment-timeout')){d.state='cancelled';d.endedAt=at;d.outcome='Timeout policy turned off';i.revision++;i.timeline.push({id:'deadline-cancelled:'+d.id,actor:actor.id,at,kind:'deadline-cancelled',text:`${d.kind}: ${d.minutes} minutes, due ${d.dueAt}: ${d.outcome}; paging OFF`});}
   state.audit.push({id:crypto.randomUUID(),actor:actor.id,at,kind:input.type,text:`Acknowledgment timeout ${service.id}, version ${(previous?.version??0)+1}: ${input.minutes===0?'off':input.minutes+' minutes'}`});return service;
  }
  const incident=state.incidents.find(i=>i.id===input.incident);if(!incident)fail('Unknown incident',404);
