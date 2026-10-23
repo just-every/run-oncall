@@ -69,7 +69,7 @@ function TemplateEditor({ service, initial, send, saved }: { service: Service; i
         {severities.map(severity => <label className="field" key={severity}><span>{severity[0].toUpperCase() + severity.slice(1)} severity wording</span>
           <input name={severity} required maxLength={300} defaultValue={initial?.severityWording[severity] ?? severity} />
         </label>)}
-        <label className="field"><span>Impact prompt</span><textarea name="impactPrompt" required maxLength={1000} rows={3} defaultValue={initial?.impactPrompt ?? 'What is affected?'} /></label>
+        <label className="field"><span>Impact prompt</span><textarea aria-label="Impact prompt" name="impactPrompt" required maxLength={1000} rows={3} defaultValue={initial?.impactPrompt ?? 'What is affected?'} /></label>
         <Field name="incidentTypes" label="Incident types (one per line)" type="textarea" required={false} value={initial?.incidentTypes.join('\n') ?? ''} help="Up to 20 types, each up to 100 characters." />
         <fieldset><legend>Response checklist</legend>
           {checklist.map((item, index) => <div className="workflow-template-row" key={item.id}>
@@ -79,7 +79,7 @@ function TemplateEditor({ service, initial, send, saved }: { service: Service; i
           </div>)}
           <button type="button" disabled={checklist.length >= 30} onClick={() => setChecklist(items => [...items, { id: crypto.randomUUID(), text: '' }])}>Add checklist item</button>
         </fieldset>
-        <label className="field"><span>Reason for template change</span><textarea name="reason" required maxLength={3000} rows={3} /></label>
+        <label className="field"><span>Reason for template change</span><textarea aria-label="Reason for template change" name="reason" required maxLength={3000} rows={3} /></label>
       </div>
     </Form>
     {error && <p role="alert">{error}</p>}
