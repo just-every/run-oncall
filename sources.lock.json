@@ -1163,7 +1163,7 @@
       "executable": false
     },
     "src/family/response-operations/handoffs.ts": {
-      "sha256": "bbf2a5e5b43158ddb7f63e11be52d6522e12ebbf2ef209c16c23b4d050209722",
+      "sha256": "a679570bb68f44e87fbac1356b9ab0cd22aec8dbd60ad8201bfc5574af87f0c5",
       "executable": false
     },
     "src/family/response-operations/incident-controls.ts": {
@@ -3895,7 +3895,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "f68371a85c1330553eabaa297c7925311dfeda8c74d97b065c2935cd438f612a",
+      "sha256": "c73b4b2423253a0d78b8887b730381c26b4f2027fb7cd0288073dc345f05a0d0",
       "executable": false
     },
     "tests/product-import-browser.mjs": {
@@ -3951,7 +3951,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "2af8f51813543243e8b2ec89457bf80f2a16150db35899ac2fa5b6b517348a89",
+      "sha256": "d542f4ebd6e0265f8074f49056a4da98ecd2cf63a8e9cb0a6b614e23a49d536b",
       "executable": false
     },
     "tests/triage.mjs": {
