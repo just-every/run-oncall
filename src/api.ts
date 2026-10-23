@@ -443,7 +443,9 @@ api.post("/api/command", async (c) => {
     const current=state.members.find(m=>m.id===actor.id&&m.active);if(!current||!['admin','responder'].includes(current.role))fail('Only responders and admins may create manual pages',403);
     const key=commandKey({commandKey:input.operationId});
     const fingerprint=await hash(JSON.stringify(input));
-    const done=await runOnce(c.env.DB,{actor:actor.id,command:'manual-page:'+fingerprint,key},async()=>({result:await execute()}));return c.json(done.result);
+    const done=await runOnce(c.env.DB,{actor:actor.id,command:'manual-page:'+fingerprint,key},async()=>{const made=await execute() as import('./family/response-operations/domain').Incident;return {result:made.id};});
+    const currentState=await authorizedState(c),currentActor=currentState.members.find(m=>m.id===actor.id&&m.active);if(!currentActor||!['admin','responder'].includes(currentActor.role))fail('Manual-page access revoked',403);
+    const incident=currentState.incidents.find(i=>i.id===done.result);if(!incident)fail('Incident no longer retained',404);return c.json(incident);
   }
   return c.json(await execute());
 });

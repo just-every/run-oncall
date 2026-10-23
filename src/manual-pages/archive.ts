@@ -10,7 +10,7 @@ export function validateManualRecords(state:State) {
  for(const service of state.services)if(service.userAssignments!==undefined){if(!Array.isArray(service.userAssignments)||service.userAssignments.length>100)fail('Invalid assignment history');service.userAssignments.forEach((v,n)=>{rule(v);if(v.version!==n+1)fail('Invalid assignment version');});}
  for(const incident of state.incidents){
   const page=incident.manualPage;
-  if(page){shape(page,['creator','operation','fingerprint','description','assignment','obligations','acknowledgment']);if(!member(page.creator))fail('Invalid page creator');str(page.operation,100);str(page.fingerprint,20000);str(page.description);rule(page.assignment);response(page.acknowledgment);if(!Array.isArray(page.obligations)||page.obligations.length>100)fail('Invalid manual obligations');page.obligations.forEach(obligation);}
+  if(page){shape(page,['creator','operation','fingerprint','description','assignment','obligations','acknowledgment'],['erasedCreator','erasedAcknowledgment']);if([page.erasedCreator,page.erasedAcknowledgment].some(v=>v!==undefined&&v!==true))fail('Invalid erased page attribution');if(!member(page.creator))fail('Invalid page creator');str(page.operation,100);str(page.fingerprint,20000);str(page.description);rule(page.assignment);response(page.acknowledgment);if(!Array.isArray(page.obligations)||page.obligations.length>100)fail('Invalid manual obligations');page.obligations.forEach(obligation);}
   if(incident.responders!==undefined&&(!Array.isArray(incident.responders)||new Set(incident.responders).size!==incident.responders.length||incident.responders.some(id=>!member(id))))fail('Invalid additional responders');
   if(incident.responderRequests!==undefined){if(!Array.isArray(incident.responderRequests)||incident.responderRequests.length>500||new Set(incident.responderRequests.map(r=>r.id)).size!==incident.responderRequests.length)fail('Invalid request history');for(const r of incident.responderRequests){shape(r,['id','requester','message','at','status','response','obligation','notice']);str(r.id,100);str(r.message);date(r.at);if(!member(r.requester)||!['pending','accepted','declined','cancelled','ended','held'].includes(r.status))fail('Invalid responder request');response(r.response);obligation(r.obligation);if(r.notice)obligation(r.notice);if(r.status!=='pending'&&r.obligation.state!=='stopped')fail('Inactive request still has authority');}}
  }
@@ -20,7 +20,8 @@ export function holdManualRecords(state:State) {
 }
 export function eraseManualMember(incident:State['incidents'][number],id:string) {
  incident.responders=incident.responders?.filter(member=>member!==id);
- if(incident.manualPage?.creator===id)delete incident.manualPage;
+ if(incident.manualPage?.acknowledgment?.by===id)incident.manualPage.erasedAcknowledgment=true;
+ if(incident.manualPage?.creator===id){incident.manualPage.erasedCreator=true;incident.manualPage.description='Erased member';incident.manualPage.fingerprint='';incident.manualPage.obligations=[];}
  else if(incident.manualPage){const before=incident.manualPage.obligations.length;incident.manualPage.obligations=incident.manualPage.obligations.filter(o=>o.creator!==id&&!(o.target.kind==='user'&&o.target.id===id));if(before!==incident.manualPage.obligations.length)incident.manualPage.fingerprint='';}
  if(incident.responderRequests)incident.responderRequests=incident.responderRequests.filter(r=>r.requester!==id&&r.response?.by!==id&&!(r.obligation.target.kind==='user'&&r.obligation.target.id===id));
 }
