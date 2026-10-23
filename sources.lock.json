@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c6a1c4e0a9df0a44fb023c33bd232aa7fdbce1d2fb2e45c2e2722dd875cf7aab",
+      "sha256": "5acb8324f33b5d4ea93358e567a6c05c0f984d86b9d62c31977844c60371480b",
       "executable": false
     },
     "DEMO.md": {
@@ -3571,7 +3571,7 @@
       "executable": false
     },
     "src/routes/index.tsx": {
-      "sha256": "6ed5a8071aa5c84dfa4a528598bc2d39fa0932723f29e813a3efcf662c816e33",
+      "sha256": "9766a53a61516dc836ecf0e231ffa4d669e274d7dc6881d0226eeac2201196a7",
       "executable": false
     },
     "src/routes/signin.local.tsx": {
