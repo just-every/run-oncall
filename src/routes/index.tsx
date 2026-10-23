@@ -338,7 +338,7 @@ function Workspace() {
                     <p>Commander reminder: {name(incident.sourceRecovery.reminder.commander)} · {incident.sourceRecovery.reminder.state} · {incident.sourceRecovery.reminder.label} · non-automatic.</p>
                     <p>Source recovery does not resolve this incident. Record recovery evidence and a resolution summary.</p>
                   </section>}
-                  <IncidentWorkflows state={s} incident={incident} member={actor} send={command} />
+                  <IncidentWorkflows key={incident.id} state={s} incident={incident} member={actor} send={command} />
                   <IncidentResponseControls key={incident.id} incident={incident} members={s.members} busy={w.busy} canEdit={canEdit} mutate={mutate} />
                   <RecentChanges service={incident.service} at={incident.createdAt} revision={s.revision} expanded />
                   <section className="timeline">
