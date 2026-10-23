@@ -66,10 +66,10 @@ try{
  const prefixesBefore=sql('SELECT id,bytes,request_sha256,prefix FROM oc_native_prefixes ORDER BY id');
  assert.deepEqual(prefixesBefore.map(row=>row.prefix).sort(),nativePrefixes.map(raw=>Buffer.from(raw).subarray(0,65536).toString('base64')).sort());
  const monitoringKey=randomBytes(32).toString('hex')
- assert.equal((await req('/api/intake/sources',{id:'portable-alertmanager',name:'Portable Alertmanager',provider:'alertmanager',service:'transfer',revision:0,key:monitoringKey})).status,201)
+ assert.equal((await req('/api/routing/keys',{id:'portable-alertmanager',name:'Portable Alertmanager',provider:'alertmanager',scope:['transfer'],owner:member.id,revision:0,key:monitoringKey,rules:[{id:'portable-readable',match:'all',conditions:[{field:'labels.alertname',op:'equals',value:'Portable monitor'}],target:{service:'transfer'}}],catchAll:null})).status,201)
  const monitoringBody={version:'4',receiver:'portable',status:'firing',alerts:[{status:'firing',labels:{alertname:'Portable monitor',severity:'warning'},annotations:{summary:'Retain native monitoring lifecycle'},startsAt:'2026-10-17T10:00:00.123456Z',endsAt:'0001-01-01T00:00:00Z',fingerprint:'portable-monitoring'},{status:'resolved'}]}
  const monitoring=await fetch(m.origin+'/api/monitoring/portable-alertmanager',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+monitoringKey},body:JSON.stringify(monitoringBody)})
- assert.equal(monitoring.status,202);assert.ok((await monitoring.json()).incomplete,'a malformed sibling leaves durable incomplete evidence alongside the valid alert')
+ assert.equal(monitoring.status,202);const monitoringReceipt=(await monitoring.json()).incomplete;assert.ok(monitoringReceipt,'a malformed sibling leaves durable incomplete evidence alongside the valid alert');const queueState=ok(await req('/api/state')),queuedReceipt=queueState.intakeReceipts.find(r=>r.id===monitoringReceipt.receipt),queuedAlert=queueState.alerts.find(a=>a.id===queuedReceipt.alert);assert.equal(queuedAlert.service,null);assert.equal(queuedAlert.urgency,'high');assert.deepEqual(queuedAlert.obligation.target,{kind:'user',id:member.id});assert.equal(queuedAlert.obligation.automatic,false)
  let reviewedIncident=ok(await req('/api/state')).incidents.find(i=>i.id===incident.id)
  const reviewCommand=async data=>reviewedIncident=ok(await req('/api/command',{...data,incident:incident.id,revision:reviewedIncident.revision}))
  await reviewCommand({type:'transition',state:'acknowledged',summary:'Transfer response underway'})

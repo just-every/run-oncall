@@ -64,7 +64,7 @@ export async function nativeRouting(w,cookie,actor) {
   assert.deepEqual(held.details.ownerNotice,{owner:actor.id,paging:'off',state:'recorded'});
   assert.ok(state.audit.some(a=>a.kind==='intake-owner-notice'&&a.text.includes(held.id)));
   if(service)assert.equal(state.alerts.find(a=>a.id===held.alert).urgency,'high');
-  else {assert.equal(held.outcome,'unrouted');assert.equal(held.alert,null);}
+  else {assert.equal(held.outcome,'unrouted');const queued=state.alerts.find(a=>a.id===held.alert);assert.equal(queued.service,null);assert.equal(queued.urgency,'high');assert.deepEqual(queued.obligation.target,{kind:'user',id:actor.id});assert.equal(queued.obligation.paging,'off');}
   const again=ok(await send(raw,secret,mode,path),202);assert.equal(again.id,held.id);assert.equal(again.duplicate,true);
   assert.deepEqual(ok(await req('/api/archive')),state,'incomplete retries preserve committed custody');
   return held;

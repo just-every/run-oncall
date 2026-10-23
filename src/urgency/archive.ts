@@ -10,7 +10,7 @@ export function validateUrgencyRuleHistory(value: unknown): UrgencyRule[] {
   return rules;
 }
 export function validateUrgencyArchive(state: State) {
-  const services = new Map(state.services.map(s => [s.id, s])), events = new Map(state.events.map(e => [e.id, e]));
+  const services = new Map<string|null,State['services'][number]>(state.services.map(s => [s.id, s])), events = new Map(state.events.map(e => [e.id, e]));
   const members = new Set(state.members.map(m => m.id)), audit = new Map(state.audit.map(e => [e.id, e]));
   const receipts = new Map((state.intakeReceipts ?? []).map(r => [r.id, r]));
   const histories = new Map<string, UrgencyRule[]>();

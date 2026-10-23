@@ -38,7 +38,7 @@ export function validateIntakeArchive(state:State) {
     const outcomes={trigger:['opened','deduplicated'],recover:['recovered','no-effect'],acknowledge:['acknowledged','no-effect'],note:['noted','no-effect']};
     if(!(source.routing&&r.outcome==='unrouted')&&!outcomes[r.action].includes(r.outcome))fail('Invalid intake outcome');
     const alert=r.alert===null?null:state.alerts.find(a=>a.id===r.alert&&a.source===intakeSourceIdentity(r.source)&&a.service===r.service&&a.key===r.key&&a.generation===r.generation);
-    if(r.outcome==='unrouted'&&r.incomplete ? (!alert||r.event!==null) : ['no-effect','unrouted'].includes(r.outcome)?(r.alert!==null||r.generation!==null||r.event!==null):!alert)fail('Invalid intake lifecycle reference');
+    if(r.outcome==='unrouted'&&r.incomplete&&r.alert!==null ? (!alert||r.event!==null) : ['no-effect','unrouted'].includes(r.outcome)?(r.alert!==null||r.generation!==null||r.event!==null):!alert)fail('Invalid intake lifecycle reference');
     if(r.event!==null&&!state.events.some(e=>e.id===r.event&&alert?.events.includes(e.id)&&e.eventId===(r.native?r.routing?.readmission?'native-readmit:'+r.routing.readmission.operationId:r.native.eventId:r.id)&&e.source===intakeSourceIdentity(r.source)&&e.intent===(r.action==='recover'?'recover':'trigger')))fail('Invalid intake event reference');
     if(['trigger','recover'].includes(r.action)&&!['no-effect','unrouted'].includes(r.outcome)&&r.event===null)fail('Missing intake event');
     if(['acknowledge','note'].includes(r.action)&&r.event!==null)fail('Invalid intake action event');
