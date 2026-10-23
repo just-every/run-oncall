@@ -340,7 +340,10 @@ try {
  const checkpointReview=ok(await req('/api/schedules/daily/review',checkpointEdit))
  ok(await req('/api/schedules/daily/apply',{...checkpointEdit,digest:checkpointReview.digest,confirmed:true}))
  const replacement=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(replacement)
- const stateAfter=ok(await w.request('/api/state',undefined,replacement.cookie));assert.deepEqual({...stateAfter,revision:prior.revision},prior)
+ const stateAfter=ok(await w.request('/api/state',undefined,replacement.cookie)),receiving=structuredClone(prior)
+ receiving.members=receiving.members.map(m=>m.role==='stakeholder'?{...m,active:false}:m)
+ for(const i of receiving.incidents){if(i.manualPage)i.manualPage.obligations=i.manualPage.obligations.map(o=>o.state==='recorded'?{...o,state:'stopped',outcome:'Restored inactive; no sender'}:o);if(i.responderRequests)i.responderRequests=i.responderRequests.map(r=>({...r,status:r.status==='pending'?'held':r.status,obligation:r.obligation.state==='recorded'?{...r.obligation,state:'stopped',outcome:'Restored inactive; no sender'}:r.obligation,notice:r.notice?{...r.notice,state:'stopped'}:null}));}
+ assert.deepEqual({...stateAfter,revision:prior.revision},receiving,'checkpoint retains complete history while new status identities and active manual records restore inactive')
  const pagingAfter=ok(await w.request('/api/paging/state',undefined,replacement.cookie));assert.deepEqual(pagingAfter.schedules,checkpoint.paging.schedules);assert.deepEqual(pagingAfter.policies,checkpoint.paging.policies)
  ok(await w.request('/api/state',undefined,cookie),401)
  record('OC-016: paired checkpoint invalid rollback and complete replacement preserved both datasets and revoked the old session')
