@@ -16,7 +16,7 @@ export function validateManualRecords(state:State) {
  }
 }
 export function holdManualRecords(state:State) {
- for(const incident of state.incidents){for(const o of incident.manualPage?.obligations??[]){o.state='stopped';o.outcome='Restored inactive; no sender';}for(const request of incident.responderRequests??[]){if(request.status==='pending')request.status='held';request.obligation.state='stopped';request.obligation.outcome='Restored inactive; no sender';if(request.notice)request.notice.state='stopped';}}
+ for(const incident of state.incidents){for(const o of incident.manualPage?.obligations??[])if(o.state==='recorded'){o.state='stopped';o.outcome='Restored inactive; no sender';}for(const request of incident.responderRequests??[]){if(request.status==='pending')request.status='held';if(request.obligation.state==='recorded'){request.obligation.state='stopped';request.obligation.outcome='Restored inactive; no sender';}if(request.notice)request.notice.state='stopped';}}
 }
 export function eraseManualMember(incident:State['incidents'][number],id:string) {
  incident.responders=incident.responders?.filter(member=>member!==id);
