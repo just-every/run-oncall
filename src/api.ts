@@ -1,3 +1,4 @@
+import {holdDeadlines} from './incident-deadlines/model.ts';
 import { commandKey, runOnce, CommandKeyError } from './base/command-receipts';
 import { responseContext } from './manual-pages/context';
 import { holdManualRecords } from './manual-pages/archive';
@@ -427,7 +428,7 @@ installTriage(api, {body, state: authorizedState, save: (c, state, revision) => 
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
 api.post("/api/command", async (c) => {
   const input = await body(c);
-  const needsPolicy=['manual-page','user-assignment','request-responders','respond-request'].includes(input.type);
+  const needsPolicy=['manual-page','user-assignment','request-responders','respond-request','snooze'].includes(input.type)||input.type==='transition'&&input.state==='acknowledged';
   const snapshot=needsPolicy?await pagingSnapshot(c.env.DB):null;
   const state=snapshot?.workspace??await load(c.env.DB), revision=state.revision, actor=c.get('actor');
   const execute=async()=>{
@@ -596,6 +597,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   if(!parent)fail('Session expired or revoked',401);
   holdBusinessStatus(value);
   holdManualRecords(value);
+  holdDeadlines(value);
   refreshBusinessStatus(value);
   holdAutomation(value);
   pauseChangeSources(value);

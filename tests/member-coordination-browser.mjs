@@ -9,7 +9,7 @@ import {localWorker} from './worker.mjs'
 // through the setup token; admin-created members sign in by password at
 // /signin/local, coordinate, reload and read attributed history; signed-out and
 // revoked sessions get no workspace; paging refuses.
-const worker=await localWorker()
+const worker=await localWorker({}, {clock:true})
 const captureDirectory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
 await mkdir(captureDirectory,{recursive:true})
 const responder={name:'Rosa Responder',password:'synthetic-responder-testing-password'},viewer={name:'Vic Viewer',password:'synthetic-viewer-testing-password'}
@@ -218,6 +218,28 @@ try {
  assert.equal(await assignment68.getByLabel('User-assignment outcome',{exact:true}).inputValue(),'repeat')
  for(const width of [1440,390])await statusCapture(owner.page,'oc068-service-assignment-rule',width)
  console.log('OC-068 browser: manual page urgency/target, recorded obligations, independent accepted and declined responder requests, viewer refusal and versioned assignment setting at 1440/390')
+ await assignment68.getByText('Acknowledgment timeout · off',{exact:true}).click()
+ await assignment68.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true}).fill('1')
+ await assignment68.getByRole('button',{name:'Save acknowledgment timeout for Checkout',exact:true}).click()
+ await assignment68.getByText('Acknowledgment timeout · 1 minutes',{exact:true}).waitFor()
+ for(const width of [1440,390])await statusCapture(owner.page,'oc058-service-timeout',width)
+ let incident58=ok(await call(owner.page,'/api/command',{type:'declare',service:'checkout',title:'Snoozed checkout investigation',severity:'warning',summary:'Investigating a customer checkout delay'}))
+ incident58=ok(await call(owner.page,'/api/command',{type:'transition',incident:incident58.id,revision:incident58.revision,state:'acknowledged',summary:'Owner investigating'}))
+ await openIncident(owner.page,incident58.id)
+ await owner.page.getByLabel('Snooze duration (minutes)',{exact:true}).fill('1')
+ for(const width of [1440,390])await statusCapture(owner.page,'oc058-snooze-form',width)
+ await owner.page.getByRole('button',{name:'Snooze incident',exact:true}).click()
+ await owner.page.getByRole('status').filter({hasText:'Snoozed / acknowledgment held until'}).waitFor()
+ for(const width of [1440,390])await statusCapture(owner.page,'oc058-snoozed',width)
+ incident58=ok(await call(owner.page,'/api/state')).incidents.find(i=>i.id===incident58.id)
+ await worker.time(Date.parse(incident58.deadlines.at(-1).dueAt))
+ const expired58=await worker.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(expired58.status,200)
+ await openIncident(owner.page,incident58.id)
+ await owner.page.getByRole('region',{name:'Incident deadlines'}).getByText(/snooze · fired/).waitFor()
+ assert.equal(ok(await call(owner.page,'/api/state')).incidents.find(i=>i.id===incident58.id).state,'declared')
+ for(const width of [1440,390])await statusCapture(owner.page,'oc058-expired-triggered',width)
+ console.log('OC-058 browser: timeout setting, snooze duration, persisted snoozed state and scheduled expiry back to triggered at 1440/390; paging OFF')
+
 
  // Signed out, anonymous and revoked sessions see no workspace.
  await rosa.page.setViewportSize({width:1440,height:1000});await rosa.page.goto(worker.origin+'/#incidents')

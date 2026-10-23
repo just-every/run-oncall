@@ -181,13 +181,13 @@ export function installVersionedApi(api:any,deps:Deps) {
    const guard=c.get('apiGuard') as Guard;c.set('apiGuard',{sql:guard.sql+' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',values:[...guard.values,snapshot.revision]});
   } else {
    if(family==='services') {const current=state.services.find(s=>s.id===service)!;if(input.etag!==await changeHash(JSON.stringify(projectService(current,client))))fail('Service changed; supply its current etag',409);}
-   const permitted=family==='services'?['service']:family==='actions'?['action','complete']:['declare','manual-page','transition','reassign','assign-role'];
+   const permitted=family==='services'?['service']:family==='actions'?['action','complete']:['declare','manual-page','snooze','cancel-deadline','transition','reassign','assign-role'];
    if(!permitted.includes(input.type))fail('Action is not available in this API family',403);
    if(input.type==='manual-page'){
     const snapshot=await pagingSnapshot(c.env.DB);if(input.policy)allowed(client,input.policy);
     const guard=c.get('apiGuard') as Guard;c.set('apiGuard',{sql:guard.sql+' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',values:[...guard.values,snapshot.revision]});
     result=command(state,actor,{...input,operationId:keyHash},new Date(Date.now()).toISOString(),responseContext(snapshot,Date.now()));
-   }else result=command(state,actor,input);
+   }else result=command(state,actor,input,new Date(Date.now()).toISOString());
   }
   const operation:Operation={id:crypto.randomUUID(),client:client.id,key:keyHash,request,service,resource:family,entity:result.id,revision:result.revision??1,at:new Date().toISOString()};
   (state.apiOperations??=[]).push(operation);if(state.apiOperations.length>1000)fail('API operation history capacity reached',429);

@@ -20,6 +20,12 @@ try {
   cookie=(await w.request('/api/setup',{name:'Urgency operator',password:'synthetic-urgency-operator-password'})).cookie;
   const actor=ok(await req('/api/session')).member;
   for(const id of ['checkout','support','default'])ok(await req('/api/command',{type:'service',id,name:id,environment:'production',owner:actor.id,runbook:['Inspect service health'],pager:''}));
+  assert.equal((await state()).services.find(s=>s.id==='default').ackTimeouts,undefined);
+  const timeout58=ok(await req('/api/command',{type:'acknowledgment-timeout',service:'default',baseVersion:0,minutes:1}));assert.equal(timeout58.ackTimeouts.at(-1).version,1);
+  ok(await req('/api/command',{type:'acknowledgment-timeout',service:'default',baseVersion:0,minutes:2}),409);
+  ok(await req('/api/command',{type:'acknowledgment-timeout',service:'default',baseVersion:1,minutes:1441}),400);
+  ok(await req('/api/command',{type:'acknowledgment-timeout',service:'default',baseVersion:1,minutes:0}));
+  console.log('OC-058 service policy: off by default, bounded versioned acknowledgment timeout, stale publication refused and explicit off retained');
   ok(await req('/api/sources',{id:'urgency-monitor',key,scopes:['checkout','default']}));
   const constant=ok(await publish('checkout',0,draft('low')),201);
   const firstSignal=signal('first-observation','critical'),firstReceipt=ok(await send(firstSignal),201);

@@ -1,3 +1,4 @@
+import {holdDeadlines} from '../../src/incident-deadlines/model.ts';
 import {holdManualRecords} from '../../src/manual-pages/archive.ts'
 import {holdBusinessStatus,refreshBusinessStatus} from '../../src/business-status/model.ts'
 import {validateNativePrefixes} from './native-prefix-archive.mjs'
@@ -28,7 +29,7 @@ export default {
   await validateNativePrefixes(db,tables,coordination)
   validateAutomation(coordination)
   holdBusinessStatus(coordination)
-  holdManualRecords(coordination)
+  holdManualRecords(coordination);holdDeadlines(coordination)
   if(tables.oc_incidents)for(const row of coordination.incidents)await db.prepare('UPDATE "'+tables.oc_incidents.replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(row),row.id).run()
   refreshBusinessStatus(coordination)
   if(tables.oc_business_services)for(const row of coordination.businessServices??[])await db.prepare('UPDATE "'+tables.oc_business_services.replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(row),row.id).run()

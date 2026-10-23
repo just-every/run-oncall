@@ -1,3 +1,6 @@
+import {deadlineCommand,afterDeadlineCommand} from '../../incident-deadlines/model.ts';
+import {validateDeadlines,validDeadlineEntry} from '../../incident-deadlines/archive.ts';
+import type {AckTimeout,IncidentDeadline} from '../../incident-deadlines/types.ts';
 import { manualCommand, finishManualRecords, type PolicyContext } from '../../manual-pages/model.ts';
 import { validateManualRecords } from '../../manual-pages/archive.ts';
 import type { AssignmentRule, ManualPage, ResponderRequest } from '../../manual-pages/types';
@@ -33,6 +36,7 @@ export type Service = {
   urgencyRules?: UrgencyRule[];
   responsePolicies?: ResponsePolicy[];
   userAssignments?: AssignmentRule[];
+  ackTimeouts?: AckTimeout[];
 };
 export type Policy = {
   id: string;
@@ -116,6 +120,7 @@ export type Action = {
   accepted?: {by:string;at:string};
 };
 export type Incident = {
+  deadlines?:IncidentDeadline[];
   automaticDeclaration?: AutomaticDeclaration;
   sourceRecovery?: IncidentSourceRecovery;
   id: string;
@@ -361,15 +366,15 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
 export function command(state:State,actor:Member,input:any,at=new Date().toISOString(),context:PolicyContext={policies:[],eligible:{}}) {
   if(actor.machine) {
     machineAuthority(state,actor);
-    if(!['service','declare','manual-page','transition','reassign','assign-role','action','complete'].includes(input.type))fail('Machine action is not authorized',403);
+    if(!['service','declare','manual-page','snooze','cancel-deadline','transition','reassign','assign-role','action','complete'].includes(input.type))fail('Machine action is not authorized',403);
     if(input.type==='complete') {
       const action=state.incidents.find(i=>i.id===input.incident)?.actions.find(a=>a.id===input.action);
       if(action?.completionPolicy!=='evidence')fail('Human review requires a current human session',403);
     }
     if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&["admin", "responder"].includes(m.role)))fail('An explicit active responsible member is required; the client is not a human responder');
   }
-  const result=['manual-page','user-assignment','request-responders','respond-request','cancel-request'].includes(input.type)?manualCommand(state,actor,input,at,context,data=>applyCommand(state,actor,data,at) as Incident):applyCommand(state,actor,input,at);
-  if(result&&'timeline' in result) {finishManualRecords(result as Incident,actor,at);enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
+  const result=['snooze','cancel-deadline','acknowledgment-timeout'].includes(input.type)?deadlineCommand(state,actor,input,at,context):['manual-page','user-assignment','request-responders','respond-request','cancel-request'].includes(input.type)?manualCommand(state,actor,input,at,context,data=>applyCommand(state,actor,data,at) as Incident):applyCommand(state,actor,input,at);
+  if(result&&'timeline' in result) {afterDeadlineCommand(state,result as Incident,actor,input,at,context);finishManualRecords(result as Incident,actor,at);enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
   return result;
 }
 function applyCommand(
@@ -675,6 +680,7 @@ export function validateArchive(value: any): State {
   validateAllowances(value);
   validateBusinessStatus(value);
   validateManualRecords(value);
+  validateDeadlines(value);
   value.members.forEach(member);
   if (!value.members.some((m: any) => m.active && m.role === "admin"))
     fail("Archive needs an active administrator");
@@ -685,7 +691,7 @@ export function validateArchive(value: any): State {
   )
     fail("Duplicate member names");
   for (const s of value.services) {
-    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "userAssignments"]);
+    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "userAssignments", "ackTimeouts"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
     if (!hasMember(s.owner)) fail("Invalid service references");
@@ -810,7 +816,7 @@ export function validateArchive(value: any): State {
       "actions",
       "recovery",
       "review",
-    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance", "automaticDeclaration", "sourceRecovery", "manualPage", "responderRequests", "responders"]);
+    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance", "automaticDeclaration", "sourceRecovery", "manualPage", "responderRequests", "responders", "deadlines"]);
     validateIncidentControls(i, value.members);
     text(i.title, "incident", 300);
     if (
@@ -841,7 +847,7 @@ export function validateArchive(value: any): State {
     array(i.timeline);
     i.timeline.forEach(entry);
     if(i.timeline.some((e:any)=>e.lifecycle?.member!=null&&!hasMember(e.lifecycle.member)))fail("Invalid named responder reference");
-    if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor) && !validResponseSourceEntry(value,i,e)))
+    if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor) && !validResponseSourceEntry(value,i,e) && !validDeadlineEntry(i,e)))
       fail("Invalid incident attribution");
     array(i.runbook);
     for (const r of i.runbook) {
