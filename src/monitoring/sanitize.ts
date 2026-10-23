@@ -16,11 +16,12 @@ export async function monitoringHash(value: unknown): Promise<string> {
 }
 
 /** All persisted context is an allowlisted projection passed through this scrubber. */
-export function monitoringSanitizer(secret: string) {
+export function monitoringSanitizer(secret: string | string[]) {
+  const secrets=(Array.isArray(secret)?secret:[secret]).filter(Boolean);
   let truncated = false;
   const scrub = (value: string): string => {
     let clean = value;
-    if (secret) for (const form of new Set([secret, encodeURIComponent(secret)])) clean = clean.replaceAll(form, '[redacted]');
+    for (const item of secrets) for (const form of new Set([item, encodeURIComponent(item)])) clean = clean.replaceAll(form, '[redacted]');
     return clean.replace(/(?:Bearer|GenieKey)\s+[^\s,;"'<>]+/gi, '[redacted]')
       .replace(/((?:secret|token|password|authorization|cookie|(?:api|routing|service)[_-]?key)\s*[=:]\s*)[^&\s,"'<>]+/gi, '$1[redacted]');
   };
@@ -31,7 +32,7 @@ export function monitoringSanitizer(secret: string) {
       let decoded = value;
       for (let i = 0; i < 3; i++) { const next = decodeURIComponent(decoded); if (next === decoded) break; decoded = next; }
       if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || value.length > 2000
-        || secret && decoded.includes(secret) || [...url.searchParams.keys()].some(sensitive)
+        || secrets.some(item=>decoded.includes(item)) || [...url.searchParams.keys()].some(sensitive)
         || /\/(?:webhooks?|hooks|ingress|intake)(?:\/|\?)/i.test(decoded)
         || /(?:secret|token|password|authorization|signature|(?:api|routing|service)[_-]?key)[=:]/i.test(decoded)) {
         truncated = true; return null;

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {randomBytes} from 'node:crypto'
+import {randomBytes,createHmac} from 'node:crypto'
 import {mkdir} from 'node:fs/promises'
 import {chromium} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
@@ -212,6 +212,40 @@ async function responsePolicyBrowser(page,context) {
  }
 }
 
+
+async function changeAndSigningBrowser(page,context){
+ const request=async(path,data)=>{const response=await context.request.fetch(path,{method:data===undefined?'GET':'POST',headers:{origin:new URL(page.url()).origin},...(data===undefined?{}:{data})});const value=await response.json();assert.ok(response.ok(),JSON.stringify(value));return value;};
+ const {member}=await request('/api/session'),token=()=>randomBytes(32).toString('hex'),signingSecret=token(),keys={argocd:token(),terraform:token()},now=new Date().toISOString();
+ for(const [id,name] of [['synthetic-oncall-1','Template payments'],['synthetic-oncall-2','Template gateway']])await request('/api/command',{type:'service',id,name,environment:'production',owner:member.id,runbook:[],pager:''});
+ await request('/api/command',{type:'service-dependencies',service:'synthetic-oncall-1',dependencies:['synthetic-oncall-2'],workspaceRevision:(await request('/api/state')).revision});
+ for(const provider of ['argocd','terraform'])await request('/api/changes/sources',{id:'synthetic-oncall-'+provider,name:provider+' template',provider,service:provider==='argocd'?'synthetic-oncall-2':'synthetic-oncall-1',repository:'',mode:'provider',revision:0,key:keys[provider]});
+ const argo={eventId:'synthetic-oncall-1',application:'gateway',revision:'synthetic-oncall-2',status:'Synced',summary:'Argo CD gateway sync',timestamp:now,author:'synthetic-oncall-1',links:['https://argo.example.test/applications/gateway']},terraform={run_id:'run-synthetic-oncall-1',run_url:'https://app.terraform.io/app/example/workspaces/payments/runs/run-synthetic-oncall-1',run_created_at:now,run_created_by:'synthetic-oncall-2',workspace_name:'payments',organization_name:'example',notifications:[{trigger:'run:completed',run_status:'applied',run_updated_at:now}]};
+ for(const [provider,body] of [['argocd',argo],['terraform',terraform]]){
+  const raw=JSON.stringify(body),timestamp=String(Math.floor(Date.now()/1000));
+  const headers=provider==='argocd'?{'x-oncall-timestamp':timestamp,'x-oncall-signature':createHmac('sha256',keys[provider]).update(timestamp+'.'+raw).digest('hex')}:{'x-tfe-notification-signature':createHmac('sha512',keys[provider]).update(raw).digest('hex')};
+  assert.equal((await context.request.post('/api/changes/ingress/synthetic-oncall-'+provider,{headers:{...headers,'content-type':'application/json'},data:raw})).status(),201);
+ }
+ await request('/api/intake/sources',{id:'synthetic-oncall-grafana',name:'Synthetic Grafana',provider:'grafana',service:'synthetic-oncall-1',key:token(),revision:0});
+ await request('/api/monitoring/synthetic-oncall-grafana/signing',{revision:1,secret:signingSecret});
+ const check=async(label,width)=>{
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label+' fits viewport');assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  await page.screenshot({path:`evidence/browser/${label}-${width}.png`,fullPage:true});await page.screenshot({path:`evidence/browser/${label}-focus-${width}.png`});
+ };
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:1000});await page.reload();await page.getByRole('link',{name:'Services',exact:true}).click();
+  const service=page.locator('.service-card').filter({has:page.getByRole('heading',{name:'Template payments',exact:true})});await service.locator('.recent-changes > summary').click();
+  await service.getByText('Argo CD gateway sync',{exact:true}).waitFor();await service.getByText('payments: applied',{exact:true}).waitFor();await service.getByText('Terraform Cloud',{exact:true}).waitFor();
+  assert.ok(await service.getByText('Dependency · Template gateway',{exact:true}).count());await service.scrollIntoViewIfNeeded();await check('oc065-changes',width);
+  await page.getByText(/of 1,000 retained changes/).scrollIntoViewIfNeeded();await check('oc065-retention',width);
+  await page.getByRole('link',{name:'Alerts & events',exact:true}).click();const panel=page.getByRole('region',{name:'Grafana signature settings'});
+  await panel.getByLabel('Grafana signing integration',{exact:true}).selectOption('synthetic-oncall-grafana');await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();
+  await panel.getByLabel('Grafana signing secret',{exact:true}).fill(signingSecret);await panel.getByRole('button',{name:'Save Grafana signing secret',exact:true}).click();await page.getByText('Grafana signature check saved',{exact:true}).waitFor();
+  assert.equal(await panel.getByLabel('Grafana signing secret',{exact:true}).inputValue(),'');await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();await panel.scrollIntoViewIfNeeded();await check('oc030-signing',width);
+ }
+ console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440/390; overflow, axe and hydration');
+}
+
 // Production Worker + real local D1, without starting a managed rer dev server.
 const worker=await localWorker()
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
@@ -240,6 +274,7 @@ try {
  await incompleteIntakeBrowser(page,context)
  console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440/390; overflow, axe and hydration checked')
  await responsePolicyBrowser(page,context)
+ await changeAndSigningBrowser(page,context)
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440/390; overflow, axe and hydration checked')
  assert.deepEqual(errors,[],'no browser application errors')
  console.log('Emitted Worker product browser journey passed at desktop and mobile widths')

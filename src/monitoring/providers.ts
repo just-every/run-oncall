@@ -34,7 +34,7 @@ const severity = (value: unknown): MonitoringEvent['severity'] =>
   value === 'warning' || value === 'warn' ? 'warning' : value === 'info' || value === 'success' ? 'info' : 'critical';
 const select = (data: Data, names: string[]): Data => Object.fromEntries(names.filter(name => data[name] !== undefined).map(name => [name, data[name]]));
 
-async function groupedEvent(provider: 'alertmanager' | 'grafana', alert: unknown, envelope: Data, secret: string): Promise<MonitoringEvent> {
+async function groupedEvent(provider: 'alertmanager' | 'grafana', alert: unknown, envelope: Data, secret: string | string[]): Promise<MonitoringEvent> {
   if (!isRecord(alert)) throw new Error('alert must be an object');
   if (alert.status !== 'firing' && alert.status !== 'resolved') throw new Error('alert.status must be firing or resolved');
   const labels = stringMap(alert.labels, 'alert.labels');
@@ -75,7 +75,7 @@ async function groupedEvent(provider: 'alertmanager' | 'grafana', alert: unknown
     observedAt: end?.timestamp ?? start.timestamp, details, links, routingInput, truncated: safe.truncated };
 }
 
-async function datadogEvent(payload: Data, secret: string): Promise<MonitoringEvent> {
+async function datadogEvent(payload: Data, secret: string | string[]): Promise<MonitoringEvent> {
   const id = identifier(payload.id, 'id'), monitor = identifier(payload.alert_id, 'alert_id');
   const cycle = requireText(payload.alert_cycle_key, 'alert_cycle_key');
   if (typeof payload.alert_scope !== 'string') throw new Error('alert_scope must be text (empty for an ungrouped monitor)');
@@ -111,7 +111,7 @@ async function datadogEvent(payload: Data, secret: string): Promise<MonitoringEv
 }
 
 /** Normalize supported provider payloads; caller authenticates and enforces request-byte admission. */
-export async function normalizeMonitoring(provider: MonitoringProvider, payload: unknown, secret: string): Promise<MonitoringResult> {
+export async function normalizeMonitoring(provider: MonitoringProvider, payload: unknown, secret: string | string[]): Promise<MonitoringResult> {
   const result: MonitoringResult = { events: [], dropped: 0, truncated: false, diagnostics: [] };
   const diagnostic = (message: string) => { if (result.diagnostics.length < 30) result.diagnostics.push(message); };
   if (!isRecord(payload)) return { ...result, dropped: null, truncated: true, diagnostics: ['Payload must be a JSON object; alert count unknown'] };

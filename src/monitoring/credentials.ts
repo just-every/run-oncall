@@ -1,6 +1,8 @@
 import { auditIdentity, auditOutcome } from '../audit-store'
 import { fail, type State } from '../family/response-operations/domain.ts';
 import { intakeHash } from '../intake/credentials.ts';
+import {equalSignature,freshTimestamp,openCredential,type Custody} from '../changes/credentials.ts';
+import {runtimeBindings} from '../auth.server';
 import type { IntakeSource } from '../intake/model.ts';
 
 export type IntakeDependencies={load:(db:D1Database)=>Promise<State>;save:(db:D1Database,state:State,revision:number,guard:{sql:string;values:(string|number|null)[]})=>Promise<void>};
@@ -24,3 +26,16 @@ export async function intakeCredential(c:any,deps:IntakeDependencies,key:unknown
   return {state,source,digest,key:key as string};
 }
 export const credentialGuard=(source:IntakeSource,digest:string)=>({sql:'EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=?)',values:[source.id,digest]});
+
+export const grafanaCustody:Custody={label:'oncall-grafana-signing-v1',unavailable:'Installation key unavailable for Grafana signing',unreadable:'Grafana signing secret cannot be opened; configure it again'};
+export async function grafanaSigning(c:any,source:IntakeSource) {
+  const row=await c.env.DB.prepare('SELECT signing_custody FROM oc_intake_credentials WHERE source=?').bind(source.id).first();
+  const ciphertext=source.provider==='grafana'?row?.signing_custody??null:null;
+  return {ciphertext,key:ciphertext?await openCredential(ciphertext,runtimeBindings(c.env).SESSION_SECRET!,grafanaCustody):null};
+}
+export async function verifyGrafana(c:any,deps:IntakeDependencies,state:State,source:IntakeSource,signature:string,expected:string,timestamp:string|null) {
+  let reason='';
+  if(timestamp!==null){try{freshTimestamp(timestamp);}catch{reason='Grafana signature timestamp is stale or invalid';}}
+  if(!reason&&!equalSignature(signature.toLowerCase(),expected))reason='Grafana signature is required and must match';
+  if(reason){await rejectIntake(c,deps,state,source,'grafana',reason);fail(reason,401);}
+}

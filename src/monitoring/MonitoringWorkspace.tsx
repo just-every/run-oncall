@@ -3,6 +3,7 @@ import { Form } from '../forms';
 import type { State } from '../family/response-operations/domain';
 import type { IntakeRun } from '../intake/CompatibleTest';
 import type { MonitoringProvider } from './types';
+import { GrafanaSigning } from './GrafanaSigning';
 import { MonitoringTest } from './MonitoringTest';
 import './monitoring.css';
 
@@ -26,6 +27,7 @@ export function MonitoringWorkspace({state,admin,busy,run}:{state:State;admin:bo
       </Form>}{previous&&<button disabled={busy} onClick={()=>{setId('');setName('');setKey('');}}>Create another provider source</button>}
       <p>To route one provider across services, create a routed integration key under <a href="#routing">Routing & replay</a>, choose this provider and publish rules against each alert’s labels or tags.</p>
     </details>}
+    {admin&&<GrafanaSigning sources={sources.filter(s=>s.provider==='grafana')} busy={busy} run={run} revision={state.revision}/>}
     <MonitoringTest sources={sources} busy={busy} run={run}/>
     <div className="monitoring-receipts"><h3>Provider receipts and incomplete intake</h3>
       <label className="field"><span id={uid+'receipts'}>Provider receipt source</span><select aria-labelledby={uid+'receipts'} value={receiptSource} onChange={e=>setReceiptSource(e.target.value)}><option value="">All monitoring providers</option>{sources.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>

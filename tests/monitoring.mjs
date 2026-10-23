@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {randomBytes,createHash} from 'node:crypto';
+import {randomBytes,createHash,createHmac} from 'node:crypto';
 import {localWorker} from './worker.mjs';
 
 const w=await localWorker(),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
@@ -34,6 +34,34 @@ try {
  let state=ok(await req('/api/state')),old=state.alerts.find(a=>a.generation==='2026-10-17T09:00:00.123456789Z'&&a.id===original[0].alert),newer=state.alerts.find(a=>a.key===old.key&&a.generation==='2026-10-17T09:10:00Z');assert.equal(old.state,'recovered');assert.equal(newer.state,'active');
  ok(await send('am',group([alert('tombstone','payments','2026-10-17T09:20:00Z','resolved')])),202);ok(await send('am',group([alert('tombstone','payments','2026-10-17T09:20:00Z')])),202);state=ok(await req('/api/state'));assert.equal(state.alerts.find(a=>a.generation==='2026-10-17T09:20:00Z').state,'recovered');
  const grafana={...group([alert('grafana-one')]),version:'1',orgId:2};ok(await send('gf',grafana),202);ok(await send('gf',{...grafana,alerts:[{...grafana.alerts[0],status:'resolved',endsAt:'2026-10-17T10:00:00Z'}]}),202);
+ // OC-030 optional Grafana HMAC: bearer plus signature, rotation and atomic custody.
+ const signingPath='/api/monitoring/gf/signing',setting=ok(await req(signingPath));assert.equal(setting.configured,false);
+ ok(await w.request(signingPath),401);ok(await w.request(signingPath,{revision:setting.revision,secret:randomBytes(32).toString('hex')}),401);
+ const signer=()=>randomBytes(32).toString('hex');let signingSecret=signer();const previousSecret=signingSecret;
+ const signing=ok(await req(signingPath,{revision:setting.revision,secret:signingSecret}));assert.equal(signing.configured,true);assert.ok(!JSON.stringify(signing).includes(signingSecret));
+ const signed=async(payload,{secret=signingSecret,timestamp=null,signature,bearer=keys.gf}={})=>{const raw=typeof payload==='string'?payload:JSON.stringify(payload),headers={'content-type':'application/json',authorization:'Bearer '+bearer,'x-grafana-alerting-signature':signature??createHmac('sha256',secret).update(timestamp===null?raw:timestamp+':'+raw).digest('hex')};if(timestamp!==null)headers['x-grafana-alerting-timestamp']=timestamp;return w.send('/api/monitoring/gf',raw,headers);};
+ const signingAlert={...grafana,alerts:[alert('synthetic-oncall-1')]};
+ ok(await signed(signingAlert),202);ok(await signed({...grafana,alerts:[alert('synthetic-oncall-2')]},{timestamp:String(Math.floor(Date.now()/1000))}),202);
+ const refusedBefore=ok(await req('/api/archive'));
+ ok(await send('gf',{...grafana,alerts:[alert('synthetic-oncall-unsigned')]}),401);
+ ok(await signed({...grafana,alerts:[alert('synthetic-oncall-wrong')]},{secret:signer()}),401);
+ const stale=ok(await signed({...grafana,alerts:[alert('synthetic-oncall-stale')]},{timestamp:'1'}),401);assert.match(stale.error,/timestamp is stale/);
+ ok(await signed(signingAlert,{bearer:'forged'}),401);
+ let deniedSigning=ok(await req('/api/archive'));for(const key of ['events','alerts','intakeReceipts'])assert.deepEqual(deniedSigning[key],refusedBefore[key]);assert.ok(deniedSigning.audit.some(a=>a.kind==='intake-rejected'&&a.text.includes('Grafana signature is required')));
+ signingSecret=signer();const rotated=ok(await req(signingPath,{revision:signing.revision,secret:signingSecret}));ok(await req(signingPath,{revision:signing.revision,secret:signer()}),409);
+ ok(await signed(signingAlert,{secret:previousSecret}),401);ok(await signed({...grafana,alerts:[alert('synthetic-oncall-3')]}),202);
+ const signingRollback=ok(await req('/api/archive')),heldCipher=w.sql("SELECT signing_custody FROM oc_intake_credentials WHERE source='gf'")[0].signing_custody;
+ assert.ok(heldCipher.startsWith('v1.'));assert.ok(!heldCipher.includes(signingSecret));
+ w.sql("CREATE TRIGGER grafana_signing_audit_fail BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-4'); END");
+ try{ok(await req(signingPath,{revision:rotated.revision,secret:signer()}),503);ok(await signed({...grafana,alerts:[alert('synthetic-oncall-audit-rollback')]}),503);}finally{w.sql('DROP TRIGGER grafana_signing_audit_fail');}
+ assert.deepEqual(ok(await req('/api/archive')),signingRollback);assert.equal(w.sql("SELECT signing_custody FROM oc_intake_credentials WHERE source='gf'")[0].signing_custody,heldCipher);
+ const viewer=ok(await req('/api/members',{name:'synthetic-oncall-5',role:'viewer',password:'synthetic-oncall-viewer-password'}),201),viewerCookie=(await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-viewer-password'})).cookie;
+ ok(await w.request(signingPath,undefined,viewerCookie),403);ok(await w.request(signingPath,{revision:rotated.revision,secret:null},viewerCookie),403);
+ // Existing bearer-only requests below deliberately exercise the unchanged optional mode.
+ ok(await req(signingPath,{revision:ok(await req(signingPath)).revision,secret:null}));
+ ok(await send('gf',{...grafana,alerts:[alert('synthetic-oncall-bearer-only')]}),202);
+ assert.ok(!JSON.stringify(ok(await req('/api/archive'))).includes(signingSecret));
+ console.log('PASS OC-030 Grafana required/unsigned/wrong/stale/rotation/bearer-only, protected setting, audit rollback');
  const datadog={id:'event-1',alert_id:'monitor-2',alert_cycle_key:'outage-3',alert_scope:'region:us-east',alert_transition:'Triggered',date:Date.parse('2026-10-17T09:00:00Z'),alert_type:'error',tags:'team:payments,region:us-east',title:'Datadog database timeout',body:'Literal <script>unsafe()</script>',link:'https://example.test/datadog'};
  ok(await send('dd',datadog),202);ok(await send('dd',{...datadog,id:'event-2',alert_transition:'Recovered',date:Date.parse('2026-10-17T10:00:00Z')}),202);ok(await send('dd',{...datadog,id:'event-3',alert_cycle_key:'outage-4',alert_transition:'No Data'}),202);assert.equal(ok(await req('/api/state')).intakeReceipts.at(-1).action,'trigger');
  // Authenticate before admitting any incomplete record; diagnostics grant no authority.
@@ -79,7 +107,8 @@ try {
  w.sql("CREATE TRIGGER monitoring_queue_audit_fail BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic monitoring queue audit failure'); END");
  try {ok(await send('router','{"incomplete-queue-rollback":',keys.router,true),503);}finally{w.sql('DROP TRIGGER monitoring_queue_audit_fail');}
  assert.deepEqual(ok(await req('/api/archive')),beforeQueueFailure);assert.equal(w.sql('SELECT COALESCE(SUM(events),0) AS n FROM oc_key_rate_usage')[0].n,beforeEventDebit);
- state=ok(await req('/api/state'));archive=ok(await req('/api/archive'));for(const stored of [state,archive]){const serialized=JSON.stringify(stored);for(const secret of Object.values(keys))assert.ok(!serialized.includes(secret));for(const padding of ['x','y','z'])assert.ok(!serialized.includes(padding.repeat(12000)));assert.ok(!serialized.includes('unauthenticated-oversize-must-not-survive'));}
+ ok(await req(signingPath,{revision:ok(await req(signingPath)).revision,secret:signingSecret}));
+ state=ok(await req('/api/state'));archive=ok(await req('/api/archive'));for(const stored of [state,archive]){const serialized=JSON.stringify(stored);for(const secret of Object.values(keys))assert.ok(!serialized.includes(secret));assert.ok(!serialized.includes(signingSecret));assert.ok(!serialized.includes(previousSecret));for(const padding of ['x','y','z'])assert.ok(!serialized.includes(padding.repeat(12000)));assert.ok(!serialized.includes('unauthenticated-oversize-must-not-survive'));}
  const invalid=structuredClone(archive);invalid.intakeReceipts.find(r=>r.incomplete).incomplete.bytes=-1;ok(await req('/api/restore',{mode:'replace',archive:invalid}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;state=ok(await req('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.deepEqual(state.alerts,archive.alerts);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
  await w.stop();await w.start();state=ok(await req('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.deepEqual(state.alerts,archive.alerts);
