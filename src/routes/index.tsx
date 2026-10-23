@@ -334,7 +334,7 @@ function Workspace() {
                               <time>{time(e.at)}</time>
                             </div>
                             <p>{e.text}</p>
-                            {e.lifecycle?.member !== undefined && <p className="named-responder">Named responder: <strong>{e.lifecycle.member === null ? "Former member" : name(e.lifecycle.member)}</strong></p>}
+                            {e.lifecycle?.member !== undefined && <p className="named-responder">Named responder: <strong>{e.lifecycle.member === null ? "Erased member" : name(e.lifecycle.member)}</strong></p>}
                             <small>{name(e.actor)}{e.operationId && ` · Bulk operation ${e.operationId}`}</small>
                           </div>
                         </li>

@@ -255,6 +255,18 @@
       "name": "0135_native_prefix_custody.sql",
       "sha256": "124267e3ff088e305e9f796092610bf2f0191714ec4b58276c90752143a31b29",
       "sql": "-- Exact native evidence is independent of the authored-workspace profile.\n-- An insert-only backfill permits supported portable upgrades from Start/Base.\nCREATE TABLE oc_native_prefixes (\n id TEXT PRIMARY KEY,\n bytes INTEGER NOT NULL CHECK(bytes BETWEEN 0 AND 65536),\n request_sha256 TEXT NOT NULL CHECK(length(request_sha256)=64),\n prefix TEXT NOT NULL CHECK(length(prefix)<=87384)\n);\nINSERT INTO oc_native_prefixes(id,bytes,request_sha256,prefix)\n SELECT id,min(65536,json_extract(data,'$.incomplete.bytes')),\n json_extract(data,'$.incomplete.sha256'),json_extract(data,'$.details.nativePrefix.value')\n FROM oc_intake_receipts WHERE json_extract(data,'$.provider')='native'\n AND json_type(data,'$.details.nativePrefix.value')='text';\n-- Held receipts keep encoding, length and request hash; the bytes live only in the table above.\nUPDATE oc_intake_receipts SET data=json_set(data,'$.details.nativePrefix',json_object('encoding','base64','bytes',min(65536,json_extract(data,'$.incomplete.bytes')),'sha256',json_extract(data,'$.incomplete.sha256')))\n WHERE json_extract(data,'$.provider')='native' AND json_type(data,'$.details.nativePrefix.value')='text';\n-- Removing a receipt removes its exact evidence in the same transaction.\nCREATE TRIGGER oc_native_prefix_erasure AFTER DELETE ON oc_intake_receipts\n BEGIN DELETE FROM oc_native_prefixes WHERE id=OLD.id; END;\nCREATE INDEX oc_audit_order ON oc_audit(ordinal);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0136_subject_erasure_fences.sql",
+      "sha256": "d4ebc124a253adc93f209d6bce6d6f74d015c854fc23c4eb48a50151ead3743a",
+      "sql": "-- Retain the portability journal's identity-free digest/epoch fences in every\n-- native archive and checkpoint as well as whole-installation transfers.\nCREATE TABLE oc_erasure_fences (\n id TEXT PRIMARY KEY CHECK(length(id)=64),\n epoch INTEGER NOT NULL CHECK(epoch>=0)\n);\nINSERT INTO oc_erasure_fences(id,epoch)\n SELECT j.tombstone,MAX(e.epoch) FROM rer_portability_journal j\n JOIN rer_portability_epochs e ON e.source=j.source GROUP BY j.tombstone;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0137_named_responder_audit.sql",
+      "sha256": "1778e49b0260a019189cf7f29cab94a15d589f9248008bc789b547eebdcc3ec4",
+      "sql": "-- Random audit labels preserve the named responder independently of actor and incident.\nALTER TABLE oc_audit_clock ADD COLUMN named_member_label TEXT;\nALTER TABLE oc_admin_audit ADD COLUMN named_member TEXT;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
