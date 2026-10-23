@@ -71,7 +71,7 @@ export function Form({
         const values = new FormData(form);
         const data = Object.fromEntries(values);
         for (const element of Array.from(form.elements)) {
-          const select = element as HTMLSelectElement;
+          const select = element as unknown as HTMLSelectElement;
           if (select.tagName === "SELECT" && select.multiple) data[select.name] = values.getAll(select.name) as any;
         }
         if (await onSubmit(data)) form.reset();
