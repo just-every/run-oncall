@@ -10,7 +10,7 @@ export function cancelDeadlines(incident:Incident,at:string,reason:string) {
 function record(state:State,incident:Incident,actor:Member,kind:IncidentDeadline['kind'],minutes:number,at:string,context:PolicyContext) {
  if((incident.deadlines?.length??0)>=500)fail('Deadline history capacity reached',429);
  cancelDeadlines(incident,at,'Replaced by a new acknowledgment or snooze');
- const level=context.eligible[incident.service]?.indexOf(incident.assignee??'')??-1;
+ const level=(context.levels?.[incident.service]??context.eligible[incident.service])?.indexOf(incident.assignee??'')??-1;
  const deadline:IncidentDeadline={id:crypto.randomUUID(),kind,state:'pending',actor:actor.id,createdAt:at,dueAt:new Date(Date.parse(at)+minutes*60000).toISOString(),minutes,level:kind==='acknowledgment-timeout'?0:level===0||level===1?level:null,policyVersion:state.services.find(s=>s.id===incident.service)?.ackTimeouts?.at(-1)?.version??0,endedAt:null,outcome:'Awaiting durable deadline; paging OFF',obligation:null};
  (incident.deadlines??=[]).push(deadline);
  incident.timeline.push({id:'deadline:'+deadline.id,at,actor:actor.id,kind:'incident-deadline',text:`${kind}: ${minutes} minutes, due ${deadline.dueAt}; recorded deadline, paging OFF`});
@@ -47,7 +47,7 @@ export function stopRecoveredDeadlines(state:State,at:string) {
 }
 export function fireDeadline(state:State,incident:Incident,d:IncidentDeadline,at:string,context:PolicyContext) {
  if(d.state!=='pending'||Date.parse(d.dueAt)>Date.parse(at))return false;
- const eligible=context.eligible[incident.service]??[],assignee=incident.assignee;
+ const eligible=context.levels?.[incident.service]??context.eligible[incident.service]??[],assignee=incident.assignee;
  const target=d.kind==='snooze'&&assignee&&eligible.includes(assignee)?assignee:d.level===null?undefined:eligible[d.level];
  d.state='fired';d.endedAt=at;d.outcome=target?'Re-trigger obligation recorded; no sender':'No eligible on-call target at the recorded level; operator action required';
  if(target)d.obligation={id:'deadline-obligation:'+d.id,state:'recorded',paging:'off',automatic:false,label:'no sender',target:{kind:'user',id:target},urgency:incident.urgency??'high',creator:d.actor,at,outcome:d.kind==='acknowledgment-timeout'?'Restart at level one recorded; no sender':'Snooze expired; re-trigger recorded; no sender'};
