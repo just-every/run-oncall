@@ -3,7 +3,7 @@ import { auditedDatabase } from './audit-database'
 import { auditKind, setAuditSubject, type AuditContext } from './audit-store'
 import type { Bindings } from './auth.server'
 
-const commands = new Set(['service','service-dependencies','policy','member','declare','assign-role','reassign','set-priority','set-urgency','set-severity','bulk-acknowledge','bulk-resolve','review','action','complete','accept-action','reopen-action','note','transition','runbook','priority','close-action','request-response'])
+const commands = new Set(['manual-page','user-assignment','request-responders','respond-request','cancel-request','service','service-dependencies','policy','member','declare','assign-role','reassign','set-priority','set-urgency','set-severity','bulk-acknowledge','bulk-resolve','review','action','complete','accept-action','reopen-action','note','transition','runbook','priority','close-action','request-response'])
 export function auditInput(db: D1Database, input: any, path: string) {
   if (!input || typeof input !== 'object') return
   if (path === '/api/command' && commands.has(input.type)) auditKind(db, `command.${input.type}`)

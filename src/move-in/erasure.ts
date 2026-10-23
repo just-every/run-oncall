@@ -1,3 +1,4 @@
+import {eraseManualMember} from '../manual-pages/archive';
 import { eraseBusinessMember } from '../business-status/model';
 import { syncErasureFences } from '../erasure-fence'
 import { createErasure, defineErasure, toD1Sql } from '../modules/erasure/index.mjs'
@@ -179,9 +180,9 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
       {sql:'UPDATE oc_business_services SET data=? WHERE id=?',params:[clean,row.id]});automationChanged=true}
   }
   for(const row of (await db.prepare('SELECT id,data FROM oc_incidents').all<{id:string;data:string}>()).results){
-    const incident=JSON.parse(row.data);let changed=false
+    const incident=scrub(JSON.parse(row.data),email);for(const id of memberIds)eraseManualMember(incident,id);let changed=false
     for(const entry of incident.timeline)if(entry.lifecycle?.member&&memberIds.has(entry.lifecycle.member)){entry.lifecycle.member=null;changed=true}
-    if(changed){incident.revision++;rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_incidents WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
+    if(changed||JSON.stringify(incident)!==row.data){incident.revision++;rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_incidents WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
       {sql:'UPDATE oc_incidents SET data=? WHERE id=?',params:[JSON.stringify(incident),row.id]});automationChanged=true}
   }
   if(automationChanged)rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND revision=?) THEN 1 ELSE 0 END',params:[workspace!.revision]},

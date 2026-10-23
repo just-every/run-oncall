@@ -1,3 +1,7 @@
+import { commandKey, runOnce, CommandKeyError } from './base/command-receipts';
+import { responseContext } from './manual-pages/context';
+import { holdManualRecords } from './manual-pages/archive';
+import { pagingSnapshot } from './paging-store';
 import { installBusinessStatus } from './business-status/api';
 import { holdBusinessStatus, refreshBusinessStatus } from './business-status/model';
 import { installResponsePolicy } from './response-policy/api';
@@ -148,6 +152,7 @@ async function discardDeniedBody(c: any) {
   finally { reader.releaseLock(); }
 }
 api.onError(async (error, c) => {
+  if(error instanceof CommandKeyError)return c.json({error:error.message},error.status);
   await discardDeniedBody(c);
   if(c.req.path.startsWith("/api/v1/")) { const status=error instanceof Fault?error.status:503;return c.json({error:{code:({400:"invalid_request",401:"invalid_token",403:"insufficient_scope",404:"not_found",409:"conflict",413:"request_too_large",429:"rate_or_capacity_limit"} as Record<number,string>)[status]??"storage_unavailable",message:error instanceof Fault?error.message:"Storage unavailable; no success confirmed"}},status as any); }
   if (error instanceof Refusal)
@@ -422,12 +427,23 @@ installTriage(api, {body, state: authorizedState, save: (c, state, revision) => 
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
 api.post("/api/command", async (c) => {
   const input = await body(c);
-  const state = await load(c.env.DB);
-  const revision = state.revision;
-  const result = command(state, c.get("actor"), input);
-  if(input.type === "declare" && result && typeof result === "object" && "id" in result) setAuditSubject(c.env.DB,"entity",String(result.id));
-  await save(c.env.DB, state, revision, sessionGuard(c));
-  return c.json(result);
+  const needsPolicy=['manual-page','user-assignment','request-responders','respond-request'].includes(input.type);
+  const snapshot=needsPolicy?await pagingSnapshot(c.env.DB):null;
+  const state=snapshot?.workspace??await load(c.env.DB), revision=state.revision, actor=c.get('actor');
+  const execute=async()=>{
+    const result=command(state,actor,input,new Date(Date.now()).toISOString(),snapshot?responseContext(snapshot,Date.now()):undefined);
+    if(['declare','manual-page'].includes(input.type)&&result&&typeof result==='object'&&'id' in result)setAuditSubject(c.env.DB,'entity',String(result.id));
+    const guard=sessionGuard(c);
+    if(snapshot){guard.sql+=' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)';guard.values.push(snapshot.revision);}
+    await save(c.env.DB,state,revision,guard);return result;
+  };
+  if(input.type==='manual-page'){
+    const current=state.members.find(m=>m.id===actor.id&&m.active);if(!current||!['admin','responder'].includes(current.role))fail('Only responders and admins may create manual pages',403);
+    const key=commandKey({commandKey:input.operationId});
+    const fingerprint=await hash(JSON.stringify(input));
+    const done=await runOnce(c.env.DB,{actor:actor.id,command:'manual-page:'+fingerprint,key},async()=>({result:await execute()}));return c.json(done.result);
+  }
+  return c.json(await execute());
 });
 api.post("/api/replay", async (c) => {
   const input = await body(c);
@@ -577,6 +593,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   const parent:{operator_session:string|null}|null=await c.env.DB.prepare('SELECT operator_session FROM oc_current_sessions WHERE token=?').bind(c.get('sessionDigest')).first();
   if(!parent)fail('Session expired or revoked',401);
   holdBusinessStatus(value);
+  holdManualRecords(value);
   refreshBusinessStatus(value);
   holdAutomation(value);
   pauseChangeSources(value);

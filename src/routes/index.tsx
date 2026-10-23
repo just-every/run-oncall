@@ -1,3 +1,4 @@
+import {ManualDeclare, UserAssignment, ResponderRequests} from '../manual-pages/Controls';
 import { StatusPanel } from '../business-status/StatusPanel';
 import { AutomationSettings } from '../automation/AutomationSettings';
 import { EmailWorkspace } from '../email/EmailWorkspace';
@@ -243,37 +244,10 @@ function Workspace() {
                   {!s.services.length ? (
                     <p>Create a service first.</p>
                   ) : (
-                    <Form
-                      busy={w.busy}
-                      label="Declare"
-                      onSubmit={async (data) => {
-                        const i = await command({
-                          ...data,
-                          type: "declare",
-                          alerts: [],
-                        });
-                        if (i) {
-                          selectIncident(i.id);
-                          setDeclare(false);
-                        }
-                        return i;
-                      }}
-                    >
-                      <Field name="title" label="Incident title" />
-                      <Field name="service" label="Service">
-                        {serviceOptions}
-                      </Field>
-                      <Field name="severity" label="Severity">
-                        <option>critical</option>
-                        <option>warning</option>
-                        <option>info</option>
-                      </Field>
-                      <Field
-                        name="summary"
-                        label="Customer impact and current evidence"
-                        type="textarea"
-                      />
-                    </Form>
+                    <ManualDeclare state={s} busy={w.busy} submit={async data=>{
+                      const i=await command(data);if(i){selectIncident(i.id);setDeclare(false);}return i;
+                    }}/>
+
                   )}
                 </div>
               )}
@@ -338,6 +312,7 @@ function Workspace() {
                     <p>Source recovery does not resolve this incident. Record recovery evidence and a resolution summary.</p>
                   </section>}
                   <IncidentResponseControls key={incident.id} incident={incident} members={s.members} busy={w.busy} canEdit={canEdit} mutate={mutate} />
+                  <ResponderRequests incident={incident} state={s} actor={actor} busy={w.busy} submit={command}/>
                   <RecentChanges service={incident.service} at={incident.createdAt} revision={s.revision} expanded />
                   <section className="timeline">
                     <h3 className="section-title">
@@ -541,6 +516,7 @@ function Workspace() {
                   <ResponsePolicy key={'response:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
                   <UrgencyPolicy key={'urgency:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
                   {admin && <ServiceDependencies key={v.id} service={v} services={s.services} revision={s.revision} busy={w.busy} run={w.run} />}
+                  {actor.role === 'admin' && <UserAssignment service={v} state={s} busy={w.busy} submit={command}/>}
                   {admin && (
                     <details>
                       <summary>Edit service</summary>

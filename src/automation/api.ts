@@ -1,3 +1,4 @@
+import {responseContext} from '../manual-pages/context';
 import { command, fail, Fault, text, type State, type Member } from '../family/response-operations/domain';
 import { loadWorkspace, workspaceWrite } from '../workspace-store';
 import { auditIdentity, auditKind, setAuditSubject } from '../audit-store';
@@ -167,7 +168,7 @@ export function installVersionedApi(api:any,deps:Deps) {
   refuseKeyEcho([JSON.stringify(input),key],c.get('apiKey'));
   const request=await changeHash(JSON.stringify([family,input])),keyHash=await changeHash(key),prior=state.apiOperations?.find(o=>o.client===client.id&&o.key===keyHash);
   if(prior){allowed(client,prior.service);if(prior.request!==request)fail('Idempotency key already names different input',409);await readFence(c);return c.json(prior);}
-  const incident=state.incidents.find(i=>i.id===input.incident),service=family==='services'?input.id:family==='incidents'&&input.type==='declare'?input.service:family==='schedules'?input.service:incident?.service;
+  const incident=state.incidents.find(i=>i.id===input.incident),service=family==='services'?input.id:family==='incidents'&&['declare','manual-page'].includes(input.type)?input.service:family==='schedules'?input.service:incident?.service;
   allowed(client,service);if(!state.services.some(s=>s.id===service))fail('Record not found in this client scope',404);
   if(Array.isArray(input.dependencies)&&input.dependencies.some((s:string)=>!client.services.includes(s)))fail('Cross-service reference refused',404);
   const actor:Member={id:client.id,name:client.name,role:'responder',active:true,machine:true};
@@ -180,9 +181,13 @@ export function installVersionedApi(api:any,deps:Deps) {
    const guard=c.get('apiGuard') as Guard;c.set('apiGuard',{sql:guard.sql+' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',values:[...guard.values,snapshot.revision]});
   } else {
    if(family==='services') {const current=state.services.find(s=>s.id===service)!;if(input.etag!==await changeHash(JSON.stringify(projectService(current,client))))fail('Service changed; supply its current etag',409);}
-   const permitted=family==='services'?['service']:family==='actions'?['action','complete']:['declare','transition','reassign','assign-role'];
+   const permitted=family==='services'?['service']:family==='actions'?['action','complete']:['declare','manual-page','transition','reassign','assign-role'];
    if(!permitted.includes(input.type))fail('Action is not available in this API family',403);
-   result=command(state,actor,input);
+   if(input.type==='manual-page'){
+    const snapshot=await pagingSnapshot(c.env.DB);if(input.policy)allowed(client,input.policy);
+    const guard=c.get('apiGuard') as Guard;c.set('apiGuard',{sql:guard.sql+' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',values:[...guard.values,snapshot.revision]});
+    result=command(state,actor,{...input,operationId:keyHash},new Date(Date.now()).toISOString(),responseContext(snapshot,Date.now()));
+   }else result=command(state,actor,input);
   }
   const operation:Operation={id:crypto.randomUUID(),client:client.id,key:keyHash,request,service,resource:family,entity:result.id,revision:result.revision??1,at:new Date().toISOString()};
   (state.apiOperations??=[]).push(operation);if(state.apiOperations.length>1000)fail('API operation history capacity reached',429);
