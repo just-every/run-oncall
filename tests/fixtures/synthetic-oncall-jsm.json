@@ -1,0 +1,84 @@
+{
+  "users": {
+    "values": [
+      {
+        "accountId": "synthetic-oncall-201",
+        "emailAddress": "synthetic-oncall-201@example.test",
+        "displayName": "Synthetic Oncall 201"
+      }
+    ]
+  },
+  "schedules": {
+    "values": [
+      {
+        "id": "synthetic-oncall-202",
+        "name": "Synthetic JSM weekly",
+        "timezone": "UTC",
+        "enabled": true,
+        "teamId": "synthetic-oncall-205",
+        "rotations": [
+          {
+            "id": "synthetic-oncall-206",
+            "name": "Weekly",
+            "startDate": "2026-10-01T09:00:00Z",
+            "type": "weekly",
+            "length": 1,
+            "participants": [
+              {
+                "type": "user",
+                "id": "synthetic-oncall-201"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": {
+    "scheduleId": "synthetic-oncall-202",
+    "values": [
+      {
+        "id": "synthetic-oncall-207",
+        "startDate": "2026-10-03T09:00:00Z",
+        "endDate": "2026-10-03T12:00:00Z",
+        "responder": {
+          "type": "user",
+          "id": "synthetic-oncall-201"
+        },
+        "rotationIds": [
+          "synthetic-oncall-206"
+        ]
+      }
+    ]
+  },
+  "integrations": {
+    "values": [
+      {
+        "id": "synthetic-oncall-203",
+        "name": "Synthetic API integration",
+        "type": "API",
+        "enabled": true,
+        "teamId": "synthetic-oncall-205"
+      }
+    ]
+  },
+  "teams": {
+    "values": [
+      {
+        "id": "synthetic-oncall-205",
+        "name": "Synthetic team"
+      }
+    ]
+  },
+  "escalations": {
+    "values": [
+      {
+        "id": "synthetic-oncall-204",
+        "name": "Synthetic repeat rule",
+        "repeat": {
+          "count": 3
+        }
+      }
+    ]
+  }
+}

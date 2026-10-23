@@ -2,7 +2,8 @@ import { readFileSource } from '../modules/import-kit/src/readers/file'
 import type { Json, ParsedRecord } from '../modules/import-kit/src/types'
 import { fail } from '../family/response-operations/domain'
 
-export type Vendor='opsgenie'|'pagerduty'
+import {isVendor, type Vendor} from './vendor-formats'
+export type {Vendor} from './vendor-formats'
 
 // The documented single-detail key of each PagerDuty list response.
 const detail:Record<string,string>={users:'user',schedules:'schedule',escalation_policies:'escalation_policy'}
@@ -24,17 +25,22 @@ function entries(vendor:Vendor,kind:string,body:any,pointer:string):Entry[] {
  if(Array.isArray(body))return body.flatMap((item,index)=>entries(vendor,kind,item,`${pointer}/${index}`))
  if(!body||typeof body!=='object')return [{payload:body,pointer}]
  let items:any,at=pointer
- if(vendor==='opsgenie'&&body.data!==undefined)at=`${pointer}/data`,items=body.data
+ if(vendor==='jsm'&&body.values!==undefined)at=`${pointer}/values`,items=body.values
+ else if(vendor==='betterstack'&&body.data!==undefined)at=`${pointer}/data`,items=body.data
+ else if(vendor==='betterstack'&&kind==='events'&&body.events!==undefined)at=`${pointer}/events`,items=body.events
+ else if(vendor==='splunk'&&Array.isArray(body[kind]))at=`${pointer}/${escape(kind)}`,items=body[kind]
+ else if(vendor==='splunk'&&kind==='oncall'&&Array.isArray(body.teamsOnCall))at=`${pointer}/teamsOnCall`,items=body.teamsOnCall
+ else if(vendor==='opsgenie'&&body.data!==undefined)at=`${pointer}/data`,items=body.data
  else if(vendor==='pagerduty'&&Array.isArray(body[kind]))at=`${pointer}/${escape(kind)}`,items=body[kind]
  else if(vendor==='pagerduty'&&detail[kind]&&body[detail[kind]]&&typeof body[detail[kind]]==='object')at=`${pointer}/${detail[kind]}`,items=body[detail[kind]]
  else return [{payload:body,pointer}]
  // A list of overrides does not name its schedule; the saved file carries it beside the response.
- const parent=body.scheduleId??body.schedule_id,join=(payload:any)=>kind==='overrides'&&parent!==undefined&&payload&&typeof payload==='object'&&payload.scheduleId===undefined&&payload.schedule_id===undefined?{...payload,[vendor==='opsgenie'?'scheduleId':'schedule_id']:parent}:payload
- return Array.isArray(items)?items.map((payload,index)=>({payload:join(payload),pointer:`${at}/${index}`})):[{payload:join(items),pointer:at}]
+ const parent=body.scheduleId??body.schedule_id,join=(payload:any)=>kind==='overrides'&&parent!==undefined&&payload&&typeof payload==='object'&&payload.scheduleId===undefined&&payload.schedule_id===undefined?{...payload,[vendor==='opsgenie'||vendor==='jsm'?'scheduleId':'schedule_id']:parent}:payload
+ return Array.isArray(items)?items.flatMap((payload,index)=>Array.isArray(payload)?entries(vendor,kind,payload,`${at}/${index}`):[{payload:join(payload),pointer:`${at}/${index}`}]):[{payload:join(items),pointer:at}]
 }
 
 export async function fileSource(vendor:Vendor,raw:string,filename?:unknown) {
- if(!['opsgenie','pagerduty'].includes(vendor))throw Error('Choose Opsgenie or PagerDuty')
+ if(!isVendor(vendor))throw Error('Choose a supported saved-export source')
  if(filename!==undefined&&(typeof filename!=='string'||!filename.trim()||filename.length>255||/[\x00-\x1f\x7f/\\]/.test(filename)))fail('Supply the export filename without a folder path (at most 255 characters)')
  // Preserve the manual door's named credential refusal before the shared
  // reader deliberately replaces parser exceptions with a safe diagnostic.
@@ -53,7 +59,7 @@ export function savedExportRecords(vendor:Vendor,value:Json):ParsedRecord[] {
   for(const [kind,response] of Object.entries(value))
    for(const {payload,pointer} of entries(vendor,kind,response,`/${escape(kind)}`)) {
     const index=count.get(kind)??0;count.set(kind,index+1)
-    records.push({kind,sourceId:String(payload?.id??payload?.alias??payload?._parent?.id??`${kind}-${index}`),payload,pointer})
+    records.push({kind,sourceId:String(payload?.id??payload?.accountId??payload?.alias??payload?.username??payload?.slug??payload?._parent?.id??`${kind}-${index}`),payload,pointer})
    }
   if(!records.length)throw Error('The export bundle is empty')
   return records

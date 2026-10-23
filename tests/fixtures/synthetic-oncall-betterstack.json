@@ -1,0 +1,72 @@
+{
+  "users": [
+    {
+      "id": "synthetic-oncall-301",
+      "type": "user",
+      "attributes": {
+        "first_name": "Synthetic",
+        "last_name": "Oncall 301",
+        "email": "synthetic-oncall-301@example.test",
+        "phone_numbers": [
+          "+81312345678"
+        ]
+      }
+    }
+  ],
+  "schedules": {
+    "data": [
+      {
+        "id": "synthetic-oncall-302",
+        "type": "on_call_calendar",
+        "attributes": {
+          "name": "Synthetic calendar",
+          "default_calendar": false,
+          "team_name": "Synthetic team"
+        },
+        "relationships": {
+          "on_call_users": {
+            "data": [
+              {
+                "id": "synthetic-oncall-301",
+                "type": "user",
+                "meta": {
+                  "email": "synthetic-oncall-301@example.test"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "events": {
+    "events": [
+      {
+        "id": 303,
+        "users": [
+          "synthetic-oncall-301@example.test"
+        ],
+        "starts_at": "2026-10-01T09:00:00Z",
+        "ends_at": "2026-10-01T17:00:00Z",
+        "override": false
+      }
+    ]
+  },
+  "integrations": [
+    {
+      "id": "synthetic-oncall-304",
+      "type": "webhook"
+    }
+  ],
+  "incidents": {
+    "data": [
+      {
+        "id": "synthetic-oncall-305",
+        "type": "incident",
+        "attributes": {
+          "started_at": "2026-10-01T01:00:00Z"
+        }
+      }
+    ]
+  }
+}

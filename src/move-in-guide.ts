@@ -1,7 +1,8 @@
 /**
  * The move-in guide is the owner docs page /docs/move-in. Older links name /move-in-guide or
  * /move-in-guide.html; the Worker answers both with a permanent redirect there, in dev, preview
- * and hosted alike, so a saved link still lands on the guide.
+ * and hosted alike, so a saved link still lands on the guide. Source sections
+ * name Splunk, JSM Ops and Better Stack saved-response assumptions; no provider fetch runs here.
  */
 export function guideResponse(request: Request): Response | null {
   if (request.method !== 'GET' && request.method !== 'HEAD') return null

@@ -101,3 +101,5 @@ are 0122-0125, with Base's door archive migration as 0128; Oncall's parser,
 mapping, paused target adapter, review list and named refusals remain
 product-owned. Migration 0126 records which pending plans are the screen's own
 previews.
+
+The same reviewed file door now inventories [Splunk](docs/move-in.md#splunk-saved-responses), [JSM Ops](docs/move-in.md#jsm-saved-responses) and [Better Stack](docs/move-in.md#betterstack-saved-responses). Their documented-shape assumptions remain unverified against live accounts; unsupported objects remain named in the journal, and imported integration inventory stays inactive and keyless. Opsgenie readiness checklist deadline: 5 April 2027.

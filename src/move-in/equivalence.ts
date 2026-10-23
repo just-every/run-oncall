@@ -1,3 +1,4 @@
+import {opsFamily} from './vendor-formats'
 import {preview,coverage,type Schedule} from '../family/response-operations/schedules'
 import type {Vendor} from './source'
 
@@ -12,7 +13,7 @@ export function crossesOffsetChange(zone:string,from:string,to:string) {
 
 /** Compare every source and model boundary, not a few sampled instants. */
 export function compare(schedule:Schedule,vendor:Vendor,input:any,emails:Map<string,string>) {
- const periods=vendor==='opsgenie'?input?.finalTimeline?.rotations?.flatMap((r:any)=>r.periods??[]):input?.rendered_schedule_entries
+ const periods=opsFamily(vendor)?input?.finalTimeline?.rotations?.flatMap((r:any)=>r.periods??[]):input?.rendered_schedule_entries
  if(!Array.isArray(periods)||!periods.length)return {status:'not-supplied',differences:['No final timeline supplied; no incumbent equivalence is claimed.']}
  const validFrom=Date.parse(schedule.validFrom),validUntil=schedule.validUntil?Date.parse(schedule.validUntil):Infinity
  // The incumbent's timeline may begin before the layer Oncall maps (ended layers); only the mapped layer's own validity is compared.
