@@ -57,6 +57,13 @@ try {
  assert.deepEqual(ok(await req('/api/archive')),signingRollback);assert.equal(w.sql("SELECT signing_custody FROM oc_intake_credentials WHERE source='gf'")[0].signing_custody,heldCipher);
  const viewer=ok(await req('/api/members',{name:'synthetic-oncall-5',role:'viewer',password:'synthetic-oncall-viewer-password'}),201),viewerCookie=(await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-viewer-password'})).cookie;
  ok(await w.request(signingPath,undefined,viewerCookie),403);ok(await w.request(signingPath,{revision:rotated.revision,secret:null},viewerCookie),403);
+ // New signing read door refuses revoked and expired sessions; competing rotations have one winner.
+ const revokedLogin=await w.request('/api/login',{name:'Provider operator',password:'synthetic-provider-operator-password'});ok(await w.request('/api/logout',{},revokedLogin.cookie));ok(await w.request(signingPath,undefined,revokedLogin.cookie),401);
+ const expiredLogin=await w.request('/api/login',{name:'Provider operator',password:'synthetic-provider-operator-password'}),expiredToken=expiredLogin.cookie.slice(expiredLogin.cookie.indexOf('=')+1);
+ w.sql("UPDATE sessions SET expires=1 WHERE token='"+createHash('sha256').update(expiredToken).digest('hex')+"'");ok(await w.request(signingPath,undefined,expiredLogin.cookie),401);
+ ok(await req('/api/monitoring/am/signing'),404);ok(await req(signingPath,{revision:rotated.revision,secret:'short'}),400);
+ const competingSecrets=[signer(),signer()],competingRevision=ok(await req(signingPath)).revision,competing=await Promise.all(competingSecrets.map(secret=>req(signingPath,{revision:competingRevision,secret})));
+ assert.deepEqual(competing.map(r=>r.status).sort(),[200,409]);signingSecret=competingSecrets[competing.findIndex(r=>r.status===200)];ok(await signed({...grafana,alerts:[alert('synthetic-oncall-rotation-winner')]}),202);
  // Existing bearer-only requests below deliberately exercise the unchanged optional mode.
  ok(await req(signingPath,{revision:ok(await req(signingPath)).revision,secret:null}));
  ok(await send('gf',{...grafana,alerts:[alert('synthetic-oncall-bearer-only')]}),202);
