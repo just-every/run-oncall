@@ -43,7 +43,7 @@ async function incompleteIntakeBrowser(page,context) {
   await page.setViewportSize({width,height:1000})
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
   await page.getByRole('button',{name:'Refresh',exact:true}).click()
-  const routedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true})}),ownerCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:incompleteTitle,exact:true})})
+  const routedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true,level:3})}),ownerCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:incompleteTitle,exact:true,level:3})})
   await routedCard.getByText('Payments · production · active',{exact:true}).waitFor()
   await ownerCard.getByText(/^Integration unrouted queue.*active$/).waitFor()
   await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · paging OFF; non-automatic.`,{exact:true}).waitFor()
