@@ -1,4 +1,4 @@
-import { recordAlertObligation } from '../alert-obligation';
+import { recordAlertObligation } from '../alert-obligation.ts';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
 import { intakeSourceIdentity, type IntakeReceipt, type IntakeSource } from '../intake/model.ts';

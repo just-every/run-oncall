@@ -1,4 +1,4 @@
-import { fail, type Alert, type State } from './family/response-operations/domain';
+import { fail, type Alert, type State } from './family/response-operations/domain.ts';
 
 /** The OC-070 generation obligation, shared by every intake source. This is a
  * record only: no sender, timer, provider attempt or authority is created. */

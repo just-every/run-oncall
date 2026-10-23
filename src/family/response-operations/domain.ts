@@ -1,4 +1,4 @@
-import { recordAlertObligation, validateAlertObligation, type AlertObligation } from '../../alert-obligation';
+import { recordAlertObligation, validateAlertObligation, type AlertObligation } from '../../alert-obligation.ts';
 import { validateErasureFences, type ErasureFence } from '../../erasure-fence.ts'
 import {validateAllowances,type KeyAllowance} from '../../intake-rate/model.ts';
 import { enqueueEvents, machineAuthority, validateAutomation, type Client, type Endpoint, type Operation, type Outbox } from '../../automation/model.ts';

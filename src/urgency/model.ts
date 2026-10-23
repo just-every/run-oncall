@@ -1,4 +1,4 @@
-import { recordAlertObligation } from '../alert-obligation';
+import { recordAlertObligation } from '../alert-obligation.ts';
 import { authority, fail, type Alert, type Event, type Member, type Service, type State } from '../family/response-operations/domain.ts';
 import { evaluateUrgency, validateUrgencyRule } from './rules.ts';
 import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from './types.ts';
