@@ -25,8 +25,8 @@ export const equalSignature = (a: string, b: string) => {
   if (a.length !== b.length) return false;
   let difference = 0; for (let n=0;n<a.length;n++) difference |= a.charCodeAt(n) ^ b.charCodeAt(n); return difference === 0;
 };
-export async function changeHmac(key: string | Uint8Array, value: string, encoding: 'hex' | 'base64' = 'hex') {
-  const signingKey = await crypto.subtle.importKey('raw', typeof key === 'string' ? bytes(key) : Uint8Array.from(key), {name:'HMAC',hash:'SHA-256'},false,['sign']);
+export async function changeHmac(key: string | Uint8Array, value: string, encoding: 'hex' | 'base64' = 'hex', hash: 'SHA-256' | 'SHA-512' = 'SHA-256') {
+  const signingKey = await crypto.subtle.importKey('raw', typeof key === 'string' ? bytes(key) : Uint8Array.from(key), {name:'HMAC',hash},false,['sign']);
   const signature = await crypto.subtle.sign('HMAC',signingKey,bytes(value)); return encoding === 'hex' ? hex(signature) : base64(new Uint8Array(signature));
 }
 export function freshTimestamp(value: string) {

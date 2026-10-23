@@ -15,21 +15,40 @@ try {
   ok(await req('/api/command',{type:'service-dependencies',service:'payments',dependencies:[],workspaceRevision:state.revision}),409);
   state=ok(await req('/api/state'));
   ok(await req('/api/command',{type:'service-dependencies',service:'payments',dependencies:['missing'],workspaceRevision:state.revision}),400);
-  const keys={native:randomBytes(32).toString('hex'),signed:randomBytes(32).toString('hex'),pagerduty:randomBytes(16).toString('hex'),github:randomBytes(32).toString('hex'),gitlab:'whsec_'+randomBytes(32).toString('base64'),decoy:randomBytes(32).toString('hex')};
+  const keys={argocd:randomBytes(32).toString('hex'),terraform:randomBytes(32).toString('hex'),native:randomBytes(32).toString('hex'),signed:randomBytes(32).toString('hex'),pagerduty:randomBytes(16).toString('hex'),github:randomBytes(32).toString('hex'),gitlab:'whsec_'+randomBytes(32).toString('base64'),decoy:randomBytes(32).toString('hex')};
   const fixture=async name=>JSON.parse(await readFile(new URL('./fixtures/'+name,import.meta.url),'utf8'));
   const deployment=await fixture('github-deployment.json'),release=await fixture('github-release.json'),unmerged=await fixture('github-unmerged-pr.json'),gitlab=await fixture('gitlab-deployment.json');
   const configure=(id,provider,service,repository='',revision=0,key=keys[id])=>req('/api/changes/sources',{id,name:id+' changes',provider,service,repository,mode:id==='signed'?'signed':'bearer',revision,key});
+  ok(await configure('argocd','argocd','gateway'),201);ok(await configure('terraform','terraform','payments'),201);
   ok(await configure('native','native','payments'),201);ok(await configure('signed','native','gateway'),201);ok(await configure('decoy','native','decoy'),201);
   ok(await configure('pagerduty','pagerduty','payments'),201);ok(await configure('github','github','payments',String(deployment.repository.id)),201);ok(await configure('gitlab','gitlab','gateway',String(gitlab.project.id)),201);
   const send=(id,payload,extra={})=>{
     const raw=JSON.stringify(payload),timestamp=String(Math.floor(Date.now()/1000));let headers={};
     if(id==='native'||id==='decoy')headers={authorization:'Bearer '+keys[id]};
-    if(id==='signed')headers={'x-oncall-timestamp':timestamp,'x-oncall-signature':hmac(keys[id],timestamp+'.'+raw)};
+    if(id==='terraform')headers={'x-tfe-notification-signature':createHmac('sha512',keys[id]).update(raw).digest('hex')};
+    if(id==='signed'||id==='argocd')headers={'x-oncall-timestamp':timestamp,'x-oncall-signature':hmac(keys[id],timestamp+'.'+raw)};
     if(id==='github')headers={'x-github-event':'deployment','x-github-delivery':'recorded-deployment','x-hub-signature-256':'sha256='+hmac(keys[id],raw)};
     if(id==='gitlab')headers={'x-gitlab-event':'Deployment Hook','webhook-id':'recorded-gitlab','webhook-timestamp':timestamp,'webhook-signature':'v1,'+hmac(Buffer.from(keys[id].slice(6),'base64'),'recorded-gitlab.'+timestamp+'.'+raw,'base64')};
     return w.request(id==='pagerduty'?'/v2/change/enqueue':'/api/changes/ingress/'+id,payload,undefined,{...headers,...extra});
   };
   const at=new Date().toISOString(),change={eventId:'checkout-2048',summary:'Checkout pool deployment',timestamp:at,author:'checkout-ci',links:[{href:'https://example.test/deploy/2048'},{href:'https://example.test/deploy?token=private-query'}],custom_details:{commit:'abc123',token:'must-not-survive',nested:{password:'must-not-survive'},keyEcho:keys.native,large:'x'.repeat(2000)}};
+  // OC-065 named source templates: signatures, replay and fixed service scope.
+  const argo={eventId:'synthetic-oncall-1',application:'gateway',revision:'synthetic-oncall-2',status:'Synced',summary:'Argo CD gateway sync',timestamp:at,author:'synthetic-oncall-1',links:['https://argo.example.test/applications/gateway']};
+  const terraform={run_id:'run-synthetic-oncall-1',run_url:'https://app.terraform.io/app/example/workspaces/payments/runs/run-synthetic-oncall-1',run_created_at:at,run_created_by:'synthetic-oncall-2',workspace_name:'payments',organization_name:'example',notifications:[{trigger:'run:completed',run_status:'applied',run_updated_at:at}]};
+  const templateBefore=ok(await req('/api/state'));
+  const argoReceipt=ok(await send('argocd',argo),201),terraformReceipt=ok(await send('terraform',terraform),201);
+  assert.equal(ok(await send('argocd',argo)).id,argoReceipt.id);assert.equal(ok(await send('terraform',terraform)).id,terraformReceipt.id);
+  ok(await send('argocd',argo,{'x-oncall-signature':'forged'}),401);ok(await send('argocd',argo,{'x-oncall-timestamp':'1'}),401);
+  ok(await send('terraform',terraform,{'x-tfe-notification-signature':'forged'}),401);
+  ok(await send('argocd',{...argo,eventId:'synthetic-oncall-3',service:'decoy'}),403);ok(await send('terraform',{...terraform,service:'decoy'}),403);
+  const templateAfter=ok(await req('/api/state'));
+  for(const key of ['alerts','incidents','events'])assert.deepEqual(templateAfter[key],templateBefore[key],'change templates never create an alert or obligation');
+  assert.equal(templateAfter.changes.filter(c=>c.source==='argocd').length,1);assert.equal(templateAfter.changes.filter(c=>c.source==='terraform').length,1);
+  assert.equal(templateAfter.changes.find(c=>c.id===terraformReceipt.id).author,terraform.run_created_by);
+  assert.equal(templateAfter.changes.find(c=>c.id===argoReceipt.id).details.status,'Synced');
+  w.sql("CREATE TRIGGER change_template_audit_fail BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-4'); END");
+  try{ok(await send('argocd',{...argo,eventId:'synthetic-oncall-4'}),503);}finally{w.sql('DROP TRIGGER change_template_audit_fail');}
+  assert.deepEqual(ok(await req('/api/archive')).changes,templateAfter.changes,'audit failure rolls back template admission');
   const before=ok(await req('/api/state')),receipt=ok(await send('native',change),201);
   assert.equal(ok(await send('native',change)).id,receipt.id);
   ok(await send('native',{...change,summary:'conflicting'}),409);
@@ -82,5 +101,23 @@ try {
   state=ok(await req('/api/state'));assert.deepEqual(state.changes,archive.changes);assert.ok(state.changeSources.every(s=>!s.active));assert.deepEqual(state.services,archive.services);
   assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_change_credentials')[0].n,0);ok(await send('signed',{eventId:'after-restore',summary:'must refuse'}),401);
   await w.stop();await w.start();assert.deepEqual(ok(await req('/api/state')).changes,archive.changes,'retained changes survive restart without replaying effects');
+  // OC-065 bounded oldest-first retention keeps incident context and rolls back with audit.
+  const escape=value=>JSON.stringify(value).replaceAll("'","''"),seed={...archive.changes.find(c=>c.id===receipt.id),source:'decoy',service:'decoy',summary:'synthetic-oncall',details:{},links:[],author:'synthetic-oncall',acceptedAt:'2020-01-01T00:00:00.000Z',occurredAt:'2020-01-01T00:00:00.000Z'};
+  // Upgrade populated held storage at the actual cap; preserve the real prior records.
+  const retainedCount=w.sql('SELECT COUNT(*) AS n FROM oc_changes')[0].n;
+  w.sql(`WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM n WHERE i<${1000-retainedCount}) INSERT INTO oc_changes(id,ordinal,data) SELECT 'synthetic-oncall-'||i,${retainedCount}+i,json_set('${escape(seed)}','$.id','synthetic-oncall-'||i,'$.eventId','synthetic-oncall-'||i) FROM n`);
+  // Restore definitions are inactive; explicitly reauthorize a local sender.
+  const decoyDefinition=ok(await req('/api/state')).changeSources.find(s=>s.id==='decoy');ok(await configure('decoy','native','decoy','',decoyDefinition.revision));
+  const capacityBefore=ok(await req('/api/archive'));
+  w.sql("CREATE TRIGGER change_retention_audit_fail BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-retention'); END");
+  try{ok(await send('decoy',{eventId:'synthetic-oncall-retention',summary:'Retention rollback'}),503);}finally{w.sql('DROP TRIGGER change_retention_audit_fail');}
+  assert.deepEqual(ok(await req('/api/archive')),capacityBefore,'failed audit rolls eviction and new admission back together');
+  ok(await send('decoy',{eventId:'synthetic-oncall-retention',summary:'Retention after capacity'}),201);
+  const atCapacity=ok(await req('/api/state'));assert.equal(atCapacity.changes.length,1000);assert.ok(!atCapacity.changes.some(c=>c.id==='synthetic-oncall-1'));assert.ok(atCapacity.changes.some(c=>c.id===receipt.id),'attached incident context is retained');assert.equal(atCapacity.audit.at(-1).text,'Oldest-first retention removed 1 unattached change records; incident context retained');
+  // With every record inside the retained incident window, capacity refuses safely.
+  w.sql(`UPDATE oc_changes SET data=json_set(data,'$.source','native','$.service','payments','$.occurredAt','${at}')`);
+  const protectedCount=w.sql('SELECT COUNT(*) AS n FROM oc_changes')[0].n;ok(await send('decoy',{eventId:'synthetic-oncall-protected',summary:'Refuse protected capacity'}),429);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_changes')[0].n,protectedCount);
+  console.log('PASS OC-065 retention: populated 1,000-record cap, deterministic oldest-first eviction, incident protection, refusal and audit rollback');
+  console.log('PASS OC-065 Argo CD/Terraform signatures, scope, replay, no obligations, audit rollback');
   console.log('Change context: authenticated native/PD/GitHub/GitLab intake, replay, scope, dependencies, privacy, rotation/revoke, archive pause and restart passed');
 } finally {await w.close();}
