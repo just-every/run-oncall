@@ -1,4 +1,4 @@
-import {identityLimit} from '../../intake/identity-bounds';
+import {identityLimit} from '../../intake/identity-bounds.ts';
 import { publishIncidentTemplate, instantiateIncidentTemplate, checklistCommand, validateIncidentTemplateArchive } from '../../incident-workflows/template.ts';
 import type { IncidentTemplate, TemplateSnapshot } from '../../incident-workflows/types-template.ts';
 import { relationCommand, validateIncidentRelations, incidentAlertLinkAllowed } from '../../incident-workflows/relations.ts';

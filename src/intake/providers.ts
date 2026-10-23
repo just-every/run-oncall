@@ -1,4 +1,4 @@
-import {identityLimit,cleanIdentity} from './identity-bounds';
+import {identityLimit,cleanIdentity} from './identity-bounds.ts';
 import { fail, Fault, link } from '../family/response-operations/domain.ts';
 import type { CompatibleInput, CompatibleOptions, CompatibleProvider } from './provider-types.ts';
 export type { CompatibleInput, CompatibleOptions, CompatibleProvider } from './provider-types.ts';

@@ -1,4 +1,4 @@
-import {identityLimit} from './identity-bounds';
+import {identityLimit} from './identity-bounds.ts';
 import { fail, link, text, type State } from '../family/response-operations/domain.ts';
 import { validateRoutingSource, validateRoutingReceipt } from '../routing/archive.ts';
 import type { RoutingDefinition, RoutingExplanation } from '../routing/types.ts';
