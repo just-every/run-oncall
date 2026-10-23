@@ -34,7 +34,7 @@ export function installPaging(api:any,body:(c:any,max?:number)=>Promise<any>) {
     const old=s.archive.schedules.find(x=>x.id===v?.id)
     if(!v||typeof v!=='object'||Array.isArray(v)||!Number.isSafeInteger(v.revision)||v.revision<0) fail('Invalid schedule revision')
     if(v.revision!==(old?.revision??0)) fail('Schedule changed; reload and retry',409)
-    if(old&&v.service!==old.service) fail('Schedule service identity is immutable; create a new schedule')
+    if(old)fail('Review the schedule change before applying it',409)
     const schedule=validateSchedule({...v,revision:v.revision+1},s.workspace)
     const next={...s.archive,schedules:replace(s.archive.schedules,schedule,x=>x.id)}
     await commitPaging(c.env.DB,s,next,token=>[putSchedule(c.env.DB,schedule,token)],authority(c))
