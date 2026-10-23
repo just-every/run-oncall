@@ -372,6 +372,7 @@ try {
   assert.equal(new Set(obligationIds.values()).size, 4);
   let awaiting = ok(await req('/api/command', {type: 'declare', service: recoveryService.id, severity: 'critical', title: synthetic(), summary: 'Customer impact needs human confirmation after source recovery', alerts: linkedIds}));
   awaiting = ok(await req('/api/command', {type: 'transition', incident: awaiting.id, revision: awaiting.revision, state: 'acknowledged', summary: 'Commander accepts response responsibility'}));
+  awaiting=ok(await req('/api/command',{type:'snooze',incident:awaiting.id,revision:awaiting.revision,minutes:1}));const recoveringDeadline58=awaiting.deadlines.at(-1).id;
   assert.equal(awaiting.commander, actor.id);
   const silentPolicy = ok(await req(policyPath, {...policyDraft, baseVersion: notifiedPolicy.version, recoveredNotice: 'silent', reason: 'Future generations stop silently'}), 201);
   assert.equal(silentPolicy.version, notifiedPolicy.version + 1);
@@ -404,6 +405,7 @@ try {
   assertStopped(responseState, linkedNative.id, finalReceipt.id, frozenPolicy, obligationIds.get(linkedNative.id));
   awaiting = incidentAt(responseState, awaiting.id); assert.equal(awaiting.state, 'acknowledged');
   assert.equal(awaiting.recovery, ''); assert.equal(awaiting.sourceRecovery.receipt, finalReceipt.id);
+  assert.equal(awaiting.deadlines.find(d=>d.id===recoveringDeadline58).state,'cancelled');assert.equal(awaiting.deadlines.find(d=>d.id===recoveringDeadline58).obligation,null);console.log('OC-058 source recovery mid-snooze: atomic source recovery cancels the persisted deadline and records no re-trigger obligation');
   assert.ok(Number.isFinite(Date.parse(awaiting.sourceRecovery.at)));
   assert.deepEqual(awaiting.sourceRecovery.reminder, {id: awaiting.sourceRecovery.reminder.id, commander: actor.id, automatic: false, label: 'no timer until OC-027', state: 'recorded'});
   assert.ok(awaiting.sourceRecovery.reminder.id.length);

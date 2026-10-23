@@ -114,7 +114,7 @@ try {
   assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0,'no hydration mismatch')
   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
   assert.deepEqual(axe.violations.filter(row=>['serious','critical'].includes(row.impact)),[],screen+' has no serious accessibility finding')
-  await page.screenshot({path:`${captureDirectory}/${screen.startsWith('oc068-')?screen:'oc061-'+screen}-${width}.png`,fullPage:true})
+  await page.screenshot({path:`${captureDirectory}/${(/^(oc068|oc058)-/.test(screen))?screen:'oc061-'+screen}-${width}.png`,fullPage:true})
  }
  for(const width of [1440,390])await statusCapture(owner.page,'derived-status',width)
  await checkout.getByText('Manage internal status',{exact:true}).click()

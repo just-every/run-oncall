@@ -2,7 +2,7 @@ import { authority, fail, text, type Incident, type Member, type State } from '.
 import { serviceUrgency } from '../urgency/model.ts';
 import type { RecordedResponseObligation } from '../alert-obligation';
 import type { AssignmentRule, ResponseTarget } from './types';
-export type PolicyContext = {policies:{service:string;revision:number}[];eligible:Record<string,string[]>};
+export type PolicyContext = {policies:{service:string;revision:number}[];eligible:Record<string,string[]>;levels?:Record<string,(string|null)[]>};
 const responsive=(state:State,id:string)=>state.members.some(m=>m.id===id&&m.active&&['admin','responder'].includes(m.role));
 export function assignmentRule(state:State,service:string):AssignmentRule {
   return state.services.find(s=>s.id===service)?.userAssignments?.at(-1)??{version:0,mode:'escalate',minutes:10,policy:service,by:'',at:'1970-01-01T00:00:00.000Z'};
