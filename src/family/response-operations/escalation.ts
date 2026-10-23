@@ -129,7 +129,7 @@ export function validateJob(input: any): EscalationJob {
       if (!Array.isArray(a.members) || a.members.length > 10_000 || new Set(a.members.map((m: Member) => m.id)).size !== a.members.length) fail("Invalid membership snapshot");
       for (const m of a.members) {
         fields(m, ["id", "name", "role", "active"]); text(m.id, "member ID", 100); text(m.name, "member name", 100);
-        if (!["admin", "responder", "viewer"].includes(m.role) || typeof m.active !== "boolean") fail("Invalid membership snapshot");
+        if (!["admin", "responder", "viewer", "stakeholder"].includes(m.role) || typeof m.active !== "boolean") fail("Invalid membership snapshot");
       }
       // Recorded decisions are evidence, not executable input. Validate their shape without replacing them.
       const c = a.coverage;
