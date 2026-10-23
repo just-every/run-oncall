@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "30f52daffacf7674595b456b7e7466270b9f8ba804045b6277918b8e53d1b46f",
+      "sha256": "c404b991e58004ea881d326a6d0f782e021af2953f07b841bb90a86ba7b12b6a",
       "executable": false
     },
     "DEMO.md": {
@@ -3375,7 +3375,7 @@
       "executable": false
     },
     "src/move-in/erasure.ts": {
-      "sha256": "7009ba9340e5d620269c5916ac7d09ac266466715aaac91481eae9d30eb49e8f",
+      "sha256": "4905f2e1a793890d4400a8ad9cfea32ad4eeeed83293d8909202171267591199",
       "executable": false
     },
     "src/move-in/export-help.css": {
