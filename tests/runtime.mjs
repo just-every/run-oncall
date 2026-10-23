@@ -481,7 +481,7 @@ try {
     assert.ok(state.audit.some(row=>row.kind==="intake-owner-notice"&&row.text.includes(held.id)));
     assert.equal(held.native,undefined,"an untrusted prefix has no structured native event identity");
     if(expectedService)assert.equal(state.alerts.find(a=>a.id===held.alert).urgency,"high");
-    else {assert.equal(held.outcome,"unrouted");assert.equal(held.alert,null);}
+    else {assert.equal(held.outcome,"unrouted");const queued=state.alerts.find(a=>a.id===held.alert);assert.equal(queued.service,null);assert.equal(queued.urgency,"high");assert.deepEqual(queued.obligation.target,{kind:"user",id:admin.id});assert.equal(queued.obligation.paging,"off");}
     return {value,state,held};
   };
   const oversizeCustody=await assertIncomplete(await rawRequest("/api/ingress/monitor",oversizedBody,"",{authorization:"Bearer "+key}),oversizedBody,null);
