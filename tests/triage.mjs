@@ -142,6 +142,16 @@ try {
   assert.equal(ok(await w.request('/api/status',undefined,statusCookie)).services[0].notices[0].state,'stopped');
   const resolvedStatus=ok(await req('/api/triage/bulk',{operationId:'synthetic-oncall-66',action:'resolve',items:[{id:impacted.id,revision:impacted.revision}],reason:'Alternate gateway verified',evidence:'https://example.test/checkout-recovery'}));assert.ok(resolvedStatus.results[0].ok);
   assert.equal((await business()).derived,'operational','bulk resolution recomputes status in the same commit');
+  const noticeCount=ok(await req('/api/state')).businessServices.find(row=>row.id===status.id).notices.length;
+  const statusKey=randomBytes(32).toString('hex'),statusSource='synthetic-oncall-68';
+  ok(await req('/api/sources',{id:statusSource,key:statusKey,mode:'bearer',scopes:[statusService.id]}));
+  const statusSignal={source:statusSource,eventId:'synthetic-oncall-69',service:statusService.id,environment:'production',key:'synthetic-oncall-69',generation:'synthetic-oncall-69',intent:'trigger',severity:'critical',title:privateText,observedAt:new Date().toISOString(),evidence:''};
+  ok(await w.request('/api/ingress/'+statusSource,statusSignal,'',{authorization:'Bearer '+statusKey}),201);
+  assert.equal((await business()).derived,'degraded','configured high-urgency alert independently impacts status');
+  assert.equal(ok(await req('/api/state')).businessServices.find(row=>row.id===status.id).notices.length,noticeCount,'unsubscribed stakeholder receives no further notice');
+  ok(await w.request('/api/ingress/'+statusSource,{...statusSignal,eventId:'synthetic-oncall-70',intent:'recover'},'',{authorization:'Bearer '+statusKey}),201);
+  assert.equal((await business()).derived,'operational','source recovery recomputes status server-side');
+  console.log('OC-061 configured high-urgency impact: alert admission and source recovery recompute internal status without a browser or subscriber delivery');
   console.log('OC-061 bulk impact recomputation and unsubscribe: resolution restores operational status and no new subscriber notice is recorded');
 
   // OC-056: one generation owns one truthful, non-automatic obligation at every intake door.
