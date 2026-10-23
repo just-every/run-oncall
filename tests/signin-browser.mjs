@@ -37,7 +37,7 @@ try {
    assert.equal(forward.status(),303,'signed-in owner forwards from /signin')
    assert.equal(forward.headers().location,location)
   }
-  const corrected='synthetic-oncall-owner-'+width
+  const corrected='synthetic-oncall-'+width
   const changed=await context.request.post(worker.origin+'/setup',{form:{displayName:corrected,confirm:'yes'},headers:{origin:worker.origin},maxRedirects:0})
   assert.equal(changed.status(),303)
   const state=await context.request.get(worker.origin+'/api/state')
