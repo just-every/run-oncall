@@ -498,8 +498,8 @@ Current totals are 31 done / 26 partial / 16 missing. OC-059 records the service
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 21 | 1 | 0 | 22 |
-| Target and push further | 10 | 24 | 17 | 51 |
-| All | 31 | 25 | 17 | 73 |
+| Target and push further | 10 | 25 | 16 | 51 |
+| All | 31 | 26 | 16 | 73 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
