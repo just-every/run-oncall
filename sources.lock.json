@@ -3579,7 +3579,7 @@
       "executable": false
     },
     "src/routes/index.tsx": {
-      "sha256": "b24e7b5d952b86ad010621d2952a28a533d5b02e66c968898a2c23a7e9d5dbdb",
+      "sha256": "072d0980db3a0ef5d94d61375b02dea0a1812ef86d5a5389187db8162f6d4da7",
       "executable": false
     },
     "src/routes/signin.local.tsx": {
@@ -3927,7 +3927,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "60876d711340f8fffe67661470b212e4c23362f19a61a2ed59bfa788f50c0b4a",
+      "sha256": "e338f5bc64778628c5cb4551a85cbcd7ca961d79f28e6f4ff6ae150f5708b188",
       "executable": false
     },
     "tests/product-import-browser.mjs": {
