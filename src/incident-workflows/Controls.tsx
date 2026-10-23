@@ -9,6 +9,7 @@ const time = (value: string) => new Date(value).toLocaleString();
 
 export function IncidentWorkflows({ state, incident, member, send }: Props) {
   const [busy, setBusy] = useState(false);
+  const [pendingCheck, setPendingCheck] = useState<{ id: string; done: boolean } | null>(null);
   const [error, setError] = useState('');
   const [sources, setSources] = useState<{ id: string; revision: number }[]>([]);
   const [alerts, setAlerts] = useState<string[]>([]);
@@ -50,12 +51,18 @@ export function IncidentWorkflows({ state, incident, member, send }: Props) {
       <p>{incident.template.impactPrompt}</p>
       {incident.template.checklist.length > 0 && <ul className="checklist workflow-checklist">
         {incident.template.checklist.map(item => <li key={item.id}>
-          <label className="workflow-choice"><input type="checkbox" checked={item.done} disabled={busy || !editable || incident.commander !== member.id}
-            onChange={e => { void save({ type: 'template-check', incident: incident.id, revision: incident.revision, item: item.id, done: e.target.checked }); }} />
+          <label className="workflow-choice"><input type="checkbox" checked={pendingCheck?.id === item.id ? pendingCheck.done : item.done} disabled={busy || !editable || incident.commander !== member.id}
+            onChange={e => {
+              const done = e.target.checked;
+              setPendingCheck({ id: item.id, done });
+              void save({ type: 'template-check', incident: incident.id, revision: incident.revision, item: item.id, done })
+                .finally(() => setPendingCheck(null));
+            }} />
             <span>{item.text}{item.history.length > 0 && <small>Last changed by {name(item.history.at(-1)!.by)} · {time(item.history.at(-1)!.at)}</small>}</span>
           </label>
         </li>)}
       </ul>}
+      {pendingCheck && <p role="status">Saving checklist change…</p>}
       {incident.template.checklist.length > 0 && incident.commander !== member.id && <p className="workflow-help">The current commander updates this checklist.</p>}
       <p className="workflow-help">Copied at declaration from {service(incident.template.service)}. Later template versions apply to new incidents.</p>
     </section>}
