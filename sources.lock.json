@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7d50028091b7ab55e099cc103eb125b0d77b9cf3c6717a39d21b2d1e85acef37",
+      "sha256": "7da94983c5532cb9bff535e0098a8fce0e0bef56ff1e5c2ad5b947850d9193ff",
       "executable": false
     },
     "DEMO.md": {
@@ -3355,7 +3355,7 @@
       "executable": false
     },
     "src/move-in/erasure.ts": {
-      "sha256": "691a87d925e7137296e1c8fff70360fe051d1df19e59b1ec19d367cbaedc198c",
+      "sha256": "0b6459ed379e027016b299033c66324873d102cf04a8224b11ef28fa7060f2bc",
       "executable": false
     },
     "src/move-in/export-help.css": {
@@ -3975,7 +3975,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "849f8ce23065872d420981777d73c0877c3a13442ea6be59c94e44d0d6e965cc",
+      "sha256": "18e6015dfd531bbf37304ce29906b19ee89327a757681813598fe7fb5a433367",
       "executable": false
     },
     "tests/triage.mjs": {
