@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "fdab0e8e4d0487c7bf259dbda7d007e0de3a522022ef950c57dabbeb4f4e498e",
+      "sha256": "4c2898c9a204c73261c221006473bbfc7c07321b0335fb4b96b8b1664863c91a",
       "executable": false
     },
     "DEMO.md": {
@@ -379,7 +379,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "457a3cd9b05eac0b121a95119b43646f31a30b65bc82a05cbd96647762f97ae0",
+      "sha256": "05e0a997c41d4d454f12f4c2ae5f473943beee60ce05ec3b5cfcbe5b1b1989be",
       "executable": false
     },
     "migrations/core/0001_initial.sql": {
@@ -3899,7 +3899,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "be2226835c4b0454b59861aba75b7fda2d8f1d61f084c27ade607c70fbfc596e",
+      "sha256": "82dba13644a2a866e11b5016fb3d1b1d6a745b0a676a5d515b1eb58782a6e91a",
       "executable": false
     },
     "tests/monitoring.mjs": {
