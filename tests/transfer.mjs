@@ -109,7 +109,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  ok(await req('/api/automation/endpoints/'+createdEndpoint.value.id+'/rotate',{revision:reauthorized.apiEndpoints.find(e=>e.id===createdEndpoint.value.id).revision,key:endpointKey,approve:true}))
  assert.equal((await req('/api/changes/sources',{id:'portable-ci',name:'Portable CI context',provider:'native',service:'transfer',repository:'',mode:'bearer',revision:reauthorized.changeSources.find(s=>s.id==='portable-ci').revision,key:changeKey})).status,200)
  assert.equal((await req('/api/routing/keys',{id:'portable-monitor',name:'Portable monitor',provider:'pagerduty',scope:['transfer','upstream'],owner:member.id,revision:reauthorized.intakeSources.find(s=>s.id==='portable-monitor').revision,key:intakeKey,rules:[],catchAll:'transfer'})).status,200)
- assert.equal((await req('/api/intake/sources',{id:'portable-alertmanager',name:'Portable Alertmanager',provider:'alertmanager',service:'transfer',revision:reauthorized.intakeSources.find(s=>s.id==='portable-alertmanager').revision,key:monitoringKey})).status,200)
+ assert.equal((await req('/api/routing/keys',{id:'portable-alertmanager',name:'Portable Alertmanager',provider:'alertmanager',scope:['transfer'],owner:member.id,revision:reauthorized.intakeSources.find(s=>s.id==='portable-alertmanager').revision,key:monitoringKey})).status,200)
  assert.equal((await req('/api/routing/keys',{id:'portable-native',name:'Portable native monitor',provider:'native',authentication:'signed',scope:['transfer','upstream'],owner:member.id,revision:reauthorized.intakeSources.find(s=>s.id==='portable-native').revision,key:nativeRoutedKey})).status,200)
  await business.prepare(cookie)
  const oldCookie=cookie
