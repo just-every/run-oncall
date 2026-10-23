@@ -262,7 +262,7 @@ function Workspace() {
                       }}
                     >
                       <Field name="title" label="Incident title" />
-                      <label className="field"><span>Service</span><select name="service" required value={declarationService||s.services[0]?.id||''} onChange={event=>setDeclarationService(event.target.value)}>{serviceOptions}</select></label>
+                      <label className="field"><span id="declaration-service-label">Service</span><select aria-labelledby="declaration-service-label" name="service" required value={declarationService||s.services[0]?.id||''} onChange={event=>setDeclarationService(event.target.value)}>{serviceOptions}</select></label>
                       <Field key={declarationService||s.services[0]?.id} name="incidentType" label="Incident type (service template)" required={false}><option value="">Service template default</option>{(declarationTemplate?.incidentTypes??[]).map(type=><option key={type}>{type}</option>)}</Field>
                       <Field name="severity" label="Severity">
                         {(['critical','warning','info'] as const).map(severity=><option key={severity} value={severity}>{declarationTemplate?.severityWording[severity]??severity}</option>)}
