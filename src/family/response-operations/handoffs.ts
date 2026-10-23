@@ -1,3 +1,4 @@
+import {validateAssignmentHistory} from '../../manual-pages/archive';
 import { fail, link, type Entry, type Incident, type Member, type Service, type State } from "./domain.ts";
 import { validateLifecycleEntry } from "../../reviews/review-controls.ts";
 import { validateUrgencyRuleHistory } from '../../urgency/archive.ts';
@@ -101,7 +102,8 @@ function source(input: unknown): HandoffSource {
     if (m.rule !== null) snapshotText(m.rule, 'response rule');
     if (!d.actor.startsWith('source:')) fail('Response declaration metadata needs a source actor');
   }
-  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies"]);
+  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "userAssignments"]);
+  if (v.userAssignments !== undefined) validateAssignmentHistory(v.userAssignments);
   if (v.urgencyRules !== undefined) validateUrgencyRuleHistory(v.urgencyRules);
   if (v.responsePolicies !== undefined) {
     if (!Array.isArray(v.responsePolicies) || !v.responsePolicies.length || v.responsePolicies.length > 100) fail('Invalid handoff response policy history');
