@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c404b991e58004ea881d326a6d0f782e021af2953f07b841bb90a86ba7b12b6a",
+      "sha256": "960931140fe7c4a306f199cd0e990b44b25bb31a9008cc428e63ea34e97eb163",
       "executable": false
     },
     "DEMO.md": {
@@ -1463,7 +1463,7 @@
       "executable": false
     },
     "src/manual-pages/model.ts": {
-      "sha256": "4b660dd2b396ba1717b8e39f2da9f51787afa58d9f6606b3b9b777ffe830fc62",
+      "sha256": "01d11f012fef3a9ec40a5b5763fb8206c6ffa25ce5e3f15c7e74f5c23b87b102",
       "executable": false
     },
     "src/manual-pages/types.ts": {
@@ -3995,7 +3995,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "6a43e67e76ad9f3871264ab0c2bd08ee8f686c43e6cba7bd07a2227c1cda0440",
+      "sha256": "c0936c4155c42e902ef7fe28d7ff14c2f9b8a8769307462940556b8c0ad2dec3",
       "executable": false
     },
     "tests/triage.mjs": {
