@@ -1,3 +1,4 @@
+import { Tooltip } from './Tooltip';
 import { useEffect, useState, type ReactNode } from 'react';
 import { request } from '../useWorkspace';
 import type { Incident, Member, State } from '../family/response-operations/domain';
@@ -46,7 +47,7 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
     {children}
     <TriageFilters query={query} services={state.services} members={state.members} change={(key, value) => applyQuery({...query, [key]: value || undefined})} />
     <details className="saved-views"><summary>Saved views</summary>
-      {views.map(v => <div className="saved-view" key={v.id}><button onClick={() => applyQuery(v.query)}>{v.name}</button><button aria-label={`Delete view ${v.name}`} disabled={busy} onClick={async () => {const result = await run('/api/triage/views', {remove: v.id}); if (result) setViews(result.views);}}>×</button></div>)}
+      {views.map(v => <div className="saved-view" key={v.id}><button onClick={() => applyQuery(v.query)}>{v.name}</button><Tooltip label={`Delete view ${v.name}`}><button aria-label={`Delete view ${v.name}`} disabled={busy} onClick={async () => {const result = await run('/api/triage/views', {remove: v.id}); if (result) setViews(result.views);}}>×</button></Tooltip></div>)}
       {!views.length && <p>No saved views yet.</p>}
       <form onSubmit={async e => {e.preventDefault(); const result = await run('/api/triage/views', {name: viewName, query}, 'View saved'); if (result) {setViews(result.views); setViewName('');}}}><label>View name<input value={viewName} required maxLength={100} onChange={e => setViewName(e.target.value)} /></label><button disabled={busy}>Save current view</button></form>
     </details>

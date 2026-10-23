@@ -1,3 +1,4 @@
+import { finishResponseAdmission } from '../response-policy/model.ts';
 import {readNativeRequest} from '../native-request';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
 import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
@@ -41,6 +42,7 @@ export function receiveNativeRouting(state:State,source:IntakeSource,signal:Retu
     }
   }
   (state.intakeReceipts??=[]).push(receipt);
+  if(receipt.alert&&receipt.event)finishResponseAdmission(state,state.alerts.find(a=>a.id===receipt.alert)!,state.events.find(e=>e.id===receipt.event)!,receipt.id);
   state.audit.push({id:crypto.randomUUID(),at,actor:'source:'+intakeSourceIdentity(source.id),kind:'native-routed-intake',text:`Native ${signal.intent}: ${receipt.outcome}; receipt ${receipt.id}`});
   return {receipt,duplicate:false};
 }

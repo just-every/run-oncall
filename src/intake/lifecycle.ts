@@ -1,3 +1,4 @@
+import { finishResponseAdmission } from '../response-policy/model.ts';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
 import { intakeSourceIdentity, type IntakeReceipt, type IntakeSource } from './model.ts';
@@ -41,6 +42,7 @@ export function receiveCompatible(state:State,source:IntakeSource,provider:Compa
   }
   const receipt:IntakeReceipt={...input,id,source:source.id,provider,service:service.id,generation,event,alert,acceptedAt:at,outcome,...(explanation?{routing:explanation,routingInput}:{})};
   (state.intakeReceipts??=[]).push(receipt);
+  if(alert&&event)finishResponseAdmission(state,state.alerts.find(a=>a.id===alert)!,state.events.find(e=>e.id===event)!,receipt.id);
   state.audit.push({id:crypto.randomUUID(),at,actor:'source:'+identity,kind:'compatible-intake',text:`${provider} ${input.action}: ${outcome}; receipt ${id}`});
   return receipt;
 }

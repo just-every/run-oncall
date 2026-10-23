@@ -1,3 +1,4 @@
+import { finishResponseAdmission } from '../response-policy/model.ts';
 import { recordAlertObligation } from '../alert-obligation.ts';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
@@ -33,6 +34,7 @@ export function receiveMonitoring(state:State,source:IntakeSource,input:Monitori
   }
   const receipt:IntakeReceipt={id,source:source.id,provider:options.provider,service,generation,event,alert,acceptedAt:at,outcome,action:input.intent==='recover'?'recover':'trigger',key:input.key,title:input.title,severity:input.severity,priority:null,observedAt:input.observedAt,sender:source.provider,links:structuredClone(input.links),details:structuredClone(input.details),truncated:input.truncated,...(routing?{routing,routingInput}:{}),...(options.monitoring?{monitoring:structuredClone(options.monitoring)}:{}),...(options.incomplete?{incomplete:structuredClone(options.incomplete)}:{})};
   (state.intakeReceipts??=[]).push(receipt);
+  if(alert&&!options.incomplete)finishResponseAdmission(state,state.alerts.find(a=>a.id===alert)!,state.events.find(e=>e.id===event)!,receipt.id);
   state.audit.push({id:crypto.randomUUID(),at,actor:'source:'+identity,kind:options.incomplete?'incomplete-intake':'monitoring-intake',text:`${source.provider} ${input.intent}: ${outcome}; receipt ${id}`});
   return {receipt,duplicate:false};
 }

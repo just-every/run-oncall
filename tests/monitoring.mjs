@@ -10,7 +10,7 @@ const alert=(fingerprint,team='payments',startsAt='2026-10-17T09:00:00.123456789
 const group=alerts=>({version:'4',receiver:'Oncall',status:'firing',groupKey:'regional-latency',groupLabels:{alertname:'Latency objective exceeded'},commonLabels:{},commonAnnotations:{},alerts});
 const pageObligation=(alert,target)=>{
  assert.ok(alert,'a page obligation has a retained alert');assert.equal(typeof alert.obligation?.id,'string');assert.ok(alert.obligation.id.length);
- assert.deepEqual(alert.obligation,{id:alert.obligation.id,state:'recorded',paging:'off',automatic:false,outcome:null,receipt:null,target,urgency:alert.urgency});
+ assert.deepEqual(alert.obligation,{id:alert.obligation.id,state:'recorded',paging:'off',automatic:false,outcome:null,receipt:null,target,urgency:alert.urgency,policy:{version:0,mode:'alert-only',recoveredNotice:'silent',rule:null}});
 };
 const incompleteCustody=(state,receipt,raw,readableIds,owner,target)=>{
  assert.ok(receipt,'the incomplete receipt is readable through the owner state door');assert.equal(receipt.severity,'critical');assert.equal(receipt.truncated,true);

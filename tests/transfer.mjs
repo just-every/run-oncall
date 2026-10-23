@@ -26,6 +26,7 @@ try{
  ok(await req('/api/command',{type:'service',id:'upstream',name:'Upstream service',environment:'production',owner:member.id,runbook:[],pager:''}))
  ok(await req('/api/command',{type:'service-dependencies',service:'transfer',dependencies:['upstream'],workspaceRevision:ok(await req('/api/state')).revision}))
  assert.equal((await req('/api/urgency/services/transfer',{baseVersion:0,mode:'support-hours',timezone:'America/New_York',weekly:[{day:1,start:'09:00',end:'17:00'}],holidays:['2026-12-25'],inside:'high',outside:'low',reason:'Retain versioned urgency and service snapshot across installations'})).status,201)
+ assert.equal((await req('/api/response/services/transfer',{baseVersion:0,defaultMode:'alert-only',recoveredNotice:'notified',rules:[{id:'synthetic-oncall-80',urgency:'high',severity:'critical',policy:'*',mode:'incident'}],reason:'Retain policy, source recovery and non-automatic notices through installation recovery'})).status,201)
  const incident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Preserve authored history',severity:'warning',summary:'Archive proof',alerts:[]}))
  const schedule=ok(await req('/api/paging/schedules',{id:'transfer',name:'Transfer rota',service:'transfer',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[member.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}))
  const context=ok(await req('/api/handoffs/context/'+incident.id)),prepared=await req('/api/handoffs/prepare',{id:'archive-copy',incident:incident.id,incidentRevision:incident.revision,serviceHash:context.serviceHash,payload:{audience:'internal',title:'Exact copy',summary:'Authored transfer evidence',evidenceLinks:[],impactLinks:[]}})
@@ -38,9 +39,9 @@ try{
  ok(await req('/api/triage/views',{name:'Open transfer work',query:{q:'authored',status:'open'}}))
  const emailPart=localPart();assert.equal((await req('/api/email/addresses',{id:'portable-email',name:'Nightly archive monitor',localPart:emailPart,service:'transfer',owner:member.id,mode:'custom',fallback:'quarantine',rules:recoveryRules()})).status,201)
  await m.close();execFileSync('pnpm',['exec','vite','build'],{stdio:'pipe',maxBuffer:32*1024*1024})
- const emailWorker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{persistTo:'.wrangler/state'});try{await mail(emailWorker,emailPart,'FAILED: archive-db');await mail(emailWorker,emailPart,'Unknown archive mail')}finally{await emailWorker.close()}
+ const emailWorker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{persistTo:'.wrangler/state'});try{await mail(emailWorker,emailPart,'FAILED: archive-db');await mail(emailWorker,emailPart,'Unknown archive mail');await mail(emailWorker,emailPart,'OK: archive-db')}finally{await emailWorker.close()}
  await m.start()
- assert.equal(ok(await req('/api/email')).samples.length,2)
+ assert.equal(ok(await req('/api/email')).samples.length,3)
  const changeKey=randomBytes(32).toString('hex')
  assert.equal((await req('/api/changes/sources',{id:'portable-ci',name:'Portable CI context',provider:'native',service:'transfer',repository:'',mode:'bearer',revision:0,key:changeKey})).status,201)
  assert.equal((await fetch(m.origin+'/api/changes/ingress/portable-ci',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+changeKey},body:JSON.stringify({eventId:'portable-deploy',summary:'Retain deployment context',author:'transfer-ci',timestamp:new Date().toISOString()})})).status,201)
@@ -58,6 +59,15 @@ try{
  const nativeBody=JSON.stringify({source:'intake:portable-native',eventId:'portable-native-event',service:'transfer',environment:'production',key:'portable-native-outage',generation:'portable-native-cycle',intent:'trigger',severity:'warning',title:'Native routed archive custody',observedAt:new Date().toISOString()})
  const nativeTimestamp=String(Math.floor(Date.now()/1000))
  assert.equal((await fetch(m.origin+'/api/ingress/intake:portable-native',{method:'POST',headers:{'content-type':'application/json','x-oncall-timestamp':nativeTimestamp,'x-oncall-signature':createHmac('sha256',nativeRoutedKey).update(nativeTimestamp+'.'+nativeBody).digest('hex')},body:nativeBody})).status,201)
+ // The same portable fixture carries a policy-created incident, stopped obligation and commander reminder.
+ const responseSignal={...JSON.parse(nativeBody),eventId:'synthetic-oncall-81',key:'synthetic-oncall-81',generation:'synthetic-oncall-81',severity:'critical',title:'Archive replica unavailable'}
+ const responseSend=async input=>{const body=JSON.stringify(input),at=String(Math.floor(Date.now()/1000));return fetch(m.origin+'/api/ingress/intake:portable-native',{method:'POST',headers:{'content-type':'application/json','x-oncall-timestamp':at,'x-oncall-signature':createHmac('sha256',nativeRoutedKey).update(at+'.'+body).digest('hex')},body})}
+ assert.equal((await responseSend(responseSignal)).status,201)
+ let recoveredIncident=ok(await req('/api/state')).incidents.find(i=>i.automaticDeclaration&&i.title===responseSignal.title);assert.ok(recoveredIncident)
+ recoveredIncident=ok(await req('/api/command',{type:'transition',incident:recoveredIncident.id,revision:recoveredIncident.revision,state:'acknowledged',summary:'Archive operator investigating'}))
+ assert.equal((await responseSend({...responseSignal,eventId:'synthetic-oncall-82',intent:'recover'})).status,201)
+ const responseState=ok(await req('/api/state')),responseAlert=responseState.alerts.find(a=>a.id===recoveredIncident.alerts[0]);recoveredIncident=responseState.incidents.find(i=>i.id===recoveredIncident.id)
+ assert.equal(responseAlert.obligation.outcome,'stopped by source recovery');assert.equal(responseAlert.obligation.recoveryNotice.label,'no sender until OC-026');assert.equal(recoveredIncident.sourceRecovery.reminder.commander,member.id);assert.equal(recoveredIncident.sourceRecovery.reminder.automatic,false)
  const nativePrefixes=['synthetic-oncall-1'+'x'.repeat(70000),'synthetic-oncall-2{'];
  for(const body of nativePrefixes){const at=String(Math.floor(Date.now()/1000));const r=await fetch(m.origin+'/api/ingress/intake:portable-native',{method:'POST',headers:{'content-type':'application/json','x-oncall-timestamp':at,'x-oncall-signature':createHmac('sha256',nativeRoutedKey).update(at+'.'+body).digest('hex')},body});assert.equal(r.status,202);}
  ok(await req('/api/intake/allowances',{id:'intake:portable-native',requests:500,events:1,revision:ok(await req('/api/state')).revision}));

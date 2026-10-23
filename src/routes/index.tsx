@@ -1,6 +1,7 @@
 import { AutomationSettings } from '../automation/AutomationSettings';
 import { EmailWorkspace } from '../email/EmailWorkspace';
 import { MonitoringWorkspace } from '../monitoring/MonitoringWorkspace';
+import { ResponsePolicy } from '../response-policy/ResponsePolicy';
 import { UrgencyPolicy } from '../urgency/UrgencyPolicy';
 import { CompatibleIngress } from '../intake/CompatibleIngress';
 import { RoutingWorkspace } from '../routing/RoutingWorkspace';
@@ -272,6 +273,16 @@ function Workspace() {
                   )}
                 </div>
               )}
+              <section className="padded" aria-label="My commander reminders">
+                <h2>My commander reminders</h2>
+                <p>Open incidents awaiting your resolution as commander, regardless of assignee.</p>
+                {s.incidents.filter(item => item.state !== "resolved" && item.sourceRecovery?.reminder.state === "recorded" && item.sourceRecovery.reminder.commander === actor.id).map(item => <article key={item.id}>
+                  <button onClick={() => {selectIncident(item.id); setHandoff(null);}}>{item.title}</button>
+                  <p>all alerts recovered — awaiting resolution</p>
+                  <p>{item.sourceRecovery!.reminder.label} · non-automatic · Commander: {name(item.sourceRecovery!.reminder.commander)}</p>
+                </article>)}
+                {!s.incidents.some(item => item.state !== "resolved" && item.sourceRecovery?.reminder.state === "recorded" && item.sourceRecovery.reminder.commander === actor.id) && <p>No open commander reminders.</p>}
+              </section>
               {!s.incidents.length && (
                 <div className="empty">
                   <h2>Ready when something needs coordination</h2>
@@ -279,7 +290,7 @@ function Workspace() {
                     {s.services.length
                       ? "Your services are ready. Declare an incident when something needs coordination."
                       : "Set up a service and its runbook, then declare a real incident."}
-                    {" "}Incoming alerts never declare one automatically.
+                    {" "}Each service’s response policy controls automatic incident declaration.
                   </p>
                   {s.services.length ? (
                     canEdit && <button onClick={() => setDeclare(true)}>Start an incident</button>
@@ -315,6 +326,13 @@ function Workspace() {
                       Send test page
                     </button>
                   )}
+                  {incident.automaticDeclaration && <p>Automatic declaration · service response policy</p>}
+                  {incident.sourceRecovery && <section aria-label="Source recovery" className="urgency-preview">
+                    {incident.state !== "resolved" && <strong>all alerts recovered — awaiting resolution</strong>}
+                    <p>Source recovery recorded {time(incident.sourceRecovery.at)} · receipt: <span style={{overflowWrap: 'anywhere'}}>{incident.sourceRecovery.receipt}</span></p>
+                    <p>Commander reminder: {name(incident.sourceRecovery.reminder.commander)} · {incident.sourceRecovery.reminder.state} · {incident.sourceRecovery.reminder.label} · non-automatic.</p>
+                    <p>Source recovery does not resolve this incident. Record recovery evidence and a resolution summary.</p>
+                  </section>}
                   <IncidentResponseControls key={incident.id} incident={incident} members={s.members} busy={w.busy} canEdit={canEdit} mutate={mutate} />
                   <RecentChanges service={incident.service} at={incident.createdAt} revision={s.revision} expanded />
                   <section className="timeline">
@@ -516,6 +534,7 @@ function Workspace() {
                     </a>
                   )}
                   <RecentChanges service={v.id} revision={s.revision} />
+                  <ResponsePolicy key={'response:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
                   <UrgencyPolicy key={'urgency:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
                   {admin && <ServiceDependencies key={v.id} service={v} services={s.services} revision={s.revision} busy={w.busy} run={w.run} />}
                   {admin && (

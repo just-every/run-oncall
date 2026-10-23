@@ -1,3 +1,6 @@
+import type { ResponsePolicy, AutomaticDeclaration, IncidentSourceRecovery } from '../../response-policy/types.ts';
+import { refreshIncidentRecovery } from '../../response-policy/model.ts';
+import { validateResponseArchive, validResponseSourceEntry } from '../../response-policy/archive.ts';
 import { recordAlertObligation, validateAlertObligation, type AlertObligation } from '../../alert-obligation.ts';
 import { validateErasureFences, type ErasureFence } from '../../erasure-fence.ts'
 import {validateAllowances,type KeyAllowance} from '../../intake-rate/model.ts';
@@ -23,6 +26,7 @@ export type Service = {
   pager: string;
   dependencies?: string[];
   urgencyRules?: UrgencyRule[];
+  responsePolicies?: ResponsePolicy[];
 };
 export type Policy = {
   id: string;
@@ -88,6 +92,7 @@ export type Entry = {
   kind: string;
   text: string;
   operationId?: string;
+  metadata?: {event?:string;policyVersion?:number;rule?:string|null;receipt?:string|null};
   lifecycle?: {from: Incident["state"] | null; to: Incident["state"]; evidence?: string; member?: string | null};
   review?: {rootCause:string;impact:string;review:string;materialRevision:number;workspaceRevision:number};
 };
@@ -105,6 +110,8 @@ export type Action = {
   accepted?: {by:string;at:string};
 };
 export type Incident = {
+  automaticDeclaration?: AutomaticDeclaration;
+  sourceRecovery?: IncidentSourceRecovery;
   id: string;
   title: string;
   service: string;
@@ -352,7 +359,7 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
     if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&m.role!=='viewer'))fail('An explicit active responsible member is required; the client is not a human responder');
   }
   const result=applyCommand(state,actor,input,at);
-  if(result&&'timeline' in result)enqueueEvents(state,result as Incident,input,actor);
+  if(result&&'timeline' in result) {enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
   return result;
 }
 function applyCommand(
@@ -472,7 +479,7 @@ function applyCommand(
       !Array.isArray(ids) ||
       ids.some(
         (id: string) =>
-          !state.alerts.some((a) => a.id === id && a.service === service.id),
+          !state.alerts.some((a) => a.id === id && (a.service === service.id || a.service===null&&state.intakeSources?.some(source=>a.source==='intake:'+source.id&&source.routing?.scope.includes(service.id)))),
       )
     )
       fail("Invalid linked alerts");
@@ -577,7 +584,7 @@ export function validateArchive(value: any): State {
       fail("Invalid archive timestamp");
   };
   const entry = (e: any) => {
-    object(e, ["id", "at", "actor", "kind", "text"], ["operationId", "lifecycle", "review"]);
+    object(e, ["id", "at", "actor", "kind", "text"], ["operationId", "lifecycle", "review", "metadata"]);
     validateLifecycleEntry(e);
     if (e.operationId !== undefined) text(e.operationId, "operation ID", 100);
     text(e.id, "entry ID", 100);
@@ -666,7 +673,7 @@ export function validateArchive(value: any): State {
   )
     fail("Duplicate member names");
   for (const s of value.services) {
-    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules"]);
+    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
     if (!hasMember(s.owner)) fail("Invalid service references");
@@ -791,7 +798,7 @@ export function validateArchive(value: any): State {
       "actions",
       "recovery",
       "review",
-    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance"]);
+    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance", "automaticDeclaration", "sourceRecovery"]);
     validateIncidentControls(i, value.members);
     text(i.title, "incident", 300);
     if (
@@ -814,7 +821,7 @@ export function validateArchive(value: any): State {
       i.alerts.some(
         (id: any) =>
           !value.alerts.some(
-            (a: any) => a.id === id && a.service === i.service,
+            (a: any) => a.id === id && (a.service === i.service || a.service===null&&value.intakeSources?.some((source:any)=>a.source==='intake:'+source.id&&source.routing?.scope.includes(i.service))),
           ),
       )
     )
@@ -822,7 +829,7 @@ export function validateArchive(value: any): State {
     array(i.timeline);
     i.timeline.forEach(entry);
     if(i.timeline.some((e:any)=>e.lifecycle?.member!=null&&!hasMember(e.lifecycle.member)))fail("Invalid named responder reference");
-    if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor)))
+    if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor) && !validResponseSourceEntry(value,i,e)))
       fail("Invalid incident attribution");
     array(i.runbook);
     for (const r of i.runbook) {
@@ -849,6 +856,7 @@ export function validateArchive(value: any): State {
   }
   value.audit.forEach(entry);
   validateUrgencyArchive(value);
+  validateResponseArchive(value);
   validateReviewFields(value);
   validateChangeArchive(value);
   validateIntakeArchive(value);

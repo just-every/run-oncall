@@ -10,7 +10,7 @@ export function applyEmail(state:State,address:EmailAddress,version:EmailVersion
   const generation=open?.generation??crypto.randomUUID();
   const result=admit(state,{source,eventId:receipt.id,service:address.service,environment:address.environment,key:decision.key!,generation,intent:decision.action==='resolve'?'recover':'trigger',title:sample.subject.trim().slice(0,300)||'Email alert',severity:decision.severity,observedAt:receipt.at,evidence:''},receipt.at,true);
   const alert=state.alerts.find(a=>a.id===result.alert)!;
-  Object.assign(receipt,{alert:alert.id,event:result.event.id,generation,obligation:open?state.emailReceipts?.find(r=>r.alert===open.id&&r.obligation)?.obligation??null:'email-obligation:'+generation,outcome:decision.action==='resolve'?'recovered':open?'deduplicated':'opened',diagnostic:decision.reason});
+  Object.assign(receipt,{alert:alert.id,event:result.event.id,generation,obligation:alert.obligation!.id,outcome:decision.action==='resolve'?'recovered':open?'deduplicated':'opened',diagnostic:decision.reason});
   if(decision.action==='trigger') {
     if(decision.priority)alert.priority=decision.priority;
     if(decision.urgency)emailAlertUrgency(state,alert,receipt,decision.urgency,!open);

@@ -34,7 +34,7 @@ export function validateEmailArchive(state:State) {
     if(['opened','deduplicated','recovered'].includes(r.outcome)) {
       const alert=state.alerts.find(a=>a.id===r.alert&&a.source==='email:'+r.address&&a.service===address?.service&&a.environment===address?.environment&&a.key===r.decision?.key&&a.generation===r.generation);
       const event=state.events.find(e=>e.id===r.event&&e.eventId===r.id&&alert?.events.includes(e.id));
-      if(!alert||!event||event.intent!==(r.outcome==='recovered'?'recover':'trigger')||!r.obligation||event.key!==r.decision?.key||r.outcome==='recovered'&&r.stop!=='stopped by source recovery')fail('Invalid email generation reference');
+      if(!alert||!event||event.intent!==(r.outcome==='recovered'?'recover':'trigger')||!r.obligation||alert.obligation&&alert.obligation.id!==r.obligation||event.key!==r.decision?.key||r.outcome==='recovered'&&r.stop!=='stopped by source recovery')fail('Invalid email generation reference');
     } else if([r.alert,r.event,r.generation,r.obligation,r.stop].some(v=>v!==null))fail('No-effect mail changed a generation');
   }
   for(const event of state.events.filter(e=>e.source.startsWith('email:')))if(!receipts.some(r=>r.event===event.id&&r.id===event.eventId))fail('Email event lacks its receipt');

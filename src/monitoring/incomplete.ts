@@ -1,3 +1,4 @@
+import { finishResponseAdmission } from '../response-policy/model.ts';
 import type { State } from '../family/response-operations/domain.ts';
 import type { IntakeReceipt, IntakeSource } from '../intake/model.ts';
 import { receiveMonitoring } from './admission.ts';
@@ -16,7 +17,7 @@ export function retainIncomplete(state:State,source:IntakeSource,provider:Intake
   const explanation=incompleteRouting(source);
   const result=receiveMonitoring(state,source,input,{provider,incomplete:evidence,explanation},at);
   const alert=result.duplicate?undefined:state.alerts.find(a=>a.id===result.receipt.alert);
-  if(alert)raiseIncompleteUrgency(state,alert,result.receipt);
+  if(alert) {raiseIncompleteUrgency(state,alert,result.receipt);finishResponseAdmission(state,alert,state.events.find(e=>e.id===result.receipt.event)??null,result.receipt.id);}
   if(!result.duplicate)state.audit.push({id:crypto.randomUUID(),at,actor:'source:'+source.id,kind:'intake-owner-notice',text:`Integration owner ${owner}: incomplete intake receipt ${result.receipt.id}; ${evidence.bytes} bytes; dropped ${evidence.dropped??'unknown'} alerts; coordination notice recorded; paging remains OFF`});
   return result;
 }

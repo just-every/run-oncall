@@ -1,3 +1,5 @@
+import { installResponsePolicy } from './response-policy/api';
+import { finishResponseAdmission } from './response-policy/model';
 import { requireErasureFence, erasureFenceCondition, fenceValues } from './erasure-fence'
 import {hydrateNativePrefixes,requireNativePrefixValues} from './native-prefix-store';
 import {rateFaultBody} from './intake-rate/fault';
@@ -366,6 +368,7 @@ api.post("/api/ingress/:source", async (c) => {
     fail('"service" must be an internal service ID authorized for this source', 403);
   const revision = state.revision;
   const result = admit(state, signal);
+  if(!result.duplicate&&result.alert)finishResponseAdmission(state,state.alerts.find(a=>a.id===result.alert)!,result.event,result.event.id);
   if (!result.duplicate) await saveRate(c,{load,save},state,revision,rate,admittedCount(before,state));
   // Source credentials admit signals; they never grant workspace read access.
   // Project explicitly so new internal event fields cannot widen this receipt.
@@ -403,6 +406,7 @@ installEmailManagement(api, changeDeps);
 installRoutingManagement(api, changeDeps);
 installAllowances(api, changeDeps);
 installUrgency(api, changeDeps);
+installResponsePolicy(api, changeDeps);
 installReviews(api, authorizedState);
 installTriage(api, {body, state: authorizedState, save: (c, state, revision) => save(c.env.DB, state, revision, sessionGuard(c)), saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));

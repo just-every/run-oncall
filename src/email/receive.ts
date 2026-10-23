@@ -1,3 +1,4 @@
+import { finishResponseAdmission } from '../response-policy/model.ts';
 import type { Bindings } from '../auth.server';
 import { auditedDatabase } from '../audit-database.ts';
 import { auditIdentity, auditOutcome, type AuditContext } from '../audit-store.ts';
@@ -43,6 +44,7 @@ export async function receiveEmail(message:ForwardableEmailMessage,env:Bindings)
     }
     if(reason){receipt.outcome='quarantined';receipt.diagnostic=reason;if(receipt.decision)receipt.decision.reason=reason;}
     (state.emailReceipts??=[]).push(receipt);
+    if(receipt.alert&&receipt.event)finishResponseAdmission(state,state.alerts.find(a=>a.id===receipt.alert)!,state.events.find(e=>e.id===receipt.event)!,receipt.id);
     if(['quarantined','refused'].includes(receipt.outcome)) {
       (state.emailQuarantine??=[]).push({id:receipt.id,receipt:receipt.id,address:receipt.address,reason:receipt.diagnostic});
       auditOutcome(db,'refused');
