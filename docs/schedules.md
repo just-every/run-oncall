@@ -21,7 +21,9 @@ Then set each rotation:
 2. **Interval (calendar days)**: how long each turn lasts, from 1 to 366 days. Seven days means a weekly rota.
 3. **Responders (in order)**: add people with **Add primary responder** or **Add backup responder** and put them in order with the arrows.
 
-Press **Save schedule**. Each save is a new revision, so an old edit can never overwrite a newer one: if someone saved in the meantime, Oncall asks you to reload the saved version first.
+Press **Save schedule** to create a schedule. For an existing schedule, the same button opens **Review schedule changes** using the **Preview from/to (UTC)** range. Review each previous and proposed holder, the rule that wins, every new gap and every previously uncovered interval that becomes covered. Clock transitions in the old and proposed named zones show their UTC instants and offsets. Check **I reviewed these assignments and gaps**, then press **Apply reviewed change**.
+
+Confirmation binds the complete proposal and evaluated range to the schedule revision and current membership snapshot. If a schedule or workspace changes, review again; an old confirmation cannot overwrite it. The preview covers at most 31 elapsed days, and states its range explicitly. It does not claim coverage outside that range. The unchanged ordinary override API remains an explicit administrator operation. No timer or delivery is created.
 
 A rotation with no responders is shown as a gap in coverage, never filled in silently. A person who leaves the team or becomes a viewer keeps their place in the order, and their turn shows as uncovered until you change it.
 
@@ -30,6 +32,10 @@ A rotation with no responders is shown as a gap in coverage, never filled in sil
 Hand-overs happen at the same local time on the clock, not after a fixed number of hours. A daily 09:00 hand-over in London stays at 09:00 when the clocks go back, so that one turn is 25 hours long.
 
 Twice a year a local time either repeats or does not exist. For the repeated hour, **Repeated time handling** chooses the **Earlier occurrence**, the **Later occurrence**, or **Reject**. A hand-over at a time that does not exist, or that you chose to reject, leaves the turns on either side visibly uncovered instead of guessing.
+
+## Coverage review limits
+
+The reviewed editor supports the existing primary/backup rotations and UTC overrides. Follow-the-sun layers, selected holiday calendars, stored PTO and ICS PTO upload are not implemented. Google/Outlook consent-based PTO import, verified route counts, degraded-route flags and a real-phone handoff also remain unobserved. US fall back in 2026 occurs on 1 November; London changes on 25 October.
 
 ## Swaps and cover
 
