@@ -1227,7 +1227,7 @@
       "executable": false
     },
     "src/forms.tsx": {
-      "sha256": "6cababd6719e70ae47a08f8018af3242b98165b4c5149c7155246854fa654652",
+      "sha256": "f452cb72d16ec79e9b71bd0896ec9932dce93c096d31d94af2fa8d6cbce29689",
       "executable": false
     },
     "src/handoff-api.ts": {
