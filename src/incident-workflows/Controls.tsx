@@ -130,6 +130,11 @@ export function IncidentWorkflows({ state, incident, member, send }: Props) {
           {action.evidence && <p>{action.evidence}</p>}
           {action.submission && <small>Submitted by {name(action.submission.by)} · {time(action.submission.at)} · {action.submission.evidence}</small>}
           {action.accepted && <small>Accepted by {name(action.accepted.by)} · {time(action.accepted.at)}</small>}
+          {!action.done && member.active && member.role!=='viewer' && <>
+            <Form busy={busy} label={`Submit evidence for ${action.title}`} onSubmit={data=>save({...data,type:'complete',incident:source.id,revision:source.revision,action:action.id})}><Field name="evidence" label={`Completion evidence for ${action.title}`} type="url" /></Form>
+            {action.completionPolicy==='human-review'&&action.submission&&<Form busy={busy} label={`Accept completion of ${action.title}`} onSubmit={data=>save({...data,type:'accept-action',incident:source.id,revision:source.revision,action:action.id})}><Field name="reason" label={`Acceptance reason for ${action.title}`} type="textarea" /></Form>}
+          </>}
+
         </li>)}</ul> : <p>No source follow-ups.</p>}
         <h4>Source evidence and decisions</h4>
         <ol className="events">{source.timeline.map(entry => <li className="event" key={entry.id}>

@@ -1,4 +1,4 @@
-import { authority, fail, text, type Action, type Alert, type Entry, type Incident, type Member, type State } from '../family/response-operations/domain.ts';
+import { authority, fail, text, type Alert, type Entry, type Incident, type Member, type State } from '../family/response-operations/domain.ts';
 import type { IncidentRelations, RelatedIncident, RetainedTimelineEntry } from './types-relations.ts';
 
 export type { IncidentRelations, RelatedIncident, RetainedTimelineEntry } from './types-relations.ts';
@@ -80,20 +80,12 @@ export function relationCommand(state: State, actor: Member, input: any, at: str
       (incident.mergedSources?.length ?? 0) + sources.length > 10000) fail('Incident history capacity reached', 429);
     const alerts = [...new Set([...incident.alerts, ...sources.flatMap(source => source.alerts)])];
     const mergedSources = [...(incident.mergedSources ?? []), ...sources.map(source => source.id)];
-    const actions = new Map<string, Action>(incident.actions.map(action => [action.id, action]));
-    for (const source of sources) for (const action of source.actions) {
-      const current = actions.get(action.id);
-      if (current && !sameValue(current, action)) fail('Conflicting retained follow-up IDs; reload and reconcile before merging', 409);
-      if (!current) actions.set(action.id, structuredClone(action));
-    }
-    if (actions.size > 10000) fail('Incident follow-up capacity reached', 429);
     const descriptions = sources.map(source => mergeText(source, incident, reason));
     const targetEntries = descriptions.map(description => entry(actor.id, 'merge', description, at));
     const sourceEntries = descriptions.map(description => entry(actor.id, 'merge', description, at));
     const audit = descriptions.map(description => entry(actor.id, 'merge-incidents', description, at));
     incident.alerts = alerts;
     incident.mergedSources = mergedSources;
-    incident.actions = [...actions.values()];
     incident.timeline.push(...targetEntries);
     incident.revision++;
     sources.forEach((source, index) => {

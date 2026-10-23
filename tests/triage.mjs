@@ -182,7 +182,10 @@ try {
   const canonicalAlias = await w.request('/api/v1/incidents/' + workflowSource.id, undefined, undefined, {authorization: 'Bearer ' + workflowApiKey});
   assert.equal(ok(canonicalAlias).id, workflowTarget.id); assert.equal(canonicalAlias.headers.get('content-location'), '/api/v1/incidents/' + workflowTarget.id);
   assert.deepEqual(ok(canonicalAlias).mergedSources, workflowTarget.mergedSources);
-  assert.deepEqual(workflowTarget.actions.find(a=>a.id===sourceBeforeMerge.actions[0].id),sourceBeforeMerge.actions[0],'merged follow-ups remain editable at the canonical incident');
+  assert.deepEqual(workflowTarget.actions, targetBeforeMerge.actions,'merge does not duplicate an open remediation obligation');
+  workflowSource=ok(await w.request('/api/command',{type:'complete',incident:workflowSource.id,revision:workflowSource.revision,action:workflowSource.actions[0].id,evidence:'https://example.test/merged-dependency-evidence'},workflowResponder));
+  workflowSource=ok(await req('/api/command',{type:'accept-action',incident:workflowSource.id,revision:workflowSource.revision,action:workflowSource.actions[0].id,reason:'Reviewed the retained dependency follow-up'}));
+  assert.equal(workflowSource.actions[0].done,true,'retained source remediation stays editable without changing alias lifecycle or roles');
   for(const member of [actor.id,backup.id])workflowTarget=ok(await w.request('/api/command',{type:'assign-role',incident:workflowTarget.id,revision:workflowTarget.revision,role:'communications',member,reason:'Transfer merged customer communication responsibility'},workflowResponder));
   workflowTarget=ok(await w.request('/api/command',{type:'note',incident:workflowTarget.id,revision:workflowTarget.revision,text:'Merged response decision remains attributed to the current responder'},workflowResponder));
   assert.equal(workflowTarget.communications,backup.id);assert.equal(workflowTarget.timeline.at(-1).actor,backup.id);

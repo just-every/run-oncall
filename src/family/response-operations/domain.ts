@@ -531,7 +531,7 @@ function applyCommand(
   }
   const incident = state.incidents.find((i) => i.id === input.incident);
   if (!incident) fail("Unknown incident", 404);
-  if (incident.mergedInto) fail("This incident is a retained alias; open the merged incident",409);
+  if (incident.mergedInto && !["complete","accept-action"].includes(input.type)) fail("This incident is a retained alias; open the merged incident",409);
   if (input.revision !== incident.revision)
     fail("Incident changed. Reload before applying your edit.", 409);
   const controlled = incidentControl(state, actor, incident, input, at);
