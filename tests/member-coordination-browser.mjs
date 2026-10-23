@@ -145,6 +145,31 @@ try {
  console.log('OC-061 browser: existing internal-status panel, derived degraded, attributed override and reason, stakeholder subscription and private-door refusals at 1440/390')
  await samView.context.close()
 
+ // The new role is excluded from every responder selector on the existing screens.
+ ok(await call(owner.page,'/api/paging/schedules',{id:'synthetic-oncall-62',name:'Payments primary',service:'synthetic-oncall-61',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[ownerMember.id],ambiguity:'earlier'},overrides:[]}))
+ const excludesStakeholder=async locator=>assert.ok(!(await locator.locator('option').evaluateAll(options=>options.map(option=>option.value))).includes(sam.id),'stakeholders are never offered as responders')
+ for(const screen of ['team','services','routing','schedules','incidents']){
+  await owner.page.goto(worker.origin+'/#'+screen);await owner.page.reload()
+  if(screen==='team')await owner.page.getByRole('heading',{name:'Team and access',exact:true}).waitFor()
+  if(screen==='services'){await owner.page.getByRole('heading',{name:'Service ownership',exact:true}).waitFor();await excludesStakeholder(owner.page.getByLabel('Service owner',{exact:true}))}
+  if(screen==='routing'){await owner.page.getByText('Create a routed integration key',{exact:true}).click();await excludesStakeholder(owner.page.getByLabel('Integration owner',{exact:true}))}
+  if(screen==='schedules'){
+   await owner.page.getByLabel('Schedule',{exact:true}).selectOption('synthetic-oncall-62')
+   await excludesStakeholder(owner.page.getByLabel('Primary responder 1',{exact:true}))
+   await owner.page.getByRole('button',{name:'Remove primary responder 1',exact:true}).focus()
+   await owner.page.getByRole('tooltip').filter({hasText:'Remove primary responder 1'}).waitFor({state:'visible'})
+  }
+  if(screen==='incidents'){
+   await owner.page.getByRole('button',{name:'Select this page',exact:true}).click()
+   await owner.page.getByLabel('Bulk action',{exact:true}).selectOption('reassign')
+   await excludesStakeholder(owner.page.getByLabel('Bulk assignee',{exact:true}))
+   await owner.page.getByText('Change response ownership or priority',{exact:true}).click()
+   await excludesStakeholder(owner.page.getByLabel('Assigned responder',{exact:true}))
+  }
+  for(const width of [1440,390])await statusCapture(owner.page,'role-'+screen,width)
+ }
+ console.log('OC-061 role selectors and tooltips: team, service, routing, schedule and incident/bulk screens at 1440/390; stakeholder excluded from response owners and keyboard tooltip immediate')
+
  // Signed out, anonymous and revoked sessions see no workspace.
  await rosa.page.setViewportSize({width:1440,height:1000});await rosa.page.goto(worker.origin+'/#incidents')
  await rosa.page.getByRole('button',{name:'Sign out',exact:true}).click();await rosa.page.waitForURL(u=>u.pathname.startsWith('/signin'))

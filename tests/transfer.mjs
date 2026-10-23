@@ -29,7 +29,7 @@ try{
  assert.equal((await req('/api/response/services/transfer',{baseVersion:0,defaultMode:'alert-only',recoveredNotice:'notified',rules:[{id:'synthetic-oncall-80',urgency:'*',severity:'critical',policy:'*',mode:'incident'}],reason:'Retain policy, source recovery and non-automatic notices through installation recovery'})).status,201)
  const incident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Preserve authored history',severity:'warning',summary:'Archive proof',alerts:[]}))
  // OC-061's full durable status category travels with this existing installation journey.
- const stakeholder=ok(await req('/api/members',{name:'synthetic-oncall-61',role:'stakeholder',password:'synthetic-oncall-61-password'}),201)
+ const stakeholderCreated=await req('/api/members',{name:'synthetic-oncall-61',role:'stakeholder',password:'synthetic-oncall-61-password'});assert.equal(stakeholderCreated.status,201);const stakeholder=stakeholderCreated.value
  ok(await req('/api/status',{action:'create',name:'Checkout',owningTeam:'Payments',supporting:['transfer'],communicationsOwner:member.id,audience:[stakeholder.id],highUrgencyImpact:false}))
  let statusBusiness=ok(await req('/api/status')).services.find(row=>row.name==='Checkout')
  ok(await req('/api/status',{action:'subscribe',id:statusBusiness.id,revision:statusBusiness.revision,member:stakeholder.id,channel:'email',active:true}))
@@ -210,7 +210,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const erase=email=>req('/api/move-in/erase',{email,confirmation:'erase '+email})
  assert.equal((await m.request('/api/move-in/erase',{email:'alice@example.test',confirmation:'erase alice@example.test'})).status,401)
  assert.equal((await erase('nobody@example.test')).status,404)
- const erasedSubscriber=ok(await req('/api/members',{name:'alice@example.test status',role:'stakeholder',password:'synthetic-oncall-67-password'}),201)
+ const erasedSubscriberCreated=await req('/api/members',{name:'alice@example.test status',role:'stakeholder',password:'synthetic-oncall-67-password'});assert.equal(erasedSubscriberCreated.status,201);const erasedSubscriber=erasedSubscriberCreated.value
  statusBusiness=ok(await req('/api/status')).services.find(row=>row.name==='Checkout')
  // Grant the member explicitly on a second service so no out-of-scope subscription is manufactured.
  ok(await req('/api/status',{action:'create',name:'Customer checkout',owningTeam:'Payments',supporting:['transfer'],communicationsOwner:member.id,audience:[erasedSubscriber.id],highUrgencyImpact:false}))
