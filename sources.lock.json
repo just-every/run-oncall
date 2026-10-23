@@ -847,7 +847,7 @@
       "executable": false
     },
     "src/automation/api.ts": {
-      "sha256": "2ee78a3ccdba11016db720833113abfa0b7755d7a452895863bf04eb99d9a307",
+      "sha256": "a3de1045b4278ee7351e28d2c8dc6de4ed7af6ca8df6917da2cfd7cab857d5c5",
       "executable": false
     },
     "src/automation/AutomationSettings.tsx": {
@@ -3927,7 +3927,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "da0a239a385ee5939fdd05f7a843e344d0eb264126d5fe1f2cc913939fc8c731",
+      "sha256": "d84052802ba437bb84d748033a818f8e6a5523ec5b8592c49f23da91c3d0651a",
       "executable": false
     },
     "tests/product-import-browser.mjs": {
@@ -3987,7 +3987,7 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "3b67431bd9be31287133249ede113ee76d54158ca9c90cbf3034b4143fd3f202",
+      "sha256": "e7152984da0bd541d803b71d482fac4d3bd5760a223d69cc6a2562c45d8864c9",
       "executable": false
     },
     "tests/urgency.mjs": {
