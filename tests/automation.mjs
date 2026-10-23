@@ -368,6 +368,7 @@ try {
  const ack=async i=>ok(await req('/api/command',{type:'transition',incident:i.id,revision:i.revision,state:'acknowledged',summary:'Owner acknowledged'}));
  await w.time(at);let i=await ack(await make());assert.equal(i.deadlines,undefined,'upgrade default off changes no acknowledgment behavior');
  ok(await req('/api/command',{type:'acknowledgment-timeout',service:i.service,baseVersion:0,minutes:1}));i=await ack(await make());const timeout=i.deadlines.at(-1);assert.equal(Date.parse(timeout.dueAt),at+60000);
+ for(const minutes of [0,1441])ok(await req('/api/command',{type:'snooze',incident:i.id,revision:i.revision,minutes}),400);
  i=ok(await req('/api/command',{type:'snooze',incident:i.id,revision:i.revision,minutes:2}));const snooze=i.deadlines.at(-1);assert.equal(i.deadlines[0].state,'cancelled');assert.equal(Date.parse(snooze.dueAt),at+120000);
  await w.time(at+119999);await tick();assert.equal((await find(i.id)).state,'acknowledged','never early');
  await w.stop();await w.start();await w.time(at+120000);
