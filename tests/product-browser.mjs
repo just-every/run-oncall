@@ -238,7 +238,9 @@ try {
  }
  await productBrowserJourney(page,context,{openSession})
  await incompleteIntakeBrowser(page,context)
+ console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440/390; overflow, axe and hydration checked')
  await responsePolicyBrowser(page,context)
+ console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440/390; overflow, axe and hydration checked')
  assert.deepEqual(errors,[],'no browser application errors')
  console.log('Emitted Worker product browser journey passed at desktop and mobile widths')
 } catch(error) {
