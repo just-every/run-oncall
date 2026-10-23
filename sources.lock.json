@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "108259673c6bccdee2a8cd02dff3d1c21fa883ae14b3e9b29dc68f1d4c09fe42",
+      "sha256": "30f52daffacf7674595b456b7e7466270b9f8ba804045b6277918b8e53d1b46f",
       "executable": false
     },
     "DEMO.md": {
@@ -1451,7 +1451,7 @@
       "executable": false
     },
     "src/manual-pages/archive.ts": {
-      "sha256": "fbe235a66a99ea8cff15d5ef1bfce771cee753924c3eb12fb78c4f505d2968ec",
+      "sha256": "d917d5c6caa527c74e238debc3ecf2de9b019cd166e5016492335cd0c97b37d9",
       "executable": false
     },
     "src/manual-pages/context.ts": {
@@ -1463,7 +1463,7 @@
       "executable": false
     },
     "src/manual-pages/model.ts": {
-      "sha256": "64542716c06f2c4e9d4410b930654872b31f309af1c46d42032091c533267a51",
+      "sha256": "4b660dd2b396ba1717b8e39f2da9f51787afa58d9f6606b3b9b777ffe830fc62",
       "executable": false
     },
     "src/manual-pages/types.ts": {
@@ -3763,7 +3763,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "a085f9aa5d6aa707e917e2b5ba4a85f2426d9b368e949fac1a1d21346f6dd57e",
+      "sha256": "30dba3e6fdfb5ff89d8de48cd8f4143d64ecad53273c82cb5cc32c85adb69d12",
       "executable": false
     },
     "tests/alert-severity-browser.mjs": {
