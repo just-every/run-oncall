@@ -735,8 +735,9 @@ function Workspace() {
             <section className="panel padded">
               <h2>Team and access</h2>
               <p>
-                All active members can read workspace incident data. Responders
-                coordinate; admins manage configuration and archives. Incident
+                Admins, responders and viewers can read incident data. Stakeholders
+                see only internal status for their audience. Responders coordinate;
+                admins manage configuration and archives. Incident
                 commander is a responsibility, separate from account permission.
               </p>
               {s.members.map((m) => (
