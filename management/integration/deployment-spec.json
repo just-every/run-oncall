@@ -267,6 +267,12 @@
       "name": "0137_named_responder_audit.sql",
       "sha256": "1778e49b0260a019189cf7f29cab94a15d589f9248008bc789b547eebdcc3ec4",
       "sql": "-- Random audit labels preserve the named responder independently of actor and incident.\nALTER TABLE oc_audit_clock ADD COLUMN named_member_label TEXT;\nALTER TABLE oc_admin_audit ADD COLUMN named_member TEXT;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0138_business_status.sql",
+      "sha256": "9b5d0f59f3227ba0fef8f301d01e6f38d83595af432d941db5cb937a14b388f9",
+      "sql": "-- Internal status, overrides, explicit audiences, subscriptions and record-only notices.\nCREATE TABLE oc_business_services(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
