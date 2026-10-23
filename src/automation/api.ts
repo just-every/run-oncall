@@ -134,9 +134,9 @@ export function installVersionedApi(api:any,deps:Deps) {
   const services=state.services.filter(s=>client.services.includes(s.id)),incidents=state.incidents.filter(i=>!i.mergedInto&&incidentWithinServices(state,i,client.services));
   if(family==='services')return services.map(s=>projectService(s,client));
   if(family==='incidents')return incidents;
-  if(family==='actions')return incidents.flatMap(i=>i.actions.map(a=>({...a,incident:i.id,service:i.service,revision:i.revision})));
+  if(family==='actions')return state.incidents.filter(i=>client.services.includes(i.service)).flatMap(i=>i.actions.map(a=>({...a,incident:i.id,service:i.service,revision:i.revision})));
   if(family==='schedules')return (await pagingSnapshot(c.env.DB)).archive.schedules.filter(s=>client.services.includes(s.service));
-  if(family==='analytics')return services.map(s=>({id:s.id,service:s.id,incidents:incidents.filter(i=>i.service===s.id).length,open:incidents.filter(i=>i.service===s.id&&i.state!=='resolved').length,followups:incidents.filter(i=>i.service===s.id).flatMap(i=>i.actions).filter(a=>!a.done).length}));
+  if(family==='analytics')return services.map(s=>({id:s.id,service:s.id,incidents:incidents.filter(i=>i.service===s.id).length,open:incidents.filter(i=>i.service===s.id&&i.state!=='resolved').length,followups:state.incidents.filter(i=>client.services.includes(i.service)&&i.service===s.id).flatMap(i=>i.actions).filter(a=>!a.done).length}));
   if(family==='integrations') {
    const native=(await c.env.DB.prepare('SELECT id,scopes FROM sources').all()).results;
    return [...(state.intakeSources??[]).filter(s=>client.services.includes(s.service)).map(s=>({id:'intake:'+s.id,active:s.active,service:s.service,provider:s.provider})),

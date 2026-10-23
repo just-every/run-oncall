@@ -160,7 +160,7 @@ try {
   }
   assert.deepEqual(ok(await req('/api/archive')), beforeWorkflowAuthority, 'anonymous and viewer workflow commands change no held records');
   const workflowApiKey = randomBytes(32).toString('hex');
-  const workflowClient = ok(await req('/api/automation/clients', {name: 'Workflow history reader', key: workflowApiKey, services: [workflowService.id], permissions: ['incidents:read', 'incidents:write']}), 201);
+  const workflowClient = ok(await req('/api/automation/clients', {name: 'Workflow history reader', key: workflowApiKey, services: [workflowService.id], permissions: ['incidents:read', 'incidents:write', 'actions:read']}), 201);
   for (const input of [checklist(workflowTarget), merge, split(workflowTarget)]) ok(await w.request('/api/v1/incidents', input, undefined, {authorization: 'Bearer ' + workflowApiKey, 'idempotency-key': 'workflow-refusal-' + input.type}), 403);
   const beforeRelationRefusals = ok(await req('/api/archive'));
   ok(await req('/api/command', {...merge, revision: merge.revision - 1}), 409);
@@ -186,6 +186,7 @@ try {
   workflowSource=ok(await w.request('/api/command',{type:'complete',incident:workflowSource.id,revision:workflowSource.revision,action:workflowSource.actions[0].id,evidence:'https://example.test/merged-dependency-evidence'},workflowResponder));
   workflowSource=ok(await req('/api/command',{type:'accept-action',incident:workflowSource.id,revision:workflowSource.revision,action:workflowSource.actions[0].id,reason:'Reviewed the retained dependency follow-up'}));
   assert.equal(workflowSource.actions[0].done,true,'retained source remediation stays editable without changing alias lifecycle or roles');
+  assert.equal(ok(await w.request('/api/v1/actions/'+workflowSource.actions[0].id,undefined,undefined,{authorization:'Bearer '+workflowApiKey})).incident,workflowSource.id,'scoped actions keep their original custody after merging');
   for(const member of [actor.id,backup.id])workflowTarget=ok(await w.request('/api/command',{type:'assign-role',incident:workflowTarget.id,revision:workflowTarget.revision,role:'communications',member,reason:'Transfer merged customer communication responsibility'},workflowResponder));
   workflowTarget=ok(await w.request('/api/command',{type:'note',incident:workflowTarget.id,revision:workflowTarget.revision,text:'Merged response decision remains attributed to the current responder'},workflowResponder));
   assert.equal(workflowTarget.communications,backup.id);assert.equal(workflowTarget.timeline.at(-1).actor,backup.id);
