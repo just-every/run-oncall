@@ -147,6 +147,7 @@ try {
 
  // The new role is excluded from every responder selector on the existing screens.
  ok(await call(owner.page,'/api/paging/schedules',{id:'synthetic-oncall-62',name:'Payments primary',service:'synthetic-oncall-61',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[ownerMember.id],ambiguity:'earlier'},overrides:[]}))
+ const roleSession=await owner.context.newCDPSession(owner.page);await roleSession.send('Emulation.setCPUThrottlingRate',{rate:4})
  const excludesStakeholder=async locator=>assert.ok(!(await locator.locator('option').evaluateAll(options=>options.map(option=>option.value))).includes(sam.id),'stakeholders are never offered as responders')
  for(const screen of ['team','services','routing','schedules','incidents']){
   await owner.page.goto(worker.origin+'/#'+screen);await owner.page.reload()
@@ -168,7 +169,8 @@ try {
   }
   for(const width of [1440,390])await statusCapture(owner.page,'role-'+screen,width)
  }
- console.log('OC-061 role selectors and tooltips: team, service, routing, schedule and incident/bulk screens at 1440/390; stakeholder excluded from response owners and keyboard tooltip immediate')
+ await roleSession.send('Emulation.setCPUThrottlingRate',{rate:1});await roleSession.detach()
+ console.log('OC-061 role selectors and tooltips: team, service, routing, schedule and incident/bulk screens at 1440/390 with own browser CPU rate 4; stakeholder excluded from response owners and keyboard tooltip immediate')
 
  // Signed out, anonymous and revoked sessions see no workspace.
  await rosa.page.setViewportSize({width:1440,height:1000});await rosa.page.goto(worker.origin+'/#incidents')
