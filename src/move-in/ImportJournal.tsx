@@ -1,4 +1,5 @@
-const provider=(job:any)=>(job.vendor??job.namespace)==='pagerduty'?'PagerDuty':'Opsgenie'
+import {vendorName} from './vendor-formats'
+const provider=(job:any)=>vendorName(job.vendor??job.namespace)
 const label=(job:any)=>[provider(job),...(job.schedules??[]),...(job.files??[]),job.state,job.id.slice(0,8)].join(' · ')
 
 // A door import continues and undoes through the door; Business's continue only through Business, and a failed one needs a new preview.

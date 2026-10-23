@@ -1,3 +1,4 @@
+import {SavedExportHelp} from './SavedExportHelp'
 import { useState } from 'react'
 import './export-help.css'
 
@@ -13,6 +14,7 @@ export function ExportHelp({vendor}:{vendor:string}) {
   try {await navigator.clipboard.writeText(command);setCopyStatus('Command copied')}
   catch {setCopyStatus('Select and copy the command below')}
  }
+ if(!['opsgenie','pagerduty'].includes(vendor))return <SavedExportHelp key={vendor} vendor={vendor}/>
  return <details className="move-in-export-help" key={vendor}>
   <summary>How to export from {name}</summary>
   <p>Use the downloadable exporter on your computer to create one ready-to-upload JSON file. It reads {name} with GET requests, handles every page, gets schedule details and joins each override to its schedule. Your existing pager stays in charge.</p>

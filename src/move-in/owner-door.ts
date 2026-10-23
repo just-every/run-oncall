@@ -1,3 +1,4 @@
+import {vendorName} from './vendor-formats'
 import { auditIdentity } from '../audit-store'
 import { createImportOperatorHandler } from '../modules/import-kit/src/door/operator'
 import { loadSnapshot, planRow, sql, transact } from '../modules/import-kit/src/door/store'
@@ -21,8 +22,7 @@ import { expireInterruptedImports, importAttempt } from './import-lifecycle'
 // named refusals around the door's answers; the door does every write.
 const PREFIX = '/api/operator/import/'
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
-const vendorName = (vendor: string) => vendor === 'pagerduty' ? 'PagerDuty' : 'Opsgenie'
-const aVendor = (vendor: string) => vendor === 'pagerduty' ? 'a PagerDuty' : 'an Opsgenie'
+const aVendor = (vendor: string) => (vendor==='opsgenie'?'an ':'a ')+vendorName(vendor)
 const answer = (value: unknown, status = 200) => Response.json(value, { status, headers })
 // Every Oncall refusal carries its sentence and a code, so the screen shows the sentence exactly as written.
 const refusal = (fault: Fault) => answer({ error: fault.message, code: fault instanceof Refusal ? fault.code : 'SOURCE_REFUSED' }, fault.status)

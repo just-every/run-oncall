@@ -196,6 +196,16 @@ try {
   },
   assertUndone:async(before,after)=>assert.deepEqual(after,before)})
  console.log('Business import door: ADOPTING.md public HTTP conformance passed')
+ // OC-038 the three additional namespaces obey the same signed-grant public door contract.
+ for(const vendor of ['splunk','jsm','betterstack'])await checkDoor({request:async(action,body,review)=>response(await call(action,vendor,body,review)),bytes:await readFile(`tests/fixtures/synthetic-oncall-${vendor}.json`),name:`synthetic-oncall-${vendor}.json`,
+  nativeSnapshot:async()=>ok(await req('/api/move-in/objects')),
+  assertApplied:async(before,after,report)=>{
+   assert.ok(after.length>before.length);assert.ok(report.counts.explained>0)
+   assert.ok(after.filter(row=>row.targetKind==='integration').every(row=>row.value.active===false&&row.value.incumbentKey==='not supplied'))
+   assert.ok(after.every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
+  },assertUndone:async(before,after)=>assert.deepEqual(after,before)})
+ console.log('OC-038 signed import door: Splunk/JSM/Better Stack reviewed grants, source reconciliation, inactive integration inventory and undo passed')
+
  // The move-in screen's own path: the same door through the owner's session, the same allow-list and one history.
  const viewer=ok(await req('/api/members',{name:'Door viewer',password:'synthetic-import-door-password',role:'viewer'}),201)
  const viewing=await w.request('/api/login',{name:viewer.name,password:'synthetic-import-door-password'});ok(viewing)

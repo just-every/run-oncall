@@ -1,3 +1,4 @@
+import {isVendor} from './vendor-formats'
 import { resumeD1Import,undoD1Import,readD1ImportJob } from '../modules/import-kit/src/d1/index'
 import type { D1ImportContext } from '../modules/import-kit/src/d1/types'
 import type { Vendor } from './source'
@@ -17,7 +18,7 @@ import { expireInterruptedImports, importAttempt } from './import-lifecycle'
 export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  function context(c:any,vendor:Vendor):D1ImportContext {
   if(c.get('actor').role!=='admin')fail('Current admin required',403)
-  if(!['opsgenie','pagerduty'].includes(vendor))fail('Choose Opsgenie or PagerDuty')
+  if(!isVendor(vendor))fail('Choose a supported saved-export source')
   return {destination:'oncall',namespace:vendor,mappingVersion:'oncall-move-in-1',batchSize:10,maxBatches:1,storage:{database:c.env.DB,targets},authorization:{principalId:c.get('actor').id,predicate(){return adminSession(c.get('sessionDigest'),c.get('actor').id)}}}
  }
  // The move-in screen's one import path: Base's owner-session door, under the allow-list Business uses.

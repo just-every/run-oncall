@@ -1,8 +1,8 @@
+import {vendorName as provider} from './vendor-formats'
 // The move-in screen's calls to the owner-session import door (owner-door.ts):
 // upload the saved file's original bytes in checksummed chunks, plan, apply the
 // reviewed fingerprint in bounded steps, and undo.
 const CHUNK = 65536
-const provider = (vendor: string) => vendor === 'pagerduty' ? 'PagerDuty' : 'Opsgenie'
 
 /** The door answers a code; the screen says what happened and what to do. */
 function sentence(code: string, vendor: string): string {

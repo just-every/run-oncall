@@ -11,7 +11,7 @@ import { expireInterruptedImports, importAttempt } from './import-lifecycle'
 const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
 /** The saved-export bounds both mounts read a bundle under. */
 export const DOOR_LIMITS = { maxBytes: 512 * 1024, maxRecordBytes: 512 * 1024, maxRecords: 500 }
-const sources: Record<Vendor, true> = { opsgenie: true, pagerduty: true }
+const sources: Record<Vendor, true> = { opsgenie: true, pagerduty: true, splunk: true, jsm: true, betterstack: true }
 
 /** Oncall's one server-owned allow-list, shared by the owner's move-in screen
  * (owner-door.ts) and Business: one import namespace per vendor. A

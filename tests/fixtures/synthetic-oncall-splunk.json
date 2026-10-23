@@ -1,0 +1,57 @@
+{
+  "users": {
+    "users": [
+      [
+        {
+          "username": "synthetic-oncall-101",
+          "email": "synthetic-oncall-101@example.test",
+          "firstName": "Synthetic",
+          "lastName": "Oncall 101",
+          "createdAt": "2026-10-01T00:00:00Z"
+        }
+      ]
+    ]
+  },
+  "teams": [
+    {
+      "slug": "synthetic-oncall-102",
+      "name": "Synthetic team",
+      "memberCount": 1
+    }
+  ],
+  "oncall": {
+    "teamsOnCall": [
+      {
+        "team": {
+          "slug": "synthetic-oncall-102",
+          "name": "Synthetic team"
+        },
+        "oncallNow": [
+          {
+            "users": [
+              {
+                "onCalluser": {
+                  "username": "synthetic-oncall-101"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "integrations": [
+    {
+      "id": "synthetic-oncall-103",
+      "type": "REST",
+      "name": "Synthetic REST integration"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "synthetic-oncall-104",
+      "timestamp": "2026-10-01T01:00:00Z",
+      "summary": "Synthetic historical incident"
+    }
+  ]
+}
