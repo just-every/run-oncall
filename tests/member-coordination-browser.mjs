@@ -93,7 +93,7 @@ try {
  const stakeholder={name:'Sam Stakeholder',password:'synthetic-oncall-61-password'}
  const sam=ok(await call(owner.page,'/api/members',{...stakeholder,role:'stakeholder'}),201)
  ok(await call(owner.page,'/api/command',{type:'service',id:'synthetic-oncall-61',name:'Payment gateway',environment:'production',owner:rosaRecord.id,runbook:['Private gateway recovery instructions'],pager:''}))
- await owner.page.goto(worker.origin+'/#status')
+ await owner.page.goto(worker.origin+'/#status');await owner.page.reload()
  const statusPanel=owner.page.getByRole('region',{name:'Internal business status'})
  await statusPanel.getByRole('heading',{name:'Internal status',exact:true}).waitFor()
  await statusPanel.getByText('Add business service',{exact:true}).click()
