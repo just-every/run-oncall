@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "2a1e47d2ab8adbb7eb0af5ccadeb98e5c5cd17df4c483cc9c6a8dcd25305f072",
+      "sha256": "530df457532f7ddfab40ed6c0b657fd576dbd3719ceb7a65fc523c60b5ca530c",
       "executable": false
     },
     "DEMO.md": {
@@ -3615,7 +3615,7 @@
       "executable": false
     },
     "src/routes/index.tsx": {
-      "sha256": "be332a0eacd2783def4a29eebb1ef44d11c7e77a1b55fe5d56cfe511ef73cf16",
+      "sha256": "5723e34330b661f076547dbdf6fffab1e5c6c3d2a8cb664aebe25ae25c0681ed",
       "executable": false
     },
     "src/routes/signin.local.tsx": {
@@ -3943,7 +3943,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "3649c2bd80d9e175849107f862af8b56c9b16433b0f1e1a45d3dd4b34232a6a5",
+      "sha256": "876ecf4a79b48a25991976215c4786bded7c836cc982eda5ef7c32980f82ec77",
       "executable": false
     },
     "tests/monitoring.mjs": {
