@@ -28,6 +28,7 @@ try{
  assert.equal((await req('/api/urgency/services/transfer',{baseVersion:0,mode:'support-hours',timezone:'America/New_York',weekly:[{day:1,start:'09:00',end:'17:00'}],holidays:['2026-12-25'],inside:'high',outside:'low',reason:'Retain versioned urgency and service snapshot across installations'})).status,201)
  assert.equal((await req('/api/response/services/transfer',{baseVersion:0,defaultMode:'alert-only',recoveredNotice:'notified',rules:[{id:'synthetic-oncall-80',urgency:'*',severity:'critical',policy:'*',mode:'incident'}],reason:'Retain policy, source recovery and non-automatic notices through installation recovery'})).status,201)
  let portableManual=ok(await req('/api/command',{type:'manual-page',operationId:'synthetic-oncall-68-transfer',service:'transfer',title:'Retain manual page',severity:'warning',description:'Retained request custody',users:[member.id]}))
+ assert.match(portableManual.manualPage.obligations[0].outcome,/No configured escalation policy/);
  portableManual=ok(await req('/api/command',{type:'request-responders',incident:portableManual.id,revision:portableManual.revision,users:[member.id],message:'Retain this pending request inactive'}))
  const incident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Preserve authored history',severity:'warning',summary:'Archive proof',alerts:[]}))
  // OC-061's full durable status category travels with this existing installation journey.
