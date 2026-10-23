@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "bcb68d33f141cecc9fd58270ea3445025b3d84cabcfd38b1c01ac55cea7bb6f3",
+      "sha256": "1e36767ef7fefb0f001a6799e26038e578bb4bcf33f5791f8e892e1f3a02a0e9",
       "executable": false
     },
     "DEMO.md": {
@@ -1455,7 +1455,7 @@
       "executable": false
     },
     "src/manual-pages/archive.ts": {
-      "sha256": "0a148af0d2d18bfafeffb30a1e0725734d5adc9350ec796adcbc81e88bcf4cec",
+      "sha256": "d57a0b535de125391a5898f5a21df9c0e98f595336e38cdb4c4685aad28d90f3",
       "executable": false
     },
     "src/manual-pages/context.ts": {
@@ -3767,7 +3767,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "30dba3e6fdfb5ff89d8de48cd8f4143d64ecad53273c82cb5cc32c85adb69d12",
+      "sha256": "ad6f381f34066d19cc95eec78b1af513d72fcd44fd478c52edae0abc7a5508b5",
       "executable": false
     },
     "tests/alert-severity-browser.mjs": {
@@ -3791,7 +3791,7 @@
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
-      "sha256": "94e49275b622cc68fbfc66db026e572dcd7da9fe80e3feb2e05fe92789dbaa49",
+      "sha256": "f596623b56bdedb1e2e33db9573e003472bcbbbf513036f1df7e503869b29d06",
       "executable": false
     },
     "tests/checkpoint-fixtures.mjs": {
@@ -3999,7 +3999,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "c27db22614b1ef9b0acab9a6b37353888bbccf36cd2bb05a14b759f7862d93a1",
+      "sha256": "9d63ff1bd8f4471f7f7c1d30f19da3f9a5dec45e67328f5a805b9738f5ecd827",
       "executable": false
     },
     "tests/triage.mjs": {
