@@ -22,3 +22,11 @@ export function validateAlertObligation(state:State,alert:Alert) {
   if(!o||Object.keys(o).some(k=>![...keys,'policy','stoppedAt','cancellation','recoveryNotice'].includes(k))||keys.some(k=>!Object.hasOwn(o,k))||typeof o.id!=='string'||!o.id.length||o.id.length>200||o.paging!=='off'||o.automatic!==false||!['recorded','stopped'].includes(o.state)||!['high','low'].includes(o.urgency)||!o.target||Object.keys(o.target).length!==2||o.target.kind!==(alert.service===null?'user':'service')||o.target.id!==(alert.service??alert.owner)||o.receipt!==null&&typeof o.receipt!=='string'||(o.state==='stopped')!==(o.outcome==='stopped by source recovery')||o.state==='recorded'&&o.outcome!==null||o.state==='stopped'&&alert.state!=='recovered')fail('Invalid alert paging obligation');
   if(o.target.kind==='user'&&!state.members.some(m=>m.id===o.target.id))fail('Invalid owner paging obligation');
 }
+
+/** Subscriber impact custody extends the same record-only obligation family. */
+export type StatusNoticeObligation = {
+  id: string; kind: 'business-status'; state: 'recorded' | 'stopped'; paging: 'off'; automatic: false;
+  label: 'no sender'; target: {kind: 'user'; id: string}; channel: 'email' | 'push' | 'chat';
+  businessService: string; businessName: string; derivedStatus: 'degraded' | 'major outage';
+  approvedUpdate: null; at: string;
+};

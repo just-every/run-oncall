@@ -1,3 +1,4 @@
+import { Tooltip } from './app/Tooltip';
 import { ScheduleNowNext, ScheduleSummary } from './ScheduleSummary';
 import { cloneElement, isValidElement, useCallback, useEffect, useId, useRef, useState, type ComponentProps, type FormEvent, type ReactNode } from "react";
 import type { Member, State } from "./family/response-operations/domain";
@@ -80,7 +81,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
   const [previewFrom, setPreviewFrom] = useState(() => iso(utcDay()));
   const [previewTo, setPreviewTo] = useState(() => iso(utcDay() + 86400000));
   const admin = actor.active && actor.role === "admin";
-  const responder = actor.active && actor.role !== "viewer";
+  const responder = actor.active && ["admin", "responder"].includes(actor.role);
   const readGeneration = useRef(0);
   const initialized = useRef(false);
   const load = useCallback(async () => {
@@ -112,7 +113,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
   const serviceName = (id: string) => state.services.find(s => s.id === id)?.name ?? `Missing service (${id})`;
 
   const savedSchedule = data?.schedules.find(s => s.id === selectedSchedule);
-  const activeMembers = state.members.filter(m => m.active && m.role !== "viewer");
+  const activeMembers = state.members.filter(m => m.active && ["admin", "responder"].includes(m.role));
 
   async function run<T>(operation: () => Promise<T>, success: string): Promise<T | null> {
     setBusy(true); setError(""); setNotice("");
@@ -237,7 +238,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
                   <ol className="scheduling-member-slots">{draft[role].members.map((id, index) => <li key={`${role}-${index}`}>
                     <span className="scheduling-slot-index">{index + 1}.</span><span className="scheduling-avatar" aria-hidden="true">{id ? memberName(id).slice(0, 2).toUpperCase() : <Icon name="people" />}</span>
                     <Field label={`${titleCase(role)} responder ${index + 1}`}><select required value={id} onChange={e => patchRotation(role, { members: draft[role].members.map((member, i) => i === index ? e.target.value : member) })}>{optionsForMember(id)}</select></Field>
-                    <div className="scheduling-slot-actions"><button type="button" aria-label={`Move ${role} responder ${index + 1} up`} disabled={index === 0} onClick={() => moveSlot(role, index, -1)}>↑</button><button type="button" aria-label={`Move ${role} responder ${index + 1} down`} disabled={index === draft[role].members.length - 1} onClick={() => moveSlot(role, index, 1)}>↓</button><button type="button" aria-label={`Remove ${role} responder ${index + 1}`} onClick={() => patchRotation(role, { members: draft[role].members.filter((_, i) => i !== index) })}>×</button></div>
+                    <div className="scheduling-slot-actions"><Tooltip label={`Move ${role} responder ${index + 1} up`}><button type="button" aria-label={`Move ${role} responder ${index + 1} up`} disabled={index === 0} onClick={() => moveSlot(role, index, -1)}>↑</button></Tooltip><Tooltip label={`Move ${role} responder ${index + 1} down`}><button type="button" aria-label={`Move ${role} responder ${index + 1} down`} disabled={index === draft[role].members.length - 1} onClick={() => moveSlot(role, index, 1)}>↓</button></Tooltip><Tooltip label={`Remove ${role} responder ${index + 1}`}><button type="button" aria-label={`Remove ${role} responder ${index + 1}`} onClick={() => patchRotation(role, { members: draft[role].members.filter((_, i) => i !== index) })}>×</button></Tooltip></div>
                   </li>)}</ol>
                   {!draft[role].members.length && <p className="scheduling-muted">No member slots. This rotation has a visible coverage gap.</p>}
                   <button type="button" disabled={draft[role].members.length >= 100} onClick={() => patchRotation(role, { members: [...draft[role].members, ""] })}><span aria-hidden="true">＋ </span>Add {role} responder</button>

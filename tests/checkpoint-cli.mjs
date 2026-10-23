@@ -21,6 +21,8 @@ function exported(checkpoint,before) {
 // stored field and the entire attributed history prefix, including frozen data.
 export function assertCheckpointRestored(checkpoint,after,handoffs=checkpoint.handoffs) {
  const inactive=structuredClone(checkpoint.coordination)
+ if(inactive.businessServices)inactive.businessServices=inactive.businessServices.map(service=>({...service,active:false,subscriptions:service.subscriptions.map(row=>({...row,active:false})),notices:service.notices.map(row=>({...row,state:'stopped'}))}))
+ inactive.members=inactive.members.map(member=>member.role==='stakeholder'?{...member,active:false}:member)
  for(const key of ['changeSources','intakeSources','emailAddresses','apiClients','apiEndpoints'])if(inactive[key])inactive[key]=inactive[key].map(source=>({...source,active:false}))
  if(inactive.apiOutbox)inactive.apiOutbox=inactive.apiOutbox.map(item=>{
   const restored=after.coordination.apiOutbox.find(o=>o.id===item.id);assert.ok(restored)

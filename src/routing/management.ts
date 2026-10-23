@@ -28,7 +28,7 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     if(input.revision!==(previous?.revision??0))fail('Integration changed; reload before saving',409);
     const scope=routingScope(state,input.scope);
     if(!intakeProviders.includes(input.provider))fail('Choose a supported provider');
-    if(!state.members.some(m=>m.id===input.owner&&m.active&&m.role!=='viewer'))fail('Integration owner must be an active responder');
+    if(!state.members.some(m=>m.id===input.owner&&m.active&&["admin", "responder"].includes(m.role)))fail('Integration owner must be an active responder');
     if(previous&&(!previous.routing||previous.provider!==input.provider||JSON.stringify(previous.routing.scope)!==JSON.stringify(scope)))fail('Provider and routing scope are immutable; create another integration');
     const authentication=input.provider==='native'?(input.authentication??previous?.authentication??'bearer'):undefined;
     if(authentication!==undefined&&!['bearer','signed'].includes(authentication)||input.provider!=='native'&&input.authentication!==undefined)fail('Choose bearer or signed authentication for a native routed key');

@@ -1,3 +1,4 @@
+import { StatusPanel } from '../business-status/StatusPanel';
 import { AutomationSettings } from '../automation/AutomationSettings';
 import { EmailWorkspace } from '../email/EmailWorkspace';
 import { MonitoringWorkspace } from '../monitoring/MonitoringWorkspace';
@@ -74,14 +75,14 @@ function Workspace() {
     if (strandedSession && !signingOut) location.replace("/signin/local");
   }, [strandedSession, signingOut]);
   const admin = actor?.role === "admin";
-  const canEdit = actor?.role !== "viewer";
+  const canEdit = actor?.role === "admin" || actor?.role === "responder";
   const incident =
     s?.incidents.find((i) => i.id === selected) ?? s?.incidents[0];
   const service = s?.services.find((v) => v.id === incident?.service);
   const name = (id: string | null) =>
     s?.members.find((m) => m.id === id)?.name ?? (id?.startsWith("api-") ? "Service account" : "Unassigned");
   const memberOptions = s?.members
-    .filter((m) => m.active && m.role !== "viewer")
+    .filter((m) => m.active && ["admin", "responder"].includes(m.role))
     .map((m) => (
       <option key={m.id} value={m.id}>
         {m.name}
@@ -107,6 +108,7 @@ function Workspace() {
     );
   if (!actor)
     return <main className="access"><h1>Oncall</h1><p role="status">Opening sign-in…</p></main>;
+  if (actor.role === "stakeholder") return <div className="app"><aside className="sidebar"><div className="brand"><Mark size={30} /><span>Oncall</span></div><p>{actor.name} · stakeholder</p><button onClick={async () => { await request("/api/logout", {}); location.replace("/signin/local"); }}>Sign out</button></aside><main className="workspace" id="main"><header className="header"><h1>Oncall</h1></header><StatusPanel actor={actor} /></main></div>;
   if (!s)
     return (
       <main>
@@ -121,6 +123,7 @@ function Workspace() {
     ["incidents", "Incidents"],
     ["alerts", "Alerts & events"],
     ["services", "Services"],
+    ["status", "Internal status"],
     ["routing", "Routing & replay"],
     ["schedules", "Schedules"],
     ["move-in", "Move-in kit"],
@@ -215,6 +218,7 @@ function Workspace() {
             </button>
           </div>
         )}
+        {page === "status" && <StatusPanel actor={actor} state={s} />}
         {page === "move-in" && <MoveInWorkspace admin={admin} request={request} />}
         {page === "schedules" && (
           <SchedulingWorkspace page="schedules" actor={actor} state={s} request={request} refreshWorkspace={w.refresh} demo={w.demo} />
@@ -756,7 +760,7 @@ function Workspace() {
                         }
                       >
                         <Field name="role" label="Role" value={m.role}>
-                          <option>viewer</option>
+                          <option>viewer</option><option>stakeholder</option>
                           <option>responder</option>
                           <option>admin</option>
                         </Field>
@@ -803,7 +807,7 @@ function Workspace() {
                   <Field name="name" label="Name" />
                   <Field name="role" label="Role">
                     <option>responder</option>
-                    <option>viewer</option>
+                    <option>viewer</option><option>stakeholder</option>
                     <option>admin</option>
                   </Field>
                   <Field

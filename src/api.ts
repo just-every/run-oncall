@@ -1,3 +1,5 @@
+import { installBusinessStatus } from './business-status/api';
+import { holdBusinessStatus, refreshBusinessStatus } from './business-status/model';
 import { installResponsePolicy } from './response-policy/api';
 import { finishResponseAdmission } from './response-policy/model';
 import { requireErasureFence, erasureFenceCondition, fenceValues } from './erasure-fence'
@@ -221,7 +223,8 @@ api.get("/api/workspace", async (c) => {
   const member = await session(c, state);
   if (!member) return c.json({setup: state.members.length === 0, member: null, demo: c.env.RER_DEMO === "1", state: null});
   c.set("actor", member);
-  const current = await authorizedState(c);
+  const current = await authorizedState(c, false, true);
+  if (member.role === "stakeholder") return c.json({setup:false, member:current.members.find(m => m.id === member.id), demo:false, state:null});
   return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", state: memberWorkspace(current, member)});
 });
 async function session(c: any, state: State): Promise<Member | null> {
@@ -247,12 +250,13 @@ async function session(c: any, state: State): Promise<Member | null> {
   if (member) { c.set("sessionDigest", digest); auditIdentity(c.env.DB,{actor:{kind:"member",id:member.id}}); }
   return member;
 }
-async function authorizedState(c: any, admin = false): Promise<State> {
+async function authorizedState(c: any, admin = false, statusOnly = false): Promise<State> {
   const state = await load(c.env.DB);
   const member = state.members.find(
     (m) => m.id === c.get("actor").id && m.active,
   );
   if (!member) fail("Access revoked", 401);
+  if (member.role === "stakeholder" && !statusOnly) fail("Stakeholders may only access internal status and approved updates", 403);
   if (admin && member.role !== "admin") fail("Current admin required", 403);
   return state;
 }
@@ -396,8 +400,13 @@ api.use("/api/*", async (c, next) => {
     return c.json({ error: "Sign in required" }, 401);
   }
   c.set("actor", actor);
+  if (actor.role === "stakeholder" && c.req.path !== "/api/status") {
+    await discardDeniedBody(c);
+    return c.json({error:"Stakeholders may only access internal status and approved updates"},403);
+  }
   await next();
 });
+installBusinessStatus(api, {...changeDeps, state: (c: any) => authorizedState(c, false, true)});
 installAutomationManagement(api, changeDeps);
 installChangeManagement(api, changeDeps);
 installNativeSources(api, changeDeps);
@@ -454,7 +463,7 @@ api.post("/api/members", async (c) => {
   const name = text(input.name, "name", 100);
   if (state.members.some((m) => m.name === name))
     fail("Name already exists", 409);
-  if (!["admin", "responder", "viewer"].includes(input.role))
+  if (!["admin", "responder", "viewer", "stakeholder"].includes(input.role))
     fail("Invalid role");
   const pass = text(input.password, "password", 200);
   if (pass.length < 12) fail("Use at least 12 password characters");
@@ -566,6 +575,8 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   const sessionDigest = await hash(sessionToken);
   const parent:{operator_session:string|null}|null=await c.env.DB.prepare('SELECT operator_session FROM oc_current_sessions WHERE token=?').bind(c.get('sessionDigest')).first();
   if(!parent)fail('Session expired or revoked',401);
+  holdBusinessStatus(value);
+  refreshBusinessStatus(value);
   holdAutomation(value);
   pauseChangeSources(value);
   pauseIntakeSources(value);

@@ -28,6 +28,14 @@ try{
  assert.equal((await req('/api/urgency/services/transfer',{baseVersion:0,mode:'support-hours',timezone:'America/New_York',weekly:[{day:1,start:'09:00',end:'17:00'}],holidays:['2026-12-25'],inside:'high',outside:'low',reason:'Retain versioned urgency and service snapshot across installations'})).status,201)
  assert.equal((await req('/api/response/services/transfer',{baseVersion:0,defaultMode:'alert-only',recoveredNotice:'notified',rules:[{id:'synthetic-oncall-80',urgency:'*',severity:'critical',policy:'*',mode:'incident'}],reason:'Retain policy, source recovery and non-automatic notices through installation recovery'})).status,201)
  const incident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Preserve authored history',severity:'warning',summary:'Archive proof',alerts:[]}))
+ // OC-061's full durable status category travels with this existing installation journey.
+ const stakeholder=ok(await req('/api/members',{name:'synthetic-oncall-61',role:'stakeholder',password:'synthetic-oncall-61-password'}),201)
+ ok(await req('/api/status',{action:'create',name:'Checkout',owningTeam:'Payments',supporting:['transfer'],communicationsOwner:member.id,audience:[stakeholder.id],highUrgencyImpact:false}))
+ let statusBusiness=ok(await req('/api/status')).services.find(row=>row.name==='Checkout')
+ ok(await req('/api/status',{action:'subscribe',id:statusBusiness.id,revision:statusBusiness.revision,member:stakeholder.id,channel:'email',active:true}))
+ statusBusiness=ok(await req('/api/status')).services.find(row=>row.name==='Checkout')
+ ok(await req('/api/status',{action:'override',id:statusBusiness.id,revision:statusBusiness.revision,value:'operational',reason:'Verified alternate processing path'}))
+ assert.ok(ok(await req('/api/state')).businessServices[0].notices.length)
  const schedule=ok(await req('/api/paging/schedules',{id:'transfer',name:'Transfer rota',service:'transfer',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[member.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}))
  const context=ok(await req('/api/handoffs/context/'+incident.id)),prepared=await req('/api/handoffs/prepare',{id:'archive-copy',incident:incident.id,incidentRevision:incident.revision,serviceHash:context.serviceHash,payload:{audience:'internal',title:'Exact copy',summary:'Authored transfer evidence',evidenceLinks:[],impactLinks:[]}})
  assert.equal(prepared.status,201);const record=prepared.value.record
@@ -123,6 +131,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.equal((await req('/api/routing/keys',{id:'portable-alertmanager',name:'Portable Alertmanager',provider:'alertmanager',scope:['transfer'],owner:member.id,revision:reauthorized.intakeSources.find(s=>s.id==='portable-alertmanager').revision,key:monitoringKey})).status,200)
  assert.equal((await req('/api/routing/keys',{id:'portable-native',name:'Portable native monitor',provider:'native',authentication:'signed',scope:['transfer','upstream'],owner:member.id,revision:reauthorized.intakeSources.find(s=>s.id==='portable-native').revision,key:nativeRoutedKey})).status,200)
  await business.prepare(cookie)
+ statusBusiness=ok(await req('/api/status')).services.find(row=>row.name==='Checkout');ok(await req('/api/status',{action:'activate',id:statusBusiness.id,revision:statusBusiness.revision}))
  const oldCookie=cookie
  const source=await readFile('tests/fixtures/opsgenie.json','utf8'),door=ownerDoor(m,cookie),preview=ok(await door.preview('opsgenie',source)),job=ok(await door.apply('opsgenie',preview)).job;assert.equal(job.state,'completed')
  const at=Date.parse('2026-10-11T09:00:00Z'),pending={id:'held-pending',incident:incident.id,service:'transfer',revision:1,status:'pending',nextDue:at,createdAt:at,lastEvaluatedAt:at,currentStep:0,policy:{service:'transfer',scheduleId:'transfer',revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3},schedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[],history:[{type:'created',at,actor:null,reason:null,attempt:null}]}
@@ -161,7 +170,9 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  sql("INSERT INTO credentials VALUES('"+member.id+"','fixture-salt','fixture-password-digest')")
  assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:member.id})).status,409,'held password data cannot be claimed by a new native owner')
  sql('DELETE FROM credentials')
- ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}));assert.deepEqual(ok(await req('/api/state')),{...prior,changeSources:prior.changeSources.map(source=>({...source,active:false})),intakeSources:prior.intakeSources.map(source=>({...source,active:false})),emailAddresses:prior.emailAddresses.map(address=>({...address,active:false})),apiClients:prior.apiClients.map(c=>({...c,active:false})),apiEndpoints:prior.apiEndpoints.map(e=>({...e,active:false})),apiOutbox:prior.apiOutbox.map(o=>({...o,authorized:false}))},'all relational coordination and attribution restored with source definitions explicitly inactive')
+ ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}));assert.deepEqual(ok(await req('/api/state')),{...prior,members:prior.members.map(member=>member.role==='stakeholder'?{...member,active:false}:member),businessServices:prior.businessServices.map(service=>({...service,active:false,subscriptions:service.subscriptions.map(row=>({...row,active:false})),notices:service.notices.map(row=>({...row,state:'stopped'}))})),changeSources:prior.changeSources.map(source=>({...source,active:false})),intakeSources:prior.intakeSources.map(source=>({...source,active:false})),emailAddresses:prior.emailAddresses.map(address=>({...address,active:false})),apiClients:prior.apiClients.map(c=>({...c,active:false})),apiEndpoints:prior.apiEndpoints.map(e=>({...e,active:false})),apiOutbox:prior.apiOutbox.map(o=>({...o,authorized:false}))},'all relational coordination and attribution restored with source definitions explicitly inactive')
+ assert.equal(ok(await req('/api/state')).businessServices[0].active,false);assert.ok(ok(await req('/api/state')).businessServices[0].subscriptions.every(row=>!row.active));assert.ok(ok(await req('/api/state')).businessServices[0].notices.every(row=>row.state==='stopped'));assert.equal(ok(await req('/api/state')).members.find(row=>row.id===stakeholder.id).active,false)
+ console.log('OC-061 portable status custody: business services, overrides, subscriptions, obligations and stakeholder role restored inactive without authority')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_email_credentials')[0].n,0,'email address keys never transfer')
  assert.deepEqual(ok(await req('/api/email')).samples,prior.emailSamples,'saved mail, versioned rules, activity and quarantine survive inactive restore')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0,'compatible verification hashes are excluded from portable transfers')
@@ -199,8 +210,15 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const erase=email=>req('/api/move-in/erase',{email,confirmation:'erase '+email})
  assert.equal((await m.request('/api/move-in/erase',{email:'alice@example.test',confirmation:'erase alice@example.test'})).status,401)
  assert.equal((await erase('nobody@example.test')).status,404)
+ const erasedSubscriber=ok(await req('/api/members',{name:'alice@example.test status',role:'stakeholder',password:'synthetic-oncall-67-password'}),201)
+ statusBusiness=ok(await req('/api/status')).services.find(row=>row.name==='Checkout')
+ // Grant the member explicitly on a second service so no out-of-scope subscription is manufactured.
+ ok(await req('/api/status',{action:'create',name:'Customer checkout',owningTeam:'Payments',supporting:['transfer'],communicationsOwner:member.id,audience:[erasedSubscriber.id],highUrgencyImpact:false}))
+ const erasedBusiness=ok(await req('/api/status')).services.find(row=>row.name==='Customer checkout')
+ ok(await req('/api/status',{action:'subscribe',id:erasedBusiness.id,revision:erasedBusiness.revision,member:erasedSubscriber.id,channel:'chat',active:true}))
  const auditBeforeErasure=ok(await req('/api/audit/export')).rows
  let erased;cookie=await checkpointErasureCli(m,cookie,async()=>{erased=ok(await erase('alice@example.test'));assert.ok(erased.receiptId)});
+ const erasedBusinessState=ok(await req('/api/state')).businessServices.find(row=>row.id===erasedBusiness.id);assert.ok(!JSON.stringify(erasedBusinessState).includes(erasedSubscriber.id),'subject erasure severs status audience, subscription and obligation destinations atomically')
  assert.ok(!JSON.stringify(ok(await req('/api/state')).apiClients).includes('alice@example.test'),'erasure severs automation labels and authority')
  assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.history[0].reason==='capacity-not-scheduled'),'capacity history survives safe erasure')
  assert.equal((await req('/api/automation/dispatch',{})).value.processed,0,'restored unfinished and capacity events remain held after erasure')

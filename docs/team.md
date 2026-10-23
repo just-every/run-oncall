@@ -25,3 +25,5 @@ An admin fills in **Add local member** with the person's **Name**, a **Role** an
 To change someone's access later, use **Update access** on their card. **Reset local password** sets a new password and signs them out everywhere.
 
 Being on the team does not put anyone on call: that is the [schedule's](schedules.md) job.
+
+Stakeholders are a separate, admin-assigned local member role. They can read only the internal status panel and subscribe themselves to a business service whose explicit audience includes them; all incident, alert, runbook, contact, schedule, audit and archive doors refuse their session. Admins and active communications owners can subscribe eligible users. SSO/SCIM assignment and private-team scope are not implemented. Restoring an archive keeps stakeholder identities inactive until an admin explicitly reauthorizes them.

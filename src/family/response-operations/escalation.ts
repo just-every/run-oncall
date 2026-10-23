@@ -37,7 +37,7 @@ export function validatePolicy(input: any, schedule?: Schedule): EscalationPolic
   if (schedule && (schedule.id !== policy.scheduleId || schedule.service !== policy.service)) fail("Policy schedule/service mismatch");
   return policy;
 }
-const active = (m: Member) => m.active && m.role !== "viewer";
+const active = (m: Member) => m.active && ["admin", "responder"].includes(m.role);
 const DUPLICATE_FROZEN = "Backup duplicates the frozen primary recipient; backup unavailable";
 function history(job: EscalationJob, type: JobHistory["type"], at: number, reason: string | null = null,
   actor: string | null = null, attempt: EscalationAttempt | null = null) {

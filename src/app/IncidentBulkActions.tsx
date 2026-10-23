@@ -27,7 +27,7 @@ export function IncidentBulkActions({items, allMatching, count, query, workspace
       if (response) setResult(response);
       return response?.remaining ? null : response;
     }}>
-      {action === 'reassign' && <Field name="member" label="Bulk assignee" required={false}><option value="">Unassigned</option>{members.filter(m => m.active && m.role !== 'viewer').map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</Field>}
+      {action === 'reassign' && <Field name="member" label="Bulk assignee" required={false}><option value="">Unassigned</option>{members.filter(m => m.active && ["admin", "responder"].includes(m.role)).map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</Field>}
       {action === 'set-priority' && <Field name="priority" label="Bulk priority">{['P1', 'P2', 'P3', 'P4', 'P5'].map(p => <option key={p}>{p}</option>)}</Field>}
       {action === 'set-urgency' && <Field name="urgency" label="Bulk urgency"><option>high</option><option>low</option></Field>}
       <Field name="reason" label={action === 'resolve' ? 'Resolution summary for every incident' : 'Bulk action reason'} type="textarea" />

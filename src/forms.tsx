@@ -68,7 +68,12 @@ export function Form({
       onSubmit={async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
-        const data = Object.fromEntries(new FormData(form));
+        const values = new FormData(form);
+        const data = Object.fromEntries(values);
+        for (const element of Array.from(form.elements)) {
+          const select = element as HTMLSelectElement;
+          if (select.tagName === "SELECT" && select.multiple) data[select.name] = values.getAll(select.name) as any;
+        }
         if (await onSubmit(data)) form.reset();
       }}
     >
