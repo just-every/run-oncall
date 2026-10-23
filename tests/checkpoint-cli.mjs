@@ -170,3 +170,25 @@ export async function checkpointErasureCli(w,cookie,erase) {
   console.log('PASS OC-053 CLI erasure fence: older checkpoint refuses without dataset/session changes; current checkpoint restores');return next;
  } finally {await rm(dir,{recursive:true,force:true});}
 }
+
+// OC-055 focused execution extends this existing CLI journey with held key custody.
+if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1]) {
+ const {localWorker,ownerDoor}=await import('./worker.mjs'),{randomBytes}=await import('node:crypto')
+ const w=await localWorker();let cookie
+ try {
+  const owner=await w.request('/api/setup',{name:'synthetic-oncall-1',password:'synthetic-oncall-checkpoint-password'});assert.equal(owner.status,200);cookie=owner.cookie
+  ok(await w.request('/api/command',{type:'service',id:'synthetic-oncall-1',name:'Synthetic checkpoint service',environment:'production',owner:owner.value.member.id,runbook:[],pager:''},cookie))
+  const door=ownerDoor(w,cookie),preview=ok(await door.preview('pagerduty',JSON.stringify({integrations:[{id:'synthetic-oncall-1',type:'events_api_v2_inbound_integration'}]})))
+  ok(await door.apply('pagerduty',preview))
+  const row=ok(await w.request('/api/move-in/objects',undefined,cookie)).find(row=>row.targetKind==='integration'),key=randomBytes(16).toString('hex')
+  const supplied=await w.request('/api/intake/incumbent',{importedId:row.targetId,importedRevision:row.revision,id:'synthetic-oncall-1',service:'synthetic-oncall-1',name:'Synthetic checkpoint incumbent',revision:0,key},cookie);assert.equal(supplied.status,201)
+  const active=ok(await w.request('/api/intake/sources/synthetic-oncall-1/activate-incumbent',{revision:supplied.value.source.revision,confirmed:true},cookie)),digest=w.sql('SELECT key_digest FROM oc_incumbent_credentials')[0].key_digest
+  const checkpoint=JSON.stringify(ok(await w.request('/api/recovery/checkpoint',undefined,cookie)))
+  for(const secret of [key,active.nativeKey,digest])assert.ok(!checkpoint.includes(secret),'checkpoint excludes both keys and verification material')
+  cookie=await checkpointCli(w,cookie)
+  const status=ok(await w.request('/api/intake/sources/synthetic-oncall-1/incumbent',undefined,cookie))
+  assert.equal(status.source.active,false);assert.equal(status.keySupplied,false);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_incumbent_credentials')[0].n,0)
+  const refused=await w.request('/api/intake/sources/synthetic-oncall-1/activate-incumbent',{revision:status.source.revision,confirmed:true},cookie);assert.equal(refused.status,409)
+  console.log('OC-055 real CLI checkpoint: both keys and hashes excluded; all held history restored; integration inactive and supply required again')
+ }finally{await w.close()}
+}

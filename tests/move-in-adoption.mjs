@@ -102,5 +102,16 @@ try {
   assert.ok(!held.includes('synthetic-oncall-credential-must-not-persist'),'credential-bearing file never persists')
   console.log(`OC-038 ${vendor}: credential refusal, named unsupported objects, inactive integrations, no login/send authority, preview/apply/restart/reconcile/undo and related-person erasure passed`)
  }
+ // OC-055 activation is a separate administrator action after reviewed file import.
+ const heldIntegration=(await imported()).find(row=>row.targetKind==='integration'&&row.value.provider==='opsgenie')
+ assert.ok(heldIntegration)
+ const key='synthetic-oncall-adoption-incumbent-key-1',service=ok(await req('/api/state')).services[0].id
+ const supplied=ok(await req('/api/intake/incumbent',{importedId:heldIntegration.targetId,importedRevision:heldIntegration.revision,id:'synthetic-oncall-adoption',service,name:'Synthetic adoption incumbent',revision:0,key}),201)
+ assert.equal(supplied.source.active,false);assert.equal(JSON.stringify(supplied).includes(key),false)
+ const active=ok(await req('/api/intake/sources/synthetic-oncall-adoption/activate-incumbent',{revision:supplied.source.revision,confirmed:true}))
+ assert.equal(active.source.active,true);assert.notEqual(active.nativeKey,key)
+ ok(await req('/api/intake/sources/synthetic-oncall-adoption/revoke',{revision:active.source.revision}))
+ assert.equal(ok(await req('/api/intake/sources/synthetic-oncall-adoption/incumbent')).keySupplied,false)
+ console.log('OC-055 import activation: separate key supply, inactive receiving, explicit activation, no supplied-key echo and revoke passed')
  console.log('Move-in: explicit timing difference, named people, validated adoption, authority, concurrent publication, atomic rollback, now/next, ICS and protected undo passed')
 } finally {await w.close()}

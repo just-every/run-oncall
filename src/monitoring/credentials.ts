@@ -16,7 +16,7 @@ export async function intakeCredential(c:any,deps:IntakeDependencies,key:unknown
   const state=await deps.load(c.env.DB),known=sourceId?state.intakeSources?.find(s=>s.id===sourceId):undefined;
   let digest='';
   if(typeof key==='string'&&key.length>0&&key.length<=200)digest=await intakeHash(key);
-  const row=digest?await c.env.DB.prepare('SELECT source,key_digest FROM oc_intake_credentials WHERE key_digest=?').bind(digest).first():null;
+  const row=digest?await c.env.DB.prepare('SELECT source,key_digest FROM oc_intake_credentials WHERE key_digest=? UNION ALL SELECT source,key_digest FROM oc_incumbent_credentials WHERE key_digest=?').bind(digest,digest).first():null;
   const source=state.intakeSources?.find(s=>s.id===row?.source);
   if(source)auditIdentity(c.env.DB,{actor:{kind:'intake-source',id:source.id},source:{kind:'intake-source',id:source.id}});
   if(!source||!source.active||source.provider!==provider||sourceId!==undefined&&source.id!==sourceId) {
@@ -25,7 +25,7 @@ export async function intakeCredential(c:any,deps:IntakeDependencies,key:unknown
   }
   return {state,source,digest,key:key as string};
 }
-export const credentialGuard=(source:IntakeSource,digest:string)=>({sql:'EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=?)',values:[source.id,digest]});
+export const credentialGuard=(source:IntakeSource,digest:string)=>({sql:'(EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=?) OR EXISTS(SELECT 1 FROM oc_incumbent_credentials WHERE source=? AND key_digest=?))',values:[source.id,digest,source.id,digest]});
 
 export const grafanaCustody:Custody={label:'oncall-grafana-signing-v1',unavailable:'Installation key unavailable for Grafana signing',unreadable:'Grafana signing secret cannot be opened; configure it again'};
 export async function grafanaSigning(c:any,source:IntakeSource) {

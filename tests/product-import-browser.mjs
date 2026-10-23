@@ -58,6 +58,35 @@ export async function productImport(page,context,width,session) {
   await page.screenshot({path:`evidence/browser/erase-person-${width}.png`,fullPage:true})
   await person.getByRole('button',{name:'Erase permanently',exact:true}).click()
   await page.getByText(/^Erased\. Receipt /).waitFor();assert.equal(await person.count(),0,'the erased person leaves the paused data list')
+  await incumbentActivation(page,context,width)
+}
+
+async function incumbentActivation(page,context,width) {
+ const foreign='synthetic-oncall-browser-key-'+width,objects=await (await context.request.get('/api/move-in/objects')).json()
+ if(!objects.some(row=>row.targetId==='splunk:'+foreign)) {
+  await page.getByLabel('Source',{exact:true}).selectOption('splunk')
+  const bundle={integrations:[1440,390].map(size=>({id:'synthetic-oncall-browser-key-'+size,type:'REST',name:'Synthetic browser integration '+size}))}
+  await page.getByLabel('Export JSON').setInputFiles({name:'synthetic-oncall-keys.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))})
+  await page.getByRole('button',{name:'Preview import',exact:true}).click();await page.getByRole('heading',{name:'Compatibility review'}).waitFor()
+  await page.getByRole('button',{name:'Confirm paused import',exact:true}).click();await page.getByRole('heading',{name:'Import journal'}).waitFor()
+ }
+ const panel=page.getByRole('region',{name:'Activate imported integration '+foreign,exact:true}),key='synthetic-oncall-incumbent-browser-'+width
+ await panel.waitFor();await panel.getByLabel('Incumbent integration key',{exact:true}).fill(key)
+ await panel.getByRole('button',{name:'Supply incumbent key · leave inactive',exact:true}).click()
+ await panel.getByText(/Incumbent key supplied; never shown again/).waitFor()
+ assert.equal(await panel.getByLabel('Incumbent integration key',{exact:true}).inputValue(),'')
+ assert.ok(!(await page.content()).includes(key),'incumbent key does not reappear in the document')
+ await panel.screenshot({path:`evidence/browser/incumbent-inactive-${width}.png`})
+ await panel.getByRole('button',{name:'Activate compatible intake · paging OFF',exact:true}).click()
+ await panel.getByRole('button',{name:'I saved the Oncall key',exact:true}).click()
+ await panel.getByText(/Active compatible intake/).waitFor()
+ assert.equal(await panel.locator('output').count(),0,'one-time Oncall key disappears after acknowledgement')
+ assert.ok(!(await page.content()).includes(key));assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0)
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[])
+ await panel.screenshot({path:`evidence/browser/incumbent-active-${width}.png`})
+ await panel.getByRole('button',{name:'Revoke imported integration keys',exact:true}).click();await panel.getByText(/Incumbent key: not supplied/).waitFor()
+ console.log(`OC-055 browser ${width}: one-time password field, inactive supply, explicit activation, one-time native key dismissal, revoke, no incumbent echo, overflow, axe and hydration passed`)
 }
 
 // Focused execution reuses this registered product journey; no additional suite.
@@ -74,5 +103,10 @@ if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1]) {
   page.on('pageerror',error=>errors.push(error.message));await page.goto(worker.origin);await page.getByRole('link',{name:'Move-in kit',exact:true}).waitFor()
   for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await productImport(page,context,width,owner.value);console.log(`OC-038 browser ${width}: source guidance, inactive integration review, named refusal, apply/undo, overflow, axe and hydration passed`)}
   assert.deepEqual(errors,[])
+  const login={name:'synthetic-oncall-1',password:'synthetic-oncall-browser-password'},revoked=await worker.request('/api/login',login)
+  assert.equal((await worker.request('/api/logout',{},revoked.cookie)).status,200)
+  const expired=await worker.request('/api/login',login);worker.sql('UPDATE sessions SET expires=0')
+  for(const cookie of [revoked.cookie,expired.cookie])for(const [path,input] of [['/api/intake/incumbent',{}],['/api/intake/sources/import-synthetic-oncall-browser-key-390/incumbent',undefined],['/api/intake/sources/import-synthetic-oncall-browser-key-390/activate-incumbent',{}]])assert.equal((await worker.request(path,input,cookie)).status,401)
+  console.log('OC-055 new custody doors: revoked and expired sessions refused')
  }finally{await browser?.close();await worker.close()}
 }

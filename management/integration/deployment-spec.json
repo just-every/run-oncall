@@ -267,6 +267,12 @@
       "name": "0137_named_responder_audit.sql",
       "sha256": "1778e49b0260a019189cf7f29cab94a15d589f9248008bc789b547eebdcc3ec4",
       "sql": "-- Random audit labels preserve the named responder independently of actor and incident.\nALTER TABLE oc_audit_clock ADD COLUMN named_member_label TEXT;\nALTER TABLE oc_admin_audit ADD COLUMN named_member TEXT;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0140_incumbent_intake_credentials.sql",
+      "sha256": "6d960f77ca4d255029ccb0d9d711462b5f46a0a1c2bcba8db46eb463b6372e12",
+      "sql": "-- Installation-local verification material: never exported or restored as authority.\nCREATE TABLE oc_incumbent_credentials (\n source TEXT PRIMARY KEY REFERENCES oc_intake_sources(id) ON DELETE CASCADE,\n key_digest TEXT NOT NULL UNIQUE CHECK(length(key_digest)=64 AND key_digest NOT GLOB '*[^0-9a-f]*'),\n imported_digest TEXT NOT NULL UNIQUE,\n created_at TEXT NOT NULL\n);\n\n-- Preserve unambiguous credential lookup even through other native key managers.\nCREATE TRIGGER incumbent_key_distinct_insert BEFORE INSERT ON oc_incumbent_credentials\nWHEN EXISTS(SELECT 1 FROM oc_intake_credentials WHERE key_digest=NEW.key_digest AND source<>NEW.source)\nBEGIN SELECT RAISE(ABORT,'Integration key must be distinct'); END;\nCREATE TRIGGER incumbent_key_distinct_update BEFORE UPDATE OF key_digest ON oc_incumbent_credentials\nWHEN EXISTS(SELECT 1 FROM oc_intake_credentials WHERE key_digest=NEW.key_digest AND source<>NEW.source)\nBEGIN SELECT RAISE(ABORT,'Integration key must be distinct'); END;\nCREATE TRIGGER native_key_distinct_insert BEFORE INSERT ON oc_intake_credentials\nWHEN EXISTS(SELECT 1 FROM oc_incumbent_credentials WHERE key_digest=NEW.key_digest AND source<>NEW.source)\nBEGIN SELECT RAISE(ABORT,'Integration key must be distinct'); END;\nCREATE TRIGGER native_key_distinct_update BEFORE UPDATE OF key_digest ON oc_intake_credentials\nWHEN EXISTS(SELECT 1 FROM oc_incumbent_credentials WHERE key_digest=NEW.key_digest AND source<>NEW.source)\nBEGIN SELECT RAISE(ABORT,'Integration key must be distinct'); END;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

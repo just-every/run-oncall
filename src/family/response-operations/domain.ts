@@ -1,3 +1,4 @@
+import {identityLimit} from '../../intake/identity-bounds';
 import { publishIncidentTemplate, instantiateIncidentTemplate, checklistCommand, validateIncidentTemplateArchive } from '../../incident-workflows/template.ts';
 import type { IncidentTemplate, TemplateSnapshot } from '../../incident-workflows/types-template.ts';
 import { relationCommand, validateIncidentRelations, incidentAlertLinkAllowed } from '../../incident-workflows/relations.ts';
@@ -251,7 +252,7 @@ export function route(state: State, signal: Signal): Decision {
     reason: policy.reason,
   };
 }
-export function signalInput(input: any, exactKey = false): Signal {
+export function signalInput(input: any, exactKey = false, keyLimit = 200): Signal {
   if (!input || typeof input !== "object" || Array.isArray(input))
     fail("Signal must be an object");
   if (!["trigger", "recover"].includes(input.intent))
@@ -270,7 +271,7 @@ export function signalInput(input: any, exactKey = false): Signal {
     eventId: text(input.eventId, '"eventId"', 200),
     service: text(input.service, '"service"', 100),
     environment: text(input.environment, '"environment"', 100),
-    key: exactKey && typeof input.key==='string' && input.key.length>0 && input.key.length<=200 ? input.key : text(input.key, '"key"', 200),
+    key: exactKey && typeof input.key==='string' && input.key.length>0 && input.key.length<=keyLimit ? input.key : text(input.key, '"key"', keyLimit),
     generation: text(input.generation, '"generation"', 100),
     intent: input.intent,
     severity: input.severity,
@@ -279,8 +280,8 @@ export function signalInput(input: any, exactKey = false): Signal {
     evidence,
   };
 }
-export function admit(state: State, input: any, at = new Date().toISOString(), exactKey = false) {
-  const signal = signalInput(input,exactKey);
+export function admit(state: State, input: any, at = new Date().toISOString(), exactKey = false, keyLimit = 200) {
+  const signal = signalInput(input,exactKey,keyLimit);
   const old = state.events.find(
     (e) => e.source === signal.source && e.eventId === signal.eventId,
   );
@@ -730,7 +731,7 @@ export function validateArchive(value: any): State {
       "decision",
       "routingSnapshot",
     ], ["urgency"]);
-    signalInput(e,typeof e.source==="string"&&e.source.startsWith("email:"));
+    signalInput(e,typeof e.source==="string"&&e.source.startsWith("email:"),typeof e.source==="string"&&e.source.startsWith("intake:")?identityLimit(value.intakeSources?.find((source:any)=>source.id===e.source.slice(7))?.provider??"native"):200);
     date(e.acceptedAt);
     if (
       !value.services.some(

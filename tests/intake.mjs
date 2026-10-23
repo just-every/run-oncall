@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
-import {localWorker} from './worker.mjs';
+import {localWorker,ownerDoor} from './worker.mjs';
+import {readFile} from 'node:fs/promises';
 import {localPart,mail} from './email-fixtures.mjs';
 
 // One real emitted-Worker journey. Provider request bodies are synthetic test
@@ -9,7 +10,7 @@ const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'}),ok=(r,s
 const keys={pd:randomBytes(32).toString('hex'),og:randomBytes(32).toString('hex'),sp:randomBytes(32).toString('hex'),other:randomBytes(32).toString('hex')};
 let cookie;
 const request=(path,data)=>w.request(path,data,cookie);
-const external=async(path,data,headers={})=>{const r=await fetch(w.origin+path,{method:data===undefined?'GET':'POST',headers:{'content-type':'application/json',...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:r.status,value:await r.json()}};
+const external=async(path,data,headers={})=>{const r=await fetch(w.origin+path,{method:data===undefined?'GET':'POST',headers:{'content-type':'application/json',connection:'close',...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:r.status,value:await r.json()}};
 const pd=(action,key='checkout-latency',extra={})=>external('/v2/enqueue',{routing_key:keys.pd,event_action:action,dedup_key:key,...(action==='trigger'?{payload:{summary:'Checkout latency above two seconds',source:'checkout-monitor',severity:'critical',custom_details:{component:'checkout',token:'must-not-survive',echo:keys.pd}},links:[{href:'https://example.test/latency'},{href:'https://example.test/private?token=hidden'}]}:{}),...extra});
 const og=(action,alias='payments-db',extra={})=>external(action==='trigger'?'/v2/alerts':'/v2/alerts/'+encodeURIComponent(alias)+'/'+action+'?identifierType=alias',action==='trigger'?{alias,message:'Payments database connections exhausted',priority:'P4',tags:['team:payments'],...extra}:extra,{authorization:'GenieKey '+keys.og});
 const sp=(message_type,entity_id='search-cluster')=>external('/integrations/generic/20131114/alert/'+keys.sp+'/search',{message_type,entity_id,state_message:'Search replicas need attention',monitoring_tool:'cluster-monitor'});
@@ -20,6 +21,14 @@ try {
   ok(await request('/api/command',{type:'policy',service:'payments',severity:'*',action:'route',owner:actor.id,reason:'Payments primary'}));
   const configure=(id,provider,service='payments',revision=0)=>request('/api/intake/sources',{id,name:id+' monitor',provider,service,key:keys[id],revision});
   ok(await configure('pd','pagerduty'),201);ok(await configure('og','opsgenie'),201);ok(await configure('sp','splunk','search'),201);ok(await configure('other','pagerduty','search'),201);
+  // OC-055 populated additive upgrade: recreate only the new empty credential table over held data.
+  assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_incumbent_credentials')[0].n,0);
+  const priorTables=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name<>'oc_incumbent_credentials' ORDER BY name").map(row=>row.name);
+  const heldSql=priorTables.map(name=>'SELECT * FROM "'+name.replaceAll('"','""')+'"').join(';'),heldRows=w.statements(heldSql);
+  w.statements('DROP TRIGGER incumbent_key_distinct_insert; DROP TRIGGER incumbent_key_distinct_update; DROP TRIGGER native_key_distinct_insert; DROP TRIGGER native_key_distinct_update; DROP TABLE oc_incumbent_credentials');
+  w.statements((await readFile('migrations/core/0140_incumbent_intake_credentials.sql','utf8')).replace(/^--.*$/gm,''));
+  assert.ok(JSON.stringify(w.statements(heldSql))===JSON.stringify(heldRows),'additive incumbent-key migration preserves every held application row');
+  console.log('OC-055 populated upgrade: prior tables and held native credentials unchanged; new hashed custody empty');
   // OC-033: real emitted email() door, with only Cloudflare delivery faked.
   const local=localPart(),addressInput={id:'email-db',name:'Nightly database email',service:'payments',owner:actor.id,localPart:local,mode:'subject',fallback:'subject',rules:[]};
   ok(await request('/api/email/addresses',addressInput),201);
@@ -97,13 +106,83 @@ try {
   const viewer=ok(await request('/api/members',{name:'Intake reader',role:'viewer',password:'synthetic-intake-reader-password'}),201),viewerCookie=(await w.request('/api/login',{name:viewer.name,password:'synthetic-intake-reader-password'})).cookie;
   ok(await w.request('/api/intake/sources',{id:'viewer',name:'Denied',provider:'pagerduty',service:'payments',revision:0,key:keys.pd},viewerCookie),403);
   ok(await w.request('/api/email',undefined,viewerCookie),403);ok(await w.request('/api/email/addresses/email-db/publish',{revision:3,mode:'subject',fallback:'subject',rules:[]},viewerCookie),403);assert.equal(ok(await w.request('/api/state',undefined,viewerCookie)).emailSamples,undefined);
+  // OC-055 provider identity bounds refuse, never truncate or retain an incomplete alert.
+  // PD was revoked by the original lifecycle journey; rotate through the existing explicit admin door.
+  keys.pd=randomBytes(32).toString('hex');ok(await configure('pd','pagerduty','payments',3));
+  const bounds=[['pagerduty-v2',255,key=>pd('trigger',key)],['pagerduty-v1',255,key=>external('/generic/2010-04-15/create_event.json',{service_key:keys.pd,event_type:'trigger',incident_key:key,description:'Synthetic bounded identity'})],['opsgenie',512,key=>og('trigger',key)],['splunk',200,key=>sp('CRITICAL',key)]];
+  for(const [provider,limit,send] of bounds) {
+   const key=provider+'x'.repeat(limit-provider.length),response=await send(key);ok(response,provider==='pagerduty-v2'||provider==='opsgenie'?202:200);
+   const before=ok(await request('/api/state'));
+   for(const invalid of [key+'x','synthetic-oncall-identity\ncontrol',' synthetic-oncall-leading','synthetic-oncall-\ud800']) {
+    const refused=await send(invalid);assert.equal(refused.status,400);if(provider.startsWith('pagerduty'))assert.equal(refused.value.status,'invalid event');
+    const after=ok(await request('/api/state'));assert.deepEqual(after.alerts,before.alerts);assert.deepEqual(after.intakeReceipts,before.intakeReceipts);
+   }
+   assert.ok(before.intakeReceipts.some(receipt=>receipt.key===key),'maximum identity remains exact');
+  }
+  const actionBefore=ok(await request('/api/state'));
+  ok(await pd('trigger','synthetic-oncall-invalid-action',{event_action:'x'.repeat(300)}),400);ok(await sp('x'.repeat(300)),400);
+  assert.deepEqual(ok(await request('/api/state')).alerts,actionBefore.alerts);
+  console.log('OC-055 identity bounds: PD v1/v2 255, Opsgenie 512 and conservative Splunk 200; invalid characters/actions and over-limit identities refuse without alert or incomplete custody');
+
+  // OC-055 administrator-supplied incumbent keys, separate activation and no echo.
+  const importDoor=ownerDoor(w,cookie),incumbentKeys=[],nativeIncumbentKeys=[];
+  for(const [vendor,provider,kind] of [['pagerduty','pagerduty','events_api_v2_inbound_integration'],['opsgenie','opsgenie','API'],['splunk','splunk','REST']]) {
+   const id='synthetic-oncall-inc-'+vendor,foreign='synthetic-oncall-foreign-'+vendor;
+   const plan=ok(await importDoor.preview(vendor,JSON.stringify({integrations:[{id:foreign,type:kind,name:'Synthetic integration'}]})));ok(await importDoor.apply(vendor,plan));
+   const rows=()=>request('/api/move-in/objects').then(ok),imported=(await rows()).find(row=>row.targetId===vendor+':'+foreign);
+   const key=randomBytes(vendor==='pagerduty'?16:32).toString('hex');incumbentKeys.push(key);
+   const input={importedId:imported.targetId,importedRevision:imported.revision,id,service:'payments',name:'Synthetic incumbent '+vendor,revision:0,key};
+   ok(await w.request('/api/intake/incumbent',input),401);ok(await w.request('/api/intake/incumbent',input,viewerCookie),403);
+   const snapshot=ok(await request('/api/archive')),objects=await rows();
+   w.sql("CREATE TRIGGER synthetic_incumbent_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.feature='intake' BEGIN SELECT RAISE(ABORT,'SYNTHETIC_INCUMBENT_AUDIT_FAILURE'); END");
+   ok(await request('/api/intake/incumbent',input),503);w.sql('DROP TRIGGER synthetic_incumbent_audit');
+   assert.deepEqual(ok(await request('/api/archive')),snapshot);assert.deepEqual(await rows(),objects);
+   const race=await Promise.all([request('/api/intake/incumbent',input),request('/api/intake/incumbent',input)]);assert.deepEqual(race.map(r=>r.status).sort(),[201,409]);
+   let status=ok(await request('/api/intake/sources/'+id+'/incumbent'));assert.equal(status.source.active,false);assert.equal(status.keySupplied,true);
+   ok(await request('/api/intake/sources',{id,provider,service:'payments',name:'Synthetic bypass refused',revision:status.source.revision,key:randomBytes(32).toString('hex')}),409);
+   ok(await w.request('/api/intake/sources/'+id+'/incumbent',undefined,viewerCookie),403);ok(await w.request('/api/intake/sources/'+id+'/incumbent'),401);
+   const send=(credential,identity)=>vendor==='pagerduty'?external('/v2/enqueue',{routing_key:credential,event_action:'trigger',dedup_key:identity,payload:{summary:'Synthetic incumbent observation',source:'synthetic-oncall-source',severity:'warning'}}):vendor==='opsgenie'?external('/v2/alerts',{alias:identity,message:'Synthetic incumbent observation'},{authorization:'GenieKey '+credential}):external('/integrations/generic/20131114/alert/'+credential+'/synthetic-oncall-route',{message_type:'WARNING',entity_id:identity,state_message:'Synthetic incumbent observation'});
+   const deniedBefore=ok(await request('/api/state')).alerts;
+   ok(await send(key,id+'-inactive'),vendor==='pagerduty'?400:401);assert.deepEqual(ok(await request('/api/state')).alerts,deniedBefore);
+   const activation={revision:status.source.revision,confirmed:true},activate=()=>request('/api/intake/sources/'+id+'/activate-incumbent',activation);
+   ok(await w.request('/api/intake/sources/'+id+'/activate-incumbent',activation,viewerCookie),403);
+   const beforeActivate=ok(await request('/api/archive'));
+   w.sql("CREATE TRIGGER synthetic_incumbent_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.feature='intake' BEGIN SELECT RAISE(ABORT,'SYNTHETIC_INCUMBENT_AUDIT_FAILURE'); END");
+   ok(await activate(),503);w.sql('DROP TRIGGER synthetic_incumbent_audit');assert.deepEqual(ok(await request('/api/archive')),beforeActivate);
+   const activated=ok(await activate());nativeIncumbentKeys.push(activated.nativeKey);assert.equal(activated.source.active,true);
+   ok(await send(key,id+'-accepted'),vendor==='splunk'?200:202);ok(await send(activated.nativeKey,id+'-accepted'),vendor==='splunk'?200:202);
+   assert.equal(ok(await request('/api/state')).alerts.filter(alert=>alert.source==='intake:'+id&&alert.key===id+'-accepted').length,1,'both keys share the same source identity and generation');
+   if(vendor==='pagerduty')ok(await external('/generic/2010-04-15/create_event.json',{service_key:key,event_type:'trigger',incident_key:id+'-v1',description:'Synthetic incumbent v1'}));
+   const beforeWrong=ok(await request('/api/state')).alerts;ok(await send('synthetic-oncall-wrong-key-not-supplied',id+'-wrong'),vendor==='pagerduty'?400:401);assert.deepEqual(ok(await request('/api/state')).alerts,beforeWrong);
+   status=ok(await request('/api/intake/sources/'+id+'/incumbent'));
+   const beforeRevoke=ok(await request('/api/archive'));
+   w.sql("CREATE TRIGGER synthetic_incumbent_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.feature='intake' BEGIN SELECT RAISE(ABORT,'SYNTHETIC_INCUMBENT_AUDIT_FAILURE'); END");
+   ok(await request('/api/intake/sources/'+id+'/revoke',{revision:status.source.revision}),503);w.sql('DROP TRIGGER synthetic_incumbent_audit');assert.deepEqual(ok(await request('/api/archive')),beforeRevoke);
+   ok(await request('/api/intake/sources/'+id+'/revoke',{revision:status.source.revision}));
+   ok(await send(key,id+'-revoked'),vendor==='pagerduty'?400:401);ok(await send(activated.nativeKey,id+'-revoked-native'),vendor==='pagerduty'?400:401);
+   assert.equal(w.sql("SELECT COUNT(*) AS n FROM oc_incumbent_credentials WHERE source='"+id+"'")[0].n,0,'revocation erases incumbent verification material');
+   // Resupply/rotate without activation, so restore must erase a real held hash.
+   const current=(await rows()).find(row=>row.targetId===imported.targetId),revision=ok(await request('/api/intake/sources/'+id+'/incumbent')).source.revision;
+   const rotated=randomBytes(vendor==='pagerduty'?16:32).toString('hex');incumbentKeys.push(rotated);
+   const rotation={...input,importedRevision:current.revision,revision,key:rotated};
+   const beforeRotation=ok(await request('/api/archive')),beforeRotationObjects=await rows();
+   w.sql("CREATE TRIGGER synthetic_incumbent_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.feature='intake' BEGIN SELECT RAISE(ABORT,'SYNTHETIC_INCUMBENT_AUDIT_FAILURE'); END");
+   ok(await request('/api/intake/incumbent',rotation),503);w.sql('DROP TRIGGER synthetic_incumbent_audit');assert.deepEqual(ok(await request('/api/archive')),beforeRotation);assert.deepEqual(await rows(),beforeRotationObjects);
+   ok(await request('/api/intake/incumbent',rotation));assert.equal(ok(await request('/api/intake/sources/'+id+'/incumbent')).source.active,false);
+   assert.equal(w.sql("SELECT length(key_digest) AS length FROM oc_incumbent_credentials WHERE source='"+id+"'")[0].length,64);
+  }
+  for(const path of ['/api/state','/api/workspace','/api/move-in/objects','/api/audit/export','/api/archive','/api/recovery/checkpoint','/']) {
+   const value=JSON.stringify(ok(await request(path)));
+   for(const key of [...incumbentKeys,...nativeIncumbentKeys])assert.ok(!value.includes(key),'key absent from '+path);
+  }
+  console.log('OC-055 incumbent keys: admin-only one-time supply, hash-only custody, audit rollback on supply/rotation/activation/revoke, concurrent supply, inactive refusal, dual-key deduplication, wrong/revoked refusal and no echo passed');
   const permanent=ok(await request('/api/audit/export'));for(const value of [local,rotated,'monitor@example.test','Nightly database email','Safe monitor result'])assert.ok(!JSON.stringify(permanent).includes(value));
   const archive=ok(await request('/api/archive'));for(const key of [...Object.values(keys),oldKey,nativeKey])assert.ok(!JSON.stringify(archive).includes(key));
   assert.equal(ok(await external('/api/ingress/native',native,{authorization:'Bearer '+nativeKey})).duplicate,true);
   assert.deepEqual(archive.events.find(e=>e.eventId==='held-trigger'),nativeEvent,'native observations stay unchanged');
   const malformed=structuredClone(archive);malformed.intakeReceipts[0].alert='unknown';ok(await request('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await request('/api/archive')),archive);
   const restored=await request('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
-  state=ok(await request('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.ok(state.intakeSources.every(s=>!s.active));assert.ok(state.emailAddresses.every(a=>!a.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_email_credentials')[0].n,0);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);ok(await og('trigger','after-restore'),401);
+  state=ok(await request('/api/state'));assert.deepEqual(state.intakeReceipts,archive.intakeReceipts);assert.ok(state.intakeSources.every(s=>!s.active));assert.ok(state.emailAddresses.every(a=>!a.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_email_credentials')[0].n,0);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_incumbent_credentials')[0].n,0,'restored incumbent integrations have no verification material');ok(await og('trigger','after-restore'),401);
   await w.stop();await w.start();assert.deepEqual(ok(await request('/api/state')).intakeReceipts,archive.intakeReceipts);
   assert.deepEqual(state.incidents,archive.incidents);assert.equal(state.events.find(e=>e.eventId==='held-trigger').generation,'held-cycle');
   assert.equal(state.members.length,original.members.length+1);
