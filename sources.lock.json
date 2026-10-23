@@ -131,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0f13c67d25add0b6e0192bdffb71ad29827adb51bea657cabb41703a9c355615",
+      "sha256": "e04dd535afb1274a401aba2fb2bc4e9069d17eb8e3b52b2b3d5f90bb5f9062c7",
       "executable": false
     },
     "AGENTS.md": {
@@ -3939,7 +3939,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "1e2936117abca0278fce4d433158d2b9ed5520e9998644b786741726b0eafde2",
+      "sha256": "eda8f8665c64cbf8ffaffc333cd52b4c03e7a6d3c3890c8ccb4dc0fd4fe2ca79",
       "executable": false
     },
     "tests/signin-browser.mjs": {
