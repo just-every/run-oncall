@@ -1,6 +1,7 @@
 import { IncidentWorkflows } from '../incident-workflows/Controls';
 import { ServiceTemplateSettings } from '../incident-workflows/TemplateSettings';
 import { resolveIncidentAlias } from '../incident-workflows/relations';
+import {deadlineActor} from '../incident-deadlines/model';
 import {DeadlineControls,TimeoutSetting} from '../incident-deadlines/Controls';
 import {ManualDeclare, UserAssignment, ResponderRequests} from '../manual-pages/Controls';
 import { StatusPanel } from '../business-status/StatusPanel';
@@ -341,7 +342,7 @@ function Workspace() {
                             </div>
                             <p>{e.text}</p>
                             {e.lifecycle?.member !== undefined && <p className="named-responder">Named responder: <strong>{e.lifecycle.member === null ? "Erased member" : name(e.lifecycle.member)}</strong></p>}
-                            <small>{name(e.actor)}{e.operationId && ` · Bulk operation ${e.operationId}`}</small>
+                            <small>{e.actor===deadlineActor?'Deadline scheduler':name(e.actor)}{e.operationId && ` · Bulk operation ${e.operationId}`}</small>
                           </div>
                         </li>
                       ))}
