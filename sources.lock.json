@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "1e36767ef7fefb0f001a6799e26038e578bb4bcf33f5791f8e892e1f3a02a0e9",
+      "sha256": "898af80ee0e70fecf457af52a09c7f6868be5984f0dfa28acb567d871235e40d",
       "executable": false
     },
     "DEMO.md": {
@@ -1191,7 +1191,7 @@
       "executable": false
     },
     "src/family/response-operations/handoffs.ts": {
-      "sha256": "a679570bb68f44e87fbac1356b9ab0cd22aec8dbd60ad8201bfc5574af87f0c5",
+      "sha256": "7f67b456de1d9d982086f7c867a61e9bd4451b2e7003a859c6b68c6fc13ccef8",
       "executable": false
     },
     "src/family/response-operations/incident-controls.ts": {
@@ -1455,7 +1455,7 @@
       "executable": false
     },
     "src/manual-pages/archive.ts": {
-      "sha256": "d57a0b535de125391a5898f5a21df9c0e98f595336e38cdb4c4685aad28d90f3",
+      "sha256": "be5977f695b2c6ff2136b671f12fe033a76cec6bf8ce0eedcbe0cf96e91829f9",
       "executable": false
     },
     "src/manual-pages/context.ts": {
