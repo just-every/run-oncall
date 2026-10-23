@@ -12,6 +12,7 @@ import { emailErasureFence } from './email/fence'
 import { installEmailManagement } from './email/api'
 import { auditIdentity, setAuditSubject } from './audit-store'
 import { auditInput } from './audit-request'
+import { installMonitoringSigning } from './monitoring/signing';
 import { installMonitoringIntake } from './monitoring/api';
 import { compatiblePath, monitoringPath } from './intake/paths';
 import { installCompatibleIntake } from './intake/api';
@@ -400,6 +401,7 @@ api.use("/api/*", async (c, next) => {
 });
 installAutomationManagement(api, changeDeps);
 installChangeManagement(api, changeDeps);
+installMonitoringSigning(api, changeDeps);
 installNativeSources(api, changeDeps);
 installIntakeManagement(api, changeDeps);
 installEmailManagement(api, changeDeps);

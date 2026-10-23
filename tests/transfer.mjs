@@ -47,6 +47,12 @@ try{
  const changeKey=randomBytes(32).toString('hex')
  assert.equal((await req('/api/changes/sources',{id:'portable-ci',name:'Portable CI context',provider:'native',service:'transfer',repository:'',mode:'bearer',revision:0,key:changeKey})).status,201)
  assert.equal((await fetch(m.origin+'/api/changes/ingress/portable-ci',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+changeKey},body:JSON.stringify({eventId:'portable-deploy',summary:'Retain deployment context',author:'transfer-ci',timestamp:new Date().toISOString()})})).status,201)
+ // sd-oncall-c14 OC-065/030: existing categories carry new kinds; signing custody never travels.
+ const fleetChangeKeys={argocd:randomBytes(32).toString('hex'),terraform:randomBytes(32).toString('hex')},fleetGrafanaKey=randomBytes(32).toString('hex'),fleetSigningKey=randomBytes(32).toString('hex');
+ for(const provider of ['argocd','terraform'])assert.equal((await req('/api/changes/sources',{id:'synthetic-oncall-'+provider,name:'Synthetic '+provider,provider,service:'transfer',repository:'',mode:'provider',revision:0,key:fleetChangeKeys[provider]})).status,201);
+ assert.equal((await req('/api/intake/sources',{id:'synthetic-oncall-grafana',name:'Synthetic Grafana',provider:'grafana',service:'transfer',key:fleetGrafanaKey,revision:0})).status,201);
+ ok(await req('/api/monitoring/synthetic-oncall-grafana/signing',{revision:1,secret:fleetSigningKey}));
+ const fleetSigningCustody=sql("SELECT signing_custody FROM oc_intake_credentials WHERE source='synthetic-oncall-grafana'")[0].signing_custody;
  // OC-042: a held signed-source key and its installation-sealed form never travel in an archive.
  const sourceKey=randomBytes(32).toString('hex')
  ok(await req('/api/sources',{id:'portable-signed',key:sourceKey,mode:'signed',scopes:['transfer']}))
@@ -151,7 +157,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
  const manifest=JSON.parse(exportedArchive.toString('utf8').split('\n')[0])
  assert.ok(!manifest.tables.some(table=>table.name==='oc_audit_identities'),'revocable identity associations never travel in archives')
- for(const secret of [nativeRoutedKey,sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey,emailPart,apiKey,endpointKey])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
+ for(const secret of [...Object.values(fleetChangeKeys),fleetGrafanaKey,fleetSigningKey,fleetSigningCustody,nativeRoutedKey,sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey,emailPart,apiKey,endpointKey])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
  await m.command(['import','--input',archive,'--yes','--non-interactive'],4)
  const serviceRow=sql("SELECT data FROM oc_services WHERE id='transfer'")[0].data
  sql("UPDATE oc_services SET data='{\"id\":\"transfer\"}' WHERE id='transfer'");await m.command(['export','--output',invalidRecords,'--non-interactive']);sql("UPDATE oc_services SET data='"+serviceRow.replaceAll("'","''")+"' WHERE id='transfer'")
@@ -182,6 +188,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.deepEqual(ok(await req('/api/state')).intakeReceipts,prior.intakeReceipts,'compatible lifecycle and routing explanations survive portable transfer')
  assert.equal(ok(await req('/api/state')).intakeSources.find(source=>source.id==='portable-monitor').routing.versions[0].catchAll,'transfer','published routing definitions survive portable transfer')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_api_credentials')[0].n,0,'service-account digests do not transfer');assert.equal(sql('SELECT COUNT(*) AS n FROM oc_endpoint_credentials')[0].n,0,'outbound signing custody does not transfer')
+ for(const provider of ['argocd','terraform'])assert.ok(ok(await req('/api/state')).changeSources.some(s=>s.provider===provider&&!s.active),'sd-oncall-c14 source kind restores inactive');
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_change_credentials')[0].n,0,'change verification material is excluded from portable transfers')
  assert.equal(sql('SELECT COUNT(*) AS n FROM sources')[0].n,0,'native source keys are excluded from portable transfers')
  assert.equal((await fetch(m.origin+'/api/ingress/portable-signed',{method:'POST',headers:{'content-type':'application/json'},body:'{}'})).status,401,'a restored installation holds no transferable source authority')
