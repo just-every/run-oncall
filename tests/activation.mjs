@@ -6,6 +6,7 @@ import {localWorker,ownerDoor} from './worker.mjs'
 import {checkpointCli} from './checkpoint-cli.mjs'
 import {pagingHistory} from './paging-history.mjs'
 
+await (await import('./migration-upgrade.mjs')).migrationUpgrade()
 const w=await localWorker(),checks=[]
 const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'?r.value:JSON.stringify(r.value));return r.value}
 try {
