@@ -37,7 +37,7 @@ try {
  await productBrowserJourney(page,context,{ownerLink:link})
  assert.deepEqual(errors,[],'no browser application errors')
  await browser.close();browser=null
- await command(['dev','--stop'])
+ if(dev.exitCode===null){dev.kill('SIGTERM');await new Promise(resolve=>dev.once('exit',resolve))}
  // Exercise fixed production preview and verify that dev identity is absent.
  const preview=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),'preview','--port',String(port),'--idle-timeout','120','--non-interactive'],{env,stdio:['ignore','pipe','pipe']});children.push(preview)
  let ready='';for(const s of [preview.stdout,preview.stderr])s.on('data',c=>ready+=c)
