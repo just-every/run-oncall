@@ -1,3 +1,4 @@
+import {sweepDeadlines} from './incident-deadlines/sweep';
 import { dispatchOutbox } from './automation/dispatch'
 import { auditedDatabase } from './audit-database'
 import { receiveEmail } from './email/receive'
@@ -20,6 +21,8 @@ import {importDoorResponse} from './move-in/door'
 type Env=Bindings
 export default withDemo({
   async scheduled(_event,env) {
+    const deadlines=auditedDatabase(env.DB,{feature:'incident-deadlines',kind:'deadline.sweep',actor:{kind:'service',id:'incident-deadlines'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
+    await sweepDeadlines(deadlines.db);
     for(let n=0;n<10;n++) {
       const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
       if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;

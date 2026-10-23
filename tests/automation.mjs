@@ -1,3 +1,4 @@
+import {localWorker} from './worker.mjs';
 import assert from 'node:assert/strict';
 import {randomBytes,createHmac,createHash} from 'node:crypto';
 import {automationRuntime} from './automation-runtime.mjs';
@@ -351,3 +352,37 @@ try {
  ok(await submit({...input,service:'synthetic-oncall-68-foreign'},key,'synthetic-oncall-68-cross-scope'),404);assert.equal(ok(await owner('/api/state')).incidents.length,1);
  console.log('OC-068 API manual page: explicit incident-write scope, real policy override, repeated-key single incident, conflicting/cross-scope/read-only refusals and recorded-only obligation');
 } finally {await manualApi.close();}
+
+// OC-058 uses the existing ephemeral Date.now wrapper and the emitted scheduled door.
+const deadlines58=await localWorker({}, {clock:true});
+try {
+ const w=deadlines58,ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value;};
+ const setup=await w.request('/api/setup',{name:'synthetic-oncall-58',password:'synthetic-oncall-58-password'});ok(setup);let cookie=setup.cookie;
+ const req=(path,input)=>w.request(path,input,cookie),read=async()=>ok(await req('/api/state')),admin=setup.value.member;
+ const backup=ok(await req('/api/members',{name:'synthetic-oncall-58-backup',role:'responder',password:'synthetic-oncall-58-backup-password'}),201);
+ ok(await req('/api/command',{type:'service',id:'synthetic-oncall-58',name:'Deadline service',environment:'test',owner:admin.id,runbook:[],pager:''}));
+ const schedule=ok(await req('/api/paging/schedules',{id:'synthetic-oncall-58',service:'synthetic-oncall-58',name:'Deadline rota',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[admin.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[backup.id],ambiguity:'earlier'},overrides:[]}));
+ ok(await req('/api/paging/policies',{service:'synthetic-oncall-58',scheduleId:schedule.id,revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}));
+ const at=Date.now(),tick=async()=>{const r=await w.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(r.status,200);},find=async id=>(await read()).incidents.find(i=>i.id===id);
+ const make=async()=>ok(await req('/api/command',{type:'declare',service:'synthetic-oncall-58',title:'Deadline investigation',severity:'warning',summary:'Customer impact under investigation'}));
+ const ack=async i=>ok(await req('/api/command',{type:'transition',incident:i.id,revision:i.revision,state:'acknowledged',summary:'Owner acknowledged'}));
+ await w.time(at);let i=await ack(await make());assert.equal(i.deadlines,undefined,'upgrade default off changes no acknowledgment behavior');
+ ok(await req('/api/command',{type:'acknowledgment-timeout',service:i.service,baseVersion:0,minutes:1}));i=await ack(await make());const timeout=i.deadlines.at(-1);assert.equal(Date.parse(timeout.dueAt),at+60000);
+ i=ok(await req('/api/command',{type:'snooze',incident:i.id,revision:i.revision,minutes:2}));const snooze=i.deadlines.at(-1);assert.equal(i.deadlines[0].state,'cancelled');assert.equal(Date.parse(snooze.dueAt),at+120000);
+ await w.time(at+119999);await tick();assert.equal((await find(i.id)).state,'acknowledged','never early');
+ await w.stop();await w.start();await w.time(at+120000);
+ await Promise.all([tick(),tick()]);await tick();i=await find(i.id);assert.equal(i.state,'declared');assert.equal(i.commander,null);assert.equal(i.deadlines.filter(d=>d.state==='fired').length,1);assert.equal(i.timeline.filter(e=>e.kind==='deadline-fired').length,1);assert.equal(i.deadlines.at(-1).obligation.target.id,admin.id);assert.equal(i.deadlines.at(-1).obligation.paging,'off');assert.equal(i.deadlines.at(-1).obligation.automatic,false);
+ console.log('OC-058 scheduled snooze: absolute replacement, never-early boundary, restart and concurrent/double sweep produce one deterministic re-trigger obligation with paging OFF');
+ i=await ack(i);const due=Date.parse(i.deadlines.at(-1).dueAt);assert.equal(i.deadlines.at(-1).kind,'acknowledgment-timeout');assert.equal(i.deadlines.find(d=>d.id===snooze.id).obligation.state,'stopped');
+ ok(await req('/api/paging/schedules',{...schedule,revision:schedule.revision,primary:{...schedule.primary,members:[backup.id]},backup:{...schedule.backup,members:[admin.id]}}));
+ await w.time(due);await tick();i=await find(i.id);assert.equal(i.deadlines.at(-1).obligation.target.id,backup.id,'timeout resolves current level-one coverage at firing');
+ console.log('OC-058 timeout: each new acknowledgment starts a new versioned deadline and current level-one coverage is resolved only when it fires');
+ i=await ack(i);i=ok(await req('/api/command',{type:'snooze',incident:i.id,revision:i.revision,minutes:1}));const held=ok(await req('/api/recovery/checkpoint'));const restored=await req('/api/recovery/restore',{mode:'replace',checkpoint:held});ok(restored);cookie=restored.cookie;i=await find(i.id);assert.equal(i.deadlines.at(-1).state,'held');await w.time(Date.parse(i.deadlines.at(-1).dueAt)+1);await tick();assert.equal((await find(i.id)).state,'acknowledged');
+ console.log('OC-058 checkpoint receiving duty: pending snooze restored held and scheduled work never resumes it');
+ let cancelled=await ack(await make());cancelled=ok(await req('/api/command',{type:'cancel-deadline',incident:cancelled.id,revision:cancelled.revision}));assert.equal(cancelled.deadlines.at(-1).state,'cancelled');
+ let resolved=await ack(await make());resolved=ok(await req('/api/command',{type:'bulk-resolve',incident:resolved.id,revision:resolved.revision,reason:'Verified recovery',evidence:'https://example.test/recovered'}));assert.equal(resolved.deadlines.at(-1).state,'cancelled');
+ const gapSchedule=(ok(await req('/api/paging/state'))).schedules.find(s=>s.id===schedule.id);ok(await req('/api/paging/schedules',{...gapSchedule,primary:{...gapSchedule.primary,members:[]},backup:{...gapSchedule.backup,members:[]}}));let gap=await ack(await make());await w.time(Date.parse(gap.deadlines.at(-1).dueAt));await tick();gap=await find(gap.id);assert.equal(gap.state,'declared');assert.equal(gap.deadlines.at(-1).obligation,null);assert.match(gap.deadlines.at(-1).outcome,/operator action required/);
+ console.log('OC-058 cancellation and gaps: resolution and explicit cancellation stop deadlines; missing current on-call is a retained operator-visible failure, never silence');
+ let rollback=await ack(await make());const before=await read();w.sql("CREATE TRIGGER synthetic_oncall_58_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END");try{ok(await req('/api/command',{type:'snooze',incident:rollback.id,revision:rollback.revision,minutes:1}),503);}finally{w.sql('DROP TRIGGER synthetic_oncall_58_audit');}assert.deepEqual(await read(),before);
+ console.log('OC-058 atomic deadline custody: failed permanent audit rolls back snooze state, timeline and deadline together');
+} finally {await deadlines58.close();}

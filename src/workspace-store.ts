@@ -1,3 +1,4 @@
+import {stopRecoveredDeadlines} from './incident-deadlines/model';
 import { refreshBusinessStatus } from './business-status/model';
 import { restoreErasureFences, erasureFencesQuery } from './erasure-fence'
 import { storedReceipt, nativePrefixWrites } from './native-prefix-store'
@@ -46,6 +47,7 @@ export function workspaceRows(db:D1Database,state:State,token:string):D1Prepared
   return [...statements,restoreErasureFences(db,state,token),...nativePrefixWrites(db,state.intakeReceipts??[],token,previous&&new Set(previous.get('intakeReceipts')?.keys()))]
 }
 export function workspaceWrite(db:D1Database,state:State,revision:number,authority:{sql:string;values:(string|number|null)[]},token=crypto.randomUUID()) {
+  stopRecoveredDeadlines(state,new Date(Date.now()).toISOString())
   refreshBusinessStatus(state)
   state.revision = revision + 1
   checkWorkspaceSize(state)

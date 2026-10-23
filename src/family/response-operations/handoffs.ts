@@ -1,4 +1,5 @@
 import { validateIncidentTemplateHistory } from '../../incident-workflows/template.ts';
+import {validateTimeoutHistory} from '../../incident-deadlines/archive.ts';
 import {validateAssignmentHistory} from '../../manual-pages/archive.ts';
 import { fail, link, type Entry, type Incident, type Member, type Service, type State } from "./domain.ts";
 import { validateLifecycleEntry } from "../../reviews/review-controls.ts";
@@ -103,7 +104,8 @@ function source(input: unknown): HandoffSource {
     if (m.rule !== null) snapshotText(m.rule, 'response rule');
     if (!d.actor.startsWith('source:')) fail('Response declaration metadata needs a source actor');
   }
-  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments"]);
+  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
+  if (v.ackTimeouts !== undefined) validateTimeoutHistory(v.ackTimeouts);
   if (v.userAssignments !== undefined) validateAssignmentHistory(v.userAssignments);
   if (v.urgencyRules !== undefined) validateUrgencyRuleHistory(v.urgencyRules);
   if(v.incidentTemplates!==undefined)validateIncidentTemplateHistory(v);

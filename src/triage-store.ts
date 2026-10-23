@@ -1,3 +1,4 @@
+import {stopRecoveredDeadlines} from './incident-deadlines/model';
 import { refreshBusinessStatus } from './business-status/model';
 import { auditOutcome, setAuditSubject } from './audit-store'
 import { fail, type State } from './family/response-operations/domain';
@@ -6,6 +7,7 @@ import { checkWorkspaceSize } from './workspace-store';
 /** One independent incident + receipt transaction, without rewriting other entities. */
 export async function saveTriageItem(db: D1Database, state: State, revision: number, operationId: string,
   incidentId: string | undefined, authority: {sql: string; values: (string | number | null)[]}) {
+  stopRecoveredDeadlines(state,new Date(Date.now()).toISOString());
   refreshBusinessStatus(state);
   state.revision = revision + 1;
   checkWorkspaceSize(state);
