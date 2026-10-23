@@ -1,4 +1,4 @@
-import { fail, type State } from '../family/response-operations/domain';
+import { fail, type State } from '../family/response-operations/domain.ts';
 function shape(v:any,required:string[],optional:string[]=[]) {if(!v||typeof v!=='object'||Array.isArray(v)||required.some(k=>!Object.hasOwn(v,k))||Object.keys(v).some(k=>![...required,...optional].includes(k)))fail('Invalid manual response record');}
 const str=(v:any,max=3000)=>{if(typeof v!=='string'||v.length>max)fail('Invalid manual response text');};
 const date=(v:any)=>{if(typeof v!=='string'||!Number.isFinite(Date.parse(v)))fail('Invalid manual response date');};

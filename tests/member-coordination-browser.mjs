@@ -215,6 +215,7 @@ try {
  await assignment68.getByLabel('Assignment delay (minutes)',{exact:true}).fill('7')
  await assignment68.getByRole('button',{name:'Save user assignment for Checkout',exact:true}).click()
  await assignment68.getByText(/Repeat to the user after 7 minutes · version 1/).waitFor()
+ assert.equal(await assignment68.getByLabel('User-assignment outcome',{exact:true}).inputValue(),'repeat')
  for(const width of [1440,390])await statusCapture(owner.page,'oc068-service-assignment-rule',width)
  console.log('OC-068 browser: manual page urgency/target, recorded obligations, independent accepted and declined responder requests, viewer refusal and versioned assignment setting at 1440/390')
 

@@ -3,8 +3,8 @@ import { publishIncidentTemplate, instantiateIncidentTemplate, checklistCommand,
 import type { IncidentTemplate, TemplateSnapshot } from '../../incident-workflows/types-template.ts';
 import { relationCommand, validateIncidentRelations, incidentAlertLinkAllowed } from '../../incident-workflows/relations.ts';
 import type { IncidentRelations } from '../../incident-workflows/relations.ts';
-import { manualCommand, finishManualRecords, type PolicyContext } from '../../manual-pages/model';
-import { validateManualRecords } from '../../manual-pages/archive';
+import { manualCommand, finishManualRecords, type PolicyContext } from '../../manual-pages/model.ts';
+import { validateManualRecords } from '../../manual-pages/archive.ts';
 import type { AssignmentRule, ManualPage, ResponderRequest } from '../../manual-pages/types';
 import type { BusinessService } from '../../business-status/types.ts';
 import { validateBusinessStatus } from '../../business-status/archive.ts';
