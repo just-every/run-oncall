@@ -3,6 +3,7 @@ import type { Bindings } from '../auth.server';
 import { auditedDatabase } from '../audit-database.ts';
 import { auditIdentity, auditOutcome, type AuditContext } from '../audit-store.ts';
 import { loadWorkspace, workspaceWrite } from '../workspace-store.ts';
+import { checkEmailCustody } from '../workspace-profile.ts';
 import { changeHash } from '../changes/credentials.ts';
 import { fail } from '../family/response-operations/domain.ts';
 import { parseEmail, emailDiagnostic } from './parse.mjs';
@@ -21,7 +22,12 @@ export async function receiveEmail(message:ForwardableEmailMessage,env:Bindings)
     if(address)auditIdentity(db,{actor:{kind:'email-address',id:address.id},source:{kind:'email-address',id:address.id},subject:{kind:'email-address',id:address.id}});
     const domain=inboundDomain(env);
     let reason=!domain?'inbound_domain_not_configured':message.to.split('@')[1]?.toLowerCase()!==domain?'unknown_address':!address?'unknown_address':!credential?.active||!address.active?'revoked_address':!state.services.some(s=>s.id===address.service&&s.environment===address.environment)?'unmapped_service_environment':!state.members.some(m=>m.id===address.owner&&m.active&&m.role==='admin')?'integration_owner_inactive':'';
-    if((state.emailReceipts??[]).filter(r=>r.address===(address?.id??null)&&Date.parse(r.at)>Date.now()-60000).length>=60)reason='address_rate_limit';
+    const recent=(state.emailReceipts??[]).filter(r=>r.address===(address?.id??null)&&Date.parse(r.at)>Date.now()-60000);
+    if(recent.length>=60) {
+      // One receipt records the engaged limit; later mail in its minute is refused without storage.
+      if(recent.some(r=>r.diagnostic==='address_rate_limit')){message.setReject('address_rate_limit');return;}
+      reason='address_rate_limit';
+    }
     const suppliedId=message.headers.get('message-id'),messageDigest=suppliedId&&suppliedId.length<=1000&&/^<[^<>\s]+>$/.test(suppliedId)?await changeHash((address?.id??digest)+'|'+suppliedId):null;
     const previous=messageDigest?state.emailReceipts?.find(r=>r.address===(address?.id??null)&&r.messageDigest===messageDigest):undefined;
     if(previous) {
@@ -50,6 +56,7 @@ export async function receiveEmail(message:ForwardableEmailMessage,env:Bindings)
       auditOutcome(db,'refused');
     }
     if(state.emailReceipts.length>10000)fail('Email receipt capacity reached',429);
+    checkEmailCustody(state);
     const result=await db.batch(workspaceWrite(db,state,revision,{sql:'1=1',values:[]}));
     if(result[0].meta.changes!==1)fail('Email admission changed; provider must retry',409);
     if(['quarantined','refused'].includes(receipt.outcome))message.setReject(receipt.diagnostic);

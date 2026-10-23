@@ -21,10 +21,11 @@ const isNativeCustody=(source:{id:string;name:string})=>source.id.startsWith('na
 
 /** The 1 MB authored profile measures human-authored records only. Machine-ingested
  * records (events, alerts, receipts, their audit rows including rate notices, and
- * native custody sources) are charged to intake accounting, so no sender can make
- * a human write fail. The outbox keeps its own bounds. */
+ * native custody sources) are charged to intake accounting, and received mail to
+ * its own allocation, so no sender can make a human write fail. The outbox keeps
+ * its own bounds. */
 export function authoredWorkspace(state:State) {
- const {apiOutbox,events,alerts,intakeReceipts,...workspace}=state;
+ const {apiOutbox,events,alerts,intakeReceipts,emailReceipts,emailQuarantine,emailSamples,...workspace}=state;
  const incidents=state.incidents.map(incident=>{
   const timeline=incident.timeline.filter(entry=>!entry.actor.startsWith('source:'));
   if(incident.automaticDeclaration)return {id:incident.id,timeline,actions:incident.actions};
@@ -39,6 +40,11 @@ export function intakeBytes(state:State):number {
  const prefixes=(state.intakeReceipts??[]).reduce((sum,receipt)=>receipt.provider==='native'&&receipt.incomplete?sum+encodedPrefixBytes(receipt.incomplete.bytes):sum,0);
  const response=state.incidents.map(incident=>incident.automaticDeclaration?incident:{sourceRecovery:incident.sourceRecovery,sourceRecoveryHistory:incident.sourceRecoveryHistory,timeline:incident.timeline.filter(entry=>entry.actor.startsWith('source:'))});
  return json(response)+json(state.events)+json(state.alerts)+json(state.intakeReceipts??[])+json(state.intakeSources?.filter(isNativeCustody)??[])+json(state.audit.filter(isIntakeAudit))+prefixes;
+}
+
+/** Received mail (receipts, quarantine and saved samples) is untrusted custody with its own 1 MB allocation. */
+export function checkEmailCustody(state:State) {
+ if(new TextEncoder().encode(JSON.stringify([state.emailReceipts??[],state.emailQuarantine??[],state.emailSamples??[]])).length>1000000)fail('Email storage capacity reached; export or erase saved mail before extending it',429);
 }
 
 /** The derived budget holds the full receipt capacity; this is the capacity refusal, never a smaller limit. */

@@ -115,5 +115,13 @@ try {
   unmapped.emailRules.push({id:'unmapped-mode',address:'unmapped-mail',version:1,mode:'subject',fallback:'subject',rules:[],by:actor.id,at});
   const unmappedRestore=await request('/api/restore',{mode:'replace',archive:unmapped});ok(unmappedRestore);cookie=unmappedRestore.cookie;
   ok(await request('/api/email/addresses/unmapped-mail/rotate',{revision:1,localPart:mapPart}));await mail(w,mapPart,'Wrong environment');assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'unmapped_service_environment');
+  // Refused mail over an address's rate limit is not stored per message, and held mail never takes the human-authored allocation.
+  const floodPart=localPart();ok(await request('/api/email/addresses',{id:'email-flood',name:'Flooded monitor',service:'payments',owner:actor.id,localPart:floodPart,mode:'subject',fallback:'subject',rules:[]}),201);
+  for(let n=0;n<70;n++)await mail(w,floodPart,'Unauthenticated flood',{auth:'fail'});
+  const flooded=ok(await request('/api/email')).receipts.filter(r=>r.address==='email-flood');
+  assert.equal(flooded.filter(r=>r.diagnostic==='address_rate_limit').length,1,'one receipt records the engaged rate limit; later refusals in its minute are not stored');
+  const heldMail=flooded.find(r=>r.diagnostic==='sender_authentication_failed').id;
+  w.sql(`WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM n WHERE i<2000) INSERT INTO oc_email_receipts(id,ordinal,data) SELECT 'synthetic-oncall-'||i,(SELECT MAX(ordinal) FROM oc_email_receipts)+i,json_set(r.data,'$.id','synthetic-oncall-'||i) FROM n,oc_email_receipts r WHERE r.id='${heldMail}'`);
+  ok(await request('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Coordination beside held mail',summary:'s'.repeat(3000)}));
   console.log('OC-033 inbound email accepts, deduplicates, recovers and quarantines by address mode and rule without granting authority to the sender. Compatible intake: provider lifecycles, authority, concurrency, rollback, key rotation/revoke, native integrity and inactive archive/restart');
 } finally {await w.close();}
