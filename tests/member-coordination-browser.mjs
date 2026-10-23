@@ -223,7 +223,7 @@ try {
  await assignment68.getByRole('button',{name:'Save acknowledgment timeout for Checkout',exact:true}).click()
  await assignment68.getByText('Acknowledgment timeout · 1 minutes',{exact:true}).waitFor()
  for(const width of [1440,390])await statusCapture(owner.page,'oc058-service-timeout',width)
- let incident58=ok(await call(owner.page,'/api/command',{type:'declare',service:'checkout',title:'Snoozed checkout investigation',severity:'warning',summary:'Investigating a customer checkout delay'}))
+ let incident58=ok(await call(owner.page,'/api/command',{type:'manual-page',operationId:'synthetic-oncall-58-browser',service:'checkout',title:'Snoozed checkout investigation',severity:'warning',summary:'Investigating a customer checkout delay'}))
  incident58=ok(await call(owner.page,'/api/command',{type:'transition',incident:incident58.id,revision:incident58.revision,state:'acknowledged',summary:'Owner investigating'}))
  await openIncident(owner.page,incident58.id)
  await owner.page.getByLabel('Snooze duration (minutes)',{exact:true}).fill('1')
@@ -237,6 +237,8 @@ try {
  await openIncident(owner.page,incident58.id)
  await owner.page.getByRole('region',{name:'Incident deadlines'}).getByText(/snooze · fired/).waitFor()
  assert.equal(ok(await call(owner.page,'/api/state')).incidents.find(i=>i.id===incident58.id).state,'declared')
+ await owner.page.getByRole('region',{name:'Manual obligations and responder requests'}).getByText('Primary acknowledgment: Unacknowledged',{exact:true}).waitFor()
+ await owner.page.getByText(/^Earlier manual-page acknowledgment:/).waitFor()
  for(const width of [1440,390])await statusCapture(owner.page,'oc058-expired-triggered',width)
  console.log('OC-058 browser: timeout setting, snooze duration, persisted snoozed state and scheduled expiry back to triggered at 1440/390; paging OFF')
 
