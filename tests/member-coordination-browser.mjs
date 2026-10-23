@@ -239,6 +239,7 @@ try {
  assert.equal(ok(await call(owner.page,'/api/state')).incidents.find(i=>i.id===incident58.id).state,'declared')
  await owner.page.getByRole('region',{name:'Manual obligations and responder requests'}).getByText('Primary acknowledgment: Unacknowledged',{exact:true}).waitFor()
  await owner.page.getByText(/^Earlier manual-page acknowledgment:/).waitFor()
+ await owner.page.getByText('Deadline scheduler',{exact:true}).waitFor()
  for(const width of [1440,390])await statusCapture(owner.page,'oc058-expired-triggered',width)
  console.log('OC-058 browser: timeout setting, snooze duration, persisted snoozed state and scheduled expiry back to triggered at 1440/390; paging OFF')
 
