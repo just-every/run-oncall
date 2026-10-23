@@ -1,3 +1,6 @@
+import { ReviewedChange } from './schedule-coverage/ReviewedChange';
+import type { ScheduleReview } from './schedule-coverage/review';
+import { Tooltip } from './app/Tooltip';
 import { ScheduleNowNext, ScheduleSummary } from './ScheduleSummary';
 import { cloneElement, isValidElement, useCallback, useEffect, useId, useRef, useState, type ComponentProps, type FormEvent, type ReactNode } from "react";
 import type { Member, State } from "./family/response-operations/domain";
@@ -76,6 +79,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
   const [notice, setNotice] = useState("");
   const [selectedSchedule, setSelectedSchedule] = useState("");
   const [draft, setDraft] = useState<Schedule | null>(null);
+  const [changeReview, setChangeReview] = useState<ScheduleReview | null>(null);
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [previewFrom, setPreviewFrom] = useState(() => iso(utcDay()));
   const [previewTo, setPreviewTo] = useState(() => iso(utcDay() + 86400000));
@@ -142,20 +146,23 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
       if (!latest) return;
       const saved = latest.schedules.find(s => s.id === selectedSchedule);
       if (!saved) throw Error("The selected schedule is no longer available; choose another saved schedule");
-      setDraft(structuredClone(saved)); setPreview(null);
+      setChangeReview(null); setDraft(structuredClone(saved)); setPreview(null);
       setNotice("Editor reloaded from the latest saved schedule");
     } catch (failure) { setError(explain(failure)); }
     finally { setBusy(false); }
   }
   function chooseSchedule(id: string) {
+    setChangeReview(null);
     setSelectedSchedule(id); setPreview(null); setNotice(""); setError("");
     const selected = data?.schedules.find(s => s.id === id);
     setDraft(selected ? structuredClone(selected) : null);
   }
   function patchSchedule(patch: Partial<Schedule>) {
+    setChangeReview(null);
     if (draft) setDraft({ ...draft, ...patch });
   }
   function patchRotation(role: "primary" | "backup", patch: Partial<Rotation>) {
+    setChangeReview(null);
     if (draft) setDraft({ ...draft, [role]: { ...draft[role], ...patch } });
   }
   function moveSlot(role: "primary" | "backup", index: number, direction: -1 | 1) {
@@ -178,8 +185,17 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
   async function saveSchedule(event: FormEvent) {
     event.preventDefault();
     if (!draft) return;
+    if (draft.revision > 0) {
+      const review = await run<ScheduleReview>(() => request(`/api/schedules/${encodeURIComponent(draft.id)}/review`, {schedule:draft,from:utcClock(previewFrom,"Preview from"),to:utcClock(previewTo,"Preview to")}), "Schedule change ready for review; nothing saved");
+      setChangeReview(review);return;
+    }
     const saved = await run<Schedule>(() => request("/api/paging/schedules", { ...draft, validUntil: draft.validUntil || null }), "Schedule saved");
     if (saved) { setSelectedSchedule(saved.id); setDraft(structuredClone(saved)); setPreview(null); }
+  }
+  async function applyReviewedChange() {
+    if (!changeReview || !draft) return;
+    const result = await run<{schedule:Schedule}>(() => request(`/api/schedules/${encodeURIComponent(draft.id)}/apply`, {schedule:draft,from:changeReview.from,to:changeReview.to,digest:changeReview.digest,confirmed:true}), "Schedule saved");
+    if(result){setDraft(structuredClone(result.schedule));setChangeReview(null);setPreview(null);}
   }
   async function previewCoverage(event: FormEvent) {
     event.preventDefault();
@@ -207,10 +223,11 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
     {!data ? <div className="scheduling-panel scheduling-loading"><p>{error ? "Scheduling data could not be loaded." : "Loading saved scheduling records…"}</p><button type="button" onClick={refresh} disabled={busy}>Retry scheduling load</button></div> : <>
       <div className="scheduling-selection">
         <Field label="Schedule"><select value={selectedSchedule} onChange={e => chooseSchedule(e.target.value)} disabled={busy}><option value="">Choose a saved schedule</option>{data.schedules.map(s => <option key={s.id} value={s.id}>{s.name} · {serviceName(s.service)} · revision {s.revision}</option>)}</select></Field>
-        {admin && <button type="button" disabled={busy || !state.services.length} onClick={() => { const schedule = newSchedule(state.services[0].id); setSelectedSchedule(""); setDraft(schedule); setPreviewFrom(schedule.validFrom); setPreviewTo(iso(Date.parse(schedule.validFrom) + 86400000)); setPreview(null); setError(""); setNotice(""); }}><span aria-hidden="true">＋ </span>New schedule</button>}
+        {admin && <button type="button" disabled={busy || !state.services.length} onClick={() => { const schedule = newSchedule(state.services[0].id); setChangeReview(null); setSelectedSchedule(""); setDraft(schedule); setPreviewFrom(schedule.validFrom); setPreviewTo(iso(Date.parse(schedule.validFrom) + 86400000)); setPreview(null); setError(""); setNotice(""); }}><span aria-hidden="true">＋ </span>New schedule</button>}
         {!admin && <Tag>Read-only schedule configuration</Tag>}
       </div>
       {savedSchedule && <ScheduleNowNext schedule={savedSchedule} state={state} request={request} />}
+      {changeReview && <ReviewedChange key={changeReview.digest} review={changeReview} busy={busy} onApply={applyReviewedChange} />}
       <div className="scheduling-schedule-grid">
         <div className="scheduling-panel scheduling-editor">
           <div className="scheduling-panel-heading"><Icon name="calendar" /><div><h2>{draft ? (draft.revision ? draft.name : "New schedule") : "Service schedules"}</h2><p>{draft ? `${serviceName(draft.service)} · ${draft.revision ? `${admin ? "editing" : "saved"} revision ${draft.revision}` : "unsaved configuration"}` : "Own primary and backup calendar-day rotations."}</p></div><Tag tone="blue">Service</Tag></div>
@@ -237,7 +254,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
                   <ol className="scheduling-member-slots">{draft[role].members.map((id, index) => <li key={`${role}-${index}`}>
                     <span className="scheduling-slot-index">{index + 1}.</span><span className="scheduling-avatar" aria-hidden="true">{id ? memberName(id).slice(0, 2).toUpperCase() : <Icon name="people" />}</span>
                     <Field label={`${titleCase(role)} responder ${index + 1}`}><select required value={id} onChange={e => patchRotation(role, { members: draft[role].members.map((member, i) => i === index ? e.target.value : member) })}>{optionsForMember(id)}</select></Field>
-                    <div className="scheduling-slot-actions"><button type="button" aria-label={`Move ${role} responder ${index + 1} up`} disabled={index === 0} onClick={() => moveSlot(role, index, -1)}>↑</button><button type="button" aria-label={`Move ${role} responder ${index + 1} down`} disabled={index === draft[role].members.length - 1} onClick={() => moveSlot(role, index, 1)}>↓</button><button type="button" aria-label={`Remove ${role} responder ${index + 1}`} onClick={() => patchRotation(role, { members: draft[role].members.filter((_, i) => i !== index) })}>×</button></div>
+                    <div className="scheduling-slot-actions"><Tooltip label={`Move ${role} responder ${index + 1} up`}><button type="button" aria-label={`Move ${role} responder ${index + 1} up`} disabled={index === 0} onClick={() => moveSlot(role, index, -1)}>↑</button></Tooltip><Tooltip label={`Move ${role} responder ${index + 1} down`}><button type="button" aria-label={`Move ${role} responder ${index + 1} down`} disabled={index === draft[role].members.length - 1} onClick={() => moveSlot(role, index, 1)}>↓</button></Tooltip><Tooltip label={`Remove ${role} responder ${index + 1}`}><button type="button" aria-label={`Remove ${role} responder ${index + 1}`} onClick={() => patchRotation(role, { members: draft[role].members.filter((_, i) => i !== index) })}>×</button></Tooltip></div>
                   </li>)}</ol>
                   {!draft[role].members.length && <p className="scheduling-muted">No member slots. This rotation has a visible coverage gap.</p>}
                   <button type="button" disabled={draft[role].members.length >= 100} onClick={() => patchRotation(role, { members: [...draft[role].members, ""] })}><span aria-hidden="true">＋ </span>Add {role} responder</button>
