@@ -14,6 +14,23 @@ export async function providerChange(source: ChangeSource, payload: any, headers
   if (source.provider === 'native') {
     if (payload.service !== undefined && payload.service !== source.service) fail('Change service is outside this source scope',403);
     eventId = text(payload.eventId,'Change event ID',200); summary = payload.summary; author = payload.author ?? 'Not reported'; occurredAt = payload.timestamp; kind = 'change'; details = payload.custom_details ?? {}; links = payload.links ?? [];
+   } else if (source.provider === 'argocd') {
+    // These fields are the administrator's explicit Argo Notifications template.
+    if(payload.service!==undefined&&payload.service!==source.service)fail('Change service is outside this source scope',403);
+    eventId=text(payload.eventId,'Argo CD event ID',200);kind='argocd-sync';summary=payload.summary;
+    author=payload.author??'Not reported';occurredAt=payload.timestamp;links=payload.links??[];
+    details={application:payload.application,revision:payload.revision,status:payload.status};
+  } else if (source.provider === 'terraform') {
+    if(payload.service!==undefined&&payload.service!==source.service)fail('Change service is outside this source scope',403);
+    const notifications=payload.notifications;
+    if(!Array.isArray(notifications)||!notifications.length||notifications.length>20)fail('Terraform Cloud notifications are required (1–20)');
+    const runId=text(payload.run_id,'Terraform run ID',100),workspace=text(payload.workspace_name,'Terraform workspace name',200);
+    for(const notice of notifications){text(notice.run_status,'Terraform run status',100);timestamp(notice.run_updated_at);}
+    const latest=notifications.at(-1);
+    eventId='terraform:'+await changeHash(JSON.stringify([runId,notifications.map((n:any)=>[n.trigger,n.run_status,n.run_updated_at])]));
+    kind='terraform-run';summary=`${workspace}: ${latest.run_status}`;author=payload.run_created_by??'Not reported';
+    occurredAt=latest.run_updated_at??payload.run_created_at;links=[payload.run_url];
+    details={runId,workspace,status:latest.run_status,notifications,organization:payload.organization_name};
   } else if (source.provider === 'pagerduty') {
     const data = payload.payload; if (!data || typeof data !== 'object') fail('payload.summary is required');
     summary = data.summary; author = data.custom_details?.author ?? data.source ?? 'Not reported'; occurredAt = data.timestamp; kind = 'change'; details = {...data.custom_details, source: data.source ?? ''}; links = payload.links ?? [];

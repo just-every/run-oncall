@@ -1,10 +1,12 @@
 import { fail, link, text, type State } from '../family/response-operations/domain.ts';
 
-export type ChangeProvider = 'native' | 'pagerduty' | 'github' | 'gitlab';
+export type ChangeProvider = 'native' | 'pagerduty' | 'github' | 'gitlab' | 'argocd' | 'terraform';
 export type ChangeSource = {id: string; name: string; service: string; provider: ChangeProvider; mode: 'bearer' | 'signed' | 'provider'; repository: string; active: boolean; revision: number; createdBy: string; updatedAt: string; lastAccepted?: {id: string; eventId: string; at: string}};
 export type ChangeRecord = {id: string; source: string; eventId: string; service: string; kind: string; summary: string; author: string; occurredAt: string; acceptedAt: string; links: string[]; details: Record<string, string>; fingerprint: string; truncated: boolean; timeBasis: 'source' | 'received'};
 export type IncomingChange = Omit<ChangeRecord, 'id' | 'source' | 'service' | 'fingerprint' | 'acceptedAt' | 'occurredAt' | 'timeBasis'> & {occurredAt: string | null};
-export const changeProviders = ['native', 'pagerduty', 'github', 'gitlab'] as const;
+export const changeProviders = ['native', 'pagerduty', 'github', 'gitlab', 'argocd', 'terraform'] as const;
+export const changeRetentionLimit = 1000;
+export const changeProviderNames: Record<ChangeProvider,string> = {native:'Native CI',pagerduty:'PagerDuty',github:'GitHub',gitlab:'GitLab',argocd:'Argo CD',terraform:'Terraform Cloud'};
 const validDate = (v: unknown) => typeof v === 'string' && /(?:Z|[+-]\d{2}:\d{2})$/i.test(v) && Number.isFinite(Date.parse(v));
 const fields = (v: any, keys: string[], optional: string[] = []) => {
   if (!v || typeof v !== 'object' || Array.isArray(v) || keys.some(k => !Object.hasOwn(v, k)) || Object.keys(v).some(k => !keys.includes(k) && !optional.includes(k))) fail('Invalid change archive fields');
@@ -45,5 +47,22 @@ export function recentChanges(state: State, service: string, at: string, hours: 
   const root = state.services.find(s => s.id === service); if (!root) fail('Unknown service', 404);
   if (!validDate(at) || !Number.isInteger(hours) || hours < 1 || hours > 168) fail('Choose a real timestamp and 1–168 lookback hours');
   const end = Date.parse(at), start = end - hours * 3600000, scope = new Set([root.id, ...(root.dependencies ?? [])]);
-  return {service, from: new Date(start).toISOString(), to: new Date(end).toISOString(), hours, items: (state.changes ?? []).filter(c => scope.has(c.service) && Date.parse(c.occurredAt) >= start && Date.parse(c.occurredAt) <= end).sort((a,b) => Date.parse(b.occurredAt)-Date.parse(a.occurredAt) || a.id.localeCompare(b.id)).map(c => ({...c, dependency: c.service !== service, serviceName: state.services.find(s => s.id === c.service)!.name}))};
+  return {service, from: new Date(start).toISOString(), to: new Date(end).toISOString(), hours, items: (state.changes ?? []).filter(c => scope.has(c.service) && Date.parse(c.occurredAt) >= start && Date.parse(c.occurredAt) <= end).sort((a,b) => Date.parse(b.occurredAt)-Date.parse(a.occurredAt) || a.id.localeCompare(b.id)).map(c => ({...c, provider:state.changeSources!.find(s=>s.id===c.source)!.provider, dependency: c.service !== service, serviceName: state.services.find(s => s.id === c.service)!.name}))};
+}
+
+/** Keep every potentially attached incident context (the maximum supported window).
+ * Capacity never silently removes a retained incident's change context. */
+export function retainChangeCapacity(state: State) {
+  const records=state.changes??[], required=records.length-changeRetentionLimit+1;
+  if(required<=0)return 0;
+  const protectedRecord=(change:ChangeRecord)=>state.incidents.some(incident=>{
+    const service=state.services.find(s=>s.id===incident.service),end=Date.parse(incident.createdAt),at=Date.parse(change.occurredAt);
+    return (change.service===incident.service||service?.dependencies?.includes(change.service))&&at>=end-168*3600000&&at<=end;
+  });
+  const evict=records.filter(c=>!protectedRecord(c)).sort((a,b)=>Date.parse(a.acceptedAt)-Date.parse(b.acceptedAt)||a.id.localeCompare(b.id)).slice(0,required);
+  if(evict.length<required)fail('Change retention capacity is protected by incident context; export and review retained history before admitting more changes',429);
+  const ids=new Set(evict.map(c=>c.id));state.changes=records.filter(c=>!ids.has(c.id));
+  for(const source of state.changeSources??[])if(source.lastAccepted&&ids.has(source.lastAccepted.id))delete source.lastAccepted;
+  state.audit.push({id:crypto.randomUUID(),at:new Date().toISOString(),actor:'source:changes',kind:'change-retention',text:`Oldest-first retention removed ${evict.length} unattached change records; incident context retained`});
+  return evict.length;
 }

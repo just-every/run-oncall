@@ -2,7 +2,7 @@ import { auditIdentity } from '../audit-store'
 import { workspaceWrite } from '../workspace-store';
 import { authority, fail, Fault, text, type State } from '../family/response-operations/domain';
 import { runtimeBindings } from '../auth.server';
-import { changeProviders, recentChanges, type ChangeSource, type ChangeRecord } from './model';
+import { changeProviders, recentChanges, retainChangeCapacity, type ChangeSource, type ChangeRecord } from './model';
 import { changeHash, changeHmac, equalSignature, freshTimestamp, gitlabSigningKey, openCredential, sealCredential, changeCustody } from './credentials';
 import { providerChange } from './providers';
 
@@ -29,6 +29,8 @@ export function installChangeIntake(api:any, deps:Dependencies) {
       verificationKey=key;
       if (source.provider==='github') {
         if (!equalSignature(headers.get('x-hub-signature-256')??'', 'sha256='+await changeHmac(key,raw))) fail('Invalid GitHub signature',401);
+      } else if (source.provider==='terraform') {
+        if (!equalSignature((headers.get('x-tfe-notification-signature')??'').toLowerCase(),await changeHmac(key,raw,'hex','SHA-512'))) fail('Invalid Terraform Cloud signature',401);
       } else if (source.provider==='gitlab') {
         const id=headers.get('webhook-id')??'', timestamp=headers.get('webhook-timestamp')??'';freshTimestamp(timestamp);
         const signature=await changeHmac(gitlabSigningKey(key),id+'.'+timestamp+'.'+raw,'base64');
@@ -47,6 +49,7 @@ export function installChangeIntake(api:any, deps:Dependencies) {
     if (existing && existing.fingerprint!==fingerprint) fail('Change identity conflicts with different content',409);
     let record=existing;
     if (!record) {
+      retainChangeCapacity(state);
       const at=new Date().toISOString();record={...input,id:crypto.randomUUID(),source:source.id,service:source.service,occurredAt:input.occurredAt??at,timeBasis:input.occurredAt?'source':'received',acceptedAt:at,fingerprint} satisfies ChangeRecord;
       (state.changes??=[]).push(record); source.lastAccepted={id:record.id,eventId:record.eventId,at};
       await deps.save(c.env.DB,state,revision,{sql:'EXISTS(SELECT 1 FROM oc_change_credentials WHERE source=? AND key_digest=? AND ciphertext=?)',values:[source.id,credential.key_digest,credential.ciphertext]});
