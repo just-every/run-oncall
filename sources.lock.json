@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "960931140fe7c4a306f199cd0e990b44b25bb31a9008cc428e63ea34e97eb163",
+      "sha256": "cd5954a60cc539b3950408e0a4f477c4d81a3199cb6178a177e5a0602d01d7dc",
       "executable": false
     },
     "DEMO.md": {
@@ -767,7 +767,7 @@
       "executable": false
     },
     "src/api.ts": {
-      "sha256": "91b4c935ce234ed80a2b0350297153e74f947e193e3cdd4341e6fb8dcea664fb",
+      "sha256": "e95f8dc653e26c80873cf5197401371f72c4050febe112ff686cf2f09f3ed403",
       "executable": false
     },
     "src/app/AlertsPanel.tsx": {
@@ -1451,7 +1451,7 @@
       "executable": false
     },
     "src/manual-pages/archive.ts": {
-      "sha256": "d917d5c6caa527c74e238debc3ecf2de9b019cd166e5016492335cd0c97b37d9",
+      "sha256": "0a148af0d2d18bfafeffb30a1e0725734d5adc9350ec796adcbc81e88bcf4cec",
       "executable": false
     },
     "src/manual-pages/context.ts": {
@@ -1459,7 +1459,7 @@
       "executable": false
     },
     "src/manual-pages/Controls.tsx": {
-      "sha256": "7d7be351f9643022def961935fa9ab6436bfdc4b04059f1e25cccd41df5b265d",
+      "sha256": "df69dd945ca949e78bc3c2f136bb120ca8429e95330b90f5188ea9a447603df9",
       "executable": false
     },
     "src/manual-pages/model.ts": {
@@ -1467,7 +1467,7 @@
       "executable": false
     },
     "src/manual-pages/types.ts": {
-      "sha256": "7cbc078c613bf0adc31f4fea6918a4449b9577f5323b616ac5090aca174e36d8",
+      "sha256": "9829ea71a486223d1cbde7c5b7c1aa39c55dcdf3d24fa5f4685d8447933aff07",
       "executable": false
     },
     "src/modules/d1-transport/index.d.mts": {
@@ -3995,7 +3995,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "c0936c4155c42e902ef7fe28d7ff14c2f9b8a8769307462940556b8c0ad2dec3",
+      "sha256": "c27db22614b1ef9b0acab9a6b37353888bbccf36cd2bb05a14b759f7862d93a1",
       "executable": false
     },
     "tests/triage.mjs": {
