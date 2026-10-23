@@ -182,6 +182,11 @@ try {
   const canonicalAlias = await w.request('/api/v1/incidents/' + workflowSource.id, undefined, undefined, {authorization: 'Bearer ' + workflowApiKey});
   assert.equal(ok(canonicalAlias).id, workflowTarget.id); assert.equal(canonicalAlias.headers.get('content-location'), '/api/v1/incidents/' + workflowTarget.id);
   assert.deepEqual(ok(canonicalAlias).mergedSources, workflowTarget.mergedSources);
+  assert.deepEqual(workflowTarget.actions.find(a=>a.id===sourceBeforeMerge.actions[0].id),sourceBeforeMerge.actions[0],'merged follow-ups remain editable at the canonical incident');
+  for(const member of [actor.id,backup.id])workflowTarget=ok(await w.request('/api/command',{type:'assign-role',incident:workflowTarget.id,revision:workflowTarget.revision,role:'communications',member,reason:'Transfer merged customer communication responsibility'},workflowResponder));
+  workflowTarget=ok(await w.request('/api/command',{type:'note',incident:workflowTarget.id,revision:workflowTarget.revision,text:'Merged response decision remains attributed to the current responder'},workflowResponder));
+  assert.equal(workflowTarget.communications,backup.id);assert.equal(workflowTarget.timeline.at(-1).actor,backup.id);
+
 
   ok(await req('/api/command', checklist(workflowSource)), 409);
   ok(await req('/api/command', {...split(workflowSource), alerts: [workflowAlerts[0]]}), 409);
@@ -202,6 +207,19 @@ try {
   const resolvedWorkflow = ok(await req('/api/command', {type: 'bulk-resolve', incident: workflowChild.id, revision: workflowChild.revision, reason: 'Independent customer recovery verified', evidence: 'https://example.test/workflow-recovery'}));
   ok(await w.request('/api/command', checklist(resolvedWorkflow), workflowResponder), 409);
   for (const input of [split(resolvedWorkflow), {...merge, incident: workflowTarget.id, revision: workflowTarget.revision, sources: [{id: resolvedWorkflow.id, revision: resolvedWorkflow.revision}]}]) ok(await req('/api/command', input), 409);
+  // Expanding and splitting an all-recovered group retains each earlier reminder as history.
+  const workflowSignal=(n,intent)=>({source:workflowSourceId,eventId:'workflow-'+n+'-'+intent,service:workflowService.id,environment:'production',key:'workflow-'+n,generation:'workflow-'+n,intent,severity:'warning',title:'Dependency signal '+n,observedAt:'2026-10-17T09:00:00Z',evidence:''});
+  const workflowSend=async(n,intent)=>ok(await w.request('/api/ingress/'+workflowSourceId,workflowSignal(n,intent),undefined,{authorization:'Bearer '+workflowKey}),201);
+  await workflowSend(1,'recover');workflowTarget=await workflowIncident(workflowTarget.id);const earlierMarker=structuredClone(workflowTarget.sourceRecovery);assert.ok(earlierMarker);
+  const additionalEvent=await workflowSend(2,'trigger'),additionalAlert=(await workflowState()).alerts.find(a=>a.events.includes(additionalEvent.id));
+  const additionalIncident=ok(await req('/api/command',{...declaration,title:'Separate source investigation',alerts:[additionalAlert.id]}));
+  workflowTarget=ok(await req('/api/command',{type:'merge-incidents',incident:workflowTarget.id,revision:workflowTarget.revision,sources:[{id:additionalIncident.id,revision:additionalIncident.revision}],reason:'Join a newly related active source to recovered context'}));
+  assert.equal(workflowTarget.sourceRecovery,undefined);assert.equal(workflowTarget.sourceRecoveryHistory.at(-1).reminder.id,earlierMarker.reminder.id);
+  assert.ok(workflowTarget.timeline.some(e=>e.id===earlierMarker.reminder.id),'a changed group never discards its former recovery timeline');
+  await workflowSend(2,'recover');workflowTarget=await workflowIncident(workflowTarget.id);assert.notEqual(workflowTarget.sourceRecovery.reminder.id,earlierMarker.reminder.id);
+  const recoveredSplit=ok(await req('/api/command',{type:'split-incident',incident:workflowTarget.id,revision:workflowTarget.revision,alerts:[additionalAlert.id],title:'Recovered separate source',summary:'Keep the recovered source as separate human response work',reason:'Preserve independent response ownership'}));
+  workflowTarget=await workflowIncident(workflowTarget.id);assert.equal(recoveredSplit.state,workflowTarget.state);assert.ok(recoveredSplit.sourceRecovery);assert.equal(workflowTarget.sourceRecoveryHistory.length,2);
+  ok(await req('/api/archive'));
   w.sql("UPDATE sessions SET expires=0 WHERE member='" + backup.id + "'");
   ok(await w.request('/api/command', checklist(workflowTarget), workflowResponder), 401);
   const revokedWorkflowResponder = (await w.request('/api/login', {name: backup.name, password: passwords.scribe})).cookie;
