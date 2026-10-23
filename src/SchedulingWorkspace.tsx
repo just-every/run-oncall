@@ -84,7 +84,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
   const [previewFrom, setPreviewFrom] = useState(() => iso(utcDay()));
   const [previewTo, setPreviewTo] = useState(() => iso(utcDay() + 86400000));
   const admin = actor.active && actor.role === "admin";
-  const responder = actor.active && actor.role !== "viewer";
+  const responder = actor.active && ["admin", "responder"].includes(actor.role);
   const readGeneration = useRef(0);
   const initialized = useRef(false);
   const load = useCallback(async () => {
@@ -116,7 +116,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
   const serviceName = (id: string) => state.services.find(s => s.id === id)?.name ?? `Missing service (${id})`;
 
   const savedSchedule = data?.schedules.find(s => s.id === selectedSchedule);
-  const activeMembers = state.members.filter(m => m.active && m.role !== "viewer");
+  const activeMembers = state.members.filter(m => m.active && ["admin", "responder"].includes(m.role));
 
   async function run<T>(operation: () => Promise<T>, success: string): Promise<T | null> {
     setBusy(true); setError(""); setNotice("");

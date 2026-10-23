@@ -21,7 +21,7 @@ function actor(s:PagingSnapshot,id:string,admin=false):Member {
   if(admin&&m.role!=='admin') fail('Current admin required',403)
   return m
 }
-function editable(m:Member) { if(m.role==='viewer') fail('Responder required',403) }
+function editable(m:Member) { if(!['admin','responder'].includes(m.role)) fail('Responder required',403) }
 function knownJob(s:PagingSnapshot,id:string) {const j=s.archive.jobs.find(j=>j.id===id);if(!j) fail('Unknown escalation',404);return j}
 function revision(j:EscalationJob,input:any) {if(!Number.isSafeInteger(input.revision)||j.revision!==input.revision) fail('Escalation changed; reload and retry',409)}
 function replace<T>(list:T[],value:T,key:(v:T)=>string) {return [...list.filter(v=>key(v)!==key(value)),value]}

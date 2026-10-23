@@ -45,7 +45,7 @@ export function Followups({incident, members, busy, canEdit, mutate}: Props) {
 function CreateFollowup({members, busy, mutate}: Pick<Props, 'members' | 'busy' | 'mutate'>) {
   const labelId = useId();
   const [priority, setPriority] = useState('P2'), [policy, setPolicy] = useState('human-review');
-  const eligible = members.filter(member => member.active && member.role !== 'viewer');
+  const eligible = members.filter(member => member.active && ["admin", "responder"].includes(member.role));
   const options = eligible.map(member => <option value={member.id} key={member.id}>{member.name}</option>);
   return <details className="followup-create"><summary>Add a follow-up</summary>
     {!eligible.length && <p>No active responders are available to own a follow-up.</p>}

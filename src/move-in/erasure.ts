@@ -1,3 +1,4 @@
+import { eraseBusinessMember } from '../business-status/model';
 import { syncErasureFences } from '../erasure-fence'
 import { createErasure, defineErasure, toD1Sql } from '../modules/erasure/index.mjs'
 import { createPortability } from '../modules/portability/index.mjs'
@@ -159,6 +160,13 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
   const memberIds=new Set<string>([email,...ids]);
   for(const row of (await db.prepare("SELECT id,data FROM oc_members").all<{id:string;data:string}>()).results)if(names(JSON.parse(row.data).name,email))memberIds.add(row.id)
   for(const row of (await db.prepare("SELECT l.member_id FROM operator_members l JOIN oa_operators o ON o.id=l.operator_id WHERE lower(o.email)=?").bind(email).all<{member_id:string}>()).results)memberIds.add(row.member_id)
+  for(const row of (await db.prepare('SELECT id,data FROM oc_business_services').all<{id:string;data:string}>()).results){
+    const business=JSON.parse(row.data), state={members:[],businessServices:[business]} as unknown as import('../family/response-operations/domain').State;
+    for(const id of memberIds)eraseBusinessMember(state,id);
+    const clean=JSON.stringify(scrub(business,email));
+    if(clean!==row.data){rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_business_services WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
+      {sql:'UPDATE oc_business_services SET data=? WHERE id=?',params:[clean,row.id]});automationChanged=true}
+  }
   for(const row of (await db.prepare('SELECT id,data FROM oc_incidents').all<{id:string;data:string}>()).results){
     const incident=JSON.parse(row.data);let changed=false
     for(const entry of incident.timeline)if(entry.lifecycle?.member&&memberIds.has(entry.lifecycle.member)){entry.lifecycle.member=null;changed=true}

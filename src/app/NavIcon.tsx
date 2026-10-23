@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 const paths: Record<string, ReactNode> = {
   incidents: <path d="M12 3.5 20.5 12 12 20.5 3.5 12Z M12 8.5 15.5 12 12 15.5 8.5 12Z" />,
   alerts: <><path d="M12 4 21 19.5H3Z" /><path d="M12 10v4.5M12 17.2v.3" /></>,
+  status: <><circle cx="12" cy="12" r="8.5" /><path d="m7 12 3 3 7-7" /></>,
   services: <path d="M12 4.5 19.5 12 12 19.5 4.5 12Z" />,
   routing: <path d="M6 18 18 6M9.5 6H18v8.5" />,
   schedules: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>,

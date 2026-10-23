@@ -3,6 +3,8 @@ import { publishIncidentTemplate, instantiateIncidentTemplate, checklistCommand,
 import type { IncidentTemplate, TemplateSnapshot } from '../../incident-workflows/types-template.ts';
 import { relationCommand, validateIncidentRelations, incidentAlertLinkAllowed } from '../../incident-workflows/relations.ts';
 import type { IncidentRelations } from '../../incident-workflows/relations.ts';
+import type { BusinessService } from '../../business-status/types.ts';
+import { validateBusinessStatus } from '../../business-status/archive.ts';
 import type { ResponsePolicy, AutomaticDeclaration, IncidentSourceRecovery } from '../../response-policy/types.ts';
 import { refreshIncidentRecovery } from '../../response-policy/model.ts';
 import { validateResponseArchive, validResponseSourceEntry } from '../../response-policy/archive.ts';
@@ -20,7 +22,7 @@ import { validateTriageRecords, type TriageRecord } from "./triage.ts";
 import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from '../../urgency/types.ts';
 import { admitAlertUrgency, declarationUrgency, serviceUrgency } from '../../urgency/model.ts';
 import { validateUrgencyArchive } from '../../urgency/archive.ts';
-export type Role = "admin" | "responder" | "viewer";
+export type Role = "admin" | "responder" | "viewer" | "stakeholder";
 export type Member = { id: string; name: string; role: Role; active: boolean; machine?: true };
 export type Service = {
   id: string;
@@ -142,6 +144,7 @@ export type Incident = IncidentRelations & {
   communications?: string | null;
 };
 export type State = {
+  businessServices?: BusinessService[];
   erasureFences?: ErasureFence[];
   keyAllowances?: KeyAllowance[];
   apiClients?: Client[];
@@ -216,7 +219,7 @@ export function authority(state: State, actor: Member, admin = false) {
   if(actor.machine) { machineAuthority(state,actor); return; }
   const member = state.members.find((m) => m.id === actor.id && m.active);
   if (!member) fail("Access revoked", 401);
-  if (member.role === "viewer" || (admin && member.role !== "admin"))
+  if (!["admin", "responder"].includes(member.role) || (admin && member.role !== "admin"))
     fail("Insufficient role", 403);
 }
 export function route(state: State, signal: Signal): Decision {
@@ -234,7 +237,7 @@ export function route(state: State, signal: Signal): Decision {
       reason: "No matching policy; visible unowned alert",
     };
   const owner = state.members.find(
-    (m) => m.id === policy.owner && m.active && m.role !== "viewer",
+    (m) => m.id === policy.owner && m.active && ["admin", "responder"].includes(m.role),
   );
   if (policy.action === "route" && !owner)
     return {
@@ -364,7 +367,7 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
       const action=state.incidents.find(i=>i.id===input.incident)?.actions.find(a=>a.id===input.action);
       if(action?.completionPolicy!=='evidence')fail('Human review requires a current human session',403);
     }
-    if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&m.role!=='viewer'))fail('An explicit active responsible member is required; the client is not a human responder');
+    if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&["admin", "responder"].includes(m.role)))fail('An explicit active responsible member is required; the client is not a human responder');
   }
   const beforeLinks = ['merge-incidents','split-incident'].includes(input.type) ? state.incidents.map(i=>({id:i.id,alerts:[...i.alerts],marker:i.sourceRecovery?structuredClone(i.sourceRecovery):undefined})) : [];
   const result=applyCommand(state,actor,input,at);
@@ -415,7 +418,7 @@ function applyCommand(
     if (service.runbook.length > 30) fail("Maximum 30 runbook steps");
     if (
       !state.members.some(
-        (m) => m.id === service.owner && m.active && m.role !== "viewer",
+        (m) => m.id === service.owner && m.active && ["admin", "responder"].includes(m.role),
       )
     )
       fail("Owner must be an active responder");
@@ -438,7 +441,7 @@ function applyCommand(
     if (
       input.action === "route" &&
       !state.members.some(
-        (m) => m.id === input.owner && m.active && m.role !== "viewer",
+        (m) => m.id === input.owner && m.active && ["admin", "responder"].includes(m.role),
       )
     )
       fail("Route requires active responder");
@@ -472,7 +475,7 @@ function applyCommand(
   if (input.type === "member") {
     const member = state.members.find((m) => m.id === input.id);
     if (!member) fail("Unknown member");
-    if (!["admin", "responder", "viewer"].includes(input.role))
+    if (!["admin", "responder", "viewer", "stakeholder"].includes(input.role))
       fail("Invalid role");
     if (
       member.role === "admin" &&
@@ -617,7 +620,7 @@ export function validateArchive(value: any): State {
     object(m, ["id", "name", "role", "active"]);
     text(m.id, "member ID", 100);
     text(m.name, "member name", 100);
-    if (!["admin", "responder", "viewer"].includes(m.role))
+    if (!["admin", "responder", "viewer", "stakeholder"].includes(m.role))
       fail("Invalid archive role");
     bool(m.active);
   };
@@ -659,7 +662,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["erasureFences", "keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
+  ], ["businessServices", "erasureFences", "keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   if(value.erasureFences!==undefined)validateErasureFences(value.erasureFences);
@@ -683,6 +686,7 @@ export function validateArchive(value: any): State {
       fail("Invalid archive identities");
   }
   validateAllowances(value);
+  validateBusinessStatus(value);
   value.members.forEach(member);
   if (!value.members.some((m: any) => m.active && m.role === "admin"))
     fail("Archive needs an active administrator");

@@ -1,6 +1,6 @@
 import {fail,link,text,type State,type Member,type Incident,type Action} from '../family/response-operations/domain.ts';
 const priorities=['P1','P2','P3'] as const;
-const responder=(state:State,id:string)=>state.members.some(m=>m.id===id&&m.active&&m.role!=='viewer');
+const responder=(state:State,id:string)=>state.members.some(m=>m.id===id&&m.active&&["admin", "responder"].includes(m.role));
 export function reviewCommand(state:State,actor:Member,incident:Incident,input:any,at:string):string|null {
  if(input.type==='action'){
   if(!responder(state,input.owner)||!responder(state,input.escalationRecipient??input.owner))fail('Follow-up owner and escalation recipient must be active responders');

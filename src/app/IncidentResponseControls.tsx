@@ -23,7 +23,7 @@ export function IncidentResponseControls({incident, members, busy, canEdit, muta
       </select></label>
       <Form busy={busy} label="Save response change" onSubmit={data => mutate({...data, type, member: data.member || null})}>
         {type === 'assign-role' && <Field name="role" label="Response role"><option value="commander">Commander</option><option value="scribe">Scribe</option><option value="communications">Communications</option></Field>}
-        {['assign-role', 'reassign'].includes(type) && <Field name="member" label="Assigned responder" required={false}><option value="">Unassigned</option>{members.filter(m => m.active && m.role !== 'viewer').map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</Field>}
+        {['assign-role', 'reassign'].includes(type) && <Field name="member" label="Assigned responder" required={false}><option value="">Unassigned</option>{members.filter(m => m.active && ["admin", "responder"].includes(m.role)).map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</Field>}
         {type === 'set-priority' && <Field name="priority" label="Response priority">{['P1', 'P2', 'P3', 'P4', 'P5'].map(p => <option key={p}>{p}</option>)}</Field>}
         {type === 'set-urgency' && <Field name="urgency" label="Response urgency"><option>high</option><option>low</option></Field>}
         {type === 'set-severity' && <Field name="severity" label="Response severity"><option>critical</option><option>warning</option><option>info</option></Field>}

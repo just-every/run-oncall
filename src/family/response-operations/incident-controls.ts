@@ -14,7 +14,7 @@ export function incidentControl(state: State, actor: Member, i: Incident, input:
   if (input.type === 'assign-role' || input.type === 'reassign') {
     const role = input.type === 'reassign' ? 'assignee' : input.role;
     if (!['commander', 'scribe', 'communications', 'assignee'].includes(role)) fail('Unknown response role');
-    const member = input.member === null ? null : state.members.find(m => m.id === input.member && m.active && m.role !== 'viewer');
+    const member = input.member === null ? null : state.members.find(m => m.id === input.member && m.active && ["admin", "responder"].includes(m.role));
     if (input.member !== null && !member) fail('Choose an active responder');
     const old = (i as any)[role] ?? (role === 'assignee' ? incidentAssignee(i) : null);
     (i as any)[role] = member?.id ?? null;

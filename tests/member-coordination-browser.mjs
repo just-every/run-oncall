@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import {mkdir} from 'node:fs/promises'
 import {chromium} from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
 import {localWorker} from './worker.mjs'
 
 // OC-018 real hosted member coordination persists after reload: the hosted
@@ -87,6 +88,62 @@ try {
  assert.equal(await vic.page.getByLabel('Observation, decision or evidence').count(),0,'viewers get no coordination controls')
  ok(await call(vic.page,'/api/command',{type:'note',incident:declared.id,revision:kept.revision,text:'viewer write'}),403)
  await vic.page.locator('.timeline').scrollIntoViewIfNeeded();await vic.page.screenshot({path:`${captureDirectory}/member-coordination-viewer-390.png`,fullPage:true})
+
+ // OC-061: the existing shell carries internal status, with a status-only stakeholder session.
+ const stakeholder={name:'Sam Stakeholder',password:'synthetic-oncall-61-password'}
+ const sam=ok(await call(owner.page,'/api/members',{...stakeholder,role:'stakeholder'}),201)
+ ok(await call(owner.page,'/api/command',{type:'service',id:'synthetic-oncall-61',name:'Payment gateway',environment:'production',owner:rosaRecord.id,runbook:['Private gateway recovery instructions'],pager:''}))
+ await owner.page.goto(worker.origin+'/#status')
+ const statusPanel=owner.page.getByRole('region',{name:'Internal business status'})
+ await statusPanel.getByRole('heading',{name:'Internal status',exact:true}).waitFor()
+ await statusPanel.getByText('Add business service',{exact:true}).click()
+ await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
+ await statusPanel.getByLabel('Owning team label',{exact:true}).fill('Payments')
+ await statusPanel.getByLabel('Supporting technical services',{exact:true}).selectOption('synthetic-oncall-61')
+ await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id)
+ await statusPanel.getByLabel('Stakeholder audience',{exact:true}).selectOption(sam.id)
+ await statusPanel.getByRole('button',{name:'Create business service',exact:true}).click()
+ const checkout=statusPanel.getByRole('article',{name:'Checkout',exact:true})
+ await checkout.getByText('Derived status: operational',{exact:true}).waitFor()
+ const statusIncident=ok(await call(owner.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',severity:'warning',title:'Private gateway timeouts',summary:'Customer payment attempts delayed',alerts:[]}))
+ await statusPanel.getByRole('button',{name:'Refresh status',exact:true}).click()
+ await checkout.getByText('Derived status: degraded',{exact:true}).waitFor()
+ const statusCapture=async(page,screen,width)=>{
+  await page.setViewportSize({width,height:1000})
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),screen+' fits '+width)
+  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0,'no hydration mismatch')
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
+  assert.deepEqual(axe.violations.filter(row=>['serious','critical'].includes(row.impact)),[],screen+' has no serious accessibility finding')
+  await page.screenshot({path:`${captureDirectory}/oc061-${screen}-${width}.png`,fullPage:true})
+ }
+ for(const width of [1440,390])await statusCapture(owner.page,'derived-status',width)
+ await checkout.getByText('Manage internal status',{exact:true}).click()
+ await checkout.getByLabel('Override status',{exact:true}).selectOption('operational')
+ await checkout.getByLabel('Override reason',{exact:true}).fill('Alternate gateway is processing payments')
+ await checkout.getByRole('button',{name:'Set status override',exact:true}).click()
+ await checkout.getByText(/Manual override: operational/).waitFor()
+ for(const width of [1440,390])await statusCapture(owner.page,'override-reason',width)
+ const samView=await open(1440);await passwordSignIn(samView.page,stakeholder)
+ await samView.page.getByRole('heading',{name:'Internal status',exact:true}).waitFor()
+ const samCheckout=samView.page.getByRole('article',{name:'Checkout',exact:true})
+ await samCheckout.getByLabel('Your subscription',{exact:true}).selectOption('true')
+ await samCheckout.getByRole('button',{name:'Save subscription',exact:true}).click()
+ await samCheckout.getByRole('heading',{name:'Recorded impact obligations',exact:true}).waitFor()
+ for(const width of [1440,390]){
+  await samView.page.setViewportSize({width,height:1000});await samView.page.reload()
+  await samView.page.getByRole('heading',{name:'Recorded impact obligations',exact:true}).waitFor()
+  assert.equal(await samView.page.locator('.timeline').count(),0)
+  assert.equal(await samView.page.getByRole('link',{name:'Incidents',exact:true}).count(),0)
+  for(const path of ['/api/state','/api/triage','/api/archive','/api/recovery/checkpoint','/api/audit/export','/api/handoffs/context/'+statusIncident.id,'/api/paging/state','/api/email','/api/automation/clients'])ok(await call(samView.page,path),403)
+  ok(await call(samView.page,'/api/v1/incidents'),401)
+  ok(await call(samView.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',title:'Refused page',severity:'warning',summary:'No authority'}),403)
+  const workspace=ok(await call(samView.page,'/api/workspace'));assert.equal(workspace.state,null)
+  const html=await (await samView.context.request.get(worker.origin+'/')).text()
+  assert.ok(!html.includes('Private gateway timeouts')&&!html.includes('Private gateway recovery instructions'),'stakeholder HTML bootstrap contains no response data')
+  await statusCapture(samView.page,'stakeholder-status-and-refusals',width)
+ }
+ console.log('OC-061 browser: existing internal-status panel, derived degraded, attributed override and reason, stakeholder subscription and private-door refusals at 1440/390')
+ await samView.context.close()
 
  // Signed out, anonymous and revoked sessions see no workspace.
  await rosa.page.setViewportSize({width:1440,height:1000});await rosa.page.goto(worker.origin+'/#incidents')

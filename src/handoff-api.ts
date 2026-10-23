@@ -16,7 +16,7 @@ function exact(input: any, required: string[], optional: string[] = []) {
 function currentActor(snapshot: HandoffSnapshot, id: string, permission: 'read' | 'respond' | 'admin'): Member {
   const member = snapshot.workspace.members.find(member => member.id === id && member.active);
   if (!member) fail('Access revoked', 401);
-  if ((permission === 'respond' && member.role === 'viewer') ||
+  if ((permission === 'respond' && !['admin','responder'].includes(member.role)) ||
       (permission === 'admin' && member.role !== 'admin')) fail('Insufficient current role', 403);
   return member;
 }

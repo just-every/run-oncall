@@ -1,9 +1,10 @@
+import { refreshBusinessStatus } from './business-status/model';
 import { restoreErasureFences, erasureFencesQuery } from './erasure-fence'
 import { storedReceipt, nativePrefixWrites } from './native-prefix-store'
 import { authoredWorkspace } from './workspace-profile'
 import { empty, fail, type State } from './family/response-operations/domain'
 
-const tables = {keyAllowances:'oc_key_allowances',apiClients:'oc_api_clients',apiEndpoints:'oc_api_endpoints',apiOperations:'oc_api_operations',apiOutbox:'oc_api_outbox',members:'oc_members', services:'oc_services', policies:'oc_policies', events:'oc_events', alerts:'oc_alerts', incidents:'oc_incidents', audit:'oc_audit', triage:'oc_triage', changes:'oc_changes', changeSources:'oc_change_sources', intakeSources:'oc_intake_sources', intakeReceipts:'oc_intake_receipts', emailAddresses:'oc_email_addresses', emailRules:'oc_email_rules', emailSamples:'oc_email_samples', emailReceipts:'oc_email_receipts', emailQuarantine:'oc_email_quarantine'} as const
+const tables = {businessServices:'oc_business_services',keyAllowances:'oc_key_allowances',apiClients:'oc_api_clients',apiEndpoints:'oc_api_endpoints',apiOperations:'oc_api_operations',apiOutbox:'oc_api_outbox',members:'oc_members', services:'oc_services', policies:'oc_policies', events:'oc_events', alerts:'oc_alerts', incidents:'oc_incidents', audit:'oc_audit', triage:'oc_triage', changes:'oc_changes', changeSources:'oc_change_sources', intakeSources:'oc_intake_sources', intakeReceipts:'oc_intake_receipts', emailAddresses:'oc_email_addresses', emailRules:'oc_email_rules', emailSamples:'oc_email_samples', emailReceipts:'oc_email_receipts', emailQuarantine:'oc_email_quarantine'} as const
 const collections = Object.keys(tables) as (keyof typeof tables)[]
 // D1 batch reads share one transaction. Individual records avoid a whole-
 // workspace SQL cell and do not depend on SQLite's compound-SELECT limit.
@@ -45,6 +46,7 @@ export function workspaceRows(db:D1Database,state:State,token:string):D1Prepared
   return [...statements,restoreErasureFences(db,state,token),...nativePrefixWrites(db,state.intakeReceipts??[],token,previous&&new Set(previous.get('intakeReceipts')?.keys()))]
 }
 export function workspaceWrite(db:D1Database,state:State,revision:number,authority:{sql:string;values:(string|number|null)[]},token=crypto.randomUUID()) {
+  refreshBusinessStatus(state)
   state.revision = revision + 1
   checkWorkspaceSize(state)
   return [db.prepare(`UPDATE workspace_control SET revision=?,write_token=? WHERE id=1 AND revision=? AND ${authority.sql}`).bind(state.revision,token,revision,...authority.values),...workspaceRows(db,state,token)]
