@@ -49,6 +49,7 @@ async function incompleteIntakeBrowser(page,context) {
   await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · paging OFF; non-automatic.`,{exact:true}).waitFor()
   assert.ok(await routedCard.isVisible());assert.ok(await ownerCard.isVisible())
   await checkScreen('alerts',width)
+  await ownerCard.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc059-alerts-focus-${width}.png`})
   await page.getByRole('link',{name:'Routing & replay',exact:true}).click()
   await page.getByLabel('Routed integration',{exact:true}).selectOption(source)
   const diagnostics=page.getByRole('region',{name:'Routing diagnostics',exact:true})
@@ -59,6 +60,7 @@ async function incompleteIntakeBrowser(page,context) {
   assert.ok(await diagnostics.getByRole('heading',{name:title,exact:true}).isVisible())
   assert.ok(await diagnostics.getByRole('heading',{name:incompleteTitle,exact:true}).isVisible())
   await checkScreen('routing',width)
+  await diagnostics.getByRole('heading',{name:incompleteTitle,exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc059-routing-focus-${width}.png`})
  }
 }
 
