@@ -255,6 +255,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  ok(await req('/api/status',{action:'subscribe',id:erasedBusiness.id,revision:erasedBusiness.revision,member:erasedSubscriber.id,channel:'chat',active:true}))
  const auditBeforeErasure=ok(await req('/api/audit/export')).rows
  let erased;cookie=await checkpointErasureCli(m,cookie,async()=>{erased=ok(await erase('alice@example.test'));assert.ok(erased.receiptId)});
+ const erasedRole=ok(await req('/api/state')).members.find(row=>row.id===erasedSubscriber.id);assert.equal(erasedRole.active,false);assert.equal(erasedRole.name,'Erased member');assert.equal(sql("SELECT COUNT(*) AS n FROM credentials WHERE member='"+erasedSubscriber.id+"'")[0].n,0);assert.equal((await req('/api/login',{name:'alice@example.test status',password:'synthetic-oncall-67-password'})).status,401,'erased stakeholder role has no sign-in authority')
  const erasedBusinessState=ok(await req('/api/state')).businessServices.find(row=>row.id===erasedBusiness.id);assert.ok(!JSON.stringify(erasedBusinessState).includes(erasedSubscriber.id),'subject erasure severs status audience, subscription and obligation destinations atomically')
  assert.ok(!JSON.stringify(ok(await req('/api/state')).apiClients).includes('alice@example.test'),'erasure severs automation labels and authority')
  assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.history[0].reason==='capacity-not-scheduled'),'capacity history survives safe erasure')
