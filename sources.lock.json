@@ -727,7 +727,7 @@
       "executable": false
     },
     "scripts/installer/archive-policy.mjs": {
-      "sha256": "99d7a2f40e100bc30361b98e5e9174829da9936f7803cd2eb2313f1aad33966f",
+      "sha256": "829a42f0779531630ac2172e703f43756a079029c6c51aae1b0ecb7883fae1ec",
       "executable": false
     },
     "scripts/installer/audit-archive.mjs": {
@@ -1183,7 +1183,7 @@
       "executable": false
     },
     "src/family/response-operations/domain.ts": {
-      "sha256": "4393f41be19f78d82f466868f52ee630ab5236098b9184308ee8d3f6a2302117",
+      "sha256": "0dffa69e0fa6e8dc7d21dc1992e631ff36785768c7f38edfdd270d92f1d42df6",
       "executable": false
     },
     "src/family/response-operations/escalation.ts": {
@@ -1191,7 +1191,7 @@
       "executable": false
     },
     "src/family/response-operations/handoffs.ts": {
-      "sha256": "7f67b456de1d9d982086f7c867a61e9bd4451b2e7003a859c6b68c6fc13ccef8",
+      "sha256": "b3cda695b930a74c16681440197b70cc99d61a3de10f3e5ea0b0c40d412bbc4b",
       "executable": false
     },
     "src/family/response-operations/incident-controls.ts": {
@@ -1455,7 +1455,7 @@
       "executable": false
     },
     "src/manual-pages/archive.ts": {
-      "sha256": "be5977f695b2c6ff2136b671f12fe033a76cec6bf8ce0eedcbe0cf96e91829f9",
+      "sha256": "e2a1e8916ca4e3fe77a30cdc890e1228635b20e63a3201b564e95ee3ff4773b2",
       "executable": false
     },
     "src/manual-pages/context.ts": {
@@ -1463,11 +1463,11 @@
       "executable": false
     },
     "src/manual-pages/Controls.tsx": {
-      "sha256": "df69dd945ca949e78bc3c2f136bb120ca8429e95330b90f5188ea9a447603df9",
+      "sha256": "57333943d02383d3c2ab189e2307d3acb3c303a65aae174dfe519c47ab5f2332",
       "executable": false
     },
     "src/manual-pages/model.ts": {
-      "sha256": "01d11f012fef3a9ec40a5b5763fb8206c6ffa25ce5e3f15c7e74f5c23b87b102",
+      "sha256": "af9205d16d22cdb6510a45a49cbd5ff56b14267e5c6c21c809e3894a7b3c53bb",
       "executable": false
     },
     "src/manual-pages/types.ts": {
@@ -3923,7 +3923,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "a77d920895a23e4569e6a5d0d679369147cb863731ec7bd94db2bb33f815988a",
+      "sha256": "d2d1c02eee3c731d628425ccfb0de488d3a8fa1cb88ea6ea4f768c33d1926f6a",
       "executable": false
     },
     "tests/monitoring.mjs": {
