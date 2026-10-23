@@ -207,7 +207,7 @@
       "executable": false
     },
     "docs/monitoring-providers.md": {
-      "sha256": "97fbbb7c80012920be5f31b79fe8d0d5f266b670efbf004f161f660b8131a5f4",
+      "sha256": "49068da972bb4bbe696d0089e384a894fb232e1b1fae65ea44a5bf103a76f0c3",
       "executable": false
     },
     "docs/move-in.md": {
@@ -3571,7 +3571,7 @@
       "executable": false
     },
     "src/routing/RoutingWorkspace.tsx": {
-      "sha256": "e6b14f373279fd44e160d2639e62c0d997e7b125468d9af6c61171c2f9eb8d3a",
+      "sha256": "c20de6493d11a1ea7b8b631f69b58f550351dc0b1d122c54cb6c2b195405bddc",
       "executable": false
     },
     "src/routing/RuleEditor.tsx": {
@@ -3859,7 +3859,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "278818f60783639a698235f163fc9c806cb40b88007255f834de27a3159331df",
+      "sha256": "0c77a52e914939d59391567e55766334377ebd682d2a13575af4741b7fadb378",
       "executable": false
     },
     "tests/product-import-browser.mjs": {
