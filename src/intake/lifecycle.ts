@@ -1,4 +1,4 @@
-import {identityLimit} from './identity-bounds';
+import {identityLimit} from './identity-bounds.ts';
 import { finishResponseAdmission } from '../response-policy/model.ts';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
