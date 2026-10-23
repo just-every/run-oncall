@@ -43,7 +43,7 @@ export function manualCommand(state:State,actor:Member,input:any,at:string,conte
     const incident=declare({type:'declare',service:service.id,title:input.title,severity:input.severity??'critical',summary:description.trim()||'Impact not yet assessed.',alerts:[]});
     incident.urgency=urgency;incident.priority=input.priority||null;
     const assignment=structuredClone(assignmentRule(state,service.id));
-    incident.manualPage={creator:actor.id,operation,fingerprint,description,assignment,acknowledgment:null,obligations:chosen.map(target=>obligation(actor,target,urgency,at,target.kind==='service'?'No configured escalation policy; operator action required':'Manual page obligation recorded; no sender',target.kind==='user'?assignment:undefined))};
+    incident.manualPage={creator:actor.id,operation,fingerprint,description,assignment,acknowledgment:null,obligations:chosen.map(target=>obligation(actor,target,urgency,at,target.kind==='service'||target.kind==='user'&&assignment.mode==='escalate'&&!context.policies.some(p=>p.service===assignment.policy)?'No configured escalation policy; operator action required':'Manual page obligation recorded; no sender',target.kind==='user'?assignment:undefined))};
     incident.timeline.push({id:crypto.randomUUID(),actor:actor.id,at,kind:'manual-page',text:`Manual page recorded by ${actor.name}; ${urgency} urgency; ${chosen.map(t=>t.kind+' '+t.id).join(', ')}. User assignment ${assignment.mode} after ${assignment.minutes} minutes, version ${assignment.version}; automatic action unavailable; paging OFF.`});return incident;
   }
   const incident=state.incidents.find(i=>i.id===input.incident);if(!incident)fail('Unknown incident',404);

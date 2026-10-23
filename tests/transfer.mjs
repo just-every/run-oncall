@@ -31,6 +31,7 @@ try{
  const incident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Preserve authored history',severity:'warning',summary:'Archive proof',alerts:[],incidentType:'Dependency'}))
  assert.deepEqual(incident.template,{service:'transfer',...portableTemplate,incidentType:'Dependency',checklist:portableTemplate.checklist.map(item=>({...item,done:false,history:[]}))})
  let portableManual=ok(await req('/api/command',{type:'manual-page',operationId:'synthetic-oncall-68-transfer',service:'transfer',title:'Retain manual page',severity:'warning',description:'Retained request custody',users:[member.id]}))
+ assert.match(portableManual.manualPage.obligations[0].outcome,/No configured escalation policy/);
  portableManual=ok(await req('/api/command',{type:'request-responders',incident:portableManual.id,revision:portableManual.revision,users:[member.id],message:'Retain this pending request inactive'}))
  // OC-061's full durable status category travels with this existing installation journey.
  const stakeholderCreated=await req('/api/members',{name:'synthetic-oncall-61',role:'stakeholder',password:'synthetic-oncall-61-password'});assert.equal(stakeholderCreated.status,201);const stakeholder=stakeholderCreated.value
