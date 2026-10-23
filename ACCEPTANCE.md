@@ -14,7 +14,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
 1. **OC-001 — Event identity and alerts. Status: done.** POST signed and bearer events through /api/ingress/:source; repeat a normalized identity, conflict changed content, send recovery before trigger and after a newer generation, and inspect protected state. Verify grouping across multiple sources without merging service/environment boundaries.
 
-   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` (named OC-001 signed/bearer identities, same-tuple grouping, four separate source/service/environment/generation alerts, early and delayed recovery, no archive cross-links and unchanged human incidents); `tests/intake.mjs` (compatible receipt-ordered lifecycle).
+   Existing implementation / exercising flow: `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` (named OC-001 signed/bearer identities, same-tuple grouping, four separate source/service/environment/generation alerts, early and delayed recovery, no archive cross-links and source recovery that never resolves declared human incidents (OC-056 adds its attributed recovery marker and reminder)); `tests/intake.mjs` (compatible receipt-ordered lifecycle).
 
 2. **OC-002 — Routing replay. Status: done.** Admit a severity-routed event, change policy, POST /api/replay and compare the immutable admission explanation with the proposed decision in submitted order; compare state before/after for zero writes.
 

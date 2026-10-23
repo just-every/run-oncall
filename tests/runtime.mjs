@@ -718,8 +718,14 @@ try {
     "mitigating",
   );
   const afterSourceRecovery = ok(await request("/api/archive", undefined, cookie));
-  assert.deepEqual(afterSourceRecovery.incidents, beforeSourceRecovery.incidents,
-    "OC-001: source recovery never mutates the declared human incident");
+  const sourceRecoveredIncident=afterSourceRecovery.incidents.find(i=>i.id===incident.id),priorIncident=beforeSourceRecovery.incidents.find(i=>i.id===incident.id);
+  assert.equal(sourceRecoveredIncident.state,priorIncident.state,"OC-001: source recovery never resolves a declared human incident");
+  assert.deepEqual(sourceRecoveredIncident.timeline.slice(0,-1),priorIncident.timeline,"the complete human timeline is preserved before the attributed OC-056 marker");
+  assert.equal(sourceRecoveredIncident.timeline.at(-1).kind,'source-recovery');
+  assert.equal(sourceRecoveredIncident.sourceRecovery.reminder.commander,priorIncident.commander);assert.equal(sourceRecoveredIncident.sourceRecovery.reminder.automatic,false);
+  assert.deepEqual({...sourceRecoveredIncident,revision:priorIncident.revision,timeline:priorIncident.timeline,sourceRecovery:undefined},{...priorIncident,sourceRecovery:undefined},"OC-056 adds only its attributed marker, reminder and revision; authored incident fields stay intact");
+  assert.deepEqual(afterSourceRecovery.incidents.filter(i=>i.id!==incident.id),beforeSourceRecovery.incidents.filter(i=>i.id!==incident.id));
+  incident=sourceRecoveredIncident;
   assert.equal(afterSourceRecovery.alerts.find(alert => alert.id === admittedAlert).state, "recovered");
   assert.deepEqual(afterSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
     beforeSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
