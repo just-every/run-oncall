@@ -6,6 +6,9 @@ export function visibleBusiness(service: BusinessService, actor: Member) {
   return ['admin', 'responder', 'viewer'].includes(actor.role) || actor.role === 'stakeholder' && service.active && service.audience.includes(actor.id);
 }
 export function statusView(state: State, actor: Member) {
+  const current = state.members.find(member => member.id === actor.id && member.active);
+  if (!current) fail('Access revoked', 401);
+  actor = current;
   return (state.businessServices ?? []).filter(service => visibleBusiness(service, actor)).map(service => ({
     id: service.id, name: service.name, owningTeam: service.owningTeam, active: service.active,
     derived: service.derived, revision: service.revision,
