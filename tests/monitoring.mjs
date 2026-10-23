@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import {randomBytes,createHash,createHmac} from 'node:crypto';
 import {localWorker} from './worker.mjs';
 
+// Local database pauses can outlive the Worker's pooled HTTP connection.
+const fetch=(url,input={})=>globalThis.fetch(url,{...input,headers:{...input.headers,connection:'close'}});
+
 const w=await localWorker(),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 let cookie;const keys={am:randomBytes(32).toString('hex'),gf:randomBytes(32).toString('hex'),dd:randomBytes(32).toString('hex'),pd:randomBytes(32).toString('hex'),router:randomBytes(32).toString('hex')};
 const req=(path,data)=>w.request(path,data,cookie);
