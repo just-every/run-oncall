@@ -64,6 +64,8 @@ try {
  ok(await req('/api/monitoring/am/signing'),404);ok(await req(signingPath,{revision:rotated.revision,secret:'short'}),400);
  const competingSecrets=[signer(),signer()],competingRevision=ok(await req(signingPath)).revision,competing=await Promise.all(competingSecrets.map(secret=>req(signingPath,{revision:competingRevision,secret})));
  assert.deepEqual(competing.map(r=>r.status).sort(),[200,409]);signingSecret=competingSecrets[competing.findIndex(r=>r.status===200)];ok(await signed({...grafana,alerts:[alert('synthetic-oncall-rotation-winner')]}),202);
+ const signedOversize=JSON.stringify({...grafana,alerts:[alert('synthetic-oncall-signed-large')],padding:'x'.repeat(3*1024*1024)}),signedLargeReply=ok(await signed(signedOversize),202);assert.equal(signedLargeReply.truncation,true);assert.ok(signedLargeReply.incomplete);
+ const beforeTamper=ok(await req('/api/archive'));ok(await signed(signedOversize+' ',{signature:createHmac('sha256',signingSecret).update(signedOversize).digest('hex')}),401);for(const key of ['events','alerts','intakeReceipts'])assert.deepEqual(ok(await req('/api/archive'))[key],beforeTamper[key],'the exact complete body, including bytes beyond the parse prefix, must be signed');
  // Existing bearer-only requests below deliberately exercise the unchanged optional mode.
  ok(await req(signingPath,{revision:ok(await req(signingPath)).revision,secret:null}));
  ok(await send('gf',{...grafana,alerts:[alert('synthetic-oncall-bearer-only')]}),202);
