@@ -334,3 +334,20 @@ try {
  }finally{await destination.close();}
  console.log('PASS OC-053 human capacity: retained history >1000, full unfinished backlog, all human event paths, multi-recipient boundary, storage rollback, restart, stable replay and inactive checkpoint restore');
 }finally{await capacity.close();}
+
+// OC-068 shares the scoped API receipt door, not a second paging transport.
+const manualApi=await automationRuntime();
+try {
+ const setup=await manualApi.request('/api/setup',{name:'synthetic-oncall-68-owner',password:'synthetic-oncall-68-password'});assert.equal(setup.status,200);
+ const cookie=setup.cookie,owner=(p,d)=>manualApi.request(p,d,cookie),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value},admin=setup.value.member;
+ const service=ok(await owner('/api/command',{type:'service',id:'synthetic-oncall-68-api',name:'Payments API',environment:'test',owner:admin.id,runbook:[],pager:''}));
+ const schedule=ok(await owner('/api/paging/schedules',{id:service.id,name:'Payments primary',service:service.id,revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[admin.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}));
+ const policy=ok(await owner('/api/paging/policies',{service:service.id,scheduleId:schedule.id,revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}));
+ const key=randomBytes(32).toString('hex');ok(await owner('/api/automation/clients',{name:'Manual incident writer',key,services:[service.id],permissions:['incidents:write','incidents:read']}),201);
+ const submit=(input,credential=key)=>manualApi.request('/api/v1/incidents',input,'',{authorization:'Bearer '+credential,'idempotency-key':'synthetic-oncall-68-api-page'}),input={type:'manual-page',service:service.id,title:'Payments policy-targeted incident',severity:'warning',urgency:'high',policy:service.id};
+ const first=ok(await submit(input),201),replayed=ok(await submit(input));assert.equal(replayed.id,first.id);ok(await submit({...input,title:'Conflicting policy-targeted page'}),409);
+ const state=ok(await owner('/api/state'));assert.equal(state.incidents.length,1);const incident=state.incidents.find(i=>i.id===first.entity);assert.equal(incident.manualPage.creator,first.client);assert.deepEqual(incident.manualPage.obligations[0].target,{kind:'policy',id:service.id,policyRevision:policy.revision});assert.equal(incident.manualPage.obligations[0].automatic,false);assert.equal(incident.manualPage.obligations[0].paging,'off');
+ const readKey=randomBytes(32).toString('hex');ok(await owner('/api/automation/clients',{name:'Manual incident reader',key:readKey,services:[service.id],permissions:['incidents:read']}),201);ok(await submit(input,readKey),403);
+ ok(await submit({...input,service:'synthetic-oncall-68-foreign'}),404);assert.equal(ok(await owner('/api/state')).incidents.length,1);
+ console.log('OC-068 API manual page: explicit incident-write scope, real policy override, repeated-key single incident, conflicting/cross-scope/read-only refusals and recorded-only obligation');
+} finally {await manualApi.close();}
