@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "cd5954a60cc539b3950408e0a4f477c4d81a3199cb6178a177e5a0602d01d7dc",
+      "sha256": "0648dfabf81de86dd087f80c2a7411bae1e400c0d6a58fe83130c6b205835448",
       "executable": false
     },
     "DEMO.md": {
@@ -556,6 +556,10 @@
     },
     "migrations/core/0138_business_status.sql": {
       "sha256": "9b5d0f59f3227ba0fef8f301d01e6f38d83595af432d941db5cb937a14b388f9",
+      "executable": false
+    },
+    "migrations/core/0139_manual_command_receipts.sql": {
+      "sha256": "8064fe877c22bf0500ff5c20d274cbd4e8b2e0dea986fa9e3e4fef4faf2c54a0",
       "executable": false
     },
     "MOVE-IN.md": {
@@ -3475,7 +3479,7 @@
       "executable": false
     },
     "src/portability-policy.mjs": {
-      "sha256": "f2afb1c2af04077a58cd385b6e3d465d6cbc71b7013eb4af9070d2ff4ef54dca",
+      "sha256": "f0015aee26e1ca1809fae4008aa435a479e7ca3a66c01516065489015751b829",
       "executable": false
     },
     "src/raw.d.ts": {
