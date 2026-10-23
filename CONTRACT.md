@@ -381,6 +381,8 @@ These clauses close the buyer reviews of 16 October 2026 against PagerDuty: OC-0
 
   **Acceptance evidence:** Send a change through the PagerDuty-compatible change endpoint and a GitHub deployment webhook, one for the alerting service and one decoy for an unrelated service, plus one for a dependency. Trigger the alert and observe that no page is caused by any change event. The recent-changes panel lists the service's and the dependency's changes, labeled, and omits the unrelated decoy. A user without access to the service sees none of them. Replay a change event and observe one record.
 
+  **Status:** partial
+
 - **OC-066 — International SMS and voice paging for follow-the-sun responders.** OC-026 SMS and voice paging reaches responders outside the US through a published, maintained country list; email and push already work worldwide. A country is listed only when two independent providers (Twilio and a second provider such as Telnyx, Vonage or Sinch) have each passed a live SMS send, an SMS reply where the row offers one, and a voice call with DTMF acknowledgment to a real handset in that country. The list's row for each country names the sender used for paging (local two-way long code, toll-free, short code or registered alphanumeric sender), the sender registration it needs, whether SMS replies (the OC-071 per-message reply codes, plus the one-use link) work, the caller ID shown, the country's consent and opt-out keywords, and the per-message and per-minute USD rates (OC-044). The first release lists the following, each with SMS and voice paging:
 
   | Country | Paging sender and registration | SMS replies |
