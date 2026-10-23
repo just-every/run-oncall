@@ -18,7 +18,7 @@ export function MoveInWorkspace({admin,request}:{admin:boolean;request:(path:str
  <label className="scheduling-field"><span id="move-in-source">Source</span><select aria-labelledby="move-in-source" value={vendor} onChange={e=>{setVendor(e.target.value);setPreview(null);setJob(null)}}>{Object.entries(vendorNames).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
  <ExportHelp vendor={vendor}/>
  <label className="scheduling-field">Export JSON<input type="file" accept="application/json,.json" onChange={async e=>{const file=e.target.files?.[0];if(file){setSource(new Uint8Array(await file.arrayBuffer()));setFilename(file.name);setPreview(null);setJob(null)}}}/></label>
- <p>Choose the JSON bundle prepared above. Oncall never asks for your provider API key.</p>
+ <p>Choose the JSON bundle prepared above without keys or secrets. After review, an administrator can supply a supported incumbent integration key in the separate activation field.</p>
  <button disabled={busy||!source} onClick={()=>run(async()=>{setJob(null);setPreview(null);setPreview(await previewFile(door,source!,filename,vendor))})}>Preview import</button>
  {error&&<p role="alert">{error}</p>}{busy&&<p role="status">Working…</p>}
  {preview&&<CompatibilityReview preview={preview} busy={busy} hasJob={Boolean(job)} confirm={()=>void run(async()=>{setJob(await applyPlan(door,preview.planId,preview.fingerprint));await load()})}/>}
