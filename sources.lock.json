@@ -131,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "962d38209a7623b8abb64461f675214bc73ba64ec48c555f468806eedaf35a8b",
+      "sha256": "72d16becf9db7f3c4aecb782ea44d7465d933e80df7e56a41db354ad006a5749",
       "executable": false
     },
     "AGENTS.md": {
@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a251d54e0647212394c1ffd09fd3d115f778ce5abb4189e8d9260c9023535656",
+      "sha256": "eade6b64ea9cb575e4ae939e1b3ff60a603c17109607f8f11c12ad57fc4052c4",
       "executable": false
     },
     "DEMO.md": {
@@ -195,7 +195,7 @@
       "executable": false
     },
     "docs/incidents.md": {
-      "sha256": "e641aaceb6ac0a785d3f5f4c4cd9f3c2199f7b95b18330b16992db26647969b5",
+      "sha256": "db8df36a158f0c9386bb41df290a3dbd42d9378257830509d627e9264209025e",
       "executable": false
     },
     "docs/install.md": {
@@ -855,7 +855,7 @@
       "executable": false
     },
     "src/automation/api.ts": {
-      "sha256": "51893b28ba3a6d53fc339c2aff1e1dc86d6a3338f7d9fa773dc8e7afd0cacc19",
+      "sha256": "7bc19a585ad24c70ab1897791c5f5719b694d213a7c02843b44961121e773237",
       "executable": false
     },
     "src/automation/AutomationSettings.tsx": {
@@ -3803,7 +3803,7 @@
       "executable": false
     },
     "tests/automation.mjs": {
-      "sha256": "866dc7ef3945b690127dd03c09d57bf393960f748bdd7054948eca534709de4c",
+      "sha256": "7863e4d13ddda0f922fa03691e5532b149e9cc0e383089cad2a272750eb5eb13",
       "executable": false
     },
     "tests/changes.mjs": {
