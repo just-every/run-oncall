@@ -1,6 +1,6 @@
-import { auditIdentity } from './audit-store'
+import { auditIdentity, auditKind } from './audit-store'
 import { operatorAuth, runtimeBindings, type Bindings } from './auth.server'
-import { loadWorkspace, workspaceRows } from './workspace-store'
+import { loadWorkspace, workspaceRows, workspaceWrite } from './workspace-store'
 import type { Member } from './family/response-operations/domain'
 
 /** Base sessions retain Base's key gate, expiry and revocation checks. */
@@ -31,7 +31,20 @@ export async function nativeMember(env:Bindings,request:Request):Promise<{member
     }
   }
   if(!link) return null
-  const member:Member=JSON.parse(link.data)
+  let member:Member=JSON.parse(link.data)
+  if(native.operator.role==='owner' && member.name!==native.operator.displayName) {
+    const state=await loadWorkspace(env.DB),mapped=state.members.find(row=>row.id===member.id)
+    if(!mapped?.active)return null
+    mapped.name=native.operator.displayName
+    auditKind(env.DB,'member.owner-name')
+    await env.DB.batch(workspaceWrite(env.DB,state,state.revision,{
+      sql:`EXISTS(SELECT 1 FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id WHERE s.id=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.role='owner' AND o.status='active' AND o.version=s.operator_version AND o.display_name=?)`,
+      values:[native.id,Date.now(),native.operator.displayName],
+    }))
+    link=await read()
+    if(!link)return null
+    member=JSON.parse(link.data)
+  }
   auditIdentity(env.DB,{actor:{kind:'member',id:member.id}})
   if(!link.linked) await env.DB.prepare('INSERT INTO sessions(token,member,expires,operator_session) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id WHERE s.id=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status=\'active\' AND o.version=s.operator_version) ON CONFLICT(token) DO NOTHING').bind(digest,member.id,native.expiresAt,native.id,native.id,Date.now()).run()
   return {member,digest}

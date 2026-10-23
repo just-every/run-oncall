@@ -3,7 +3,7 @@ import { createOwnerClaimHandler } from './modules/owner-claim/index.mjs'
 import { firstRunResponse } from './base/setup'
 import { admitted } from './base/setup-state'
 import { brandDocumentResponse } from './brand/document-response'
-import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, devNotFound, isLoopbackHost, normalizeEmail, type AuthConfig } from './modules/operator-auth/index.mjs'
+import { createOperatorAuth, createAuthHandler, createSignInHandler, devGate, devNotFound, isLoopbackHost, normalizeEmail, safeReturnTo, type AuthConfig } from './modules/operator-auth/index.mjs'
 import { operatorMail } from './mail.server.mjs'
 import branding from './branding.json'
 import { sessionCookieLine } from './session-cookie'
@@ -81,6 +81,9 @@ export async function authResponse(request: Request, original: Bindings): Promis
  }
  // The shared server-rendered sign-in page: plain forms that work before any script.
  if (url.pathname === '/signin') {
+  if (request.method === 'GET' && await operatorAuth(env).getSession(request)) {
+   return new Response(null,{status:303,headers:{...privateHeaders,location:safeReturnTo(url.searchParams.get('returnTo'))}})
+  }
   const page = await createSignInHandler(operatorAuth(env), {
    defaultReturnTo: '/setup',
    links: async () => [

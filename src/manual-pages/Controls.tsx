@@ -10,13 +10,15 @@ function Targets({state,policies}:{state:State;policies:{service:string;revision
  <p>Choose named users or one policy. Each target is a recorded obligation; paging OFF.</p>
  </>;}
 export function ManualDeclare({state,busy,submit}:{state:State;busy:boolean;submit:(data:any)=>Promise<any>}){
- const {policies,error}=usePolicies(),[operation]=useState(()=>crypto.randomUUID());
+ const {policies,error}=usePolicies(),[operation]=useState(()=>crypto.randomUUID()),[serviceId,setServiceId]=useState(state.services[0]?.id??'');
+ const template=state.services.find(s=>s.id===serviceId)?.incidentTemplates?.at(-1);
  return <><p>Manual page records an incident and its intended targets. No sender runs.</p>{error&&<p role="alert">{error}</p>}<Form busy={busy} disabled={policies===null} label="Declare" onSubmit={data=>submit({...data,type:'manual-page',operationId:operation,users:data.users??[]})}>
- <Field name="title" label="Incident title"/><Field name="service" label="Service">{state.services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</Field>
- <Field name="severity" label="Severity"><option>critical</option><option>warning</option><option>info</option></Field>
+ <Field name="title" label="Incident title"/><label className="field"><span id="declaration-service-label">Service</span><select aria-labelledby="declaration-service-label" name="service" required value={serviceId} onChange={event=>setServiceId(event.target.value)}>{state.services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+ <Field key={serviceId} name="incidentType" label="Incident type (service template)" required={false}><option value="">Service template default</option>{(template?.incidentTypes??[]).map(type=><option key={type}>{type}</option>)}</Field>
+ <Field name="severity" label="Severity">{(['critical','warning','info'] as const).map(severity=><option key={severity} value={severity}>{template?.severityWording[severity]??severity}</option>)}</Field>
  <Field name="urgency" label="Page urgency" required={false}><option value="">Service rule (high when severity is required)</option><option value="high">High</option><option value="low">Low</option></Field>
  <Field name="priority" label="Page priority" required={false}><option value="">Unset</option>{['P1','P2','P3','P4','P5'].map(p=><option key={p}>{p}</option>)}</Field>
- <Field name="summary" label="Customer impact and current evidence" type="textarea" required={false}/><Targets state={state} policies={policies??[]}/>
+ <Field name="summary" label="Customer impact and current evidence" help={template?.impactPrompt} type="textarea" required={false}/><Targets state={state} policies={policies??[]}/>
  </Form></>;
 }
 export function UserAssignment({service,state,busy,submit}:{service:Service;state:State;busy:boolean;submit:(data:any)=>Promise<any>}){

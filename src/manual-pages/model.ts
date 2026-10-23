@@ -32,7 +32,7 @@ export function manualCommand(state:State,actor:Member,input:any,at:string,conte
   if(input.type==='manual-page') {
     const service=state.services.find(s=>s.id===input.service);if(!service)fail('Unknown service',404);
     const operation=text(input.operationId,'Operation ID',100);if(!/^[A-Za-z0-9_-]{16,100}$/.test(operation))fail('Use an opaque operation ID');
-    const fingerprint=JSON.stringify({service:input.service,title:input.title,severity:input.severity,description:input.description??input.summary??'',urgency:input.urgency??'',priority:input.priority??null,users:input.users??[],policy:input.policy??''});
+    const fingerprint=JSON.stringify({service:input.service,title:input.title,incidentType:input.incidentType??'',severity:input.severity,description:input.description??input.summary??'',urgency:input.urgency??'',priority:input.priority??null,users:input.users??[],policy:input.policy??''});
     const prior=state.incidents.find(i=>i.manualPage?.creator===actor.id&&i.manualPage.operation===operation);
     if(prior){if(prior.manualPage!.fingerprint!==fingerprint)fail('Operation ID already names different page input',409);return prior;}
     const chosen=targets(state,input,service.id,context,false),rule=service.urgencyRules?.at(-1);
@@ -40,7 +40,7 @@ export function manualCommand(state:State,actor:Member,input:any,at:string,conte
     if(!['high','low'].includes(urgency))fail('Choose high or low urgency');
     if(input.priority&& !['P1','P2','P3','P4','P5'].includes(input.priority))fail('Choose a priority');
     const description=input.description??input.summary??'';if(typeof description!=='string'||description.length>3000)fail('Description must be at most 3000 characters');
-    const incident=declare({type:'declare',service:service.id,title:input.title,severity:input.severity??'critical',summary:description.trim()||'Impact not yet assessed.',alerts:[]});
+    const incident=declare({type:'declare',service:service.id,title:input.title,severity:input.severity??'critical',summary:description.trim()||'Impact not yet assessed.',incidentType:input.incidentType,alerts:[]});
     incident.urgency=urgency;incident.priority=input.priority||null;
     const assignment=structuredClone(assignmentRule(state,service.id));
     incident.manualPage={creator:actor.id,operation,fingerprint,description,assignment,acknowledgment:null,obligations:chosen.map(target=>obligation(actor,target,urgency,at,target.kind==='service'||target.kind==='user'&&assignment.mode==='escalate'&&!context.policies.some(p=>p.service===assignment.policy)?'No configured escalation policy; operator action required':'Manual page obligation recorded; no sender',target.kind==='user'?assignment:undefined))};

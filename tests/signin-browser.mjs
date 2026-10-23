@@ -26,6 +26,26 @@ try {
   return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}
  }))
  const errors=[];page.on('pageerror',error=>errors.push(error.message))
+ const initialState=await context.request.get(worker.origin+'/api/state')
+ assert.equal(initialState.status(),200)
+ const initialMember=(await initialState.json()).members.find(member=>member.role==='admin')
+ assert.equal(initialMember.name,'Oncall lead','claim name becomes the owner member name')
+ for(const width of [1440,390]) {
+  await page.setViewportSize({width,height:1000})
+  for(const [suffix,location] of [['','/app'],['?returnTo=%2Fapp%2Fincidents','/app/incidents'],['?returnTo=https%3A%2F%2Fexample.test','/app'],['?returnTo=%2F%252Fexample.test','/app']]) {
+   const forward=await context.request.get(worker.origin+'/signin'+suffix,{maxRedirects:0})
+   assert.equal(forward.status(),303,'signed-in owner forwards from /signin')
+   assert.equal(forward.headers().location,location)
+  }
+  const corrected='synthetic-oncall-owner-'+width
+  const changed=await context.request.post(worker.origin+'/setup',{form:{displayName:corrected,confirm:'yes'},headers:{origin:worker.origin},maxRedirects:0})
+  assert.equal(changed.status(),303)
+  const state=await context.request.get(worker.origin+'/api/state')
+  assert.equal((await state.json()).members.find(member=>member.id===initialMember.id).name,corrected,'later setup correction follows into the mapped member')
+  await page.goto(worker.origin+'/app')
+  await page.locator('.profile').getByText(corrected,{exact:true}).waitFor()
+  await page.screenshot({path:`${captureDirectory}/signin-owner-name-${width}.png`,fullPage:true})
+ }
  await page.goto(worker.origin+'/setup')
  const confirmation=page.getByRole('checkbox')
  if(await confirmation.count()){await confirmation.check();await page.getByRole('button',{name:'Finish setup'}).click()}
