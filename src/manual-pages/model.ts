@@ -1,4 +1,4 @@
-import { authority, command, fail, text, type Incident, type Member, type State } from '../family/response-operations/domain';
+import { authority, fail, text, type Incident, type Member, type State } from '../family/response-operations/domain';
 import { serviceUrgency } from '../urgency/model';
 import type { RecordedResponseObligation } from '../alert-obligation';
 import type { AssignmentRule, ResponseTarget } from './types';
@@ -18,13 +18,14 @@ function targets(state:State,input:any,service:string,context:PolicyContext,requ
 function obligation(actor:Member,target:ResponseTarget,urgency:'high'|'low',at:string,outcome:string,assignment?:AssignmentRule):RecordedResponseObligation {
   return {id:crypto.randomUUID(),state:'recorded',paging:'off',automatic:false,label:'no sender',target,urgency,creator:actor.id,at,outcome,...(assignment?{assignment:structuredClone(assignment)}:{})};
 }
-export function manualCommand(state:State,actor:Member,input:any,at:string,context:PolicyContext) {
+export function manualCommand(state:State,actor:Member,input:any,at:string,context:PolicyContext,declare:(input:any)=>Incident) {
   authority(state,actor,input.type==='user-assignment');
   if(input.type==='user-assignment') {
     const service=state.services.find(s=>s.id===input.service);if(!service)fail('Unknown service',404);
     const previous=assignmentRule(state,service.id);if(input.baseVersion!==previous.version)fail('Assignment setting changed; reload',409);
     if(!['repeat','escalate'].includes(input.mode)||!Number.isSafeInteger(input.minutes)||input.minutes<1||input.minutes>1440)fail('Choose repeat or escalate after 1–1440 minutes');
     const policy=input.policy||service.id;if(input.mode==='escalate'&&!context.policies.some(p=>p.service===policy))fail('Choose an existing escalation policy');
+    if((service.userAssignments?.length??0)>=100)fail('Assignment rule history capacity reached',429);
     const rule:AssignmentRule={version:previous.version+1,mode:input.mode,minutes:input.minutes,policy,by:actor.id,at};(service.userAssignments??=[]).push(rule);
     state.audit.push({id:crypto.randomUUID(),actor:actor.id,at,kind:input.type,text:`User-assignment rule ${service.id} version ${rule.version}: ${rule.mode} after ${rule.minutes} minutes; recorded only`});return service;
   }
@@ -39,7 +40,7 @@ export function manualCommand(state:State,actor:Member,input:any,at:string,conte
     if(!['high','low'].includes(urgency))fail('Choose high or low urgency');
     if(input.priority&& !['P1','P2','P3','P4','P5'].includes(input.priority))fail('Choose a priority');
     const description=input.description??input.summary??'';if(typeof description!=='string'||description.length>3000)fail('Description must be at most 3000 characters');
-    const incident=command(state,actor,{type:'declare',service:service.id,title:input.title,severity:input.severity??'critical',summary:description.trim()||'Impact not yet assessed.',alerts:[]},at) as Incident;
+    const incident=declare({type:'declare',service:service.id,title:input.title,severity:input.severity??'critical',summary:description.trim()||'Impact not yet assessed.',alerts:[]});
     incident.urgency=urgency;incident.priority=input.priority||null;
     const assignment=structuredClone(assignmentRule(state,service.id));
     incident.manualPage={creator:actor.id,operation,fingerprint,description,assignment,acknowledgment:null,obligations:chosen.map(target=>obligation(actor,target,urgency,at,target.kind==='service'?'No configured escalation policy; operator action required':'Manual page obligation recorded; no sender',target.kind==='user'?assignment:undefined))};

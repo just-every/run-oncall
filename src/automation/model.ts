@@ -26,7 +26,7 @@ export function endpointUrl(value:unknown) {
  return u.href;
 }
 export function enqueueEvents(state:State,incident:Incident,input:any,actor:Member) {
- const event:EventType|undefined=input.type==='declare'?'trigger':input.type==='reassign'?'reassignment':input.type==='assign-role'?'role':['action','complete','accept-action'].includes(input.type)?'follow-up':input.type==='bulk-acknowledge'||input.type==='transition'&&input.state==='acknowledged'?'acknowledgment':input.type==='bulk-resolve'||input.type==='transition'&&input.state==='resolved'?'resolution':undefined;
+ const event:EventType|undefined=['declare','manual-page'].includes(input.type)?'trigger':input.type==='reassign'?'reassignment':input.type==='assign-role'?'role':['action','complete','accept-action'].includes(input.type)?'follow-up':input.type==='bulk-acknowledge'||input.type==='transition'&&input.state==='acknowledged'?'acknowledgment':input.type==='bulk-resolve'||input.type==='transition'&&input.state==='resolved'?'resolution':undefined;
  if(!event)return;
  const entry=incident.timeline.at(-1)!;
  let pending=unfinishedDeliveries(state);

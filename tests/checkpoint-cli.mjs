@@ -22,6 +22,7 @@ function exported(checkpoint,before) {
 export function assertCheckpointRestored(checkpoint,after,handoffs=checkpoint.handoffs) {
  const inactive=structuredClone(checkpoint.coordination)
  if(inactive.businessServices)inactive.businessServices=inactive.businessServices.map(service=>({...service,active:false,subscriptions:service.subscriptions.map(row=>({...row,active:false})),notices:service.notices.map(row=>({...row,state:'stopped'}))}))
+ for(const i of inactive.incidents){if(i.manualPage)i.manualPage.obligations=i.manualPage.obligations.map(o=>({...o,state:'stopped',outcome:'Restored inactive; no sender'}));if(i.responderRequests)i.responderRequests=i.responderRequests.map(r=>({...r,status:r.status==='pending'?'held':r.status,obligation:{...r.obligation,state:'stopped',outcome:'Restored inactive; no sender'},notice:r.notice?{...r.notice,state:'stopped'}:null}));}
  inactive.members=inactive.members.map(member=>member.role==='stakeholder'?{...member,active:false}:member)
  for(const key of ['changeSources','intakeSources','emailAddresses','apiClients','apiEndpoints'])if(inactive[key])inactive[key]=inactive[key].map(source=>({...source,active:false}))
  if(inactive.apiOutbox)inactive.apiOutbox=inactive.apiOutbox.map(item=>{

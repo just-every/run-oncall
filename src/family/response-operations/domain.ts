@@ -368,7 +368,7 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
     }
     if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&["admin", "responder"].includes(m.role)))fail('An explicit active responsible member is required; the client is not a human responder');
   }
-  const result=['manual-page','user-assignment','request-responders','respond-request','cancel-request'].includes(input.type)?manualCommand(state,actor,input,at,context):applyCommand(state,actor,input,at);
+  const result=['manual-page','user-assignment','request-responders','respond-request','cancel-request'].includes(input.type)?manualCommand(state,actor,input,at,context,data=>applyCommand(state,actor,data,at) as Incident):applyCommand(state,actor,input,at);
   if(result&&'timeline' in result) {finishManualRecords(result as Incident,actor,at);enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
   return result;
 }

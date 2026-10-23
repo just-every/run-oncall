@@ -20,7 +20,7 @@ export function holdManualRecords(state:State) {
 }
 export function eraseManualMember(incident:State['incidents'][number],id:string) {
  incident.responders=incident.responders?.filter(member=>member!==id);
- if(incident.manualPage?.creator===id){incident.manualPage.description='Erased member';incident.manualPage.fingerprint='';}
- for(const o of incident.manualPage?.obligations??[])if(o.creator===id||o.target.kind==='user'&&o.target.id===id){o.state='stopped';o.outcome='Erased member';}
- for(const request of incident.responderRequests??[])if(request.requester===id||request.obligation.target.kind==='user'&&request.obligation.target.id===id||request.response?.by===id){request.message='Erased member';if(request.status==='pending')request.status='ended';request.obligation.state='stopped';request.obligation.outcome='Erased member';if(request.notice)request.notice.state='stopped';}
+ if(incident.manualPage?.creator===id)delete incident.manualPage;
+ else if(incident.manualPage)incident.manualPage.obligations=incident.manualPage.obligations.filter(o=>o.creator!==id&&!(o.target.kind==='user'&&o.target.id===id));
+ if(incident.responderRequests)incident.responderRequests=incident.responderRequests.filter(r=>r.requester!==id&&r.response?.by!==id&&!(r.obligation.target.kind==='user'&&r.obligation.target.id===id));
 }
