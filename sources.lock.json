@@ -3803,7 +3803,7 @@
       "executable": false
     },
     "tests/automation.mjs": {
-      "sha256": "0176daba51a54cece0db80aae02bf1198a195566db611bc02c549e8365081138",
+      "sha256": "4f1d13b22bca5525c46d82c5cd3baa922d5682529275ead70cabda44597c13d7",
       "executable": false
     },
     "tests/changes.mjs": {
