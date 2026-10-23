@@ -131,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "bb4fd6f18c5f80f6be69e5047bfad6fdf14cc31cf033f072babcee438806db68",
+      "sha256": "1d4383c10c8f62654592d8857ea4dfcf2ee3364d2881111850935e03b0718ff2",
       "executable": false
     },
     "AGENTS.md": {
@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "6caca5e353059f8a53b28cbf2cfd78374f24aa5858b69a1fa4a92fdc23c46615",
+      "sha256": "2c28a03d82602e8097904c4abf2f68899c6017087289a3f397ac948015156f6c",
       "executable": false
     },
     "DEMO.md": {
@@ -195,7 +195,7 @@
       "executable": false
     },
     "docs/incidents.md": {
-      "sha256": "d276bfaafdc4c7b6136f3f94095c29ca095a76deb64c6a742a608bd9d6b41479",
+      "sha256": "85f80bfd193309b80152f8706705099a4150d8fedb1594043e63a03b4d0e0cdf",
       "executable": false
     },
     "docs/install.md": {
@@ -1155,7 +1155,7 @@
       "executable": false
     },
     "src/family/response-operations/domain.ts": {
-      "sha256": "4c512e737e7ccc729035cd2722b6169983ac4878da1cdee98049e34c209810fe",
+      "sha256": "5a9e5daa4c237074a8885f5f0877f0f95211f661bb9666eee7f7737e3abad944",
       "executable": false
     },
     "src/family/response-operations/escalation.ts": {
@@ -1223,11 +1223,11 @@
       "executable": false
     },
     "src/incident-workflows/Controls.tsx": {
-      "sha256": "024920799bdcaba12f266e77c4214416fd3f8879d7d4d258bf4871f160f701d6",
+      "sha256": "cb376974d393b4106f5b4eef39d20eca88f7b948feb10d446e3e6a15117e98c5",
       "executable": false
     },
     "src/incident-workflows/relations.ts": {
-      "sha256": "1e8c91d044f051a0a91cde615ede69fe254f05c20e1703d981e64634c3af7ba0",
+      "sha256": "cf4dde3bb3752b6adb63fdaff06ab007d3986275242dea2ea85dbbc678372070",
       "executable": false
     },
     "src/incident-workflows/scope.ts": {
@@ -3987,7 +3987,7 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "fe4bf3db5d810e0a00813dec7555c93da577ecc66f4ef178de28e2bdd23814f6",
+      "sha256": "3b67431bd9be31287133249ede113ee76d54158ca9c90cbf3034b4143fd3f202",
       "executable": false
     },
     "tests/urgency.mjs": {
