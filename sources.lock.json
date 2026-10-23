@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "eade6b64ea9cb575e4ae939e1b3ff60a603c17109607f8f11c12ad57fc4052c4",
+      "sha256": "487ca4fe272680bfa124b06eb0a4f13e818b80062675c4433c05c0af7178eab6",
       "executable": false
     },
     "DEMO.md": {
@@ -1259,7 +1259,7 @@
       "executable": false
     },
     "src/incident-deadlines/model.ts": {
-      "sha256": "588da776639cc2a426902c67a0a6805d2aa538139860e4b380c6432f49ff07fe",
+      "sha256": "f844c7e39e530522759c231ce1451c2dc9d4728444640cc7be23b2274e5d344f",
       "executable": false
     },
     "src/incident-deadlines/sweep.ts": {
