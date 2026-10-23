@@ -273,6 +273,12 @@
       "name": "0138_business_status.sql",
       "sha256": "9b5d0f59f3227ba0fef8f301d01e6f38d83595af432d941db5cb937a14b388f9",
       "sql": "-- Internal status, overrides, explicit audiences, subscriptions and record-only notices.\nCREATE TABLE oc_business_services(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0139_manual_command_receipts.sql",
+      "sha256": "8064fe877c22bf0500ff5c20d274cbd4e8b2e0dea986fa9e3e4fef4faf2c54a0",
+      "sql": "-- Refresh-safe writes (command-receipts.ts): one row per actor and form command\n-- key. A seed applies this as its next numbered migration; archives leave it out.\nCREATE TABLE rer_command_receipts (\n  actor TEXT NOT NULL,\n  command_key TEXT NOT NULL,\n  command TEXT NOT NULL,\n  state TEXT NOT NULL CHECK(state IN ('running','done')),\n  result TEXT,\n  once TEXT,\n  created_at INTEGER NOT NULL,\n  PRIMARY KEY(actor, command_key)\n);\nCREATE INDEX rer_command_receipts_created ON rer_command_receipts(created_at);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
