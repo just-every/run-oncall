@@ -6,9 +6,15 @@ import {runtimeBindings} from '../auth.server';
 import type { IntakeSource } from '../intake/model.ts';
 
 export type IntakeDependencies={load:(db:D1Database)=>Promise<State>;save:(db:D1Database,state:State,revision:number,guard:{sql:string;values:(string|number|null)[]})=>Promise<void>};
+const rejectionWindowMs=60000;
+/** Each receiver and reason keeps one rejection diagnostic. A refusal within a minute of it
+ * persists nothing, so unauthenticated senders cannot grow the workspace or advance its revision. */
 export async function rejectIntake(c:any,deps:IntakeDependencies,state:State,source:IntakeSource|undefined,endpoint:string,reason:string) {
-  const at=new Date().toISOString();
-  state.audit.push({id:crypto.randomUUID(),at,actor:'source:intake',kind:'intake-rejected',text:`Rejected ${endpoint} intake${source?' for integration '+source.id+'; owner '+(source.routing?.owner??source.createdBy):''}: ${reason}`});
+  const at=Date.now(),text=`Rejected ${endpoint} intake${source?' for integration '+source.id+'; owner '+(source.routing?.owner??source.createdBy):''}: ${reason}`;
+  const same=(row:State['audit'][number])=>row.kind==='intake-rejected'&&row.text===text;
+  if(state.audit.some(row=>same(row)&&Date.parse(row.at)>at-rejectionWindowMs))return;
+  state.audit=state.audit.filter(row=>!same(row));
+  state.audit.push({id:crypto.randomUUID(),at:new Date(at).toISOString(),actor:'source:intake',kind:'intake-rejected',text});
   auditOutcome(c.env.DB,'refused');
   try { await deps.save(c.env.DB,state,state.revision,{sql:'1=1',values:[]}); } finally { auditOutcome(c.env.DB); }
 }

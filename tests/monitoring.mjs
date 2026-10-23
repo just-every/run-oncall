@@ -75,6 +75,10 @@ try {
  ok(await send('dd',datadog),202);ok(await send('dd',{...datadog,id:'event-2',alert_transition:'Recovered',date:Date.parse('2026-10-17T10:00:00Z')}),202);ok(await send('dd',{...datadog,id:'event-3',alert_cycle_key:'outage-4',alert_transition:'No Data'}),202);assert.equal(ok(await req('/api/state')).intakeReceipts.at(-1).action,'trigger');
  // Authenticate before admitting any incomplete record; diagnostics grant no authority.
  const beforeDenied=ok(await req('/api/archive'));ok(await send('am',first,'forged'),401);const denied=ok(await req('/api/archive'));assert.deepEqual(denied.events,beforeDenied.events);assert.deepEqual(denied.intakeReceipts,beforeDenied.intakeReceipts);assert.equal(denied.audit.at(-1).kind,'intake-rejected');
+ // Repeated anonymous refusals share one receiver diagnostic and cannot advance the coordination revision per request.
+ for(let n=0;n<20;n++)ok(await w.send('/api/monitoring/missing','{}',{'content-type':'application/json'}),401);
+ const repeatedDenied=ok(await req('/api/archive'));assert.ok(repeatedDenied.revision<=denied.revision+1,'refused requests leave the workspace revision for human writes');
+ assert.equal(repeatedDenied.audit.length,denied.audit.length+1);assert.equal(repeatedDenied.audit.at(-1).kind,'intake-rejected');
  const long=alert('long-context');long.annotations.description='x'.repeat(12000);long.labels.token='must-not-survive';long.labels.secretEcho=keys.am;
  ok(await send('am',group([long])),202);state=ok(await req('/api/state'));assert.ok(state.intakeReceipts.at(-1).truncated);assert.ok(!JSON.stringify(state).includes('must-not-survive'));assert.ok(!JSON.stringify(state).includes(keys.am));
  const longIdentityResult=ok(await send('am',group([alert('f'.repeat(1200)+'a'),alert('f'.repeat(1200)+'b')])),202);assert.equal(longIdentityResult.receipts.length,2);assert.notEqual(longIdentityResult.receipts[0].id,longIdentityResult.receipts[1].id,'bounded context cannot merge distinct full provider identities');
@@ -97,10 +101,11 @@ try {
  state=ok(await req('/api/state'));const pdIncomplete=state.intakeReceipts.find(r=>r.source==='pd'&&r.incomplete?.sha256===createHash('sha256').update(overPd).digest('hex'));assert.equal(pdIncomplete?.service,'payments');
  const pdObligation=incompleteCustody(state,pdIncomplete,overPd,['large-pd'],actor.id,{kind:'service',id:'payments'});assert.deepEqual(pdObligation.urgencyHistory.map(e=>[e.from,e.to,e.ruleVersion]),[[null,'low',1],['low','high',null]]);assert.equal(pdObligation.urgencyHistory[1].id,'incomplete:'+pdIncomplete.id);
  // An oversized anonymous request on a known receiver gets an owner diagnostic, never custody.
+ // It uses a receiver with no earlier refusal: repeats for one receiver share its diagnostic.
  const deniedRaw=JSON.stringify({...group([alert('unauthenticated-oversize-must-not-survive')]),padding:'z'.repeat(3*1024*1024)}),beforeOversizeDenied=ok(await req('/api/archive'));
- ok(await w.send('/api/monitoring/am',deniedRaw,{'content-type':'application/json'}),401);const oversizeDenied=ok(await req('/api/archive'));
+ ok(await w.send('/api/monitoring/dd',deniedRaw,{'content-type':'application/json'}),401);const oversizeDenied=ok(await req('/api/archive'));
  assert.deepEqual(oversizeDenied.alerts,beforeOversizeDenied.alerts);assert.deepEqual(oversizeDenied.events,beforeOversizeDenied.events);assert.deepEqual(oversizeDenied.intakeReceipts,beforeOversizeDenied.intakeReceipts);
- assert.equal(oversizeDenied.audit.length,beforeOversizeDenied.audit.length+1);const refusal=oversizeDenied.audit.at(-1);assert.equal(refusal.kind,'intake-rejected');assert.ok(refusal.text.includes('integration am; owner '+actor.id));assert.ok(!JSON.stringify(oversizeDenied).includes('unauthenticated-oversize-must-not-survive'));assert.ok(!JSON.stringify(oversizeDenied).includes('z'.repeat(12000)));
+ assert.equal(oversizeDenied.audit.length,beforeOversizeDenied.audit.length+1);const refusal=oversizeDenied.audit.at(-1);assert.equal(refusal.kind,'intake-rejected');assert.ok(refusal.text.includes('integration dd; owner '+actor.id));assert.ok(!JSON.stringify(oversizeDenied).includes('unauthenticated-oversize-must-not-survive'));assert.ok(!JSON.stringify(oversizeDenied).includes('z'.repeat(12000)));
  // Invalid siblings and malformed JSON retain readable identities and unknown denominators.
  const partial=ok(await send('gf',{...grafana,alerts:[alert('valid-sibling'),{status:'resolved'}]}),202);assert.ok(partial.incomplete);
  const malformed='{"version":"4","alerts":['+JSON.stringify(alert('malformed-readable'))+',{"broken":"';const malformedReply=ok(await send('am',malformed,keys.am,true),202);assert.equal(malformedReply.receipts.length,1);assert.ok(malformedReply.incomplete);

@@ -83,7 +83,8 @@ try {
   const afterDenied=ok(await request('/api/archive')),accepted=({revision,audit,...records})=>records;
   assert.deepEqual(accepted(afterDenied),accepted(beforeDenied),'rejected intake changes no accepted product records');
   assert.deepEqual(afterDenied.audit.slice(0,beforeDenied.audit.length),beforeDenied.audit);
-  assert.equal(afterDenied.audit.length-beforeDenied.audit.length,3);assert.ok(afterDenied.audit.slice(beforeDenied.audit.length).every(entry=>entry.kind==='intake-rejected'),'each refused credential remains visible to integration owners');
+  // The two anonymous refusals share one diagnostic; the wrong-provider key names its own integration.
+  assert.equal(afterDenied.audit.length-beforeDenied.audit.length,2);assert.ok(afterDenied.audit.slice(beforeDenied.audit.length).every(entry=>entry.kind==='intake-rejected'),'refused credentials remain visible to integration owners');
   const simultaneous=await Promise.all([pd('trigger','concurrent'),pd('trigger','concurrent')]);assert.ok(simultaneous.some(r=>r.status===202));assert.ok(simultaneous.every(r=>[202,503].includes(r.status)));
   for(const r of simultaneous)if(r.status===503)ok(await pd('trigger','concurrent'),202);
   assert.equal(ok(await request('/api/state')).alerts.filter(a=>a.source==='intake:pd'&&a.key==='concurrent').length,1);
