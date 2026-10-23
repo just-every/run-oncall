@@ -475,7 +475,7 @@ The approved scope is the 16 October 2026 Oncall entry in LIST.json; the categor
 
 ## Status
 
-Judged from the code and tests at commit `f97f83022c2d6c314a08629b34f6109777c1ba3e` (23 October 2026). The 0.4.0 release gate remains dated one-time evidence for its own published rota, now/next, calendar feed, incident, move-in, upgrade and hosted journeys; it does not establish later capabilities. Each status rests only on its exercising flow. OC-053 is done; ct's independent exact-head transfer and portable CLI gate passed at 66ea392a on 23 October 2026. Current row totals are 31 done, 24 partial and 18 missing of 73.
+Judged from the code and tests at commit `e1929e39c06dd5df29ad03b6ebeda2a82b1acb1e` (23 October 2026). The 0.4.0 release gate remains dated one-time evidence for its own published rota, now/next, calendar feed, incident, move-in, upgrade and hosted journeys; it does not establish later capabilities. Each status rests only on its exercising flow. OC-053 is done; ct's independent exact-head transfer and portable CLI gate passed at 66ea392a on 23 October 2026. Current row totals are 31 done, 24 partial and 18 missing of 73.
 
 Current totals are 31 done / 24 partial / 18 missing. OC-059 records the service and integration-owner page obligations while paging stays OFF; OC-026 and OC-068 retain delivery, and OC-064 retains reference-load measurement.
 
