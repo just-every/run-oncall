@@ -1259,7 +1259,7 @@
       "executable": false
     },
     "src/incident-deadlines/model.ts": {
-      "sha256": "436d74ec3dda0529c3ec448120b1e68445cf9f18257f694ea021326a80747eb8",
+      "sha256": "2fbc0b5e2c87bca2659008f4e425f76e65adcdb83cda67f7ca3994422258a106",
       "executable": false
     },
     "src/incident-deadlines/sweep.ts": {
@@ -1479,7 +1479,7 @@
       "executable": false
     },
     "src/manual-pages/context.ts": {
-      "sha256": "bdd7ace4fb0084bcc2e58474e2940fe9f1a70863d0475c8b186e38c3cbb0137f",
+      "sha256": "ff3923e01c210adbcfe096179d8e8d8b54322d152e1ad8edbcaae1fd2ffdfc25",
       "executable": false
     },
     "src/manual-pages/Controls.tsx": {
@@ -1487,7 +1487,7 @@
       "executable": false
     },
     "src/manual-pages/model.ts": {
-      "sha256": "af9205d16d22cdb6510a45a49cbd5ff56b14267e5c6c21c809e3894a7b3c53bb",
+      "sha256": "f4cbcbd02c38ed38c2eb984d0bb290d2891dc95301807f1fc58abcd513e02ede",
       "executable": false
     },
     "src/manual-pages/types.ts": {
@@ -3803,7 +3803,7 @@
       "executable": false
     },
     "tests/automation.mjs": {
-      "sha256": "0a089c3b0fea638a6692436df1027ed48cec821cc6c8859424516a8e3fd3268d",
+      "sha256": "866dc7ef3945b690127dd03c09d57bf393960f748bdd7054948eca534709de4c",
       "executable": false
     },
     "tests/changes.mjs": {
@@ -3943,7 +3943,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "fa6b8ecc5067445e77376613d39dcc6c4642699811d17c0ffd0dacb0668e122c",
+      "sha256": "fb799a2c94612fe64ba99135b89c90cda6f1b49e995fd2e291d805fc14648aff",
       "executable": false
     },
     "tests/monitoring.mjs": {
@@ -4023,7 +4023,7 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "7460a4d4c85769925d2592542d33d87a15624bf6d84a69279c53484a56bdb1c8",
+      "sha256": "a09f19eb426581058f24565788b96b1aab4c86a68936499e4b6ccfcafea20930",
       "executable": false
     },
     "tests/urgency.mjs": {
