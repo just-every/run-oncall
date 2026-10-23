@@ -51,6 +51,7 @@ function Workspace() {
     window.history.replaceState(null, "", url);
   };
   const [declare, setDeclare] = useState(false);
+  const [declarationService,setDeclarationService]=useState("");
   const [signingOut, setSigningOut] = useState(false);
   const [replay, setReplay] = useState<any>(null);
   const [handoff, setHandoff] = useState<any>(null);
@@ -96,6 +97,7 @@ function Workspace() {
       {v.name} · {v.environment}
     </option>
   ));
+  const declarationTemplate=s?.services.find(v=>v.id===(declarationService||s.services[0]?.id))?.incidentTemplates?.at(-1);
   const command = (data: any) => w.run("/api/command", data);
   const mutate = (data: any) =>
     incident
@@ -260,18 +262,15 @@ function Workspace() {
                       }}
                     >
                       <Field name="title" label="Incident title" />
-                      <Field name="service" label="Service">
-                        {serviceOptions}
-                      </Field>
-                      <Field name="incidentType" label="Incident type (service template)"><option value="">Service template default</option>{[...new Set(s.services.flatMap(service=>service.incidentTemplates?.at(-1)?.incidentTypes??[]))].map(type=><option key={type}>{type}</option>)}</Field>
+                      <label className="field"><span>Service</span><select name="service" required value={declarationService||s.services[0]?.id||''} onChange={event=>setDeclarationService(event.target.value)}>{serviceOptions}</select></label>
+                      <Field key={declarationService||s.services[0]?.id} name="incidentType" label="Incident type (service template)" required={false}><option value="">Service template default</option>{(declarationTemplate?.incidentTypes??[]).map(type=><option key={type}>{type}</option>)}</Field>
                       <Field name="severity" label="Severity">
-                        <option>critical</option>
-                        <option>warning</option>
-                        <option>info</option>
+                        {(['critical','warning','info'] as const).map(severity=><option key={severity} value={severity}>{declarationTemplate?.severityWording[severity]??severity}</option>)}
                       </Field>
                       <Field
                         name="summary"
                         label="Customer impact and current evidence"
+                        help={declarationTemplate?.impactPrompt}
                         type="textarea"
                       />
                     </Form>
