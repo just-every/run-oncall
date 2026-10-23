@@ -1251,7 +1251,7 @@
       "executable": false
     },
     "src/incident-deadlines/archive.ts": {
-      "sha256": "195d4ab344a9cf809aec8af0be42e06ac34c6ec982faa892ad9637af9b6271b3",
+      "sha256": "bf826def33f509107171919b5b6282a770eb4799f1446a380b08de666570f7eb",
       "executable": false
     },
     "src/incident-deadlines/Controls.tsx": {
@@ -1259,7 +1259,7 @@
       "executable": false
     },
     "src/incident-deadlines/model.ts": {
-      "sha256": "2fbc0b5e2c87bca2659008f4e425f76e65adcdb83cda67f7ca3994422258a106",
+      "sha256": "588da776639cc2a426902c67a0a6805d2aa538139860e4b380c6432f49ff07fe",
       "executable": false
     },
     "src/incident-deadlines/sweep.ts": {
@@ -3803,7 +3803,7 @@
       "executable": false
     },
     "tests/automation.mjs": {
-      "sha256": "7863e4d13ddda0f922fa03691e5532b149e9cc0e383089cad2a272750eb5eb13",
+      "sha256": "0176daba51a54cece0db80aae02bf1198a195566db611bc02c549e8365081138",
       "executable": false
     },
     "tests/changes.mjs": {
