@@ -1,6 +1,7 @@
 import { IncidentWorkflows } from '../incident-workflows/Controls';
 import { ServiceTemplateSettings } from '../incident-workflows/TemplateSettings';
 import { resolveIncidentAlias } from '../incident-workflows/relations';
+import {ManualDeclare, UserAssignment, ResponderRequests} from '../manual-pages/Controls';
 import { StatusPanel } from '../business-status/StatusPanel';
 import { AutomationSettings } from '../automation/AutomationSettings';
 import { EmailWorkspace } from '../email/EmailWorkspace';
@@ -249,35 +250,10 @@ function Workspace() {
                   {!s.services.length ? (
                     <p>Create a service first.</p>
                   ) : (
-                    <Form
-                      busy={w.busy}
-                      label="Declare"
-                      onSubmit={async (data) => {
-                        const i = await command({
-                          ...data,
-                          type: "declare",
-                          alerts: [],
-                        });
-                        if (i) {
-                          selectIncident(i.id);
-                          setDeclare(false);
-                        }
-                        return i;
-                      }}
-                    >
-                      <Field name="title" label="Incident title" />
-                      <label className="field"><span id="declaration-service-label">Service</span><select aria-labelledby="declaration-service-label" name="service" required value={declarationService||s.services[0]?.id||''} onChange={event=>setDeclarationService(event.target.value)}>{serviceOptions}</select></label>
-                      <Field key={declarationService||s.services[0]?.id} name="incidentType" label="Incident type (service template)" required={false}><option value="">Service template default</option>{(declarationTemplate?.incidentTypes??[]).map(type=><option key={type}>{type}</option>)}</Field>
-                      <Field name="severity" label="Severity">
-                        {(['critical','warning','info'] as const).map(severity=><option key={severity} value={severity}>{declarationTemplate?.severityWording[severity]??severity}</option>)}
-                      </Field>
-                      <Field
-                        name="summary"
-                        label="Customer impact and current evidence"
-                        help={declarationTemplate?.impactPrompt}
-                        type="textarea"
-                      />
-                    </Form>
+                    <ManualDeclare state={s} busy={w.busy} submit={async data=>{
+                      const i=await command(data);if(i){selectIncident(i.id);setDeclare(false);}return i;
+                    }}/>
+
                   )}
                 </div>
               )}
@@ -343,6 +319,7 @@ function Workspace() {
                   </section>}
                   <IncidentWorkflows key={`workflow-${incident.id}`} state={s} incident={incident} member={actor} send={command} />
                   <IncidentResponseControls key={`response-${incident.id}`} incident={incident} members={s.members} busy={w.busy} canEdit={canEdit} mutate={mutate} />
+                  <ResponderRequests incident={incident} state={s} actor={actor} busy={w.busy} submit={command}/>
                   <RecentChanges service={incident.service} at={incident.createdAt} revision={s.revision} expanded />
                   <section className="timeline">
                     <h3 className="section-title">
@@ -547,6 +524,7 @@ function Workspace() {
                   <ServiceTemplateSettings state={s} service={v} member={actor} send={command} />
                   <UrgencyPolicy key={'urgency:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
                   {admin && <ServiceDependencies key={v.id} service={v} services={s.services} revision={s.revision} busy={w.busy} run={w.run} />}
+                  {actor.role === 'admin' && <UserAssignment service={v} state={s} busy={w.busy} submit={command}/>}
                   {admin && (
                     <details>
                       <summary>Edit service</summary>

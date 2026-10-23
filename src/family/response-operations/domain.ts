@@ -3,6 +3,9 @@ import { publishIncidentTemplate, instantiateIncidentTemplate, checklistCommand,
 import type { IncidentTemplate, TemplateSnapshot } from '../../incident-workflows/types-template.ts';
 import { relationCommand, validateIncidentRelations, incidentAlertLinkAllowed } from '../../incident-workflows/relations.ts';
 import type { IncidentRelations } from '../../incident-workflows/relations.ts';
+import { manualCommand, finishManualRecords, type PolicyContext } from '../../manual-pages/model';
+import { validateManualRecords } from '../../manual-pages/archive';
+import type { AssignmentRule, ManualPage, ResponderRequest } from '../../manual-pages/types';
 import type { BusinessService } from '../../business-status/types.ts';
 import { validateBusinessStatus } from '../../business-status/archive.ts';
 import type { ResponsePolicy, AutomaticDeclaration, IncidentSourceRecovery } from '../../response-policy/types.ts';
@@ -35,6 +38,7 @@ export type Service = {
   urgencyRules?: UrgencyRule[];
   responsePolicies?: ResponsePolicy[];
   incidentTemplates?: IncidentTemplate[];
+  userAssignments?: AssignmentRule[];
 };
 export type Policy = {
   id: string;
@@ -136,6 +140,9 @@ export type Incident = IncidentRelations & {
   actions: Action[];
   recovery: string;
   review: string;
+  manualPage?: ManualPage;
+  responderRequests?: ResponderRequest[];
+  responders?: string[];
   reviewAcceptance?: {rootCause:string;impact:string;by:string;at:string;materialRevision:number;workspaceRevision:number};
   assignee?: string | null;
   urgency?: "high" | "low";
@@ -359,10 +366,10 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
   );
   return { event, alert: alert?.id ?? null, duplicate: false };
 }
-export function command(state:State,actor:Member,input:any,at=new Date().toISOString()) {
+export function command(state:State,actor:Member,input:any,at=new Date().toISOString(),context:PolicyContext={policies:[],eligible:{}}) {
   if(actor.machine) {
     machineAuthority(state,actor);
-    if(!['service','declare','transition','reassign','assign-role','action','complete'].includes(input.type))fail('Machine action is not authorized',403);
+    if(!['service','declare','manual-page','transition','reassign','assign-role','action','complete'].includes(input.type))fail('Machine action is not authorized',403);
     if(input.type==='complete') {
       const action=state.incidents.find(i=>i.id===input.incident)?.actions.find(a=>a.id===input.action);
       if(action?.completionPolicy!=='evidence')fail('Human review requires a current human session',403);
@@ -370,14 +377,14 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
     if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&["admin", "responder"].includes(m.role)))fail('An explicit active responsible member is required; the client is not a human responder');
   }
   const beforeLinks = ['merge-incidents','split-incident'].includes(input.type) ? state.incidents.map(i=>({id:i.id,alerts:[...i.alerts],marker:i.sourceRecovery?structuredClone(i.sourceRecovery):undefined})) : [];
-  const result=applyCommand(state,actor,input,at);
+  const result=['manual-page','user-assignment','request-responders','respond-request','cancel-request'].includes(input.type)?manualCommand(state,actor,input,at,context):applyCommand(state,actor,input,at);
   for (const prior of beforeLinks) {
     const changed=state.incidents.find(i=>i.id===prior.id)!;
     if(JSON.stringify(prior.alerts)===JSON.stringify(changed.alerts))continue;
     if(prior.marker){(changed.sourceRecoveryHistory??=[]).push({...prior.marker,alerts:prior.alerts});delete changed.sourceRecovery;}
     refreshIncidentRecovery(state,changed,at,undefined,actor);
   }
-  if(result&&'timeline' in result) {enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
+  if(result&&'timeline' in result) {finishManualRecords(result as Incident,actor,at);enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
   return result;
 }
 function applyCommand(
@@ -687,6 +694,7 @@ export function validateArchive(value: any): State {
   }
   validateAllowances(value);
   validateBusinessStatus(value);
+  validateManualRecords(value);
   value.members.forEach(member);
   if (!value.members.some((m: any) => m.active && m.role === "admin"))
     fail("Archive needs an active administrator");
@@ -697,7 +705,7 @@ export function validateArchive(value: any): State {
   )
     fail("Duplicate member names");
   for (const s of value.services) {
-    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "incidentTemplates"]);
+    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
     if (!hasMember(s.owner)) fail("Invalid service references");
@@ -822,7 +830,7 @@ export function validateArchive(value: any): State {
       "actions",
       "recovery",
       "review",
-    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance", "automaticDeclaration", "sourceRecovery", "sourceRecoveryHistory", "template", "mergedInto", "mergedSources", "splitFrom"]);
+    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance", "automaticDeclaration", "sourceRecovery", "sourceRecoveryHistory", "template", "mergedInto", "mergedSources", "splitFrom", "manualPage", "responderRequests", "responders"]);
     validateIncidentControls(i, value.members);
     text(i.title, "incident", 300);
     if (

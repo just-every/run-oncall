@@ -30,3 +30,10 @@ export type StatusNoticeObligation = {
   businessService: string; businessName: string; derivedStatus: 'degraded' | 'major outage';
   approvedUpdate: null; at: string;
 };
+
+/** Human-origin pages and responder requests retain obligations with delivery off. */
+export type RecordedResponseObligation = {
+  id:string;state:'recorded'|'stopped';paging:'off';automatic:false;label:'no sender';
+  target:import('./manual-pages/types').ResponseTarget;urgency:'high'|'low';creator:string;
+  at:string;outcome:string;assignment?:import('./manual-pages/types').AssignmentRule;
+};
