@@ -377,7 +377,7 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
     if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&["admin", "responder"].includes(m.role)))fail('An explicit active responsible member is required; the client is not a human responder');
   }
   const beforeLinks = ['merge-incidents','split-incident'].includes(input.type) ? state.incidents.map(i=>({id:i.id,alerts:[...i.alerts],marker:i.sourceRecovery?structuredClone(i.sourceRecovery):undefined})) : [];
-  const result=['manual-page','user-assignment','request-responders','respond-request','cancel-request'].includes(input.type)?manualCommand(state,actor,input,at,context):applyCommand(state,actor,input,at);
+  const result=['manual-page','user-assignment','request-responders','respond-request','cancel-request'].includes(input.type)?manualCommand(state,actor,input,at,context,data=>applyCommand(state,actor,data,at) as Incident):applyCommand(state,actor,input,at);
   for (const prior of beforeLinks) {
     const changed=state.incidents.find(i=>i.id===prior.id)!;
     if(JSON.stringify(prior.alerts)===JSON.stringify(changed.alerts))continue;

@@ -251,6 +251,7 @@ try {
   status=await business();
   ok(await w.request('/api/status',{action:'override',id:status.id,revision:status.revision,value:'operational',reason:'Not my status'},viewerCookie),403);
   ok(await w.request('/api/status',{action:'subscribe',id:status.id,revision:status.revision,member:actor.id,channel:'email',active:true},statusCookie),403);
+  for(const deniedCookie of [viewerCookie,statusCookie]){const before=ok(await req('/api/state'));for(const type of ['manual-page','request-responders'])assert.equal((await w.request('/api/command',{type,service:'synthetic-oncall-61',operationId:'synthetic-oncall-68-denied',title:'Forbidden page',severity:'critical',users:[]},deniedCookie)).status,403);assert.deepEqual(ok(await req('/api/state')),before);}console.log('OC-068 triage permissions: viewers and stakeholders refuse manual page and responder requests without creating state');
   console.log('OC-061 business services and subscriptions: explicit audience, self subscription, recorded channel, unauthorized subscription and override refusals');
   const privateText='synthetic-oncall-64-private-alert';
   const impacted=ok(await req('/api/command',{type:'declare',service:statusService.id,severity:'warning',title:privateText,summary:'Private incident impact',alerts:[]}));

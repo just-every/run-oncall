@@ -74,6 +74,35 @@ try {
  assert.deepEqual(retained.primary.members,reviewBase.primary.members);assert.deepEqual(retained.backup.members,reviewBase.backup.members)
  record('OC-024 reviewed schedule changes: New York/London/Los Angeles DST, new gap, retained slots, denied viewer/anonymous, confirmation and stale-digest refusal, audit rollback, race and exact apply/preview equality passed')
  record('OC-011/014/020: calendar-day DST hand-off, overrides, now/next, protected ICS and escalation data passed')
+ // OC-068: public manual page and independent responder-request lifecycle, with no sender.
+ const pageInput={type:'manual-page',operationId:'synthetic-oncall-68-page',service:'checkout',title:'Manual checkout impact',severity:'warning',description:'Investigate payment failures',users:[a.id,b.id],priority:'P2'}
+ let manual=ok(await req('/api/command',pageInput));assert.equal(manual.urgency,'high');assert.equal(manual.manualPage.creator,admin.id);assert.equal(manual.manualPage.assignment.minutes,10);assert.equal(manual.manualPage.assignment.policy,'checkout');assert.equal(manual.manualPage.obligations.length,2)
+ assert.ok(manual.manualPage.obligations.every(o=>o.paging==='off'&&o.automatic===false&&o.label==='no sender'))
+ assert.equal(ok(await req('/api/command',pageInput)).id,manual.id);ok(await req('/api/command',{...pageInput,title:'Conflicting reuse'}),409)
+ assert.equal(ok(await req('/api/state')).incidents.filter(i=>i.manualPage?.operation===pageInput.operationId).length,1)
+ ok(await req('/api/command',{type:'user-assignment',service:'checkout',baseVersion:0,mode:'repeat',minutes:7,policy:'checkout'}));ok(await req('/api/command',{type:'user-assignment',service:'checkout',baseVersion:0,mode:'repeat',minutes:7,policy:'checkout'}),409)
+ const policyPage=ok(await req('/api/command',{...pageInput,operationId:'synthetic-oncall-68-policy',users:[],policy:'checkout',urgency:'low'}));assert.equal(policyPage.urgency,'low');assert.equal(policyPage.manualPage.obligations[0].target.policyRevision,1);assert.equal(policyPage.manualPage.assignment.version,1)
+ record('OC-068 manual pages: creator, urgency default/override, optional priority/description, real policy snapshot, per-user obligations, versioned assignment setting and repeated/conflicting operation keys')
+ const beforePageFailure=ok(await req('/api/state'))
+ w.sql("CREATE TRIGGER injected_manual_audit_failure BEFORE INSERT ON oc_admin_audit WHEN NEW.workspace_after>NEW.workspace_before BEGIN SELECT RAISE(ABORT,'INJECTED_MANUAL_AUDIT_FAILURE'); END")
+ try{ok(await req('/api/command',{...pageInput,operationId:'synthetic-oncall-68-atomic'}),503)}finally{w.sql('DROP TRIGGER injected_manual_audit_failure')}
+ assert.deepEqual(ok(await req('/api/state')),beforePageFailure,'manual page and obligations roll back when permanent audit fails')
+ record('OC-068 atomic custody: failed permanent audit rolls back incident, obligations and creator state')
+ manual=ok(await req('/api/command',{type:'request-responders',incident:manual.id,revision:manual.revision,users:[a.id,b.id],message:'Please inspect payments'}))
+ const [requestA,requestB]=manual.responderRequests,sessionA=(await w.request('/api/login',{name:'Alice',password:'synthetic-local-testing-password'})).cookie,sessionB=(await w.request('/api/login',{name:'Bob',password:'synthetic-local-testing-password'})).cookie
+ manual=ok(await w.request('/api/command',{type:'respond-request',incident:manual.id,revision:manual.revision,request:requestA.id,decision:'accept'},sessionA));assert.deepEqual(manual.responders,[a.id]);assert.equal(manual.manualPage.acknowledgment,null);assert.equal(manual.state,'declared')
+ manual=ok(await req('/api/command',{type:'transition',incident:manual.id,revision:manual.revision,state:'acknowledged',summary:'Primary owner acknowledges'}));assert.equal(manual.responderRequests.find(r=>r.id===requestB.id).status,'pending')
+ manual=ok(await w.request('/api/command',{type:'respond-request',incident:manual.id,revision:manual.revision,request:requestB.id,decision:'decline'},sessionB));assert.equal(manual.manualPage.acknowledgment.by,admin.id);assert.equal(manual.responderRequests[1].notice.target.id,admin.id);assert.equal(manual.responderRequests[1].notice.automatic,false)
+ manual=ok(await req('/api/command',{type:'request-responders',incident:manual.id,revision:manual.revision,users:[a.id,b.id],message:'Follow-up request'}));const cancel=manual.responderRequests.at(-2)
+ ok(await w.request('/api/command',{type:'cancel-request',incident:manual.id,revision:manual.revision,request:cancel.id},sessionA),403)
+ manual=ok(await req('/api/command',{type:'cancel-request',incident:manual.id,revision:manual.revision,request:cancel.id}));assert.equal(manual.responderRequests.find(r=>r.id===cancel.id).status,'cancelled')
+ manual=ok(await req('/api/command',{type:'bulk-resolve',incident:manual.id,revision:manual.revision,reason:'Human verification completed',evidence:'https://example.test/manual-recovery'}));assert.ok(manual.responderRequests.every(r=>r.status!=='pending'&&r.obligation.state==='stopped'));assert.ok(manual.manualPage.obligations.every(o=>o.state==='stopped'))
+ assert.ok(manual.timeline.some(e=>e.kind==='respond-request'&&e.actor===a.id));assert.ok(manual.timeline.some(e=>e.kind==='respond-request'&&e.actor===b.id))
+ record('OC-068 responder requests: independent accept/decline and timeline acknowledgment; accepted responder never acknowledges primary; primary acknowledgment preserves pending requests; requester notice, cancellation and resolution stop only their own work')
+ const stakeholder68=ok(await req('/api/members',{name:'synthetic-oncall-68-stakeholder',password:'synthetic-local-testing-password',role:'stakeholder'}),201)
+ for(const name of ['Viewer',stakeholder68.name]){const deniedSession=(await w.request('/api/login',{name,password:'synthetic-local-testing-password'})).cookie,before=ok(await req('/api/state'));ok(await w.request('/api/command',{...pageInput,operationId:'synthetic-oncall-68-refused'},deniedSession),403);ok(await w.request('/api/command',{type:'request-responders',incident:policyPage.id,revision:policyPage.revision,users:[a.id],message:'Refused'},deniedSession),403);assert.deepEqual(ok(await req('/api/state')),before)}
+ record('OC-068 permissions: viewer and stakeholder create/request attempts explain refusal and create nothing; paging remains OFF')
+
  const refusedPagingBefore=ok(await req('/api/paging/state')),refusedWorkspaceBefore=ok(await req('/api/state')),beforeRefusedPaging=await auditExport(),priorPagingAuditIds=new Set(beforeRefusedPaging.map(row=>row.id))
  const pagingDoors=['/api/delivery','/api/paging/jobs','/api/paging/tick','/api/paging/callbacks','/api/paging/jobs/old/resume']
  for(const path of pagingDoors)ok(await req(path,{}),409)
