@@ -251,7 +251,7 @@ try {
   assert.ok(restoredState.intakeSources.filter(s => [pdSource, amSource].includes(s.id)).every(s => !s.active));
   assert.equal(restoredState.emailAddresses.find(a => a.id === emailAddress).active, false);
   ok(await native({...linkedInput, eventId: synthetic()}), 401); ok(await pd('trigger', synthetic()), 400);
-  assert.equal((await mail(w, local, 'FAILED: ' + synthetic())).status, 200);
+  assert.equal((await mail(w, local, 'FAILED: ' + synthetic())).status, 400, 'restored email has no authorized receiving address');
   const inactiveState = ok(await w.request('/api/state', undefined, restored.cookie));
   assert.deepEqual(inactiveState.alerts, archive.alerts); assert.deepEqual(inactiveState.incidents, archive.incidents, 'restored inputs cannot restart stops, reminders or automatic declarations');
   await w.stop(); await w.start();
