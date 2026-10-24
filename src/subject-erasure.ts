@@ -155,6 +155,10 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    for(const incident of state.incidents){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);for(const e of incident.timeline)if(e.lifecycle&&e.lifecycle.member===id)e.lifecycle.member=null;for(const e of incident.timeline)if(e.actor===id||['reassign','assign-role','manual-page','request-responders','respond-request','cancel-request'].includes(e.kind))e.text=redact(e.text)}
    remember('oc_incidents')
    for(const alert of state.alerts)if(alert.coordination){for(const entry of alert.coordination.history)entry.text=redact(entry.text);if(alert.coordination.assignee===id){alert.coordination.assignee=null;alert.coordination.snoozeDue=null}}remember('oc_alerts')
+   // Operational audit copies share entry IDs with the source timeline. Keep
+   // their wording equal after redaction; the permanent audit remains immutable.
+   const redactedEntries=new Map([...state.incidents.flatMap(i=>i.timeline),...state.alerts.flatMap(a=>a.coordination?.history??[])].map(e=>[e.id,e.text]))
+   for(const entry of state.audit)if(redactedEntries.has(entry.id))entry.text=redactedEntries.get(entry.id)!
    await eraseHandoffCopies([],[id])
    for(const table of ['credentials','sessions'])eraseCredential(table,'member',[id])
    eraseCredential('operator_members','member_id',[id]);eraseCredential('login_attempts','name',[oldName,...aliases].map(v=>v.toLowerCase()))
