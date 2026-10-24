@@ -129,6 +129,11 @@ try {
  const maintenanceProviders=ok(await req('/api/state'));for(const source of ['synthetic-oncall-43-dd','synthetic-oncall-43-am']){const receipt=maintenanceProviders.intakeReceipts.find(r=>r.source===source);assert.ok(receipt);assert.equal(maintenanceProviders.events.find(e=>e.id===receipt.event).decision.action,'suppress');}
  await w.time(maintenanceEnd);const expiredMaintenance=await maintenanceAdmission('after');assert.equal(expiredMaintenance.event.decision.action,'route');assert.equal(expiredMaintenance.alert.suppressed,false);assert.match(expiredMaintenance.event.decision.reason,/Maintenance expired/);
  assert.deepEqual(expiredMaintenance.snapshot.events.find(e=>e.id===inMaintenance.event.id),inMaintenance.event,'expiry does not rewrite the earlier event');
+ ok(await pd('trigger','synthetic-oncall-43-during',{team:'payments',observation:'synthetic-oncall-43 after expiry'}),202);
+ const repeatedMaintenance=ok(await req('/api/state')),repeatedReceipt=repeatedMaintenance.intakeReceipts.at(-1),repeatedAlert=repeatedMaintenance.alerts.find(a=>a.id===repeatedReceipt.alert);
+ assert.equal(repeatedAlert.id,inMaintenance.alert.id);assert.equal(repeatedAlert.suppressed,false);assert.equal(repeatedAlert.owner,actor.id);assert.match(repeatedMaintenance.events.find(e=>e.id===repeatedReceipt.event).decision.reason,/Maintenance expired/);assert.deepEqual(repeatedMaintenance.events.find(e=>e.id===inMaintenance.event.id),inMaintenance.event);
+ console.log('PASS OC-043 later observation after expiry routes the existing group without rewriting its original event');
+
  const maintenanceArchive=ok(await req('/api/archive')),maintenanceRows=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
  const maintenanceReplay=ok(await req('/api/routing/keys/pd/preview',{baseVersion:3,rules:changedRules,catchAll:'payments',receiptIds:[inMaintenance.receipt.id]}));
  assert.equal(maintenanceReplay.decisions[0].historical.serviceDecision.action,'suppress');assert.equal(maintenanceReplay.decisions[0].proposed.serviceDecision.action,'route');assert.match(maintenanceReplay.decisions[0].proposed.serviceDecision.reason,/Maintenance expired/);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),maintenanceRows);assert.deepEqual(ok(await req('/api/archive')),maintenanceArchive);
