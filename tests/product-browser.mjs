@@ -307,12 +307,15 @@ async function changeAndSigningBrowser(page,context){
   await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);
   await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const comparison=page.getByRole('region',{name:'Routing preview',exact:true});await comparison.getByText('1 retained events compared. No records changed.',{exact:true}).waitFor();
+  await comparison.getByRole('heading',{name:observation.title,exact:true,level:4}).waitFor();
+  await comparison.getByText('Proposed: routing v1 · service rule v'+policy.version+' · suppress · owner '+member.name+'.',{exact:true}).waitFor();
   await comparison.getByText('Ordered routing decisions',{exact:true}).click();
   const compared=JSON.parse(await comparison.locator('pre').innerText());assert.equal(compared.historical.version,1);assert.equal(compared.proposed.version,1);assert.equal(compared.proposed.serviceDecision.version,policy.version);assert.equal(compared.proposed.serviceDecision.owner,member.id);assert.match(compared.proposed.serviceDecision.reason,/Maintenance active/);assert.ok(compared.proposed.serviceDecision.reason.includes(window.end));
   await comparison.scrollIntoViewIfNeeded();await check('oc043-maintenance-preview',width);
   const expired={start:'2020-01-01T00:00:00.000Z',end:'2020-01-02T00:00:00.000Z'};
   await request('/api/command',{type:'policy',service:'synthetic-oncall-1',severity:'warning',action:'suppress',owner:member.id,reason:'Synthetic completed maintenance',baseVersion:policy.version,suppressionWindow:expired});
   await page.reload();await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();await comparison.getByText('Ordered routing decisions',{exact:true}).click();
+  await comparison.getByText('Proposed: routing v1 · service rule v'+(policy.version+1)+' · route · owner '+member.name+'.',{exact:true}).waitFor();
   const expiry=JSON.parse(await comparison.locator('pre').innerText());assert.equal(expiry.historical.serviceDecision.action,'suppress');assert.equal(expiry.proposed.serviceDecision.action,'route');assert.match(expiry.proposed.serviceDecision.reason,/Maintenance expired/);
   await comparison.scrollIntoViewIfNeeded();await check('oc043-maintenance-expired-preview',width);
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click();const panel=page.getByRole('region',{name:'Grafana signature settings'});
