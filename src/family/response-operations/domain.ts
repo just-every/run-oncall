@@ -732,7 +732,7 @@ export function validateArchive(value: any): State {
   const hasMember = (id: any) => value.members.some((m: any) => m.id === id);
   const hasService = (id: any) => value.services.some((s: any) => s.id === id);
   if (
-    new Set(value.members.map((m: any) => m.name)).size !== value.members.length
+    new Set(value.members.filter((m:any)=>!m.erased).map((m: any) => m.name)).size !== value.members.filter((m:any)=>!m.erased).length
   )
     fail("Duplicate member names");
   for (const s of value.services) {

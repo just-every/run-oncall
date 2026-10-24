@@ -147,6 +147,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    outbox(o=>o.owner===id)
    const oldName=member.name,names=new Set([oldName,...aliases])
    const redact=(text:string)=>{for(const name of names){const ranges=addressRanges(text,name).filter(([start,end])=>name.includes('@')||text.slice(start,end)===name&&!/[\p{L}\p{N}]/u.test(text[start-1]??'')&&!/[\p{L}\p{N}]/u.test(text[end]??''));text=ranges.reduceRight((value,[start,end])=>value.slice(0,start)+'Erased member'+value.slice(end),text)}return text}
+   await fence('login',oldName)
    member.name='Erased member';member.active=false;member.erased=true;remember('oc_members')
    for(const entry of state.audit)if(entry.kind==='member')entry.text=redact(entry.text)
    remember('oc_audit')

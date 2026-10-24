@@ -631,6 +631,9 @@ try {
  assert.equal(ok(await erasureReq('/api/move-in/coverage',{vendor:'opsgenie',id:'opsgenie:synthetic-oncall-413',at:'2026-03-08T12:00:00Z'})).coverage.primary,keptName);
  for(const archive of [memberBefore,{...memberBefore,erasureFences:memberAfter.erasureFences}])ok(await erasureReq('/api/restore',{mode:'replace',archive}),409);
  ok(await erasureReq('/api/restore',{mode:'replace',archive:{...memberAfter,events:memberBefore.events}}),409);
+ w.sql("INSERT INTO login_attempts(name,attempts,reset) VALUES('"+keptName+"',10,"+(Date.now()+60000)+") ON CONFLICT(name) DO UPDATE SET attempts=10,reset=excluded.reset");
+ ok(await erasureReq('/api/login',{name:keptName,password:'synthetic-oncall-414-password'}),429);assert.equal(w.sql("SELECT attempts FROM login_attempts WHERE name='"+keptName+"'")[0].attempts,11,'erasing someone else preserves an active account’s existing throttle');
+ w.sql("DELETE FROM login_attempts WHERE name='"+keptName+"'");
  const retainedPersonal=everything();assert.equal([erasedName,'synthetic-oncall-413-user','Synthetic erased contact'].some(value=>retainedPersonal.includes(value)),false,'no local table retains the erased native/imported person value');
  record('OC-040 member erasure: reviewed imported identity, native credentials/session, audit-failure rollback, anonymous tombstone, immutable slot gaps without reassignment, unrelated member retention and CLI/native restore fences passed');
  record('OC-040 change-event erasure: admin-only confirmation, stale refusal, atomic audit-failure rollback, per-table local receipt, last receipt unlink, immutable pseudonymous audit, CLI/native restore fence, restart and provider retry refusal passed');
