@@ -47,6 +47,7 @@ export type Service = {
   ackTimeouts?: AckTimeout[];
 };
 export type Policy = {
+  suppressionWindow?: {start: string; end: string};
   id: string;
   version: number;
   service: string;
@@ -239,7 +240,12 @@ export function authority(state: State, actor: Member, admin = false) {
   if (!["admin", "responder"].includes(member.role) || (admin && member.role !== "admin"))
     fail("Insufficient role", 403);
 }
-export function route(state: State, signal: Signal): Decision {
+function suppressionWindow(value: any) {
+  if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).sort().join(',')!=='end,start'||
+    [value.start,value.end].some(at=>typeof at!=='string'||!Number.isFinite(Date.parse(at))||new Date(at).toISOString()!==at)||Date.parse(value.start)>=Date.parse(value.end))fail('Suppression window needs ordered canonical UTC start and end timestamps');
+  return {start:value.start as string,end:value.end as string};
+}
+export function route(state: State, signal: Signal, at=new Date().toISOString()): Decision {
   const policy = state.policies.find(
     (p) =>
       p.service === signal.service &&
@@ -256,7 +262,11 @@ export function route(state: State, signal: Signal): Decision {
   const owner = state.members.find(
     (m) => m.id === policy.owner && m.active && ["admin", "responder"].includes(m.role),
   );
-  if (policy.action === "route" && !owner)
+  const window=policy.suppressionWindow;
+  const active=window&&Date.parse(at)>=Date.parse(window.start)&&Date.parse(at)<Date.parse(window.end);
+  const action=window?(active?'suppress':'route'):policy.action;
+  const reason=window?`${active?'Maintenance active':Date.parse(at)<Date.parse(window.start)?'Maintenance not started':'Maintenance expired'} (${window.start} – ${window.end}); ${policy.reason}`:policy.reason;
+  if (action === "route" && !owner)
     return {
       policy: policy.id,
       version: policy.version,
@@ -267,9 +277,9 @@ export function route(state: State, signal: Signal): Decision {
   return {
     policy: policy.id,
     version: policy.version,
-    action: policy.action,
-    owner: policy.action === "route" ? policy.owner : null,
-    reason: policy.reason,
+    action,
+    owner: action === "route" || window ? owner?.id??null : null,
+    reason,
   };
 }
 export function signalInput(input: any, exactKey = false, keyLimit = 200): Signal {
@@ -327,7 +337,7 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     ...signal,
     id: crypto.randomUUID(),
     acceptedAt: at,
-    decision: route(state, signal),
+    decision: route(state, signal, at),
     urgency: serviceUrgency(state, signal.service, signal.severity, at),
     routingSnapshot: {
       policies: structuredClone(state.policies),
@@ -360,6 +370,7 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     state.alerts.push(alert);
   }
   if (alert) {
+    if(signal.intent==='trigger'&&state.policies.find(p=>p.id===event.decision.policy)?.suppressionWindow){alert.suppressed=event.decision.action==='suppress';alert.owner=event.decision.owner;}
     admitAlertUrgency(state, alert, event, created);
     alert.events.push(event.id);
     if (signal.intent === "recover") alert.state = "recovered";
@@ -465,14 +476,17 @@ function applyCommand(
     const old = state.policies.find(
       (p) => p.service === input.service && p.severity === input.severity,
     );
+    const window=input.suppressionWindow===undefined?undefined:suppressionWindow(input.suppressionWindow);
+    if(window&&(input.action!=='suppress'||!state.members.some(m=>m.id===input.owner&&m.active&&['admin','responder'].includes(m.role))))fail('Windowed suppression requires an active queue owner');
+    if((window||old?.suppressionWindow)&&input.baseVersion!==(old?.version??0))fail('Suppression policy changed; reload before publishing',409);
     const rule: Policy = {
-      id: old?.id ?? crypto.randomUUID(),
+      ...(window?{suppressionWindow:window}:{}),      id: old?.id ?? crypto.randomUUID(),
       version: (old?.version ?? 0) + 1,
       service: input.service,
       severity: input.severity,
       action: input.action,
       owner: input.owner ?? "",
-      reason: text(input.reason, "reason", 500),
+      reason: text(input.reason, "reason", window?300:500),
     };
     if (old) state.policies[state.policies.indexOf(old)] = rule;
     else state.policies.push(rule);
@@ -650,7 +664,8 @@ export function validateArchive(value: any): State {
       "action",
       "owner",
       "reason",
-    ]);
+    ], ["suppressionWindow"]);
+    if(p.suppressionWindow!==undefined){suppressionWindow(p.suppressionWindow);if(p.action!=="suppress"||!p.owner)fail("Invalid windowed suppression");text(p.reason,"reason",300);}
     integer(p.version);
     text(p.id, "policy ID", 100);
     text(p.reason, "reason", 500);
@@ -727,7 +742,7 @@ export function validateArchive(value: any): State {
   }
   for (const p of value.policies) {
     policy(p);
-    if (!hasService(p.service) || (p.action === "route" && !hasMember(p.owner)))
+    if (!hasService(p.service) || ((p.action === "route" || p.suppressionWindow) && !hasMember(p.owner)))
       fail("Invalid policy references");
   }
   if (

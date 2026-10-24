@@ -11,3 +11,6 @@ Every newly admitted event keeps its urgency decision and exact rule. An active 
 Native archives, checkpoints and portable transfers retain service policies, admission decisions and attributed alert history. Legacy records without urgency remain readable. Restoring an archive does not re-evaluate admissions, run a timer or deliver notifications.
 
 Paging is OFF. Support hours apply at admission. Oncall has no timer, so a low alert is not raised automatically when support hours begin: the alert says so and shows the next support start, and you can raise it by hand. Per-channel notification rules, low-urgency escalation, phone delivery and push delivery are not implemented. Keep an existing paging system for those obligations.
+
+
+Successful service replay (`POST /api/replay`) writes no permanent audit or other durable state. Its output is ordered by accepted time (or source observed time for a hypothetical event), then source and event identity. It retains historical urgency and compares the current versioned rule. Finite admission-time maintenance is described in [Routed intake](routed-intake.md#admission-time-maintenance); it does not lower urgency or execute timers.

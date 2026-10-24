@@ -1,4 +1,4 @@
-import { fail, type State } from '../family/response-operations/domain.ts';
+import { fail, route, type State } from '../family/response-operations/domain.ts';
 import type { IntakeSource } from '../intake/model.ts';
 import type { RoutingPreview, RoutingVersion } from './types.ts';
 import { evaluateRouting } from './engine.ts';
@@ -10,12 +10,14 @@ export function previewRouting(state:State,source:IntakeSource,draft:RoutingVers
   if(input.receiptIds!==undefined&&(input.from!==undefined||input.to!==undefined))fail('Choose receipt IDs or a time window');
   const all=(state.intakeReceipts??[]).filter(r=>r.source===source.id),ids=input.receiptIds as string[]|undefined;
   if(ids?.some(id=>!all.some(r=>r.id===id)))fail('Replay receipt does not belong to this routed key');
-  const receipts=all.filter(r=>(!ids||ids.includes(r.id))&&(!input.from||Date.parse(r.acceptedAt)>=Date.parse(input.from))&&(!input.to||Date.parse(r.acceptedAt)<=Date.parse(input.to))).sort((a,b)=>a.acceptedAt.localeCompare(b.acceptedAt));
+  const receipts=all.filter(r=>(!ids||ids.includes(r.id))&&(!input.from||Date.parse(r.acceptedAt)>=Date.parse(input.from))&&(!input.to||Date.parse(r.acceptedAt)<=Date.parse(input.to))).sort((a,b)=>a.acceptedAt.localeCompare(b.acceptedAt)||a.id.localeCompare(b.id));
   if(receipts.length>10000)fail('Replay supports at most 10,000 receipts');
   const warnings:string[]=[];
   const decisions=receipts.map(receipt=>{
     const proposed=evaluateRouting(state,source.id,source.routing!,draft,receipt.routingInput!),historical=structuredClone(receipt.routing!);
-    const changed=historical.service!==proposed.service||historical.rule!==proposed.rule||historical.kind!==proposed.kind||JSON.stringify(historical.dynamic)!==JSON.stringify(proposed.dynamic)||JSON.stringify(historical.evaluated)!==JSON.stringify(proposed.evaluated);
+    const service=state.services.find(row=>row.id===proposed.service);
+    if(service&&!receipt.incomplete)proposed.serviceDecision={event:receipt.event??receipt.routing?.serviceDecision?.event??'receipt:'+receipt.id,...route(state,{source:'intake:'+source.id,eventId:receipt.id,service:service.id,environment:service.environment,key:receipt.key,generation:receipt.generation??'replay:'+receipt.id,intent:receipt.action==='recover'?'recover':'trigger',severity:receipt.severity,title:receipt.title,observedAt:receipt.observedAt??receipt.acceptedAt,evidence:receipt.links[0]??''})};
+    const changed=JSON.stringify(historical.serviceDecision)!==JSON.stringify(proposed.serviceDecision)||historical.service!==proposed.service||historical.rule!==proposed.rule||historical.kind!==proposed.kind||JSON.stringify(historical.dynamic)!==JSON.stringify(proposed.dynamic)||JSON.stringify(historical.evaluated)!==JSON.stringify(proposed.evaluated);
     return {receipt:receipt.id,historical,proposed,changed};
   });
   // Test a hypothetical recovery for each open generation, including those

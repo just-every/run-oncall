@@ -867,6 +867,15 @@ try {
   );
   assert.equal(handoff.lamp.publication, "not-published");
   assert.deepEqual(handoff.providerActions, []);
+  const maintenanceRuntimeKey=randomBytes(32).toString('hex'),maintenanceRuntimeId='synthetic-oncall-43-runtime';
+  ok(await request('/api/command',{type:'service',id:maintenanceRuntimeId,name:maintenanceRuntimeId,environment:'test',owner:admin.id,runbook:[],pager:''},cookie));
+  const maintenanceRuntimeWindow={start:new Date(Date.now()-60000).toISOString(),end:new Date(Date.now()+3600000).toISOString()};
+  const maintenanceRuntimePolicy=ok(await request('/api/command',{type:'policy',service:maintenanceRuntimeId,severity:'*',action:'suppress',owner:admin.id,reason:'synthetic-oncall-43 restart custody',baseVersion:0,suppressionWindow:maintenanceRuntimeWindow},cookie));
+  ok(await request('/api/sources',{id:maintenanceRuntimeId,key:maintenanceRuntimeKey,scopes:[maintenanceRuntimeId]},cookie));
+  const maintenanceRuntimeSignal={source:maintenanceRuntimeId,eventId:maintenanceRuntimeId,service:maintenanceRuntimeId,environment:'test',key:maintenanceRuntimeId,generation:maintenanceRuntimeId,intent:'trigger',severity:'warning',title:maintenanceRuntimeId,observedAt:new Date().toISOString(),evidence:''};
+  const maintenanceRuntimeSend=()=>request('/api/ingress/'+maintenanceRuntimeId,maintenanceRuntimeSignal,'',{authorization:'Bearer '+maintenanceRuntimeKey});
+  const maintenanceRuntimeReceipt=ok(await maintenanceRuntimeSend(),201),maintenanceRuntimeState=ok(await request('/api/state',undefined,cookie));
+  const maintenanceRuntimeEvent=maintenanceRuntimeState.events.find(row=>row.id===maintenanceRuntimeReceipt.id);assert.equal(maintenanceRuntimeEvent.decision.action,'suppress');assert.equal(maintenanceRuntimeEvent.decision.owner,admin.id);assert.equal(maintenanceRuntimeEvent.decision.version,maintenanceRuntimePolicy.version);
   await stop();
   migration();
   await start();
@@ -876,6 +885,10 @@ try {
   );
   assert.deepEqual(ok(await request("/api/state", undefined, cookie)).incidents.find(item => item.id === incident.id), incident,
     "OC-008: a Worker restart and repeated migrations preserve every authored incident field");
+  const maintenanceRestarted=ok(await request('/api/state',undefined,cookie));assert.deepEqual(maintenanceRestarted.events.find(row=>row.id===maintenanceRuntimeReceipt.id),maintenanceRuntimeEvent);assert.deepEqual(maintenanceRestarted.policies.find(row=>row.id===maintenanceRuntimePolicy.id),maintenanceRuntimePolicy);
+  assert.equal(ok(await maintenanceRuntimeSend()).duplicate,true);assert.deepEqual(ok(await request('/api/state',undefined,cookie)),maintenanceRestarted,'OC-043 restart never replays a maintenance admission or its recorded obligation');
+  console.log('PASS OC-043 runtime: maintenance policy, immutable explanation and owned suppressed signal survive restart; duplicate admission adds no workflow or obligation');
+
   ok(
     await request(
       "/api/command",

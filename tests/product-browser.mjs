@@ -293,10 +293,30 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByText('oc_changes: 1 deleted, 0 updated',{exact:true}).waitFor();
   assert.ok(!(await request('/api/state')).changes.some(row=>row.id===erasureChange.id));
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-erasure-receipt',width);
+  // OC-043's existing routing screen exposes both stages before publication.
+  const orchestrationId='synthetic-oncall-43-'+width,orchestrationKey=token(),policyBefore=(await request('/api/state')).policies.find(p=>p.service==='synthetic-oncall-1'&&p.severity==='warning');
+  const window={start:new Date(Date.now()-60000).toISOString(),end:new Date(Date.now()+3600000).toISOString()};
+  const policy=await request('/api/command',{type:'policy',service:'synthetic-oncall-1',severity:'warning',action:'suppress',owner:member.id,reason:'Synthetic planned maintenance',baseVersion:policyBefore?.version??0,suppressionWindow:window});
+  await request('/api/routing/keys',{id:orchestrationId,name:'Synthetic maintenance '+width,provider:'native',scope:['synthetic-oncall-1'],owner:member.id,key:orchestrationKey,revision:0,rules:[],catchAll:'synthetic-oncall-1'});
+  const observation={source:'intake:'+orchestrationId,eventId:orchestrationId,service:'synthetic-oncall-1',environment:'production',key:orchestrationId,generation:orchestrationId,intent:'trigger',severity:'warning',title:'Synthetic maintenance signal '+width,observedAt:new Date().toISOString(),evidence:''};
+  const orchestrated=await context.request.post('/api/ingress/intake:'+orchestrationId,{headers:{authorization:'Bearer '+orchestrationKey},data:observation});assert.equal(orchestrated.status(),201);
+  await page.reload();await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);
+  await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
+  const comparison=page.getByRole('region',{name:'Routing preview',exact:true});await comparison.getByText('1 retained events compared. No records changed.',{exact:true}).waitFor();
+  await comparison.getByText('Ordered routing decisions',{exact:true}).click();
+  const compared=JSON.parse(await comparison.locator('pre').innerText());assert.equal(compared.historical.version,1);assert.equal(compared.proposed.version,1);assert.equal(compared.proposed.serviceDecision.version,policy.version);assert.equal(compared.proposed.serviceDecision.owner,member.id);assert.match(compared.proposed.serviceDecision.reason,/Maintenance active/);assert.ok(compared.proposed.serviceDecision.reason.includes(window.end));
+  await comparison.scrollIntoViewIfNeeded();await check('oc043-maintenance-preview',width);
+  const expired={start:'2020-01-01T00:00:00.000Z',end:'2020-01-02T00:00:00.000Z'};
+  await request('/api/command',{type:'policy',service:'synthetic-oncall-1',severity:'warning',action:'suppress',owner:member.id,reason:'Synthetic completed maintenance',baseVersion:policy.version,suppressionWindow:expired});
+  await page.reload();await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();await comparison.getByText('Ordered routing decisions',{exact:true}).click();
+  const expiry=JSON.parse(await comparison.locator('pre').innerText());assert.equal(expiry.historical.serviceDecision.action,'suppress');assert.equal(expiry.proposed.serviceDecision.action,'route');assert.match(expiry.proposed.serviceDecision.reason,/Maintenance expired/);
+  await comparison.scrollIntoViewIfNeeded();await check('oc043-maintenance-expired-preview',width);
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click();const panel=page.getByRole('region',{name:'Grafana signature settings'});
   await panel.getByLabel('Grafana signing integration',{exact:true}).selectOption('synthetic-oncall-grafana');await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();
   await panel.getByLabel('Grafana signing secret',{exact:true}).fill(signingSecret);await panel.getByRole('button',{name:'Save Grafana signing secret',exact:true}).click();await page.getByText('Grafana signature check saved',{exact:true}).waitFor();
   assert.equal(await panel.getByLabel('Grafana signing secret',{exact:true}).inputValue(),'');await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();await panel.scrollIntoViewIfNeeded();await check('oc030-signing',width);
+  for(const [slug,section] of [['changes','erase-a-retained-change'],['routed-intake','admission-time-maintenance'],['data','subject-erasure-fences'],['urgency','']]){await page.goto(new URL(page.url()).origin+'/docs/'+slug+(section?'#'+section:''));await page.locator('.docs-article').waitFor();if(section)await page.locator('#'+section).scrollIntoViewIfNeeded();await check('oc040-043-docs-'+slug,width);}
+  await page.goto(new URL(page.url()).origin);
  }
  console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440/390; overflow, axe and hydration');
 }

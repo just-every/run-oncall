@@ -70,9 +70,17 @@ try {
  ok(await pd('resolve','shared',{team:'payments'}),202);
  state=ok(await req('/api/state'));assert.equal(state.alerts.find(a=>a.key==='shared'&&a.service==='payments').state,'recovered');assert.equal(state.alerts.find(a=>a.key==='shared'&&a.service==='search').state,'active');
  ok(await pd('resolve','shared',{team:'payments'}),202);assert.match(ok(await req('/api/state')).intakeReceipts.at(-1).routing.diagnostics.join(' '),/search/);
+ const replayAudit=()=>w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+ const auditBeforePreview=replayAudit();
  const beforePreview=ok(await req('/api/archive')),changedRules=rules.map(r=>r.id==='search'?{...r,target:{service:'payments'}}:r);
  const preview=ok(await req('/api/routing/keys/pd/preview',{baseVersion:2,rules:changedRules,catchAll:'payments',receiptIds:receipts.map(r=>r.id)}));
  assert.equal(preview.decisions.length,receipts.length);assert.ok(preview.decisions.some(r=>r.changed));assert.ok(preview.warnings.length>0);assert.deepEqual(ok(await req('/api/archive')),beforePreview);
+ assert.deepEqual(replayAudit(),auditBeforePreview,'OC-043 routed replay writes no permanent audit');
+ assert.deepEqual(preview.decisions.map(row=>row.receipt),[...receipts].sort((a,b)=>a.acceptedAt.localeCompare(b.acceptedAt)||a.id.localeCompare(b.id)).map(row=>row.id),'OC-043 replay order is stable by admission time and receipt identity');
+ const rerouted=preview.decisions.find(row=>row.historical.service==='search');
+ assert.equal(rerouted.historical.serviceDecision.action,'suppress');assert.equal(rerouted.proposed.serviceDecision.action,'route');assert.equal(rerouted.proposed.serviceDecision.owner,actor.id);
+ assert.equal(rerouted.proposed.serviceDecision.version,1);assert.equal(rerouted.historical.version,2);assert.equal(rerouted.proposed.version,2);
+ assert.ok(rerouted.proposed.serviceDecision.reason);assert.ok(rerouted.proposed.serviceDecision.event);
  ok(await publish(1),409);
  const afterStale=ok(await req('/api/archive'));assert.equal(afterStale.audit.at(-1).kind,'routing-publish-refused');
  ok(await publish(2,[{...rules[0],target:{service:'foreign'}}]),400);
@@ -97,6 +105,36 @@ try {
  const originalKey=keys.pd;keys.pd=secret();const source=ok(await req('/api/state')).intakeSources.find(s=>s.id==='pd');
  ok(await req('/api/routing/keys',{id:'pd',name:source.name,provider:'pagerduty',scope:source.routing.scope,owner:actor.id,key:keys.pd,revision:source.revision}));
  ok(await external('/v2/enqueue',{routing_key:originalKey,event_action:'trigger',payload:{summary:'Revoked',source:'test',severity:'critical'}}),400);
+ // OC-043: admission-time maintenance, expiry without a timer and unchanged originals.
+ const maintenanceNow=Date.now(),maintenanceStart=maintenanceNow+60000,maintenanceEnd=maintenanceNow+120000;
+ const maintenance={type:'policy',service:'payments',severity:'warning',action:'suppress',owner:actor.id,reason:'synthetic-oncall-43 maintenance',baseVersion:0,suppressionWindow:{start:new Date(maintenanceStart).toISOString(),end:new Date(maintenanceEnd).toISOString()}};
+ ok(await req('/api/command',{...maintenance,suppressionWindow:{start:maintenance.suppressionWindow.end,end:maintenance.suppressionWindow.start}}),400);
+ ok(await req('/api/command',{...maintenance,owner:'synthetic-oncall-missing'}),400);
+ const maintenanceBefore=ok(await req('/api/archive'));
+ w.sql("CREATE TRIGGER synthetic_oncall_43_policy_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-43'); END");
+ try{ok(await req('/api/command',maintenance),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_43_policy_audit')}
+ assert.deepEqual(ok(await req('/api/archive')),maintenanceBefore,'failed audit cannot publish a maintenance window');
+ const maintenancePolicy=ok(await req('/api/command',maintenance));assert.equal(maintenancePolicy.version,1);
+ ok(await req('/api/command',maintenance),409);
+ const maintenanceAdmission=async(label)=>{ok(await pd('trigger','synthetic-oncall-43-'+label,{team:'payments'}),202);const snapshot=ok(await req('/api/state')),receipt=snapshot.intakeReceipts.at(-1);return {snapshot,receipt,event:snapshot.events.find(e=>e.id===receipt.event),alert:snapshot.alerts.find(a=>a.id===receipt.alert)}};
+ await w.time(maintenanceStart-1);const preMaintenance=await maintenanceAdmission('before');assert.equal(preMaintenance.event.decision.action,'route');assert.match(preMaintenance.event.decision.reason,/Maintenance not started/);
+ await w.time(maintenanceStart);const inMaintenance=await maintenanceAdmission('during');assert.equal(inMaintenance.event.decision.action,'suppress');assert.equal(inMaintenance.alert.owner,actor.id);assert.equal(inMaintenance.alert.suppressed,true);assert.equal(inMaintenance.event.severity,'warning');assert.ok(inMaintenance.event.decision.reason.includes(maintenance.suppressionWindow.end));
+ assert.equal(inMaintenance.receipt.routing.version,3);assert.equal(inMaintenance.receipt.routing.serviceDecision.version,1);
+ // Datadog and Prometheus adapters inherit the same service admission rule.
+ const maintenanceKeys={'synthetic-oncall-43-dd':secret(),'synthetic-oncall-43-am':secret()};
+ for(const [id,provider] of [['synthetic-oncall-43-dd','datadog'],['synthetic-oncall-43-am','alertmanager']])ok(await req('/api/intake/sources',{id,name:id,provider,service:'payments',key:maintenanceKeys[id],revision:0}),201);
+ const monitoringSend=async(id,payload)=>external('/api/monitoring/'+id,payload,{authorization:'Bearer '+maintenanceKeys[id]});
+ ok(await monitoringSend('synthetic-oncall-43-dd',{id:'synthetic-oncall-43',alert_id:'synthetic-oncall-43',alert_cycle_key:'synthetic-oncall-43',alert_scope:'service:payments',alert_transition:'Warn',date:maintenanceStart,title:'synthetic-oncall-43 error',body:'Synthetic error event',alert_type:'warning',tags:'service:payments'}),202);
+ ok(await monitoringSend('synthetic-oncall-43-am',{version:'4',receiver:'synthetic-oncall-43',status:'firing',groupKey:'synthetic-oncall-43',groupLabels:{},commonLabels:{},commonAnnotations:{},alerts:[{status:'firing',labels:{alertname:'synthetic-oncall-43',severity:'warning'},annotations:{summary:'synthetic-oncall-43'},startsAt:new Date(maintenanceStart).toISOString(),endsAt:'0001-01-01T00:00:00Z',fingerprint:'synthetic-oncall-43'}]}),202);
+ const maintenanceProviders=ok(await req('/api/state'));for(const source of ['synthetic-oncall-43-dd','synthetic-oncall-43-am']){const receipt=maintenanceProviders.intakeReceipts.find(r=>r.source===source);assert.ok(receipt);assert.equal(maintenanceProviders.events.find(e=>e.id===receipt.event).decision.action,'suppress');}
+ await w.time(maintenanceEnd);const expiredMaintenance=await maintenanceAdmission('after');assert.equal(expiredMaintenance.event.decision.action,'route');assert.equal(expiredMaintenance.alert.suppressed,false);assert.match(expiredMaintenance.event.decision.reason,/Maintenance expired/);
+ assert.deepEqual(expiredMaintenance.snapshot.events.find(e=>e.id===inMaintenance.event.id),inMaintenance.event,'expiry does not rewrite the earlier event');
+ const maintenanceRows=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),maintenanceArchive=ok(await req('/api/archive'));
+ const maintenanceReplay=ok(await req('/api/routing/keys/pd/preview',{baseVersion:3,rules:changedRules,catchAll:'payments',receiptIds:[inMaintenance.receipt.id]}));
+ assert.equal(maintenanceReplay.decisions[0].historical.serviceDecision.action,'suppress');assert.equal(maintenanceReplay.decisions[0].proposed.serviceDecision.action,'route');assert.match(maintenanceReplay.decisions[0].proposed.serviceDecision.reason,/Maintenance expired/);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),maintenanceRows);assert.deepEqual(ok(await req('/api/archive')),maintenanceArchive);
+ await w.stop();await w.start();await w.time(maintenanceEnd+1000);assert.deepEqual(ok(await req('/api/state')).events.find(e=>e.id===inMaintenance.event.id),inMaintenance.event);const restartedMaintenance=await maintenanceAdmission('restart');assert.equal(restartedMaintenance.event.decision.action,'route');
+ await w.time(Date.now());
+ console.log('PASS OC-043 admission maintenance: stale/unauthorized shape and owner validation, atomic audit rollback, routed error/Datadog/Prometheus suppression, owner queue, exact expiry without timers, immutable originals, read-only replay and restart');
  const native=await nativeRouting(w,cookie,actor);
  await rateJourney(w,cookie,actor);
  await providerRateDoors(w,cookie,actor);
