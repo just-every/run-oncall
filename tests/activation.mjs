@@ -551,7 +551,7 @@ try {
  ok(await w.request('/api/ingress/intake:'+routedId,routedSignal,undefined,{authorization:'Bearer '+routedKey}),201);
  const splitAlert=ok(await erasureReq('/api/state')).alerts.find(a=>a.source==='intake:'+routedId);
  let splitParent=ok(await erasureReq('/api/command',{type:'declare',service:erasureService,title:'Synthetic split parent',summary:'Synthetic independent work',severity:'warning',alerts:[splitAlert.id]}));
- splitParent=ok(await erasureReq('/api/command',{type:'ack',incident:splitParent.id,revision:splitParent.revision}));
+ splitParent=ok(await erasureReq('/api/command',{type:'transition',incident:splitParent.id,revision:splitParent.revision,state:'acknowledged',summary:'Synthetic acknowledged split ownership'}));
  const splitChild=ok(await erasureReq('/api/command',{type:'split-incident',incident:splitParent.id,revision:splitParent.revision,alerts:[splitAlert.id],title:'Synthetic split child',summary:'Synthetic retained impact',reason:'Synthetic independent cause'}));
  const unrelatedSource=ok(await makeIncident()),unrelatedTarget=ok(await makeIncident());
  const unrelatedMerge=ok(await erasureReq('/api/command',{type:'merge-incidents',incident:unrelatedTarget.id,revision:unrelatedTarget.revision,sources:[{id:unrelatedSource.id,revision:unrelatedSource.revision}],reason:'Unrelated relation mentions '+splitParent.id}));
