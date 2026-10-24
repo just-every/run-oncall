@@ -128,6 +128,7 @@ try{
  // real HTTP/Worker/storage carrier stays active; no application flag is changed.
  await m.close();await m.startHttp()
  // OC-053 extends this populated transfer journey with machine history and pending egress.
+ const erasedNativeIncident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Synthetic erasable incident',summary:'Synthetic erasable context',severity:'warning'}));
  const apiKey=randomBytes(32).toString('hex'),endpointKey=randomBytes(32).toString('hex')
  const createdClient=await req('/api/automation/clients',{name:'alice@example.test automation',key:apiKey,services:['transfer'],permissions:['incidents:read','incidents:write']});assert.equal(createdClient.status,201);const apiClient=createdClient.value
  const createdEndpoint=await req('/api/automation/endpoints',{name:'Portable receiver',client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true});assert.equal(createdEndpoint.status,201)
@@ -183,7 +184,6 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const portableSubscription=ok(await req('/api/schedule-coordination',{action:'subscribe',scope:'schedule',target:schedule.id}));
  // OC-040 native categories travel in the same held installation archive.
  const erasedNativeCreated=await req('/api/members',{name:'synthetic-oncall-415@example.test',password:'synthetic-oncall-415-password',role:'responder'});assert.equal(erasedNativeCreated.status,201);const erasedNative=erasedNativeCreated.value;
- const erasedNativeIncident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Synthetic erasable incident',summary:'Synthetic erasable context',severity:'warning'}));
  const erasedNativeSource='synthetic-oncall-415';assert.equal((await req('/api/intake/sources',{id:erasedNativeSource,name:'Synthetic erasable integration',provider:'alertmanager',service:'transfer',key:randomBytes(32).toString('hex'),revision:0})).status,201);
  const permanentAudit=ok(await req('/api/audit/export')).rows
  const prior=ok(await req('/api/state')),objects=ok(await req('/api/move-in/objects'))
