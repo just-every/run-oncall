@@ -181,15 +181,15 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  ok(await req('/api/schedule-coordination',{action:'request',schedule:schedule.id,scheduleRevision:ok(await req('/api/paging/state')).schedules.find(s=>s.id===schedule.id).revision,substitute:swapMember.value.id,role:'primary',start:shiftStart,end:shiftEnd}));
  ok(await req('/api/schedule-coordination',{action:'reminder',leadMinutes:30,channel:'email'}));
  const portableSubscription=ok(await req('/api/schedule-coordination',{action:'subscribe',scope:'schedule',target:schedule.id}));
+ // OC-040 native categories travel in the same held installation archive.
+ const erasedNativeCreated=await req('/api/members',{name:'synthetic-oncall-415@example.test',password:'synthetic-oncall-415-password',role:'responder'});assert.equal(erasedNativeCreated.status,201);const erasedNative=erasedNativeCreated.value;
+ const erasedNativeIncident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Synthetic erasable incident',summary:'Synthetic erasable context',severity:'warning'}));
+ const erasedNativeSource='synthetic-oncall-415';assert.equal((await req('/api/intake/sources',{id:erasedNativeSource,name:'Synthetic erasable integration',provider:'alertmanager',service:'transfer',key:randomBytes(32).toString('hex'),revision:0})).status,201);
  const permanentAudit=ok(await req('/api/audit/export')).rows
  const prior=ok(await req('/api/state')),objects=ok(await req('/api/move-in/objects'))
  const importTables=sql("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'ik_*' OR name GLOB 'move_in_*') ORDER BY name").map(r=>r.name)
  const importRows=()=>Object.fromEntries(statements(importTables.map(table=>'SELECT * FROM '+table).join(';')).map((rows,index)=>[importTables[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
  const importHistory=importRows(),interruptedPlans=sql("SELECT plan_id FROM oc_import_lifecycle WHERE job_id IN (SELECT id FROM ik_jobs WHERE state IN ('queued','applying'))").map(row=>row.plan_id).filter(Boolean)
- // OC-040 native categories travel in the same held installation archive.
- const erasedNativeCreated=await req('/api/members',{name:'synthetic-oncall-415@example.test',password:'synthetic-oncall-415-password',role:'responder'});assert.equal(erasedNativeCreated.status,201);const erasedNative=erasedNativeCreated.value;
- const erasedNativeIncident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Synthetic erasable incident',summary:'Synthetic erasable context',severity:'warning'}));
- const erasedNativeSource='synthetic-oncall-415';assert.equal((await req('/api/intake/sources',{id:erasedNativeSource,name:'Synthetic erasable integration',provider:'alertmanager',service:'transfer',key:randomBytes(32).toString('hex'),revision:0})).status,201);
  await m.close();await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')

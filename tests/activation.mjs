@@ -549,6 +549,16 @@ try {
  const routedService=ok(await erasureReq('/api/state')).services.find(s=>s.id===erasureService);
  const routedSignal={source:'intake:'+routedId,eventId:routedId,service:erasureService,environment:routedService.environment,key:routedId,generation:routedId,intent:'trigger',severity:'warning',title:'Synthetic erased routing evidence',observedAt:new Date().toISOString(),evidence:''};
  ok(await w.request('/api/ingress/intake:'+routedId,routedSignal,undefined,{authorization:'Bearer '+routedKey}),201);
+ const splitAlert=ok(await erasureReq('/api/state')).alerts.find(a=>a.source==='intake:'+routedId);
+ let splitParent=ok(await erasureReq('/api/command',{type:'declare',service:erasureService,title:'Synthetic split parent',summary:'Synthetic independent work',severity:'warning',alerts:[splitAlert.id]}));
+ splitParent=ok(await erasureReq('/api/command',{type:'ack',incident:splitParent.id,revision:splitParent.revision}));
+ const splitChild=ok(await erasureReq('/api/command',{type:'split-incident',incident:splitParent.id,revision:splitParent.revision,alerts:[splitAlert.id],title:'Synthetic split child',summary:'Synthetic retained impact',reason:'Synthetic independent cause'}));
+ const unrelatedSource=ok(await makeIncident()),unrelatedTarget=ok(await makeIncident());
+ const unrelatedMerge=ok(await erasureReq('/api/command',{type:'merge-incidents',incident:unrelatedTarget.id,revision:unrelatedTarget.revision,sources:[{id:unrelatedSource.id,revision:unrelatedSource.revision}],reason:'Unrelated relation mentions '+splitParent.id}));
+ ok(await erasureReq('/api/erasure/incident/'+splitParent.id,{workspaceRevision:ok(await erasureReq('/api/state')).revision,confirmation:'erase '+splitParent.id}));
+ const splitArchive=ok(await erasureReq('/api/archive')),survivor=splitArchive.incidents.find(i=>i.id===splitChild.id);
+ assert.equal(survivor.state,splitChild.state);assert.ok(!survivor.splitFrom);assert.equal(survivor.timeline[0].kind,'split');assert.ok(survivor.timeline[0].text.includes('Synthetic retained impact'));
+ assert.deepEqual(splitArchive.incidents.find(i=>i.id===unrelatedTarget.id),unrelatedMerge,'an incidental UUID in another relation reason does not erase its provenance');
  const routedArchive=ok(await erasureReq('/api/archive'));
  const routedReceipt=ok(await erasureReq('/api/erasure/intake/'+routedId,{workspaceRevision:routedArchive.revision,confirmation:'erase '+routedId}));
  assert.equal(routedReceipt.stores.oc_intake_credentials.deleted,1);assert.equal(routedReceipt.stores.oc_intake_sources.deleted,1);

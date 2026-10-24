@@ -332,6 +332,7 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-imported-integration-receipt',width);
   const memberName='synthetic-oncall-413-'+width+'@example.test';
   const erasedMember=await request('/api/members',{name:memberName,password:'synthetic-oncall-413-password',role:'responder'},201);
+  const memberScheduleId='synthetic-oncall-413-'+width;await request('/api/paging/schedules',{id:memberScheduleId,name:'Synthetic erased contact slots',service:'synthetic-oncall-1',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[erasedMember.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]});
   const memberPlan=await importDoor.preview('pagerduty',JSON.stringify({users:[{id:'synthetic-oncall-413-'+width,name:'Synthetic erasable contact',email:memberName}]}));assert.equal(memberPlan.status,200);assert.equal((await importDoor.apply('pagerduty',memberPlan.value)).status,200);
   await page.getByRole('button',{name:'Refresh',exact:true}).click();
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('member');await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedMember.id);
@@ -340,6 +341,9 @@ async function changeAndSigningBrowser(page,context){
   const memberResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/member/'+erasedMember.id));await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await memberResponse).status(),200);
   await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-member-receipt',width);
   assert.equal((await request('/api/state')).members.find(m=>m.id===erasedMember.id).name,'Erased member');
+  await page.getByRole('link',{name:'Schedules',exact:true}).click();await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
+  await page.locator('.scheduling-now-next').getByText('Now: Coverage gap',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
+  await page.getByRole('link',{name:'Services',exact:true}).click();if(!await settings.getByLabel('Erasure category',{exact:true}).isVisible())await settings.getByText('Data erasure settings',{exact:true}).click();
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // OC-043's existing routing screen exposes both stages before publication.
   const orchestrationId='synthetic-oncall-43-'+width,orchestrationKey=token(),policyBefore=(await request('/api/state')).policies.find(p=>p.service==='synthetic-oncall-1'&&p.severity==='warning');
