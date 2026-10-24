@@ -47,12 +47,14 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   let handoffs:Awaited<ReturnType<typeof handoffSnapshot>>|undefined,handoffWrite=-1
   const eraseHandoffCopies=async(incidentIds:string[],memberIds:string[]=[])=>{
    if(!handoffs){handoffs=await handoffSnapshot(db);statements.push(guardStatement(db,'EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND revision=?)',handoffs.revision))}
-   const removed=handoffs.archive.records.filter(r=>(incidentIds.includes(r.source.incident.id)||r.history.some(h=>h.actor&&memberIds.includes(h.actor.id))))
+   const containsMember=(value:any):boolean=>typeof value==='string'?memberIds.includes(value):Array.isArray(value)?value.some(containsMember):!!value&&typeof value==='object'&&Object.values(value).some(containsMember)
+   const selected=(record:any)=>incidentIds.includes(record.source.incident.id)||containsMember(record)
+   const removed=handoffs.archive.records.filter(selected)
    remember('handoff_state');updated.handoff_state??=0
    if(!removed.length)return
    identities.push(...removed.map(r=>r.id))
    for(const row of removed)await fence('handoff',row.id)
-   handoffs.archive.records=handoffs.archive.records.filter(r=>!(incidentIds.includes(r.source.incident.id)||r.history.some(h=>h.actor&&memberIds.includes(h.actor.id))))
+   handoffs.archive.records=handoffs.archive.records.filter(r=>!selected(r))
    updated.handoff_state=1
    const write=db.prepare('UPDATE handoff_state SET data=?,revision=revision+1,write_token=? WHERE id=1').bind(JSON.stringify(handoffs.archive),crypto.randomUUID())
    if(handoffWrite<0){handoffWrite=statements.length;statements.push(write)}else statements[handoffWrite]=write
