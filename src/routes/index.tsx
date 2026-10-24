@@ -550,7 +550,8 @@ function Workspace() {
                           label="Environment (immutable)"
                           value={v.environment}
                         />
-                        <Field name="owner" label="Owner" value={v.owner}>
+                        <Field name="owner" label="Owner" value={v.owner} required={false}>
+                          <option value="">Unassigned</option>
                           {memberOptions}
                         </Field>
                         <Field
@@ -597,8 +598,9 @@ function Workspace() {
                     label="Environment"
                     value="production"
                   />
-                  <Field name="owner" label="Service owner">
+                  <Field name="owner" label="Service owner" required={false}>
                     {memberOptions}
+                    <option value="">Unassigned</option>
                   </Field>
                   <Field
                     name="runbook"

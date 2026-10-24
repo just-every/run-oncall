@@ -116,7 +116,7 @@ function source(input: unknown): HandoffSource {
       if (policy.version !== index + 1 || index > 0 && Date.parse(policy.at) < Date.parse(v.responsePolicies[index - 1].at)) fail('Invalid handoff response policy version order');
     });
   }
-  snapshotText(v.id, "service ID"); snapshotText(v.name, "service name", 200); snapshotText(v.environment, "environment"); snapshotText(v.owner, "service owner");
+  snapshotText(v.id, "service ID"); snapshotText(v.name, "service name", 200); snapshotText(v.environment, "environment"); if (v.owner !== "") snapshotText(v.owner, "service owner");
   snapshotText(v.pager, "pager link", 2000, true); link(v.pager);
   if (!Array.isArray(v.runbook) || v.runbook.length > 30) fail("Invalid handoff runbook snapshot");
   v.runbook.forEach((line: unknown) => snapshotText(line, "runbook", 500));

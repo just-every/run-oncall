@@ -102,7 +102,7 @@ The numbered flows are acceptance requirements through the product’s public do
 
 23. **OC-023 — Services, teams and ownership. Status: partial.** Create two teams and a dependent service through the UI/API, read the alert runbook, import a Backstage ownership change, deny a foreign-team user through direct/export/chat doors, and resolve an ownership conflict without losing incident history.
 
-   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `tests/runtime.mjs`. Services, service runbooks and workspace roles ship; team scoping, dependencies, alert runbooks and Backstage do not.
+   Existing implementation / exercising flow: `src/family/response-operations/domain.ts`; `src/api.ts`; `src/changes/Dependencies.tsx`; `src/app/AlertsPanel.tsx`; `tests/runtime.mjs`; `tests/changes.mjs` (changes lane, ownerless-service custody); `tests/member-coordination-browser.mjs` (signin lane, unassigned create/edit at 1440/390). Explicit unassigned service ownership is workspace-visible; unmatched intake retains null ownership and archive/handoff restore retains the ownership gap. Services, copied incident runbooks, alert-level service runbooks, workspace roles and revision-checked direct dependencies ship. Team privacy, managers/ownership scope and Backstage remain missing.
 
    OC-041 inheritance before shipping: exercise team-scoped audit export with atomic state/audit commit and rollback on audit failure; crash or expire the lease at its execution boundary, retain a durable failed/interrupted/uncertain outcome, erase the subject and export without secrets or reassigned labels.
 

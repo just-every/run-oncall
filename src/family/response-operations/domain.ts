@@ -425,7 +425,7 @@ function applyCommand(
       id,
       name: text(input.name, "name", 200),
       environment: text(input.environment, "environment", 100),
-      owner: text(input.owner, "owner", 100),
+      owner: input.owner === null || input.owner === "" ? "" : text(input.owner, "owner", 100),
       runbook: (input.runbook ?? []).map((x: unknown) =>
         text(x, "runbook step", 500),
       ),
@@ -434,7 +434,7 @@ function applyCommand(
     };
     if (service.runbook.length > 30) fail("Maximum 30 runbook steps");
     if (
-      !state.members.some(
+      service.owner !== "" && !state.members.some(
         (m) => m.id === service.owner && m.active && ["admin", "responder"].includes(m.role),
       )
     )
@@ -719,7 +719,7 @@ export function validateArchive(value: any): State {
     object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
-    if (!hasMember(s.owner)) fail("Invalid service references");
+    if (s.owner !== "" && !hasMember(s.owner)) fail("Invalid service references");
     array(s.runbook);
     if (s.runbook.length > 30) fail("Invalid runbook length");
     s.runbook.forEach((v: any) => text(v, "runbook", 500));

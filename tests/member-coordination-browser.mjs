@@ -51,6 +51,27 @@ try {
  const rosaRecord=ok(await call(owner.page,'/api/members',{...responder,role:'responder'}),201)
  ok(await call(owner.page,'/api/members',{...viewer,role:'viewer'}),201)
  ok(await call(owner.page,'/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:rosaRecord.id,runbook:['Check payment provider status'],pager:''}))
+ // OC-023: both service forms preserve explicit unassigned ownership.
+ for(const width of [1440,390]) {
+  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/#services');await owner.page.reload();
+  const add=owner.page.locator('section').filter({has:owner.page.getByRole('heading',{name:'Add service',exact:true})});
+  await add.getByLabel('Service name',{exact:true}).fill('synthetic-oncall-23-'+width);
+  await add.getByLabel('Service owner',{exact:true}).selectOption('');
+  await add.getByRole('button',{name:'Create service',exact:true}).click();
+  const card=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'synthetic-oncall-23-'+width,exact:true})});
+  await card.getByText('production · Unassigned',{exact:true}).waitFor();
+  await card.getByText('Edit service',{exact:true}).click();
+  assert.equal(await card.getByLabel('Owner',{exact:true}).inputValue(),'');
+  await card.getByLabel('Name',{exact:true}).fill('synthetic-oncall-23-'+width+' edited');
+  await card.getByRole('button',{name:'Save service',exact:true}).click();
+  const edited=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'synthetic-oncall-23-'+width+' edited',exact:true})});
+  await edited.getByText('production · Unassigned',{exact:true}).waitFor();
+  assert.ok(await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`ownerless services fit ${width}`);
+  assert.equal(await owner.page.evaluate(()=>window.__rerHydration?.count??0),0);
+  const axe=await new AxeBuilder({page:owner.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations,[],'ownerless services have no accessibility violations');
+  await edited.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/oc023-ownerless-services-${width}.png`,fullPage:true});
+ }
  const declared=ok(await call(owner.page,'/api/command',{type:'declare',title:'Checkout payments failing',service:'checkout',severity:'critical',summary:'Card payments fail at checkout.',alerts:[]}))
 
  // The responder coordinates through the incident page, then reloads at both widths.

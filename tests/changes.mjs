@@ -10,6 +10,32 @@ try {
   let cookie=(await w.request('/api/setup',{name:'Change operator',password:'synthetic-change-testing-password'})).cookie;
   const req=(path,data)=>w.request(path,data,cookie),actor=ok(await req('/api/session')).member;
   for(const [id,name] of [['payments','Payments'],['gateway','Gateway'],['decoy','Unrelated reporting']])ok(await req('/api/command',{type:'service',id,name,environment:'production',owner:actor.id,runbook:['Inspect current deploy before rollback'],pager:''}));
+  // OC-023 ownerless services stay visible without turning the current admin into an owner.
+  const unassigned={type:'service',id:'synthetic-oncall-23',name:'synthetic-oncall-23',environment:'production',owner:null,runbook:['synthetic-oncall-23 inspect retained evidence'],pager:''};
+  assert.equal(ok(await req('/api/command',unassigned)).owner,'');
+  const unassignedBefore=ok(await req('/api/archive'));
+  assert.equal(unassignedBefore.services.find(s=>s.id===unassigned.id).owner,'');
+  w.sql("CREATE TRIGGER synthetic_oncall_owner_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-23'); END");
+  try {ok(await req('/api/command',{...unassigned,owner:actor.id}),503);} finally {w.sql('DROP TRIGGER synthetic_oncall_owner_audit');}
+  assert.deepEqual(ok(await req('/api/archive')),unassignedBefore,'failed ownership audit leaves the ownerless service unchanged');
+  ok(await req('/api/command',{...unassigned,owner:'synthetic-oncall-missing'}),400);
+  const unassignedEvent={source:'synthetic-oncall-23',eventId:'synthetic-oncall-23',service:unassigned.id,environment:'production',key:'synthetic-oncall-23',generation:'synthetic-oncall-23',intent:'trigger',severity:'warning',title:'synthetic-oncall-23',observedAt:new Date().toISOString(),evidence:''};
+  const unassignedKey=randomBytes(32).toString('hex');
+  ok(await req('/api/sources',{id:'synthetic-oncall-23',key:unassignedKey,scopes:[unassigned.id]}));
+  ok(await w.request('/api/ingress/synthetic-oncall-23',unassignedEvent,undefined,{authorization:'Bearer '+unassignedKey}),201);
+  const unassignedState=ok(await req('/api/state'));
+  assert.equal(unassignedState.services.find(s=>s.id===unassigned.id).owner,'');
+  assert.deepEqual(unassignedState.services.find(s=>s.id===unassigned.id).runbook,unassigned.runbook);
+  assert.equal(unassignedState.events.find(e=>e.eventId===unassignedEvent.eventId).decision.owner,null);
+  assert.equal(unassignedState.alerts.find(a=>a.service===unassigned.id).owner,null,'unmatched intake never falls back to the current admin');
+  const ownerlessIncident=ok(await req('/api/command',{type:'declare',service:unassigned.id,severity:'warning',title:'synthetic-oncall-23',summary:'synthetic-oncall-23',alerts:[]}));
+  const ownerlessContext=ok(await req('/api/handoffs/context/'+ownerlessIncident.id));
+  const ownerlessHandoff=ok(await req('/api/handoffs/prepare',{id:'synthetic-oncall-23',incident:ownerlessIncident.id,incidentRevision:ownerlessIncident.revision,serviceHash:ownerlessContext.serviceHash,payload:{audience:'internal',title:'synthetic-oncall-23',summary:'synthetic-oncall-23',evidenceLinks:[],impactLinks:[]}}),201).record;
+  assert.equal(ownerlessHandoff.source.service.owner,'');
+  assert.deepEqual(ownerlessHandoff.source.service.runbook,unassigned.runbook);
+  const ownerlessHandoffArchive=ok(await req('/api/handoffs/archive'));
+  ok(await req('/api/handoffs/restore',{mode:'replace',archive:ownerlessHandoffArchive}));
+  assert.equal(ok(await req('/api/handoffs/synthetic-oncall-23')).record.source.service.owner,'','reviewed handoff restore retains an ownership gap');
   let state=ok(await req('/api/state'));
   ok(await req('/api/command',{type:'service-dependencies',service:'payments',dependencies:['gateway'],workspaceRevision:state.revision}));
   ok(await req('/api/command',{type:'service-dependencies',service:'payments',dependencies:[],workspaceRevision:state.revision}),409);
@@ -91,6 +117,7 @@ try {
   const incident=ok(await req('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Checkout connection pressure',summary:'Confirm recent service and gateway changes before mitigation'}));
   assert.ok(ok(await req('/api/changes/recent?service=payments&at='+encodeURIComponent(incident.createdAt))).items.some(c=>c.id===receipt.id));
   const viewer=ok(await req('/api/members',{name:'Change reader',role:'viewer',password:'synthetic-viewer-testing-password'}),201),viewerCookie=(await w.request('/api/login',{name:viewer.name,password:'synthetic-viewer-testing-password'})).cookie;
+  assert.equal(ok(await w.request('/api/state',undefined,viewerCookie)).services.find(s=>s.id===unassigned.id).owner,'','unassigned service stays workspace-visible');
   ok(await w.request('/api/changes/sources',undefined,viewerCookie),403);ok(await w.request('/api/changes/recent?service=payments',undefined,viewerCookie));
   keys.native=randomBytes(32).toString('hex');ok(await configure('native','native','payments','',1));
   ok(await send('native',{eventId:'rotated',summary:'New credential accepted'}),201);ok(await w.request('/api/changes/ingress/native',change,undefined,{authorization:'Bearer '+change.custom_details.keyEcho}),401);
@@ -101,6 +128,7 @@ try {
   for(const key of [...Object.values(keys),releaseKey,prKey,change.custom_details.keyEcho])assert.ok(!JSON.stringify(archive).includes(key),'keys never enter a native archive');
   const bad=structuredClone(archive);bad.changes[0].service='decoy';ok(await req('/api/restore',{mode:'replace',archive:bad}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
   const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
+  assert.equal(ok(await req('/api/state')).services.find(s=>s.id===unassigned.id).owner,'','restore preserves the explicit ownership gap');
   state=ok(await req('/api/state'));assert.deepEqual(state.changes,archive.changes);assert.ok(state.changeSources.every(s=>!s.active));assert.deepEqual(state.services,archive.services);
   assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_change_credentials')[0].n,0);ok(await send('signed',{eventId:'after-restore',summary:'must refuse'}),401);
   await w.stop();await w.start();assert.deepEqual(ok(await req('/api/state')).changes,archive.changes,'retained changes survive restart without replaying effects');
@@ -120,6 +148,7 @@ try {
   // With every record inside the retained incident window, capacity refuses safely.
   w.sql(`UPDATE oc_changes SET data=json_set(data,'$.source','native','$.service','payments','$.occurredAt','${at}')`);
   const protectedCount=w.sql('SELECT COUNT(*) AS n FROM oc_changes')[0].n;ok(await send('decoy',{eventId:'synthetic-oncall-protected',summary:'Refuse protected capacity'}),429);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_changes')[0].n,protectedCount);
+  console.log('PASS OC-023 ownerless services: visibility, unmatched ownership, copied runbook, audit rollback and archive/handoff restore');
   console.log('PASS OC-065 retention: populated 1,000-record cap, deterministic oldest-first eviction, incident protection, refusal and audit rollback');
   console.log('PASS OC-065 Argo CD/Terraform signatures, scope, replay, no obligations, audit rollback');
   console.log('Change context: authenticated native/PD/GitHub/GitLab intake, replay, scope, dependencies, privacy, rotation/revoke, archive pause and restart passed');
