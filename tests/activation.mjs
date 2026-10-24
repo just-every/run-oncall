@@ -610,6 +610,7 @@ try {
  const memberHandoffContext=ok(await erasureReq('/api/handoffs/context/'+memberIncident.id));
  ok(await erasureReq('/api/handoffs/prepare',{id:'synthetic-oncall-413-handoff',incident:memberIncident.id,incidentRevision:memberIncident.revision,serviceHash:memberHandoffContext.serviceHash,payload:{audience:'internal',title:'Synthetic member custody',summary:erasedName+' copied declaration',evidenceLinks:[],impactLinks:[]}}),201);
  const memberHandoffs=ok(await erasureReq('/api/handoffs/archive'));
+ const memberManual=ok(await erasureReq('/api/command',{type:'manual-page',operationId:'synthetic-oncall-417',service:erasureService,title:'Synthetic member destination',severity:'warning',users:[erasedMember.id],description:erasedName+' retained description'}));
  const memberPath='/api/erasure/member/'+erasedMember.id,memberBefore=ok(await erasureReq('/api/archive'));
  const memberInput={workspaceRevision:memberBefore.revision,confirmation:'erase '+erasedMember.id,identitiesReviewed:true,importedPeople:[erasedName]};
  ok(await erasureReq(memberPath,{...memberInput,identitiesReviewed:false}),409);
@@ -621,6 +622,7 @@ try {
  erasureCookie=await checkpointErasureCli(w,erasureCookie,async()=>{memberReceipt=ok(await erasureReq(memberPath,memberInput));assert.equal(memberReceipt.state,'complete');assert.equal(memberReceipt.stores.credentials.deleted,1);assert.equal(memberReceipt.stores.oc_api_credentials.deleted,1);assert.equal(memberReceipt.stores.oc_endpoint_credentials.deleted,1);assert.ok(memberReceipt.stores.oc_api_outbox.deleted>0);assert.equal(memberReceipt.stores.handoff_state.updated,1);ok(await w.request('/api/state',undefined,memberLogin.cookie),401);ok(await erasureReq('/api/login',{name:erasedName,password:'synthetic-oncall-413-password'}),401);assert.ok(memberReceipt.importCustody.stores.some(row=>row.rows>0));});
  assert.ok(!JSON.stringify(ok(await erasureReq('/api/handoffs/archive'))).includes(erasedName));ok(await erasureReq('/api/handoffs/restore',{mode:'replace',archive:memberHandoffs}),409);
  const memberAfter=ok(await erasureReq('/api/archive')),tombstone=memberAfter.members.find(m=>m.id===erasedMember.id);
+ const manualAfter=memberAfter.incidents.find(i=>i.id===memberManual.id);assert.equal(manualAfter.manualPage.obligations.length,0);assert.ok(!JSON.stringify(manualAfter).includes(erasedName),'native erasure removes recorded manual destinations and copied description/timeline content');
  assert.equal(tombstone.name,'Erased member');assert.equal(tombstone.active,false);assert.equal(tombstone.erased,true);assert.equal(memberAfter.members.find(m=>m.id===keptMember.id).name,keptName);
  assert.ok(!JSON.stringify(memberAfter).includes(erasedName));assert.ok(!JSON.stringify(ok(await erasureReq('/api/audit/export'))).includes(erasedName));
  ok(await w.request('/api/state',undefined,memberLogin.cookie),401);ok(await erasureReq('/api/login',{name:erasedName,password:'synthetic-oncall-413-password'}),401);
