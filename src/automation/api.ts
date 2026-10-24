@@ -1,3 +1,4 @@
+import {scheduleChanges} from '../schedule-coordination/model';
 import { resolveIncidentAlias } from '../incident-workflows/relations.ts';
 import { incidentWithinServices } from '../incident-workflows/scope.ts';
 import {responseContext} from '../manual-pages/context';
@@ -184,6 +185,7 @@ export function installVersionedApi(api:any,deps:Deps) {
    const snapshot=await pagingSnapshot(c.env.DB),old=snapshot.archive.schedules.find(s=>s.id===input.id);if(old&&old.service!==service)fail('Record not found in this client scope',404);
    requireRevision(old?.revision??0,input.revision);result=validateSchedule({...input,revision:input.revision+1},state);
    bound({...snapshot.archive,schedules:[...snapshot.archive.schedules.filter(s=>s.id!==result.id),result]});
+   scheduleChanges(state,old?[old]:[],[result],client.id);
    extra=token=>[c.env.DB.prepare(`UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1 AND revision=? AND ${gate}`).bind(token,snapshot.revision,token),putSchedule(c.env.DB,result,token)];
    const guard=c.get('apiGuard') as Guard;c.set('apiGuard',{sql:guard.sql+' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',values:[...guard.values,snapshot.revision]});
   } else {

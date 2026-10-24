@@ -44,10 +44,11 @@ try {
  const options=ok(await req('/api/move-in/adoption'))
  assert.ok(options.services.some(s=>s.id===input.service));assert.ok(!options.members.some(m=>m.id===viewer.id))
  // A failure after the schedule insert must roll back the schedule, source edit marker and control revision.
- const before=ok(await req('/api/paging/state'))
+ const before=ok(await req('/api/paging/state')),beforeCoordination=ok(await req('/api/state'))
  w.sql("CREATE TRIGGER injected_adoption_failure BEFORE UPDATE ON move_in_objects WHEN NEW.kind='schedule' BEGIN SELECT RAISE(ABORT,'INJECTED_ADOPTION_FAILURE'); END")
  ok(await req('/api/move-in/adopt',input),503)
  assert.deepEqual(ok(await req('/api/paging/state')),before)
+ assert.deepEqual(ok(await req('/api/state')),beforeCoordination,'failed adoption records no change notices')
  assert.deepEqual((await imported()).find(o=>o.targetKind==='schedule'),row)
  w.sql('DROP TRIGGER injected_adoption_failure')
  const race=await Promise.all([req('/api/move-in/adopt',input),req('/api/move-in/adopt',input)])
@@ -55,6 +56,9 @@ try {
  const live=ok(await req('/api/paging/state'))
  assert.equal(live.schedules.length,1);assert.equal(live.policies.length,0);assert.equal(live.paging,'OFF')
  const schedule=live.schedules[0]
+ const adoptionNotices=ok(await req('/api/state')).scheduleRecords.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id)
+ assert.deepEqual(adoptionNotices.map(r=>r.member).sort(),[admin.id,alice.id,bob.id].sort(),'adoption records one obligation per affected responder and service owner')
+ assert.ok(adoptionNotices.every(r=>r.data.obligation.reason==='schedule-change'&&r.data.obligation.creator===admin.id&&r.data.obligation.automatic===false))
  assert.equal(schedule.timezone,row.value.schedule.timezone)
  assert.deepEqual(schedule.primary.members,[alice.id,bob.id])
  const now=ok(await req(`/api/schedules/${encodeURIComponent(schedule.id)}/now-next?at=2026-03-08T13:00:00Z`))

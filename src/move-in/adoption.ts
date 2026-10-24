@@ -1,3 +1,5 @@
+import {scheduleChanges} from '../schedule-coordination/model'
+import {workspaceRows,checkWorkspaceSize} from '../workspace-store'
 import { fail } from '../family/response-operations/domain'
 import { validateSchedule } from '../family/response-operations/schedules'
 import { pagingSnapshot, bound, putSchedule } from '../paging-store'
@@ -38,6 +40,8 @@ export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
   const member=(id:string)=>input.members[id] as string
   const schedule=validateSchedule({...source,service:input.service,revision:1,primary:{...source.primary,members:source.primary.members.map(member)},backup:{...source.backup,members:source.backup.members.map(member)},overrides:source.overrides.map(o=>({...o,member:o.member===null?null:member(o.member)}))},s.workspace)
   bound({...s.archive,schedules:[...s.archive.schedules,schedule]})
+  scheduleChanges(s.workspace,[],[schedule],c.get('actor').id)
+  checkWorkspaceSize(s.workspace)
   const token=crypto.randomUUID(),at=Date.now()
   const next={...value,adopted:{scheduleId:schedule.id,service:schedule.service,at:new Date(at).toISOString()}}
   // One batch publishes both the native schedule and the import edit marker. Concurrent undo,
@@ -46,6 +50,8 @@ export function installAdoption(api:any,body:(c:any)=>Promise<any>) {
    db.prepare(`UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND revision=?) AND EXISTS(SELECT 1 FROM oc_current_sessions s JOIN oc_members m ON m.id=s.member WHERE s.token=? AND s.member=? AND s.expires>? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin') AND EXISTS(SELECT 1 FROM move_in_objects WHERE kind='schedule' AND id=? AND revision=? AND data=?) AND NOT EXISTS(SELECT 1 FROM paging_schedules WHERE id=?) AND ${completed}`)
     .bind(token,s.revision,s.workspace.revision,c.get('sessionDigest'),c.get('actor').id,at,input.id,row.revision,row.data,schedule.id,input.id),
    putSchedule(db,schedule,token),
+   db.prepare('UPDATE workspace_control SET revision=revision+1,write_token=? WHERE id=1 AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND write_token=?)').bind(token,token),
+   ...workspaceRows(db,s.workspace,token),
    db.prepare("UPDATE move_in_objects SET revision=?,data=? WHERE kind='schedule' AND id=? AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND write_token=?)").bind(`adopted-${token}`,JSON.stringify(next),input.id,token),
   ])
   if(result[0].meta.changes!==1)fail('Import, membership or scheduling state changed, or the import is incomplete; finish importing, reload and review again',409)
