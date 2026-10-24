@@ -593,7 +593,7 @@ try {
  record('OC-040 incident erasure: notes/follow-ups/runbook custody, admin authority, confirmation, audit rollback, committed per-table receipt, stale and forged-journal restore refusal, merged-source unlink and valid current checkpoint passed');
  // Native contact removal shares the imported-person custody transaction and keeps fixed slots as gaps.
  const erasedName='synthetic-oncall-413@example.test',keptName='synthetic-oncall-414@example.test';
- const erasedMember=ok(await erasureReq('/api/members',{name:erasedName,password:'synthetic-oncall-413-password',role:'responder'}),201);
+ const erasedMember=ok(await erasureReq('/api/members',{name:erasedName,password:'synthetic-oncall-413-password',role:'admin'}),201);
  const keptMember=ok(await erasureReq('/api/members',{name:keptName,password:'synthetic-oncall-414-password',role:'responder'}),201);
  const memberLogin=await erasureReq('/api/login',{name:erasedName,password:'synthetic-oncall-413-password'});ok(memberLogin);
  const memberSchedule={...schedule,id:'synthetic-oncall-413',name:'Synthetic retained erasure slots',service:erasureService,revision:0,timezone:'UTC',primary:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[erasedMember.id,keptMember.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]};
@@ -602,6 +602,10 @@ try {
  ok(await memberDoor.apply('opsgenie',memberPlan));
  const memberSource='synthetic-oncall-413-source',memberKey='synthetic-oncall-'+crypto.randomUUID()+crypto.randomUUID();ok(await erasureReq('/api/sources',{id:memberSource,key:memberKey,scopes:[erasureService]}));
  ok(await w.request('/api/ingress/'+memberSource,{source:memberSource,eventId:memberSource,service:erasureService,environment:ok(await erasureReq('/api/state')).services.find(s=>s.id===erasureService).environment,key:memberSource,generation:memberSource,intent:'trigger',severity:'warning',title:'Synthetic copied member snapshot',observedAt:new Date().toISOString(),evidence:''},undefined,{authorization:'Bearer '+memberKey}),201);
+ const personalClient=ok(await w.request('/api/automation/clients',{name:erasedName,key:memberKey,services:[erasureService],permissions:['incidents:read']},memberLogin.cookie),201);
+ const personalEndpoint=ok(await w.request('/api/automation/endpoints',{name:erasedName,client:personalClient.id,services:[erasureService],url:'https://8.8.8.8/synthetic-oncall-413',key:memberKey,approve:true},memberLogin.cookie),201);
+ ok(await erasureReq('/api/command',{type:'declare',service:erasureService,title:'Synthetic destination erasure',summary:'Synthetic retained incident',severity:'warning'}));
+ assert.ok(ok(await erasureReq('/api/state')).apiOutbox.some(o=>o.endpoint===personalEndpoint.id&&o.status==='queued'));
  const memberPath='/api/erasure/member/'+erasedMember.id,memberBefore=ok(await erasureReq('/api/archive'));
  const memberInput={workspaceRevision:memberBefore.revision,confirmation:'erase '+erasedMember.id,identitiesReviewed:true,importedPeople:[erasedName]};
  ok(await erasureReq(memberPath,{...memberInput,identitiesReviewed:false}),409);
@@ -610,7 +614,7 @@ try {
  try{ok(await erasureReq(memberPath,memberInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_413_audit')}
  assert.deepEqual(ok(await erasureReq('/api/archive')),memberBefore,'native identity, imported original and schedules roll back with their audit');
  let memberReceipt;
- erasureCookie=await checkpointErasureCli(w,erasureCookie,async()=>{memberReceipt=ok(await erasureReq(memberPath,memberInput));assert.equal(memberReceipt.state,'complete');assert.equal(memberReceipt.stores.credentials.deleted,1);assert.ok(memberReceipt.importCustody.stores.some(row=>row.rows>0));});
+ erasureCookie=await checkpointErasureCli(w,erasureCookie,async()=>{memberReceipt=ok(await erasureReq(memberPath,memberInput));assert.equal(memberReceipt.state,'complete');assert.equal(memberReceipt.stores.credentials.deleted,1);assert.equal(memberReceipt.stores.oc_api_credentials.deleted,1);assert.equal(memberReceipt.stores.oc_endpoint_credentials.deleted,1);assert.ok(memberReceipt.stores.oc_api_outbox.deleted>0);ok(await w.request('/api/state',undefined,memberLogin.cookie),401);ok(await erasureReq('/api/login',{name:erasedName,password:'synthetic-oncall-413-password'}),401);assert.ok(memberReceipt.importCustody.stores.some(row=>row.rows>0));});
  const memberAfter=ok(await erasureReq('/api/archive')),tombstone=memberAfter.members.find(m=>m.id===erasedMember.id);
  assert.equal(tombstone.name,'Erased member');assert.equal(tombstone.active,false);assert.equal(tombstone.erased,true);assert.equal(memberAfter.members.find(m=>m.id===keptMember.id).name,keptName);
  assert.ok(!JSON.stringify(memberAfter).includes(erasedName));assert.ok(!JSON.stringify(ok(await erasureReq('/api/audit/export'))).includes(erasedName));
