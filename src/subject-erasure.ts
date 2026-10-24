@@ -29,7 +29,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   const eraseCredential=(table:string,column:string,ids:string[])=>{remember(table);statements.push(db.prepare(`DELETE FROM ${table} WHERE ${column} IN (SELECT value FROM json_each(?))`).bind(JSON.stringify(ids)))}
   const anonymous=async()=>{
    const label='erased-'+(await subjectErasureIdentity(kind,id)).slice(0,32)
-   if(!state.members.some(m=>m.id===label)){state.members.push({id:label,name:'Erased integration',role:'viewer',active:false});remember('oc_members');inserted.oc_members=1}
+   if(!state.members.some(m=>m.id===label)){let name='Erased integration',sequence=1;while(state.members.some(m=>m.name===name))name='Erased integration '+sequence++;state.members.push({id:label,name,role:'viewer',active:false});remember('oc_members');inserted.oc_members=1}
    return label
   }
   const replaceIdentity=(value:any,from:string,to:string):any=>typeof value==='string'?(value===from?to:value):Array.isArray(value)?value.map(v=>replaceIdentity(v,from,to)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,replaceIdentity(v,from,to)])):value
@@ -53,7 +53,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
     for(const incident of affected){
      outbox(o=>o.incident===incident.id)
      incident.alerts=incident.alerts.filter(a=>!alerts.has(a))
-     if(incident.splitFrom?.alerts.some(a=>alerts.has(a))){incident.splitFrom.alerts=incident.splitFrom.alerts.filter(a=>!alerts.has(a));if(!incident.splitFrom.alerts.length){delete incident.splitFrom;incident.timeline[0].kind='declared';incident.timeline[0].text='Original source alert explicitly erased'}}
+     if(incident.splitFrom?.alerts.some(a=>alerts.has(a))){delete incident.splitFrom;const first=incident.timeline[0],impact=first.text.indexOf('\nImpact: ');first.text='Original source alert explicitly erased'+(impact<0?'':first.text.slice(impact))}
      if(incident.automaticDeclaration&&events.has(incident.automaticDeclaration.event)){
       delete incident.automaticDeclaration;incident.title='Incident source erased';const first=incident.timeline[0];first.actor=await anonymous();first.text='Original integration evidence explicitly erased';delete first.metadata
      }
@@ -70,6 +70,8 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    const incident=state.incidents.find(i=>i.id===id);if(!incident)fail('Unknown incident',404)
    outbox(o=>o.incident===id)
    const entries=new Set(incident.timeline.map(e=>e.id))
+   const relationKey=(e:{kind:string;actor:string;at:string;text:string})=>JSON.stringify([e.kind==='merge-incidents'?'merge':e.kind==='split-incident'?'split':e.kind,e.actor,e.at,e.text.split('\nImpact: ')[0]])
+   const relations=new Set(incident.timeline.filter(e=>['merge','split'].includes(e.kind)).map(relationKey))
    remove('incidents','oc_incidents',i=>i.id===id)
    remove('apiOperations','oc_api_operations',o=>o.entity===id)
    // Relations retain the other incident, but sever the erased source and any
@@ -78,12 +80,12 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
     let changed=false
     if(other.mergedInto?.target===id){delete other.mergedInto;changed=true}
     if(other.mergedSources?.includes(id)){other.mergedSources=other.mergedSources.filter(i=>i!==id);if(!other.mergedSources.length)delete other.mergedSources;changed=true}
-    if(other.splitFrom?.incident===id){delete other.splitFrom;const first=other.timeline[0];first.kind='declared';first.text='Original split provenance explicitly erased';changed=true}
-    const timeline=other.timeline.filter(e=>!['merge','split'].includes(e.kind)||!e.text.includes(id))
+    if(other.splitFrom?.incident===id){delete other.splitFrom;const first=other.timeline[0],impact=first.text.indexOf('\nImpact: ');first.text='Original split provenance explicitly erased'+(impact<0?'':first.text.slice(impact));changed=true}
+    const timeline=other.timeline.filter(e=>!['merge','split'].includes(e.kind)||!relations.has(relationKey(e)))
     if(timeline.length!==other.timeline.length){other.timeline=timeline;changed=true}
     if(changed){other.revision++;updated.oc_incidents=(updated.oc_incidents??0)+1}
    }
-   remove('audit','oc_audit',e=>entries.has(e.id)||['merge-incidents','split-incident'].includes(e.kind)&&e.text.includes(id))
+   remove('audit','oc_audit',e=>entries.has(e.id)||['merge-incidents','split-incident'].includes(e.kind)&&relations.has(relationKey(e)))
    remove('triage','oc_triage',r=>r.kind==='bulk'&&r.results.some((r:any)=>r.id===id))
    await eraseHandoffCopies([id])
    for(const table of ['paging_callbacks','paging_receipts','paging_jobs'])remember(table)
