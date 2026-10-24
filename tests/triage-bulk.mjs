@@ -12,10 +12,10 @@ export async function triageBulkCompletion(){
   const bulk=async input=>{let result;do{result=await req('/api/triage/bulk',input);}while(result.status===200&&result.value.remaining>0&&!result.value.interrupted);return result;};
   const item=i=>({id:i.id,revision:i.revision,...(i.kind?{kind:i.kind}:{})});
   let a=await declare(1),b=await declare(2),target=await declare(3),c=await declare(4);
-  ok(await bulk({operationId:'synthetic-oncall-600-ack',action:'acknowledge',items:[a,b].map(item)}));
+  const acknowledgedIncidents=ok(await bulk({operationId:'synthetic-oncall-600-ack',action:'acknowledge',reason:'Take responsibility for the selected incidents',items:[a,b].map(item)}));assert.ok(acknowledgedIncidents.results.every(r=>r.ok),JSON.stringify(acknowledgedIncidents));
   [a,b]=(await state()).incidents.filter(i=>[a.id,b.id].includes(i.id));
   const snooze={operationId:'synthetic-oncall-600-snooze',action:'snooze',minutes:15,reason:'Hold investigation while the dependency recovers',items:[a,b].map(item),confirmedCount:2};
-  const snoozed=ok(await bulk(snooze));assert.ok(snoozed.results.every(r=>r.ok));assert.deepEqual(ok(await bulk(snooze)),snoozed);
+  const snoozed=ok(await bulk(snooze));assert.ok(snoozed.results.every(r=>r.ok),JSON.stringify(snoozed));assert.deepEqual(ok(await bulk(snooze)),snoozed);
   for(const i of (await state()).incidents.filter(i=>[a.id,b.id].includes(i.id))){assert.equal(i.deadlines.filter(d=>d.state==='pending'&&d.kind==='snooze').length,1);assert.equal(i.timeline.filter(e=>e.operationId===snooze.operationId).length,1);}
   [a,b]=(await state()).incidents.filter(i=>[a.id,b.id].includes(i.id));
   const merge={operationId:'synthetic-oncall-600-merge',action:'merge',target:target.id,targetRevision:target.revision,reason:'One response owns the common dependency failure',items:[a,c,b].map(item),confirmedCount:3};
