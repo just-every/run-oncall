@@ -327,11 +327,10 @@ api.post("/api/login", async (c) => {
   // Active account counters keep their exact existing key and window. Only a
   // name revoked by committed erasure uses a content-free key for later refusals.
   const erasedLogin=await subjectErasureIdentity('login',loginName);
-  const throttleName=await c.env.DB.prepare('SELECT 1 FROM oc_erasure_fences WHERE id=?').bind(erasedLogin).first()?'erased:'+erasedLogin:loginName;
   const throttle = await c.env.DB.prepare(
-    "INSERT INTO login_attempts VALUES(?,1,?) ON CONFLICT(name) DO UPDATE SET attempts=CASE WHEN reset<? THEN 1 ELSE attempts+1 END,reset=CASE WHEN reset<? THEN excluded.reset ELSE reset END RETURNING attempts",
+    "INSERT INTO login_attempts(name,attempts,reset) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_erasure_fences WHERE id=?) THEN ? ELSE ? END,1,? WHERE 1 ON CONFLICT(name) DO UPDATE SET attempts=CASE WHEN reset<? THEN 1 ELSE attempts+1 END,reset=CASE WHEN reset<? THEN excluded.reset ELSE reset END RETURNING attempts",
   )
-    .bind(throttleName, Date.now() + 60000, Date.now(), Date.now())
+    .bind(erasedLogin, "erased:"+erasedLogin, loginName, Date.now() + 60000, Date.now(), Date.now())
     .first<{ attempts: number }>();
   if ((throttle?.attempts ?? 99) > 10)
     fail("Too many attempts; retry in one minute", 429);
