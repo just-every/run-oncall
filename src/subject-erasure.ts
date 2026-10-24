@@ -138,6 +138,8 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    const aliases=new Set<string>(input.importedPeople)
    if([...aliases].some(mail=>!people.some(p=>p.id===mail)))fail('An imported identity changed; reload and review',409)
    if(people.some(p=>p.id.toLowerCase()===member.name.toLowerCase()&&!aliases.has(p.id)))fail('Select the retained imported identity matching this member before erasing',409)
+   // A native email also fences pending/unapplied copies, even when no user target was applied.
+   if(/^[^\s@]+@[^\s@]+$/.test(member.name))aliases.add(member.name.toLowerCase())
    for(const client of [...state.apiClients??[]].filter(v=>v.owner===id))await eraseApiIntegration('client',client.id)
    for(const endpoint of [...state.apiEndpoints??[]].filter(v=>v.owner===id))await eraseApiIntegration('endpoint',endpoint.id)
    outbox(o=>o.owner===id)
