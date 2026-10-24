@@ -307,9 +307,18 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByText('oc_incidents: 1 deleted, 0 updated',{exact:true}).waitFor();
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-incident-receipt',width);
   assert.ok(!(await request('/api/state')).incidents.some(i=>i.id===erasedIncident.id));
+  const erasedIntegration='synthetic-oncall-40-integration-'+width;
+  await request('/api/intake/sources',{id:erasedIntegration,name:'Synthetic erasable integration '+width,provider:'alertmanager',service:'synthetic-oncall-1',key:token(),revision:0});
+  await page.getByRole('button',{name:'Refresh',exact:true}).click();
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('intake');
-  await settings.getByLabel('Erasure subject',{exact:true}).selectOption('synthetic-oncall-grafana');
+  await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedIntegration);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedIntegration);
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-integration-review',width);
+  const integrationEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/intake/'+erasedIntegration));
+  await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await integrationEraseResponse).status(),200);
+  await settings.getByText('oc_intake_credentials: 1 deleted, 0 updated',{exact:true}).waitFor();
+  await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-integration-receipt',width);
+  assert.ok(!(await request('/api/state')).intakeSources.some(i=>i.id===erasedIntegration));
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // OC-043's existing routing screen exposes both stages before publication.
   const orchestrationId='synthetic-oncall-43-'+width,orchestrationKey=token(),policyBefore=(await request('/api/state')).policies.find(p=>p.service==='synthetic-oncall-1'&&p.severity==='warning');
