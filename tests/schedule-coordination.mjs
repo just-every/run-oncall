@@ -59,6 +59,9 @@ export async function scheduleCoordination(){
   for(let n=3;n<20;n++)ok(await coord({action:'subscribe',scope:'own'}));ok(await coord({action:'subscribe',scope:'own'}),429);
   const checkpoint=ok(await req('/api/recovery/checkpoint')),before=ok(await req('/api/state')),invalid=structuredClone(checkpoint);invalid.coordination.scheduleRecords[0].kind='invalid';
   ok(await req('/api/recovery/restore',{mode:'replace',checkpoint:invalid}),400);assert.deepEqual(ok(await req('/api/state')),before);
+  const jsonArchive=ok(await req('/api/archive')),nativeRestore=await req('/api/restore',{mode:'replace',archive:jsonArchive});ok(nativeRestore);cookie=nativeRestore.cookie;
+  assert.ok(ok(await req('/api/state')).scheduleRecords.every(row=>!row.active&& (row.kind!=='subscription'||row.data.hash===null)),'native archive recovery holds the complete category inactive');
+  assert.equal((await w.send(new URL(subscriptions[1].url).pathname,undefined,{},'GET')).status,404);
   const restore=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(restore);cookie=restore.cookie;
   const restored=ok(await req('/api/state')).scheduleRecords;assert.ok(restored.every(r=>!r.active));assert.ok(restored.filter(r=>r.kind==='subscription').every(r=>r.data.hash===null));
   assert.equal((await w.send(new URL(subscriptions[1].url).pathname,undefined,{},'GET')).status,404,'restored historical subscription cannot authorize a feed');

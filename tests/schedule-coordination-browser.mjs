@@ -28,6 +28,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session){
  await coordination.getByText('Recorded schedule changes',{exact:true}).click();await coordination.getByText(/Recorded obligation/).first().waitFor();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'shift coordination fits the viewport');
  const axe=await new AxeBuilder({page}).include('[aria-label="Shift coordination"]').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+ assert.equal(await coordination.getByLabel('Swap approval',{exact:true}).inputValue(),'none','saved approval policy stays selected after the form reset');
  await coordination.screenshot({path:`${directory}/OC-025-settings-${width}.png`});
  await coordination.getByRole('button',{name:'Revoke subscription',exact:true}).click();await coordination.getByText(/revoked or restored inactive/).waitFor();assert.equal((await context.request.get(url)).status(),404);
  const coverage=await context.request.get(origin+'/api/schedules/browser-'+width+'/now-next?at='+encodeURIComponent(start));assert.equal(coverage.status(),200);assert.equal((await coverage.json()).now.primary,substitute.id);
