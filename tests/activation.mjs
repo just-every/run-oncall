@@ -457,7 +457,7 @@ try {
  const last=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(last)
  await pagingHistory(w,last.cookie)
  record('OC-013/015: restored historical acknowledgement/cancellation append attribution without recovery; strict module references, retained callbacks and SQL rollback passed')
- // OC-040 change-event erasure: public admin door, atomic counts and restore fences.
+ { // OC-040 change-event erasure: public admin door, atomic counts and restore fences.
  let erasureCookie=last.cookie;
  const erasureReq=(path,input)=>w.request(path,input,erasureCookie);
  const erasureActor=ok(await erasureReq('/api/session')).member;
@@ -484,7 +484,7 @@ try {
  let erased;
  erasureCookie=await checkpointErasureCli(w,erasureCookie,async()=>{erased=ok(await erasureReq(path,input));assert.equal(erased.state,'complete');assert.deepEqual(erased.stores.oc_changes,{deleted:1,updated:0});assert.deepEqual(erased.stores.oc_change_sources,{deleted:0,updated:1});assert.equal(erased.standby,'not-reconciled')});
  const after=ok(await erasureReq('/api/state'));
- assert.ok(!after.changes.some(row=>row.id===change.id));assert.ok(!after.changeSources.find(row=>row.id==='synthetic-oncall-40').lastAccepted);
+ assert.ok(!(after.changes??[]).some(row=>row.id===change.id));assert.ok(!after.changeSources.find(row=>row.id==='synthetic-oncall-40').lastAccepted);
  assert.ok(!JSON.stringify(after).includes(erasureSignal.summary));assert.ok(!JSON.stringify(after).includes(erasureSignal.author));
  ok(await erasureReq('/api/restore',{archive:old,mode:'replace'}),409);
  const auditAfter=new Map(ok(await erasureReq('/api/audit/export')).rows.map(row=>[row.id,row]));for(const row of auditBefore)assert.deepEqual(auditAfter.get(row.id),row);
@@ -496,7 +496,8 @@ try {
  ok(await erasureReq('/api/changes/sources',{...restoredSource,key:erasureKey}),200);
  ok(await submitChange(),410);
  await w.stop();await w.start();ok(await submitChange(),410);
- assert.ok(!ok(await erasureReq('/api/state')).changes.some(row=>row.id===change.id));
+ assert.ok(!(ok(await erasureReq('/api/state')).changes??[]).some(row=>row.id===change.id));
  record('OC-040 change-event erasure: admin-only confirmation, stale refusal, atomic audit-failure rollback, per-table local receipt, last receipt unlink, immutable pseudonymous audit, CLI/native restore fence, restart and provider retry refusal passed');
+ }
  console.log(`Activation passed: ${checks.length} requirement flow groups`)
 }finally{await w.close();await rm('.rer/local/handoff-session',{force:true});await rm('.rer/local/handoffs.json',{force:true})}
