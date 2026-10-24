@@ -58,7 +58,8 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
      incident.revision++
     }
     if(affected.length){remember('oc_incidents');updated.oc_incidents=affected.length;await eraseHandoffCopies(affected.map(i=>i.id))}
-    remove('audit','oc_audit',r=>r.actor==='source:'+sourceIdentity)
+    const receiptIds=new Set((state.intakeReceipts??[]).filter(r=>'intake:'+r.source===sourceIdentity).map(r=>r.id))
+    remove('audit','oc_audit',r=>r.actor==='source:'+sourceIdentity||r.kind==='intake-owner-notice'&&receiptIds.has(/^Integration owner .*: incomplete intake receipt ([^;]+);/.exec(r.text)?.[1]??'')||r.kind==='routing-readmitted'&&(/^Re-admitted (\S+) as (\S+) to /.exec(r.text)?.slice(1).some(id=>receiptIds.has(id))??false))
     remove('events','oc_events',r=>r.source===sourceIdentity);remove('alerts','oc_alerts',r=>r.source===sourceIdentity)
   }
   if(kind==='incident') {
@@ -122,6 +123,9 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   } else if(kind==='intake'||kind==='change') {
    const source=kind==='intake'?state.intakeSources?.find(r=>r.id===id):state.changeSources?.find(r=>r.id===id)
    if(!source)fail('Unknown integration',404)
+   const auditPatterns=kind==='change'?[`change source ${id} on `,`change source ${id}; revision `]:[`integration ${id}; revision `,`integration ${id}; owner `,`key ${id}; revision `,`routed key ${id} rule version `,`publish for ${id}: base `,`key ${source.name} throttled `]
+   const auditKinds=kind==='change'?['change-source','change-source-revoked']:['intake-source','intake-source-revoked','routing-key','routing-published','routing-publish-refused','intake-rejected','intake-throttled','incumbent-key-supplied','incumbent-key-rotated','incumbent-key-activated']
+   remove('audit','oc_audit',r=>auditKinds.includes(r.kind)&&auditPatterns.some(pattern=>r.text.includes(pattern)))
    if(kind==='change'){
     remove('changes','oc_changes',r=>r.source===id);remove('changeSources','oc_change_sources',r=>r.id===id)
     eraseCredential('oc_change_credentials','source',[id])

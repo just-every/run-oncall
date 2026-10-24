@@ -547,7 +547,7 @@ try {
  assert.equal(routedReceipt.stores.oc_intake_credentials.deleted,1);assert.equal(routedReceipt.stores.oc_intake_sources.deleted,1);
  ok(await erasureReq('/api/routing/keys',{id:routedId,name:'Synthetic erased ID reuse',provider:'native',scope:[erasureService],owner:erasureActor.id,key:routedKey,revision:0,rules:[],catchAll:erasureService}),410);assert.equal(routedReceipt.stores.oc_events.deleted,1);
  ok(await w.request('/api/ingress/intake:'+routedId,routedSignal,undefined,{authorization:'Bearer '+routedKey}),401);
- const routedAfter=ok(await erasureReq('/api/state'));assert.ok(!JSON.stringify(routedAfter).includes('Synthetic erased routing evidence'));
+ const routedAfter=ok(await erasureReq('/api/state'));assert.ok(!JSON.stringify(routedAfter).includes('Synthetic erased routing evidence'));assert.ok(!JSON.stringify(routedAfter).includes(routedId),'integration IDs also leave generated operational audit copies');
  ok(await erasureReq('/api/restore',{mode:'replace',archive:{...routedArchive,erasureFences:routedAfter.erasureFences}}),409);
  const nativeId='synthetic-oncall-405';ok(await erasureReq('/api/sources',{id:nativeId,key:routedKey,scopes:[erasureService]}));
  assert.equal(ok(await erasureReq('/api/erasure/native/'+nativeId,{workspaceRevision:ok(await erasureReq('/api/state')).revision,confirmation:'erase '+nativeId})).stores.sources.deleted,1);
