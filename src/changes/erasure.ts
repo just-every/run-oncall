@@ -27,7 +27,7 @@ export function installChangeErasure(api:any,deps:Dependencies) {
 }
 
 /** All native subjects share C20's receipt, transfer-copy, audit and fence commit. */
-export async function commitSubjectErasure(db:D1Database,state:State,guard:ReturnType<Dependencies['guard']>,plan:{tables:string[];identities:string[];statements:D1PreparedStatement[];updated?:Record<string,number>}) {
+export async function commitSubjectErasure(db:D1Database,state:State,guard:ReturnType<Dependencies['guard']>,plan:{tables:string[];identities:string[];statements:D1PreparedStatement[];updated?:Record<string,number>;inserted?:Record<string,number>}) {
  const portability=await createPortability({db,policy:portabilityPolicy})
   const checkpoint=await portability.redactionStatements()
   // Transfer snapshots can contain any local category. Count the rows inside the
@@ -53,6 +53,6 @@ export async function commitSubjectErasure(db:D1Database,state:State,guard:Retur
    throw error
   })
   const after=result.slice(result.length-(tables.length-copies.length))
-  const stores=Object.fromEntries(tables.map((name,index)=>[name,{deleted:copies.includes(name)?Number((result[index].results[0] as any).n):Math.max(0,Number((result[index].results[0] as any).n)-Number((after[index].results[0] as any).n)),updated:plan.updated?.[name]??0}]))
+  const stores=Object.fromEntries(tables.map((name,index)=>[name,{deleted:copies.includes(name)?Number((result[index].results[0] as any).n):Math.max(0,Number((result[index].results[0] as any).n)-Number((after[index].results[0] as any).n)),updated:plan.updated?.[name]??0,...(plan.inserted?.[name]?{inserted:plan.inserted[name]}:{})}]))
  return {state:'complete',stores,standby:'not-reconciled'}
 }

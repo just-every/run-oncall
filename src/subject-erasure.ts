@@ -16,7 +16,8 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   const state=await deps.state(c,true),input=await deps.body(c),kind=c.req.param('kind'),id=c.req.param('id'),db=c.env.DB as D1Database
   if(input.confirmation!==`erase ${id}`)fail('Type erase followed by the exact subject ID',409)
   if(input.workspaceRevision!==state.revision)fail('Workspace changed; reload before erasing',409)
-  const statements:D1PreparedStatement[]=[],tables:string[]=[],identities=[id],updated:Record<string,number>={}
+  const statements:D1PreparedStatement[]=[],tables:string[]=[],identities=[id],updated:Record<string,number>={},inserted:Record<string,number>={}
+  const changedIncidents=new Set<string>()
   const remember=(table:string)=>{if(!tables.includes(table))tables.push(table)}
   const remove=(key:keyof State,table:string,predicate:(row:any)=>boolean)=>{
    const rows=state[key] as any[]|undefined
@@ -26,7 +27,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   const eraseCredential=(table:string,column:string,ids:string[])=>{remember(table);statements.push(db.prepare(`DELETE FROM ${table} WHERE ${column} IN (SELECT value FROM json_each(?))`).bind(JSON.stringify(ids)))}
   const anonymous=async()=>{
    const label='erased-'+(await subjectErasureIdentity(kind,id)).slice(0,32)
-   if(!state.members.some(m=>m.id===label)){state.members.push({id:label,name:'Erased integration',role:'viewer',active:false});remember('oc_members');updated.oc_members=0}
+   if(!state.members.some(m=>m.id===label)){state.members.push({id:label,name:'Erased integration',role:'viewer',active:false});remember('oc_members');inserted.oc_members=1}
    return label
   }
   const replaceIdentity=(value:any,from:string,to:string):any=>typeof value==='string'?(value===from?to:value):Array.isArray(value)?value.map(v=>replaceIdentity(v,from,to)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,replaceIdentity(v,from,to)])):value
@@ -58,7 +59,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
      incident.timeline=incident.timeline.filter(e=>e.kind!=='source-recovery'&&(!e.metadata?.event||!events.has(e.metadata.event)))
      incident.revision++
     }
-    if(affected.length){remember('oc_incidents');updated.oc_incidents=affected.length;await eraseHandoffCopies(affected.map(i=>i.id))}
+    if(affected.length){for(const row of affected)changedIncidents.add(row.id);remember('oc_incidents');updated.oc_incidents=changedIncidents.size;await eraseHandoffCopies(affected.map(i=>i.id))}
     const receiptIds=new Set((state.intakeReceipts??[]).filter(r=>'intake:'+r.source===sourceIdentity).map(r=>r.id))
     remove('audit','oc_audit',r=>r.actor==='source:'+sourceIdentity||r.kind==='intake-owner-notice'&&receiptIds.has(/^Integration owner .*: incomplete intake receipt ([^;]+);/.exec(r.text)?.[1]??'')||r.kind==='routing-readmitted'&&(/^Re-admitted (\S+) as (\S+) to /.exec(r.text)?.slice(1).some(id=>receiptIds.has(id))??false))
     remove('events','oc_events',r=>r.source===sourceIdentity);remove('alerts','oc_alerts',r=>r.source===sourceIdentity)
@@ -148,6 +149,6 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   // paired with a newer native journal on either restore door.
   ;(state.erasureFences??=[]).push({id:await subjectErasureIdentity(kind,id),epoch:0})
   auditKind(db,kind+'.erase');auditIdentity(db,{subject:{kind,id}})
-  return c.json(await commitSubjectErasure(db,state,deps.guard(c),{tables,identities,statements,updated}))
+  return c.json(await commitSubjectErasure(db,state,deps.guard(c),{tables,identities,statements,updated,inserted}))
  })
 }
