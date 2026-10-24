@@ -31,7 +31,7 @@ import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from '.
 import { admitAlertUrgency, declarationUrgency, serviceUrgency } from '../../urgency/model.ts';
 import { validateUrgencyArchive } from '../../urgency/archive.ts';
 export type Role = "admin" | "responder" | "viewer" | "stakeholder";
-export type Member = { id: string; name: string; role: Role; active: boolean; machine?: true };
+export type Member = { id: string; name: string; role: Role; active: boolean; erased?:true; machine?: true };
 export type Service = {
   id: string;
   name: string;
@@ -509,6 +509,7 @@ function applyCommand(
   if (input.type === "member") {
     const member = state.members.find((m) => m.id === input.id);
     if (!member) fail("Unknown member");
+    if(member.erased)fail("Erased identities cannot be reactivated; create a new member explicitly",410);
     if (!["admin", "responder", "viewer", "stakeholder"].includes(input.role))
       fail("Invalid role");
     if (
@@ -651,7 +652,8 @@ export function validateArchive(value: any): State {
     text(e.text, "entry text", 10000);
   };
   const member = (m: any) => {
-    object(m, ["id", "name", "role", "active"]);
+    object(m, ["id", "name", "role", "active"],["erased"]);
+    if(m.erased!==undefined&&(m.erased!==true||m.active||!["Erased member","Erased integration"].includes(m.name)))fail("Invalid erased identity placeholder");
     text(m.id, "member ID", 100);
     text(m.name, "member name", 100);
     if (!["admin", "responder", "viewer", "stakeholder"].includes(m.role))
