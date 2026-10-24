@@ -1,3 +1,4 @@
+import { hasErasedChange } from './changes/identity.ts'
 import { fail, Fault, type State } from './family/response-operations/domain.ts'
 
 // These are the existing portability journal's value-free digests and source
@@ -18,7 +19,7 @@ export const erasureFenceCondition = `NOT EXISTS(SELECT 1 FROM (${erasureFencesQ
  WHERE json_extract(incoming.value,'$.id')=f.id AND json_extract(incoming.value,'$.epoch')>=f.epoch))`
 export const fenceValues = (state: State) => JSON.stringify(state.erasureFences ?? [])
 export async function requireErasureFence(db: D1Database, state: State) {
- if (!(await db.prepare(`SELECT ${erasureFenceCondition} AS allowed`).bind(fenceValues(state)).first<{allowed:number}>())?.allowed)
+ if (!(await db.prepare(`SELECT ${erasureFenceCondition} AS allowed`).bind(fenceValues(state)).first<{allowed:number}>())?.allowed || await hasErasedChange(state))
   throw Object.assign(new Fault(409,'Archive predates the subject erasure fence; use a current archive. Nothing was replaced.'),{code:'subject_erasure_fence'})
 }
 export function validateErasureFences(value: unknown): asserts value is ErasureFence[] {

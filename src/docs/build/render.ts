@@ -71,7 +71,7 @@ export function renderMarkdown(markdown: string, context: LinkContext): Rendered
         if (!language) problems.push('has a code block without a language');
         const name = languageNames[language] ?? language.toUpperCase();
         const head = `<div class="docs-code-head"><span>${escapeHtml(name || 'Code')}</span></div>`;
-        return `<div class="docs-code">${head}<pre><code>${escapeHtml(text.replace(/\n$/, ''))}</code></pre></div>\n`;
+        return `<div class="docs-code">${head}<pre tabindex="0"><code>${escapeHtml(text.replace(/\n$/, ''))}</code></pre></div>\n`;
       },
       html({ text }) {
         return escapeHtml(text);

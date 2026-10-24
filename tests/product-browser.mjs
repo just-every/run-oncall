@@ -255,6 +255,8 @@ async function incidentWorkflowBrowser(page,context) {
 
 async function changeAndSigningBrowser(page,context){
  const request=async(path,data)=>{const response=await context.request.fetch(path,{method:data===undefined?'GET':'POST',headers:{origin:new URL(page.url()).origin},...(data===undefined?{}:{data})});const value=await response.json();assert.ok(response.ok(),JSON.stringify(value));return value;};
+ const docsResponse=await context.request.get('/docs'),docSlugs=[...new Set([...(await docsResponse.text()).matchAll(/href="\/docs\/([a-z0-9-]+)"/g)].map(match=>match[1]))];
+ assert.ok(docSlugs.length>0,'the documentation catalog exposes its pages');
  const {member}=await request('/api/session'),token=()=>randomBytes(32).toString('hex'),signingSecret=token(),keys={argocd:token(),terraform:token()},now=new Date().toISOString();
  for(const [id,name] of [['synthetic-oncall-1','Template payments'],['synthetic-oncall-2','Template gateway']])await request('/api/command',{type:'service',id,name,environment:'production',owner:member.id,runbook:[],pager:''});
  await request('/api/command',{type:'service-dependencies',service:'synthetic-oncall-1',dependencies:['synthetic-oncall-2'],workspaceRevision:(await request('/api/state')).revision});
@@ -318,6 +320,7 @@ async function changeAndSigningBrowser(page,context){
   await panel.getByLabel('Grafana signing secret',{exact:true}).fill(signingSecret);await panel.getByRole('button',{name:'Save Grafana signing secret',exact:true}).click();await page.getByText('Grafana signature check saved',{exact:true}).waitFor();
   assert.equal(await panel.getByLabel('Grafana signing secret',{exact:true}).inputValue(),'');await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();await panel.scrollIntoViewIfNeeded();await check('oc030-signing',width);
   for(const [slug,section] of [['changes','erase-a-retained-change'],['routed-intake','admission-time-maintenance'],['data','subject-erasure-fences'],['urgency','']]){await page.goto(new URL(page.url()).origin+'/docs/'+slug+(section?'#'+section:''));await page.locator('.docs-article').waitFor();if(section)await page.locator('#'+section).scrollIntoViewIfNeeded();await check('oc040-043-docs-'+slug,width);}
+  for(const slug of docSlugs.filter(slug=>!['changes','routed-intake','data','urgency'].includes(slug))){await page.goto(new URL(page.url()).origin+'/docs/'+slug);await page.locator('.docs-article').waitFor();await check('oc040-043-docs-'+slug,width);}
   await page.goto(new URL(page.url()).origin);
  }
  console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440/390; overflow, axe and hydration');

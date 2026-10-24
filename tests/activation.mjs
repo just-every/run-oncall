@@ -476,6 +476,7 @@ try {
  input.workspaceRevision=ok(await erasureReq('/api/state')).revision;
  ok(await erasureReq(path,{...input,confirmation:'erase another'}),409);
  ok(await erasureReq(path,{...input,workspaceRevision:input.workspaceRevision-1}),409);
+ const beforeErasureCheckpoint=ok(await erasureReq('/api/recovery/checkpoint'));
  const before=ok(await erasureReq('/api/state')),journal=w.sql('SELECT * FROM rer_portability_journal'),auditBefore=ok(await erasureReq('/api/audit/export')).rows;
  // A retained copy from an interrupted installation export contains the real
  // admitted row. The public erasure must invalidate it in the same transaction.
@@ -493,6 +494,9 @@ try {
  assert.ok(!(after.changes??[]).some(row=>row.id===change.id));assert.ok(!after.changeSources.find(row=>row.id==='synthetic-oncall-40').lastAccepted);
  assert.ok(!JSON.stringify(after).includes(erasureSignal.summary));assert.ok(!JSON.stringify(after).includes(erasureSignal.author));
  ok(await erasureReq('/api/restore',{archive:old,mode:'replace'}),409);
+ ok(await erasureReq('/api/restore',{archive:{...old,erasureFences:after.erasureFences},mode:'replace'}),409);
+ ok(await erasureReq('/api/recovery/restore',{mode:'replace',checkpoint:{...beforeErasureCheckpoint,coordination:{...beforeErasureCheckpoint.coordination,erasureFences:after.erasureFences}}}),409);
+ assert.deepEqual(ok(await erasureReq('/api/state')),after,'old rows paired with current fence metadata cannot publish or rotate the session');
  const auditAfter=new Map(ok(await erasureReq('/api/audit/export')).rows.map(row=>[row.id,row]));for(const row of auditBefore)assert.deepEqual(auditAfter.get(row.id),row);
  assert.ok(!JSON.stringify([...auditAfter.values()]).includes(erasureSignal.author));
  ok(await erasureReq(path,{...input,workspaceRevision:after.revision}),404);

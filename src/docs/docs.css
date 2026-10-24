@@ -64,7 +64,7 @@
 }
 .docs-body code { padding: 1px 6px; border-radius: 6px; background: var(--oc-paper-deep); font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 0.86em; overflow-wrap: anywhere; }
 .docs-code { border: 1px solid var(--oc-line); border-radius: 12px; background: var(--oc-surface); overflow: hidden; }
-.docs-code-head { padding: 9px 18px 0; font-size: 12px; font-weight: 650; letter-spacing: 0.12em; text-transform: uppercase; color: var(--oc-muted); }
+.docs-code-head { padding: 9px 18px 0; font-size: 13px; font-weight: 650; letter-spacing: 0.12em; text-transform: uppercase; color: var(--oc-muted); }
 .docs-code pre { margin: 0; padding: 8px 18px 16px; overflow-x: auto; }
 .docs-code pre code { padding: 0; background: none; font-size: 15px; line-height: 1.7; overflow-wrap: normal; }
 .docs-table { overflow-x: auto; }

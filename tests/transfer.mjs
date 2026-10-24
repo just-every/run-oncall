@@ -291,7 +291,16 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  cookie=await checkpointErasureCli(m,cookie,async()=>{const receipt=ok(await req('/api/changes/'+erasedChange.id+'/erase',{workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase '+erasedChange.id}));assert.equal(receipt.state,'complete');assert.deepEqual(receipt.stores.oc_changes,{deleted:1,updated:0});});
  assert.ok(!ok(await req('/api/state')).changes.some(row=>row.id===erasedChange.id));
  const retainedErasureFences=sql('SELECT id,epoch FROM oc_erasure_fences ORDER BY id')
- await m.close();await m.command(['export','--output',later,'--non-interactive']);await m.command(['reset','--yes','--non-interactive'])
+ await m.close();await m.command(['export','--output',later,'--non-interactive']);
+ // A valid-checksum archive containing a current fence and an older erased row
+ // is held-data input, not a mocked importer. Build it through the export CLI.
+ sql("INSERT INTO oc_changes(id,ordinal,data) VALUES('"+erasedChange.id+"',(SELECT COALESCE(MAX(ordinal),-1)+1 FROM oc_changes),'"+JSON.stringify(erasedChange).replaceAll("'","''")+"')");
+ await rm(corrupt,{force:true});await m.command(['export','--output',corrupt,'--non-interactive']);
+ sql("DELETE FROM oc_changes WHERE id='"+erasedChange.id+"'");
+ await m.command(['reset','--yes','--non-interactive']);
+ await m.command(['import','--input',corrupt,'--yes','--non-interactive'],1);
+ assert.equal(sql('SELECT COUNT(*) AS n FROM oc_changes')[0].n,0,'current metadata cannot authorize an erased row in a portable archive');
+
  await m.command(['import','--input',archive,'--journal',later,'--yes','--non-interactive'],4)
  assert.ok(Object.values(sql('SELECT (SELECT COUNT(*) FROM move_in_objects) AS imported,(SELECT COUNT(*) FROM ik_jobs) AS jobs,(SELECT COUNT(*) FROM oc_api_clients) AS clients,(SELECT COUNT(*) FROM oc_api_endpoints) AS endpoints,(SELECT COUNT(*) FROM oc_api_operations) AS operations,(SELECT COUNT(*) FROM oc_api_outbox) AS outbox')[0]).every(count=>count===0),'the refused older archive restores no import or automation record')
  await m.command(['import','--input',later,'--yes','--non-interactive'])

@@ -4,11 +4,8 @@ import { syncErasureFences } from '../erasure-fence'
 import { createPortability } from '../modules/portability/index.mjs'
 import { portabilityPolicy } from '../portability-policy.mjs'
 import { workspaceWrite } from '../workspace-store'
-import { changeHash } from './credentials'
-
-// The namespace prevents a provider identity from colliding with another kind
-// of erasure fence. No provider content or identity is stored in the fence.
-export const changeErasureIdentity = (source: string, eventId: string) => changeHash(JSON.stringify(['change-event-erasure-v1', source, eventId]))
+import { changeErasureIdentity } from './identity'
+export { changeErasureIdentity } from './identity'
 
 type Dependencies = {body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}}
 export function installChangeErasure(api:any,deps:Dependencies) {

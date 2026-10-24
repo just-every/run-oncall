@@ -1,3 +1,4 @@
+import {hasErasedChange} from '../../src/changes/identity.ts'
 import {holdScheduleRecords} from '../../src/schedule-coordination/model.ts';
 import {holdDeadlines} from '../../src/incident-deadlines/model.ts';
 import {holdManualRecords} from '../../src/manual-pages/archive.ts'
@@ -46,6 +47,7 @@ export default {
   const archive={schemaVersion:1,mode:'synthetic-only'}
   for(const key of ['schedules','policies','jobs','receipts','callbacks'])archive[key]=(await read('paging_'+key)).map(row=>JSON.parse(row.data))
   validateRecoveryCheckpoint({schemaVersion:1,kind:'oncall-recovery-checkpoint',capturedAt:new Date().toISOString(),workspaceRevision:coordination.revision,pagingRevision:paging?.revision??0,coordination,paging:archive})
+  if(await hasErasedChange(coordination))throw Error('SUBJECT_ERASURE_FENCE')
   const rows=await read('paging_jobs')
   for(const row of rows) {
    const job=JSON.parse(row.data)
