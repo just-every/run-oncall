@@ -254,6 +254,7 @@ async function incidentWorkflowBrowser(page,context) {
 }
 
 async function changeAndSigningBrowser(page,context){
+ const origin=new URL(page.url()).origin;
  const request=async(path,data)=>{const response=await context.request.fetch(path,{method:data===undefined?'GET':'POST',headers:{origin:new URL(page.url()).origin},...(data===undefined?{}:{data})});const value=await response.json();assert.ok(response.ok(),JSON.stringify(value));return value;};
  const importDoor=ownerDoor({request:async(path,input,_cookie,extraHeaders={})=>{const response=await context.request.fetch(path,{method:input===undefined?'GET':'POST',headers:{origin:new URL(page.url()).origin,...extraHeaders},...(input===undefined?{}:{data:input})});return {status:response.status(),value:await response.json()}}});
  const docsResponse=await context.request.get('/docs'),docSlugs=[...new Set([...(await docsResponse.text()).matchAll(/href="\/docs\/([a-z0-9-]+)"/g)].map(match=>match[1]))];
@@ -330,6 +331,26 @@ async function changeAndSigningBrowser(page,context){
   const importedEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/intake/'+importedId));
   await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const importedResult=await importedEraseResponse;assert.equal(importedResult.status(),200);assert.ok((await importedResult.json()).importCustody.stores.some(row=>row.rows>0));
   await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-imported-integration-receipt',width);
+  const memberName='synthetic-oncall-413-'+width+'@example.test';
+  const erasedMember=await request('/api/members',{name:memberName,password:'synthetic-oncall-413-password',role:'admin'},201);
+  const personalContext=await context.browser().newContext({baseURL:origin});
+  try {
+   const login=await personalContext.request.post('/api/login',{headers:{origin},data:{name:memberName,password:'synthetic-oncall-413-password'}});assert.equal(login.status(),200);
+   const clientResponse=await personalContext.request.post('/api/automation/clients',{headers:{origin},data:{name:'Synthetic personal response access',key:token(),services:['synthetic-oncall-1'],permissions:['incidents:read']}});assert.equal(clientResponse.status(),201);const client=await clientResponse.json();
+   const endpointResponse=await personalContext.request.post('/api/automation/endpoints',{headers:{origin},data:{name:'Synthetic personal recipient',client:client.id,services:['synthetic-oncall-1'],url:'https://8.8.8.8/synthetic-oncall-413',key:token(),approve:true}});assert.equal(endpointResponse.status(),201);
+  } finally {await personalContext.close();}
+  const memberScheduleId='synthetic-oncall-413-'+width;await request('/api/paging/schedules',{id:memberScheduleId,name:'Synthetic erased contact slots',service:'synthetic-oncall-1',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[erasedMember.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]});
+  const memberPlan=await importDoor.preview('pagerduty',JSON.stringify({users:[{id:'synthetic-oncall-413-'+width,name:'Synthetic erasable contact',email:memberName}]}));assert.equal(memberPlan.status,200);assert.equal((await importDoor.apply('pagerduty',memberPlan.value)).status,200);
+  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await settings.getByLabel('Erasure category',{exact:true}).selectOption('member');await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedMember.id);
+  await settings.getByLabel('Imported identity '+memberName,{exact:true}).check();await settings.getByLabel('Imported identities reviewed',{exact:true}).check();
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedMember.id);await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-member-review',width);
+  const memberResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/member/'+erasedMember.id));await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const memberReply=await memberResponse;assert.equal(memberReply.status(),200,await memberReply.text());
+  await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await settings.getByText(/Approved response recipient .*Provider deletion requires the owner’s consent/).waitFor();await check('oc040-member-receipt',width);
+  assert.equal((await request('/api/state')).members.find(m=>m.id===erasedMember.id).name,'Erased member');
+  await page.getByRole('link',{name:'Schedules',exact:true}).click();await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
+  await page.locator('.scheduling-now-next').getByText('Now: Coverage gap',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
+  await page.getByRole('link',{name:'Services',exact:true}).click();if(!await settings.getByLabel('Erasure category',{exact:true}).isVisible())await settings.getByText('Data erasure settings',{exact:true}).click();
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // OC-043's existing routing screen exposes both stages before publication.
   const orchestrationId='synthetic-oncall-43-'+width,orchestrationKey=token(),policyBefore=(await request('/api/state')).policies.find(p=>p.service==='synthetic-oncall-1'&&p.severity==='warning');

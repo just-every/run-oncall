@@ -2,7 +2,7 @@ export type AuditIdentity = { kind: string; id: string }
 export type AuditOutcome = 'accepted' | 'refused' | 'failed' | 'interrupted' | 'uncertain'
 export type AuditContext = {
   feature: string; kind: string; actor?: AuditIdentity; subject?: AuditIdentity; namedMember?: AuditIdentity;
-  source: AuditIdentity; outcome?: AuditOutcome; commits: number; storageFailed: boolean
+  source: AuditIdentity; outcome?: AuditOutcome; commits: number; storageFailed: boolean; ownerCustodyRefusal?: boolean
 }
 const contexts = new WeakMap<object, AuditContext>()
 export function bindAuditContext(db: D1Database, context: AuditContext) { contexts.set(db, context) }
@@ -14,6 +14,11 @@ export function setAuditSubject(db: D1Database, kind: string, id: string) { audi
 export function auditOutcome(db: D1Database, outcome?: AuditOutcome) {
   const context = contexts.get(db)
   if (context) context.outcome = outcome
+}
+/** The owner custody boundary must refuse without changing any table. */
+export function ownerCustodyRefusal(db: D1Database) {
+  const context = contexts.get(db)
+  if (context) context.ownerCustodyRefusal = true
 }
 export function auditKind(db: D1Database, kind: string) {
   const context = contexts.get(db)

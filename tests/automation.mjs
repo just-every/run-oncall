@@ -5,7 +5,8 @@ import {automationRuntime} from './automation-runtime.mjs';
 import {readFile} from 'node:fs/promises';
 import {ownerDoor} from './worker.mjs';
 // Older sources must never restore an erased automation label through either HTTP door.
-const erasureRuntime=await automationRuntime();
+const erasureCalls=[];
+const erasureRuntime=await automationRuntime(request=>{erasureCalls.push(request.url);return new Response('unexpected outbound request',{status:403});});
 try {
  const setup=await erasureRuntime.request('/api/setup',{name:'synthetic-oncall-erasure-owner',password:'synthetic-oncall-erasure-password'});assert.equal(setup.status,200);
  let cookie=setup.cookie;
@@ -31,6 +32,19 @@ try {
  assert.ok(!JSON.stringify(await value('/api/state')).includes(label));
  const again=await request('/api/recovery/restore',{mode:'replace',checkpoint});assert.equal(again.status,409,'successful current restore retains the fence');
  console.log('PASS OC-053 erasure fence: legacy journal and native custody refuse stale archive/checkpoints atomically; current checkpoint restores and retains custody');
+ // OC-040: per-person recipient erasure has no authority to delete at the provider.
+ const person=await request('/api/members',{name:'synthetic-oncall-419',password:'synthetic-oncall-419-password',role:'admin'});assert.equal(person.status,201);
+ const login=await erasureRuntime.request('/api/login',{name:person.value.name,password:'synthetic-oncall-419-password'});assert.equal(login.status,200);
+ const personal=(p,d)=>erasureRuntime.request(p,d,login.cookie);
+ const personalClient=await personal('/api/automation/clients',{name:'Synthetic personal client',key:randomBytes(32).toString('hex'),services:[service.value.id],permissions:['incidents:read']});assert.equal(personalClient.status,201);
+ const personalRecipient=await personal('/api/automation/endpoints',{name:'Synthetic personal recipient',key:randomBytes(32).toString('hex'),client:personalClient.value.id,services:[service.value.id],url:'https://8.8.8.8/synthetic-oncall-419',approve:true});assert.equal(personalRecipient.status,201);
+ assert.equal((await request('/api/command',{type:'declare',service:service.value.id,title:'Synthetic queued personal response',summary:'Synthetic retained coordination',severity:'warning'})).status,200);
+ assert.ok((await value('/api/state')).apiOutbox.some(row=>row.endpoint===personalRecipient.value.id&&row.status==='queued'));
+ const removed=await request('/api/erasure/member/'+person.value.id,{workspaceRevision:(await value('/api/state')).revision,confirmation:'erase '+person.value.id,identitiesReviewed:true,importedPeople:[]});assert.equal(removed.status,200);assert.equal(removed.value.outstanding.length,1);assert.equal(removed.value.outstanding[0].state,'not-requested');
+ assert.equal((await erasureRuntime.request('/api/state',undefined,login.cookie)).status,401);
+ assert.equal((await request('/api/automation/dispatch',{})).status,200);assert.deepEqual(erasureCalls,[],'neither erasure nor later dispatch calls any provider without per-destination deletion consent');
+ console.log('PASS OC-040 member recipient custody: local access revoked, queued work removed, named deletion open item and zero outbound calls without consent');
+
 } finally {await erasureRuntime.close();}
 
 const sign=(key,text)=>createHmac('sha256',key).update(text).digest('hex');

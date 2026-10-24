@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {readFile,writeFile,mkdir,rm} from 'node:fs/promises'
 import {spawnSync} from 'node:child_process'
-import {createHash} from 'node:crypto'
+import {createHash,createHmac} from 'node:crypto'
 import {localWorker,ownerDoor} from './worker.mjs'
 import {checkpointCli,checkpointErasureCli} from './checkpoint-cli.mjs'
 import {pagingHistory} from './paging-history.mjs'
@@ -243,7 +243,7 @@ try {
  assert.equal(ok(await door.apply('opsgenie',crewPreview)).job.state,'completed')
  const primary=async(id,at)=>ok(await req('/api/move-in/coverage',{vendor:'opsgenie',id:'opsgenie:'+id,at})).coverage.primary
  const salRow=()=>w.sql("SELECT revision,data FROM move_in_objects WHERE id='opsgenie:sal-rota'"),salBefore=salRow()
- const everything=()=>{const columns=Map.groupBy(w.sql("SELECT m.name AS t,p.name AS c FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%' AND m.name NOT LIKE '_cf_%' AND m.name NOT LIKE 'd1_%'"),r=>r.t);return JSON.stringify(w.statements([...columns].map(([t,cs])=>`SELECT ${cs.map(({c})=>`CAST("${c}" AS TEXT)`).join(',')} FROM "${t}"`).join(';')))}
+ const everything=(includeAuth=true)=>{const columns=Map.groupBy(w.sql("SELECT m.name AS t,p.name AS c FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%' AND m.name NOT LIKE '_cf_%' AND m.name NOT LIKE 'd1_%'"+(!includeAuth?" AND m.name NOT LIKE 'oa_%'":"")),r=>r.t);return JSON.stringify(w.statements([...columns].map(([t,cs])=>`SELECT ${cs.map(({c})=>`CAST("${c}" AS TEXT)`).join(',')} FROM "${t}"`).join(';')))}
  const erasedValues=/(?<![\w.+-])al@example\.test|u-al-0|Al Erased/i
  assert.match(everything(),erasedValues,'the scan sees the person before erasure');assert.equal(await primary('al-rota','2026-03-07T12:00:00Z'),'al@example.test')
  const auditBeforeErasure=await auditExport()
@@ -597,6 +597,68 @@ try {
 
  record('OC-040 integration erasure: native and routed keys, routed receipts/events/alerts, per-table counts, rejected old key and forged-journal archive refusal passed');
  record('OC-040 incident erasure: notes/follow-ups/runbook custody, admin authority, confirmation, audit rollback, committed per-table receipt, stale and forged-journal restore refusal, merged-source unlink and valid current checkpoint passed');
+ // Native contact removal shares the imported-person custody transaction and keeps fixed slots as gaps.
+ const erasedName='synthetic-oncall-413@example.test',keptName='synthetic-oncall-414@example.test';
+ const erasedMember=ok(await erasureReq('/api/members',{name:erasedName,password:'synthetic-oncall-413-password',role:'admin'}),201);
+ const keptMember=ok(await erasureReq('/api/members',{name:keptName,password:'synthetic-oncall-414-password',role:'responder'}),201);
+ const memberLogin=await erasureReq('/api/login',{name:erasedName,password:'synthetic-oncall-413-password'});ok(memberLogin);
+ const memberSchedule={...schedule,id:'synthetic-oncall-413',name:'Synthetic retained erasure slots',service:erasureService,revision:0,timezone:'UTC',primary:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[erasedMember.id,keptMember.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]};
+ ok(await erasureReq('/api/paging/schedules',memberSchedule));
+ const memberDoor=ownerDoor(w,erasureCookie),memberPlan=ok(await memberDoor.preview('opsgenie',JSON.stringify({users:{data:[{id:'synthetic-oncall-413-user',username:erasedName,fullName:'Synthetic erased contact'},{id:'synthetic-oncall-414-user',username:keptName,fullName:'Synthetic retained contact'}]},schedules:{data:[{id:'synthetic-oncall-413',name:'Synthetic imported slots',timezone:'UTC',rotations:[{name:'Synthetic daily',startDate:'2026-03-07T09:00:00Z',type:'daily',length:1,participants:[{type:'user',id:'synthetic-oncall-413-user'},{type:'user',id:'synthetic-oncall-414-user'}]}]}]}})));
+ ok(await memberDoor.apply('opsgenie',memberPlan));
+ const memberSource='synthetic-oncall-413-source',memberKey='synthetic-oncall-'+crypto.randomUUID()+crypto.randomUUID();ok(await erasureReq('/api/sources',{id:memberSource,key:memberKey,scopes:[erasureService]}));
+ ok(await w.request('/api/ingress/'+memberSource,{source:memberSource,eventId:memberSource,service:erasureService,environment:ok(await erasureReq('/api/state')).services.find(s=>s.id===erasureService).environment,key:memberSource,generation:memberSource,intent:'trigger',severity:'warning',title:'Synthetic copied member snapshot',observedAt:new Date().toISOString(),evidence:''},undefined,{authorization:'Bearer '+memberKey}),201);
+ const personalClient=ok(await w.request('/api/automation/clients',{name:erasedName,key:memberKey,services:[erasureService],permissions:['incidents:read']},memberLogin.cookie),201);
+ const personalEndpoint=ok(await w.request('/api/automation/endpoints',{name:erasedName,client:personalClient.id,services:[erasureService],url:'https://8.8.8.8/synthetic-oncall-413',key:memberKey,approve:true},memberLogin.cookie),201);
+ ok(await erasureReq('/api/command',{type:'declare',service:erasureService,title:'Synthetic destination erasure',summary:'Synthetic retained incident',severity:'warning'}));
+ assert.ok(ok(await erasureReq('/api/state')).apiOutbox.some(o=>o.endpoint===personalEndpoint.id&&o.status==='queued'));
+ const memberIncident=ok(await w.request('/api/command',{type:'declare',service:erasureService,title:'Synthetic retained member incident',summary:erasedName+' private declaration',severity:'warning'},memberLogin.cookie));
+ const memberHandoffContext=ok(await erasureReq('/api/handoffs/context/'+memberIncident.id));
+ ok(await erasureReq('/api/handoffs/prepare',{id:'synthetic-oncall-413-handoff',incident:memberIncident.id,incidentRevision:memberIncident.revision,serviceHash:memberHandoffContext.serviceHash,payload:{audience:'internal',title:'Synthetic member custody',summary:erasedName+' copied declaration',evidenceLinks:[],impactLinks:[]}}),201);
+ const memberHandoffs=ok(await erasureReq('/api/handoffs/archive'));
+ const memberManual=ok(await erasureReq('/api/command',{type:'manual-page',operationId:'synthetic-oncall-417',service:erasureService,title:'Synthetic member destination',severity:'warning',users:[erasedMember.id],description:erasedName+' retained description'}));
+ // Auth fixtures hold real linked custody; all erasure assertions use the public HTTP door.
+ const linkedOwner=ok(await erasureReq('/api/members',{name:'synthetic-oncall-415',password:'synthetic-oncall-415-password',role:'responder'}),201);
+ w.sql("INSERT INTO oa_operators(id,email,display_name,role,status,version,created_at) VALUES('synthetic-oncall-415-auth','synthetic-oncall-415@example.test','Synthetic owner','owner','active',1,1),('synthetic-oncall-413-auth','"+erasedName+"','"+erasedName+"','member','active',1,2); INSERT INTO operator_members VALUES('synthetic-oncall-415-auth','"+linkedOwner.id+"'),('synthetic-oncall-413-auth','"+erasedMember.id+"')");
+ const authToken=Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString('base64url'),authDigest=createHmac('sha256',w.vars.SESSION_SECRET).update('session\0'+authToken).digest('hex');
+ const authCookie='operator_session_local_'+new URL(w.origin).port+'='+authToken;
+ w.sql("INSERT INTO oa_sessions(id,token_hash,operator_id,operator_version,kind,created_at,expires_at) VALUES('synthetic-oncall-413-session','"+authDigest+"','synthetic-oncall-413-auth',1,'native',1,4102444800000)");
+ ok(await w.request('/auth/session',undefined,authCookie));ok(await w.request('/api/state',undefined,authCookie));
+ const ownerInput={workspaceRevision:ok(await erasureReq('/api/state')).revision,confirmation:'erase '+linkedOwner.id,identitiesReviewed:true,importedPeople:[]};
+ const ownerTables=everything();const ownerRefusal=ok(await erasureReq('/api/erasure/member/'+linkedOwner.id,ownerInput),409);
+ assert.match(ownerRefusal.error,/only through Auth/);assert.match(ownerRefusal.error,/AUTH-ERASURE-001/);assert.equal(everything(),ownerTables,'owner-linked refusal changes no table, including Auth, links, audit and transfer custody');
+ const authBefore=w.sql('SELECT * FROM oa_operators ORDER BY id'),authSessionsBefore=w.sql('SELECT * FROM oa_sessions ORDER BY id');
+ const personalChangeSource='synthetic-oncall-418';ok(await erasureReq('/api/changes/sources',{id:personalChangeSource,name:'Synthetic personal change',provider:'native',service:erasureService,repository:'',mode:'bearer',revision:0,key:memberKey}),201);
+ const personalChange=ok(await w.request('/api/changes/ingress/'+personalChangeSource,{eventId:'synthetic-oncall-418',summary:'Synthetic person local change',author:erasedName,timestamp:new Date().toISOString()},undefined,{authorization:'Bearer '+memberKey}),201);
+ const memberPath='/api/erasure/member/'+erasedMember.id,memberBefore=ok(await erasureReq('/api/archive'));
+ const memberInput={workspaceRevision:memberBefore.revision,confirmation:'erase '+erasedMember.id,identitiesReviewed:true,importedPeople:[erasedName]};
+ ok(await erasureReq(memberPath,{...memberInput,identitiesReviewed:false}),409);
+ ok(await erasureReq(memberPath,{...memberInput,importedPeople:[]}),409);
+ w.sql("CREATE TRIGGER synthetic_oncall_413_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='member.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-413'); END");
+ try{ok(await erasureReq(memberPath,memberInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_413_audit')}
+ assert.deepEqual(ok(await erasureReq('/api/archive')),memberBefore,'native identity, imported original and schedules roll back with their audit');
+ let memberReceipt;
+ erasureCookie=await checkpointErasureCli(w,erasureCookie,async()=>{memberReceipt=ok(await erasureReq(memberPath,memberInput));assert.equal(memberReceipt.state,'complete');assert.equal(memberReceipt.outstanding.length,1);assert.equal(memberReceipt.outstanding[0].state,'not-requested');assert.deepEqual(w.sql('SELECT * FROM oa_operators ORDER BY id'),authBefore);assert.deepEqual(w.sql('SELECT * FROM oa_sessions ORDER BY id'),authSessionsBefore);ok(await w.request('/auth/session',undefined,authCookie));ok(await w.request('/api/state',undefined,authCookie),401);assert.equal(w.sql("SELECT * FROM operator_members WHERE operator_id='synthetic-oncall-413-auth'").length,0);ok(await w.request('/api/changes/ingress/'+personalChangeSource,{eventId:'synthetic-oncall-418',summary:'Synthetic person local change',author:erasedName,timestamp:new Date().toISOString()},undefined,{authorization:'Bearer '+memberKey}),410);assert.match(memberReceipt.outstanding[0].destination,/Approved response recipient/);assert.equal(memberReceipt.stores.credentials.deleted,1);assert.equal(memberReceipt.stores.oc_api_credentials.deleted,1);assert.equal(memberReceipt.stores.oc_endpoint_credentials.deleted,1);assert.ok(memberReceipt.stores.oc_api_outbox.deleted>0);assert.equal(memberReceipt.stores.handoff_state.updated,1);ok(await w.request('/api/state',undefined,memberLogin.cookie),401);ok(await erasureReq('/api/login',{name:erasedName,password:'synthetic-oncall-413-password'}),401);assert.ok(memberReceipt.importCustody.stores.some(row=>row.rows>0));});
+ assert.ok(!JSON.stringify(ok(await erasureReq('/api/handoffs/archive'))).includes(erasedName));ok(await erasureReq('/api/handoffs/restore',{mode:'replace',archive:memberHandoffs}),409);
+ const memberAfter=ok(await erasureReq('/api/archive')),tombstone=memberAfter.members.find(m=>m.id===erasedMember.id);
+ assert.ok(!(memberAfter.changes??[]).some(change=>change.id===personalChange.id));
+ const repeated=ok(await erasureReq(memberPath,memberInput));assert.equal(repeated.repeated,true);assert.equal(repeated.state,'complete');assert.ok(repeated.outstanding.every(item=>item.state==='not-requested'));assert.deepEqual(ok(await erasureReq('/api/archive')),memberAfter,'repeated erasure is idempotent');
+ const manualAfter=memberAfter.incidents.find(i=>i.id===memberManual.id);assert.equal(manualAfter.manualPage.obligations.length,0);assert.ok(!JSON.stringify(manualAfter).includes(erasedName),'native erasure removes recorded manual destinations and copied description/timeline content');
+ assert.equal(tombstone.name,'Erased member');assert.equal(tombstone.active,false);assert.equal(tombstone.erased,true);assert.equal(memberAfter.members.find(m=>m.id===keptMember.id).name,keptName);
+ assert.ok(!JSON.stringify(memberAfter).includes(erasedName));assert.ok(!JSON.stringify(ok(await erasureReq('/api/audit/export'))).includes(erasedName));
+ ok(await w.request('/api/state',undefined,memberLogin.cookie),401);ok(await erasureReq('/api/login',{name:erasedName,password:'synthetic-oncall-413-password'}),401);
+ ok(await erasureReq('/api/command',{type:'member',id:erasedMember.id,active:true,role:'responder'}),410);
+ assert.equal(ok(await erasureReq('/api/schedules/synthetic-oncall-413/now-next?at=2026-03-07T12:00:00Z')).now.primary,null);
+ assert.equal(ok(await erasureReq('/api/schedules/synthetic-oncall-413/now-next?at=2026-03-08T12:00:00Z')).now.primary,keptMember.id);
+ assert.equal(ok(await erasureReq('/api/move-in/coverage',{vendor:'opsgenie',id:'opsgenie:synthetic-oncall-413',at:'2026-03-07T12:00:00Z'})).coverage.primary,null);
+ assert.equal(ok(await erasureReq('/api/move-in/coverage',{vendor:'opsgenie',id:'opsgenie:synthetic-oncall-413',at:'2026-03-08T12:00:00Z'})).coverage.primary,keptName);
+ for(const archive of [memberBefore,{...memberBefore,erasureFences:memberAfter.erasureFences}])ok(await erasureReq('/api/restore',{mode:'replace',archive}),409);
+ ok(await erasureReq('/api/restore',{mode:'replace',archive:{...memberAfter,events:memberBefore.events}}),409);
+ w.sql("INSERT INTO login_attempts(name,attempts,reset) VALUES('"+keptName+"',10,"+(Date.now()+60000)+") ON CONFLICT(name) DO UPDATE SET attempts=10,reset=excluded.reset");
+ ok(await erasureReq('/api/login',{name:keptName,password:'synthetic-oncall-414-password'}),429);assert.equal(w.sql("SELECT attempts FROM login_attempts WHERE name='"+keptName+"'")[0].attempts,11,'erasing someone else preserves an active account’s existing throttle');
+ w.sql("DELETE FROM login_attempts WHERE name='"+keptName+"'");
+ const retainedPersonal=everything(false);assert.equal([erasedName,'synthetic-oncall-413-user','Synthetic erased contact'].some(value=>retainedPersonal.includes(value)),false,'no Oncall-owned table retains the erased person; the separate Auth identity is deliberately retained');
+ record('OC-040 member erasure: reviewed imported identity, native credentials/session, audit-failure rollback, anonymous tombstone, immutable slot gaps without reassignment, unrelated member retention and CLI/native restore fences passed');
  record('OC-040 change-event erasure: admin-only confirmation, stale refusal, atomic audit-failure rollback, per-table local receipt, last receipt unlink, immutable pseudonymous audit, CLI/native restore fence, restart and provider retry refusal passed');
  }
  console.log(`Activation passed: ${checks.length} requirement flow groups`)

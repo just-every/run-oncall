@@ -1,5 +1,15 @@
-import { prepareImportCustodyErasure } from './move-in/native-erasure'
-import { auditIdentity, auditKind } from './audit-store'
+import { addressRanges } from './move-in/address-match'
+import { upgradeD1ImportErasureIndex } from './modules/import-kit/src/d1/index'
+import { validateSchedule } from './family/response-operations/schedules'
+import { eraseManualMember } from './manual-pages/archive'
+import { eraseDeadlineMember } from './incident-deadlines/archive'
+import { eraseBusinessMember } from './business-status/model'
+import { refers,mentions,scrub,indirect } from './move-in/erasure'
+import { relatedSelection } from './modules/import-kit/src/d1/erasure-related'
+import { targetIdentity } from './modules/import-kit/src/d1/erasure-index'
+import { prepareImportCustodyErasure,importErasureContext } from './move-in/native-erasure'
+import { changeErasureIdentity } from './changes/identity'
+import { auditIdentity, auditKind, ownerCustodyRefusal } from './audit-store'
 import { commitSubjectErasure } from './changes/erasure'
 import { subjectErasureIdentity } from './subject-erasure-identity.ts'
 import { fail, validateArchive, type State } from './family/response-operations/domain'
@@ -16,8 +26,10 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
  api.post('/api/erasure/:kind/:id',async(c:any)=>{
   const state=await deps.state(c,true),input=await deps.body(c),kind=c.req.param('kind'),id=c.req.param('id'),db=c.env.DB as D1Database
   if(input.confirmation!==`erase ${id}`)fail('Type erase followed by the exact subject ID',409)
+  if(kind==='member'&&state.members.some(m=>m.id===id&&m.erased))return c.json({state:'complete',stores:{},standby:'not-reconciled',repeated:true,outstanding:[{destination:'External recipients and providers',state:'not-requested',reason:'Deletion requires the owner’s per-destination consent; local revocation is not remote deletion'}]})
   if(input.workspaceRevision!==state.revision)fail('Workspace changed; reload before erasing',409)
   const statements:D1PreparedStatement[]=[],tables:string[]=[],identities=[id],updated:Record<string,number>={},inserted:Record<string,number>={}
+  const outstanding:{destination:string;state:string;reason:string}[]=[]
   const changedIncidents=new Set<string>()
   let imported:Awaited<ReturnType<typeof prepareImportCustodyErasure>>|undefined
   const remember=(table:string)=>{if(!tables.includes(table))tables.push(table)}
@@ -27,22 +39,25 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    remember(table)
   }
   const eraseCredential=(table:string,column:string,ids:string[])=>{remember(table);statements.push(db.prepare(`DELETE FROM ${table} WHERE ${column} IN (SELECT value FROM json_each(?))`).bind(JSON.stringify(ids)))}
-  const anonymous=async()=>{
-   const label='erased-'+(await subjectErasureIdentity(kind,id)).slice(0,32)
-   if(!state.members.some(m=>m.id===label)){let name='Erased integration',sequence=1;while(state.members.some(m=>m.name===name))name='Erased integration '+sequence++;state.members.push({id:label,name,role:'viewer',active:false});remember('oc_members');inserted.oc_members=1}
+  const fence=async(subjectKind:string,subjectId:string)=>{const digest=await subjectErasureIdentity(subjectKind,subjectId);if(!(state.erasureFences??=[]).some(f=>f.id===digest))state.erasureFences.push({id:digest,epoch:0})}
+  const anonymous=async(subjectKind=kind,subjectId=id)=>{
+   const label='erased-'+(await subjectErasureIdentity(subjectKind,subjectId)).slice(0,32)
+   if(!state.members.some(m=>m.id===label)){let name='Erased integration',sequence=1;while(state.members.some(m=>m.name===name))name='Erased integration '+ ++sequence;state.members.push({id:label,name,role:'viewer',active:false,erased:true});remember('oc_members');inserted.oc_members=1}
    return label
   }
   const replaceIdentity=(value:any,from:string,to:string):any=>typeof value==='string'?(value===from?to:value):Array.isArray(value)?value.map(v=>replaceIdentity(v,from,to)):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).map(([k,v])=>[k,replaceIdentity(v,from,to)])):value
   const outbox=(predicate:(o:NonNullable<State['apiOutbox']>[number])=>boolean)=>{requireNoFlight(state,predicate);remove('apiOutbox','oc_api_outbox',predicate)}
   let handoffs:Awaited<ReturnType<typeof handoffSnapshot>>|undefined,handoffWrite=-1
-  const eraseHandoffCopies=async(incidentIds:string[])=>{
+  const eraseHandoffCopies=async(incidentIds:string[],memberIds:string[]=[])=>{
    if(!handoffs){handoffs=await handoffSnapshot(db);statements.push(guardStatement(db,'EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND revision=?)',handoffs.revision))}
-   const removed=handoffs.archive.records.filter(r=>incidentIds.includes(r.source.incident.id))
+   const containsMember=(value:any):boolean=>typeof value==='string'?memberIds.includes(value):Array.isArray(value)?value.some(containsMember):!!value&&typeof value==='object'&&Object.values(value).some(containsMember)
+   const selected=(record:any)=>incidentIds.includes(record.source.incident.id)||containsMember(record)
+   const removed=handoffs.archive.records.filter(selected)
    remember('handoff_state');updated.handoff_state??=0
    if(!removed.length)return
    identities.push(...removed.map(r=>r.id))
-   for(const row of removed)(state.erasureFences??=[]).push({id:await subjectErasureIdentity('handoff',row.id),epoch:0})
-   handoffs.archive.records=handoffs.archive.records.filter(r=>!incidentIds.includes(r.source.incident.id))
+   for(const row of removed)await fence('handoff',row.id)
+   handoffs.archive.records=handoffs.archive.records.filter(r=>!selected(r))
    updated.handoff_state=1
    const write=db.prepare('UPDATE handoff_state SET data=?,revision=revision+1,write_token=? WHERE id=1').bind(JSON.stringify(handoffs.archive),crypto.randomUUID())
    if(handoffWrite<0){handoffWrite=statements.length;statements.push(write)}else statements[handoffWrite]=write
@@ -65,6 +80,27 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
     const receiptIds=new Set((state.intakeReceipts??[]).filter(r=>'intake:'+r.source===sourceIdentity).map(r=>r.id))
     remove('audit','oc_audit',r=>r.actor==='source:'+sourceIdentity||r.kind==='intake-owner-notice'&&receiptIds.has(/^Integration owner .*: incomplete intake receipt ([^;]+);/.exec(r.text)?.[1]??'')||r.kind==='routing-readmitted'&&(/^Re-admitted (\S+) as (\S+) to /.exec(r.text)?.slice(1).some(id=>receiptIds.has(id))??false))
     remove('events','oc_events',r=>r.source===sourceIdentity);remove('alerts','oc_alerts',r=>r.source===sourceIdentity)
+  }
+  const eraseApiIntegration=async(targetKind:string,targetId:string)=>{
+   const client=targetKind==='client'?state.apiClients?.find(r=>r.id===targetId):undefined
+   const endpoint=targetKind==='endpoint'?state.apiEndpoints?.find(r=>r.id===targetId):undefined
+   if(!client&&!endpoint)fail('Unknown integration',404)
+   const endpoints=(state.apiEndpoints??[]).filter(e=>targetKind==='endpoint'?e.id===targetId:e.client===targetId).map(e=>e.id)
+   outbox(o=>endpoints.includes(o.endpoint)||targetKind==='client'&&o.client===targetId)
+   remove('apiEndpoints','oc_api_endpoints',e=>endpoints.includes(e.id))
+   eraseCredential('oc_endpoint_credentials','endpoint',endpoints)
+   if(client){
+    const label=await anonymous('client',targetId)
+    // Preserve historical machine attribution as an inactive, credential-free
+    // erased identity. Never transfer a machine's claims to the erasing admin.
+    for(const key of ['incidents','audit','services'] as const){
+     const prior=state[key].map(row=>JSON.stringify(row));(state as any)[key]=replaceIdentity(state[key],targetId,label)
+     const changed=state[key].filter((row,index)=>JSON.stringify(row)!==prior[index]).length
+     if(changed){remember('oc_'+key);updated['oc_'+key]=changed}
+    }
+    remove('apiClients','oc_api_clients',r=>r.id===targetId);remove('apiOperations','oc_api_operations',r=>r.client===targetId);eraseCredential('oc_api_credentials','client',[targetId])}
+
+   if(client)await fence('client',client.id);for(const endpoint of endpoints)await fence('endpoint',endpoint)
   }
   if(kind==='incident') {
    const incident=state.incidents.find(i=>i.id===id);if(!incident)fail('Unknown incident',404)
@@ -96,24 +132,65 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
     db.prepare('DELETE FROM paging_jobs WHERE incident=?').bind(id),
     db.prepare('UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1').bind(crypto.randomUUID()))
    eraseCredential('rer_command_receipts','result',[JSON.stringify(id)])
+  } else if(kind==='member') {
+   const member=state.members.find(m=>m.id===id);if(!member)fail('Unknown member',404)
+   const ownerLink="EXISTS(SELECT 1 FROM operator_members l JOIN oa_operators o ON o.id=l.operator_id WHERE l.member_id=? AND o.role='owner')"
+   if(await db.prepare('SELECT 1 WHERE '+ownerLink).bind(id).first()){
+    ownerCustodyRefusal(db)
+    fail('An installation owner’s identity is erased only through Auth, never through Oncall. The last owner requires the protected reset or transfer path (AUTH-ERASURE-001). Nothing was erased.',409)
+   }
+   // Recheck custody in the same batch as deletion, including a concurrent role change.
+   statements.push(guardStatement(db,'NOT '+ownerLink,id))
+   if(id===c.get('actor').id)fail('Use another administrator to erase this member',409)
+   if(member.role==='admin'&&member.active&&state.members.filter(m=>m.active&&m.role==='admin').length===1)fail('The last administrator cannot be erased',409)
+   if(input.identitiesReviewed!==true||!Array.isArray(input.importedPeople)||input.importedPeople.some((v:unknown)=>typeof v!=='string')||new Set(input.importedPeople).size!==input.importedPeople.length)fail('Review and select this member’s retained imported identities',409)
+   const people=(await db.prepare("SELECT id,data FROM move_in_objects WHERE kind='user'").all<{id:string;data:string}>()).results
+   const aliases=new Set<string>(input.importedPeople)
+   if([...aliases].some(mail=>!people.some(p=>p.id===mail)))fail('An imported identity changed; reload and review',409)
+   if(people.some(p=>p.id.toLowerCase()===member.name.toLowerCase()&&!aliases.has(p.id)))fail('Select the retained imported identity matching this member before erasing',409)
+   // A native email also fences pending/unapplied copies, even when no user target was applied.
+   if(/^[^\s@]+@[^\s@]+$/.test(member.name))aliases.add(member.name.toLowerCase())
+   const ownedClients=new Set((state.apiClients??[]).filter(v=>v.owner===id).map(v=>v.id))
+   for(const endpoint of state.apiEndpoints??[])if(endpoint.owner===id||ownedClients.has(endpoint.client))outstanding.push({destination:'Approved response recipient '+(await subjectErasureIdentity('endpoint',endpoint.id)).slice(0,12),state:'not-requested',reason:'Provider deletion requires the owner’s consent for this destination; local revocation does not recall sent messages'})
+   for(const client of [...state.apiClients??[]].filter(v=>v.owner===id))await eraseApiIntegration('client',client.id)
+   for(const endpoint of [...state.apiEndpoints??[]].filter(v=>v.owner===id))await eraseApiIntegration('endpoint',endpoint.id)
+   outbox(o=>o.owner===id)
+   const oldName=member.name,names=new Set([oldName,...aliases])
+   const redact=(text:string)=>{for(const name of names){const ranges=addressRanges(text,name).filter(([start,end])=>name.includes('@')||text.slice(start,end)===name&&!/[\p{L}\p{N}]/u.test(text[start-1]??'')&&!/[\p{L}\p{N}]/u.test(text[end]??''));text=ranges.reduceRight((value,[start,end])=>value.slice(0,start)+'Erased member'+value.slice(end),text)}return text}
+   const personalChanges=(state.changes??[]).filter(change=>names.has(change.author))
+   for(const change of personalChanges){const digest=await changeErasureIdentity(change.source,change.eventId);(state.erasureFences??=[]).push({id:digest,epoch:0});identities.push(change.id);for(const source of state.changeSources??[])if(source.lastAccepted?.id===change.id)delete source.lastAccepted}
+   remove('changes','oc_changes',change=>personalChanges.some(row=>row.id===change.id));remember('oc_change_sources')
+   await fence('login',oldName.toLowerCase())
+   member.name='Erased member';member.active=false;member.erased=true;remember('oc_members')
+   for(const entry of state.audit)if(entry.kind==='member')entry.text=redact(entry.text)
+   remember('oc_audit')
+   remove('scheduleRecords','oc_schedule_records',r=>r.member===id||r.data.substitute===id||r.data.obligation?.creator===id)
+   eraseBusinessMember(state,id);remember('oc_business_services')
+   const redactedEntries=new Set<string>()
+   const redactEntry=(entry:{id:string;text:string})=>{const text=redact(entry.text);if(text!==entry.text){redactedEntries.add(entry.id);entry.text=text}}
+   for(const incident of state.incidents){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);if(incident.manualPage){const description=redact(incident.manualPage.description);if(description!==incident.manualPage.description){incident.manualPage.description=description;incident.manualPage.fingerprint=''}}for(const request of incident.responderRequests??[])request.message=redact(request.message);for(const e of incident.timeline)if(e.lifecycle&&e.lifecycle.member===id)e.lifecycle.member=null;for(const e of incident.timeline)if(e.actor===id||incident.manualPage&&e.kind==='declared'||['reassign','assign-role','manual-page','request-responders','respond-request','cancel-request'].includes(e.kind))redactEntry(e)}
+   remember('oc_incidents')
+   for(const alert of state.alerts)if(alert.coordination){for(const entry of alert.coordination.history)redactEntry(entry);if(alert.coordination.assignee===id){alert.coordination.assignee=null;alert.coordination.snoozeDue=null}}remember('oc_alerts')
+   // Operational audit descriptions may have their own attributed prefix.
+   // Redact only affected copies without replacing unrelated checklist wording.
+   for(const entry of state.audit)if(redactedEntries.has(entry.id))entry.text=redact(entry.text)
+   await eraseHandoffCopies([],[id])
+   for(const table of ['credentials','sessions'])eraseCredential(table,'member',[id])
+   eraseCredential('operator_members','member_id',[id]);remember('login_attempts');statements.push(db.prepare("DELETE FROM login_attempts WHERE lower(name) IN (SELECT value FROM json_each(?)) AND NOT EXISTS(SELECT 1 FROM oc_members WHERE json_extract(data,'$.name')=login_attempts.name AND json_extract(data,'$.active')=1)").bind(JSON.stringify([oldName,...aliases].map(v=>v.toLowerCase()))))
+   const copied=await db.prepare("SELECT COUNT(*) AS n FROM oc_events WHERE EXISTS(SELECT 1 FROM json_each(oc_events.data,'$.routingSnapshot.members') m WHERE json_extract(m.value,'$.id')=? AND json_extract(m.value,'$.name')<>'Erased member')").bind(id).first<{n:number}>()
+   remember('oc_events');updated.oc_events=copied!.n
+   statements.push(db.prepare("UPDATE oc_events SET data=json_set(data,'$.routingSnapshot.members',json((SELECT json_group_array(json(CASE WHEN json_extract(m.value,'$.id')=? THEN json_set(m.value,'$.name','Erased member') ELSE m.value END)) FROM json_each(oc_events.data,'$.routingSnapshot.members') m))) WHERE EXISTS(SELECT 1 FROM json_each(oc_events.data,'$.routingSnapshot.members') m WHERE json_extract(m.value,'$.id')=? AND json_extract(m.value,'$.name')<>'Erased member')").bind(id,id))
+   if(aliases.size){
+    const context=importErasureContext(c);while(!(await upgradeD1ImportErasureIndex(context)).complete);
+    const idsByNamespace=new Map<string,Set<string>>(),indirectKeys=new Set<string>(),filenames=new Set<string>(),rewritten=new Set<string>()
+    await relatedSelection(context,{source(record){const payload=record.payload as any;if(record.kind==='users'&&aliases.has(String(payload.email??payload.username??'').trim().toLowerCase())){const ids=idsByNamespace.get(record.namespace)??new Set<string>();ids.add(String(payload.id??record.sourceId));idsByNamespace.set(record.namespace,ids)}return false}})
+    for(const row of (await db.prepare("SELECT id,revision,data FROM move_in_objects WHERE kind='schedule'").all<{id:string;revision:string;data:string}>()).results){let next=JSON.parse(row.data);for(const mail of aliases)next=scrub(next,mail);if(JSON.stringify(next)!==row.data){next.schedule=validateSchedule(next.schedule);rewritten.add(row.id);remember('move_in_objects');updated.move_in_objects=(updated.move_in_objects??0)+1;statements.push(guardStatement(db,"EXISTS(SELECT 1 FROM move_in_objects WHERE kind='schedule' AND id=? AND revision=? AND data=?)",row.id,row.revision,row.data),db.prepare("UPDATE move_in_objects SET data=?,revision=? WHERE kind='schedule' AND id=?").bind(JSON.stringify(next),'erased-'+crypto.randomUUID(),row.id))}}
+    for(const mail of aliases){const found=await indirect(context,mail,new Set(),rewritten,idsByNamespace);for(const key of found.found)indirectKeys.add(key);for(const name of found.filenames)filenames.add(name);identities.push(mail);statements.push(db.prepare("INSERT OR IGNORE INTO ik_d1_erased_targets(destination,identity) VALUES('oncall',?)").bind(targetIdentity('oncall','user',mail)))}
+    remember('move_in_objects');statements.push(db.prepare("DELETE FROM move_in_objects WHERE kind='user' AND id IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...aliases])))
+    imported=await prepareImportCustodyErasure(c,{kind:'user',id:[...aliases][0]},{context,values:[...aliases,...filenames],related:{source(record){const ids=idsByNamespace.get(record.namespace)??new Set<string>();return indirectKeys.has(JSON.stringify([record.namespace,record.kind,record.sourceId]))||[...aliases].some(mail=>refers(record.payload,mail,ids)||mentions(record.payload,mail))},original(bytes){const raw=new TextDecoder().decode(bytes),ids=new Set([...idsByNamespace.values()].flatMap(ids=>[...ids]));try{const value=JSON.parse(raw);return [...aliases].some(mail=>refers(value,mail,ids)||mentions(value,mail))}catch{return [...aliases].some(mail=>mentions(raw,mail))}}}})
+   }
   } else if(kind==='client'||kind==='endpoint') {
-   const client=kind==='client'?state.apiClients?.find(r=>r.id===id):undefined
-   const endpoint=kind==='endpoint'?state.apiEndpoints?.find(r=>r.id===id):undefined
-   if(!client&&!endpoint)fail('Unknown integration',404)
-   const endpoints=(state.apiEndpoints??[]).filter(e=>kind==='endpoint'?e.id===id:e.client===id).map(e=>e.id)
-   outbox(o=>endpoints.includes(o.endpoint)||kind==='client'&&o.client===id)
-   remove('apiEndpoints','oc_api_endpoints',e=>endpoints.includes(e.id))
-   eraseCredential('oc_endpoint_credentials','endpoint',endpoints)
-   if(client){
-    const label=await anonymous()
-    // Preserve historical machine attribution as an inactive, credential-free
-    // erased identity. Never transfer a machine's claims to the erasing admin.
-    for(const key of ['incidents','audit','services'] as const){
-     const prior=state[key].map(row=>JSON.stringify(row));(state as any)[key]=replaceIdentity(state[key],id,label)
-     const changed=state[key].filter((row,index)=>JSON.stringify(row)!==prior[index]).length
-     if(changed){remember('oc_'+key);updated['oc_'+key]=changed}
-    }
-    remove('apiClients','oc_api_clients',r=>r.id===id);remove('apiOperations','oc_api_operations',r=>r.client===id);eraseCredential('oc_api_credentials','client',[id])}
+   await eraseApiIntegration(kind,id)
   } else if(kind==='native') {
    if(!await db.prepare('SELECT id FROM sources WHERE id=?').bind(id).first())fail('Unknown native integration',404)
    await removeSignalSource(id)
@@ -157,9 +234,9 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   validateArchive(state)
   // The digest holds no subject content. It also rejects old rows maliciously
   // paired with a newer native journal on either restore door.
-  ;(state.erasureFences??=[]).push({id:await subjectErasureIdentity(kind,id),epoch:0})
+  await fence(kind,id)
   auditKind(db,kind+'.erase');auditIdentity(db,{subject:{kind,id}})
   const receipt=await commitSubjectErasure(db,state,deps.guard(c),{tables,identities,statements,updated,inserted,execute:imported?.execute})
-  return c.json({...receipt,...(imported?{importCustody:imported.counts()}:{})})
+  return c.json({...receipt,...(kind==='member'?{outstanding}:{} ),...(imported?{importCustody:imported.counts()}:{})})
  })
 }

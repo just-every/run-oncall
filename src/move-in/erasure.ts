@@ -25,7 +25,7 @@ const names = (text: string, email: string) => addressRanges(text, email).length
 const without = (text: string, email: string) => addressRanges(text, email).reduceRight((out, [start, end]) => out.slice(0, start) + ERASED_SLOT + out.slice(end), text)
 
 /** Whether a retained source object (or any object inside it) refers to the person: by email or username, or by the vendor user id where the object is a user reference. */
-function refers(value: any, email: string, ids: ReadonlySet<string>, key = ''): boolean {
+export function refers(value: any, email: string, ids: ReadonlySet<string>, key = ''): boolean {
   if (Array.isArray(value)) return value.some(item => refers(item, email, ids, key))
   if (!value || typeof value !== 'object') return false
   for (const field of ['email', 'username']) if (typeof value[field] === 'string' && value[field].trim().toLowerCase() === email) return true
@@ -34,11 +34,11 @@ function refers(value: any, email: string, ids: ReadonlySet<string>, key = ''): 
 }
 
 /** Whether any text inside a value names the person's address exactly. */
-const mentions = (value: any, email: string): boolean => typeof value === 'string' ? names(value, email) : Array.isArray(value) ? value.some(item => mentions(item, email)) : !!value && typeof value === 'object' && Object.values(value).some(item => mentions(item, email))
+export const mentions = (value: any, email: string): boolean => typeof value === 'string' ? names(value, email) : Array.isArray(value) ? value.some(item => mentions(item, email)) : !!value && typeof value === 'object' && Object.values(value).some(item => mentions(item, email))
 
 /** The retained records whose planned result names the person although their own source may not: a schedule absorbs override records, slots
  * and incumbent comparisons from other records, and a record whose effect is a schedule row the erasure rewrites. Keyed by source identity. */
-async function indirect(ctx: D1ImportContext, email: string, ids: ReadonlySet<string>, rewritten: ReadonlySet<string>) {
+export async function indirect(ctx: D1ImportContext, email: string, ids: ReadonlySet<string>, rewritten: ReadonlySet<string>, namespaceIds?: ReadonlyMap<string,ReadonlySet<string>>) {
   const found = new Set<string>(), filenames = new Set<string>()
   const jobs = (await ctx.storage.database.prepare('SELECT * FROM ik_jobs WHERE destination=? ORDER BY id').bind(ctx.destination).all<any>()).results
   for (const plan of (await loadPlans(jobs, ctx.storage.database, ctx.storage.targets.planCodec)).values()) {
@@ -46,7 +46,7 @@ async function indirect(ctx: D1ImportContext, email: string, ids: ReadonlySet<st
     for (const entry of plan.entries) {
       if (entry.erased) continue
       const result = { effects: entry.effects, unmapped: entry.unmapped, rejection: entry.rejection }
-      if (refers(result, email, ids) || mentions(result, email) || entry.effects.some(effect => effect.targetKind === 'schedule' && rewritten.has(effect.targetId))) found.add(sourceKey(entry.source))
+      if (refers(result, email, namespaceIds?.get(entry.source.namespace) ?? ids) || mentions(result, email) || entry.effects.some(effect => effect.targetKind === 'schedule' && rewritten.has(effect.targetId))) found.add(sourceKey(entry.source))
     }
   }
   return {found, filenames}
@@ -54,7 +54,7 @@ async function indirect(ctx: D1ImportContext, email: string, ids: ReadonlySet<st
 const sourceKey = (record: { namespace: string; kind: string; sourceId: string }) => JSON.stringify([record.namespace, record.kind, record.sourceId])
 
 /** The schedule value without the person: slots keep their index, an override that named them becomes an explicit empty interval, and the incumbent comparison text no longer names them. */
-function scrub(value: any, email: string) {
+export function scrub(value: any, email: string) {
   const next = structuredClone(value)
   const clean = (item: any): any => typeof item === 'string' ? (item.trim().toLowerCase() === email ? ERASED_SLOT : without(item, email)) : Array.isArray(item) ? item.map(clean) : item && typeof item === 'object' ? Object.fromEntries(Object.entries(item).map(([k, v]) => [k, clean(v)])) : item
   for (const override of next.schedule?.overrides ?? []) if (typeof override.member === 'string' && override.member.trim().toLowerCase() === email) override.member = null

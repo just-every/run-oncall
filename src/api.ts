@@ -1,4 +1,4 @@
-import { requireHandoffErasureFence } from './subject-erasure-identity.ts'
+import { requireHandoffErasureFence, subjectErasureIdentity } from './subject-erasure-identity.ts'
 import { installSubjectErasure } from './subject-erasure'
 import {installScheduleCoordination} from './schedule-coordination/api';
 import {holdScheduleRecords} from './schedule-coordination/model';
@@ -324,10 +324,13 @@ api.post("/api/login", async (c) => {
   const input = await body(c);
   const loginName =
     typeof input.name === "string" ? input.name.slice(0, 100) : "";
+  // Active account counters keep their exact existing key and window. Only a
+  // name revoked by committed erasure uses a content-free key for later refusals.
+  const erasedLogin=await subjectErasureIdentity('login',loginName.toLowerCase());
   const throttle = await c.env.DB.prepare(
-    "INSERT INTO login_attempts VALUES(?,1,?) ON CONFLICT(name) DO UPDATE SET attempts=CASE WHEN reset<? THEN 1 ELSE attempts+1 END,reset=CASE WHEN reset<? THEN excluded.reset ELSE reset END RETURNING attempts",
+    "INSERT INTO login_attempts(name,attempts,reset) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_erasure_fences WHERE id=?) AND NOT EXISTS(SELECT 1 FROM oc_members WHERE json_extract(data,'$.name')=? AND json_extract(data,'$.active')=1) THEN ? ELSE ? END,1,? WHERE 1 ON CONFLICT(name) DO UPDATE SET attempts=CASE WHEN reset<? THEN 1 ELSE attempts+1 END,reset=CASE WHEN reset<? THEN excluded.reset ELSE reset END RETURNING attempts",
   )
-    .bind(loginName, Date.now() + 60000, Date.now(), Date.now())
+    .bind(erasedLogin, loginName, "erased:"+erasedLogin, loginName, Date.now() + 60000, Date.now(), Date.now())
     .first<{ attempts: number }>();
   if ((throttle?.attempts ?? 99) > 10)
     fail("Too many attempts; retry in one minute", 429);
