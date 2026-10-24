@@ -284,7 +284,7 @@ async function changeAndSigningBrowser(page,context){
   await request('/api/changes/sources',{id:erasureSource,name:'Synthetic erasure '+width,provider:'native',service:'synthetic-oncall-1',repository:'',mode:'bearer',revision:0,key:erasureKey});
   const changeResponse=await context.request.post('/api/changes/ingress/'+erasureSource,{headers:{authorization:'Bearer '+erasureKey},data:{eventId:erasureSource,summary:'Synthetic erasable change '+width,author:'synthetic-oncall-40',timestamp:new Date().toISOString()}});assert.equal(changeResponse.status(),201);
   const erasureChange=await changeResponse.json();await page.reload();
-  const settings=page.locator('.change-sources');await settings.getByText('Change data settings',{exact:true}).click();
+  const settings=page.locator('.change-sources');await settings.getByText('Data erasure settings',{exact:true}).click();
   await settings.getByLabel('Retained change',{exact:true}).selectOption(erasureChange.id);
   assert.equal(await settings.getByRole('button',{name:'Erase retained change',exact:true}).isEnabled(),false);
   await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasureChange.id);
@@ -295,6 +295,22 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByText('oc_changes: 1 deleted, 0 updated',{exact:true}).waitFor();
   assert.ok(!(await request('/api/state')).changes.some(row=>row.id===erasureChange.id));
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-erasure-receipt',width);
+  const erasedIncident=await request('/api/command',{type:'declare',service:'synthetic-oncall-1',title:'Synthetic erasable incident '+width,summary:'Synthetic erasable impact',severity:'warning'});
+  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await settings.getByLabel('Erasure category',{exact:true}).selectOption('incident');
+  await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedIncident.id);
+  assert.equal(await settings.getByRole('button',{name:'Erase selected subject',exact:true}).isEnabled(),false);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedIncident.id);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-incident-review',width);
+  const incidentEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/incident/'+erasedIncident.id));
+  await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await incidentEraseResponse).status(),200);
+  await settings.getByText('oc_incidents: 1 deleted, 0 updated',{exact:true}).waitFor();
+  await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-incident-receipt',width);
+  assert.ok(!(await request('/api/state')).incidents.some(i=>i.id===erasedIncident.id));
+  await settings.getByLabel('Erasure category',{exact:true}).selectOption('intake');
+  await settings.getByLabel('Erasure subject',{exact:true}).selectOption('synthetic-oncall-grafana');
+  await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-integration-review',width);
+  await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // OC-043's existing routing screen exposes both stages before publication.
   const orchestrationId='synthetic-oncall-43-'+width,orchestrationKey=token(),policyBefore=(await request('/api/state')).policies.find(p=>p.service==='synthetic-oncall-1'&&p.severity==='warning');
   const window={start:new Date(Date.now()-60000).toISOString(),end:new Date(Date.now()+3600000).toISOString()};

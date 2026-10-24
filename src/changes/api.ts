@@ -1,3 +1,4 @@
+import { requireNewSubjectIdentity } from '../subject-erasure-identity'
 import { installChangeErasure, changeErasureIdentity } from './erasure'
 import { auditIdentity } from '../audit-store'
 import { workspaceWrite } from '../workspace-store';
@@ -69,6 +70,7 @@ export function installChangeManagement(api:any,deps:Dependencies) {
   api.post('/api/changes/sources',async(c:any)=>{
     const input=await deps.body(c), state=await deps.state(c,true), actor=c.get('actor');authority(state,actor,true);
     const id=text(input.id,'Change source ID',100), previous=state.changeSources?.find(s=>s.id===id);
+    await requireNewSubjectIdentity(state,'change',id)
     if (input.revision !== (previous?.revision??0)) fail('Change source changed. Reload before saving.',409);
     if (!state.services.some(s=>s.id===input.service) || !changeProviders.includes(input.provider)) fail('Choose a service and supported change provider');
     const repository=['github','gitlab'].includes(input.provider)?text(input.repository,'Repository or project binding',200):'';

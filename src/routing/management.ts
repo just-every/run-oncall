@@ -1,3 +1,4 @@
+import { requireNewSubjectIdentity } from '../subject-erasure-identity'
 import { runtimeBindings } from '../auth.server';
 import { sealCredential, sourceCustody } from '../changes/credentials';
 import { refuseKeyEcho } from '../native-sources';
@@ -24,6 +25,7 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     const input=await deps.body(c),state=await deps.state(c,true),actor=c.get('actor');authority(state,actor,true);
     exact(input,['id','name','provider','scope','owner','key','revision'],['rules','catchAll','authentication']);
     const id=text(input.id,'Integration ID',80),previous=state.intakeSources?.find(s=>s.id===id);
+    await requireNewSubjectIdentity(state,'intake',id)
     if(!/^[a-zA-Z0-9_-]+$/.test(id))fail('Use letters, numbers, hyphens or underscores for the integration ID');
     if(input.revision!==(previous?.revision??0))fail('Integration changed; reload before saving',409);
     const scope=routingScope(state,input.scope);

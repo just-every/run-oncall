@@ -1,3 +1,4 @@
+import { requireNewSubjectIdentity } from '../subject-erasure-identity'
 import {installIncumbentKeys} from './incumbent'
 import { auditIdentity } from '../audit-store'
 import { workspaceWrite } from '../workspace-store';
@@ -11,6 +12,7 @@ export function installIntakeManagement(api:any,deps:Dependencies) {
   api.post('/api/intake/sources',async(c:any)=>{
     const input=await deps.body(c),state=await deps.state(c,true),actor=c.get('actor');authority(state,actor,true);
     const id=text(input.id,'Integration ID',80),previous=state.intakeSources?.find(s=>s.id===id);
+    await requireNewSubjectIdentity(state,'intake',id)
     if(!/^[a-zA-Z0-9_-]+$/.test(id))fail('Use letters, numbers, hyphens or underscores for the integration ID');
     if(input.revision!==(previous?.revision??0))fail('Integration changed; reload before saving',409);
     if(input.provider==='native'||!intakeProviders.includes(input.provider)||!state.services.some(s=>s.id===input.service))fail('Choose a supported provider and service');

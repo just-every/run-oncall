@@ -402,3 +402,44 @@ try {
  await w.time(Date.parse(rollback.deadlines.at(-1).dueAt));const beforeSweep=await read();w.sql("CREATE TRIGGER synthetic_oncall_58_sweep_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END");try{const failed=await w.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(failed.status,500);}finally{w.sql('DROP TRIGGER synthetic_oncall_58_sweep_audit');}assert.deepEqual(await read(),beforeSweep);await tick();assert.equal((await find(rollback.id)).deadlines.at(-1).state,'fired');
  console.log('OC-058 atomic deadline custody: failed permanent audit rolls back snooze and scheduled expiry together; the durable pending item remains visible and a later sweep commits exactly once');
 } finally {await deadlines58.close();}
+
+// OC-040 integration erasure owns the same OC-053 lease boundary as dispatch.
+{
+ const sent=[],key=randomBytes(32).toString('hex');let hold,entered,waiting=false;
+ const erased=await automationRuntime(async request=>{
+  const body=JSON.parse(await request.text()),timestamp=request.headers.get('x-oncall-timestamp');sent.push(body);
+  if(waiting){entered();await new Promise(resolve=>hold=resolve)}
+  return new Response(null,{status:200,headers:{'x-oncall-result':'accepted','x-oncall-receipt':sign(key,body.operationId+'.'+timestamp+'.accepted')}})
+ });
+ try{
+  const setup=await erased.request('/api/setup',{name:'synthetic-oncall-403',password:'synthetic-oncall-403-password'});ok(setup);let cookie=setup.cookie;
+  const req=(path,data)=>erased.request(path,data,cookie),read=async()=>ok(await req('/api/state'));
+  const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-403',name:'Synthetic erasure delivery',environment:'test',owner:setup.value.member.id,runbook:[],pager:''}));
+  const clientKey=randomBytes(32).toString('hex');
+  const client=ok(await req('/api/automation/clients',{name:'synthetic-oncall-403 private client',key:clientKey,services:[service.id],permissions:['incidents:read','incidents:write']}),201);
+  const makeEndpoint=async()=>ok(await req('/api/automation/endpoints',{name:'synthetic-oncall-403 private endpoint',key,client:client.id,services:[service.id],url:'https://8.8.8.8/events',approve:true}),201);
+  const makeIncident=async()=>ok(await req('/api/command',{type:'declare',service:service.id,title:'Synthetic erasure incident',summary:'Synthetic incident evidence',severity:'warning'}));
+  const erase=async(kind,id,extra={})=>req('/api/erasure/'+kind+'/'+id,{workspaceRevision:(await read()).revision,confirmation:'erase '+id,...extra});
+  let endpoint=await makeEndpoint();await makeIncident();const before=await read(),archive=ok(await req('/api/archive'));
+  await erased.db.prepare("CREATE TRIGGER synthetic_oncall_403_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='endpoint.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-403'); END").run();
+  try{ok(await erase('endpoint',endpoint.id),503)}finally{await erased.db.prepare('DROP TRIGGER synthetic_oncall_403_audit').run()}
+  assert.deepEqual(await read(),before,'failed endpoint erasure preserves queued work and credentials');
+  const receipt=ok(await erase('endpoint',endpoint.id));assert.equal(receipt.state,'complete');assert.equal(receipt.stores.oc_endpoint_credentials.deleted,1);assert.equal(receipt.stores.oc_api_outbox.deleted,1);
+  assert.equal(ok(await req('/api/automation/dispatch',{})).processed,0);assert.equal(sent.length,0,'erased queued work never reaches the network edge');
+  ok(await req('/api/restore',{mode:'replace',archive:{...archive,erasureFences:(await read()).erasureFences}}),409);
+  endpoint=await makeEndpoint();const incident=await makeIncident();waiting=true;
+  const started=new Promise(resolve=>entered=resolve),dispatch=req('/api/automation/dispatch',{});await started;
+  ok(await erase('endpoint',endpoint.id),409);ok(await erase('incident',incident.id),409);
+  assert.equal((await read()).apiOutbox.find(o=>o.endpoint===endpoint.id).status,'sending','no erasure receipt while the network call owns a lease');
+  waiting=false;hold();assert.equal(ok(await dispatch).status,'sent');
+  const calls=sent.length;ok(await erase('endpoint',endpoint.id));await req('/api/automation/dispatch',{});assert.equal(sent.length,calls,'receipt precedes no subsequent erased send');
+  // A losing same-object POST must return conflict, never drop its connection.
+  endpoint=await makeEndpoint();await makeIncident();const snapshot=await read(),input={workspaceRevision:snapshot.revision,confirmation:'erase '+endpoint.id};
+  const raced=await Promise.all([0,1].map(()=>req('/api/erasure/endpoint/'+endpoint.id,input)));assert.deepEqual(raced.map(r=>r.status).sort(),[200,409]);
+  const machine=ok(await erased.request('/api/v1/incidents',{type:'declare',service:service.id,title:'Synthetic machine history',summary:'Synthetic machine evidence',severity:'warning'},'',{authorization:'Bearer '+clientKey,'idempotency-key':'synthetic-oncall-407'}),201);
+  const clientArchive=ok(await req('/api/archive'));ok(await erase('client',client.id));const after=await read();assert.ok(!JSON.stringify(after).includes(client.name));assert.notEqual(after.incidents.find(i=>i.id===machine.entity).timeline[0].actor,client.id);assert.equal(after.members.find(m=>m.id===after.incidents.find(i=>i.id===machine.entity).timeline[0].actor).name,'Erased integration');
+  ok(await req('/api/restore',{mode:'replace',archive:{...clientArchive,erasureFences:after.erasureFences}}),409);
+  const checkpoint=ok(await req('/api/recovery/checkpoint')),restored=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(restored);cookie=restored.cookie;
+  console.log('PASS OC-040 integration erasure: queued send prevented, in-flight public erasure 409, completion only after outcome, audit rollback, per-table credentials/outbox counts, concurrent 200/409, client unlink and native restore fence');
+ }finally{hold?.();await erased.close()}
+}

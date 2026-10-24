@@ -1,3 +1,4 @@
+import { installSubjectErasure } from './subject-erasure'
 import {installScheduleCoordination} from './schedule-coordination/api';
 import {holdScheduleRecords} from './schedule-coordination/model';
 import {holdDeadlines} from './incident-deadlines/model.ts';
@@ -419,6 +420,7 @@ api.use("/api/*", async (c, next) => {
 installBusinessStatus(api, {...changeDeps, state: (c: any) => authorizedState(c, false, true)});
 installAutomationManagement(api, changeDeps);
 installChangeManagement(api, changeDeps);
+installSubjectErasure(api, changeDeps);
 installMonitoringSigning(api, changeDeps);
 installNativeSources(api, changeDeps);
 installIntakeManagement(api, changeDeps);

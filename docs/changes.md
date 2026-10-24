@@ -57,7 +57,7 @@ Field mapping assumption **unverified against a live sender**: `notifications[]`
 
 ## Erase a retained change
 
-In Services, open **Change data settings** under Change integrations. An administrator chooses one retained event and types `erase <change ID>`. This removes the event, clears its last-accepted pointer and invalidates local installation-transfer snapshots and chunks. Recent-change panels read the remaining records; no separate panel copy survives. Oncall does not store raw change requests or fetch linked content. Provider source configuration and credentials remain, as do unrelated events.
+In Services, open **Data erasure settings** under Change integrations. An administrator chooses one retained event and types `erase <change ID>`. This removes the event, clears its last-accepted pointer and invalidates local installation-transfer snapshots and chunks. Recent-change panels read the remaining records; no separate panel copy survives. Oncall does not store raw change requests or fetch linked content. Provider source configuration and credentials remain, as do unrelated events.
 
 The protected HTTP door is `POST /api/changes/:id/erase` with `workspaceRevision` and `confirmation`. The revision and current administrator session are checked in the erasure transaction. A failure rolls back; no completion response is issued. The response reports local `state: complete`, per-table deleted/updated counts, and `standby: not-reconciled`. Counts cover the event, changed source pointer, erased identity associations and invalidated transfer tables. Fence/journal bookkeeping and anonymized audit entries contain no event content and are retained. This is local completion only, not cross-site success.
 

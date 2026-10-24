@@ -73,4 +73,19 @@ rer dev
 Confirm the new owner and map an archived administrator as described above. An import that says `target_not_empty` has kept the existing installation; it has not replaced any records. Do not reset to upgrade Oncall.
 
 
-Change-event erasure is a separate administrator action in Services → Change data settings. It commits event removal, last-receipt cleanup, local transfer-copy invalidation, retry and restore fences and identity unlinking together. The count-only receipt confirms local completion and explicitly reports standby as not reconciled. See [Change erasure](changes.md#erase-a-retained-change) for categories, retention, the HTTP door and offline/provider custody limits. General incident, native member/contact and full integration erasure remain incomplete.
+Change-event erasure is a separate administrator action in Services → Data erasure settings. It commits event removal, last-receipt cleanup, local transfer-copy invalidation, retry and restore fences and identity unlinking together. The count-only receipt confirms local completion and explicitly reports standby as not reconciled. See [Change erasure](changes.md#erase-a-retained-change) for categories, retention, the HTTP door and offline/provider custody limits. Native member/contact erasure, imported integration custody and standby reconciliation remain incomplete.
+
+
+## Incident and integration erasure
+
+An administrator opens **Services → Data erasure settings**, chooses the category and exact subject, and types `erase <subject ID>`. The HTTP equivalent is `POST /api/erasure/:category/:id` with `workspaceRevision` and `confirmation`. Supported categories are `incident`, `native`, `intake`, `change`, `client` and `endpoint`. Use a new integration ID after erasure; an erased ID cannot be configured again.
+
+| Category | Local custody removed | Retention and limitations |
+| --- | --- | --- |
+| Incident | Incident timeline, notes, review, follow-ups, copied runbook and workflow/checklist; alert links, related merge/split links, reviewed-handoff copies, bulk results, API results, synthetic paging history and queued response events | Kept until explicit erasure. Independent alerts and other incidents remain. A surviving split or merge loses the erased source reference visibly. |
+| Integration | Native/routed keys, signing custody and incumbent credentials; routed receipts, signals, native incomplete prefixes, change source copies; API client or endpoint definitions, subscriptions and associated queued response events | Kept until explicit erasure. API client history uses an inactive anonymous identity rather than being reassigned to a human. Imported vendor custody still needs the move-in erasure work; this local receipt does not certify that custody. |
+| Native contact/member | Not yet supported by this erasure form | Membership, destination and schedule-slot erasure remain incomplete. Imported-person erasure is a separate supported action in the Move-in kit. |
+
+The same transaction as change-event erasure removes local transfer snapshots and staged copies, advances the restore journal and severs permanent-audit identity associations. An audit, table or revision failure commits no erasure receipt. The successful count-only receipt reports local `complete` and `standby: not-reconciled`; it never certifies cross-site completion.
+
+A matching response delivery that is sending, uncertain or has an expired lease returns **409 without an erasure receipt**. Reconcile its outcome first. Queued deliveries are removed atomically. Already-sent provider messages and bytes already handed to an external call cannot be recalled. Ask the named recipient and provider to delete their retained messages, logs and backups; record their response separately. Request deletion of offline exports and copied text from their holders. This installation cannot prove those remote deletions. No automatic expiry, live provider call or paging delivery is enabled.

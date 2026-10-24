@@ -1,3 +1,4 @@
+import { requireNewSubjectIdentity } from './subject-erasure-identity'
 import { auditIdentity, setAuditSubject } from './audit-store'
 import { fail, text, type State } from './family/response-operations/domain';
 import { changeHash, changeHmac, equalSignature, freshTimestamp, openCredential, sealCredential, sourceCustody } from './changes/credentials';
@@ -71,6 +72,7 @@ export function installNativeSources(api: any, deps: Dependencies) {
     const key = text(input.key, 'source key', 200);
     if (key.length < 32) fail('Source key needs at least 32 characters');
     const state = await currentAdmin(c, deps);
+    await requireNewSubjectIdentity(state,'native',id)
     if (!Array.isArray(input.scopes) || input.scopes.length === 0 || input.scopes.some((scope: string) => !state.services.some(s => s.id === scope)))
       fail('Choose explicit service scopes');
     refuseKeyEcho([id, ...input.scopes], key);
