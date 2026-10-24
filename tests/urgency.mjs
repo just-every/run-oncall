@@ -53,14 +53,13 @@ try {
   assert.deepEqual(await archive(),beforeDuplicate,'native duplicate detection excludes internal urgency metadata');
   ok(await send({...firstSignal,severity:'warning'}),409);assert.deepEqual(await archive(),beforeDuplicate);
 
-  const replayAuditBefore=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
-  const beforeReplay=await archive(),replay=ok(await req('/api/replay',{events:[firstSignal]}));
+  const beforeReplay=await archive(),replayAuditBefore=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),replay=ok(await req('/api/replay',{events:[firstSignal]}));
   assert.deepEqual(replay.decisions[0].historicalUrgency,initial.urgency);
   assert.equal(replay.decisions[0].proposedUrgency.version,severity.version);
-  assert.equal(replay.decisions[0].proposedUrgency.urgency,'high');assert.deepEqual(await archive(),beforeReplay);
+  assert.equal(replay.decisions[0].proposedUrgency.urgency,'high');
   assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),replayAuditBefore,'OC-043 service replay writes no permanent audit');
   const unordered=ok(await req('/api/replay',{events:[signal('synthetic-oncall-43-z','warning',{observedAt:'2026-10-24T00:00:00Z'}),signal('synthetic-oncall-43-b','warning',{observedAt:'2026-10-23T00:00:00Z'}),signal('synthetic-oncall-43-a','warning',{observedAt:'2026-10-23T00:00:00Z'})]}));
-  assert.deepEqual(unordered.decisions.map(row=>row.eventId),['synthetic-oncall-43-a','synthetic-oncall-43-b','synthetic-oncall-43-z']);assert.deepEqual(await archive(),beforeReplay);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),replayAuditBefore);
+  assert.deepEqual(unordered.decisions.map(row=>row.eventId),['synthetic-oncall-43-a','synthetic-oncall-43-b','synthetic-oncall-43-z']);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),replayAuditBefore);assert.deepEqual(await archive(),beforeReplay);
   const edited=ok(await req('/api/command',{type:'service',id:'checkout',name:'Checkout renamed',environment:'production',owner:actor.id,runbook:['Inspect the updated dashboard'],pager:''}));
   assert.deepEqual(edited.urgencyRules,[constant,severity],'ordinary service edits preserve published policy history');
   assert.deepEqual((await state()).events.find(e=>e.id===firstReceipt.id),initial);

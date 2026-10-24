@@ -71,11 +71,11 @@ try {
  state=ok(await req('/api/state'));assert.equal(state.alerts.find(a=>a.key==='shared'&&a.service==='payments').state,'recovered');assert.equal(state.alerts.find(a=>a.key==='shared'&&a.service==='search').state,'active');
  ok(await pd('resolve','shared',{team:'payments'}),202);assert.match(ok(await req('/api/state')).intakeReceipts.at(-1).routing.diagnostics.join(' '),/search/);
  const replayAudit=()=>w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
- const auditBeforePreview=replayAudit();
  const beforePreview=ok(await req('/api/archive')),changedRules=rules.map(r=>r.id==='search'?{...r,target:{service:'payments'}}:r);
+ const auditBeforePreview=replayAudit();
  const preview=ok(await req('/api/routing/keys/pd/preview',{baseVersion:2,rules:changedRules,catchAll:'payments',receiptIds:receipts.map(r=>r.id)}));
- assert.equal(preview.decisions.length,receipts.length);assert.ok(preview.decisions.some(r=>r.changed));assert.ok(preview.warnings.length>0);assert.deepEqual(ok(await req('/api/archive')),beforePreview);
- assert.deepEqual(replayAudit(),auditBeforePreview,'OC-043 routed replay writes no permanent audit');
+ assert.equal(preview.decisions.length,receipts.length);assert.ok(preview.decisions.some(r=>r.changed));assert.ok(preview.warnings.length>0);
+ assert.deepEqual(replayAudit(),auditBeforePreview,'OC-043 routed replay writes no permanent audit');assert.deepEqual(ok(await req('/api/archive')),beforePreview);
  assert.deepEqual(preview.decisions.map(row=>row.receipt),[...receipts].sort((a,b)=>a.acceptedAt.localeCompare(b.acceptedAt)||a.id.localeCompare(b.id)).map(row=>row.id),'OC-043 replay order is stable by admission time and receipt identity');
  const rerouted=preview.decisions.find(row=>row.historical.service==='search');
  assert.equal(rerouted.historical.serviceDecision.action,'suppress');assert.equal(rerouted.proposed.serviceDecision.action,'route');assert.equal(rerouted.proposed.serviceDecision.owner,actor.id);
@@ -129,7 +129,7 @@ try {
  const maintenanceProviders=ok(await req('/api/state'));for(const source of ['synthetic-oncall-43-dd','synthetic-oncall-43-am']){const receipt=maintenanceProviders.intakeReceipts.find(r=>r.source===source);assert.ok(receipt);assert.equal(maintenanceProviders.events.find(e=>e.id===receipt.event).decision.action,'suppress');}
  await w.time(maintenanceEnd);const expiredMaintenance=await maintenanceAdmission('after');assert.equal(expiredMaintenance.event.decision.action,'route');assert.equal(expiredMaintenance.alert.suppressed,false);assert.match(expiredMaintenance.event.decision.reason,/Maintenance expired/);
  assert.deepEqual(expiredMaintenance.snapshot.events.find(e=>e.id===inMaintenance.event.id),inMaintenance.event,'expiry does not rewrite the earlier event');
- const maintenanceRows=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),maintenanceArchive=ok(await req('/api/archive'));
+ const maintenanceArchive=ok(await req('/api/archive')),maintenanceRows=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
  const maintenanceReplay=ok(await req('/api/routing/keys/pd/preview',{baseVersion:3,rules:changedRules,catchAll:'payments',receiptIds:[inMaintenance.receipt.id]}));
  assert.equal(maintenanceReplay.decisions[0].historical.serviceDecision.action,'suppress');assert.equal(maintenanceReplay.decisions[0].proposed.serviceDecision.action,'route');assert.match(maintenanceReplay.decisions[0].proposed.serviceDecision.reason,/Maintenance expired/);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),maintenanceRows);assert.deepEqual(ok(await req('/api/archive')),maintenanceArchive);
  await w.stop();await w.start();await w.time(maintenanceEnd+1000);assert.deepEqual(ok(await req('/api/state')).events.find(e=>e.id===inMaintenance.event.id),inMaintenance.event);const restartedMaintenance=await maintenanceAdmission('restart');assert.equal(restartedMaintenance.event.decision.action,'route');
