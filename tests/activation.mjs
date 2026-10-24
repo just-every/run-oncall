@@ -509,7 +509,9 @@ try {
  assert.ok(!(ok(await erasureReq('/api/state')).changes??[]).some(row=>row.id===change.id));
  // OC-040 incident erasure uses the same committed receipt and custody fence.
  const incidentViewer=ok(await erasureReq('/api/members',{name:'synthetic-oncall-406',role:'viewer',password:'synthetic-oncall-406-password'}),201),incidentViewerLogin=await erasureReq('/api/login',{name:incidentViewer.name,password:'synthetic-oncall-406-password'});ok(incidentViewerLogin);
- const makeIncident=()=>erasureReq('/api/command',{type:'declare',service:erasureService,title:'synthetic-oncall-401 private incident',summary:'synthetic-oncall-401 private impact',severity:'warning'});
+ ok(await erasureReq('/api/command',{type:'service',id:'synthetic-oncall-411',name:'Synthetic erasure dependencies',environment:'test',owner:erasureActor.id,runbook:['Synthetic recovery guide'],pager:''}));
+ ok(await erasureReq('/api/status',{action:'create',name:'Synthetic erasure impact',owningTeam:'synthetic-oncall-411',supporting:['synthetic-oncall-411'],communicationsOwner:erasureActor.id,audience:[],highUrgencyImpact:false}));
+ const makeIncident=()=>erasureReq('/api/command',{type:'declare',service:'synthetic-oncall-411',title:'synthetic-oncall-401 private incident',summary:'synthetic-oncall-401 private impact',severity:'warning'});
  let subject=ok(await makeIncident());
  subject=ok(await erasureReq('/api/command',{type:'note',incident:subject.id,revision:subject.revision,text:'synthetic-oncall-401 private note'}));
  subject=ok(await erasureReq('/api/command',{type:'action',incident:subject.id,revision:subject.revision,title:'synthetic-oncall-401 private follow-up',owner:erasureActor.id,due:'2026-12-01'}));
@@ -530,7 +532,7 @@ try {
  w.sql("CREATE TRIGGER synthetic_oncall_401_table BEFORE DELETE ON oc_incidents WHEN OLD.id='"+subject.id+"' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-401 table'); END");
  try{ok(await erasureReq(incidentPath,incidentInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_401_table')}
  assert.deepEqual(ok(await erasureReq('/api/state')),incidentBefore);
- const incidentReceipt=ok(await erasureReq(incidentPath,incidentInput));assert.equal(incidentReceipt.state,'complete');assert.equal(incidentReceipt.stores.oc_incidents.deleted,1);assert.equal(incidentReceipt.stores[incidentCopy].deleted,1);assert.equal(incidentReceipt.standby,'not-reconciled');assert.equal(incidentReceipt.stores.handoff_state.updated,1);assert.ok(!JSON.stringify(w.sql('SELECT data FROM handoff_state')).includes('synthetic-oncall-401 private'));
+ const incidentReceipt=ok(await erasureReq(incidentPath,incidentInput));assert.equal(incidentReceipt.state,'complete');assert.equal(incidentReceipt.stores.oc_incidents.deleted,1);assert.equal(incidentReceipt.stores[incidentCopy].deleted,1);assert.equal(incidentReceipt.standby,'not-reconciled');assert.equal(incidentReceipt.stores.handoff_state.updated,1);assert.equal(incidentReceipt.stores.oc_business_services.updated,1,'receipt includes recomputed dependent status custody');assert.ok(!JSON.stringify(w.sql('SELECT data FROM handoff_state')).includes('synthetic-oncall-401 private'));
  const incidentAfter=ok(await erasureReq('/api/state'));
  ok(await erasureReq('/api/handoffs/restore',{archive:incidentHandoffs,mode:'replace'}),409);
  const laterIncidentCheckpoint=ok(await erasureReq('/api/recovery/checkpoint'));
@@ -566,7 +568,8 @@ try {
  try{ok(await erasureReq('/api/erasure/intake/'+importedId,importedInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_409_audit')}
  assert.deepEqual(ok(await erasureReq('/api/state')),importedBefore,'import custody and native key erasure roll back with their audit');
  assert.ok(ok(await erasureReq('/api/move-in/objects')).some(row=>row.targetId===importedRoot.targetId));
- const importedReceipt=ok(await erasureReq('/api/erasure/intake/'+importedId,importedInput));assert.equal(importedReceipt.state,'complete');assert.equal(importedReceipt.importCustody.state,'complete');assert.ok(importedReceipt.importCustody.stores.some(row=>row.rows>0));assert.equal(importedReceipt.stores.oc_incumbent_credentials.deleted,1);assert.equal(importedReceipt.stores.oc_intake_credentials.deleted,1);assert.equal(importedReceipt.stores.move_in_objects.deleted,1);
+ const importedRaces=await Promise.all([0,1].map(()=>erasureReq('/api/erasure/intake/'+importedId,importedInput)));assert.deepEqual(importedRaces.map(r=>r.status).sort(),[200,409]);
+ const importedReceipt=ok(importedRaces.find(r=>r.status===200));assert.equal(importedReceipt.state,'complete');assert.equal(importedReceipt.importCustody.state,'complete');assert.ok(importedReceipt.importCustody.stores.some(row=>row.rows>0));assert.equal(importedReceipt.stores.oc_incumbent_credentials.deleted,1);assert.equal(importedReceipt.stores.oc_intake_credentials.deleted,1);assert.equal(importedReceipt.stores.move_in_objects.deleted,1);
  assert.ok(!ok(await erasureReq('/api/move-in/objects')).some(row=>row.targetId===importedRoot.targetId));assert.ok(!JSON.stringify(importedReceipt).includes(incumbentKey));
  record('OC-040 imported integration erasure: incumbent and native keys, source target, original/plan retirement and count-only receipt share audit-failure rollback and one commit');
  const nativeId='synthetic-oncall-405';ok(await erasureReq('/api/sources',{id:nativeId,key:routedKey,scopes:[erasureService]}));
