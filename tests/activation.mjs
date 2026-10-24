@@ -477,12 +477,18 @@ try {
  ok(await erasureReq(path,{...input,confirmation:'erase another'}),409);
  ok(await erasureReq(path,{...input,workspaceRevision:input.workspaceRevision-1}),409);
  const before=ok(await erasureReq('/api/state')),journal=w.sql('SELECT * FROM rer_portability_journal'),auditBefore=ok(await erasureReq('/api/audit/export')).rows;
- w.sql("CREATE TRIGGER synthetic_oncall_40_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-40'); END");
+ // A retained copy from an interrupted installation export contains the real
+ // admitted row. The public erasure must invalidate it in the same transaction.
+ const erasureCopy='rer_portability_snap_synthetic_oncall_40';
+ w.sql('CREATE TABLE '+erasureCopy+' AS SELECT * FROM oc_changes');
+ w.sql("CREATE TRIGGER synthetic_oncall_40_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='change.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-40'); END");
  try{ok(await erasureReq(path,input),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_40_audit')}
  assert.deepEqual(ok(await erasureReq('/api/state')),before,'failed erasure cannot remove content or advance the fence');
  assert.deepEqual(w.sql('SELECT * FROM rer_portability_journal'),journal,'failed erasure cannot issue a journal');
+ assert.equal(w.sql('SELECT COUNT(*) AS n FROM '+erasureCopy)[0].n,1,'final audit failure rolls back transfer-copy deletion too');
  let erased;
- erasureCookie=await checkpointErasureCli(w,erasureCookie,async()=>{erased=ok(await erasureReq(path,input));assert.equal(erased.state,'complete');assert.deepEqual(erased.stores.oc_changes,{deleted:1,updated:0});assert.deepEqual(erased.stores.oc_change_sources,{deleted:0,updated:1});assert.equal(erased.standby,'not-reconciled')});
+ erasureCookie=await checkpointErasureCli(w,erasureCookie,async()=>{erased=ok(await erasureReq(path,input));assert.equal(erased.state,'complete');assert.deepEqual(erased.stores.oc_changes,{deleted:1,updated:0});assert.deepEqual(erased.stores.oc_change_sources,{deleted:0,updated:1});assert.equal(erased.standby,'not-reconciled');assert.deepEqual(erased.stores[erasureCopy],{deleted:1,updated:0})});
+ assert.equal(w.sql("SELECT COUNT(*) AS n FROM sqlite_master WHERE name='"+erasureCopy+"'")[0].n,0,'the committed erasure drops the retained transfer copy');
  const after=ok(await erasureReq('/api/state'));
  assert.ok(!(after.changes??[]).some(row=>row.id===change.id));assert.ok(!after.changeSources.find(row=>row.id==='synthetic-oncall-40').lastAccepted);
  assert.ok(!JSON.stringify(after).includes(erasureSignal.summary));assert.ok(!JSON.stringify(after).includes(erasureSignal.author));

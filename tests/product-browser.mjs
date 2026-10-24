@@ -269,7 +269,7 @@ async function changeAndSigningBrowser(page,context){
  await request('/api/monitoring/synthetic-oncall-grafana/signing',{revision:1,secret:signingSecret});
  const check=async(label,width)=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label+' fits viewport');assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
-  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations,[],label+' has no WCAG axe violations');
   await page.screenshot({path:`evidence/browser/${label}-${width}.png`,fullPage:true});await page.screenshot({path:`evidence/browser/${label}-focus-${width}.png`});
  };
  for(const width of [1440,390]){
