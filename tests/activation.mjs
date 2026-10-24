@@ -515,6 +515,8 @@ try {
  subject=ok(await erasureReq('/api/command',{type:'action',incident:subject.id,revision:subject.revision,title:'synthetic-oncall-401 private follow-up',owner:erasureActor.id,due:'2026-12-01'}));
  const incidentContext=ok(await erasureReq('/api/handoffs/context/'+subject.id));
  ok(await erasureReq('/api/handoffs/prepare',{id:'synthetic-oncall-401-handoff',incident:subject.id,incidentRevision:subject.revision,serviceHash:incidentContext.serviceHash,payload:{audience:'internal',title:'Synthetic erasable handoff',summary:'synthetic-oncall-401 private handoff',evidenceLinks:[],impactLinks:[]}}),201);
+ const incidentHandoffs=ok(await erasureReq('/api/handoffs/archive'));
+ const incidentCheckpoint=ok(await erasureReq('/api/recovery/checkpoint'));
  const incidentArchive=ok(await erasureReq('/api/archive')),incidentPath='/api/erasure/incident/'+subject.id;
  let incidentInput={workspaceRevision:incidentArchive.revision,confirmation:'erase '+subject.id};
  ok(await w.request(incidentPath,incidentInput),401);ok(await w.request(incidentPath,incidentInput,incidentViewerLogin.cookie),403);
@@ -529,7 +531,10 @@ try {
  try{ok(await erasureReq(incidentPath,incidentInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_401_table')}
  assert.deepEqual(ok(await erasureReq('/api/state')),incidentBefore);
  const incidentReceipt=ok(await erasureReq(incidentPath,incidentInput));assert.equal(incidentReceipt.state,'complete');assert.equal(incidentReceipt.stores.oc_incidents.deleted,1);assert.equal(incidentReceipt.stores[incidentCopy].deleted,1);assert.equal(incidentReceipt.standby,'not-reconciled');assert.equal(incidentReceipt.stores.handoff_state.updated,1);assert.ok(!JSON.stringify(w.sql('SELECT data FROM handoff_state')).includes('synthetic-oncall-401 private'));
- const incidentAfter=ok(await erasureReq('/api/state'));assert.ok(!JSON.stringify(incidentAfter).includes('synthetic-oncall-401 private'));
+ const incidentAfter=ok(await erasureReq('/api/state'));
+ ok(await erasureReq('/api/handoffs/restore',{archive:incidentHandoffs,mode:'replace'}),409);
+ const laterIncidentCheckpoint=ok(await erasureReq('/api/recovery/checkpoint'));
+ ok(await erasureReq('/api/recovery/restore',{mode:'replace',checkpoint:{...laterIncidentCheckpoint,handoffs:incidentCheckpoint.handoffs}}),409);assert.ok(!JSON.stringify(incidentAfter).includes('synthetic-oncall-401 private'));
  for(const archive of [incidentArchive,{...incidentArchive,erasureFences:incidentAfter.erasureFences}])ok(await erasureReq('/api/restore',{archive,mode:'replace'}),409);
  // A surviving incident remains valid after its merged source is erased.
  const mergeSource=ok(await makeIncident()),mergeTarget=ok(await makeIncident());
@@ -550,7 +555,12 @@ try {
  const routedAfter=ok(await erasureReq('/api/state'));assert.ok(!JSON.stringify(routedAfter).includes('Synthetic erased routing evidence'));assert.ok(!JSON.stringify(routedAfter).includes(routedId),'integration IDs also leave generated operational audit copies');
  ok(await erasureReq('/api/restore',{mode:'replace',archive:{...routedArchive,erasureFences:routedAfter.erasureFences}}),409);
  const nativeId='synthetic-oncall-405';ok(await erasureReq('/api/sources',{id:nativeId,key:routedKey,scopes:[erasureService]}));
- assert.equal(ok(await erasureReq('/api/erasure/native/'+nativeId,{workspaceRevision:ok(await erasureReq('/api/state')).revision,confirmation:'erase '+nativeId})).stores.sources.deleted,1);
+ const incomplete=await w.send('/api/ingress/'+nativeId,'{"source":"'+nativeId+'","private":"synthetic-oncall-405@example.test",',{authorization:'Bearer '+routedKey,'content-type':'application/json'});ok(incomplete,202);
+ const nativeCustody=ok(await erasureReq('/api/state')).intakeSources.find(s=>s.name==='Native incomplete: '+nativeId);assert.ok(nativeCustody);
+ ok(await erasureReq('/api/erasure/intake/'+encodeURIComponent(nativeCustody.id),{workspaceRevision:ok(await erasureReq('/api/state')).revision,confirmation:'erase '+nativeCustody.id}),409);
+ const nativeReceipt=ok(await erasureReq('/api/erasure/native/'+nativeId,{workspaceRevision:ok(await erasureReq('/api/state')).revision,confirmation:'erase '+nativeId}));assert.equal(nativeReceipt.stores.sources.deleted,1);assert.equal(nativeReceipt.stores.oc_native_prefixes.deleted,1);
+ assert.ok(!JSON.stringify(ok(await erasureReq('/api/state'))).includes('synthetic-oncall-405@example.test'));
+
  record('OC-040 integration erasure: native and routed keys, routed receipts/events/alerts, per-table counts, rejected old key and forged-journal archive refusal passed');
  record('OC-040 incident erasure: notes/follow-ups/runbook custody, admin authority, confirmation, audit rollback, committed per-table receipt, stale and forged-journal restore refusal, merged-source unlink and valid current checkpoint passed');
  record('OC-040 change-event erasure: admin-only confirmation, stale refusal, atomic audit-failure rollback, per-table local receipt, last receipt unlink, immutable pseudonymous audit, CLI/native restore fence, restart and provider retry refusal passed');

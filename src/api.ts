@@ -1,3 +1,4 @@
+import { requireHandoffErasureFence } from './subject-erasure-identity'
 import { installSubjectErasure } from './subject-erasure'
 import {installScheduleCoordination} from './schedule-coordination/api';
 import {holdScheduleRecords} from './schedule-coordination/model';
@@ -676,6 +677,7 @@ api.post("/api/recovery/restore", async (c) => {
   requireNativePrefixValues(checkpoint.coordination);
   await emailErasureFence(c.env.DB,checkpoint.coordination);
   await requireErasureFence(c.env.DB,checkpoint.coordination);
+  if(checkpoint.schemaVersion===2)await requireHandoffErasureFence(checkpoint.coordination,checkpoint.handoffs);
   const snapshot = await recoverySnapshot(c.env.DB);
   const imported = preparePagingImport(checkpoint.paging, Date.now());
   const replacement = prepareCheckpointReplacement(c.env.DB, snapshot, imported);

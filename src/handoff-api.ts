@@ -1,3 +1,4 @@
+import { requireHandoffErasureFence, requireNewSubjectIdentity } from './subject-erasure-identity'
 import { fail, Fault, type Member } from './family/response-operations/domain';
 import {
   sourceSnapshot, prepareHandoff, reviewHandoff, withdrawHandoff, handoffEligibility,
@@ -78,6 +79,7 @@ export function installHandoffs(api: any, body: (c: any, max?: number) => Promis
     const input = exact(await body(c, 1024 * 1024 + 64), ['mode', 'archive']);
     if (input.mode !== 'replace') fail('Explicit handoff replacement required');
     const archive = await validateHandoffArchive(input.archive);
+    await requireHandoffErasureFence(snapshot.workspace, archive);
     const held = await holdHandoffsForRecovery(archive, Date.now(), crypto.randomUUID(),
       'Handoff archive restore; explicit review required');
     await commitHandoffs(c.env.DB, snapshot, held, authority(c));
@@ -86,6 +88,7 @@ export function installHandoffs(api: any, body: (c: any, max?: number) => Promis
   api.post('/api/handoffs/prepare', async (c: any) => {
     const { snapshot, actor } = await context(c, 'respond');
     const input = exact(await body(c), ['id', 'incident', 'incidentRevision', 'serviceHash', 'payload'], ['supersedes']);
+    await requireNewSubjectIdentity(snapshot.workspace,'handoff',input.id)
     const existing = snapshot.archive.records.find(record => record.id === input.id);
     const prior = input.supersedes ? snapshot.archive.records.find(record => record.id === input.supersedes) : undefined;
     const record = await prepareHandoff(snapshot.workspace, actor, input, Date.now(), existing, prior);

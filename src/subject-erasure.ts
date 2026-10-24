@@ -38,6 +38,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    remember('handoff_state');updated.handoff_state??=0
    if(!removed.length)return
    identities.push(...removed.map(r=>r.id))
+   for(const row of removed)(state.erasureFences??=[]).push({id:await subjectErasureIdentity('handoff',row.id),epoch:0})
    handoffs.archive.records=handoffs.archive.records.filter(r=>!incidentIds.includes(r.source.incident.id))
    updated.handoff_state=1
    const write=db.prepare('UPDATE handoff_state SET data=?,revision=revision+1,write_token=? WHERE id=1').bind(JSON.stringify(handoffs.archive),crypto.randomUUID())
@@ -123,6 +124,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   } else if(kind==='intake'||kind==='change') {
    const source=kind==='intake'?state.intakeSources?.find(r=>r.id===id):state.changeSources?.find(r=>r.id===id)
    if(!source)fail('Unknown integration',404)
+   if(kind==='intake'&&id.startsWith('native:'))fail('Erase the native integration key to remove every retained scope and its credentials',409)
    const auditPatterns=kind==='change'?[`change source ${id} on `,`change source ${id}; revision `]:[`integration ${id}; revision `,`integration ${id}; owner `,`key ${id}; revision `,`routed key ${id} rule version `,`publish for ${id}: base `,`key ${source.name} throttled `]
    const auditKinds=kind==='change'?['change-source','change-source-revoked']:['intake-source','intake-source-revoked','routing-key','routing-published','routing-publish-refused','intake-rejected','intake-throttled','incumbent-key-supplied','incumbent-key-rotated','incumbent-key-activated']
    remove('audit','oc_audit',r=>auditKinds.includes(r.kind)&&auditPatterns.some(pattern=>r.text.includes(pattern)))

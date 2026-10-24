@@ -10,5 +10,12 @@ export async function hasErasedSubject(state:State) {
 
 export async function requireNewSubjectIdentity(state:State,kind:string,id:string) {
  const digest=await subjectErasureIdentity(kind,id)
- if(state.erasureFences?.some(f=>f.id===digest))fail('This integration identity was erased; choose a new ID',410)
+ if(state.erasureFences?.some(f=>f.id===digest))fail('This subject identity was erased; choose a new ID',410)
+}
+
+/** Handoff archives may keep orphan sources, so ordinary reference validation
+ * cannot authorize a copy of an explicitly erased incident or handoff. */
+export async function requireHandoffErasureFence(state:State,archive:{records:{id:string;source:{incident:{id:string}}}[]}) {
+ const fences=new Set((state.erasureFences??[]).map(f=>f.id))
+ for(const row of archive.records)if(fences.has(await subjectErasureIdentity('incident',row.source.incident.id))||fences.has(await subjectErasureIdentity('handoff',row.id)))fail('Handoff predates the subject erasure fence; nothing was restored',409)
 }
