@@ -1,4 +1,4 @@
-import { requireNewSubjectIdentity } from '../subject-erasure-identity'
+import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import { installChangeErasure, changeErasureIdentity } from './erasure'
 import { auditIdentity } from '../audit-store'
 import { workspaceWrite } from '../workspace-store';

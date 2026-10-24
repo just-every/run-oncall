@@ -1,4 +1,4 @@
-import { requireHandoffErasureFence, requireNewSubjectIdentity } from './subject-erasure-identity'
+import { requireHandoffErasureFence, requireNewSubjectIdentity } from './subject-erasure-identity.ts'
 import { fail, Fault, type Member } from './family/response-operations/domain';
 import {
   sourceSnapshot, prepareHandoff, reviewHandoff, withdrawHandoff, handoffEligibility,

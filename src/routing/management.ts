@@ -1,4 +1,4 @@
-import { requireNewSubjectIdentity } from '../subject-erasure-identity'
+import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import { runtimeBindings } from '../auth.server';
 import { sealCredential, sourceCustody } from '../changes/credentials';
 import { refuseKeyEcho } from '../native-sources';

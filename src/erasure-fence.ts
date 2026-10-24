@@ -1,4 +1,4 @@
-import { hasErasedSubject } from './subject-erasure-identity'
+import { hasErasedSubject } from './subject-erasure-identity.ts'
 import { hasErasedChange } from './changes/identity.ts'
 import { fail, Fault, type State } from './family/response-operations/domain.ts'
 

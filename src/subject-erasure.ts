@@ -1,6 +1,6 @@
 import { auditIdentity, auditKind } from './audit-store'
 import { commitSubjectErasure } from './changes/erasure'
-import { subjectErasureIdentity } from './subject-erasure-identity'
+import { subjectErasureIdentity } from './subject-erasure-identity.ts'
 import { fail, validateArchive, type State } from './family/response-operations/domain'
 import { handoffSnapshot } from './handoff-store'
 

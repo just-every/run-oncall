@@ -1,4 +1,4 @@
-import { requireNewSubjectIdentity } from '../subject-erasure-identity'
+import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import {installIncumbentKeys} from './incumbent'
 import { auditIdentity } from '../audit-store'
 import { workspaceWrite } from '../workspace-store';

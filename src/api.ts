@@ -1,4 +1,4 @@
-import { requireHandoffErasureFence } from './subject-erasure-identity'
+import { requireHandoffErasureFence } from './subject-erasure-identity.ts'
 import { installSubjectErasure } from './subject-erasure'
 import {installScheduleCoordination} from './schedule-coordination/api';
 import {holdScheduleRecords} from './schedule-coordination/model';

@@ -1,6 +1,8 @@
-import { changeHash } from './changes/credentials'
-import { fail, type State } from './family/response-operations/domain'
-export const subjectErasureIdentity=(kind:string,id:string)=>changeHash(JSON.stringify(['native-subject-erasure-v1',kind,id]))
+import { fail, type State } from './family/response-operations/domain.ts'
+export async function subjectErasureIdentity(kind:string,id:string) {
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(['native-subject-erasure-v1',kind,id])))
+ return Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('')
+}
 export async function hasErasedSubject(state:State) {
  const fences=new Set(state.erasureFences?.map(f=>f.id))
  for(const [kind,rows] of [['incident',state.incidents],['client',state.apiClients],['endpoint',state.apiEndpoints],['intake',state.intakeSources],['change',state.changeSources]] as const)

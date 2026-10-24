@@ -1,4 +1,4 @@
-import { requireNewSubjectIdentity } from './subject-erasure-identity'
+import { requireNewSubjectIdentity } from './subject-erasure-identity.ts'
 import { auditIdentity, setAuditSubject } from './audit-store'
 import { fail, text, type State } from './family/response-operations/domain';
 import { changeHash, changeHmac, equalSignature, freshTimestamp, openCredential, sealCredential, sourceCustody } from './changes/credentials';
