@@ -590,6 +590,8 @@ try {
  ok(await erasureReq('/api/paging/schedules',memberSchedule));
  const memberDoor=ownerDoor(w,erasureCookie),memberPlan=ok(await memberDoor.preview('opsgenie',JSON.stringify({users:{data:[{id:'synthetic-oncall-413-user',username:erasedName,fullName:'Synthetic erased contact'},{id:'synthetic-oncall-414-user',username:keptName,fullName:'Synthetic retained contact'}]},schedules:{data:[{id:'synthetic-oncall-413',name:'Synthetic imported slots',timezone:'UTC',rotations:[{name:'Synthetic daily',startDate:'2026-03-07T09:00:00Z',type:'daily',length:1,participants:[{type:'user',id:'synthetic-oncall-413-user'},{type:'user',id:'synthetic-oncall-414-user'}]}]}]}})));
  ok(await memberDoor.apply('opsgenie',memberPlan));
+ const memberSource='synthetic-oncall-413-source',memberKey='synthetic-oncall-'+crypto.randomUUID()+crypto.randomUUID();ok(await erasureReq('/api/sources',{id:memberSource,key:memberKey,scopes:[erasureService]}));
+ ok(await w.request('/api/ingress/'+memberSource,{source:memberSource,eventId:memberSource,service:erasureService,environment:ok(await erasureReq('/api/state')).services.find(s=>s.id===erasureService).environment,key:memberSource,generation:memberSource,intent:'trigger',severity:'warning',title:'Synthetic copied member snapshot',observedAt:new Date().toISOString(),evidence:''},undefined,{authorization:'Bearer '+memberKey}),201);
  const memberPath='/api/erasure/member/'+erasedMember.id,memberBefore=ok(await erasureReq('/api/archive'));
  const memberInput={workspaceRevision:memberBefore.revision,confirmation:'erase '+erasedMember.id,identitiesReviewed:true,importedPeople:[erasedName]};
  ok(await erasureReq(memberPath,{...memberInput,identitiesReviewed:false}),409);
