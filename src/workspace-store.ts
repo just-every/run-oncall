@@ -38,7 +38,7 @@ export function workspaceRows(db:D1Database,state:State,token:string):D1Prepared
     const old=previous?.get('alerts')?.get(alert.id),prior=old?JSON.parse(old.data):undefined;
     const withoutRevision=({revision,...row}:typeof alert)=>JSON.stringify(row);
     if(prior&&withoutRevision(prior)!==withoutRevision(alert))alert.revision=Math.max(alert.revision??1,(prior.revision??1)+1);
-    else alert.revision??=prior?.revision??1;
+    else if(prior?.revision!==undefined)alert.revision??=prior.revision;
   }
   const statements=collections.flatMap(key => {
     const rows=(state[key]??[]).map((row,ordinal)=>({id:row.id,ordinal,data:JSON.stringify(key==='intakeReceipts'?storedReceipt(row as import('./intake/model').IntakeReceipt):row)}))
