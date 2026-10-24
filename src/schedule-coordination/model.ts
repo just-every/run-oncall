@@ -1,5 +1,5 @@
 import {fail,type State,type Member} from '../family/response-operations/domain.ts';
-import {preview,validateSchedule,type Schedule} from '../family/response-operations/schedules.ts';
+import {coverage,preview,validateSchedule,type Schedule} from '../family/response-operations/schedules.ts';
 import type {RecordedResponseObligation} from '../alert-obligation';
 export type ScheduleRecord={id:string;kind:'swap'|'policy'|'reminder'|'subscription'|'notice';member:string;active:boolean;revision:number;at:string;data:Record<string,any>};
 export const records=(state:State)=>state.scheduleRecords??=[];
@@ -18,7 +18,7 @@ export function swapSchedule(state:State,schedule:Schedule,requester:string,subs
  const override={id:crypto.randomUUID(),role,start:new Date(from).toISOString(),end:new Date(to).toISOString(),member:substitute};
  const changed=validateSchedule({...schedule,revision:schedule.revision+1,overrides:[...schedule.overrides,override]},state);
  const after=preview(changed,state.members,from,to),other=role==='primary'?'backup':'primary';
- if(after.some(window=>window[role]!==substitute||window[other]===substitute))fail('Swap would create ambiguous or overlapping coverage',409);
+ for(const at of new Set([...before,...after].map(window=>window.at))){const prior=coverage(schedule,state.members,at),next=coverage(changed,state.members,at);if(next[role]!==substitute||next[other]!==prior[other])fail('Swap would create ambiguous or overlapping coverage or a new gap',409);}
  return changed;
 }
 export function scheduleChanges(state:State,before:Schedule[],after:Schedule[],actor?:string) {
