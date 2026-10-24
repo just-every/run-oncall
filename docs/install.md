@@ -1,16 +1,16 @@
 # Install and run
 
-You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2 (without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall` brings its own). `rer` provides the checkout's pinned Node and pnpm tooling.
+Oncall runs on macOS, Linux or Windows with WSL2. Git is required; rer brings Node and pnpm. `rer` provides the checkout's pinned Node and pnpm tooling.
 
 ## Run it on your computer
 
-One line installs the `rer` command, clones Oncall and starts it:
+One line installs the `rer` command, clones Oncall into `run-oncall` and starts it:
 
 ```sh
-npx -y @runeditrun/rer dev just-every/run-oncall
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
 ```
 
-To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
+Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same. If the installer prints a line that puts `rer` on your PATH, run that line too. To start it again later, run the same line from the same folder, or `cd run-oncall && rer dev`. `rer dev` installs the locked dependencies, prepares the local database and creates a local development owner (`owner@<checkout-name>.test`). It starts Oncall and prints a private `RER_OPEN` link. Open that link on this computer and you are signed in as the owner. Use the printed address: the default port starts at 8787 and another free port is selected if needed; `rer dev --port N` requests a specific free port.
 
 The first time, Oncall opens **Finish setup**. Name and Email are read-only; a default local owner is named **Owner**. Review the displayed email, tick *I confirm this owner account is ready to use* and press **Finish setup**. This screen confirms the owner; it does not edit their name or email. After that, Oncall opens straight into the app. To choose a real owner mailbox before first launch, use the explicit setup steps below.
 
@@ -100,6 +100,8 @@ rer dev
 This restarts the updated local app, applies migrations and keeps your owner, schedules and incidents. `rer` installs a pulled change of its own pin before it runs and provides the pinned Node and pnpm versions. Do not reset to upgrade.
 
 ## Host for your team
+
+**Or let Run Edit Run host it.** [Run Edit Run](https://app.runeditrun.com/?product=oncall&plan=assisted) can set Oncall up on your own Cloudflare account and keep it updated; sign-ups are by request for now.
 
 Release 1 supports hosted incident coordination alongside your team's existing pager. Paging stays OFF; coordination does not need an independent standby. Release 2 paging and independent standby are not built. Keep the pager's routes and notification settings in place.
 

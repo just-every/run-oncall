@@ -1,8 +1,10 @@
 # Run it locally
 
-Start Oncall from nothing with `npx -y @runeditrun/rer dev just-every/run-oncall`
-(set up only: `npx -y @runeditrun/rer setup just-every/run-oncall`; without Node:
-`curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall`).
+Start Oncall from nothing with
+`curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall`
+(Git is required; rer brings Node and pnpm. Already have Node 22 or later?
+`npx -y @runeditrun/rer dev just-every/run-oncall` does the same; to set up only,
+use `setup` in place of `dev`).
 `rer` runs every verb with the checkout's exact `@runeditrun/rer` package pin.
 The `OPERATIONS.json` argv and `package.json` aliases name `rer VERB`.
 

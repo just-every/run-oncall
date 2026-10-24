@@ -10,6 +10,12 @@
           "summary": "What Oncall keeps, how it sits beside your pager, and where to start."
         },
         {
+          "slug": "getting-started",
+          "title": "Getting started",
+          "source": "docs/getting-started.md",
+          "summary": "Start Oncall on your own computer with one line."
+        },
+        {
           "slug": "install",
           "title": "Install and run",
           "source": "docs/install.md",
