@@ -370,7 +370,9 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     state.alerts.push(alert);
   }
   if (alert) {
-    if(signal.intent==='trigger'&&state.policies.find(p=>p.id===event.decision.policy)?.suppressionWindow){alert.suppressed=event.decision.action==='suppress';alert.owner=event.decision.owner;}
+    const priorEvent=state.events.find(e=>e.id===alert.events.at(-1));
+    const wasWindowed=priorEvent?.routingSnapshot.policies.some(p=>p.id===priorEvent.decision.policy&&p.suppressionWindow);
+    if(signal.intent==='trigger'&&(wasWindowed||state.policies.find(p=>p.id===event.decision.policy)?.suppressionWindow)){alert.suppressed=event.decision.action==='suppress';alert.owner=event.decision.owner;}
     admitAlertUrgency(state, alert, event, created);
     alert.events.push(event.id);
     if (signal.intent === "recover") alert.state = "recovered";

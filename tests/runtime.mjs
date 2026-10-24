@@ -888,6 +888,11 @@ try {
   const maintenanceRestarted=ok(await request('/api/state',undefined,cookie));assert.deepEqual(maintenanceRestarted.events.find(row=>row.id===maintenanceRuntimeReceipt.id),maintenanceRuntimeEvent);assert.deepEqual(maintenanceRestarted.policies.find(row=>row.id===maintenanceRuntimePolicy.id),maintenanceRuntimePolicy);
   assert.equal(ok(await maintenanceRuntimeSend()).duplicate,true);assert.deepEqual(ok(await request('/api/state',undefined,cookie)),maintenanceRestarted,'OC-043 restart never replays a maintenance admission or its recorded obligation');
   console.log('PASS OC-043 runtime: maintenance policy, immutable explanation and owned suppressed signal survive restart; duplicate admission adds no workflow or obligation');
+  const maintenanceRemoved=ok(await request('/api/command',{type:'policy',service:maintenanceRuntimeId,severity:'*',action:'route',owner:admin.id,reason:'synthetic-oncall-43 maintenance removed',baseVersion:maintenanceRuntimePolicy.version},cookie));assert.equal(maintenanceRemoved.suppressionWindow,undefined);
+  const afterRemoval=ok(await request('/api/ingress/'+maintenanceRuntimeId,{...maintenanceRuntimeSignal,eventId:maintenanceRuntimeId+'-after'},'',{authorization:'Bearer '+maintenanceRuntimeKey}),201),removedWindowState=ok(await request('/api/state',undefined,cookie));
+  const afterRemovalAlert=removedWindowState.alerts.find(a=>a.events.includes(afterRemoval.id));assert.equal(afterRemovalAlert.suppressed,false);assert.equal(afterRemovalAlert.owner,admin.id);assert.deepEqual(removedWindowState.events.find(e=>e.id===maintenanceRuntimeReceipt.id),maintenanceRuntimeEvent,'removing maintenance releases the next observation without rewriting the original');
+  console.log('PASS OC-043 removing maintenance routes the next observation of the retained alert group');
+
 
   ok(
     await request(
