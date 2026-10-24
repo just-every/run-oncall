@@ -480,7 +480,8 @@ function applyCommand(
     if(window&&(input.action!=='suppress'||!state.members.some(m=>m.id===input.owner&&m.active&&['admin','responder'].includes(m.role))))fail('Windowed suppression requires an active queue owner');
     if((window||old?.suppressionWindow)&&input.baseVersion!==(old?.version??0))fail('Suppression policy changed; reload before publishing',409);
     const rule: Policy = {
-      ...(window?{suppressionWindow:window}:{}),      id: old?.id ?? crypto.randomUUID(),
+      ...(window?{suppressionWindow:window}:{}),
+      id: old?.id ?? crypto.randomUUID(),
       version: (old?.version ?? 0) + 1,
       service: input.service,
       severity: input.severity,

@@ -43,7 +43,7 @@ export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpen
         </div>}
         {alert.priority&&<p>Priority: {alert.priority}</p>}
         <p>{alert.source} / {alert.key} / {alert.generation}</p>
-        <p>{alert.suppressed ? 'Suppressed' : name(alert.owner)} · {alert.events.length} events</p>
+        <p>{alert.suppressed ? 'Suppressed'+(alert.owner?' · Owner: '+name(alert.owner):'') : name(alert.owner)} · {alert.events.length} events</p>
         <AlertUrgency alert={alert} state={state} canEdit={canEdit&&alert.service!==null} busy={busy} run={run}/><details><summary>Service runbook</summary>{state.services.find(s=>s.id===alert.service)?.runbook.length ? <ol>{state.services.find(s=>s.id===alert.service)!.runbook.map((step,n)=><li key={n}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</details>
         {alert.service!==null&&<RecentChanges service={alert.service} at={triggers[0]?.observedAt ?? events[0]?.observedAt} revision={state.revision} />}
         {incidents.map(incident => <p key={incident.id}><a href="#incidents" onClick={() => onOpenIncident(incident.id)}>Open incident: {incident.title}</a> · {incident.state}</p>)}
