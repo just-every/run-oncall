@@ -24,7 +24,10 @@ export async function localWorker(bindings = {}, {persistTo,clock=false} = {}) {
   config=resolve('dist/server',name+'.json');clockFiles=[wrapper,config];
   const built=JSON.parse(await readFile('dist/server/wrangler.json','utf8'));
   await writeFile(wrapper,`import app from './${built.main}';
-const realNow=Date.now;let at;Date.now=()=>at??realNow();
+const RealDate=Date;let at;
+// The test platform clock must agree for Date.now() and no-argument new Date().
+// Explicit source timestamps and all native Date parsing remain unchanged.
+globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
 export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__test_clock'){at=Number(await request.text());return new Response('clock injected');}return app.fetch(request,env,ctx);}};`);
   await writeFile(config,JSON.stringify({...built,main:name+'.js'}));
  }
