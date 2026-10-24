@@ -12,6 +12,9 @@ const collections = Object.keys(tables) as (keyof typeof tables)[]
 export const workspaceQueries = [`SELECT 'erasureFences' AS collection,0 AS ordinal,json_object('id',id,'epoch',epoch) AS data FROM (${erasureFencesQuery}) ORDER BY id`,"SELECT 'control' AS collection,0 AS ordinal,json_object('revision',revision) AS data FROM workspace_control WHERE id=1",...collections.map(key=>`SELECT '${key}' AS collection,ordinal,data AS data FROM ${tables[key]} ORDER BY ordinal`)]
 type Snapshot=Map<string,{ordinal:number;data:string}>
 const snapshots=new WeakMap<State,Map<string,Snapshot>>()
+type MutationCounts=Record<string,{deleted:number;updated:number;inserted:number}>
+const mutationCounts=new WeakMap<State,MutationCounts>()
+export const workspaceMutationCounts=(state:State)=>mutationCounts.get(state)??{}
 export function decodeWorkspace(rows:{collection:string;ordinal:number;data:string}[]):State {
   const control=rows.find(row=>row.collection==='control')
   const state=empty(),previous=new Map<string,Snapshot>(collections.map(key=>[key,new Map()]))
@@ -33,7 +36,7 @@ export async function loadWorkspace(db:D1Database):Promise<State> {
 export function inheritWorkspaceSnapshot(next:State,previous:State):State {const snapshot=snapshots.get(previous);if(snapshot)snapshots.set(next,snapshot);return next}
 export function workspaceRows(db:D1Database,state:State,token:string):D1PreparedStatement[] {
   const gate = 'EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND write_token=?)'
-  const previous=snapshots.get(state)
+  const previous=snapshots.get(state),counts:MutationCounts={}
   for(const alert of state.alerts){
     const old=previous?.get('alerts')?.get(alert.id),prior=old?JSON.parse(old.data):undefined;
     const withoutRevision=({revision,...row}:typeof alert)=>JSON.stringify(row);
@@ -46,11 +49,14 @@ export function workspaceRows(db:D1Database,state:State,token:string):D1Prepared
     const writes:D1PreparedStatement[]=[]
     if(removed?.length)writes.push(db.prepare(`DELETE FROM ${tables[key]} WHERE id IN (SELECT value FROM json_each(?)) AND ${gate}`).bind(JSON.stringify(removed),token))
     if(!old)writes.push(db.prepare(`DELETE FROM ${tables[key]} WHERE id NOT IN (SELECT value FROM json_each(?)) AND ${gate}`).bind(JSON.stringify([...ids]),token))
+    const inserted=rows.filter(row=>!old?.has(row.id)).length,updated=rows.filter(row=>old?.has(row.id)&&old.get(row.id)!.data!==row.data).length
+    if(removed?.length||inserted||updated)counts[tables[key]]={deleted:removed?.length??0,inserted,updated}
     const changed=rows.filter(row=>!old||old.get(row.id)?.data!==row.data||old.get(row.id)?.ordinal!==row.ordinal)
     // Bounded parameters and by-id updates preserve unchanged rows and their custody.
     for(let i=0;i<changed.length;i+=32)writes.push(db.prepare(`INSERT INTO ${tables[key]}(id,ordinal,data) SELECT json_extract(value,'$.id'),json_extract(value,'$.ordinal'),json_extract(value,'$.data') FROM json_each(?) WHERE ${gate} ON CONFLICT(id) DO UPDATE SET ordinal=excluded.ordinal,data=excluded.data WHERE ordinal<>excluded.ordinal OR data<>excluded.data`).bind(JSON.stringify(changed.slice(i,i+32)),token))
     return writes
   })
+  mutationCounts.set(state,counts)
   return [...statements,restoreErasureFences(db,state,token),...nativePrefixWrites(db,state.intakeReceipts??[],token,previous&&new Set(previous.get('intakeReceipts')?.keys()))]
 }
 export function workspaceWrite(db:D1Database,state:State,revision:number,authority:{sql:string;values:(string|number|null)[]},token=crypto.randomUUID()) {

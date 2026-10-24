@@ -3,7 +3,7 @@ import { fail, type State } from '../family/response-operations/domain'
 import { syncErasureFences } from '../erasure-fence'
 import { createPortability } from '../modules/portability/index.mjs'
 import { portabilityPolicy } from '../portability-policy.mjs'
-import { workspaceWrite } from '../workspace-store'
+import { workspaceWrite, workspaceMutationCounts } from '../workspace-store'
 import { changeErasureIdentity } from './identity'
 export { changeErasureIdentity } from './identity'
 
@@ -27,7 +27,7 @@ export function installChangeErasure(api:any,deps:Dependencies) {
 }
 
 /** All native subjects share C20's receipt, transfer-copy, audit and fence commit. */
-export async function commitSubjectErasure(db:D1Database,state:State,guard:ReturnType<Dependencies['guard']>,plan:{tables:string[];identities:string[];statements:D1PreparedStatement[];updated?:Record<string,number>;inserted?:Record<string,number>}) {
+export async function commitSubjectErasure(db:D1Database,state:State,guard:ReturnType<Dependencies['guard']>,plan:{tables:string[];identities:string[];statements:D1PreparedStatement[];updated?:Record<string,number>;inserted?:Record<string,number>;execute?:(statements:D1PreparedStatement[],checkpoint:D1PreparedStatement[])=>Promise<D1Result[]>}) {
  const portability=await createPortability({db,policy:portabilityPolicy})
   const checkpoint=await portability.redactionStatements()
   // Transfer snapshots can contain any local category. Count the rows inside the
@@ -35,10 +35,10 @@ export async function commitSubjectErasure(db:D1Database,state:State,guard:Retur
   // chunks carry this event. The receipt contains counts only, after commit.
   const copies=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'rer_portability_snap_*' OR name GLOB 'rer_portability_stage_*') ORDER BY name").all<{name:string}>()).results.map(row=>row.name)
   const transfers=await portability.invalidateTransfersStatements()
-  const tables=[...new Set([...plan.tables,'oc_audit_identities','rer_portability_segments','rer_portability_parts','rer_portability_jobs',...copies])]
+  const token=crypto.randomUUID(),writes=workspaceWrite(db,state,state.revision,guard,token),mutations=workspaceMutationCounts(state)
+  const tables=[...new Set([...plan.tables,...Object.keys(mutations),'oc_audit_identities','rer_portability_segments','rer_portability_parts','rer_portability_jobs',...copies])]
   const counts=tables.map(name=>db.prepare(`SELECT COUNT(*) AS n FROM "${name.replaceAll('"','""')}"`))
-  const token=crypto.randomUUID(),writes=workspaceWrite(db,state,state.revision,guard,token)
-  const result=await db.batch([...counts,...writes,
+  const statements=[...counts,...writes,
    db.prepare(`INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN
     (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND (name GLOB 'rer_portability_snap_*' OR name GLOB 'rer_portability_stage_*'))=?
     AND NOT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND (name GLOB 'rer_portability_snap_*' OR name GLOB 'rer_portability_stage_*') AND name NOT IN (SELECT value FROM json_each(?)))
@@ -46,13 +46,14 @@ export async function commitSubjectErasure(db:D1Database,state:State,guard:Retur
    // A lost workspace/authority race must abort the entire batch, including
    // journals, transfer invalidation and identity unlinking.
    db.prepare('INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND write_token=?) THEN 1 ELSE 0 END').bind(token),
-   ...plan.statements,...checkpoint,db.prepare(syncErasureFences),...transfers,...forgetAuditIdentities(db,plan.identities),
+   ...plan.statements,...(plan.execute?[]:checkpoint),db.prepare(syncErasureFences),...transfers,...forgetAuditIdentities(db,plan.identities),
    db.prepare('DELETE FROM rer_erasure_guard'),
-   ...tables.filter(name=>!copies.includes(name)).map(name=>db.prepare(`SELECT COUNT(*) AS n FROM "${name}"`))]).catch((error:unknown)=>{
-   if(/CHECK constraint failed: value=1/.test(String(error)))fail('Workspace, authority or transfer custody changed; nothing was erased. Reload and retry.',409)
+   ...tables.filter(name=>!copies.includes(name)).map(name=>db.prepare(`SELECT COUNT(*) AS n FROM "${name}"`))]
+  const result=await (plan.execute?plan.execute(statements,checkpoint):db.batch(statements)).catch((error:unknown)=>{
+   if(/CHECK constraint|IMPORT_ATOMIC_GUARD/.test(String(error)))fail('Workspace, authority or transfer custody changed; nothing was erased. Reload and retry.',409)
    throw error
   })
   const after=result.slice(result.length-(tables.length-copies.length))
-  const stores=Object.fromEntries(tables.map((name,index)=>[name,{deleted:copies.includes(name)?Number((result[index].results[0] as any).n):Math.max(0,Number((result[index].results[0] as any).n)-Number((after[index].results[0] as any).n)),updated:plan.updated?.[name]??0,...(plan.inserted?.[name]?{inserted:plan.inserted[name]}:{})}]))
+  const stores=Object.fromEntries(tables.map((name,index)=>[name,{deleted:copies.includes(name)?Number((result[index].results[0] as any).n):(mutations[name]?.deleted??Math.max(0,Number((result[index].results[0] as any).n)-Number((after[index].results[0] as any).n))),updated:mutations[name]?.updated??plan.updated?.[name]??0,...((mutations[name]?.inserted??plan.inserted?.[name])?{inserted:mutations[name]?.inserted??plan.inserted![name]}:{})}]))
  return {state:'complete',stores,standby:'not-reconciled'}
 }

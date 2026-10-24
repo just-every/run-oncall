@@ -554,6 +554,21 @@ try {
  ok(await w.request('/api/ingress/intake:'+routedId,routedSignal,undefined,{authorization:'Bearer '+routedKey}),401);
  const routedAfter=ok(await erasureReq('/api/state'));assert.ok(!JSON.stringify(routedAfter).includes('Synthetic erased routing evidence'));assert.ok(!JSON.stringify(routedAfter).includes(routedId),'integration IDs also leave generated operational audit copies');
  ok(await erasureReq('/api/restore',{mode:'replace',archive:{...routedArchive,erasureFences:routedAfter.erasureFences}}),409);
+ // Imported integration originals are owned custody too, not an exemption.
+ const importedId='synthetic-oncall-409',importedDoor=ownerDoor(w,erasureCookie);
+ const importedPlan=ok(await importedDoor.preview('pagerduty',JSON.stringify({integrations:[{id:importedId,type:'events_api_v2_inbound_integration'}]})));ok(await importedDoor.apply('pagerduty',importedPlan));
+ const importedRoot=ok(await erasureReq('/api/move-in/objects')).find(row=>row.targetKind==='integration'&&row.targetId==='pagerduty:'+importedId);assert.ok(importedRoot);
+ const incumbentKey=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
+ const supplied=ok(await erasureReq('/api/intake/incumbent',{importedId:importedRoot.targetId,importedRevision:importedRoot.revision,id:importedId,service:erasureService,name:'Synthetic imported integration custody',revision:0,key:incumbentKey}),201);
+ const activated=ok(await erasureReq('/api/intake/sources/'+importedId+'/activate-incumbent',{revision:supplied.source.revision,confirmed:true}));assert.ok(activated.nativeKey);
+ const importedBefore=ok(await erasureReq('/api/state')),importedInput={workspaceRevision:importedBefore.revision,confirmation:'erase '+importedId};
+ w.sql("CREATE TRIGGER synthetic_oncall_409_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='intake.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-409'); END");
+ try{ok(await erasureReq('/api/erasure/intake/'+importedId,importedInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_409_audit')}
+ assert.deepEqual(ok(await erasureReq('/api/state')),importedBefore,'import custody and native key erasure roll back with their audit');
+ assert.ok(ok(await erasureReq('/api/move-in/objects')).some(row=>row.targetId===importedRoot.targetId));
+ const importedReceipt=ok(await erasureReq('/api/erasure/intake/'+importedId,importedInput));assert.equal(importedReceipt.state,'complete');assert.equal(importedReceipt.importCustody.state,'complete');assert.ok(importedReceipt.importCustody.stores.some(row=>row.rows>0));assert.equal(importedReceipt.stores.oc_incumbent_credentials.deleted,1);assert.equal(importedReceipt.stores.oc_intake_credentials.deleted,1);assert.equal(importedReceipt.stores.move_in_objects.deleted,1);
+ assert.ok(!ok(await erasureReq('/api/move-in/objects')).some(row=>row.targetId===importedRoot.targetId));assert.ok(!JSON.stringify(importedReceipt).includes(incumbentKey));
+ record('OC-040 imported integration erasure: incumbent and native keys, source target, original/plan retirement and count-only receipt share audit-failure rollback and one commit');
  const nativeId='synthetic-oncall-405';ok(await erasureReq('/api/sources',{id:nativeId,key:routedKey,scopes:[erasureService]}));
  const incomplete=await w.send('/api/ingress/'+nativeId,'{"source":"'+nativeId+'","private":"synthetic-oncall-405@example.test",',{authorization:'Bearer '+routedKey,'content-type':'application/json'});ok(incomplete,202);
  const nativeCustody=ok(await erasureReq('/api/state')).intakeSources.find(s=>s.name==='Native incomplete: '+nativeId);assert.ok(nativeCustody);

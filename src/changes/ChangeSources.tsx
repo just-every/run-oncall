@@ -35,7 +35,7 @@ export function ChangeSources({state,busy,run}:{state:State;busy:boolean;run:(pa
         <label className="field">Erasure confirmation<input value={confirmation} onChange={e=>setConfirmation(e.target.value)} autoComplete="off"/></label>
         <button className="primary" type="submit" disabled={!eraseId||confirmation!==`erase ${eraseId}`}>{eraseKind==='change-event'?'Erase retained change':'Erase selected subject'}</button>
       </fieldset></form>
-      {receipt&&<div role="status"><p>Local erasure {receipt.state}. Standby not reconciled.</p><ul>{Object.entries(receipt.stores).map(([table,counts]:[string,any])=><li key={table} style={{overflowWrap:'anywhere'}}>{table}: {counts.deleted} deleted, {counts.updated} updated{counts.inserted?`, ${counts.inserted} inserted`:null}</li>)}</ul></div>}
+      {receipt&&<div role="status"><p>Local erasure {receipt.state}. Standby not reconciled.</p><ul>{Object.entries(receipt.stores).map(([table,counts]:[string,any])=><li key={table} style={{overflowWrap:'anywhere'}}>{table}: {counts.deleted} deleted, {counts.updated} updated{counts.inserted?`, ${counts.inserted} inserted`:null}</li>)}</ul>{receipt.importCustody&&<><p>Imported custody {receipt.importCustody.state}.</p><ul>{receipt.importCustody.stores.map((row:any)=><li key={row.store} style={{overflowWrap:'anywhere'}}>{row.store}: {row.rows} erased or rewritten</li>)}</ul></>}</div>}
     </details>
   </section>;
 }

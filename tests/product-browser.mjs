@@ -3,7 +3,7 @@ import {randomBytes,createHmac} from 'node:crypto'
 import {mkdir} from 'node:fs/promises'
 import {chromium} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import {localWorker} from './worker.mjs'
+import {localWorker,ownerDoor} from './worker.mjs'
 import {productBrowserJourney} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 import {keyboardUser} from './keyboard.mjs'
@@ -255,6 +255,7 @@ async function incidentWorkflowBrowser(page,context) {
 
 async function changeAndSigningBrowser(page,context){
  const request=async(path,data)=>{const response=await context.request.fetch(path,{method:data===undefined?'GET':'POST',headers:{origin:new URL(page.url()).origin},...(data===undefined?{}:{data})});const value=await response.json();assert.ok(response.ok(),JSON.stringify(value));return value;};
+ const importDoor=ownerDoor({request:async(path,input,_cookie,extraHeaders={})=>{const response=await context.request.fetch(path,{method:input===undefined?'GET':'POST',headers:{origin:new URL(page.url()).origin,...extraHeaders},...(input===undefined?{}:{data:input})});return {status:response.status(),value:await response.json()}}});
  const docsResponse=await context.request.get('/docs'),docSlugs=[...new Set([...(await docsResponse.text()).matchAll(/href="\/docs\/([a-z0-9-]+)"/g)].map(match=>match[1]))];
  assert.ok(docSlugs.length>0,'the documentation catalog exposes its pages');
  const {member}=await request('/api/session'),token=()=>randomBytes(32).toString('hex'),signingSecret=token(),keys={argocd:token(),terraform:token()},now=new Date().toISOString();
@@ -319,6 +320,16 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByText('oc_intake_credentials: 1 deleted, 0 updated',{exact:true}).waitFor();
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-integration-receipt',width);
   assert.ok(!(await request('/api/state')).intakeSources.some(i=>i.id===erasedIntegration));
+  const importedId='synthetic-oncall-410-'+width;
+  const importedPlan=await importDoor.preview('pagerduty',JSON.stringify({integrations:[{id:importedId,type:'events_api_v2_inbound_integration'}]}));assert.equal(importedPlan.status,200);assert.equal((await importDoor.apply('pagerduty',importedPlan.value)).status,200);
+  const importedRoot=(await request('/api/move-in/objects')).find(row=>row.targetKind==='integration'&&row.targetId==='pagerduty:'+importedId);
+  await request('/api/intake/incumbent',{importedId:importedRoot.targetId,importedRevision:importedRoot.revision,id:importedId,service:'synthetic-oncall-1',name:'Synthetic imported erasure '+width,revision:0,key:randomBytes(16).toString('hex')});
+  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await settings.getByLabel('Erasure subject',{exact:true}).selectOption(importedId);await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+importedId);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-imported-integration-review',width);
+  const importedEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/intake/'+importedId));
+  await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const importedResult=await importedEraseResponse;assert.equal(importedResult.status(),200);assert.ok((await importedResult.json()).importCustody.stores.some(row=>row.rows>0));
+  await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-imported-integration-receipt',width);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // OC-043's existing routing screen exposes both stages before publication.
   const orchestrationId='synthetic-oncall-43-'+width,orchestrationKey=token(),policyBefore=(await request('/api/state')).policies.find(p=>p.service==='synthetic-oncall-1'&&p.severity==='warning');

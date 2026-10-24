@@ -1,3 +1,4 @@
+import { prepareImportCustodyErasure } from './move-in/native-erasure'
 import { auditIdentity, auditKind } from './audit-store'
 import { commitSubjectErasure } from './changes/erasure'
 import { subjectErasureIdentity } from './subject-erasure-identity.ts'
@@ -18,6 +19,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   if(input.workspaceRevision!==state.revision)fail('Workspace changed; reload before erasing',409)
   const statements:D1PreparedStatement[]=[],tables:string[]=[],identities=[id],updated:Record<string,number>={},inserted:Record<string,number>={}
   const changedIncidents=new Set<string>()
+  let imported:Awaited<ReturnType<typeof prepareImportCustodyErasure>>|undefined
   const remember=(table:string)=>{if(!tables.includes(table))tables.push(table)}
   const remove=(key:keyof State,table:string,predicate:(row:any)=>boolean)=>{
    const rows=state[key] as any[]|undefined
@@ -129,6 +131,12 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    const auditPatterns=kind==='change'?[`change source ${id} on `,`change source ${id}; revision `]:[`integration ${id}; revision `,`integration ${id}; owner `,`key ${id}; revision `,`routed key ${id} rule version `,`publish for ${id}: base `,`key ${source.name} throttled `]
    const auditKinds=kind==='change'?['change-source','change-source-revoked']:['intake-source','intake-source-revoked','routing-key','routing-published','routing-publish-refused','intake-rejected','intake-throttled','incumbent-key-supplied','incumbent-key-rotated','incumbent-key-activated']
    remove('audit','oc_audit',r=>auditKinds.includes(r.kind)&&auditPatterns.some(pattern=>r.text.includes(pattern)))
+   if(kind==='intake'){
+    const roots=(await db.prepare("SELECT id,revision,data FROM move_in_objects WHERE kind='integration' AND json_extract(data,'$.intakeSource')=?").bind(id).all<{id:string;revision:string;data:string}>()).results
+    if(roots.length>1)fail('Conflicting imported integration bindings; nothing was erased. Resolve the retained import custody first.',409)
+    if(roots.length){const root=roots[0];imported=await prepareImportCustodyErasure(c,{kind:'integration',id:root.id});remember('move_in_objects');identities.push(root.id)
+     statements.push(guardStatement(db,"EXISTS(SELECT 1 FROM move_in_objects WHERE kind='integration' AND id=? AND revision=? AND data=?)",root.id,root.revision,root.data),db.prepare("DELETE FROM move_in_objects WHERE kind='integration' AND id=?").bind(root.id))}
+   }
    if(kind==='change'){
     remove('changes','oc_changes',r=>r.source===id);remove('changeSources','oc_change_sources',r=>r.id===id)
     eraseCredential('oc_change_credentials','source',[id])
@@ -149,6 +157,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   // paired with a newer native journal on either restore door.
   ;(state.erasureFences??=[]).push({id:await subjectErasureIdentity(kind,id),epoch:0})
   auditKind(db,kind+'.erase');auditIdentity(db,{subject:{kind,id}})
-  return c.json(await commitSubjectErasure(db,state,deps.guard(c),{tables,identities,statements,updated,inserted}))
+  const receipt=await commitSubjectErasure(db,state,deps.guard(c),{tables,identities,statements,updated,inserted,execute:imported?.execute})
+  return c.json({...receipt,...(imported?{importCustody:imported.counts()}:{})})
  })
 }
