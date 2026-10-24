@@ -38,7 +38,7 @@ export const mentions = (value: any, email: string): boolean => typeof value ===
 
 /** The retained records whose planned result names the person although their own source may not: a schedule absorbs override records, slots
  * and incumbent comparisons from other records, and a record whose effect is a schedule row the erasure rewrites. Keyed by source identity. */
-export async function indirect(ctx: D1ImportContext, email: string, ids: ReadonlySet<string>, rewritten: ReadonlySet<string>) {
+export async function indirect(ctx: D1ImportContext, email: string, ids: ReadonlySet<string>, rewritten: ReadonlySet<string>, namespaceIds?: ReadonlyMap<string,ReadonlySet<string>>) {
   const found = new Set<string>(), filenames = new Set<string>()
   const jobs = (await ctx.storage.database.prepare('SELECT * FROM ik_jobs WHERE destination=? ORDER BY id').bind(ctx.destination).all<any>()).results
   for (const plan of (await loadPlans(jobs, ctx.storage.database, ctx.storage.targets.planCodec)).values()) {
@@ -46,7 +46,7 @@ export async function indirect(ctx: D1ImportContext, email: string, ids: Readonl
     for (const entry of plan.entries) {
       if (entry.erased) continue
       const result = { effects: entry.effects, unmapped: entry.unmapped, rejection: entry.rejection }
-      if (refers(result, email, ids) || mentions(result, email) || entry.effects.some(effect => effect.targetKind === 'schedule' && rewritten.has(effect.targetId))) found.add(sourceKey(entry.source))
+      if (refers(result, email, namespaceIds?.get(entry.source.namespace) ?? ids) || mentions(result, email) || entry.effects.some(effect => effect.targetKind === 'schedule' && rewritten.has(effect.targetId))) found.add(sourceKey(entry.source))
     }
   }
   return {found, filenames}
