@@ -289,7 +289,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.equal((await erase('alice@example.test')).status,404,'repeating an erasure changes nothing')
  const erasedChange=ok(await req('/api/state')).changes.find(row=>row.eventId==='portable-deploy');assert.ok(erasedChange);
  cookie=await checkpointErasureCli(m,cookie,async()=>{const receipt=ok(await req('/api/changes/'+erasedChange.id+'/erase',{workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase '+erasedChange.id}));assert.equal(receipt.state,'complete');assert.deepEqual(receipt.stores.oc_changes,{deleted:1,updated:0});});
- assert.ok(!ok(await req('/api/state')).changes.some(row=>row.id===erasedChange.id));
+ assert.ok(!(ok(await req('/api/state')).changes??[]).some(row=>row.id===erasedChange.id));
  const retainedErasureFences=sql('SELECT id,epoch FROM oc_erasure_fences ORDER BY id')
  await m.close();await m.command(['export','--output',later,'--non-interactive']);
  // A valid-checksum archive containing a current fence and an older erased row
