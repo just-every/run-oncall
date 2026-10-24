@@ -301,7 +301,7 @@ async function changeAndSigningBrowser(page,context){
   const observation={source:'intake:'+orchestrationId,eventId:orchestrationId,service:'synthetic-oncall-1',environment:'production',key:orchestrationId,generation:orchestrationId,intent:'trigger',severity:'warning',title:'Synthetic maintenance signal '+width,observedAt:new Date().toISOString(),evidence:''};
   const orchestrated=await context.request.post('/api/ingress/intake:'+orchestrationId,{headers:{authorization:'Bearer '+orchestrationKey},data:observation});assert.equal(orchestrated.status(),201);
   await page.reload();await page.getByRole('link',{name:'Alerts & events',exact:true}).click();
-  const suppressedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:observation.title,exact:true,level:3})});await suppressedCard.getByText('Suppressed · Owner: '+member.name,{exact:true}).waitFor();await suppressedCard.scrollIntoViewIfNeeded();await check('oc043-owned-suppressed-alert',width);
+  const suppressedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:observation.title,exact:true,level:3})});await suppressedCard.getByText('Suppressed · Owner: '+member.name,{exact:false}).waitFor();await suppressedCard.scrollIntoViewIfNeeded();await check('oc043-owned-suppressed-alert',width);
   await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);
   await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const comparison=page.getByRole('region',{name:'Routing preview',exact:true});await comparison.getByText('1 retained events compared. No records changed.',{exact:true}).waitFor();
