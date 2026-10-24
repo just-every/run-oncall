@@ -3,7 +3,7 @@ import {readFile,writeFile,mkdir,rm} from 'node:fs/promises'
 import {spawnSync} from 'node:child_process'
 import {createHash} from 'node:crypto'
 import {localWorker,ownerDoor} from './worker.mjs'
-import {checkpointCli} from './checkpoint-cli.mjs'
+import {checkpointCli,checkpointErasureCli} from './checkpoint-cli.mjs'
 import {pagingHistory} from './paging-history.mjs'
 
 await (await import('./migration-upgrade.mjs')).migrationUpgrade()
@@ -457,5 +457,46 @@ try {
  const last=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(last)
  await pagingHistory(w,last.cookie)
  record('OC-013/015: restored historical acknowledgement/cancellation append attribution without recovery; strict module references, retained callbacks and SQL rollback passed')
+ // OC-040 change-event erasure: public admin door, atomic counts and restore fences.
+ let erasureCookie=last.cookie;
+ const erasureReq=(path,input)=>w.request(path,input,erasureCookie);
+ const erasureActor=ok(await erasureReq('/api/session')).member;
+ const erasureService=ok(await erasureReq('/api/state')).services[0].id;
+ const erasureKey='synthetic-oncall-'+crypto.randomUUID()+crypto.randomUUID();
+ ok(await erasureReq('/api/changes/sources',{id:'synthetic-oncall-40',name:'Synthetic change erasure',provider:'native',service:erasureService,repository:'',mode:'bearer',revision:0,key:erasureKey}),201);
+ const erasureSignal={eventId:'synthetic-oncall-40',summary:'synthetic-oncall-40 private context',author:'synthetic-oncall-40@example.test',timestamp:new Date().toISOString()};
+ const submitChange=()=>w.request('/api/changes/ingress/synthetic-oncall-40',erasureSignal,undefined,{authorization:'Bearer '+erasureKey});
+ const change=ok(await submitChange(),201),path='/api/changes/'+change.id+'/erase';
+ let input={workspaceRevision:ok(await erasureReq('/api/state')).revision,confirmation:'erase '+change.id};
+ const old=ok(await erasureReq('/api/archive'));
+ ok(await w.request(path,input),401);
+ const erasureViewer=ok(await erasureReq('/api/members',{name:'synthetic-oncall-40-viewer',role:'viewer',password:'synthetic-oncall-40-password'}),201);
+ const viewerLogin=await erasureReq('/api/login',{name:erasureViewer.name,password:'synthetic-oncall-40-password'});ok(viewerLogin);
+ ok(await w.request(path,input,viewerLogin.cookie),403);
+ input.workspaceRevision=ok(await erasureReq('/api/state')).revision;
+ ok(await erasureReq(path,{...input,confirmation:'erase another'}),409);
+ ok(await erasureReq(path,{...input,workspaceRevision:input.workspaceRevision-1}),409);
+ const before=ok(await erasureReq('/api/state')),journal=w.sql('SELECT * FROM rer_portability_journal'),auditBefore=ok(await erasureReq('/api/audit/export')).rows;
+ w.sql("CREATE TRIGGER synthetic_oncall_40_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-40'); END");
+ try{ok(await erasureReq(path,input),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_40_audit')}
+ assert.deepEqual(ok(await erasureReq('/api/state')),before,'failed erasure cannot remove content or advance the fence');
+ assert.deepEqual(w.sql('SELECT * FROM rer_portability_journal'),journal,'failed erasure cannot issue a journal');
+ let erased;
+ erasureCookie=await checkpointErasureCli(w,erasureCookie,async()=>{erased=ok(await erasureReq(path,input));assert.equal(erased.state,'complete');assert.deepEqual(erased.stores.oc_changes,{deleted:1,updated:0});assert.deepEqual(erased.stores.oc_change_sources,{deleted:0,updated:1});assert.equal(erased.standby,'not-reconciled')});
+ const after=ok(await erasureReq('/api/state'));
+ assert.ok(!after.changes.some(row=>row.id===change.id));assert.ok(!after.changeSources.find(row=>row.id==='synthetic-oncall-40').lastAccepted);
+ assert.ok(!JSON.stringify(after).includes(erasureSignal.summary));assert.ok(!JSON.stringify(after).includes(erasureSignal.author));
+ ok(await erasureReq('/api/restore',{archive:old,mode:'replace'}),409);
+ const auditAfter=new Map(ok(await erasureReq('/api/audit/export')).rows.map(row=>[row.id,row]));for(const row of auditBefore)assert.deepEqual(auditAfter.get(row.id),row);
+ assert.ok(!JSON.stringify([...auditAfter.values()]).includes(erasureSignal.author));
+ ok(await erasureReq(path,{...input,workspaceRevision:after.revision}),404);
+ // Current checkpoints restore sources inactive. Renew only the local credential;
+ // the same source event still cannot cross the carried erasure fence.
+ const restoredSource=after.changeSources.find(row=>row.id==='synthetic-oncall-40');
+ ok(await erasureReq('/api/changes/sources',{...restoredSource,key:erasureKey}),200);
+ ok(await submitChange(),410);
+ await w.stop();await w.start();ok(await submitChange(),410);
+ assert.ok(!ok(await erasureReq('/api/state')).changes.some(row=>row.id===change.id));
+ record('OC-040 change-event erasure: admin-only confirmation, stale refusal, atomic audit-failure rollback, per-table local receipt, last receipt unlink, immutable pseudonymous audit, CLI/native restore fence, restart and provider retry refusal passed');
  console.log(`Activation passed: ${checks.length} requirement flow groups`)
 }finally{await w.close();await rm('.rer/local/handoff-session',{force:true});await rm('.rer/local/handoffs.json',{force:true})}

@@ -5,6 +5,7 @@ import { changeProviderNames, changeRetentionLimit, type ChangeProvider } from '
 import './changes.css';
 export function ChangeSources({state,busy,run}:{state:State;busy:boolean;run:(path:string,data:any,message?:string)=>Promise<any>}) {
   const [provider,setProvider]=useState<ChangeProvider>('native'),[id,setId]=useState('deployments'),[key,setKey]=useState(''),[name,setName]=useState('Deployment changes'),[service,setService]=useState(state.services[0]?.id??''),[repository,setRepository]=useState(''),[mode,setMode]=useState('bearer'),[configured,setConfigured]=useState('');
+  const [eraseId,setEraseId]=useState(''),[confirmation,setConfirmation]=useState(''),[receipt,setReceipt]=useState<any>(null);
   const previous=state.changeSources?.find(s=>s.id===id), endpoint=provider==='pagerduty'?'/v2/change/enqueue':'/api/changes/ingress/'+encodeURIComponent(id);
   return <section className="panel padded change-sources"><h2>Change integrations</h2><p>Record deploys, releases and merged pull requests beside the response. Change events never create alerts, incidents, timers or pages.</p>
     <p>{state.changes?.length??0} of {changeRetentionLimit.toLocaleString()} retained changes. Oldest records outside retained incident windows are removed first; protected context is never evicted. At protected capacity, intake is refused visibly.</p>
@@ -22,5 +23,16 @@ export function ChangeSources({state,busy,run}:{state:State;busy:boolean;run:(pa
     </Form>
     {configured&&<p role="status">{configured} is configured. The verification key is now hidden.</p>}
     <p>Receiver: <code>{window.location.origin}{endpoint}</code></p><p>{provider==='github'?'Use X-Hub-Signature-256 over the exact body and enable deployment, release and pull_request events.':provider==='gitlab'?'Use webhook-id, webhook-timestamp and webhook-signature; older plaintext-token hooks are not accepted.':provider==='terraform'?'Send the run notification JSON with X-TFE-Notification-Signature (HMAC SHA-512 of the exact body).':provider==='argocd'?'Use the documented Argo CD template with x-oncall-timestamp and x-oncall-signature over timestamp + dot + exact body.':provider==='pagerduty'?'Send routing_key and payload.summary in the standard Change Events request.':'Send eventId, summary, timestamp, author, custom_details and HTTP(S) links. Signed mode uses x-oncall-timestamp and x-oncall-signature over timestamp + dot + exact body.'} <a href="/docs/changes">Setup and request reference</a></p></>}
+    <details><summary>Change data settings</summary>
+      <p>Erase one retained change and its local transfer copies. Provider retries for that identity will be refused. Older archives need the later erasure journal. Standby reconciliation is unavailable; local completion cannot confirm standby deletion.</p>
+      <p>Offline exports, copied text and already sent provider messages cannot be recalled. Request deletion from their holders separately.</p>
+      <form onSubmit={async e=>{e.preventDefault();const result=await run('/api/changes/'+encodeURIComponent(eraseId)+'/erase',{workspaceRevision:state.revision,confirmation},'Local change erasure committed');if(result){setReceipt(result);setEraseId('');setConfirmation('')}}}><fieldset disabled={busy}>
+        <label className="field">Retained change<select value={eraseId} onChange={e=>{setEraseId(e.target.value);setConfirmation('');setReceipt(null)}}><option value="">Choose a change</option>{(state.changes??[]).map(change=><option key={change.id} value={change.id}>{change.summary}</option>)}</select></label>
+        {eraseId&&<p>Type <code style={{overflowWrap:'anywhere'}}>erase {eraseId}</code> to confirm.</p>}
+        <label className="field">Erasure confirmation<input value={confirmation} onChange={e=>setConfirmation(e.target.value)} autoComplete="off"/></label>
+        <button className="primary" type="submit" disabled={!eraseId||confirmation!==`erase ${eraseId}`}>Erase retained change</button>
+      </fieldset></form>
+      {receipt&&<div role="status"><p>Local erasure {receipt.state}. Standby not reconciled.</p><ul>{Object.entries(receipt.stores).map(([table,counts]:[string,any])=><li key={table} style={{overflowWrap:'anywhere'}}>{table}: {counts.deleted} deleted, {counts.updated} updated</li>)}</ul></div>}
+    </details>
   </section>;
 }

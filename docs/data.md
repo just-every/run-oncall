@@ -71,3 +71,6 @@ rer dev
 ```
 
 Confirm the new owner and map an archived administrator as described above. An import that says `target_not_empty` has kept the existing installation; it has not replaced any records. Do not reset to upgrade Oncall.
+
+
+Change-event erasure is a separate administrator action in Services → Change data settings. It commits event removal, last-receipt cleanup, local transfer-copy invalidation, retry and restore fences and identity unlinking together. The count-only receipt confirms local completion and explicitly reports standby as not reconciled. See [Change erasure](changes.md#erase-a-retained-change) for categories, retention, the HTTP door and offline/provider custody limits. General incident, native member/contact and full integration erasure remain incomplete.

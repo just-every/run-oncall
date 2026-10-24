@@ -1,3 +1,4 @@
+import { installChangeErasure, changeErasureIdentity } from './erasure'
 import { auditIdentity } from '../audit-store'
 import { workspaceWrite } from '../workspace-store';
 import { authority, fail, Fault, text, type State } from '../family/response-operations/domain';
@@ -45,6 +46,8 @@ export function installChangeIntake(api:any, deps:Dependencies) {
     payload??=parse();
     const input=await providerChange(source,payload,headers,verificationKey);
     if (!input) return c.json({ignored:true,reason:'This signed event does not describe a supported change'},200);
+    const awaitIdentity=await changeErasureIdentity(source.id,input.eventId);
+    if(state.erasureFences?.some(f=>f.id===awaitIdentity))fail('Change identity was erased; it cannot be admitted again',410);
     const fingerprint=await changeHash(JSON.stringify(input)), existing=state.changes?.find(change=>change.source===source.id&&change.eventId===input.eventId);
     if (existing && existing.fingerprint!==fingerprint) fail('Change identity conflicts with different content',409);
     let record=existing;
@@ -60,6 +63,7 @@ export function installChangeIntake(api:any, deps:Dependencies) {
   api.post('/v2/change/enqueue',async(c:any)=>{try{return await receive(c,true);}catch(error){if(error instanceof Fault && error.status<500)return c.json({status:'invalid event',message:'Event object is invalid',errors:[error.message]},error.status===429?429:400);throw error;}});
 }
 export function installChangeManagement(api:any,deps:Dependencies) {
+  installChangeErasure(api,deps);
   api.get('/api/changes/recent',async(c:any)=>c.json(recentChanges(await deps.state(c),c.req.query('service'),c.req.query('at')??new Date().toISOString(),Number(c.req.query('hours')??24))));
   api.get('/api/changes/sources',async(c:any)=>c.json({sources:(await deps.state(c,true)).changeSources??[]}));
   api.post('/api/changes/sources',async(c:any)=>{
