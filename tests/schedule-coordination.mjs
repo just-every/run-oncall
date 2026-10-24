@@ -15,6 +15,12 @@ export async function scheduleCoordination(){
   let schedule=ok(await req('/api/paging/schedules',{id:'synthetic-oncall-250',name:'Synthetic coordination rota',service:service.id,revision:0,timezone:'UTC',validFrom:start,validUntil:null,primary:{anchorLocal:start.slice(0,16),periodDays:1,members:[owner.value.member.id,outsider.id],ambiguity:'earlier'},backup:{anchorLocal:start.slice(0,16),periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}));
   const overlap=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-255',revision:0,backup:{...schedule.backup,members:[substitute.id]}}));
   ok(await coord({action:'request',schedule:overlap.id,scheduleRevision:overlap.revision,substitute:substitute.id,role:'primary',start,end}),409);
+  const formerService=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-256',name:'Synthetic former service',environment:'test',owner:outsider.id,runbook:[],pager:''}));
+  const moved=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-256',service:formerService.id,revision:0,primary:{...schedule.primary,members:[owner.value.member.id]}}));
+  const moveInput={schedule:{...moved,service:service.id},from:Date.parse(start),to:Date.parse(end)},moveReview=ok(await req('/api/schedules/'+moved.id+'/review',moveInput));
+  ok(await req('/api/schedules/'+moved.id+'/apply',{...moveInput,digest:moveReview.digest,confirmed:true}));
+  const moveNotices=ok(await req('/api/state')).scheduleRecords.filter(r=>r.kind==='notice'&&r.data.schedule===moved.id&&r.data.key.includes(':2:'));
+  assert.deepEqual(new Set(moveNotices.map(r=>r.member)),new Set([owner.value.member.id,outsider.id]),'changing service records obligations for both former and current service owners, even when the former owner holds no shift');
   const request={action:'request',schedule:schedule.id,scheduleRevision:schedule.revision,substitute:substitute.id,role:'primary',start,end};
   ok(await as(viewerCookie,request),403);ok(await as(outsiderCookie,request),409);
   let swap=ok(await coord(request)).record;

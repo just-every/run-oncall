@@ -24,7 +24,7 @@ export function swapSchedule(state:State,schedule:Schedule,requester:string,subs
 export function scheduleChanges(state:State,before:Schedule[],after:Schedule[],actor?:string) {
  for(const next of after){
   const old=before.find(s=>s.id===next.id);if(old&&JSON.stringify(old)===JSON.stringify(next))continue;
-  const ids=new Set([state.services.find(s=>s.id===next.service)?.owner,...[old,next].flatMap(s=>s?[...s.primary.members,...s.backup.members,...s.overrides.map(o=>o.member)]:[])]);
+  const ids=new Set([state.services.find(s=>s.id===next.service)?.owner,old&&state.services.find(s=>s.id===old.service)?.owner,...[old,next].flatMap(s=>s?[...s.primary.members,...s.backup.members,...s.overrides.map(o=>o.member)]:[])]);
   for(const member of ids)if(member&&state.members.some(row=>row.id===member)){
    const key=next.id+':'+next.revision+':'+member;
    if(records(state).some(r=>r.kind==='notice'&&r.data.key===key))continue;
