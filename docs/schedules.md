@@ -41,6 +41,10 @@ The reviewed editor supports the existing primary/backup rotations and UTC overr
 
 To cover a few hours or days without touching the rotation, use **UTC override intervals** and press **Add interval**. Choose the role (primary or backup), the person, and the start and end in UTC. The start is included and the end is not, so one cover can end exactly when the next begins. Two covers for the same role cannot overlap. Choosing **Explicit coverage gap** as the responder leaves that time deliberately empty.
 
+In **Shift coordination**, a current holder can request one named substitute for a future UTC interval of up to 31 days. Only the substitute accepts or declines. An administrator must approve first by default; **Settings → Swap approval** can select substitute acceptance without a second administrator decision. Acceptance checks the latest schedule, creates one override and refuses a new gap or overlap, including a change to the other role. Of competing accepts, one succeeds. The requester can cancel. Undecided requests show as **overdue** after their start and never resolve themselves.
+
+Schedule and override changes retain one **recorded obligation** for each affected configured responder and service owner. Without a verified channel it says **not deliverable**. Nothing is sent. **Settings → Reminder lead minutes / Reminder channel** saves your personal preference and shows a due time labelled **not sent (no timer)**. Team-manager rules and native mobile actions remain unbuilt.
+
 ## Who is on now and next
 
 **On call now and next** shows, for primary and backup, who is on now, who is next and the exact time of the next hand-over. **Preview coverage** shows every resolved window between two times you choose, with an explanation for each gap. Neither starts a timer or sends anything.
@@ -49,7 +53,11 @@ If both roles land on the same person at once, primary stays and backup shows as
 
 ## Your calendar
 
-**Open private ICS feed (next 7 days)** downloads the next week of shifts, primary and backup separately, with the same hand-over times as the app. The download uses your own sign-in, so the file is private to you; there is no public calendar link to leak.
+**Open private ICS feed (next 7 days)** downloads the next week of shifts, primary and backup separately, with the same hand-over times as the app. The download uses your own sign-in.
+
+For a recurring feed, use **Shift coordination → Settings → Create calendar subscription**. Choose the selected schedule, its service, or only your own shifts. Copy the private URL when it appears: it is shown once and can be dismissed. Anyone holding it can read that scope's next 31 days of schedule windows, so keep it private. The feed omits responder contacts, alert content and credentials. Only the token hash is stored; the URL cannot be recovered later.
+
+You or a workspace administrator can revoke a subscription. The next read is refused immediately, while shift assignments and historical decisions stay unchanged. Up to 20 subscription records are retained per member, including revoked records. Restored subscription records are inactive and their hashes are cleared; create a new subscription when capacity permits. Google Calendar/Outlook viewing is still pending dated owner-role evidence; no real-provider viewing claim is made.
 
 ## Escalation policy as data
 

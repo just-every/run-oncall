@@ -10,6 +10,8 @@ rer export --output exports/installation.rer
 
 The archive holds everything Oncall keeps: services, schedules, incidents with their timelines and reviews, alerts, routing rules, the team and the move-in journal. Sign-in sessions, passwords and private settings are never in it. Stop `dev` first. Keep the archive private: imported pager files you moved in from may contain people's names and email addresses.
 
+Shift coordination is included: swap requests and decisions, approval settings, recorded change obligations, reminder preferences and subscription records. Raw calendar URLs are never stored or exported. Native, paired-checkpoint and installation recovery retain these records inactive and clear subscription hashes. Restored swaps cannot be accepted and restored feed records grant no access. Subject erasure removes their owned and indirect person references atomically. Alert-only coordination history, revisions and replay-safe bulk results stay in the existing alert/triage categories.
+
 ## Permanent operational audit
 
 The permanent audit is a separate durable category in installation transfer. It contains safe operation metadata and permanent random labels, with no credentials, raw hashes, credential labels or payload content. Its identity associations can be erased without rewriting the append-only entries. Incident timelines and imported operational history remain separate and retain their own custody rules. Administrators can read the dedicated protected `GET /api/audit/export`; see [Permanent operational audit](audit.md) for authority and erasure limits.
