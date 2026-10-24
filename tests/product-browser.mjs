@@ -338,7 +338,7 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('member');await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedMember.id);
   await settings.getByLabel('Imported identity '+memberName,{exact:true}).check();await settings.getByLabel('Imported identities reviewed',{exact:true}).check();
   await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedMember.id);await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-member-review',width);
-  const memberResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/member/'+erasedMember.id));await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await memberResponse).status(),200);
+  const memberResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/member/'+erasedMember.id));await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const memberReply=await memberResponse;assert.equal(memberReply.status(),200,await memberReply.text());
   await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-member-receipt',width);
   assert.equal((await request('/api/state')).members.find(m=>m.id===erasedMember.id).name,'Erased member');
   await page.getByRole('link',{name:'Schedules',exact:true}).click();await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
