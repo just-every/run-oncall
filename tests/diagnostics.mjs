@@ -64,6 +64,7 @@ function redactText(value, environment, state) {
   .replace(/([?&#]rer-dev=)[^&#\s"'<>]+/gi, '$1[redacted]')
   .replace(/([?&#](?:[^=&#\s]*?(?:token|key|secret|password|code|signature|credential)[^=&#\s]*)=)[^&#\s"'<>]+/gi, '$1[redacted]')
   .replace(/(https?:\/\/)[^\s/@]+:[^\s/@]+@/gi, '$1[redacted]@')
+  .replace(/(\/calendar\/)[a-f0-9]{64}(\.ics)/gi, '$1[redacted]$2')
   .replace(/\bBearer\s+[^\s"',;]+/gi, 'Bearer [redacted]')
 }
 

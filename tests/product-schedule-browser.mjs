@@ -1,3 +1,4 @@
+import {scheduleCoordinationBrowser} from './schedule-coordination-browser.mjs';
 import AxeBuilder from '@axe-core/playwright'
 import assert from 'node:assert/strict'
 import {keyboardUser} from './keyboard.mjs'
@@ -43,6 +44,7 @@ export async function productSchedule(page,context,width,session) {
   assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'default ICS feed uses whole-second UTC times')
   await page.screenshot({path:`evidence/browser/schedules-${width}.png`,fullPage:true})
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'schedule viewport has no horizontal overflow')
+  await scheduleCoordinationBrowser(page,context,width,session)
 }
 
 // Focused execution of the existing journey; no additional suite registration.

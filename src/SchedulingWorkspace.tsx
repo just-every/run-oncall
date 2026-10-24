@@ -1,3 +1,4 @@
+import {ScheduleCoordination} from './schedule-coordination/Controls';
 import { ReviewedChange } from './schedule-coverage/ReviewedChange';
 import type { ScheduleReview } from './schedule-coverage/review';
 import { Tooltip } from './app/Tooltip';
@@ -289,6 +290,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
         </aside>
       </div>
     </>}
+    {savedSchedule && <ScheduleCoordination key={savedSchedule.id} schedule={savedSchedule} state={state} actor={actor} onChanged={async()=>{await load();await refreshWorkspace?.();}} />}
     {savedSchedule && <ScheduleSummary schedule={savedSchedule} policies={data!.policies} admin={admin} request={request} onSaveStart={() => { setError(""); setNotice(""); }} onSaved={() => setNotice("Escalation data saved")} />}
   </section>;
 }

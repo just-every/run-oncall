@@ -7,6 +7,7 @@ import {checkpointCli} from './checkpoint-cli.mjs'
 import {pagingHistory} from './paging-history.mjs'
 
 await (await import('./migration-upgrade.mjs')).migrationUpgrade()
+await (await import('./schedule-coordination.mjs')).scheduleCoordination()
 const w=await localWorker(),checks=[]
 const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'?r.value:JSON.stringify(r.value));return r.value}
 try {
@@ -342,6 +343,7 @@ try {
  ok(await req('/api/schedules/daily/apply',{...checkpointEdit,digest:checkpointReview.digest,confirmed:true}))
  const replacement=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(replacement)
  const stateAfter=ok(await w.request('/api/state',undefined,replacement.cookie)),receiving=structuredClone(prior)
+ if(receiving.scheduleRecords)receiving.scheduleRecords=receiving.scheduleRecords.map(row=>({...row,active:false,data:row.kind==='subscription'?{...row.data,hash:null}:row.data}))
  receiving.members=receiving.members.map(m=>m.role==='stakeholder'?{...m,active:false}:m)
  for(const i of receiving.incidents){if(i.manualPage)i.manualPage.obligations=i.manualPage.obligations.map(o=>o.state==='recorded'?{...o,state:'stopped',outcome:'Restored inactive; no sender'}:o);if(i.responderRequests)i.responderRequests=i.responderRequests.map(r=>({...r,status:r.status==='pending'?'held':r.status,obligation:r.obligation.state==='recorded'?{...r.obligation,state:'stopped',outcome:'Restored inactive; no sender'}:r.obligation,notice:r.notice?{...r.notice,state:'stopped'}:null}));}
  assert.deepEqual({...stateAfter,revision:prior.revision},receiving,'checkpoint retains complete history while new status identities and active manual records restore inactive')
@@ -403,7 +405,7 @@ try {
  const winner=race.find(r=>r.status===200),loser=race.find(r=>r!==winner)
  assert.ok(winner&&[401,409].includes(loser.status),JSON.stringify(race.map(r=>r.status))) // exactly one concurrent restore wins
  const W=(p,i)=>w.request(p,i,winner.cookie),[restored,restoredPaging]=[ok(await W('/api/state')),ok(await W('/api/paging/state'))]
- assert.deepEqual({...restored,revision:cp.coordination.revision},cp.coordination,'the losing restore cannot revoke the winner or leave a partial state')
+ assert.deepEqual({...restored,revision:cp.coordination.revision},{...cp.coordination,...(cp.coordination.scheduleRecords?{scheduleRecords:cp.coordination.scheduleRecords.map(row=>({...row,active:false,data:row.kind==='subscription'?{...row.data,hash:null}:row.data}))}:{})},'the losing restore cannot revoke the winner or leave a partial state')
  ok(await A('/api/state'),401) // prior sessions are revoked
  assert.equal(restoredPaging.jobs.find(j=>j.id==='held-pending').status,'paused','restore pauses imported pending jobs')
  const held=ok(await W('/api/handoffs/h2'));assert.ok(held.record.held&&!held.eligibility.eligible,'restore holds active approvals')
@@ -446,7 +448,7 @@ try {
   const moved=ok(await w.request('/api/recovery/checkpoint',undefined,own.cookie)),archived=moved.coordination.members.find(m=>m.active&&m.role==='admin')
   ok(await fresh.request('/api/recovery/restore',{mode:'replace',checkpoint:moved},setup.cookie),400) // mapping is explicit
   const mapped=await fresh.request('/api/recovery/restore',{mode:'replace',checkpoint:moved,adminMapping:archived.id},setup.cookie);ok(mapped)
-  assert.deepEqual({...ok(await fresh.request('/api/state',undefined,mapped.cookie)),revision:moved.coordination.revision},moved.coordination,'the mapped restore replaces the empty target')
+  assert.deepEqual({...ok(await fresh.request('/api/state',undefined,mapped.cookie)),revision:moved.coordination.revision},{...moved.coordination,...(moved.coordination.scheduleRecords?{scheduleRecords:moved.coordination.scheduleRecords.map(row=>({...row,active:false,data:row.kind==='subscription'?{...row.data,hash:null}:row.data}))}:{})},'the mapped restore replaces the empty target')
   ok(await fresh.request('/api/state',undefined,setup.cookie),401)
   assert.equal(ok(await fresh.request('/api/login',{name:archived.name,password:'synthetic-fresh-testing-password'})).member.id,archived.id,'the current password signs in as the mapped administrator')
  } finally { await fresh.close() }

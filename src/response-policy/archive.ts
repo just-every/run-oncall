@@ -34,6 +34,7 @@ function validateObligation(state: State, alert: Alert) {
     if (extras.some(v => v !== undefined) || o.receipt !== null || alert.state !== 'active') fail('Active response obligation contains a recovery outcome');
     return;
   }
+  if(o.outcome==='stopped by human resolution'){if(alert.coordination?.state!=='closed'||o.receipt!==null||extras.some(v=>v!==undefined)||!alert.coordination.history.some(entry=>entry.kind==='bulk-resolve'))fail('Invalid human alert resolution provenance');return;}
   const recovered = alert.events.map(id => state.events.find(e => e.id === id)).find(e => e?.intent === 'recover');
   const reference = typeof o.receipt === 'string' ? responseReceipt(state, o.receipt) : undefined;
   if (!recovered || !reference || reference.alert.id !== alert.id || reference.event.id !== recovered.id ||

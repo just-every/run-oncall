@@ -1,3 +1,5 @@
+import {scheduleChanges} from './schedule-coordination/model';
+import {workspaceRows,checkWorkspaceSize} from './workspace-store';
 import { workspaceQueries, decodeWorkspace } from './workspace-store'
 import { parseHandoffRow } from './handoff-store'
 import { fail, type State } from './family/response-operations/domain'
@@ -38,13 +40,16 @@ export function bound(archive:PagingArchive) {
 const gate='EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND write_token=?)'
 export type Mutation = (token:string)=>D1PreparedStatement[]
 export type PagingAuthority = {digest:string;member:string}
-export async function commitPaging(db:D1Database,s:PagingSnapshot,archive:PagingArchive,mutation:Mutation,authority?:PagingAuthority) {
+export async function commitPaging(db:D1Database,s:PagingSnapshot,archive:PagingArchive,mutation:Mutation,authority?:PagingAuthority,options:{saveWorkspace?:boolean;scheduleChange?:boolean}={}) {
   bound(archive)
+  if(options.scheduleChange)scheduleChanges(s.workspace,s.archive.schedules,archive.schedules,authority?.member)
+  if(options.saveWorkspace||options.scheduleChange)checkWorkspaceSize(s.workspace)
   const token=crypto.randomUUID()
   const result=await db.batch([
     db.prepare('UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND revision=?)'+(authority?' AND EXISTS(SELECT 1 FROM oc_current_sessions WHERE token=? AND member=? AND expires>?)':''))
       .bind(token,s.revision,s.workspace.revision,...(authority?[authority.digest,authority.member,Date.now()]:[])),
     ...mutation(token),
+    ...(options.saveWorkspace||options.scheduleChange?[db.prepare('UPDATE workspace_control SET revision=revision+1,write_token=? WHERE id=1 AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND write_token=?)').bind(token,token),...workspaceRows(db,s.workspace,token)]:[]),
   ])
   if(result[0].meta.changes!==1) fail('Workspace or scheduling state changed; reload and retry',409)
   return result

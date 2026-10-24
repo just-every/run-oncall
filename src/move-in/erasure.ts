@@ -173,12 +173,26 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
       {sql:'DELETE FROM sessions WHERE member=?',params:[row.id]});
     automationChanged=true;
   }
+  for(const row of (await db.prepare('SELECT id,data FROM oc_schedule_records').all<{id:string;data:string}>()).results){
+    const value=JSON.parse(row.data);
+    if(memberIds.has(value.member)||memberIds.has(value.data.substitute)||memberIds.has(value.data.obligation?.creator)||mentions(value,email)){
+      rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_schedule_records WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
+        {sql:'DELETE FROM oc_schedule_records WHERE id=?',params:[row.id]});automationChanged=true;
+    }
+  }
   for(const row of (await db.prepare('SELECT id,data FROM oc_business_services').all<{id:string;data:string}>()).results){
     const business=JSON.parse(row.data), state={members:[],businessServices:[business]} as unknown as import('../family/response-operations/domain').State;
     for(const id of memberIds)eraseBusinessMember(state,id);
     const clean=JSON.stringify(scrub(business,email));
     if(clean!==row.data){rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_business_services WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
       {sql:'UPDATE oc_business_services SET data=? WHERE id=?',params:[clean,row.id]});automationChanged=true}
+  }
+  for(const row of (await db.prepare('SELECT id,data FROM oc_alerts').all<{id:string;data:string}>()).results){
+    const alert=JSON.parse(row.data);if(!alert.coordination)continue;
+    for(const entry of alert.coordination.history)entry.text=scrub(entry.text,email);
+    if(memberIds.has(alert.coordination.assignee)){alert.coordination.assignee=null;alert.coordination.snoozeDue=null;}
+    if(JSON.stringify(alert)!==row.data){alert.revision=(alert.revision??1)+1;rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_alerts WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
+      {sql:'UPDATE oc_alerts SET data=? WHERE id=?',params:[JSON.stringify(alert),row.id]});automationChanged=true;}
   }
   for(const row of (await db.prepare('SELECT id,data FROM oc_incidents').all<{id:string;data:string}>()).results){
     const incident=JSON.parse(row.data);const wasManual=!!incident.manualPage;for(const key of ['manualPage','responderRequests'])if(incident[key])incident[key]=scrub(incident[key],email);for(const entry of incident.timeline)if(['manual-page','request-responders','respond-request','cancel-request'].includes(entry.kind)||wasManual&&entry.kind==='declared')entry.text=scrub(entry.text,email);for(const id of memberIds){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);}let changed=false

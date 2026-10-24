@@ -38,7 +38,7 @@ export function installSchedules(api:any,body:(c:any)=>Promise<any>) {
   if(action==='review')return c.json(review)
   if(input.confirmed!==true||typeof input.digest!=='string'||input.digest!==review.digest)fail('Review changed or confirmation missing; review again',409)
   const archive={...s.archive,schedules:s.archive.schedules.map(v=>v.id===old.id?review.schedule:v)}
-  await commitPaging(c.env.DB,s,archive,token=>[putSchedule(c.env.DB,review.schedule,token)],{digest:c.get('sessionDigest'),member:actor.id})
+  await commitPaging(c.env.DB,s,archive,token=>[putSchedule(c.env.DB,review.schedule,token)],{digest:c.get('sessionDigest'),member:actor.id},{scheduleChange:true})
   return c.json({schedule:review.schedule,coverage:review.coverage})
  })
  api.post('/api/schedules/:id/overrides',async(c:any)=>{
@@ -48,7 +48,7 @@ export function installSchedules(api:any,body:(c:any)=>Promise<any>) {
   const input=await body(c);if(input.revision!==old.revision)fail('Schedule changed; reload',409)
   const schedule=validateSchedule({...old,revision:old.revision+1,overrides:[...old.overrides,input.override]},s.workspace)
   const archive={...s.archive,schedules:s.archive.schedules.map(v=>v.id===schedule.id?schedule:v)}
-  await commitPaging(c.env.DB,s,archive,token=>[putSchedule(c.env.DB,schedule,token)],{digest:c.get('sessionDigest'),member:actor.id})
+  await commitPaging(c.env.DB,s,archive,token=>[putSchedule(c.env.DB,schedule,token)],{digest:c.get('sessionDigest'),member:actor.id},{scheduleChange:true})
   return c.json(schedule)
  })
 }

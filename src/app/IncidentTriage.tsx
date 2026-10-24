@@ -11,9 +11,9 @@ import './triage.css';
 const readQuery = (): TriageQuery => typeof location === 'undefined' ? {} : Object.fromEntries(queryFields.flatMap(key => new URLSearchParams(location.search).has('triage_' + key) ? [[key, new URLSearchParams(location.search).get('triage_' + key)!]] : []));
 export function IncidentTriage({state, actor, current, select, children, busy, run}: {state: State; actor: Member; current?: string; select: (id: string) => void; children: ReactNode; busy: boolean; run: (path: string | (() => Promise<any>), data?: any, message?: any) => Promise<any>}) {
   const [query, setQuery] = useState<TriageQuery>(readQuery);
-  const [page, setPage] = useState<{items: Incident[]; total: number; nextCursor: string | null; workspaceRevision: number} | null>(null);
+  const [page, setPage] = useState<{items: (Incident&{kind?:'incident'|'alert'})[]; total: number; nextCursor: string | null; workspaceRevision: number} | null>(null);
   const [views, setViews] = useState<SavedView[]>([]);
-  const [selection, setSelection] = useState<{id: string; revision: number}[]>([]);
+  const [selection, setSelection] = useState<{id: string; revision: number;kind?:string}[]>([]);
   const [allMatching, setAllMatching] = useState(false);
   const [selectionRevision, setSelectionRevision] = useState(0);
   const [error, setError] = useState('');
@@ -38,9 +38,9 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
     try {
       let next = await request('/api/triage?' + params + '&limit=100');
       if (next.total > 1000) throw Error('Narrow the filters to at most 1,000 incidents');
-      const items: Incident[] = [...next.items], revision = next.workspaceRevision;
+      const items: (Incident&{kind?:'incident'|'alert'})[] = [...next.items], revision = next.workspaceRevision;
       while (next.nextCursor) { next = await request('/api/triage?' + params + '&limit=100&cursor=' + encodeURIComponent(next.nextCursor)); items.push(...next.items); }
-      setSelection(items.map(i => ({id: i.id, revision: i.revision}))); setSelectionRevision(revision); setAllMatching(true);
+      setSelection(items.map(i => ({id: i.id, revision: i.revision,kind:i.kind}))); setSelectionRevision(revision); setAllMatching(true);
     } catch (e) {setError((e as Error).message);} finally {setLoading(false);}
   }
   return <section className="panel incidents" aria-label="Incident triage">
@@ -51,15 +51,15 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
       {!views.length && <p>No saved views yet.</p>}
       <form onSubmit={async e => {e.preventDefault(); const result = await run('/api/triage/views', {name: viewName, query}, 'View saved'); if (result) {setViews(result.views); setViewName('');}}}><label>View name<input value={viewName} required maxLength={100} onChange={e => setViewName(e.target.value)} /></label><button disabled={busy}>Save current view</button></form>
     </details>
-    <div className="triage-count" role="status">{loading ? 'Loading incidents…' : `${page?.total ?? 0} matching incidents`}</div>
+    <div className="triage-count" role="status">{loading ? 'Loading incidents…' : `${page?.total ?? 0} matching ${query.kind==='alerts'?'alert-only items':'incidents'}`}</div>
     {error && <p role="alert" className="error">{error}</p>}
-    {actor.role !== 'viewer' && !!page?.total && <div className="triage-selection"><button disabled={loading || busy} onClick={() => {setSelection(page.items.slice(0, 500).map(i => ({id: i.id, revision: i.revision}))); setAllMatching(false);}}>Select this page</button>{page.total <= 1000 && <button disabled={loading || busy} onClick={selectMatching}>Select all {page.total} matching</button>}</div>}
-    {selection.length > 0 && <IncidentBulkActions items={selection} allMatching={allMatching} count={selection.length} query={query} workspaceRevision={selectionRevision} members={state.members} busy={busy} canEdit={actor.role !== "viewer"} run={run} clear={() => {setSelection([]); setAllMatching(false);}} />}
+    {actor.role !== 'viewer' && !!page?.total && <div className="triage-selection"><button disabled={loading || busy} onClick={() => {setSelection(page.items.slice(0, 500).map(i => ({id: i.id, revision: i.revision,kind:i.kind}))); setAllMatching(false);}}>Select this page</button>{page.total <= 1000 && <button disabled={loading || busy} onClick={selectMatching}>Select all {page.total} matching</button>}</div>}
+    {selection.length > 0 && <IncidentBulkActions items={selection} allMatching={allMatching} count={selection.length} query={query} workspaceRevision={selectionRevision} members={state.members} incidents={state.incidents.filter(i=>!i.mergedInto&&i.state!=='resolved')} busy={busy} canEdit={actor.role !== "viewer"} run={run} clear={() => {setSelection([]); setAllMatching(false);}} />}
     {page?.items.map(i => <div className="triage-item" key={i.id}>
-      {actor.role !== 'viewer' && <label className="triage-check"><input type="checkbox" aria-label={`Select ${i.title}`} checked={selection.some(s => s.id === i.id)} disabled={busy || loading || selection.length >= 500 && !selection.some(s => s.id === i.id)} onChange={e => {setAllMatching(false); setSelection(old => e.target.checked ? [...old, {id: i.id, revision: i.revision}].slice(0, 500) : old.filter(s => s.id !== i.id));}} /></label>}
-      <button className={`incident ${current === i.id ? 'current' : ''}`} onClick={() => select(i.id)}>
+      {actor.role !== 'viewer' && <label className="triage-check"><input type="checkbox" aria-label={`Select ${i.title}`} checked={selection.some(s => s.id === i.id)} disabled={busy || loading || selection.length >= 500 && !selection.some(s => s.id === i.id)} onChange={e => {setAllMatching(false); setSelection(old => e.target.checked ? [...old, {id: i.id, revision: i.revision,kind:i.kind}].slice(0, 500) : old.filter(s => s.id !== i.id));}} /></label>}
+      <button className={`incident ${current === i.id ? 'current' : ''}`} onClick={() => {if(i.kind==='alert')location.hash='alerts';else select(i.id);}}>
         <div className="incident-top"><span className={`dot ${i.state === 'resolved' ? 'green' : 'red'}`} /><span>{i.id.slice(0, 8)}</span><span className={`priority ${i.state === 'resolved' ? 'state-resolved' : `sev-${i.severity}`}`}>{i.severity}{i.state === 'resolved' && ' · resolved'}</span></div>
-        <h3>{i.title}</h3><p className="service">{state.services.find(v => v.id === i.service)?.name} · {i.state}</p>
+        <h3>{i.kind==='alert'&&'Alert-only: '}{i.title}</h3><p className="service">{state.services.find(v => v.id === i.service)?.name} · {i.state}</p>
         <time>{new Date(i.createdAt).toLocaleString()}</time><div className="tags"><span className="tag">{incidentUrgency(i)} urgency</span>{i.priority && <span className="tag">{i.priority}</span>}<span className="tag">{state.members.find(m => m.id === incidentAssignee(i))?.name ?? 'Unassigned'}</span><span className="tag">{i.actions.filter(a => !a.done).length} open follow-ups</span></div>
       </button>
     </div>)}

@@ -1,3 +1,4 @@
+import {subscriptionResponse} from './schedule-coordination/feed';
 import {sweepDeadlines} from './incident-deadlines/sweep';
 import { dispatchOutbox } from './automation/dispatch'
 import { auditedDatabase } from './audit-database'
@@ -35,6 +36,7 @@ export default withDemo({
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
     const bindings=runtimeBindings(env);
+    const subscription=await subscriptionResponse(request,bindings);if(subscription)return subscription;
     let workspace: unknown;
     const state=await setupStateResponse(request,bindings);if(state)return state;
     if(new URL(request.url).pathname==='/') {

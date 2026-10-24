@@ -1,3 +1,5 @@
+import {installScheduleCoordination} from './schedule-coordination/api';
+import {holdScheduleRecords} from './schedule-coordination/model';
 import {holdDeadlines} from './incident-deadlines/model.ts';
 import { commandKey, runOnce, CommandKeyError } from './base/command-receipts';
 import { responseContext } from './manual-pages/context';
@@ -597,6 +599,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   const sessionDigest = await hash(sessionToken);
   const parent:{operator_session:string|null}|null=await c.env.DB.prepare('SELECT operator_session FROM oc_current_sessions WHERE token=?').bind(c.get('sessionDigest')).first();
   if(!parent)fail('Session expired or revoked',401);
+  holdScheduleRecords(value);
   holdBusinessStatus(value);
   holdManualRecords(value);
   holdDeadlines(value);
@@ -689,6 +692,7 @@ api.get("/api/handoff/:id", async (c) => {
 });
 installPaging(api, body);
 installSchedules(api,body);
+installScheduleCoordination(api,body);
 installMoveIn(api,body);
 installHandoffs(api, body);
 export { api };

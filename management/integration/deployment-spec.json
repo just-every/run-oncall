@@ -285,6 +285,12 @@
       "name": "0142_manual_command_receipts.sql",
       "sha256": "8064fe877c22bf0500ff5c20d274cbd4e8b2e0dea986fa9e3e4fef4faf2c54a0",
       "sql": "-- Refresh-safe writes (command-receipts.ts): one row per actor and form command\n-- key. A seed applies this as its next numbered migration; archives leave it out.\nCREATE TABLE rer_command_receipts (\n  actor TEXT NOT NULL,\n  command_key TEXT NOT NULL,\n  command TEXT NOT NULL,\n  state TEXT NOT NULL CHECK(state IN ('running','done')),\n  result TEXT,\n  once TEXT,\n  created_at INTEGER NOT NULL,\n  PRIMARY KEY(actor, command_key)\n);\nCREATE INDEX rer_command_receipts_created ON rer_command_receipts(created_at);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0143_schedule_coordination.sql",
+      "sha256": "7caa6b10f36b6bea311418d8203bcd7725685218b88824c638773ad86b97537b",
+      "sql": "-- Swaps, recorded schedule notices, reminder settings and digest-only subscriptions.\nCREATE TABLE oc_schedule_records(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE INDEX oc_schedule_capabilities ON oc_schedule_records(json_extract(data,'$.data.hash'))\n WHERE json_extract(data,'$.kind')='subscription' AND json_extract(data,'$.active')=1;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

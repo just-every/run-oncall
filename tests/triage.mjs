@@ -1,7 +1,10 @@
+import {triageBulkCompletion} from './triage-bulk.mjs';
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {localWorker} from './worker.mjs';
 import {localPart, mail, recoveryRules} from './email-fixtures.mjs';
+
+await triageBulkCompletion();
 
 // One storm journey through emitted Worker/D1 HTTP: query, coordinate and restore.
 const w = await localWorker({INBOUND_EMAIL_DOMAIN: 'inbound.example.test'});
@@ -279,10 +282,10 @@ try {
   ok(await w.request('/api/status'),401);
   const publicStatus=await fetch(w.origin+'/status');assert.equal(publicStatus.status,404);assert.ok(!(await publicStatus.text()).includes('Checkout gateway'),'no public status route exposes internal status');
   const bootstrap=ok(await w.request('/api/workspace',undefined,statusCookie));assert.equal(bootstrap.state,null);
-  for(const path of ['/api/state','/api/triage','/api/triage/views','/api/archive','/api/recovery/checkpoint','/api/audit/export','/api/handoffs','/api/handoffs/context/'+impacted.id,'/api/paging/state','/api/schedules/missing/now-next','/api/schedules/missing/calendar.ics','/api/changes','/api/reports/response','/api/reports/response.csv','/api/reviews/'+impacted.id+'/material','/api/automation/clients','/api/email','/api/routing/keys','/api/sources']) ok(await w.request(path,undefined,statusCookie),403);
+  for(const path of ['/api/state','/api/schedule-coordination','/api/triage','/api/triage/views','/api/archive','/api/recovery/checkpoint','/api/audit/export','/api/handoffs','/api/handoffs/context/'+impacted.id,'/api/paging/state','/api/schedules/missing/now-next','/api/schedules/missing/calendar.ics','/api/changes','/api/reports/response','/api/reports/response.csv','/api/reviews/'+impacted.id+'/material','/api/automation/clients','/api/email','/api/routing/keys','/api/sources']) ok(await w.request(path,undefined,statusCookie),403);
   ok(await w.request('/api/v1/incidents',undefined,statusCookie),401);
   const deniedState=ok(await req('/api/state'));
-  for(const [path,data] of [['/api/command',{type:'declare',service:statusService.id,title:'Refused stakeholder page',severity:'warning',summary:'No authority'}],['/api/command',{type:'request-response',incident:impacted.id,revision:impacted.revision,member:actor.id}],['/api/triage/bulk',{operationId:'synthetic-oncall-65',action:'acknowledge',items:[{id:impacted.id,revision:impacted.revision}]}],['/api/members',{name:'No member',role:'admin',password:'synthetic-oncall-65-password'}],['/api/restore',{}],['/api/recovery/restore',{}]]) ok(await w.request(path,data,statusCookie),403);
+  for(const [path,data] of [['/api/schedule-coordination',{action:'subscribe',scope:'own'}],['/api/command',{type:'declare',service:statusService.id,title:'Refused stakeholder page',severity:'warning',summary:'No authority'}],['/api/command',{type:'request-response',incident:impacted.id,revision:impacted.revision,member:actor.id}],['/api/triage/bulk',{operationId:'synthetic-oncall-65',action:'acknowledge',items:[{id:impacted.id,revision:impacted.revision}]}],['/api/members',{name:'No member',role:'admin',password:'synthetic-oncall-65-password'}],['/api/restore',{}],['/api/recovery/restore',{}]]) ok(await w.request(path,data,statusCookie),403);
   assert.deepEqual(ok(await req('/api/state')),deniedState,'every stakeholder refusal creates no workspace object');
   const html=await fetch(w.origin+'/?incident='+impacted.id+'#incidents',{headers:{cookie:statusCookie}});assert.equal(html.status,200);
   const document=await html.text();assert.ok(!document.includes(privateText)&&!document.includes('Private recovery steps'),'HTML injected workspace contains no incident or runbook text');

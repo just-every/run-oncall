@@ -321,7 +321,7 @@ try {
  console.log('Emitted Worker product browser journey passed at desktop and mobile widths')
 } catch(error) {
  if(page){
-  await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true})
+  await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]')]})
   console.error('Product browser failure at',new URL(page.url()).pathname)
   console.error(redact((await page.locator('body').innerText()).slice(0,1800)))
  }

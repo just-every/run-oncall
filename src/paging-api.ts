@@ -37,7 +37,7 @@ export function installPaging(api:any,body:(c:any,max?:number)=>Promise<any>) {
     if(old)fail('Review the schedule change before applying it',409)
     const schedule=validateSchedule({...v,revision:v.revision+1},s.workspace)
     const next={...s.archive,schedules:replace(s.archive.schedules,schedule,x=>x.id)}
-    await commitPaging(c.env.DB,s,next,token=>[putSchedule(c.env.DB,schedule,token)],authority(c))
+    await commitPaging(c.env.DB,s,next,token=>[putSchedule(c.env.DB,schedule,token)],authority(c),{scheduleChange:true})
     return c.json(schedule)
   })
   api.post('/api/paging/policies',async(c:any)=>{

@@ -32,7 +32,7 @@ export function derivedStatus(state: State, business: BusinessService): Internal
   const ids = supportingServices(state, business);
   const incidents = state.incidents.filter(row => ids.has(row.service) && row.state !== 'resolved');
   if (incidents.some(row => row.severity === 'critical')) return 'major outage';
-  if (incidents.length || business.highUrgencyImpact && state.alerts.some(row => row.service && ids.has(row.service) && row.state === 'active' && !row.suppressed && (row.urgency ?? 'high') === 'high')) return 'degraded';
+  if (incidents.length || business.highUrgencyImpact && state.alerts.some(row => row.service && ids.has(row.service) && row.state === 'active' && row.coordination?.state!=='closed' && !row.suppressed && (row.urgency ?? 'high') === 'high')) return 'degraded';
   return 'operational';
 }
 function notice(service: BusinessService, member: string) {

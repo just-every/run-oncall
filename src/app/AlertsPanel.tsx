@@ -29,6 +29,7 @@ export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpen
         <h3>{title}</h3>
         {severity && <span className={`priority sev-${severity}`}>{severity}</span>}
         <p>{state.services.find(service => service.id === alert.service)?.name??'Integration unrouted queue'} · {alert.environment} · {alert.state}</p>
+        {alert.coordination&&<><p>Coordination: {alert.coordination.state} · assignee {name(alert.coordination.assignee)}{alert.coordination.snoozeDue&&` · due ${alert.coordination.snoozeDue}, not sent (no timer)`}</p><details><summary>Coordination history</summary>{alert.coordination.history.map(entry=><p key={entry.id}>{entry.text} · {name(entry.actor)} · operation {entry.operationId}</p>)}</details></>}
         {alert.obligation&&<p>Paging obligation: {alert.obligation.state} · {alert.obligation.target.kind==='user'?'Integration owner: '+name(alert.obligation.target.id):'Service policy'} · {alert.obligation.urgency} urgency · paging OFF; non-automatic.</p>}
         {alert.obligation?.policy && <p>Response policy v{alert.obligation.policy.version} · {alert.obligation.policy.mode === 'incident' ? 'Automatic incident declaration' : 'Alert-only'} · {alert.obligation.policy.rule ? 'rule ' + alert.obligation.policy.rule : 'default response'}.</p>}
         {alert.obligation?.state === 'stopped' && <div className="urgency-preview">

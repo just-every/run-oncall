@@ -46,7 +46,7 @@ try {
  await command(['reset','--yes'])
  console.log('Managed production preview, signed-out authority and confirmed reset passed')
 }catch(error){
- if(browser){const page=browser.contexts()[0]?.pages()[0];await page?.screenshot({path:'evidence/browser/failure.png',fullPage:true});console.error('Browser failure at',new URL(page.url()).pathname);console.error(safe((await page.locator('body').innerText()).slice(0,1800)))}
+ if(browser){const page=browser.contexts()[0]?.pages()[0];await page?.screenshot({path:'evidence/browser/failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]')]});console.error('Browser failure at',new URL(page.url()).pathname);console.error(safe((await page.locator('body').innerText()).slice(0,1800)))}
  throw error
 }finally{
  await browser?.close()

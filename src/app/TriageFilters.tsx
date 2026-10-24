@@ -5,6 +5,7 @@ export function TriageFilters({query, change, services, members}: {query: Triage
   const select = (key: keyof TriageQuery, label: string, choices: {id: string; name: string}[]) => <label>{label}<select aria-label={label} value={query[key] ?? ''} onChange={e => change(key, e.target.value)}><option value="">All</option>{choices.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>;
   const options = (...values: string[]) => values.map(id => ({id, name: id}));
   return <div className="triage-filters">
+    <label>Items<select aria-label="Triage items" value={query.kind??'incidents'} onChange={e=>change('kind',e.target.value)}><option value="incidents">Declared incidents</option><option value="alerts">Alert-only items</option></select></label>
     <label className="search">Search<input aria-label="Search incidents" placeholder="Title, notes, service or alert key" value={query.q ?? ''} onChange={e => change('q', e.target.value)} /></label>
     <label className="triage-mine"><input type="checkbox" checked={query.mine === 'true'} onChange={e => change('mine', e.target.checked ? 'true' : '')} />Assigned to me</label>
     <details><summary>Filter and sort incidents</summary><div className="triage-filter-grid">

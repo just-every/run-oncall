@@ -1,3 +1,4 @@
+import {triageBulkBrowser} from './triage-bulk-browser.mjs';
 import assert from 'node:assert/strict'
 import {routingBrowser} from './routing-browser.mjs';
 import {keyboardUser} from './keyboard.mjs'
@@ -17,6 +18,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession}
   await keyboardCoordination(page,context,width,ownerLink,openSession)
   await alertSeverity(page,context,width)
   await productSchedule(page,context,width,session)
+  await triageBulkBrowser(page,context,width)
   await productImport(page,context,width,session)
   await routingBrowser(page,context,width)
   await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel(/^Event JSON array/).fill(JSON.stringify([{source:'browser',eventId:'replay-'+width,service:'checkout',environment:'production',key:'browser',generation:'g1',intent:'trigger',severity:'critical',title:'Replay '+width,observedAt:'2026-10-12T00:00:00.000Z'}]))

@@ -1,9 +1,14 @@
+import {coordinateAlert} from './triage-alerts';
+import {inheritWorkspaceSnapshot} from './workspace-store';
+import {pagingSnapshot} from './paging-store';
+import {responseContext} from './manual-pages/context';
 import { auditKind, auditOutcome } from './audit-store'
 import { authority, command, fail, Fault, text, type Member, type State } from './family/response-operations/domain';
-import { matchingIncidents, triagePage, triageQuery, type BulkOperation, type BulkResult, type SavedView } from './family/response-operations/triage';
+import { matchingItems, triagePage, triageQuery, type BulkOperation, type BulkResult, type SavedView } from './family/response-operations/triage';
 
 export function memberWorkspace(state: State, actor: Member): State {
   if(actor.role!=='admin'){const {apiClients,apiEndpoints,apiOperations,apiOutbox,emailSamples,emailAddresses,emailRules,emailReceipts,emailQuarantine,...visible}=state;state=visible;}
+  if(actor.role!=='admin'&&state.scheduleRecords)state={...state,scheduleRecords:state.scheduleRecords.filter(r=>r.kind==='policy'||r.member===actor.id||r.kind==='swap'&&r.data.substitute===actor.id)};
   if (!state.triage) return state;
   return {...state, triage: state.triage.filter(r => r.kind !== 'view' || r.actor === actor.id)};
 }
@@ -45,12 +50,13 @@ export function installTriage(api: any, deps: Dependencies) {
   api.post('/api/triage/bulk', async (c: any) => {
     const input = await deps.body(c, 256 * 1024);
     const id = text(input.operationId, 'Operation ID', 100);
-    if (!['acknowledge', 'resolve', 'reassign', 'set-priority', 'set-urgency'].includes(input.action)) fail('Unsupported bulk action');
+    if (!['acknowledge', 'resolve', 'reassign', 'set-priority', 'set-urgency','snooze','merge'].includes(input.action)) fail('Unsupported bulk action');
     auditKind(c.env.DB, `triage.${input.action}`);
     if (!Array.isArray(input.items) || !input.items.length || input.items.length > (input.allMatching ? 1000 : 500)) fail('Choose 1–500 incidents, or confirm up to 1,000 matching incidents');
-    const items = input.items.map((i: any) => ({id: text(i?.id, 'Incident ID', 100), revision: i?.revision}));
-    if (new Set(items.map((i: any) => i.id)).size !== items.length || items.some((i: any) => !Number.isSafeInteger(i.revision) || i.revision < 1)) fail('Each selected incident needs one revision');
-    const payload = {action: input.action, items, reason: input.reason ?? '', evidence: input.evidence ?? '', member: input.member || null, priority: input.priority ?? null, urgency: input.urgency ?? null, allMatching: input.allMatching ? triageQuery(input.query ?? {}) : null, confirmedCount: input.confirmedCount ?? null};
+    const items = input.items.map((i: any) => ({id: text(i?.id, 'Item ID', 100), revision: i?.revision,...(i?.kind?{kind:i.kind}:{})}));
+    if (new Set(items.map((i: any) => i.id)).size !== items.length || items.some((i: any) => !Number.isSafeInteger(i.revision) || i.revision < 1||i.kind!==undefined&&!['incident','alert'].includes(i.kind))) fail('Each selected incident needs one revision');
+    if(!input.allMatching&&(items.some((item:any)=>item.kind==='alert')||['snooze','merge'].includes(input.action))&&input.confirmedCount!==items.length)fail('Confirm the current selected item count',409);
+    const payload = {action: input.action, items, reason: input.reason ?? '', evidence: input.evidence ?? '', member: input.member || null, priority: input.priority ?? null, urgency: input.urgency ?? null, allMatching: input.allMatching ? triageQuery(input.query ?? {}) : null, confirmedCount: input.confirmedCount ?? null,...(input.action==='snooze'?{minutes:input.minutes}:{}),...(input.action==='merge'?{target:input.target,targetRevision:input.targetRevision}:{})};
     const fingerprint = await digest(JSON.stringify(payload));
     const actor: Member = c.get('actor');
     let initial = await deps.state(c);
@@ -64,8 +70,8 @@ export function installTriage(api: any, deps: Dependencies) {
     authority(initial, actor);
     if (!operation) {
       if (input.allMatching) {
-        const all = matchingIncidents(initial, actor, payload.allMatching!);
-        if (input.workspaceRevision !== initial.revision || input.confirmedCount !== all.length || items.length !== all.length || all.some(i => !items.some((item: any) => item.id === i.id && item.revision === i.revision))) fail('Matching incidents changed. Confirm the current count and selection.', 409);
+        const all = matchingItems(initial, actor, payload.allMatching!);
+        if (input.workspaceRevision !== initial.revision || input.confirmedCount !== all.length || items.length !== all.length || all.some(i => !items.some((item: any) => item.id === i.id && item.revision === i.revision && (item.kind??'incident')===i.kind))) fail('Matching incidents changed. Confirm the current count and selection.', 409);
       }
       operation = {id, kind: 'bulk', actor: actor.id, fingerprint, at: new Date().toISOString(), results: []};
       (initial.triage ??= []).push(operation);
@@ -88,11 +94,24 @@ export function installTriage(api: any, deps: Dependencies) {
         const revision = state.revision;
         // Domain mutation can fail after changing its working copy. Keep failures
         // separate from the state whose receipt is committed.
-        const proposed = structuredClone(state);
+        const proposed = inheritWorkspaceSnapshot(structuredClone(state),state);
         try {
-          const changed = command(proposed, actor, {type: input.action === 'acknowledge' ? 'bulk-acknowledge' : input.action === 'resolve' ? 'bulk-resolve' : input.action,
-            incident: item.id, revision: item.revision, operationId: id, reason: payload.reason, evidence: payload.evidence, member: payload.member, priority: payload.priority, urgency: payload.urgency}) as any;
-          result = {id: item.id, ok: true, revision: changed.revision};
+          const at=new Date(Date.now()).toISOString(),beforeEntries=new Set(proposed.incidents.flatMap(i=>i.timeline.map(e=>e.id)));
+          let changed:any;
+          if(item.kind==='alert')changed=coordinateAlert(proposed,actor,{...payload,id:item.id,revision:item.revision,operationId:id},at);
+          else if(input.action==='merge'){
+            const accepted=receipt.results.filter(r=>r.ok).length;
+            if(typeof payload.target!=='string'||!Number.isSafeInteger(payload.targetRevision))fail('Choose a merge target and its revision');
+            if(item.id===payload.target)fail('Merge target cannot also be a selected source',409);
+            command(proposed,actor,{type:'merge-incidents',incident:payload.target,revision:payload.targetRevision+accepted,sources:[{id:item.id,revision:item.revision}],reason:payload.reason},at);
+            changed=proposed.incidents.find(i=>i.id===item.id);
+          }else{
+            const context=input.action==='snooze'?responseContext(await pagingSnapshot(c.env.DB),Date.parse(at)):undefined;
+            changed=command(proposed,actor,{type:input.action==='acknowledge'?'bulk-acknowledge':input.action==='resolve'?'bulk-resolve':input.action,
+              incident:item.id,revision:item.revision,operationId:id,reason:payload.reason,evidence:payload.evidence,member:payload.member,priority:payload.priority,urgency:payload.urgency,...(input.action==='snooze'?{minutes:payload.minutes}:{})},at,context);
+          }
+          for(const incident of proposed.incidents)for(const entry of incident.timeline)if(!beforeEntries.has(entry.id))entry.operationId=id;
+          result={id:item.id,ok:true,revision:changed.revision,...(item.kind==='alert'?{kind:'alert' as const}:{})};
           (proposed.triage!.find(r => r.id === id) as BulkOperation).results.push(result);
           await deps.saveItem(c, proposed, revision, id, item.id);
           completed.set(item.id, result);

@@ -1,3 +1,5 @@
+import {validateAlertCoordination,type AlertCoordination} from '../../triage-alerts.ts';
+import {validateScheduleRecords,type ScheduleRecord} from '../../schedule-coordination/model.ts';
 import {identityLimit} from '../../intake/identity-bounds.ts';
 import { publishIncidentTemplate, instantiateIncidentTemplate, checklistCommand, validateIncidentTemplateArchive } from '../../incident-workflows/template.ts';
 import type { IncidentTemplate, TemplateSnapshot } from '../../incident-workflows/types-template.ts';
@@ -85,6 +87,8 @@ export type Event = Signal & {
   };
 };
 export type Alert = {
+  revision?:number;
+  coordination?:AlertCoordination;
   id: string;
   source: string;
   service: string | null;
@@ -156,6 +160,7 @@ export type Incident = IncidentRelations & {
   communications?: string | null;
 };
 export type State = {
+  scheduleRecords?: ScheduleRecord[];
   businessServices?: BusinessService[];
   erasureFences?: ErasureFence[];
   keyAllowances?: KeyAllowance[];
@@ -674,7 +679,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["businessServices", "erasureFences", "keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
+  ], ["scheduleRecords", "businessServices", "erasureFences", "keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   if(value.erasureFences!==undefined)validateErasureFences(value.erasureFences);
@@ -781,7 +786,7 @@ export function validateArchive(value: any): State {
       "events",
       "owner",
       "suppressed",
-    ], ["urgency", "urgencyRevision", "urgencyHistory", "priority", "obligation"]);
+    ], ["urgency", "urgencyRevision", "urgencyHistory", "priority", "obligation", "revision", "coordination"]);
     if (
       !(a.service===null ? a.environment==='' && a.events.length===0 && value.intakeReceipts?.some((r:any)=>r.alert===a.id&&r.incomplete&&r.service===null&&r.source===a.source.slice(7)&&r.key===a.key&&r.generation===a.generation) : value.services.some(
         (s: any) => s.id === a.service && s.environment === a.environment,
@@ -790,6 +795,7 @@ export function validateArchive(value: any): State {
       (a.owner !== null && !hasMember(a.owner))
     )
       fail("Invalid alert references");
+    validateAlertCoordination(value,a);
     validateAlertObligation(value,a);
     text(a.generation, "generation", 100);
     bool(a.suppressed);
@@ -902,6 +908,7 @@ export function validateArchive(value: any): State {
   validateIntakeArchive(value);
   validateEmailArchive(value);
   validateAutomation(value);
+  validateScheduleRecords(value);
   if (value.triage !== undefined) validateTriageRecords(value.triage, value);
   return structuredClone(value);
 }

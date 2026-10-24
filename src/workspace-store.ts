@@ -5,7 +5,7 @@ import { storedReceipt, nativePrefixWrites } from './native-prefix-store'
 import { authoredWorkspace } from './workspace-profile'
 import { empty, fail, type State } from './family/response-operations/domain'
 
-const tables = {businessServices:'oc_business_services',keyAllowances:'oc_key_allowances',apiClients:'oc_api_clients',apiEndpoints:'oc_api_endpoints',apiOperations:'oc_api_operations',apiOutbox:'oc_api_outbox',members:'oc_members', services:'oc_services', policies:'oc_policies', events:'oc_events', alerts:'oc_alerts', incidents:'oc_incidents', audit:'oc_audit', triage:'oc_triage', changes:'oc_changes', changeSources:'oc_change_sources', intakeSources:'oc_intake_sources', intakeReceipts:'oc_intake_receipts', emailAddresses:'oc_email_addresses', emailRules:'oc_email_rules', emailSamples:'oc_email_samples', emailReceipts:'oc_email_receipts', emailQuarantine:'oc_email_quarantine'} as const
+const tables = {scheduleRecords:'oc_schedule_records',businessServices:'oc_business_services',keyAllowances:'oc_key_allowances',apiClients:'oc_api_clients',apiEndpoints:'oc_api_endpoints',apiOperations:'oc_api_operations',apiOutbox:'oc_api_outbox',members:'oc_members', services:'oc_services', policies:'oc_policies', events:'oc_events', alerts:'oc_alerts', incidents:'oc_incidents', audit:'oc_audit', triage:'oc_triage', changes:'oc_changes', changeSources:'oc_change_sources', intakeSources:'oc_intake_sources', intakeReceipts:'oc_intake_receipts', emailAddresses:'oc_email_addresses', emailRules:'oc_email_rules', emailSamples:'oc_email_samples', emailReceipts:'oc_email_receipts', emailQuarantine:'oc_email_quarantine'} as const
 const collections = Object.keys(tables) as (keyof typeof tables)[]
 // D1 batch reads share one transaction. Individual records avoid a whole-
 // workspace SQL cell and do not depend on SQLite's compound-SELECT limit.
@@ -30,9 +30,16 @@ export function decodeWorkspace(rows:{collection:string;ordinal:number;data:stri
 export async function loadWorkspace(db:D1Database):Promise<State> {
   return decodeWorkspace((await db.batch<{collection:string;ordinal:number;data:string}>(workspaceQueries.map(query=>db.prepare(query)))).flatMap(result=>result.results))
 }
+export function inheritWorkspaceSnapshot(next:State,previous:State):State {const snapshot=snapshots.get(previous);if(snapshot)snapshots.set(next,snapshot);return next}
 export function workspaceRows(db:D1Database,state:State,token:string):D1PreparedStatement[] {
   const gate = 'EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND write_token=?)'
   const previous=snapshots.get(state)
+  for(const alert of state.alerts){
+    const old=previous?.get('alerts')?.get(alert.id),prior=old?JSON.parse(old.data):undefined;
+    const withoutRevision=({revision,...row}:typeof alert)=>JSON.stringify(row);
+    if(prior&&withoutRevision(prior)!==withoutRevision(alert))alert.revision=Math.max(alert.revision??1,(prior.revision??1)+1);
+    else alert.revision??=prior?.revision??1;
+  }
   const statements=collections.flatMap(key => {
     const rows=(state[key]??[]).map((row,ordinal)=>({id:row.id,ordinal,data:JSON.stringify(key==='intakeReceipts'?storedReceipt(row as import('./intake/model').IntakeReceipt):row)}))
     const old=previous?.get(key),ids=new Set(rows.map(row=>row.id)),removed=old?[...old.keys()].filter(id=>!ids.has(id)):undefined
