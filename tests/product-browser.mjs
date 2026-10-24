@@ -330,6 +330,16 @@ async function changeAndSigningBrowser(page,context){
   const importedEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/intake/'+importedId));
   await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const importedResult=await importedEraseResponse;assert.equal(importedResult.status(),200);assert.ok((await importedResult.json()).importCustody.stores.some(row=>row.rows>0));
   await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-imported-integration-receipt',width);
+  const memberName='synthetic-oncall-413-'+width+'@example.test';
+  const erasedMember=await request('/api/members',{name:memberName,password:'synthetic-oncall-413-password',role:'responder'},201);
+  const memberPlan=await importDoor.preview('pagerduty',JSON.stringify({users:[{id:'synthetic-oncall-413-'+width,name:'Synthetic erasable contact',email:memberName}]}));assert.equal(memberPlan.status,200);assert.equal((await importDoor.apply('pagerduty',memberPlan.value)).status,200);
+  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await settings.getByLabel('Erasure category',{exact:true}).selectOption('member');await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedMember.id);
+  await settings.getByLabel('Imported identity '+memberName,{exact:true}).check();await settings.getByLabel('Imported identities reviewed',{exact:true}).check();
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedMember.id);await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-member-review',width);
+  const memberResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/member/'+erasedMember.id));await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await memberResponse).status(),200);
+  await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-member-receipt',width);
+  assert.equal((await request('/api/state')).members.find(m=>m.id===erasedMember.id).name,'Erased member');
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // OC-043's existing routing screen exposes both stages before publication.
   const orchestrationId='synthetic-oncall-43-'+width,orchestrationKey=token(),policyBefore=(await request('/api/state')).policies.find(p=>p.service==='synthetic-oncall-1'&&p.severity==='warning');

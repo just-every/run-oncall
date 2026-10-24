@@ -148,7 +148,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    remember('oc_audit')
    remove('scheduleRecords','oc_schedule_records',r=>r.member===id||r.data.substitute===id||r.data.obligation?.creator===id)
    eraseBusinessMember(state,id);remember('oc_business_services')
-   for(const incident of state.incidents){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);for(const e of incident.timeline)if(e.lifecycle?.member===id)e.lifecycle.member=null;for(const e of incident.timeline)if(e.actor===id||['reassign','assign-role','manual-page','request-responders','respond-request','cancel-request'].includes(e.kind))e.text=redact(e.text)}
+   for(const incident of state.incidents){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);for(const e of incident.timeline)if(e.lifecycle&&e.lifecycle.member===id)e.lifecycle.member=null;for(const e of incident.timeline)if(e.actor===id||['reassign','assign-role','manual-page','request-responders','respond-request','cancel-request'].includes(e.kind))e.text=redact(e.text)}
    remember('oc_incidents')
    for(const alert of state.alerts)if(alert.coordination){for(const entry of alert.coordination.history)entry.text=redact(entry.text);if(alert.coordination.assignee===id){alert.coordination.assignee=null;alert.coordination.snoozeDue=null}}remember('oc_alerts')
    await eraseHandoffCopies([],[id])
