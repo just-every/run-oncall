@@ -922,13 +922,19 @@ try {
   const workflowAfter=ok(await request('/api/state',undefined,cookie));
   for(const alert of workflowAlerts){const current=workflowAfter.alerts.find(row=>row.id===alert.id);assert.equal(current.coordination.assignee,workflowMember.id);assert.equal(current.coordination.history.filter(entry=>entry.operationId===workflowInput.operationId).length,1);}
   ok(await request(resumePath,{approve:true},cookie));assert.deepEqual(ok(await request('/api/state',undefined,cookie)),workflowAfter,'completed workflow replay repeats no mutation');
+  const refusedInput={...workflowInput,operationId:'synthetic-oncall-439-workflow',member:null,items:workflowInput.items.map(item=>({...item,revision:workflowAfter.alerts.find(alert=>alert.id===item.id).revision}))};
+  assert.equal(ok(await request('/api/triage/bulk',refusedInput,cookie)).remaining,1);
+  const staleStep=workflowAfter.alerts.find(alert=>alert.id===workflowAlerts[2].id);
+  ok(await request('/api/triage/bulk',{operationId:'synthetic-oncall-439-stale',action:'set-priority',priority:'P2',reason:'Synthetic concurrent edit',items:[{id:staleStep.id,revision:staleStep.revision,kind:'alert'}],confirmedCount:1},cookie));
+  const refusal=ok(await request('/api/triage/workflows/'+refusedInput.operationId+'/resume',{approve:true},cookie));assert.equal(refusal.remaining,0);assert.equal(refusal.results.filter(result=>!result.ok).length,1);assert.match(refusal.results.at(-1).error,/changed/i);
+  const refusalHeld=ok(await request('/api/state',undefined,cookie));await stop();await start();assert.deepEqual(ok(await request('/api/state',undefined,cookie)),refusalHeld,'a refused step remains durably complete across restart');
   const workflowAudit=ok(await request('/api/audit/export',undefined,cookie)).rows;
   assert.ok(workflowAudit.some(row=>row.kind==='triage.reassign'&&row.outcome==='accepted'&&row.workspaceAfter===row.workspaceBefore+1),'each accepted workflow step has an atomic audit revision');
   assert.ok(workflowAudit.some(row=>row.kind==='triage.reassign'&&['failed','uncertain'].includes(row.outcome)),'interrupted execution has a permanent outcome');
   assert.ok(!JSON.stringify(workflowAudit).includes(workflowMember.name));
   const malformedWorkflow=ok(await request('/api/archive',undefined,cookie));malformedWorkflow.triage.find(row=>row.id===workflowInput.operationId).workflow.items[0].kind='incident';
   ok(await request('/api/restore',{mode:'replace',archive:malformedWorkflow},cookie),400);
-  const workflowErase=ok(await request('/api/erasure/member/'+workflowMember.id,{workspaceRevision:workflowAfter.revision,confirmation:'erase '+workflowMember.id,identitiesReviewed:true,importedPeople:[]},cookie));assert.equal(workflowErase.state,'complete');
+  const workflowErase=ok(await request('/api/erasure/member/'+workflowMember.id,{workspaceRevision:refusalHeld.revision,confirmation:'erase '+workflowMember.id,identitiesReviewed:true,importedPeople:[]},cookie));assert.equal(workflowErase.state,'complete');
   assert.ok(!ok(await request('/api/archive',undefined,cookie)).triage.some(row=>row.id===workflowInput.operationId),'erasure removes the saved recipient plan and its copied reason');
   ok(await request(resumePath,{approve:true},cookie),404);
   console.log('PASS OC-043 durable coordination workflow: frozen ordered plan, two committed steps, restart mid-workflow, explicit authorized resume, atomic audit-failure rollback with interrupted outcome, exact-once completion/replay and member-erasure/export custody');
