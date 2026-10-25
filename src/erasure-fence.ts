@@ -25,7 +25,7 @@ export async function requireErasureFence(db: D1Database, state: State) {
   SELECT 1 FROM json_each(?) incoming WHERE json_extract(incoming.value,'$.id')=held.id
   AND json_extract(incoming.value,'$.service')=json_extract(held.data,'$.service')
   AND json_extract(incoming.value,'$.declaredAt')=json_extract(held.data,'$.declaredAt')) LIMIT 1`).bind(JSON.stringify(state.erasedReportCases??[])).first();
- if(lost)fail('Archive omits or changes an anonymous erased declaration case; refresh the archive. Nothing was replaced.',409)
+ if(lost)fail('Archive violates the erasure fence by omitting or changing an anonymous erased declaration case; refresh the archive. Nothing was replaced.',409)
 
  if (!(await db.prepare(`SELECT ${erasureFenceCondition} AS allowed`).bind(fenceValues(state)).first<{allowed:number}>())?.allowed || await hasErasedChange(state) || await hasErasedSubject(state))
   throw Object.assign(new Fault(409,'Archive predates the subject erasure fence; use a current archive. Nothing was replaced.'),{code:'subject_erasure_fence'})

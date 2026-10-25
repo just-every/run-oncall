@@ -291,6 +291,12 @@
       "name": "0143_schedule_coordination.sql",
       "sha256": "7caa6b10f36b6bea311418d8203bcd7725685218b88824c638773ad86b97537b",
       "sql": "-- Swaps, recorded schedule notices, reminder settings and digest-only subscriptions.\nCREATE TABLE oc_schedule_records(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\nCREATE INDEX oc_schedule_capabilities ON oc_schedule_records(json_extract(data,'$.data.hash'))\n WHERE json_extract(data,'$.kind')='subscription' AND json_extract(data,'$.active')=1;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0144_erased_report_cases.sql",
+      "sha256": "eb50a653819e6aa30a2aa89bba3ed81672f6f80612a37a4b63f56408f01b2f79",
+      "sql": "-- Anonymous declaration cohort cases preserve denominators after explicit incident erasure.\nCREATE TABLE oc_erased_report_cases(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

@@ -89,7 +89,15 @@ export function installAutomationManagement(api:any,deps:Deps) {
   if(input.approve!==true||!expired&&!uncertain)fail('Explicit approval and an expired lease are required; a live send cannot be cleared',409);
   item.authorized=false;updateOutcome(item,'interrupted','expired-lease-cleared');
   auditKind(c.env.DB,'automation.clear-expired');auditOutcome(c.env.DB,'interrupted');setAuditSubject(c.env.DB,'outbox',item.id);
-  await commitAutomation(c,state,deps.guard(c));
+  try {
+   await commitAutomation(c,state,deps.guard(c),token=>[
+    c.env.DB.prepare(`INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN ${gate} THEN 1 ELSE 0 END`).bind(token),
+    c.env.DB.prepare('DELETE FROM rer_erasure_guard'),
+   ]);
+  }catch(error){
+   if(/CHECK constraint/.test(String(error)))fail('State or authority changed; reload before clearing the lease',409);
+   throw error;
+  }finally{auditOutcome(c.env.DB,undefined);}
   return c.json({operation:item,externalOutcome:'unknown',deletion:'not-requested',reason:'The local lease is cleared. In-flight bytes cannot be recalled; request recipient deletion separately with per-destination consent.'});
  });
  api.post('/api/automation/outbox/:id/replay',async(c:any)=>{
