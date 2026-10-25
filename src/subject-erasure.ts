@@ -163,6 +163,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    remove('triage','oc_triage',r=>r.kind==='bulk'&&r.workflow&&(r.actor===id||r.workflow.member===id))
    const oldName=member.name,names=new Set([oldName,...aliases])
    const redact=(text:string)=>{for(const name of names){const ranges=addressRanges(text,name).filter(([start,end])=>name.includes('@')||text.slice(start,end)===name&&!/[\p{L}\p{N}]/u.test(text[start-1]??'')&&!/[\p{L}\p{N}]/u.test(text[end]??''));text=ranges.reduceRight((value,[start,end])=>value.slice(0,start)+'Erased member'+value.slice(end),text)}return text}
+   remove('triage','oc_triage',record=>record.kind==='bulk'&&record.workflow&&redact(record.workflow.reason)!==record.workflow.reason)
    const personalChanges=(state.changes??[]).filter(change=>names.has(change.author))
    for(const change of personalChanges){const digest=await changeErasureIdentity(change.source,change.eventId);(state.erasureFences??=[]).push({id:digest,epoch:0});identities.push(change.id);for(const source of state.changeSources??[])if(source.lastAccepted?.id===change.id)delete source.lastAccepted}
    remove('changes','oc_changes',change=>personalChanges.some(row=>row.id===change.id));remember('oc_change_sources')
