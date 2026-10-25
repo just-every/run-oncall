@@ -3,7 +3,9 @@ import { auditedDatabase } from './audit-database'
 import { auditKind, setAuditSubject, type AuditContext } from './audit-store'
 import type { Bindings } from './auth.server'
 
-// Only server code can mark this request's unique audited database after its read fence.
+// Only an authorized human response-value comparison can mark this request's
+// unique audited database after its read fence. Permission, credential,
+// notification-routing and retention no-ops still retain their audit facts.
 const commandNoops = new WeakSet<D1Database>()
 export function markCommandNoop(db: D1Database) { commandNoops.add(db) }
 
@@ -42,6 +44,8 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
     const status = response.status
     // Successful write batches already carry their own entries. A refusal with no
     // state write, including paging OFF, still survives as an attributed attempt.
+    // The OC-050 human comparison exception excludes denials, failed authority
+    // and stale revisions; Response API and bulk receipt contracts remain audited.
     const zeroWriteReplay = response.ok && (path === '/api/replay' || path === '/api/triage/workflows/preview' || /^\/api\/(?:email\/addresses|routing\/keys)\/[^/]+\/preview$/.test(path));
     const unchangedCommand = path === '/api/command' && request.method === 'POST' && status === 200 && context.commits === 0 && commandNoops.has(audit.db)
     if (!context.ownerCustodyRefusal && !(context.refusalCommitted && status === 409) && !zeroWriteReplay && !unchangedCommand && context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))

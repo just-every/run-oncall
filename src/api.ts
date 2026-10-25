@@ -656,6 +656,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
     ).bind(sessionDigest, target, Date.now() + 43200000,parent.operator_session, restoreToken, restoreToken, restoreToken),
   ]);
   if (r[0].meta.changes !== 1) {
+    auditRefusalCommitted(c.env.DB);
     await requireErasureFence(c.env.DB,value);
     fail("Workspace changed; reload before restore", 409);
   }
