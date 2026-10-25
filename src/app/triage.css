@@ -14,7 +14,9 @@
 .triage-item .incident-top { padding-right: 24px; flex-wrap: wrap; }
 .triage-bulk { border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper); padding: 12px; margin: 12px 0; overflow-wrap: anywhere; }
 .triage-bulk ul { padding-left: 18px; max-height: 240px; overflow-y: auto; }
-.triage-bulk p { font-size: 12px; }
+.triage-bulk p { font-size: 14px; }
+.triage-bulk li p { margin: 4px 0; }
+.triage-bulk > summary { cursor: pointer; font-weight: 600; }
 .response-controls { margin: 18px 0; padding: 16px; border: 1px solid var(--app-line); border-radius: 12px; }
 .response-controls h3 { margin: 0 0 12px; }
 .response-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; }
