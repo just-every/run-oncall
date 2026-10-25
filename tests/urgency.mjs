@@ -172,6 +172,14 @@ try {
   await w.stop();await w.start();assert.deepEqual(await archive(),beforeTransformFailure);
   console.log('PASS OC-043 severity/priority transformations: versioned reasoned lowering, open-alert floors, original fields, raising, duplicate identity, authority, stale/invalid zero writes, ordered replay table counts, audit rollback and restart');
 
+  // Existing response rules and declarations consume effective severity without rewriting source evidence.
+  ok(await req('/api/response/services/checkout',{baseVersion:0,defaultMode:'alert-only',recoveredNotice:'silent',rules:[{id:'synthetic-oncall-439',urgency:'*',severity:'warning',policy:'*',mode:'incident'}],reason:'Synthetic reviewed response classification'}),201);
+  const automaticSignal=generalizedSignal('synthetic-oncall-439'),automaticReceipt=ok(await send(automaticSignal),201),automaticState=await state(),automaticAlert=automaticState.alerts.find(a=>a.events.includes(automaticReceipt.id)),automaticIncident=automaticState.incidents.find(i=>i.alerts.includes(automaticAlert.id));
+  assert.ok(automaticIncident);assert.equal(automaticIncident.severity,'warning');assert.equal(automaticIncident.priority,'P3');assert.equal(automaticAlert.obligation.policy.rule,'synthetic-oncall-439');assert.equal(automaticState.events.find(e=>e.id===automaticReceipt.id).severity,'critical');
+  ok(await send({...automaticSignal,eventId:'synthetic-oncall-439-recovery',intent:'recover',severity:'info'}),201);
+  const recoveredState=await state(),retainedIncident=recoveredState.incidents.find(i=>i.id===automaticIncident.id);assert.equal(retainedIncident.state,'declared');assert.equal(retainedIncident.severity,'warning');assert.equal(retainedIncident.priority,'P3');assert.equal(recoveredState.alerts.find(a=>a.id===automaticAlert.id).obligation.state,'stopped');
+  console.log('PASS OC-043 effective response classification: transformed severity selects response rule and declaration, original retained; recovery stops only the alert obligation and preserves human incident state');
+
   const saved=await archive(),malformed=[
     value=>{delete value.events.find(e=>e.id===loweredEvent.id).decision.transformation;},
     value=>{value.events.find(e=>e.id===loweredEvent.id).decision.transformation.originalSeverity='warning';},
