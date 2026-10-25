@@ -27,5 +27,5 @@ export function useWorkspacePath() {
   }, []);
   const legacyIncident = location.pathname === '/' ? new URLSearchParams(location.searchStr).get('incident') : null;
   const address = location.pathname === '/' ? legacyIncident ? {page:'incidents', incident:legacyIncident} : workspaceAddress(location.hash ? '/' + location.hash : '/incidents') : workspaceAddress(location.pathname);
-  return {...address, selectIncident: (id: string) => go((id ? incidentPath(id) : '/incidents') + location.searchStr), go};
+  return {...address, selectIncident: (id: string, replace = false) => go((id ? incidentPath(id) : '/incidents') + location.searchStr, replace), go};
 }

@@ -74,7 +74,7 @@ export function Workspace() {
   const canEdit = actor?.role === "admin" || actor?.role === "responder";
   const selectedIncident=selected?s?.incidents.find(i=>i.id===selected):s?.incidents.find(i=>!i.mergedInto);
   const incident=s&&selectedIncident?resolveIncidentAlias(s,selectedIncident.id):undefined;
-  useEffect(()=>{if(selectedIncident?.mergedInto&&incident)selectIncident(incident.id);},[selectedIncident?.id,selectedIncident?.mergedInto?.target,incident?.id]);
+  useEffect(()=>{if(selectedIncident?.mergedInto&&incident)void chooseIncident(incident.id,true);},[selectedIncident?.id,selectedIncident?.mergedInto?.target,incident?.id]);
   useEffect(() => {
     if (!revealing || revealing !== incident?.id || declare || listedRevision !== s?.revision) return;
     const frame=requestAnimationFrame(() => {
