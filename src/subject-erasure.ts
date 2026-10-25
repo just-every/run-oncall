@@ -164,10 +164,12 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    for(const client of [...state.apiClients??[]].filter(v=>v.owner===id))await eraseApiIntegration('client',client.id)
    for(const endpoint of [...state.apiEndpoints??[]].filter(v=>v.owner===id))await eraseApiIntegration('endpoint',endpoint.id)
    outbox(o=>o.owner===id)
+   const erasedWorkflows=new Set((state.triage??[]).filter(r=>r.kind==='bulk'&&r.workflow&&(r.actor===id||r.workflow.member===id)).map(r=>r.id))
    remove('triage','oc_triage',r=>r.kind==='bulk'&&r.workflow&&(r.actor===id||r.workflow.member===id))
    const oldName=member.name,names=new Set([oldName,...aliases])
    const redact=(text:string)=>{for(const name of names){const ranges=addressRanges(text,name).filter(([start,end])=>name.includes('@')||text.slice(start,end)===name&&!/[\p{L}\p{N}]/u.test(text[start-1]??'')&&!/[\p{L}\p{N}]/u.test(text[end]??''));text=ranges.reduceRight((value,[start,end])=>value.slice(0,start)+'Erased member'+value.slice(end),text)}return text}
-   remove('triage','oc_triage',record=>record.kind==='bulk'&&record.workflow&&redact(record.workflow.reason)!==record.workflow.reason)
+   remove('triage','oc_triage',record=>{const selected=record.kind==='bulk'&&record.workflow&&redact(record.workflow.reason)!==record.workflow.reason;if(selected)erasedWorkflows.add(record.id);return selected})
+   for(const operation of erasedWorkflows)await fence('workflow',operation)
    const personalChanges=(state.changes??[]).filter(change=>names.has(change.author))
    for(const change of personalChanges){const digest=await changeErasureIdentity(change.source,change.eventId);(state.erasureFences??=[]).push({id:digest,epoch:0});identities.push(change.id);for(const source of state.changeSources??[])if(source.lastAccepted?.id===change.id)delete source.lastAccepted}
    remove('changes','oc_changes',change=>personalChanges.some(row=>row.id===change.id));remember('oc_change_sources')
@@ -179,12 +181,12 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    eraseBusinessMember(state,id);remember('oc_business_services')
    const redactedEntries=new Set<string>()
    const redactEntry=(entry:{id:string;text:string})=>{const text=redact(entry.text);if(text!==entry.text){redactedEntries.add(entry.id);entry.text=text}}
-   for(const incident of state.incidents){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);if(incident.manualPage){const description=redact(incident.manualPage.description);if(description!==incident.manualPage.description){incident.manualPage.description=description;incident.manualPage.fingerprint=''}}for(const request of incident.responderRequests??[])request.message=redact(request.message);for(const e of incident.timeline)if(e.lifecycle&&e.lifecycle.member===id)e.lifecycle.member=null;for(const e of incident.timeline)if(e.actor===id||incident.manualPage&&e.kind==='declared'||['reassign','assign-role','manual-page','request-responders','respond-request','cancel-request'].includes(e.kind))redactEntry(e)}
+   for(const incident of state.incidents){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);if(incident.manualPage){const description=redact(incident.manualPage.description);if(description!==incident.manualPage.description){incident.manualPage.description=description;incident.manualPage.fingerprint=''}}for(const request of incident.responderRequests??[])request.message=redact(request.message);for(const e of incident.timeline)if(e.lifecycle&&e.lifecycle.member===id)e.lifecycle.member=null;for(const e of incident.timeline){const copied=e.operationId!==undefined&&erasedWorkflows.has(e.operationId);if(e.actor===id||copied||incident.manualPage&&e.kind==='declared'||['reassign','assign-role','manual-page','request-responders','respond-request','cancel-request'].includes(e.kind))redactEntry(e);if(copied)delete e.operationId}}
    remember('oc_incidents')
    for(const alert of state.alerts)if(alert.coordination){for(const entry of alert.coordination.history)redactEntry(entry);if(alert.coordination.assignee===id){alert.coordination.assignee=null;alert.coordination.snoozeDue=null}}remember('oc_alerts')
    // Operational audit descriptions may have their own attributed prefix.
    // Redact only affected copies without replacing unrelated checklist wording.
-   for(const entry of state.audit)if(redactedEntries.has(entry.id))entry.text=redact(entry.text)
+   for(const entry of state.audit){if(redactedEntries.has(entry.id))entry.text=redact(entry.text);if(entry.operationId&&erasedWorkflows.has(entry.operationId))delete entry.operationId}
    await eraseHandoffCopies([],[id])
    for(const table of ['credentials','sessions'])eraseCredential(table,'member',[id])
    eraseCredential('operator_members','member_id',[id]);remember('login_attempts');statements.push(db.prepare("DELETE FROM login_attempts WHERE lower(name) IN (SELECT value FROM json_each(?)) AND NOT EXISTS(SELECT 1 FROM oc_members WHERE json_extract(data,'$.name')=login_attempts.name AND json_extract(data,'$.active')=1)").bind(JSON.stringify([oldName,...aliases].map(v=>v.toLowerCase()))))

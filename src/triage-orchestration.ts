@@ -21,7 +21,7 @@ export function applyCoordinationStep(state:State,actor:Member,task:Coordination
   if((alert.revision??1)!==task.revision)fail('Selected alert changed; review a new workflow',409);
   if(alert.service===null||alert.state!=='active'||alert.coordination?.state==='closed')fail('Declaration requires an active service-bound alert',409);
   const selected=matchingItems(state,actor,{kind:'alerts'}).find(row=>row.id===alert.id);if(!selected)fail('Selected alert already belongs to an incident',409);
-  return command(state,actor,{type:'declare',service:alert.service,alerts:[alert.id],title:selected.title,summary:reason,severity:selected.severity},at) as Incident;
+  return command(state,actor,{type:'declare',service:alert.service,alerts:[alert.id],title:selected.title,summary:'Declared from a selected alert by a recorded coordination workflow; impact requires human assessment.',severity:selected.severity},at) as Incident;
  }
  const declared=results.find(result=>result.id===`step:${task.index}:declare`&&result.ok&&result.kind==='workflow');
  if(!declared?.incident)fail('Declaration did not commit; no responder obligation was recorded',409);

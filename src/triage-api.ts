@@ -1,3 +1,4 @@
+import {requireNewSubjectIdentity} from './subject-erasure-identity';
 import {coordinationTasks,applyCoordinationStep,coordinationPreview,validateCoordination} from './triage-orchestration';
 import {coordinateAlert} from './triage-alerts';
 import {inheritWorkspaceSnapshot} from './workspace-store';
@@ -72,6 +73,7 @@ export function installTriage(api: any, deps: Dependencies) {
     }
     authority(initial, actor);
     if (!operation) {
+      await requireNewSubjectIdentity(initial,'workflow',id);
       if (input.allMatching) {
         const all = matchingItems(initial, actor, payload.allMatching!);
         if (input.workspaceRevision !== initial.revision || input.confirmedCount !== all.length || items.length !== all.length || all.some(i => !items.some((item: any) => item.id === i.id && item.revision === i.revision && (item.kind??'incident')===i.kind))) fail('Matching incidents changed. Confirm the current count and selection.', 409);
