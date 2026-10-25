@@ -105,3 +105,15 @@ version and the selected service's policy version and transformation. Replay com
 historical and proposed decisions in order without admitting events, changing alerts,
 or appending permanent audit rows. It respects the retained open-alert floor.
 Transformations do not send notifications, run timers, or authorize workflow execution.
+
+## Approved coordination workflows
+
+Under a service's **Settings · approved workflows**, an administrator chooses a responder, supplies a reason and explicitly approves a workflow version. Approval updates the all-severity service rule with a revision check. Severity-specific rules still win. A stale version, missing approval or unavailable responder is refused without changing accepted configuration.
+
+An eligible, routed, alert-only generation without an existing incident records one reassignment and one durable workflow in the existing triage progress area. Duplicate events and later observations of that generation create no additional run. Suppressed signals and generations covered by an automatic incident-declaration policy do not launch this workflow. The run retains the service rule version, approved workflow version and launch-time checklist version.
+
+The approving administrator explicitly resumes the saved run to declare the incident, then resumes again to record a responder request. Each step commits with its permanent audit entry. Notification is a **recorded obligation**: paging is OFF and no sender or timer runs. Restart never advances a pending run.
+
+Each resume reserves a bounded execution lease with a durable uncertain outcome before applying its step. If execution stops, the administrator must explicitly clear the expired lease, inspect the interrupted result and approve another resume. Concurrent actions on one revision return 409. Active or uncertain execution refuses erasure of its referenced subject until the expired lease is cleared.
+
+Service replay includes the proposed ordered `reassign → declare → notify` launch once per generation, with no durable or permanent-audit writes. Restore holds workflow approval and pending runs; it never resumes them. Member or source-alert erasure removes the affected workflow and its personal copies from exports while retaining permanent anonymized audit facts.
