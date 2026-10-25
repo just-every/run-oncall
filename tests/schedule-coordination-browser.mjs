@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import AxeBuilder from '@axe-core/playwright';
 import {mkdir} from 'node:fs/promises';
-export async function scheduleCoordinationBrowser(page,context,width,session){
+export async function scheduleCoordinationBrowser(page,context,width,session,{ownerLink}={}){
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const fixture=2500+width,name='synthetic-oncall-'+fixture,password='synthetic-oncall-'+fixture+'-password';
  const created=await context.request.post(origin+'/api/members',{headers:{origin},data:{name,role:'responder',password}});assert.equal(created.status(),201);const substitute=await created.json();
@@ -14,10 +14,26 @@ export async function scheduleCoordinationBrowser(page,context,width,session){
  await coordination.getByRole('button',{name:'Approve swap',exact:true}).click();await coordination.getByText(/approval recorded/).waitFor();
  const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:1000}});
  try{
+  if(ownerLink){
+   // A fresh managed clone loads Vite modules through gated /@fs paths. Admit
+   // this context with the runtime key only; never enter the owner's persona.
+   const local=new URL(ownerLink);assert.equal(local.origin,origin);
+   const key=new URLSearchParams(local.hash.slice(1)).get('rer-dev');assert.ok(key,'managed runtime supplies its local gate key');
+   const admitted=await relief.request.post(origin+'/__dev/key',{headers:{origin},data:{key}});assert.equal(admitted.status(),204);
+   const anonymous=await relief.request.get(origin+'/api/session');assert.equal(anonymous.status(),200);assert.equal((await anonymous.json()).member,null,'local gate admission grants no member authority');
+  }
   const login=await relief.request.post(origin+'/api/login',{headers:{origin},data:{name,password}});assert.equal(login.status(),200);
-  const reliefPage=await relief.newPage();await reliefPage.goto(origin+'/#schedules');await reliefPage.getByLabel('Schedule',{exact:true}).selectOption('browser-'+width);
+  const current=await relief.request.get(origin+'/api/session');assert.equal(current.status(),200);const member=(await current.json()).member;
+  assert.equal(member.id,substitute.id,'the substitute uses its own password session');assert.equal(member.role,'responder');assert.notEqual(member.id,session.member.id);
+  assert.equal((await relief.cookies()).some(cookie=>/^(?:__Host-operator_session|operator_session_local(?:_\d+)?)$/.test(cookie.name)),false,'no owner Auth session is copied or created');
+  const reliefPage=await relief.newPage(),errors=[];reliefPage.on('pageerror',error=>errors.push(error.message));
+  const document=await reliefPage.goto(origin+'/#schedules');assert.equal(document.status(),200);await reliefPage.getByLabel('Schedule',{exact:true}).selectOption('browser-'+width);
   const substituteView=reliefPage.getByRole('region',{name:'Shift coordination',exact:true});await substituteView.getByRole('button',{name:'Accept swap',exact:true}).click();await substituteView.getByText(/accepted/).waitFor();
+  assert.ok(await reliefPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'substitute schedule fits the viewport');
+  assert.equal(await reliefPage.evaluate(()=>window.__rerHydration?.count??0),0);assert.deepEqual(errors,[],'substitute schedule has no application errors');
+  assert.deepEqual((await new AxeBuilder({page:reliefPage}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
   await substituteView.screenshot({path:`${directory}/OC-025-substitute-${width}.png`});
+  await reliefPage.screenshot({path:`${directory}/OC-025-substitute-schedule-${width}.png`,fullPage:true});
  }finally{await relief.close();}
  await page.getByRole('button',{name:'Refresh scheduling',exact:true}).click();await coordination.getByText(/accepted/).waitFor();
  await coordination.getByText('Settings',{exact:true}).click();await coordination.getByLabel('Swap approval',{exact:true}).selectOption('none');await coordination.getByRole('button',{name:'Save swap approval',exact:true}).click();

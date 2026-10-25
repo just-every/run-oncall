@@ -17,7 +17,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession}
   await page.setViewportSize({width,height:1000})
   await keyboardCoordination(page,context,width,ownerLink,openSession)
   await alertSeverity(page,context,width)
-  await productSchedule(page,context,width,session)
+  await productSchedule(page,context,width,session,{ownerLink})
   await triageBulkBrowser(page,context,width)
   await productImport(page,context,width,session)
   await routingBrowser(page,context,width)
