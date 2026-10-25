@@ -1,5 +1,5 @@
 import {authority,command,fail,type Incident,type Member,type State} from './family/response-operations/domain';
-import type {BulkResult} from './family/response-operations/triage';
+import {matchingItems,type BulkResult} from './family/response-operations/triage';
 type Selected={id:string;revision:number;kind?:string};
 export type CoordinationTask={id:string;source:string;revision:number;index:number;step:'declare'|'notify'};
 /** Version 1 expands the saved selection into two ordered steps in existing oc_triage custody. */
@@ -20,7 +20,8 @@ export function applyCoordinationStep(state:State,actor:Member,task:Coordination
   if(!alert)fail('Selected alert is no longer retained',409);
   if((alert.revision??1)!==task.revision)fail('Selected alert changed; review a new workflow',409);
   if(alert.service===null||alert.state!=='active'||alert.coordination?.state==='closed')fail('Declaration requires an active service-bound alert',409);
-  return command(state,actor,{type:'declare',service:alert.service,alerts:[alert.id],title:alert.title,summary:reason,severity:alert.severity},at) as Incident;
+  const selected=matchingItems(state,actor,{kind:'alerts'}).find(row=>row.id===alert.id);if(!selected)fail('Selected alert already belongs to an incident',409);
+  return command(state,actor,{type:'declare',service:alert.service,alerts:[alert.id],title:selected.title,summary:reason,severity:selected.severity},at) as Incident;
  }
  const declared=results.find(result=>result.id===`step:${task.index}:declare`&&result.ok&&result.kind==='workflow');
  if(!declared?.incident)fail('Declaration did not commit; no responder obligation was recorded',409);
