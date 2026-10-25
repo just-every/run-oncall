@@ -1,5 +1,5 @@
 import {labelsForEvent} from './correlation.ts';
-import {fail,type Alert,type Decision,type Policy,type Signal,type State} from '../family/response-operations/domain.ts';
+import {fail,type Alert,type Event,type Policy,type Signal,type State} from '../family/response-operations/domain.ts';
 type Severity=Signal['severity'];
 type Priority='P1'|'P2'|'P3'|'P4'|'P5';
 export type Transformation={field:string;values:Record<string,{severity?:Severity;priority?:Priority}>;allowLowering:boolean;reason:string};
@@ -28,6 +28,18 @@ export function transform(state:State,signal:Signal,policy:Policy,event:string,l
 }
 export function alertSeverity(state:State,alert:Alert):Severity {
  return (['critical','warning','info'] as const).find(v=>alert.events.some(id=>{const e=state.events.find(e=>e.id===id);return e&&(e.decision.transformation?.severity??e.severity)===v;}))??'critical';
+}
+/** Advance only a private replay copy, using admission's generation and priority rules. */
+export function advanceReplayClassification(state:State,event:Event){
+ let alert=state.alerts.find(a=>a.source===event.source&&a.service===event.service&&a.environment===event.environment&&a.key===event.key&&a.generation===event.generation);
+ const created=!alert;
+ if(!alert){alert={id:'preview-classification:'+event.id,source:event.source,service:event.service,environment:event.environment,key:event.key,generation:event.generation,state:event.intent==='recover'?'recovered':'active',events:[],owner:event.decision.owner,suppressed:event.decision.action==='suppress'};state.alerts.push(alert);}
+ if(event.intent==='trigger'&&event.decision.transformation?.priority)alert.priority=event.decision.transformation.priority;
+ else if(created&&event.priority)alert.priority=event.priority;
+ if(!alert.events.includes(event.id))alert.events.push(event.id);
+ if(event.intent==='recover')alert.state='recovered';
+ const old=state.events.findIndex(e=>e.id===event.id);
+ if(old<0)state.events.push(structuredClone(event));else state.events[old]=structuredClone(event);
 }
 export function validateTransformationEvents(state:State){
  for(const event of state.events){

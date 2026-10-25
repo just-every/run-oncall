@@ -187,6 +187,11 @@ try {
   const afterMalformedPriority=await state();assert.deepEqual(afterMalformedPriority.events,beforeMalformedPriority.events);assert.deepEqual(afterMalformedPriority.incidents,beforeMalformedPriority.incidents,'malformed source priority never reaches a transformation or declaration');
   console.log('PASS OC-043 declared priority field: severity/priority raises from source priority and original classification; malformed priority stays in OC-059 high incomplete custody without transformation or declaration');
 
+  const futureA=generalizedSignal('synthetic-oncall-442-a','info',{key:'synthetic-oncall-442',generation:'synthetic-oncall-442',observedAt:'2000-01-01T00:00:00Z'}),futureB={...futureA,eventId:'synthetic-oncall-442-b',priority:'P4',observedAt:'2000-01-01T00:00:01Z'};
+  const futureBefore=await archive(),futureAudit=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),futureCounts=tableCounts(),futureReplay=ok(await req('/api/replay',{events:[futureB,futureA]}));
+  assert.deepEqual(futureReplay.decisions.map(row=>row.eventId),[futureA.eventId,futureB.eventId]);assert.equal(futureReplay.decisions[0].proposed.transformation.severity,'warning');assert.equal(futureReplay.decisions[1].proposed.transformation.severity,'warning');assert.equal(futureReplay.decisions[1].proposed.transformation.priority,'P1');assert.equal(futureReplay.decisions[1].proposed.transformation.blocked,true,'an earlier hypothetical raise protects later events in the same ordered generation');assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),futureAudit);assert.deepEqual(tableCounts(),futureCounts);assert.deepEqual(await archive(),futureBefore);
+  console.log('PASS OC-043 ordered future replay: prior hypothetical raises protect the same generation with zero durable or permanent-audit writes');
+
   const saved=await archive(),malformed=[
     value=>{delete value.events.find(e=>e.id===loweredEvent.id).decision.transformation;},
     value=>{value.events.find(e=>e.id===loweredEvent.id).decision.transformation.originalSeverity='warning';},
