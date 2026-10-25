@@ -1,3 +1,4 @@
+import {requireTeamCoverage} from './teams/model';
 import { reviewSchedule } from './schedule-coverage/review'
 import { pagingSnapshot, commitPaging, putSchedule } from './paging-store'
 import { coverage, validateSchedule } from './family/response-operations/schedules'
@@ -29,8 +30,9 @@ export function installSchedules(api:any,body:(c:any)=>Promise<any>) {
  })
  for(const action of ['review','apply'] as const) api.post(`/api/schedules/:id/${action}`,async(c:any)=>{
   const s=await pagingSnapshot(c.env.DB),actor=s.workspace.members.find(m=>m.id===c.get('actor').id&&m.active)
-  if(actor?.role!=='admin')fail('Current admin required',403)
   const old=s.archive.schedules.find(v=>v.id===c.req.param('id'));if(!old)fail('Unknown schedule',404)
+  if(!actor)fail('Access revoked',401)
+  requireTeamCoverage(s.workspace,actor,old.service)
   const input=await body(c)
   const allowed=action==='review'?['schedule','from','to']:['schedule','from','to','digest','confirmed']
   if(!input||Object.keys(input).some(k=>!allowed.includes(k)))fail('Unknown schedule review fields')
@@ -43,8 +45,9 @@ export function installSchedules(api:any,body:(c:any)=>Promise<any>) {
  })
  api.post('/api/schedules/:id/overrides',async(c:any)=>{
   const s=await pagingSnapshot(c.env.DB),actor=s.workspace.members.find(m=>m.id===c.get('actor').id&&m.active)
-  if(actor?.role!=='admin') fail('Current admin required',403)
   const old=s.archive.schedules.find(v=>v.id===c.req.param('id'));if(!old)fail('Unknown schedule',404)
+  if(!actor)fail('Access revoked',401)
+  requireTeamCoverage(s.workspace,actor,old.service)
   const input=await body(c);if(input.revision!==old.revision)fail('Schedule changed; reload',409)
   const schedule=validateSchedule({...old,revision:old.revision+1,overrides:[...old.overrides,input.override]},s.workspace)
   const archive={...s.archive,schedules:s.archive.schedules.map(v=>v.id===schedule.id?schedule:v)}

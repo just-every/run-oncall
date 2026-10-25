@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import {mkdir} from 'node:fs/promises'
-import {chromium} from '@playwright/test'
+import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker} from './worker.mjs'
 
@@ -51,6 +51,37 @@ try {
  const rosaRecord=ok(await call(owner.page,'/api/members',{...responder,role:'responder'}),201)
  ok(await call(owner.page,'/api/members',{...viewer,role:'viewer'}),201)
  ok(await call(owner.page,'/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:rosaRecord.id,runbook:['Check payment provider status'],pager:''}))
+ // OC-023 public-team forms use the existing Team section at both widths.
+ for(const width of [1440,390]){
+  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/#team');await owner.page.reload();
+  const panel=owner.page.getByRole('region',{name:'Teams',exact:true});await panel.getByRole('heading',{name:'Teams',exact:true}).waitFor();
+  await panel.locator('summary').filter({hasText:/^Create team$/}).click();
+  const create=panel.locator('details').filter({hasText:'Create team'});
+  await create.getByLabel('Team name',{exact:true}).fill('synthetic-oncall-145-'+width);
+  await create.getByLabel('Members',{exact:true}).selectOption([rosaRecord.id]);
+  await create.getByLabel('Managers',{exact:true}).selectOption([rosaRecord.id]);
+  await create.getByRole('button',{name:'Create team',exact:true}).click();
+  const card=panel.getByRole('article').filter({has:owner.page.getByRole('heading',{name:'synthetic-oncall-145-'+width,exact:true})});
+  await card.getByRole('heading').waitFor();await card.getByText('Edit team',{exact:true}).click();
+  await card.getByLabel('Team name',{exact:true}).fill('synthetic-oncall-145-'+width+' edited');
+  await card.getByRole('button',{name:'Save team',exact:true}).click();
+  const saved=panel.getByRole('article').filter({has:owner.page.getByRole('heading',{name:'synthetic-oncall-145-'+width+' edited',exact:true})});await saved.getByRole('heading').waitFor();
+  await saved.getByLabel('Team state',{exact:true}).selectOption('false');
+  await saved.getByRole('button',{name:'Save team',exact:true}).click();await saved.getByText('Public · Archived · 1 members',{exact:true}).waitFor();
+  await saved.getByLabel('Team state',{exact:true}).selectOption('true');
+  await saved.getByRole('button',{name:'Save team',exact:true}).click();await saved.getByText('Public · Active · 1 members',{exact:true}).waitFor();
+  const teamState=ok(await call(owner.page,'/api/state')),owning=teamState.teams.find(t=>t.name==='synthetic-oncall-145-'+width+' edited');
+  const ownership=panel.locator('form').filter({has:owner.page.getByLabel('Owning team for Checkout',{exact:true})});
+  await ownership.getByLabel('Owning team for Checkout',{exact:true}).selectOption(owning.id);
+  const ownershipSaved=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/teams/ownership'&&response.request().method()==='POST');
+  await ownership.getByRole('button',{name:'Save owning team',exact:true}).click();assert.equal((await ownershipSaved).status(),200);
+  await owner.page.reload();await panel.getByRole('heading',{name:'Teams',exact:true}).waitFor();
+  assert.equal(await panel.getByLabel('Owning team for Checkout',{exact:true}).inputValue(),owning.id);
+  assert.ok(await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`teams fit ${width}`);
+  assert.equal(await owner.page.evaluate(()=>window.__rerHydration?.count??0),0);
+  assert.deepEqual((await new AxeBuilder({page:owner.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
+  await panel.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/oc023-public-teams-${width}.png`,fullPage:true});
+ }
  // OC-023: both service forms preserve explicit unassigned ownership.
  for(const width of [1440,390]) {
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/#services');await owner.page.reload();
@@ -101,6 +132,20 @@ try {
  for(const text of [ackText,noteText])assert.equal(kept.timeline.find(e=>e.text.includes(text)).actor,rosaMember.id,'the stored entry names the member')
  assert.ok(kept.timeline.some(e=>e.kind==='declared'&&e.actor===ownerMember.id),'the declaration stays the owner’s')
 
+ // A public-team manager can edit own coverage without workspace configuration authority.
+ const managedRotation={anchorLocal:'2026-01-01T00:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'};
+ ok(await call(owner.page,'/api/paging/schedules',{id:'synthetic-oncall-145',name:'synthetic-oncall-145',service:'checkout',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:managedRotation,backup:{...managedRotation,members:[]},overrides:[]}));
+ for(const width of [1440,390]){
+  await rosa.page.setViewportSize({width,height:1000});await rosa.page.goto(worker.origin+'/#schedules');await rosa.page.reload();
+  await rosa.page.getByLabel('Schedule',{exact:true}).selectOption('synthetic-oncall-145');
+  await expect(rosa.page.getByLabel('Schedule name',{exact:true})).toBeEnabled();
+  await rosa.page.getByRole('button',{name:'New schedule',exact:true}).click();
+  assert.deepEqual(await rosa.page.getByLabel('Service',{exact:true}).locator('option').evaluateAll(options=>options.map(option=>option.value)),['checkout']);
+  assert.ok(await rosa.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`manager coverage fits ${width}`);
+  assert.equal(await rosa.page.evaluate(()=>window.__rerHydration?.count??0),0);
+  assert.deepEqual((await new AxeBuilder({page:rosa.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
+  await rosa.page.screenshot({path:`${captureDirectory}/oc023-manager-coverage-${width}.png`,fullPage:true});
+ }
  // A second permitted session, the viewer, reads the same history and cannot write.
  const vic=await open(390)
  assert.equal((await passwordSignIn(vic.page,viewer)).role,'viewer')

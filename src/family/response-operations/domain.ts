@@ -552,6 +552,7 @@ function applyCommand(
       state.members.filter((m) => m.role === "admin" && m.active).length === 1
     )
       fail("Cannot remove last admin");
+    if(!['admin','responder'].includes(input.role))for(const team of state.teams??[])if(team.managers.includes(member.id)){team.managers=team.managers.filter(id=>id!==member.id);team.revision++;}
     member.role = input.role;
     member.active = Boolean(input.active);
     state.audit.push(
@@ -760,12 +761,12 @@ export function validateArchive(value: any): State {
     )
       fail("Invalid archive identities");
   }
-  validateTeams(value);
   validateAllowances(value);
   validateBusinessStatus(value);
   validateManualRecords(value);
   validateDeadlines(value);
   value.members.forEach(member);
+  validateTeams(value);
   if (!value.members.some((m: any) => m.active && m.role === "admin"))
     fail("Archive needs an active administrator");
   const hasMember = (id: any) => value.members.some((m: any) => m.id === id);

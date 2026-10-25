@@ -1,3 +1,4 @@
+import {requireTeamCoverage} from './teams/model';
 import { demoEffect } from './modules/demo/index.mjs'
 import { sendDemoPage } from './demo-paging'
 import { deliver } from './delivery'
@@ -30,7 +31,8 @@ export function installPaging(api:any,body:(c:any,max?:number)=>Promise<any>) {
   async function context(c:any,admin=false) {const s=await pagingSnapshot(c.env.DB);const m=actor(s,c.get('actor').id,admin);return {s,m}}
   api.get('/api/paging/state',async(c:any)=>{const {s}=await context(c);return c.json({revision:s.revision,workspaceRevision:s.workspace.revision,paging:'OFF',...s.archive})})
   api.post('/api/paging/schedules',async(c:any)=>{
-    const {s}=await context(c,true),v=await body(c)
+    const {s,m}=await context(c),v=await body(c)
+    requireTeamCoverage(s.workspace,m,v?.service)
     const old=s.archive.schedules.find(x=>x.id===v?.id)
     if(!v||typeof v!=='object'||Array.isArray(v)||!Number.isSafeInteger(v.revision)||v.revision<0) fail('Invalid schedule revision')
     if(v.revision!==(old?.revision??0)) fail('Schedule changed; reload and retry',409)
@@ -41,7 +43,8 @@ export function installPaging(api:any,body:(c:any,max?:number)=>Promise<any>) {
     return c.json(schedule)
   })
   api.post('/api/paging/policies',async(c:any)=>{
-    const {s}=await context(c,true),v=await body(c),old=s.archive.policies.find(x=>x.service===v?.service)
+    const {s,m}=await context(c),v=await body(c),old=s.archive.policies.find(x=>x.service===v?.service)
+    requireTeamCoverage(s.workspace,m,v?.service)
     if(!v||typeof v!=='object'||Array.isArray(v)||!Number.isSafeInteger(v.revision)||v.revision<0) fail('Invalid escalation policy revision')
     if(v.revision!==(old?.revision??0)) fail('Escalation policy changed; reload and retry',409)
     const schedule=s.archive.schedules.find(x=>x.id===v.scheduleId)

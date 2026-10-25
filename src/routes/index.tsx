@@ -1,3 +1,4 @@
+import {TeamsPanel} from '../teams/TeamsPanel';
 import {CorrelationSettings,WorkflowSettings} from '../orchestration/Settings';
 import { IncidentWorkflows } from '../incident-workflows/Controls';
 import { ServiceTemplateSettings } from '../incident-workflows/TemplateSettings';
@@ -725,6 +726,7 @@ function Workspace() {
         {page === "reviews" && <ReviewsWorkspace state={s} busy={w.busy} canEdit={canEdit} command={command} onOpenIncident={id=>{selectIncident(id);location.hash="incidents"}} />}
         {page === "team" && (
           <div className="management-grid">
+            <TeamsPanel state={s} actor={actor} busy={w.busy} run={w.run}/>
             <section className="panel padded">
               <h2>Team and access</h2>
               <p>

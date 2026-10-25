@@ -1,3 +1,4 @@
+import {teamCoverage} from './teams/model';
 import {ScheduleCoordination} from './schedule-coordination/Controls';
 import { ReviewedChange } from './schedule-coverage/ReviewedChange';
 import type { ScheduleReview } from './schedule-coverage/review';
@@ -84,7 +85,8 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [previewFrom, setPreviewFrom] = useState(() => iso(utcDay()));
   const [previewTo, setPreviewTo] = useState(() => iso(utcDay() + 86400000));
-  const admin = actor.active && actor.role === "admin";
+  const coverageServices = state.services.filter(service=>teamCoverage(state,actor,service.id));
+  const admin = actor.active && (actor.role === "admin" || !!draft && teamCoverage(state,actor,draft.service));
   const responder = actor.active && ["admin", "responder"].includes(actor.role);
   const readGeneration = useRef(0);
   const initialized = useRef(false);
@@ -224,7 +226,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
     {!data ? <div className="scheduling-panel scheduling-loading"><p>{error ? "Scheduling data could not be loaded." : "Loading saved scheduling records…"}</p><button type="button" onClick={refresh} disabled={busy}>Retry scheduling load</button></div> : <>
       <div className="scheduling-selection">
         <Field label="Schedule"><select value={selectedSchedule} onChange={e => chooseSchedule(e.target.value)} disabled={busy}><option value="">Choose a saved schedule</option>{data.schedules.map(s => <option key={s.id} value={s.id}>{s.name} · {serviceName(s.service)} · revision {s.revision}</option>)}</select></Field>
-        {admin && <button type="button" disabled={busy || !state.services.length} onClick={() => { const schedule = newSchedule(state.services[0].id); setChangeReview(null); setSelectedSchedule(""); setDraft(schedule); setPreviewFrom(schedule.validFrom); setPreviewTo(iso(Date.parse(schedule.validFrom) + 86400000)); setPreview(null); setError(""); setNotice(""); }}><span aria-hidden="true">＋ </span>New schedule</button>}
+        {coverageServices.length>0 && <button type="button" disabled={busy} onClick={() => { const schedule = newSchedule(coverageServices[0].id); setChangeReview(null); setSelectedSchedule(""); setDraft(schedule); setPreviewFrom(schedule.validFrom); setPreviewTo(iso(Date.parse(schedule.validFrom) + 86400000)); setPreview(null); setError(""); setNotice(""); }}><span aria-hidden="true">＋ </span>New schedule</button>}
         {!admin && <Tag>Read-only schedule configuration</Tag>}
       </div>
       {savedSchedule && <ScheduleNowNext schedule={savedSchedule} state={state} request={request} />}
@@ -237,7 +239,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
               <div className="scheduling-form-grid three">
                 <Field label="Schedule ID"><input required maxLength={100} value={draft.id} readOnly={draft.revision > 0} onChange={e => patchSchedule({ id: e.target.value })} /></Field>
                 <Field label="Schedule name"><input required maxLength={200} value={draft.name} onChange={e => patchSchedule({ name: e.target.value })} /></Field>
-                <Field label="Service"><select required disabled={draft.revision > 0} value={draft.service} onChange={e => patchSchedule({ service: e.target.value })}>{state.services.map(s => <option key={s.id} value={s.id}>{s.name} · {s.environment}</option>)}</select></Field>
+                <Field label="Service"><select required disabled={draft.revision > 0} value={draft.service} onChange={e => patchSchedule({ service: e.target.value })}>{(draft.revision?state.services:coverageServices).map(s => <option key={s.id} value={s.id}>{s.name} · {s.environment}</option>)}</select></Field>
               </div>
               <div className="scheduling-form-grid three">
                 <Field label="Timezone (IANA)" hint="Named zone, for example America/New_York; UTC is also supported."><input required value={draft.timezone} onChange={e => patchSchedule({ timezone: e.target.value })} /></Field>

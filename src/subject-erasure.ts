@@ -171,6 +171,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    remember('oc_policies');remember('oc_events')
    const erasedWorkflows=new Set((state.triage??[]).filter(r=>r.kind==='bulk'&&r.workflow&&(r.actor===id||r.workflow.member===id)).map(r=>r.id))
    remove('triage','oc_triage',r=>r.kind==='bulk'&&r.workflow&&(r.actor===id||r.workflow.member===id))
+   for(const team of state.teams??[])if(team.members.includes(id)||team.managers.includes(id)){team.members=team.members.filter(member=>member!==id);team.managers=team.managers.filter(member=>member!==id);team.revision++;remember('oc_teams')}
    const oldName=member.name,names=new Set([oldName,...aliases])
    const redact=(text:string)=>{for(const name of names){const ranges=addressRanges(text,name).filter(([start,end])=>name.includes('@')||text.slice(start,end)===name&&!/[\p{L}\p{N}]/u.test(text[start-1]??'')&&!/[\p{L}\p{N}]/u.test(text[end]??''));text=ranges.reduceRight((value,[start,end])=>value.slice(0,start)+'Erased member'+value.slice(end),text)}return text}
    remove('triage','oc_triage',record=>{const selected=record.kind==='bulk'&&record.workflow&&redact(record.workflow.reason)!==record.workflow.reason;if(selected)erasedWorkflows.add(record.id);return selected})
