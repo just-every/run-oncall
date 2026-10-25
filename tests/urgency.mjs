@@ -142,7 +142,41 @@ try {
   assert.deepEqual(transformReplay.decisions.map(row=>row.eventId),[highSignal.eventId,lowSignal.eventId]);assert.equal(transformReplay.decisions[0].historicalUrgency.urgency,'high');assert.equal(transformReplay.decisions[0].proposedUrgency.urgency,'low');assert.equal(transformReplay.decisions[0].proposedUrgency.version,lowerRule.version);assert.equal(transformReplay.decisions[1].proposed.correlation.group,highEvent.id);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),transformAudit);assert.deepEqual(await archive(),transformBefore);
   console.log('PASS OC-043 urgency transformation: versioned explained lowering at new admission, unchanged severity and open high urgency, ordered correlation and both urgency decisions with zero durable/audit writes');
 
+  // OC-043 generalized admission transformations use the existing policy and audit transaction.
+  const transformation={field:'severity',values:{critical:{severity:'info',priority:'P4'},warning:{severity:'critical',priority:'P1'}},allowLowering:false,reason:'Synthetic reviewed customer-impact classification'};
+  const transformPolicy=baseVersion=>({type:'policy',service:'checkout',severity:'*',action:'route',owner:actor.id,reason:'Synthetic transformation policy',baseVersion,transformation});
+  const publishTransform=ok(await req('/api/command',transformPolicy(groupingPolicy.version)));
+  const unchanged=await archive();
+  ok(await req('/api/command',transformPolicy(groupingPolicy.version)),409);
+  ok(await w.request('/api/command',transformPolicy(publishTransform.version),viewerCookie),403);
+  for(const invalid of [{...transformation,reason:''},{...transformation,allowLowering:'yes'},{...transformation,values:{critical:{severity:'minor'}}},{...transformation,field:'undeclared'},{...transformation,unexpected:true}])ok(await req('/api/command',{...transformPolicy(publishTransform.version),transformation:invalid}),400);
+  assert.deepEqual(await archive(),unchanged);
+  const generalizedSignal=(id,severity='critical',extra={})=>signal(id,severity,{key:'synthetic-oncall-436',generation:id,priority:'P2',...extra});
+  const heldSignal=generalizedSignal('synthetic-oncall-436-held'),heldAdmission=ok(await send(heldSignal),201),heldEvent=(await state()).events.find(e=>e.id===heldAdmission.id);
+  assert.equal(heldEvent.decision.transformation.severity,'critical');assert.equal(heldEvent.decision.transformation.priority,'P2');assert.equal(heldEvent.decision.transformation.blocked,true);
+  transformation.allowLowering=true;
+  const explicit=ok(await req('/api/command',transformPolicy(publishTransform.version)));
+  const loweredSignal=generalizedSignal('synthetic-oncall-436-lowered'),loweredAdmission=ok(await send(loweredSignal),201),loweredEvent=(await state()).events.find(e=>e.id===loweredAdmission.id);
+  assert.equal(loweredEvent.severity,'critical');assert.equal(loweredEvent.priority,'P2');assert.equal(loweredEvent.decision.transformation.originalSeverity,'critical');assert.equal(loweredEvent.decision.transformation.originalPriority,'P2');assert.equal(loweredEvent.decision.transformation.severity,'info');assert.equal(loweredEvent.decision.transformation.priority,'P4');assert.equal(loweredEvent.decision.transformation.lowering,true);assert.equal(loweredEvent.decision.transformation.blocked,false);assert.equal(loweredEvent.decision.transformation.event,loweredEvent.id);assert.equal(loweredEvent.decision.version,explicit.version);assert.ok(loweredEvent.decision.transformation.reason.includes(transformation.reason));
+  const loweredAlert=(await state()).alerts.find(a=>a.events.includes(loweredEvent.id));assert.equal(loweredAlert.priority,'P4');assert.equal(loweredAlert.originalSeverity,'critical');assert.equal(loweredAlert.originalPriority,'P2');
+  const noDuplicate=await archive();ok(await send(loweredSignal));assert.deepEqual(await archive(),noDuplicate);
+  const sameGeneration=generalizedSignal('synthetic-oncall-436-open','critical',{generation:heldSignal.generation}),sameAdmission=ok(await send(sameGeneration),201),sameEvent=(await state()).events.find(e=>e.id===sameAdmission.id);
+  assert.equal(sameEvent.decision.transformation.severity,'critical');assert.equal(sameEvent.decision.transformation.priority,'P2');assert.equal(sameEvent.decision.transformation.blocked,true,'an explained lowering cannot lower an existing high alert');
+  const raisedAdmission=ok(await send(generalizedSignal('synthetic-oncall-436-raised','warning')),201),raisedEvent=(await state()).events.find(e=>e.id===raisedAdmission.id);assert.equal(raisedEvent.decision.transformation.severity,'critical');assert.equal(raisedEvent.decision.transformation.priority,'P1');assert.equal(raisedEvent.severity,'warning');
+  const tableCounts=()=>w.statements(w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'oc_%' ORDER BY name").map(({name})=>`SELECT '${name}' AS name,COUNT(*) AS n FROM ${name}`).join(';')).flat();
+  transformation.values.critical={severity:'warning',priority:'P3'};const revised=ok(await req('/api/command',transformPolicy(explicit.version)));
+  const beforeGeneralizedReplay=await archive(),beforeGeneralizedAudit=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),countsAtReplay=tableCounts();
+  const generalizedReplay=ok(await req('/api/replay',{events:[loweredSignal,heldSignal]}));assert.deepEqual(generalizedReplay.decisions.map(d=>d.eventId),[heldSignal.eventId,loweredSignal.eventId]);assert.equal(generalizedReplay.decisions[1].historical.transformation.severity,'info');assert.equal(generalizedReplay.decisions[1].proposed.transformation.severity,'warning');assert.equal(generalizedReplay.decisions[1].proposed.version,revised.version);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),beforeGeneralizedAudit);assert.deepEqual(tableCounts(),countsAtReplay);assert.deepEqual(await archive(),beforeGeneralizedReplay);
+  const beforeTransformFailure=await archive();w.sql("CREATE TRIGGER synthetic_oncall_436 BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-436'); END");
+  try{ok(await send(generalizedSignal('synthetic-oncall-436-rollback')),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_436')};assert.deepEqual(await archive(),beforeTransformFailure);
+  await w.stop();await w.start();assert.deepEqual(await archive(),beforeTransformFailure);
+  console.log('PASS OC-043 severity/priority transformations: versioned reasoned lowering, open-alert floors, original fields, raising, duplicate identity, authority, stale/invalid zero writes, ordered replay table counts, audit rollback and restart');
+
   const saved=await archive(),malformed=[
+    value=>{delete value.events.find(e=>e.id===loweredEvent.id).decision.transformation;},
+    value=>{value.events.find(e=>e.id===loweredEvent.id).decision.transformation.originalSeverity='warning';},
+    value=>{value.alerts.find(a=>a.events.includes(loweredEvent.id)).originalPriority='P1';},
+    value=>{value.policies.find(p=>p.service==='checkout'&&p.severity==='*').transformation.allowLowering='yes';},
     value=>{value.services.find(s=>s.id==='checkout').urgencyRules[0].by='missing-member';},
     value=>{value.events.find(e=>e.id===firstReceipt.id).urgency.reason='Forged explanation';},
     value=>{const decision=value.events.find(e=>e.id===firstReceipt.id).urgency;decision.version=severity.version+1;decision.rule.version=decision.version;},

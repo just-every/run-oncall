@@ -1,3 +1,4 @@
+import {alertSeverity} from '../../orchestration/transformation.ts';
 import { mergedTimeline, retainedIncidentSources } from '../../incident-workflows/relations.ts';
 import { fail, text, type Incident, type Member, type State } from './domain.ts';
 import { incidentAssignee, incidentUpdated, incidentUrgency } from './incident-controls.ts';
@@ -59,7 +60,7 @@ export function matchingItems(state:State,actor:Member,query:TriageQuery):(Incid
  if(query.kind!=='alerts')return matchingIncidents(state,actor,query).map(i=>({...i,kind:'incident' as const}));
  return state.alerts.filter(a=>!state.incidents.some(i=>i.alerts.includes(a.id))).map(a=>{
   const events=a.events.map(id=>state.events.find(e=>e.id===id)).filter(e=>!!e),first=events[0],last=events.at(-1),held=a.coordination;
-  const severity=(['critical','warning','info'] as const).find(v=>events.some(e=>e.severity===v))??'critical';
+  const severity=alertSeverity(state,a);
   return {id:a.id,kind:'alert' as const,revision:a.revision??1,title:first?.title??a.key,summary:a.key,service:a.service??'',severity,state:held?.state==='closed'||a.state==='recovered'?'resolved':held?.state==='acknowledged'?'acknowledged':'declared',createdAt:first?.acceptedAt??state.intakeReceipts?.find(r=>r.alert===a.id)?.acceptedAt??'2000-01-01T00:00:00.000Z',assignee:held?.assignee??a.owner,commander:null,urgency:a.urgency??'high',priority:a.priority??null,alerts:[a.id],runbook:[],actions:[],timeline:held?.history??[],recovery:'',review:''} as Incident&{kind:'alert'};
  }).filter(i=>{
   const service=state.services.find(s=>s.id===i.service),terms=query.q?.toLocaleLowerCase().split(/\s+/).filter(Boolean)??[];

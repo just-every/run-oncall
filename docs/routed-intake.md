@@ -82,3 +82,26 @@ Erasing an original integration clears surviving group references visibly, prese
 Selected alert-only reassignments can be saved as a resumable workflow in the incident list's bulk controls. The plan freezes the ordered alert identities, revisions, intended assignee and reason in the existing triage custody. Each invocation processes at most two items; each item's mutation, result and permanent audit commit together. The incident list's **Recorded coordination workflows** shows pending, complete and refused counts. Only the still-authorized author can explicitly resume. A closed browser or Worker restart does not run pending work. No timer or sender runs; paging stays OFF.
 
 The HTTP start is `POST /api/triage/bulk` with `durable: true`, `action: "reassign"`, selected alert items and the existing confirmed count. Resume with `POST /api/triage/workflows/:id/resume` and `approve: true`. Committed steps are never repeated. A stale or unavailable item retains its refusal; a storage/audit failure leaves its step pending with an interrupted response and permanent failure/uncertainty outcome. Erasing an involved source or recipient removes the copied plan. Restore retains the plan as history and requires a fresh explicit resume under current authority. This bounded reassignment slice does not implement generalized transformations, timers, arbitrary multi-action workflows or provider execution.
+
+## Severity and priority transformations
+
+A service orchestration policy can include `transformation` through the administrator's
+`POST /api/command` policy door. Supply the current `baseVersion`; a stale version is
+refused. `field` selects `severity`, `priority`, or a declared `labels.<name>`.
+`values` maps up to 30 exact field values to a severity (`critical`, `warning`, `info`),
+a priority (`P1`–`P5`), or both. Missing or ambiguous labels leave the source values
+unchanged. Set `allowLowering` explicitly and provide a reviewed `reason`.
+
+For example, a transformation may map `severity: critical` to `severity: warning`
+and `priority: P3` with `allowLowering: true` and an explanation of the reduced
+customer impact. Without that explicit permission, lowering is held at the source
+value. An existing active alert also keeps its higher effective severity and priority.
+The source event retains its original fields; the alert retains its original admission
+classification. Alerts show the effective values alongside the original event,
+service-rule version and explanation. Incident declaration uses the effective severity.
+
+On a routed key, key routing chooses the service first. Its receipt retains the key-rule
+version and the selected service's policy version and transformation. Replay compares
+historical and proposed decisions in order without admitting events, changing alerts,
+or appending permanent audit rows. It respects the retained open-alert floor.
+Transformations do not send notifications, run timers, or authorize workflow execution.

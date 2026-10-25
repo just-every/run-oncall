@@ -28,7 +28,7 @@ export function receiveNativeRouting(state:State,source:IntakeSource,signal:Retu
   const at=new Date().toISOString(),service=routing.service===null?null:state.services.find(s=>s.id===routing.service);
   if(routing.service!==null&&!service)fail('Unknown integration service');
   const native={eventId:signal.eventId,sourceGeneration:signal.generation,fingerprint};
-  const receipt:IntakeReceipt={id:crypto.randomUUID(),source:source.id,provider:'native',service:service?.id??null,generation:null,event:null,alert:null,acceptedAt:at,outcome:service?'no-effect':'unrouted',action:signal.intent==='recover'?'recover':'trigger',key:signal.key,title:signal.title,severity:signal.severity,priority:null,observedAt:signal.observedAt,sender:signal.source,links:signal.evidence?[signal.evidence]:[],details:{},truncated:false,routing,routingInput:structuredClone(routingInput),native};
+  const receipt:IntakeReceipt={id:crypto.randomUUID(),source:source.id,provider:'native',service:service?.id??null,generation:null,event:null,alert:null,acceptedAt:at,outcome:service?'no-effect':'unrouted',action:signal.intent==='recover'?'recover':'trigger',key:signal.key,title:signal.title,severity:signal.severity,priority:signal.priority??null,observedAt:signal.observedAt,sender:signal.source,links:signal.evidence?[signal.evidence]:[],details:{},truncated:false,routing,routingInput:structuredClone(routingInput),native};
   if(service) {
     const generation=state.alerts.find(a=>a.source===intakeSourceIdentity(source.id)&&a.service===service.id&&a.environment===service.environment&&a.key===signal.key&&a.generation===signal.generation);
     const open=generation?.state==='active'?generation:undefined;

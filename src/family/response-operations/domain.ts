@@ -1,3 +1,4 @@
+import {transform,validateTransformation,validateTransformationEvents,type Transformation,type TransformationDecision} from '../../orchestration/transformation.ts';
 import {correlate,validateCorrelation,validateCorrelationDecision,validateCorrelationEvents,type CorrelationRule,type CorrelationDecision} from '../../orchestration/correlation.ts';
 import {validateAlertCoordination,type AlertCoordination} from '../../triage-alerts.ts';
 import {validateScheduleRecords,type ScheduleRecord} from '../../schedule-coordination/model.ts';
@@ -48,6 +49,7 @@ export type Service = {
   ackTimeouts?: AckTimeout[];
 };
 export type Policy = {
+  transformation?:Transformation;
   correlation?:CorrelationRule;
   suppressionWindow?: {start: string; end: string};
   id: string;
@@ -59,6 +61,7 @@ export type Policy = {
   reason: string;
 };
 export type Signal = {
+  priority?: "P1" | "P2" | "P3" | "P4" | "P5";
   source: string;
   eventId: string;
   service: string;
@@ -72,6 +75,7 @@ export type Signal = {
   evidence: string;
 };
 export type Decision = {
+  transformation?:TransformationDecision;
   correlation?:CorrelationDecision;
   policy: string | null;
   version: number | null;
@@ -91,6 +95,8 @@ export type Event = Signal & {
   };
 };
 export type Alert = {
+  originalSeverity?: Signal['severity'];
+  originalPriority?: Signal['priority'] | null;
   revision?:number;
   coordination?:AlertCoordination;
   id: string;
@@ -249,7 +255,7 @@ function suppressionWindow(value: any) {
     [value.start,value.end].some(at=>typeof at!=='string'||!Number.isFinite(Date.parse(at))||new Date(at).toISOString()!==at)||Date.parse(value.start)>=Date.parse(value.end))fail('Suppression window needs ordered canonical UTC start and end timestamps');
   return {start:value.start as string,end:value.end as string};
 }
-export function route(state: State, signal: Signal, at=new Date().toISOString(),eventId="preview:"+signal.source+":"+signal.eventId,labels?:Record<string,string>): Decision {
+export function route(state: State, signal: Signal, at=new Date().toISOString(),eventId="preview:"+signal.source+":"+signal.eventId,labels?:Record<string,string>,admissionState:State=state): Decision {
   const policy = state.policies.find(
     (p) =>
       p.service === signal.service &&
@@ -278,7 +284,9 @@ export function route(state: State, signal: Signal, at=new Date().toISOString(),
       owner: null,
       reason: "Configured responder is inactive or unavailable",
     };
+  const transformation=transform(admissionState,signal,policy,eventId,labels);
   const decision:Decision={
+    ...(transformation?{transformation}:{}),
     policy: policy.id,
     version: policy.version,
     action,
@@ -298,10 +306,12 @@ export function signalInput(input: any, exactKey = false, keyLimit = 200): Signa
     fail('"observedAt" must be an ISO-8601 timestamp with a timezone');
   if (!/(?:Z|[+-]\d{2}:\d{2})$/i.test(input.observedAt))
     fail('"observedAt" must include a timezone (Z or an offset)');
+  if(input.priority!==undefined&&(typeof input.priority!=='string'||!/^P[1-5]$/.test(input.priority)))fail('Invalid signal priority');
   let evidence: string;
   try { evidence = link(input.evidence); }
   catch { fail('"evidence" must be an HTTP or HTTPS URL, or empty'); }
   return {
+    ...(input.priority!==undefined?{priority:input.priority}:{}),
     source: text(input.source, '"source"', 100),
     eventId: text(input.eventId, '"eventId"', 200),
     service: text(input.service, '"service"', 100),
@@ -362,6 +372,7 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
   const created = !alert;
   if (!alert) {
     alert = {
+      ...(event.decision.transformation?{originalSeverity:signal.severity,originalPriority:signal.priority??null}:{}),
       id: crypto.randomUUID(),
       source: signal.source,
       service: signal.service,
@@ -380,6 +391,8 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     const wasWindowed=priorEvent?.routingSnapshot.policies.some(p=>p.id===priorEvent.decision.policy&&(p.suppressionWindow||p.correlation));
     if(signal.intent==='trigger'&&(wasWindowed||event.decision.correlation||state.policies.find(p=>p.id===event.decision.policy)?.suppressionWindow)){alert.suppressed=event.decision.action==='suppress';alert.owner=event.decision.owner;}
     admitAlertUrgency(state, alert, event, created);
+    if(event.intent==='trigger'&&event.decision.transformation?.priority)alert.priority=event.decision.transformation.priority;
+    else if(created&&signal.priority)alert.priority=signal.priority;
     alert.events.push(event.id);
     if (signal.intent === "recover") alert.state = "recovered";
     recordAlertObligation(alert, event.id);
@@ -486,10 +499,13 @@ function applyCommand(
     );
     const correlation=input.correlation===null?undefined:input.correlation===undefined?old?.correlation:validateCorrelation(input.correlation);
     if(correlation&&!state.members.some(m=>m.id===input.owner&&m.active&&["admin","responder"].includes(m.role)))fail("Grouping requires an active coordination owner");
+    const transformation=input.transformation===null?undefined:input.transformation===undefined?old?.transformation:validateTransformation(input.transformation);
+    if((transformation||old?.transformation)&&input.baseVersion!==(old?.version??0))fail('Transformation policy changed; reload before publishing',409);
     const window=input.suppressionWindow===undefined?undefined:suppressionWindow(input.suppressionWindow);
     if(window&&(input.action!=='suppress'||!state.members.some(m=>m.id===input.owner&&m.active&&['admin','responder'].includes(m.role))))fail('Windowed suppression requires an active queue owner');
     if((window||old?.suppressionWindow||correlation||old?.correlation)&&input.baseVersion!==(old?.version??0))fail('Suppression policy changed; reload before publishing',409);
     const rule: Policy = {
+      ...(transformation?{transformation}:{}),
       ...(window?{suppressionWindow:window}:{}),
       ...(correlation?{correlation}:{}),
       id: old?.id ?? crypto.randomUUID(),
@@ -678,7 +694,8 @@ export function validateArchive(value: any): State {
       "action",
       "owner",
       "reason",
-    ], ["suppressionWindow","correlation"]);
+    ], ["suppressionWindow","correlation","transformation"]);
+    if(p.transformation!==undefined)validateTransformation(p.transformation);
     if(p.correlation!==undefined){validateCorrelation(p.correlation);if(!p.owner)fail("Grouping requires an owner");}
     if(p.suppressionWindow!==undefined){suppressionWindow(p.suppressionWindow);if(p.action!=="suppress"||!p.owner)fail("Invalid windowed suppression");text(p.reason,"reason",300);}
     integer(p.version);
@@ -691,7 +708,7 @@ export function validateArchive(value: any): State {
       fail("Invalid archive policy");
   };
   const decision = (d: any) => {
-    object(d, ["policy", "version", "action", "owner", "reason"],["correlation"]);
+    object(d, ["policy", "version", "action", "owner", "reason"],["correlation","transformation"]);
     if(d.correlation!==undefined)validateCorrelationDecision(d.correlation);
     if (!["route", "suppress", "unmatched"].includes(d.action))
       fail("Invalid routing decision");
@@ -784,7 +801,7 @@ export function validateArchive(value: any): State {
       "acceptedAt",
       "decision",
       "routingSnapshot",
-    ], ["urgency"]);
+    ], ["urgency","priority"]);
     signalInput(e,typeof e.source==="string"&&e.source.startsWith("email:"),typeof e.source==="string"&&e.source.startsWith("intake:")?identityLimit(value.intakeSources?.find((source:any)=>source.id===e.source.slice(7))?.provider??"native"):200);
     date(e.acceptedAt);
     if (
@@ -818,7 +835,7 @@ export function validateArchive(value: any): State {
       "events",
       "owner",
       "suppressed",
-    ], ["urgency", "urgencyRevision", "urgencyHistory", "priority", "obligation", "revision", "coordination"]);
+    ], ["urgency", "urgencyRevision", "urgencyHistory", "priority", "obligation", "revision", "coordination", "originalSeverity", "originalPriority"]);
     if (
       !(a.service===null ? a.environment==='' && a.events.length===0 && value.intakeReceipts?.some((r:any)=>r.alert===a.id&&r.incomplete&&r.service===null&&r.source===a.source.slice(7)&&r.key===a.key&&r.generation===a.generation) : value.services.some(
         (s: any) => s.id === a.service && s.environment === a.environment,
@@ -827,6 +844,8 @@ export function validateArchive(value: any): State {
       (a.owner !== null && !hasMember(a.owner))
     )
       fail("Invalid alert references");
+    const firstClassification=value.events.find((e:any)=>e.id===a.events[0]);
+    if(firstClassification?.decision.transformation||a.originalSeverity!==undefined||a.originalPriority!==undefined){const first=firstClassification;if(!first?.decision.transformation||a.originalSeverity!==first.severity||a.originalPriority!==(first.priority??null))fail('Invalid original alert classification');}
     validateAlertCoordination(value,a);
     validateAlertObligation(value,a);
     text(a.generation, "generation", 100);
@@ -939,6 +958,7 @@ export function validateArchive(value: any): State {
   validateChangeArchive(value);
   validateIntakeArchive(value);
   validateCorrelationEvents(value);
+  validateTransformationEvents(value);
   validateEmailArchive(value);
   validateAutomation(value);
   if(value.erasedReportCases!==undefined){

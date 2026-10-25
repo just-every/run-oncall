@@ -28,7 +28,7 @@ function validateObligation(state: State, alert: Alert) {
     if (!sameDecision(decision, decideResponse(undefined, '', '', null))) fail('Invalid default response decision');
   } else {
     if (!first || !policy || Date.parse(policy.at) > Date.parse(first.acceptedAt) || historicalResponsePolicy(state, alert.service, first.acceptedAt)?.version !== policy.version ||
-      !sameDecision(decision, decideResponse(policy, responseAdmissionUrgency(state, alert, first), first.severity, first.decision.policy))) fail('Invalid response policy admission reference');
+      !sameDecision(decision, decideResponse(policy, responseAdmissionUrgency(state, alert, first), first.decision.transformation?.severity??first.severity, first.decision.policy))) fail('Invalid response policy admission reference');
   }
   if (o.state !== 'stopped') {
     if (extras.some(v => v !== undefined) || o.receipt !== null || alert.state !== 'active') fail('Active response obligation contains a recovery outcome');

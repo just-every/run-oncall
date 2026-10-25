@@ -41,7 +41,7 @@ export function validateRoutingReceipt(state:State,source:IntakeSource,receipt:I
     if(state.intakeReceipts?.some(r=>r!==receipt&&r.source===source.id&&r.routing?.readmission?.operationId===readmit.operationId))fail('Duplicate routing re-admission operation');
   } else if(route.readmission!==undefined||expected.kind!==route.kind||expected.service!==route.service)fail('Invalid routing decision');
   if(route.serviceDecision!==null) {
-    exact(route.serviceDecision,['event','policy','version','action','owner','reason'],['correlation']);
+    exact(route.serviceDecision,['event','policy','version','action','owner','reason'],['correlation','transformation']);
     const reference=route.serviceDecision,event=state.events.find(e=>e.id===reference.event&&e.service===receipt.service&&e.source==='intake:'+source.id&&e.key===receipt.key&&e.generation===receipt.generation);
     if(!event||Date.parse(event.acceptedAt)>Date.parse(receipt.acceptedAt)||receipt.event!==null&&event.id!==receipt.event||JSON.stringify(event.decision)!==JSON.stringify({policy:reference.policy,version:reference.version,action:reference.action,owner:reference.owner,reason:reference.reason,...(reference.correlation?{correlation:reference.correlation}:{})}))fail('Invalid service orchestration decision reference');
   } else if(receipt.event!==null)fail('Missing service orchestration decision reference');

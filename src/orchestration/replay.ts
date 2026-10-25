@@ -7,7 +7,7 @@ export function replayService(state:State,signals:Signal[],at:string){
  proposed.events=proposed.events.filter(e=>!selected.has(identity(e)));
  return signals.map((signal,index)=>{
   const historical=state.events.find(e=>identity(e)===identity(signal)),id=historical?.id??'preview:'+index;
-  const decision=route(proposed,signal,at,id,historical?labelsForEvent(state,historical):undefined),urgency=state.services.some(s=>s.id===signal.service)?serviceUrgency(state,signal.service,signal.severity,at):null;
+  const decision=route(proposed,signal,at,id,historical?labelsForEvent(state,historical):undefined,state),urgency=state.services.some(s=>s.id===signal.service)?serviceUrgency(state,signal.service,signal.severity,at):null;
   proposed.events.push({...signal,id,acceptedAt:at,decision,...(urgency?{urgency}:{}),routingSnapshot:{policies:proposed.policies,members:proposed.members,evaluatedAt:at}} as Event);
   // Provider labels remain in their original receipt. The original event id
   // makes those receipts available to later proposed grouping decisions.

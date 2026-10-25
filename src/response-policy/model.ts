@@ -47,7 +47,7 @@ export function finishResponseAdmission(state: State, alert: Alert, event: Event
   if (!obligation.policy) {
     const first = state.events.find(e => e.id === alert.events[0]);
     const policy = first && alert.state !== 'recovered' ? historicalResponsePolicy(state, alert.service, first.acceptedAt) : undefined;
-    obligation.policy = decideResponse(policy, first ? responseAdmissionUrgency(state, alert, first) : 'high', first?.severity ?? 'critical', first?.decision.policy ?? null);
+    obligation.policy = decideResponse(policy, first ? responseAdmissionUrgency(state, alert, first) : 'high', first?.decision.transformation?.severity ?? first?.severity ?? 'critical', first?.decision.policy ?? null);
   }
   if (!event) return;
   if (alert.state === 'recovered') {
@@ -75,7 +75,7 @@ export function finishResponseAdmission(state: State, alert: Alert, event: Event
   const entry: Entry = {id: crypto.randomUUID(), at: event.acceptedAt, actor: `source:${event.source}`, kind: 'declared',
     text: automaticDeclarationText(event, policy.version, obligation.policy.rule), lifecycle: {from: null, to: 'declared'},
     metadata: {event: event.id, policyVersion: policy.version, rule: obligation.policy.rule}};
-  const incident: Incident = {id: crypto.randomUUID(), title: event.title, service: service.id, severity: event.severity,
+  const incident: Incident = {id: crypto.randomUUID(), title: event.title, service: service.id, severity: event.decision.transformation?.severity??event.severity,...(event.decision.transformation?.priority?{priority:event.decision.transformation.priority}:{}),
     state: 'declared', commander: null, revision: 1, createdAt: event.acceptedAt, alerts: [alert.id], timeline: [entry],
     runbook: service.runbook.map(text => ({text, done: false})), actions: [], recovery: '', review: '', urgency: alert.urgency ?? 'high',
     automaticDeclaration: {alert: alert.id, event: event.id, receipt: receiptId, policyVersion: policy.version, rule: obligation.policy.rule, by: policy.by}};
