@@ -374,6 +374,7 @@ async function changeAndSigningBrowser(page,context){
   const responseReport=page.locator('.response-report');
   await responseReport.getByText(/Incident durations and source entries/).click();
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().waitFor();
+  await responseReport.getByText(/incident revision unknown/).first().waitFor();
   assert.equal(await responseReport.getByRole('link',{name:'Erased incident',exact:true}).count(),0,'erased cases have no personal incident drilldown');
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().scrollIntoViewIfNeeded();await check('oc040-erased-response-report',width);
   await page.getByRole('link',{name:'Services',exact:true}).click();if(!await settings.getByLabel('Erasure category',{exact:true}).isVisible())await settings.getByText('Data erasure settings',{exact:true}).click();
