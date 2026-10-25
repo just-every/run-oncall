@@ -73,7 +73,7 @@ export function installTriage(api: any, deps: Dependencies) {
         const all = matchingItems(initial, actor, payload.allMatching!);
         if (input.workspaceRevision !== initial.revision || input.confirmedCount !== all.length || items.length !== all.length || all.some(i => !items.some((item: any) => item.id === i.id && item.revision === i.revision && (item.kind??'incident')===i.kind))) fail('Matching incidents changed. Confirm the current count and selection.', 409);
       }
-      if(input.durable===true&&(input.action!=='reassign'||input.allMatching||items.some((item:any)=>item.kind!=='alert')||typeof payload.reason!=='string'||!payload.reason.trim()||payload.reason.length>1000||payload.member!==null&&!initial.members.some(m=>m.id===payload.member&&m.active&&['admin','responder'].includes(m.role))))fail('Durable coordination requires selected alerts, a current responder and a reason',409);
+      if(input.durable===true&&(input.action!=='reassign'||input.allMatching||payload.evidence!==''||payload.priority!==null||payload.urgency!==null||items.some((item:any)=>item.kind!=='alert')||typeof payload.reason!=='string'||!payload.reason.trim()||payload.reason.length>1000||payload.member!==null&&!initial.members.some(m=>m.id===payload.member&&m.active&&['admin','responder'].includes(m.role))))fail('Durable coordination requires selected alerts, a current responder and a reason',409);
       operation = {id, kind: 'bulk', actor: actor.id, fingerprint, at: new Date().toISOString(), results: [],...(input.durable===true?{workflow:{items,member:payload.member,reason:payload.reason}}:{})};
       (initial.triage ??= []).push(operation);
       await deps.save(c, initial, initial.revision);
