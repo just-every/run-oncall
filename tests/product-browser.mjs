@@ -352,6 +352,8 @@ async function changeAndSigningBrowser(page,context){
    const clientResponse=await personalContext.request.post('/api/automation/clients',{headers:{origin},data:{name:'Synthetic personal response access',key:token(),services:['synthetic-oncall-1'],permissions:['incidents:read']}});assert.equal(clientResponse.status(),201);const client=await clientResponse.json();
    const endpointResponse=await personalContext.request.post('/api/automation/endpoints',{headers:{origin},data:{name:'Synthetic personal recipient',client:client.id,services:['synthetic-oncall-1'],url:'https://8.8.8.8/synthetic-oncall-413',key:token(),approve:true}});assert.equal(endpointResponse.status(),201);
   } finally {await personalContext.close();}
+  const memberBusiness=await request('/api/status',{action:'create',name:'Synthetic erased membership '+width,owningTeam:'Synthetic team',supporting:['synthetic-oncall-1'],audience:[erasedMember.id],communicationsOwner:member.id,highUrgencyImpact:false});
+  await request('/api/status',{action:'subscribe',id:memberBusiness.id,revision:memberBusiness.revision,member:erasedMember.id,channel:'email',active:true});
   const memberScheduleId='synthetic-oncall-413-'+width;await request('/api/paging/schedules',{id:memberScheduleId,name:'Synthetic erased contact slots',service:'synthetic-oncall-1',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[erasedMember.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]});
   const memberPlan=await importDoor.preview('pagerduty',JSON.stringify({users:[{id:'synthetic-oncall-413-'+width,name:'Synthetic erasable contact',email:memberName}]}));assert.equal(memberPlan.status,200);assert.equal((await importDoor.apply('pagerduty',memberPlan.value)).status,200);
   await page.getByRole('button',{name:'Refresh',exact:true}).click();
@@ -361,6 +363,10 @@ async function changeAndSigningBrowser(page,context){
   const memberResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/member/'+erasedMember.id));await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const memberReply=await memberResponse;assert.equal(memberReply.status(),200,await memberReply.text());
   await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await settings.getByText(/Approved response recipient .*Provider deletion requires the owner’s consent/).waitFor();await check('oc040-member-receipt',width);
   assert.equal((await request('/api/state')).members.find(m=>m.id===erasedMember.id).name,'Erased member');
+  const erasedBusiness=(await request('/api/state')).businessServices.find(row=>row.id===memberBusiness.id);
+  assert.ok(!erasedBusiness.audience.includes(erasedMember.id));assert.ok(!erasedBusiness.subscriptions.some(row=>row.member===erasedMember.id));
+  await settings.getByText(/oc_business_services:/).waitFor();
+
   await page.getByRole('link',{name:'Schedules',exact:true}).click();await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
   await page.locator('.scheduling-now-next').getByText('Now: Coverage gap',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
   await page.getByRole('link',{name:'Services',exact:true}).click();if(!await settings.getByLabel('Erasure category',{exact:true}).isVisible())await settings.getByText('Data erasure settings',{exact:true}).click();
