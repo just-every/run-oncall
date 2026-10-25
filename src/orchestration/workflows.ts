@@ -41,13 +41,16 @@ export function validateRuleRun(state:State,record:BulkOperation){
  if(rule.outcome!==(rule.state==='running'?'uncertain':rule.state==='interrupted'?'interrupted':null))fail('Invalid workflow execution outcome');
  if((rule.state==='complete')!==(record.results.length===3))fail('Invalid workflow completion');
 }
-export function workflowPreview(state:State,decision:Decision,signal:{intent:string;source:string;service:string;environment:string;key:string;generation:string;severity:'critical'|'warning'|'info'},eventId?:string){
- const service=state.services.find(s=>s.id===signal.service),urgency=serviceUrgency(state,signal.service,signal.severity,new Date().toISOString()).urgency;
- if(decideResponse(service?.responsePolicies?.at(-1),urgency,decision.transformation?.severity??signal.severity,decision.policy).mode!=='alert-only')return null;
+export function workflowPreview(state:State,decision:Decision,signal:{intent:string;source:string;service:string;environment:string;key:string;generation:string;severity:'critical'|'warning'|'info'},eventId?:string,at=new Date().toISOString()){
+ const policy=state.policies.find(p=>p.id===decision.policy&&p.version===decision.version),workflow=policy?.workflow;
+ if(signal.intent!=='trigger'||decision.action!=='route'||!workflow||workflow.held)return null;
+ const service=state.services.find(s=>s.id===signal.service);if(!service)return null;
+ const urgency=serviceUrgency(state,signal.service,signal.severity,at).urgency;
+ if(decideResponse(service.responsePolicies?.at(-1),urgency,decision.transformation?.severity??signal.severity,decision.policy).mode!=='alert-only')return null;
+ if(!state.members.some(m=>m.id===workflow.by&&m.active&&m.role==='admin')||!state.members.some(m=>m.id===workflow.member&&m.active&&['admin','responder'].includes(m.role)))return null;
  const existing=state.alerts.find(a=>a.source===signal.source&&a.service===signal.service&&a.environment===signal.environment&&a.key===signal.key&&a.generation===signal.generation);
  if(existing&&existing.events[0]!==eventId)return null;
- const policy=state.policies.find(p=>p.id===decision.policy&&p.version===decision.version);
- return signal.intent==='trigger'&&decision.action==='route'&&policy?.workflow&&!policy.workflow.held?{action:'launch',policy:policy.id,policyVersion:policy.version,workflowVersion:policy.workflow.version,steps:['reassign','declare','notify'],member:policy.workflow.member,obligation:'recorded',automatic:false,paging:'OFF'}:null;
+ return {action:'launch',policy:policy!.id,policyVersion:policy!.version,workflowVersion:workflow.version,steps:['reassign','declare','notify'],member:workflow.member,obligation:'recorded',automatic:false,paging:'OFF'};
 }
 
 export function holdRuleWorkflows(state:State){for(const policy of state.policies)if(policy.workflow)policy.workflow.held=true;for(const row of state.triage??[])if(row.kind==='bulk'&&row.rule&&row.rule.state!=='complete'&&(row.rule.state!=='interrupted'||row.rule.lease!==null))Object.assign(row.rule,{state:'interrupted',outcome:'interrupted',lease:null,leaseUntil:null,revision:row.rule.revision+1});}

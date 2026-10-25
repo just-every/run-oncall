@@ -1,4 +1,4 @@
-import {workflowPreview} from './workflows';
+import {workflowPreview} from './workflows.ts';
 import {advanceReplayClassification} from './transformation.ts';
 import {route,type State,type Signal,type Event} from '../family/response-operations/domain.ts';
 import {serviceUrgency} from '../urgency/model.ts';
@@ -15,7 +15,7 @@ export function replayService(state:State,signals:Signal[],at:string){
   proposed.events.push(event);advanceReplayClassification(classification,event);
   // Provider labels remain in their original receipt. The original event id
   // makes those receipts available to later proposed grouping decisions.
-  const generation=JSON.stringify([signal.source,signal.service,signal.environment,signal.key,signal.generation]),proposedWorkflow=launched.has(generation)?null:workflowPreview(state,decision,signal,id);if(proposedWorkflow)launched.add(generation);
+  const generation=JSON.stringify([signal.source,signal.service,signal.environment,signal.key,signal.generation]),proposedWorkflow=launched.has(generation)?null:workflowPreview(state,decision,signal,id,at);if(proposedWorkflow)launched.add(generation);
   return {proposedWorkflow,eventId:signal.eventId,historical:historical?.decision??null,historicalEvaluation:historical?.routingSnapshot??null,historicalUrgency:historical?.urgency??null,proposed:decision,proposedUrgency:urgency,proposedEvaluation:at};
  });
 }
