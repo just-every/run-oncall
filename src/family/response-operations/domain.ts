@@ -799,6 +799,7 @@ export function validateArchive(value: any): State {
     e.routingSnapshot.policies.forEach(policy);
     e.routingSnapshot.members.forEach(member);
     date(e.routingSnapshot.evaluatedAt);
+    if(e.routingSnapshot.policies.some((p:any)=>p.id===e.decision.policy&&p.version===e.decision.version&&p.correlation)&&e.decision.action!=="unmatched"&&!e.decision.correlation)fail("Missing frozen correlation explanation");
     const k = JSON.stringify([e.source, e.eventId]);
     if (eventKeys.has(k)) fail("Duplicate source event identities");
     eventKeys.add(k);
