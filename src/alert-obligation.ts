@@ -26,8 +26,8 @@ export function validateAlertObligation(state:State,alert:Alert) {
 /** Subscriber impact custody extends the same record-only obligation family. */
 export type StatusNoticeObligation = {
   id: string; kind: 'business-status'; state: 'recorded' | 'stopped'; paging: 'off'; automatic: false;
-  label: 'no sender'; target: {kind: 'user'; id: string}; channel: 'email' | 'push' | 'chat';
-  businessService: string; businessName: string; derivedStatus: 'degraded' | 'major outage';
+  label: 'no sender'; target: {kind: 'user'|'email-list'; id: string}; phase?:'started'|'ended'; channel: 'email' | 'push' | 'chat';
+  businessService: string; businessName: string; derivedStatus: 'operational'|'degraded' | 'major outage';
   approvedUpdate: null; at: string;
 };
 

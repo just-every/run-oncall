@@ -178,7 +178,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    for(const entry of state.audit)if(entry.kind==='member')entry.text=redact(entry.text)
    remember('oc_audit')
    remove('scheduleRecords','oc_schedule_records',r=>r.member===id||r.data.substitute===id||r.data.obligation?.creator===id)
-   eraseBusinessMember(state,id);remember('oc_business_services')
+   const lists=eraseBusinessMember(state,id,[oldName,...aliases]);identities.push(...lists);for(const list of lists)await fence('email-list',list);remember('oc_business_services')
    const redactedEntries=new Set<string>()
    const redactEntry=(entry:{id:string;text:string})=>{const text=redact(entry.text);if(text!==entry.text){redactedEntries.add(entry.id);entry.text=text}}
    for(const incident of state.incidents){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);if(incident.manualPage){const description=redact(incident.manualPage.description);if(description!==incident.manualPage.description){incident.manualPage.description=description;incident.manualPage.fingerprint=''}}for(const request of incident.responderRequests??[])request.message=redact(request.message);for(const e of incident.timeline)if(e.lifecycle&&e.lifecycle.member===id)e.lifecycle.member=null;for(const e of incident.timeline){const copied=e.operationId!==undefined&&erasedWorkflows.has(e.operationId);if(e.actor===id||copied||incident.manualPage&&e.kind==='declared'||['reassign','assign-role','manual-page','request-responders','respond-request','cancel-request'].includes(e.kind))redactEntry(e);if(copied)delete e.operationId}}
@@ -202,6 +202,10 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
     remember('move_in_objects');statements.push(db.prepare("DELETE FROM move_in_objects WHERE kind='user' AND id IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...aliases])))
     imported=await prepareImportCustodyErasure(c,{kind:'user',id:[...aliases][0]},{context,values:[...aliases,...filenames],related:{source(record){const ids=idsByNamespace.get(record.namespace)??new Set<string>();return indirectKeys.has(JSON.stringify([record.namespace,record.kind,record.sourceId]))||[...aliases].some(mail=>refers(record.payload,mail,ids)||mentions(record.payload,mail))},original(bytes){const raw=new TextDecoder().decode(bytes),ids=new Set([...idsByNamespace.values()].flatMap(ids=>[...ids]));try{const value=JSON.parse(raw);return [...aliases].some(mail=>refers(value,mail,ids)||mentions(value,mail))}catch{return [...aliases].some(mail=>mentions(raw,mail))}}}})
    }
+  } else if(kind==='email-list') {
+   const service=state.businessServices?.find(row=>row.emailLists?.some(list=>list.id===id));if(!service)fail('Unknown email-list subscriber',404)
+   service.emailLists=service.emailLists!.filter(row=>row.id!==id);service.notices=service.notices.filter(row=>row.target.kind!=='email-list'||row.target.id!==id);service.revision++
+   remember('oc_business_services');updated.oc_business_services=1
   } else if(kind==='email') {
    const address=state.emailAddresses?.find(row=>row.id===id)
    if(!address)fail('Unknown email integration',404)

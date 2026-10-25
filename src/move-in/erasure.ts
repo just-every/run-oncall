@@ -1,3 +1,4 @@
+import {subjectErasureIdentity} from '../subject-erasure-identity';
 import {eraseDeadlineMember} from '../incident-deadlines/archive';
 import {eraseManualMember} from '../manual-pages/archive';
 import { eraseBusinessMember } from '../business-status/model';
@@ -182,7 +183,7 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
   }
   for(const row of (await db.prepare('SELECT id,data FROM oc_business_services').all<{id:string;data:string}>()).results){
     const business=JSON.parse(row.data), state={members:[],businessServices:[business]} as unknown as import('../family/response-operations/domain').State;
-    for(const id of memberIds)eraseBusinessMember(state,id);
+    for(const id of memberIds){const lists=eraseBusinessMember(state,id,[email]);if(lists.length)rewrite.push(...forgetAuditIdentityQueries(lists));for(const list of lists)rewrite.push({sql:'INSERT OR IGNORE INTO oc_erasure_fences(id,epoch) VALUES(?,0)',params:[await subjectErasureIdentity('email-list',list)]});}
     const clean=JSON.stringify(scrub(business,email));
     if(clean!==row.data){rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_business_services WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
       {sql:'UPDATE oc_business_services SET data=? WHERE id=?',params:[clean,row.id]});automationChanged=true}

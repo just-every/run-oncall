@@ -21,12 +21,14 @@ async function upgradeFrom(baseline){
   const member={id:'synthetic-oncall-1',name:'Held upgrade owner',role:'admin',active:true};
   const service={id:'synthetic-oncall-1',name:'Held upgrade service',environment:'production',owner:member.id,runbook:['Retain this authored step'],pager:''};
   sql(`INSERT INTO oc_members VALUES('synthetic-oncall-1',0,${quote(member)}); INSERT INTO oc_services VALUES('synthetic-oncall-1',0,${quote(service)}); INSERT INTO workspace_control VALUES(1,7,'synthetic-oncall-1');`);
+  let heldBusiness=[];
+  if(baseline>=141){const business={id:'synthetic-oncall-61',name:'Held business status',owningTeam:'Held team label',supporting:[service.id],communicationsOwner:member.id,audience:[],highUrgencyImpact:false,active:true,revision:1,derived:'operational',impactRevision:0,override:null,subscriptions:[],notices:[]};sql(`INSERT INTO oc_business_services VALUES('synthetic-oncall-61',0,${quote(business)});`);heldBusiness=sql('SELECT id,ordinal,data FROM oc_business_services');}
   const before=sql('SELECT id,ordinal,data FROM oc_members UNION ALL SELECT id,ordinal,data FROM oc_services');
   bindings.d1_databases[0].migrations_dir=resolve('migrations/core');await writeFile(config,JSON.stringify(bindings));cli('d1','migrations','apply','DB');
   assert.deepEqual(sql('SELECT id,ordinal,data FROM oc_members UNION ALL SELECT id,ordinal,data FROM oc_services'),before,'all held identities, fields and authored runbooks survive the real upgrade');
   assert.equal(sql('SELECT revision FROM workspace_control')[0].revision,7);
   const applied=sql('SELECT name FROM d1_migrations ORDER BY id').map(r=>r.name);assert.deepEqual(applied,names,'migration ledger follows the unique candidate history in order');
-  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_business_services')[0].n,0);assert.equal(sql('SELECT COUNT(*) AS n FROM rer_command_receipts')[0].n,0);assert.equal(sql('SELECT COUNT(*) AS n FROM oc_erased_report_cases')[0].n,0);
+  assert.deepEqual(sql('SELECT id,ordinal,data FROM oc_business_services'),heldBusiness,'held pre-email-list business-service records remain byte-identical');assert.equal(sql('SELECT COUNT(*) AS n FROM rer_command_receipts')[0].n,0);assert.equal(sql('SELECT COUNT(*) AS n FROM oc_erased_report_cases')[0].n,0);
   console.log(`PASS populated migration CLI upgrade: main ${String(baseline).padStart(4,'0')} to candidate, held member/service/runbook bytes and workspace revision preserved; complete unique migration ledger in order`);
  }finally{await rm(root,{recursive:true,force:true});}
 }

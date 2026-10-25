@@ -1,7 +1,7 @@
 import {triageBulkCompletion} from './triage-bulk.mjs';
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
-import {localWorker} from './worker.mjs';
+import {localWorker,ownerDoor} from './worker.mjs';
 import {localPart, mail, recoveryRules} from './email-fixtures.mjs';
 
 await triageBulkCompletion();
@@ -496,3 +496,47 @@ try {
   console.log('PASS OC-056: native, PagerDuty-compatible before/after source acknowledgment, Alertmanager and email recover exact canonical obligations without human summaries; retry/late traffic preserve stop receipts, policy versions freeze silent/nonautomatic no-sender notices, declared incidents retain current-commander no-timer reminders and require summary plus evidence, urgency/severity/orchestration rules explicitly declare incidents, stale/anonymous/expired/revoked/nonadmin edits fail, audit failure rolls back recovery atomically, and archive/restore/restart retain history without credentials or sends. Paging remains OFF.');
   console.log('OC-041 triage accepted and refused items retain their own atomic audit outcomes; triage storm: 50 incidents, 49 independent commits plus stale failure, replay, roles, queries, viewer denial, confirmed matching and archive/restart passed');
 } finally {await w.close();}
+
+// OC-061 email-list records exercise the same public status and shared erasure doors.
+{
+ const {automationRuntime}=await import('./automation-runtime.mjs'),external=[];
+ const runtime=await automationRuntime(request=>{external.push(request.url);return new Response('unexpected provider call',{status:403});});
+ try{
+  const setup=await runtime.request('/api/setup',{name:'synthetic-oncall-610-owner',password:'synthetic-oncall-610-password'});assert.equal(setup.status,200);let cookie=setup.cookie;
+  const request=(path,input,as=cookie)=>runtime.request(path,input,as),value=async(path,input,status=200)=>{const result=await request(path,input);assert.equal(result.status,status,JSON.stringify(result.value));return result.value;};
+  const owner=setup.value.member,communications=await value('/api/members',{name:'synthetic-oncall-611',role:'responder',password:'synthetic-oncall-611-password'},201),outside=await value('/api/members',{name:'synthetic-oncall-612',role:'responder',password:'synthetic-oncall-612-password'},201),viewer=await value('/api/members',{name:'synthetic-oncall-613',role:'viewer',password:'synthetic-oncall-613-password'},201);
+  const session=async person=>(await request('/api/login',{name:person.name,password:person.name+'-password'})).cookie,communicationsCookie=await session(communications),outsideCookie=await session(outside),viewerCookie=await session(viewer);
+  const service=await value('/api/command',{type:'service',id:'synthetic-oncall-610',name:'Synthetic list service',environment:'test',owner:owner.id,runbook:[],pager:''});
+  await value('/api/status',{action:'create',name:'Synthetic list business',owningTeam:'Synthetic team label',supporting:[service.id],communicationsOwner:communications.id,audience:[],highUrgencyImpact:false});
+  const business=async()=> (await value('/api/state')).businessServices.find(row=>row.name==='Synthetic list business'),listAddress='synthetic-oncall-614-list@example.test';
+  const add=async(address,as=cookie,extra={})=>request('/api/status',{action:'email-list-add',id:(await business()).id,revision:(await business()).revision,category:'email-list',channel:'email',address,...extra},as);
+  assert.equal((await add(listAddress,'')).status,401);assert.equal((await add(listAddress,viewerCookie)).status,403);assert.equal((await add(listAddress,outsideCookie)).status,403);
+  for(const [address,extra]of [['not-an-address',{}],['bad..list@example.test',{}],['list@example.test\nBcc:other@example.test',{}],[listAddress,{category:'team'}],[listAddress,{channel:'chat'}]])assert.equal((await add(address,cookie,extra)).status,400);
+  assert.equal((await add(listAddress,communicationsCookie)).status,200);assert.equal((await add(listAddress.toUpperCase())).status,409);
+  let status=await business();const list=status.emailLists[0];assert.equal(list.category,'email-list');assert.equal(list.channel,'email');assert.equal(list.by,communications.id);
+  for(const as of [viewerCookie,outsideCookie]){const limited=await request('/api/status',undefined,as);assert.equal(limited.status,200);assert.ok(!JSON.stringify(limited.value).includes(listAddress));for(const path of ['/api/state','/api/workspace']){const workspace=await request(path,undefined,as);assert.ok(!JSON.stringify(workspace.value).includes(listAddress));}}
+  let incident=await value('/api/command',{type:'declare',service:service.id,title:'Synthetic private alert text must not be copied',summary:'Synthetic private response context',severity:'warning'});
+  status=await business();assert.deepEqual(status.notices.filter(row=>row.target.kind==='email-list'&&row.target.id===list.id).map(row=>row.phase),['started']);assert.ok(!JSON.stringify(status.notices).includes(incident.title));assert.ok(status.notices.every(row=>row.label==='no sender'&&row.automatic===false&&row.paging==='off'&&row.channel==='email'));
+  const before=await value('/api/state');await runtime.db.prepare("CREATE TRIGGER synthetic_oncall_list_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='business.email-list-add' AND NEW.workspace_after>NEW.workspace_before BEGIN SELECT RAISE(ABORT,'synthetic-oncall-614'); END").run();
+  try{assert.equal((await add('synthetic-oncall-614-rollback@example.test')).status,503);}finally{await runtime.db.prepare('DROP TRIGGER synthetic_oncall_list_audit').run();}assert.deepEqual(await value('/api/state'),before,'list and immediate impact obligation roll back with their permanent audit');
+  assert.equal((await add('synthetic-oncall-615@example.test')).status,200);assert.equal((await add('synthetic-oncall-616@example.test')).status,200);
+  const invalid=await value('/api/archive');invalid.businessServices.find(row=>row.id===status.id).emailLists[0].category='channel';await value('/api/restore',{mode:'replace',archive:invalid},400);
+  incident=await value('/api/command',{type:'transition',incident:incident.id,revision:incident.revision,state:'resolved',summary:'Synthetic verified recovery',evidence:'https://example.test/synthetic-oncall-614'});
+  status=await business();assert.deepEqual(status.notices.filter(row=>row.target.kind==='email-list'&&row.target.id===list.id).map(row=>row.phase),['started','ended']);
+  await value('/api/status',{action:'email-list-subscription',id:status.id,revision:status.revision,list:list.id,category:'email-list',channel:'email',active:false});
+  await value('/api/command',{type:'declare',service:service.id,title:'Synthetic next impact',summary:'Synthetic response only',severity:'warning'});status=await business();assert.equal(status.notices.filter(row=>row.target.id===list.id).length,2,'unsubscribe stops future obligations');assert.ok(status.notices.filter(row=>row.target.id===list.id).every(row=>row.state==='stopped'));
+  const old=await value('/api/archive'),erase='/api/erasure/email-list/'+list.id,eraseInput={workspaceRevision:old.revision,confirmation:'erase '+list.id};await value(erase,{...eraseInput,workspaceRevision:old.revision-1},409);
+  await runtime.db.prepare("CREATE TRIGGER synthetic_oncall_list_erase BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='email-list.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-614'); END").run();try{await value(erase,eraseInput,503);}finally{await runtime.db.prepare('DROP TRIGGER synthetic_oncall_list_erase').run();}assert.deepEqual(await value('/api/archive'),old);
+  const receipt=await value(erase,eraseInput);assert.equal(receipt.state,'complete');assert.equal(receipt.stores.oc_business_services.updated,1);assert.ok(!JSON.stringify(await value('/api/state')).includes(listAddress));await value('/api/restore',{mode:'replace',archive:old},409);
+  const current=await value('/api/archive'),forged=structuredClone(old);forged.erasureFences=current.erasureFences;await value('/api/restore',{mode:'replace',archive:forged},409);
+  const person=await value('/api/members',{name:'synthetic-oncall-615@example.test',password:'synthetic-oncall-615-password',role:'responder'},201);await value('/api/erasure/member/'+person.id,{workspaceRevision:(await value('/api/state')).revision,confirmation:'erase '+person.id,identitiesReviewed:true,importedPeople:[]});assert.ok(!JSON.stringify(await value('/api/state')).includes(person.name));
+  const door=ownerDoor(runtime,cookie),imported='synthetic-oncall-616@example.test',plan=await door.preview('opsgenie',JSON.stringify({users:{data:[{id:'synthetic-oncall-616',username:imported,fullName:'Synthetic list contact'}]}}));assert.equal(plan.status,200);assert.equal((await door.apply('opsgenie',plan.value)).status,200);await value('/api/move-in/erase',{email:imported,confirmation:'erase '+imported});assert.ok(!JSON.stringify(await value('/api/state')).includes(imported));
+  await value('/api/status',{action:'create',name:'Synthetic bounded subscribers',owningTeam:'Synthetic team',supporting:[service.id],communicationsOwner:owner.id,audience:[],highUrgencyImpact:false});
+  const bounded=async()=> (await value('/api/state')).businessServices.find(row=>row.name==='Synthetic bounded subscribers');
+  for(let n=0;n<50;n++){const row=await bounded();await value('/api/status',{action:'email-list-add',id:row.id,revision:row.revision,category:'email-list',channel:'email',address:'synthetic-oncall-620-'+n+'@example.test'});}
+  const full=await bounded();await value('/api/status',{action:'email-list-add',id:full.id,revision:full.revision,category:'email-list',channel:'email',address:'synthetic-oncall-620-50@example.test'},429);assert.equal((await bounded()).emailLists.length,50);
+  const legacy=await value('/api/archive');delete legacy.businessServices.find(row=>row.id===status.id).emailLists;
+  const restored=await request('/api/restore',{mode:'replace',archive:legacy});assert.equal(restored.status,200,JSON.stringify(restored.value));cookie=restored.cookie;await runtime.restart();const held=await value('/api/state');assert.ok(held.businessServices.every(row=>!row.active&&(row.emailLists??[]).every(list=>!list.active)&&row.notices.every(notice=>notice.state==='stopped')));assert.equal(held.businessServices.find(row=>row.id===full.id).emailLists.length,50);
+  assert.deepEqual(external,[],'email-list records never call any provider');console.log('PASS OC-061 email-list records: bounded validated category/address/channel, admin/communications-owner authority and restricted reads, atomic list/obligation audit rollback, start/end recorded obligations without raw alerts, unsubscribe, shared list/native/imported erasure and restore fences, legacy archive compatibility and inactive restart; no sender');
+ }finally{await runtime.close();}
+}

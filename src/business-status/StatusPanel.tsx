@@ -31,7 +31,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
         <Field name="channel" label="Recorded delivery channel" value={service.subscription?.channel ?? 'email'}><option value="email">Email (record only)</option><option value="push">Push (record only)</option><option value="chat">Chat (record only)</option></Field>
         <Field name="active" label="Your subscription" value={String(service.subscription?.active ?? false)}><option value="true">Subscribed</option><option value="false">Unsubscribed</option></Field>
       </Form>
-      {service.notices.length > 0 && <div aria-label="Recorded impact obligations"><h4>Recorded impact obligations</h4>{service.notices.map((record: any) => <p key={record.id}>{record.businessName} · {record.derivedStatus} · {record.channel} · {record.state} · no sender · non-automatic · paging OFF. {record.approvedUpdate === null && 'No approved update is available.'}</p>)}</div>}
+      {service.notices.length > 0 && <div aria-label="Recorded impact obligations"><h4>Recorded impact obligations</h4>{service.notices.map((record: any) => <p key={record.id}>{record.businessName} · {record.phase?`impact ${record.phase} · `:''}{record.derivedStatus} · {record.channel} · {record.state} · no sender · non-automatic · paging OFF. {record.approvedUpdate === null && 'No approved update is available.'}</p>)}</div>}
       {(admin || actor.id === service.communicationsOwner) && <details><summary>Manage internal status</summary>
         <Form busy={busy} label="Set status override" onSubmit={data => save({...data, action:'override', id:service.id, revision:service.revision})}>
           <Field name="value" label="Override status"><option value="operational">Operational</option><option value="degraded">Degraded</option><option value="major outage">Major outage</option></Field>
@@ -43,6 +43,12 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
           <Field name="channel" label="Member recorded channel"><option value="email">Email (record only)</option><option value="push">Push (record only)</option><option value="chat">Chat (record only)</option></Field>
           <Field name="active" label="Member subscription"><option value="true">Subscribed</option><option value="false">Unsubscribed</option></Field>
         </Form>}
+        <details><summary>Email-list subscription settings</summary><p>Email lists record obligations only. No email is sent; an approved sender is still required.</p>
+          <Form busy={busy} label="Add email-list subscriber" onSubmit={data=>save({...data,action:'email-list-add',id:service.id,revision:service.revision,category:'email-list',channel:'email'})}>
+            <Field name="address" label="Email-list address" type="email" />
+          </Form>
+          {(service.emailLists??[]).map((list:any)=><div className="saved-view" key={list.id} style={{flexWrap:"wrap"}}><span style={{overflowWrap:"anywhere",minWidth:0,flex:"1 1 220px"}}>{list.address} · email · {list.active?'subscribed':'unsubscribed'}</span><button disabled={busy} onClick={()=>save({action:'email-list-subscription',id:service.id,revision:service.revision,list:list.id,category:'email-list',channel:'email',active:!list.active})}>{list.active?'Unsubscribe email list':'Subscribe email list'}</button></div>)}
+        </details>
         {!service.active && admin && <button disabled={busy} onClick={() => save({action:'activate',id:service.id,revision:service.revision})}>Activate status records</button>}
       </details>}
     </article>)}
