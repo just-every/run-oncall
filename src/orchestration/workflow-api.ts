@@ -2,7 +2,7 @@ import {inheritWorkspaceSnapshot} from '../workspace-store.ts';
 import {authority,fail,Fault,type State} from '../family/response-operations/domain.ts';
 import type {BulkOperation} from '../family/response-operations/triage.ts';
 import {coordinationTasks,applyCoordinationStep} from '../triage-orchestration.ts';
-import {auditKind,auditOutcome,auditRefusalCommitted} from '../audit-store.ts';
+import {auditKind,auditOutcome,auditRefusalCommitted,auditWriteOutcome} from '../audit-store.ts';
 type Dependencies={state:(c:any)=>Promise<State>;save:(c:any,s:State,r:number)=>Promise<void>};
 export async function advanceRuleWorkflow(c:any,record:BulkOperation,input:any,deps:Dependencies,clear=false){
  const save=async(s:State,r:number)=>{try{await deps.save(c,s,r)}catch(error){if(error instanceof Fault&&error.status===409)auditRefusalCommitted(c.env.DB);throw error;}};
@@ -15,7 +15,7 @@ export async function advanceRuleWorkflow(c:any,record:BulkOperation,input:any,d
  if(clear){
   if(rule.state!=='running'||Date.parse(rule.leaseUntil!)>Date.now())fail('Only an expired workflow lease can be explicitly cleared',409);
   Object.assign(rule,{state:'interrupted',outcome:'interrupted',lease:null,leaseUntil:null,revision:rule.revision+1});
-  auditKind(c.env.DB,'triage.workflow-clear-expired');auditOutcome(c.env.DB,'interrupted');
+  auditKind(c.env.DB,'triage.workflow-clear-expired');auditWriteOutcome(c.env.DB,'interrupted');
   await save(state,state.revision);return c.json(current);
  }
  if(rule.state==='running')fail('Workflow has an active or uncertain lease; explicitly clear it after expiry',409);

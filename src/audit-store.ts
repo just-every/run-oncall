@@ -2,7 +2,7 @@ export type AuditIdentity = { kind: string; id: string }
 export type AuditOutcome = 'accepted' | 'refused' | 'failed' | 'interrupted' | 'uncertain'
 export type AuditContext = {
   feature: string; kind: string; actor?: AuditIdentity; subject?: AuditIdentity; namedMember?: AuditIdentity;
-  source: AuditIdentity; outcome?: AuditOutcome; commits: number; storageFailed: boolean; ownerCustodyRefusal?: boolean; refusalCommitted?: boolean
+  source: AuditIdentity; outcome?: AuditOutcome; writeOutcome?: AuditOutcome; commits: number; storageFailed: boolean; ownerCustodyRefusal?: boolean; refusalCommitted?: boolean
 }
 const contexts = new WeakMap<object, AuditContext>()
 export function bindAuditContext(db: D1Database, context: AuditContext) { contexts.set(db, context) }
@@ -15,6 +15,8 @@ export function auditOutcome(db: D1Database, outcome?: AuditOutcome) {
   const context = contexts.get(db)
   if (context) context.outcome = outcome
 }
+/** Apply an execution outcome only when this batch changes accepted state. */
+export function auditWriteOutcome(db:D1Database,outcome:AuditOutcome){const context=contexts.get(db);if(context)context.writeOutcome=outcome}
 /** The owner custody boundary must refuse without changing any table. */
 export function ownerCustodyRefusal(db: D1Database) {
   const context = contexts.get(db)
@@ -48,8 +50,8 @@ export function auditTransaction(db: D1Database, context: AuditContext, statemen
   prefix.push(db.prepare(`UPDATE oc_audit_clock SET workspace_before=${revision('workspace_control')},paging_before=${revision('paging_control')},handoff_before=${revision('handoff_state')},actor_label=${label},subject_label=${label},source_label=${label},named_member_label=${context.namedMember ? label : 'NULL'},changes_before=total_changes(),changed=0 WHERE id=1`).bind(...identities.flatMap(identity => [identity.kind, identity.id])))
   const suffix = [db.prepare(`UPDATE oc_audit_clock SET changed=CASE WHEN total_changes()>changes_before+1 THEN 1 ELSE 0 END,revision=revision+CASE WHEN total_changes()>changes_before+1 THEN 1 ELSE 0 END WHERE id=1`),
     db.prepare(`INSERT INTO oc_admin_audit(id,kind,feature,actor,subject,source,at,before_revision,after_revision,outcome,workspace_before,workspace_after,paging_before,paging_after,handoff_before,handoff_after,named_member)
-      SELECT ?,?,?,actor_label,subject_label,source_label,?,revision-changed,revision,COALESCE(?,CASE changed WHEN 1 THEN 'accepted' ELSE 'refused' END),workspace_before,${revision('workspace_control')},paging_before,${revision('paging_control')},handoff_before,${revision('handoff_state')},named_member_label FROM oc_audit_clock WHERE id=1`)
-      .bind(crypto.randomUUID(), context.kind, context.feature, new Date().toISOString(), outcome ?? context.outcome ?? null)]
+      SELECT ?,?,?,actor_label,subject_label,source_label,?,revision-changed,revision,COALESCE(${context.writeOutcome!==undefined&&outcome===undefined&&context.outcome===undefined?'CASE WHEN changed=1 THEN ? END':'?'},CASE changed WHEN 1 THEN 'accepted' ELSE 'refused' END),workspace_before,${revision('workspace_control')},paging_before,${revision('paging_control')},handoff_before,${revision('handoff_state')},named_member_label FROM oc_audit_clock WHERE id=1`)
+      .bind(crypto.randomUUID(), context.kind, context.feature, new Date().toISOString(), outcome ?? context.outcome ?? context.writeOutcome ?? null)]
   return { statements: [...prefix, ...statements, ...suffix], offset: prefix.length }
 }
 export async function exportAudit(db: D1Database) {
