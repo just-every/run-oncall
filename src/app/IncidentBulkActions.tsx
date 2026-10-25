@@ -45,6 +45,6 @@ export function IncidentBulkActions({items, allMatching, count, query, workspace
       {action === 'resolve' && items.some(i=>i.kind!=='alert') && <Field name="evidence" label="Recovery evidence for every incident" type="url" />}
     </Form>
     {action==='orchestrate'&&preview&&<div role="status"><p>Ordered comparison · no effects</p><ol>{preview.comparison.map(step=><li key={step.position}>{step.step==='declare'?'Declare incident':'Record responder obligation'} · alert {step.alert.slice(0,8)} · {step.ok?'would record':step.error}{step.ok&&step.step==='declare'&&(step.templateVersion===null?' · no service template':` · template v${step.templateVersion}`)}{step.ok&&step.step==='notify'&&` · ${members.find(member=>member.id===step.member)?.name??'Responder unavailable'} · no sender`}</li>)}</ol></div>}
-    {result && <div role="status"><p>Operation {result.operationId}{result.remaining ? ` · ${result.results.length} processed · ${result.remaining} pending` : ""}</p><ul>{result.results.map(r => <li key={r.id}>{r.step??r.id.slice(0, 8)}: {r.ok ? `saved · revision ${r.revision}` : r.error}</li>)}</ul></div>}
+    {result && <div role="status"><p>Operation {result.operationId}{result.remaining ? ` · ${result.results.length} processed · ${result.remaining} pending` : ""}</p><ul tabIndex={0} aria-label="Bulk operation results">{result.results.map(r => <li key={r.id}>{r.step??r.id.slice(0, 8)}: {r.ok ? `saved · revision ${r.revision}` : r.error}</li>)}</ul></div>}
   </section>;
 }
