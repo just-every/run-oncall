@@ -302,6 +302,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  for(const [kind,id] of [['incident',erasedNativeIncident.id],['intake',erasedNativeSource],['member',erasedNative.id]]){
   const receipt=ok(await req('/api/erasure/'+kind+'/'+id,{workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase '+id,...(kind==='member'?{identitiesReviewed:true,importedPeople:[]}:{})}));assert.equal(receipt.state,'complete');
  }
+ const groupedAfterErasure=ok(await req('/api/state')).events.filter(event=>event.service===groupedService);assert.deepEqual(groupedAfterErasure.map(event=>event.decision),groupedEvents.map(event=>event.decision),'explicit member erasure redacts copied identities without changing grouping decisions');
  const retainedErasureFences=sql('SELECT id,epoch FROM oc_erasure_fences ORDER BY id')
  await m.close();await m.command(['export','--output',later,'--non-interactive']);
  // A valid-checksum archive containing a current fence and an older erased row
@@ -317,7 +318,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.ok(Object.values(sql('SELECT (SELECT COUNT(*) FROM move_in_objects) AS imported,(SELECT COUNT(*) FROM ik_jobs) AS jobs,(SELECT COUNT(*) FROM oc_api_clients) AS clients,(SELECT COUNT(*) FROM oc_api_endpoints) AS endpoints,(SELECT COUNT(*) FROM oc_api_operations) AS operations,(SELECT COUNT(*) FROM oc_api_outbox) AS outbox')[0]).every(count=>count===0),'the refused older archive restores no import or automation record')
  await m.command(['import','--input',later,'--yes','--non-interactive'])
  assert.equal(sql("SELECT COUNT(*) AS n FROM oc_incidents WHERE id='"+erasedNativeIncident.id+"'")[0].n,0);assert.equal(sql("SELECT COUNT(*) AS n FROM oc_intake_sources WHERE id='"+erasedNativeSource+"'")[0].n,0);assert.equal(JSON.parse(sql("SELECT data FROM oc_members WHERE id='"+erasedNative.id+"'")[0].data).name,'Erased member');
- assert.deepEqual(sql("SELECT data FROM oc_events WHERE json_extract(data,'$.service')='synthetic-oncall-437' ORDER BY ordinal").map(row=>JSON.parse(row.data)),groupedEvents,'portable receiving preserves original grouping ids, versions and explanations without replay');
+ assert.deepEqual(sql("SELECT data FROM oc_events WHERE json_extract(data,'$.service')='synthetic-oncall-437' ORDER BY ordinal").map(row=>JSON.parse(row.data)),groupedAfterErasure,'portable receiving preserves original grouping ids, versions and explanations without replay');
  console.log('OC-040 incident/member/integration portable erasure: later journal rejects the older installation archive; current import preserves anonymous member and absence of incident/key');
  assert.ok(retainedErasureFences.length);assert.deepEqual(sql('SELECT id,epoch FROM oc_erasure_fences ORDER BY id'),retainedErasureFences,'current installation archive preserves every durable subject erasure fence exactly')
  assert.ok(!sql('SELECT data FROM oc_api_clients UNION ALL SELECT data FROM oc_api_endpoints').some(row=>row.data.includes('alice@example.test')),'erased automation labels stay absent after current portable restore')

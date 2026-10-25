@@ -9,7 +9,7 @@ export function validateCorrelation(value:any):CorrelationRule {
 /** Use existing bounded provider context; never copy label values into grouping metadata. */
 export function correlationLabels(value:any):Record<string,string> {
  const labels:Record<string,string>={},ambiguous=new Set<string>();
- const put=(key:string,value:unknown)=>{if(!/^[a-zA-Z0-9_.-]{1,64}$/.test(key)||typeof value!=='string'||!value||value.length>200||/secret|token|password|authorization|cookie|credential|signature/i.test(key))return;if(Object.hasOwn(labels,key)&&labels[key]!==value)ambiguous.add(key);else Object.defineProperty(labels,key,{value,enumerable:true,configurable:true});};
+ const put=(key:string,value:unknown)=>{if(!/^[a-zA-Z0-9_.-]{1,64}$/.test(key)||typeof value!=='string'||!value.trim()||value.length>200||/secret|token|password|authorization|cookie|credential|signature/i.test(key))return;if(Object.hasOwn(labels,key)&&labels[key]!==value)ambiguous.add(key);else Object.defineProperty(labels,key,{value,enumerable:true,configurable:true});};
  for(const map of [value?.labels,value?.custom_details,value?.details?.labels])if(map&&typeof map==='object'&&!Array.isArray(map))for(const [key,v] of Object.entries(map))put(key,v);
  const tags=Array.isArray(value?.tags)?value.tags:typeof value?.tags==='string'?value.tags.split(','):[];
  for(const tag of tags)if(typeof tag==='string'){const colon=tag.indexOf(':');if(colon>0)put(tag.slice(0,colon).trim(),tag.slice(colon+1).trim());}
