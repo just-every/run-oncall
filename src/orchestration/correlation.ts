@@ -9,7 +9,7 @@ export function validateCorrelation(value:any):CorrelationRule {
 /** Use existing bounded provider context; never copy label values into grouping metadata. */
 export function correlationLabels(value:any):Record<string,string> {
  const labels:Record<string,string>={},ambiguous=new Set<string>();
- const put=(key:string,value:unknown)=>{if(!/^[a-zA-Z0-9_.-]{1,64}$/.test(key)||typeof value!=='string'||!value||value.length>200||/secret|token|password|authorization|cookie|credential|signature/i.test(key))return;if(labels[key]!==undefined&&labels[key]!==value)ambiguous.add(key);else Object.defineProperty(labels,key,{value,enumerable:true,configurable:true});};
+ const put=(key:string,value:unknown)=>{if(!/^[a-zA-Z0-9_.-]{1,64}$/.test(key)||typeof value!=='string'||!value||value.length>200||/secret|token|password|authorization|cookie|credential|signature/i.test(key))return;if(Object.hasOwn(labels,key)&&labels[key]!==value)ambiguous.add(key);else Object.defineProperty(labels,key,{value,enumerable:true,configurable:true});};
  for(const map of [value?.labels,value?.custom_details,value?.details?.labels])if(map&&typeof map==='object'&&!Array.isArray(map))for(const [key,v] of Object.entries(map))put(key,v);
  const tags=Array.isArray(value?.tags)?value.tags:typeof value?.tags==='string'?value.tags.split(','):[];
  for(const tag of tags)if(typeof tag==='string'){const colon=tag.indexOf(':');if(colon>0)put(tag.slice(0,colon).trim(),tag.slice(colon+1).trim());}
@@ -21,7 +21,7 @@ export function correlate(state:State,signal:Signal,policy:Policy,decision:Decis
  const eventById=new Map(state.events.map(e=>[e.id,e])),receiptByEvent=new Map((state.intakeReceipts??[]).filter(r=>r.event).map(r=>[r.event,r]));
  const retainedLabels=(event:Event)=>{const receipt=receiptByEvent.get(event.id);return {...correlationLabels(receipt?.details),...correlationLabels(receipt?.routingInput)};};
  const same=(event:Event)=>event.source===signal.source&&event.eventId===signal.eventId;
- const value=(event:Signal,provided?:Record<string,string>)=>rule.field==='key'?event.key:rule.field==='title'?event.title:(provided??retainedLabels(event as Event))[rule.field.slice(7)];
+ const value=(event:Signal,provided?:Record<string,string>)=>{if(rule.field==='key')return event.key;if(rule.field==='title')return event.title;const labels=provided??retainedLabels(event as Event),name=rule.field.slice(7);return Object.hasOwn(labels,name)?labels[name]:undefined;};
  const match=value(signal,labels??(state.events.find(same)?retainedLabels(state.events.find(same)!):{}));
  const related=(event:Event)=>event.environment===signal.environment&&(event.service===signal.service||rule.includeDependencies&&(service?.dependencies?.includes(event.service)||state.services.find(s=>s.id===event.service)?.dependencies?.includes(signal.service)));
  const candidates=state.events.filter(e=>!same(e)&&e.intent==='trigger'&&related(e)&&e.decision.correlation?.group&&e.decision.correlation.field===rule.field&&e.decision.correlation.windowSeconds===rule.windowSeconds&&value(e)===match);
