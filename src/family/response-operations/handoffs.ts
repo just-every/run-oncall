@@ -104,7 +104,7 @@ function source(input: unknown): HandoffSource {
     if (m.rule !== null) snapshotText(m.rule, 'response rule');
     if (!d.actor.startsWith('source:')) fail('Response declaration metadata needs a source actor');
   }
-  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
+  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["team", "dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
   if (v.ackTimeouts !== undefined) validateTimeoutHistory(v.ackTimeouts);
   if (v.userAssignments !== undefined) validateAssignmentHistory(v.userAssignments);
   if (v.urgencyRules !== undefined) validateUrgencyRuleHistory(v.urgencyRules);
@@ -120,6 +120,7 @@ function source(input: unknown): HandoffSource {
   snapshotText(v.pager, "pager link", 2000, true); link(v.pager);
   if (!Array.isArray(v.runbook) || v.runbook.length > 30) fail("Invalid handoff runbook snapshot");
   v.runbook.forEach((line: unknown) => snapshotText(line, "runbook", 500));
+  if (v.team !== undefined && v.team !== null) snapshotText(v.team, "owning team ID");
   if (v.dependencies !== undefined) {
     if (!Array.isArray(v.dependencies) || v.dependencies.length > 30 || new Set(v.dependencies).size !== v.dependencies.length || v.dependencies.includes(v.id)) fail("Invalid handoff dependency snapshot");
     v.dependencies.forEach((id: unknown) => snapshotText(id, "dependency ID"));
