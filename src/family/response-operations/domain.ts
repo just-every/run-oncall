@@ -1,4 +1,4 @@
-import {correlate,validateCorrelation,validateCorrelationDecision,validateCorrelationEvents,type CorrelationRule,type CorrelationDecision} from '../../orchestration/correlation';
+import {correlate,validateCorrelation,validateCorrelationDecision,validateCorrelationEvents,type CorrelationRule,type CorrelationDecision} from '../../orchestration/correlation.ts';
 import {validateAlertCoordination,type AlertCoordination} from '../../triage-alerts.ts';
 import {validateScheduleRecords,type ScheduleRecord} from '../../schedule-coordination/model.ts';
 import {identityLimit} from '../../intake/identity-bounds.ts';

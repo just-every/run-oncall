@@ -1,4 +1,4 @@
-import {replayService} from './orchestration/replay';
+import {replayService} from './orchestration/replay.ts';
 import { requireHandoffErasureFence, subjectErasureIdentity } from './subject-erasure-identity.ts'
 import { installSubjectErasure } from './subject-erasure'
 import {installScheduleCoordination} from './schedule-coordination/api';

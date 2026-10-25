@@ -1,4 +1,4 @@
-import {correlationLabels} from '../orchestration/correlation';
+import {correlationLabels} from '../orchestration/correlation.ts';
 import {identityLimit} from './identity-bounds.ts';
 import { finishResponseAdmission } from '../response-policy/model.ts';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';

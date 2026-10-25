@@ -1,4 +1,4 @@
-import {fail,type Decision,type Event,type Policy,type Signal,type State} from '../family/response-operations/domain';
+import {fail,type Decision,type Event,type Policy,type Signal,type State} from '../family/response-operations/domain.ts';
 export type CorrelationRule={field:string;windowSeconds:number;includeDependencies:boolean;flappingCount:number};
 export type CorrelationDecision={group:string|null;originalEvent:string|null;originalPolicy:string|null;originalVersion:number|null;field:string;windowSeconds:number;startedAt:string;relationship:'service'|'dependency'|'unmatched';held:boolean;occurrences:number;reason:string};
 const fields=['field','windowSeconds','includeDependencies','flappingCount'];

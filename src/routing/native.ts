@@ -1,11 +1,11 @@
-import {correlationLabels} from '../orchestration/correlation';
+import {correlationLabels} from '../orchestration/correlation.ts';
 import { finishResponseAdmission } from '../response-policy/model.ts';
 import {readNativeRequest} from '../native-request';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
 import {beginRate,saveRate,admittedCount} from '../intake-rate/admission';
 import { auditIdentity } from '../audit-store';
 import { parseNativeRequest, retainNativeIncomplete } from '../native-incomplete';
-import { fail, signalInput, admit, type State } from '../family/response-operations/domain';
+import { fail, signalInput, admit, type State } from '../family/response-operations/domain.ts';
 import { refuseKeyEcho, type NativeSource } from '../native-sources';
 import { intakeHash } from '../intake/credentials';
 import { intakeSourceIdentity, type IntakeReceipt, type IntakeSource } from '../intake/model';

@@ -1,6 +1,6 @@
-import {route,type State,type Signal,type Event} from '../family/response-operations/domain';
-import {serviceUrgency} from '../urgency/model';
-import {labelsForEvent} from './correlation';
+import {route,type State,type Signal,type Event} from '../family/response-operations/domain.ts';
+import {serviceUrgency} from '../urgency/model.ts';
+import {labelsForEvent} from './correlation.ts';
 /** Evaluate in supplied order on a private copy. No admission or audit write runs. */
 export function replayService(state:State,signals:Signal[],at:string){
  const proposed=structuredClone(state),identity=(s:Signal)=>JSON.stringify([s.source,s.eventId]),selected=new Set(signals.map(identity));

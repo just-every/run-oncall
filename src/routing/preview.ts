@@ -1,5 +1,5 @@
-import {correlationLabels,labelsForEvent} from '../orchestration/correlation';
-import {serviceUrgency} from '../urgency/model';
+import {correlationLabels,labelsForEvent} from '../orchestration/correlation.ts';
+import {serviceUrgency} from '../urgency/model.ts';
 import { fail, route, type State } from '../family/response-operations/domain.ts';
 import type { IntakeSource } from '../intake/model.ts';
 import type { RoutingPreview, RoutingVersion } from './types.ts';

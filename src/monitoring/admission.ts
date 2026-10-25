@@ -1,4 +1,4 @@
-import {correlationLabels} from '../orchestration/correlation';
+import {correlationLabels} from '../orchestration/correlation.ts';
 import { finishResponseAdmission } from '../response-policy/model.ts';
 import { recordAlertObligation } from '../alert-obligation.ts';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
