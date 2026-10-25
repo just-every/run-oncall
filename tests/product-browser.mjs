@@ -370,7 +370,7 @@ async function changeAndSigningBrowser(page,context){
   await page.getByRole('link',{name:'Schedules',exact:true}).click();await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
   await page.locator('.scheduling-now-next').getByText('Now: Coverage gap',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
   await page.getByRole('link',{name:'Reviews',exact:true}).click();
-  const responseReport=page.getByRole('region',{name:'Response report',exact:true});
+  const responseReport=page.locator('.response-report');
   await responseReport.getByText(/Incident durations and source entries/).click();
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().waitFor();
   assert.equal(await responseReport.getByRole('link',{name:'Erased incident',exact:true}).count(),0,'erased cases have no personal incident drilldown');
