@@ -66,10 +66,11 @@ export function coverageLoad(state: State, scheduling: Scheduling, report: Respo
   });
   return {schedulingRevision: scheduling.revision, from: new Date(from).toISOString(), through: new Date(through).toISOString(),
     schedules: schedules.map(s => ({id: s.id, name: s.name, service: s.service, revision: s.revision, timezone: s.timezone})),
-    acknowledged: acknowledgements.length, unacknowledged: report.incidents.length - acknowledgements.length, responders, services,
+    acknowledged: acknowledgements.length, unacknowledged: report.incidents.length - acknowledgements.length - report.cohort.erased, unknownAcknowledgements:report.cohort.erased, responders, services,
     basis: [
       'Scheduled hours come from the current revision of each schedule (its rotations and overrides) and current membership, over the cohort range up to the observation time. They are scheduled hours, not worked hours.',
       'Earlier schedule revisions are not retained, so a schedule change recomputes past scheduled hours; the schedule revisions used are listed. A slot held by a member who is now inactive or not a responder counts as uncovered.',
+      'Erased declaration cases have unknown acknowledgment state, shown separately from unacknowledged incidents. Shares use only observed retained acknowledgments; no erased case is attributed or treated as zero.',
       'Load is the first explicit acknowledgement of each cohort incident, the entry acknowledgement time is measured to. Unacknowledged incidents are counted as unattributed, never assigned to anyone.',
       'Load is normalised by scheduled primary hours, the role a page reaches first; backup hours are shown separately. Load to coverage is the share of acknowledgements divided by the share of primary hours: 1 means load in proportion to coverage. Without primary hours no rate is given.',
       'Outside coverage counts acknowledgements made while the responder held neither primary nor backup on a schedule of that incident\'s service. Overlapping schedules count each hour once.',

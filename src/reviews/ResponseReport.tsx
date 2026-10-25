@@ -58,7 +58,7 @@ export function ResponseReport({state}: {state: State}) {
         <p>Declarations from <time>{utc(report.cohort.from)}</time> inclusive to <time>{utc(report.cohort.to)}</time> exclusive.</p>
         <p>Observed through <time>{utc(report.generatedAt)}</time> · workspace revision {report.revision}.</p>
         {report.revision !== state.revision && <p>Workspace is now revision {state.revision}. Refresh to include its latest records.</p>}
-        <p>Unassignable declaration timestamps: {report.cohort.unassignableDeclarations}.</p>
+        <p>Unassignable declaration timestamps: {report.cohort.unassignableDeclarations} · erased declaration cases, durations unknown: {report.cohort.erased}.</p>
         <button type="button" disabled={loading||exporting} onClick={async()=>{
           setExporting(true);setError('');
           try{

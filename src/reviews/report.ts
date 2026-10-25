@@ -135,7 +135,7 @@ export function responseReport(state: State, input: {from?: string; to?: string;
   incidents.sort((a,b)=>clock(a.declaredAt)-clock(b.declaredAt)||a.id.localeCompare(b.id));
   return {revision: state.revision, generatedAt,
     cohort: {from: new Date(from).toISOString(), to: new Date(to).toISOString(), service: input.service ?? null,
-      observationAt: generatedAt, count: incidents.length,
+      observationAt: generatedAt, count: incidents.length, erased: incidents.filter(row=>row.state==='erased').length,
       unassignableDeclarations: state.incidents.filter(i => (input.service === undefined || i.service === input.service) && !Number.isFinite(clock(i.createdAt))).length,
       inclusion: 'createdAt declaration in UTC [from,to); every matching incident retained regardless of state, severity, service configuration or metric availability; endpoints observed through generatedAt'},
     definitions: {

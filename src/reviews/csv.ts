@@ -9,14 +9,14 @@ export function exportResponseCsv(report: ProjectedReport): string {
   const metrics = ['mtta', 'mttr', 'recovery', 'sourceRecovery'] as const;
   const fields = ['status', 'seconds', 'sourceEntryId', 'sourceAt', 'sourceKind', 'reason', 'evidence'] as const;
   const metadata = [report.revision, report.load.schedulingRevision, report.generatedAt, report.cohort.from, report.cohort.to,
-    report.cohort.service, report.cohort.observationAt, report.cohort.count, report.cohort.unassignableDeclarations];
+    report.cohort.service, report.cohort.observationAt, report.cohort.count, report.cohort.unassignableDeclarations, report.cohort.erased];
   const incidentHeader = ['incidentId', 'title', 'serviceId', 'serviceName', 'state', 'severity', 'incidentRevision', 'declaredAt', 'drilldown',
     ...metrics.flatMap(metric => fields.map(field => `${metric}.${field}`))];
   const loadHeader = ['loadSubjectId', 'loadSubjectName', 'scheduledPrimarySeconds', 'scheduledBackupSeconds', 'uncoveredPrimarySeconds',
     'loadIncidents', 'loadAcknowledgements', 'acknowledgementsOutsideCoverage', 'per24PrimaryHours', 'acknowledgementShare', 'primaryHourShare', 'loadToCoverage'];
   const noiseHeader = ['noiseSource', 'noiseKey', 'noiseTitle', 'noiseAlerts', 'noiseTriggers', 'noiseSuppressed', 'noiseActive'];
   const header = ['recordType', 'revision', 'schedulingRevision', 'generatedAt', 'cohortFrom', 'cohortTo', 'cohortService', 'observationAt', 'cohortCount',
-    'unassignableDeclarations', ...incidentHeader, ...loadHeader, ...noiseHeader];
+    'unassignableDeclarations', 'erasedDeclarations', ...incidentHeader, ...loadHeader, ...noiseHeader];
   const blankIncident = Array<string>(incidentHeader.length).fill(''), blankLoad = Array<string>(loadHeader.length).fill(''), blankNoise = Array<string>(noiseHeader.length).fill('');
   const rows = [
     ...report.incidents.map(i => ['incident', ...metadata, i.id, i.title, i.service, i.serviceName, i.state, i.severity,
