@@ -180,6 +180,11 @@ try {
   const recoveredState=await state(),retainedIncident=recoveredState.incidents.find(i=>i.id===automaticIncident.id);assert.equal(retainedIncident.state,'declared');assert.equal(retainedIncident.severity,'warning');assert.equal(retainedIncident.priority,'P3');assert.equal(recoveredState.alerts.find(a=>a.id===automaticAlert.id).obligation.state,'stopped');
   console.log('PASS OC-043 effective response classification: transformed severity selects response rule and declaration, original retained; recovery stops only the alert obligation and preserves human incident state');
 
+  const priorityRule=ok(await req('/api/command',{...transformPolicy(revised.version),transformation:{field:'priority',values:{P2:{severity:'warning',priority:'P1'}},allowLowering:false,reason:'Synthetic declared priority classification'}}));
+  const prioritySignal=generalizedSignal('synthetic-oncall-440','info'),priorityReceipt=ok(await send(prioritySignal),201),priorityEvent=(await state()).events.find(e=>e.id===priorityReceipt.id);assert.equal(priorityEvent.priority,'P2');assert.equal(priorityEvent.severity,'info');assert.equal(priorityEvent.decision.version,priorityRule.version);assert.equal(priorityEvent.decision.transformation.field,'priority');assert.equal(priorityEvent.decision.transformation.severity,'warning');assert.equal(priorityEvent.decision.transformation.priority,'P1');
+  const beforeMalformedPriority=await archive();for(const priority of [null,0,['P2']])ok(await send({...prioritySignal,eventId:'synthetic-oncall-441-'+JSON.stringify(priority),priority}),400);assert.deepEqual(await archive(),beforeMalformedPriority);
+  console.log('PASS OC-043 declared priority field: severity/priority raises from source priority, original classification and malformed priority refusal');
+
   const saved=await archive(),malformed=[
     value=>{delete value.events.find(e=>e.id===loweredEvent.id).decision.transformation;},
     value=>{value.events.find(e=>e.id===loweredEvent.id).decision.transformation.originalSeverity='warning';},
