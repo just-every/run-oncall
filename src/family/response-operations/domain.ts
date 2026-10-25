@@ -1,3 +1,4 @@
+import {validateTeams,type Team} from '../../teams/model';
 import {approveWorkflow,workflowShape,type ApprovedWorkflow} from '../../orchestration/workflows.ts';
 import {transform,validateTransformation,validateTransformationEvents,type Transformation,type TransformationDecision} from '../../orchestration/transformation.ts';
 import {correlate,validateCorrelation,validateCorrelationDecision,validateCorrelationEvents,type CorrelationRule,type CorrelationDecision} from '../../orchestration/correlation.ts';
@@ -36,6 +37,7 @@ import { validateUrgencyArchive } from '../../urgency/archive.ts';
 export type Role = "admin" | "responder" | "viewer" | "stakeholder";
 export type Member = { id: string; name: string; role: Role; active: boolean; erased?:true; machine?: true };
 export type Service = {
+  team?: string | null;
   id: string;
   name: string;
   environment: string;
@@ -172,6 +174,7 @@ export type Incident = IncidentRelations & {
   communications?: string | null;
 };
 export type State = {
+  teams?: Team[];
   erasedReportCases?: {id:string;service:string;declaredAt:string}[];
   scheduleRecords?: ScheduleRecord[];
   businessServices?: BusinessService[];
@@ -734,7 +737,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["erasedReportCases", "scheduleRecords", "businessServices", "erasureFences", "keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
+  ], ["teams", "erasedReportCases", "scheduleRecords", "businessServices", "erasureFences", "keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   if(value.erasureFences!==undefined)validateErasureFences(value.erasureFences);
@@ -757,6 +760,7 @@ export function validateArchive(value: any): State {
     )
       fail("Invalid archive identities");
   }
+  validateTeams(value);
   validateAllowances(value);
   validateBusinessStatus(value);
   validateManualRecords(value);
@@ -771,7 +775,7 @@ export function validateArchive(value: any): State {
   )
     fail("Duplicate member names");
   for (const s of value.services) {
-    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
+    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["team", "dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
     if (s.owner !== "" && !hasMember(s.owner)) fail("Invalid service references");

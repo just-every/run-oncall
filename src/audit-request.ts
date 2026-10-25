@@ -19,7 +19,7 @@ function route(path: string): { feature: string; kind: string } {
   if (path === '/api/audit/export') return { feature: 'audit', kind: 'audit.export' }
   if (path.startsWith('/api/operator/import/')) return { feature: 'import-door', kind: importKind(path) }
   if (path.startsWith('/api/rer/import/')) return { feature: 'import-door', kind: importKind(path) }
-  const prefixes = ['identity-link','command','members','password','sources','paging','schedules','delivery','triage','handoffs','routing','urgency','response','changes','intake','monitoring','email','move-in','restore','recovery','setup','login','logout']
+  const prefixes = ['teams','identity-link','command','members','password','sources','paging','schedules','delivery','triage','handoffs','routing','urgency','response','changes','intake','monitoring','email','move-in','restore','recovery','setup','login','logout']
   const feature = prefixes.find(value => path === `/api/${value}` || path.startsWith(`/api/${value}/`))
     ?? (path.startsWith('/auth/') || path.startsWith('/__dev/') ? 'access' : path.startsWith('/api/ingress/') || path.startsWith('/v2/') || path.startsWith('/integrations/') || path.startsWith('/generic/') ? 'ingest' : 'workspace')
   const operation = path.split('/').at(-1) ?? ''

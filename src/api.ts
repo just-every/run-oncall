@@ -1,3 +1,4 @@
+import {installTeams} from './teams/api';
 import {auditRefusalCommitted} from './audit-store';
 import {holdRuleWorkflows} from './orchestration/workflows';
 import {replayService} from './orchestration/replay.ts';
@@ -689,6 +690,7 @@ api.get("/api/handoff/:id", async (c) => {
   if (!service) fail("Missing incident service", 503);
   return c.json(handoff(incident, service));
 });
+installTeams(api,{body,state:authorizedState,save:(c,state,revision)=>save(c.env.DB,state,revision,sessionGuard(c))});
 installPaging(api, body);
 installSchedules(api,body);
 installScheduleCoordination(api,body);
