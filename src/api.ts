@@ -1,3 +1,4 @@
+import {auditRefusalCommitted} from './audit-store';
 import {holdRuleWorkflows} from './orchestration/workflows';
 import {replayService} from './orchestration/replay.ts';
 import { requireHandoffErasureFence, subjectErasureIdentity } from './subject-erasure-identity.ts'
@@ -127,7 +128,7 @@ function sessionGuard(c: any): WriteGuard {
 }
 async function save(db:D1Database,state:State,revision:number,authority:WriteGuard) {
  const result=await db.batch(workspaceWrite(db,state,revision,authority));
- if(result[0].meta.changes!==1) fail('Workspace changed. Reload and retry.',409);
+ if(result[0].meta.changes!==1){auditRefusalCommitted(db);fail('Workspace changed. Reload and retry.',409);}
 }
 async function body(c: any, max = 65536) {
   const raw = await c.req.text();
