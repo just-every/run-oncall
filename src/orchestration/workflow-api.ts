@@ -27,10 +27,18 @@ export async function advanceRuleWorkflow(c:any,record:BulkOperation,input:any,d
  state=await deps.state(c);authority(state,actor,true);
  const held=state.triage!.find(r=>r.id===record.id) as BulkOperation;
  if(held.rule?.lease!==token||held.rule.state!=='running'||Date.parse(held.rule.leaseUntil!)<=Date.now())fail('Workflow execution lease changed or expired',409);
- const task=coordinationTasks(held.workflow!.items,true).find(t=>!held.results.some(r=>r.id===t.id))!;
+ let task=coordinationTasks(held.workflow!.items,true).find(t=>!held.results.some(r=>r.id===t.id))!;
  const proposed=inheritWorkspaceSnapshot(structuredClone(state),state),next=proposed.triage!.find(r=>r.id===record.id) as BulkOperation;
  auditKind(c.env.DB,'triage.workflow-'+task.step);
  try{
+  if(task.step==='declare'){
+   const alert=proposed.alerts.find(a=>a.id===held.rule!.alert),history=alert?.coordination?.history;
+   // New retained observations advance the alert revision, not its generation.
+   // Explicit resume may use that current revision only while the approved
+   // reassignment remains the sole human coordination action.
+   if(!alert||alert.generation!==held.rule!.generation||history?.length!==1||history[0].operationId!==held.id||history[0].kind!=='bulk-reassign'||alert.coordination?.assignee!==held.workflow!.member||alert.urgencyHistory?.some(entry=>!entry.by.startsWith('source:')))fail('Alert coordination changed; review a new workflow',409);
+   task={...task,revision:alert.revision??1};
+  }
   const changed=applyCoordinationStep(proposed,actor,task,held.workflow!.member!,held.workflow!.reason,held.results,held.id,new Date().toISOString(),held.rule!.templateVersion);
   for(const incident of proposed.incidents)for(const entry of incident.timeline)if(!state.incidents.find(i=>i.id===incident.id)?.timeline.some(e=>e.id===entry.id))entry.operationId=held.id;
   next.results.push({id:task.id,ok:true,revision:changed.revision,kind:'workflow',step:task.step,...(task.step==='reassign'?{}:{incident:changed.id})});
