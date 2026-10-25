@@ -24,7 +24,7 @@ export function MonitoringIngress({ admin, services, busy, run }: { admin: boole
   return <section className="panel padded ingress">
     <h2>Monitoring ingress</h2>
     <p>Connect your monitoring to this installation’s app address. Hosted Oncall records alert events and coordinates incidents beside your existing pager. Keep that pager active: Oncall sends no pages and has no independent standby.</p>
-    {!services.length ? <p><a href="#services">Create a service first</a> so Oncall knows what the signal affects.</p> : <>
+    {!services.length ? <p><a href="/services">Create a service first</a> so Oncall knows what the signal affects.</p> : <>
       {admin ? <>
         <h3>1. Create a monitoring source</h3>
         <p>A source is one monitoring tool or sender. Its key can send events for the service you allow below. It cannot read the workspace or sign in. Keys stay in this installation: bearer keys as a digest, HMAC keys encrypted with the installation key. They are never shown again and are excluded from exports.</p>

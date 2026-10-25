@@ -1,10 +1,10 @@
 import { introGuardScript, introCss } from "../base/hydration/intro-guard";
 import {
   HeadContent,
-  Outlet,
   Scripts,
   createRootRoute,
 } from "@tanstack/react-router";
+import { WorkspaceOutlet } from "../app/WorkspaceOutlet";
 import { fontLinks } from "../brand/font-head";
 import "../brand/tokens.css";
 
@@ -27,7 +27,7 @@ export const Route = createRootRoute({
         <HeadContent />
       </head>
       <body>
-        <Outlet />
+        <WorkspaceOutlet />
         <Scripts />
       </body>
     </html>

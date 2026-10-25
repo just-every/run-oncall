@@ -7,7 +7,7 @@ export function RoutingKeyForm({state,busy,run}:{state:State;busy:boolean;run:In
   const uid=useId(),[id,setId]=useState(''),[name,setName]=useState(''),[provider,setProvider]=useState('pagerduty'),[scope,setScope]=useState<string[]>([]),[owner,setOwner]=useState(''),[key,setKey]=useState(''),[copied,setCopied]=useState(''),[authentication,setAuthentication]=useState('bearer');
   return <details className="panel padded routing-create"><summary>Create a routed integration key</summary>
     <p>One key routes each event to one allowed service. Unmatched events are retained in this key’s unrouted queue. An acceptance records coordination data; paging stays OFF.</p>
-    {!state.services.length?<p><a href="#services">Create services first.</a></p>:<Form busy={busy} label="Create routed key" onSubmit={async()=>{
+    {!state.services.length?<p><a href="/services">Create services first.</a></p>:<Form busy={busy} label="Create routed key" onSubmit={async()=>{
       const result=await run('/api/routing/keys',{id,name,provider,scope,owner:owner||state.members.find(m=>m.active&&m.role==='admin')?.id,key,revision:0,rules:[],catchAll:null,...(provider==='native'?{authentication}:{})},'Routed key created');
       if(result){setId('');setName('');setKey('');setCopied('');}return false;
     }}>

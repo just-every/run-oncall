@@ -5,6 +5,7 @@ import { incidentAssignee, incidentUrgency } from '../family/response-operations
 
 export function IncidentResponseControls({incident, members, busy, canEdit, mutate}: {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>}) {
   const [type, setType] = useState('assign-role');
+  const [answer, setAnswer] = useState('');
   const name = (id: string | null | undefined) => members.find(m => m.id === id)?.name ?? 'Unassigned';
   return <section className="response-controls" aria-label="Response ownership">
     <h3>Response ownership</h3>
@@ -21,7 +22,12 @@ export function IncidentResponseControls({incident, members, busy, canEdit, muta
         <option value="assign-role">Assign or transfer a role</option><option value="reassign">Reassign incident</option>
         <option value="set-priority">Set priority</option><option value="set-urgency">Set urgency</option><option value="set-severity">Set severity</option>
       </select></label>
-      <Form busy={busy} label="Save response change" onSubmit={data => mutate({...data, type, member: data.member || null})}>
+      <Form busy={busy} label="Save response change" onSubmit={async data => {
+        setAnswer('');
+        const result = await mutate({...data, type, member: data.member || null});
+        if (result?.changed === false) {setAnswer('Nothing to change'); return null;}
+        return result;
+      }}>
         {type === 'assign-role' && <Field name="role" label="Response role"><option value="commander">Commander</option><option value="scribe">Scribe</option><option value="communications">Communications</option></Field>}
         {['assign-role', 'reassign'].includes(type) && <Field name="member" label="Assigned responder" required={false}><option value="">Unassigned</option>{members.filter(m => m.active && ["admin", "responder"].includes(m.role)).map(m => <option key={m.id} value={m.id}>{m.name}</option>)}</Field>}
         {type === 'set-priority' && <Field name="priority" label="Response priority">{['P1', 'P2', 'P3', 'P4', 'P5'].map(p => <option key={p}>{p}</option>)}</Field>}
@@ -29,6 +35,7 @@ export function IncidentResponseControls({incident, members, busy, canEdit, muta
         {type === 'set-severity' && <Field name="severity" label="Response severity"><option>critical</option><option>warning</option><option>info</option></Field>}
         <Field name="reason" label="Reason for response change" type="textarea" />
       </Form>
+      {answer && <p role="status">{answer}</p>}
     </details>}
   </section>;
 }

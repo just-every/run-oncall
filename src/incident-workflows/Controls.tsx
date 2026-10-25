@@ -44,7 +44,7 @@ export function IncidentWorkflows({ state, incident, member, send }: Props) {
 
   return <section className="response-controls incident-workflows" aria-label="Incident workflows">
     <h3>Incident workflows</h3>
-    {incident.splitFrom && <p>Split from <a href={`?incident=${encodeURIComponent(incident.splitFrom.incident)}#incidents`}>{incident.splitFrom.incident}</a> by {name(incident.splitFrom.by)} · {time(incident.splitFrom.at)}. {incident.splitFrom.reason}</p>}
+    {incident.splitFrom && <p>Split from <a href={`/incidents/${encodeURIComponent(incident.splitFrom.incident)}`}>{incident.splitFrom.incident}</a> by {name(incident.splitFrom.by)} · {time(incident.splitFrom.at)}. {incident.splitFrom.reason}</p>}
     {incident.template && <section aria-label="Incident template snapshot">
       <h4>Response template · version {incident.template.version}</h4>
       <p>{incident.template.severityWording[incident.severity as 'critical' | 'warning' | 'info']} · {incident.template.incidentType ?? 'No incident type selected'}</p>

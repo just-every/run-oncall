@@ -1,3 +1,4 @@
+import {FailureLine, useActionFailure} from "./app/FailureLine";
 import {ScheduleCoordination} from './schedule-coordination/Controls';
 import { ReviewedChange } from './schedule-coverage/ReviewedChange';
 import type { ScheduleReview } from './schedule-coverage/review';
@@ -25,7 +26,6 @@ const titleCase = (value: string) => value[0].toUpperCase() + value.slice(1);
 const iso = (at: number) => new Date(at).toISOString();
 const utcDay = () => Math.floor(Date.now() / 86400000) * 86400000;
 const formatClock = (at: number | null) => at === null ? "None" : iso(at);
-const explain = (error: unknown) => error instanceof Error ? error.message : "Request failed; no success confirmed";
 const utcHint = "Enter UTC date and time. Your device timezone is not used; seconds and milliseconds are preserved.";
 function UtcInput({ value, onChange, ...props }: Omit<ComponentProps<"input">, "value" | "onChange" | "type" | "step"> & { value: string; onChange: (value: string) => void }) {
   return <input {...props} type="datetime-local" step="0.001" value={value.replace(/Z$/, "")} onChange={event => {
@@ -74,9 +74,9 @@ function Empty({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export function SchedulingWorkspace({ page, actor, state, request, refreshWorkspace, demo }: Props) {
+  const failures=useActionFailure();
   const [data, setData] = useState<ModuleState | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [selectedSchedule, setSelectedSchedule] = useState("");
   const [draft, setDraft] = useState<Schedule | null>(null);
@@ -110,38 +110,27 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
     }
   }, [request]);
   useEffect(() => {
-    load().catch((failure: unknown) => setError(explain(failure)));
+    load().catch((failure: unknown) => failures.show(failure,{read:true,target:null,retry:async()=>{await load();failures.clear();}}));
     return () => { ++readGeneration.current; };
-  }, [load]);
+  }, [load, state]);
   const memberName = (id: string | null) => id === null ? "Coverage gap" : !id ? "Choose a responder" : state.members.find(m => m.id === id)?.name ?? `Missing member (${id})`;
   const serviceName = (id: string) => state.services.find(s => s.id === id)?.name ?? `Missing service (${id})`;
 
   const savedSchedule = data?.schedules.find(s => s.id === selectedSchedule);
   const activeMembers = state.members.filter(m => m.active && ["admin", "responder"].includes(m.role));
 
-  async function run<T>(operation: () => Promise<T>, success: string): Promise<T | null> {
-    setBusy(true); setError(""); setNotice("");
+  async function run<T>(operation: () => Promise<T>, success: string, guarded = false): Promise<T | null> {
+    setBusy(true); failures.clear(); setNotice("");
     try {
       const result = await operation();
-      try { await load(); } catch (failure) { setError(`${success}; refresh failed: ${explain(failure)}`); return result; }
+      try { await load(); } catch (failure) { failures.show(failure,{read:true,target:null,retry:async()=>{await load();failures.clear();}}); return result; }
       setNotice(success);
       return result;
-    } catch (failure) { setError(explain(failure)); return null; }
-    finally { setBusy(false); }
-  }
-  async function refresh() {
-    setBusy(true); setError(""); setNotice("");
-    try {
-      // Supersede an initial read before awaiting the coordination refresh too.
-      ++readGeneration.current;
-      const [, latest] = await Promise.all([refreshWorkspace?.(), load()]);
-      if (latest) setNotice("Scheduling records refreshed; unsaved edits are retained");
-    }
-    catch (failure) { setError(explain(failure)); }
+    } catch (failure) { failures.show(failure,{retry:guarded?()=>run(operation,success,true):undefined}); return null; }
     finally { setBusy(false); }
   }
   async function reloadSchedule() {
-    setBusy(true); setError(""); setNotice("");
+    setBusy(true); failures.clear(); setNotice("");
     try {
       const latest = await load();
       if (!latest) return;
@@ -149,12 +138,12 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
       if (!saved) throw Error("The selected schedule is no longer available; choose another saved schedule");
       setChangeReview(null); setDraft(structuredClone(saved)); setPreview(null);
       setNotice("Editor reloaded from the latest saved schedule");
-    } catch (failure) { setError(explain(failure)); }
+    } catch (failure) { failures.show(failure,{read:true,target:null,retry:async()=>{await load();failures.clear();}}); }
     finally { setBusy(false); }
   }
   function chooseSchedule(id: string) {
     setChangeReview(null);
-    setSelectedSchedule(id); setPreview(null); setNotice(""); setError("");
+    setSelectedSchedule(id); setPreview(null); setNotice(""); failures.clear();
     const selected = data?.schedules.find(s => s.id === id);
     setDraft(selected ? structuredClone(selected) : null);
   }
@@ -187,15 +176,15 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
     event.preventDefault();
     if (!draft) return;
     if (draft.revision > 0) {
-      const review = await run<ScheduleReview>(() => request(`/api/schedules/${encodeURIComponent(draft.id)}/review`, {schedule:draft,from:utcClock(previewFrom,"Preview from"),to:utcClock(previewTo,"Preview to")}), "Schedule change ready for review; nothing saved");
+      const review = await run<ScheduleReview>(() => request(`/api/schedules/${encodeURIComponent(draft.id)}/review`, {schedule:draft,from:utcClock(previewFrom,"Preview from"),to:utcClock(previewTo,"Preview to")}), "Schedule change ready for review; nothing saved",true);
       setChangeReview(review);return;
     }
-    const saved = await run<Schedule>(() => request("/api/paging/schedules", { ...draft, validUntil: draft.validUntil || null }), "Schedule saved");
+    const saved = await run<Schedule>(() => request("/api/paging/schedules", { ...draft, validUntil: draft.validUntil || null }), "Schedule saved",true);
     if (saved) { setSelectedSchedule(saved.id); setDraft(structuredClone(saved)); setPreview(null); }
   }
   async function applyReviewedChange() {
     if (!changeReview || !draft) return;
-    const result = await run<{schedule:Schedule}>(() => request(`/api/schedules/${encodeURIComponent(draft.id)}/apply`, {schedule:draft,from:changeReview.from,to:changeReview.to,digest:changeReview.digest,confirmed:true}), "Schedule saved");
+    const result = await run<{schedule:Schedule}>(() => request(`/api/schedules/${encodeURIComponent(draft.id)}/apply`, {schedule:draft,from:changeReview.from,to:changeReview.to,digest:changeReview.digest,confirmed:true}), "Schedule saved",true);
     if(result){setDraft(structuredClone(result.schedule));setChangeReview(null);setPreview(null);}
   }
   async function previewCoverage(event: FormEvent) {
@@ -217,14 +206,13 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
     {!demo && <div className="scheduling-boundary"><Icon name="bolt" /><span><strong>Paging OFF.</strong> No provider sends. Your existing pager remains authoritative.</span></div>}
     <div className="scheduling-toolbar">
       <p>{"Configure calendar rotations and inspect resolved UTC coverage."}</p>
-      <button type="button" disabled={busy} onClick={refresh}>Refresh scheduling</button>
     </div>
     <div className="scheduling-feedback" aria-live="polite" role="status">{notice}</div>
-    {error && <div className="scheduling-error" role="alert"><strong>Action needs attention</strong><p>{error}</p><span>Edits remain available.</span></div>}
-    {!data ? <div className="scheduling-panel scheduling-loading"><p>{error ? "Scheduling data could not be loaded." : "Loading saved scheduling records…"}</p><button type="button" onClick={refresh} disabled={busy}>Retry scheduling load</button></div> : <>
+    <FailureLine failure={failures.failure} />
+    {!data ? <div className="scheduling-panel scheduling-loading"><p>{failures.failure ? "Scheduling data could not be loaded." : "Loading saved scheduling records…"}</p><button type="button" onClick={() => void load().catch(failure=>failures.show(failure,{read:true,target:null}))} disabled={busy}>Retry scheduling load</button></div> : <>
       <div className="scheduling-selection">
         <Field label="Schedule"><select value={selectedSchedule} onChange={e => chooseSchedule(e.target.value)} disabled={busy}><option value="">Choose a saved schedule</option>{data.schedules.map(s => <option key={s.id} value={s.id}>{s.name} · {serviceName(s.service)} · revision {s.revision}</option>)}</select></Field>
-        {admin && <button type="button" disabled={busy || !state.services.length} onClick={() => { const schedule = newSchedule(state.services[0].id); setChangeReview(null); setSelectedSchedule(""); setDraft(schedule); setPreviewFrom(schedule.validFrom); setPreviewTo(iso(Date.parse(schedule.validFrom) + 86400000)); setPreview(null); setError(""); setNotice(""); }}><span aria-hidden="true">＋ </span>New schedule</button>}
+        {admin && <button type="button" disabled={busy || !state.services.length} onClick={() => { const schedule = newSchedule(state.services[0].id); setChangeReview(null); setSelectedSchedule(""); setDraft(schedule); setPreviewFrom(schedule.validFrom); setPreviewTo(iso(Date.parse(schedule.validFrom) + 86400000)); setPreview(null); failures.clear(); setNotice(""); }}><span aria-hidden="true">＋ </span>New schedule</button>}
         {!admin && <Tag>Read-only schedule configuration</Tag>}
       </div>
       {savedSchedule && <ScheduleNowNext schedule={savedSchedule} state={state} request={request} />}
@@ -232,7 +220,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
       <div className="scheduling-schedule-grid">
         <div className="scheduling-panel scheduling-editor">
           <div className="scheduling-panel-heading"><Icon name="calendar" /><div><h2>{draft ? (draft.revision ? draft.name : "New schedule") : "Service schedules"}</h2><p>{draft ? `${serviceName(draft.service)} · ${draft.revision ? `${admin ? "editing" : "saved"} revision ${draft.revision}` : "unsaved configuration"}` : "Own primary and backup calendar-day rotations."}</p></div><Tag tone="blue">Service</Tag></div>
-          {!draft ? <Empty title={data.schedules.length ? "Choose a schedule" : "No schedules yet"}><p>{admin ? "Create a schedule for a persisted service, then verify its coverage." : "An administrator can create schedules for your services."}</p>{!state.services.length && <a href="#services">Create a service first →</a>}<a href="#team">Manage responder access →</a></Empty> : <form onSubmit={saveSchedule}>
+          {!draft ? <Empty title={data.schedules.length ? "Choose a schedule" : "No schedules yet"}><p>{admin ? "Create a schedule for a persisted service, then verify its coverage." : "An administrator can create schedules for your services."}</p>{!state.services.length && <a href="/services">Create a service first →</a>}<a href="/team">Manage responder access →</a></Empty> : <form onSubmit={saveSchedule}>
             <fieldset disabled={!admin || busy} className="scheduling-editor-fields">
               <div className="scheduling-form-grid three">
                 <Field label="Schedule ID"><input required maxLength={100} value={draft.id} readOnly={draft.revision > 0} onChange={e => patchSchedule({ id: e.target.value })} /></Field>
@@ -291,6 +279,6 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
       </div>
     </>}
     {savedSchedule && <ScheduleCoordination key={savedSchedule.id} schedule={savedSchedule} state={state} actor={actor} onChanged={async()=>{await load();await refreshWorkspace?.();}} />}
-    {savedSchedule && <ScheduleSummary schedule={savedSchedule} policies={data!.policies} admin={admin} request={request} onSaveStart={() => { setError(""); setNotice(""); }} onSaved={() => setNotice("Escalation data saved")} />}
+    {savedSchedule && <ScheduleSummary schedule={savedSchedule} policies={data!.policies} admin={admin} request={request} onSaveStart={() => { failures.clear(); setNotice(""); }} onSaved={() => setNotice("Escalation data saved")} />}
   </section>;
 }
