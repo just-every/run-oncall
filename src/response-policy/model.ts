@@ -1,3 +1,4 @@
+import {launchRuleWorkflow} from '../orchestration/workflows.ts';
 import { instantiateIncidentTemplate } from '../incident-workflows/template.ts';
 import { recordAlertObligation } from '../alert-obligation.ts';
 import { enqueueEvents } from '../automation/model.ts';
@@ -65,6 +66,7 @@ export function finishResponseAdmission(state: State, alert: Alert, event: Event
     for (const incident of state.incidents.filter(i => i.alerts.includes(alert.id))) refreshIncidentRecovery(state, incident, event.acceptedAt, obligation.receipt ?? undefined);
     return;
   }
+  if(automatic&&event.intent==='trigger'&&!alert.suppressed&&obligation.policy.mode==='alert-only'&&!state.incidents.some(i=>i.alerts.includes(alert.id)))launchRuleWorkflow(state,event,alert,alert.events[0]===event.id);
   if (!automatic || event.intent !== 'trigger' || alert.suppressed || obligation.policy.mode !== 'incident' ||
     state.incidents.some(i => i.alerts.includes(alert.id))) return;
   const service = state.services.find(s => s.id === alert.service);

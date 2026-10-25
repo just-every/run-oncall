@@ -1,4 +1,6 @@
-import {authority,fail,text,type State,type Member,type Event,type Alert} from '../family/response-operations/domain.ts';
+import {decideResponse} from '../response-policy/rules.ts';
+import {serviceUrgency} from '../urgency/model.ts';
+import {authority,fail,text,type State,type Member,type Event,type Alert,type Decision} from '../family/response-operations/domain.ts';
 import {applyCoordinationStep,coordinationTasks} from '../triage-orchestration.ts';
 import type {BulkOperation} from '../family/response-operations/triage.ts';
 export type ApprovedWorkflow={version:number;approved:true;held?:true;by:string;at:string;member:string;reason:string};
@@ -39,7 +41,9 @@ export function validateRuleRun(state:State,record:BulkOperation){
  if(rule.outcome!==(rule.state==='running'?'uncertain':rule.state==='interrupted'?'interrupted':null))fail('Invalid workflow execution outcome');
  if((rule.state==='complete')!==(record.results.length===3))fail('Invalid workflow completion');
 }
-export function workflowPreview(state:State,decision:{policy:string|null;version:number|null;action:string},signal:{intent:string;source:string;service:string;environment:string;key:string;generation:string},eventId?:string){
+export function workflowPreview(state:State,decision:Decision,signal:{intent:string;source:string;service:string;environment:string;key:string;generation:string;severity:'critical'|'warning'|'info'},eventId?:string){
+ const service=state.services.find(s=>s.id===signal.service),urgency=serviceUrgency(state,signal.service,signal.severity,new Date().toISOString()).urgency;
+ if(decideResponse(service?.responsePolicies?.at(-1),urgency,decision.transformation?.severity??signal.severity,decision.policy).mode!=='alert-only')return null;
  const existing=state.alerts.find(a=>a.source===signal.source&&a.service===signal.service&&a.environment===signal.environment&&a.key===signal.key&&a.generation===signal.generation);
  if(existing&&existing.events[0]!==eventId)return null;
  const policy=state.policies.find(p=>p.id===decision.policy&&p.version===decision.version);

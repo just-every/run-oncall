@@ -1,4 +1,4 @@
-import {approveWorkflow,workflowShape,launchRuleWorkflow,type ApprovedWorkflow} from '../../orchestration/workflows.ts';
+import {approveWorkflow,workflowShape,type ApprovedWorkflow} from '../../orchestration/workflows.ts';
 import {transform,validateTransformation,validateTransformationEvents,type Transformation,type TransformationDecision} from '../../orchestration/transformation.ts';
 import {correlate,validateCorrelation,validateCorrelationDecision,validateCorrelationEvents,type CorrelationRule,type CorrelationDecision} from '../../orchestration/correlation.ts';
 import {validateAlertCoordination,type AlertCoordination} from '../../triage-alerts.ts';
@@ -400,7 +400,6 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     recordAlertObligation(alert, event.id);
   }
   state.events.push(event);
-  if(alert)launchRuleWorkflow(state,event,alert,created);
   state.audit.push(
     stamp(
       `source:${signal.source}`,
