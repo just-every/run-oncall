@@ -605,7 +605,7 @@ try {
  const memberSchedule={...schedule,id:'synthetic-oncall-413',name:'Synthetic retained erasure slots',service:erasureService,revision:0,timezone:'UTC',primary:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[erasedMember.id,keptMember.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]};
  ok(await erasureReq('/api/paging/schedules',memberSchedule));
  // Existing native memberships and personal calendar/reminder custody must be populated before erasure.
- const memberBusiness=ok(await erasureReq('/api/status',{action:'create',name:'Synthetic member custody',owningTeam:'Synthetic team',supporting:[erasureService],audience:[erasedMember.id,keptMember.id],communicationsOwner:keptMember.id,highUrgencyImpact:false}));
+ const memberBusiness=ok(await erasureReq('/api/status',{action:'create',name:'Synthetic member custody',owningTeam:'Synthetic team',supporting:[erasureService],audience:[erasedMember.id,keptMember.id],communicationsOwner:keptMember.id,highUrgencyImpact:false})).services.find(row=>row.name==='Synthetic member custody');
  ok(await erasureReq('/api/status',{action:'subscribe',id:memberBusiness.id,revision:memberBusiness.revision,member:erasedMember.id,channel:'email',active:true}));
  const memberFeed=ok(await w.request('/api/schedule-coordination',{action:'subscribe',scope:'schedule',target:memberSchedule.id},memberLogin.cookie));
  ok(await w.request('/api/schedule-coordination',{action:'reminder',leadMinutes:15,channel:'email'},memberLogin.cookie));
