@@ -4,7 +4,7 @@ import { incidentWithinServices } from '../incident-workflows/scope.ts';
 import {responseContext} from '../manual-pages/context';
 import { command, fail, Fault, text, type State, type Member } from '../family/response-operations/domain';
 import { loadWorkspace, workspaceWrite } from '../workspace-store';
-import { auditIdentity, auditKind, setAuditSubject } from '../audit-store';
+import { auditIdentity, auditKind, auditOutcome, setAuditSubject } from '../audit-store';
 import { changeHash, changeHmac, sealCredential, openCredential, type Custody } from '../changes/credentials';
 import { refuseKeyEcho } from '../native-sources';
 import { runtimeBindings } from '../auth.server';
@@ -79,6 +79,19 @@ export function installAutomationManagement(api:any,deps:Deps) {
   return c.json(endpoint);
  });
  api.post('/api/automation/dispatch',async(c:any)=>{await owner(c);return c.json(await dispatchOutbox(c.env,deps.guard(c)));});
+ // Clearing an expired lease records an interrupted local send, never a remote deletion or delivery claim.
+ api.post('/api/automation/outbox/:id/clear-expired',async(c:any)=>{
+  const state=await owner(c),input=await deps.body(c),item=state.apiOutbox?.find(v=>v.id===c.req.param('id'));
+  if(!item)fail('Unknown operation',404);
+  requireRevision(item.revision,input.revision);
+  const expired=item.status==='sending'&&item.leaseUntil!==null&&Date.parse(item.leaseUntil)<=Date.now();
+  const uncertain=item.status==='uncertain'&&item.history.at(-1)?.reason==='lease-expired';
+  if(input.approve!==true||!expired&&!uncertain)fail('Explicit approval and an expired lease are required; a live send cannot be cleared',409);
+  item.authorized=false;updateOutcome(item,'interrupted','expired-lease-cleared');
+  auditKind(c.env.DB,'automation.clear-expired');auditOutcome(c.env.DB,'interrupted');setAuditSubject(c.env.DB,'outbox',item.id);
+  await commitAutomation(c,state,deps.guard(c));
+  return c.json({operation:item,externalOutcome:'unknown',deletion:'not-requested',reason:'The local lease is cleared. In-flight bytes cannot be recalled; request recipient deletion separately with per-destination consent.'});
+ });
  api.post('/api/automation/outbox/:id/replay',async(c:any)=>{
   const state=await owner(c),input=await deps.body(c);expireLeases(state);
   const item=state.apiOutbox?.find(v=>v.id===c.req.param('id'));if(!item)fail('Unknown operation',404);

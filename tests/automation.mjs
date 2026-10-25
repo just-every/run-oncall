@@ -44,6 +44,47 @@ try {
  assert.equal((await erasureRuntime.request('/api/state',undefined,login.cookie)).status,401);
  assert.equal((await request('/api/automation/dispatch',{})).status,200);assert.deepEqual(erasureCalls,[],'neither erasure nor later dispatch calls any provider without per-destination deletion consent');
  console.log('PASS OC-040 member recipient custody: local access revoked, queued work removed, named deletion open item and zero outbound calls without consent');
+ // OC-040 expired-lease clearance: fixture a crashed send in the real durable outbox; all transitions use HTTP.
+ const leaseClient=await request('/api/automation/clients',{name:'Synthetic lease recipient',key:randomBytes(32).toString('hex'),services:[service.value.id],permissions:['incidents:read']});assert.equal(leaseClient.status,201);
+ const leaseEndpoint=await request('/api/automation/endpoints',{name:'Synthetic lease destination',key:randomBytes(32).toString('hex'),client:leaseClient.value.id,services:[service.value.id],url:'https://8.8.8.8/synthetic-oncall-420',approve:true});assert.equal(leaseEndpoint.status,201);
+ const leaseViewer=await request('/api/members',{name:'synthetic-oncall-420-viewer',password:'synthetic-oncall-420-password',role:'viewer'});assert.equal(leaseViewer.status,201);
+ const viewerSession=await erasureRuntime.request('/api/login',{name:leaseViewer.value.name,password:'synthetic-oncall-420-password'});assert.equal(viewerSession.status,200);
+ for(const race of ['clear-clear','clear-erase']){
+  const incident=await request('/api/command',{type:'declare',service:service.value.id,title:'Synthetic expired lease '+race,summary:'Synthetic retained coordination',severity:'warning'});assert.equal(incident.status,200);
+  let item=(await value('/api/state')).apiOutbox.find(row=>row.incident===incident.value.id&&row.endpoint===leaseEndpoint.value.id);
+  const held={...item,status:'sending',lease:crypto.randomUUID(),leaseUntil:new Date(Date.now()+3600000).toISOString(),attempts:1,revision:item.revision+1,history:[...item.history,{at:new Date().toISOString(),status:'sending',reason:'dispatch'}]};
+  await erasureRuntime.db.prepare('UPDATE oc_api_outbox SET data=? WHERE id=?').bind(JSON.stringify(held),item.id).run();
+  const clear='/api/automation/outbox/'+item.id+'/clear-expired',erase='/api/erasure/incident/'+incident.value.id;
+  const eraseInput=async()=>({workspaceRevision:(await value('/api/state')).revision,confirmation:'erase '+incident.value.id});
+  assert.equal((await request(clear,{revision:held.revision,approve:true})).status,409,'live leases cannot be cleared');
+  assert.equal((await request(erase,await eraseInput())).status,409,'sending work blocks erasure');
+  held.leaseUntil='2000-01-01T00:00:00.000Z';
+  await erasureRuntime.db.prepare('UPDATE oc_api_outbox SET data=? WHERE id=?').bind(JSON.stringify(held),item.id).run();
+  assert.equal((await erasureRuntime.request(clear,{revision:held.revision,approve:true})).status,401);
+  assert.equal((await erasureRuntime.request(clear,{revision:held.revision,approve:true},viewerSession.cookie)).status,403);
+  assert.equal((await request(clear,{revision:held.revision,approve:false})).status,409);
+  assert.equal((await request(clear,{revision:held.revision-1,approve:true})).status,409);
+  if(race==='clear-clear'){
+   // The scheduled dispatcher may already have classified the expired lease as uncertain.
+   assert.equal((await request('/api/automation/dispatch',{})).status,200);
+   item=(await value('/api/state')).apiOutbox.find(row=>row.id===item.id);assert.equal(item.status,'uncertain');assert.equal(item.history.at(-1).reason,'lease-expired');
+  }else item=held;
+  const before=(await value('/api/state')).apiOutbox,facts=(await value('/api/audit/export')).rows.filter(row=>row.kind==='automation.clear-expired'&&row.outcome==='interrupted');
+  await erasureRuntime.db.prepare("CREATE TRIGGER synthetic_oncall_clear_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='automation.clear-expired' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-420'); END").run();
+  try{assert.equal((await request(clear,{revision:item.revision,approve:true})).status,503);}finally{await erasureRuntime.db.prepare('DROP TRIGGER synthetic_oncall_clear_audit').run();}
+  assert.deepEqual((await value('/api/state')).apiOutbox,before,'audit failure rolls back clearance');
+  assert.deepEqual((await value('/api/audit/export')).rows.filter(row=>row.kind==='automation.clear-expired'&&row.outcome==='interrupted'),facts);
+  const input=await eraseInput(),results=await Promise.all([request(clear,{revision:item.revision,approve:true}),race==='clear-clear'?request(clear,{revision:item.revision,approve:true}):request(erase,input)]);
+  assert.deepEqual(results.map(row=>row.status).sort(),[200,409],'concurrent same-object requests answer conflict without dropping the connection');
+  const cleared=(await value('/api/state')).apiOutbox.find(row=>row.id===item.id);assert.equal(cleared.status,'interrupted');assert.equal(cleared.authorized,false);assert.equal(cleared.lease,null);assert.equal(cleared.history.at(-1).reason,'expired-lease-cleared');
+  const audit=(await value('/api/audit/export')).rows.filter(row=>row.kind==='automation.clear-expired'&&row.outcome==='interrupted');assert.equal(audit.length,facts.length+1);assert.ok(audit.at(-1).actor&&audit.at(-1).subject);assert.equal(audit.at(-1).workspaceAfter,(await value('/api/state')).revision);
+  await erasureRuntime.restart();assert.equal((await value('/api/state')).apiOutbox.find(row=>row.id===item.id).status,'interrupted');
+  assert.equal((await request('/api/automation/dispatch',{})).value.processed,0);
+  const erased=await request(erase,await eraseInput());assert.equal(erased.status,200,JSON.stringify(erased.value));assert.equal(erased.value.state,'complete');assert.equal(erased.value.stores.oc_api_outbox.deleted,1);
+  assert.deepEqual(erasureCalls,[],'clearance and erasure make no external call');
+ }
+ console.log('PASS OC-040 expired-lease clearance: live refusal, admin approval/revision, expired and uncertain leases, atomic audit rollback, clear/clear and clear/erase 200/409, restart before committed erasure and zero external calls');
+
 
 } finally {await erasureRuntime.close();}
 

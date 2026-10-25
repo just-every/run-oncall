@@ -20,7 +20,7 @@ const guardStatement=(db:D1Database,sql:string,...values:(string|number|null)[])
 // A sending lease is a durable exclusion boundary, not a promise to recall an
 // external call. Erasure refuses until that call has a recorded outcome.
 function requireNoFlight(state:State,predicate:(o:NonNullable<State['apiOutbox']>[number])=>boolean) {
- if(state.apiOutbox?.some(o=>predicate(o)&&(['sending','uncertain'].includes(o.status)||o.history.some(h=>h.reason==='lease-expired'))))fail('Delivery is sending or uncertain; no erasure receipt can be issued. Reconcile the external outcome first.',409)
+ if(state.apiOutbox?.some(o=>predicate(o)&&(['sending','uncertain'].includes(o.status)||o.history.findLastIndex(h=>h.reason==='lease-expired')>o.history.findLastIndex(h=>h.reason==='expired-lease-cleared'))))fail('Delivery is sending or uncertain; no erasure receipt can be issued. Reconcile the external outcome first.',409)
 }
 export function installSubjectErasure(api:any,deps:Dependencies) {
  api.post('/api/erasure/:kind/:id',async(c:any)=>{
