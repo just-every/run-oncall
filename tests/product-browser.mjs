@@ -332,7 +332,7 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await emailEraseResponse).status(),200);
   await settings.getByText('oc_email_credentials: 1 deleted, 0 updated',{exact:true}).waitFor();
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-email-receipt',width);
-  assert.ok(!(await request('/api/state')).emailAddresses.some(row=>row.id===erasedEmail));
+  assert.ok(!((await request('/api/state')).emailAddresses??[]).some(row=>row.id===erasedEmail));
   const importedId='synthetic-oncall-410-'+width;
   const importedPlan=await importDoor.preview('pagerduty',JSON.stringify({integrations:[{id:importedId,type:'events_api_v2_inbound_integration'}]}));assert.equal(importedPlan.status,200);assert.equal((await importDoor.apply('pagerduty',importedPlan.value)).status,200);
   const importedRoot=(await request('/api/move-in/objects')).find(row=>row.targetKind==='integration'&&row.targetId==='pagerduty:'+importedId);
