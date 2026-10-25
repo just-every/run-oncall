@@ -1,4 +1,4 @@
-import {CorrelationSettings} from '../orchestration/Settings';
+import {CorrelationSettings,WorkflowSettings} from '../orchestration/Settings';
 import { IncidentWorkflows } from '../incident-workflows/Controls';
 import { ServiceTemplateSettings } from '../incident-workflows/TemplateSettings';
 import { resolveIncidentAlias } from '../incident-workflows/relations';
@@ -527,6 +527,7 @@ function Workspace() {
                   <ResponsePolicy key={'response:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
                   <ServiceTemplateSettings state={s} service={v} member={actor} send={command} />
                   <UrgencyPolicy key={'urgency:'+v.id} service={v} state={s} admin={admin} busy={w.busy} run={w.run} />
+                  {admin&&<WorkflowSettings key={'workflow:'+v.id} service={v} state={s} busy={w.busy} run={w.run}/>}
                   {admin&&<CorrelationSettings key={'correlation:'+v.id} service={v} state={s} busy={w.busy} run={w.run}/>}
                   {admin && <ServiceDependencies key={v.id} service={v} services={s.services} revision={s.revision} busy={w.busy} run={w.run} />}
                   {actor.role === 'admin' && <TimeoutSetting service={v} busy={w.busy} submit={command}/>}

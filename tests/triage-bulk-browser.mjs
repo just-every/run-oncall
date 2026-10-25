@@ -84,4 +84,23 @@ export async function triageBulkBrowser(page,context,width){
  console.log(`OC-043 transformation browser ${width}: Alerts, triage, routed replay and service replay show original/effective classifications and versions; lost comparison responses recover through one real retry without state effects; mutations remain one attempt; axe, overflow and hydration passed`);
  console.log(`OC-043 declaration browser ${width}: zero-write ordered comparison, saved pending declaration/notification progress after reload, explicit completion, frozen checklist and recorded no-sender obligations; axe, overflow and hydration passed`);
  console.log(`OC-060 browser ${width}: selected snooze, merge target and per-item receipts, confirmed alert-only close, retained human-resolution history, no fabricated incident, axe and overflow passed`);
+ // Rule approval uses the service's existing Settings controls and saved progress.
+ await page.getByRole('link',{name:'Services',exact:true}).click();
+ const ruleCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Synthetic coordination '+width,exact:true})});
+ await ruleCard.getByText('Settings · approved workflows',{exact:true}).click();
+ const ruleForm=ruleCard.getByRole('form',{name:'Approved workflow settings',exact:true});
+ await ruleForm.getByLabel('Workflow responder',{exact:true}).selectOption(coordinator.id);await ruleForm.getByLabel('Workflow reason',{exact:true}).fill('Synthetic approved coordination '+width);await ruleForm.getByLabel('Approve this workflow version',{exact:true}).check();
+ await ruleForm.getByRole('button',{name:'Approve workflow rule',exact:true}).click();await ruleCard.getByText(/^Workflow v1 · service rule/).waitFor();await workflowCheck('rule-authoring');
+ const approvedState=await call('/api/state'),approvedPolicy=approvedState.policies.find(p=>p.service===newServiceId&&p.severity==='*'),ruleIdentity='synthetic-oncall-446-'+width;
+ const ruleSignal={source:newSource,eventId:ruleIdentity,service:newServiceId,environment:'test',key:ruleIdentity,generation:ruleIdentity,intent:'trigger',severity:'warning',title:'Synthetic approved launch '+width,observedAt:new Date().toISOString(),evidence:''};
+ await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel('Event JSON array',{exact:true}).fill(JSON.stringify([ruleSignal]));await page.getByRole('button',{name:'Compare decisions',exact:true}).click();const ruleReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await ruleReplay.getByText('Proposed workflow v1: reassign → declare → notify. Recorded obligation only; no effects.',{exact:true}).waitFor();await ruleReplay.scrollIntoViewIfNeeded();await workflowCheck('rule-replay');
+ const admitted=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:ruleSignal});assert.equal(admitted.status(),201);
+ const launched=(await call('/api/state')).triage.find(r=>r.kind==='bulk'&&r.rule?.policy===approvedPolicy.id);assert.equal(launched.results.length,1);assert.equal(launched.results[0].step,'reassign');
+ await page.goto(origin+'/#incidents');await page.getByText('Recorded coordination workflows',{exact:true}).click();
+ const launchedProgress=page.locator('details.triage-bulk > ul > li').filter({hasText:'Operation '+launched.id});await launchedProgress.getByText('1 of 3 processed · 0 refused',{exact:true}).waitFor();await launchedProgress.scrollIntoViewIfNeeded();await workflowCheck('rule-launched');
+ await page.reload();await page.getByText('Recorded coordination workflows',{exact:true}).click();await launchedProgress.getByRole('button',{name:'Resume recorded workflow',exact:true}).click();await launchedProgress.getByText('2 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-declared');
+ await launchedProgress.getByRole('button',{name:'Resume recorded workflow',exact:true}).click();await launchedProgress.getByText('3 of 3 processed · 0 refused',{exact:true}).waitFor();await workflowCheck('rule-complete');
+ assert.equal((await call('/api/state')).triage.find(r=>r.id===launched.id).rule.state,'complete');
+ console.log(`OC-043 approved rule browser ${width}: Settings approval, launch versions, saved progress across reload, explicit declaration/notification, axe, overflow and hydration passed`);
+
 }

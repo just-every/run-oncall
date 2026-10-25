@@ -68,6 +68,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
      const prior=event.decision.correlation;event.decision.correlation={...prior,group:null,originalEvent:null,originalPolicy:null,originalVersion:null,relationship:'unmatched',startedAt:event.observedAt,reason:'Original correlation evidence explicitly erased; this retained signal remains visible'+(prior.held?'; prior local flapping hold retained for review':'')};remember('oc_events');
      for(const receipt of state.intakeReceipts??[])if(receipt.routing?.serviceDecision?.event===event.id){receipt.routing.serviceDecision={event:event.id,...structuredClone(event.decision)};remember('oc_intake_receipts');}
     }
+    if(state.triage?.some(r=>r.kind==='bulk'&&r.rule?.state==='running'&&alerts.has(r.rule.alert)))fail('Workflow execution is active or uncertain; clear its expired lease before erasure',409)
     const affected=state.incidents.filter(i=>i.alerts.some(a=>alerts.has(a)))
     for(const incident of affected){
      outbox(o=>o.incident===incident.id)
@@ -164,6 +165,10 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    for(const client of [...state.apiClients??[]].filter(v=>v.owner===id))await eraseApiIntegration('client',client.id)
    for(const endpoint of [...state.apiEndpoints??[]].filter(v=>v.owner===id))await eraseApiIntegration('endpoint',endpoint.id)
    outbox(o=>o.owner===id)
+   if(state.triage?.some(r=>r.kind==='bulk'&&r.rule?.state==='running'&&(r.actor===id||r.workflow?.member===id)))fail('Workflow execution is active or uncertain; clear its expired lease before erasure',409)
+   for(const policy of state.policies)if(policy.workflow&&(policy.workflow.by===id||policy.workflow.member===id))delete policy.workflow
+   for(const event of state.events)for(const policy of event.routingSnapshot.policies)if(policy.workflow&&(policy.workflow.by===id||policy.workflow.member===id))delete policy.workflow
+   remember('oc_policies');remember('oc_events')
    const erasedWorkflows=new Set((state.triage??[]).filter(r=>r.kind==='bulk'&&r.workflow&&(r.actor===id||r.workflow.member===id)).map(r=>r.id))
    remove('triage','oc_triage',r=>r.kind==='bulk'&&r.workflow&&(r.actor===id||r.workflow.member===id))
    const oldName=member.name,names=new Set([oldName,...aliases])

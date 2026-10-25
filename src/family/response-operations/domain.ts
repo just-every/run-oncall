@@ -1,3 +1,4 @@
+import {approveWorkflow,workflowShape,launchRuleWorkflow,type ApprovedWorkflow} from '../../orchestration/workflows.ts';
 import {transform,validateTransformation,validateTransformationEvents,type Transformation,type TransformationDecision} from '../../orchestration/transformation.ts';
 import {correlate,validateCorrelation,validateCorrelationDecision,validateCorrelationEvents,type CorrelationRule,type CorrelationDecision} from '../../orchestration/correlation.ts';
 import {validateAlertCoordination,type AlertCoordination} from '../../triage-alerts.ts';
@@ -49,6 +50,7 @@ export type Service = {
   ackTimeouts?: AckTimeout[];
 };
 export type Policy = {
+  workflow?:ApprovedWorkflow;
   transformation?:Transformation;
   correlation?:CorrelationRule;
   suppressionWindow?: {start: string; end: string};
@@ -398,6 +400,7 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     recordAlertObligation(alert, event.id);
   }
   state.events.push(event);
+  if(alert)launchRuleWorkflow(state,event,alert,created);
   state.audit.push(
     stamp(
       `source:${signal.source}`,
@@ -497,6 +500,9 @@ function applyCommand(
     const old = state.policies.find(
       (p) => p.service === input.service && p.severity === input.severity,
     );
+    const workflow=input.workflow===null?undefined:input.workflow===undefined?old?.workflow:approveWorkflow(state,actor,input.workflow,old?.workflow,at);
+    if((workflow||old?.workflow)&&input.baseVersion!==(old?.version??0))fail('Workflow rule changed; reload before approval',409);
+    if(workflow&&input.action!=='route')fail('Approved workflows require a routed service rule',409);
     const correlation=input.correlation===null?undefined:input.correlation===undefined?old?.correlation:validateCorrelation(input.correlation);
     if(correlation&&!state.members.some(m=>m.id===input.owner&&m.active&&["admin","responder"].includes(m.role)))fail("Grouping requires an active coordination owner");
     const transformation=input.transformation===null?undefined:input.transformation===undefined?old?.transformation:validateTransformation(input.transformation);
@@ -505,6 +511,7 @@ function applyCommand(
     if(window&&(input.action!=='suppress'||!state.members.some(m=>m.id===input.owner&&m.active&&['admin','responder'].includes(m.role))))fail('Windowed suppression requires an active queue owner');
     if((window||old?.suppressionWindow||correlation||old?.correlation)&&input.baseVersion!==(old?.version??0))fail('Suppression policy changed; reload before publishing',409);
     const rule: Policy = {
+      ...(workflow?{workflow}:{}),
       ...(transformation?{transformation}:{}),
       ...(window?{suppressionWindow:window}:{}),
       ...(correlation?{correlation}:{}),
@@ -694,7 +701,8 @@ export function validateArchive(value: any): State {
       "action",
       "owner",
       "reason",
-    ], ["suppressionWindow","correlation","transformation"]);
+    ], ["suppressionWindow","correlation","transformation","workflow"]);
+    if(p.workflow!==undefined){workflowShape(p.workflow);if(p.action!=="route")fail("Invalid workflow rule");}
     if(p.transformation!==undefined)validateTransformation(p.transformation);
     if(p.correlation!==undefined){validateCorrelation(p.correlation);if(!p.owner)fail("Grouping requires an owner");}
     if(p.suppressionWindow!==undefined){suppressionWindow(p.suppressionWindow);if(p.action!=="suppress"||!p.owner)fail("Invalid windowed suppression");text(p.reason,"reason",300);}

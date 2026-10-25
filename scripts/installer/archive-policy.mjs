@@ -1,3 +1,4 @@
+import {holdRuleWorkflows} from '../../src/orchestration/workflows.ts'
 import {hasErasedSubject} from '../../src/subject-erasure-identity.ts'
 import {hasErasedChange} from '../../src/changes/identity.ts'
 import {holdScheduleRecords} from '../../src/schedule-coordination/model.ts';
@@ -39,6 +40,8 @@ export default {
   refreshBusinessStatus(coordination)
   if(tables.oc_business_services)for(const row of coordination.businessServices??[])await db.prepare('UPDATE "'+tables.oc_business_services.replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(row),row.id).run()
   if(tables.oc_members)for(const row of coordination.members.filter(m=>m.role==='stakeholder'))await db.prepare('UPDATE "'+tables.oc_members.replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(row),row.id).run()
+  holdRuleWorkflows(coordination)
+  for(const [key,name] of [['policies','oc_policies'],['triage','oc_triage']])if(tables[name])for(const row of coordination[key]??[])await db.prepare('UPDATE "'+tables[name].replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(row),row.id).run()
   holdAutomation(coordination)
   for(const [key,name] of [['apiClients','oc_api_clients'],['apiEndpoints','oc_api_endpoints'],['apiOutbox','oc_api_outbox']])if(tables[name])for(const row of coordination[key]??[])await db.prepare('UPDATE "'+tables[name].replaceAll('"','""')+'" SET data=? WHERE id=?').bind(JSON.stringify(row),row.id).run()
   pauseChangeSources(coordination)

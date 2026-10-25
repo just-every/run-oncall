@@ -1,10 +1,12 @@
-import {authority,command,fail,type Incident,type Member,type State} from './family/response-operations/domain';
-import {matchingItems,type BulkResult} from './family/response-operations/triage';
+import {coordinateAlert} from './triage-alerts.ts';
+import {authority,command,fail,type Incident,type Member,type State} from './family/response-operations/domain.ts';
+import {matchingItems,type BulkResult} from './family/response-operations/triage.ts';
 type Selected={id:string;revision:number;kind?:string};
-export type CoordinationTask={id:string;source:string;revision:number;index:number;step:'declare'|'notify'};
+export type CoordinationTask={id:string;source:string;revision:number;index:number;step:'reassign'|'declare'|'notify'};
 /** Version 1 expands the saved selection into two ordered steps in existing oc_triage custody. */
-export const coordinationTasks=(items:Selected[]):CoordinationTask[]=>items.flatMap((item,index)=>[
- {id:`step:${index}:declare`,source:item.id,revision:item.revision,index,step:'declare' as const},
+export const coordinationTasks=(items:Selected[],reassign=false):CoordinationTask[]=>items.flatMap((item,index)=>[
+ ...(reassign?[{id:`step:${index}:reassign`,source:item.id,revision:item.revision,index,step:'reassign' as const}]:[]),
+ {id:`step:${index}:declare`,source:item.id,revision:item.revision+(reassign?1:0),index,step:'declare' as const},
  {id:`step:${index}:notify`,source:item.id,revision:item.revision,index,step:'notify' as const},
 ]);
 export function validateCoordination(state:State,actor:Member,input:any){
@@ -13,15 +15,18 @@ export function validateCoordination(state:State,actor:Member,input:any){
  if(!state.members.some(member=>member.id===input.member&&member.active&&['admin','responder'].includes(member.role)))fail('Choose a current responder for the recorded notification',409);
  if(typeof input.reason!=='string'||!input.reason.trim()||input.reason.length>1000)fail('Provide a bounded workflow reason',409);
 }
-export function applyCoordinationStep(state:State,actor:Member,task:CoordinationTask,member:string,reason:string,results:BulkResult[],operationId:string,at:string):Incident{
+export function applyCoordinationStep(state:State,actor:Member,task:CoordinationTask,member:string,reason:string,results:BulkResult[],operationId:string,at:string,templateVersion?:number|null):any{
  authority(state,actor);
+ if(task.step==='reassign')return coordinateAlert(state,actor,{id:task.source,revision:task.revision,action:'reassign',member,reason,operationId},at);
  if(task.step==='declare'){
   const alert=state.alerts.find(row=>row.id===task.source);
   if(!alert)fail('Selected alert is no longer retained',409);
   if((alert.revision??1)!==task.revision)fail('Selected alert changed; review a new workflow',409);
   if(alert.service===null||alert.state!=='active'||alert.coordination?.state==='closed')fail('Declaration requires an active service-bound alert',409);
   const selected=matchingItems(state,actor,{kind:'alerts'}).find(row=>row.id===alert.id);if(!selected)fail('Selected alert already belongs to an incident',409);
-  return command(state,actor,{type:'declare',service:alert.service,alerts:[alert.id],title:selected.title,summary:'Declared from a selected alert by a recorded coordination workflow; impact requires human assessment.',severity:selected.severity},at) as Incident;
+  const service=state.services.find(s=>s.id===alert.service)!,history=service.incidentTemplates;
+  if(templateVersion!==undefined)service.incidentTemplates=templateVersion===null?undefined:history?.filter(t=>t.version<=templateVersion);
+  try {return command(state,actor,{type:'declare',service:alert.service,alerts:[alert.id],title:selected.title,summary:'Declared from a selected alert by a recorded coordination workflow; impact requires human assessment.',severity:selected.severity},at) as Incident;}finally{if(templateVersion!==undefined){if(history===undefined)delete service.incidentTemplates;else service.incidentTemplates=history;}}
  }
  const declared=results.find(result=>result.id===`step:${task.index}:declare`&&result.ok&&result.kind==='workflow');
  if(!declared?.incident)fail('Declaration did not commit; no responder obligation was recorded',409);

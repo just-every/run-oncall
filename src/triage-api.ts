@@ -1,3 +1,4 @@
+import {advanceRuleWorkflow} from './orchestration/workflow-api';
 import {requireNewSubjectIdentity} from './subject-erasure-identity';
 import {coordinationTasks,applyCoordinationStep,coordinationPreview,validateCoordination} from './triage-orchestration';
 import {coordinateAlert} from './triage-alerts';
@@ -65,6 +66,7 @@ export function installTriage(api: any, deps: Dependencies) {
     const actor: Member = c.get('actor');
     let initial = await deps.state(c);
     let operation = (initial.triage ?? []).find(r => r.id === id);
+    if(operation?.kind==='bulk'&&operation.rule)fail('Rule-launched workflows require explicit authorized resume',409);
     if (operation && (operation.kind !== 'bulk' || operation.actor !== actor.id || operation.fingerprint !== fingerprint)) fail('Operation ID conflicts with different content or actor', 409);
     if(input.action==='orchestrate')validateCoordination(initial,actor,input);
     if (initial.members.find(m => m.id === actor.id)?.role === 'viewer') {
@@ -144,11 +146,13 @@ export function installTriage(api: any, deps: Dependencies) {
   };
   api.post('/api/triage/workflows/preview',async(c:any)=>{const input=await deps.body(c,256*1024),state=await deps.state(c);return c.json(coordinationPreview(state,c.get('actor'),input));});
   api.post('/api/triage/bulk', (c:any)=>executeBulk(c));
+  api.post('/api/triage/workflows/:id/clear-expired',async(c:any)=>{const state=await deps.state(c),input=await deps.body(c),record=state.triage?.find(r=>r.id===c.req.param('id')&&r.kind==='bulk') as BulkOperation|undefined;if(!record?.rule)fail('Unknown rule workflow',404);return advanceRuleWorkflow(c,record,input,deps,true);});
   api.post('/api/triage/workflows/:id/resume',async(c:any)=>{
     const state=await deps.state(c),input=await deps.body(c),actor:Member=c.get('actor');
     authority(state,actor);
     const record=state.triage?.find(row=>row.id===c.req.param('id')&&row.kind==='bulk');
     if(!record||record.kind!=='bulk'||!record.workflow)fail('Unknown recorded workflow',404);
+    if(record.rule)return advanceRuleWorkflow(c,record,input,deps);
     if(record.actor!==actor.id||input.approve!==true)fail('Only the current author can explicitly resume this recorded workflow',403);
     return executeBulk(c,{...record.workflow,operationId:record.id,action:record.workflow.action??'reassign',confirmedCount:record.workflow.items.length,durable:true});
   });

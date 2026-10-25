@@ -1,3 +1,4 @@
+import {holdRuleWorkflows} from './orchestration/workflows';
 import {replayService} from './orchestration/replay.ts';
 import { requireHandoffErasureFence, subjectErasureIdentity } from './subject-erasure-identity.ts'
 import { installSubjectErasure } from './subject-erasure'
@@ -600,6 +601,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
   holdDeadlines(value);
   refreshBusinessStatus(value);
   holdAutomation(value);
+  holdRuleWorkflows(value);
   pauseChangeSources(value);
   pauseIntakeSources(value);
   value.revision = old.revision + 1;
