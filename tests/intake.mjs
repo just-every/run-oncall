@@ -195,13 +195,6 @@ try {
   const unmappedRestore=await request('/api/restore',{mode:'replace',archive:unmapped});ok(unmappedRestore);cookie=unmappedRestore.cookie;
   ok(await request('/api/email/addresses/unmapped-mail/rotate',{revision:1,localPart:mapPart}));await mail(w,mapPart,'Wrong environment');assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'unmapped_service_environment');
   // Refused mail over an address's rate limit is not stored per message, and held mail never takes the human-authored allocation.
-  const floodPart=localPart();ok(await request('/api/email/addresses',{id:'email-flood',name:'Flooded monitor',service:'payments',owner:actor.id,localPart:floodPart,mode:'subject',fallback:'subject',rules:[]}),201);
-  for(let n=0;n<70;n++)await mail(w,floodPart,'Unauthenticated flood',{auth:'fail'});
-  const flooded=ok(await request('/api/email')).receipts.filter(r=>r.address==='email-flood');
-  assert.equal(flooded.filter(r=>r.diagnostic==='address_rate_limit').length,1,'one receipt records the engaged rate limit; later refusals in its minute are not stored');
-  const heldMail=flooded.find(r=>r.diagnostic==='sender_authentication_failed').id;
-  w.sql(`WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM n WHERE i<2000) INSERT INTO oc_email_receipts(id,ordinal,data) SELECT 'synthetic-oncall-'||i,(SELECT MAX(ordinal) FROM oc_email_receipts)+i,json_set(r.data,'$.id','synthetic-oncall-'||i) FROM n,oc_email_receipts r WHERE r.id='${heldMail}'`);
-  ok(await request('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Coordination beside held mail',summary:'s'.repeat(3000)}));
   // OC-040 email integration erasure shares the subject receipt, audit and restore boundary.
   const erasureId='synthetic-oncall-440',erasureLocal=localPart();
   const erasureDefinition={id:erasureId,name:'Synthetic erasable email',service:'payments',owner:actor.id,localPart:erasureLocal,mode:'subject',fallback:'subject',rules:[]};
@@ -210,9 +203,10 @@ try {
   await mail(w,erasureLocal,'synthetic-oncall-442 refused sender',{auth:'fail'});
   const erasureState=ok(await request('/api/state')),erasureAlert=erasureState.alerts.find(a=>a.source==='email:'+erasureId);
   const erasureIncident=ok(await request('/api/command',{type:'declare',service:'payments',title:'Synthetic retained incident',summary:'Synthetic retained impact',severity:'warning',alerts:[erasureAlert.id]}));
+  const erasureViewer=ok(await request('/api/members',{name:'synthetic-oncall-444',role:'viewer',password:'synthetic-oncall-444-password'}),201),erasureViewerCookie=(await w.request('/api/login',{name:erasureViewer.name,password:'synthetic-oncall-444-password'})).cookie;
   const beforeEmailErasure=ok(await request('/api/archive')),emailCheckpoint=ok(await request('/api/recovery/checkpoint'));
   const erasePath='/api/erasure/email/'+erasureId,eraseInput={workspaceRevision:beforeEmailErasure.revision,confirmation:'erase '+erasureId};
-  ok(await w.request(erasePath,eraseInput),401);ok(await w.request(erasePath,eraseInput,viewerCookie),403);
+  ok(await w.request(erasePath,eraseInput),401);ok(await w.request(erasePath,eraseInput,erasureViewerCookie),403);
   ok(await request(erasePath,{...eraseInput,confirmation:'wrong'}),409);
   ok(await request(erasePath,{...eraseInput,workspaceRevision:0}),409);
   const copy='rer_portability_snap_synthetic_oncall_440';
@@ -245,5 +239,12 @@ try {
   assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'unknown_address');
   assert.ok(!ok(await request('/api/state')).alerts.some(a=>a.source==='email:'+erasureId));
   console.log('OC-040 email integration erasure: authority, confirmation, stale refusal, audit/table rollback, committed per-store counts, linked incident retention, transfer invalidation, forged-journal archive/checkpoint refusal, identity reuse and restart/retired delivery refusal passed');
+  const floodPart=localPart();ok(await request('/api/email/addresses',{id:'email-flood',name:'Flooded monitor',service:'payments',owner:actor.id,localPart:floodPart,mode:'subject',fallback:'subject',rules:[]}),201);
+  for(let n=0;n<70;n++)await mail(w,floodPart,'Unauthenticated flood',{auth:'fail'});
+  const flooded=ok(await request('/api/email')).receipts.filter(r=>r.address==='email-flood');
+  assert.equal(flooded.filter(r=>r.diagnostic==='address_rate_limit').length,1,'one receipt records the engaged rate limit; later refusals in its minute are not stored');
+  const heldMail=flooded.find(r=>r.diagnostic==='sender_authentication_failed').id;
+  w.sql(`WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM n WHERE i<2000) INSERT INTO oc_email_receipts(id,ordinal,data) SELECT 'synthetic-oncall-'||i,(SELECT MAX(ordinal) FROM oc_email_receipts)+i,json_set(r.data,'$.id','synthetic-oncall-'||i) FROM n,oc_email_receipts r WHERE r.id='${heldMail}'`);
+  ok(await request('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Coordination beside held mail',summary:'s'.repeat(3000)}));
   console.log('OC-033 inbound email accepts, deduplicates, recovers and quarantines by address mode and rule without granting authority to the sender. Compatible intake: provider lifecycles, authority, concurrency, rollback, key rotation/revoke, native integrity and inactive archive/restart');
 } finally {await w.close();}
