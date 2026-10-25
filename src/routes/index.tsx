@@ -211,7 +211,8 @@ export function Workspace() {
         {page === "schedules" && (
           <SchedulingWorkspace page="schedules" actor={actor} state={s} request={request} refreshWorkspace={w.refresh} demo={w.demo} />
         )}
-        {page === "incidents" && (
+        {page === "incidents" && selected && !incident && <WorkspaceNotFound incident />}
+        {page === "incidents" && (!selected || incident) && (
           <div className="board">
             <IncidentTriage onUpdated={setListedRevision} state={s} actor={actor} current={incident?.id} select={id => {selectIncident(id); setHandoff(null); if (window.innerWidth < 900) requestAnimationFrame(() => document.querySelector(".detail")?.scrollIntoView({block: "start"}));}} busy={w.busy} run={w.run}>
               <div className="list-toolbar">
@@ -263,7 +264,7 @@ export function Workspace() {
                 </div>
               )}
             </IncidentTriage>
-            {selected && !incident ? <WorkspaceNotFound incident /> : incident ? (
+            {incident ? (
               <>
                 <section className="panel detail">
                   <div className="detail-heading">
