@@ -4,7 +4,7 @@ import { changeHash, equalSignature } from './changes/credentials'
 import { readSessionCookie } from './session-cookie'
 import type { AuditIdentity } from './audit-store'
 
-/** Authenticate metadata before the bounded body reader can refuse an upload.
+/** Attribute the request after bounded transport consumption, including refused uploads.
  * The ordinary handler still repeats its authority fence in the state transaction. */
 export async function auditPrincipal(request: Request, env: Bindings): Promise<{ actor?: AuditIdentity; source?: AuditIdentity }> {
   const path = new URL(request.url).pathname

@@ -174,6 +174,14 @@ try {
    ok(await request('/api/intake/incumbent',rotation),503);w.sql('DROP TRIGGER synthetic_incumbent_audit');assert.deepEqual(ok(await request('/api/archive')),beforeRotation);assert.deepEqual(await rows(),beforeRotationObjects);
    ok(await request('/api/intake/incumbent',rotation));assert.equal(ok(await request('/api/intake/sources/'+id+'/incumbent')).source.active,false);
    assert.equal(w.sql("SELECT length(key_digest) AS length FROM oc_incumbent_credentials WHERE source='"+id+"'")[0].length,64);
+   const rotationCurrent=(await rows()).find(row=>row.targetId===imported.targetId);
+   const competingRotation={...rotation,importedRevision:rotationCurrent.revision,revision:ok(await request('/api/intake/sources/'+id+'/incumbent')).source.revision};
+   const beforeRotationRace=new Set(ok(await request('/api/audit/export')).rows.map(row=>row.id));
+   const rotationRace=await Promise.all([request('/api/intake/incumbent',competingRotation),request('/api/intake/incumbent',competingRotation)]);
+   assert.deepEqual(rotationRace.map(row=>row.status).sort(),[200,409],'concurrent incumbent rotations return a conflict without dropping the losing response');
+   const rotationAudit=ok(await request('/api/audit/export')).rows.filter(row=>!beforeRotationRace.has(row.id)&&row.feature==='intake');
+   assert.equal(rotationAudit.filter(row=>row.outcome==='accepted').length,1);assert.equal(rotationAudit.filter(row=>row.outcome==='refused').length,1,'a losing rotation retains exactly one refusal');
+
   }
   for(const path of ['/api/state','/api/workspace','/api/move-in/objects','/api/audit/export','/api/archive','/api/recovery/checkpoint','/']) {
    const value=JSON.stringify(ok(await request(path)));

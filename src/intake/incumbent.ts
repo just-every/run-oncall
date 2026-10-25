@@ -59,7 +59,7 @@ export function installIncumbentKeys(api:any,deps:Dependencies) {
   source.active=true;source.revision++;source.updatedAt=new Date().toISOString();audit(c,state,source,'incumbent-key-activated');
   const token=crypto.randomUUID(),guard=deps.guard(c),bound={sql:`(${guard.sql}) AND EXISTS(SELECT 1 FROM oc_incumbent_credentials WHERE source=? AND key_digest=?)`,values:[...guard.values,source.id,held.key_digest]};
   const result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,bound,token),c.env.DB.prepare(`INSERT INTO oc_intake_credentials(source,key_digest) SELECT ?,? WHERE ${gate} ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest`).bind(source.id,digest,token)]);
-  if(result[0].meta.changes!==1)fail('Integration or authority changed; reload',409);
+  if(result[0].meta.changes!==1){auditRefusalCommitted(c.env.DB);fail('Integration or authority changed; reload',409);}
   return c.json({source,keySupplied:true,nativeKey,paging:'OFF'});
  });
 }
