@@ -1,3 +1,4 @@
+import {CorrelationExplanation} from '../orchestration/Explanation';
 import type { UrgencyDecision } from "../urgency/types";
 import type { Decision, Member } from "../family/response-operations/domain";
 
@@ -7,7 +8,7 @@ export function ReplayComparison({ result, members }: { result: Result; members:
   function decision(value: Decision | null, people: Member[]) {
     if (!value) return <p>No accepted event with this identity.</p>;
     const owner = value.owner ? people.find(member => member.id === value.owner)?.name ?? `Unavailable member (${value.owner})` : "Unassigned";
-    return <><p><strong>{value.action}</strong> · {owner}</p><p>{value.reason}</p><small>{value.policy ? `Policy ${value.policy} · version ${value.version}` : "No matching policy"}</small></>;
+    return <><p><strong>{value.action}</strong> · {owner}</p><p>{value.reason}</p><CorrelationExplanation decision={value}/><small>{value.policy ? `Policy ${value.policy} · version ${value.version}` : "No matching policy"}</small></>;
   }
   return <section aria-label="Replay comparison">
     <p>Compared against workspace revision {result.workspaceRevision}. No records changed.</p>

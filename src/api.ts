@@ -1,3 +1,4 @@
+import {replayService} from './orchestration/replay';
 import { requireHandoffErasureFence, subjectErasureIdentity } from './subject-erasure-identity.ts'
 import { installSubjectErasure } from './subject-erasure'
 import {installScheduleCoordination} from './schedule-coordination/api';
@@ -467,25 +468,10 @@ api.post("/api/replay", async (c) => {
   return c.json({
     sideEffects: false,
     workspaceRevision: state.revision,
-    decisions: input.events.map((e: any) => signalInput(e)).sort((a: any,b: any)=>{
+    decisions: replayService(state,input.events.map((e:any)=>signalInput(e)).sort((a:any,b:any)=>{
       const accepted=(signal:any)=>state.events.find(event=>event.source===signal.source&&event.eventId===signal.eventId)?.acceptedAt??signal.observedAt;
       return accepted(a).localeCompare(accepted(b))||a.source.localeCompare(b.source)||a.eventId.localeCompare(b.eventId);
-    }).map((e: any) => {
-      const signal = signalInput(e);
-      const historical = state.events.find(
-        (v) => v.source === signal.source && v.eventId === signal.eventId,
-      );
-      return {
-        eventId: signal.eventId,
-        historical: historical?.decision ?? null,
-        historicalEvaluation: historical?.routingSnapshot ?? null,
-        historicalUrgency: historical?.urgency ?? null,
-        proposed: route(state, signal, evaluatedAt),
-        proposedUrgency: state.services.some(service => service.id === signal.service)
-          ? serviceUrgency(state, signal.service, signal.severity, evaluatedAt) : null,
-        proposedEvaluation: evaluatedAt,
-      };
-    }),
+    }),evaluatedAt),
   });
 });
 api.post("/api/members", async (c) => {

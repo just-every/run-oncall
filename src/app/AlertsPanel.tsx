@@ -1,3 +1,4 @@
+import {CorrelationExplanation} from '../orchestration/Explanation';
 import { useState } from 'react';
 import { AlertUrgency } from '../urgency/AlertUrgency';
 import type { IntakeRun } from '../intake/CompatibleTest';
@@ -10,12 +11,16 @@ export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpen
   onOpenIncident: (id: string) => void;
 }) {
   const [incidentServices, setIncidentServices] = useState<Record<string, string>>({});
+  const held=state.alerts.filter(alert=>alert.state==='active'&&alert.suppressed&&[...alert.events].reverse().map(id=>state.events.find(e=>e.id===id)).find(e=>e?.intent==='trigger')?.decision.correlation?.held);
+  const heldGroups=new Map<string,Alert[]>();
+  for(const alert of held){const key=JSON.stringify([alert.source,alert.service,alert.environment,alert.key]);const group=heldGroups.get(key)??[];group.push(alert);heldGroups.set(key,group);}
   return <section className="panel padded">
     <h2>Alerts</h2>
     <p>Signals remain separate from incidents. Recovery affects only its lifecycle generation.
       This list refreshes every 10 seconds while visible; use Refresh for an immediate update.</p>
     <p>Severity is the highest trigger severity recorded for the alert. Declaring an incident keeps that severity.</p>
-    {state.alerts.map((alert: Alert) => {
+    {[...heldGroups].map(([identity,alerts])=>{const events=alerts.flatMap(alert=>alert.events.map(id=>state.events.find(e=>e.id===id)!)),latest=events.filter(e=>e.intent==='trigger').sort((a,b)=>b.acceptedAt.localeCompare(a.acceptedAt))[0],severity=['critical','warning','info'].find(level=>events.some(e=>e.intent==='trigger'&&e.severity===level));return <article className="service-card" key={identity} style={{overflowWrap:'anywhere'}}><h3>Flapping signal: {latest.title}</h3><p><strong>{severity}</strong> · {alerts.length} held active {alerts.length===1?'generation':'generations'} · {latest.source} · {latest.service}</p><CorrelationExplanation decision={latest.decision}/><p>Held locally, paging OFF. Source recoveries still affect only their own generation.</p><details><summary>Retained generations and evidence</summary>{alerts.map(alert=><p key={alert.id} style={{overflowWrap:'anywhere'}}>Generation {alert.generation} · owner {name(alert.owner)} · alert {alert.id} · events {alert.events.join(', ')}</p>)}</details></article>})}
+    {state.alerts.filter(alert=>!held.includes(alert)).map((alert: Alert) => {
       const events = alert.events.map(id => state.events.find(event => event.id === id)).filter(event => event !== undefined);
       const triggers = events.filter(event => event.intent === 'trigger');
       const ranked = ['critical', 'warning', 'info'] as const;
@@ -43,6 +48,7 @@ export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpen
         </div>}
         {alert.priority&&<p>Priority: {alert.priority}</p>}
         <p>{alert.source} / {alert.key} / {alert.generation}</p>
+        <CorrelationExplanation decision={events.at(-1)?.decision}/>
         <p>{alert.suppressed ? 'Suppressed'+(alert.owner?' · Owner: '+name(alert.owner):'') : name(alert.owner)} · {alert.events.length} events</p>
         <AlertUrgency alert={alert} state={state} canEdit={canEdit&&alert.service!==null} busy={busy} run={run}/><details><summary>Service runbook</summary>{state.services.find(s=>s.id===alert.service)?.runbook.length ? <ol>{state.services.find(s=>s.id===alert.service)!.runbook.map((step,n)=><li key={n}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</details>
         {alert.service!==null&&<RecentChanges service={alert.service} at={triggers[0]?.observedAt ?? events[0]?.observedAt} revision={state.revision} />}
@@ -62,7 +68,7 @@ export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpen
       <summary>Accepted event receipts ({state.events.length})</summary>
       {state.events.map(event => <article className="receipt" key={event.id}>
         <strong>{event.eventId} · {event.intent} · {event.severity}</strong>
-        <p>{event.decision.action}: {event.decision.reason}</p>
+        <p>{event.decision.action}: {event.decision.reason}</p><CorrelationExplanation decision={event.decision}/>
         <p>{new Date(event.acceptedAt).toLocaleString()} · {state.intakeReceipts?.some(r=>r.event===event.id&&r.observedAt===null)?'source time not supplied':`observed ${new Date(event.observedAt).toLocaleString()}`} · {event.generation}</p>
       </article>)}
     </details>

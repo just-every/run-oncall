@@ -11,4 +11,4 @@ export type RoutingExplanation = {
   serviceDecision:(Decision & {event:string})|null;
   readmission?:{receipt:string;operationId:string;by:string};
 };
-export type RoutingPreview = {baseVersion:number;decisions:{receipt:string;historical:RoutingExplanation;proposed:RoutingExplanation;changed:boolean;warning?:string}[];warnings:string[]};
+export type RoutingPreview = {baseVersion:number;decisions:{receipt:string;historical:RoutingExplanation;proposed:RoutingExplanation;changed:boolean;historicalUrgency?:import('../urgency/types').UrgencyDecision|null;proposedUrgency?:import('../urgency/types').UrgencyDecision|null;warning?:string}[];warnings:string[]};

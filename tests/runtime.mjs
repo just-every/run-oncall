@@ -892,6 +892,13 @@ try {
   const afterRemoval=ok(await request('/api/ingress/'+maintenanceRuntimeId,{...maintenanceRuntimeSignal,eventId:maintenanceRuntimeId+'-after'},'',{authorization:'Bearer '+maintenanceRuntimeKey}),201),removedWindowState=ok(await request('/api/state',undefined,cookie));
   const afterRemovalAlert=removedWindowState.alerts.find(a=>a.events.includes(afterRemoval.id));assert.equal(afterRemovalAlert.suppressed,false);assert.equal(afterRemovalAlert.owner,admin.id);assert.deepEqual(removedWindowState.events.find(e=>e.id===maintenanceRuntimeReceipt.id),maintenanceRuntimeEvent,'removing maintenance releases the next observation without rewriting the original');
   console.log('PASS OC-043 removing maintenance routes the next observation of the retained alert group');
+  const runtimeGrouping=ok(await request('/api/command',{type:'policy',service:maintenanceRuntimeId,severity:'*',action:'route',owner:admin.id,reason:'Synthetic restart-safe grouping',baseVersion:maintenanceRemoved.version,correlation:{field:'key',windowSeconds:300,includeDependencies:false,flappingCount:0}},cookie));
+  const runtimeGroupA=ok(await request('/api/ingress/'+maintenanceRuntimeId,{...maintenanceRuntimeSignal,eventId:'synthetic-oncall-436-a',key:'synthetic-oncall-436',generation:'synthetic-oncall-436-a'},'',{authorization:'Bearer '+maintenanceRuntimeKey}),201),runtimeGroupBefore=ok(await request('/api/state',undefined,cookie)),runtimeOriginal=runtimeGroupBefore.events.find(e=>e.id===runtimeGroupA.id);
+  await stop();migration();await start();assert.deepEqual(ok(await request('/api/state',undefined,cookie)).events.find(e=>e.id===runtimeGroupA.id),runtimeOriginal);
+  const runtimeGroupInput={...maintenanceRuntimeSignal,eventId:'synthetic-oncall-436-b',key:'synthetic-oncall-436',generation:'synthetic-oncall-436-b'},runtimeGroupB=ok(await request('/api/ingress/'+maintenanceRuntimeId,runtimeGroupInput,'',{authorization:'Bearer '+maintenanceRuntimeKey}),201),runtimeGroupAfter=ok(await request('/api/state',undefined,cookie));
+  assert.equal(runtimeGroupAfter.events.find(e=>e.id===runtimeGroupB.id).decision.correlation.originalEvent,runtimeOriginal.id);assert.equal(runtimeOriginal.decision.version,runtimeGrouping.version);ok(await request('/api/ingress/'+maintenanceRuntimeId,runtimeGroupInput,'',{authorization:'Bearer '+maintenanceRuntimeKey}));assert.deepEqual(ok(await request('/api/state',undefined,cookie)),runtimeGroupAfter,'restart and duplicate intake add no second grouping effect');
+  console.log('PASS OC-043 correlation restart: frozen original and version survive migration/restart, next source generation joins once, duplicate admission adds no action');
+
 
 
   ok(

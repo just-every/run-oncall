@@ -1,3 +1,4 @@
+import {correlate,validateCorrelation,validateCorrelationDecision,validateCorrelationEvents,type CorrelationRule,type CorrelationDecision} from '../../orchestration/correlation';
 import {validateAlertCoordination,type AlertCoordination} from '../../triage-alerts.ts';
 import {validateScheduleRecords,type ScheduleRecord} from '../../schedule-coordination/model.ts';
 import {identityLimit} from '../../intake/identity-bounds.ts';
@@ -47,6 +48,7 @@ export type Service = {
   ackTimeouts?: AckTimeout[];
 };
 export type Policy = {
+  correlation?:CorrelationRule;
   suppressionWindow?: {start: string; end: string};
   id: string;
   version: number;
@@ -70,6 +72,7 @@ export type Signal = {
   evidence: string;
 };
 export type Decision = {
+  correlation?:CorrelationDecision;
   policy: string | null;
   version: number | null;
   action: "route" | "suppress" | "unmatched";
@@ -245,7 +248,7 @@ function suppressionWindow(value: any) {
     [value.start,value.end].some(at=>typeof at!=='string'||!Number.isFinite(Date.parse(at))||new Date(at).toISOString()!==at)||Date.parse(value.start)>=Date.parse(value.end))fail('Suppression window needs ordered canonical UTC start and end timestamps');
   return {start:value.start as string,end:value.end as string};
 }
-export function route(state: State, signal: Signal, at=new Date().toISOString()): Decision {
+export function route(state: State, signal: Signal, at=new Date().toISOString(),eventId="preview:"+signal.source+":"+signal.eventId,labels?:Record<string,string>): Decision {
   const policy = state.policies.find(
     (p) =>
       p.service === signal.service &&
@@ -274,13 +277,14 @@ export function route(state: State, signal: Signal, at=new Date().toISOString())
       owner: null,
       reason: "Configured responder is inactive or unavailable",
     };
-  return {
+  const decision:Decision={
     policy: policy.id,
     version: policy.version,
     action,
-    owner: action === "route" || window ? owner?.id??null : null,
+    owner: action === "route" || window || policy.correlation ? owner?.id??null : null,
     reason,
   };
+  return policy.correlation?correlate(state,signal,policy,decision,eventId,labels):decision;
 }
 export function signalInput(input: any, exactKey = false, keyLimit = 200): Signal {
   if (!input || typeof input !== "object" || Array.isArray(input))
@@ -310,7 +314,7 @@ export function signalInput(input: any, exactKey = false, keyLimit = 200): Signa
     evidence,
   };
 }
-export function admit(state: State, input: any, at = new Date().toISOString(), exactKey = false, keyLimit = 200) {
+export function admit(state: State, input: any, at = new Date().toISOString(), exactKey = false, keyLimit = 200,labels?:Record<string,string>) {
   const signal = signalInput(input,exactKey,keyLimit);
   const old = state.events.find(
     (e) => e.source === signal.source && e.eventId === signal.eventId,
@@ -333,11 +337,12 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
     fail('Unknown "service" / "environment" combination');
   if (state.events.length >= 10000)
     fail("Local event capacity reached; export before extending capacity", 429);
+  const eventId=crypto.randomUUID();
   const event: Event = {
     ...signal,
-    id: crypto.randomUUID(),
+    id: eventId,
     acceptedAt: at,
-    decision: route(state, signal, at),
+    decision: route(state, signal, at,eventId,labels),
     urgency: serviceUrgency(state, signal.service, signal.severity, at),
     routingSnapshot: {
       policies: structuredClone(state.policies),
@@ -371,8 +376,8 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
   }
   if (alert) {
     const priorEvent=state.events.find(e=>e.id===alert.events.at(-1));
-    const wasWindowed=priorEvent?.routingSnapshot.policies.some(p=>p.id===priorEvent.decision.policy&&p.suppressionWindow);
-    if(signal.intent==='trigger'&&(wasWindowed||state.policies.find(p=>p.id===event.decision.policy)?.suppressionWindow)){alert.suppressed=event.decision.action==='suppress';alert.owner=event.decision.owner;}
+    const wasWindowed=priorEvent?.routingSnapshot.policies.some(p=>p.id===priorEvent.decision.policy&&(p.suppressionWindow||p.correlation));
+    if(signal.intent==='trigger'&&(wasWindowed||event.decision.correlation||state.policies.find(p=>p.id===event.decision.policy)?.suppressionWindow)){alert.suppressed=event.decision.action==='suppress';alert.owner=event.decision.owner;}
     admitAlertUrgency(state, alert, event, created);
     alert.events.push(event.id);
     if (signal.intent === "recover") alert.state = "recovered";
@@ -478,11 +483,14 @@ function applyCommand(
     const old = state.policies.find(
       (p) => p.service === input.service && p.severity === input.severity,
     );
+    const correlation=input.correlation===null?undefined:input.correlation===undefined?old?.correlation:validateCorrelation(input.correlation);
+    if(correlation&&!state.members.some(m=>m.id===input.owner&&m.active&&["admin","responder"].includes(m.role)))fail("Grouping requires an active coordination owner");
     const window=input.suppressionWindow===undefined?undefined:suppressionWindow(input.suppressionWindow);
     if(window&&(input.action!=='suppress'||!state.members.some(m=>m.id===input.owner&&m.active&&['admin','responder'].includes(m.role))))fail('Windowed suppression requires an active queue owner');
-    if((window||old?.suppressionWindow)&&input.baseVersion!==(old?.version??0))fail('Suppression policy changed; reload before publishing',409);
+    if((window||old?.suppressionWindow||correlation||old?.correlation)&&input.baseVersion!==(old?.version??0))fail('Suppression policy changed; reload before publishing',409);
     const rule: Policy = {
       ...(window?{suppressionWindow:window}:{}),
+      ...(correlation?{correlation}:{}),
       id: old?.id ?? crypto.randomUUID(),
       version: (old?.version ?? 0) + 1,
       service: input.service,
@@ -669,7 +677,8 @@ export function validateArchive(value: any): State {
       "action",
       "owner",
       "reason",
-    ], ["suppressionWindow"]);
+    ], ["suppressionWindow","correlation"]);
+    if(p.correlation!==undefined){validateCorrelation(p.correlation);if(!p.owner)fail("Grouping requires an owner");}
     if(p.suppressionWindow!==undefined){suppressionWindow(p.suppressionWindow);if(p.action!=="suppress"||!p.owner)fail("Invalid windowed suppression");text(p.reason,"reason",300);}
     integer(p.version);
     text(p.id, "policy ID", 100);
@@ -681,7 +690,8 @@ export function validateArchive(value: any): State {
       fail("Invalid archive policy");
   };
   const decision = (d: any) => {
-    object(d, ["policy", "version", "action", "owner", "reason"]);
+    object(d, ["policy", "version", "action", "owner", "reason"],["correlation"]);
+    if(d.correlation!==undefined)validateCorrelationDecision(d.correlation);
     if (!["route", "suppress", "unmatched"].includes(d.action))
       fail("Invalid routing decision");
     text(d.reason, "reason", 500);
@@ -926,6 +936,7 @@ export function validateArchive(value: any): State {
   validateReviewFields(value);
   validateChangeArchive(value);
   validateIntakeArchive(value);
+  validateCorrelationEvents(value);
   validateEmailArchive(value);
   validateAutomation(value);
   validateScheduleRecords(value);

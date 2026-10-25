@@ -1,0 +1,18 @@
+import {useState} from 'react';
+import type {Service,State} from '../family/response-operations/domain';
+import type {IntakeRun} from '../intake/CompatibleTest';
+export function CorrelationSettings({service,state,busy,run}:{service:Service;state:State;busy:boolean;run:IntakeRun}){
+ const policy=state.policies.find(p=>p.service===service.id&&p.severity==='*'),current=policy?.correlation;
+ const [base,setBase]=useState(policy?.version??0);
+ const [enabled,setEnabled]=useState(!!current),[field,setField]=useState(current?.field??'labels.correlation'),[seconds,setSeconds]=useState(current?.windowSeconds??300),[dependencies,setDependencies]=useState(current?.includeDependencies??false),[flapping,setFlapping]=useState(current?.flappingCount??0),[owner,setOwner]=useState(policy?.owner??service.owner),[reason,setReason]=useState(policy?.reason??'Correlate declared related signals');
+ return <details className="response-policy"><summary>Signal grouping settings · service rule v{policy?.version??0}</summary><p>Uses the all-severity coordination rule; severity-specific rules still win. Match a declared key, title or provider label within an event-time window. Source generations and severity stay independent. Flapping holds are local; no sender or timer runs.</p><form onSubmit={async event=>{event.preventDefault();const result=await run('/api/command',{type:'policy',service:service.id,severity:'*',action:policy?.action??'route',owner,reason,baseVersion:base,...(policy?.suppressionWindow?{suppressionWindow:policy.suppressionWindow}:{}),correlation:enabled?{field,windowSeconds:seconds,includeDependencies:dependencies,flappingCount:flapping}:null},'Grouping policy published');if(result)setBase(result.version)}}><fieldset disabled={busy}>
+ <label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" checked={enabled} onChange={e=>setEnabled(e.target.checked)}/> Enable correlation</label>
+ {base!==(policy?.version??0)&&<p role="alert">Draft v{base} is stale; reload the service before publishing.</p>}
+ <label className="field">Match field<input value={field} onChange={e=>setField(e.target.value)} required={enabled} placeholder="key, title or labels.correlation"/></label>
+ <label className="field">Grouping window in seconds<input type="number" min="1" max="86400" required value={seconds} onChange={e=>setSeconds(Number(e.target.value))}/></label>
+ <label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" checked={dependencies} onChange={e=>setDependencies(e.target.checked)}/> Include declared direct dependencies</label>
+ <label className="field">Flapping trigger generations<input type="number" min="0" max="100" value={flapping} onChange={e=>setFlapping(Number(e.target.value))}/></label><p>Use 0 for no hold, or 2–100 completed and retriggered generations in the grouping window. Unrecovered concurrent generations remain separate.</p>
+ <label className="field">Grouping coordination owner<select value={owner} onChange={e=>setOwner(e.target.value)} required><option value="">Choose an owner</option>{state.members.filter(m=>m.active&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
+ <label className="field">Grouping reason<textarea value={reason} onChange={e=>setReason(e.target.value)} maxLength={500} required/></label>
+ <button type="submit">Publish grouping rule</button></fieldset></form></details>;
+}

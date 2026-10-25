@@ -131,6 +131,17 @@ try {
   } finally {w.sql('DROP TRIGGER reject_urgency');}
   assert.deepEqual(await archive(),beforeFailure,'admission, alert history and audit commit atomically');
 
+  // OC-043 inherits OC-057: only a versioned explained rule lowers a new admission.
+  const groupingPolicy=ok(await req('/api/command',{type:'policy',service:'checkout',severity:'*',action:'route',owner:actor.id,reason:'Synthetic urgency correlation',baseVersion:0,correlation:{field:'key',windowSeconds:60,includeDependencies:false,flappingCount:0}}));
+  const transformAt=Date.now(),highSignal=signal('synthetic-oncall-435-high','critical',{key:'synthetic-oncall-435',generation:'synthetic-oncall-435-a',observedAt:new Date(transformAt).toISOString()}),highReceipt=ok(await send(highSignal),201);
+  const highEvent=(await state()).events.find(e=>e.id===highReceipt.id);assert.equal(highEvent.urgency.urgency,'high');assert.equal(highEvent.decision.version,groupingPolicy.version);
+  const currentUrgency=(await state()).services.find(s=>s.id==='checkout').urgencyRules.at(-1),lowerRule=ok(await publish('checkout',currentUrgency.version,draft('low',{reason:'Synthetic reviewed lower urgency'})),201);
+  const lowSignal=signal('synthetic-oncall-435-low','critical',{key:'synthetic-oncall-435',generation:'synthetic-oncall-435-b',observedAt:new Date(transformAt+1000).toISOString()}),lowReceipt=ok(await send(lowSignal),201),transformed=await state(),lowEvent=transformed.events.find(e=>e.id===lowReceipt.id);
+  assert.equal(lowEvent.urgency.urgency,'low');assert.equal(lowEvent.urgency.version,lowerRule.version);assert.equal(lowEvent.urgency.reason,lowerRule.reason);assert.equal(lowEvent.severity,'critical');assert.equal(lowEvent.decision.correlation.originalEvent,highEvent.id);assert.equal(alertIn(transformed,transformed.alerts.find(a=>a.events.includes(highEvent.id)).id).urgency,'high');
+  const transformBefore=await archive(),transformAudit=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),transformReplay=ok(await req('/api/replay',{events:[lowSignal,highSignal]}));
+  assert.deepEqual(transformReplay.decisions.map(row=>row.eventId),[highSignal.eventId,lowSignal.eventId]);assert.equal(transformReplay.decisions[0].historicalUrgency.urgency,'high');assert.equal(transformReplay.decisions[0].proposedUrgency.urgency,'low');assert.equal(transformReplay.decisions[0].proposedUrgency.version,lowerRule.version);assert.equal(transformReplay.decisions[1].proposed.correlation.group,highEvent.id);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),transformAudit);assert.deepEqual(await archive(),transformBefore);
+  console.log('PASS OC-043 urgency transformation: versioned explained lowering at new admission, unchanged severity and open high urgency, ordered correlation and both urgency decisions with zero durable/audit writes');
+
   const saved=await archive(),malformed=[
     value=>{value.services.find(s=>s.id==='checkout').urgencyRules[0].by='missing-member';},
     value=>{value.events.find(e=>e.id===firstReceipt.id).urgency.reason='Forged explanation';},

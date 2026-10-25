@@ -1,3 +1,4 @@
+import {correlationLabels} from '../orchestration/correlation';
 import { finishResponseAdmission } from '../response-policy/model.ts';
 import {readNativeRequest} from '../native-request';
 import { intakeReceiptCapacity } from '../workspace-profile.ts';
@@ -32,7 +33,7 @@ export function receiveNativeRouting(state:State,source:IntakeSource,signal:Retu
     const generation=state.alerts.find(a=>a.source===intakeSourceIdentity(source.id)&&a.service===service.id&&a.environment===service.environment&&a.key===signal.key&&a.generation===signal.generation);
     const open=generation?.state==='active'?generation:undefined;
     if(signal.intent==='trigger'||open) {
-      const admitted=admit(state,{...signal,source:intakeSourceIdentity(source.id),service:service.id,environment:service.environment,eventId:routing.readmission?'native-readmit:'+routing.readmission.operationId:signal.eventId},at);
+      const admitted=admit(state,{...signal,source:intakeSourceIdentity(source.id),service:service.id,environment:service.environment,eventId:routing.readmission?'native-readmit:'+routing.readmission.operationId:signal.eventId},at,false,200,correlationLabels(routingInput));
       receipt.id=admitted.event.id;receipt.event=admitted.event.id;receipt.alert=admitted.alert;receipt.generation=signal.generation;
       receipt.outcome=signal.intent==='recover'?'recovered':generation?'deduplicated':'opened';
       routing.serviceDecision={event:admitted.event.id,...structuredClone(admitted.event.decision)};

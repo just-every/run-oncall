@@ -185,6 +185,11 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  // OC-040 native categories travel in the same held installation archive.
  const erasedNativeCreated=await req('/api/members',{name:'synthetic-oncall-415@example.test',password:'synthetic-oncall-415-password',role:'responder'});assert.equal(erasedNativeCreated.status,201);const erasedNative=erasedNativeCreated.value;
  const erasedNativeSource='synthetic-oncall-415';assert.equal((await req('/api/intake/sources',{id:erasedNativeSource,name:'Synthetic erasable integration',provider:'alertmanager',service:'transfer',key:randomBytes(32).toString('hex'),revision:0})).status,201);
+ const groupedService='synthetic-oncall-437',groupedKeys=[randomBytes(32).toString('hex'),randomBytes(32).toString('hex')];
+ ok(await req('/api/command',{type:'service',id:groupedService,name:groupedService,environment:'test',owner:member.id,runbook:[],pager:''}));
+ ok(await req('/api/command',{type:'policy',service:groupedService,severity:'*',action:'route',owner:member.id,reason:'Synthetic portable grouping',baseVersion:0,correlation:{field:'key',windowSeconds:300,includeDependencies:false,flappingCount:0}}));
+ for(let n=0;n<2;n++){const id='synthetic-oncall-437-'+n;ok(await req('/api/sources',{id,key:groupedKeys[n],scopes:[groupedService]}));const accepted=await m.request('/api/ingress/'+id,{source:id,eventId:id,service:groupedService,environment:'test',key:groupedService,generation:id,intent:'trigger',severity:'critical',title:'Synthetic portable correlated signal',observedAt:new Date().toISOString(),evidence:''},undefined,{authorization:'Bearer '+groupedKeys[n]});assert.equal(accepted.status,201);}
+ const groupedEvents=ok(await req('/api/state')).events.filter(event=>event.service===groupedService);assert.equal(groupedEvents[1].decision.correlation.originalEvent,groupedEvents[0].id);
  const permanentAudit=ok(await req('/api/audit/export')).rows
  const prior=ok(await req('/api/state')),objects=ok(await req('/api/move-in/objects'))
  const importTables=sql("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'ik_*' OR name GLOB 'move_in_*') ORDER BY name").map(r=>r.name)
@@ -195,7 +200,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
  const manifest=JSON.parse(exportedArchive.toString('utf8').split('\n')[0])
  assert.ok(!manifest.tables.some(table=>table.name==='oc_audit_identities'),'revocable identity associations never travel in archives')
- for(const secret of [incumbentKey,incumbentHash,activated.nativeKey,...Object.values(fleetChangeKeys),fleetGrafanaKey,fleetSigningKey,fleetSigningCustody,nativeRoutedKey,sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey,emailPart,apiKey,endpointKey])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
+ for(const secret of [...groupedKeys,incumbentKey,incumbentHash,activated.nativeKey,...Object.values(fleetChangeKeys),fleetGrafanaKey,fleetSigningKey,fleetSigningCustody,nativeRoutedKey,sourceKey,sourceCustody,changeKey,intakeKey,monitoringKey,emailPart,apiKey,endpointKey])assert.ok(!exportedArchive.includes(secret),'neither the signed source key nor its sealed form enters the archive')
  await m.command(['import','--input',archive,'--yes','--non-interactive'],4)
  const serviceRow=sql("SELECT data FROM oc_services WHERE id='transfer'")[0].data
  sql("UPDATE oc_services SET data='{\"id\":\"transfer\"}' WHERE id='transfer'");await m.command(['export','--output',invalidRecords,'--non-interactive']);sql("UPDATE oc_services SET data='"+serviceRow.replaceAll("'","''")+"' WHERE id='transfer'")
@@ -312,6 +317,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.ok(Object.values(sql('SELECT (SELECT COUNT(*) FROM move_in_objects) AS imported,(SELECT COUNT(*) FROM ik_jobs) AS jobs,(SELECT COUNT(*) FROM oc_api_clients) AS clients,(SELECT COUNT(*) FROM oc_api_endpoints) AS endpoints,(SELECT COUNT(*) FROM oc_api_operations) AS operations,(SELECT COUNT(*) FROM oc_api_outbox) AS outbox')[0]).every(count=>count===0),'the refused older archive restores no import or automation record')
  await m.command(['import','--input',later,'--yes','--non-interactive'])
  assert.equal(sql("SELECT COUNT(*) AS n FROM oc_incidents WHERE id='"+erasedNativeIncident.id+"'")[0].n,0);assert.equal(sql("SELECT COUNT(*) AS n FROM oc_intake_sources WHERE id='"+erasedNativeSource+"'")[0].n,0);assert.equal(JSON.parse(sql("SELECT data FROM oc_members WHERE id='"+erasedNative.id+"'")[0].data).name,'Erased member');
+ assert.deepEqual(sql("SELECT data FROM oc_events WHERE json_extract(data,'$.service')='synthetic-oncall-437' ORDER BY ordinal").map(row=>JSON.parse(row.data)),groupedEvents,'portable receiving preserves original grouping ids, versions and explanations without replay');
  console.log('OC-040 incident/member/integration portable erasure: later journal rejects the older installation archive; current import preserves anonymous member and absence of incident/key');
  assert.ok(retainedErasureFences.length);assert.deepEqual(sql('SELECT id,epoch FROM oc_erasure_fences ORDER BY id'),retainedErasureFences,'current installation archive preserves every durable subject erasure fence exactly')
  assert.ok(!sql('SELECT data FROM oc_api_clients UNION ALL SELECT data FROM oc_api_endpoints').some(row=>row.data.includes('alice@example.test')),'erased automation labels stay absent after current portable restore')

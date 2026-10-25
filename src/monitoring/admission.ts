@@ -1,3 +1,4 @@
+import {correlationLabels} from '../orchestration/correlation';
 import { finishResponseAdmission } from '../response-policy/model.ts';
 import { recordAlertObligation } from '../alert-obligation.ts';
 import { admit, fail, type State } from '../family/response-operations/domain.ts';
@@ -22,7 +23,7 @@ export function receiveMonitoring(state:State,source:IntakeSource,input:Monitori
   if(service!==null) {
     const destination=state.services.find(s=>s.id===service);if(!destination)fail('Unknown integration service');
     const previous=state.alerts.find(a=>a.source===identity&&a.service===service&&a.key===input.key&&a.generation===input.generation);
-    const result=admit(state,{source:identity,eventId:id,service,environment:destination.environment,key:input.key,generation:input.generation,intent:input.intent,severity:input.severity,title:input.title,observedAt:input.observedAt,evidence:input.links[0]??''},at);
+    const result=admit(state,{source:identity,eventId:id,service,environment:destination.environment,key:input.key,generation:input.generation,intent:input.intent,severity:input.severity,title:input.title,observedAt:input.observedAt,evidence:input.links[0]??''},at,false,200,correlationLabels(input.details));
     generation=input.generation;event=result.event.id;alert=result.alert;
     outcome=input.intent==='recover'?'recovered':previous?'deduplicated':'opened';
     if(routing)routing.serviceDecision={event,...structuredClone(result.event.decision)};

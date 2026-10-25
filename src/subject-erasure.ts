@@ -64,6 +64,10 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   }
   const removeSignalSource=async(sourceIdentity:string)=>{
     const events=new Set(state.events.filter(e=>e.source===sourceIdentity).map(e=>e.id)),alerts=new Set(state.alerts.filter(a=>a.source===sourceIdentity).map(a=>a.id))
+    for(const event of state.events)if(!events.has(event.id)&&event.decision.correlation?.originalEvent&&events.has(event.decision.correlation.originalEvent)){
+     const prior=event.decision.correlation;event.decision.correlation={...prior,group:null,originalEvent:null,originalPolicy:null,originalVersion:null,relationship:'unmatched',startedAt:event.observedAt,reason:'Original correlation evidence explicitly erased; this retained signal remains visible'+(prior.held?'; prior local flapping hold retained for review':'')};remember('oc_events');
+     for(const receipt of state.intakeReceipts??[])if(receipt.routing?.serviceDecision?.event===event.id){receipt.routing.serviceDecision={event:event.id,...structuredClone(event.decision)};remember('oc_intake_receipts');}
+    }
     const affected=state.incidents.filter(i=>i.alerts.some(a=>alerts.has(a)))
     for(const incident of affected){
      outbox(o=>o.incident===incident.id)

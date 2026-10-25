@@ -1,3 +1,5 @@
+import {correlationLabels,labelsForEvent} from '../orchestration/correlation';
+import {serviceUrgency} from '../urgency/model';
 import { fail, route, type State } from '../family/response-operations/domain.ts';
 import type { IntakeSource } from '../intake/model.ts';
 import type { RoutingPreview, RoutingVersion } from './types.ts';
@@ -13,12 +15,16 @@ export function previewRouting(state:State,source:IntakeSource,draft:RoutingVers
   const receipts=all.filter(r=>(!ids||ids.includes(r.id))&&(!input.from||Date.parse(r.acceptedAt)>=Date.parse(input.from))&&(!input.to||Date.parse(r.acceptedAt)<=Date.parse(input.to))).sort((a,b)=>a.acceptedAt.localeCompare(b.acceptedAt)||a.id.localeCompare(b.id));
   if(receipts.length>10000)fail('Replay supports at most 10,000 receipts');
   const warnings:string[]=[];
+  const proposedState=structuredClone(state),selected=new Set(receipts.map(r=>r.event));proposedState.events=proposedState.events.filter(e=>!selected.has(e.id));
   const decisions=receipts.map(receipt=>{
     const proposed=evaluateRouting(state,source.id,source.routing!,draft,receipt.routingInput!),historical=structuredClone(receipt.routing!);
-    const service=state.services.find(row=>row.id===proposed.service);
-    if(service&&!receipt.incomplete)proposed.serviceDecision={event:receipt.event??receipt.routing?.serviceDecision?.event??'receipt:'+receipt.id,...route(state,{source:'intake:'+source.id,eventId:receipt.id,service:service.id,environment:service.environment,key:receipt.key,generation:receipt.generation??'replay:'+receipt.id,intent:receipt.action==='recover'?'recover':'trigger',severity:receipt.severity,title:receipt.title,observedAt:receipt.observedAt??receipt.acceptedAt,evidence:receipt.links[0]??''})};
+    const service=state.services.find(row=>row.id===proposed.service),original=state.events.find(e=>e.id===receipt.event);
+    const historicalUrgency=original?.urgency??null,proposedUrgency=service&&!receipt.incomplete?serviceUrgency(state,service.id,receipt.severity,new Date().toISOString()):null;
+    if(service&&!receipt.incomplete){const id=receipt.event??receipt.routing?.serviceDecision?.event??'receipt:'+receipt.id,at=new Date().toISOString(),signal={source:'intake:'+source.id,eventId:original?.eventId??receipt.id,service:service.id,environment:service.environment,key:receipt.key,generation:receipt.generation??'replay:'+receipt.id,intent:receipt.action==='recover'?'recover' as const:'trigger' as const,severity:receipt.severity,title:receipt.title,observedAt:receipt.observedAt??receipt.acceptedAt,evidence:receipt.links[0]??''};
+     const decision=route(proposedState,signal,at,id,original?labelsForEvent(state,original):correlationLabels(receipt.details));proposed.serviceDecision={event:id,...decision};proposedState.events.push({...signal,id,acceptedAt:at,decision,...(proposedUrgency?{urgency:proposedUrgency}:{}),routingSnapshot:{policies:state.policies,members:state.members,evaluatedAt:at}});
+    }
     const changed=JSON.stringify(historical.serviceDecision)!==JSON.stringify(proposed.serviceDecision)||historical.service!==proposed.service||historical.rule!==proposed.rule||historical.kind!==proposed.kind||JSON.stringify(historical.dynamic)!==JSON.stringify(proposed.dynamic)||JSON.stringify(historical.evaluated)!==JSON.stringify(proposed.evaluated);
-    return {receipt:receipt.id,historical,proposed,changed};
+    return {receipt:receipt.id,historical,proposed,historicalUrgency,proposedUrgency,changed:changed||JSON.stringify(historicalUrgency&&{urgency:historicalUrgency.urgency,version:historicalUrgency.version,reason:historicalUrgency.reason,rule:historicalUrgency.rule})!==JSON.stringify(proposedUrgency&&{urgency:proposedUrgency.urgency,version:proposedUrgency.version,reason:proposedUrgency.reason,rule:proposedUrgency.rule})};
   });
   // Test a hypothetical recovery for each open generation, including those
   // outside the replay selection. A resolve must stay on its original service.
