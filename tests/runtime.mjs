@@ -899,6 +899,40 @@ try {
   assert.equal(runtimeGroupAfter.events.find(e=>e.id===runtimeGroupB.id).decision.correlation.originalEvent,runtimeOriginal.id);assert.equal(runtimeOriginal.decision.version,runtimeGrouping.version);ok(await request('/api/ingress/'+maintenanceRuntimeId,runtimeGroupInput,'',{authorization:'Bearer '+maintenanceRuntimeKey}));assert.deepEqual(ok(await request('/api/state',undefined,cookie)),runtimeGroupAfter,'restart and duplicate intake add no second grouping effect');
   console.log('PASS OC-043 correlation restart: frozen original and version survive migration/restart, next source generation joins once, duplicate admission adds no action');
 
+  // OC-043 durable coordination reuses bounded triage commits; the saved plan survives a closed client and restart.
+  const workflowMember=ok(await request('/api/members',{name:'synthetic-oncall-437',role:'responder',password:'synthetic-oncall-437-password'},cookie),201);
+  const workflowThird=ok(await request('/api/ingress/'+maintenanceRuntimeId,{...maintenanceRuntimeSignal,eventId:'synthetic-oncall-437-c',key:'synthetic-oncall-437',generation:'synthetic-oncall-437-c'},'',{authorization:'Bearer '+maintenanceRuntimeKey}),201);
+  const workflowBefore=ok(await request('/api/state',undefined,cookie));
+  const workflowAlerts=[runtimeGroupA.id,runtimeGroupB.id,workflowThird.id].map(event=>workflowBefore.alerts.find(alert=>alert.events.includes(event)));
+  const workflowInput={operationId:'synthetic-oncall-437-workflow',action:'reassign',items:workflowAlerts.map(alert=>({id:alert.id,revision:alert.revision??1,kind:'alert'})),member:workflowMember.id,reason:'Synthetic ordered coordination',confirmedCount:3,durable:true};
+  const workflowViewer=ok(await request('/api/members',{name:'synthetic-oncall-438',role:'viewer',password:'synthetic-oncall-438-password'},cookie),201),workflowViewerLogin=await request('/api/login',{name:workflowViewer.name,password:'synthetic-oncall-438-password'});
+  const workflowFirst=ok(await request('/api/triage/bulk',workflowInput,cookie));
+  assert.equal(workflowFirst.remaining,1);assert.equal(workflowFirst.results.length,2);assert.ok(workflowFirst.results.every(result=>result.ok));
+  const workflowHeld=ok(await request('/api/state',undefined,cookie)),workflowRecord=workflowHeld.triage.find(row=>row.id===workflowInput.operationId);
+  assert.deepEqual(workflowRecord.workflow.items,workflowInput.items);assert.equal(workflowHeld.alerts.find(alert=>alert.id===workflowAlerts[2].id).coordination,undefined);
+  await stop();migration();await start();
+  assert.deepEqual(ok(await request('/api/state',undefined,cookie)),workflowHeld,'restart neither loses the plan nor runs a pending step');
+  const resumePath='/api/triage/workflows/'+workflowInput.operationId+'/resume';
+  ok(await request(resumePath,{approve:true}),401);ok(await request(resumePath,{approve:true},workflowViewerLogin.cookie),403);
+  ok(await request(resumePath,{approve:false},cookie),403);
+  sql("CREATE TRIGGER synthetic_oncall_437_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='triage.reassign' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-437'); END");
+  try{const failed=ok(await request(resumePath,{approve:true},cookie));assert.equal(failed.interrupted,true);assert.equal(failed.remaining,1);}finally{sql('DROP TRIGGER synthetic_oncall_437_audit')}
+  assert.deepEqual(ok(await request('/api/state',undefined,cookie)),workflowHeld,'audit failure rolls back both item effect and progress');
+  const resumed=ok(await request(resumePath,{approve:true},cookie));assert.equal(resumed.remaining,0);assert.ok(resumed.results.every(result=>result.ok));
+  const workflowAfter=ok(await request('/api/state',undefined,cookie));
+  for(const alert of workflowAlerts){const current=workflowAfter.alerts.find(row=>row.id===alert.id);assert.equal(current.coordination.assignee,workflowMember.id);assert.equal(current.coordination.history.filter(entry=>entry.operationId===workflowInput.operationId).length,1);}
+  ok(await request(resumePath,{approve:true},cookie));assert.deepEqual(ok(await request('/api/state',undefined,cookie)),workflowAfter,'completed workflow replay repeats no mutation');
+  const workflowAudit=ok(await request('/api/audit/export',undefined,cookie)).rows;
+  assert.ok(workflowAudit.some(row=>row.kind==='triage.reassign'&&row.outcome==='accepted'&&row.workspaceAfter===row.workspaceBefore+1),'each accepted workflow step has an atomic audit revision');
+  assert.ok(workflowAudit.some(row=>row.kind==='triage.reassign'&&['failed','uncertain'].includes(row.outcome)),'interrupted execution has a permanent outcome');
+  assert.ok(!JSON.stringify(workflowAudit).includes(workflowMember.name));
+  const malformedWorkflow=ok(await request('/api/archive',undefined,cookie));malformedWorkflow.triage.find(row=>row.id===workflowInput.operationId).workflow.items[0].kind='incident';
+  ok(await request('/api/restore',{mode:'replace',archive:malformedWorkflow},cookie),400);
+  const workflowErase=ok(await request('/api/erasure/member/'+workflowMember.id,{workspaceRevision:workflowAfter.revision,confirmation:'erase '+workflowMember.id,identitiesReviewed:true,importedPeople:[]},cookie));assert.equal(workflowErase.state,'complete');
+  assert.ok(!ok(await request('/api/archive',undefined,cookie)).triage.some(row=>row.id===workflowInput.operationId),'erasure removes the saved recipient plan and its copied reason');
+  ok(await request(resumePath,{approve:true},cookie),404);
+  console.log('PASS OC-043 durable coordination workflow: frozen ordered plan, two committed steps, restart mid-workflow, explicit authorized resume, atomic audit-failure rollback with interrupted outcome, exact-once completion/replay and member-erasure/export custody');
+
 
 
   ok(

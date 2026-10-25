@@ -5,7 +5,7 @@ import { incidentAssignee, incidentUpdated, incidentUrgency } from './incident-c
 export type TriageQuery = Partial<Record<'kind' | 'q' | 'status' | 'severity' | 'urgency' | 'priority' | 'service' | 'assignee' | 'mine' | 'createdAfter' | 'createdBefore' | 'updatedAfter' | 'updatedBefore' | 'sort', string>>;
 export type BulkResult = {id: string; ok: boolean; revision?: number; error?: string; kind?:'alert'};
 export type SavedView = {id: string; kind: 'view'; actor: string; name: string; query: TriageQuery};
-export type BulkOperation = {id: string; kind: 'bulk'; actor: string; fingerprint: string; at: string; results: BulkResult[]};
+export type BulkOperation = {id: string; kind: 'bulk'; actor: string; fingerprint: string; at: string; results: BulkResult[]; workflow?: {items:{id:string;revision:number;kind:'alert'}[];member:string|null;reason:string}};
 export type TriageRecord = SavedView | BulkOperation;
 export const queryFields = ['kind','q', 'status', 'severity', 'urgency', 'priority', 'service', 'assignee', 'mine', 'createdAfter', 'createdBefore', 'updatedAfter', 'updatedBefore', 'sort'] as const;
 
@@ -90,7 +90,7 @@ export function triagePage(state: State, actor: Member, query: TriageQuery, curs
 export function validateTriageRecords(records: any, state: State) {
   if (!Array.isArray(records) || records.length > 10000 || new Set(records.map((r: any) => r?.id)).size !== records.length) fail('Invalid triage records');
   for (const r of records) {
-    const keys = r?.kind === 'view' ? ['id', 'kind', 'actor', 'name', 'query'] : ['id', 'kind', 'actor', 'fingerprint', 'at', 'results'];
+    const keys = r?.kind === 'view' ? ['id', 'kind', 'actor', 'name', 'query'] : ['id', 'kind', 'actor', 'fingerprint', 'at', 'results',...(r?.workflow!==undefined?['workflow']:[])];
     if (!r || !['view', 'bulk'].includes(r.kind) || Object.keys(r).length !== keys.length || keys.some(k => !Object.hasOwn(r, k))) fail('Invalid triage record fields');
     text(r.id, 'Triage ID', 100);
     if (!state.members.some(m => m.id === r.actor)) fail('Invalid triage actor');
@@ -100,6 +100,10 @@ export function validateTriageRecords(records: any, state: State) {
       triageQuery(r.query);
     } else {
       if (!/^[a-f0-9]{64}$/.test(r.fingerprint) || !Number.isFinite(Date.parse(r.at)) || !Array.isArray(r.results) || r.results.length > 1000 || new Set(r.results.map((v: any) => v.id)).size !== r.results.length) fail('Invalid bulk receipt');
+      if(r.workflow!==undefined){
+        const plan=r.workflow;
+        if(!plan||Object.keys(plan).sort().join(',')!=='items,member,reason'||!Array.isArray(plan.items)||!plan.items.length||plan.items.length>500||new Set(plan.items.map((item:any)=>item.id)).size!==plan.items.length||plan.items.some((item:any)=>!item||Object.keys(item).sort().join(',')!=='id,kind,revision'||item.kind!=='alert'||!Number.isSafeInteger(item.revision)||item.revision<1||!state.alerts.some(a=>a.id===item.id))||plan.member!==null&&!state.members.some(m=>m.id===plan.member)||typeof plan.reason!=='string'||!plan.reason.trim()||plan.reason.length>1000||r.results.some((result:any)=>!plan.items.some((item:any)=>item.id===result.id)))fail('Invalid durable coordination plan');
+      }
       for (const result of r.results) {
         if (!result || Object.keys(result).some(k => !['id', 'ok', 'revision', 'error', 'kind'].includes(k))) fail('Invalid bulk result fields');
         text(result.id, 'Bulk incident ID', 100);

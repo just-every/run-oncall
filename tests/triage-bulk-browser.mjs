@@ -26,5 +26,23 @@ export async function triageBulkBrowser(page,context,width){
  await page.getByRole('link',{name:'Alerts & events',exact:true}).click();const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:prefix+' alert 0',exact:true})});await card.getByText(/Coordination: closed/).waitFor();await card.getByText('Coordination history',{exact:true}).click();await card.getByText(/stopped by human resolution/).waitFor();await card.screenshot({path:`${directory}/OC-060-alert-history-${width}.png`});
  const after=await call('/api/state');assert.equal(after.incidents.length,state.incidents.length+3,'alert-only close creates no incident');assert.ok(after.incidents.filter(i=>[a.id,b.id].includes(i.id)).every(i=>i.mergedInto.target===target.id));
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.goto(origin+'/#incidents');
+ // OC-043: author a durable selected-alert workflow, close its client state, then resume from saved custody.
+ const workflowTitle='Synthetic workflow '+width;
+ for(let n=0;n<3;n++){
+  const identity='synthetic-oncall-437-'+width+'-'+n;
+  const response=await context.request.post(origin+'/api/ingress/'+source,{headers:{origin,authorization:'Bearer '+key},data:{source,eventId:identity,service:service.id,environment:service.environment,key:identity,generation:identity,intent:'trigger',severity:'warning',title:workflowTitle+' '+n,observedAt:new Date().toISOString(),evidence:''}});assert.equal(response.status(),201);
+ }
+ await page.goto(origin+'/?triage_kind=alerts&triage_q='+encodeURIComponent(workflowTitle)+'#incidents');await page.getByText('3 matching alert-only items',{exact:true}).waitFor();
+ for(let n=0;n<3;n++)await page.getByLabel('Select '+workflowTitle+' '+n,{exact:true}).check();
+ bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('reassign');
+ await bulk.getByLabel('Bulk assignee',{exact:true}).selectOption((await call('/api/session')).member.id);
+ await bulk.getByLabel('Bulk action reason',{exact:true}).fill('Synthetic ordered handoff');await bulk.getByLabel('Save reassignment as a resumable workflow',{exact:true}).check();
+ const workflowCheck=async label=>{assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);await page.screenshot({path:`${directory}/oc043-workflow-${label}-${width}.png`,fullPage:true});};
+ await workflowCheck('review');await bulk.getByRole('button',{name:'Apply to 3 alert-only items',exact:true}).click();
+ await page.getByText('2 changed; 0 refused; 1 pending — submit the same action to resume',{exact:true}).waitFor();await page.reload();
+ await page.getByText('Recorded coordination workflows',{exact:true}).click();const workflow=page.locator('details.triage-bulk');await workflow.getByText('2 of 3 processed · 0 refused',{exact:true}).waitFor();
+ await workflow.scrollIntoViewIfNeeded();await workflowCheck('pending');await workflow.getByRole('button',{name:'Resume recorded reassignment',exact:true}).click();
+ await workflow.getByText('3 of 3 processed · 0 refused',{exact:true}).waitFor();await workflow.getByText('Complete · recorded reassignment',{exact:true}).waitFor();assert.equal(await workflow.getByRole('button',{name:'Resume recorded reassignment',exact:true}).count(),0);await workflowCheck('complete');
+ console.log(`OC-043 browser ${width}: selected durable reassignment, saved pending plan after reload, explicit resume and completion, axe, overflow and hydration passed`);
  console.log(`OC-060 browser ${width}: selected snooze, merge target and per-item receipts, confirmed alert-only close, retained human-resolution history, no fabricated incident, axe and overflow passed`);
 }

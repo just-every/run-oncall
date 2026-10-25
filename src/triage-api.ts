@@ -47,8 +47,8 @@ export function installTriage(api: any, deps: Dependencies) {
     await deps.save(c, state, revision);
     return c.json({views: records.filter(r => r.kind === 'view' && r.actor === actor.id)});
   });
-  api.post('/api/triage/bulk', async (c: any) => {
-    const input = await deps.body(c, 256 * 1024);
+  const executeBulk = async (c: any, supplied?:any) => {
+    const input = supplied ?? await deps.body(c, 256 * 1024);
     const id = text(input.operationId, 'Operation ID', 100);
     if (!['acknowledge', 'resolve', 'reassign', 'set-priority', 'set-urgency','snooze','merge'].includes(input.action)) fail('Unsupported bulk action');
     auditKind(c.env.DB, `triage.${input.action}`);
@@ -73,7 +73,8 @@ export function installTriage(api: any, deps: Dependencies) {
         const all = matchingItems(initial, actor, payload.allMatching!);
         if (input.workspaceRevision !== initial.revision || input.confirmedCount !== all.length || items.length !== all.length || all.some(i => !items.some((item: any) => item.id === i.id && item.revision === i.revision && (item.kind??'incident')===i.kind))) fail('Matching incidents changed. Confirm the current count and selection.', 409);
       }
-      operation = {id, kind: 'bulk', actor: actor.id, fingerprint, at: new Date().toISOString(), results: []};
+      if(input.durable===true&&(input.action!=='reassign'||input.allMatching||items.some((item:any)=>item.kind!=='alert')||typeof payload.reason!=='string'||!payload.reason.trim()||payload.reason.length>1000||payload.member!==null&&!initial.members.some(m=>m.id===payload.member&&m.active&&['admin','responder'].includes(m.role))))fail('Durable coordination requires selected alerts, a current responder and a reason',409);
+      operation = {id, kind: 'bulk', actor: actor.id, fingerprint, at: new Date().toISOString(), results: [],...(input.durable===true?{workflow:{items,member:payload.member,reason:payload.reason}}:{})};
       (initial.triage ??= []).push(operation);
       await deps.save(c, initial, initial.revision);
     }
@@ -132,5 +133,14 @@ export function installTriage(api: any, deps: Dependencies) {
     }
     const byId = new Map(results.map(r => [r.id, r]));
     return c.json({operationId: id, results: items.flatMap((item: any) => byId.has(item.id) ? [byId.get(item.id)] : []), remaining: items.length - completed.size, interrupted});
+  };
+  api.post('/api/triage/bulk', (c:any)=>executeBulk(c));
+  api.post('/api/triage/workflows/:id/resume',async(c:any)=>{
+    const state=await deps.state(c),input=await deps.body(c),actor:Member=c.get('actor');
+    authority(state,actor);
+    const record=state.triage?.find(row=>row.id===c.req.param('id')&&row.kind==='bulk');
+    if(!record||record.kind!=='bulk'||!record.workflow)fail('Unknown recorded workflow',404);
+    if(record.actor!==actor.id||input.approve!==true)fail('Only the current author can explicitly resume this recorded workflow',403);
+    return executeBulk(c,{...record.workflow,operationId:record.id,action:'reassign',confirmedCount:record.workflow.items.length,durable:true});
   });
 }

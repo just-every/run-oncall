@@ -83,6 +83,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
     if(affected.length){for(const row of affected)changedIncidents.add(row.id);remember('oc_incidents');updated.oc_incidents=changedIncidents.size;await eraseHandoffCopies(affected.map(i=>i.id))}
     const receiptIds=new Set((state.intakeReceipts??[]).filter(r=>'intake:'+r.source===sourceIdentity).map(r=>r.id))
     remove('audit','oc_audit',r=>r.actor==='source:'+sourceIdentity||r.kind==='intake-owner-notice'&&receiptIds.has(/^Integration owner .*: incomplete intake receipt ([^;]+);/.exec(r.text)?.[1]??'')||r.kind==='routing-readmitted'&&(/^Re-admitted (\S+) as (\S+) to /.exec(r.text)?.slice(1).some(id=>receiptIds.has(id))??false))
+    remove('triage','oc_triage',r=>r.kind==='bulk'&&(r.results.some((result:any)=>alerts.has(result.id))||r.workflow?.items.some((item:any)=>alerts.has(item.id))))
     remove('events','oc_events',r=>r.source===sourceIdentity);remove('alerts','oc_alerts',r=>r.source===sourceIdentity)
   }
   const eraseApiIntegration=async(targetKind:string,targetId:string)=>{
@@ -159,6 +160,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    for(const client of [...state.apiClients??[]].filter(v=>v.owner===id))await eraseApiIntegration('client',client.id)
    for(const endpoint of [...state.apiEndpoints??[]].filter(v=>v.owner===id))await eraseApiIntegration('endpoint',endpoint.id)
    outbox(o=>o.owner===id)
+   remove('triage','oc_triage',r=>r.kind==='bulk'&&r.workflow&&(r.actor===id||r.workflow.member===id))
    const oldName=member.name,names=new Set([oldName,...aliases])
    const redact=(text:string)=>{for(const name of names){const ranges=addressRanges(text,name).filter(([start,end])=>name.includes('@')||text.slice(start,end)===name&&!/[\p{L}\p{N}]/u.test(text[start-1]??'')&&!/[\p{L}\p{N}]/u.test(text[end]??''));text=ranges.reduceRight((value,[start,end])=>value.slice(0,start)+'Erased member'+value.slice(end),text)}return text}
    const personalChanges=(state.changes??[]).filter(change=>names.has(change.author))
