@@ -1,15 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import type { Member, State } from "./family/response-operations/domain";
+class InterruptedTransport extends Error {
+  constructor(){super('Connection interrupted; no success confirmed');}
+}
 export async function request(path: string, data?: unknown): Promise<any> {
-  const response = await fetch(path, {
-    method: data === undefined ? "GET" : "POST",
-    headers: data === undefined ? {} : { "Content-Type": "application/json" },
-    body: data === undefined ? undefined : JSON.stringify(data),
-  });
-  const value: any = await response.json();
-  if (!response.ok)
-    throw Error(value.error ?? `Request failed (${response.status})`);
+  const body=data===undefined?undefined:JSON.stringify(data);
+  let response:Response,raw:string;
+  try {
+    response=await fetch(path,{method:data===undefined?'GET':'POST',headers:data===undefined?{}:{'Content-Type':'application/json'},body});
+    raw=await response.text();
+  } catch {throw new InterruptedTransport();}
+  let value:any;
+  try {value=JSON.parse(raw);} catch {
+    if(response.status>=500)throw new InterruptedTransport();
+    throw Error(`Invalid server response (${response.status}); no success confirmed`);
+  }
+  if(!response.ok)throw Error(value?.error??`Request failed (${response.status})`);
   return value;
+}
+/** Only these effect-free comparison contracts may repeat a request whose response was lost. */
+export async function compareRequest(path:'/api/replay'|`/api/routing/keys/${string}/preview`,data:unknown):Promise<any>{
+  try {return await request(path,data);} catch(error){
+    if(!(error instanceof InterruptedTransport))throw error;
+    await new Promise(resolve=>setTimeout(resolve,100));
+    return request(path,data);
+  }
 }
 export function useWorkspace() {
   const [state, setState] = useState<State | null>(null);

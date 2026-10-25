@@ -25,7 +25,7 @@ import { MoveInWorkspace } from '../MoveInWorkspace';
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Field, Form } from "../forms";
-import { request, useWorkspace } from "../useWorkspace";
+import { compareRequest, request, useWorkspace } from "../useWorkspace";
 import { SchedulingWorkspace } from "../SchedulingWorkspace";
 import type { Incident } from "../family/response-operations/domain";
 import { Mark } from "../landing/Mark";
@@ -683,7 +683,7 @@ function Workspace() {
                 onSubmit={async (data) => {
                   try {
                     w.setNotice(""); w.setError(""); setReplay(null);
-                    const r = await request("/api/replay", {
+                    const r = await compareRequest("/api/replay", {
                       events: JSON.parse(data.events),
                     });
                     setReplay(r);
