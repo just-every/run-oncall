@@ -78,7 +78,7 @@ Change-event erasure is a separate administrator action in Services → Data era
 
 ## Incident, member and integration erasure
 
-An administrator opens **Services → Data erasure settings**, chooses the category and exact subject, and types `erase <subject ID>`. The HTTP equivalent is `POST /api/erasure/:category/:id` with `workspaceRevision` and `confirmation`. Supported categories are `incident`, `member`, `native`, `intake`, `change`, `client` and `endpoint`. Use a new integration ID after erasure; an erased ID cannot be configured again.
+An administrator opens **Services → Data erasure settings**, chooses the category and exact subject, and types `erase <subject ID>`. The HTTP equivalent is `POST /api/erasure/:category/:id` with `workspaceRevision` and `confirmation`. Supported categories are `incident`, `member`, `native`, `intake`, `email`, `change`, `client` and `endpoint`. Use a new integration ID after erasure; an erased ID cannot be configured again.
 
 ### Incident
 
@@ -91,6 +91,8 @@ An administrator opens **Services → Data erasure settings**, chooses the categ
 **Local custody:** Native/routed keys, signing custody and incumbent credentials; routed receipts, signals, native incomplete prefixes, change source copies; API client or endpoint definitions, subscriptions and associated queued response events
 
 **Retention and limits:** Kept until explicit erasure. API client history uses an inactive anonymous identity rather than being reassigned to a human. A linked supplied incumbent integration retires its imported target, plans and originals in the same transaction; its receipt adds per-store erased-or-rewritten counts. Conflicting imported bindings refuse without erasing anything.
+
+Email integration erasure removes the address, every rule version, saved mail, quarantine, receipts, signals and credential digests together. Linked incidents remain with their source references removed. It uses the same count-only receipt, audit rollback, transfer invalidation and restore fence as other subjects. The separate “Erase saved mail and quarantine” action retains operational history and is not full integration erasure. Provider and offline copies still need separate deletion.
 
 ### Native contact/member
 

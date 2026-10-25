@@ -193,6 +193,16 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
     remember('move_in_objects');statements.push(db.prepare("DELETE FROM move_in_objects WHERE kind='user' AND id IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...aliases])))
     imported=await prepareImportCustodyErasure(c,{kind:'user',id:[...aliases][0]},{context,values:[...aliases,...filenames],related:{source(record){const ids=idsByNamespace.get(record.namespace)??new Set<string>();return indirectKeys.has(JSON.stringify([record.namespace,record.kind,record.sourceId]))||[...aliases].some(mail=>refers(record.payload,mail,ids)||mentions(record.payload,mail))},original(bytes){const raw=new TextDecoder().decode(bytes),ids=new Set([...idsByNamespace.values()].flatMap(ids=>[...ids]));try{const value=JSON.parse(raw);return [...aliases].some(mail=>refers(value,mail,ids)||mentions(value,mail))}catch{return [...aliases].some(mail=>mentions(raw,mail))}}}})
    }
+  } else if(kind==='email') {
+   const address=state.emailAddresses?.find(row=>row.id===id)
+   if(!address)fail('Unknown email integration',404)
+   await removeSignalSource('email:'+id)
+   remove('emailQuarantine','oc_email_quarantine',row=>row.address===id)
+   remove('emailSamples','oc_email_samples',row=>row.address===id)
+   remove('emailReceipts','oc_email_receipts',row=>row.address===id)
+   remove('emailRules','oc_email_rules',row=>row.address===id)
+   remove('emailAddresses','oc_email_addresses',row=>row.id===id)
+   eraseCredential('oc_email_credentials','address',[id])
   } else if(kind==='client'||kind==='endpoint') {
    await eraseApiIntegration(kind,id)
   } else if(kind==='native') {

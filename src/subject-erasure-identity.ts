@@ -10,7 +10,7 @@ export async function hasErasedSubject(state:State) {
  const erased=async(id:string)=>{if(!known.has(id))known.set(id,fences.has(await subjectErasureIdentity("member",id)));return known.get(id)!}
  for(const member of state.members)if(!member.erased&&await erased(member.id))return true
  for(const event of state.events)for(const member of event.routingSnapshot.members)if(await erased(member.id)&&!["Erased member","Erased integration"].includes(member.name))return true
- for(const [kind,rows] of [['incident',state.incidents],['client',state.apiClients],['endpoint',state.apiEndpoints],['intake',state.intakeSources],['change',state.changeSources]] as const)
+ for(const [kind,rows] of [['incident',state.incidents],['client',state.apiClients],['endpoint',state.apiEndpoints],['intake',state.intakeSources],['change',state.changeSources],['email',state.emailAddresses]] as const)
   for(const row of rows??[])if(fences.has(await subjectErasureIdentity(kind,row.id)))return true
  return false
 }

@@ -321,6 +321,18 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByText('oc_intake_credentials: 1 deleted, 0 updated',{exact:true}).waitFor();
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-integration-receipt',width);
   assert.ok(!(await request('/api/state')).intakeSources.some(i=>i.id===erasedIntegration));
+  const erasedEmail='synthetic-oncall-440-'+width;
+  await request('/api/email/addresses',{id:erasedEmail,name:'Synthetic erasable email '+width,service:'synthetic-oncall-1',owner:(await request('/api/session')).member.id,localPart:'synthetic-oncall-'+randomBytes(20).toString('hex'),mode:'subject',fallback:'subject',rules:[]},201);
+  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await settings.getByLabel('Erasure category',{exact:true}).selectOption('email');
+  await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedEmail);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedEmail);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-email-review',width);
+  const emailEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/email/'+erasedEmail));
+  await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await emailEraseResponse).status(),200);
+  await settings.getByText('oc_email_credentials: 1 deleted, 0 updated',{exact:true}).waitFor();
+  await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-email-receipt',width);
+  assert.ok(!(await request('/api/state')).emailAddresses.some(row=>row.id===erasedEmail));
   const importedId='synthetic-oncall-410-'+width;
   const importedPlan=await importDoor.preview('pagerduty',JSON.stringify({integrations:[{id:importedId,type:'events_api_v2_inbound_integration'}]}));assert.equal(importedPlan.status,200);assert.equal((await importDoor.apply('pagerduty',importedPlan.value)).status,200);
   const importedRoot=(await request('/api/move-in/objects')).find(row=>row.targetKind==='integration'&&row.targetId==='pagerduty:'+importedId);
@@ -408,7 +420,7 @@ async function changeAndSigningBrowser(page,context){
 }
 
 // Production Worker + real local D1, without starting a managed rer dev server.
-const worker=await localWorker()
+const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'})
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
 let browser,page
 try {

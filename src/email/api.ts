@@ -1,3 +1,4 @@
+import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import { syncErasureFences } from '../erasure-fence'
 import { authority, fail, text, type State } from '../family/response-operations/domain.ts';
 import { workspaceWrite } from '../workspace-store.ts';
@@ -21,6 +22,7 @@ export function installEmailManagement(api:any,deps:Deps) {
     const state=await current(c),input=await deps.body(c),domain=inboundDomain(c.env);
     if(!domain)fail('Inbound email is off: configure INBOUND_EMAIL_DOMAIN first');
     const id=text(input.id,'Address ID',80);if(!/^[a-zA-Z0-9_-]+$/.test(id)||state.emailAddresses?.some(a=>a.id===id))fail('Choose a new address ID');
+    await requireNewSubjectIdentity(state,'email',id)
     const service=state.services.find(s=>s.id===input.service);if(!service)fail('Choose a mapped service and environment');
     const owner=state.members.find(m=>m.id===input.owner&&m.active&&m.role==='admin');if(!owner)fail('Choose an active integration administrator');
     const draft=emailDraft(input),at=new Date().toISOString();

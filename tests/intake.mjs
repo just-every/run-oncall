@@ -202,5 +202,48 @@ try {
   const heldMail=flooded.find(r=>r.diagnostic==='sender_authentication_failed').id;
   w.sql(`WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM n WHERE i<2000) INSERT INTO oc_email_receipts(id,ordinal,data) SELECT 'synthetic-oncall-'||i,(SELECT MAX(ordinal) FROM oc_email_receipts)+i,json_set(r.data,'$.id','synthetic-oncall-'||i) FROM n,oc_email_receipts r WHERE r.id='${heldMail}'`);
   ok(await request('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Coordination beside held mail',summary:'s'.repeat(3000)}));
+  // OC-040 email integration erasure shares the subject receipt, audit and restore boundary.
+  const erasureId='synthetic-oncall-440',erasureLocal=localPart();
+  const erasureDefinition={id:erasureId,name:'Synthetic erasable email',service:'payments',owner:actor.id,localPart:erasureLocal,mode:'subject',fallback:'subject',rules:[]};
+  ok(await request('/api/email/addresses',erasureDefinition),201);
+  await mail(w,erasureLocal,'synthetic-oncall-441 private failure');
+  await mail(w,erasureLocal,'synthetic-oncall-442 refused sender',{auth:'fail'});
+  const erasureState=ok(await request('/api/state')),erasureAlert=erasureState.alerts.find(a=>a.source==='email:'+erasureId);
+  const erasureIncident=ok(await request('/api/command',{type:'declare',service:'payments',title:'Synthetic retained incident',summary:'Synthetic retained impact',severity:'warning',alerts:[erasureAlert.id]}));
+  const beforeEmailErasure=ok(await request('/api/archive')),emailCheckpoint=ok(await request('/api/recovery/checkpoint'));
+  const erasePath='/api/erasure/email/'+erasureId,eraseInput={workspaceRevision:beforeEmailErasure.revision,confirmation:'erase '+erasureId};
+  ok(await w.request(erasePath,eraseInput),401);ok(await w.request(erasePath,eraseInput,viewerCookie),403);
+  ok(await request(erasePath,{...eraseInput,confirmation:'wrong'}),409);
+  ok(await request(erasePath,{...eraseInput,workspaceRevision:0}),409);
+  const copy='rer_portability_snap_synthetic_oncall_440';
+  w.sql('CREATE TABLE '+copy+' AS SELECT * FROM oc_email_samples');
+  const credentialBefore=w.sql('SELECT * FROM oc_email_credentials ORDER BY digest');
+  w.sql("CREATE TRIGGER synthetic_oncall_440_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='email.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-440'); END");
+  try{ok(await request(erasePath,eraseInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_440_audit')}
+  assert.deepEqual(ok(await request('/api/archive')),beforeEmailErasure);
+  assert.deepEqual(w.sql('SELECT * FROM oc_email_credentials ORDER BY digest'),credentialBefore);
+  assert.ok(w.sql('SELECT COUNT(*) AS n FROM '+copy)[0].n>0);
+  w.sql("CREATE TRIGGER synthetic_oncall_440_delete BEFORE DELETE ON oc_email_credentials BEGIN SELECT RAISE(ABORT,'synthetic-oncall-440'); END");
+  try{ok(await request(erasePath,eraseInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_440_delete')}
+  assert.deepEqual(ok(await request('/api/archive')),beforeEmailErasure);
+  const erasedEmail=ok(await request(erasePath,eraseInput));
+  assert.equal(erasedEmail.state,'complete');assert.equal(erasedEmail.standby,'not-reconciled');
+  for(const table of ['oc_email_addresses','oc_email_rules','oc_email_samples','oc_email_receipts','oc_email_quarantine','oc_email_credentials','oc_events','oc_alerts',copy])assert.ok(erasedEmail.stores[table].deleted>0,table+' has committed deletion counts');
+  const afterEmailErasure=ok(await request('/api/archive'));
+  assert.ok(afterEmailErasure.emailAddresses.some(a=>a.id==='email-db'),'unrelated address retained');
+  assert.ok(!JSON.stringify(afterEmailErasure).includes(erasureId),'no erased email subject survives in native state');
+  assert.ok(!JSON.stringify(afterEmailErasure).includes('synthetic-oncall-441 private'));
+  assert.deepEqual(afterEmailErasure.incidents.find(i=>i.id===erasureIncident.id).alerts,[],'linked incident remains without erased signal links');
+  assert.equal(w.sql("SELECT COUNT(*) AS n FROM oc_email_credentials WHERE address='"+erasureId+"'")[0].n,0);
+  for(const archive of [beforeEmailErasure,{...beforeEmailErasure,erasureFences:afterEmailErasure.erasureFences}])ok(await request('/api/restore',{mode:'replace',archive}),409);
+  ok(await request('/api/recovery/restore',{mode:'replace',checkpoint:emailCheckpoint}),409);
+  ok(await request('/api/email/addresses',erasureDefinition),410);
+  ok(await request(erasePath,eraseInput),409);
+  await w.stop();await w.start();
+  ok(await request('/api/email/addresses',erasureDefinition),410);
+  await mail(w,erasureLocal,'synthetic-oncall-443 retired credential');
+  assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'unknown_address');
+  assert.ok(!ok(await request('/api/state')).alerts.some(a=>a.source==='email:'+erasureId));
+  console.log('OC-040 email integration erasure: authority, confirmation, stale refusal, audit/table rollback, committed per-store counts, linked incident retention, transfer invalidation, forged-journal archive/checkpoint refusal, identity reuse and restart/retired delivery refusal passed');
   console.log('OC-033 inbound email accepts, deduplicates, recovers and quarantines by address mode and rule without granting authority to the sender. Compatible intake: provider lifecycles, authority, concurrency, rollback, key rotation/revoke, native integrity and inactive archive/restart');
 } finally {await w.close();}
