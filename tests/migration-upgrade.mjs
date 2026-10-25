@@ -15,7 +15,7 @@ export async function migrationUpgrade(){
  const quote=value=>"'"+JSON.stringify(value).replaceAll("'","''")+"'";
  try{
   await mkdir(old);
-  for(const name of names.filter(n=>Number(n.slice(0,4))<=140))await copyFile(join('migrations/core',name),join(old,name));
+  for(const name of names.filter(n=>Number(n.slice(0,4))<=143))await copyFile(join('migrations/core',name),join(old,name));
   const bindings={name:'synthetic-oncall-upgrade',compatibility_date:'2026-09-08',d1_databases:[{binding:'DB',database_name:'synthetic-oncall-upgrade',database_id:'00000000-0000-0000-0000-000000000001',migrations_dir:old}]};
   await writeFile(config,JSON.stringify(bindings));cli('d1','migrations','apply','DB');
   const member={id:'synthetic-oncall-1',name:'Held upgrade owner',role:'admin',active:true};
@@ -27,7 +27,7 @@ export async function migrationUpgrade(){
   assert.equal(sql('SELECT revision FROM workspace_control')[0].revision,7);
   const applied=sql('SELECT name FROM d1_migrations ORDER BY id').map(r=>r.name);assert.deepEqual(applied,names,'migration ledger follows the unique candidate history in order');
   assert.equal(sql('SELECT COUNT(*) AS n FROM oc_business_services')[0].n,0);assert.equal(sql('SELECT COUNT(*) AS n FROM rer_command_receipts')[0].n,0);assert.equal(sql('SELECT COUNT(*) AS n FROM oc_erased_report_cases')[0].n,0);
-  console.log('PASS populated migration CLI upgrade: main 0140 to candidate, held member/service/runbook bytes and workspace revision preserved; complete unique migration ledger in order');
+  console.log('PASS populated migration CLI upgrade: main 0143 to candidate, held member/service/runbook bytes and workspace revision preserved; complete unique migration ledger in order');
  }finally{await rm(root,{recursive:true,force:true});}
 }
 if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1])await migrationUpgrade();
