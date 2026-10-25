@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Incident, State } from '../family/response-operations/domain';
 import { Field, Form } from '../forms';
+import {FailureLine,useActionFailure} from '../app/FailureLine';
 import { request } from '../useWorkspace';
 import { Followups, followupOrder, isOverdue } from './Followups';
 import { ResponseReport } from './ResponseReport';
@@ -35,14 +36,15 @@ export function ReviewsWorkspace(props: Props) {
   </div>;
 }
 function ReviewCard({incident, state, busy, canEdit, command, onOpenIncident}: Props & {incident: Incident}) {
+  const failures=useActionFailure();
   const [open, setOpen] = useState(false), [material, setMaterial] = useState<Material | null>(null);
-  const [loading, setLoading] = useState(false), [error, setError] = useState(''), [refresh, setRefresh] = useState(0);
+  const [loading, setLoading] = useState(false), [refresh, setRefresh] = useState(0);
   useEffect(() => {
     if (!open) return;
     let live = true;
-    setLoading(true); setError(''); setMaterial(null);
+    if(!material)setLoading(true); failures.clear();
     request('/api/reviews/' + encodeURIComponent(incident.id) + '/material').then((result: Material) => {if (live) setMaterial(result);})
-      .catch(e => {if (live) setError(e instanceof Error ? e.message : 'Review material could not be loaded');})
+      .catch(e => {if (live) failures.show(e,{read:true,target:null,retry:async()=>setRefresh(value=>value+1)});})
       .finally(() => {if (live) setLoading(false);});
     return () => {live = false;};
   }, [open, incident.id, incident.revision, refresh]);
@@ -63,14 +65,14 @@ function ReviewCard({incident, state, busy, canEdit, command, onOpenIncident}: P
     <details className="review-material" open={open} onToggle={event => {if (event.target === event.currentTarget) setOpen(event.currentTarget.open);}}>
       <summary>Generated review material and human acceptance</summary>
       {loading && <p role="status">Loading retained review material…</p>}
-      {error && <p className="error" role="alert">{error}</p>}
+      <FailureLine failure={failures.failure}/>
       <button type="button" disabled={loading} onClick={() => setRefresh(value => value + 1)}>Refresh material</button>
       {material && <ReviewMaterial material={material} />}
       {material && !currentMaterial && <p role="status">This material is workspace revision {material.workspaceRevision}, incident revision {material.incidentRevision}; the current workspace is revision {state.revision}, incident revision {incident.revision}. Refresh material before accepting.</p>}
-      {canEdit && incident.state === 'resolved' && currentMaterial && <div className="review-acceptance">
+      {canEdit && incident.state === 'resolved' && material && <div className="review-acceptance">
         <h4>Accept a human-authored review</h4>
         <p>Write your own root cause and impact assessment. Generated material is supporting context and is not copied into these fields. Any responder may accept this review.</p>
-        <Form key={incident.revision} busy={busy} disabled={loading} label="Accept root cause, impact and review" onSubmit={data => command({type: 'review', text: data.text, rootCause: data.rootCause, impact: data.impact, incident: incident.id, revision: incident.revision, accept: true, materialRevision: incident.revision, materialWorkspaceRevision: material.workspaceRevision})}>
+        <Form key={incident.id} busy={busy} disabled={loading} label="Accept root cause, impact and review" onSubmit={data => command({type: 'review', text: data.text, rootCause: data.rootCause, impact: data.impact, incident: incident.id, revision: incident.revision, accept: true, materialRevision: incident.revision, materialWorkspaceRevision: material.workspaceRevision})}>
           <Field name="text" label="Review · response lessons and next verification" type="textarea" value={incident.review} />
           <Field name="rootCause" label="Human-assessed root cause" type="textarea" value={accepted?.rootCause ?? ''} />
           <Field name="impact" label="Human-assessed impact" type="textarea" value={accepted?.impact ?? ''} />
