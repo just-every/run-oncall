@@ -1,4 +1,4 @@
-import {validateTeams,type Team} from '../../teams/model';
+import {validateTeams,type Team} from '../../teams/model.ts';
 import {approveWorkflow,workflowShape,type ApprovedWorkflow} from '../../orchestration/workflows.ts';
 import {transform,validateTransformation,validateTransformationEvents,type Transformation,type TransformationDecision} from '../../orchestration/transformation.ts';
 import {correlate,validateCorrelation,validateCorrelationDecision,validateCorrelationEvents,type CorrelationRule,type CorrelationDecision} from '../../orchestration/correlation.ts';

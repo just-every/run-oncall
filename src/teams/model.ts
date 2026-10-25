@@ -1,4 +1,4 @@
-import {fail,text,type State,type Member} from '../family/response-operations/domain';
+import {fail,text,type State,type Member} from '../family/response-operations/domain.ts';
 
 export type Team={id:string;name:string;visibility:'public';active:boolean;revision:number;members:string[];managers:string[]};
 export function teamCoverage(state:State,actor:Member,service:string):boolean {
