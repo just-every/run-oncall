@@ -1,3 +1,4 @@
 .failure-line { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 12px 0; color: var(--oc-ink, #1d2a35); font-size: 15px; overflow-wrap: anywhere; }
 .failure-line button { min-height: 44px; flex-shrink: 0; }
 .workspace-not-found a { display: inline-flex; min-height: 44px; align-items: center; }
+.detail > h2 { scroll-margin-top: 16px; }
