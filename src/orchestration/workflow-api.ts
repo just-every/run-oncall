@@ -15,9 +15,10 @@ export async function advanceRuleWorkflow(c:any,record:BulkOperation,input:any,d
  if(input.revision!==rule.revision)fail('Workflow changed; reload its progress',409);
  if(clear){
   if(rule.state!=='running'||Date.parse(rule.leaseUntil!)>Date.now())fail('Only an expired workflow lease can be explicitly cleared',409);
+  const clearanceGuard:Guard={sql:"EXISTS(SELECT 1 FROM oc_triage WHERE id=? AND json_extract(data,'$.rule.lease')=? AND json_extract(data,'$.rule.state')='running' AND julianday(json_extract(data,'$.rule.leaseUntil'))<=julianday('now'))",values:[record.id,rule.lease]};
   Object.assign(rule,{state:'interrupted',outcome:'interrupted',lease:null,leaseUntil:null,revision:rule.revision+1});
   auditKind(c.env.DB,'triage.workflow-clear-expired');auditWriteOutcome(c.env.DB,'interrupted');
-  await save(state,state.revision);return c.json(current);
+  await save(state,state.revision,clearanceGuard);return c.json(current);
  }
  if(rule.state==='running')fail('Workflow has an active or uncertain lease; explicitly clear it after expiry',409);
  if(rule.state==='complete')return c.json(current);
