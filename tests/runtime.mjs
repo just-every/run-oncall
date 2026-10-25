@@ -916,7 +916,7 @@ try {
   const resumePath='/api/triage/workflows/'+workflowInput.operationId+'/resume';
   ok(await request(resumePath,{approve:true}),401);ok(await request(resumePath,{approve:true},workflowViewerLogin.cookie),403);
   ok(await request(resumePath,{approve:false},cookie),403);
-  sql("CREATE TRIGGER synthetic_oncall_437_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='triage.reassign' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-437'); END");
+  sql("CREATE TRIGGER synthetic_oncall_437_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='triage.reassign' AND NEW.workspace_after>NEW.workspace_before BEGIN SELECT RAISE(ABORT,'synthetic-oncall-437'); END");
   try{const failed=ok(await request(resumePath,{approve:true},cookie));assert.equal(failed.interrupted,true);assert.equal(failed.remaining,1);}finally{sql('DROP TRIGGER synthetic_oncall_437_audit')}
   assert.deepEqual(ok(await request('/api/state',undefined,cookie)),workflowHeld,'audit failure rolls back both item effect and progress');
   const resumed=ok(await request(resumePath,{approve:true},cookie));assert.equal(resumed.remaining,0);assert.ok(resumed.results.every(result=>result.ok));
