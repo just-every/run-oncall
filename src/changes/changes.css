@@ -1,4 +1,5 @@
-.recent-changes { margin: 16px 0; padding: 14px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper); overflow-wrap: anywhere; }
+/* A wash, not a frame: the lookback field inside keeps the one border (H17). */
+.recent-changes { margin: 16px 0; padding: 14px; border-radius: 10px; background: var(--oc-paper); overflow-wrap: anywhere; }
 .recent-changes summary, .service-dependencies summary { cursor: pointer; font-weight: 650; }
 .recent-changes > label { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 14px 0; }
 .recent-changes input { width: 85px; min-height: 40px; background: var(--app-field); color: var(--oc-ink); border: 1px solid var(--app-field-line); border-radius: 8px; padding: 8px; }

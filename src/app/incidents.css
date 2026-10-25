@@ -64,7 +64,7 @@
 .event-line strong { font-size: 15px; font-weight: 680; }
 .event-line time, .event time { flex: none; color: var(--oc-muted); font-size: 13px; white-space: nowrap; }
 .event p { margin: 4px 0 0; color: var(--oc-ink-soft); font-size: 15px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
-.event small { display: block; margin-top: 4px; color: var(--oc-muted); font-size: 13px; }
+.event small { display: block; margin-top: 4px; color: var(--oc-muted); }
 .composer { margin-top: 6px; }
 .status { margin-top: 16px; padding: 18px; border: 1px solid var(--app-line); border-radius: 12px; background: var(--oc-paper); }
 .status h3 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 16px; font-weight: 700; }
@@ -101,4 +101,10 @@
   .timeline, .status { padding: 16px 14px; }
   .event-line { flex-direction: column; gap: 0; }
   .runbook-owners, .context { padding: 20px 16px 18px; }
+  .context a, .status > a { display: inline-flex; align-items: center; min-height: var(--oc-tap); }
+  /* A runbook step's whole row is its label, so the row is the tap target; the box stays on top. */
+  .checklist li { position: relative; min-height: var(--oc-tap); align-items: center; padding: 0; }
+  .checklist input { position: relative; z-index: 1; margin: 0; }
+  .checklist label { align-self: stretch; display: flex; align-items: center; }
+  .checklist label::after { content: ""; position: absolute; inset: 0; }
 }

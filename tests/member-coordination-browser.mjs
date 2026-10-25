@@ -196,8 +196,8 @@ try {
   if(screen==='schedules'){
    await owner.page.getByLabel('Schedule',{exact:true}).selectOption('synthetic-oncall-62')
    await excludesStakeholder(owner.page.getByLabel('Primary responder 1',{exact:true}))
-   await owner.page.getByRole('button',{name:'Remove primary responder 1',exact:true}).focus()
-   await owner.page.getByRole('tooltip').filter({hasText:'Remove primary responder 1'}).waitFor({state:'visible'})
+   await owner.page.getByRole('button',{name:'Remove primary 1',exact:true}).focus()
+   await owner.page.getByRole('tooltip').filter({hasText:'Remove primary 1'}).waitFor({state:'visible'})
   }
   if(screen==='incidents'){
    await owner.page.getByRole('button',{name:'Select this page',exact:true}).click()

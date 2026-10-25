@@ -27,4 +27,6 @@
   --oc-radius-pill: 999px;
   --oc-gutter: clamp(16px, 5vw, 72px);
   --oc-max: 1440px;
+  --oc-text-min: 13px;      /* the smallest app text: notes, labels, initials and code (H11) */
+  --oc-tap: 44px;           /* the smallest tap target at phone width (TMPL-001) */
 }

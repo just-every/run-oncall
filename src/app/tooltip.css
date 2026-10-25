@@ -1,1 +1,21 @@
-.oncall-tooltip{position:relative;display:inline-flex}.oncall-tooltip-content{position:absolute;z-index:20;bottom:calc(100% + 6px);right:0;max-width:220px;width:max-content;padding:6px 10px;border-radius:6px;background:var(--oc-ink,#20303a);color:var(--oc-paper,#fffaf1);font-size:12px;line-height:1.4;pointer-events:none;visibility:hidden;opacity:0;transition:visibility 0s,opacity .1s}.oncall-tooltip:hover .oncall-tooltip-content{visibility:visible;opacity:1;transition-delay:300ms}.oncall-tooltip:focus-within .oncall-tooltip-content{visibility:visible;opacity:1;transition:none}
+/* The shared tooltip (src/app/Tooltip.tsx): ink on paper, centred above its control. A closed tip
+   takes no room, so it can never widen the page. */
+.oncall-tooltip { position: relative; display: inline-flex; }
+.oncall-tooltip-content {
+  position: absolute;
+  z-index: 20;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  width: max-content;
+  max-width: min(220px, calc(100vw - 16px));
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--oc-ink);
+  color: var(--oc-paper);
+  font-size: var(--oc-text-min);
+  line-height: 1.4;
+  pointer-events: none;
+  transform: translateX(calc(-50% + var(--tip-shift, 0px)));
+}
+.oncall-tooltip-content[hidden] { display: none; }
+.oncall-tooltip-content[data-side="below"] { top: calc(100% + 6px); bottom: auto; }

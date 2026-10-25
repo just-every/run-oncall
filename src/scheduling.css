@@ -27,7 +27,7 @@
 .scheduling-field :is(input, select, textarea) { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--app-field-line); border-radius: 10px; background-color: var(--app-field); color: var(--oc-ink); font-size: 15px; }
 .scheduling-field input[readonly] { background: var(--oc-paper-deep); }
 .scheduling-field textarea { min-height: 72px; resize: vertical; }
-.scheduling-field small { color: var(--oc-muted); font-size: 13px; line-height: 1.5; }
+.scheduling-field small { color: var(--oc-muted); line-height: 1.5; }
 .scheduling-workspace fieldset:disabled { opacity: 0.85; }
 
 .scheduling-tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: var(--oc-paper-deep); color: var(--oc-ink-soft); font-size: 13px; font-weight: 600; white-space: nowrap; }
@@ -56,18 +56,20 @@
 .scheduling-form-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .scheduling-form-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-.scheduling-rotations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 4px; }
-.scheduling-rotation { padding: 18px 12px 8px; border: 1px solid var(--app-line); border-top: 3px solid var(--oc-now); border-radius: 12px; background: var(--oc-paper); }
-.scheduling-rotation + .scheduling-rotation { border-top-color: var(--oc-next); }
-.scheduling-rotation h3 { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-.scheduling-rotation h3 small { color: var(--oc-muted); font-size: 13px; font-weight: 500; }
+/* One role per row, so every responder choice shows its whole name. The role is a chip on the
+   card's heading: rose clay for primary, dusk blue for backup. */
+.scheduling-rotations { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin-top: 4px; }
+.scheduling-rotation { padding: 18px 12px 8px; border: 1px solid var(--app-line); border-radius: 12px; background: var(--oc-paper); }
+.scheduling-rotation h3 { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; width: fit-content; margin-bottom: 14px; padding: 4px 12px 4px 10px; border-radius: var(--oc-radius-pill); background: var(--oc-now-wash); }
+.scheduling-rotation + .scheduling-rotation h3 { background: var(--oc-next-wash); }
+.scheduling-rotation h3 small { color: var(--oc-ink-soft); font-weight: 500; }
 .scheduling-member-slots { list-style: none; margin: 4px 0 14px; padding: 0; }
 .scheduling-member-slots li { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; }
 .scheduling-member-slots .scheduling-field { flex: 1; margin: 0; }
 .scheduling-member-slots .scheduling-field > span { color: var(--oc-muted); font-size: 13px; font-weight: 550; }
 .scheduling-member-slots select, .scheduling-rotation select { padding-left: 10px; font-size: 14px; }
 .scheduling-slot-index { flex: none; width: 14px; color: var(--oc-muted); font-size: 14px; }
-.scheduling-avatar { flex: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--oc-now-wash); color: var(--oc-now-ink); font-size: 12px; font-weight: 650; }
+.scheduling-avatar { flex: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--oc-now-wash); color: var(--oc-now-ink); font-size: var(--oc-text-min); font-weight: 650; }
 .scheduling-rotation + .scheduling-rotation .scheduling-avatar { background: var(--oc-next-wash); color: var(--app-next-ink); }
 .scheduling-slot-actions { flex: none; display: grid; grid-template-columns: repeat(3, 30px); gap: 3px; }
 .scheduling-slot-actions button { min-width: 30px; min-height: 30px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
@@ -93,7 +95,7 @@
 .scheduling-coverage-row :is(strong, span, small) { display: block; }
 .scheduling-coverage-row strong { font-size: 15px; }
 .scheduling-coverage-row > div > span { color: var(--oc-ink-soft); font-size: 14px; }
-.scheduling-coverage-row small { margin-top: 2px; color: var(--oc-muted); font-size: 13px; }
+.scheduling-coverage-row small { margin-top: 2px; color: var(--oc-muted); }
 .scheduling-warning { margin: 12px 0 !important; padding: 12px 14px; border: 1px solid #e9d4ab; border-radius: 10px; background: #fbf1dc; color: var(--app-ochre-ink); font-size: 14px; line-height: 1.6; }
 .scheduling-validation { border-color: #e7c4b9; background: #fbeee8; color: var(--oc-now-ink); }
 .scheduling-validation ul { margin: 0; padding-left: 18px; font-size: 14px; }
@@ -116,18 +118,19 @@
 .scheduling-workspace details { margin: 12px 0 0; font-size: 14px; }
 .scheduling-workspace pre { max-height: 430px; overflow: auto; padding: 12px 14px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper); font-size: 13px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 
+/* An override's responder takes the widest column, so a name and role show whole. */
+@media (min-width: 1251px) { .scheduling-override .scheduling-form-grid.three { grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(0, 1.4fr); } }
 @media (max-width: 1250px) {
   .scheduling-schedule-grid { grid-template-columns: minmax(0, 1.7fr) minmax(270px, 1fr); }
-  .scheduling-rotations, .scheduling-form-grid.three { grid-template-columns: 1fr; }
+  .scheduling-form-grid.three { grid-template-columns: 1fr; }
 }
 @media (max-width: 950px) {
   .scheduling-schedule-grid { grid-template-columns: 1fr; }
   .scheduling-coverage-column { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
   .scheduling-occurrences { grid-column: 1 / -1; }
-  .scheduling-rotations { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 699px) {
-  .scheduling-rotations, .scheduling-form-grid.two, .scheduling-coverage-column { grid-template-columns: 1fr; }
+  .scheduling-form-grid.two, .scheduling-coverage-column { grid-template-columns: 1fr; }
   .scheduling-coverage-column { display: grid; }
   .scheduling-toolbar, .scheduling-selection, .scheduling-save, .scheduling-subheading { flex-wrap: wrap; }
   .scheduling-selection > .scheduling-field, .scheduling-save > div { flex-basis: 100%; }
@@ -141,7 +144,9 @@
   /* Each responder row: number, initials and the full-width choice, then its order buttons. */
   .scheduling-member-slots li { flex-wrap: wrap; }
   .scheduling-member-slots .scheduling-field { flex: 1 1 calc(100% - 60px); }
-  .scheduling-slot-actions { margin-left: 54px; }
+  .scheduling-slot-actions { grid-template-columns: repeat(3, var(--oc-tap)); margin-left: 54px; }
+  .scheduling-slot-actions button { min-width: var(--oc-tap); min-height: var(--oc-tap); }
+  .scheduling-feed > a { display: inline-flex; align-items: center; min-height: var(--oc-tap); }
 }
 
 /* "On call now and next", drawn like the homepage's card: a rose dot for now, a blue dot for next. */

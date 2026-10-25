@@ -1,6 +1,6 @@
 .compatible-intake { min-width: 0; overflow-wrap: anywhere; }
 .compatible-intake .field, .compatible-intake fieldset, .compatible-intake details { min-width: 0; }
-.compatible-intake .field small { color: var(--oc-muted); font-size: 13px; font-weight: 400; }
+.compatible-intake .field small { color: var(--oc-muted); font-weight: 400; }
 .compatible-intake input, .compatible-intake select, .compatible-intake textarea { min-width: 0; max-width: 100%; box-sizing: border-box; }
 .compatible-intake code, .compatible-intake dd { overflow-wrap: anywhere; white-space: pre-wrap; }
 .compatible-intake summary { cursor: pointer; font-weight: 600; }
@@ -11,9 +11,9 @@
 .intake-list > li p { margin: 8px 0; }
 .intake-list dt { color: var(--oc-muted); font-size: 13px; }
 .intake-list dd { margin: 0 0 10px; }
-.compatible-intake pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; max-width: 100%; }
-.intake-example { padding: 16px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper-deep); }
-.intake-example textarea { font-family: var(--oc-mono, monospace); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.compatible-intake pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--oc-text-min); line-height: 1.5; max-width: 100%; }
+.intake-example { padding: 16px; border-radius: 10px; background: var(--oc-paper-deep); }
+.intake-example textarea { font-family: var(--oc-mono, monospace); font-size: var(--oc-text-min); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .intake-receipts { margin-top: 24px; }
 @media (max-width: 480px) {
   .compatible-intake .intake-actions > button { max-width: 100%; white-space: normal; }

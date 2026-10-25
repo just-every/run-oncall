@@ -20,7 +20,11 @@
 .response-controls { margin: 18px 0; padding: 16px; border: 1px solid var(--app-line); border-radius: 12px; }
 .response-controls h3 { margin: 0 0 12px; }
 .response-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; }
-.response-roles dt { font-size: 12px; color: var(--oc-muted); }
+.response-roles dt { font-size: var(--oc-text-min); color: var(--oc-muted); }
 .response-roles dd { margin: 2px 0 0; overflow-wrap: anywhere; }
 .response-controls details > label { margin: 14px 0; }
 @media (min-width: 600px) and (max-width: 899px) { .triage-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 699px) {
+  .triage-check { min-width: var(--oc-tap); min-height: var(--oc-tap); top: 13px; }
+  .triage-item .incident-top { padding-right: 40px; }
+}

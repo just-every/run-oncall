@@ -55,8 +55,10 @@ h1, h2, h3 { letter-spacing: -0.015em; }
   padding: 22px 16px 24px;
   overflow-y: auto;
 }
-.brand .oc-mark { width: 1.22em; height: 1.22em; margin-bottom: -0.04em; }
-.brand { display: inline-flex; align-items: center; gap: 10px; padding: 0 8px; font-size: 27px; font-weight: 760; letter-spacing: -0.035em; text-decoration: none; }
+/* The wordmark keeps its name on one line beside the Mark; a longer name ends in an ellipsis. */
+.brand .oc-mark { flex: none; width: 1.22em; height: 1.22em; margin-bottom: -0.04em; }
+.brand { display: inline-flex; align-items: center; gap: 10px; max-width: 100%; padding: 0 8px; font-size: 22px; font-weight: 760; letter-spacing: -0.035em; text-decoration: none; }
+.brand > span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .navigation { display: flex; flex-direction: column; gap: 4px; }
 .nav {
   display: flex;
@@ -159,7 +161,15 @@ select:not([multiple],[size]:not([size="1"])):disabled { --rer-select-ink: color
   cursor: pointer;
 }
 :is(.field, .scheduling-field) input[type="file"]:hover::file-selector-button { border-color: var(--oc-ink-soft); }
-.field :is(input, select, textarea):focus-visible { outline-offset: 1px; border-color: var(--oc-ink); }
+/* A field shows focus on its own border, never as a second ring outside it (H17). */
+.app :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"]), select, textarea):focus-visible {
+  outline: none;
+  border-color: var(--oc-ink);
+  box-shadow: inset 0 0 0 1px var(--oc-ink);
+}
+@media (forced-colors: active) {
+  .app :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"]), select, textarea):focus-visible { outline: 2px solid; outline-offset: -2px; }
+}
 
 /* Panels and the management screens */
 .panel { min-width: 0; border: 1px solid var(--app-line); border-radius: 14px; background: var(--app-panel); box-shadow: var(--app-shadow); }
@@ -176,6 +186,8 @@ select:not([multiple],[size]:not([size="1"])):disabled { --rer-select-ink: color
 .service-card ol, .review-card ul { margin: 10px 0 0; padding-left: 22px; line-height: 1.7; }
 .review-card > p { white-space: pre-wrap; }
 .muted { color: var(--oc-muted); line-height: 1.6; }
+/* Notes, hints and receipts are written as <small>; none is under the 13px floor (H11). */
+.app small { font-size: var(--oc-text-min); }
 code { padding: 1px 6px; border-radius: 6px; background: var(--oc-paper-deep); font-size: 13px; overflow-wrap: anywhere; }
 pre { max-height: 500px; overflow: auto; margin: 14px 0 0; padding: 14px 16px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper); font-size: 13px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
 details { margin: 18px 0; }
@@ -191,6 +203,7 @@ summary { cursor: pointer; font-weight: 620; line-height: 1.6; }
 
 @media (max-width: 1199px) {
   .app { --rail: 196px; }
+  .brand { font-size: 19px; }
   .workspace { padding: 0 22px 48px; }
 }
 @media (max-width: 899px) {
@@ -202,13 +215,13 @@ summary { cursor: pointer; font-weight: 620; line-height: 1.6; }
 @media (max-width: 699px) {
   .app { display: block; background: none; }
   .sidebar { position: static; height: auto; gap: 14px; padding: 14px 16px; background: #f4eadb; border-bottom: 1px solid var(--app-line); }
-  .brand { padding: 0; font-size: 24px; }
+  .brand { min-height: var(--oc-tap); padding: 0; font-size: 24px; }
   .navigation { flex-direction: row; flex-wrap: wrap; gap: 6px; }
-  .nav { min-height: 38px; padding: 6px 12px; border: 1px solid var(--app-line); border-radius: 999px; background: var(--oc-surface); font-size: 14px; gap: 8px; }
+  .nav { min-height: var(--oc-tap); padding: 6px 12px; border: 1px solid var(--app-line); border-radius: 999px; background: var(--oc-surface); font-size: 14px; gap: 8px; }
   .nav.active { border-color: var(--oc-now); }
   .nav-icon { width: 17px; height: 17px; }
   .profile { grid-template-columns: auto auto auto 1fr; padding: 12px 0 0; gap: 4px 10px; }
-  .profile .avatar { grid-row: auto; width: 30px; height: 30px; font-size: 12px; }
+  .profile .avatar { grid-row: auto; width: 30px; height: 30px; font-size: var(--oc-text-min); }
   .profile button { grid-column: auto; justify-self: end; margin-top: 0; }
   .workspace { padding: 0 16px 36px; }
   .header { padding-top: 20px; }
@@ -216,4 +229,12 @@ summary { cursor: pointer; font-weight: 620; line-height: 1.6; }
   .technical { font-size: 14px; }
   .padded { padding: 20px 18px; }
   .padded h2 { font-size: 20px; }
+  /* Tap targets stay 44px at phone width (TMPL-001): controls, disclosure rows, checkbox rows and
+     links that stand on their own line. Links inside running text stay inline. */
+  .app :is(button, select, input:not([type="checkbox"], [type="radio"], [type="hidden"])) { min-height: var(--oc-tap); }
+  .app button { min-width: var(--oc-tap); }
+  .app summary { min-height: var(--oc-tap); padding-block: 10px; }
+  .app label:has(> input:is([type="checkbox"], [type="radio"])) { min-height: var(--oc-tap); }
+  .app label:not([class], [style], .triage-bulk > label):has(> input:is([type="checkbox"], [type="radio"])) { display: flex; align-items: center; }
+  .service-card > a, .padded > p:not([class]) > a:only-child { display: inline-flex; align-items: center; min-height: var(--oc-tap); }
 }

@@ -33,7 +33,19 @@ export function keyboardUser(page) {
   },
   async focusScreenshot(locator,path) {
    await reach(locator,true)
-   assert.ok(await locator.evaluate(element=>element.matches(':focus-visible')&&getComputedStyle(element).outlineStyle!=='none'&&parseFloat(getComputedStyle(element).outlineWidth)>0),'keyboard focus is visibly outlined')
+   // A field shows focus on its own border (an unfocused twin of it shows the border at rest);
+   // every other control draws an outline.
+   assert.ok(await locator.evaluate(element=>{
+    if(!element.matches(':focus-visible'))return false
+    const style=getComputedStyle(element)
+    if(style.outlineStyle!=='none'&&parseFloat(style.outlineWidth)>0)return true
+    if(!element.matches('input:not([type=checkbox],[type=radio]),select,textarea'))return false
+    const twin=element.cloneNode(false);twin.removeAttribute('id');twin.setAttribute('aria-hidden','true');twin.tabIndex=-1;twin.style.position='absolute';twin.style.visibility='hidden'
+    element.after(twin);const rest=getComputedStyle(twin)
+    const own=style.borderTopColor!==rest.borderTopColor||style.borderTopWidth!==rest.borderTopWidth||style.boxShadow!==rest.boxShadow
+    const shown=style.borderTopStyle!=='none'&&!/rgba\(.*, 0\)$/.test(style.borderTopColor)
+    twin.remove();return own&&shown
+   }),'keyboard focus is visibly outlined or shown on the field\'s own border')
    await page.screenshot({path,fullPage:true})
   },
  }

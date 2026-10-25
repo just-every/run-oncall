@@ -7,7 +7,7 @@
 .incident-workflows .workflow-choice { display: flex; align-items: flex-start; gap: 10px; font-weight: 400; line-height: 1.45; }
 .incident-workflows .workflow-choice input { flex: none; width: 18px; height: 18px; min-height: 0; margin-top: 3px; accent-color: var(--oc-ink); }
 .incident-workflows .workflow-choice span { min-width: 0; }
-.incident-workflows small { display: block; margin-top: 3px; color: var(--oc-muted); font-size: 13px; font-weight: 400; }
+.incident-workflows small { display: block; margin-top: 3px; color: var(--oc-muted); font-weight: 400; }
 .incident-workflows .workflow-help { color: var(--oc-muted); font-size: 13px; }
 .incident-workflows .workflow-checklist { border-bottom: 0; padding-bottom: 0; }
 .workflow-history { padding-left: 20px; }
