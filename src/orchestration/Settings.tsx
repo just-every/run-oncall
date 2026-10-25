@@ -12,7 +12,7 @@ export function CorrelationSettings({service,state,busy,run}:{service:Service;st
  <label className="field">Grouping window in seconds<input type="number" min="1" max="86400" required value={seconds} onChange={e=>setSeconds(Number(e.target.value))}/></label>
  <label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" checked={dependencies} onChange={e=>setDependencies(e.target.checked)}/> Include declared direct dependencies</label>
  <label className="field">Flapping trigger generations<input type="number" min="0" max="100" value={flapping} onChange={e=>setFlapping(Number(e.target.value))}/></label><p>Use 0 for no hold, or 2–100 completed and retriggered generations in the grouping window. Unrecovered concurrent generations remain separate.</p>
- <label className="field">Grouping coordination owner<select value={owner} onChange={e=>setOwner(e.target.value)} required><option value="">Choose an owner</option>{state.members.filter(m=>m.active&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
+ <label className="field">Grouping coordination owner<select aria-label="Grouping coordination owner" value={owner} onChange={e=>setOwner(e.target.value)} required><option value="">Choose an owner</option>{state.members.filter(m=>m.active&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
  <label className="field">Grouping reason<textarea value={reason} onChange={e=>setReason(e.target.value)} maxLength={500} required/></label>
  <button type="submit">Publish grouping rule</button></fieldset></form></details>;
 }
