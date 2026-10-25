@@ -131,7 +131,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
     if(changed){other.revision++;updated.oc_incidents=(updated.oc_incidents??0)+1}
    }
    remove('audit','oc_audit',e=>entries.has(e.id)||['merge-incidents','split-incident'].includes(e.kind)&&relations.has(relationKey(e)))
-   remove('triage','oc_triage',r=>r.kind==='bulk'&&r.results.some((r:any)=>r.id===id))
+   remove('triage','oc_triage',r=>r.kind==='bulk'&&r.results.some((r:any)=>r.id===id||r.incident===id))
    await eraseHandoffCopies([id])
    for(const table of ['paging_callbacks','paging_receipts','paging_jobs'])remember(table)
    const paging=await db.prepare('SELECT revision FROM paging_control WHERE id=1').first<{revision:number}>()

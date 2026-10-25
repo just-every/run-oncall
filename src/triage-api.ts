@@ -1,3 +1,4 @@
+import {coordinationTasks,applyCoordinationStep,coordinationPreview,validateCoordination} from './triage-orchestration';
 import {coordinateAlert} from './triage-alerts';
 import {inheritWorkspaceSnapshot} from './workspace-store';
 import {pagingSnapshot} from './paging-store';
@@ -50,18 +51,20 @@ export function installTriage(api: any, deps: Dependencies) {
   const executeBulk = async (c: any, supplied?:any) => {
     const input = supplied ?? await deps.body(c, 256 * 1024);
     const id = text(input.operationId, 'Operation ID', 100);
-    if (!['acknowledge', 'resolve', 'reassign', 'set-priority', 'set-urgency','snooze','merge'].includes(input.action)) fail('Unsupported bulk action');
+    if (!['acknowledge', 'resolve', 'reassign', 'set-priority', 'set-urgency','snooze','merge','orchestrate'].includes(input.action)) fail('Unsupported bulk action');
+    if(input.action==='orchestrate'&&input.durable!==true)fail('Declaration and notification require a saved workflow',409);
     auditKind(c.env.DB, `triage.${input.action}`);
     if (!Array.isArray(input.items) || !input.items.length || input.items.length > (input.allMatching ? 1000 : 500)) fail('Choose 1–500 incidents, or confirm up to 1,000 matching incidents');
     const items = input.items.map((i: any) => ({id: text(i?.id, 'Item ID', 100), revision: i?.revision,...(i?.kind?{kind:i.kind}:{})}));
     if (new Set(items.map((i: any) => i.id)).size !== items.length || items.some((i: any) => !Number.isSafeInteger(i.revision) || i.revision < 1||i.kind!==undefined&&!['incident','alert'].includes(i.kind))) fail('Each selected incident needs one revision');
-    if(!input.allMatching&&(items.some((item:any)=>item.kind==='alert')||['snooze','merge'].includes(input.action))&&input.confirmedCount!==items.length)fail('Confirm the current selected item count',409);
+    if(!input.allMatching&&(items.some((item:any)=>item.kind==='alert')||['snooze','merge','orchestrate'].includes(input.action))&&input.confirmedCount!==items.length)fail('Confirm the current selected item count',409);
     const payload = {action: input.action, items, reason: input.reason ?? '', evidence: input.evidence ?? '', member: input.member || null, priority: input.priority ?? null, urgency: input.urgency ?? null, allMatching: input.allMatching ? triageQuery(input.query ?? {}) : null, confirmedCount: input.confirmedCount ?? null,...(input.action==='snooze'?{minutes:input.minutes}:{}),...(input.action==='merge'?{target:input.target,targetRevision:input.targetRevision}:{})};
     const fingerprint = await digest(JSON.stringify(payload));
     const actor: Member = c.get('actor');
     let initial = await deps.state(c);
     let operation = (initial.triage ?? []).find(r => r.id === id);
     if (operation && (operation.kind !== 'bulk' || operation.actor !== actor.id || operation.fingerprint !== fingerprint)) fail('Operation ID conflicts with different content or actor', 409);
+    if(input.action==='orchestrate')validateCoordination(initial,actor,input);
     if (initial.members.find(m => m.id === actor.id)?.role === 'viewer') {
       auditOutcome(c.env.DB,'refused');
       const committed = operation?.kind === 'bulk' ? operation.results : [];
@@ -73,17 +76,18 @@ export function installTriage(api: any, deps: Dependencies) {
         const all = matchingItems(initial, actor, payload.allMatching!);
         if (input.workspaceRevision !== initial.revision || input.confirmedCount !== all.length || items.length !== all.length || all.some(i => !items.some((item: any) => item.id === i.id && item.revision === i.revision && (item.kind??'incident')===i.kind))) fail('Matching incidents changed. Confirm the current count and selection.', 409);
       }
-      if(input.durable===true&&(input.action!=='reassign'||input.allMatching||payload.evidence!==''||payload.priority!==null||payload.urgency!==null||items.some((item:any)=>item.kind!=='alert')||typeof payload.reason!=='string'||!payload.reason.trim()||payload.reason.length>1000||payload.member!==null&&!initial.members.some(m=>m.id===payload.member&&m.active&&['admin','responder'].includes(m.role))))fail('Durable coordination requires selected alerts, a current responder and a reason',409);
-      operation = {id, kind: 'bulk', actor: actor.id, fingerprint, at: new Date().toISOString(), results: [],...(input.durable===true?{workflow:{items,member:payload.member,reason:payload.reason}}:{})};
+      if(input.durable===true&&(!['reassign','orchestrate'].includes(input.action)||input.allMatching||payload.evidence!==''||payload.priority!==null||payload.urgency!==null||items.some((item:any)=>item.kind!=='alert')||typeof payload.reason!=='string'||!payload.reason.trim()||payload.reason.length>1000||payload.member!==null&&!initial.members.some(m=>m.id===payload.member&&m.active&&['admin','responder'].includes(m.role))))fail('Durable coordination requires selected alerts, a current responder and a reason',409);
+      operation = {id, kind: 'bulk', actor: actor.id, fingerprint, at: new Date().toISOString(), results: [],...(input.durable===true?{workflow:{items,member:payload.member,reason:payload.reason,...(input.action==='orchestrate'?{action:'orchestrate' as const,version:1 as const}:{})}}:{})};
       (initial.triage ??= []).push(operation);
       await deps.save(c, initial, initial.revision);
     }
+    const tasks=input.action==='orchestrate'?coordinationTasks(items):items;
     const completed = new Map((operation as BulkOperation).results.map(r => [r.id, r]));
     const results: BulkResult[] = [...completed.values()];
     let interrupted = false;
     // Bound each invocation, including the first reservation, below D1 Free's
     // query budget. Continuations keep the exact request identity and revisions.
-    for (const item of items.filter((i: any) => !completed.has(i.id)).slice(0, 2)) {
+    for (const item of tasks.filter((i: any) => !completed.has(i.id)).slice(0, 2)) {
       let state: State | undefined, result: BulkResult;
       try {
         state = await deps.state(c);
@@ -99,7 +103,8 @@ export function installTriage(api: any, deps: Dependencies) {
         try {
           const at=new Date(Date.now()).toISOString(),beforeEntries=new Set(proposed.incidents.flatMap(i=>i.timeline.map(e=>e.id)));
           let changed:any;
-          if(item.kind==='alert')changed=coordinateAlert(proposed,actor,{...payload,id:item.id,revision:item.revision,operationId:id},at);
+          if(input.action==='orchestrate'){auditKind(c.env.DB,'triage.workflow-'+item.step);changed=applyCoordinationStep(proposed,actor,item,payload.member!,payload.reason,receipt.results,id,at);}
+          else if(item.kind==='alert')changed=coordinateAlert(proposed,actor,{...payload,id:item.id,revision:item.revision,operationId:id},at);
           else if(input.action==='merge'){
             const accepted=receipt.results.filter(r=>r.ok).length;
             if(typeof payload.target!=='string'||!Number.isSafeInteger(payload.targetRevision))fail('Choose a merge target and its revision');
@@ -112,13 +117,13 @@ export function installTriage(api: any, deps: Dependencies) {
               incident:item.id,revision:item.revision,operationId:id,reason:payload.reason,evidence:payload.evidence,member:payload.member,priority:payload.priority,urgency:payload.urgency,...(input.action==='snooze'?{minutes:payload.minutes}:{})},at,context);
           }
           for(const incident of proposed.incidents)for(const entry of incident.timeline)if(!beforeEntries.has(entry.id))entry.operationId=id;
-          result={id:item.id,ok:true,revision:changed.revision,...(item.kind==='alert'?{kind:'alert' as const}:{})};
+          result={id:item.id,ok:true,revision:changed.revision,...(input.action==='orchestrate'?{kind:'workflow' as const,step:item.step,incident:changed.id}:item.kind==='alert'?{kind:'alert' as const}:{})};
           (proposed.triage!.find(r => r.id === id) as BulkOperation).results.push(result);
-          await deps.saveItem(c, proposed, revision, id, item.id);
+          await deps.saveItem(c, proposed, revision, id, input.action==='orchestrate'?changed.id:item.id);
           completed.set(item.id, result);
         } catch (error) {
           if (!(error instanceof Fault) || error.status >= 500) throw error;
-          result = {id: item.id, ok: false, error: error.message};
+          result = {id: item.id, ok: false, error: error.message,...(input.action==='orchestrate'?{kind:'workflow' as const,step:item.step}:{})};
           receipt.results.push(result);
           await deps.saveItem(c, state, revision, id);
           completed.set(item.id, result);
@@ -132,8 +137,9 @@ export function installTriage(api: any, deps: Dependencies) {
       if (interrupted) break;
     }
     const byId = new Map(results.map(r => [r.id, r]));
-    return c.json({operationId: id, results: items.flatMap((item: any) => byId.has(item.id) ? [byId.get(item.id)] : []), remaining: items.length - completed.size, interrupted});
+    return c.json({operationId: id, results: tasks.flatMap((item: any) => byId.has(item.id) ? [byId.get(item.id)] : []), remaining: tasks.length - completed.size, interrupted});
   };
+  api.post('/api/triage/workflows/preview',async(c:any)=>{const input=await deps.body(c,256*1024),state=await deps.state(c);return c.json(coordinationPreview(state,c.get('actor'),input));});
   api.post('/api/triage/bulk', (c:any)=>executeBulk(c));
   api.post('/api/triage/workflows/:id/resume',async(c:any)=>{
     const state=await deps.state(c),input=await deps.body(c),actor:Member=c.get('actor');
@@ -141,6 +147,6 @@ export function installTriage(api: any, deps: Dependencies) {
     const record=state.triage?.find(row=>row.id===c.req.param('id')&&row.kind==='bulk');
     if(!record||record.kind!=='bulk'||!record.workflow)fail('Unknown recorded workflow',404);
     if(record.actor!==actor.id||input.approve!==true)fail('Only the current author can explicitly resume this recorded workflow',403);
-    return executeBulk(c,{...record.workflow,operationId:record.id,action:'reassign',confirmedCount:record.workflow.items.length,durable:true});
+    return executeBulk(c,{...record.workflow,operationId:record.id,action:record.workflow.action??'reassign',confirmedCount:record.workflow.items.length,durable:true});
   });
 }

@@ -3,9 +3,9 @@ import { fail, text, type Incident, type Member, type State } from './domain.ts'
 import { incidentAssignee, incidentUpdated, incidentUrgency } from './incident-controls.ts';
 
 export type TriageQuery = Partial<Record<'kind' | 'q' | 'status' | 'severity' | 'urgency' | 'priority' | 'service' | 'assignee' | 'mine' | 'createdAfter' | 'createdBefore' | 'updatedAfter' | 'updatedBefore' | 'sort', string>>;
-export type BulkResult = {id: string; ok: boolean; revision?: number; error?: string; kind?:'alert'};
+export type BulkResult = {id: string; ok: boolean; revision?: number; error?: string; kind?:'alert'|'workflow';step?:'declare'|'notify';incident?:string};
 export type SavedView = {id: string; kind: 'view'; actor: string; name: string; query: TriageQuery};
-export type BulkOperation = {id: string; kind: 'bulk'; actor: string; fingerprint: string; at: string; results: BulkResult[]; workflow?: {items:{id:string;revision:number;kind:'alert'}[];member:string|null;reason:string}};
+export type BulkOperation = {id: string; kind: 'bulk'; actor: string; fingerprint: string; at: string; results: BulkResult[]; workflow?: {action?:'orchestrate';version?:1;items:{id:string;revision:number;kind:'alert'}[];member:string|null;reason:string}};
 export type TriageRecord = SavedView | BulkOperation;
 export const queryFields = ['kind','q', 'status', 'severity', 'urgency', 'priority', 'service', 'assignee', 'mine', 'createdAfter', 'createdBefore', 'updatedAfter', 'updatedBefore', 'sort'] as const;
 
@@ -102,12 +102,17 @@ export function validateTriageRecords(records: any, state: State) {
       if (!/^[a-f0-9]{64}$/.test(r.fingerprint) || !Number.isFinite(Date.parse(r.at)) || !Array.isArray(r.results) || r.results.length > 1000 || new Set(r.results.map((v: any) => v.id)).size !== r.results.length) fail('Invalid bulk receipt');
       if(r.workflow!==undefined){
         const plan=r.workflow;
-        if(!plan||Object.keys(plan).sort().join(',')!=='items,member,reason'||!Array.isArray(plan.items)||!plan.items.length||plan.items.length>500||new Set(plan.items.map((item:any)=>item.id)).size!==plan.items.length||plan.items.some((item:any)=>!item||Object.keys(item).sort().join(',')!=='id,kind,revision'||item.kind!=='alert'||!Number.isSafeInteger(item.revision)||item.revision<1||!state.alerts.some(a=>a.id===item.id))||plan.member!==null&&!state.members.some(m=>m.id===plan.member)||typeof plan.reason!=='string'||!plan.reason.trim()||plan.reason.length>1000||r.results.some((result:any)=>!plan.items.some((item:any)=>item.id===result.id)))fail('Invalid durable coordination plan');
+        if(!plan||Object.keys(plan).sort().join(',')!==(plan.action==='orchestrate'?'action,items,member,reason,version':'items,member,reason')||plan.action==='orchestrate'&&(plan.version!==1||plan.member===null||plan.items?.length>25)||!Array.isArray(plan.items)||!plan.items.length||plan.items.length>500||new Set(plan.items.map((item:any)=>item.id)).size!==plan.items.length||plan.items.some((item:any)=>!item||Object.keys(item).sort().join(',')!=='id,kind,revision'||item.kind!=='alert'||!Number.isSafeInteger(item.revision)||item.revision<1||!state.alerts.some(a=>a.id===item.id))||plan.member!==null&&!state.members.some(m=>m.id===plan.member)||typeof plan.reason!=='string'||!plan.reason.trim()||plan.reason.length>1000||r.results.some((result:any)=>plan.action==='orchestrate'?!plan.items.some((item:any,index:number)=>result.id===`step:${index}:declare`||result.id===`step:${index}:notify`):!plan.items.some((item:any)=>item.id===result.id)))fail('Invalid durable coordination plan');
       }
       for (const result of r.results) {
-        if (!result || Object.keys(result).some(k => !['id', 'ok', 'revision', 'error', 'kind'].includes(k))) fail('Invalid bulk result fields');
+        if (!result || Object.keys(result).some(k => !(r.workflow?.action==='orchestrate'?['id','ok','revision','error','kind','step','incident']:['id','ok','revision','error','kind']).includes(k))) fail('Invalid bulk result fields');
         text(result.id, 'Bulk incident ID', 100);
         if (typeof result.ok !== 'boolean' || (result.ok ? !Number.isSafeInteger(result.revision) || result.revision < 1 : typeof result.error !== 'string' || !result.error || result.error.length > 1000)) fail('Invalid bulk result');
+        if(r.workflow?.action==='orchestrate'){
+          if(result.kind!=='workflow'||!['declare','notify'].includes(result.step)||!result.id.endsWith(':'+result.step))fail('Invalid workflow step identity');
+          if(result.ok){const incident=state.incidents.find(row=>row.id===result.incident);if(!incident||incident.revision<result.revision||!incident.timeline.some(entry=>entry.operationId===r.id&&entry.actor===r.actor&&entry.kind===(result.step==='declare'?'declared':'request-responders')))fail('Invalid workflow incident attribution');}
+          continue;
+        }
         if (result.ok) {
           if(result.kind==='alert'){
             const alert=state.alerts.find(a=>a.id===result.id);

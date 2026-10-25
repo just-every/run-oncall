@@ -1030,3 +1030,45 @@ try {
 
 // The scoped machine and outbound execution class extends the emitted-HTTP runtime journey.
 await import("./automation.mjs");
+
+// OC-043 extends the same oc_triage workflow custody with declaration and recorded notification steps.
+{
+ const {automationRuntime}=await import('./automation-runtime.mjs');const calls=[];
+ const workflowRuntime=await automationRuntime(request=>{calls.push(request.url);return new Response('unexpected effect',{status:403});});
+ try{
+  const setup=await workflowRuntime.request('/api/setup',{name:'synthetic-oncall-443-owner',password:'synthetic-oncall-443-password'});assert.equal(setup.status,200);let currentCookie=setup.cookie;
+  const call=(path,input,as=currentCookie)=>workflowRuntime.request(path,input,as),value=async(path,input,status=200)=>{const result=await call(path,input);assert.equal(result.status,status,JSON.stringify(result.value));return result.value;};
+  const owner=setup.value.member,target=await value('/api/members',{name:'synthetic-oncall-443-responder',password:'synthetic-oncall-443-password',role:'responder'},201),viewer=await value('/api/members',{name:'synthetic-oncall-444-viewer',password:'synthetic-oncall-444-password',role:'viewer'},201);
+  const targetLogin=await call('/api/login',{name:target.name,password:'synthetic-oncall-443-password'}),viewerLogin=await call('/api/login',{name:viewer.name,password:'synthetic-oncall-444-password'});
+  const service=await value('/api/command',{type:'service',id:'synthetic-oncall-443',name:'Synthetic workflow service',environment:'test',owner:owner.id,runbook:['Synthetic copied runbook'],pager:''});
+  const template={type:'service-template',service:service.id,baseVersion:0,severityWording:{critical:'Synthetic blocked',warning:'Synthetic delayed',info:'Synthetic investigation'},impactPrompt:'Synthetic impact',incidentTypes:[],checklist:[{id:'synthetic-oncall-443',text:'Synthetic frozen checklist'}],reason:'Synthetic reviewed template'};await value('/api/command',template);
+  const key=randomBytes(32).toString('hex'),source='synthetic-oncall-443';await value('/api/sources',{id:source,key,scopes:[service.id]});
+  for(let n=0;n<2;n++){const result=await workflowRuntime.request('/api/ingress/'+source,{source,eventId:'synthetic-oncall-443-'+n,service:service.id,environment:'test',key:'synthetic-oncall-443-'+n,generation:'synthetic-oncall-443-'+n,intent:'trigger',severity:'warning',title:'Synthetic orchestration '+n,observedAt:new Date().toISOString(),evidence:''},'',{authorization:'Bearer '+key});assert.equal(result.status,201);}
+  const alerts=(await value('/api/state')).alerts.filter(row=>row.source===source),reason='Synthetic coordination for '+target.name;
+  const input={operationId:'synthetic-oncall-443-workflow',action:'orchestrate',items:[{id:alerts[0].id,revision:alerts[0].revision??1,kind:'alert'}],confirmedCount:1,member:target.id,reason,durable:true};
+  assert.equal((await call('/api/triage/workflows/preview',input,'')).status,401);assert.equal((await call('/api/triage/workflows/preview',input,viewerLogin.cookie)).status,403);assert.equal((await call('/api/triage/bulk',input,viewerLogin.cookie)).status,403);
+  const before=await value('/api/state'),auditCount=async()=>Number((await workflowRuntime.db.prepare('SELECT COUNT(*) AS n FROM oc_admin_audit').first()).n),priorAudit=await auditCount();
+  const preview=await value('/api/triage/workflows/preview',input);assert.equal(preview.effects,false);assert.deepEqual(preview.comparison.map(row=>row.step),['declare','notify']);assert.equal(preview.comparison[0].templateVersion,1);assert.equal(preview.comparison[0].checklist[0].text,'Synthetic frozen checklist');assert.equal(preview.comparison[1].label,'no sender');
+  assert.deepEqual(await value('/api/triage/workflows/preview',input),preview);assert.deepEqual(await value('/api/state'),before);assert.equal(await auditCount(),priorAudit,'ordered replay creates zero durable or permanent-audit writes');
+  await workflowRuntime.db.prepare("CREATE TRIGGER synthetic_oncall_443_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='triage.workflow-notify' AND NEW.workspace_after>NEW.workspace_before BEGIN SELECT RAISE(ABORT,'synthetic-oncall-443'); END").run();
+  let interrupted;try{interrupted=await value('/api/triage/bulk',input);}finally{await workflowRuntime.db.prepare('DROP TRIGGER synthetic_oncall_443_audit').run();}
+  assert.equal(interrupted.interrupted,true);assert.equal(interrupted.remaining,1);
+  const held=await value('/api/state'),record=held.triage.find(row=>row.id===input.operationId);assert.equal(record.results.length,1);assert.equal(record.results[0].step,'declare');
+  const declared=held.incidents.find(row=>row.id===record.results[0].incident);assert.equal(declared.template.version,1);assert.equal(declared.template.checklist[0].done,false);assert.equal(declared.responderRequests?.length??0,0,'notification and progress rolled back together');
+  const interruptedAudit=(await value('/api/audit/export')).rows;assert.ok(interruptedAudit.some(row=>row.kind==='triage.workflow-declare'&&row.outcome==='accepted'&&row.workspaceAfter===row.workspaceBefore+1));assert.ok(interruptedAudit.some(row=>row.kind==='triage.workflow-notify'&&['uncertain','interrupted'].includes(row.outcome)));
+  await workflowRuntime.restart();assert.deepEqual(await value('/api/state'),held,'restart retains the committed declaration and pending notification without running it');
+  const resume='/api/triage/workflows/'+input.operationId+'/resume';assert.equal((await call(resume,{approve:true},'')).status,401);assert.equal((await call(resume,{approve:true},targetLogin.cookie)).status,403);assert.equal((await call(resume,{approve:false})).status,403);
+  await value('/api/command',{...template,baseVersion:1,checklist:[{id:'synthetic-oncall-443',text:'Synthetic later checklist'}]});
+  const completed=await value(resume,{approve:true});assert.equal(completed.remaining,0);assert.equal(completed.results.length,2);assert.ok(completed.results.every(row=>row.ok));
+  const after=await value('/api/state'),incident=after.incidents.find(row=>row.id===declared.id);assert.equal(incident.template.version,1);assert.equal(incident.template.checklist[0].text,'Synthetic frozen checklist');assert.equal(incident.responderRequests.length,1);assert.equal(incident.responderRequests[0].obligation.label,'no sender');assert.equal(incident.responderRequests[0].obligation.paging,'off');assert.equal(incident.responderRequests[0].obligation.automatic,false);
+  await value(resume,{approve:true});assert.deepEqual(await value('/api/state'),after,'completed declaration and notification are never repeated');
+  const staleInput={...input,operationId:'synthetic-oncall-444-workflow',items:[{id:alerts[1].id,revision:alerts[1].revision??1,kind:'alert'}]};await value('/api/triage/bulk',{operationId:'synthetic-oncall-444-edit',action:'set-priority',priority:'P2',reason:'Synthetic concurrent edit',items:staleInput.items,confirmedCount:1});
+  const refused=await value('/api/triage/bulk',staleInput);assert.equal(refused.remaining,0);assert.equal(refused.results.length,2);assert.ok(refused.results.every(row=>!row.ok));
+  const archive=await value('/api/archive'),malformed=structuredClone(archive);malformed.triage.find(row=>row.id===input.operationId).workflow.version=2;await value('/api/restore',{mode:'replace',archive:malformed},400);
+  const restored=await call('/api/restore',{mode:'replace',archive});assert.equal(restored.status,200,JSON.stringify(restored.value));currentCookie=restored.cookie;assert.deepEqual((await value('/api/state')).triage,archive.triage);
+  const facts=(await value('/api/audit/export')).rows;const erased=await value('/api/erasure/member/'+target.id,{workspaceRevision:(await value('/api/state')).revision,confirmation:'erase '+target.id,identitiesReviewed:true,importedPeople:[]});assert.equal(erased.state,'complete');assert.ok(erased.stores.oc_triage.deleted>=2);
+  const exported=await value('/api/archive');assert.ok(!exported.triage.some(row=>row.id===input.operationId));assert.ok(!JSON.stringify(exported).includes(target.name));await value(resume,{approve:true},404);
+  const auditAfter=new Map((await value('/api/audit/export')).rows.map(row=>[row.id,row]));for(const fact of facts)assert.deepEqual(auditAfter.get(fact.id),fact);assert.deepEqual(calls,[],'orchestration records obligations without a network effect');
+  console.log('PASS OC-043 declaration and notification workflow: ordered zero-write replay, frozen template checklist, restart between steps, explicit author resume, atomic audit rollback/interrupted outcome, stale-step refusal, idempotency, strict archive and recipient-erasure-safe export; paging OFF');
+ }finally{await workflowRuntime.close();}
+}

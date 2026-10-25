@@ -38,7 +38,7 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
     const status = response.status
     // Successful write batches already carry their own entries. A refusal with no
     // state write, including paging OFF, still survives as an attributed attempt.
-    const zeroWriteReplay = response.ok && (path === '/api/replay' || /^\/api\/(?:email\/addresses|routing\/keys)\/[^/]+\/preview$/.test(path));
+    const zeroWriteReplay = response.ok && (path === '/api/replay' || path === '/api/triage/workflows/preview' || /^\/api\/(?:email\/addresses|routing\/keys)\/[^/]+\/preview$/.test(path));
     if (!context.ownerCustodyRefusal && !zeroWriteReplay && context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
       await audit.record(context.outcome ?? (status >= 500 ? 'failed' : status >= 400 ? 'refused' : 'accepted'))
     return response
