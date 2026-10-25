@@ -110,6 +110,10 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   if(kind==='incident') {
    const incident=state.incidents.find(i=>i.id===id);if(!incident)fail('Unknown incident',404)
    outbox(o=>o.incident===id)
+   // No original ID, text, identity, metric or source survives in this independent cohort case.
+   if((state.erasedReportCases??=[]).length>=10000)fail('Anonymous report case capacity reached; no erasure was committed',429)
+   state.erasedReportCases.push({id:'erased-case-'+crypto.randomUUID(),service:incident.service,declaredAt:incident.createdAt})
+   remember('oc_erased_report_cases')
    const entries=new Set(incident.timeline.map(e=>e.id))
    const relationKey=(e:{kind:string;actor:string;at:string;text:string})=>JSON.stringify([e.kind==='merge-incidents'?'merge':e.kind==='split-incident'?'split':e.kind,e.actor,e.at,e.text.split('\nImpact: ')[0]])
    const relations=new Set(incident.timeline.filter(e=>['merge','split'].includes(e.kind)).map(relationKey))

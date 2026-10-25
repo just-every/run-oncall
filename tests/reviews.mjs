@@ -114,5 +114,29 @@ try{
  const dst=ok(await req('/api/reports/response?from=2026-03-07T14:00:00.000Z&to=2026-03-09T13:00:00.000Z&service=search'));
  assert.deepEqual(dst.load.responders.map(r=>[r.member,r.primarySeconds]),[[floater.id,24*3600],[shift.id,23*3600]],'the spring-forward shift holds 23 scheduled hours');
  console.log('PASS OC-037 response report keeps unknown cases visible and normalises load by scheduled coverage');
+ // OC-040 receiving OC-037: member and incident erasure cannot silently shrink cohort denominators.
+ const cohortBefore=ok(await req('/api/reports/response?'+window)),oldCsv=new URLSearchParams(window);oldCsv.set('revision',String(cohortBefore.revision));oldCsv.set('schedulingRevision',String(cohortBefore.load.schedulingRevision));
+ ok(await req('/api/erasure/member/'+floater.id,{workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase '+floater.id,identitiesReviewed:true,importedPeople:[]}));
+ const memberErased=ok(await req('/api/reports/response?'+window));assert.equal(memberErased.cohort.count,cohortBefore.cohort.count);assert.equal(memberErased.load.acknowledged,cohortBefore.load.acknowledged);
+ const anonymousResponder=memberErased.load.responders.find(row=>row.member===floater.id);assert.equal(anonymousResponder.name,'Erased member');assert.equal(anonymousResponder.current,false);assert.equal(anonymousResponder.acknowledgements,1);assert.ok(!JSON.stringify(memberErased).includes(floater.name));
+ const selected=declaredIds[0],erasePath='/api/erasure/incident/'+selected,input={workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase '+selected};
+ const archiveBefore=ok(await req('/api/archive'));
+ w.sql("CREATE TRIGGER synthetic_oncall_report_erasure BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='incident.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-421'); END");
+ try{ok(await req(erasePath,input),503);}finally{w.sql('DROP TRIGGER synthetic_oncall_report_erasure');}
+ assert.deepEqual(ok(await req('/api/archive')),archiveBefore,'failed erasure cannot create a denominator case or remove the original');
+ const receipt=ok(await req(erasePath,input));assert.equal(receipt.state,'complete');assert.equal(receipt.stores.oc_erased_report_cases.inserted,1);
+ const erased=ok(await req('/api/reports/response?'+window)),caseRow=erased.incidents.find(row=>row.state==='erased');
+ assert.equal(erased.cohort.count,cohortBefore.cohort.count);assert.ok(caseRow);assert.equal(caseRow.title,'Erased incident');assert.equal(caseRow.href,'');assert.ok(!JSON.stringify(erased).includes(selected));
+ for(const metric of ['mtta','mttr','recovery','sourceRecovery']){assert.equal(caseRow[metric].status,'unknown');assert.equal(caseRow[metric].seconds,null);assert.equal(caseRow[metric].sourceEntryId,null);assert.equal(erased.aggregates[metric].total,cohortBefore.aggregates[metric].total);}
+ const exact=new URLSearchParams(window);exact.set('revision',String(erased.revision));exact.set('schedulingRevision',String(erased.load.schedulingRevision));
+ const erasedCsv=ok(await req('/api/reports/response.csv?'+exact)),rows=erasedCsv.trim().split('\r\n').map(line=>[...line.matchAll(/"((?:[^"]|"")*)"/g)].map(m=>m[1].replaceAll('""','"'))),col=name=>rows[0].indexOf(name);
+ const erasedCsvRow=rows.find(row=>row[col('incidentId')]===caseRow.id);assert.ok(erasedCsvRow);assert.equal(erasedCsvRow[col('cohortCount')],String(erased.cohort.count));assert.equal(erasedCsvRow[col('title')],'Erased incident');assert.equal(erasedCsvRow[col('drilldown')],'');
+ for(const metric of ['mtta','mttr','recovery','sourceRecovery'])assert.equal(erasedCsvRow[col(metric+'.status')],'unknown');
+ assert.ok(!erasedCsv.includes(floater.name));assert.ok(!erasedCsv.includes(selected));ok(await req('/api/reports/response.csv?'+oldCsv),409);
+ const current=ok(await req('/api/archive')),withoutCases={...current,erasedReportCases:[]};ok(await req('/api/restore',{mode:'replace',archive:withoutCases}),409);assert.deepEqual(ok(await req('/api/archive')),current);
+ const restoredCase=await req('/api/restore',{mode:'replace',archive:current});ok(restoredCase);cookie=restoredCase.cookie;
+ await w.stop();await w.start();const durable=ok(await req('/api/reports/response?'+window));assert.equal(durable.cohort.count,erased.cohort.count);assert.equal(durable.incidents.find(row=>row.id===caseRow.id).mtta.status,'unknown');
+ console.log('PASS OC-040 erasure-proof response denominators: erased member load remains explicit; incident becomes anonymous unknown case; audit rollback, matching CSV, changed-workspace refusal, current restore and restart preserve the cohort');
+
  console.log('Response learning: measured/censored/unknown reports and CSV, relapse drilldown, generated material, human review, prioritized evidence acceptance, authority and archive/restart passed');
 }finally{await w.close();}

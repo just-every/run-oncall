@@ -94,7 +94,7 @@ export function ResponseReport({state}: {state: State}) {
       <details className="review-material"><summary>Incident durations and source entries ({report.incidents.length})</summary>
         {!report.incidents.length && <p>No retained incidents declared in this cohort.</p>}
         {report.incidents.map(row => <article className="review-record" key={row.id}>
-          <h3><a href={row.href}>{row.title}</a> <span className="tag">{row.state}</span></h3>
+          <h3>{row.href ? <a href={row.href}>{row.title}</a> : row.title} <span className="tag">{row.state}</span></h3>
           <p className="review-meta">{row.id} · {row.serviceName ?? row.service} · {row.severity} · incident revision {row.incidentRevision}<br />Declared {row.declaredAt} UTC</p>
           <div className="response-metrics">{metrics.map(([key, label]) => <section key={key}><h4>{label}</h4><DurationSource value={row[key]} /></section>)}</div>
         </article>)}

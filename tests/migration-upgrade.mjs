@@ -26,7 +26,7 @@ export async function migrationUpgrade(){
   assert.deepEqual(sql('SELECT id,ordinal,data FROM oc_members UNION ALL SELECT id,ordinal,data FROM oc_services'),before,'all held identities, fields and authored runbooks survive the real upgrade');
   assert.equal(sql('SELECT revision FROM workspace_control')[0].revision,7);
   const applied=sql('SELECT name FROM d1_migrations ORDER BY id').map(r=>r.name);assert.deepEqual(applied,names,'migration ledger follows the unique candidate history in order');
-  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_business_services')[0].n,0);assert.equal(sql('SELECT COUNT(*) AS n FROM rer_command_receipts')[0].n,0);
+  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_business_services')[0].n,0);assert.equal(sql('SELECT COUNT(*) AS n FROM rer_command_receipts')[0].n,0);assert.equal(sql('SELECT COUNT(*) AS n FROM oc_erased_report_cases')[0].n,0);
   console.log('PASS populated migration CLI upgrade: main 0140 to candidate, held member/service/runbook bytes and workspace revision preserved; complete unique migration ledger in order');
  }finally{await rm(root,{recursive:true,force:true});}
 }

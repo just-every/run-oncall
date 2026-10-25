@@ -126,8 +126,13 @@ export function responseReport(state: State, input: {from?: string; to?: string;
       (input.service === undefined || i.service === input.service))
     .sort((a, b) => clock(a.createdAt) - clock(b.createdAt) || a.id.localeCompare(b.id))
     .map(i => ({id: i.id, title: i.title, service: i.service, serviceName: state.services.find(s => s.id === i.service)?.name ?? null,
-      state: i.state, severity: i.severity, incidentRevision: i.revision, declaredAt: new Date(clock(i.createdAt)).toISOString(),
+      state: i.state as string, severity: i.severity as string, incidentRevision: i.revision, declaredAt: new Date(clock(i.createdAt)).toISOString(),
       href: `/?incident=${encodeURIComponent(i.id)}#incidents`, ...durations(state, i, observed)}));
+  const erasedDuration=():ResponseDuration=>({status:'unknown',seconds:null,sourceEntryId:null,sourceAt:null,sourceKind:null,reason:'Incident explicitly erased; anonymous declaration case retained in the denominator',evidence:null});
+  for(const row of state.erasedReportCases??[])if(clock(row.declaredAt)>=from&&clock(row.declaredAt)<to&&(input.service===undefined||row.service===input.service)){
+    incidents.push({id:row.id,title:'Erased incident',service:row.service,serviceName:state.services.find(service=>service.id===row.service)?.name??null,state:'erased',severity:'unknown',incidentRevision:0,declaredAt:row.declaredAt,href:'',mtta:erasedDuration(),mttr:erasedDuration(),recovery:erasedDuration(),sourceRecovery:erasedDuration()});
+  }
+  incidents.sort((a,b)=>clock(a.declaredAt)-clock(b.declaredAt)||a.id.localeCompare(b.id));
   return {revision: state.revision, generatedAt,
     cohort: {from: new Date(from).toISOString(), to: new Date(to).toISOString(), service: input.service ?? null,
       observationAt: generatedAt, count: incidents.length,
@@ -148,7 +153,7 @@ export function responseReport(state: State, input: {from?: string; to?: string;
       'Reassignment latency and after-hours interruptions are unavailable. Coverage hours are scheduled from current schedules, not worked hours (see the load basis).',
       'Imported-history provenance is unavailable; timeline source kind describes representation, not native versus imported origin.',
       'Source-reported recovery is what the monitoring sources reported, as accepted by Oncall; neither it nor a human attestation is independent verification of recovery.',
-      'This is the current snapshot, not immutable historical custody: deleted/erased incidents cannot be reconstructed. Unassignable declaration timestamps are separately counted, not silently successful.',
+      'Explicitly erased incidents retain only an anonymous declaration case with service and timestamp: all durations are unknown and the denominator stays visible. Earlier erasures made before this capability cannot be reconstructed. Unassignable declaration timestamps are separately counted.',
     ],
     aggregates: {mtta: aggregate(incidents.map(i => i.mtta)), mttr: aggregate(incidents.map(i => i.mttr)), recovery: aggregate(incidents.map(i => i.recovery)), sourceRecovery: aggregate(incidents.map(i => i.sourceRecovery))},
     incidents};

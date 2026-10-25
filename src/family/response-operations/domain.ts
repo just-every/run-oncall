@@ -164,6 +164,7 @@ export type Incident = IncidentRelations & {
   communications?: string | null;
 };
 export type State = {
+  erasedReportCases?: {id:string;service:string;declaredAt:string}[];
   scheduleRecords?: ScheduleRecord[];
   businessServices?: BusinessService[];
   erasureFences?: ErasureFence[];
@@ -709,7 +710,7 @@ export function validateArchive(value: any): State {
     "alerts",
     "incidents",
     "audit",
-  ], ["scheduleRecords", "businessServices", "erasureFences", "keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
+  ], ["erasedReportCases", "scheduleRecords", "businessServices", "erasureFences", "keyAllowances", "triage", "changes", "changeSources", "intakeSources", "intakeReceipts", "emailAddresses", "emailRules", "emailSamples", "emailReceipts", "emailQuarantine", "apiClients", "apiEndpoints", "apiOperations", "apiOutbox"]);
   if (value.schemaVersion !== 1) fail("Unsupported archive");
   integer(value.revision);
   if(value.erasureFences!==undefined)validateErasureFences(value.erasureFences);
@@ -940,6 +941,15 @@ export function validateArchive(value: any): State {
   validateCorrelationEvents(value);
   validateEmailArchive(value);
   validateAutomation(value);
+  if(value.erasedReportCases!==undefined){
+    if(!Array.isArray(value.erasedReportCases)||value.erasedReportCases.length>10000)fail('Invalid erased report cases');
+    const ids=new Set<string>();
+    for(const row of value.erasedReportCases){
+      object(row,['id','service','declaredAt']);
+      if(typeof row.id!=='string'||!/^erased-case-[0-9a-f-]{36}$/.test(row.id)||ids.has(row.id))fail('Invalid erased report case identity');
+      ids.add(row.id);if(!value.services.some((service:any)=>service.id===row.service))fail('Invalid erased report case service');date(row.declaredAt);
+    }
+  }
   validateScheduleRecords(value);
   if (value.triage !== undefined) validateTriageRecords(value.triage, value);
   return structuredClone(value);
