@@ -436,7 +436,7 @@ installAllowances(api, changeDeps);
 installUrgency(api, changeDeps);
 installResponsePolicy(api, changeDeps);
 installReviews(api, authorizedState);
-installTriage(api, {body, state: authorizedState, save: (c, state, revision) => save(c.env.DB, state, revision, sessionGuard(c)), saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
+installTriage(api, {body, state: authorizedState, save: (c, state, revision, extra) => {const guard=sessionGuard(c);return save(c.env.DB,state,revision,extra?{sql:'('+guard.sql+') AND ('+extra.sql+')',values:[...guard.values,...extra.values]}:guard)}, saveItem: (c, state, revision, operationId, incidentId) => saveTriageItem(c.env.DB, state, revision, operationId, incidentId, sessionGuard(c))});
 api.get("/api/state", async (c) => c.json(memberWorkspace(await authorizedState(c), c.get("actor"))));
 api.post("/api/command", async (c) => {
   const input = await body(c);

@@ -3,9 +3,10 @@ import {authority,fail,Fault,type State} from '../family/response-operations/dom
 import type {BulkOperation} from '../family/response-operations/triage.ts';
 import {coordinationTasks,applyCoordinationStep} from '../triage-orchestration.ts';
 import {auditKind,auditOutcome,auditRefusalCommitted,auditWriteOutcome} from '../audit-store.ts';
-type Dependencies={state:(c:any)=>Promise<State>;save:(c:any,s:State,r:number)=>Promise<void>};
+type Guard={sql:string;values:(string|number|null)[]};
+type Dependencies={state:(c:any)=>Promise<State>;save:(c:any,s:State,r:number,guard?:Guard)=>Promise<void>};
 export async function advanceRuleWorkflow(c:any,record:BulkOperation,input:any,deps:Dependencies,clear=false){
- const save=async(s:State,r:number)=>{try{await deps.save(c,s,r)}catch(error){if(error instanceof Fault&&error.status===409)auditRefusalCommitted(c.env.DB);throw error;}};
+ const save=async(s:State,r:number,guard?:Guard)=>{try{await deps.save(c,s,r,guard)}catch(error){if(error instanceof Fault&&error.status===409)auditRefusalCommitted(c.env.DB);throw error;}};
  const actor=c.get('actor');let state=await deps.state(c);
  authority(state,actor,true);
  const current=state.triage?.find(r=>r.id===record.id&&r.kind==='bulk') as BulkOperation|undefined;
@@ -24,6 +25,7 @@ export async function advanceRuleWorkflow(c:any,record:BulkOperation,input:any,d
  // A crash after reservation already has a durable uncertain outcome. No timer resumes it.
  auditKind(c.env.DB,'triage.workflow-reserve');
  await save(state,state.revision);auditOutcome(c.env.DB);
+ const executionGuard:Guard={sql:"EXISTS(SELECT 1 FROM oc_triage WHERE id=? AND json_extract(data,'$.rule.lease')=? AND json_extract(data,'$.rule.state')='running' AND julianday(json_extract(data,'$.rule.leaseUntil'))>julianday('now'))",values:[record.id,token]};
  state=await deps.state(c);authority(state,actor,true);
  const held=state.triage!.find(r=>r.id===record.id) as BulkOperation;
  if(held.rule?.lease!==token||held.rule.state!=='running'||Date.parse(held.rule.leaseUntil!)<=Date.now())fail('Workflow execution lease changed or expired',409);
@@ -48,8 +50,8 @@ export async function advanceRuleWorkflow(c:any,record:BulkOperation,input:any,d
   next.results=held.results.concat({id:task.id,ok:false,error:error.message,kind:'workflow',step:task.step});
   state=inheritWorkspaceSnapshot(structuredClone(state),state);const refused=state.triage!.find(r=>r.id===record.id) as BulkOperation;refused.results=next.results;
   Object.assign(refused.rule!,{state:refused.results.length===3?'complete':'ready',outcome:null,lease:null,leaseUntil:null,revision:refused.rule!.revision+1});
-  auditOutcome(c.env.DB,'refused');await save(state,state.revision);return c.json(refused);
+  auditOutcome(c.env.DB,'refused');await save(state,state.revision,executionGuard);return c.json(refused);
  }
  Object.assign(next.rule!,{state:next.results.length===3?'complete':'ready',outcome:null,lease:null,leaseUntil:null,revision:next.rule!.revision+1});
- await save(proposed,state.revision);return c.json(next);
+ await save(proposed,state.revision,executionGuard);return c.json(next);
 }

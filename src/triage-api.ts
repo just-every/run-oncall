@@ -20,7 +20,7 @@ export function memberWorkspace(state: State, actor: Member): State {
 type Dependencies = {
   body: (c: any, max?: number) => Promise<any>;
   state: (c: any) => Promise<State>;
-  save: (c: any, state: State, revision: number) => Promise<void>;
+  save: (c: any, state: State, revision: number, guard?:{sql:string;values:(string|number|null)[]}) => Promise<void>;
   saveItem: (c: any, state: State, revision: number, operationId: string, incidentId?: string) => Promise<void>;
 };
 const digest = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))), b => b.toString(16).padStart(2, '0')).join('');
