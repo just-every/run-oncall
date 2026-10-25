@@ -31,7 +31,13 @@ export default withDemo({
   },
   async email(message,env) { await receiveEmail(message,runtimeBindings(env)); },
   async fetch(request,original,execution) {
+   // Buffer bounded API uploads before auditPrincipal performs asynchronous authentication.
+   // Keep refusals and read failures inside the audited boundary after transport is consumed.
+   let received:Request|Response=request,bodyFailure:{error:unknown}|undefined;
+   try {received=await receivedRequest(request)} catch(error){bodyFailure={error}}
    return auditedRequest(request,original,async env => {
+    if(bodyFailure)throw bodyFailure.error;
+    if(received instanceof Response)return received;
     if (new URL(request.url).pathname === '/favicon.ico' && ['GET', 'HEAD'].includes(request.method))
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
@@ -62,7 +68,6 @@ export default withDemo({
       }
     }
     const guide=guideResponse(request);if(guide)return guide;
-    const received=await receivedRequest(request);if(received instanceof Response)return received;
     const imports=await importDoorResponse(received,bindings);if(imports)return imports;
     const auth=await authResponse(received,env as Bindings); if(auth) return auth;
     const response=await dispatch(received,()=>api.fetch(received,env,execution),()=>start.fetch(received));

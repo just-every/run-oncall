@@ -138,7 +138,10 @@ try {
    w.sql("CREATE TRIGGER synthetic_incumbent_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.feature='intake' BEGIN SELECT RAISE(ABORT,'SYNTHETIC_INCUMBENT_AUDIT_FAILURE'); END");
    ok(await request('/api/intake/incumbent',input),503);w.sql('DROP TRIGGER synthetic_incumbent_audit');
    assert.deepEqual(ok(await request('/api/archive')),snapshot);assert.deepEqual(await rows(),objects);
+   const beforeRaceAudit=new Set(ok(await request('/api/audit/export')).rows.map(row=>row.id));
    const race=await Promise.all([request('/api/intake/incumbent',input),request('/api/intake/incumbent',input)]);assert.deepEqual(race.map(r=>r.status).sort(),[201,409]);
+   const raceAudit=ok(await request('/api/audit/export')).rows.filter(row=>!beforeRaceAudit.has(row.id)&&row.feature==='intake');
+   assert.equal(raceAudit.filter(row=>row.outcome==='accepted').length,1,'one supply commits with its audit');assert.equal(raceAudit.filter(row=>row.outcome==='refused').length,1,'one conflicting request retains one permanent refusal');
    let status=ok(await request('/api/intake/sources/'+id+'/incumbent'));assert.equal(status.source.active,false);assert.equal(status.keySupplied,true);
    ok(await request('/api/intake/sources',{id,provider,service:'payments',name:'Synthetic bypass refused',revision:status.source.revision,key:randomBytes(32).toString('hex')}),409);
    ok(await w.request('/api/intake/sources/'+id+'/incumbent',undefined,viewerCookie),403);ok(await w.request('/api/intake/sources/'+id+'/incumbent'),401);

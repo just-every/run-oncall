@@ -1,4 +1,4 @@
-import {auditIdentity} from '../audit-store';
+import {auditIdentity,auditRefusalCommitted} from '../audit-store';
 import {workspaceWrite} from '../workspace-store';
 import {authority,fail,text,type State} from '../family/response-operations/domain';
 import type {IntakeSource} from './model';
@@ -46,7 +46,7 @@ export function installIncumbentKeys(api:any,deps:Dependencies) {
    c.env.DB.prepare(`INSERT INTO oc_incumbent_credentials(source,key_digest,imported_digest,created_at) SELECT ?,?,?,? WHERE ${gate} ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,created_at=excluded.created_at`).bind(id,digest,importedDigest,source.updatedAt,token),
    c.env.DB.prepare(`DELETE FROM oc_intake_credentials WHERE source=? AND ${gate}`).bind(id,token),
    c.env.DB.prepare(`UPDATE move_in_objects SET revision=?,data=? WHERE kind='integration' AND id=? AND ${gate}`).bind('intake-'+token,JSON.stringify(next),importedId,token)]);
-  if(result[0].meta.changes!==1)fail('Import, workspace or authority changed; reload',409);
+  if(result[0].meta.changes!==1){auditRefusalCommitted(c.env.DB);fail('Import, workspace or authority changed; reload',409);}
   return c.json({source,keySupplied:true,paging:'OFF'},previous?200:201);
  });
  api.post('/api/intake/sources/:source/activate-incumbent',async(c:any)=>{

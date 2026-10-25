@@ -2,7 +2,7 @@ export type AuditIdentity = { kind: string; id: string }
 export type AuditOutcome = 'accepted' | 'refused' | 'failed' | 'interrupted' | 'uncertain'
 export type AuditContext = {
   feature: string; kind: string; actor?: AuditIdentity; subject?: AuditIdentity; namedMember?: AuditIdentity;
-  source: AuditIdentity; outcome?: AuditOutcome; commits: number; storageFailed: boolean; ownerCustodyRefusal?: boolean
+  source: AuditIdentity; outcome?: AuditOutcome; commits: number; storageFailed: boolean; ownerCustodyRefusal?: boolean; refusalCommitted?: boolean
 }
 const contexts = new WeakMap<object, AuditContext>()
 export function bindAuditContext(db: D1Database, context: AuditContext) { contexts.set(db, context) }
@@ -19,6 +19,11 @@ export function auditOutcome(db: D1Database, outcome?: AuditOutcome) {
 export function ownerCustodyRefusal(db: D1Database) {
   const context = contexts.get(db)
   if (context) context.ownerCustodyRefusal = true
+}
+/** A failed CAS already committed its permanent refusal in the same batch. */
+export function auditRefusalCommitted(db:D1Database) {
+  const context=contexts.get(db)
+  if(context&&context.commits>0)context.refusalCommitted=true
 }
 export function auditKind(db: D1Database, kind: string) {
   const context = contexts.get(db)
