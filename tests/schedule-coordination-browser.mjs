@@ -2,7 +2,7 @@ import {focusWorkspace} from './keyboard.mjs'
 import assert from 'node:assert/strict';
 import AxeBuilder from '@axe-core/playwright';
 import {mkdir} from 'node:fs/promises';
-export async function scheduleCoordinationBrowser(page,context,width,session){
+export async function scheduleCoordinationBrowser(page,context,width,session,{ownerLink}={}){
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const fixture=2500+width,name='synthetic-oncall-'+fixture,password='synthetic-oncall-'+fixture+'-password';
  const created=await context.request.post(origin+'/api/members',{headers:{origin},data:{name,role:'responder',password}});assert.equal(created.status(),201);const substitute=await created.json();
@@ -15,8 +15,11 @@ export async function scheduleCoordinationBrowser(page,context,width,session){
  await coordination.getByRole('button',{name:'Approve swap',exact:true}).click();await coordination.getByText(/approval recorded/).waitFor();
  const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:1000}});
  try{
+  const reliefPage=await relief.newPage();
+  if(ownerLink){await reliefPage.goto(ownerLink);await reliefPage.getByRole('link',{name:'Services',exact:true}).waitFor();}
   const login=await relief.request.post(origin+'/api/login',{headers:{origin},data:{name,password}});assert.equal(login.status(),200);
-  const reliefPage=await relief.newPage();await reliefPage.goto(origin+'/schedules');await reliefPage.getByLabel('Schedule',{exact:true}).selectOption('browser-'+width);
+  assert.equal((await (await relief.request.get(origin+'/api/session')).json()).member.id,substitute.id,'the independently opened context acts as the substitute');
+  await reliefPage.goto(origin+'/schedules');await reliefPage.getByLabel('Schedule',{exact:true}).selectOption('browser-'+width);
   const substituteView=reliefPage.getByRole('region',{name:'Shift coordination',exact:true});await substituteView.getByRole('button',{name:'Accept swap',exact:true}).click();await substituteView.getByText(/accepted/).waitFor();
   await substituteView.screenshot({path:`${directory}/OC-025-substitute-${width}.png`});
  }finally{await relief.close();}

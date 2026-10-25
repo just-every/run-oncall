@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright'
 import assert from 'node:assert/strict'
 import {keyboardUser} from './keyboard.mjs'
 
-export async function productSchedule(page,context,width,session) {
+export async function productSchedule(page,context,width,session,{ownerLink}={}) {
  const key=keyboardUser(page)
   await key.activate(page.getByRole('link',{name:'Schedules',exact:true}));await key.activate(page.getByRole('button',{name:'New schedule',exact:true}),'Space')
   await key.text(page.getByLabel('Schedule ID',{exact:true}),'browser-'+width);await key.text(page.getByLabel('Schedule name',{exact:true}),'Checkout rota '+width)
@@ -44,7 +44,7 @@ export async function productSchedule(page,context,width,session) {
   assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'default ICS feed uses whole-second UTC times')
   await page.screenshot({path:`evidence/browser/schedules-${width}.png`,fullPage:true})
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'schedule viewport has no horizontal overflow')
-  await scheduleCoordinationBrowser(page,context,width,session)
+  await scheduleCoordinationBrowser(page,context,width,session,{ownerLink})
 }
 
 // Focused execution of the existing journey; no additional suite registration.
