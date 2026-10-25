@@ -1,5 +1,5 @@
 import {coordinateAlert} from './triage-alerts.ts';
-import {authority,command,fail,type Incident,type Member,type State} from './family/response-operations/domain.ts';
+import {authority,command,fail,type Incident,type Alert,type Member,type State} from './family/response-operations/domain.ts';
 import {matchingItems,type BulkResult} from './family/response-operations/triage.ts';
 type Selected={id:string;revision:number;kind?:string};
 export type CoordinationTask={id:string;source:string;revision:number;index:number;step:'reassign'|'declare'|'notify'};
@@ -15,7 +15,7 @@ export function validateCoordination(state:State,actor:Member,input:any){
  if(!state.members.some(member=>member.id===input.member&&member.active&&['admin','responder'].includes(member.role)))fail('Choose a current responder for the recorded notification',409);
  if(typeof input.reason!=='string'||!input.reason.trim()||input.reason.length>1000)fail('Provide a bounded workflow reason',409);
 }
-export function applyCoordinationStep(state:State,actor:Member,task:CoordinationTask,member:string,reason:string,results:BulkResult[],operationId:string,at:string,templateVersion?:number|null):any{
+export function applyCoordinationStep(state:State,actor:Member,task:CoordinationTask,member:string,reason:string,results:BulkResult[],operationId:string,at:string,templateVersion?:number|null):Incident|Alert{
  authority(state,actor);
  if(task.step==='reassign')return coordinateAlert(state,actor,{id:task.source,revision:task.revision,action:'reassign',member,reason,operationId},at);
  if(task.step==='declare'){
@@ -41,7 +41,7 @@ export function coordinationPreview(state:State,actor:Member,input:any){
  for(const task of coordinationTasks(input.items)){
   const proposed=structuredClone(working);
   try{
-   const incident=applyCoordinationStep(proposed,actor,task,input.member,input.reason,results,'preview',new Date().toISOString());
+   const incident=applyCoordinationStep(proposed,actor,task,input.member,input.reason,results,'preview',new Date().toISOString()) as Incident;
    results.push({id:task.id,ok:true,revision:incident.revision,kind:'workflow',step:task.step,incident:incident.id});working=proposed;
    comparison.push({position:comparison.length+1,alert:task.source,step:task.step,ok:true,...(task.step==='declare'?{service:incident.service,templateVersion:incident.template?.version??null,checklist:incident.template?.checklist.map(({id,text})=>({id,text}))??[]}:{member:input.member,obligation:'recorded',label:'no sender',paging:'OFF',automatic:false})});
   }catch(error){
