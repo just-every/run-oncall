@@ -1,5 +1,5 @@
 import { fail, type State } from '../family/response-operations/domain.ts';
-import {emailListAddress} from './email-lists';
+import {emailListAddress} from './email-lists.ts';
 const exact=(value:any,keys:string[])=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===keys.length&&keys.every(key=>Object.hasOwn(value,key));
 const text=(value:unknown,max=100)=>typeof value==='string'&&value.length>0&&value.length<=max;
 const date=(value:unknown)=>typeof value==='string'&&Number.isFinite(Date.parse(value));

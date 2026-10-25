@@ -1,4 +1,4 @@
-import {emailListAddress} from './email-lists';
+import {emailListAddress} from './email-lists.ts';
 import { fail, text, type Member, type State } from '../family/response-operations/domain.ts';
 import type { BusinessService, InternalStatus } from './types.ts';
 const statuses = ['operational', 'degraded', 'major outage'];
