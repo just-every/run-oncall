@@ -906,6 +906,7 @@ try {
   const workflowAlerts=[runtimeGroupA.id,runtimeGroupB.id,workflowThird.id].map(event=>workflowBefore.alerts.find(alert=>alert.events.includes(event)));
   const workflowInput={operationId:'synthetic-oncall-437-workflow',action:'reassign',items:workflowAlerts.map(alert=>({id:alert.id,revision:alert.revision??1,kind:'alert'})),member:workflowMember.id,reason:'Synthetic ordered coordination',confirmedCount:3,durable:true};
   const workflowViewer=ok(await request('/api/members',{name:'synthetic-oncall-438',role:'viewer',password:'synthetic-oncall-438-password'},cookie),201),workflowViewerLogin=await request('/api/login',{name:workflowViewer.name,password:'synthetic-oncall-438-password'});
+  ok(await request('/api/triage/bulk',{...workflowInput,evidence:'Synthetic unsaved option'},cookie),409);
   const workflowFirst=ok(await request('/api/triage/bulk',workflowInput,cookie));
   assert.equal(workflowFirst.remaining,1);assert.equal(workflowFirst.results.length,2);assert.ok(workflowFirst.results.every(result=>result.ok));
   const workflowHeld=ok(await request('/api/state',undefined,cookie)),workflowRecord=workflowHeld.triage.find(row=>row.id===workflowInput.operationId);

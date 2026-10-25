@@ -212,6 +212,7 @@ try {
   const copy='rer_portability_snap_synthetic_oncall_440';
   w.sql('CREATE TABLE '+copy+' AS SELECT * FROM oc_email_samples');
   const credentialBefore=w.sql('SELECT * FROM oc_email_credentials ORDER BY digest');
+  const emailAuditBefore=ok(await request('/api/audit/export')).rows;
   w.sql("CREATE TRIGGER synthetic_oncall_440_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='email.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-440'); END");
   try{ok(await request(erasePath,eraseInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_440_audit')}
   assert.deepEqual(ok(await request('/api/archive')),beforeEmailErasure);
@@ -224,6 +225,8 @@ try {
   assert.equal(erasedEmail.state,'complete');assert.equal(erasedEmail.standby,'not-reconciled');
   for(const table of ['oc_email_addresses','oc_email_rules','oc_email_samples','oc_email_receipts','oc_email_quarantine','oc_email_credentials','oc_events','oc_alerts',copy])assert.ok(erasedEmail.stores[table].deleted>0,table+' has committed deletion counts');
   const afterEmailErasure=ok(await request('/api/archive'));
+  assert.equal(w.sql("SELECT COUNT(*) AS n FROM oc_audit_identities WHERE entity_id='"+erasureId+"'")[0].n,0,'email audit identity associations are removed');
+  const emailAuditAfter=ok(await request('/api/audit/export')).rows;assert.deepEqual(emailAuditAfter.filter(row=>emailAuditBefore.some(prior=>prior.id===row.id)),emailAuditBefore,'permanent audit facts retain their original labels after erasure');
   assert.ok(afterEmailErasure.emailAddresses.some(a=>a.id==='email-db'),'unrelated address retained');
   assert.ok(!JSON.stringify(afterEmailErasure).includes(erasureId),'no erased email subject survives in native state');
   assert.ok(!JSON.stringify(afterEmailErasure).includes('synthetic-oncall-441 private'));
