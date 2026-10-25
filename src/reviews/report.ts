@@ -130,7 +130,7 @@ export function responseReport(state: State, input: {from?: string; to?: string;
       href: `/?incident=${encodeURIComponent(i.id)}#incidents`, ...durations(state, i, observed)}));
   const erasedDuration=():ResponseDuration=>({status:'unknown',seconds:null,sourceEntryId:null,sourceAt:null,sourceKind:null,reason:'Incident explicitly erased; anonymous declaration case retained in the denominator',evidence:null});
   for(const row of state.erasedReportCases??[])if(clock(row.declaredAt)>=from&&clock(row.declaredAt)<to&&(input.service===undefined||row.service===input.service)){
-    incidents.push({id:row.id,title:'Erased incident',service:row.service,serviceName:state.services.find(service=>service.id===row.service)?.name??null,state:'erased',severity:'unknown',incidentRevision:0,declaredAt:row.declaredAt,href:'',mtta:erasedDuration(),mttr:erasedDuration(),recovery:erasedDuration(),sourceRecovery:erasedDuration()});
+    incidents.push({id:row.id,title:'Erased incident',service:row.service,serviceName:state.services.find(service=>service.id===row.service)?.name??null,state:'erased',severity:'unknown',incidentRevision:0,declaredAt:new Date(clock(row.declaredAt)).toISOString(),href:'',mtta:erasedDuration(),mttr:erasedDuration(),recovery:erasedDuration(),sourceRecovery:erasedDuration()});
   }
   incidents.sort((a,b)=>clock(a.declaredAt)-clock(b.declaredAt)||a.id.localeCompare(b.id));
   return {revision: state.revision, generatedAt,
