@@ -182,8 +182,10 @@ try {
 
   const priorityRule=ok(await req('/api/command',{...transformPolicy(revised.version),transformation:{field:'priority',values:{P2:{severity:'warning',priority:'P1'}},allowLowering:false,reason:'Synthetic declared priority classification'}}));
   const prioritySignal=generalizedSignal('synthetic-oncall-440','info'),priorityReceipt=ok(await send(prioritySignal),201),priorityEvent=(await state()).events.find(e=>e.id===priorityReceipt.id);assert.equal(priorityEvent.priority,'P2');assert.equal(priorityEvent.severity,'info');assert.equal(priorityEvent.decision.version,priorityRule.version);assert.equal(priorityEvent.decision.transformation.field,'priority');assert.equal(priorityEvent.decision.transformation.severity,'warning');assert.equal(priorityEvent.decision.transformation.priority,'P1');
-  const beforeMalformedPriority=await archive();for(const priority of [null,0,['P2']])ok(await send({...prioritySignal,eventId:'synthetic-oncall-441-'+JSON.stringify(priority),priority}),400);assert.deepEqual(await archive(),beforeMalformedPriority);
-  console.log('PASS OC-043 declared priority field: severity/priority raises from source priority, original classification and malformed priority refusal');
+  const beforeMalformedPriority=await state();
+  for(const priority of [null,0,['P2']]){const rejected=ok(await send({...prioritySignal,eventId:'synthetic-oncall-441-'+JSON.stringify(priority),priority}),202),held=await state(),receipt=held.intakeReceipts.find(r=>r.id===rejected.incomplete.receipt),queued=held.alerts.find(a=>a.id===receipt.alert);assert.ok(receipt.incomplete);assert.equal(receipt.event,null);assert.equal(receipt.severity,'critical');assert.equal(receipt.priority,null);assert.equal(queued.urgency,'high');assert.equal(queued.service,null);assert.equal(queued.originalPriority,undefined);}
+  const afterMalformedPriority=await state();assert.deepEqual(afterMalformedPriority.events,beforeMalformedPriority.events);assert.deepEqual(afterMalformedPriority.incidents,beforeMalformedPriority.incidents,'malformed source priority never reaches a transformation or declaration');
+  console.log('PASS OC-043 declared priority field: severity/priority raises from source priority and original classification; malformed priority stays in OC-059 high incomplete custody without transformation or declaration');
 
   const saved=await archive(),malformed=[
     value=>{delete value.events.find(e=>e.id===loweredEvent.id).decision.transformation;},
