@@ -108,7 +108,7 @@ Transformations do not send notifications, run timers, or authorize workflow exe
 
 ## Approved coordination workflows
 
-Under a service's **Settings · approved workflows**, an administrator chooses a responder, supplies a reason and explicitly approves a workflow version. Approval updates the all-severity service rule with a revision check. Severity-specific rules still win. A stale version, missing approval or unavailable responder is refused without changing accepted configuration.
+Under a service's **Settings · approved workflows**, an administrator chooses a responder, supplies a reason and explicitly approves a workflow version. Approval updates the all-severity service rule with a revision check and preserves its existing settings. A routed rule is required; change suppression explicitly before approval. Severity-specific rules still win. A stale version, missing approval or unavailable responder is refused without changing accepted configuration.
 
 An eligible, routed, alert-only generation without an existing incident records one reassignment and one durable workflow in the existing triage progress area. Duplicate events and later observations of that generation create no additional run. Suppressed signals and generations covered by an automatic incident-declaration policy do not launch this workflow. The run retains the service rule version, approved workflow version and launch-time checklist version.
 
