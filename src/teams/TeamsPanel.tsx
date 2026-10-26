@@ -38,7 +38,7 @@ function TeamEditor({state,team,write,notes}:{state:State;team:Team;write:(team:
  const key=(field:string)=>team.id+':'+field;
  const commit=()=>{if(name!==lastName.current){lastName.current=name;dirty.current=false;write(team,{name},key('name'));}};
  return <div className="teams-editor">
- <div onBlur={commit} onKeyDown={e=>{if(e.key==='Enter'&&e.target instanceof HTMLInputElement){e.preventDefault();commit();}}}><label className="field"><span>Team name <Mark note={notes[key('name')]}/></span><input name="name" aria-label="Team name" value={name} onChange={e=>{dirty.current=true;setName(e.target.value);}}/></label><Feedback note={notes[key('name')]}/></div>
+ <div onBlur={commit} onKeyDown={e=>{if(e.key==='Enter'&&e.target instanceof HTMLInputElement){e.preventDefault();commit();}}}><label className="field"><span>Team name <Mark note={dirty.current?undefined:notes[key('name')]}/></span><input name="name" aria-label="Team name" value={name} onChange={e=>{dirty.current=e.target.value!==lastName.current;setName(e.target.value);}}/></label><Feedback note={notes[key('name')]}/></div>
  <Choices state={state} members={members} managers={managers} onChange={(m,g,kind)=>{setMembers(m);setManagers(g);write(team,{members:m,managers:g},key(kind));}} note={kind=>notes[key(kind)]}/>
  <label className="field"><span>Team state <Mark note={notes[key('active')]}/></span><select name="active" aria-label="Team state" value={String(active)} onChange={e=>{const value=e.target.value==='true';setActive(value);write(team,{active:value},key('active'));}}><option value="true">Active</option><option value="false">Archived</option></select></label><Feedback note={notes[key('active')]}/>
  </div>;
@@ -49,7 +49,8 @@ function Ownership({service,teams,note,write}:{service:State['services'][number]
 }
 export function TeamsPanel({state,actor,refresh}:{state:State;actor:Member;refresh:()=>Promise<void>}){
  const [notes,setNotes]=useState<Record<string,Note>>({}),[creating,setCreating]=useState(false),[members,setMembers]=useState<string[]>([]),[managers,setManagers]=useState<string[]>([]);
- const current=useRef(state),queue=useRef(Promise.resolve());
+ const current=useRef(state),queue=useRef(Promise.resolve()),createRoot=useRef<HTMLDetailsElement>(null),createAttempt=useRef<string|undefined>(undefined),createDraft=useRef({members,managers});
+ createDraft.current={members,managers};
  const teams=state.teams??[],admin=actor.role==='admin';
  useEffect(()=>{current.current=state;},[state]);
  const note=(key:string,value:Note)=>setNotes(old=>({...old,[key]:value}));
@@ -72,24 +73,34 @@ export function TeamsPanel({state,actor,refresh}:{state:State;actor:Member;refre
   if(!result||result.id!==latest.id||!Number.isSafeInteger(result.revision)||result.revision!==latest.revision+1)throw Error('Invalid server response');
   current.current={...current.current,teams:current.current.teams!.map(t=>t.id===result.id?result:t)};
  });
- async function create(data:any,id=crypto.randomUUID(),retry=false){
+ async function create(data:any,id=createAttempt.current??crypto.randomUUID(),retry=false){
+  const repeated=retry||createAttempt.current===id;
+  createAttempt.current=id;
+  const draft={name:data.name,members:[...createDraft.current.members],managers:[...createDraft.current.managers]};
   setCreating(true);
-  // Keep Form's values until a confirmed create, including on Retry.
   let succeeded=false;
   const operation=async()=>{
-   const existing=retry?(await request('/api/teams')).teams.find((t:Team)=>t.id===id):undefined;
-   if(existing){if(existing.name!==data.name||JSON.stringify(existing.members)!==JSON.stringify(members)||JSON.stringify(existing.managers)!==JSON.stringify(managers))throw Error('This team changed. Open Edit team to review it.');return;}
-   const result=await request('/api/teams',{id,name:data.name,members:[...members],managers:[...managers],revision:0,visibility:'public',active:true});
-   if(result?.id!==id||result.revision!==1)throw Error('Invalid server response');
+   const existing:Team|undefined=repeated?(await request('/api/teams')).teams.find((t:Team)=>t.id===id):undefined;
+   if(existing&&existing.name===draft.name&&JSON.stringify(existing.members)===JSON.stringify(draft.members)&&JSON.stringify(existing.managers)===JSON.stringify(draft.managers))return;
+   const payload=existing?{...existing,...draft}:{id,...draft,revision:0,visibility:'public',active:true};
+   const result=await request('/api/teams',payload);
+   if(result?.id!==id||result.revision!==(existing?existing.revision+1:1))throw Error('Invalid server response');
   };
   note('create',{saving:true});
-  const execute=async()=>{try{await operation();current.current=await request('/api/state');await refresh();succeeded=true;note('create',{saved:true});setMembers([]);setManagers([]);}catch(error){note('create',{error:words(error),retry:()=>{void create(data,id,true);}});}finally{setCreating(false);}};
+  const execute=async()=>{try{
+   await operation();current.current=await request('/api/state');await refresh();
+   succeeded=true;createAttempt.current=undefined;createRoot.current?.querySelector('form')?.reset();
+   setMembers([]);setManagers([]);note('create',{saved:true});
+  }catch(error){note('create',{error:words(error),retry:()=>{
+   const form=createRoot.current!.querySelector('form')!;
+   void create({name:new FormData(form).get('name')},id,true);
+  }});}finally{setCreating(false);}};
   queue.current=queue.current.then(execute,execute);await queue.current;return succeeded;
  }
  return <section className="panel padded teams-panel" aria-label="Teams"><h2>Teams</h2>
  {teams.map(team=><article className="service-card" key={team.id}><h3>{team.name}</h3><p>Public · {team.active?'Active':'Archived'} · {team.members.length} {team.members.length===1?'member':'members'}</p><p>Managers: {team.managers.map(id=>state.members.find(m=>m.id===id)?.name??'Unavailable member').join(', ')||'None'}</p>
  {admin&&<details><summary>Edit team</summary><TeamEditor state={state} team={team} write={write} notes={notes}/></details>}</article>)}
- {admin&&<><details><summary>Create team</summary><Form busy={creating} label="Create team" onSubmit={create}><Field name="name" label="Team name"/><Choices state={state} members={members} managers={managers} onChange={(m,g)=>{setMembers(m);setManagers(g);}}/></Form><Mark note={notes.create}/><Feedback note={notes.create}/></details>
+ {admin&&<><details ref={createRoot} onChange={()=>{if(notes.create?.saved)note('create',{});}}><summary>Create team</summary><Form busy={creating} label="Create team" onSubmit={create}><Field name="name" label="Team name"/><Choices state={state} members={members} managers={managers} onChange={(m,g)=>{setMembers(m);setManagers(g);}}/></Form><Mark note={notes.create}/><Feedback note={notes.create}/></details>
  <h3>Service ownership</h3>{state.services.map(service=><Ownership key={service.id} service={service} teams={teams} note={notes['ownership:'+service.id]} write={value=>enqueue('ownership:'+service.id,async()=>{
  const revision=current.current.revision,result=await request('/api/teams/ownership',{service:service.id,team:value||null,workspaceRevision:revision});
  if(!result||result.id!==service.id||result.team!==(value||null))throw Error('Invalid server response');

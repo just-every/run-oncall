@@ -3891,7 +3891,7 @@
       "executable": false
     },
     "src/teams/TeamsPanel.tsx": {
-      "sha256": "1cf43b8e11dea9a8a0b63961514dab72a4a95e91dddf6d9d6ae6ca10dcc02cfd",
+      "sha256": "7f52753be327c87605317a7fdd34e916d51dac4bd8fe9c5f6f0c666499decbb9",
       "executable": false
     },
     "src/triage-alerts.ts": {
@@ -4135,7 +4135,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "0a684a9c51cb3f3d899c67ec6c6b99bdec15a782b8996628f1b96892abf6f977",
+      "sha256": "447a309591128096640308a12aabc343395102835d66f65e988569cbc43fe4ff",
       "executable": false
     },
     "tests/migration-upgrade.mjs": {
