@@ -4171,7 +4171,7 @@
       "executable": false
     },
     "tests/product-schedule-browser.mjs": {
-      "sha256": "365b55a4266e2efcd7277ef5d85ab288ff39e5df42bb27111683fe5b0a57f285",
+      "sha256": "47b166040db595a1453331cbc16ef5f2ff7c6e6f541554c42557a8bc707e3faf",
       "executable": false
     },
     "tests/provider-export-browser.mjs": {

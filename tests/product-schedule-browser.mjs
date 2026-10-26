@@ -12,11 +12,12 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
   await key.focusScreenshot(page.getByRole('button',{name:'Save schedule',exact:true}),`evidence/browser/keyboard-schedule-${width}.png`)
   await page.keyboard.press('Enter');await page.getByText('Schedule saved',{exact:true}).waitFor()
   await key.activate(page.getByRole('button',{name:'Add interval',exact:false}),'Space');await key.option(page.getByLabel('Override 1 responder',{exact:true}),'')
-  await page.getByLabel('Override 1 start (UTC)',{exact:true}).fill('2026-10-26T09:00')
-  await page.getByLabel('Override 1 end (UTC)',{exact:true}).fill('2026-10-26T12:00')
+  const window=scheduleReviewWindow(Date.now())
+  await page.getByLabel('Override 1 start (UTC)',{exact:true}).fill(window.overrideStart)
+  await page.getByLabel('Override 1 end (UTC)',{exact:true}).fill(window.overrideEnd)
   await key.text(page.getByLabel('Timezone (IANA)',{exact:true}),'Europe/London')
-  await page.getByLabel('Preview from (UTC)',{exact:true}).fill('2026-10-24T00:00')
-  await page.getByLabel('Preview to (UTC)',{exact:true}).fill('2026-11-09T00:00')
+  await page.getByLabel('Preview from (UTC)',{exact:true}).fill(window.previewFrom)
+  await page.getByLabel('Preview to (UTC)',{exact:true}).fill(window.previewTo)
   await key.focusScreenshot(page.getByRole('button',{name:'Save schedule',exact:true}),`evidence/browser/keyboard-override-${width}.png`)
   await page.keyboard.press('Enter');await page.getByText('Schedule change ready for review; nothing saved',{exact:true}).waitFor()
   await page.getByRole('region',{name:'Review schedule changes',exact:true}).waitFor()
@@ -74,4 +75,30 @@ if (process.argv[1] && new URL(import.meta.url).pathname === process.argv[1]) {
   for(const action of ['review','apply'])for(const cookie of [revoked.cookie,expired.cookie])assert.equal((await worker.request('/api/schedules/browser-390/'+action,{},cookie)).status,401)
   console.log('OC-024 reviewed schedule doors: revoked and expired sessions refused')
  }finally{await browser?.close();await worker.close()}
+}
+
+// Pair the next nearby offset changes from the zones themselves, beyond tomorrow.
+export function scheduleReviewWindow(now) {
+ const hour=3600000,day=24*hour,zones=['Europe/London','America/New_York']
+ const formatters=zones.map(timeZone=>new Intl.DateTimeFormat('en-US',{timeZone,timeZoneName:'longOffset'}))
+ const offset=(zone,at)=>formatters[zone].formatToParts(at).find(part=>part.type==='timeZoneName').value
+ const start=now+day,previous=zones.map((_,zone)=>offset(zone,start)),changes=[]
+ for(let left=start;left<start+370*day;left+=6*hour) {
+  const right=left+6*hour
+  for(let zone=0;zone<zones.length;zone++) {
+   const next=offset(zone,right)
+   if(next===previous[zone])continue
+   let low=left,high=right
+   while(high-low>60000){const middle=Math.floor((low+high)/2);if(offset(zone,middle)===previous[zone])low=middle;else high=middle}
+   changes.push({zone,at:Math.ceil(high/60000)*60000});previous[zone]=next
+  }
+  changes.sort((a,b)=>a.at-b.at)
+  const last=changes.at(-1),first=changes.at(-2)
+  if(!first||first.zone===last.zone)continue
+  const from=Math.floor(first.at/day)*day-day,to=Math.floor(last.at/day)*day+2*day
+  if(to-from>31*day)continue
+  const gap=from+day+9*hour,utc=at=>new Date(at).toISOString().slice(0,16)
+  return {overrideStart:utc(gap),overrideEnd:utc(gap+3*hour),previewFrom:utc(from),previewTo:utc(to)}
+ }
+ throw Error('No nearby clock changes found for schedule review')
 }
