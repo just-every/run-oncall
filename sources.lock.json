@@ -131,7 +131,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "3d84539ecc30ab838379f575c9ab85fb6524afe4eb7704c473dec97e94b2dba0",
+      "sha256": "7414aa08a5a9c512816e20a6e1056b585fb8f518a1638ac49c4ae59114fe4131",
       "executable": false
     },
     "AGENTS.md": {
@@ -155,7 +155,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "db20f6e2123eb246e1b6a9a24d868e6f8a7643739fd6c3ac8cf458660f11ba97",
+      "sha256": "202b2507d67f8d0a925e02f2bcc69735fda9b5bbb6940465f5c7854ba34626c4",
       "executable": false
     },
     "DEMO.md": {
@@ -3882,6 +3882,14 @@
       "sha256": "0ef1bfabc56017c7c60933444e33458d86630cfb8b3234f7576a0121e709bdb1",
       "executable": false
     },
+    "src/teams/backstage.ts": {
+      "sha256": "9501e845c28c91865855c9b447a4732935aca9f8f9a66ba5daaf7343b7bb2126",
+      "executable": false
+    },
+    "src/teams/BackstageImport.tsx": {
+      "sha256": "6cb222b9666f041e31aa2247529a7ac84a0bb2466bf22f48fb8ca63b84fc29fd",
+      "executable": false
+    },
     "src/teams/edits.ts": {
       "sha256": "b5fb9e4731062253dffa0c42eb5ba3b54d7f45d8ecb569c09ef1b42ea1ebc756",
       "executable": false
@@ -4024,6 +4032,10 @@
     },
     "tests/email-fixtures.mjs": {
       "sha256": "11a91884b2d2668c2b2217dc0f455adf8d9a5f5fc38d3e805acba271687a5509",
+      "executable": false
+    },
+    "tests/fixtures/backstage-catalog.json": {
+      "sha256": "e624546e4369d91cfb6bd18bf60544f546bc3434bc1c3ba3f4df1229b68a8cab",
       "executable": false
     },
     "tests/fixtures/change-sources.md": {
