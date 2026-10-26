@@ -1,4 +1,6 @@
 import type {Team} from './model';
+import type {State} from '../family/response-operations/domain';
+import {cannotBelong,cannotManage,managesButNotMember,noLongerActive,serviceGone,teamNameRule} from './words';
 
 export type TeamEdit=
  | {kind:'name';value:string}
@@ -15,3 +17,26 @@ export function applyTeamEdit(team:Team,edit:TeamEdit):Team {
  const values=edit.checked?(chosen.includes(edit.member)?chosen:[...chosen,edit.member]):chosen.filter(id=>id!==edit.member);
  return {...team,[edit.kind]:values,...(edit.kind==='members'&&!edit.checked?{managers:team.managers.filter(id=>id!==edit.member)}:{})};
 }
+
+// Whether a kept edit still applies to the latest record, in the Teams door's own words: null when it applies.
+export function teamEditProblem(state:State,id:string,edit:TeamEdit):string|null {
+ const team=state.teams?.find(t=>t.id===id),person=(member:string)=>state.members.find(m=>m.id===member);
+ if(!team)return 'This team is no longer available. Nothing was saved.';
+ if(edit.kind==='managers'&&edit.checked&&!team.members.includes(edit.member))return (person(edit.member)?.name??'This person')+' is no longer a member of this team. Nothing was saved.';
+ const next=applyTeamEdit(team,edit);
+ if(typeof next.name!=='string'||!next.name.trim()||next.name.length>200)return teamNameRule;
+ for(const member of next.managers){
+  if(!next.members.includes(member))return managesButNotMember(person(member)?.name??'This person');
+  if(!['admin','responder'].includes(person(member)?.role??''))return cannotManage(person(member)?.name??'This person');
+ }
+ const inactive=[...next.members,...next.managers].find(member=>!person(member)?.active);
+ return inactive?noLongerActive(person(inactive)?.name??'This person'):null;
+}
+export const teamEditHeld=(team:Team,edit:TeamEdit)=>JSON.stringify(applyTeamEdit(team,edit))===JSON.stringify(team);
+
+export function ownershipProblem(state:State,service:string,team:string):string|null {
+ const record=state.services.find(s=>s.id===service);
+ if(!record)return serviceGone;
+ return team&&!state.teams?.some(t=>t.id===team&&t.active)?cannotBelong(record.name,state.teams?.find(t=>t.id===team)?.name??'this team'):null;
+}
+export const ownershipHeld=(state:State,service:string,team:string)=>(state.services.find(s=>s.id===service)?.team??null)===(team||null);

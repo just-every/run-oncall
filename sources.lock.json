@@ -3879,15 +3879,15 @@
       "executable": false
     },
     "src/teams/api.ts": {
-      "sha256": "8fb87fcf3857c36a8577997680bcda21333b59f1e2b2aea22827c06e1834e899",
+      "sha256": "c0930afde098ae5a8a3c9e4f3923bc6b63b26eeea3132cce2811f5152652b70d",
       "executable": false
     },
     "src/teams/edits.ts": {
-      "sha256": "aeaf1cd2ad32ca9b822ef4aba63f3eecbb00889d885c8fea40dd9cedbb6c4dcb",
+      "sha256": "b5fb9e4731062253dffa0c42eb5ba3b54d7f45d8ecb569c09ef1b42ea1ebc756",
       "executable": false
     },
     "src/teams/model.ts": {
-      "sha256": "d5a32bb5a5a10d57e4bde7e19f7313538e6ab4dc31bf5efc13a31cc8713f1113",
+      "sha256": "96d30aaea522f5f7f8a65bbb16f865d8459cebb717a4f728da05980ae28c8595",
       "executable": false
     },
     "src/teams/teams.css": {
@@ -3895,7 +3895,7 @@
       "executable": false
     },
     "src/teams/TeamsPanel.tsx": {
-      "sha256": "a42bec22bbd1696e87309e4062dac1acb81247ee9e8b9d3200e9837544da7810",
+      "sha256": "8c99bb4ed4953b6508ba47a7a62a2b903bb9404936c99aaf64af4141a1c355e1",
       "executable": false
     },
     "src/triage-alerts.ts": {
