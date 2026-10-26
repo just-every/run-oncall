@@ -1,4 +1,5 @@
 import {teamCoverage} from './teams/model';
+import {HttpFailure} from './useWorkspace';
 import {useViewAnchor} from './app/useViewAnchor';
 
 import {FailureLine, useActionFailure} from "./app/FailureLine";
@@ -131,7 +132,12 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
       try { await load(); } catch (failure) { failures.show(failure,{read:true,target:null,retry:async()=>{await load();failures.clear();}}); return result; }
       setNotice(success);
       return result;
-    } catch (failure) { failures.show(failure,{retry:guarded?()=>run(operation,success,true):undefined}); return null; }
+    } catch (failure) {
+      const coverageRefused = failure instanceof HttpFailure && (failure.status === 403 || failure.status === 404);
+      failures.show(failure,{retry:guarded && !coverageRefused?()=>run(operation,success,true):undefined});
+      if (coverageRefused) {try {await refreshWorkspace?.();} catch { /* Keep the refusal while workspace access is unavailable. */ }}
+      return null;
+    }
     finally { setBusy(false); }
   }
   async function reloadSchedule() {
