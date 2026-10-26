@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import {savedIncidentSummary, savedRecordSummary} from './app/savedEditSummary';
 import {useViewAnchor} from "./app/useViewAnchor";
 import {useActionFailure, failureMessage, hasChangeBase} from "./app/FailureLine";
 import type { Member, State } from "./family/response-operations/domain";
@@ -153,12 +154,12 @@ export function useWorkspace() {
           }
           if (!input.baseValues) {
             const incident = record && 'timeline' in record ? record : undefined;
-            const saved = incident ? input.type === 'note' ? incident.timeline.filter(entry => entry.kind === 'note').at(-1)?.text ?? 'No timeline note.' : Object.entries(input).filter(([key]) => key in incident && !['revision', 'incident', 'type'].includes(key)).map(([key]) => `${key}: ${JSON.stringify((incident as any)[key])}`).join(' · ') || `Incident revision ${incident.revision}` : undefined;
+            const saved = incident ? savedIncidentSummary(input, incident, currentState.current?.members ?? []) : undefined;
             const apply = incident && input.type === 'note' ? async () => {input.revision = incident.revision; return execute();} : undefined;
             failures.show(error, {target, saved, retryLabel: 'Apply my edit', retry: apply});
             setBusy(false); if (!apply) finish(null); return null;
           }
-          failures.show(error, {target, saved: base ? Object.entries(base).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join('; ') : String(value ?? '')}`).join(' · ') : 'This record is no longer available.', retryLabel: 'Apply my edit', retry: base ? async () => {input.baseValues = base; return execute();} : undefined});
+          failures.show(error, {target, saved: base ? savedRecordSummary(input, base, desiredValue, currentState.current?.members ?? []) : undefined, retryLabel: 'Apply my edit', retry: base ? async () => {input.baseValues = base; return execute();} : undefined});
           setBusy(false);
           if (!base) finish(null);
           return null;
