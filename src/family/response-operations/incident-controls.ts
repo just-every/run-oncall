@@ -5,9 +5,10 @@ export function incidentAssignee(i: Incident): string | null {
 }
 export const incidentUrgency = (i: Incident) => i.urgency ?? (i.severity === 'critical' ? 'high' : 'low');
 export const incidentUpdated = (i: Incident) => new Date(i.timeline.at(-1)?.at ?? i.createdAt).toISOString();
+export const isResponseChange = (type: string) => ['assign-role', 'reassign', 'set-priority', 'set-urgency', 'set-severity'].includes(type);
 
 export function incidentControl(state: State, actor: Member, i: Incident, input: any, at: string): boolean {
-  if (!['assign-role', 'reassign', 'set-priority', 'set-urgency', 'set-severity', 'bulk-acknowledge', 'bulk-resolve'].includes(input.type)) return false;
+  if (!isResponseChange(input.type) && !['bulk-acknowledge', 'bulk-resolve'].includes(input.type)) return false;
   const previousState=i.state;
   let description: string;
   const reason = text(input.reason, 'Reason', 3000);
@@ -17,18 +18,22 @@ export function incidentControl(state: State, actor: Member, i: Incident, input:
     const member = input.member === null ? null : state.members.find(m => m.id === input.member && m.active && ["admin", "responder"].includes(m.role));
     if (input.member !== null && !member) fail('Choose an active responder');
     const old = (i as any)[role] ?? (role === 'assignee' ? incidentAssignee(i) : null);
+    if (old === (member?.id ?? null)) return true;
     (i as any)[role] = member?.id ?? null;
     description = `${role}: ${state.members.find(m => m.id === old)?.name ?? 'Unassigned'} → ${member?.name ?? 'Unassigned'}: ${reason}`;
   } else if (input.type === 'set-priority') {
     if (input.priority !== null && !['P1', 'P2', 'P3', 'P4', 'P5'].includes(input.priority)) fail('Invalid priority');
+    if ((i.priority ?? null) === input.priority) return true;
     description = `Priority: ${i.priority ?? 'unset'} → ${input.priority ?? 'unset'}: ${reason}`;
     i.priority = input.priority;
   } else if (input.type === 'set-urgency') {
     if (!['high', 'low'].includes(input.urgency)) fail('Invalid urgency');
+    if (incidentUrgency(i) === input.urgency) return true;
     description = `Urgency: ${incidentUrgency(i)} → ${input.urgency}: ${reason}`;
     i.urgency = input.urgency;
   } else if (input.type === 'set-severity') {
     if (!['critical', 'warning', 'info'].includes(input.severity)) fail('Invalid severity');
+    if (i.severity === input.severity) return true;
     description = `Severity: ${i.severity} → ${input.severity}: ${reason}`;
     // A lower severity must not silently lower the independent urgency.
     i.urgency = incidentUrgency(i);

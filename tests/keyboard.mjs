@@ -1,5 +1,14 @@
 import assert from 'node:assert/strict'
 
+export async function focusWorkspace(page) {
+ const [response]=await Promise.all([
+  page.waitForResponse(response=>new URL(response.url()).pathname==='/api/workspace'&&response.request().method()==='GET'),
+  page.evaluate(()=>window.dispatchEvent(new Event('focus'))),
+ ])
+ assert.equal(response.status(),200,'returning to the workspace fetches current state')
+ await response.finished()
+}
+
 /** Reach controls only through the browser's native tab order. Locators inspect;
  * they never click, focus, fill or select on this keyboard journey. */
 export function keyboardUser(page) {

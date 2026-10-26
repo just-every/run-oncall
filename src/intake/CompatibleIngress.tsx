@@ -39,7 +39,7 @@ function IntakeReceipts({state, serviceName}: {state: State; serviceName: (id: s
         {receipt.truncated && <p>Source context was truncated to the receiver’s stored limits.</p>}
         <h4>Source links (stored as text)</h4>{receipt.links.length ? <ul>{receipt.links.map((url, index) => <li key={index}><code>{url}</code></li>)}</ul> : <p>No source links supplied.</p>}
         <h4>Bounded source details</h4><pre>{JSON.stringify(receipt.details, null, 2)}</pre>
-        {receipt.routing&&<><h4>Routing before service orchestration</h4><pre>{JSON.stringify(receipt.routing,null,2)}</pre><a href="#routing">Open routing rules and unrouted queue</a></>}
+        {receipt.routing&&<><h4>Routing before service orchestration</h4><pre>{JSON.stringify(receipt.routing,null,2)}</pre><a href="/routing">Open routing rules and unrouted queue</a></>}
       </details>
     </li>)}</ol>}
   </div>;
@@ -69,7 +69,7 @@ export function CompatibleIngress({state, admin, busy, run}: {state: State; admi
     {admin ? <>
       <h3>{previous ? 'Configure ' + previous.name : 'Create a compatible source'}</h3>
       {previous && <button type="button" disabled={busy} onClick={() => configure()}>Create another source</button>}
-      {!state.services.length ? <p><a href="#services">Create a service first</a> to bind this source.</p> : <Form busy={busy} label={previous ? 'Save and rotate compatible key' : 'Save compatible source'} onSubmit={async () => {
+      {!state.services.length ? <p><a href="/services">Create a service first</a> to bind this source.</p> : <Form busy={busy} label={previous ? 'Save and rotate compatible key' : 'Save compatible source'} onSubmit={async () => {
         const result = await run('/api/intake/sources', {id, name, provider: boundProvider, service: boundService, key, revision: previous?.revision ?? 0}, 'Compatible source saved');
         if (result) {setKey(''); setCopyStatus(''); setStatus('Source saved. The key is now cleared here; use the private copy in your sender.');}
         return false;

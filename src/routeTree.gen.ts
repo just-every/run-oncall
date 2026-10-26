@@ -10,13 +10,80 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SplatRouteImport } from './routes/$'
+import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as ArchiveRouteImport } from './routes/archive'
+import { Route as IncidentsRouteImport } from './routes/incidents'
+import { Route as MoveInRouteImport } from './routes/move-in'
+import { Route as ReviewsRouteImport } from './routes/reviews'
+import { Route as RoutingRouteImport } from './routes/routing'
+import { Route as SchedulesRouteImport } from './routes/schedules'
+import { Route as ServicesRouteImport } from './routes/services'
+import { Route as StatusRouteImport } from './routes/status'
+import { Route as TeamRouteImport } from './routes/team'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
+import { Route as IncidentsIdRouteImport } from './routes/incidents.$id'
 import { Route as SigninLocalRouteImport } from './routes/signin.local'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArchiveRoute = ArchiveRouteImport.update({
+  id: '/archive',
+  path: '/archive',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IncidentsRoute = IncidentsRouteImport.update({
+  id: '/incidents',
+  path: '/incidents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoveInRoute = MoveInRouteImport.update({
+  id: '/move-in',
+  path: '/move-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewsRoute = ReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoutingRoute = RoutingRouteImport.update({
+  id: '/routing',
+  path: '/routing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SchedulesRoute = SchedulesRouteImport.update({
+  id: '/schedules',
+  path: '/schedules',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
@@ -29,6 +96,11 @@ const DocsSlugRoute = DocsSlugRouteImport.update({
   path: '/docs/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IncidentsIdRoute = IncidentsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => IncidentsRoute,
+} as any)
 const SigninLocalRoute = SigninLocalRouteImport.update({
   id: '/signin/local',
   path: '/signin/local',
@@ -37,33 +109,129 @@ const SigninLocalRoute = SigninLocalRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/alerts': typeof AlertsRoute
+  '/archive': typeof ArchiveRoute
+  '/incidents': typeof IncidentsRouteWithChildren
+  '/move-in': typeof MoveInRoute
+  '/reviews': typeof ReviewsRoute
+  '/routing': typeof RoutingRoute
+  '/schedules': typeof SchedulesRoute
+  '/services': typeof ServicesRoute
+  '/status': typeof StatusRoute
+  '/team': typeof TeamRoute
   '/docs/$slug': typeof DocsSlugRoute
+  '/incidents/$id': typeof IncidentsIdRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs/': typeof DocsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/alerts': typeof AlertsRoute
+  '/archive': typeof ArchiveRoute
+  '/incidents': typeof IncidentsRouteWithChildren
+  '/move-in': typeof MoveInRoute
+  '/reviews': typeof ReviewsRoute
+  '/routing': typeof RoutingRoute
+  '/schedules': typeof SchedulesRoute
+  '/services': typeof ServicesRoute
+  '/status': typeof StatusRoute
+  '/team': typeof TeamRoute
   '/docs/$slug': typeof DocsSlugRoute
+  '/incidents/$id': typeof IncidentsIdRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs': typeof DocsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/alerts': typeof AlertsRoute
+  '/archive': typeof ArchiveRoute
+  '/incidents': typeof IncidentsRouteWithChildren
+  '/move-in': typeof MoveInRoute
+  '/reviews': typeof ReviewsRoute
+  '/routing': typeof RoutingRoute
+  '/schedules': typeof SchedulesRoute
+  '/services': typeof ServicesRoute
+  '/status': typeof StatusRoute
+  '/team': typeof TeamRoute
   '/docs/$slug': typeof DocsSlugRoute
+  '/incidents/$id': typeof IncidentsIdRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs/': typeof DocsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/docs/$slug' | '/signin/local' | '/docs/'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/alerts'
+    | '/archive'
+    | '/incidents'
+    | '/move-in'
+    | '/reviews'
+    | '/routing'
+    | '/schedules'
+    | '/services'
+    | '/status'
+    | '/team'
+    | '/docs/$slug'
+    | '/incidents/$id'
+    | '/signin/local'
+    | '/docs/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/docs/$slug' | '/signin/local' | '/docs'
-  id: '__root__' | '/' | '/docs/$slug' | '/signin/local' | '/docs/'
+  to:
+    | '/'
+    | '/$'
+    | '/alerts'
+    | '/archive'
+    | '/incidents'
+    | '/move-in'
+    | '/reviews'
+    | '/routing'
+    | '/schedules'
+    | '/services'
+    | '/status'
+    | '/team'
+    | '/docs/$slug'
+    | '/incidents/$id'
+    | '/signin/local'
+    | '/docs'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/alerts'
+    | '/archive'
+    | '/incidents'
+    | '/move-in'
+    | '/reviews'
+    | '/routing'
+    | '/schedules'
+    | '/services'
+    | '/status'
+    | '/team'
+    | '/docs/$slug'
+    | '/incidents/$id'
+    | '/signin/local'
+    | '/docs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
+  AlertsRoute: typeof AlertsRoute
+  ArchiveRoute: typeof ArchiveRoute
+  IncidentsRoute: typeof IncidentsRouteWithChildren
+  MoveInRoute: typeof MoveInRoute
+  ReviewsRoute: typeof ReviewsRoute
+  RoutingRoute: typeof RoutingRoute
+  SchedulesRoute: typeof SchedulesRoute
+  ServicesRoute: typeof ServicesRoute
+  StatusRoute: typeof StatusRoute
+  TeamRoute: typeof TeamRoute
   DocsSlugRoute: typeof DocsSlugRoute
   SigninLocalRoute: typeof SigninLocalRoute
   DocsIndexRoute: typeof DocsIndexRoute
@@ -76,6 +244,83 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/archive': {
+      id: '/archive'
+      path: '/archive'
+      fullPath: '/archive'
+      preLoaderRoute: typeof ArchiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/incidents': {
+      id: '/incidents'
+      path: '/incidents'
+      fullPath: '/incidents'
+      preLoaderRoute: typeof IncidentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/move-in': {
+      id: '/move-in'
+      path: '/move-in'
+      fullPath: '/move-in'
+      preLoaderRoute: typeof MoveInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reviews': {
+      id: '/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof ReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/routing': {
+      id: '/routing'
+      path: '/routing'
+      fullPath: '/routing'
+      preLoaderRoute: typeof RoutingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/schedules': {
+      id: '/schedules'
+      path: '/schedules'
+      fullPath: '/schedules'
+      preLoaderRoute: typeof SchedulesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/': {
@@ -92,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/incidents/$id': {
+      id: '/incidents/$id'
+      path: '/$id'
+      fullPath: '/incidents/$id'
+      preLoaderRoute: typeof IncidentsIdRouteImport
+      parentRoute: typeof IncidentsRoute
+    }
     '/signin/local': {
       id: '/signin/local'
       path: '/signin/local'
@@ -102,8 +354,31 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface IncidentsRouteChildren {
+  IncidentsIdRoute: typeof IncidentsIdRoute
+}
+
+const IncidentsRouteChildren: IncidentsRouteChildren = {
+  IncidentsIdRoute: IncidentsIdRoute,
+}
+
+const IncidentsRouteWithChildren = IncidentsRoute._addFileChildren(
+  IncidentsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
+  AlertsRoute: AlertsRoute,
+  ArchiveRoute: ArchiveRoute,
+  IncidentsRoute: IncidentsRouteWithChildren,
+  MoveInRoute: MoveInRoute,
+  ReviewsRoute: ReviewsRoute,
+  RoutingRoute: RoutingRoute,
+  SchedulesRoute: SchedulesRoute,
+  ServicesRoute: ServicesRoute,
+  StatusRoute: StatusRoute,
+  TeamRoute: TeamRoute,
   DocsSlugRoute: DocsSlugRoute,
   SigninLocalRoute: SigninLocalRoute,
   DocsIndexRoute: DocsIndexRoute,
