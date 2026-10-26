@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "parent": null,
   "edition": "just-every/run-oncall",
-  "manifest": "8cddbb0988d461d5f4c88189995e9f4964ea622c9698cc31b17b6842b00242fb",
+  "manifest": "39fb70dcaad16c656b6a17c813b1c4f1f9c0242dfb0787ddc242a296e53b68e5",
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
@@ -39,7 +39,8 @@
           "src/docs",
           "public",
           "scripts",
-          "package.json"
+          "package.json",
+          ".github/workflows/rer-managed.yml"
         ]
       },
       "baseline": null
@@ -104,6 +105,10 @@
     },
     ".github/assets/release/oncall-0.4.0-incident-1440.png": {
       "sha256": "8fb13cc6e373a5b26bd99aaed0255373c5a55eacc9be25a24d19904b419c9128",
+      "executable": false
+    },
+    ".github/workflows/rer-managed.yml": {
+      "sha256": "4438b6e2ab1aa8eac1ccb92a7a6063ed222ac3b8575417824951e80a0bf4c40a",
       "executable": false
     },
     ".github/workflows/run-demo.yml": {
@@ -251,7 +256,7 @@
       "executable": false
     },
     "edition.json": {
-      "sha256": "8cddbb0988d461d5f4c88189995e9f4964ea622c9698cc31b17b6842b00242fb",
+      "sha256": "39fb70dcaad16c656b6a17c813b1c4f1f9c0242dfb0787ddc242a296e53b68e5",
       "executable": false
     },
     "evidence/email/address-1440.png": {
