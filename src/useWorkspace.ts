@@ -45,7 +45,10 @@ export function useWorkspace() {
   const reading = useRef<Promise<void> | null>(null);
   function refresh(): Promise<void> {
     if (reading.current) return reading.current;
-    const pending = request("/api/workspace").then(apply).finally(() => { if (reading.current === pending) reading.current = null; });
+    const pending = request("/api/workspace").then(session => {
+      apply(session);
+      if (failures.current.current?.read) {updateError(""); failures.clear();}
+    }).finally(() => { if (reading.current === pending) reading.current = null; });
     reading.current = pending;
     return pending;
   }

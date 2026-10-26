@@ -51,12 +51,12 @@ export function FailureLine({failure}: {failure: ActionFailure | null}) {
   const line = useRef<HTMLDivElement>(null);
   const [retrying, setRetrying] = useState(false);
   useEffect(() => {
-    if (!failure || !line.current) return;
+    if (!failure || failure.read || !line.current) return;
     const box = line.current.getBoundingClientRect();
     if (box.top < 0 || box.bottom > window.innerHeight) line.current.scrollIntoView({block: 'center'});
   }, [failure]);
   if (!failure) return null;
-  const content = <div className="failure-line" role="alert" ref={line}>
+  const content = <div className={failure.read ? 'failure-line read-failure' : 'failure-line'} role="alert" ref={line}>
     <span>{failure.message}</span>
     {failure.retry && <button type="button" disabled={retrying} onClick={async () => {
       setRetrying(true);
