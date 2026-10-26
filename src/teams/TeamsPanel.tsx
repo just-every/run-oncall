@@ -11,6 +11,7 @@ function words(error:unknown){
  const message=error instanceof Error?error.message:'';
  if(/Connection interrupted/.test(message))return 'The connection was lost. Your change is kept.';
  if(/Invalid server response|Request failed/.test(message))return 'The save could not be confirmed. Your change is kept.';
+ if(/^(This team changed\.|Service ownership changed\.)/.test(message))return message;
  if(/changed;|changed\./i.test(message))return 'Someone else changed this team or its services. Your change is kept.';
  if(/ cannot belong to /.test(message))return message;
  if(/^(.* manages but is not a member|.* cannot manage this team|.* is no longer an active member|.* is archived|.* is not available|Enter a team name|Choose |Only |Sign in |Private teams)/.test(message))return message;
@@ -71,13 +72,13 @@ export function TeamsPanel({state,actor,refresh}:{state:State;actor:Member;refre
   if(!result||result.id!==latest.id||!Number.isSafeInteger(result.revision)||result.revision<=latest.revision)throw Error('Invalid server response');
   current.current={...current.current,teams:current.current.teams!.map(t=>t.id===result.id?result:t)};
  });
- async function create(data:any){
+ async function create(data:any,id=crypto.randomUUID()){
   setCreating(true);
   // Keep Form's values until a confirmed create, including on Retry.
   let succeeded=false;
-  const operation=async()=>{const result=await request('/api/teams',{name:data.name,members:[...members],managers:[...managers],revision:0,visibility:'public',active:true});if(!result?.id||result.revision!==1)throw Error('Invalid server response');};
+  const operation=async()=>{const result=await request('/api/teams',{id,name:data.name,members:[...members],managers:[...managers],revision:0,visibility:'public',active:true});if(!result?.id||result.revision!==1)throw Error('Invalid server response');};
   note('create',{saving:true});
-  const execute=async()=>{try{await operation();current.current=await request('/api/state');await refresh();succeeded=true;note('create',{saved:true});setMembers([]);setManagers([]);}catch(error){note('create',{error:words(error),retry:()=>{void create(data);}});}finally{setCreating(false);}};
+  const execute=async()=>{try{await operation();current.current=await request('/api/state');await refresh();succeeded=true;note('create',{saved:true});setMembers([]);setManagers([]);}catch(error){note('create',{error:words(error),retry:()=>{void create(data,id);}});}finally{setCreating(false);}};
   queue.current=queue.current.then(execute,execute);await queue.current;return succeeded;
  }
  return <section className="panel padded teams-panel" aria-label="Teams"><h2>Teams</h2>

@@ -3883,7 +3883,7 @@
       "executable": false
     },
     "src/teams/model.ts": {
-      "sha256": "912793c7be90ba1f828a510897dbae7e63db995b488f973a017e8cfac9d013c5",
+      "sha256": "d5a32bb5a5a10d57e4bde7e19f7313538e6ab4dc31bf5efc13a31cc8713f1113",
       "executable": false
     },
     "src/teams/teams.css": {
@@ -3891,7 +3891,7 @@
       "executable": false
     },
     "src/teams/TeamsPanel.tsx": {
-      "sha256": "3b21e1ede503c9cb53a7f8008080d284c5368ee613f9ac9328197cebe0f77edf",
+      "sha256": "fd7c068399049efcebda896fd8333c8efadbdbd19fbdaf7967feaf07635d15d1",
       "executable": false
     },
     "src/triage-alerts.ts": {

@@ -1,6 +1,7 @@
 import {fail,text,type State,type Member} from '../family/response-operations/domain.ts';
 
 export type Team={id:string;name:string;visibility:'public';active:boolean;revision:number;members:string[];managers:string[]};
+function teamName(value:unknown){try{return text(value,'Team name',200);}catch{fail('Enter a team name with up to 200 characters.');}}
 export function teamCoverage(state:State,actor:Member,service:string):boolean {
  const current=state.members.find(m=>m.id===actor.id&&m.active);
  if(!current)return false;
@@ -17,7 +18,7 @@ export function validateTeams(state:State) {
  if(!Array.isArray(state.teams)||state.teams.length>1000||new Set(state.teams.map(t=>t?.id)).size!==state.teams.length)fail('Choose up to 1,000 teams, each with its own name.');
  for(const team of state.teams){
   if(!team||typeof team!=='object'||Array.isArray(team)||Object.keys(team).some(k=>!['id','name','visibility','active','revision','members','managers'].includes(k)))fail('Enter a team name and choose its members.');
-  text(team.id,'Team ID',100);text(team.name,'Team name',200);
+  text(team.id,'Team ID',100);teamName(team.name);
   if(team.visibility!=='public'||typeof team.active!=='boolean'||!Number.isSafeInteger(team.revision)||team.revision<1)fail('Choose Active or Archived for this public team.');
   for(const key of ['members','managers'] as const){const ids=team[key];if(!Array.isArray(ids)||ids.length>1000||new Set(ids).size!==ids.length||ids.some(id=>!state.members.some(m=>m.id===id&&!m.erased)))fail('Choose each available member once.');}
   for(const id of team.managers){const person=state.members.find(m=>m.id===id);if(!team.members.includes(id))fail((person?.name??'This person')+' manages but is not a member');if(!person||!['admin','responder'].includes(person.role))fail((person?.name??'This person')+' cannot manage this team. Choose a responder or administrator.');}
@@ -31,7 +32,7 @@ export function editTeam(state:State,actor:Member,input:any):Team {
  if(input.visibility!=='public')fail('Private teams are not available: access enforcement is not complete',409);
  const id=input.id?text(input.id,'Team ID',100):crypto.randomUUID(),old=state.teams?.find(t=>t.id===id);
  if(!Number.isSafeInteger(input.revision)||input.revision!==(old?.revision??0))fail('This team changed. Retry to keep your change with its latest version.',409);
- const team:Team={id,name:text(input.name,'Team name',200),visibility:'public',active:input.active,revision:input.revision+1,members:input.members,managers:input.managers};
+ const team:Team={id,name:teamName(input.name),visibility:'public',active:input.active,revision:input.revision+1,members:input.members,managers:input.managers};
  state.teams=[...(state.teams??[]).filter(t=>t.id!==id),team];validateTeams(state);
  for(const id of [...team.members,...team.managers])if(!state.members.some(m=>m.id===id&&m.active))fail((state.members.find(m=>m.id===id)?.name??'This person')+' is no longer an active member. Choose an active member.');
  return team;
