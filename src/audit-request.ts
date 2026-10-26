@@ -3,6 +3,10 @@ import { auditedDatabase } from './audit-database'
 import { auditKind, setAuditSubject, type AuditContext } from './audit-store'
 import type { Bindings } from './auth.server'
 
+// Only server code can mark this request's unique audited database after its read fence.
+const commandNoops = new WeakSet<D1Database>()
+export function markCommandNoop(db: D1Database) { commandNoops.add(db) }
+
 const commands = new Set(['manual-page','user-assignment','request-responders','respond-request','cancel-request','merge-incidents','split-incident','service-template','template-check','service','service-dependencies','policy','member','declare','assign-role','reassign','set-priority','set-urgency','set-severity','bulk-acknowledge','bulk-resolve','review','action','complete','accept-action','reopen-action','note','transition','runbook','priority','close-action','request-response'])
 export function auditInput(db: D1Database, input: any, path: string) {
   if (!input || typeof input !== 'object') return
@@ -39,7 +43,8 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
     // Successful write batches already carry their own entries. A refusal with no
     // state write, including paging OFF, still survives as an attributed attempt.
     const zeroWriteReplay = response.ok && (path === '/api/replay' || path === '/api/triage/workflows/preview' || /^\/api\/(?:email\/addresses|routing\/keys)\/[^/]+\/preview$/.test(path));
-    if (!context.ownerCustodyRefusal && !(context.refusalCommitted && status === 409) && !zeroWriteReplay && context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
+    const unchangedCommand = path === '/api/command' && request.method === 'POST' && status === 200 && context.commits === 0 && commandNoops.has(audit.db)
+    if (!context.ownerCustodyRefusal && !(context.refusalCommitted && status === 409) && !zeroWriteReplay && !unchangedCommand && context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
       await audit.record(context.outcome ?? (status >= 500 ? 'failed' : status >= 400 ? 'refused' : 'accepted'))
     return response
   } catch {

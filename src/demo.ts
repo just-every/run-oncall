@@ -7,7 +7,7 @@ import { workspaceRows } from './workspace-store'
 
 const MIN = 60_000, HOUR = 60 * MIN, DAY = 24 * HOUR
 const iso = (at: number) => new Date(at).toISOString()
-const evidence = (path: string) => `https://dashboards.example.com/${path}`
+const evidence = (slug: string) => `https://run-oncall.com/docs/${slug}`
 
 /** The most recent Monday at `hour` local time in `zone`, `weeksBack` weeks earlier, as a rotation anchor. */
 function anchor(now: number, zone: string, hour: number, weeksBack: number) {
@@ -47,8 +47,8 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
   const run = (actor: Member, input: object, offset: number) => command(state, actor, input, at(offset))
 
   // Services and routing policies.
-  run(admin, { type: 'service', id: 'checkout-api', name: 'Checkout API', environment: 'production', owner: priya.id, pager: evidence('pager/checkout'), runbook: ['Check the deploy log for a release in the last hour', 'Compare the 5xx rate by region', 'Roll back the latest release if errors began with it', 'Post status in the incident timeline'] }, 11 * DAY)
-  run(admin, { type: 'service', id: 'payments-worker', name: 'Payments worker', environment: 'production', owner: elena.id, pager: evidence('pager/payments'), runbook: ['Check queue depth and oldest message age', 'Scale consumers to the configured maximum', 'Confirm the card processor status page', 'Drain the dead-letter queue once the backlog clears'] }, 11 * DAY)
+  run(admin, { type: 'service', id: 'checkout-api', name: 'Checkout API', environment: 'production', owner: priya.id, pager: evidence('limits'), runbook: ['Check the deploy log for a release in the last hour', 'Compare the 5xx rate by region', 'Roll back the latest release if errors began with it', 'Post status in the incident timeline'] }, 11 * DAY)
+  run(admin, { type: 'service', id: 'payments-worker', name: 'Payments worker', environment: 'production', owner: elena.id, pager: evidence('limits'), runbook: ['Check queue depth and oldest message age', 'Scale consumers to the configured maximum', 'Confirm the card processor status page', 'Drain the dead-letter queue once the backlog clears'] }, 11 * DAY)
   for (const rule of [
     { service: 'checkout-api', severity: 'critical', action: 'route', owner: priya.id, reason: 'Checkout outages go to the service owner' },
     { service: 'checkout-api', severity: 'warning', action: 'route', owner: marcus.id, reason: 'Latency warnings go to the checkout rota' },
@@ -64,30 +64,30 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
     step({ type: 'transition', state: 'acknowledged', summary: 'Acknowledged and investigating' }, 4 * MIN)
     step({ type: 'runbook', index: 0, done: true }, 9 * MIN)
     step({ type: 'transition', state: 'mitigating', summary: 'Mitigation applied; watching the graphs' }, 25 * MIN)
-    step({ type: 'transition', state: 'recovered', summary: 'Metrics are back within their normal range', evidence: evidence(`recovery/${inc.service}`) }, recoveredAfter)
+    step({ type: 'transition', state: 'recovered', summary: 'Metrics are back within their normal range', evidence: evidence('incidents') }, recoveredAfter)
     step({ type: 'transition', state: 'resolved', summary: 'No further impact after an hour of watching' }, resolvedAfter)
     step({ type: 'action', title: follow.title, owner: follow.owner.id, due: follow.due }, resolvedAfter + 10 * MIN)
-    step({ type: 'complete', action: inc.actions[0].id, evidence: evidence('followups/done') }, resolvedAfter + 3 * HOUR)
+    step({ type: 'complete', action: inc.actions[0].id, evidence: evidence('reviews') }, resolvedAfter + 3 * HOUR)
     step({ type: 'review', text: review }, resolvedAfter + 4 * HOUR)
   }
   const day = (offset: number) => new Date(now - offset).toISOString().slice(0, 10)
 
   // A latency warning that recovered by itself, with no incident.
-  signal('checkout-api', 'warning', 'checkout-latency', 'g1', 'Checkout p95 latency above 800 ms', 'trigger', 9 * DAY + 2 * HOUR, 'checkout/latency')
-  signal('checkout-api', 'warning', 'checkout-latency', 'g1', 'Checkout p95 latency back under 800 ms', 'recover', 9 * DAY + 80 * MIN, 'checkout/latency')
+  signal('checkout-api', 'warning', 'checkout-latency', 'g1', 'Checkout p95 latency above 800 ms', 'trigger', 9 * DAY + 2 * HOUR, 'monitoring-providers')
+  signal('checkout-api', 'warning', 'checkout-latency', 'g1', 'Checkout p95 latency back under 800 ms', 'recover', 9 * DAY + 80 * MIN, 'monitoring-providers')
   // A resolved payments backlog.
-  const backlog = signal('payments-worker', 'critical', 'payments-queue', 'g1', 'Payment queue depth above 5,000', 'trigger', 6 * DAY + 3 * HOUR, 'payments/queue')
-  signal('payments-worker', 'info', 'payments-retry', 'g1', 'Processor retries elevated', 'trigger', 6 * DAY + 2 * HOUR, 'payments/retries')
+  const backlog = signal('payments-worker', 'critical', 'payments-queue', 'g1', 'Payment queue depth above 5,000', 'trigger', 6 * DAY + 3 * HOUR, 'monitoring-providers')
+  signal('payments-worker', 'info', 'payments-retry', 'g1', 'Processor retries elevated', 'trigger', 6 * DAY + 2 * HOUR, 'monitoring-providers')
   const first = run(elena, { type: 'declare', service: 'payments-worker', severity: 'critical', title: 'Payments are queueing', summary: 'Card captures are delayed; the queue is draining slowly.', alerts: [backlog.alert] }, 6 * DAY + 3 * HOUR - 3 * MIN) as Incident
   finish(first, elena, 6 * DAY + 3 * HOUR - 3 * MIN, 95 * MIN, 150 * MIN, 'The processor throttled us after a retry storm. Consumers were scaled up and retries now back off. Detection was fast; the queue-depth alert fired late.', { title: 'Alert at 2,000 queued messages, not 5,000', owner: elena, due: day(5 * DAY) })
-  signal('payments-worker', 'critical', 'payments-queue', 'g1', 'Payment queue depth back under 500', 'recover', 6 * DAY + 90 * MIN, 'payments/queue')
+  signal('payments-worker', 'critical', 'payments-queue', 'g1', 'Payment queue depth back under 500', 'recover', 6 * DAY + 90 * MIN, 'monitoring-providers')
   // A resolved checkout error spike.
-  const spike = signal('checkout-api', 'critical', 'checkout-5xx', 'g1', 'Checkout 5xx rate above 5%', 'trigger', 3 * DAY + 5 * HOUR, 'checkout/errors')
+  const spike = signal('checkout-api', 'critical', 'checkout-5xx', 'g1', 'Checkout 5xx rate above 5%', 'trigger', 3 * DAY + 5 * HOUR, 'monitoring-providers')
   const second = run(priya, { type: 'declare', service: 'checkout-api', severity: 'critical', title: 'Checkout returning errors', summary: 'About one in twenty checkouts fail with a 500 since the latest release.', alerts: [spike.alert] }, 3 * DAY + 5 * HOUR - 2 * MIN) as Incident
   finish(second, priya, 3 * DAY + 5 * HOUR - 2 * MIN, 70 * MIN, 140 * MIN, 'A migration locked the orders table during the release. The release was rolled back and the migration reworked to run online.', { title: 'Run migrations against a production-size copy before release', owner: marcus, due: day(2 * DAY) })
-  signal('checkout-api', 'critical', 'checkout-5xx', 'g1', 'Checkout 5xx rate back under 0.5%', 'recover', 3 * DAY + 3 * HOUR, 'checkout/errors')
+  signal('checkout-api', 'critical', 'checkout-5xx', 'g1', 'Checkout 5xx rate back under 0.5%', 'recover', 3 * DAY + 3 * HOUR, 'monitoring-providers')
   // The incident open right now.
-  const live = signal('checkout-api', 'critical', 'checkout-5xx', 'g2', 'Checkout 5xx rate above 5% in eu-west', 'trigger', 38 * MIN, 'checkout/errors')
+  const live = signal('checkout-api', 'critical', 'checkout-5xx', 'g2', 'Checkout 5xx rate above 5% in eu-west', 'trigger', 38 * MIN, 'monitoring-providers')
   const current = run(priya, { type: 'declare', service: 'checkout-api', severity: 'critical', title: 'Checkout errors in eu-west', summary: 'Customers in eu-west see failed payments at checkout.', alerts: [live.alert] }, 35 * MIN) as Incident
   const act = (actor: Member, input: object, offset: number) => run(actor, { incident: current.id, revision: current.revision, ...input }, offset)
   act(admin, { type: 'note', text: `Page sent to ${priya.name} via SMS, voice, push and email.` }, 34 * MIN)

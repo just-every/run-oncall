@@ -1,3 +1,4 @@
+import {focusWorkspace} from './keyboard.mjs'
 import assert from 'node:assert/strict';
 import AxeBuilder from '@axe-core/playwright';
 import {mkdir} from 'node:fs/promises';
@@ -5,7 +6,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const fixture=2500+width,name='synthetic-oncall-'+fixture,password='synthetic-oncall-'+fixture+'-password';
  const created=await context.request.post(origin+'/api/members',{headers:{origin},data:{name,role:'responder',password}});assert.equal(created.status(),201);const substitute=await created.json();
- await page.getByRole('button',{name:'Refresh scheduling',exact:true}).click();
+ await focusWorkspace(page);
  const coordination=page.getByRole('region',{name:'Shift coordination',exact:true});await coordination.getByRole('heading',{name:'Shift coordination',exact:true}).waitFor();
  await coordination.getByText('Request a swap',{exact:true}).click();await coordination.getByLabel('Swap substitute',{exact:true}).selectOption(substitute.id);
  const start=new Date(Date.now()+3600000).toISOString(),end=new Date(Date.now()+7200000).toISOString();
@@ -27,7 +28,8 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
   assert.equal(member.id,substitute.id,'the substitute uses its own password session');assert.equal(member.role,'responder');assert.notEqual(member.id,session.member.id);
   assert.equal((await relief.cookies()).some(cookie=>/^(?:__Host-operator_session|operator_session_local(?:_\d+)?)$/.test(cookie.name)),false,'no owner Auth session is copied or created');
   const reliefPage=await relief.newPage(),errors=[];reliefPage.on('pageerror',error=>errors.push(error.message));
-  const document=await reliefPage.goto(origin+'/#schedules');assert.equal(document.status(),200);await reliefPage.getByLabel('Schedule',{exact:true}).selectOption('browser-'+width);
+  const document=await reliefPage.goto(origin+'/schedules');assert.equal(document.status(),200);await reliefPage.getByLabel('Schedule',{exact:true}).selectOption('browser-'+width);
+
   const substituteView=reliefPage.getByRole('region',{name:'Shift coordination',exact:true});await substituteView.getByRole('button',{name:'Accept swap',exact:true}).click();await substituteView.getByText(/accepted/).waitFor();
   assert.ok(await reliefPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'substitute schedule fits the viewport');
   assert.equal(await reliefPage.evaluate(()=>window.__rerHydration?.count??0),0);assert.deepEqual(errors,[],'substitute schedule has no application errors');
@@ -35,7 +37,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
   await substituteView.screenshot({path:`${directory}/OC-025-substitute-${width}.png`});
   await reliefPage.screenshot({path:`${directory}/OC-025-substitute-schedule-${width}.png`,fullPage:true});
  }finally{await relief.close();}
- await page.getByRole('button',{name:'Refresh scheduling',exact:true}).click();await coordination.getByText(/accepted/).waitFor();
+ await focusWorkspace(page);await coordination.getByText(/accepted/).waitFor();
  await coordination.getByText('Settings',{exact:true}).click();await coordination.getByLabel('Swap approval',{exact:true}).selectOption('none');await coordination.getByRole('button',{name:'Save swap approval',exact:true}).click();
  await coordination.getByLabel('Reminder lead minutes',{exact:true}).fill('30');await coordination.getByRole('button',{name:'Save shift reminder',exact:true}).click();await coordination.getByText(/not sent \(no timer\)/).waitFor();
  await coordination.getByLabel('Calendar scope',{exact:true}).selectOption('schedule');await coordination.getByRole('button',{name:'Create calendar subscription',exact:true}).click();

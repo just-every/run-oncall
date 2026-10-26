@@ -6,7 +6,7 @@ import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor} from './worker.mjs'
 import {productBrowserJourney} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
-import {keyboardUser} from './keyboard.mjs'
+import {keyboardUser,focusWorkspace} from './keyboard.mjs'
 
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -43,7 +43,7 @@ async function incompleteIntakeBrowser(page,context) {
  for(const width of [1440,390]) {
   await page.setViewportSize({width,height:1000})
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
-  await page.getByRole('button',{name:'Refresh',exact:true}).click()
+  await focusWorkspace(page)
   const routedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true,level:3})}),ownerCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:incompleteTitle,exact:true,level:3})})
   await routedCard.getByText('Payments · production · active',{exact:true}).waitFor()
   await ownerCard.getByText(/^Integration unrouted queue.*active$/).waitFor()
@@ -107,7 +107,7 @@ async function responsePolicyBrowser(page,context) {
   const viewName='Checkout commander review '+width
   await request('/api/triage/views',{name:viewName,query:{}})
   await page.getByRole('link',{name:'Services',exact:true}).click()
-  await page.getByRole('button',{name:'Refresh',exact:true}).click()
+  await focusWorkspace(page)
   const service=page.getByRole('article').filter({has:page.getByRole('heading',{name:serviceName,exact:true,level:3})})
   const responsePolicy=service.locator('details.urgency-policy').filter({has:page.locator('summary').filter({hasText:/^Response policy ·/})})
   await responsePolicy.locator(':scope > summary').click()
@@ -143,7 +143,7 @@ async function responsePolicyBrowser(page,context) {
   assert.equal(admitted.incidents.some(incident=>incident.alerts.includes(warningAlert.id)),false,'warning remains alert-only')
   await send({...warning,eventId:'slow-payments-recovery',intent:'recover',severity:'info'})
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
-  await page.getByRole('button',{name:'Refresh',exact:true}).click()
+  await focusWorkspace(page)
   const alertCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:warning.title,exact:true,level:3})})
   await alertCard.getByText('stopped by source recovery',{exact:true}).waitFor()
   await alertCard.getByText(/Recovered notice: Everyone already notified · recorded · no sender until OC-026/).waitFor()
@@ -158,7 +158,7 @@ async function responsePolicyBrowser(page,context) {
   await send(critical)
   const automaticState=await request('/api/state'),criticalAlert=automaticState.alerts.find(alert=>alert.source==='intake:'+source&&alert.key===critical.key),incident=automaticState.incidents.find(incident=>incident.alerts.includes(criticalAlert.id))
   assert.ok(incident?.automaticDeclaration,'critical rule automatically declares an incident')
-  await page.getByRole('button',{name:'Refresh',exact:true}).click()
+  await focusWorkspace(page)
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
   const criticalCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:critical.title,exact:true,level:3})})
   await criticalCard.getByRole('link',{name:'Open incident: '+critical.title,exact:true}).click()
@@ -175,7 +175,7 @@ async function responsePolicyBrowser(page,context) {
   await detail.getByRole('button',{name:'Save response change',exact:true}).click()
   await page.getByRole('status').filter({hasText:'Saved'}).waitFor()
   await send({...critical,eventId:'checkout-recovery',intent:'recover',severity:'info'})
-  await page.getByRole('button',{name:'Refresh',exact:true}).click()
+  await focusWorkspace(page)
   const recovery=detail.getByRole('region',{name:'Source recovery',exact:true})
   await recovery.getByText('all alerts recovered — awaiting resolution',{exact:true}).waitFor()
   await recovery.locator('p').filter({hasText:'Commander reminder: '+member.name+' · recorded · no timer until OC-027'}).waitFor()
@@ -226,7 +226,7 @@ async function incidentWorkflowBrowser(page,context) {
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:1000});const serviceId='workflow-'+width,serviceName='Checkout incident workflow '+width;
   await req('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Check replica health before changing customer traffic.'],pager:''});
-  await page.getByRole('link',{name:'Services',exact:true}).click();await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await page.getByRole('link',{name:'Services',exact:true}).click();await focusWorkspace(page);
   const service=page.getByRole('article').filter({has:page.getByRole('heading',{name:serviceName,exact:true,level:3})}),settings=service.getByRole('region',{name:'Response template for '+serviceName});
   await settings.getByRole('button',{name:'Create response template',exact:true}).click();
   await settings.getByLabel('Critical severity wording',{exact:true}).fill('Checkout unavailable');await settings.getByLabel('Warning severity wording',{exact:true}).fill('Checkout degraded');await settings.getByLabel('Info severity wording',{exact:true}).fill('Customer impact under investigation');
@@ -241,14 +241,14 @@ async function incidentWorkflowBrowser(page,context) {
   const sourceId='synthetic-oncall-workflow-'+width,key=randomBytes(32).toString('hex');await req('/api/sources',{id:sourceId,key,mode:'bearer',scopes:[serviceId]});
   const alerts=[];for(const keyName of ['checkout-replica','unrelated-batch']){const r=await context.request.post('/api/ingress/'+sourceId,{headers:{origin,authorization:'Bearer '+key},data:{source:sourceId,eventId:keyName+'-'+width,service:serviceId,environment:'production',key:keyName,generation:'cycle-'+width,intent:'trigger',severity:'warning',title:keyName+' investigation',observedAt:new Date().toISOString(),evidence:''}});assert.equal(r.status(),201);const receipt=await r.json();alerts.push((await req('/api/state')).alerts.find(a=>a.events.includes(receipt.id)).id)}
   const sourceTitle='Replica and batch investigation '+width;let source=await req('/api/command',{type:'declare',service:serviceId,severity:'warning',title:sourceTitle,summary:'Investigate related source alerts before separating the batch group.',alerts});source=await req('/api/command',{type:'note',incident:source.id,revision:source.revision,text:'Replica lag was observed before customer impact.'});source=await req('/api/command',{type:'action',incident:source.id,revision:source.revision,title:'Replica capacity follow-up',owner:member.id,escalationRecipient:member.id,due:'2026-12-01',completionPolicy:'human-review',priority:'P2'});
-  await page.getByRole('button',{name:'Refresh',exact:true}).click();const workflow=page.getByRole('region',{name:'Incident workflows',exact:true});
+  await focusWorkspace(page);const workflow=page.getByRole('region',{name:'Incident workflows',exact:true});
   const checklist=workflow.getByRole('checkbox',{name:'Confirm customer checkout recovery',exact:false});const [tick]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST'),checklist.check()]);assert.equal(tick.status(),200);await workflow.getByText(/Last changed by/).waitFor();await capture('checklist',width,workflow);
   await workflow.getByText('Merge related incidents into this incident',{exact:true}).click();await workflow.locator('label').filter({hasText:sourceTitle}).getByRole('checkbox').check();await workflow.getByLabel('Reason for merging',{exact:true}).fill('The replica investigation explains the same checkout impact.');await submit(workflow.getByRole('button',{name:'Merge selected incidents',exact:true}));
   await workflow.getByText('Retained source incidents',{exact:true}).waitFor();await workflow.locator('summary').filter({hasText:sourceTitle}).click();await workflow.getByText('Replica lag was observed before customer impact.',{exact:true}).waitFor();await workflow.getByLabel('Completion evidence for Replica capacity follow-up',{exact:true}).fill('https://example.test/replica-capacity');await submit(workflow.getByRole('button',{name:'Submit evidence for Replica capacity follow-up',exact:true}));await workflow.getByLabel('Acceptance reason for Replica capacity follow-up',{exact:true}).fill('The commander reviewed the retained dependency evidence.');await submit(workflow.getByRole('button',{name:'Accept completion of Replica capacity follow-up',exact:true}));assert.equal((await req('/api/state')).incidents.find(i=>i.id===source.id).actions[0].done,true);await capture('merge',width,workflow);
-  await page.goto(origin+'/?incident='+encodeURIComponent(source.id)+'#incidents');await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();await page.waitForURL(url=>url.searchParams.get('incident')===target.id);await capture('alias',width,page.locator('.detail'));
+  await page.goto(origin+'/incidents/'+encodeURIComponent(source.id));await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();await page.waitForURL(url=>url.pathname==='/incidents/'+encodeURIComponent(target.id));await capture('alias',width,page.locator('.detail'));
   await workflow.getByText('Split unrelated alerts into a new incident',{exact:true}).click();await workflow.locator('label').filter({hasText:'unrelated-batch'}).getByRole('checkbox').check();await workflow.getByLabel('New incident title',{exact:true}).fill('Independent batch delay '+width);await workflow.getByLabel('New incident impact summary',{exact:true}).fill('Batch processing is separate from checkout customer impact.');await workflow.getByLabel('Reason for splitting',{exact:true}).fill('The batch alert is unrelated to the replica incident.');await submit(workflow.getByRole('button',{name:'Split selected alerts',exact:true}));
   state=await req('/api/state');const child=state.incidents.find(i=>i.title==='Independent batch delay '+width);assert.equal(child.state,'acknowledged');assert.equal(state.incidents.find(i=>i.id===target.id).state,'acknowledged');assert.equal(child.splitFrom.incident,target.id);assert.equal(child.template.version,1);assert.equal((await req('/api/handoffs/context/'+child.id)).source.incident.declaration.kind,'split','a split origin remains usable by the existing reviewed handoff door');
-  await page.goto(origin+'/?incident='+child.id+'#incidents');await page.locator('.detail').getByRole('heading',{name:child.title,exact:true}).waitFor();await capture('split',width,workflow);
+  await page.goto(origin+'/incidents/'+encodeURIComponent(child.id));await page.locator('.detail').getByRole('heading',{name:child.title,exact:true}).waitFor();await capture('split',width,workflow);
  }
  console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440/390; overflow, axe and hydration checked');
 }
@@ -298,7 +298,7 @@ async function changeAndSigningBrowser(page,context){
   assert.ok(!(await request('/api/state')).changes.some(row=>row.id===erasureChange.id));
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-erasure-receipt',width);
   const erasedIncident=await request('/api/command',{type:'declare',service:'synthetic-oncall-1',title:'Synthetic erasable incident '+width,summary:'Synthetic erasable impact',severity:'warning'});
-  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('incident');
   await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedIncident.id);
   assert.equal(await settings.getByRole('button',{name:'Erase selected subject',exact:true}).isEnabled(),false);
@@ -311,7 +311,7 @@ async function changeAndSigningBrowser(page,context){
   assert.ok(!(await request('/api/state')).incidents.some(i=>i.id===erasedIncident.id));
   const erasedIntegration='synthetic-oncall-40-integration-'+width;
   await request('/api/intake/sources',{id:erasedIntegration,name:'Synthetic erasable integration '+width,provider:'alertmanager',service:'synthetic-oncall-1',key:token(),revision:0});
-  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('intake');
   await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedIntegration);
   await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedIntegration);
@@ -323,7 +323,7 @@ async function changeAndSigningBrowser(page,context){
   assert.ok(!(await request('/api/state')).intakeSources.some(i=>i.id===erasedIntegration));
   const erasedEmail='synthetic-oncall-440-'+width;
   await request('/api/email/addresses',{id:erasedEmail,name:'Synthetic erasable email '+width,service:'synthetic-oncall-1',owner:(await request('/api/session')).member.id,localPart:'synthetic-oncall-'+randomBytes(20).toString('hex'),mode:'subject',fallback:'subject',rules:[]},201);
-  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('email');
   await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedEmail);
   await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedEmail);
@@ -337,7 +337,7 @@ async function changeAndSigningBrowser(page,context){
   const importedPlan=await importDoor.preview('pagerduty',JSON.stringify({integrations:[{id:importedId,type:'events_api_v2_inbound_integration'}]}));assert.equal(importedPlan.status,200);assert.equal((await importDoor.apply('pagerduty',importedPlan.value)).status,200);
   const importedRoot=(await request('/api/move-in/objects')).find(row=>row.targetKind==='integration'&&row.targetId==='pagerduty:'+importedId);
   await request('/api/intake/incumbent',{importedId:importedRoot.targetId,importedRevision:importedRoot.revision,id:importedId,service:'synthetic-oncall-1',name:'Synthetic imported erasure '+width,revision:0,key:randomBytes(16).toString('hex')});
-  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('intake');
   await settings.getByLabel('Erasure subject',{exact:true}).selectOption(importedId);await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+importedId);
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-imported-integration-review',width);
@@ -357,7 +357,7 @@ async function changeAndSigningBrowser(page,context){
   await request('/api/status',{action:'subscribe',id:memberBusiness.id,revision:memberBusiness.revision,member:erasedMember.id,channel:'email',active:true});
   const memberScheduleId='synthetic-oncall-413-'+width;await request('/api/paging/schedules',{id:memberScheduleId,name:'Synthetic erased contact slots',service:'synthetic-oncall-1',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[erasedMember.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]});
   const memberPlan=await importDoor.preview('pagerduty',JSON.stringify({users:[{id:'synthetic-oncall-413-'+width,name:'Synthetic erasable contact',email:memberName}]}));assert.equal(memberPlan.status,200);assert.equal((await importDoor.apply('pagerduty',memberPlan.value)).status,200);
-  await page.getByRole('button',{name:'Refresh',exact:true}).click();
+  await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('member');await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedMember.id);
   await settings.getByLabel('Imported identity '+memberName,{exact:true}).check();await settings.getByLabel('Imported identities reviewed',{exact:true}).check();
   await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedMember.id);await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-member-review',width);
