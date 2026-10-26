@@ -24,12 +24,12 @@ function Feedback({note}: {note?:Note}){
 }
 function Mark({note}:{note?:Note}){return <span className="teams-status" role="status">{note?.saving?'Saving…':note?.saved?'Saved':''}</span>;}
 function Choices({state,members,managers,onChange,note}:{state:State;members:string[];managers:string[];onChange:(members:string[],managers:string[],kind:'members'|'managers')=>void;note?:(kind:string)=>Note|undefined}){
- const id=useId();
+ const id=useId(),[lastManager,setLastManager]=useState<string>();
  return <div className="teams-choices" role="group" aria-labelledby={id}><div id={id}>Members <Mark note={note?.('members')}/></div>
  {state.members.filter(m=>m.active&&!m.machine).map(m=><div className={'teams-person'+(members.includes(m.id)?' teams-chosen':'')} key={m.id}>
  <label className="teams-choice"><input type="checkbox" aria-label={'Member '+m.name} checked={members.includes(m.id)} onChange={e=>onChange(e.target.checked?[...members,m.id]:members.filter(id=>id!==m.id),e.target.checked?managers:managers.filter(id=>id!==m.id),'members')}/><span>{m.name}</span></label>
- {members.includes(m.id)&&['admin','responder'].includes(m.role)&&<label className="teams-choice teams-manager"><input type="checkbox" aria-label={'Manager '+m.name} checked={managers.includes(m.id)} onChange={e=>onChange(members,e.target.checked?[...managers,m.id]:managers.filter(id=>id!==m.id),'managers')}/><span>Manager <Mark note={note?.('managers')}/></span></label>}
- </div>)}<Feedback note={note?.('members')}/><div className="teams-manager-status"><Mark note={note?.('managers')}/><Feedback note={note?.('managers')}/></div></div>;
+ {members.includes(m.id)&&['admin','responder'].includes(m.role)&&<label className="teams-choice teams-manager"><input type="checkbox" aria-label={'Manager '+m.name} checked={managers.includes(m.id)} onChange={e=>{setLastManager(m.id);onChange(members,e.target.checked?[...managers,m.id]:managers.filter(id=>id!==m.id),'managers');}}/><span>Manager <Mark note={lastManager===m.id?note?.('managers'):undefined}/></span></label>}
+ </div>)}<Feedback note={note?.('members')}/><div className="teams-manager-status"><Feedback note={note?.('managers')}/></div></div>;
 }
 function TeamEditor({state,team,write,notes}:{state:State;team:Team;write:(team:Team,patch:Patch,key:string)=>void;notes:Record<string,Note>}){
  const [name,setName]=useState(team.name),[members,setMembers]=useState(team.members),[managers,setManagers]=useState(team.managers),[active,setActive]=useState(team.active);

@@ -7,7 +7,7 @@
 .teams-panel .teams-choice input{flex:none;width:18px;height:18px;margin:0}
 .teams-panel .teams-manager{flex:none}
 .teams-panel .teams-status{font-size:13px;font-weight:400;margin-inline-start:8px}
-.teams-panel .teams-failure{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px}
+.teams-panel .teams-failure{scroll-margin-block:12px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px}
 .teams-panel .teams-failure button,.teams-panel input:not([type=checkbox]),.teams-panel select,.teams-panel button,.teams-panel summary{min-height:44px}
 .teams-panel summary{display:flex;align-items:center;cursor:pointer}
 .teams-panel summary::before{content:'▸';margin-right:6px}

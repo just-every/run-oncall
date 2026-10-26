@@ -3887,11 +3887,11 @@
       "executable": false
     },
     "src/teams/teams.css": {
-      "sha256": "933b08b3f343ae0cc9ed55bf82d1c5c54d3ddf602ce37cc7dfccbeeba318d5a3",
+      "sha256": "5032c18b1ed5816928005822fbca8082b0e0e87f70dd9577f98eca93a70fb19a",
       "executable": false
     },
     "src/teams/TeamsPanel.tsx": {
-      "sha256": "efd1c1d132cde03a12b6d3fe8c77a0619b9ac59bfb975ef90e572ba9535f52a2",
+      "sha256": "1cf43b8e11dea9a8a0b63961514dab72a4a95e91dddf6d9d6ae6ca10dcc02cfd",
       "executable": false
     },
     "src/triage-alerts.ts": {
