@@ -12,6 +12,7 @@
     "setup": "pnpm install --frozen-lockfile && pnpm exec rer install",
     "build": "pnpm exec rer build",
     "verify": "pnpm exec rer check --profile first-party && pnpm run typecheck",
+    "artifact": "node scripts/build-delivery-artifact.mjs",
     "recovery": "Hosted Oncall coordinates incidents alongside the customer's existing pager with paging OFF; keep the existing pager routes authoritative and continue through them and the team's incident process if coordination is unavailable. Retain exact source, the private .rer/deploy deployment record, private secrets and every applied migration byte. Hosted D1 and local .wrangler/state are separate stores: export the hosted database with wrangler d1 export --remote before changes, restore only into a fresh empty installation, and verify the owner, schedules and incident records before switching traffic. Imported pending timers stay paused because delivery is OFF; sessions and credentials never transfer. See OPERATIONS.md."
   }
 }

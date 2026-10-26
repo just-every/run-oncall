@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "project": {
+    "schema": 1,
+    "projectId": "just-every/run-oncall",
+    "name": "Oncall",
+    "sourceRepository": "https://github.com/just-every/run-oncall",
+    "license": "MIT",
+    "deployment": {
+      "target": "cloudflare-workers",
+      "artifactFile": "rer-worker-artifact.json"
+    },
+    "operations": {
+      "setup": "pnpm install --frozen-lockfile && pnpm exec rer install",
+      "build": "pnpm exec rer build",
+      "verify": "pnpm exec rer check --profile first-party && pnpm run typecheck",
+      "artifact": "node scripts/build-delivery-artifact.mjs",
+      "recovery": "Hosted Oncall coordinates incidents alongside the customer's existing pager with paging OFF; keep the existing pager routes authoritative and continue through them and the team's incident process if coordination is unavailable. Retain exact source, the private .rer/deploy deployment record, private secrets and every applied migration byte. Hosted D1 and local .wrangler/state are separate stores: export the hosted database with wrangler d1 export --remote before changes, restore only into a fresh empty installation, and verify the owner, schedules and incident records before switching traffic. Imported pending timers stay paused because delivery is OFF; sessions and credentials never transfer. See OPERATIONS.md."
+    }
+  },
+  "managed": {
+    "workflowRef": "runeditrun/delivery/.github/workflows/trusted-build.yml@86c8b37399c901bffd9a240dbd1148a65ec83b34",
+    "artifactFile": "rer-worker-artifact.json",
+    "buildProfile": "project",
+    "pnpmVersion": "10.12.4",
+    "verificationProfiles": [
+      "full"
+    ]
+  },
+  "setup": {
+    "manifestFile": "rer-setup.json"
+  },
+  "artifact": {
+    "specInputs": {
+      "publicVariableNames": [
+        "AUTH_LOCAL",
+        "MAIL_PROVIDER",
+        "MAIL_FROM",
+        "MAIL_RELAY_URL"
+      ],
+      "secretNames": [
+        "SESSION_SECRET",
+        "SETUP_TOKEN"
+      ],
+      "optionalSecretNames": [
+        "MAIL_API_KEY",
+        "INBOUND_EMAIL_DOMAIN"
+      ],
+      "healthPath": "/health",
+      "providerEffects": [
+        "outbound-mail",
+        "signed-response-events"
+      ],
+      "surfaces": {
+        "app": {
+          "path": "/",
+          "originVariable": "AUTH_ORIGIN",
+          "signIn": {
+            "path": "/signin",
+            "loginHint": true
+          },
+          "readiness": [
+            {
+              "path": "/health",
+              "statuses": [
+                200
+              ]
+            }
+          ]
+        }
+      },
+      "mail": {
+        "providers": [
+          "rer"
+        ]
+      },
+      "recovery": "Hosted incident coordination runs beside your existing pager. Paging is OFF; there is no independent standby or delivery guarantee. Signed-in admins can export coordination records from Archive. rer export and rer import recover local installation data; see docs/data.md and docs/checkpoints.md."
+    }
+  }
+}
