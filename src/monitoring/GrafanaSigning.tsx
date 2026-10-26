@@ -1,3 +1,4 @@
+import {failureMessage} from '../app/FailureLine';
 import {useViewAnchor} from '../app/useViewAnchor';
 import {useEffect,useId,useState} from 'react';
 import {Form} from '../forms';
@@ -10,7 +11,7 @@ export function GrafanaSigning({sources,busy,run,revision}:{sources:IntakeSource
   const [selected,setSelected]=useState(''),[secret,setSecret]=useState(''),[loaded,setLoaded]=useState<{source:string;value:any}|null>(null),[error,setError]=useState('');
   const source=sources.find(s=>s.id===selected)??sources[0];
   const setting=loaded&&loaded.source===source?.id?loaded.value:null;
-  useEffect(()=>{let live=true;setError('');if(source)request('/api/monitoring/'+encodeURIComponent(source.id)+'/signing').then(v=>{if(live){preserveView();setLoaded({source:source.id,value:v})}}).catch(e=>{if(live)setError(e.message)});return()=>{live=false};},[source?.id,revision]);
+  useEffect(()=>{let live=true;if(source)request('/api/monitoring/'+encodeURIComponent(source.id)+'/signing').then(v=>{if(live){preserveView();setError('');setLoaded({source:source.id,value:v})}}).catch(e=>{if(live)setError(failureMessage(e,true))});return()=>{live=false};},[source?.id,revision]);
   if(!source)return null;
   return <section aria-label="Grafana signature settings"><h3>Grafana signature check</h3>
     <p>A configured signing secret requires HMAC SHA-256 in addition to the bearer credential. No secret is returned after saving; restore excludes it.</p>

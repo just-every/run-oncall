@@ -9,7 +9,7 @@ type Row=ScheduleRecord&{status?:string;dueAt?:string|null;label?:string};
 export function ScheduleCoordination({schedule,state,actor,onChanged}:{schedule:Schedule;state:State;actor:Member;onChanged:()=>Promise<any>}){
  const [rows,setRows]=useState<Row[]>([]),[busy,setBusy]=useState(false),[url,setUrl]=useState('');
  const failures=useActionFailure(),[ready,setReady]=useState(false);
- const load=async()=>{setRows((await request('/api/schedule-coordination')).records);setReady(true);};
+ const load=async()=>{setRows((await request('/api/schedule-coordination')).records);setReady(true);if(failures.current.current?.read)failures.clear();};
  useEffect(()=>{load().catch(e=>failures.show(e,{read:true,target:null,retry:async()=>{await load();failures.clear();}}));},[schedule.id,schedule.revision,state]);
  const send=async(data:any)=>{setBusy(true);failures.clear();setUrl('');try{const result=await request('/api/schedule-coordination',data);if(result.url)setUrl(result.url);await load();await onChanged();return result;}catch(e){failures.show(e,{retry:hasChangeBase(data)?()=>send(data):undefined});return null;}finally{setBusy(false);}};
  const name=(id:string)=>state.members.find(m=>m.id===id)?.name??'Erased member',policy=rows.find(r=>r.kind==='policy'&&r.data.schedule===schedule.id),reminder=rows.find(r=>r.kind==='reminder'&&r.member===actor.id),editable=['admin','responder'].includes(actor.role);
