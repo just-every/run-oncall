@@ -43,6 +43,7 @@ export function useWorkspace() {
   const failures = useActionFailure();
   const preserveView = useViewAnchor();
   const reading = useRef<Promise<void> | null>(null);
+  const currentState = useRef<State | null>(null);
   function refresh(): Promise<void> {
     if (reading.current) return reading.current;
     const pending = request("/api/workspace").then(session => {
@@ -57,6 +58,7 @@ export function useWorkspace() {
     setMember(session.member);
     setDemo(session.demo === true);
     setSetup(session.setup);
+    currentState.current = session.state;
     setState(session.state);
     setReady(true);
   }
@@ -107,6 +109,15 @@ export function useWorkspace() {
       try {
         result = await (typeof path === "function" ? path() : request(path, change));
       } catch (error) {
+        if (error instanceof HttpFailure && error.status === 409 && change && typeof change === 'object' && 'baseValues' in change) {
+          try {await refresh();} catch { /* Keep the edit until current values can be read. */ }
+          const input = change as any;
+          const record = input.type === 'service' ? currentState.current?.services.find(row => row.id === input.id) : currentState.current?.members.find(row => row.id === input.id);
+          const base = record && Object.fromEntries(Object.keys(input.baseValues).map(key => [key, (record as any)[key]]));
+          failures.show(error, {target, saved: base ? Object.entries(base).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join('; ') : String(value ?? '')}`).join(' · ') : 'This record is no longer available.', retryLabel: 'Apply my edit', retry: base ? async () => {input.baseValues = base; return execute();} : undefined});
+          setBusy(false);
+          return null;
+        }
         updateError(failureMessage(error));
         failures.show(error, {target, retry: typeof path === 'string' && (guarded || change === undefined) && (!(error instanceof HttpFailure) || error.status >= 500) ? async () => {
           const saved = await execute();
