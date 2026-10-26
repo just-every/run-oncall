@@ -1,0 +1,15 @@
+.teams-panel .teams-editor,.teams-panel .teams-ownership{display:grid;gap:12px;margin-top:12px}
+.teams-panel .teams-choices{display:grid;gap:6px}
+.teams-panel .teams-person{display:flex;flex-wrap:wrap;align-items:center;border-radius:8px}
+.teams-panel .teams-chosen{background:var(--oc-paper-deep)}
+.teams-panel .teams-choice{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px;cursor:pointer;box-sizing:border-box;overflow-wrap:anywhere}
+.teams-panel .teams-choice:first-child{flex:1;min-width:0}
+.teams-panel .teams-choice input{flex:none;width:18px;height:18px;margin:0}
+.teams-panel .teams-manager{flex:none}
+.teams-panel .teams-status{font-size:13px;font-weight:400;margin-inline-start:8px}
+.teams-panel .teams-failure{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px}
+.teams-panel .teams-failure button,.teams-panel input:not([type=checkbox]),.teams-panel select,.teams-panel button,.teams-panel summary{min-height:44px}
+.teams-panel summary{display:flex;align-items:center;cursor:pointer}
+.teams-panel summary::before{content:'▸';margin-right:6px}
+.teams-panel details[open]>summary::before{content:'▾'}
+.teams-panel .teams-manager-status:empty{display:none}

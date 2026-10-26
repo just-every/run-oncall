@@ -726,7 +726,7 @@ function Workspace() {
         {page === "reviews" && <ReviewsWorkspace state={s} busy={w.busy} canEdit={canEdit} command={command} onOpenIncident={id=>{selectIncident(id);location.hash="incidents"}} />}
         {page === "team" && (
           <div className="management-grid">
-            <TeamsPanel state={s} actor={actor} busy={w.busy} run={w.run}/>
+            <TeamsPanel state={s} actor={actor} refresh={w.refresh}/>
             <section className="panel padded">
               <h2>Team and access</h2>
               <p>

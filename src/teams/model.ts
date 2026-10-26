@@ -9,30 +9,30 @@ export function teamCoverage(state:State,actor:Member,service:string):boolean {
  return current.role==='responder'&&!!state.teams?.some(t=>t.id===owner&&t.active&&t.managers.includes(current.id));
 }
 export function requireTeamCoverage(state:State,actor:Member,service:string) {
- if(!['admin','responder'].includes(actor.role))fail('Responder or administrator required',403);
- if(!teamCoverage(state,actor,service))fail('Not found',404);
+ if(!['admin','responder'].includes(actor.role))fail('Only responders and workspace administrators can change coverage.',403);
+ if(!teamCoverage(state,actor,service))fail((state.services.find(s=>s.id===service)?.name??'This service')+' is not covered by a team you manage. A workspace administrator can change its owning team.',404);
 }
 export function validateTeams(state:State) {
- if(state.teams===undefined){if(state.services.some(s=>s.team!==undefined&&s.team!==null))fail('Invalid owning team');return;}
- if(!Array.isArray(state.teams)||state.teams.length>1000||new Set(state.teams.map(t=>t?.id)).size!==state.teams.length)fail('Invalid teams');
+ if(state.teams===undefined){if(state.services.some(s=>s.team!==undefined&&s.team!==null))fail('Choose an available owning team or Unassigned.');return;}
+ if(!Array.isArray(state.teams)||state.teams.length>1000||new Set(state.teams.map(t=>t?.id)).size!==state.teams.length)fail('Choose up to 1,000 teams, each with its own name.');
  for(const team of state.teams){
-  if(!team||typeof team!=='object'||Array.isArray(team)||Object.keys(team).some(k=>!['id','name','visibility','active','revision','members','managers'].includes(k)))fail('Invalid team fields');
+  if(!team||typeof team!=='object'||Array.isArray(team)||Object.keys(team).some(k=>!['id','name','visibility','active','revision','members','managers'].includes(k)))fail('Enter a team name and choose its members.');
   text(team.id,'Team ID',100);text(team.name,'Team name',200);
-  if(team.visibility!=='public'||typeof team.active!=='boolean'||!Number.isSafeInteger(team.revision)||team.revision<1)fail('Invalid team state');
-  for(const key of ['members','managers'] as const){const ids=team[key];if(!Array.isArray(ids)||ids.length>1000||new Set(ids).size!==ids.length||ids.some(id=>!state.members.some(m=>m.id===id&&!m.erased)))fail('Invalid team membership');}
-  if(team.managers.some(id=>!team.members.includes(id)||!state.members.some(m=>m.id===id&&['admin','responder'].includes(m.role))))fail('Managers must be team responders');
+  if(team.visibility!=='public'||typeof team.active!=='boolean'||!Number.isSafeInteger(team.revision)||team.revision<1)fail('Choose Active or Archived for this public team.');
+  for(const key of ['members','managers'] as const){const ids=team[key];if(!Array.isArray(ids)||ids.length>1000||new Set(ids).size!==ids.length||ids.some(id=>!state.members.some(m=>m.id===id&&!m.erased)))fail('Choose each available member once.');}
+  for(const id of team.managers){const person=state.members.find(m=>m.id===id);if(!team.members.includes(id))fail((person?.name??'This person')+' manages but is not a member');if(!person||!['admin','responder'].includes(person.role))fail((person?.name??'This person')+' cannot manage this team. Choose a responder or administrator.');}
  }
- for(const service of state.services)if(service.team!==undefined&&service.team!==null&&!state.teams.some(t=>t.id===service.team))fail('Invalid owning team');
+ for(const service of state.services)if(service.team!==undefined&&service.team!==null&&!state.teams.some(t=>t.id===service.team))fail('Choose an available owning team or Unassigned.');
 }
 export function editTeam(state:State,actor:Member,input:any):Team {
- if(!state.members.some(m=>m.id===actor.id&&m.active&&m.role==='admin'))fail('Current administrator required',403);
- if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(k=>!['id','name','visibility','active','revision','members','managers'].includes(k)))fail('Invalid team fields');
+ if(!state.members.some(m=>m.id===actor.id&&m.active&&m.role==='admin'))fail('Only a current workspace administrator can change teams.',403);
+ if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(k=>!['id','name','visibility','active','revision','members','managers'].includes(k)))fail('Enter a team name and choose its members.');
  // Private records cannot be authored until every existing read/export/integration door enforces their scope.
  if(input.visibility!=='public')fail('Private teams are not available: access enforcement is not complete',409);
  const id=input.id?text(input.id,'Team ID',100):crypto.randomUUID(),old=state.teams?.find(t=>t.id===id);
- if(!Number.isSafeInteger(input.revision)||input.revision!==(old?.revision??0))fail('Team changed; reload and retry',409);
+ if(!Number.isSafeInteger(input.revision)||input.revision!==(old?.revision??0))fail('This team changed. Retry to keep your change with its latest version.',409);
  const team:Team={id,name:text(input.name,'Team name',200),visibility:'public',active:input.active,revision:input.revision+1,members:input.members,managers:input.managers};
  state.teams=[...(state.teams??[]).filter(t=>t.id!==id),team];validateTeams(state);
- if(team.members.some(id=>!state.members.some(m=>m.id===id&&m.active))||team.managers.some(id=>!state.members.some(m=>m.id===id&&m.active)))fail('Choose active team members');
+ for(const id of [...team.members,...team.managers])if(!state.members.some(m=>m.id===id&&m.active))fail((state.members.find(m=>m.id===id)?.name??'This person')+' is no longer an active member. Choose an active member.');
  return team;
 }
