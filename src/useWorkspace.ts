@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import {useActionFailure, failureMessage, hasChangeBase} from "./app/FailureLine";
 import type { Member, State } from "./family/response-operations/domain";
-class InterruptedTransport extends Error {
+export class InterruptedTransport extends Error {
   constructor(){super('Connection interrupted; no success confirmed');}
 }
 export async function request(path: string, data?: unknown): Promise<any> {
@@ -32,11 +33,16 @@ export function useWorkspace() {
   const [demo, setDemo] = useState(false);
   const [setup, setSetup] = useState(false);
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState("");
+  const [error, updateError] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
-  async function refresh() {
-    apply(await request("/api/workspace"));
+  const failures = useActionFailure();
+  const reading = useRef<Promise<void> | null>(null);
+  function refresh(): Promise<void> {
+    if (reading.current) return reading.current;
+    const pending = request("/api/workspace").then(apply).finally(() => { if (reading.current === pending) reading.current = null; });
+    reading.current = pending;
+    return pending;
   }
   function apply(session: {member: Member | null; demo?: boolean; setup: boolean; state: State | null}) {
     setMember(session.member);
@@ -44,6 +50,15 @@ export function useWorkspace() {
     setSetup(session.setup);
     setState(session.state);
     setReady(true);
+  }
+  function setError(message: string) {
+    updateError(message ? failureMessage(new Error(message)) : "");
+    if (message) failures.show(new Error(message)); else failures.clear();
+  }
+  function readFailed(error: unknown) {
+    if (failures.current.current && !failures.current.current.read) return;
+    updateError(failureMessage(error, true));
+    failures.show(error, {read: true, target: null, retry: async () => {try {await refresh(); updateError(""); failures.clear();} catch (error) {readFailed(error);}}});
   }
   const initialized = useRef(false);
   useEffect(() => {
@@ -56,43 +71,54 @@ export function useWorkspace() {
       apply(snapshot);
       return;
     }
-    refresh().catch((e) => {
-      setError(e.message);
-      setReady(true);
-    });
+    refresh().catch((error) => {readFailed(error); setReady(true);});
   }, []);
+  // One visible-tab clock for the whole workspace, including focus and resume.
+  useEffect(() => {
+    if (!ready || !member) return;
+    const update = () => {if (document.visibilityState === "visible") void refresh().catch(readFailed);};
+    const timer = window.setInterval(update, 10000);
+    window.addEventListener("focus", update);
+    document.addEventListener("visibilitychange", update);
+    return () => {window.clearInterval(timer); window.removeEventListener("focus", update); document.removeEventListener("visibilitychange", update);};
+  }, [ready, member?.id]);
   async function run(
     path: string | (() => Promise<any>),
     data?: unknown,
     success: string | ((result: any) => string) = "Saved",
   ) {
-    setBusy(true);
-    setError("");
-    setNotice("");
-    try {
-      const result = await (typeof path === "function" ? path() : request(path, data));
-      await refresh();
-      setNotice(typeof success === "function" ? success(result) : success);
-      return result;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Request failed");
-      return null;
-    } finally {
+    const change = data === undefined ? undefined : structuredClone(data);
+    const target = failures.action.current;
+    const form = target?.closest('form');
+    const values = form ? JSON.stringify([...new FormData(form)]) : null;
+    const guarded = hasChangeBase(change);
+    const execute = async (): Promise<any> => {
+      setBusy(true); updateError(""); failures.clear(); setNotice("");
+      let result: any;
+      try {
+        result = await (typeof path === "function" ? path() : request(path, change));
+      } catch (error) {
+        updateError(failureMessage(error));
+        failures.show(error, {target, retry: typeof path === 'string' && (guarded || change === undefined) ? async () => {
+          const saved = await execute();
+          if (saved && form?.isConnected && JSON.stringify([...new FormData(form)]) === values) form.reset();
+          return saved;
+        } : undefined});
+        // A refusal may describe a stale base. Show current saved records alongside the retained edit.
+        if (!(error instanceof InterruptedTransport)) {try {await refresh();} catch { /* Keep the action's failure in place. */ }}
+        setBusy(false);
+        return null;
+      }
+      try {
+        // A read begun before this write cannot be the write's confirmation read.
+        if (reading.current) await reading.current.catch(() => {});
+        await refresh();
+      } catch (error) {readFailed(error);}
+      setNotice(result?.changed === false ? '' : typeof success === "function" ? success(result) : success);
       setBusy(false);
-    }
+      return result;
+    };
+    return execute();
   }
-  return {
-    state,
-    demo,
-    member,
-    setup,
-    ready,
-    error,
-    busy,
-    notice,
-    run,
-    refresh,
-    setError,
-    setNotice,
-  };
+  return {state, demo, member, setup, ready, error, busy, notice, run, refresh, setError, setNotice, failure: failures.failure};
 }

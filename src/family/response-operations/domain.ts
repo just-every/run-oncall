@@ -29,7 +29,7 @@ import type { EmailAddress, EmailVersion, EmailSample, EmailReceipt, EmailQuaran
 import { validateIntakeArchive, type IntakeSource, type IntakeReceipt } from '../../intake/model.ts';
 import { reviewCommand, validateReviewFields, validateLifecycleEntry } from '../../reviews/review-controls.ts';
 import { dependencies, validateChangeArchive, type ChangeRecord, type ChangeSource } from "../../changes/model.ts";
-import { incidentControl, validateIncidentControls } from "./incident-controls.ts";
+import { incidentControl, isResponseChange, validateIncidentControls } from "./incident-controls.ts";
 import { validateTriageRecords, type TriageRecord } from "./triage.ts";
 import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from '../../urgency/types.ts';
 import { admitAlertUrgency, declarationUrgency, serviceUrgency } from '../../urgency/model.ts';
@@ -423,6 +423,7 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
     }
     if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&["admin", "responder"].includes(m.role)))fail('An explicit active responsible member is required; the client is not a human responder');
   }
+  const responseRevision = isResponseChange(input.type) ? state.incidents.find(i=>i.id===input.incident)?.revision : undefined;
   const beforeLinks = ['merge-incidents','split-incident'].includes(input.type) ? state.incidents.map(i=>({id:i.id,alerts:[...i.alerts],marker:i.sourceRecovery?structuredClone(i.sourceRecovery):undefined})) : [];
   const result=['snooze','cancel-deadline','acknowledgment-timeout'].includes(input.type)?deadlineCommand(state,actor,input,at,context):['manual-page','user-assignment','request-responders','respond-request','cancel-request'].includes(input.type)?manualCommand(state,actor,input,at,context,data=>applyCommand(state,actor,data,at) as Incident):applyCommand(state,actor,input,at);
   for (const prior of beforeLinks) {
@@ -431,7 +432,7 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
     if(prior.marker){(changed.sourceRecoveryHistory??=[]).push({...prior.marker,alerts:prior.alerts});delete changed.sourceRecovery;}
     refreshIncidentRecovery(state,changed,at,undefined,actor);
   }
-  if(result&&'timeline' in result) {afterDeadlineCommand(state,result as Incident,actor,input,at,context);finishManualRecords(result as Incident,actor,at);enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
+  if(result&&'timeline' in result&&(!isResponseChange(input.type)||result.revision!==responseRevision)) {afterDeadlineCommand(state,result as Incident,actor,input,at,context);finishManualRecords(result as Incident,actor,at);enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
   return result;
 }
 function applyCommand(
