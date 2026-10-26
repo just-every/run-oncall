@@ -93,6 +93,7 @@ export function useWorkspace() {
     document.addEventListener("visibilitychange", update);
     return () => {window.clearInterval(timer); window.removeEventListener("focus", update); document.removeEventListener("visibilitychange", update);};
   }, [ready, member?.id]);
+  const pendingAction = useRef<((value: any) => void) | null>(null);
   async function run(
     path: string | (() => Promise<any>),
     data?: unknown,
@@ -101,7 +102,20 @@ export function useWorkspace() {
     const change = data === undefined ? undefined : structuredClone(data);
     const target = failures.action.current;
     const form = target?.closest('form');
-    const values = form ? JSON.stringify([...new FormData(form)]) : null;
+    const formValues = () => form ? JSON.stringify(Array.from(form.elements).filter(element => 'name' in element && element.name).map(element => {
+      const field = element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+      return [field.name, field.value, 'checked' in field ? field.checked : null, 'selectedOptions' in field ? Array.from(field.selectedOptions).map(option => option.value) : null];
+    })) : null;
+    const values = formValues();
+    pendingAction.current?.(null);
+    let resolve!: (value: any) => void;
+    const completion = new Promise<any>(done => {resolve = done;});
+    pendingAction.current = resolve;
+    const finish = (result: any) => {
+      if (pendingAction.current !== resolve) return;
+      pendingAction.current = null;
+      resolve(result && (!form?.isConnected || formValues() === values) ? result : null);
+    };
     const guarded = hasChangeBase(change);
     const execute = async (): Promise<any> => {
       setBusy(true); updateError(""); failures.clear(); setNotice("");
@@ -116,14 +130,13 @@ export function useWorkspace() {
           const base = record && Object.fromEntries(Object.keys(input.baseValues).map(key => [key, (record as any)[key]]));
           failures.show(error, {target, saved: base ? Object.entries(base).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join('; ') : String(value ?? '')}`).join(' · ') : 'This record is no longer available.', retryLabel: 'Apply my edit', retry: base ? async () => {input.baseValues = base; return execute();} : undefined});
           setBusy(false);
+          if (!base) finish(null);
           return null;
         }
         updateError(failureMessage(error));
-        failures.show(error, {target, retry: typeof path === 'string' && (guarded || change === undefined) && (!(error instanceof HttpFailure) || error.status >= 500) ? async () => {
-          const saved = await execute();
-          if (saved && form?.isConnected && JSON.stringify([...new FormData(form)]) === values) form.reset();
-          return saved;
-        } : undefined});
+        const retry = typeof path === 'string' && (guarded || change === undefined) && (!(error instanceof HttpFailure) || error.status >= 500) ? execute : undefined;
+        failures.show(error, {target, retry});
+        if (!retry) finish(null);
         // A refusal may describe a stale base. Show current saved records alongside the retained edit.
         if (!(error instanceof InterruptedTransport)) {try {await refresh();} catch { /* Keep the action's failure in place. */ }}
         setBusy(false);
@@ -136,9 +149,11 @@ export function useWorkspace() {
       } catch (error) {readFailed(error);}
       setNotice(result?.changed === false ? '' : typeof success === "function" ? success(result) : success);
       setBusy(false);
+      finish(result);
       return result;
     };
-    return execute();
+    void execute();
+    return completion;
   }
   return {state, demo, member, setup, ready, error, busy, notice, run, refresh, setError, setNotice, failure: failures.failure};
 }
