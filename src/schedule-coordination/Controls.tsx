@@ -8,11 +8,12 @@ import type {ScheduleRecord} from './model';
 type Row=ScheduleRecord&{status?:string;dueAt?:string|null;label?:string};
 export function ScheduleCoordination({schedule,state,actor,onChanged}:{schedule:Schedule;state:State;actor:Member;onChanged:()=>Promise<any>}){
  const [rows,setRows]=useState<Row[]>([]),[busy,setBusy]=useState(false),[url,setUrl]=useState('');
- const failures=useActionFailure();
- const load=async()=>setRows((await request('/api/schedule-coordination')).records);
+ const failures=useActionFailure(),[ready,setReady]=useState(false);
+ const load=async()=>{setRows((await request('/api/schedule-coordination')).records);setReady(true);};
  useEffect(()=>{load().catch(e=>failures.show(e,{read:true,target:null,retry:async()=>{await load();failures.clear();}}));},[schedule.id,schedule.revision,state]);
  const send=async(data:any)=>{setBusy(true);failures.clear();setUrl('');try{const result=await request('/api/schedule-coordination',data);if(result.url)setUrl(result.url);await load();await onChanged();return result;}catch(e){failures.show(e,{retry:hasChangeBase(data)?()=>send(data):undefined});return null;}finally{setBusy(false);}};
  const name=(id:string)=>state.members.find(m=>m.id===id)?.name??'Erased member',policy=rows.find(r=>r.kind==='policy'&&r.data.schedule===schedule.id),reminder=rows.find(r=>r.kind==='reminder'&&r.member===actor.id),editable=['admin','responder'].includes(actor.role);
+ if(!ready)return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>{!failures.failure&&<p role="status">Loading shift coordination…</p>}</section>;
  return <section className="scheduling-panel" aria-label="Shift coordination"><h2>Shift coordination</h2><FailureLine failure={failures.failure}/>
  <p>Substitutes decide swaps explicitly. Overdue requests remain undecided. Paging OFF.</p>
  {rows.filter(r=>r.kind==='swap'&&r.data.schedule===schedule.id).map(row=><article key={row.id}><h3>{name(row.member)} → {name(row.data.substitute)}</h3><p>{row.data.role} · {row.data.start} → {row.data.end} · {row.active?row.status:'restored inactive'} · {row.data.approved?'approval recorded':'admin approval required'}</p>{row.active&&row.data.status==='pending'&&<div className="routing-actions">{actor.role==='admin'&&!row.data.approved&&<button disabled={busy} onClick={()=>send({action:'approve',id:row.id,revision:row.revision})}>Approve swap</button>}{actor.id===row.data.substitute&&<><button disabled={busy} onClick={()=>send({action:'accept',id:row.id,revision:row.revision})}>Accept swap</button><button disabled={busy} onClick={()=>send({action:'decline',id:row.id,revision:row.revision})}>Decline swap</button></>}{actor.id===row.member&&<button disabled={busy} onClick={()=>send({action:'cancel',id:row.id,revision:row.revision})}>Cancel swap</button>}</div>}</article>)}
