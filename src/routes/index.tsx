@@ -38,8 +38,6 @@ import { ReplayComparison } from "../app/ReplayComparison";
 import { AlertsPanel } from "../app/AlertsPanel";
 import { ArchiveWorkspace } from "../app/ArchiveWorkspace";
 import { HandoffPreview } from "../app/HandoffPreview";
-import "../app/shell.css";
-import "../app/incidents.css";
 export const Route = createFileRoute("/")({ component: () => null });
 const time = (value: string) =>
   new Date(value).toLocaleString([], {
