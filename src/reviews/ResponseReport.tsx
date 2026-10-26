@@ -1,3 +1,4 @@
+import {useViewAnchor} from '../app/useViewAnchor';
 import { useEffect, useRef, useState } from 'react';
 import type { State } from '../family/response-operations/domain';
 import type { ProjectedReport as Report } from './load';
@@ -17,6 +18,7 @@ function parameters(filters: Filters) {
   return params;
 }
 export function ResponseReport({state}: {state: State}) {
+  const preserveView=useViewAnchor();
   const failures=useActionFailure();
   const [initial] = useState<Filters>(() => {
     const now = Date.now();
@@ -30,7 +32,7 @@ export function ResponseReport({state}: {state: State}) {
     if (!background) setLoading(true); failures.clear();
     try {
       const result: Report = await request('/api/reports/response?' + parameters(filters));
-      if (current === sequence.current) { setReport(result); setApplied(filters); }
+      if (current === sequence.current) { preserveView(); setReport(result); setApplied(filters); }
     } catch (e) { if (current === sequence.current) failures.show(e,{read:true,target:null,retry:()=>load(filters, Boolean(report))}); }
     finally { if (current === sequence.current) setLoading(false); }
   }

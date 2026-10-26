@@ -1,3 +1,4 @@
+import {useViewAnchor} from './app/useViewAnchor'
 import {FailureLine,useActionFailure} from './app/FailureLine'
 import { useEffect,useRef,useState } from 'react'
 import type { Coverage, Schedule } from './family/response-operations/schedules'
@@ -16,9 +17,10 @@ type NowNext = {now:Coverage;next:Record<'primary'|'backup',Coverage|null>}
 export function ScheduleNowNext({schedule,state,request}:ReadProps) {
  const [value,setValue]=useState<NowNext|null>(null)
  const failures=useActionFailure()
+ const preserveView=useViewAnchor()
  useEffect(()=>{
   let current=true
-  request(`/api/schedules/${encodeURIComponent(schedule.id)}/now-next`).then(data=>{if(current)setValue(data)}).catch(e=>{if(current)failures.show(e,{read:true,target:null})})
+  request(`/api/schedules/${encodeURIComponent(schedule.id)}/now-next`).then(data=>{if(current){preserveView();setValue(data)}}).catch(e=>{if(current)failures.show(e,{read:true,target:null})})
   return ()=>{current=false}
  },[schedule,request])
  const name=(id:string|null|undefined)=>state.members.find(m=>m.id===id)?.name??'Coverage gap'

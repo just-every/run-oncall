@@ -1,3 +1,4 @@
+import {useViewAnchor} from '../app/useViewAnchor';
 import { useEffect, useState } from 'react';
 import type { Incident, State } from '../family/response-operations/domain';
 import { Field, Form } from '../forms';
@@ -36,6 +37,7 @@ export function ReviewsWorkspace(props: Props) {
   </div>;
 }
 function ReviewCard({incident, state, busy, canEdit, command, onOpenIncident}: Props & {incident: Incident}) {
+  const preserveView=useViewAnchor();
   const failures=useActionFailure();
   const [open, setOpen] = useState(false), [material, setMaterial] = useState<Material | null>(null);
   const [loading, setLoading] = useState(false), [refresh, setRefresh] = useState(0);
@@ -43,7 +45,7 @@ function ReviewCard({incident, state, busy, canEdit, command, onOpenIncident}: P
     if (!open) return;
     let live = true;
     if(!material)setLoading(true); failures.clear();
-    request('/api/reviews/' + encodeURIComponent(incident.id) + '/material').then((result: Material) => {if (live) setMaterial(result);})
+    request('/api/reviews/' + encodeURIComponent(incident.id) + '/material').then((result: Material) => {if (live) {preserveView(); setMaterial(result);}})
       .catch(e => {if (live) failures.show(e,{read:true,target:null,retry:async()=>setRefresh(value=>value+1)});})
       .finally(() => {if (live) setLoading(false);});
     return () => {live = false;};
