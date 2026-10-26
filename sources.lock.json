@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "60532aec53c5fb9acb6faecba0e3bad0debabc7faeb6a66224074c820fce8c90"
+    "sha256": "f8cc00a4d2ee27019cfe55492f22b08abebe4d81c24f9a5e2d5304deecf3eaed"
   },
   "components": [
     {
@@ -4359,8 +4359,12 @@
       "sha256": "7cc4d29d453e3aa0eea60e55cf17d0a13ce12b793ee213adbc13754f3963f6f6",
       "executable": false
     },
+    "tests/worker-server.mjs": {
+      "sha256": "b38791549b3f9d150d411530181ae025689a32690ed8d146d494911b51a189c6",
+      "executable": false
+    },
     "tests/worker.mjs": {
-      "sha256": "3714e1de681d537219a690ea5e1554c543d2e4bf8e00869b8b8d0a274efed13b",
+      "sha256": "128dcbe7df47a98a39396fb8e74da6e829702c80136b5f568194b86b676b5a5d",
       "executable": false
     },
     "tsconfig.json": {

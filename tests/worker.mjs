@@ -36,7 +36,7 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
  const stop=async()=>{if(worker&&worker.exitCode===null){worker.kill('SIGTERM');await new Promise(r=>worker.once('exit',r))}}
  const start=async()=>{
   diagnostics=workerDiagnostics({...env,...vars})
-  worker=spawn(process.execPath,[cli,'dev','--local','--config',config,'--persist-to',persist,'--ip','127.0.0.1','--port',String(port),'--inspector-port','0','--env-file',join(dir,'local.env')],{env,stdio:['ignore','pipe','pipe']})
+  worker=spawn(process.execPath,['tests/worker-server.mjs',config,persist,String(port),join(dir,'local.env')],{env,stdio:['ignore','pipe','pipe']})
   let startupError;worker.once('error',error=>{startupError=error;diagnostics.report('startup process error')})
   diagnostics.attach(worker.stdout,'stdout');diagnostics.attach(worker.stderr,'stderr')
   for(let n=0;n<240;n++){if(startupError)throw Error('Worker process could not start');if(worker.exitCode!==null){diagnostics.report('startup exited');throw Error('Worker exited before readiness')};try{if((await fetch(origin+'/health')).ok)return}catch{}await new Promise(r=>setTimeout(r,250))}
