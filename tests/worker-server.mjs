@@ -19,9 +19,10 @@ const root=dirname(main),modules=[main,...(await walk(root)).filter(path=>path!=
 
 // Exercise the emitted Worker over HTTP. Wrangler's additional dev proxy can
 // reuse a downstream socket as its five-second idle timeout closes it; it cannot
-// safely retry a POST. Keep Wrangler's binding/assets projection and D1 layout.
+// safely retry a POST. Keep Wrangler's binding/assets projection and D1 layout,
+// and the scheduled and email trigger doors wrangler dev serves under /cdn-cgi/local/.
 const runtime=new Miniflare(convertV4MiniflareOptions({
- host:'127.0.0.1',port:Number(port),resourcePersistencePath:resolve(persist,'v3'),
+ host:'127.0.0.1',port:Number(port),resourcePersistencePath:resolve(persist,'v3'),unsafeTriggerHandlers:true,
  workers:[{...options,name:config.name,modules,modulesRoot:root},...externalWorkers],
 }))
 const stop=async()=>{await runtime.dispose();process.exit(0)}
