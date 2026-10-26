@@ -1,11 +1,15 @@
+import {useViewAnchor} from '../app/useViewAnchor';
 import { useEffect, useState } from 'react';
 import { request } from '../useWorkspace';
 import './changes.css';
 import {changeProviderNames, type ChangeProvider} from './model';
 
 export function RecentChanges({service, at, revision, expanded=false}: {service:string; at?:string; revision:number; expanded?:boolean}) {
-  const [open,setOpen]=useState(expanded),[hours,setHours]=useState(24),[data,setData]=useState<any>(null),[error,setError]=useState('');
-  useEffect(()=>{if(!open)return;let live=true;setError('');setData(null);request('/api/changes/recent?'+new URLSearchParams({service,hours:String(hours),...(at?{at}:{})})).then(v=>{if(live)setData(v)}).catch(e=>{if(live)setError(e.message)});return()=>{live=false};},[service,at,hours,revision,open]);
+  const preserveView=useViewAnchor();
+  const [open,setOpen]=useState(expanded),[hours,setHours]=useState(24),[loaded,setLoaded]=useState<{query:string;value:any}|null>(null),[error,setError]=useState('');
+  const query=new URLSearchParams({service,hours:String(hours),...(at?{at}:{})}).toString();
+  const data=loaded?.query===query?loaded.value:null;
+  useEffect(()=>{if(!open)return;let live=true;setError('');request('/api/changes/recent?'+query).then(v=>{if(live){preserveView();setLoaded({query,value:v})}}).catch(e=>{if(live)setError(e.message)});return()=>{live=false};},[query,revision,open]);
   return <details className="recent-changes" open={open} onToggle={e=>setOpen(e.currentTarget.open)}><summary>Recent changes</summary>
     <label>Lookback hours<input type="number" min={1} max={168} value={hours} onChange={e=>{const value=Number(e.target.value);if(Number.isInteger(value)&&value>=1&&value<=168)setHours(value)}} /></label>
     {error&&<p role="alert">{error}</p>}
