@@ -135,7 +135,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
       return result;
     } catch (failure) {
       const coverageRefused = failure instanceof HttpFailure && (failure.status === 403 || failure.status === 404);
-      failures.show(failure,{retry:guarded && !coverageRefused?()=>run(operation,success,true):undefined});
+      failures.show(failure,{target:coverageRefused?failures.action.current?.closest('fieldset')??failures.action.current?.closest('form')??failures.action.current:undefined,retry:guarded && !coverageRefused?()=>run(operation,success,true):undefined});
       if (coverageRefused) {try {await refreshWorkspace?.();} catch { /* Keep the refusal while workspace access is unavailable. */ }}
       return null;
     }
