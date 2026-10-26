@@ -21,7 +21,7 @@ try {
  for(const width of [1440,390]) {
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const at=cookie.indexOf('=');await context.addCookies([{name:cookie.slice(0,at),value:cookie.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}]);
-  await page.goto(runtime.origin+'/#alerts');const panel=page.locator('#response-api');await panel.getByRole('heading',{name:'Response API and outbound events',exact:true}).waitFor();
+  await page.goto(runtime.origin+'/alerts');const panel=page.locator('#response-api');await panel.getByRole('heading',{name:'Response API and outbound events',exact:true}).waitFor();
   if(width===1440){await panel.getByText('No API clients configured.',{exact:true}).waitFor();for(const emptyWidth of [1440,390]){await page.setViewportSize({width:emptyWidth,height:1000});await panel.screenshot({path:join(proof,'automation-empty-'+emptyWidth+'.png')});}await page.setViewportSize({width,height:1000});}
   await panel.getByRole('button',{name:'Generate private key',exact:true}).focus();await page.keyboard.press('Enter');
   await panel.getByLabel('Client name',{exact:true}).fill('Synthetic browser client '+width);
@@ -53,7 +53,7 @@ try {
   assert.equal((await machine({type:'transition',incident:incident.value.entity,revision:uncertain.value.revision,state:'acknowledged',member:memberA.id,summary:'Explicit machine responsibility'},1)).status,201);
   assert.equal((await machine({type:'reassign',incident:incident.value.entity,revision:uncertain.value.revision+1,member:memberB.id,reason:'Subsequent assignment'},2)).status,201);
   assert.equal((await req('/api/state')).value.incidents.find(i=>i.id===incident.value.entity).assignee,memberB.id);
-  await page.goto(runtime.origin+'/?incident='+incident.value.entity+'#incidents');await page.locator('.timeline').getByText('Service account',{exact:true}).first().waitFor();const named=page.locator('.timeline .event').filter({has:page.locator('.named-responder').filter({hasText:memberA.name})});assert.equal(await named.count(),1);await named.getByText('Service account',{exact:true}).waitFor();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
+  await page.goto(runtime.origin+'/incidents/'+encodeURIComponent(incident.value.entity));await page.locator('.timeline').getByText('Service account',{exact:true}).first().waitFor();const named=page.locator('.timeline .event').filter({has:page.locator('.named-responder').filter({hasText:memberA.name})});assert.equal(await named.count(),1);await named.getByText('Service account',{exact:true}).waitFor();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
   const timelineAxe=await new AxeBuilder({page}).include('.timeline').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(timelineAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
   // The existing Archive screen refuses a source captured before label erasure.
   const email='synthetic-oncall-'+width+'@example.test',label=email+' automation',door=ownerDoor(runtime,cookie);
@@ -61,20 +61,20 @@ try {
   assert.equal((await req('/api/automation/clients',{name:label,key:randomBytes(32).toString('hex'),services:['synthetic-oncall-browser'],permissions:['incidents:read']})).status,201);
   const oldArchive=(await req('/api/archive')).value;assert.equal((await req('/api/move-in/erase',{email,confirmation:'erase '+email})).status,200);
   const afterErasure=(await req('/api/state')).value;
-  await page.goto(runtime.origin+'/#archive');await page.getByLabel('Choose archive JSON').setInputFiles({name:'synthetic-oncall-old.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(oldArchive))});
+  await page.goto(runtime.origin+'/archive');await page.getByLabel('Choose archive JSON').setInputFiles({name:'synthetic-oncall-old.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(oldArchive))});
   await page.getByLabel('Type REPLACE to confirm').fill('REPLACE');
   const refusal=page.waitForResponse(r=>r.url().endsWith('/api/restore')&&r.request().method()==='POST');await page.getByRole('button',{name:'Replace workspace with this archive',exact:true}).click();assert.equal((await refusal).status(),409);
   await page.getByRole('alert').waitFor();assert.deepEqual((await req('/api/state')).value,afterErasure);assert.ok(!JSON.stringify(afterErasure).includes(label));
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-erasure-refusal-'+width+'.png'),fullPage:true});
   const archiveAxe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(archiveAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
 
-  await page.goto(runtime.origin+'/?incident='+incident.value.entity+'#incidents');await page.locator('.timeline').getByText('Service account',{exact:true}).first().waitFor();assert.equal(await page.locator('.timeline .named-responder strong').innerText(),'Erased member','OC-053 post-erasure timeline reads Erased member');await page.locator('.timeline').screenshot({path:join(proof,'automation-erased-member-'+width+'.png')});
-  await page.goto(runtime.origin+'/#alerts');await panel.getByRole('heading',{name:'Durable outbox',exact:true}).waitFor();const panelAxe=await new AxeBuilder({page}).include('#response-api').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(panelAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  await page.goto(runtime.origin+'/incidents/'+encodeURIComponent(incident.value.entity));await page.locator('.timeline').getByText('Service account',{exact:true}).first().waitFor();assert.equal(await page.locator('.timeline .named-responder strong').innerText(),'Erased member','OC-053 post-erasure timeline reads Erased member');await page.locator('.timeline').screenshot({path:join(proof,'automation-erased-member-'+width+'.png')});
+  await page.goto(runtime.origin+'/alerts');await panel.getByRole('heading',{name:'Durable outbox',exact:true}).waitFor();const panelAxe=await new AxeBuilder({page}).include('#response-api').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(panelAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
   assert.deepEqual(errors,[]);
   for(const [slug,anchor] of [['data','subject-erasure-fences'],['response-api','version-1-http-reference'],['audit','identity-and-content']]){const response=await page.goto(runtime.origin+'/docs/'+slug+'#'+anchor);assert.equal(response.status(),200);await page.locator('.docs-article').waitFor();await page.locator('#'+anchor).scrollIntoViewIfNeeded();if(slug==='response-api')await page.locator('.docs-body > p').filter({hasText:'The timeline attributes'}).scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-docs-'+slug+'-'+width+'.png')});}
   await context.close();
   const denied=await browser.newContext({viewport:{width,height:1000}}),deniedPage=await denied.newPage();const login=await denied.request.post(runtime.origin+'/api/login',{headers:{origin:runtime.origin},data:{name:'Synthetic Viewer',password:'synthetic-oncall-viewer-password'}});assert.equal(login.status(),200);
-  await deniedPage.goto(runtime.origin+'/#alerts');await deniedPage.locator('#response-api').getByText('An administrator manages clients, recipients and delivery failures.',{exact:true}).waitFor();assert.equal(await deniedPage.locator('#response-api').getByRole('button').count(),0);
+  await deniedPage.goto(runtime.origin+'/alerts');await deniedPage.locator('#response-api').getByText('An administrator manages clients, recipients and delivery failures.',{exact:true}).waitFor();assert.equal(await deniedPage.locator('#response-api').getByRole('button').count(),0);
   assert.equal((await denied.request.get(runtime.origin+'/api/automation')).status(),403);
   await deniedPage.screenshot({path:join(proof,'automation-denied-'+width+'.png'),fullPage:true});await denied.close();
  }

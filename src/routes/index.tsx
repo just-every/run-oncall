@@ -23,6 +23,9 @@ import { IncidentTriage } from "../app/IncidentTriage";
 import { IncidentResponseControls } from "../app/IncidentResponseControls";
 import { MonitoringIngress } from '../integrations/MonitoringIngress';
 import { MoveInWorkspace } from '../MoveInWorkspace';
+import { FailureLine } from "../app/FailureLine";
+import { WorkspaceNotFound } from "../app/NotFound";
+import { useWorkspacePath } from "../app/useWorkspacePath";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Field, Form } from "../forms";
@@ -37,7 +40,7 @@ import { ArchiveWorkspace } from "../app/ArchiveWorkspace";
 import { HandoffPreview } from "../app/HandoffPreview";
 import "../app/shell.css";
 import "../app/incidents.css";
-export const Route = createFileRoute("/")({ component: Workspace });
+export const Route = createFileRoute("/")({ component: () => null });
 const time = (value: string) =>
   new Date(value).toLocaleString([], {
     month: "short",
@@ -45,16 +48,14 @@ const time = (value: string) =>
     hour: "2-digit",
     minute: "2-digit",
   });
-function Workspace() {
+export function Workspace() {
   const w = useWorkspace();
-  const [page, setPage] = useState("incidents");
-  const [selected, setSelected] = useState("");
-  const selectIncident = (id: string) => {
-    setSelected(id);
-    const url = new URL(window.location.href);
-    if (id) url.searchParams.set("incident", id);
-    else url.searchParams.delete("incident");
-    window.history.replaceState(null, "", url);
+  const {page, incident: selected, selectIncident: chooseIncident} = useWorkspacePath();
+  const [revealing, setRevealing] = useState("");
+  const [listedRevision, setListedRevision] = useState(-1);
+  const selectIncident = async (id: string, reveal = false) => {
+    if (reveal) setRevealing(id);
+    await chooseIncident(id);
   };
   const [declare, setDeclare] = useState(false);
   const [declarationService,setDeclarationService]=useState("");
@@ -63,19 +64,6 @@ function Workspace() {
   const [handoff, setHandoff] = useState<any>(null);
   const [pendingSteps, setPendingSteps] = useState<Record<string, boolean>>({});
   useEffect(() => { w.setNotice(""); w.setError(""); }, [page]);
-  useEffect(() => {
-    if (page !== "alerts") return;
-    const update = () => { if (document.visibilityState === "visible") void w.refresh().catch(e => w.setError(e.message)); };
-    const timer = window.setInterval(update, 10000);
-    window.addEventListener("focus", update);
-    return () => { window.clearInterval(timer); window.removeEventListener("focus", update); };
-  }, [page]);
-  useEffect(() => {
-    const update = () => {setPage(location.hash.slice(1) || "incidents"); const id=new URLSearchParams(location.search).get("incident");if(id)setSelected(id);};
-    update();
-    window.addEventListener("hashchange", update);
-    return () => window.removeEventListener("hashchange", update);
-  }, []);
   const s = w.state;
   const actor = w.member;
   const activeIncidents = s?.incidents.filter((i) => i.state !== "resolved" && !i.mergedInto).length ?? 0;
@@ -85,9 +73,18 @@ function Workspace() {
   }, [strandedSession, signingOut]);
   const admin = actor?.role === "admin";
   const canEdit = actor?.role === "admin" || actor?.role === "responder";
-  const selectedIncident=s?.incidents.find(i=>i.id===selected)??s?.incidents.find(i=>!i.mergedInto);
+  const selectedIncident=selected?s?.incidents.find(i=>i.id===selected):s?.incidents.find(i=>!i.mergedInto);
   const incident=s&&selectedIncident?resolveIncidentAlias(s,selectedIncident.id):undefined;
   useEffect(()=>{if(selectedIncident?.mergedInto&&incident)selectIncident(incident.id);},[selectedIncident?.id,selectedIncident?.mergedInto?.target,incident?.id]);
+  useEffect(() => {
+    if (!revealing || revealing !== incident?.id || declare || listedRevision !== s?.revision) return;
+    const frame=requestAnimationFrame(() => {
+      const heading=document.querySelector<HTMLElement>(".detail > h2");
+      if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true});heading.scrollIntoView({block:"start"});}
+      setRevealing("");
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [revealing, incident?.id, declare, listedRevision, s?.revision]);
   const service = s?.services.find((v) => v.id === incident?.service);
   const name = (id: string | null) =>
     s?.members.find((m) => m.id === id)?.name ?? (id?.startsWith("api-") ? "Service account" : "Unassigned");
@@ -104,7 +101,7 @@ function Workspace() {
     </option>
   ));
   const declarationTemplate=s?.services.find(v=>v.id===(declarationService||s.services[0]?.id))?.incidentTemplates?.at(-1);
-  const command = (data: any) => w.run("/api/command", data);
+  const command = (data: any) => w.run("/api/command", ["service", "member"].includes(data.type) ? {...data, workspaceRevision: s?.revision} : data);
   const mutate = (data: any) =>
     incident
       ? command({ ...data, incident: incident.id, revision: incident.revision })
@@ -148,7 +145,7 @@ function Workspace() {
         Skip to workspace
       </a>
       <aside className="sidebar">
-        <a href="#incidents" className="brand" aria-label="Oncall home">
+        <a href="/incidents" className="brand">
           <Mark size={30} />
           <span data-rer-name>Oncall</span>
         </a>
@@ -157,7 +154,7 @@ function Workspace() {
             <a
               key={id}
               className={`nav ${page === id ? "active" : ""}`}
-              href={"#" + id}
+              href={"/" + id}
               aria-current={page === id ? "page" : undefined}
             >
               <NavIcon name={id} />
@@ -200,17 +197,6 @@ function Workspace() {
             <span className={`active-incident${activeIncidents ? "" : " none"}`}>
               {activeIncidents} active {activeIncidents === 1 ? "incident" : "incidents"}
             </span>
-            <button
-              className="quiet"
-              onClick={() =>
-                w
-                  .refresh()
-                  .then(() => w.setNotice("Up to date"))
-                  .catch((e) => w.setError(e.message))
-              }
-            >
-              Refresh
-            </button>
           </div>
         </header>
         {!w.demo && <div className="authority">
@@ -219,16 +205,8 @@ function Workspace() {
         <div role="status" className="notice" aria-live="polite">
           {w.busy ? "Saving…" : w.notice}
         </div>
-        {w.error && (
-          <div className="error" role="alert">
-            {w.error}{" "}
-            <button
-              onClick={() => w.refresh().catch((e) => w.setError(e.message))}
-            >
-              Reload current state
-            </button>
-          </div>
-        )}
+        <FailureLine failure={w.failure} />
+        {page === "not-found" && <WorkspaceNotFound />}
         {page === "status" && <StatusPanel actor={actor} state={s} />}
         {page === "move-in" && <MoveInWorkspace admin={admin} request={request} />}
         {page === "schedules" && (
@@ -236,7 +214,7 @@ function Workspace() {
         )}
         {page === "incidents" && (
           <div className="board">
-            <IncidentTriage state={s} actor={actor} current={incident?.id} select={id => {selectIncident(id); setHandoff(null); if (window.innerWidth < 900) requestAnimationFrame(() => document.querySelector(".detail")?.scrollIntoView({block: "start"}));}} busy={w.busy} run={w.run}>
+            <IncidentTriage onUpdated={setListedRevision} state={s} actor={actor} current={incident?.id} select={id => {selectIncident(id); setHandoff(null); if (window.innerWidth < 900) requestAnimationFrame(() => document.querySelector(".detail")?.scrollIntoView({block: "start"}));}} busy={w.busy} run={w.run}>
               <div className="list-toolbar">
                 <strong>Incidents {s.incidents.length}</strong>
                 {canEdit && (
@@ -255,7 +233,7 @@ function Workspace() {
                     <p>Create a service first.</p>
                   ) : (
                     <ManualDeclare state={s} busy={w.busy} submit={async data=>{
-                      const i=await command(data);if(i){selectIncident(i.id);setDeclare(false);}return i;
+                      const i=await command(data);if(i){await selectIncident(i.id,true);setDeclare(false);}return i;
                     }}/>
 
                   )}
@@ -282,11 +260,11 @@ function Workspace() {
                   </p>
                   {s.services.length ? (
                     canEdit && <button onClick={() => setDeclare(true)}>Start an incident</button>
-                  ) : <a href="#services">Set up services →</a>}
+                  ) : <a href="/services">Set up services →</a>}
                 </div>
               )}
             </IncidentTriage>
-            {incident ? (
+            {selected && !incident ? <WorkspaceNotFound incident /> : incident ? (
               <>
                 <section className="panel detail">
                   <div className="detail-heading">
@@ -714,7 +692,7 @@ function Workspace() {
           <div className="management-grid">
             <AlertsPanel state={s} canEdit={canEdit} run={w.run} busy={w.busy} name={name} onOpenIncident={selectIncident} onDeclare={async data => {
               const created = await command(data);
-              if (created) { selectIncident(created.id); location.hash = "incidents"; }
+              if (created) { await selectIncident(created.id,true); }
             }} />
             <AutomationSettings state={s} admin={admin} busy={w.busy} run={w.run} />
             <EmailWorkspace state={s} admin={admin} busy={w.busy} run={w.run} />
@@ -723,7 +701,7 @@ function Workspace() {
             <MonitoringIngress admin={admin} services={s.services} busy={w.busy} run={w.run} />
           </div>
         )}
-        {page === "reviews" && <ReviewsWorkspace state={s} busy={w.busy} canEdit={canEdit} command={command} onOpenIncident={id=>{selectIncident(id);location.hash="incidents"}} />}
+        {page === "reviews" && <ReviewsWorkspace state={s} busy={w.busy} canEdit={canEdit} command={command} onOpenIncident={id=>{void selectIncident(id)}} />}
         {page === "team" && (
           <div className="management-grid">
             <TeamsPanel state={s} actor={actor} refresh={w.refresh}/>

@@ -52,7 +52,7 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
   const secondPage=await second.newPage()
   if(openSession) await openSession(second,secondPage)
   else await secondPage.goto(ownerLink)
-  await secondPage.waitForURL(url=>url.pathname==='/'&&!url.hash,{timeout:60000})
+  await secondPage.waitForURL(url=>url.pathname==='/incidents'&&!url.hash,{timeout:60000})
   await secondPage.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
   const secondSession=await second.request.get('/api/session');assert.equal(secondSession.status(),200)
   assert.equal((await secondSession.json()).member.role,'admin','second session authenticates independently')
