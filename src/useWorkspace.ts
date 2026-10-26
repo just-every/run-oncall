@@ -5,6 +5,9 @@ import type { Member, State } from "./family/response-operations/domain";
 export class InterruptedTransport extends Error {
   constructor(){super('Connection interrupted; no success confirmed');}
 }
+export class HttpFailure extends Error {
+  constructor(public status: number, message: string, public human = true) {super(message);}
+}
 export async function request(path: string, data?: unknown): Promise<any> {
   const body=data===undefined?undefined:JSON.stringify(data);
   let response:Response,raw:string;
@@ -15,9 +18,9 @@ export async function request(path: string, data?: unknown): Promise<any> {
   let value:any;
   try {value=JSON.parse(raw);} catch {
     if(response.status>=500)throw new InterruptedTransport();
-    throw Error(`Invalid server response (${response.status}); no success confirmed`);
+    throw new HttpFailure(response.status, "The server response could not be read; saving was not confirmed.", false);
   }
-  if(!response.ok)throw Error(value?.error??`Request failed (${response.status})`);
+  if(!response.ok)throw new HttpFailure(response.status, typeof value?.error === 'string' ? value.error : 'This request could not be completed.', typeof value?.error === 'string');
   return value;
 }
 /** Only these effect-free comparison contracts may repeat a request whose response was lost. */
@@ -102,7 +105,7 @@ export function useWorkspace() {
         result = await (typeof path === "function" ? path() : request(path, change));
       } catch (error) {
         updateError(failureMessage(error));
-        failures.show(error, {target, retry: typeof path === 'string' && (guarded || change === undefined) ? async () => {
+        failures.show(error, {target, retry: typeof path === 'string' && (guarded || change === undefined) && (!(error instanceof HttpFailure) || error.status >= 500) ? async () => {
           const saved = await execute();
           if (saved && form?.isConnected && JSON.stringify([...new FormData(form)]) === values) form.reset();
           return saved;
