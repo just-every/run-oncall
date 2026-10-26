@@ -912,7 +912,7 @@
       "executable": false
     },
     "src/app/FailureLine.tsx": {
-      "sha256": "d9ed03bddaa142a8ab958c307689b65eeb1b49abd19b340c2c4ce557020a660d",
+      "sha256": "b74efe2e19fbc842b9e3138e52cab48a109bf3f05e5e422762a76b80b131e9fe",
       "executable": false
     },
     "src/app/flows.css": {
@@ -957,6 +957,10 @@
     },
     "src/app/ReplayComparison.tsx": {
       "sha256": "7cfc6c257a0d39b482a9186ec40c4278ef64d6310c430ed7db6d2050c93b262d",
+      "executable": false
+    },
+    "src/app/savedEditSummary.ts": {
+      "sha256": "e5aac4d69ebd18fb87807e51f7006ca226f55e0a2dbbdffbe90e4a7a22cab60e",
       "executable": false
     },
     "src/app/shell.css": {
@@ -1172,7 +1176,7 @@
       "executable": false
     },
     "src/business-status/StatusPanel.tsx": {
-      "sha256": "cbb808745528de746a9af26dca10b919c6a5854e1f646956ab568c6eac1fd62e",
+      "sha256": "6c1a33f5696bcc492704e6eb1380a718d10b189d71b13e782f5d7837efa369d3",
       "executable": false
     },
     "src/business-status/types.ts": {
@@ -1220,7 +1224,7 @@
       "executable": false
     },
     "src/changes/RecentChanges.tsx": {
-      "sha256": "1b9f0ee6babfb240ccc46b20a12657faec00d5283ddaa73cab1c83383dcb1936",
+      "sha256": "87002db20e3a27f83c12966797e8625029334a211cc0da6e4db77353b76c2f65",
       "executable": false
     },
     "src/client.tsx": {
@@ -3540,7 +3544,7 @@
       "executable": false
     },
     "src/monitoring/GrafanaSigning.tsx": {
-      "sha256": "07c6755114a2f345b95f475ac0e7a2213a266bab00b6bd76b0fe1f4a7f1930db",
+      "sha256": "518b52ab053d60f1553acfe4732f1d4bc3a332c7260665a9bb2a0bc794714808",
       "executable": false
     },
     "src/monitoring/incomplete.ts": {
@@ -4008,7 +4012,7 @@
       "executable": false
     },
     "src/schedule-coordination/Controls.tsx": {
-      "sha256": "086f2484646c918a25a72bcc8d9f83aefaa7b9b84fa3091b73a1aaa926ce6234",
+      "sha256": "02960d1ada7fb58bddb202ddb014806057e012213f10c1d0ccfec99fbbc9d658",
       "executable": false
     },
     "src/schedule-coordination/feed.ts": {
@@ -4028,7 +4032,7 @@
       "executable": false
     },
     "src/ScheduleSummary.tsx": {
-      "sha256": "e87b3977e79a012ca23deaf609e994275b7e150c326e63ac5bcba6cc8793174b",
+      "sha256": "7e43afa320d499cd6642d74fdc5a2cf011c32973ec2cf27230528271c74fcd4a",
       "executable": false
     },
     "src/scheduling.css": {
@@ -4036,7 +4040,7 @@
       "executable": false
     },
     "src/SchedulingWorkspace.tsx": {
-      "sha256": "5a0e796d039ed787bf2396140f0982617510895f075a420735d15c57396be903",
+      "sha256": "f80c6e905938f1d2ba8df2cd51345adf2410f175f93eea24ddfdf085ede18b8d",
       "executable": false
     },
     "src/server.dev.ts": {
@@ -4140,7 +4144,7 @@
       "executable": false
     },
     "src/useWorkspace.ts": {
-      "sha256": "f1de63c1e992c0a45f506ab93f3dc6a49873b3c86030050e76a4cc586f6c514f",
+      "sha256": "3313a4107e74ac8e985eca31f8cf4fc84df94c50d048eeadfefad3c939805816",
       "executable": false
     },
     "src/workspace-document.ts": {
