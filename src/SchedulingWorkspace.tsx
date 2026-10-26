@@ -1,4 +1,6 @@
 import {teamCoverage} from './teams/model';
+import {useViewAnchor} from './app/useViewAnchor';
+
 import {FailureLine, useActionFailure} from "./app/FailureLine";
 import {ScheduleCoordination} from './schedule-coordination/Controls';
 import { ReviewedChange } from './schedule-coverage/ReviewedChange';
@@ -75,6 +77,7 @@ function Empty({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export function SchedulingWorkspace({ page, actor, state, request, refreshWorkspace, demo }: Props) {
+  const preserveView=useViewAnchor();
   const failures=useActionFailure();
   const [data, setData] = useState<ModuleState | null>(null);
   const [busy, setBusy] = useState(false);
@@ -95,7 +98,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
     try {
       const loaded: ModuleState = await request("/api/paging/state");
       if (generation !== readGeneration.current) return null;
-      setData(loaded);
+      preserveView(); setData(loaded);
       if (!initialized.current) {
         initialized.current = true;
         const first = loaded.schedules[0];

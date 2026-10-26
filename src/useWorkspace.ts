@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import {useViewAnchor} from "./app/useViewAnchor";
 import {useActionFailure, failureMessage, hasChangeBase} from "./app/FailureLine";
 import type { Member, State } from "./family/response-operations/domain";
 export class InterruptedTransport extends Error {
@@ -37,6 +38,7 @@ export function useWorkspace() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const failures = useActionFailure();
+  const preserveView = useViewAnchor();
   const reading = useRef<Promise<void> | null>(null);
   function refresh(): Promise<void> {
     if (reading.current) return reading.current;
@@ -45,6 +47,7 @@ export function useWorkspace() {
     return pending;
   }
   function apply(session: {member: Member | null; demo?: boolean; setup: boolean; state: State | null}) {
+    preserveView();
     setMember(session.member);
     setDemo(session.demo === true);
     setSetup(session.setup);

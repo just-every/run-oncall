@@ -1,3 +1,4 @@
+import {useViewAnchor} from '../app/useViewAnchor';
 import { useEffect, useState } from 'react';
 import { Field, Form } from '../forms';
 import {FailureLine, useActionFailure, hasChangeBase} from '../app/FailureLine';
@@ -5,15 +6,16 @@ import { request } from '../useWorkspace';
 import type { Member, State } from '../family/response-operations/domain';
 
 export function StatusPanel({actor, state}: {actor: Member; state?: State | null}) {
+  const preserveView=useViewAnchor();
   const failures=useActionFailure();
   const [services, setServices] = useState<any[]>([]), [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false), [notice, setNotice] = useState('');
-  const refresh = async () => { const result = await request('/api/status'); setServices(result.services); setReady(true); };
+  const refresh = async () => { const result = await request('/api/status'); preserveView(); setServices(result.services); setReady(true); };
   const failedRead=(error:unknown)=>{if(!failures.current.current||failures.current.current.read)failures.show(error,{read:true,target:null,retry:async()=>{try{await refresh();failures.clear();}catch(error){failedRead(error);}}});};
   useEffect(() => { refresh().catch(failedRead); }, [state?.revision, actor]);
   const save = async (input: any) => {
     setBusy(true); failures.clear(); setNotice('');
-    try { const result = await request('/api/status', input); setServices(result.services); setNotice('Status records saved. No delivery was sent.'); return result; }
+    try { const result = await request('/api/status', input); preserveView(); setServices(result.services); setNotice('Status records saved. No delivery was sent.'); return result; }
     catch (error) { failures.show(error,{retry:hasChangeBase(input)?()=>save(input):undefined}); return null; }
     finally { setBusy(false); }
   };
