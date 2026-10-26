@@ -205,10 +205,10 @@ async function responsePolicyBrowser(page,context) {
   const refused=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST')
   await detail.getByRole('button',{name:'Record transition',exact:true}).click()
   assert.equal((await refused).status(),400,'server refuses resolution without a summary')
-  await page.locator('.error[role="alert"]').waitFor()
-  assert.match(await page.locator('.error[role="alert"]').innerText(),/summary/i)
+  await page.locator('.failure-line[role="alert"]').waitFor()
+  assert.match(await page.locator('.failure-line[role="alert"]').innerText(),/summary/i)
   assert.equal((await request('/api/state')).incidents.find(item=>item.id===incident.id).state,'recovered','refused resolution leaves the incident open')
-  await checkScreen('resolution-refused',width,page.locator('.error[role="alert"]'))
+  await checkScreen('resolution-refused',width,page.locator('.failure-line[role="alert"]'))
  }
 }
 
