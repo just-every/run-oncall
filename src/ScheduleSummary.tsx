@@ -20,7 +20,7 @@ export function ScheduleNowNext({schedule,state,request}:ReadProps) {
  const preserveView=useViewAnchor()
  useEffect(()=>{
   let current=true
-  request(`/api/schedules/${encodeURIComponent(schedule.id)}/now-next`).then(data=>{if(current){preserveView();setValue(data)}}).catch(e=>{if(current)failures.show(e,{read:true,target:null})})
+  request(`/api/schedules/${encodeURIComponent(schedule.id)}/now-next`).then(data=>{if(current){preserveView();setValue(data);if(failures.current.current?.read)failures.clear()}}).catch(e=>{if(current)failures.show(e,{read:true,target:null})})
   return ()=>{current=false}
  },[schedule,request])
  const name=(id:string|null|undefined)=>state.members.find(m=>m.id===id)?.name??'Coverage gap'
