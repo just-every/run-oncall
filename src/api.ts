@@ -448,9 +448,12 @@ api.post("/api/command", async (c) => {
   const snapshot=needsPolicy?await pagingSnapshot(c.env.DB):null;
   const state=snapshot?.workspace??await load(c.env.DB), revision=state.revision, actor=c.get('actor');
   const execute=async()=>{
-    if(['service','member'].includes(input.type)&&input.workspaceRevision!==undefined){
-      authority(state,actor,true);
-      if(input.workspaceRevision!==revision)fail('Workspace changed. Reload before applying your edit.',409);
+    if (['service', 'member'].includes(input.type) && input.baseValues !== undefined) {
+      authority(state, actor, true);
+      const record = input.type === 'service' ? state.services.find(row => row.id === input.id) : state.members.find(row => row.id === input.id);
+      const fields = input.type === 'service' ? ['name', 'environment', 'owner', 'runbook', 'pager'] : ['role', 'active'];
+      if (!record || fields.some(field => JSON.stringify((record as any)[field]) !== JSON.stringify(input.baseValues?.[field])))
+        fail('This record changed. Review the saved value before applying your edit.', 409);
     }
     const result=command(state,actor,input,new Date(Date.now()).toISOString(),snapshot?responseContext(snapshot,Date.now()):undefined);
     if(['declare','manual-page'].includes(input.type)&&result&&typeof result==='object'&&'id' in result)setAuditSubject(c.env.DB,'entity',String(result.id));
