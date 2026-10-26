@@ -100,6 +100,7 @@ export function SchedulingWorkspace({ page, actor, state, request, refreshWorksp
       const loaded: ModuleState = await request("/api/paging/state");
       if (generation !== readGeneration.current) return null;
       preserveView(); setData(loaded);
+      if (failures.current.current?.read) failures.clear();
       if (!initialized.current) {
         initialized.current = true;
         const first = loaded.schedules[0];

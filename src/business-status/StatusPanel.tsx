@@ -10,7 +10,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
   const failures=useActionFailure();
   const [services, setServices] = useState<any[]>([]), [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false), [notice, setNotice] = useState('');
-  const refresh = async () => { const result = await request('/api/status'); preserveView(); setServices(result.services); setReady(true); };
+  const refresh = async () => { const result = await request('/api/status'); preserveView(); setServices(result.services); setReady(true); if(failures.current.current?.read)failures.clear(); };
   const failedRead=(error:unknown)=>{if(!failures.current.current||failures.current.current.read)failures.show(error,{read:true,target:null,retry:async()=>{try{await refresh();failures.clear();}catch(error){failedRead(error);}}});};
   useEffect(() => { refresh().catch(failedRead); }, [state?.revision, actor]);
   const save = async (input: any) => {
