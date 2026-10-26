@@ -87,7 +87,7 @@ export function TeamsPanel({state,actor,refresh}:{state:State;actor:Member;refre
   queue.current=queue.current.then(execute,execute);await queue.current;return succeeded;
  }
  return <section className="panel padded teams-panel" aria-label="Teams"><h2>Teams</h2>
- {teams.map(team=><article className="service-card" key={team.id}><h3>{team.name}</h3><p>Public · {team.active?'Active':'Archived'} · {team.members.length} {team.members.length===1?'member':'members'}</p>
+ {teams.map(team=><article className="service-card" key={team.id}><h3>{team.name}</h3><p>Public · {team.active?'Active':'Archived'} · {team.members.length} {team.members.length===1?'member':'members'}</p><p>Managers: {team.managers.map(id=>state.members.find(m=>m.id===id)?.name??'Unavailable member').join(', ')||'None'}</p>
  {admin&&<details><summary>Edit team</summary><TeamEditor state={state} team={team} write={write} notes={notes}/></details>}</article>)}
  {admin&&<><details><summary>Create team</summary><Form busy={creating} label="Create team" onSubmit={create}><Field name="name" label="Team name"/><Choices state={state} members={members} managers={managers} onChange={(m,g)=>{setMembers(m);setManagers(g);}}/></Form><Mark note={notes.create}/><Feedback note={notes.create}/></details>
  <h3>Service ownership</h3>{state.services.map(service=><Ownership key={service.id} service={service} teams={teams} note={notes['ownership:'+service.id]} write={value=>enqueue('ownership:'+service.id,async()=>{
