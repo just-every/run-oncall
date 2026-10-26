@@ -31,7 +31,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
       <h3>{service.name}</h3><p>Owning team: {service.owningTeam}</p>
       <p><strong>Derived status: {service.derived}</strong>{!service.active && ' · inactive after restore'}</p>
       {service.override && <p>Manual override: <strong>{service.override.value}</strong> · {service.override.reason} · {new Date(service.override.at).toLocaleString()}{service.override.by && ` · ${state?.members.find(member => member.id === service.override.by)?.name ?? 'Erased member'}`}</p>}
-      <Form key={'subscription:'+service.id} busy={busy} label="Save subscription" onSubmit={data => save({...data, action:'subscribe', id:service.id, revision:service.revision, active:data.active==='true'})}>
+      <Form key={'subscription:'+service.id} busy={busy} label="Save subscription" onSubmit={async data => {await save({...data, action:'subscribe', id:service.id, revision:service.revision, active:data.active==='true'});}}>
         <Field name="channel" label="Recorded delivery channel" value={service.subscription?.channel ?? 'email'}><option value="email">Email (record only)</option><option value="push">Push (record only)</option><option value="chat">Chat (record only)</option></Field>
         <Field name="active" label="Your subscription" value={String(service.subscription?.active ?? false)}><option value="true">Subscribed</option><option value="false">Unsubscribed</option></Field>
       </Form>

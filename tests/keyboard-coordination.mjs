@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import {keyboardUser} from './keyboard.mjs'
+import {keyboardUser,focusWorkspace} from './keyboard.mjs'
 
 export async function keyboardCoordination(page,context,width,ownerLink,openSession) {
  const key=keyboardUser(page)
@@ -46,7 +46,13 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  await key.activate(page.getByRole('button',{name:'Record transition',exact:true}))
  await page.locator('.status-mark').filter({hasText:'acknowledged'}).waitFor()
  // A separately authenticated HTTP context advances the real stored revision.
- // The browser keeps its earlier version, so its next ordinary UI write loses.
+ // Delay this browser's real workspace reads while the second session wins,
+ // so a live-update clock cannot make this stale-write transport case disappear.
+ await focusWorkspace(page)
+ let releaseWorkspace
+ const workspaceGate=new Promise(resolve=>{releaseWorkspace=resolve})
+ const holdWorkspace=async route=>{await workspaceGate;await route.continue()}
+ await page.route('**/api/workspace',holdWorkspace)
  const second=await context.browser().newContext({baseURL:new URL(page.url()).origin})
  try {
   const secondPage=await second.newPage()
@@ -65,12 +71,14 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
   const rejected=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST')
   await key.activate(page.getByRole('button',{name:'Add timeline note',exact:true}))
   assert.equal((await rejected).status(),409,'real stale browser write rejected by server')
-  await page.locator('.error[role="alert"]').waitFor()
-  assert.ok((await page.locator('.error[role="alert"]').innerText()).length>0,'failed write is announced by an alert live region')
+  releaseWorkspace()
+  await page.unroute('**/api/workspace',holdWorkspace)
+  await page.locator('.failure-line[role="alert"]').waitFor()
+  assert.ok((await page.locator('.failure-line[role="alert"]').innerText()).length>0,'failed write is announced by an alert live region')
   await page.waitForFunction(()=>document.querySelector('.notice[role="status"]')?.textContent==='')
   assert.equal(await page.locator('.notice[role="status"]').innerText(),'','failed write never claims saved')
   assert.equal(await page.getByLabel('Observation, decision or evidence',{exact:true}).inputValue(),'Losing browser note must not save','failed draft remains editable')
   assert.deepEqual(await (await second.request.get('/api/state')).json(),before,'rejected write leaves the winning server data unchanged')
   await key.focusScreenshot(page.getByRole('button',{name:'Add timeline note',exact:true}),`evidence/browser/keyboard-rejected-write-${width}.png`)
- } finally { await second.close() }
+ } finally { releaseWorkspace();await page.unroute('**/api/workspace',holdWorkspace);await second.close() }
 }
