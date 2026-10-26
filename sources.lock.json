@@ -4360,7 +4360,7 @@
       "executable": false
     },
     "tests/worker-server.mjs": {
-      "sha256": "1523517adfd454fea78fa250464df04bc1210081e414d3d4c23ab729aacd860b",
+      "sha256": "5a7fe1091a9276e96b841446cd0b48c61c336e4fc33a6519cb31181ec148175a",
       "executable": false
     },
     "tests/worker.mjs": {
