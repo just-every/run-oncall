@@ -51,7 +51,13 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  await focusWorkspace(page)
  let releaseWorkspace
  const workspaceGate=new Promise(resolve=>{releaseWorkspace=resolve})
- const holdWorkspace=async route=>{await workspaceGate;await route.continue()}
+ const heldReads=new Set()
+ const holdWorkspace=route=>{
+  const read=workspaceGate.then(()=>route.continue())
+  heldReads.add(read)
+  return read.finally(()=>heldReads.delete(read))
+ }
+ const releaseReads=async()=>{releaseWorkspace();await Promise.all([...heldReads]);await page.unroute('**/api/workspace',holdWorkspace)}
  await page.route('**/api/workspace',holdWorkspace)
  const second=await context.browser().newContext({baseURL:new URL(page.url()).origin})
  try {
@@ -71,8 +77,7 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
   const rejected=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST')
   await key.activate(page.getByRole('button',{name:'Add timeline note',exact:true}))
   assert.equal((await rejected).status(),409,'real stale browser write rejected by server')
-  releaseWorkspace()
-  await page.unroute('**/api/workspace',holdWorkspace)
+  await releaseReads()
   await page.locator('.failure-line[role="alert"]').waitFor()
   assert.ok((await page.locator('.failure-line[role="alert"]').innerText()).length>0,'failed write is announced by an alert live region')
   await page.waitForFunction(()=>document.querySelector('.notice[role="status"]')?.textContent==='')
@@ -80,5 +85,5 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
   assert.equal(await page.getByLabel('Observation, decision or evidence',{exact:true}).inputValue(),'Losing browser note must not save','failed draft remains editable')
   assert.deepEqual(await (await second.request.get('/api/state')).json(),before,'rejected write leaves the winning server data unchanged')
   await key.focusScreenshot(page.getByRole('button',{name:'Add timeline note',exact:true}),`evidence/browser/keyboard-rejected-write-${width}.png`)
- } finally { releaseWorkspace();await page.unroute('**/api/workspace',holdWorkspace);await second.close() }
+ } finally { await releaseReads();await second.close() }
 }
