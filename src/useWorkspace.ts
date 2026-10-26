@@ -117,17 +117,43 @@ export function useWorkspace() {
       resolve(result && (!form?.isConnected || formValues() === values) ? result : null);
     };
     const guarded = hasChangeBase(change);
+    const original = currentState.current;
+    const originalNotes = new Set(original?.incidents.find(row => row.id === (change as any)?.incident)?.timeline.map(entry => entry.id));
+    let lostResponse = false;
     const execute = async (): Promise<any> => {
       setBusy(true); updateError(""); failures.clear(); setNotice("");
       let result: any;
       try {
         result = await (typeof path === "function" ? path() : request(path, change));
       } catch (error) {
-        if (error instanceof HttpFailure && error.status === 409 && change && typeof change === 'object' && 'baseValues' in change) {
-          try {await refresh();} catch { /* Keep the edit until current values can be read. */ }
+        if (error instanceof InterruptedTransport) lostResponse = true;
+        if (error instanceof HttpFailure && error.status === 409 && change && typeof change === 'object') {
+          let confirmed = false;
+          try {
+            if (reading.current) await reading.current.catch(() => {});
+            await refresh(); confirmed = true;
+          } catch { /* A new base is offered only after a healthy read. */ }
           const input = change as any;
-          const record = input.type === 'service' ? currentState.current?.services.find(row => row.id === input.id) : currentState.current?.members.find(row => row.id === input.id);
-          const base = record && Object.fromEntries(Object.keys(input.baseValues).map(key => [key, (record as any)[key]]));
+          const record = confirmed ? input.type === 'service' ? currentState.current?.services.find(row => row.id === input.id) : input.type === 'member' ? currentState.current?.members.find(row => row.id === input.id) : currentState.current?.incidents.find(row => row.id === input.incident) : undefined;
+          const base = record && input.baseValues && Object.fromEntries(Object.keys(input.baseValues).map(key => [key, (record as any)[key]]));
+          const note = record && 'timeline' in record && input.type === 'note' ? record.timeline.find(entry => !originalNotes.has(entry.id) && entry.actor === member?.id && entry.kind === 'note' && entry.text === input.text.trim()) : undefined;
+          const desiredValue = (key: string) => {
+            const value = input[key];
+            if (input.type !== 'service') return value;
+            if (key === 'runbook' && Array.isArray(value)) return value.map(item => typeof item === 'string' ? item.trim() : item);
+            return typeof value === 'string' ? value.trim() : value;
+          };
+          const sameValue = base && Object.keys(base).every(key => JSON.stringify(base[key]) === JSON.stringify(desiredValue(key)));
+          if (lostResponse && (note || sameValue)) {
+            failures.clear(); updateError(''); setNotice('Saved'); setBusy(false); finish(record); return record;
+          }
+          if (!input.baseValues) {
+            const incident = record && 'timeline' in record ? record : undefined;
+            const saved = incident ? input.type === 'note' ? incident.timeline.filter(entry => entry.kind === 'note').at(-1)?.text ?? 'No timeline note.' : Object.entries(input).filter(([key]) => key in incident && !['revision', 'incident', 'type'].includes(key)).map(([key]) => `${key}: ${JSON.stringify((incident as any)[key])}`).join(' · ') || `Incident revision ${incident.revision}` : 'Current values could not be read.';
+            const apply = incident && input.type === 'note' ? async () => {input.revision = incident.revision; return execute();} : undefined;
+            failures.show(error, {target, saved, retryLabel: 'Apply my edit', retry: apply});
+            setBusy(false); if (!apply) finish(null); return null;
+          }
           failures.show(error, {target, saved: base ? Object.entries(base).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join('; ') : String(value ?? '')}`).join(' · ') : 'This record is no longer available.', retryLabel: 'Apply my edit', retry: base ? async () => {input.baseValues = base; return execute();} : undefined});
           setBusy(false);
           if (!base) finish(null);
