@@ -135,6 +135,10 @@ export function useWorkspace() {
           } catch { /* A new base is offered only after a healthy read. */ }
           const input = change as any;
           const record = confirmed ? input.type === 'service' ? currentState.current?.services.find(row => row.id === input.id) : input.type === 'member' ? currentState.current?.members.find(row => row.id === input.id) : currentState.current?.incidents.find(row => row.id === input.incident) : undefined;
+          if (!record || ((input.type === 'service' || input.type === 'member') && !input.baseValues)) {
+            failures.show(error, {target});
+            setBusy(false); finish(null); return null;
+          }
           const base = record && input.baseValues && Object.fromEntries(Object.keys(input.baseValues).map(key => [key, (record as any)[key]]));
           const note = record && 'timeline' in record && input.type === 'note' ? record.timeline.find(entry => !originalNotes.has(entry.id) && entry.actor === member?.id && entry.kind === 'note' && entry.text === input.text.trim()) : undefined;
           const desiredValue = (key: string) => {
@@ -149,7 +153,7 @@ export function useWorkspace() {
           }
           if (!input.baseValues) {
             const incident = record && 'timeline' in record ? record : undefined;
-            const saved = incident ? input.type === 'note' ? incident.timeline.filter(entry => entry.kind === 'note').at(-1)?.text ?? 'No timeline note.' : Object.entries(input).filter(([key]) => key in incident && !['revision', 'incident', 'type'].includes(key)).map(([key]) => `${key}: ${JSON.stringify((incident as any)[key])}`).join(' · ') || `Incident revision ${incident.revision}` : 'Current values could not be read.';
+            const saved = incident ? input.type === 'note' ? incident.timeline.filter(entry => entry.kind === 'note').at(-1)?.text ?? 'No timeline note.' : Object.entries(input).filter(([key]) => key in incident && !['revision', 'incident', 'type'].includes(key)).map(([key]) => `${key}: ${JSON.stringify((incident as any)[key])}`).join(' · ') || `Incident revision ${incident.revision}` : undefined;
             const apply = incident && input.type === 'note' ? async () => {input.revision = incident.revision; return execute();} : undefined;
             failures.show(error, {target, saved, retryLabel: 'Apply my edit', retry: apply});
             setBusy(false); if (!apply) finish(null); return null;
