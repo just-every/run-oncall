@@ -15,7 +15,7 @@ export function requireTeamCoverage(state:State,actor:Member,service:string) {
  if(!teamCoverage(state,actor,service))fail((state.services.find(s=>s.id===service)?.name??'This service')+' is not covered by a team you manage. A workspace administrator can change its owning team.',404);
 }
 export function validateTeams(state:State) {
- if(state.teams===undefined){if(state.services.some(s=>s.team!==undefined&&s.team!==null))fail('Choose an available owning team or Unassigned.');return;}
+ if(state.teams===undefined){if(state.services.some(s=>s.team!==undefined&&s.team!==null||s.ownership!==undefined))fail('Choose an available owning team or Unassigned.');return;}
  if(!Array.isArray(state.teams)||state.teams.length>1000||new Set(state.teams.map(t=>t?.id)).size!==state.teams.length)fail('Choose up to 1,000 teams, each with its own name.');
  for(const team of state.teams){
   if(!team||typeof team!=='object'||Array.isArray(team)||Object.keys(team).some(k=>!['id','name','visibility','active','revision','members','managers'].includes(k)))fail('Enter a team name and choose its members.');
@@ -25,6 +25,8 @@ export function validateTeams(state:State) {
   for(const id of team.managers){const person=state.members.find(m=>m.id===id);if(!team.members.includes(id))fail(managesButNotMember(person?.name??'This person'));if(!person||!['admin','responder'].includes(person.role))fail(cannotManage(person?.name??'This person'));}
  }
  for(const service of state.services)if(service.team!==undefined&&service.team!==null&&!state.teams.some(t=>t.id===service.team))fail('Choose an available owning team or Unassigned.');
+ // Imported ownership names the Backstage component it came from; it holds no person.
+ for(const {ownership:o,team} of state.services)if(o!==undefined&&(!o||typeof o!=='object'||Array.isArray(o)||Object.keys(o).length!==4||o.source!=='backstage'||typeof o.entity!=='string'||!/^component:[^/]{1,253}\/[^/]{1,253}$/.test(o.entity)||typeof o.importId!=='string'||!o.importId||o.importId.length>100||typeof o.importedAt!=='string'||Number.isNaN(Date.parse(o.importedAt))||!team))fail('Imported service ownership is not valid.');
 }
 export function editTeam(state:State,actor:Member,input:any):Team {
  if(!state.members.some(m=>m.id===actor.id&&m.active&&m.role==='admin'))fail('Only a current workspace administrator can change teams.',403);

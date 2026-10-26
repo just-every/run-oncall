@@ -56,6 +56,61 @@ try {
   assert.equal(ok(await req('/api/state')).services.find(s=>s.id==='payments').team,team.id,'archive retains explicit ownership');
   team=ok(await req('/api/teams',{...team,active:true}));
   console.log('PASS OC-023 public teams: create/edit/archive, ownership, stale and concurrent writes, audit rollback, manager own coverage and zero-write foreign refusal');
+  // OC-023 Backstage ownership import: preview writes nothing; apply keeps a hand-set team unless chosen; nothing is invented.
+  const catalog=JSON.parse(await readFile(new URL('./fixtures/backstage-catalog.json',import.meta.url),'utf8'));
+  for(const [id,name] of [['synthetic-oncall-231'],['synthetic-oncall-232'],['synthetic-oncall-233'],['synthetic-oncall-235'],['synthetic-oncall-236'],['synthetic-oncall-237'],['synthetic-oncall-238-a','synthetic-oncall 238'],['synthetic-oncall-238-b','Synthetic Oncall 238']])ok(await req('/api/command',{type:'service',id,name:name??id,environment:'production',owner:'',runbook:[],pager:''}));
+  for(const id of ['synthetic-oncall-241','synthetic-oncall-242'])ok(await req('/api/teams',{...teamInput,id,name:id,members:[actor.id],managers:[actor.id]}));
+  for(const [service,owning] of [['synthetic-oncall-232','synthetic-oncall-242'],['synthetic-oncall-233','synthetic-oncall-241']])ok(await req('/api/teams/ownership',{service,team:owning,workspaceRevision:ok(await req('/api/state')).revision}));
+  const member=async(name,role)=>{ok(await req('/api/members',{name,role,password:name+'-password'}),201);const login=(await w.request('/api/login',{name,password:name+'-password'})).cookie;return (path,input)=>w.request(path,input,login);};
+  const importers=[managerReq,await member('synthetic-oncall-243','viewer'),await member('synthetic-oncall-244','responder')];
+  const records=async()=>{const s=ok(await req('/api/state'));return {services:s.services,teams:s.teams,members:s.members};};
+  const preview=async()=>ok(await req('/api/teams/backstage/preview',{catalog}));
+  let importBefore=await records();
+  for(const as of importers)for(const door of ['preview','apply'])ok(await as('/api/teams/backstage/'+door,{catalog,digest:'',choices:{}}),403);
+  ok(await w.send('/api/teams/backstage/preview','{"catalog":[',{origin:w.origin,cookie,'content-type':'application/json'}),400);
+  for(const refused of [{catalog:'synthetic-oncall-245'},{catalog:{kind:'Component'}},{catalog:[{kind:'Component'}]},{catalog,extra:true}])ok(await req('/api/teams/backstage/preview',refused),400);
+  ok(await req('/api/teams/backstage/preview',{catalog:Array.from({length:1001},(_,i)=>({kind:'Component',metadata:{name:'s'+i}}))}),413);
+  let rows=await preview();
+  assert.deepEqual(rows.rows.map(r=>[r.entity,r.action]),['change','conflict','unchanged','unmatched','unmatched','unmatched','unmatched','unmatched'].map((action,i)=>['component:default/synthetic-oncall-'+[231,232,233,234,235,236,237,238][i],action]));
+  assert.deepEqual(await records(),importBefore,'refusals and the preview write nothing');
+  const importArchive=ok(await req('/api/archive'));
+  w.sql("CREATE TRIGGER synthetic_oncall_import_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-246'); END");
+  try{ok(await req('/api/teams/backstage/apply',{catalog,digest:rows.digest,choices:{}}),503);}finally{w.sql('DROP TRIGGER synthetic_oncall_import_audit');}
+  assert.deepEqual(ok(await req('/api/archive')),importArchive,'an import rolls back with its permanent audit');
+  assert.deepEqual(ok(await req('/api/teams/backstage/apply',{catalog,digest:rows.digest,choices:{}})).applied,['synthetic-oncall-231']);
+  let imported=ok(await req('/api/state'));const record=id=>imported.services.find(s=>s.id===id);
+  assert.equal(record('synthetic-oncall-231').team,'synthetic-oncall-241');assert.equal(record('synthetic-oncall-231').ownership.source,'backstage');assert.equal(record('synthetic-oncall-231').ownership.entity,'component:default/synthetic-oncall-231');
+  assert.equal(record('synthetic-oncall-232').team,'synthetic-oncall-242','a hand-set conflict keeps its team without a choice');
+  for(const id of ['synthetic-oncall-232','synthetic-oncall-233','synthetic-oncall-235','synthetic-oncall-236','synthetic-oncall-237','synthetic-oncall-238-a','synthetic-oncall-238-b'])assert.deepEqual(record(id),importBefore.services.find(s=>s.id===id),'kept and unmatched rows write nothing');
+  assert.deepEqual([imported.teams,imported.members],[importBefore.teams,importBefore.members],'an import never creates a team or a person');
+  // The conflict's incident history survives choosing Backstage's team.
+  const importIncident=ok(await req('/api/command',{type:'declare',service:'synthetic-oncall-232',severity:'warning',title:'synthetic-oncall-232',summary:'synthetic-oncall-232',alerts:[]}));
+  const history=async()=>ok(await req('/api/state')).incidents.find(i=>i.id===importIncident.id);
+  const historyBefore=await history();
+  rows=await preview();
+  ok(await req('/api/teams/backstage/apply',{catalog,digest:rows.digest,choices:{'synthetic-oncall-232':'backstage'}}));
+  imported=ok(await req('/api/state'));
+  assert.equal(record('synthetic-oncall-232').team,'synthetic-oncall-241');assert.equal(record('synthetic-oncall-232').ownership.entity,'component:default/synthetic-oncall-232');
+  assert.deepEqual(await history(),historyBefore,'resolving the conflict keeps incident history');
+  // A hand change after the preview stales it; a manual choice clears provenance; an unrelated note does not stale it.
+  rows=await preview();
+  ok(await req('/api/teams/ownership',{service:'synthetic-oncall-231',team:'synthetic-oncall-242',workspaceRevision:ok(await req('/api/state')).revision}));
+  importBefore=await records();
+  ok(await req('/api/teams/backstage/apply',{catalog,digest:rows.digest,choices:{}}),409);
+  assert.deepEqual(await records(),importBefore,'a stale preview writes nothing');
+  assert.equal(importBefore.services.find(s=>s.id==='synthetic-oncall-231').ownership,undefined,'a manual choice clears imported provenance');
+  rows=await preview();
+  assert.equal(rows.rows[0].action,'conflict','re-importing shows the hand-set service as a conflict');
+  ok(await req('/api/command',{type:'note',incident:importIncident.id,revision:(await history()).revision,text:'synthetic-oncall-247'}));
+  assert.deepEqual(ok(await req('/api/teams/backstage/apply',{catalog,digest:rows.digest,choices:{'synthetic-oncall-231':'backstage'}})).applied,['synthetic-oncall-231']);
+  // Save service keeps imported provenance; a repeated import writes nothing.
+  imported=ok(await req('/api/state'));const kept=record('synthetic-oncall-232');
+  ok(await req('/api/command',{type:'service',id:kept.id,name:kept.name,environment:kept.environment,owner:kept.owner,runbook:kept.runbook,pager:kept.pager}));
+  imported=ok(await req('/api/state'));assert.deepEqual(record('synthetic-oncall-232').ownership,kept.ownership,'Save service keeps imported provenance');
+  rows=await preview();importBefore=await records();
+  assert.deepEqual(ok(await req('/api/teams/backstage/apply',{catalog,digest:rows.digest,choices:{}})).applied,[]);
+  assert.deepEqual(await records(),importBefore,'a repeated import writes nothing');
+  console.log('PASS OC-023 Backstage ownership import: zero-write preview, provenance, audit rollback, conflict choice with incident history, stale digest, no invented owner, admin-only refusals');
   // OC-023 ownerless services stay visible without turning the current admin into an owner.
   const unassigned={type:'service',id:'synthetic-oncall-23',name:'synthetic-oncall-23',environment:'production',owner:null,runbook:['synthetic-oncall-23 inspect retained evidence'],pager:''};
   assert.equal(ok(await req('/api/command',unassigned)).owner,'');

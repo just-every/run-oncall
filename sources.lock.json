@@ -1215,7 +1215,7 @@
       "executable": false
     },
     "src/family/response-operations/domain.ts": {
-      "sha256": "2d8ac54231982ce864999363db453ddc6c7ca0d7d27bdeb8dc6393d14e96e1b0",
+      "sha256": "d3de697b6200e3e9bf686917d5e113a761aeeea943c2e272d6762dbd32dddb58",
       "executable": false
     },
     "src/family/response-operations/escalation.ts": {
@@ -3879,23 +3879,31 @@
       "executable": false
     },
     "src/teams/api.ts": {
-      "sha256": "c0930afde098ae5a8a3c9e4f3923bc6b63b26eeea3132cce2811f5152652b70d",
+      "sha256": "0ef1bfabc56017c7c60933444e33458d86630cfb8b3234f7576a0121e709bdb1",
       "executable": false
     },
     "src/teams/edits.ts": {
       "sha256": "b5fb9e4731062253dffa0c42eb5ba3b54d7f45d8ecb569c09ef1b42ea1ebc756",
       "executable": false
     },
+    "src/teams/feedback.tsx": {
+      "sha256": "9dd80474bdde38e3d1954da164e1feba34f1bc5191a354aa5d0c0f594ea54f62",
+      "executable": false
+    },
     "src/teams/model.ts": {
-      "sha256": "96d30aaea522f5f7f8a65bbb16f865d8459cebb717a4f728da05980ae28c8595",
+      "sha256": "c3d0a349889dd0e0491d2c35cdf9f59ef93070561d1dfff423a4df12042c500d",
       "executable": false
     },
     "src/teams/teams.css": {
-      "sha256": "5032c18b1ed5816928005822fbca8082b0e0e87f70dd9577f98eca93a70fb19a",
+      "sha256": "0e0ffd02954f1b5a8f97bbf6f4abab0ead14955990a149e0efb3d324114498fe",
       "executable": false
     },
     "src/teams/TeamsPanel.tsx": {
-      "sha256": "8c99bb4ed4953b6508ba47a7a62a2b903bb9404936c99aaf64af4141a1c355e1",
+      "sha256": "f8ef15c3a5abfb98c1147296a4e17306f465b576f2e9397d2e71e37696f0565d",
+      "executable": false
+    },
+    "src/teams/words.ts": {
+      "sha256": "6a2ca62f80ed7e5cf54c6238701935f868a3026ea2ba03f35432c041cbed7c4e",
       "executable": false
     },
     "src/triage-alerts.ts": {
@@ -3991,7 +3999,7 @@
       "executable": false
     },
     "tests/changes.mjs": {
-      "sha256": "856b2f9904bf0fe44e26f4cbe4c594bb9cf5836790214a114822d66aecc911df",
+      "sha256": "6ac2086a5ddcab3106752b3806e5e858e153c181579680039cb3ac642ce082f4",
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {

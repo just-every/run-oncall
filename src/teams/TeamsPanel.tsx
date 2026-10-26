@@ -6,6 +6,7 @@ import type {Team} from './model';
 import {applyTeamEdit,editTarget,ownershipHeld,ownershipProblem,teamEditHeld,teamEditProblem,type TeamEdit} from './edits';
 import {staleOwnership,staleTeam} from './words';
 import {Feedback,Mark,type Note} from './feedback';
+import {BackstageImport} from './BackstageImport';
 import './teams.css';
 
 // How a write failed: lost on the way, refused as stale, or refused for its value. `blocked` records that the
@@ -39,7 +40,8 @@ function TeamEditor({state,team,write,notes}:{state:State;team:Team;write:(team:
  </div>;
 }
 function Ownership({service,teams,value,note,write}:{service:State['services'][number];teams:Team[];value:string;note?:Note;write:(value:string)=>void}){
- return <div className="teams-ownership"><label className="field"><span>{'Owning team for '+service.name} <Mark note={note}/></span><select aria-label={'Owning team for '+service.name} value={value} onChange={e=>write(e.target.value)}><option value="">Unassigned</option>{teams.filter(t=>t.active||t.id===value).map(t=><option key={t.id} value={t.id}>{t.name}{t.active?'':' (archived)'}</option>)}</select></label><Feedback note={note}/></div>;
+ const imported=service.ownership?.source==='backstage'&&value===service.team?service.ownership:undefined;
+ return <div className="teams-ownership"><label className="field"><span>{'Owning team for '+service.name} <Mark note={note}/></span><select aria-label={'Owning team for '+service.name} value={value} onChange={e=>write(e.target.value)}><option value="">Unassigned</option>{teams.filter(t=>t.active||t.id===value).map(t=><option key={t.id} value={t.id}>{t.name}{t.active?'':' (archived)'}</option>)}</select></label>{imported&&<span className="teams-provenance">From Backstage · {imported.entity}</span>}<Feedback note={note}/></div>;
 }
 export function TeamsPanel({state,actor,refresh}:{state:State;actor:Member;refresh:()=>Promise<void>}){
  const [savedNotes,setNotes]=useState<Record<string,Note>>({}),[pending,setPending]=useState<Pending[]>([]),[creating,setCreating]=useState(false),[members,setMembers]=useState<string[]>([]),[managers,setManagers]=useState<string[]>([]);
@@ -131,6 +133,6 @@ export function TeamsPanel({state,actor,refresh}:{state:State;actor:Member;refre
  <h3>Service ownership</h3>{state.services.map(service=><Ownership key={service.id} service={service} teams={teams} value={pending.find(p=>p.ownership?.service===service.id)?.ownership?.value??service.team??''} note={notes['ownership:'+service.id]} write={value=>keep({key:'ownership:'+service.id,target:'ownership:'+service.id,ownership:{service:service.id,value},operation:async()=>{
  const revision=current.current.revision,result=await request('/api/teams/ownership',{service:service.id,team:value||null,workspaceRevision:revision});
  if(!result||result.id!==service.id||result.team!==(value||null))throw Error('Invalid server response');
- }})}/>)}</>}
+ }})}/>)}<BackstageImport refresh={refresh}/></>}
  </section>;
 }
