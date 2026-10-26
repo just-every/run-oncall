@@ -27,7 +27,7 @@ import { FailureLine } from "../app/FailureLine";
 import { WorkspaceNotFound } from "../app/NotFound";
 import { useWorkspacePath } from "../app/useWorkspacePath";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Field, Form } from "../forms";
 import { compareRequest, request, useWorkspace } from "../useWorkspace";
 import { SchedulingWorkspace } from "../SchedulingWorkspace";
@@ -99,7 +99,20 @@ export function Workspace() {
     </option>
   ));
   const declarationTemplate=s?.services.find(v=>v.id===(declarationService||s.services[0]?.id))?.incidentTemplates?.at(-1);
-  const command = (data: any) => w.run("/api/command", ["service", "member"].includes(data.type) ? {...data, workspaceRevision: s?.revision} : data);
+  const recordBases = useRef(new Map<string, any>());
+  const rememberBase = (type: string, record: any) => {
+    const key = type + ':' + record.id;
+    if (!recordBases.current.has(key)) recordBases.current.set(key, structuredClone(type === 'service'
+      ? {name: record.name, environment: record.environment, owner: record.owner, runbook: record.runbook, pager: record.pager}
+      : {role: record.role, active: record.active}));
+  };
+  const command = async (data: any) => {
+    const key = data.type + ':' + data.id;
+    const baseValues = recordBases.current.get(key);
+    const result = await w.run("/api/command", baseValues ? {...data, baseValues} : data);
+    if (result) recordBases.current.delete(key);
+    return result;
+  };
   const mutate = (data: any) =>
     incident
       ? command({ ...data, incident: incident.id, revision: incident.revision })
@@ -485,7 +498,7 @@ export function Workspace() {
             <section className="panel padded">
               <h2>Service ownership</h2>
               {s.services.map((v) => (
-                <article className="service-card" key={v.id}>
+                <article className="service-card" key={v.id} onFocusCapture={() => rememberBase('service', v)}>
                   <h3>{v.name}</h3>
                   <p>
                     {v.environment} · {name(v.owner)}
@@ -713,7 +726,7 @@ export function Workspace() {
                 commander is a responsibility, separate from account permission.
               </p>
               {s.members.map((m) => (
-                <article className="service-card" key={m.id}>
+                <article className="service-card" key={m.id} onFocusCapture={() => rememberBase('member', m)}>
                   <h3>{m.name}</h3>
                   <p>
                     {m.role} · {m.active ? "Active" : "Revoked"}
