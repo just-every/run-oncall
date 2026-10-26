@@ -1,3 +1,4 @@
+import {lobbyPaths} from './app/lobbyPaths';
 import {isWorkspacePath, workspaceAddress} from './app/paths';
 import {subscriptionResponse} from './schedule-coordination/feed';
 import {sweepDeadlines} from './incident-deadlines/sweep';
@@ -51,7 +52,7 @@ export default withDemo({
     const lobby=async()=>{
       const root=new Request(new URL('/',request.url),{method:request.method,headers:request.headers});
       const response=await lobbyResponse(root,bindings,identity);
-      return response&&documentStatus===404?new Response(response.body,{status:404,headers:response.headers}):response;
+      return response ? lobbyPaths(response, documentStatus) : response;
     };
     const state=await setupStateResponse(request,bindings);if(state)return state;
     if(appDocument) {

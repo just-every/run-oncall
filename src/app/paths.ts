@@ -20,6 +20,6 @@ export function legacyWorkspacePath(url: URL) {
   const incident = url.searchParams.get('incident');
   const section = url.hash.slice(1);
   url.searchParams.delete('incident');
-  const path = incident ? incidentPath(incident) : section ? `/${encodeURIComponent(section)}` : '/incidents';
+  const path = incident ? '/incidents/' + encodeURIComponent(incident) : section ? `/${encodeURIComponent(section)}` : '/incidents';
   return path + url.search;
 }

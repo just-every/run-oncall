@@ -52,6 +52,15 @@ async function sharedIncidentLinks(page,context) {
   await page.locator('.navigation').waitFor()
   assert.deepEqual(await page.evaluate(()=>window.__routeReplacements),[path],'a shared entry canonicalizes in one client replace hop')
  }
+ const visitor=await context.browser().newContext()
+ try{
+  const entry=await visitor.newPage()
+  for(const [old,path] of [['/#alerts','/alerts'],['/#schedules','/schedules'],['/?incident='+encodeURIComponent(incident.id)+'#incidents','/incidents/'+encodeURIComponent(incident.id)]]){
+   await entry.goto(origin+old)
+   await entry.waitForURL(url=>url.pathname===path)
+   assert.equal(await entry.locator('.detail').count(),0,'shared guest entries retain the sign-in lobby without incident data')
+  }
+ }finally{await visitor.close()}
  await page.locator('.detail').getByRole('heading',{name:incident.title,exact:true}).waitFor()
  const shell=await page.locator('.app').elementHandle()
  try{
