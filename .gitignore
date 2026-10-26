@@ -19,3 +19,4 @@ exports/
 evidence/*.log
 evidence/browser/
 evidence/history-scan.json
+delivery-artifact/
