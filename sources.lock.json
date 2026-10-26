@@ -115,7 +115,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "7747754ac2f41e7a6a974a3ca9c32f6385e6bfc031922a82e0681b9573d91e72",
+      "sha256": "02f60a4dbd26225d6aefd2c9032955936f5ae9324f35f618b9d6c3c4cabc01e8",
       "executable": false
     },
     ".gitignore": {
@@ -3882,6 +3882,10 @@
       "sha256": "8fb87fcf3857c36a8577997680bcda21333b59f1e2b2aea22827c06e1834e899",
       "executable": false
     },
+    "src/teams/edits.ts": {
+      "sha256": "aeaf1cd2ad32ca9b822ef4aba63f3eecbb00889d885c8fea40dd9cedbb6c4dcb",
+      "executable": false
+    },
     "src/teams/model.ts": {
       "sha256": "d5a32bb5a5a10d57e4bde7e19f7313538e6ab4dc31bf5efc13a31cc8713f1113",
       "executable": false
@@ -3891,7 +3895,7 @@
       "executable": false
     },
     "src/teams/TeamsPanel.tsx": {
-      "sha256": "7f52753be327c87605317a7fdd34e916d51dac4bd8fe9c5f6f0c666499decbb9",
+      "sha256": "a42bec22bbd1696e87309e4062dac1acb81247ee9e8b9d3200e9837544da7810",
       "executable": false
     },
     "src/triage-alerts.ts": {
@@ -4135,7 +4139,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "447a309591128096640308a12aabc343395102835d66f65e988569cbc43fe4ff",
+      "sha256": "aa92c8190fa26baef096a4e08dc9af13fb574040cc7fe860b5a9f027353276d1",
       "executable": false
     },
     "tests/migration-upgrade.mjs": {

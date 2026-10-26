@@ -85,6 +85,25 @@ try {
   await saved.getByLabel('Team name',{exact:true}).fill(edited);
   const teamState=ok(await call(owner.page,'/api/state')),owning=teamState.teams.find(t=>t.name===edited);
   assert.ok(owning.members.includes(rosaRecord.id));assert.equal(owning.members.length,2);assert.deepEqual(owning.managers,[rosaRecord.id]);
+  // A stale edit keeps a different member change saved by another administrator.
+  const other=await owner.context.newPage();await other.goto(worker.origin+'/#team');
+  const otherCard=other.getByRole('region',{name:'Teams',exact:true}).getByRole('article').filter({has:other.getByRole('heading',{name:edited,exact:true})});
+  await otherCard.getByText('Edit team',{exact:true}).click();
+  const otherWrite=other.waitForResponse(response=>new URL(response.url()).pathname==='/api/teams'&&response.request().method()==='POST'&&response.status()===200);
+  await otherCard.getByRole('checkbox',{name:'Member '+ownerMember.name,exact:true}).check();assert.equal((await otherWrite).status(),200);
+  const firstEdit=teamWrite();await saved.getByRole('checkbox',{name:'Member '+viewer.name,exact:true}).uncheck();
+  const firstAnswer=await firstEdit;
+  if(firstAnswer.status()===409){
+   const kept=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/teams'&&response.request().method()==='POST'&&response.status()===200);
+   await saved.getByRole('button',{name:'Retry',exact:true}).click();assert.equal((await kept).status(),200);
+  }else assert.equal(firstAnswer.status(),200);
+  const combined=ok(await call(owner.page,'/api/state')).teams.find(t=>t.id===owning.id);
+  const viewerRecord=ok(await call(owner.page,'/api/state')).members.find(m=>m.name===viewer.name);
+  assert.ok(combined.members.includes(ownerMember.id));assert.ok(!combined.members.includes(viewerRecord.id));
+  await expect(saved.getByRole('checkbox',{name:'Member '+ownerMember.name,exact:true})).toBeChecked();
+  await other.close();
+  let reset=teamWrite();await saved.getByRole('checkbox',{name:'Member '+ownerMember.name,exact:true}).uncheck();assert.equal((await reset).status(),200);
+  reset=teamWrite();await saved.getByRole('checkbox',{name:'Member '+viewer.name,exact:true}).check();assert.equal((await reset).status(),200);
   const archived=teamWrite();await saved.getByLabel('Team state',{exact:true}).selectOption('false');assert.equal((await archived).status(),200);
   assert.equal(ok(await call(owner.page,'/api/state')).teams.find(t=>t.id===owning.id).active,false);
   const restored=teamWrite();await saved.getByLabel('Team state',{exact:true}).selectOption('true');assert.equal((await restored).status(),200);
