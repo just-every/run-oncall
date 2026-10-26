@@ -40,8 +40,9 @@ export function useActionFailure() {
   }, []);
   function show(error: unknown, options: {retry?: () => Promise<unknown>; read?: boolean; target?: HTMLElement | null; retryLabel?: string; saved?: string} = {}) {
     if (options.read && current.current && !current.current.read) return;
-    const message = failureMessage(error, options.read);
-    const next = {read: options.read, saved: options.saved, retryLabel: options.retryLabel, message: message + (!options.read && !options.retry ? ' Check the current records before trying this action again.' : ''), target: options.target === undefined ? action.current : options.target, retry: options.retry};
+    const reason = failureMessage(error, options.read);
+    const message = /[.!?]$/.test(reason) ? reason : reason + '.';
+    const next = {read: options.read, saved: options.saved, retryLabel: options.retryLabel, message: message + (!options.read && !options.retry && error instanceof InterruptedTransport ? ' Check the current records before trying this action again.' : ''), target: options.target === undefined ? action.current : options.target, retry: options.retry};
     current.current = next; setFailure(next);
   }
   return {failure, show, clear: () => {current.current = null; setFailure(null);}, action, current};
