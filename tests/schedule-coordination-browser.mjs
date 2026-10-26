@@ -25,10 +25,12 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
   }
   const login=await relief.request.post(origin+'/api/login',{headers:{origin},data:{name,password}});assert.equal(login.status(),200);
   const current=await relief.request.get(origin+'/api/session');assert.equal(current.status(),200);const member=(await current.json()).member;
-  assert.equal(member.id,substitute.id,'the substitute uses its own password session');assert.equal(member.role,'responder');assert.notEqual(member.id,session.member.id);
+  assert.equal(member.id,substitute.id,'the substitute uses its own password session');
+  assert.equal(member.id,substitute.id,'the independently opened context acts as the substitute');assert.equal(member.role,'responder');assert.notEqual(member.id,session.member.id);
   assert.equal((await relief.cookies()).some(cookie=>/^(?:__Host-operator_session|operator_session_local(?:_\d+)?)$/.test(cookie.name)),false,'no owner Auth session is copied or created');
   const reliefPage=await relief.newPage(),errors=[];reliefPage.on('pageerror',error=>errors.push(error.message));
   const document=await reliefPage.goto(origin+'/schedules');assert.equal(document.status(),200);await reliefPage.getByLabel('Schedule',{exact:true}).selectOption('browser-'+width);
+
 
   const substituteView=reliefPage.getByRole('region',{name:'Shift coordination',exact:true});await substituteView.getByRole('button',{name:'Accept swap',exact:true}).click();await substituteView.getByText(/accepted/).waitFor();
   assert.ok(await reliefPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'substitute schedule fits the viewport');
