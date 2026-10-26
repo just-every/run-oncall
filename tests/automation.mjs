@@ -345,13 +345,13 @@ try {
  assert.equal((await act({type:'assign-role',role:'scribe',member:responder.id,reason:'Completed history does not block coordination'})).status,'queued');
  assert.equal(ok(await manage('/api/automation/dispatch',{})).status,'sent');
  // Fill genuinely unfinished work through the authenticated human command door.
- for(let n=0;n<1000;n++)incident=ok(await human('/api/command',{type:'assign-role',incident:incident.id,revision:incident.revision,role:'scribe',member:responder.id,reason:'Synthetic unfinished capacity '+n}));
+ for(let n=0;n<1000;n++)incident=ok(await human('/api/command',{type:'assign-role',incident:incident.id,revision:incident.revision,role:'scribe',member:n%2===0?admin.id:responder.id,reason:'Synthetic unfinished capacity '+n}));
  const full=await read();assert.equal(full.apiOutbox.filter(o=>['queued','sending','failed'].includes(o.status)).length,1000);
  const overflow=await act({type:'transition',state:'acknowledged',summary:'Human coordination continues with a full queue'});
  assert.equal(overflow.status,'terminal');assert.equal(overflow.history[0].reason,'capacity-not-scheduled');assert.equal(overflow.attempts,0);
  ok(await manage('/api/automation/outbox/'+overflow.id+'/replay',{revision:overflow.revision,approve:true}),429);
- assert.equal((await act({type:'reassign',member:responder.id,reason:'A subsequent command also survives capacity'})).status,'terminal');
- await act({type:'assign-role',role:'scribe',member:responder.id,reason:'Role custody at capacity'});
+ assert.equal((await act({type:'reassign',member:admin.id,reason:'A subsequent command also survives capacity'})).status,'terminal');
+ await act({type:'assign-role',role:'scribe',member:admin.id,reason:'Role custody at capacity'});
  await act({type:'action',title:'synthetic-oncall-follow-up',owner:responder.id,due:'2026-12-01',completionPolicy:'human-review'});
  await act({type:'complete',action:incident.actions[0].id,evidence:'https://example.test/capacity'});
  await act({type:'accept-action',action:incident.actions[0].id,reason:'Actual human acceptance'});
@@ -373,7 +373,7 @@ try {
  // Storage failure still rolls back incident, audit and the capacity outcome.
  const beforeFailure=await read(),auditBeforeFailure=await audit();
  await capacity.db.prepare("CREATE TRIGGER synthetic_capacity_fault BEFORE INSERT ON oc_api_outbox BEGIN SELECT RAISE(ABORT,'synthetic outbox storage failure'); END").run();
- ok(await human('/api/command',{type:'assign-role',incident:incident.id,revision:incident.revision,role:'scribe',member:responder.id,reason:'Must roll back'}),503);
+ ok(await human('/api/command',{type:'assign-role',incident:incident.id,revision:incident.revision,role:'scribe',member:admin.id,reason:'Must roll back'}),503);
  await capacity.db.prepare('DROP TRIGGER synthetic_capacity_fault').run();
  assert.deepEqual((await read()).incidents,beforeFailure.incidents);assert.deepEqual((await read()).apiOutbox,beforeFailure.apiOutbox);
  assert.equal((await audit()).filter(x=>!auditBeforeFailure.some(y=>x.id===y.id)&&x.kind==='command.assign-role'&&x.outcome==='accepted').length,0);
