@@ -24,7 +24,7 @@ function sentence(code: string, vendor: string): string {
 
 export class DoorRefusal extends Error {
  code: string
- constructor(message: string, code: string) { super(message); this.code = code }
+ constructor(message: string, code: string, public status?: number) { super(message); this.code = code }
 }
 
 export function doorClient(vendor: string) {
@@ -35,7 +35,7 @@ export function doorClient(vendor: string) {
   // Oncall's own refusals carry a sentence and a code, and a session or request refusal is a sentence: both show as written.
   // The door's carry only its snake_case code, which the screen puts into words.
   const code = value.code ?? value.error ?? `http_${response.status}`
-  throw new DoorRefusal(typeof value.error === 'string' && (value.code || !/^[a-z][a-z0-9_]*$/.test(value.error)) ? value.error : sentence(code, vendor), code)
+  throw new DoorRefusal(typeof value.error === 'string' && (value.code || !/^[a-z][a-z0-9_]*$/.test(value.error)) ? value.error : sentence(code, vendor), code, response.status)
  }
 }
 type Door = ReturnType<typeof doorClient>
@@ -61,7 +61,7 @@ export async function previewFile(door: Door, bytes: Uint8Array, name: string, v
  for (let index = 0; index < totalChunks; index++) {
   const chunk = bytes.subarray(index * CHUNK, (index + 1) * CHUNK)
   try { uploadId = (await door('uploads', { uploadId, name, bundleSha256, totalBytes: bytes.length, totalChunks, index, chunkSha256: await hex(chunk), base64: base64(chunk) })).uploadId }
-  catch (error) { throw error instanceof DoorRefusal && error.code === 'quota_or_chunk_limit' ? new DoorRefusal(oversize(bytes, name, vendor), error.code) : error }
+  catch (error) { throw error instanceof DoorRefusal && error.code === 'quota_or_chunk_limit' ? new DoorRefusal(oversize(bytes, name, vendor), error.code, error.status) : error }
  }
  return door('plan', { uploadId })
 }
