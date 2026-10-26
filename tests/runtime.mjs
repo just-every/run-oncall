@@ -851,7 +851,8 @@ try {
   ]);
   const successes = restores.filter((r) => r.status === 200);
   assert.ok(successes.length >= 1, JSON.stringify(restores));
-  assert.ok(restores.every((r) => [200, 409, 401].includes(r.status)));
+  assert.ok(restores.every((r) => [200, 409, 401].includes(r.status)),
+    JSON.stringify(restores.map(({status,value}) => ({status,body:value}))));
   const valid = [];
   for (const receipt of successes) {
     if ((await request("/api/state", undefined, receipt.cookie)).status === 200)
