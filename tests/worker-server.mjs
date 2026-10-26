@@ -25,7 +25,15 @@ const runtime=new Miniflare(convertV4MiniflareOptions({
  host:'127.0.0.1',port:Number(port),resourcePersistencePath:resolve(persist,'v3'),unsafeTriggerHandlers:true,
  workers:[{...options,name:config.name,modules,modulesRoot:root},...externalWorkers],
 }))
-const stop=async()=>{await runtime.dispose();process.exit(0)}
+let resident,touch
+const stop=async()=>{clearInterval(resident);await touch;await runtime.dispose();process.exit(0)}
 process.once('SIGTERM',stop)
 process.once('SIGINT',stop)
 try{await runtime.ready}catch(error){await runtime.dispose();throw error}
+
+// Workerd closes a Durable Object after ten idle seconds. Closing, the Worker's D1
+// object checkpoints its WAL under an exclusive SQLite lock, so a journey's
+// out-of-process d1 execute between requests fails SQLITE_BUSY. Keep the D1
+// objects resident while this Worker serves.
+const databases=await Promise.all(config.d1_databases.map(({binding})=>runtime.getD1Database(binding)))
+resident=setInterval(()=>{touch??=Promise.all(databases.map(db=>db.prepare('SELECT 1').first())).finally(()=>{touch=undefined})},2000)
