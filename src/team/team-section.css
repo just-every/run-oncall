@@ -4,6 +4,8 @@
 .team-section .team-member {display:grid; grid-template-columns:minmax(0,1fr) minmax(160px,210px) 44px; gap:12px; align-items:start; padding:14px; border:1px solid var(--oc-line); border-radius:12px; min-width:0;}
 .team-section .team-member-main h3 {margin:0; font-size:16px;}
 .team-section .team-member-main p {margin:4px 0 0; color:var(--oc-muted); font-size:14px;}
+.team-section .team-member-role {position:relative;}
+.team-section .team-member-role > .autosave-saved {position:absolute; top:0; left:27px;}
 .team-section .team-member-role .field {margin:0;}
 .team-section .team-member-role .field > span {font-size:13px;}
 .team-section .team-member-actions {position:relative;}
@@ -38,6 +40,7 @@
 @media(max-width:760px) {
  .team-section .team-member {padding:10px;gap:6px;}
  .team-section .team-member-role .field > span {display:none;}
+ .team-section .team-member-role > .autosave-saved {top:13px; left:calc(100% + 6px); margin:0;}
 }
 .team-section [data-tip-dismissed] .oncall-tooltip-content {visibility:hidden;opacity:0;}
 .team-section .field :is(input,select,textarea):focus-visible {outline-offset:-2px;}
