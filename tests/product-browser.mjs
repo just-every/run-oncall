@@ -443,7 +443,7 @@ try {
  await mkdir('.rer/local',{recursive:true,mode:0o700})
  const owner=await worker.request('/api/setup',credentials)
  assert.equal(owner.status,200,'the public setup door creates the local browser owner')
- browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']})
+ browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.CHROMIUM_EXECUTABLE_PATH}:{}),args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
  const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000}})
  await context.addCookies(owner.headers.getSetCookie().map(line=>{
   const pair=line.split(';')[0],at=pair.indexOf('=')

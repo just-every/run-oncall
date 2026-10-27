@@ -11,7 +11,9 @@ export function incidentControl(state: State, actor: Member, i: Incident, input:
   if (!isResponseChange(input.type) && !['bulk-acknowledge', 'bulk-resolve'].includes(input.type)) return false;
   const previousState=i.state;
   let description: string;
-  const reason = text(input.reason, 'Reason', 3000);
+  const required = ['bulk-acknowledge', 'bulk-resolve'].includes(input.type) || input.type === 'set-urgency' && incidentUrgency(i) === 'high' && input.urgency === 'low';
+  const reason = required ? text(input.reason, 'Reason', 3000) : input.reason === undefined || input.reason === '' ? '' : text(input.reason, 'Reason', 3000);
+  const suffix = reason ? `: ${reason}` : '';
   if (input.type === 'assign-role' || input.type === 'reassign') {
     const role = input.type === 'reassign' ? 'assignee' : input.role;
     if (!['commander', 'scribe', 'communications', 'assignee'].includes(role)) fail('Unknown response role');
@@ -20,21 +22,21 @@ export function incidentControl(state: State, actor: Member, i: Incident, input:
     const old = (i as any)[role] ?? (role === 'assignee' ? incidentAssignee(i) : null);
     if (old === (member?.id ?? null)) return true;
     (i as any)[role] = member?.id ?? null;
-    description = `${role}: ${state.members.find(m => m.id === old)?.name ?? 'Unassigned'} → ${member?.name ?? 'Unassigned'}: ${reason}`;
+    description = `${role}: ${state.members.find(m => m.id === old)?.name ?? 'Unassigned'} → ${member?.name ?? 'Unassigned'}${suffix}`;
   } else if (input.type === 'set-priority') {
     if (input.priority !== null && !['P1', 'P2', 'P3', 'P4', 'P5'].includes(input.priority)) fail('Invalid priority');
     if ((i.priority ?? null) === input.priority) return true;
-    description = `Priority: ${i.priority ?? 'unset'} → ${input.priority ?? 'unset'}: ${reason}`;
+    description = `Priority: ${i.priority ?? 'unset'} → ${input.priority ?? 'unset'}${suffix}`;
     i.priority = input.priority;
   } else if (input.type === 'set-urgency') {
     if (!['high', 'low'].includes(input.urgency)) fail('Invalid urgency');
     if (incidentUrgency(i) === input.urgency) return true;
-    description = `Urgency: ${incidentUrgency(i)} → ${input.urgency}: ${reason}`;
+    description = `Urgency: ${incidentUrgency(i)} → ${input.urgency}${suffix}`;
     i.urgency = input.urgency;
   } else if (input.type === 'set-severity') {
     if (!['critical', 'warning', 'info'].includes(input.severity)) fail('Invalid severity');
     if (i.severity === input.severity) return true;
-    description = `Severity: ${i.severity} → ${input.severity}: ${reason}`;
+    description = `Severity: ${i.severity} → ${input.severity}${suffix}`;
     // A lower severity must not silently lower the independent urgency.
     i.urgency = incidentUrgency(i);
     i.severity = input.severity;
@@ -43,14 +45,14 @@ export function incidentControl(state: State, actor: Member, i: Incident, input:
     i.state = 'acknowledged';
     i.assignee = actor.id;
     if (!i.commander) i.commander = actor.id;
-    description = `declared → acknowledged: ${reason}`;
+    description = `declared → acknowledged${suffix}`;
   } else {
     if (i.state === 'resolved') fail('Incident is already resolved', 409);
     const evidence = link(input.evidence);
     if (!evidence) fail('Recovery evidence URL is required');
     i.recovery = evidence;
     i.state = 'resolved';
-    description = `Resolved with human recovery attestation ${evidence}: ${reason}`;
+    description = `Resolved with human recovery attestation ${evidence}${suffix}`;
   }
   i.revision++;
   i.timeline.push({id: crypto.randomUUID(), at, actor: actor.id, kind: input.type, text: description,
