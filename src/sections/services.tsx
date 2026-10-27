@@ -5,7 +5,6 @@ import { UserAssignment } from '../manual-pages/Controls';
 import { ResponsePolicy } from '../response-policy/ResponsePolicy';
 import { UrgencyPolicy } from '../urgency/UrgencyPolicy';
 import { RecentChanges } from "../changes/RecentChanges";
-import { ChangeSources } from "../changes/ChangeSources";
 import { ServiceDependencies } from "../changes/Dependencies";
 import { Field, Form } from "../forms";
 import { useWorkspaceContext } from "../app/shell/WorkspaceContext";
@@ -97,7 +96,6 @@ export function ServicesSection() {
                 <p>No services yet. Start with the system your team owns.</p>
               )}
             </section>
-            {admin && <ChangeSources state={s} busy={w.busy} run={w.run} />}
             {admin && (
               <section className="panel padded">
                 <h2>Add service</h2>

@@ -9,8 +9,8 @@ export function CompareHistory({ state }: { state: State }) {
   const [pasted, setPasted] = useState(''), [events, setEvents] = useState(state.events);
   const opener = useRef<HTMLButtonElement>(null), panel = useRef<HTMLDivElement>(null);
   async function compare(input: State['events']) {
-    setRunning(true); setError('');
-    try { setResult(await compareRequest('/api/replay', { events: input })); setEvents(input); }
+    setRunning(true); setError(''); setResult(undefined);
+    try { const submitted=input.map(({source,eventId,service,environment,key,generation,intent,severity,title,observedAt,evidence,priority})=>({source,eventId,service,environment,key,generation,intent,severity,title,observedAt,evidence,...(priority?{priority}:{})}));setResult(await compareRequest('/api/replay', { events: submitted })); setEvents(input); }
     catch (e) { setError(failureMessage(e, true)); }
     finally { setRunning(false); }
   }

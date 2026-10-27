@@ -1,4 +1,5 @@
 import {openWorkspaceSection} from './keyboard.mjs'
+import {openHistoryComparison} from './routing-browser.mjs';
 import assert from 'node:assert/strict'
 import {randomBytes,createHmac} from 'node:crypto'
 import {mkdir} from 'node:fs/promises'
@@ -282,20 +283,20 @@ async function changeAndSigningBrowser(page,context){
   const service=page.locator('.service-card').filter({has:page.getByRole('heading',{name:'Template payments',exact:true})});await service.locator('.recent-changes > summary').click();
   await service.getByText('Argo CD gateway sync',{exact:true}).waitFor();await service.getByText('payments: applied',{exact:true}).waitFor();await service.getByText('Terraform Cloud',{exact:true}).waitFor();
   assert.ok(await service.getByText('Dependency · Template gateway',{exact:true}).count());await service.scrollIntoViewIfNeeded();await check('oc065-changes',width);
-  await page.getByText(/of 1,000 retained changes/).scrollIntoViewIfNeeded();await check('oc065-retention',width);
+  await page.goto(origin+'/settings/integrations');await page.getByRole('heading',{name:'Sources',exact:true}).waitFor();await check('oc065-retention',width);
   const erasureKey=token(),erasureSource='synthetic-oncall-40-'+width;
   await request('/api/changes/sources',{id:erasureSource,name:'Synthetic erasure '+width,provider:'native',service:'synthetic-oncall-1',repository:'',mode:'bearer',revision:0,key:erasureKey});
   const changeResponse=await context.request.post('/api/changes/ingress/'+erasureSource,{headers:{authorization:'Bearer '+erasureKey},data:{eventId:erasureSource,summary:'Synthetic erasable change '+width,author:'synthetic-oncall-40',timestamp:new Date().toISOString()}});assert.equal(changeResponse.status(),201);
   const erasureChange=await changeResponse.json();await page.reload();
-  const settings=page.locator('.change-sources');await settings.getByText('Data erasure settings',{exact:true}).click();
+  await page.goto(origin+'/settings/archive');const settings=page.locator('.erase-data');await settings.getByRole('heading',{name:'Erase someone’s data',exact:true}).waitFor();
   await settings.getByLabel('Retained change',{exact:true}).selectOption(erasureChange.id);
   assert.equal(await settings.getByRole('button',{name:'Erase retained change',exact:true}).isEnabled(),false);
-  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasureChange.id);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-erasure-review',width);
   const erasureResponse=page.waitForResponse(r=>r.url().endsWith('/api/changes/'+erasureChange.id+'/erase'));
   await settings.getByRole('button',{name:'Erase retained change',exact:true}).click();assert.equal((await erasureResponse).status(),200);
   await settings.getByText('Local erasure complete. Standby not reconciled.',{exact:true}).waitFor();
-  await settings.getByText('oc_changes: 1 deleted, 0 updated',{exact:true}).waitFor();
+  assert.equal((await (await erasureResponse).json()).stores.oc_changes.deleted,1);assert.equal((await (await erasureResponse).json()).stores.oc_changes.updated,0);
   assert.ok(!(await request('/api/state')).changes.some(row=>row.id===erasureChange.id));
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-erasure-receipt',width);
   const erasedIncident=await request('/api/command',{type:'declare',service:'synthetic-oncall-1',title:'Synthetic erasable incident '+width,summary:'Synthetic erasable impact',severity:'warning'});
@@ -303,11 +304,11 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('incident');
   await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedIncident.id);
   assert.equal(await settings.getByRole('button',{name:'Erase selected subject',exact:true}).isEnabled(),false);
-  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedIncident.id);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-incident-review',width);
   const incidentEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/incident/'+erasedIncident.id));
   await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await incidentEraseResponse).status(),200);
-  await settings.getByText('oc_incidents: 1 deleted, 0 updated',{exact:true}).waitFor();
+  assert.equal((await (await incidentEraseResponse).json()).stores.oc_incidents.deleted,1);assert.equal((await (await incidentEraseResponse).json()).stores.oc_incidents.updated,0);
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-incident-receipt',width);
   assert.ok(!(await request('/api/state')).incidents.some(i=>i.id===erasedIncident.id));
   const erasedIntegration='synthetic-oncall-40-integration-'+width;
@@ -315,11 +316,11 @@ async function changeAndSigningBrowser(page,context){
   await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('intake');
   await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedIntegration);
-  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedIntegration);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-integration-review',width);
   const integrationEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/intake/'+erasedIntegration));
   await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await integrationEraseResponse).status(),200);
-  await settings.getByText('oc_intake_credentials: 1 deleted, 0 updated',{exact:true}).waitFor();
+  assert.equal((await (await integrationEraseResponse).json()).stores.oc_intake_credentials.deleted,1);assert.equal((await (await integrationEraseResponse).json()).stores.oc_intake_credentials.updated,0);
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-integration-receipt',width);
   assert.ok(!(await request('/api/state')).intakeSources.some(i=>i.id===erasedIntegration));
   const erasedEmail='synthetic-oncall-440-'+width;
@@ -327,11 +328,11 @@ async function changeAndSigningBrowser(page,context){
   await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('email');
   await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedEmail);
-  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedEmail);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-email-review',width);
   const emailEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/email/'+erasedEmail));
   await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await emailEraseResponse).status(),200);
-  await settings.getByText('oc_email_credentials: 1 deleted, 0 updated',{exact:true}).waitFor();
+  assert.equal((await (await emailEraseResponse).json()).stores.oc_email_credentials.deleted,1);assert.equal((await (await emailEraseResponse).json()).stores.oc_email_credentials.updated,0);
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-email-receipt',width);
   assert.ok(!((await request('/api/state')).emailAddresses??[]).some(row=>row.id===erasedEmail));
   const importedId='synthetic-oncall-410-'+width;
@@ -340,11 +341,11 @@ async function changeAndSigningBrowser(page,context){
   await request('/api/intake/incumbent',{importedId:importedRoot.targetId,importedRevision:importedRoot.revision,id:importedId,service:'synthetic-oncall-1',name:'Synthetic imported erasure '+width,revision:0,key:randomBytes(16).toString('hex')});
   await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('intake');
-  await settings.getByLabel('Erasure subject',{exact:true}).selectOption(importedId);await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+importedId);
+  await settings.getByLabel('Erasure subject',{exact:true}).selectOption(importedId);await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-imported-integration-review',width);
   const importedEraseResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/intake/'+importedId));
   await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const importedResult=await importedEraseResponse;assert.equal(importedResult.status(),200);assert.ok((await importedResult.json()).importCustody.stores.some(row=>row.rows>0));
-  await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-imported-integration-receipt',width);
+  await settings.getByText('Imported records cleared locally.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-imported-integration-receipt',width);
   const memberName='synthetic-oncall-413-'+width+'@example.test';
   const erasedMember=await request('/api/members',{name:memberName,password:'synthetic-oncall-413-password',role:'admin'},201);
   const personalContext=await context.browser().newContext({baseURL:origin});
@@ -360,14 +361,14 @@ async function changeAndSigningBrowser(page,context){
   const memberPlan=await importDoor.preview('pagerduty',JSON.stringify({users:[{id:'synthetic-oncall-413-'+width,name:'Synthetic erasable contact',email:memberName}]}));assert.equal(memberPlan.status,200);assert.equal((await importDoor.apply('pagerduty',memberPlan.value)).status,200);
   await focusWorkspace(page);
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('member');await settings.getByLabel('Erasure subject',{exact:true}).selectOption(erasedMember.id);
-  await settings.getByLabel('Imported identity '+memberName,{exact:true}).check();await settings.getByLabel('Imported identities reviewed',{exact:true}).check();
-  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedMember.id);await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-member-review',width);
+  await settings.getByLabel('Imported identity Synthetic erasable contact',{exact:true}).check();await settings.getByLabel('Imported identities reviewed',{exact:true}).check();
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-member-review',width);
   const memberResponse=page.waitForResponse(r=>r.url().endsWith('/api/erasure/member/'+erasedMember.id));await settings.getByRole('button',{name:'Erase selected subject',exact:true}).click();const memberReply=await memberResponse;assert.equal(memberReply.status(),200,await memberReply.text());
-  await settings.getByText('Imported custody complete.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await settings.getByText(/Approved response recipient .*Provider deletion requires the owner’s consent/).waitFor();await check('oc040-member-receipt',width);
+  await settings.getByText('Imported records cleared locally.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await settings.getByText(/Approved response recipient .*Provider deletion requires the owner’s consent/).waitFor();await check('oc040-member-receipt',width);
   assert.equal((await request('/api/state')).members.find(m=>m.id===erasedMember.id).name,'Erased member');
   const erasedBusiness=(await request('/api/state')).businessServices.find(row=>row.id===memberBusiness.id);
   assert.ok(!erasedBusiness.audience.includes(erasedMember.id));assert.ok(!erasedBusiness.subscriptions.some(row=>row.member===erasedMember.id));
-  await settings.getByText(/oc_business_services:/).waitFor();
+  assert.ok((await memberReply.json()).stores.oc_business_services.updated>0);
 
   await openWorkspaceSection(page,'schedules');await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
   await page.locator('.scheduling-now-next').getByText('Now: Coverage gap',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
@@ -378,7 +379,7 @@ async function changeAndSigningBrowser(page,context){
   await responseReport.getByText(/incident revision unknown/).first().waitFor();
   assert.equal(await responseReport.getByRole('link',{name:'Erased incident',exact:true}).count(),0,'erased cases have no personal incident drilldown');
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().scrollIntoViewIfNeeded();await check('oc040-erased-response-report',width);
-  await openWorkspaceSection(page,'services');if(!await settings.getByLabel('Erasure category',{exact:true}).isVisible())await settings.getByText('Data erasure settings',{exact:true}).click();
+  await page.goto(origin+'/settings/archive');await settings.getByLabel('Erasure category',{exact:true}).waitFor();
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // Publish grouping through the existing service settings, then inspect its public admissions.
   await page.reload();await openWorkspaceSection(page,'services');
@@ -399,7 +400,7 @@ async function changeAndSigningBrowser(page,context){
   await openWorkspaceSection(page,'services');
   await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(groupSources[1]);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const groupedPreview=page.getByRole('region',{name:'Routing preview',exact:true});await groupedPreview.getByText('4 retained events compared. No records changed.',{exact:true}).waitFor();await groupedPreview.getByText(/Joined original event/).first().waitFor();await groupedPreview.getByText(/Historical urgency: high/).first().waitFor();await groupedPreview.getByText(/Proposed urgency: high/).first().waitFor();await groupedPreview.scrollIntoViewIfNeeded();await check('oc043-grouping-routing-preview',width);
-  await page.getByLabel('Event JSON array',{exact:true}).fill(JSON.stringify([rootEvent,joinedEvent]));await page.getByRole('button',{name:'Compare decisions',exact:true}).click();const serviceReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await serviceReplay.getByText(/Joined original event/).first().waitFor();await serviceReplay.getByText(/Historical urgency:/).first().waitFor();await serviceReplay.getByText(/Proposed urgency:/).first().waitFor();await serviceReplay.scrollIntoViewIfNeeded();await check('oc043-grouping-service-replay',width);
+  await openHistoryComparison(page);await page.getByLabel('Event JSON',{exact:true}).fill(JSON.stringify([rootEvent,joinedEvent]));await page.getByRole('button',{name:'Compare pasted events',exact:true}).click();const serviceReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await serviceReplay.getByText(/Joined original event/).first().waitFor();await serviceReplay.getByText(/Historical urgency:/).first().waitFor();await serviceReplay.getByText(/Proposed urgency:/).first().waitFor();await serviceReplay.scrollIntoViewIfNeeded();await check('oc043-grouping-service-replay',width);await page.getByRole('button',{name:'Close comparison',exact:true}).click();
   await openWorkspaceSection(page,'services');
   // OC-043's existing routing screen exposes both stages before publication.
   const orchestrationId='synthetic-oncall-43-'+width,orchestrationKey=token(),policyBefore=(await request('/api/state')).policies.find(p=>p.service==='synthetic-oncall-1'&&p.severity==='warning');
@@ -411,23 +412,21 @@ async function changeAndSigningBrowser(page,context){
   await page.reload();await openWorkspaceSection(page,'alerts');
   const suppressedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:observation.title,exact:true,level:3})});await suppressedCard.getByText('Suppressed · Owner: '+member.name,{exact:false}).waitFor();await suppressedCard.scrollIntoViewIfNeeded();await check('oc043-owned-suppressed-alert',width);
   await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);
-  await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
+  const maintenancePreview=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/preview')&&r.request().method()==='POST');await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const comparison=page.getByRole('region',{name:'Routing preview',exact:true});await comparison.getByText('1 retained events compared. No records changed.',{exact:true}).waitFor();
   await comparison.getByRole('heading',{name:observation.title,exact:true,level:4}).waitFor();
   await comparison.getByText('Proposed: routing v1 · service rule v'+policy.version+' · suppress · owner '+member.name+'.',{exact:true}).waitFor();
-  await comparison.getByText('Ordered routing decisions',{exact:true}).click();
-  const compared=JSON.parse(await comparison.locator('pre').innerText());assert.equal(compared.historical.version,1);assert.equal(compared.proposed.version,1);assert.equal(compared.proposed.serviceDecision.version,policy.version);assert.equal(compared.proposed.serviceDecision.owner,member.id);assert.match(compared.proposed.serviceDecision.reason,/Maintenance active/);assert.ok(compared.proposed.serviceDecision.reason.includes(window.end));
+  const compared=(await (await maintenancePreview).json()).decisions[0];assert.equal(compared.historical.version,1);assert.equal(compared.proposed.version,1);assert.equal(compared.proposed.serviceDecision.version,policy.version);assert.equal(compared.proposed.serviceDecision.owner,member.id);assert.match(compared.proposed.serviceDecision.reason,/Maintenance active/);assert.ok(compared.proposed.serviceDecision.reason.includes(window.end));
   await comparison.scrollIntoViewIfNeeded();await check('oc043-maintenance-preview',width);
   const expired={start:'2020-01-01T00:00:00.000Z',end:'2020-01-02T00:00:00.000Z'};
   await request('/api/command',{type:'policy',service:'synthetic-oncall-1',severity:'warning',action:'suppress',owner:member.id,reason:'Synthetic completed maintenance',baseVersion:policy.version,suppressionWindow:expired});
-  await page.reload();await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();await comparison.getByText('Ordered routing decisions',{exact:true}).click();
+  await page.reload();await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);const expiredPreview=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/preview')&&r.request().method()==='POST');await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   await comparison.getByText('Proposed: routing v1 · service rule v'+(policy.version+1)+' · route · owner '+member.name+'.',{exact:true}).waitFor();
-  const expiry=JSON.parse(await comparison.locator('pre').innerText());assert.equal(expiry.historical.serviceDecision.action,'suppress');assert.equal(expiry.proposed.serviceDecision.action,'route');assert.match(expiry.proposed.serviceDecision.reason,/Maintenance expired/);
+  const expiry=(await (await expiredPreview).json()).decisions[0];assert.equal(expiry.historical.serviceDecision.action,'suppress');assert.equal(expiry.proposed.serviceDecision.action,'route');assert.match(expiry.proposed.serviceDecision.reason,/Maintenance expired/);
   await comparison.scrollIntoViewIfNeeded();await check('oc043-maintenance-expired-preview',width);
-  await openWorkspaceSection(page,'integrations');const panel=page.getByRole('region',{name:'Grafana signature settings'});
-  await panel.getByLabel('Grafana signing integration',{exact:true}).selectOption('synthetic-oncall-grafana');await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();
-  await panel.getByLabel('Grafana signing secret',{exact:true}).fill(signingSecret);await panel.getByRole('button',{name:'Save Grafana signing secret',exact:true}).click();await page.getByText('Grafana signature check saved',{exact:true}).waitFor();
-  assert.equal(await panel.getByLabel('Grafana signing secret',{exact:true}).inputValue(),'');await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();await panel.scrollIntoViewIfNeeded();await check('oc030-signing',width);
+  await page.goto(origin+'/settings/integrations/'+encodeURIComponent('intake:synthetic-oncall-grafana'));const panel=page.getByLabel('Grafana signature settings',{exact:true});await panel.locator('summary').click();await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();
+  await panel.getByRole('button',{name:'Disable signature check',exact:true}).click();await panel.getByRole('button',{name:'Disable check',exact:true}).click();await panel.getByText('Bearer authentication only',{exact:true}).waitFor();
+  await panel.getByRole('button',{name:'Enable signature check',exact:true}).click();await panel.getByRole('button',{name:'Create signing key',exact:true}).click();assert.ok(await panel.getByLabel('Signing key',{exact:true}).inputValue());await panel.getByRole('button',{name:'Done',exact:true}).click();await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();await page.reload();await panel.locator('summary').click();assert.equal(await panel.getByLabel('Signing key',{exact:true}).count(),0);await panel.scrollIntoViewIfNeeded();await check('oc030-signing',width);
   for(const [slug,section] of [['changes','erase-a-retained-change'],['routed-intake','event-time-correlation-and-flapping'],['data','incident-member-and-integration-erasure'],['urgency','']]){await page.goto(new URL(page.url()).origin+'/docs/'+slug+(section?'#'+section:''));await page.locator('.docs-article').waitFor();if(section)await page.locator('#'+section).scrollIntoViewIfNeeded();await check('oc040-043-docs-'+slug,width);}
   for(const slug of docSlugs.filter(slug=>!['changes','routed-intake','data','urgency'].includes(slug))){await page.goto(new URL(page.url()).origin+'/docs/'+slug);await page.locator('.docs-article').waitFor();await check('oc040-043-docs-'+slug,width);}
   await page.goto(new URL(page.url()).origin);
@@ -470,7 +469,7 @@ try {
  console.log('Emitted Worker product browser journey passed at desktop and mobile widths')
 } catch(error) {
  if(page){
-  await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]')]})
+  await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
   console.error('Product browser failure at',new URL(page.url()).pathname)
   console.error(redact((await page.locator('body').innerText()).slice(0,1800)))
  }

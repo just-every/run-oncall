@@ -15,7 +15,7 @@ try {
  const cookie=setup.cookie,owner=setup.value.member,req=(p,d)=>runtime.request(p,d,cookie);
  assert.equal((await req('/api/command',{type:'service',id:'synthetic-oncall-browser',name:'Synthetic browser service',environment:'test',owner:owner.id,runbook:[],pager:''})).status,200);
  const viewer=await req('/api/members',{name:'Synthetic Viewer',role:'viewer',password:'synthetic-oncall-viewer-password'});assert.equal(viewer.status,201);
- browser=await chromium.launch({headless:true,...(process.env.ONCALL_CHROMIUM_PATH?{executablePath:process.env.ONCALL_CHROMIUM_PATH}:{}),args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
+ browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.CHROMIUM_EXECUTABLE_PATH}:{}),args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
  recordOwnedProcesses();
  console.log('Browser driver PID',process.pid,'runtime proof uses a fresh test-only context');
  for(const width of [1440,390]) {
@@ -41,14 +41,14 @@ try {
   const incident=await runtime.request('/api/v1/incidents',{type:'declare',service:'synthetic-oncall-browser',title:'Synthetic browser incident '+width,summary:'Visible outbox failure',severity:'warning'},'',{authorization:'Bearer '+key,'idempotency-key':'synthetic-oncall-browser-'+width});assert.equal(incident.status,201);
   if(!await panel.getByRole('button',{name:'Send next now',exact:true}).isVisible())await panel.locator(':scope > details > summary').nth(2).click();
   let processed;do{const response=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/automation/dispatch'&&r.request().method()==='POST');await panel.getByRole('button',{name:'Send next now',exact:true}).click();const reply=await response;assert.equal(reply.status(),200);processed=(await reply.json()).processed;}while(processed);
-  await page.reload();await panel.locator(':scope > details > summary').nth(2).click();await panel.getByText('trigger · terminal',{exact:true}).first().waitFor();
+  await page.reload();await panel.locator(':scope > details > summary').nth(2).click();await panel.getByText(/Triggered · Stopped/).first().waitFor();
   await panel.scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal page overflow');
   assert.equal(await panel.getByLabel('Private key',{exact:true}).count(),0);
   await panel.screenshot({path:join(proof,'automation-populated-'+width+'.png')});
   receiverStatus=200;
   const uncertain=await req('/api/command',{type:'assign-role',incident:incident.value.entity,revision:1,role:'scribe',member:owner.id,reason:'Unsigned receiver success is uncertain'});assert.equal(uncertain.status,200);
   do{const response=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/automation/dispatch'&&r.request().method()==='POST');await panel.getByRole('button',{name:'Send next now',exact:true}).click();const reply=await response;assert.equal(reply.status(),200);processed=(await reply.json()).processed;}while(processed);
-  await page.reload();await panel.locator(':scope > details > summary').nth(2).click();await panel.getByText('role · uncertain',{exact:true}).first().waitFor();await panel.screenshot({path:join(proof,'automation-uncertain-'+width+'.png')});receiverStatus=403;
+  await page.reload();await panel.locator(':scope > details > summary').nth(2).click();await panel.getByText(/People changed · Unconfirmed/).first().waitFor();await panel.screenshot({path:join(proof,'automation-uncertain-'+width+'.png')});receiverStatus=403;
 
   const memberA=(await req('/api/members',{name:'synthetic-oncall-'+width+'@example.test',role:'responder',password:'synthetic-oncall-responder-password'})).value;
   const memberB=(await req('/api/members',{name:'synthetic-oncall-reassigned-'+width,role:'responder',password:'synthetic-oncall-responder-password'})).value;

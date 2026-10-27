@@ -1,35 +1,58 @@
-import { useEffect, useState } from 'react';
-import type { State } from '../family/response-operations/domain';
-import type { IntakeRun } from '../intake/CompatibleTest';
-import { Form } from '../forms';
-import { EmailRuleEditor } from './EmailRuleEditor';
-import { EmailActivity } from './EmailActivity';
-import type { EmailMode, EmailRule } from './types';
+import {useState} from 'react';
+import {request} from '../useWorkspace';
+import {useAutosave,autosaveRequest} from '../app/autosave/useAutosave';
+import {SavedState,SaveFeedback} from '../app/autosave/SavedState';
+import {InlineConfirm} from '../app/autosave/InlineConfirm';
+import {useVersionDraft} from '../integrations/useVersionDraft';
+import {IntegrationCreate} from '../integrations/AddIntegration';
+import {OneTimeSecret} from '../integrations/OneTimeSecret';
+import {privateKey,type IntegrationProps} from '../integrations/catalog';
+import {EmailRuleEditor} from './EmailRuleEditor';
+import {EmailActivity} from './EmailActivity';
+import type {EmailMode,EmailRule} from './types';
 import './email.css';
-const names={subject:'Subject deduplication',single:'One open alert at a time',each:'New alert per email',custom:'Custom rules'};
-export function EmailWorkspace({state,admin,busy,run}:{state:State;admin:boolean;busy:boolean;run:IntakeRun}) {
- const [draftRevision,setDraftRevision]=useState(0);
- const [domain,setDomain]=useState<string|null>(null),[loaded,setLoaded]=useState(false),[selected,setSelected]=useState(''),[id,setId]=useState(''),[name,setName]=useState(''),[service,setService]=useState(''),[local,setLocal]=useState(''),[mode,setMode]=useState<EmailMode>('subject'),[fallback,setFallback]=useState<'subject'|'quarantine'>('subject'),[rules,setRules]=useState<EmailRule[]>([]),[preview,setPreview]=useState<unknown>(),[notice,setNotice]=useState('');
- const addresses=state.emailAddresses??[],address=addresses.find(a=>a.id===selected),version=state.emailRules?.filter(v=>v.address===selected).at(-1),samples=(state.emailSamples??[]).filter(s=>s.address===selected);
- useEffect(()=>{if(admin)fetch('/api/email').then(r=>r.ok?r.json():Promise.reject()).then((data:any)=>{setDomain(data.domain);setLoaded(true);}).catch(()=>setNotice('Email settings could not be read.'));},[admin,state.revision]);
- function select(value:string){setSelected(value);const a=addresses.find(a=>a.id===value),v=state.emailRules?.filter(v=>v.address===value).at(-1);setDraftRevision(a?.revision??0);setId(a?.id??'');setName(a?.name??'');setService(a?.service??'');setMode(v?.mode??'subject');setFallback(v?.fallback??'subject');setRules(structuredClone(v?.rules??[]));setLocal('');setPreview(undefined);setNotice('');}
- const generate=()=>{setLocal('oncall-'+Array.from(crypto.getRandomValues(new Uint8Array(20)),b=>b.toString(16).padStart(2,'0')).join(''));setNotice('Copy the private address before saving. It will never be returned.');};
- return <section className="panel padded email-workspace" id="email-intake"><h2>Integration email</h2><p>Cloudflare Email Routing admits mail to one service and environment. From is data, never account authority. Attachments are discarded; only plain text is saved. Paging is OFF.</p>
- {!admin?<p>An integration administrator manages email addresses and their activity.</p>:<>
- <p role="status">{loaded?(domain?`Inbound domain: ${domain}`:'Inbound email is OFF. Configure INBOUND_EMAIL_DOMAIN in this installation to enable it.'):'Reading email configuration…'}</p>
- <label className="field">Integration address<select aria-label="Integration address" value={selected} onChange={e=>select(e.target.value)}><option value="">Create an address</option>{addresses.map(a=><option value={a.id} key={a.id}>{a.name} · {a.active?'active':'revoked or restored inactive'}</option>)}</select></label>
- {address&&<p>{address.name} · {address.service} / {address.environment} · revision {address.revision} · mode version {version?.version}. Private address is held as a digest and cannot be read back.</p>}
- <Form busy={busy} disabled={!domain||!state.services.length} label={address?'Publish email mode and rules':'Create integration email address'} onSubmit={async()=>{const result=await run(address?`/api/email/addresses/${encodeURIComponent(address.id)}/publish`:'/api/email/addresses',address?{revision:draftRevision,mode,fallback,rules}:{id,name,service:service||state.services[0]?.id,owner:state.members.find(m=>m.role==='admin'&&m.active)?.id,localPart:local,mode,fallback,rules},'Email settings saved');if(result){setPreview(undefined);setDraftRevision(result.revision);setLocal('');setNotice('Saved. The private address is cleared here. Configure its literal To rule in Cloudflare.');if(!address)setSelected(id);}return false;}}>
- {!address&&<><label className="field">Email integration ID<input required value={id} maxLength={80} onChange={e=>setId(e.target.value)}/></label><label className="field">Address name<input required value={name} maxLength={100} onChange={e=>setName(e.target.value)}/></label><label className="field">Email service<select aria-label="Email service" value={service||state.services[0]?.id||''} onChange={e=>setService(e.target.value)}>{state.services.map(s=><option value={s.id} key={s.id}>{s.name} · {s.environment}</option>)}</select></label></>}
- <label className="field">Email mode<select aria-label="Email mode" value={mode} onChange={e=>{setMode(e.target.value as EmailMode);setRules(rules.filter(r=>e.target.value==='custom'||r.action==='resolve'));setPreview(undefined);}}>{Object.entries(names).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label>
- <label className="field">Unmatched mail fallback<select aria-label="Unmatched mail fallback" value={fallback} onChange={e=>{setFallback(e.target.value as 'subject'|'quarantine');setPreview(undefined);}}><option value="subject">Trigger by normalized subject</option><option value="quarantine">Quarantine for integration owner</option></select><small>Custom mode uses this fallback when no rule matches. Modes 1–3 otherwise use their selected trigger behavior.</small></label>
- <EmailRuleEditor rules={rules} onChange={next=>{setRules(next);setPreview(undefined);}} custom={mode==='custom'}/>
- {!address&&<label className="field">Private local part<input type="password" autoComplete="new-password" required minLength={32} maxLength={64} value={local} onChange={e=>setLocal(e.target.value)}/></label>}
- {!address&&<div className="intake-actions"><button type="button" onClick={generate}>Generate private email address</button><button type="button" disabled={!local||!domain} onClick={async()=>{await navigator.clipboard.writeText(local+'@'+domain);setNotice('Private email address copied.');}}>Copy private email address</button></div>}
- </Form>
- {address&&<><h3>Test this draft against saved mail</h3><p>{samples.length} saved mails. Replay shows would-be decisions and makes zero writes.</p><button disabled={busy||!samples.length} onClick={async()=>{const result=await run(`/api/email/addresses/${encodeURIComponent(address.id)}/preview`,{revision:draftRevision,mode,fallback,rules,samples:samples.map(s=>s.id)},'Draft replay completed with zero writes');if(result)setPreview(result);}}>Test draft rules</button>{preview!==undefined&&<pre>{JSON.stringify(preview,null,2)}</pre>}
- <h3>Rotate or revoke</h3><label className="field">New private local part<input type="password" autoComplete="new-password" value={local} onChange={e=>setLocal(e.target.value)}/></label><div className="intake-actions"><button onClick={generate}>Generate replacement address</button><button disabled={!local||!domain} onClick={async()=>{await navigator.clipboard.writeText(local+'@'+domain);setNotice('Replacement address copied.');}}>Copy replacement address</button><button disabled={busy||!local||!domain} onClick={async()=>{if(await run(`/api/email/addresses/${encodeURIComponent(address.id)}/rotate`,{revision:address.revision,localPart:local},'Address rotated'))setLocal('');}}>Rotate address</button><button disabled={busy||!address.active} onClick={()=>run(`/api/email/addresses/${encodeURIComponent(address.id)}/revoke`,{revision:address.revision},'Address revoked')}>Revoke address</button><button disabled={busy} onClick={()=>run(`/api/email/addresses/${encodeURIComponent(address.id)}/erase`,{revision:address.revision},'Saved mail erased; address revoked; old archives fenced')}>Erase saved mail and quarantine</button></div></>}
- <p role="status">{notice}</p><EmailActivity key={selected} quarantine={(state.emailQuarantine??[]).filter(q=>address?q.address===address.id:q.address===null)} receipts={(state.emailReceipts??[]).filter(r=>address?r.address===address.id:r.address===null)} samples={samples}/>
- <p><a href="/docs/compatible-intake#integration-email">Cloudflare setup and email rules reference</a></p></>}
- </section>;
+type Rules={mode:EmailMode;fallback:'subject'|'quarantine';rules:EmailRule[]};
+const names={subject:'Group by subject',single:'One open alert',each:'New alert per email',custom:'Custom rules'};
+export function EmailWorkspace(props:IntegrationProps&{addressId?:string}) {
+ if(!props.addressId)return <IntegrationCreate {...props} kind="email"/>;
+ const address=props.state.emailAddresses?.find(a=>a.id===props.addressId);
+ if(!address)return <p>Address not found.</p>;
+ return <EmailAddressPage key={address.id} {...props} address={address}/>;
+}
+function EmailAddressPage({state,admin,busy,run,address}:IntegrationProps&{address:NonNullable<IntegrationProps['state']['emailAddresses']>[number]}) {
+ const version=state.emailRules?.filter(v=>v.address===address.id).at(-1)!;
+ const draft=useVersionDraft<Rules>('email',address.id,version.version,{mode:version.mode,fallback:version.fallback,rules:version.rules});
+ const [service,setService]=useState<string>(),[confirm,setConfirm]=useState<'publish'|'rotate'|'revoke'>(),[secret,setSecret]=useState(''),[preview,setPreview]=useState<any>(),[sampleCopied,setSampleCopied]=useState(false);
+ const fields=(value:typeof address)=>({values:{name:value.name,service:value.service},revision:value.revision});
+ const save=useAutosave({storageKey:'email:'+address.id,snapshot:fields(address),read:async()=>{const value=await request('/api/email');return fields(value.addresses.find((a:any)=>a.id===address.id));},write:async change=>fields(await autosaveRequest('/api/email/addresses/'+encodeURIComponent(address.id)+'/field',{revision:change.revision,field:change.field,from:change.from,to:change.to}))});
+ const feedback=(field:'name'|'service')=><SaveFeedback state={save.states[field]} retry={()=>save.retry(field)} useMine={()=>save.useMine(field)} format={value=>field==='service'?state.services.find(s=>s.id===value)?.name??'Service unavailable':String(value)}/>;
+ const samples=(state.emailSamples??[]).filter(s=>s.address===address.id);
+ return <div className="email-workspace">{!admin&&<p>An administrator changes this address and its rules.</p>}
+  <label className="field"><span>Name <SavedState state={save.states.name}/></span><input aria-label="Name" disabled={!admin} value={save.values.name} onChange={e=>save.change('name',e.target.value,'text')} onBlur={()=>save.blur('name')}/></label>{feedback('name')}
+  {state.services.length>1?<><label className="field"><span>Service <SavedState state={save.states.service}/></span><select aria-label="Service" disabled={!admin} value={service??save.values.service} onChange={e=>setService(e.target.value===save.values.service?undefined:e.target.value)}>{state.services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>{service&&<InlineConfirm action="Change service" busy={busy} onCancel={()=>setService(undefined)} onConfirm={()=>{save.change('service',service,'choice');setService(undefined);}}>Send new mail for this address to {state.services.find(s=>s.id===service)?.name}? Existing alerts stay with their service.</InlineConfirm>}{feedback('service')}</>:<p>{state.services[0]?.name}</p>}
+  <details><summary>Rules · version {version.version}</summary>
+   {draft.stale&&<p role="alert">A newer version is published. Your draft is still here. <button onClick={draft.useMine}>Use mine</button></p>}
+   <fieldset disabled={!admin}><label className="field">Email mode<select aria-label="Email mode" value={draft.value.mode} onChange={e=>draft.edit({...draft.value,mode:e.target.value as EmailMode,rules:draft.value.rules.filter(r=>e.target.value==='custom'||r.action==='resolve')})}>{Object.entries(names).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+    <label className="field">Unmatched mail<select aria-label="Unmatched mail" value={draft.value.fallback} onChange={e=>draft.edit({...draft.value,fallback:e.target.value as Rules['fallback']})}><option value="subject">Group by subject</option><option value="quarantine">Hold for review</option></select></label>
+    <EmailRuleEditor rules={draft.value.rules} custom={draft.value.mode==='custom'} onChange={rules=>draft.edit({...draft.value,rules})}/>
+   </fieldset>
+   {admin&&draft.changed&&<button disabled={busy||draft.stale} onClick={()=>setConfirm('publish')}>Publish version {version.version+1}</button>}
+   {confirm==='publish'&&<InlineConfirm action={'Publish version '+(version.version+1)} busy={busy} onCancel={()=>setConfirm(undefined)} onConfirm={async()=>{
+    if(!await save.flush())return;
+    const latest=await request('/api/email'),current=latest.addresses.find((a:any)=>a.id===address.id);
+    const result=await run('/api/email/addresses/'+encodeURIComponent(address.id)+'/publish',{revision:current.revision,baseVersion:draft.baseVersion,...draft.value},'Email rules published');
+    if(result){draft.accepted(version.version+1,draft.value);setConfirm(undefined);}
+   }}>Apply this draft to new mail? Existing receipts keep their original decisions.</InlineConfirm>}
+   <details><summary>Test draft against saved mail</summary><button disabled={!admin||busy||!samples.length} onClick={async()=>{const value=await run('/api/email/addresses/'+encodeURIComponent(address.id)+'/preview',{revision:address.revision,...draft.value,samples:samples.map(s=>s.id)},'Draft compared without changes');if(value)setPreview(value);}}>Test draft rules</button>{preview&&<p role="status">{preview.decisions.length} saved messages compared. No records changed.</p>}</details>
+  </details>
+  <details><summary>Send a test</summary><p>Send a message from your email app to the private address you copied. Its receipt appears below.</p></details>
+  <details><summary>Sample request</summary><pre>Subject: Service latency{String.fromCharCode(10,10)}The service is taking longer than usual to respond.</pre><button type="button" onClick={async()=>{try{await navigator.clipboard.writeText('Subject: Service latency\n\nThe service is taking longer than usual to respond.');setSampleCopied(true);}catch{setSampleCopied(false);}}}>Copy sample message</button>{sampleCopied&&<p role="status">Copied</p>}</details>
+  <EmailActivity samples={samples} receipts={(state.emailReceipts??[]).filter(r=>r.address===address.id&&r.outcome!=='refused')} quarantine={(state.emailQuarantine??[]).filter(q=>q.address===address.id)}/>
+  {admin&&<details><summary>Address actions</summary><button disabled={busy} onClick={()=>setConfirm('rotate')}>Rotate address</button><button disabled={busy||!address.active} onClick={()=>setConfirm('revoke')}>Revoke address</button>{confirm&&confirm!=='publish'&&<InlineConfirm action={confirm==='rotate'?'Rotate address':'Revoke address'} keep="Cancel" busy={busy} onCancel={()=>setConfirm(undefined)} onConfirm={async()=>{
+   const localPart='oncall-'+privateKey(20),domain=confirm==='rotate'?(await request('/api/email')).domain:null;
+   if(confirm==='rotate'&&!domain)return;
+   if(await run('/api/email/addresses/'+encodeURIComponent(address.id)+'/'+confirm,{revision:address.revision,...(confirm==='rotate'?{localPart}:{})},'Address '+(confirm==='rotate'?'rotated':'revoked'))){if(domain)setSecret(localPart+'@'+domain);setConfirm(undefined);}
+  }}>Stop mail sent to the old address? Accepted history stays.</InlineConfirm>}</details>}
+  {secret&&<OneTimeSecret value={secret} label="Private address" onDone={()=>setSecret('')}/>}
+ </div>;
 }

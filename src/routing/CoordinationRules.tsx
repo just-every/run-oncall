@@ -16,10 +16,10 @@ function CoordinationDraft({state,busy,run,id,version,initial,confirm,setConfirm
  const current=state.policies.find(p=>p.service===value.service&&p.severity===value.severity),next=(current?.version??0)+1;
  const change=(field:keyof Rule,to:string)=>draft.edit({...value,[field]:to});
  return <div className="coordination-draft"><h3>Draft rule</h3><div className="routing-fields">
-  <label className="field">Service<select value={value.service} onChange={e=>change('service',e.target.value)}>{state.services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
-  <label className="field">Severity<select value={value.severity} onChange={e=>change('severity',e.target.value)}><option value="*">All severities</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="info">Information</option></select></label>
-  <label className="field">Decision<select value={value.action} onChange={e=>change('action',e.target.value)}><option value="route">Route to owner</option><option value="suppress">Suppress</option></select></label>
-  <label className="field">Owner<select value={value.owner} onChange={e=>change('owner',e.target.value)}>{state.members.filter(m=>m.active&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
+  <label className="field">Service<select aria-label="Service" value={value.service} onChange={e=>change('service',e.target.value)}>{state.services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+  <label className="field">Severity<select aria-label="Severity" value={value.severity} onChange={e=>change('severity',e.target.value)}><option value="*">All severities</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="info">Information</option></select></label>
+  <label className="field">Decision<select aria-label="Decision" value={value.action} onChange={e=>change('action',e.target.value)}><option value="route">Route to owner</option><option value="suppress">Suppress</option></select></label>
+  <label className="field">Owner<select aria-label="Owner" value={value.owner} onChange={e=>change('owner',e.target.value)}>{state.members.filter(m=>m.active&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
  </div>
  {draft.stale&&<p role="alert">A newer rule is published. Your draft is still here. <button onClick={draft.useMine}>Use mine</button></p>}
  {(id==='new'||draft.changed)&&<button disabled={busy||draft.stale} onClick={()=>setConfirm(true)}>Publish version {next}</button>}

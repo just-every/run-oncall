@@ -23,10 +23,10 @@ export function IntegrationWorkspace(props: IntegrationProps & { path: string; p
   if (!tail) return <IntegrationsHome {...props} native={native} readFailure={readFailure} />;
   let id: string;
   try { id = decodeURIComponent(tail); } catch { id = ''; }
-  const sources = sourcesFrom(props.state, native), source = sources.find(s => s.id === id);
+  const sources = sourcesFrom(props.state, native, props.admin), source = sources.find(s => s.id === id);
   if (!loaded && id.startsWith('native:')) return <section className="panel padded integrations"><p role="status">Reading source…</p></section>;
   return <div className="integration-detail-layout">
     <aside className="panel padded integrations integration-list-column" aria-label="Sources"><h2>Integrations</h2><ul className="integration-rows">{sources.map(s => <li key={s.id}><a href={sourcePath(s.id)} aria-current={s.id === id ? 'page' : undefined}><strong>{s.name}</strong><small>{integrationKinds[s.kind]}</small></a></li>)}</ul><a className="integration-link" href="/settings/integrations/new">Add integration</a></aside>
-    <div>{readFailure}<SourcePage {...props} run={run} source={source}>{source?.kind === 'email' && props.emailPage?.(source)}</SourcePage></div>
+    <div>{readFailure}<SourcePage key={source?.id??id} {...props} run={run} source={source}>{source?.kind === 'email' && props.emailPage?.(source)}</SourcePage></div>
   </div>;
 }

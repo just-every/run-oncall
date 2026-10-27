@@ -18,17 +18,19 @@ export function SourcePage({ source, state, admin, busy, run, children }: Integr
   const events = state.events.filter(e => e.source === id || e.source === 'intake:' + id).slice().reverse();
   const changes = (state.changes ?? []).filter(c => c.source === id).slice().reverse();
   const rejections = state.audit.filter(a => a.kind === 'intake-rejected' && a.text.includes(' for integration ' + id + ';'));
+  const emailRejected=source.kind==='email'?(state.emailReceipts??[]).filter(r=>r.address===id&&r.outcome==='refused'):[];
   const [reference, referenceName] = references[source.kind];
   const existing = source.id.startsWith('intake:') ? state.intakeSources?.find(s => s.id === id) : source.id.startsWith('change:') ? state.changeSources?.find(s => s.id === id) : undefined;
   return <section className="panel padded integrations" aria-label="Integration source">
-    <a className="integration-link" href="/settings/integrations">‹ Integrations</a><h2>{source.name}</h2><p>{integrationKinds[source.kind]}{service ? ' · ' + service.name : ''}{!source.active ? ' · Inactive' : ''}</p>
+    <a className="integration-link" href="/settings/integrations">‹ Integrations</a><h2>{source.name}</h2><p>{integrationKinds[source.kind]}{service ? ' · ' + service.name : ''}{!source.active&&source.statusKnown!==false ? ' · Inactive' : ''}</p>
     {children}
     {admin&&source.kind==='grafana'&&<GrafanaSigning sources={state.intakeSources!.filter(s=>s.id===id)} busy={busy} run={run} revision={state.revision}/>}
     {source.kind === 'changes' && <ChangeSourceTest source={state.changeSources!.find(s => s.id === id)!} busy={busy} run={run} />}
-    {service && <SourceTest source={source} service={service} busy={busy} run={run} />}
+    {source.statusKnown===false&&<p>An administrator can view this source’s settings.</p>}
+    {service && source.statusKnown!==false && <SourceTest source={source} service={service} busy={busy} run={run} />}
     {source.kind !== 'email' && <><h3>Receipts</h3><ol className="integration-receipts">{(source.kind === 'changes' ? changes : source.kind === 'events' ? events : intake).map((r: any) => <li key={r.id}><strong>{r.title ?? r.summary ?? 'Received event'}</strong><p>{r.outcome ?? r.intent ?? 'Accepted'} · {shortTime(r.acceptedAt ?? r.timestamp ?? r.observedAt)}</p>{r.incomplete && <p>Incomplete intake · {r.incomplete.bytes.toLocaleString()} bytes · {r.incomplete.dropped ?? 'Some'} alerts unread</p>}</li>)}</ol>{!(source.kind === 'changes' ? changes : source.kind === 'events' ? events : intake).length && <p>No accepted requests yet.</p>}</>}
-    <details><summary>Rejected requests ({rejections.length})</summary>{rejections.length ? <ul>{rejections.map(r => <li key={r.id}>Request refused · {shortTime(r.at)}</li>)}</ul> : <p>No rejected requests retained for this source.</p>}</details>
-    {admin&&source.kind!=='email'&&<details><summary>Source actions</summary><button type="button" disabled={busy} onClick={()=>setConfirm('rotate')}>Rotate key</button><button type="button" disabled={busy||!source.active} onClick={()=>setConfirm('revoke')}>Revoke key</button>
+    <details><summary>Rejected requests ({rejections.length+emailRejected.length})</summary>{rejections.length ? <ul>{rejections.map(r => <li key={r.id}>Request refused · {shortTime(r.at)}</li>)}</ul> : !emailRejected.length&&<p>No rejected requests retained for this source.</p>}{emailRejected.length>0&&<ul>{emailRejected.map(r=><li key={r.id}>Message refused · {shortTime(r.at)}</li>)}</ul>}</details>
+    {admin&&source.kind!=='email'&&<details><summary>Source actions</summary><button type="button" disabled={busy||source.kind==='events'&&!source.active} onClick={()=>setConfirm('rotate')}>Rotate key</button><button type="button" disabled={busy||!source.active} onClick={()=>setConfirm('revoke')}>Revoke key</button>
      {confirm&&<InlineConfirm action={confirm==='rotate'?'Rotate key now':'Revoke key now'} keep="Cancel" busy={busy} onCancel={()=>setConfirm(undefined)} onConfirm={async()=>{
       let key=privateKey(source.kind==='changes'&&existing&&'provider' in existing&&existing.provider==='pagerduty'?16:32);
       if(source.kind==='changes'&&existing&&'provider' in existing&&existing.provider==='gitlab')key='whsec_'+btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));

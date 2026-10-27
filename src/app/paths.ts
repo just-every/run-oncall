@@ -10,6 +10,7 @@ export function workspaceAddress(path: string) {
   if (/^\/settings\/?$/.test(path)) return {page: 'services', incident: ''};
   const setting = /^\/settings\/(services|integrations|routing|team|move-in|archive)\/?$/.exec(path);
   if (setting) return {page: setting[1], incident: ''};
+  if (/^\/settings\/integrations(?:\/(?:new(?:\/[^/]+)?|[^/]+))?\/?$/.test(path)) return {page:'integrations',incident:''};
   const section = workspaceSections.find(section => path === `/${section}` || path === `/${section}/`);
   if (section) return {page: section, incident: ''};
   const incident = /^\/incidents\/([^/]+)\/?$/.exec(path);
