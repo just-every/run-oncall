@@ -3,6 +3,8 @@ import type { Action, Incident, Member } from '../family/response-operations/dom
 import { Field, Form } from '../forms';
 import { EvidenceLink, utc } from './display';
 import './reviews.css';
+import {InlineConfirm} from '../app/autosave/InlineConfirm';
+import {shortDate,browserZone} from './time';
 
 export function followupOrder(a: Action, b: Action) {
   return Number(a.done) - Number(b.done) || (a.priority ?? 'P2').localeCompare(b.priority ?? 'P2') || a.due.localeCompare(b.due) || a.id.localeCompare(b.id);
@@ -10,8 +12,9 @@ export function followupOrder(a: Action, b: Action) {
 export function isOverdue(action: Action, now = Date.now()) {
   return !action.done && now >= Date.parse(action.due + 'T00:00:00.000Z') + 86400000;
 }
-type Props = {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>};
-export function Followups({incident, members, busy, canEdit, mutate}: Props) {
+type Props = {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>; onlyAction?:string; compact?:boolean; zone?:string};
+export function Followups({incident, members, busy, canEdit, mutate, onlyAction, compact=false, zone=browserZone()}: Props) {
+  if(compact)return <section className="followups">{incident.actions.filter(a=>(!onlyAction||a.id===onlyAction)&&!a.done).map(action=><CompactFollowup key={action.id} action={action} members={members} busy={busy} canEdit={canEdit} mutate={mutate} zone={zone}/>)}</section>;
   const name = (id: string) => members.find(member => member.id === id)?.name ?? id;
   return <section className="followups">
     <div className="right-title owners-heading"><h3>Follow-up owners</h3><span>{incident.actions.filter(action => !action.done).length} open</span></div>
@@ -68,4 +71,15 @@ function CreateFollowup({members, busy, mutate}: Pick<Props, 'members' | 'busy' 
       <Field name="escalationRecipient" label="Manual escalation contact" help="A recorded contact only. Contact them yourself when escalation is needed.">{options}</Field>
     </Form>
   </details>;
+}
+
+function CompactFollowup({action,members,busy,canEdit,mutate,zone}:{action:Action;members:Member[];busy:boolean;canEdit:boolean;mutate:Props['mutate'];zone:string}) {
+ const [accept,setAccept]=useState(false),[evidence,setEvidence]=useState(false);
+ return <article className="followup-item" aria-label={action.title}><strong>{action.title}</strong><p className="review-meta">{members.find(m=>m.id===action.owner)?.name??'Former member'} · due {shortDate(action.due,zone)}{action.submission?' · awaiting acceptance':''}</p>
+  {action.evidence&&<EvidenceLink url={action.evidence}>Completion evidence</EvidenceLink>}
+  {canEdit&&<><details open={evidence} onToggle={e=>setEvidence(e.currentTarget.open)}><summary>{action.submission?'Replace evidence':'Add evidence'}</summary><Form busy={busy} label={action.submission?'Replace evidence':'Add evidence'} onSubmit={async data=>{const result=await mutate({...data,type:'complete',action:action.id});if(result)setEvidence(false);return result;}}><Field name="evidence" label="Completion evidence" type="url" value={action.submission?.evidence??''}/></Form></details>
+   {action.completionPolicy==='human-review'&&action.submission&&<button disabled={busy} onClick={()=>setAccept(true)}>Accept completion</button>}
+   {accept&&<InlineConfirm action="Accept this completion" keep="Keep open" reasonRequired busy={busy} onCancel={()=>setAccept(false)} onConfirm={async reason=>{if(await mutate({type:'accept-action',action:action.id,reason}))setAccept(false);}}>Accept this completion evidence as finishing the follow-up? Your reason is recorded.</InlineConfirm>}
+  </>}
+ </article>;
 }

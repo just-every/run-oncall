@@ -9,6 +9,10 @@ export function workspaceAddress(path: string) {
   if (path === '/') return {page: 'incidents', incident: ''};
   const section = workspaceSections.find(section => path === `/${section}` || path === `/${section}/`);
   if (section) return {page: section, incident: ''};
+  const record = /^\/(alerts|reviews)\/([^/]+)\/?$/.exec(path);
+  if (record) {
+    try {decodeURIComponent(record[2]);return {page: record[1], incident: ''};} catch {return {page: 'not-found', incident: ''};}
+  }
   const incident = /^\/incidents\/([^/]+)\/?$/.exec(path);
   if (incident) {
     try {return {page: 'incidents', incident: decodeURIComponent(incident[1])};} catch {return {page: 'not-found', incident: ''};}

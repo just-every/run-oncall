@@ -5,7 +5,7 @@ const hours = (seconds: number | null) => seconds === null ? 'No schedule' : `${
 const rate = (value: number | null, none: string) => value === null ? none : new Intl.NumberFormat('en', {maximumFractionDigits: 2}).format(value);
 const share = (value: number | null) => value === null ? 'none' : new Intl.NumberFormat('en', {style: 'percent', maximumFractionDigits: 1}).format(value);
 
-export function CoverageLoad({load}: {load: Load}) {
+export function CoverageLoad({load,showBasis=true}: {load: Load;showBasis?:boolean}) {
   return <section className="coverage-load" aria-labelledby="coverage-load-heading">
     <h3 id="coverage-load-heading">Load by scheduled coverage</h3>
     <p>Scheduled hours from <time>{utc(load.from)}</time> to <time>{utc(load.through)}</time> · scheduling revision {load.schedulingRevision}.</p>
@@ -14,7 +14,7 @@ export function CoverageLoad({load}: {load: Load}) {
     <h4>Responders</h4>
     {!load.responders.length && <p>No responder holds a schedule slot or acknowledged an incident in this cohort.</p>}
     <div className="coverage-load-grid">{load.responders.map(r => <article className="response-metric" key={r.member}>
-      <h5>{r.name ?? r.member}{!r.current && <span className="tag">{r.name ? 'not current' : 'not a member'}</span>}</h5>
+      <h5>{r.name ?? 'Former member'}{!r.current && <span className="tag">{r.name ? 'not current' : 'not a member'}</span>}</h5>
       <dl className="review-stat-grid">
         <div><dt>Primary</dt><dd>{hours(r.primarySeconds)}</dd></div>
         <div><dt>Backup</dt><dd>{hours(r.backupSeconds)}</dd></div>
@@ -26,7 +26,7 @@ export function CoverageLoad({load}: {load: Load}) {
     </article>)}</div>
     <h4>Services</h4>
     <div className="coverage-load-grid">{load.services.map(s => <article className="response-metric" key={s.service}>
-      <h5>{s.name ?? s.service}</h5>
+      <h5>{s.name ?? 'Former service'}</h5>
       <dl className="review-stat-grid">
         <div><dt>Primary covered</dt><dd>{hours(s.primarySeconds)}</dd></div>
         <div><dt>Primary uncovered</dt><dd>{hours(s.uncoveredPrimarySeconds)}</dd></div>
@@ -35,6 +35,6 @@ export function CoverageLoad({load}: {load: Load}) {
       </dl>
       <p className="review-meta">Schedules: {s.schedules} · acknowledged: {s.acknowledgements}</p>
     </article>)}</div>
-    <details className="review-material"><summary>How scheduled coverage and load are computed</summary><ul>{load.basis.map(line => <li key={line}>{line}</li>)}</ul></details>
+    {showBasis&&<details className="review-material"><summary>How scheduled coverage and load are computed</summary><ul>{load.basis.map(line => <li key={line}>{line}</li>)}</ul></details>}
   </section>;
 }

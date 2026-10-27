@@ -5,14 +5,14 @@ import { request } from '../useWorkspace';
 import './changes.css';
 import {changeProviderNames, type ChangeProvider} from './model';
 
-export function RecentChanges({service, at, revision, expanded=false}: {service:string; at?:string; revision:number; expanded?:boolean}) {
+export function RecentChanges({service, at, revision, expanded=false, windowChoice=false}: {service:string; at?:string; revision:number; expanded?:boolean; windowChoice?:boolean}) {
   const preserveView=useViewAnchor();
   const [open,setOpen]=useState(expanded),[hours,setHours]=useState(24),[loaded,setLoaded]=useState<{query:string;value:any}|null>(null),[error,setError]=useState('');
   const query=new URLSearchParams({service,hours:String(hours),...(at?{at}:{})}).toString();
   const data=loaded?.query===query?loaded.value:null;
   useEffect(()=>{if(!open)return;let live=true;request('/api/changes/recent?'+query).then(v=>{if(live){preserveView();setError('');setLoaded({query,value:v})}}).catch(e=>{if(live)setError(failureMessage(e,true))});return()=>{live=false};},[query,revision,open]);
   return <details className="recent-changes" open={open} onToggle={e=>setOpen(e.currentTarget.open)}><summary>Recent changes</summary>
-    <label>Lookback hours<input type="number" min={1} max={168} value={hours} onChange={e=>{const value=Number(e.target.value);if(Number.isInteger(value)&&value>=1&&value<=168)setHours(value)}} /></label>
+    <label className={windowChoice?"field":undefined}>{windowChoice?'Window':'Lookback hours'}{windowChoice?<select value={hours} onChange={e=>setHours(Number(e.target.value))}><option value={1}>1 h</option><option value={6}>6 h</option><option value={24}>24 h</option><option value={72}>3 days</option></select>:<input type="number" min={1} max={168} value={hours} onChange={e=>{const value=Number(e.target.value);if(Number.isInteger(value)&&value>=1&&value<=168)setHours(value)}} />}</label>
     {error&&<p role="alert">{error}</p>}
     {data&&<><p className="muted">{new Date(data.from).toLocaleString()} – {new Date(data.to).toLocaleString()} · this service and its direct dependencies. Changes never page.</p>
       {!data.items.length&&<p>No changes in this window.</p>}

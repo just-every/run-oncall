@@ -1,3 +1,4 @@
+import {useNavigate} from '@tanstack/react-router';
 import {FailureLine,useActionFailure} from './FailureLine';
 import { Tooltip } from './Tooltip';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -11,6 +12,7 @@ import './triage.css';
 
 const readQuery = (): TriageQuery => typeof location === 'undefined' ? {} : Object.fromEntries(queryFields.flatMap(key => new URLSearchParams(location.search).has('triage_' + key) ? [[key, new URLSearchParams(location.search).get('triage_' + key)!]] : []));
 export function IncidentTriage({state, actor, current, select, children, busy, run, onUpdated}: {onUpdated?: (revision:number)=>void; state: State; actor: Member; current?: string; select: (id: string) => void; children: ReactNode; busy: boolean; run: (path: string | (() => Promise<any>), data?: any, message?: any) => Promise<any>}) {
+  const navigate=useNavigate();
   const failures=useActionFailure();
   const [query, setQuery] = useState<TriageQuery>(readQuery);
   const [page, setPage] = useState<{items: (Incident&{kind?:'incident'|'alert'})[]; total: number; nextCursor: string | null; workspaceRevision: number} | null>(null);
@@ -59,7 +61,7 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
     {selection.length > 0 && <IncidentBulkActions items={selection} allMatching={allMatching} count={selection.length} query={query} workspaceRevision={selectionRevision} members={state.members} incidents={state.incidents.filter(i=>!i.mergedInto&&i.state!=='resolved')} busy={busy} canEdit={actor.role !== "viewer"} run={run} clear={() => {setSelection([]); setAllMatching(false);}} />}
     {page?.items.map(i => <div className="triage-item" key={i.id}>
       {actor.role !== 'viewer' && <label className="triage-check"><input type="checkbox" aria-label={`Select ${i.title}`} checked={selection.some(s => s.id === i.id)} disabled={busy || loading || selection.length >= 500 && !selection.some(s => s.id === i.id)} onChange={e => {setAllMatching(false); setSelection(old => e.target.checked ? [...old, {id: i.id, revision: i.revision,kind:i.kind}].slice(0, 500) : old.filter(s => s.id !== i.id));}} /></label>}
-      <button className={`incident ${current === i.id ? 'current' : ''}`} onClick={() => {if(i.kind==='alert')document.querySelector<HTMLAnchorElement>('a.nav[href="/alerts"]')?.click();else select(i.id);}}>
+      <button className={`incident ${current === i.id ? 'current' : ''}`} onClick={() => {if(i.kind==='alert')void navigate({to:'/alerts/'+encodeURIComponent(i.id),resetScroll:false} as any);else select(i.id);}}>
         <div className="incident-top"><span className={`dot ${i.state === 'resolved' ? 'green' : 'red'}`} /><span>{i.id.slice(0, 8)}</span><span className={`priority ${i.state === 'resolved' ? 'state-resolved' : `sev-${i.severity}`}`}>{i.severity}{i.state === 'resolved' && ' · resolved'}</span></div>
         <h3>{i.kind==='alert'&&'Alert-only: '}{i.title}</h3><p className="service">{state.services.find(v => v.id === i.service)?.name} · {i.state}</p>
         <time>{new Date(i.createdAt).toLocaleString()}</time><div className="tags"><span className="tag">{incidentUrgency(i)} urgency</span>{i.priority && <span className="tag">{i.priority}</span>}<span className="tag">{state.members.find(m => m.id === incidentAssignee(i))?.name ?? 'Unassigned'}</span><span className="tag">{i.actions.filter(a => !a.done).length} open follow-ups</span></div>

@@ -1,0 +1,8 @@
+.status-work { min-width: 0; overflow-wrap: anywhere; }
+.status-work h2 { margin-top: 0; }
+.status-work :is(summary,button,select,input) { min-height: 44px; }
+.status-work summary { align-content: center; cursor: pointer; }
+.status-work :is(small,.field small) { font-size: 13px; }
+.status-work select { height: auto; align-self: start; }
+.status-work select[multiple] { min-height: 88px; }
+@media(max-width:700px){.status-work { padding: 20px 16px; }.status-work .service-card { padding: 16px; }}

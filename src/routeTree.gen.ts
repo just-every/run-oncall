@@ -21,9 +21,11 @@ import { Route as SchedulesRouteImport } from './routes/schedules'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as TeamRouteImport } from './routes/team'
+import { Route as AlertsAlertIdRouteImport } from './routes/alerts.$alertId'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IncidentsIdRouteImport } from './routes/incidents.$id'
+import { Route as ReviewsIncidentIdRouteImport } from './routes/reviews.$incidentId'
 import { Route as SigninLocalRouteImport } from './routes/signin.local'
 
 const IndexRoute = IndexRouteImport.update({
@@ -86,6 +88,11 @@ const TeamRoute = TeamRouteImport.update({
   path: '/team',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlertsAlertIdRoute = AlertsAlertIdRouteImport.update({
+  id: '/$alertId',
+  path: '/$alertId',
+  getParentRoute: () => AlertsRoute,
+} as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
@@ -101,6 +108,11 @@ const IncidentsIdRoute = IncidentsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => IncidentsRoute,
 } as any)
+const ReviewsIncidentIdRoute = ReviewsIncidentIdRouteImport.update({
+  id: '/$incidentId',
+  path: '/$incidentId',
+  getParentRoute: () => ReviewsRoute,
+} as any)
 const SigninLocalRoute = SigninLocalRouteImport.update({
   id: '/signin/local',
   path: '/signin/local',
@@ -110,36 +122,40 @@ const SigninLocalRoute = SigninLocalRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/alerts': typeof AlertsRoute
+  '/alerts': typeof AlertsRouteWithChildren
   '/archive': typeof ArchiveRoute
   '/incidents': typeof IncidentsRouteWithChildren
   '/move-in': typeof MoveInRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/routing': typeof RoutingRoute
   '/schedules': typeof SchedulesRoute
   '/services': typeof ServicesRoute
   '/status': typeof StatusRoute
   '/team': typeof TeamRoute
+  '/alerts/$alertId': typeof AlertsAlertIdRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
+  '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs/': typeof DocsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/alerts': typeof AlertsRoute
+  '/alerts': typeof AlertsRouteWithChildren
   '/archive': typeof ArchiveRoute
   '/incidents': typeof IncidentsRouteWithChildren
   '/move-in': typeof MoveInRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/routing': typeof RoutingRoute
   '/schedules': typeof SchedulesRoute
   '/services': typeof ServicesRoute
   '/status': typeof StatusRoute
   '/team': typeof TeamRoute
+  '/alerts/$alertId': typeof AlertsAlertIdRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
+  '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs': typeof DocsIndexRoute
 }
@@ -147,18 +163,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/alerts': typeof AlertsRoute
+  '/alerts': typeof AlertsRouteWithChildren
   '/archive': typeof ArchiveRoute
   '/incidents': typeof IncidentsRouteWithChildren
   '/move-in': typeof MoveInRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/routing': typeof RoutingRoute
   '/schedules': typeof SchedulesRoute
   '/services': typeof ServicesRoute
   '/status': typeof StatusRoute
   '/team': typeof TeamRoute
+  '/alerts/$alertId': typeof AlertsAlertIdRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
+  '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs/': typeof DocsIndexRoute
 }
@@ -177,8 +195,10 @@ export interface FileRouteTypes {
     | '/services'
     | '/status'
     | '/team'
+    | '/alerts/$alertId'
     | '/docs/$slug'
     | '/incidents/$id'
+    | '/reviews/$incidentId'
     | '/signin/local'
     | '/docs/'
   fileRoutesByTo: FileRoutesByTo
@@ -195,8 +215,10 @@ export interface FileRouteTypes {
     | '/services'
     | '/status'
     | '/team'
+    | '/alerts/$alertId'
     | '/docs/$slug'
     | '/incidents/$id'
+    | '/reviews/$incidentId'
     | '/signin/local'
     | '/docs'
   id:
@@ -213,8 +235,10 @@ export interface FileRouteTypes {
     | '/services'
     | '/status'
     | '/team'
+    | '/alerts/$alertId'
     | '/docs/$slug'
     | '/incidents/$id'
+    | '/reviews/$incidentId'
     | '/signin/local'
     | '/docs/'
   fileRoutesById: FileRoutesById
@@ -222,11 +246,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
-  AlertsRoute: typeof AlertsRoute
+  AlertsRoute: typeof AlertsRouteWithChildren
   ArchiveRoute: typeof ArchiveRoute
   IncidentsRoute: typeof IncidentsRouteWithChildren
   MoveInRoute: typeof MoveInRoute
-  ReviewsRoute: typeof ReviewsRoute
+  ReviewsRoute: typeof ReviewsRouteWithChildren
   RoutingRoute: typeof RoutingRoute
   SchedulesRoute: typeof SchedulesRoute
   ServicesRoute: typeof ServicesRoute
@@ -323,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alerts/$alertId': {
+      id: '/alerts/$alertId'
+      path: '/$alertId'
+      fullPath: '/alerts/$alertId'
+      preLoaderRoute: typeof AlertsAlertIdRouteImport
+      parentRoute: typeof AlertsRoute
+    }
     '/docs/': {
       id: '/docs/'
       path: '/docs'
@@ -344,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IncidentsIdRouteImport
       parentRoute: typeof IncidentsRoute
     }
+    '/reviews/$incidentId': {
+      id: '/reviews/$incidentId'
+      path: '/$incidentId'
+      fullPath: '/reviews/$incidentId'
+      preLoaderRoute: typeof ReviewsIncidentIdRouteImport
+      parentRoute: typeof ReviewsRoute
+    }
     '/signin/local': {
       id: '/signin/local'
       path: '/signin/local'
@@ -353,6 +391,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AlertsRouteChildren {
+  AlertsAlertIdRoute: typeof AlertsAlertIdRoute
+}
+
+const AlertsRouteChildren: AlertsRouteChildren = {
+  AlertsAlertIdRoute: AlertsAlertIdRoute,
+}
+
+const AlertsRouteWithChildren =
+  AlertsRoute._addFileChildren(AlertsRouteChildren)
 
 interface IncidentsRouteChildren {
   IncidentsIdRoute: typeof IncidentsIdRoute
@@ -366,14 +415,25 @@ const IncidentsRouteWithChildren = IncidentsRoute._addFileChildren(
   IncidentsRouteChildren,
 )
 
+interface ReviewsRouteChildren {
+  ReviewsIncidentIdRoute: typeof ReviewsIncidentIdRoute
+}
+
+const ReviewsRouteChildren: ReviewsRouteChildren = {
+  ReviewsIncidentIdRoute: ReviewsIncidentIdRoute,
+}
+
+const ReviewsRouteWithChildren =
+  ReviewsRoute._addFileChildren(ReviewsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
-  AlertsRoute: AlertsRoute,
+  AlertsRoute: AlertsRouteWithChildren,
   ArchiveRoute: ArchiveRoute,
   IncidentsRoute: IncidentsRouteWithChildren,
   MoveInRoute: MoveInRoute,
-  ReviewsRoute: ReviewsRoute,
+  ReviewsRoute: ReviewsRouteWithChildren,
   RoutingRoute: RoutingRoute,
   SchedulesRoute: SchedulesRoute,
   ServicesRoute: ServicesRoute,

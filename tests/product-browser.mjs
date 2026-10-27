@@ -44,11 +44,14 @@ async function incompleteIntakeBrowser(page,context) {
   await page.setViewportSize({width,height:1000})
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
   await focusWorkspace(page)
-  const routedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true,level:3})}),ownerCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:incompleteTitle,exact:true,level:3})})
-  await routedCard.getByText('Payments · production · active',{exact:true}).waitFor()
-  await ownerCard.getByText(/^Integration unrouted queue.*active$/).waitFor()
+  await page.locator('.alert-row').filter({hasText:title}).click();
+  const routedCard=page.getByRole('article',{name:'Alert details',exact:true});
+  await routedCard.getByText(/Payments · production · active/).waitFor();
+  await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:incompleteTitle}).click();
+  const ownerCard=page.getByRole('article',{name:'Alert details',exact:true});
+  await ownerCard.getByText(/Integration unrouted queue.*active$/).waitFor();await ownerCard.getByText('Event context',{exact:true}).click()
   await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · paging OFF; non-automatic.`,{exact:true}).waitFor()
-  assert.ok(await routedCard.isVisible());assert.ok(await ownerCard.isVisible())
+  assert.ok(await ownerCard.isVisible())
   const incidentService=ownerCard.getByLabel('Incident service',{exact:true}),declare=ownerCard.getByRole('button',{name:'Declare incident from alert',exact:true})
   assert.equal(await incidentService.inputValue(),'','owner queue declaration requires an explicit service choice')
   assert.equal(await declare.isEnabled(),false)
@@ -70,7 +73,8 @@ async function incompleteIntakeBrowser(page,context) {
   await diagnostics.getByRole('heading',{name:incompleteTitle,exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc059-routing-focus-${width}.png`})
  }
  await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
- const ownerCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:incompleteTitle,exact:true,level:3})})
+ await page.locator('.alert-row').filter({hasText:incompleteTitle}).click();
+ const ownerCard=page.getByRole('article',{name:'Alert details',exact:true})
  await ownerCard.getByLabel('Incident service',{exact:true}).selectOption('payments')
  await ownerCard.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
  await page.locator('.detail').getByRole('heading',{name:incompleteTitle,exact:true}).waitFor()
@@ -144,13 +148,14 @@ async function responsePolicyBrowser(page,context) {
   await send({...warning,eventId:'slow-payments-recovery',intent:'recover',severity:'info'})
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
   await focusWorkspace(page)
-  const alertCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:warning.title,exact:true,level:3})})
+  await page.locator('.alert-row').filter({hasText:warning.title}).click();
+  const alertCard=page.getByRole('article',{name:'Alert details',exact:true});await alertCard.getByText('Event context',{exact:true}).click();
   await alertCard.getByText('stopped by source recovery',{exact:true}).waitFor()
-  await alertCard.getByText(/Recovered notice: Everyone already notified · recorded · no sender until OC-026/).waitFor()
+  await alertCard.getByText(/Recovered notice: Everyone already notified · recorded/).waitFor()
   await alertCard.getByText(/Attempt cancellation:/).waitFor()
   const recoveredState=await request('/api/state'),stopped=recoveredState.alerts.find(alert=>alert.id===warningAlert.id)
   assert.equal(stopped.state,'recovered');assert.equal(stopped.obligation.state,'stopped')
-  assert.ok(stopped.obligation.receipt);await alertCard.locator('p').filter({hasText:'Recovery receipt: '+stopped.obligation.receipt}).waitFor()
+  assert.ok(stopped.obligation.receipt);await alertCard.getByText(/Recovery recorded/).waitFor()
   await checkScreen('alert-recovery',width,alertCard)
   await alertCard.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
   await page.locator('.detail').getByRole('heading',{name:warning.title,exact:true}).waitFor()
@@ -160,8 +165,9 @@ async function responsePolicyBrowser(page,context) {
   assert.ok(incident?.automaticDeclaration,'critical rule automatically declares an incident')
   await focusWorkspace(page)
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
-  const criticalCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:critical.title,exact:true,level:3})})
-  await criticalCard.getByRole('link',{name:'Open incident: '+critical.title,exact:true}).click()
+  await page.locator('.alert-row').filter({hasText:critical.title}).click();
+  const criticalCard=page.getByRole('article',{name:'Alert details',exact:true});
+  await criticalCard.getByRole('link',{name:'In incident '+critical.title,exact:true}).click()
   const detail=page.locator('.detail')
   await detail.getByText('Automatic declaration · service response policy',{exact:true}).waitFor()
   await detail.getByLabel('Reason and observed outcome',{exact:true}).fill('Commander acknowledges the customer checkout outage.')
@@ -371,10 +377,11 @@ async function changeAndSigningBrowser(page,context){
   await page.getByRole('link',{name:'Schedules',exact:true}).click();await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
   await page.locator('.scheduling-now-next').getByText('Now: Coverage gap',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
   await page.getByRole('link',{name:'Reviews',exact:true}).click();
+  await page.getByText('Response numbers',{exact:true}).click();
   const responseReport=page.locator('.response-report');
-  await responseReport.getByText(/Incident durations and source entries/).click();
+  await responseReport.getByText(/Incidents in this period/).click();
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().waitFor();
-  await responseReport.getByText(/incident revision unknown/).first().waitFor();
+  await responseReport.getByText(/Retained erased case; durations unknown/).first().waitFor();
   assert.equal(await responseReport.getByRole('link',{name:'Erased incident',exact:true}).count(),0,'erased cases have no personal incident drilldown');
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().scrollIntoViewIfNeeded();await check('oc040-erased-response-report',width);
   await page.getByRole('link',{name:'Services',exact:true}).click();if(!await settings.getByLabel('Erasure category',{exact:true}).isVisible())await settings.getByText('Data erasure settings',{exact:true}).click();
@@ -443,7 +450,7 @@ try {
  await mkdir('.rer/local',{recursive:true,mode:0o700})
  const owner=await worker.request('/api/setup',credentials)
  assert.equal(owner.status,200,'the public setup door creates the local browser owner')
- browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']})
+ browser=await chromium.launch({headless:true,...(process.env.ONCALL_CHROMIUM?{executablePath:process.env.ONCALL_CHROMIUM}:{}),args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
  const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000}})
  await context.addCookies(owner.headers.getSetCookie().map(line=>{
   const pair=line.split(';')[0],at=pair.indexOf('=')
