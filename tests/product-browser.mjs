@@ -288,7 +288,7 @@ async function changeAndSigningBrowser(page,context){
   await request('/api/changes/sources',{id:erasureSource,name:'Synthetic erasure '+width,provider:'native',service:'synthetic-oncall-1',repository:'',mode:'bearer',revision:0,key:erasureKey});
   const changeResponse=await context.request.post('/api/changes/ingress/'+erasureSource,{headers:{authorization:'Bearer '+erasureKey},data:{eventId:erasureSource,summary:'Synthetic erasable change '+width,author:'synthetic-oncall-40',timestamp:new Date().toISOString()}});assert.equal(changeResponse.status(),201);
   const erasureChange=await changeResponse.json();await page.reload();
-  await page.goto(origin+'/settings/archive');const settings=page.locator('.erase-data');await settings.getByRole('heading',{name:'Erase someone’s data',exact:true}).waitFor();
+  await page.goto(origin+'/settings/archive');const settings=page.locator('.erase-data');await settings.locator(':scope > summary').click();
   await settings.getByLabel('Retained change',{exact:true}).selectOption(erasureChange.id);
   assert.equal(await settings.getByRole('button',{name:'Erase retained change',exact:true}).isEnabled(),false);
   await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));
@@ -379,7 +379,7 @@ async function changeAndSigningBrowser(page,context){
   await responseReport.getByText(/incident revision unknown/).first().waitFor();
   assert.equal(await responseReport.getByRole('link',{name:'Erased incident',exact:true}).count(),0,'erased cases have no personal incident drilldown');
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().scrollIntoViewIfNeeded();await check('oc040-erased-response-report',width);
-  await page.goto(origin+'/settings/archive');await settings.getByLabel('Erasure category',{exact:true}).waitFor();
+  await page.goto(origin+'/settings/archive');await settings.locator(':scope > summary').click();await settings.getByLabel('Erasure category',{exact:true}).waitFor();
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // Publish grouping through the existing service settings, then inspect its public admissions.
   await page.reload();await openWorkspaceSection(page,'services');

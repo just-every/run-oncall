@@ -1,0 +1,22 @@
+.archive-settings { display: grid; gap: 20px; min-width: 0; color: var(--oc-ink); }
+.archive-settings > .panel { margin: 0; min-width: 0; }
+.archive-settings :is(p, li, label, summary, code) { font-size: 14px; overflow-wrap: anywhere; }
+.archive-settings :is(input, select, textarea) { font: inherit; font-size: 15px; max-width: 100%; min-width: 0; align-self: start; }
+.archive-settings :is(button, summary, input, select) { min-height: 44px; }
+.archive-settings summary { cursor: pointer; align-items: center; }
+.archive-settings .archive-restore { margin-top: 20px; }
+.archive-settings .archive-audit h2 { margin-top: 0; }
+.archive-settings .archive-audit p { margin: 8px 0; }
+.archive-settings .erase-data > summary { display: grid; gap: 6px; padding-right: 24px; position: relative; }
+.archive-settings .erase-data > summary > span:first-child { font-family: var(--oc-font); font-size: 20px; font-weight: 650; }
+.archive-settings .erase-data > summary > span + span { font-weight: 400; color: var(--oc-muted); }
+.archive-settings .erase-data > summary::after { position: absolute; right: 0; top: 0; font-size: 20px; }
+.archive-settings .field :is(input, select, textarea):focus-visible { outline: none; border: 2px solid var(--oc-ink); box-shadow: none; }
+.archive-settings pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+@media (max-width: 600px) {
+  .archive-settings .field { width: 100%; }
+  .archive-settings :is(form, fieldset) { min-width: 0; }
+  .archive-settings .integration-checkbox { min-height: 44px; width: 100%; }
+  .archive-settings .integration-checkbox input { width: 18px; height: 18px; min-height: 18px; }
+  .archive-settings input[type="file"] { width: 100%; }
+}

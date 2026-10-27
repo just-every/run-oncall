@@ -29,7 +29,7 @@ export function ArchiveWorkspace({ state, actor, busy, run, setError, setNotice,
         schedules and overrides stay as they are when you replace it.
         Use <code>rer export --output exports/installation.rer</code> with Oncall stopped for a complete local installation archive, including schedules.</p>
       <button className="primary" onClick={download}>Export original archive</button>
-      <h3>Validate and replace from archive</h3>
+      <details className="archive-restore"><summary>Restore from an archive</summary>
       <p>Restore replaces coordination data. Other sessions, source credentials and other member passwords are removed.
         Compatible and change integrations become inactive until their keys are configured again. Your current sign-in remains the only authenticated authority. An archive from another installation
         needs explicit administrator mapping, and the target must have only its initial administrator and no services, incidents or events.</p>
@@ -70,6 +70,7 @@ export function ArchiveWorkspace({ state, actor, busy, run, setError, setNotice,
           }}><Field name="confirm" label="Type REPLACE to confirm" /></Form>
         </>}
       </div>}
+      </details>
     </>}
   </section>;
 }
