@@ -1,5 +1,5 @@
 import {openWorkspaceSection} from './keyboard.mjs'
-import {openHistoryComparison} from './routing-browser.mjs';
+import {openHistoryComparison,selectRoutedSource} from './routing-browser.mjs';
 import assert from 'node:assert/strict'
 import {randomBytes,createHmac} from 'node:crypto'
 import {mkdir} from 'node:fs/promises'
@@ -60,7 +60,7 @@ async function incompleteIntakeBrowser(page,context) {
   await checkScreen('alerts',width)
   await ownerCard.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc059-alerts-focus-${width}.png`})
   await openWorkspaceSection(page,'routing')
-  await page.getByLabel('Routed integration',{exact:true}).selectOption(source)
+  await selectRoutedSource(page,source)
   const diagnostics=page.getByRole('region',{name:'Routing diagnostics',exact:true})
   await diagnostics.getByRole('heading',{name:incompleteTitle,exact:true}).waitFor()
   await diagnostics.getByText('High-urgency incomplete-intake alert · integration-owner page obligation recorded · paging OFF; non-automatic.',{exact:true}).waitFor()
@@ -398,7 +398,7 @@ async function changeAndSigningBrowser(page,context){
   for(const [eventId,generation,intent,offset] of [['synthetic-oncall-439-a','synthetic-oncall-439-a','trigger',2000],['synthetic-oncall-439-r','synthetic-oncall-439-a','recover',3000],['synthetic-oncall-439-b','synthetic-oncall-439-b','trigger',4000]]){const response=await groupSignal(1,eventId,generation,intent,flapIdentity,offset,flapTitle);assert.equal(response.status(),201);}
   await page.reload();await openWorkspaceSection(page,'alerts');const heldCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true})});await heldCard.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true}).waitFor();assert.equal(await heldCard.count(),1);await heldCard.getByText(/1 held active generation/).waitFor();await heldCard.getByText('Retained generations and evidence',{exact:true}).click();await heldCard.scrollIntoViewIfNeeded();await check('oc043-flapping-held',width);
   await openWorkspaceSection(page,'services');
-  await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(groupSources[1]);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
+  await openWorkspaceSection(page,'routing');await selectRoutedSource(page,groupSources[1]);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const groupedPreview=page.getByRole('region',{name:'Routing preview',exact:true});await groupedPreview.getByText('4 retained events compared. No records changed.',{exact:true}).waitFor();await groupedPreview.getByText(/Joined original event/).first().waitFor();await groupedPreview.getByText(/Historical urgency: high/).first().waitFor();await groupedPreview.getByText(/Proposed urgency: high/).first().waitFor();await groupedPreview.scrollIntoViewIfNeeded();await check('oc043-grouping-routing-preview',width);
   await openHistoryComparison(page);await page.getByLabel('Event JSON',{exact:true}).fill(JSON.stringify([rootEvent,joinedEvent]));await page.getByRole('button',{name:'Compare pasted events',exact:true}).click();const serviceReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await serviceReplay.getByText(/Joined original event/).first().waitFor();await serviceReplay.getByText(/Historical urgency:/).first().waitFor();await serviceReplay.getByText(/Proposed urgency:/).first().waitFor();await serviceReplay.scrollIntoViewIfNeeded();await check('oc043-grouping-service-replay',width);await page.getByRole('button',{name:'Close comparison',exact:true}).click();
   await openWorkspaceSection(page,'services');
@@ -411,7 +411,7 @@ async function changeAndSigningBrowser(page,context){
   const orchestrated=await context.request.post('/api/ingress/intake:'+orchestrationId,{headers:{authorization:'Bearer '+orchestrationKey},data:observation});assert.equal(orchestrated.status(),201);
   await page.reload();await openWorkspaceSection(page,'alerts');
   const suppressedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:observation.title,exact:true,level:3})});await suppressedCard.getByText('Suppressed · Owner: '+member.name,{exact:false}).waitFor();await suppressedCard.scrollIntoViewIfNeeded();await check('oc043-owned-suppressed-alert',width);
-  await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);
+  await openWorkspaceSection(page,'routing');await selectRoutedSource(page,orchestrationId);
   const maintenancePreview=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/preview')&&r.request().method()==='POST');await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const comparison=page.getByRole('region',{name:'Routing preview',exact:true});await comparison.getByText('1 retained events compared. No records changed.',{exact:true}).waitFor();
   await comparison.getByRole('heading',{name:observation.title,exact:true,level:4}).waitFor();
@@ -420,7 +420,7 @@ async function changeAndSigningBrowser(page,context){
   await comparison.scrollIntoViewIfNeeded();await check('oc043-maintenance-preview',width);
   const expired={start:'2020-01-01T00:00:00.000Z',end:'2020-01-02T00:00:00.000Z'};
   await request('/api/command',{type:'policy',service:'synthetic-oncall-1',severity:'warning',action:'suppress',owner:member.id,reason:'Synthetic completed maintenance',baseVersion:policy.version,suppressionWindow:expired});
-  await page.reload();await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);const expiredPreview=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/preview')&&r.request().method()==='POST');await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
+  await page.reload();await selectRoutedSource(page,orchestrationId);const expiredPreview=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/preview')&&r.request().method()==='POST');await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   await comparison.getByText('Proposed: routing v1 · service rule v'+(policy.version+1)+' · route · owner '+member.name+'.',{exact:true}).waitFor();
   const expiry=(await (await expiredPreview).json()).decisions[0];assert.equal(expiry.historical.serviceDecision.action,'suppress');assert.equal(expiry.proposed.serviceDecision.action,'route');assert.match(expiry.proposed.serviceDecision.reason,/Maintenance expired/);
   await comparison.scrollIntoViewIfNeeded();await check('oc043-maintenance-expired-preview',width);

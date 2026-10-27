@@ -1,5 +1,5 @@
 import {openWorkspaceSection} from './keyboard.mjs'
-import {openHistoryComparison} from './routing-browser.mjs';
+import {openHistoryComparison,selectRoutedSource} from './routing-browser.mjs';
 import {focusWorkspace} from './keyboard.mjs'
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
@@ -70,7 +70,7 @@ export async function triageBulkBrowser(page,context,width){
  const replayEvent=(await call('/api/state')).events.find(event=>event.title===transformTitle),routedId='synthetic-oncall-445-'+width,routedKey=randomBytes(32).toString('hex');
  const routedDefinition=await call('/api/routing/keys',{id:routedId,name:'Synthetic transformed routing '+width,provider:'pagerduty',scope:[newServiceId],owner:coordinator.id,key:routedKey,revision:0,rules:[],catchAll:newServiceId},201);
  const routedResponse=await context.request.post(origin+'/v2/enqueue',{data:{routing_key:routedKey,event_action:'trigger',dedup_key:routedId,payload:{summary:'Synthetic routed transformation '+width,source:routedId,severity:'critical'}}});assert.equal(routedResponse.status(),202);
- await page.reload();await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(routedId);
+ await page.reload();await openWorkspaceSection(page,'routing');await selectRoutedSource(page,routedId);
  let routedAttempts=0;const routedPath='**/api/routing/keys/'+routedId+'/preview';
  const loseRoutingResponse=async route=>{routedAttempts++;if(routedAttempts===1){const actual=await route.fetch();assert.equal(actual.status(),200);await actual.dispose();await route.abort('connectionfailed');}else await route.continue();};
  await page.route(routedPath,loseRoutingResponse);
