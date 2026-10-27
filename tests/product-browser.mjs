@@ -283,7 +283,8 @@ async function changeAndSigningBrowser(page,context){
   const service=page.locator('.service-card').filter({has:page.getByRole('heading',{name:'Template payments',exact:true})});await service.locator('.recent-changes > summary').click();
   await service.getByText('Argo CD gateway sync',{exact:true}).waitFor();await service.getByText('payments: applied',{exact:true}).waitFor();await service.getByText('Terraform Cloud',{exact:true}).waitFor();
   assert.ok(await service.getByText('Dependency · Template gateway',{exact:true}).count());await service.scrollIntoViewIfNeeded();await check('oc065-changes',width);
-  await page.goto(origin+'/settings/integrations');await page.getByRole('heading',{name:'Sources',exact:true}).waitFor();await check('oc065-retention',width);
+  await page.goto(origin+'/settings/integrations');
+  await page.getByText(/of 1,000 retained changes/).scrollIntoViewIfNeeded();await check('oc065-retention',width);
   const erasureKey=token(),erasureSource='synthetic-oncall-40-'+width;
   await request('/api/changes/sources',{id:erasureSource,name:'Synthetic erasure '+width,provider:'native',service:'synthetic-oncall-1',repository:'',mode:'bearer',revision:0,key:erasureKey});
   const changeResponse=await context.request.post('/api/changes/ingress/'+erasureSource,{headers:{authorization:'Bearer '+erasureKey},data:{eventId:erasureSource,summary:'Synthetic erasable change '+width,author:'synthetic-oncall-40',timestamp:new Date().toISOString()}});assert.equal(changeResponse.status(),201);
