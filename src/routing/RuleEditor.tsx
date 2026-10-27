@@ -2,8 +2,10 @@ import { useId, useState } from 'react';
 import type { State } from '../family/response-operations/domain';
 import type { RoutingRule } from './types';
 
+export const routingFieldNames:Record<string,string>={summary:'Title',severity:'Severity',service:'Service','payload.custom_details.team':'Sender team','labels.team':'Alert team','payload.custom_details.service':'Sender service','labels.service':'Alert service'};
+
 export function RuleEditor({rule,index,services,onChange,onMove,onRemove,first,last,disabled}:{rule:RoutingRule;index:number;services:State['services'];onChange:(rule:RoutingRule)=>void;onMove:(delta:number)=>void;onRemove:()=>void;first:boolean;last:boolean;disabled:boolean}) {
-  const fieldNames:Record<string,string>={summary:'Title',severity:'Severity',service:'Service','payload.custom_details.team':'Sender team','labels.team':'Alert team','payload.custom_details.service':'Sender service','labels.service':'Alert service'};
+  const fieldNames=routingFieldNames;
   const uid=useId(),dynamic='field' in rule.target,[expanded,setExpanded]=useState(rule.id.startsWith('rule-'));
   return <details className="routing-rule" open={expanded} onToggle={e=>setExpanded(e.currentTarget.open)}>
     <summary><span className="routing-number">{index+1}</span><span className="routing-rule-copy"><strong>Rule {index+1}</strong><small>{rule.conditions.map(c=>`${c.op.replaceAll('-', ' ')}${c.value===undefined?'':` ${c.value}`}`).join(rule.match==='all'?' · and · ':' · or · ')}</small></span><span className="routing-target">{'service' in rule.target?services.find(s=>'service' in rule.target&&s.id===rule.target.service)?.name:'Extracted service'}</span><span className="tag">{dynamic?'Dynamic':'Fixed service'}</span></summary>
