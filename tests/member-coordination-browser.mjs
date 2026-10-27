@@ -273,7 +273,7 @@ try {
   await samView.page.setViewportSize({width,height:1000});await samView.page.reload()
   await samView.page.getByRole('heading',{name:'Recorded impact obligations',exact:true}).waitFor()
   assert.equal(await samView.page.locator('.timeline').count(),0)
-  assert.equal(await samView.page.getByRole('link',{name:'Incidents',exact:true}).count(),0)
+  assert.equal(await samView.page.locator('nav a[href="/incidents"]').count(),0)
   for(const path of ['/api/state','/api/triage','/api/archive','/api/recovery/checkpoint','/api/audit/export','/api/handoffs/context/'+statusIncident.id,'/api/paging/state','/api/email','/api/automation/clients'])ok(await call(samView.page,path),403)
   ok(await call(samView.page,'/api/v1/incidents'),401)
   ok(await call(samView.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',title:'Refused page',severity:'warning',summary:'No authority'}),403)
