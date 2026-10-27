@@ -1,3 +1,4 @@
+import {openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes,createHmac} from 'node:crypto'
 import {mkdir} from 'node:fs/promises'
@@ -42,7 +43,7 @@ async function incompleteIntakeBrowser(page,context) {
  }
  for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
-  await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
+  await openWorkspaceSection(page,'alerts')
   await focusWorkspace(page)
   const routedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true,level:3})}),ownerCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:incompleteTitle,exact:true,level:3})})
   await routedCard.getByText('Payments · production · active',{exact:true}).waitFor()
@@ -57,7 +58,7 @@ async function incompleteIntakeBrowser(page,context) {
   await page.screenshot({path:`evidence/browser/oc056-queue-service-${width}.png`,fullPage:true})
   await checkScreen('alerts',width)
   await ownerCard.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc059-alerts-focus-${width}.png`})
-  await page.getByRole('link',{name:'Routing & replay',exact:true}).click()
+  await openWorkspaceSection(page,'routing')
   await page.getByLabel('Routed integration',{exact:true}).selectOption(source)
   const diagnostics=page.getByRole('region',{name:'Routing diagnostics',exact:true})
   await diagnostics.getByRole('heading',{name:incompleteTitle,exact:true}).waitFor()
@@ -69,7 +70,7 @@ async function incompleteIntakeBrowser(page,context) {
   await checkScreen('routing',width)
   await diagnostics.getByRole('heading',{name:incompleteTitle,exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc059-routing-focus-${width}.png`})
  }
- await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
+ await openWorkspaceSection(page,'alerts')
  const ownerCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:incompleteTitle,exact:true,level:3})})
  await ownerCard.getByLabel('Incident service',{exact:true}).selectOption('payments')
  await ownerCard.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
@@ -106,7 +107,7 @@ async function responsePolicyBrowser(page,context) {
   await request('/api/routing/keys',{id:source,name:'Checkout native monitor '+width,provider:'native',authentication:'bearer',scope:[serviceId],owner:member.id,key,revision:0,rules:[],catchAll:serviceId},201)
   const viewName='Checkout commander review '+width
   await request('/api/triage/views',{name:viewName,query:{}})
-  await page.getByRole('link',{name:'Services',exact:true}).click()
+  await openWorkspaceSection(page,'services')
   await focusWorkspace(page)
   await page.goto(origin+'/settings/services/'+encodeURIComponent(serviceId));
   const service=page.locator('.service-page')
@@ -142,7 +143,7 @@ async function responsePolicyBrowser(page,context) {
   assert.equal(warningAlert.obligation.policy.mode,'alert-only')
   assert.equal(admitted.incidents.some(incident=>incident.alerts.includes(warningAlert.id)),false,'warning remains alert-only')
   await send({...warning,eventId:'slow-payments-recovery',intent:'recover',severity:'info'})
-  await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
+  await openWorkspaceSection(page,'alerts')
   await focusWorkspace(page)
   const alertCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:warning.title,exact:true,level:3})})
   await alertCard.getByText('stopped by source recovery',{exact:true}).waitFor()
@@ -159,7 +160,7 @@ async function responsePolicyBrowser(page,context) {
   const automaticState=await request('/api/state'),criticalAlert=automaticState.alerts.find(alert=>alert.source==='intake:'+source&&alert.key===critical.key),incident=automaticState.incidents.find(incident=>incident.alerts.includes(criticalAlert.id))
   assert.ok(incident?.automaticDeclaration,'critical rule automatically declares an incident')
   await focusWorkspace(page)
-  await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
+  await openWorkspaceSection(page,'alerts')
   const criticalCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:critical.title,exact:true,level:3})})
   await criticalCard.getByRole('link',{name:'Open incident: '+critical.title,exact:true}).click()
   const detail=page.locator('.detail')
@@ -226,7 +227,7 @@ async function incidentWorkflowBrowser(page,context) {
  for(const width of [1440]){
   await page.setViewportSize({width,height:1000});const serviceId='workflow-'+width,serviceName='Checkout incident workflow '+width;
   await req('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Check replica health before changing customer traffic.'],pager:''});
-  await page.getByRole('link',{name:'Services',exact:true}).click();await focusWorkspace(page);
+  await openWorkspaceSection(page,'services');await focusWorkspace(page);
   await page.goto(origin+'/settings/services/'+encodeURIComponent(serviceId));
   const service=page.locator('.service-page'),settings=service.getByRole('region',{name:'Incident template for '+serviceName});
   await service.getByText('Incident template',{exact:true}).click();
@@ -234,7 +235,7 @@ async function incidentWorkflowBrowser(page,context) {
   await settings.getByLabel('Impact prompt',{exact:true}).fill('Which checkout paths and customers are affected?');await settings.getByLabel('Incident types (one per line)',{exact:true}).fill('Database failure\nTraffic saturation');
   await settings.getByRole('button',{name:'Add checklist item',exact:true}).click();await settings.getByLabel('Checklist item 1',{exact:true}).fill('Confirm customer checkout recovery');await settings.getByRole('button',{name:/^Publish version/}).click();await settings.getByLabel('Reason',{exact:true}).fill('Keep checkout response consistent across shifts.');
   await submit(settings.getByRole('button',{name:/^Publish version/}));await expect.poll(async()=>(await req('/api/state')).services.find(item=>item.id===serviceId).incidentTemplates?.length??0).toBe(1);await capture('template',width,settings);
-  await page.getByRole('link',{name:'Incidents',exact:true}).click();await page.getByRole('button',{name:'Declare incident',exact:true}).click();
+  await openWorkspaceSection(page,'incidents');await page.getByRole('button',{name:'Declare incident',exact:true}).click();
   const form=page.locator('form').filter({has:page.getByRole('button',{name:'Declare',exact:true})});const targetTitle='Checkout customer impact '+width;
   await form.getByLabel('Incident title',{exact:true}).fill(targetTitle);await form.getByLabel('Service',{exact:true}).selectOption(serviceId);await form.getByLabel('Incident type (service template)',{exact:true}).selectOption('Database failure');await form.getByLabel('Severity',{exact:true}).selectOption('warning');await form.getByLabel('Customer impact and current evidence',{exact:true}).fill('Customers observe slower checkout; response team is investigating.');await submit(form.getByRole('button',{name:'Declare',exact:true}));
   await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();let state=await req('/api/state'),target=state.incidents.find(i=>i.title===targetTitle);assert.equal(target.template.incidentType,'Database failure');
@@ -278,7 +279,7 @@ async function changeAndSigningBrowser(page,context){
   await page.screenshot({path:`evidence/browser/${label}-${width}.png`,fullPage:true});await page.screenshot({path:`evidence/browser/${label}-focus-${width}.png`});
  };
  for(const width of [1440]){
-  await page.setViewportSize({width,height:1000});await page.reload();await page.getByRole('link',{name:'Services',exact:true}).click();
+  await page.setViewportSize({width,height:1000});await page.reload();await openWorkspaceSection(page,'services');
   await page.goto(origin+'/settings/services/synthetic-oncall-1');const service=page.locator('.service-page');await service.locator('.recent-changes > summary').click();
   await service.getByText('Argo CD gateway sync',{exact:true}).waitFor();await service.getByText('payments: applied',{exact:true}).waitFor();await service.getByText('Terraform Cloud',{exact:true}).waitFor();
   assert.ok(await service.getByText('Dependency · Template gateway',{exact:true}).count());await service.scrollIntoViewIfNeeded();await check('oc065-changes',width);
@@ -369,19 +370,19 @@ async function changeAndSigningBrowser(page,context){
   assert.ok(!erasedBusiness.audience.includes(erasedMember.id));assert.ok(!erasedBusiness.subscriptions.some(row=>row.member===erasedMember.id));
   await settings.getByText(/oc_business_services:/).waitFor();
 
-  await page.getByRole('link',{name:'Schedules',exact:true}).click();await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
+  await openWorkspaceSection(page,'schedules');await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
   await page.locator('.scheduling-now-next').getByText('Now: Coverage gap',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
-  await page.getByRole('link',{name:'Reviews',exact:true}).click();
+  await openWorkspaceSection(page,'reviews');
   const responseReport=page.locator('.response-report');
   await responseReport.getByText(/Incident durations and source entries/).click();
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().waitFor();
   await responseReport.getByText(/incident revision unknown/).first().waitFor();
   assert.equal(await responseReport.getByRole('link',{name:'Erased incident',exact:true}).count(),0,'erased cases have no personal incident drilldown');
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().scrollIntoViewIfNeeded();await check('oc040-erased-response-report',width);
-  await page.getByRole('link',{name:'Services',exact:true}).click();if(!await settings.getByLabel('Erasure category',{exact:true}).isVisible())await settings.getByText('Data erasure settings',{exact:true}).click();
+  await openWorkspaceSection(page,'services');if(!await settings.getByLabel('Erasure category',{exact:true}).isVisible())await settings.getByText('Data erasure settings',{exact:true}).click();
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // Publish grouping through the existing service settings, then inspect its public admissions.
-  await page.reload();await page.getByRole('link',{name:'Services',exact:true}).click();
+  await page.reload();await openWorkspaceSection(page,'services');
   await page.goto(origin+'/settings/services/synthetic-oncall-1');const groupSettings=page.locator('.service-grouping');
   await groupSettings.locator(':scope > summary').click();await groupSettings.getByLabel('Enable grouping',{exact:true}).check();await groupSettings.getByLabel('Match field',{exact:true}).fill('key');await groupSettings.getByLabel('Grouping window in seconds',{exact:true}).fill('60');await groupSettings.getByLabel('Flapping trigger generations',{exact:true}).fill('0');await groupSettings.getByLabel('Grouping coordination owner',{exact:true}).selectOption(member.id);await groupSettings.getByRole('button',{name:/^Publish version/}).click();await groupSettings.getByLabel('Reason',{exact:true}).fill('Synthetic shared failure grouping');
   const groupPublished=page.waitForResponse(r=>r.url().endsWith('/api/command')&&r.request().postDataJSON()?.correlation?.field==='key');await groupSettings.getByRole('button',{name:/^Publish version/}).click();const groupingReply=await groupPublished;assert.equal(groupingReply.status(),200);const publishedGrouping=await groupingReply.json();await expect.poll(async()=>(await request('/api/state')).policies.find(p=>p.id===publishedGrouping.id).version).toBe(publishedGrouping.version);await groupSettings.scrollIntoViewIfNeeded();await check('oc043-grouping-settings',width);
@@ -391,16 +392,16 @@ async function changeAndSigningBrowser(page,context){
   const rootResponse=await groupSignal(0,'synthetic-oncall-438-a','synthetic-oncall-438-a','trigger','synthetic-oncall-438-'+width,0,'Synthetic correlation original '+width);assert.equal(rootResponse.status(),201);const rootReply=await rootResponse.json();
   const joinedResponse=await groupSignal(1,'synthetic-oncall-438-b','synthetic-oncall-438-b','trigger','synthetic-oncall-438-'+width,1000,'Synthetic correlation joined '+width);assert.equal(joinedResponse.status(),201);const joinedReply=await joinedResponse.json();
   const groupingState=await request('/api/state'),rootEvent=groupingState.events.find(e=>e.id===rootReply.id),joinedEvent=groupingState.events.find(e=>e.id===joinedReply.id);assert.equal(joinedEvent.decision.correlation.originalEvent,rootEvent.id);
-  await page.reload();await page.getByRole('link',{name:'Alerts & events',exact:true}).click();const joinedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Synthetic correlation joined '+width,exact:true})});await joinedCard.getByText(/Joined original event/).waitFor();await joinedCard.scrollIntoViewIfNeeded();await check('oc043-correlated-signal',width);
+  await page.reload();await openWorkspaceSection(page,'alerts');const joinedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Synthetic correlation joined '+width,exact:true})});await joinedCard.getByText(/Joined original event/).waitFor();await joinedCard.scrollIntoViewIfNeeded();await check('oc043-correlated-signal',width);
   await page.goto(origin+'/settings/services/synthetic-oncall-1');await groupSettings.locator(':scope > summary').click();await groupSettings.getByLabel('Flapping trigger generations',{exact:true}).fill('2');await groupSettings.getByRole('button',{name:/^Publish version/}).click();await groupSettings.getByLabel('Reason',{exact:true}).fill('Hold repeating generations for review');const flapPublished=page.waitForResponse(r=>r.url().endsWith('/api/command')&&r.request().postDataJSON()?.correlation?.flappingCount===2);await groupSettings.getByRole('button',{name:/^Publish version/}).click();assert.equal((await flapPublished).status(),200);
   const flapTitle='Synthetic flapping browser '+width,flapIdentity='synthetic-oncall-439-'+width;
   for(const [eventId,generation,intent,offset] of [['synthetic-oncall-439-a','synthetic-oncall-439-a','trigger',2000],['synthetic-oncall-439-r','synthetic-oncall-439-a','recover',3000],['synthetic-oncall-439-b','synthetic-oncall-439-b','trigger',4000]]){const response=await groupSignal(1,eventId,generation,intent,flapIdentity,offset,flapTitle);assert.equal(response.status(),201);}
-  await page.reload();await page.getByRole('link',{name:'Alerts & events',exact:true}).click();const heldCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true})});await heldCard.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true}).waitFor();assert.equal(await heldCard.count(),1);await heldCard.getByText(/1 held active generation/).waitFor();await heldCard.getByText('Retained generations and evidence',{exact:true}).click();await heldCard.scrollIntoViewIfNeeded();await check('oc043-flapping-held',width);
-  await page.getByRole('link',{name:'Services',exact:true}).click();
-  await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel('Routed integration',{exact:true}).selectOption(groupSources[1]);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
+  await page.reload();await openWorkspaceSection(page,'alerts');const heldCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true})});await heldCard.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true}).waitFor();assert.equal(await heldCard.count(),1);await heldCard.getByText(/1 held active generation/).waitFor();await heldCard.getByText('Retained generations and evidence',{exact:true}).click();await heldCard.scrollIntoViewIfNeeded();await check('oc043-flapping-held',width);
+  await openWorkspaceSection(page,'services');
+  await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(groupSources[1]);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const groupedPreview=page.getByRole('region',{name:'Routing preview',exact:true});await groupedPreview.getByText('4 retained events compared. No records changed.',{exact:true}).waitFor();await groupedPreview.getByText(/Joined original event/).first().waitFor();await groupedPreview.getByText(/Historical urgency: high/).first().waitFor();await groupedPreview.getByText(/Proposed urgency: high/).first().waitFor();await groupedPreview.scrollIntoViewIfNeeded();await check('oc043-grouping-routing-preview',width);
   await page.getByLabel('Event JSON array',{exact:true}).fill(JSON.stringify([rootEvent,joinedEvent]));await page.getByRole('button',{name:'Compare decisions',exact:true}).click();const serviceReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await serviceReplay.getByText(/Joined original event/).first().waitFor();await serviceReplay.getByText(/Historical urgency:/).first().waitFor();await serviceReplay.getByText(/Proposed urgency:/).first().waitFor();await serviceReplay.scrollIntoViewIfNeeded();await check('oc043-grouping-service-replay',width);
-  await page.getByRole('link',{name:'Services',exact:true}).click();
+  await openWorkspaceSection(page,'services');
   // OC-043's existing routing screen exposes both stages before publication.
   const orchestrationId='synthetic-oncall-43-'+width,orchestrationKey=token(),policyBefore=(await request('/api/state')).policies.find(p=>p.service==='synthetic-oncall-1'&&p.severity==='warning');
   const window={start:new Date(Date.now()-60000).toISOString(),end:new Date(Date.now()+3600000).toISOString()};
@@ -408,9 +409,9 @@ async function changeAndSigningBrowser(page,context){
   await request('/api/routing/keys',{id:orchestrationId,name:'Synthetic maintenance '+width,provider:'native',scope:['synthetic-oncall-1'],owner:member.id,key:orchestrationKey,revision:0,rules:[],catchAll:'synthetic-oncall-1'});
   const observation={source:'intake:'+orchestrationId,eventId:orchestrationId,service:'synthetic-oncall-1',environment:'production',key:orchestrationId,generation:orchestrationId,intent:'trigger',severity:'warning',title:'Synthetic maintenance signal '+width,observedAt:new Date().toISOString(),evidence:''};
   const orchestrated=await context.request.post('/api/ingress/intake:'+orchestrationId,{headers:{authorization:'Bearer '+orchestrationKey},data:observation});assert.equal(orchestrated.status(),201);
-  await page.reload();await page.getByRole('link',{name:'Alerts & events',exact:true}).click();
+  await page.reload();await openWorkspaceSection(page,'alerts');
   const suppressedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:observation.title,exact:true,level:3})});await suppressedCard.getByText('Suppressed · Owner: '+member.name,{exact:false}).waitFor();await suppressedCard.scrollIntoViewIfNeeded();await check('oc043-owned-suppressed-alert',width);
-  await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);
+  await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);
   await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const comparison=page.getByRole('region',{name:'Routing preview',exact:true});await comparison.getByText('1 retained events compared. No records changed.',{exact:true}).waitFor();
   await comparison.getByRole('heading',{name:observation.title,exact:true,level:4}).waitFor();
@@ -424,7 +425,7 @@ async function changeAndSigningBrowser(page,context){
   await comparison.getByText('Proposed: routing v1 · service rule v'+(policy.version+1)+' · route · owner '+member.name+'.',{exact:true}).waitFor();
   const expiry=JSON.parse(await comparison.locator('pre').innerText());assert.equal(expiry.historical.serviceDecision.action,'suppress');assert.equal(expiry.proposed.serviceDecision.action,'route');assert.match(expiry.proposed.serviceDecision.reason,/Maintenance expired/);
   await comparison.scrollIntoViewIfNeeded();await check('oc043-maintenance-expired-preview',width);
-  await page.getByRole('link',{name:'Alerts & events',exact:true}).click();const panel=page.getByRole('region',{name:'Grafana signature settings'});
+  await openWorkspaceSection(page,'integrations');const panel=page.getByRole('region',{name:'Grafana signature settings'});
   await panel.getByLabel('Grafana signing integration',{exact:true}).selectOption('synthetic-oncall-grafana');await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();
   await panel.getByLabel('Grafana signing secret',{exact:true}).fill(signingSecret);await panel.getByRole('button',{name:'Save Grafana signing secret',exact:true}).click();await page.getByText('Grafana signature check saved',{exact:true}).waitFor();
   assert.equal(await panel.getByLabel('Grafana signing secret',{exact:true}).inputValue(),'');await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();await panel.scrollIntoViewIfNeeded();await check('oc030-signing',width);
@@ -453,7 +454,7 @@ try {
  page=await context.newPage()
  const errors=[];page.on('pageerror',error=>errors.push(error.message))
  await page.goto(worker.origin)
- await page.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
+ await page.locator('.oncall-frame').waitFor({timeout:60000})
  const openSession=async(second,secondPage)=>{
   const login=await second.request.post('/api/login',{headers:{origin:worker.origin},data:credentials})
   assert.equal(login.status(),200,'the second browser context signs in through the real login door')

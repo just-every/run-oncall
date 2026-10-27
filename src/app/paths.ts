@@ -8,7 +8,10 @@ export function isWorkspacePath(path: string) {
 export function workspaceAddress(path: string) {
   const service = /^\/settings\/services(?:\/([^/]+))?\/?$/.exec(path);
   if (service) {try {if (service[1]) decodeURIComponent(service[1]);return {page: 'services', incident: ''};} catch {return {page: 'not-found', incident: ''};}}
-  if (path === '/') return {page: 'incidents', incident: ''};
+  if (path === '/' || /^\/on-call\/?$/.test(path)) return {page: 'on-call', incident: ''};
+  if (/^\/settings\/?$/.test(path)) return {page: 'services', incident: ''};
+  const setting = /^\/settings\/(services|integrations|routing|team|move-in|archive)\/?$/.exec(path);
+  if (setting) return {page: setting[1], incident: ''};
   const section = workspaceSections.find(section => path === `/${section}` || path === `/${section}/`);
   if (section) return {page: section, incident: ''};
   const incident = /^\/incidents\/([^/]+)\/?$/.exec(path);
@@ -17,11 +20,13 @@ export function workspaceAddress(path: string) {
   }
   return {page: 'not-found', incident: ''};
 }
-export function legacyWorkspacePath(url: URL) {
+export function legacyWorkspacePath(url: URL, home = '/on-call') {
   if (url.pathname !== '/') return null;
   const incident = url.searchParams.get('incident');
   const section = url.hash.slice(1);
   url.searchParams.delete('incident');
-  const path = incident ? '/incidents/' + encodeURIComponent(incident) : section ? `/${encodeURIComponent(section)}` : '/incidents';
+  // Kept self-contained: the signed-out lobby also serializes this function.
+  const destinations: Record<string, string> = {services: '/settings/services', routing: '/settings/routing', schedules: '/on-call', 'move-in': '/settings/move-in', team: '/settings/team', archive: '/settings/archive'};
+  const path = incident ? '/incidents/' + encodeURIComponent(incident) : section ? destinations[section] ?? `/${encodeURIComponent(section)}` : home;
   return path + url.search;
 }

@@ -6,7 +6,7 @@ import {resolveIncidentAlias} from "../../incident-workflows/relations";
 /** One workspace lifetime: navigation and live reads never remount the shell or its drafts. */
 export function useWorkspaceValue() {
   const w = useWorkspace();
-  const {page, incident: selected, selectIncident: chooseIncident} = useWorkspacePath();
+  const {page, incident: selected, selectIncident: chooseIncident} = useWorkspacePath({ready: w.ready, stakeholder: w.member?.role === "stakeholder"});
   const [revealing, setRevealing] = useState("");
   const [listedRevision, setListedRevision] = useState(-1);
   const selectIncident = async (id: string, reveal = false) => {
@@ -75,7 +75,7 @@ export function useWorkspaceValue() {
     incident
       ? command({ ...data, incident: incident.id, revision: incident.revision })
       : Promise.resolve(null);
-  return {w,page,selected,selectIncident,declare,setDeclare,declarationService,setDeclarationService,signingOut,setSigningOut,replay,setReplay,handoff,setHandoff,pendingSteps,setPendingSteps,setListedRevision,s,actor,activeIncidents,admin,canEdit,incident,service,name,memberOptions,serviceOptions,declarationTemplate,rememberBase,command,mutate};
+  return {w,page,selected,selectIncident,declare,setDeclare,declarationService,setDeclarationService,signingOut,setSigningOut,replay,setReplay,handoff,setHandoff,pendingSteps,setPendingSteps,listedRevision,setListedRevision,s,actor,activeIncidents,admin,canEdit,incident,service,name,memberOptions,serviceOptions,declarationTemplate,rememberBase,command,mutate};
 }
 
 export type WorkspaceValue = ReturnType<typeof useWorkspaceValue>;

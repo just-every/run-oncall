@@ -1,3 +1,4 @@
+import {openWorkspaceSection} from './keyboard.mjs'
 import {focusWorkspace} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {mkdir} from 'node:fs/promises'
@@ -25,7 +26,7 @@ async function passwordSignIn(page,who){
  await page.getByLabel('Name',{exact:true}).fill(who.name)
  await page.getByLabel('Password',{exact:true}).fill(who.password)
  await page.getByRole('button',{name:'Sign in',exact:true}).click()
- await page.waitForURL(worker.origin+'/incidents')
+ await page.waitForURL(url=>url.pathname==='/on-call'||url.pathname==='/status')
  return (await call(page,'/api/session')).value.member
 }
 async function openIncident(page,id){await page.goto(`${worker.origin}/incidents/${encodeURIComponent(id)}`);await page.reload();await page.locator('.detail h2').waitFor()}
@@ -47,35 +48,31 @@ try {
  await owner.page.goto(worker.origin+'/setup')
  const confirmation=owner.page.getByRole('checkbox')
  if(await confirmation.count()){await confirmation.check();await owner.page.getByRole('button',{name:'Finish setup'}).click()}
- await owner.page.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
+ await owner.page.locator('.oncall-frame').waitFor({timeout:60000})
  const ownerMember=ok(await call(owner.page,'/api/session')).member
  const rosaRecord=ok(await call(owner.page,'/api/members',{...responder,role:'responder'}),201)
  ok(await call(owner.page,'/api/members',{...viewer,role:'viewer'}),201)
  ok(await call(owner.page,'/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:rosaRecord.id,runbook:['Check payment provider status'],pager:''}))
  // OC4: per-value save survives immediate menu departure; offline Retry commits once.
- await owner.page.goto(worker.origin+'/services');
- const autosaveCard=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'Checkout',exact:true})});
- await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();
- const timeoutField=autosaveCard.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true});
- await timeoutField.fill('2');await owner.page.getByRole('link',{name:'Team',exact:true}).click();await owner.page.waitForURL(worker.origin+'/team');
- await owner.page.getByRole('link',{name:'Services',exact:true}).click();await owner.page.reload();
- await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();await expect(timeoutField).toHaveValue('2');
+ await owner.page.goto(worker.origin+'/settings/services/checkout');
+ const autosaveCard=owner.page.locator('.service-page'),ownerField=autosaveCard.getByLabel('Owner',{exact:true});
+ await ownerField.selectOption(ownerMember.id);await openWorkspaceSection(owner.page,'team');
+ await openWorkspaceSection(owner.page,'services');await owner.page.locator('a[href="/settings/services/checkout"]').click();await owner.page.reload();
+ await expect(ownerField).toHaveValue(ownerMember.id);
  const beforeRetry=ok(await call(owner.page,'/api/state')).audit.length;
- const blockWrite=route=>route.request().postDataJSON()?.type==='acknowledgment-timeout'?route.abort():route.continue();
- await owner.page.route('**/api/command',blockWrite);await timeoutField.fill('3');await timeoutField.blur();
- await expect(autosaveCard.getByRole('button',{name:'Retry',exact:true})).toBeVisible();await expect(timeoutField).toHaveValue('3');
+ const blockWrite=route=>route.request().postDataJSON()?.type==='service'&&route.request().postDataJSON()?.field==='owner'?route.abort():route.continue();
+ await owner.page.route('**/api/command',blockWrite);await ownerField.selectOption(rosaRecord.id);
+ await expect(autosaveCard.getByRole('button',{name:'Retry',exact:true})).toBeVisible();await expect(ownerField).toHaveValue(rosaRecord.id);
  assert.equal(await autosaveCard.getByText('Saved',{exact:true}).count(),0,'failed save never announces success');
  await owner.page.unroute('**/api/command',blockWrite);
- const retryWrite=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='acknowledgment-timeout');
+ const retryWrite=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='service'&&r.request().postDataJSON()?.field==='owner');
  await autosaveCard.getByRole('button',{name:'Retry',exact:true}).click();assert.equal((await retryWrite).status(),200);
  await expect(autosaveCard.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
- const afterRetry=ok(await call(owner.page,'/api/state'));assert.equal(afterRetry.audit.length,beforeRetry+1,'Retry adds exactly one audit row');assert.equal(afterRetry.services.find(s=>s.id==='checkout').ackTimeouts.at(-1).minutes,3);
- const resetTimeout=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='acknowledgment-timeout');
- await timeoutField.fill('0');await timeoutField.blur();assert.equal((await resetTimeout).status(),200);
- console.log('OC4 autosave: menu departure retains value after reload; offline retains input; Retry audit +1');
+ const afterRetry=ok(await call(owner.page,'/api/state'));assert.equal(afterRetry.audit.length,beforeRetry+1,'Retry adds exactly one audit row');assert.equal(afterRetry.services.find(s=>s.id==='checkout').owner,rosaRecord.id);
+ console.log('OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1');
  // OC-023 public-team forms use the existing Team section at both widths.
  for(const width of [1440]){
-  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/team');await owner.page.reload();
+  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/team');await owner.page.reload();
   const panel=owner.page.getByRole('region',{name:'Teams',exact:true});await panel.getByRole('heading',{name:'Teams',exact:true}).waitFor();
   const teamWrite=()=>owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/teams'&&response.request().method()==='POST');
   await panel.locator('summary').filter({hasText:/^Create team$/}).click();
@@ -108,7 +105,7 @@ try {
   const teamState=ok(await call(owner.page,'/api/state')),owning=teamState.teams.find(t=>t.name===edited);
   assert.ok(owning.members.includes(rosaRecord.id));assert.equal(owning.members.length,2);assert.deepEqual(owning.managers,[rosaRecord.id]);
   // A stale edit keeps a different member change saved by another administrator.
-  const other=await owner.context.newPage();await other.goto(worker.origin+'/team');
+  const other=await owner.context.newPage();await other.goto(worker.origin+'/settings/team');
   const otherCard=other.getByRole('region',{name:'Teams',exact:true}).getByRole('article').filter({has:other.getByRole('heading',{name:edited,exact:true})});
   await otherCard.getByText('Edit team',{exact:true}).click();
   const otherWrite=other.waitForResponse(response=>new URL(response.url()).pathname==='/api/teams'&&response.request().method()==='POST'&&response.status()===200);
@@ -132,7 +129,7 @@ try {
   assert.equal(ok(await call(owner.page,'/api/state')).teams.find(t=>t.id===owning.id).active,true);
   const ownershipSaved=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().postDataJSON()?.field==='team'&&response.request().method()==='POST');
   await owner.page.goto(worker.origin+'/settings/services/checkout');await owner.page.getByLabel('Team',{exact:true}).selectOption(owning.id);await owner.page.getByRole('button',{name:'Change team',exact:true}).click();assert.equal((await ownershipSaved).status(),200);
-  await owner.page.reload();assert.equal(await owner.page.getByLabel('Team',{exact:true}).inputValue(),owning.id);await owner.page.goto(worker.origin+'/team');await panel.getByRole('heading',{name:'Teams',exact:true}).waitFor();
+  await owner.page.reload();assert.equal(await owner.page.getByLabel('Team',{exact:true}).inputValue(),owning.id);await owner.page.goto(worker.origin+'/settings/team');await panel.getByRole('heading',{name:'Teams',exact:true}).waitFor();
   assert.ok(await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`teams fit ${width}`);
   assert.equal(await owner.page.evaluate(()=>window.__rerHydration?.count??0),0);
   assert.deepEqual((await new AxeBuilder({page:owner.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
@@ -140,7 +137,7 @@ try {
  }
  // OC-023: both service forms preserve explicit unassigned ownership.
  for(const width of [1440]) {
-  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/services');await owner.page.reload();
+  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/services');await owner.page.reload();
   await owner.page.getByRole('button',{name:'Add service',exact:true}).click();
   const add=owner.page.locator('.service-create');
   await add.getByLabel('Service name',{exact:true}).fill('synthetic-oncall-23-'+width);
@@ -212,7 +209,7 @@ try {
  const managedRotation={anchorLocal:'2026-01-01T00:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'};
  ok(await call(owner.page,'/api/paging/schedules',{id:'synthetic-oncall-145',name:'synthetic-oncall-145',service:'checkout',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:managedRotation,backup:{...managedRotation,members:[]},overrides:[]}));
  for(const width of [1440]){
-  await rosa.page.setViewportSize({width,height:1000});await rosa.page.goto(worker.origin+'/schedules');await rosa.page.reload();
+  await rosa.page.setViewportSize({width,height:1000});await rosa.page.goto(worker.origin+'/on-call');await rosa.page.reload();
   await rosa.page.getByLabel('Schedule',{exact:true}).selectOption('synthetic-oncall-145');
   await expect(rosa.page.getByLabel('Schedule name',{exact:true})).toBeEnabled();
   await rosa.page.getByRole('button',{name:'New schedule',exact:true}).click();
@@ -300,7 +297,7 @@ try {
   const listRow=card.locator('.saved-view').filter({hasText:address});await listRow.getByRole('button',{name:'Unsubscribe email list',exact:true}).click();await card.getByText(address+' · email · unsubscribed',{exact:true}).waitFor();
   ok(await call(owner.page,'/api/command',{type:'declare',service:serviceId,title:'Synthetic subsequent impact '+width,summary:'Synthetic local response only',severity:'warning'}));await focusWorkspace(owner.page);
   const saved=ok(await call(owner.page,'/api/state')).businessServices.find(row=>row.name===name),list=saved.emailLists.find(row=>row.address===address);assert.equal(saved.notices.filter(row=>row.target.kind==='email-list'&&row.target.id===list.id).length,2);assert.ok(saved.notices.every(row=>row.label==='no sender'&&row.automatic===false));assert.ok(!JSON.stringify(saved.notices).includes('Synthetic private list impact'));await statusCapture(owner.page,'email-list-unsubscribed',width);
-  await owner.page.getByRole('link',{name:'Services',exact:true}).click();await focusWorkspace(owner.page);const erasure=owner.page.getByText('Data erasure settings',{exact:true}).locator('..');if(!await erasure.getByLabel('Erasure category',{exact:true}).isVisible())await erasure.locator('summary').click();
+  await openWorkspaceSection(owner.page,'services');await focusWorkspace(owner.page);const erasure=owner.page.getByText('Data erasure settings',{exact:true}).locator('..');if(!await erasure.getByLabel('Erasure category',{exact:true}).isVisible())await erasure.locator('summary').click();
   await erasure.getByLabel('Erasure category',{exact:true}).selectOption('email-list');await erasure.getByLabel('Erasure subject',{exact:true}).selectOption(list.id);await erasure.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+list.id);await erasure.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await statusCapture(owner.page,'email-list-erasure-review',width);
   const erased=owner.page.waitForResponse(response=>response.url().endsWith('/api/erasure/email-list/'+list.id));await erasure.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await erased).status(),200);await erasure.getByText('oc_business_services: 0 deleted, 1 updated',{exact:true}).waitFor();await erasure.getByRole('status').scrollIntoViewIfNeeded();await statusCapture(owner.page,'email-list-erasure-receipt',width);await owner.page.screenshot({path:`${captureDirectory}/oc061-email-list-erasure-receipt-focus-${width}.png`});assert.ok(!JSON.stringify(ok(await call(owner.page,'/api/state'))).includes(address));
  }
@@ -311,7 +308,7 @@ try {
  const roleSession=await owner.context.newCDPSession(owner.page);await roleSession.send('Emulation.setCPUThrottlingRate',{rate:4})
  const excludesStakeholder=async locator=>assert.ok(!(await locator.locator('option').evaluateAll(options=>options.map(option=>option.value))).includes(sam.id),'stakeholders are never offered as responders')
  for(const screen of ['team','services','routing','schedules','incidents']){
-  await owner.page.goto(worker.origin+'/'+screen);await owner.page.reload()
+  await owner.page.goto(worker.origin+({team:'/settings/team',services:'/settings/services',routing:'/settings/routing',schedules:'/on-call'}[screen]??'/'+screen));await owner.page.reload()
   if(screen==='team')await owner.page.getByRole('heading',{name:'Team',exact:true,level:2}).waitFor()
   if(screen==='services'){await owner.page.getByRole('button',{name:'Add service',exact:true}).click();await excludesStakeholder(owner.page.getByLabel('Service owner',{exact:true}))}
   if(screen==='routing'){await owner.page.getByText('Create a routed integration key',{exact:true}).click();await excludesStakeholder(owner.page.getByLabel('Integration owner',{exact:true}))}
@@ -410,11 +407,11 @@ try {
 
  // Signed out, anonymous and revoked sessions see no workspace.
  await rosa.page.setViewportSize({width:1440,height:1000});await rosa.page.goto(worker.origin+'/incidents')
- await rosa.page.getByRole('button',{name:'Sign out',exact:true}).click();await rosa.page.waitForURL(u=>u.pathname.startsWith('/signin'))
+ await rosa.page.locator('.shell-rail .owner-button').click();await rosa.page.getByRole('menuitem',{name:'Sign out',exact:true}).click();await rosa.page.waitForURL(u=>u.pathname.startsWith('/signin'))
  await denied(rosa.page,'signed-out member',declared.id)
  const anonymous=await open(390);await denied(anonymous.page,'anonymous visitor',declared.id)
  const again=await open(390);await passwordSignIn(again.page,responder);await openIncident(again.page,declared.id)
- await owner.page.goto(worker.origin+'/team');await owner.page.reload()
+ await owner.page.goto(worker.origin+'/settings/team');await owner.page.reload()
  const card=owner.page.getByRole('article',{name:responder.name,exact:true});
  await card.getByRole('button',{name:'Member actions',exact:true}).click();await card.getByRole('button',{name:'Revoke access',exact:true}).click();
  await card.locator('.autosave-confirm').getByRole('button',{name:'Revoke access',exact:true}).click();

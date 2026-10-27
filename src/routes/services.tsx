@@ -1,2 +1,2 @@
-import {createFileRoute} from "@tanstack/react-router";
-export const Route = createFileRoute("/services")({component: () => null});
+import {createFileRoute, redirect} from "@tanstack/react-router";
+export const Route = createFileRoute("/services")({beforeLoad: () => {throw redirect({to: "/settings/services", replace: true});}});
