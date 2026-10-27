@@ -50,6 +50,7 @@ export function keyboardUser(page) {
 
 /** Open a section through the current rail or the phone Menu sheet. */
 export async function openWorkspaceSection(page, section, {keyboard = false} = {}) {
+ await page.locator('.oncall-frame').waitFor({state:'visible'})
  const paths={incidents:'/incidents',alerts:'/alerts',reviews:'/reviews',status:'/status',schedules:'/on-call','on-call':'/on-call',services:'/settings/services',integrations:'/settings/integrations',routing:'/settings/routing',team:'/settings/team','move-in':'/settings/move-in',archive:'/settings/archive'}
  const path=paths[section]
  assert.ok(path,'workspace section has a destination')
