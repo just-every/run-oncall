@@ -145,7 +145,14 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  // The same portable/erasure journey carries a full queue and capacity outcomes.
  for(let n=1;n<50;n++)assert.equal((await req('/api/automation/endpoints',{name:'synthetic-oncall-portable-'+n,client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true})).status,201)
  let capacityIncident=ok(await req('/api/state')).incidents.find(i=>i.id===machineOperation.entity)
- for(let n=0;n<21;n++)capacityIncident=ok(await req('/api/command',{type:'assign-role',incident:capacityIncident.id,revision:capacityIncident.revision,role:'scribe',member:member.id,reason:'Synthetic portable capacity '+n}))
+ // Reassigning the current holder is a no-op, not a new incident/timeline response.
+ // Each real role change must retain the incident and enqueue all 50 recipients.
+ for(let n=0;n<21;n++){
+  const previous=capacityIncident
+  capacityIncident=ok(await req('/api/command',{type:'assign-role',incident:previous.id,revision:previous.revision,role:'scribe',member:n%2===0?member.id:null,reason:'Synthetic portable capacity '+n}))
+  assert.equal(capacityIncident.id,machineOperation.entity)
+  assert.equal(capacityIncident.revision,previous.revision+1)
+ }
  const capacityHistory=ok(await req('/api/state')).apiOutbox
  assert.equal(capacityHistory.filter(o=>['queued','sending','failed'].includes(o.status)).length,1000)
  assert.ok(capacityHistory.some(o=>o.status==='terminal'&&o.history[0].reason==='capacity-not-scheduled'&&o.attempts===0))
