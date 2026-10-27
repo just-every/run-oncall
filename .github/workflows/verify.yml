@@ -5,16 +5,73 @@ on:
     tags: ['v*']
   pull_request:
   schedule:
-    - cron: '30 17 * * *'
+    - cron: '37 3 * * 1'
+    - cron: '37 6 * * 4'
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 env:
   CI: 'true'
   WRANGLER_SEND_METRICS: 'false'
 jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      skip: ${{ steps.reuse.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: reuse
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          WF_REF: ${{ github.workflow_ref }}
+        run: |
+          set -euo pipefail
+          wf="${WF_REF%@*}"; wf="${wf##*/}"
+          # Only the newest same-repository push run of this workflow is evidence.
+          # PR merge refs, subset dispatches and this run cannot authorize a skip.
+          newest_push() {
+            gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$wf/runs?head_sha=$1&event=push&per_page=100" \
+              --jq "[.workflow_runs[] | select(.head_repository.full_name == \"$GITHUB_REPOSITORY\" and .id != $GITHUB_RUN_ID)] | max_by(.id) | select(. != null) | \"\(.status) \(.conclusion)\"" || true
+          }
+          green() { [ "$(newest_push "$1")" = "completed success" ]; }
+          skip=false
+          # C1: main reuses green push evidence on its exact SHA.
+          if [ "$EVENT" = push ] && [ "$REF" = refs/heads/main ] && green "$GITHUB_SHA"; then skip=true; fi
+          # C3: an identical parent tree can reuse that parent's newest green push.
+          # Tags retain installation coverage that ordinary branch pushes do not run.
+          if [ "$skip" = false ] && [ "$EVENT" = push ] && [[ "$REF" == refs/heads/* ]] \
+             && parent=$(git rev-parse -q --verify HEAD~1) \
+             && [ "$(git rev-parse 'HEAD^{tree}')" = "$(git rev-parse 'HEAD~1^{tree}')" ] && green "$parent"; then skip=true; fi
+          # C2: a same-repository PR waits at most 25 minutes for its head's push.
+          # Missing, red or timed-out evidence runs all applicable lanes.
+          if [ "$EVENT" = pull_request ] && [ "$SAME_REPO" = true ]; then
+            for _ in $(seq 1 50); do
+              state=$(newest_push "$PR_HEAD")
+              case "$state" in
+                'completed success') skip=true; break ;;
+                ''|completed\ *) break ;;
+                *) sleep 30 ;;
+              esac
+            done
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
   lanes:
-    if: github.event_name != 'workflow_dispatch'
+    needs: plan
+    if: needs.plan.outputs.skip != 'true' && github.event_name != 'workflow_dispatch'
     name: ${{ matrix.lane }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -46,17 +103,25 @@ jobs:
       ONCALL_VERIFY_LANE: ${{ matrix.lane }}
     steps:
       - uses: actions/checkout@v4
-      - name: Free unused runner SDKs for the 15 GiB disk guard
+      - name: Check the 15 GiB disk guard
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          if [ "$(df -Pk . | awk 'NR == 2 {print $4}')" -lt 15728640 ]; then
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          fi
           df -h / /tmp
       - uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - if: matrix.browser
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Install Chromium
+        if: matrix.browser
+        run: |
+          set -euo pipefail
+          pnpm exec playwright install chromium
+          pnpm exec node scripts/chromium-probe.mjs || \
+            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/install-chromium-deps.py
+          pnpm exec node scripts/chromium-probe.mjs
       - name: Verify the selected public-door journey
         env:
           ONCALL_BROWSER_EVIDENCE: ${{ runner.temp }}/oncall-browser-evidence
@@ -74,8 +139,9 @@ jobs:
             ${{ runner.temp }}/oncall-browser-evidence
             evidence/browser
   installation:
+    needs: plan
     name: ${{ matrix.lane }}
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    if: needs.plan.outputs.skip != 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/'))
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     strategy:
@@ -90,17 +156,25 @@ jobs:
       ONCALL_VERIFY_LANE: ${{ matrix.lane }}
     steps:
       - uses: actions/checkout@v4
-      - name: Free unused runner SDKs for the 15 GiB disk guard
+      - name: Check the 15 GiB disk guard
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          if [ "$(df -Pk . | awk 'NR == 2 {print $4}')" -lt 15728640 ]; then
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          fi
           df -h / /tmp
       - uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - if: matrix.browser
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Install Chromium
+        if: matrix.browser
+        run: |
+          set -euo pipefail
+          pnpm exec playwright install chromium
+          pnpm exec node scripts/chromium-probe.mjs || \
+            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/install-chromium-deps.py
+          pnpm exec node scripts/chromium-probe.mjs
       - run: node tests/verify.mjs
         env:
           ONCALL_BROWSER_EVIDENCE: ${{ runner.temp }}/oncall-browser-evidence
@@ -114,16 +188,20 @@ jobs:
   verify:
     # Preserve the required check name while waiting for every applicable lane.
     if: always()
-    needs: [lanes, installation]
+    needs: [plan, lanes, installation]
     runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
       - name: Require every verification lane
         env:
+          PLAN: ${{ needs.plan.result }}
+          SKIP: ${{ needs.plan.outputs.skip }}
           EVENT_NAME: ${{ github.event_name }}
           LANES_RESULT: ${{ needs.lanes.result }}
           INSTALLATION_RESULT: ${{ needs.installation.result }}
         run: |
+          test "$PLAN" = success
+          if [ "$SKIP" = true ]; then exit 0; fi
           if [ "$EVENT_NAME" = workflow_dispatch ]; then
             test "$LANES_RESULT" = skipped
             test "$INSTALLATION_RESULT" = success
