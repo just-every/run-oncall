@@ -99,7 +99,7 @@ async function responsePolicyBrowser(page,context) {
   await focus.scrollIntoViewIfNeeded()
   await page.screenshot({path:`evidence/browser/oc056-${screen}-focus-${width}.png`})
  }
- for(const width of [1440]) {
+ for(const width of [1440,390]) {
   await page.setViewportSize({width,height:1000})
   const serviceId='response-'+width,serviceName='Checkout response '+width,source='synthetic-oncall-response-'+width,key=randomBytes(32).toString('hex')
   await request('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Confirm successful checkout requests before resolving.'],pager:''})
@@ -180,6 +180,8 @@ async function responsePolicyBrowser(page,context) {
   await recovery.getByText('all alerts recovered — awaiting resolution',{exact:true}).waitFor()
   await recovery.locator('p').filter({hasText:'Commander reminder: '+member.name}).waitFor()
   await incidentContext.getByRole('button',{name:'Close',exact:true}).click()
+  // The phone incident is its own page; list controls are reached through Back.
+  if(width===390)await page.locator('.incident-back').click()
   const reminderView=page.getByRole('region',{name:'My commander reminders',exact:true})
   await reminderView.getByRole('button',{name:critical.title,exact:true}).waitFor()
   const open=(await request('/api/state')).incidents.find(item=>item.id===incident.id)
@@ -189,9 +191,11 @@ async function responsePolicyBrowser(page,context) {
   const deleteView=page.getByRole('button',{name:'Delete view '+viewName,exact:true})
   await keyboardUser(page).reach(deleteView)
   assert.equal(await page.getByRole('tooltip',{name:'Delete view '+viewName,exact:true}).isVisible(),true,'saved-view delete tooltip is visible immediately on keyboard focus')
+  if(width===390)await reminderView.getByRole('button',{name:critical.title,exact:true}).click()
   incidentContext=await openIncidentAction(page,'Service context')
   await checkScreen('incident-recovery',width,incidentContext.getByRole('region',{name:'Source recovery',exact:true}))
   await incidentContext.getByRole('button',{name:'Close',exact:true}).click()
+  if(width===390)await page.locator('.incident-back').click()
   await reminderView.getByRole('button',{name:critical.title,exact:true}).click()
   await detail.getByRole('button',{name:'Other steps ▾',exact:true}).click()
   await detail.getByRole('button',{name:'Mark recovered',exact:true}).click()
@@ -226,7 +230,7 @@ async function incidentWorkflowBrowser(page,context) {
   await page.screenshot({path:`evidence/browser/oc050-${name}-${width}.png`,fullPage:true});await focus.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc050-${name}-focus-${width}.png`});
  };
  const submit=async(button)=>{const response=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST');await button.click();assert.equal((await response).status(),200)};
- for(const width of [1440]){
+ for(const width of [1440,390]){
   await page.setViewportSize({width,height:1000});const serviceId='workflow-'+width,serviceName='Checkout incident workflow '+width;
   await req('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Check replica health before changing customer traffic.'],pager:''});
   await openWorkspaceSection(page,'services');await focusWorkspace(page);
@@ -253,7 +257,7 @@ async function incidentWorkflowBrowser(page,context) {
   state=await req('/api/state');const child=state.incidents.find(i=>i.title==='Independent batch delay '+width);assert.equal(child.state,'acknowledged');assert.equal(state.incidents.find(i=>i.id===target.id).state,'acknowledged');assert.equal(child.splitFrom.incident,target.id);assert.equal(child.template.version,1);assert.equal((await req('/api/handoffs/context/'+child.id)).source.incident.declaration.kind,'split','a split origin remains usable by the existing reviewed handoff door');
   await page.goto(origin+'/incidents/'+encodeURIComponent(child.id));await page.locator('.detail').getByRole('heading',{name:child.title,exact:true}).waitFor();await openIncidentAction(page,'Service context');await capture('split',width,workflow);await page.getByRole('button',{name:'Close',exact:true}).click();
  }
- console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440; overflow, axe and hydration checked');
+ console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440/390; overflow, axe and hydration checked');
 }
 
 async function changeAndSigningBrowser(page,context){
@@ -467,7 +471,7 @@ try {
  await responsePolicyBrowser(page,context)
  await incidentWorkflowBrowser(page,context)
  await changeAndSigningBrowser(page,context)
- console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
+ console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440/390; overflow, axe and hydration checked')
  assert.deepEqual(errors,[],'no browser application errors')
  console.log('Emitted Worker product browser journey passed at desktop and mobile widths')
 } catch(error) {
