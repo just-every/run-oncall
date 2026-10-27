@@ -6,7 +6,7 @@ import {resolveIncidentAlias} from "../../incident-workflows/relations";
 /** One workspace lifetime: navigation and live reads never remount the shell or its drafts. */
 export function useWorkspaceValue() {
   const w = useWorkspace();
-  const {page, incident: selected, selectIncident: chooseIncident} = useWorkspacePath();
+  const {page, incident: selected, selectIncident: chooseIncident} = useWorkspacePath({ready: w.ready, stakeholder: w.member?.role === "stakeholder"});
   const [revealing, setRevealing] = useState("");
   const [listedRevision, setListedRevision] = useState(-1);
   const selectIncident = async (id: string, reveal = false) => {

@@ -1,0 +1,39 @@
+/* O4's frame uses Oncall's existing paper, type, fields and rail. Section bodies keep their own styles. */
+.oncall-frame .brand {min-width: 0; max-width: 100%; flex-wrap: nowrap;}
+.oncall-frame .brand .oc-mark {flex: none;}
+.oncall-frame .brand > span {min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.oncall-frame .shell-rail {gap: 28px;}
+.oncall-frame .rail-foot {margin-top: auto; display: grid; gap: 16px;}
+.oncall-frame .nav-label {min-width: 0;}
+.oncall-frame .nav-count {margin-left: auto; min-width: 24px; text-align: center; font-size: 13px; font-weight: 650;}
+.oncall-frame .settings-back {color: var(--oc-ink); font-size: 17px; font-weight: 650;}
+.oncall-frame .profile {display: block; margin: 0; padding: 0; border: 0; position: relative;}
+.oncall-frame .owner-button {display: flex; align-items: center; gap: 10px; width: 100%; min-height: 60px; margin: 0; padding: 8px; border: 1px solid transparent; border-radius: 10px; background: transparent; text-align: left; font-size: 15px;}
+.oncall-frame .owner-button:hover {background: var(--oc-surface); border-color: var(--oc-line);}
+.oncall-frame .owner-identity {display: grid; flex: 1; min-width: 0;}
+.oncall-frame .owner-name {overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.oncall-frame .owner-identity .muted {font-size: 13px;}
+.oncall-frame .owner-popup {position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; padding: 6px; border: 1px solid var(--oc-line); border-radius: 12px; background: var(--oc-surface); box-shadow: var(--oc-shadow-card); z-index: 20;}
+.oncall-frame .owner-popup button {width: 100%; min-height: 44px; margin: 0; padding: 10px 12px; border-radius: 8px; text-align: left; font-size: 15px;}
+.oncall-frame .mobile-bar {display: none;}
+.oncall-frame .shell-sheet {max-width: none; width: min(420px, calc(100% - 24px)); max-height: calc(100dvh - 84px); margin: auto 12px 12px auto; padding: 16px; overflow: auto; color: var(--oc-ink); background: var(--oc-paper); border: 1px solid var(--oc-line); border-radius: 18px; box-shadow: var(--oc-shadow-card); font-size: 15px;}
+.oncall-frame .shell-sheet::backdrop {background: rgb(29 42 53 / 0.35);}
+.oncall-frame .sheet-heading {display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; font-size: 18px; font-weight: 650;}
+.oncall-frame .sheet-heading button {min-height: 44px;}
+.oncall-frame .shell-sheet .nav {min-height: 44px; width: 100%; font-size: 15px; border: 0; border-radius: 10px; background: transparent;}
+.oncall-frame .shell-sheet .nav.active {background: var(--oc-now-wash);}
+.oncall-frame .sheet-settings {margin-top: 12px; background: transparent; border: 0; border-radius: 10px; text-align: left;}
+.oncall-frame .shell-sheet .owner-menu {margin-bottom: 12px;}
+.oncall-frame .shell-sheet .owner-popup {bottom: auto; top: calc(100% + 4px);}
+@media (max-width: 900px) {
+  .app.oncall-frame {display: block; background: var(--oc-paper);}
+  .oncall-frame .shell-rail {display: none;}
+  .oncall-frame .mobile-bar {height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; background: var(--oc-paper-deep);}
+  .oncall-frame .mobile-bar .brand {padding: 0; font-size: 22px; flex: 1;}
+  .oncall-frame .mobile-bar button {min-height: 44px; flex: none;}
+  .oncall-frame .workspace {padding: 0 16px 40px;}
+  .oncall-frame .header {padding: 24px 0 12px;}
+  .oncall-frame .header h1 {font-size: 28px;}
+  .oncall-frame .shell-sheet .navigation {display: flex; flex-direction: column; flex-wrap: nowrap; gap: 4px;}
+  .oncall-frame .shell-sheet .nav {padding: 10px 12px;}
+}

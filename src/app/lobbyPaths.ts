@@ -5,7 +5,7 @@ const script = `(() => {
   const path = (${legacyWorkspacePath.toString()})(new URL(location.href));
   if (!path) return;
   const target = new URL(path, location.origin);
-  const known = ${JSON.stringify(workspaceSections.map(section => '/' + section))}.includes(target.pathname) || target.pathname.startsWith('/incidents/');
+  const known = ${JSON.stringify(['/on-call', ...workspaceSections.map(section => ['services','routing','team','move-in','archive'].includes(section) ? '/settings/' + section : '/' + section)])}.includes(target.pathname) || target.pathname.startsWith('/incidents/');
   if (known) history.replaceState(null, '', target.pathname + target.search);
   else location.replace(target.pathname + target.search);
 })();`;

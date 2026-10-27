@@ -1,3 +1,4 @@
+import {openWorkspaceSection} from './keyboard.mjs'
 import {scheduleCoordinationBrowser} from './schedule-coordination-browser.mjs';
 import AxeBuilder from '@axe-core/playwright'
 import assert from 'node:assert/strict'
@@ -5,7 +6,7 @@ import {keyboardUser} from './keyboard.mjs'
 
 export async function productSchedule(page,context,width,session,{ownerLink}={}) {
  const key=keyboardUser(page)
-  await key.activate(page.getByRole('link',{name:'Schedules',exact:true}));await key.activate(page.getByRole('button',{name:'New schedule',exact:true}),'Space')
+  await openWorkspaceSection(page,'schedules',{keyboard:true});await key.activate(page.getByRole('button',{name:'New schedule',exact:true}),'Space')
   await key.text(page.getByLabel('Schedule ID',{exact:true}),'browser-'+width);await key.text(page.getByLabel('Schedule name',{exact:true}),'Checkout rota '+width)
   await key.text(page.getByLabel('Timezone (IANA)',{exact:true}),'America/New_York')
   await key.activate(page.getByRole('button',{name:'Add primary responder',exact:false}));await key.option(page.getByLabel('Primary responder 1',{exact:true}),session.member.id)
@@ -62,7 +63,7 @@ if (process.argv[1] && new URL(import.meta.url).pathname === process.argv[1]) {
   const context=await browser.newContext({baseURL:worker.origin}),page=await context.newPage(),errors=[]
   await context.addCookies(owner.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}}))
   page.on('pageerror',error=>errors.push(error.message))
-  await page.goto(worker.origin);await page.getByRole('link',{name:'Schedules',exact:true}).waitFor()
+  await page.goto(worker.origin);await page.locator('.oncall-frame').waitFor()
   for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await productSchedule(page,context,width,owner.value);console.log(`OC-024 schedule review browser ${width}: new gap, DST, confirmation, saved coverage, ICS, tooltips, overflow, axe and hydration passed`)}
   assert.deepEqual(errors,[])
   // The focused browser run also checks the shared session middleware on both new doors.
