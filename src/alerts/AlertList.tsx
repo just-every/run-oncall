@@ -6,7 +6,6 @@ export function AlertList({state, selected, onOpen}: {state: State; selected: st
   const [search, setSearch] = useState(''), [service, setService] = useState(''), [urgency, setUrgency] = useState('');
   const rows = state.alerts.map(alert => ({alert, ...alertDisplay(alert, state)})).filter(row => (!service || row.alert.service === service) && (!urgency || row.alert.urgency === urgency) && `${row.title} ${row.service?.name ?? 'Integration unrouted queue'}`.toLowerCase().includes(search.toLowerCase()));
   return <section className="panel padded alert-list" aria-label="Alerts list">
-    <h2>Alerts</h2>
     <div className="alert-list-tools"><label className="field">Search alerts<input type="search" value={search} onChange={event => setSearch(event.target.value)} /></label>
       <details className="alert-filters" open={filters} onToggle={e=>setFilters(e.currentTarget.open)}><summary>Filter</summary><div className="alert-filter-fields">
         <label className="field">Service<select aria-label="Filter service" value={service} onChange={e => setService(e.target.value)}><option value="">All services</option>{state.services.map(service => <option key={service.id} value={service.id}>{service.name}</option>)}</select></label>

@@ -19,13 +19,22 @@ import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as RoutingRouteImport } from './routes/routing'
 import { Route as SchedulesRouteImport } from './routes/schedules'
 import { Route as ServicesRouteImport } from './routes/services'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as AlertsAlertIdRouteImport } from './routes/alerts.$alertId'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IncidentsIdRouteImport } from './routes/incidents.$id'
+import { Route as OnCallIndexRouteImport } from './routes/on-call.index'
 import { Route as ReviewsIncidentIdRouteImport } from './routes/reviews.$incidentId'
+import { Route as SettingsIndexRouteImport } from './routes/settings.index'
+import { Route as SettingsArchiveRouteImport } from './routes/settings.archive'
+import { Route as SettingsIntegrationsRouteImport } from './routes/settings.integrations'
+import { Route as SettingsMoveInRouteImport } from './routes/settings.move-in'
+import { Route as SettingsRoutingRouteImport } from './routes/settings.routing'
+import { Route as SettingsServicesRouteImport } from './routes/settings.services'
+import { Route as SettingsTeamRouteImport } from './routes/settings.team'
 import { Route as SigninLocalRouteImport } from './routes/signin.local'
 
 const IndexRoute = IndexRouteImport.update({
@@ -78,6 +87,11 @@ const ServicesRoute = ServicesRouteImport.update({
   path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
@@ -108,10 +122,50 @@ const IncidentsIdRoute = IncidentsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => IncidentsRoute,
 } as any)
+const OnCallIndexRoute = OnCallIndexRouteImport.update({
+  id: '/on-call/',
+  path: '/on-call/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReviewsIncidentIdRoute = ReviewsIncidentIdRouteImport.update({
   id: '/$incidentId',
   path: '/$incidentId',
   getParentRoute: () => ReviewsRoute,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsArchiveRoute = SettingsArchiveRouteImport.update({
+  id: '/archive',
+  path: '/archive',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsIntegrationsRoute = SettingsIntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsMoveInRoute = SettingsMoveInRouteImport.update({
+  id: '/move-in',
+  path: '/move-in',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsRoutingRoute = SettingsRoutingRouteImport.update({
+  id: '/routing',
+  path: '/routing',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsServicesRoute = SettingsServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsTeamRoute = SettingsTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => SettingsRoute,
 } as any)
 const SigninLocalRoute = SigninLocalRouteImport.update({
   id: '/signin/local',
@@ -130,14 +184,23 @@ export interface FileRoutesByFullPath {
   '/routing': typeof RoutingRoute
   '/schedules': typeof SchedulesRoute
   '/services': typeof ServicesRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/status': typeof StatusRoute
   '/team': typeof TeamRoute
   '/alerts/$alertId': typeof AlertsAlertIdRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
   '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
+  '/settings/archive': typeof SettingsArchiveRoute
+  '/settings/integrations': typeof SettingsIntegrationsRoute
+  '/settings/move-in': typeof SettingsMoveInRoute
+  '/settings/routing': typeof SettingsRoutingRoute
+  '/settings/services': typeof SettingsServicesRoute
+  '/settings/team': typeof SettingsTeamRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs/': typeof DocsIndexRoute
+  '/on-call/': typeof OnCallIndexRoute
+  '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -156,8 +219,16 @@ export interface FileRoutesByTo {
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
   '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
+  '/settings/archive': typeof SettingsArchiveRoute
+  '/settings/integrations': typeof SettingsIntegrationsRoute
+  '/settings/move-in': typeof SettingsMoveInRoute
+  '/settings/routing': typeof SettingsRoutingRoute
+  '/settings/services': typeof SettingsServicesRoute
+  '/settings/team': typeof SettingsTeamRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs': typeof DocsIndexRoute
+  '/on-call': typeof OnCallIndexRoute
+  '/settings': typeof SettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -171,14 +242,23 @@ export interface FileRoutesById {
   '/routing': typeof RoutingRoute
   '/schedules': typeof SchedulesRoute
   '/services': typeof ServicesRoute
+  '/settings': typeof SettingsRouteWithChildren
   '/status': typeof StatusRoute
   '/team': typeof TeamRoute
   '/alerts/$alertId': typeof AlertsAlertIdRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
   '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
+  '/settings/archive': typeof SettingsArchiveRoute
+  '/settings/integrations': typeof SettingsIntegrationsRoute
+  '/settings/move-in': typeof SettingsMoveInRoute
+  '/settings/routing': typeof SettingsRoutingRoute
+  '/settings/services': typeof SettingsServicesRoute
+  '/settings/team': typeof SettingsTeamRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs/': typeof DocsIndexRoute
+  '/on-call/': typeof OnCallIndexRoute
+  '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -193,14 +273,23 @@ export interface FileRouteTypes {
     | '/routing'
     | '/schedules'
     | '/services'
+    | '/settings'
     | '/status'
     | '/team'
     | '/alerts/$alertId'
     | '/docs/$slug'
     | '/incidents/$id'
     | '/reviews/$incidentId'
+    | '/settings/archive'
+    | '/settings/integrations'
+    | '/settings/move-in'
+    | '/settings/routing'
+    | '/settings/services'
+    | '/settings/team'
     | '/signin/local'
     | '/docs/'
+    | '/on-call/'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -219,8 +308,16 @@ export interface FileRouteTypes {
     | '/docs/$slug'
     | '/incidents/$id'
     | '/reviews/$incidentId'
+    | '/settings/archive'
+    | '/settings/integrations'
+    | '/settings/move-in'
+    | '/settings/routing'
+    | '/settings/services'
+    | '/settings/team'
     | '/signin/local'
     | '/docs'
+    | '/on-call'
+    | '/settings'
   id:
     | '__root__'
     | '/'
@@ -233,14 +330,23 @@ export interface FileRouteTypes {
     | '/routing'
     | '/schedules'
     | '/services'
+    | '/settings'
     | '/status'
     | '/team'
     | '/alerts/$alertId'
     | '/docs/$slug'
     | '/incidents/$id'
     | '/reviews/$incidentId'
+    | '/settings/archive'
+    | '/settings/integrations'
+    | '/settings/move-in'
+    | '/settings/routing'
+    | '/settings/services'
+    | '/settings/team'
     | '/signin/local'
     | '/docs/'
+    | '/on-call/'
+    | '/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -254,11 +360,13 @@ export interface RootRouteChildren {
   RoutingRoute: typeof RoutingRoute
   SchedulesRoute: typeof SchedulesRoute
   ServicesRoute: typeof ServicesRoute
+  SettingsRoute: typeof SettingsRouteWithChildren
   StatusRoute: typeof StatusRoute
   TeamRoute: typeof TeamRoute
   DocsSlugRoute: typeof DocsSlugRoute
   SigninLocalRoute: typeof SigninLocalRoute
   DocsIndexRoute: typeof DocsIndexRoute
+  OnCallIndexRoute: typeof OnCallIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -333,6 +441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/status': {
       id: '/status'
       path: '/status'
@@ -375,12 +490,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IncidentsIdRouteImport
       parentRoute: typeof IncidentsRoute
     }
+    '/on-call/': {
+      id: '/on-call/'
+      path: '/on-call'
+      fullPath: '/on-call/'
+      preLoaderRoute: typeof OnCallIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reviews/$incidentId': {
       id: '/reviews/$incidentId'
       path: '/$incidentId'
       fullPath: '/reviews/$incidentId'
       preLoaderRoute: typeof ReviewsIncidentIdRouteImport
       parentRoute: typeof ReviewsRoute
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/archive': {
+      id: '/settings/archive'
+      path: '/archive'
+      fullPath: '/settings/archive'
+      preLoaderRoute: typeof SettingsArchiveRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/integrations': {
+      id: '/settings/integrations'
+      path: '/integrations'
+      fullPath: '/settings/integrations'
+      preLoaderRoute: typeof SettingsIntegrationsRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/move-in': {
+      id: '/settings/move-in'
+      path: '/move-in'
+      fullPath: '/settings/move-in'
+      preLoaderRoute: typeof SettingsMoveInRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/routing': {
+      id: '/settings/routing'
+      path: '/routing'
+      fullPath: '/settings/routing'
+      preLoaderRoute: typeof SettingsRoutingRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/services': {
+      id: '/settings/services'
+      path: '/services'
+      fullPath: '/settings/services'
+      preLoaderRoute: typeof SettingsServicesRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/team': {
+      id: '/settings/team'
+      path: '/team'
+      fullPath: '/settings/team'
+      preLoaderRoute: typeof SettingsTeamRouteImport
+      parentRoute: typeof SettingsRoute
     }
     '/signin/local': {
       id: '/signin/local'
@@ -426,6 +597,30 @@ const ReviewsRouteChildren: ReviewsRouteChildren = {
 const ReviewsRouteWithChildren =
   ReviewsRoute._addFileChildren(ReviewsRouteChildren)
 
+interface SettingsRouteChildren {
+  SettingsArchiveRoute: typeof SettingsArchiveRoute
+  SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
+  SettingsMoveInRoute: typeof SettingsMoveInRoute
+  SettingsRoutingRoute: typeof SettingsRoutingRoute
+  SettingsServicesRoute: typeof SettingsServicesRoute
+  SettingsTeamRoute: typeof SettingsTeamRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsArchiveRoute: SettingsArchiveRoute,
+  SettingsIntegrationsRoute: SettingsIntegrationsRoute,
+  SettingsMoveInRoute: SettingsMoveInRoute,
+  SettingsRoutingRoute: SettingsRoutingRoute,
+  SettingsServicesRoute: SettingsServicesRoute,
+  SettingsTeamRoute: SettingsTeamRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
@@ -437,11 +632,13 @@ const rootRouteChildren: RootRouteChildren = {
   RoutingRoute: RoutingRoute,
   SchedulesRoute: SchedulesRoute,
   ServicesRoute: ServicesRoute,
+  SettingsRoute: SettingsRouteWithChildren,
   StatusRoute: StatusRoute,
   TeamRoute: TeamRoute,
   DocsSlugRoute: DocsSlugRoute,
   SigninLocalRoute: SigninLocalRoute,
   DocsIndexRoute: DocsIndexRoute,
+  OnCallIndexRoute: OnCallIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

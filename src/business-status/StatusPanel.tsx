@@ -26,7 +26,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
   useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),2000);return()=>clearTimeout(timer);},[notice]);
   const admin = actor.role === 'admin';
   return <section className="panel padded status-work" aria-label="Internal business status">
-    <h2>Status</h2>
+    <h2>Business services</h2>
 <details><summary>About this status</summary><p>Internal business-service impact. Subscriptions record a channel; email, push and chat delivery are off.</p></details>
     <div role="status" aria-live="polite">{busy ? 'Saving…' : notice || (!ready && !failures.failure ? 'Loading internal status…' : '')}</div>
     <FailureLine failure={failures.failure} />
