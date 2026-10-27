@@ -1,0 +1,37 @@
+.integrations { min-width: 0; font-size: 15px; }
+.integrations h2, .integrations h3 { overflow-wrap: anywhere; }
+.integration-rows { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 8px; }
+.integration-rows li { min-width: 0; }
+.integration-rows a { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 60px; padding: 12px 16px; border: 1px solid var(--oc-line); border-radius: 12px; color: var(--oc-ink); text-decoration: none; overflow-wrap: anywhere; }
+.integration-rows a:hover, .integration-rows a:focus-visible { background: var(--oc-paper); }
+.integration-rows small { font-size: 13px; color: var(--oc-muted); }
+.integration-link { display: inline-flex; align-items: center; min-height: 44px; }
+.integrations .field { min-width: 0; }
+.integrations :is(input, select, textarea) { max-width: 100%; min-width: 0; font-size: 15px; align-self: start; }
+.integrations :is(pre, code, output) { overflow-wrap: anywhere; white-space: pre-wrap; font-size: 13px; }
+.integrations :is(button, summary) { min-height: 44px; font-size: 14px; }
+.integrations summary { display: flex; align-items: center; cursor: pointer; }
+.integrations :is(p, li, label, small) { overflow-wrap: anywhere; font-size: max(13px, 1em); }
+.integration-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.integration-tabs a { display: inline-flex; min-height: 44px; align-items: center; padding: 8px 16px; border: 1px solid var(--oc-line); border-radius: 999px; }
+.integration-checkbox { display: flex; gap: 12px; align-items: center; min-height: 44px; }
+.integration-checkbox input { flex: 0 0 auto; }
+.integrations .intake-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.one-time-secret { min-width: 0; }
+.integrations-home { display: grid; gap: 20px; min-width: 0; }
+.integration-detail-layout { display: grid; grid-template-columns: minmax(220px, .65fr) minmax(0, 1.6fr); gap: 20px; align-items: start; }
+.integration-detail-layout>div { min-width: 0; }
+.integration-list-column a[aria-current="page"] { background: var(--oc-paper-deep); font-weight: 600; }
+.integration-receipts { padding-left: 20px; }
+.integration-receipts li { padding: 12px 0; }
+.integration-receipts p { margin: 4px 0; }
+@media (max-width: 600px) {
+  .integrations :is(input, select, button, summary) { min-height: 44px; }
+  .integrations .field { width: 100%; }
+  .integrations :is(fieldset, form) { min-width: 0; }
+  .integrations .integration-checkbox { width: 100%; }
+  .integration-detail-layout { display: block; }
+  .integration-list-column { display: none; }
+}
+
+@media (max-width:600px) { .integrations .integration-checkbox input, .routing-settings .routing-scope input { width:18px; height:18px; min-height:18px; } }
