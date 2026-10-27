@@ -239,7 +239,7 @@ try {
  await owner.page.goto(worker.origin+'/status');await owner.page.reload()
  const statusPanel=owner.page.getByRole('region',{name:'Internal business status'})
  await statusPanel.getByRole('heading',{name:'Business services',exact:true}).waitFor()
- if(!await statusPanel.getByLabel('Business-service name',{exact:true}).isVisible())await statusPanel.getByText('Add business service',{exact:true}).click()
+ // With no business services, creation opens automatically after the status read.
  await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
  const teamField=statusPanel.getByLabel('Owning team',{exact:true});if(await teamField.evaluate(e=>e.tagName==='SELECT'))await teamField.selectOption({index:0});else await teamField.fill('Payments')
  await statusPanel.getByLabel('Supporting technical services',{exact:true}).selectOption('synthetic-oncall-61')
