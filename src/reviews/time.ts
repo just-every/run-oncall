@@ -4,7 +4,7 @@ export function shortTime(value: string, zone = browserZone()) {
   return Number.isFinite(date.getTime()) ? date.toLocaleString([], {timeZone: zone, month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'}) : 'Time unavailable';
 }
 export function shortDate(value: string, zone = browserZone()) {
-  return new Date(value + 'T12:00:00Z').toLocaleDateString([], {timeZone: zone, month: 'short', day: 'numeric'});
+  return new Date(value + 'T12:00:00Z').toLocaleDateString([], {timeZone: 'UTC', month: 'short', day: 'numeric'});
 }
 export function zonedMidnight(date: string, zone: string) {
   const target = Date.parse(date + 'T00:00:00Z');

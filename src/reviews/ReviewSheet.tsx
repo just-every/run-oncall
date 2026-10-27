@@ -11,12 +11,12 @@ import {FailureLine,useActionFailure} from '../app/FailureLine';
 import {ReviewMaterial,type Material} from './ReviewMaterial';
 import type {ReviewProps} from './ReviewsHome';
 import {shortTime} from './time';
-export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSaved}:ReviewProps&{incident:Incident}) {
+export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSaved,draftScope}:ReviewProps&{incident:Incident}) {
   const navigate=useNavigate(), sheet=useRef<HTMLDivElement>(null), failures=useActionFailure();
   const [latest,setLatest]=useState(incident),[material,setMaterial]=useState<Material|null>(null),[confirm,setConfirm]=useState(false),[accepting,setAccepting]=useState(false),[menu,setMenu]=useState(false);
   const current=latest.revision>incident.revision?latest:incident;
   const snapshot=(i:Incident)=>({values:{text:i.review,rootCause:i.rootCause??i.reviewAcceptance?.rootCause??'',impact:i.impact??i.reviewAcceptance?.impact??''},revision:i.revision});
-  const save=useAutosave({snapshot:snapshot(current),read:async()=>{const state:State=await request('/api/state');return snapshot(state.incidents.find(i=>i.id===incident.id)!);},write:async change=>{
+  const save=useAutosave({storageKey:'review:'+draftScope+':'+incident.id,snapshot:snapshot(current),read:async()=>{const state:State=await request('/api/state');return snapshot(state.incidents.find(i=>i.id===incident.id)!);},write:async change=>{
     const result:Incident=await autosaveRequest('/api/command',{type:'review',incident:incident.id,revision:change.revision,field:change.field==='text'?'review':change.field,to:change.to});setLatest(result);onSaved?.(result);return snapshot(result);
   }});
   const close=()=>{void leaveAfterSaving(()=>{void navigate({to:'/reviews',resetScroll:false} as any);});};
@@ -39,7 +39,7 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
       </header>
       {menu&&<div className="review-sheet-menu"><button disabled={accepting} onClick={()=>{setMenu(false);void refresh();}}>Refresh material</button>{accepting&&<p>Wait for review acceptance to finish.</p>}</div>}
       <FailureLine failure={failures.failure}/>
-      {(['text','rootCause','impact'] as const).map(field=><div key={field} className="review-edit"><label className="field"><span>{field==='text'?'Review':field==='rootCause'?'Root cause':'Impact'} <SavedState state={save.states[field]}/></span><textarea aria-label={field==='text'?'Review':field==='rootCause'?'Root cause':'Impact'} rows={field==='text'?4:3} maxLength={field==='text'?10000:3000} value={save.values[field]} disabled={!canEdit||incident.state!=='resolved'||accepting} onChange={e=>{setConfirm(false);save.change(field,e.target.value,'text');}} onBlur={()=>save.blur(field)}/></label><SaveFeedback state={save.states[field]} retry={()=>save.retry(field)} useMine={()=>save.useMine(field)}/></div>)}
+      {(['text','rootCause','impact'] as const).map(field=><div key={field} className="review-edit"><label className="field"><span>{field==='text'?'Review':field==='rootCause'?'Root cause':'Impact'} <SavedState state={save.states[field]}/></span><textarea aria-label={field==='text'?'Review':field==='rootCause'?'Root cause':'Impact'} rows={field==='text'?4:3} maxLength={field==='text'?10000:3000} value={save.values[field]} readOnly={!canEdit||incident.state!=='resolved'} disabled={accepting} onChange={e=>{setConfirm(false);save.change(field,e.target.value,'text');}} onBlur={()=>save.blur(field)}/></label><SaveFeedback state={save.states[field]} retry={()=>save.retry(field)} useMine={()=>save.useMine(field)}/></div>)}
       {incident.state!=='resolved'&&<p>Resolve the incident before writing its review.</p>}
       {current.reviewAcceptance&&<p className="review-meta">Accepted by {state.members.find(m=>m.id===current.reviewAcceptance!.by)?.name??'Former member'} · {shortTime(current.reviewAcceptance.at)}</p>}
       {canEdit&&incident.state==='resolved'&&<button disabled={accepting||!Object.values(save.values).every(v=>v.trim())} onClick={async()=>{if(await save.flush())setConfirm(true);}}>Accept review</button>}

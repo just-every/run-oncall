@@ -4,7 +4,7 @@ import {Followups} from './Followups';
 import {ResponseReport} from './ResponseReport';
 import {browserZone} from './time';
 import './work.css';
-export type ReviewProps = {state:State;busy:boolean;canEdit:boolean;command:(data:any)=>Promise<any>;onOpenIncident:(id:string)=>void;onSaved?:(incident:Incident)=>void};
+export type ReviewProps = {state:State;busy:boolean;canEdit:boolean;command:(data:any)=>Promise<any>;onOpenIncident:(id:string)=>void;onSaved?:(incident:Incident)=>void;draftScope:string};
 export function ReviewsHome(props:ReviewProps) {
   const {state}=props;
   const [numbers,setNumbers]=useState(false);

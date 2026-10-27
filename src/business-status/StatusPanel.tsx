@@ -14,6 +14,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
   const failures=useActionFailure();
   const [services, setServices] = useState<any[]>([]), [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false), [notice, setNotice] = useState('');
+  const [audience,setAudience]=useState<string[]>([]);
   const refresh = async () => { const result = await request('/api/status'); preserveView(); setServices(result.services); setReady(true); if(failures.current.current?.read)failures.clear(); };
   const failedRead=(error:unknown)=>{if(!failures.current.current||failures.current.current.read)failures.show(error,{read:true,target:null,retry:async()=>{try{await refresh();failures.clear();}catch(error){failedRead(error);}}});};
   useEffect(() => { refresh().catch(failedRead); }, [state?.revision, actor]);
@@ -35,7 +36,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
       <h3>{service.name}</h3><p>Owning team: {service.owningTeam}</p>
       <p><strong>Derived status: {service.derived}</strong>{!service.active && ' · inactive after restore'}</p>
       {service.override && <p>Manual override: <strong>{service.override.value}</strong> · {service.override.reason} · {new Date(service.override.at).toLocaleString()}{service.override.by && ` · ${state?.members.find(member => member.id === service.override.by)?.name ?? 'Erased member'}`}</p>}
-      <StatusSubscription service={service}/>
+      <StatusSubscription actorId={actor.id} service={service}/>
       {service.notices.length > 0 && <div aria-label="Recorded impact obligations"><h4>Recorded impact obligations</h4>{service.notices.map((record: any) => <p key={record.id}>{record.businessName} · {record.phase?`impact ${record.phase} · `:''}{record.derivedStatus} · {record.channel} · {record.state} · no sender · non-automatic · paging OFF. {record.approvedUpdate === null && 'No approved update is available.'}</p>)}</div>}
       {(admin || actor.id === service.communicationsOwner) && <details><summary>Manage internal status</summary>
         <ManualStatus service={service} busy={busy} save={save}/>
@@ -53,11 +54,11 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
         {!service.active && admin && <button disabled={busy} onClick={() => save({action:'activate',id:service.id,revision:service.revision})}>Activate status records</button>}
       </details>}
     </article>)}
-    {admin && state && <details open={ready&&!services.length?true:undefined}><summary>Add business service</summary><Form busy={busy} label="Create business service" onSubmit={data => save({...data, action:'create',supporting:Array.isArray(data.supporting)?data.supporting:[data.supporting].filter(Boolean),audience:Array.isArray(data.audience)?data.audience:[data.audience].filter(Boolean),highUrgencyImpact:data.highUrgencyImpact==='true'})}>
+    {admin && state && <details open={ready&&!services.length?true:undefined}><summary>Add business service</summary><Form busy={busy} label="Create business service" onSubmit={async data=>{const result=await save({...data,action:'create',supporting:Array.isArray(data.supporting)?data.supporting:[data.supporting].filter(Boolean),audience,highUrgencyImpact:data.highUrgencyImpact==='true'});if(result)setAudience([]);return result;}}>
       <Field name="name" label="Business-service name" />{state.teams?.length===1?<><span>Owning team: {state.teams[0].name}</span><input type="hidden" name="owningTeam" value={state.teams[0].name}/></>:state.teams?.length?<Field name="owningTeam" label="Owning team">{state.teams.map(team=><option value={team.name} key={team.id}>{team.name}</option>)}</Field>:<Field name="owningTeam" label="Owning team"/>}
       <label className="field"><span>Supporting technical services</span><select name="supporting" multiple required aria-label="Supporting technical services">{state.services.map(service=><option key={service.id} value={service.id}>{service.name}</option>)}</select></label>
       <Field name="communicationsOwner" label="Communications owner">{state.members.filter(member=>member.active&&['admin','responder'].includes(member.role)).map(member=><option key={member.id} value={member.id}>{member.name}</option>)}</Field>
-      <label className="field"><span>Stakeholder audience</span><select name="audience" multiple aria-label="Stakeholder audience">{state.members.filter(member=>member.active&&member.role==='stakeholder').map(member=><option key={member.id} value={member.id}>{member.name}</option>)}</select></label>
+      {!!state.members.some(member=>member.active&&member.role==='stakeholder')&&<fieldset className="status-audience"><legend>Stakeholder audience</legend>{state.members.filter(member=>member.active&&member.role==='stakeholder').map(member=><label className="status-audience-choice" key={member.id}><input type="checkbox" name="audience" value={member.id} checked={audience.includes(member.id)} onChange={e=>setAudience(current=>e.target.checked?[...current,member.id]:current.filter(id=>id!==member.id))}/><span>{member.name}</span></label>)}</fieldset>}
       <Field name="highUrgencyImpact" label="High-urgency alert impact"><option value="false">Declared incidents only</option><option value="true">Declared incidents and high-urgency alerts</option></Field>
     </Form></details>}
   </section>;
@@ -69,8 +70,8 @@ function ManualStatus({service,busy,save}:{service:any;busy:boolean;save:(input:
  {pending!==undefined&&<InlineConfirm action="Set status" keep="Keep current status" reasonRequired busy={busy} onCancel={()=>setPending(undefined)} onConfirm={async reason=>{if(await save({action:'override',id:service.id,revision:service.revision,value:pending,reason}))setPending(undefined);}}>Set {service.name} to {pending??'its derived status'}? Your reason is recorded.</InlineConfirm>}
  </>;
 }
-function StatusSubscription({service}:{service:any}) {
+function StatusSubscription({service,actorId}:{service:any;actorId:string}) {
  const snapshot=(row:any)=>({values:{channel:row.subscription?.channel??'email',active:row.subscription?.active??false},revision:row.revision});
- const save=useAutosave({snapshot:snapshot(service),read:async()=>{const result=await request('/api/status');return snapshot(result.services.find((s:any)=>s.id===service.id));},write:async change=>{const result=await autosaveRequest('/api/status',{action:'subscribe',id:service.id,revision:change.revision,...change.values});return snapshot(result.services.find((s:any)=>s.id===service.id));}});
+ const save=useAutosave({storageKey:'status-subscription:'+actorId+':'+service.id,snapshot:snapshot(service),read:async()=>{const result=await request('/api/status');return snapshot(result.services.find((s:any)=>s.id===service.id));},write:async change=>{const result=await autosaveRequest('/api/status',{action:'subscribe',id:service.id,revision:change.revision,...change.values});return snapshot(result.services.find((s:any)=>s.id===service.id));}});
  return <details><summary>Your subscription</summary><label className="field"><span>Recorded channel <SavedState state={save.states.channel}/></span><select aria-label="Recorded channel" value={save.values.channel} onChange={e=>save.change('channel',e.target.value,'choice')}><option value="email">Email</option><option value="push">Push</option><option value="chat">Chat</option></select></label><SaveFeedback state={save.states.channel} retry={()=>save.retry('channel')} useMine={()=>save.useMine('channel')}/><label className="field"><span>Subscription <SavedState state={save.states.active}/></span><select aria-label="Subscription" value={String(save.values.active)} onChange={e=>save.change('active',e.target.value==='true','choice')}><option value="true">Subscribed</option><option value="false">Unsubscribed</option></select></label><SaveFeedback state={save.states.active} retry={()=>save.retry('active')} useMine={()=>save.useMine('active')}/></details>;
 }

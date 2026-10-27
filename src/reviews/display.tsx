@@ -1,4 +1,4 @@
-import {shortTime} from './time';
+import {shortTime,browserZone} from './time';
 import type { ReactNode } from 'react';
 import type { ResponseDuration } from './report';
 
@@ -9,11 +9,11 @@ export function EvidenceLink({url, children}: {url: string | null | undefined; c
   try { safe = !!url && ['https:', 'http:'].includes(new URL(url).protocol); } catch { /* Retained invalid links remain visible as text. */ }
   return safe ? <a href={url!} target="_blank" rel="noreferrer">{children ?? url} ↗</a> : url ? <span>{url} (not an HTTP(S) link)</span> : null;
 }
-export function DurationSource({value}: {value: ResponseDuration}) {
+export function DurationSource({value,zone=browserZone()}: {value: ResponseDuration;zone?:string}) {
   return <div className="response-source">
     <strong>{value.status === 'unknown' ? 'Unknown duration' : value.status === 'censored' ? `At least ${duration(value.seconds)} · censored` : `${duration(value.seconds)} · measured`}</strong>
     <p>{value.reason}</p>
-    <p className="review-meta">Source time: {value.sourceAt ? utc(value.sourceAt) : 'Unavailable'}<br />
+    <p className="review-meta">Source time: {value.sourceAt ? shortTime(value.sourceAt,zone) : 'Unavailable'}<br />
       Representation: {value.sourceKind ?? 'Unavailable'}</p>
     {value.evidence && <EvidenceLink url={value.evidence}>Recorded attestation</EvidenceLink>}
   </div>;
