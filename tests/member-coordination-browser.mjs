@@ -241,7 +241,16 @@ try {
  await statusPanel.getByRole('heading',{name:'Business services',exact:true}).waitFor()
  // With no business services, creation opens automatically after the status read.
  await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
- const teamField=statusPanel.getByLabel('Owning team',{exact:true});if(await teamField.evaluate(e=>e.tagName==='SELECT'))await teamField.selectOption({index:0});else await teamField.fill('Payments')
+ const teamField=statusPanel.getByLabel('Owning team',{exact:true})
+ if(await teamField.count()){
+  if(await teamField.evaluate(e=>e.tagName==='SELECT'))await teamField.selectOption({index:0});else await teamField.fill('Payments')
+ }else{
+  const teams=ok(await call(owner.page,'/api/state')).teams
+  assert.equal(teams.length,1,'a form without an Owning team control has one team')
+  await expect(statusPanel.locator('input[type="hidden"][name="owningTeam"]')).toHaveValue(teams[0].name)
+  await expect(statusPanel.getByText('Owning team: '+teams[0].name,{exact:true})).toBeVisible()
+  console.log('OC-061 one-team branch: the form names its sole created team',teams[0].name)
+ }
  await statusPanel.getByLabel('Supporting technical services',{exact:true}).selectOption('synthetic-oncall-61')
  await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id)
  await statusPanel.getByRole('group',{name:'Stakeholder audience',exact:true}).getByRole('checkbox',{name:sam.name,exact:true}).check()
