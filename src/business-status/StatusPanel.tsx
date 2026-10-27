@@ -1,17 +1,22 @@
+import {useViewAnchor} from '../app/useViewAnchor';
 import { useEffect, useState } from 'react';
 import { Field, Form } from '../forms';
+import {FailureLine, useActionFailure, hasChangeBase} from '../app/FailureLine';
 import { request } from '../useWorkspace';
 import type { Member, State } from '../family/response-operations/domain';
 
 export function StatusPanel({actor, state}: {actor: Member; state?: State | null}) {
+  const preserveView=useViewAnchor();
+  const failures=useActionFailure();
   const [services, setServices] = useState<any[]>([]), [ready, setReady] = useState(false);
-  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
-  const refresh = async () => { const result = await request('/api/status'); setServices(result.services); setReady(true); };
-  useEffect(() => { refresh().catch(error => setError(error.message)); }, [state?.revision, actor]);
+  const [busy, setBusy] = useState(false), [notice, setNotice] = useState('');
+  const refresh = async () => { const result = await request('/api/status'); preserveView(); setServices(result.services); setReady(true); if(failures.current.current?.read)failures.clear(); };
+  const failedRead=(error:unknown)=>{if(!failures.current.current||failures.current.current.read)failures.show(error,{read:true,target:null,retry:async()=>{try{await refresh();failures.clear();}catch(error){failedRead(error);}}});};
+  useEffect(() => { refresh().catch(failedRead); }, [state?.revision, actor]);
   const save = async (input: any) => {
-    setBusy(true); setError(''); setNotice('');
-    try { const result = await request('/api/status', input); setServices(result.services); setNotice('Status records saved. No delivery was sent.'); return result; }
-    catch (error) { setError((error as Error).message); return null; }
+    setBusy(true); failures.clear(); setNotice('');
+    try { const result = await request('/api/status', input); preserveView(); setServices(result.services); setNotice('Status records saved. No delivery was sent.'); return result; }
+    catch (error) { failures.show(error,{retry:hasChangeBase(input)?()=>save(input):undefined}); return null; }
     finally { setBusy(false); }
   };
   const admin = actor.role === 'admin';
@@ -19,15 +24,14 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
     <h2>Internal status</h2>
     <p>Business-service impact for your workspace. This view is internal and is never published to a public status page.</p>
     <p className="muted">Subscriptions record your chosen channel. Impact obligations have no sender; email, push and chat delivery are off.</p>
-    <button disabled={busy} onClick={() => refresh().catch(error => setError(error.message))}>Refresh status</button>
-    <div role="status" aria-live="polite">{busy ? 'Saving…' : notice || (!ready && !error ? 'Loading internal status…' : '')}</div>
-    {error && <p role="alert">{error}</p>}
+    <div role="status" aria-live="polite">{busy ? 'Saving…' : notice || (!ready && !failures.failure ? 'Loading internal status…' : '')}</div>
+    <FailureLine failure={failures.failure} />
     {ready && !services.length && <p>No business services are available to you.</p>}
     {services.map(service => <article className="service-card" key={service.id} aria-label={service.name}>
       <h3>{service.name}</h3><p>Owning team: {service.owningTeam}</p>
       <p><strong>Derived status: {service.derived}</strong>{!service.active && ' · inactive after restore'}</p>
       {service.override && <p>Manual override: <strong>{service.override.value}</strong> · {service.override.reason} · {new Date(service.override.at).toLocaleString()}{service.override.by && ` · ${state?.members.find(member => member.id === service.override.by)?.name ?? 'Erased member'}`}</p>}
-      <Form key={'subscription:'+service.id+':'+service.revision} busy={busy} label="Save subscription" onSubmit={data => save({...data, action:'subscribe', id:service.id, revision:service.revision, active:data.active==='true'})}>
+      <Form key={'subscription:'+service.id} busy={busy} label="Save subscription" onSubmit={async data => {await save({...data, action:'subscribe', id:service.id, revision:service.revision, active:data.active==='true'});}}>
         <Field name="channel" label="Recorded delivery channel" value={service.subscription?.channel ?? 'email'}><option value="email">Email (record only)</option><option value="push">Push (record only)</option><option value="chat">Chat (record only)</option></Field>
         <Field name="active" label="Your subscription" value={String(service.subscription?.active ?? false)}><option value="true">Subscribed</option><option value="false">Unsubscribed</option></Field>
       </Form>

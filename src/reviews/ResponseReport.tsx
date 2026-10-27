@@ -1,9 +1,11 @@
+import {useViewAnchor} from '../app/useViewAnchor';
 import { useEffect, useRef, useState } from 'react';
 import type { State } from '../family/response-operations/domain';
 import type { ProjectedReport as Report } from './load';
 import { CoverageLoad } from './CoverageLoad';
 import { AlertNoise } from './AlertNoise';
 import { Field, Form } from '../forms';
+import {FailureLine, useActionFailure} from '../app/FailureLine';
 import { request } from '../useWorkspace';
 import { duration, DurationSource, utc } from './display';
 import './reviews.css';
@@ -16,28 +18,31 @@ function parameters(filters: Filters) {
   return params;
 }
 export function ResponseReport({state}: {state: State}) {
+  const preserveView=useViewAnchor();
+  const failures=useActionFailure();
   const [initial] = useState<Filters>(() => {
     const now = Date.now();
     return {from: new Date(now - 30 * 86400000).toISOString(), to: new Date(now).toISOString(), service: ''};
   });
   const [applied, setApplied] = useState(initial), [report, setReport] = useState<Report | null>(null);
-  const [loading, setLoading] = useState(false), [exporting,setExporting]=useState(false), [error, setError] = useState('');
+  const [loading, setLoading] = useState(false), [exporting,setExporting]=useState(false);
   const sequence = useRef(0);
-  async function load(filters: Filters) {
+  async function load(filters: Filters, background = false) {
     const current = ++sequence.current;
-    setLoading(true); setError('');
+    if (!background) setLoading(true); failures.clear();
     try {
       const result: Report = await request('/api/reports/response?' + parameters(filters));
-      if (current === sequence.current) { setReport(result); setApplied(filters); }
-    } catch (e) { if (current === sequence.current) setError(e instanceof Error ? e.message : 'Report could not be loaded'); }
+      if (current === sequence.current) { preserveView(); setReport(result); setApplied(filters); }
+    } catch (e) { if (current === sequence.current) failures.show(e,{read:true,target:null,retry:()=>load(filters, Boolean(report))}); }
     finally { if (current === sequence.current) setLoading(false); }
   }
   useEffect(() => { void load(initial); return () => { sequence.current++; }; }, [initial]);
+  useEffect(() => {if (report) void load(applied, true);}, [state]);
   const csv = report ? new URLSearchParams({from: report.cohort.from, to: report.cohort.to,
     ...(report.cohort.service ? {service: report.cohort.service} : {}), at: report.generatedAt, revision:String(report.revision), schedulingRevision:String(report.load.schedulingRevision)}) : null;
   return <section className="panel padded response-report" aria-busy={loading}>
     <div className="review-heading"><h2>Response report</h2>
-      <button type="button" disabled={loading} onClick={() => void load(applied)}>{loading ? 'Loading report…' : 'Refresh report'}</button></div>
+</div>
     <p>Declaration cohort over the last 30 days by default. Apply an exact UTC range to compare retained response records.</p>
     <Form busy={loading} label="Apply report filters" onSubmit={async data => {
       await load({from: data.from, to: data.to, service: data.service});
@@ -50,22 +55,21 @@ export function ResponseReport({state}: {state: State}) {
         </Field>
       </div>
     </Form>
-    {error && <p className="error" role="alert">{error}{report && ' The previously loaded report remains below.'}</p>}
+    <FailureLine failure={failures.failure} />
     {!report && loading && <p role="status">Loading response records…</p>}
     {report && <>
       <div className="review-snapshot">
         <p><strong>{report.cohort.count} incidents</strong> · {report.cohort.service ? state.services.find(s => s.id === report.cohort.service)?.name ?? report.cohort.service : 'All services'}</p>
         <p>Declarations from <time>{utc(report.cohort.from)}</time> inclusive to <time>{utc(report.cohort.to)}</time> exclusive.</p>
         <p>Observed through <time>{utc(report.generatedAt)}</time> · workspace revision {report.revision}.</p>
-        {report.revision !== state.revision && <p>Workspace is now revision {state.revision}. Refresh to include its latest records.</p>}
         <p>Unassignable declaration timestamps: {report.cohort.unassignableDeclarations} · erased declaration cases, durations unknown: {report.cohort.erased}.</p>
         <button type="button" disabled={loading||exporting} onClick={async()=>{
-          setExporting(true);setError('');
+          setExporting(true);
           try{
             const response=await fetch('/api/reports/response.csv?'+csv);
             if(!response.ok){const value=await response.json() as {error?:string};throw Error(value.error??'CSV export failed');}
             const url=URL.createObjectURL(await response.blob()),link=document.createElement('a');link.href=url;link.download='oncall-response.csv';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),0);
-          }catch(error){setError((error as Error).message)}finally{setExporting(false)}
+          }catch(error){failures.show(error,{read:true,target:null})}finally{setExporting(false)}
         }}>{exporting?'Preparing CSV…':'Export this cohort and observation time as CSV ↓'}</button>
       </div>
       <p className="muted">Statistics use measured durations only. Censored durations are lower bounds; unknown durations are unavailable. This report does not measure real page delivery; load below is normalised by scheduled, not worked, hours.</p>

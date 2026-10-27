@@ -1,3 +1,4 @@
+import {focusWorkspace} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 
@@ -16,7 +17,7 @@ export async function alertSeverity(page,context,width) {
   if(severity==='critical') assert.equal((await context.request.post('/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:{...event,eventId:'critical-recovery',intent:'recover',severity:'info'}})).status(),201)
  }
  await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
- await page.getByRole('button',{name:'Refresh',exact:true}).click()
+ await focusWorkspace(page)
  for(const severity of ['critical','warning','info']) {
   const title=`Checkout ${severity} ${width}`
   const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true})})
