@@ -1,12 +1,32 @@
 import {useState} from 'react';
-import {request} from '../../useWorkspace';
+import {InterruptedTransport, request} from '../../useWorkspace';
+import {failureMessage} from '../../app/FailureLine';
 import type {IncidentProps} from '../types';
 
-export function TestPage({incident}: IncidentProps) {
+export function TestPage({incident, refresh}: IncidentProps) {
   const [busy, setBusy] = useState(false);
   const [answer, setAnswer] = useState('');
-  return <><p>Send a test page in this demo.</p><button disabled={busy} onClick={async () => {
-    setBusy(true);setAnswer('');
-    try {await request('/api/paging/jobs', {incident: incident.id}); setAnswer('Test page sent');} catch {setAnswer('The test page could not be sent. Try again.');} finally {setBusy(false);}
-  }}>Send test page</button><p role="status">{answer}</p></>;
+  const [sent, setSent] = useState(false);
+  const [retry, setRetry] = useState<'send' | 'refresh' | null>(null);
+  async function send(refreshOnly = false) {
+    setBusy(true); setAnswer(''); setRetry(null);
+    let accepted = refreshOnly;
+    try {
+      if (!refreshOnly) {
+        await request('/api/paging/jobs', {incident: incident.id});
+        accepted = true;
+        setSent(true);
+      }
+      await refresh();
+      setAnswer('Test page sent');
+    } catch (cause) {
+      setAnswer((accepted ? 'Test page sent. ' : '') + failureMessage(cause, accepted));
+      if (cause instanceof InterruptedTransport) setRetry(accepted ? 'refresh' : 'send');
+    } finally {setBusy(false);}
+  }
+  return <><p>Send a test page in this demo.</p>
+    {!sent && !retry && <button disabled={busy} onClick={() => void send()}>Send test page</button>}
+    <p role="status">{answer}</p>
+    {retry && <button disabled={busy} onClick={() => void send(retry === 'refresh')}>{retry === 'refresh' ? 'Refresh incident' : 'Try again'}</button>}
+  </>;
 }
