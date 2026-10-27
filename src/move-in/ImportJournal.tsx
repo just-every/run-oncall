@@ -14,7 +14,7 @@ export function ImportJournal({jobs,job,busy,select,resume,undo}:{jobs:any[];job
  {job&&<div role="status"><h3>Import journal</h3><p>{label(job)} · {job.checkpoint}/{job.total} source objects processed</p>
  {job.exportedAt&&<p>Export date from filename: {new Date(job.exportedAt).toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})}</p>}
  {job.comparisons?.map((comparison:string)=><p key={comparison}>Coverage comparison: {comparison}</p>)}
- {job.approval&&<details open><summary>Approval details</summary><p style={{overflowWrap:'anywhere'}}>{job.approval}</p></details>}
+ {job.approval&&<details><summary>Approval details</summary><p style={{overflowWrap:'anywhere'}}>{job.approval}</p></details>}
  {resumable(job)&&<button disabled={busy} onClick={resume}>{job.state==='rolling_back'?'Continue rollback':'Resume import'}</button>}
  {undoable(job)&&<button disabled={busy} onClick={undo}>{job.state==='undoing'?'Continue undo':'Undo this import'}</button>}
  {job.state==='undoing'&&<p>Undo is still in progress. Continue undo to finish removing the unchanged imported objects.</p>}
