@@ -45,7 +45,7 @@ function TeamEditor({state,team,write,notes}:{state:State;team:Team;write:(team:
 function Ownership({service,teams,value,note,write}:{service:State['services'][number];teams:Team[];value:string;note?:Note;write:(value:string)=>void}){
  return <div className="teams-ownership"><label className="field"><span>{'Owning team for '+service.name} <Mark note={note}/></span><select aria-label={'Owning team for '+service.name} value={value} onChange={e=>write(e.target.value)}><option value="">Unassigned</option>{teams.filter(t=>t.active||t.id===value).map(t=><option key={t.id} value={t.id}>{t.name}{t.active?'':' (archived)'}</option>)}</select></label><Feedback note={note}/></div>;
 }
-export function TeamsPanel({state,actor,refresh}:{state:State;actor:Member;refresh:()=>Promise<void>}){
+export function TeamsPanel({state,actor,refresh,showOwnership=true}:{state:State;actor:Member;refresh:()=>Promise<void>;showOwnership?:boolean}){
  const [savedNotes,setNotes]=useState<Record<string,Note>>({}),[pending,setPending]=useState<Pending[]>([]),[creating,setCreating]=useState(false),[members,setMembers]=useState<string[]>([]),[managers,setManagers]=useState<string[]>([]);
  const jobs=useRef<Pending[]>([]),current=useRef(state),queue=useRef(Promise.resolve()),createRoot=useRef<HTMLDetailsElement>(null),createAttempt=useRef<string|undefined>(undefined),createDraft=useRef({members,managers});
  createDraft.current={members,managers};
@@ -115,9 +115,9 @@ export function TeamsPanel({state,actor,refresh}:{state:State;actor:Member;refre
  {teams.map(team=><article className="service-card" key={team.id}><h3>{team.name}</h3><p>Public · {team.active?'Active':'Archived'} · {team.members.length} {team.members.length===1?'member':'members'}</p><p>Managers: {team.managers.map(id=>state.members.find(m=>m.id===id)?.name??'Unavailable member').join(', ')||'None'}</p>
  {admin&&<details><summary>Edit team</summary><TeamEditor state={state} team={shown(team)} write={write} notes={notes}/></details>}</article>)}
  {admin&&<><details ref={createRoot} onChange={()=>{if(notes.create?.saved)note('create',{});}}><summary>Create team</summary><Form busy={creating} label="Create team" onSubmit={create}><Field name="name" label="Team name"/><Choices state={state} members={members} managers={managers} onChange={(m,g)=>{setMembers(m);setManagers(g);}}/></Form><Mark note={notes.create}/><Feedback note={notes.create}/></details>
- <h3>Service ownership</h3>{state.services.map(service=><Ownership key={service.id} service={service} teams={teams} value={pending.find(p=>p.ownership?.service===service.id)?.ownership?.value??service.team??''} note={notes['ownership:'+service.id]} write={value=>keep({key:'ownership:'+service.id,target:'ownership:'+service.id,ownership:{service:service.id,value},operation:async()=>{
+ {showOwnership&&<><h3>Service ownership</h3>{state.services.map(service=><Ownership key={service.id} service={service} teams={teams} value={pending.find(p=>p.ownership?.service===service.id)?.ownership?.value??service.team??''} note={notes['ownership:'+service.id]} write={value=>keep({key:'ownership:'+service.id,target:'ownership:'+service.id,ownership:{service:service.id,value},operation:async()=>{
  const revision=current.current.revision,result=await request('/api/teams/ownership',{service:service.id,team:value||null,workspaceRevision:revision});
  if(!result||result.id!==service.id||result.team!==(value||null))throw Error('Invalid server response');
- }})}/>)}</>}
+ }})}/>)}</>}</>}
  </section>;
 }

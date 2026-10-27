@@ -1,0 +1,66 @@
+/* Services keep Oncall's ink, warm paper, field and card tokens. */
+.services-workspace {min-width:0; display:grid; gap:20px; align-items:start;}
+.services-workspace.with-service {grid-template-columns:minmax(230px, 0.65fr) minmax(0, 2fr);}
+.services-workspace * {box-sizing:border-box;}
+.services-workspace :is(h2,h3,p) {overflow-wrap:anywhere;}
+.services-title {display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+.services-title h2 {margin:0;}
+.service-list-rows {display:grid; gap:8px; margin-top:16px;}
+.service-list-row {display:grid; gap:4px; border:1px solid transparent; border-radius:10px; padding:12px; color:var(--oc-ink); text-decoration:none; overflow-wrap:anywhere;}
+.service-list-row:hover, .service-list-row:focus-visible, .service-list-row.selected {background:var(--oc-paper-deep); border-color:var(--oc-line);}
+.service-list-row span, .service-meta {color:var(--oc-muted); font-size:14px;}
+.service-create {margin-top:20px;}
+.service-page {min-width:0; display:grid; gap:16px;}
+.service-page-head {display:grid; gap:12px;}
+.service-page-head h2 {margin:0;}
+.service-head-fields {display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; align-items:start;}
+.service-head-fields .service-runbook {grid-column:1 / -1;}
+.service-head-fields .field {margin:0; min-width:0;}
+.service-page :is(input,select,textarea) {max-width:100%; min-width:0; font:inherit;}
+.service-page :is(input:not([type=checkbox]),select,textarea) {width:100%;}
+.service-page :is(label,p,small,summary,button,select,input,textarea) {font-size: max(13px,1em);}
+.service-page fieldset {min-width:0;}
+.service-page-head .service-meta {margin:0;}
+.service-policies {display:grid; gap:10px;}
+.service-policies > details {margin:0; padding:0; border:1px solid var(--oc-line); border-radius:var(--oc-radius-card); background:var(--oc-surface); min-width:0;}
+.service-policies > details > summary {padding:16px 20px; cursor:pointer; font-weight:650; min-height:56px;}
+.service-policies > details > :not(summary) {margin-inline:20px;}
+.service-policies > details > :last-child {margin-bottom:20px;}
+.service-policies > details > form {margin-top:8px;}
+.service-policies details details {border:0; padding:0;}
+.service-page .service-policies :is(.urgency-fields,.workflow-template-editor) {min-width:0;}
+.service-page pre {white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px;}
+.service-readonly {display:grid; gap:12px;}
+.service-readonly dl {margin:0;}
+.service-readonly dt {font-weight:650;}
+.service-readonly dd {margin:4px 0 12px; overflow-wrap:anywhere;}
+.service-policy-history {margin-top:16px;}
+.service-draft-notice {padding:12px; border-radius:10px; background:var(--oc-paper-deep); overflow-wrap:anywhere;}
+.service-policy-confirm {margin-top:16px;}
+.service-page .service-choice {display:flex; gap:10px; align-items:center; min-height:44px;}
+.service-page .service-choice input {flex:none;}
+.service-page .service-back {display:none;}
+@media(max-width:760px) {
+ .services-workspace.with-service {display:block;}
+ .services-workspace.with-service > .service-list {display:none;}
+ .service-page .service-back {display:flex; align-items:center; min-height:44px;}
+ .service-head-fields {grid-template-columns:minmax(0,1fr);}
+ .service-page :is(button,select,input:not([type=checkbox]),summary,a:not(p a)) {min-height:44px;}
+ .service-page .field {width:100%;}
+ .service-page :is(.urgency-fields,.workflow-template-row) {grid-template-columns:minmax(0,1fr);}
+ .service-policies > details > summary {padding:14px 16px;}
+ .service-policies > details > :not(summary) {margin-inline:16px;}
+ .service-policies > details > :last-child {margin-bottom:16px;}
+ .service-list button {min-height:44px;}
+}
+.service-head-fields > div {min-width:0;}
+.service-head-fields a {display:inline-flex; align-items:center; margin-top:8px;}
+.service-page :is(input:read-only,select:disabled,textarea:read-only) {color:var(--oc-ink); opacity:1;}
+.service-page .urgency-window {display:grid; gap:12px; margin-bottom:16px;}
+.service-policies {gap:8px;}
+.service-policies > details > summary {min-height:48px;padding:12px 20px;}
+@media(max-width:760px) {
+ .service-policies > details > summary {min-height:44px;padding:10px 16px;}
+ .service-head-fields {gap:12px;}
+ .service-page {gap:12px;}
+}

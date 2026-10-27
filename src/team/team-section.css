@@ -1,0 +1,34 @@
+.team-section {display:grid; gap:20px; min-width:0;}
+.team-section :is(h2,h3,h4,p) {overflow-wrap:anywhere;}
+.team-section .team-members {display:grid; gap:8px;}
+.team-section .team-member {display:grid; grid-template-columns:minmax(0,1fr) minmax(160px,210px) 44px; gap:12px; align-items:start; padding:14px; border:1px solid var(--oc-line); border-radius:12px; min-width:0;}
+.team-section .team-member-main h3 {margin:0; font-size:16px;}
+.team-section .team-member-main p {margin:4px 0 0; color:var(--oc-muted); font-size:14px;}
+.team-section .team-member-role .field {margin:0;}
+.team-section .team-member-role .field > span {font-size:13px;}
+.team-section .team-member-actions {position:relative;}
+.team-section .team-member-actions > .oncall-tooltip > button {width:44px; height:44px; padding:0;}
+.team-section .team-row-menu {position:absolute; z-index:30; right:0; top:50px; width:min(340px, calc(100vw - 48px)); padding:20px; border:1px solid var(--oc-line); border-radius:var(--oc-radius-card); background:var(--oc-surface); box-shadow:var(--oc-shadow-card); display:grid; gap:12px;}
+.team-section .team-row-menu h4 {margin:0;}
+.team-section .team-row-menu > button {width:100%; min-height:44px; text-align:left;}
+.team-section .team-row-menu .field {margin:0 0 12px;}
+.team-section .team-row-menu :is(input,textarea,select) {max-width:100%;}
+.team-section .team-row-menu :is(p,button,small,label) {font-size: max(13px, 1em);}
+.team-section .team-title {display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px;}
+.team-section .team-title h2 {margin:0;}
+.team-section .team-add {margin-top:20px;}
+.team-section .teams-panel {grid-column:1 / -1;}
+@media(max-width:760px) {
+ .team-section .team-member {grid-template-columns:minmax(0,1fr) 44px; padding:12px;}
+ .team-section .team-member-role {grid-column:1; grid-row:2;}
+ .team-section .team-member-actions {grid-column:2; grid-row:1;}
+ .team-section .team-row-menu {position:fixed; inset:auto 12px 12px; width:auto; max-height:calc(100dvh - 84px); overflow:auto; box-shadow:0 0 0 100vmax rgb(29 42 53 / .2), var(--oc-shadow-card);}
+ .team-section :is(input:not([type=checkbox]),select,button,summary) {min-height:44px;}
+ .team-section .teams-panel :is(p,small,label,summary,button) {font-size: max(13px, 1em);}
+}
+
+.team-section .oncall-tooltip-content {font-size:13px;}
+@media(max-width:760px) {
+ .team-section .team-member {padding:10px;gap:6px;}
+ .team-section .team-member-role .field > span {display:none;}
+}

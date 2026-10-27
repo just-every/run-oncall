@@ -1,29 +1,50 @@
-import {useState} from 'react';
-import type {Service,State} from '../family/response-operations/domain';
+import type {Service, State} from '../family/response-operations/domain';
 import type {IntakeRun} from '../intake/CompatibleTest';
-export function CorrelationSettings({service,state,busy,run}:{service:Service;state:State;busy:boolean;run:IntakeRun}){
- const policy=state.policies.find(p=>p.service===service.id&&p.severity==='*'),current=policy?.correlation;
- const [base,setBase]=useState(policy?.version??0);
- const [enabled,setEnabled]=useState(!!current),[field,setField]=useState(current?.field??'labels.correlation'),[seconds,setSeconds]=useState(current?.windowSeconds??300),[dependencies,setDependencies]=useState(current?.includeDependencies??false),[flapping,setFlapping]=useState(current?.flappingCount??0),[owner,setOwner]=useState(policy?.owner??service.owner),[reason,setReason]=useState(policy?.reason??'Correlate declared related signals');
- return <details className="response-policy"><summary>Signal grouping settings · service rule v{policy?.version??0}</summary><p>Uses the all-severity coordination rule; severity-specific rules still win. Match a declared key, title or provider label within an event-time window. Source generations and severity stay independent. Flapping holds are local; no sender or timer runs.</p><form onSubmit={async event=>{event.preventDefault();const result=await run('/api/command',{type:'policy',service:service.id,severity:'*',action:policy?.action??'route',owner,reason,baseVersion:base,...(policy?.suppressionWindow?{suppressionWindow:policy.suppressionWindow}:{}),correlation:enabled?{field,windowSeconds:seconds,includeDependencies:dependencies,flappingCount:flapping}:null},'Grouping policy published');if(result)setBase(result.version)}}><fieldset disabled={busy}>
- <label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" checked={enabled} onChange={e=>setEnabled(e.target.checked)}/> Enable correlation</label>
- {base!==(policy?.version??0)&&<p role="alert">Draft v{base} is stale; reload the service before publishing.</p>}
- <label className="field">Match field<input value={field} onChange={e=>setField(e.target.value)} required={enabled} placeholder="key, title or labels.correlation"/></label>
- <label className="field">Grouping window in seconds<input type="number" min="1" max="86400" required value={seconds} onChange={e=>setSeconds(Number(e.target.value))}/></label>
- <label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" checked={dependencies} onChange={e=>setDependencies(e.target.checked)}/> Include declared direct dependencies</label>
- <label className="field">Flapping trigger generations<input type="number" min="0" max="100" value={flapping} onChange={e=>setFlapping(Number(e.target.value))}/></label><p>Use 0 for no hold, or 2–100 completed and retriggered generations in the grouping window. Unrecovered concurrent generations remain separate.</p>
- <label className="field">Grouping coordination owner<select aria-label="Grouping coordination owner" value={owner} onChange={e=>setOwner(e.target.value)} required><option value="">Choose an owner</option>{state.members.filter(m=>m.active&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
- <label className="field">Grouping reason<textarea aria-label="Grouping reason" value={reason} onChange={e=>setReason(e.target.value)} maxLength={500} required/></label>
- <button type="submit">Publish grouping rule</button></fieldset></form></details>;
+import {request} from '../useWorkspace';
+import {usePolicyDraft} from '../services/usePolicyDraft';
+import {PolicyPublication} from '../services/PolicyPublication';
+import {DraftComparison} from '../services/DraftComparison';
+import {GroupingFields, groupingDraft} from '../services/sections/GroupingSection';
+import {WorkflowFields, type WorkflowDraft} from '../services/sections/WorkflowSection';
+type Props = {service: Service; state: State; busy: boolean; run: IntakeRun; refresh?: () => Promise<void>; admin?: boolean};
+export function CorrelationSettings({service, state, refresh, admin = true}: Props) {
+  const policy = state.policies.find(row => row.service === service.id && row.severity === '*'), version = policy?.version ?? 0;
+  const saved = groupingDraft(service, state), draft = usePolicyDraft('grouping', service.id, version, saved);
+  return <details className="response-policy service-grouping"><summary>Grouping · version {version}</summary>
+    <DraftComparison stale={draft.stale} baseVersion={draft.baseVersion} currentVersion={version} useMine={draft.useMine}><GroupingFields value={saved} change={() => {}} state={state} readOnly/></DraftComparison>
+    <form onSubmit={event => event.preventDefault()}><GroupingFields value={admin ? draft.value : saved} change={draft.change} state={state} readOnly={!admin}/>
+      {admin && <PolicyPublication dirty={draft.dirty} stale={draft.stale} version={version + 1} publish={async reason => {
+        const value = draft.value;
+        const result = await request('/api/command', {type:'policy',service:service.id,severity:'*',action:policy?.action ?? 'route',owner:value.owner,reason,baseVersion:draft.baseVersion,
+          ...(policy?.suppressionWindow ? {suppressionWindow:policy.suppressionWindow} : {}),
+          ...(policy?.transformation ? {transformation:policy.transformation} : {}),
+          correlation:value.enabled ? {field:value.field,windowSeconds:value.seconds,includeDependencies:value.dependencies,flappingCount:value.flapping} : null});
+        await refresh?.(); draft.published(); return result;
+      }}/>}
+    </form>
+    <details className="service-policy-history"><summary>Grouping history</summary><p>{policy ? `Version ${version}: ${policy.reason}` : 'No grouping rule published.'}</p></details>
+  </details>;
 }
-
-export function WorkflowSettings({service,state,busy,run}:{service:Service;state:State;busy:boolean;run:IntakeRun}){
- const policy=state.policies.find(p=>p.service===service.id&&p.severity==='*');
- const [base,setBase]=useState(policy?.version??0),[member,setMember]=useState(policy?.workflow?.member??service.owner),[reason,setReason]=useState(policy?.workflow?.reason??'Coordinate this admitted alert'),[approved,setApproved]=useState(false);
- return <details className="response-policy"><summary>Settings · approved workflows</summary><p>Workflow v{policy?.workflow?.version??0} · service rule v{policy?.version??0}{policy?.workflow?.held?' · held after restore; approval required':''}. Eligible alert-only generations without an existing incident record reassignment once per generation. Declaration freezes the launch-time checklist; each later step requires explicit resume. Responder notification is a recorded obligation; paging OFF, no sender or timer.</p>{policy?.action==='suppress'&&<p>Workflow approval requires a routed coordination rule. Change suppression explicitly before approval.</p>}<form aria-label="Approved workflow settings" onSubmit={async event=>{event.preventDefault();const result=await run('/api/command',{type:'policy',service:service.id,severity:'*',action:policy?.action??'route',owner:policy?.owner||service.owner,reason:policy?.reason??'Approved service coordination',baseVersion:base,...(policy?.suppressionWindow?{suppressionWindow:policy.suppressionWindow}:{}),...(policy?.correlation?{correlation:policy.correlation}:{}),...(policy?.transformation?{transformation:policy.transformation}:{}),workflow:{version:(policy?.workflow?.version??0)+1,approved,member,reason}},'Workflow approved');if(result){setBase(result.version);setApproved(false);}}}><fieldset disabled={busy||policy?.action==='suppress'}>
- {base!==(policy?.version??0)&&<p role="alert">The service rule changed; reload before approving.</p>}
- <label className="field">Workflow responder<select aria-label="Workflow responder" value={member} onChange={event=>setMember(event.target.value)} required><option value="">Choose a responder</option>{state.members.filter(m=>m.active&&['admin','responder'].includes(m.role)).map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
- <label className="field">Workflow reason<textarea aria-label="Workflow reason" value={reason} onChange={event=>setReason(event.target.value)} maxLength={1000} required/></label>
- <label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" checked={approved} onChange={event=>setApproved(event.target.checked)} required/>Approve this workflow version</label><button type="submit">Approve workflow rule</button>
- </fieldset></form></details>;
+export function WorkflowSettings({service, state, refresh, admin = true}: Props) {
+  const policy = state.policies.find(row => row.service === service.id && row.severity === '*'), version = policy?.version ?? 0;
+  const saved: WorkflowDraft = {member:policy?.workflow?.member ?? service.owner, reason:policy?.workflow?.reason ?? 'Coordinate this alert'};
+  const draft = usePolicyDraft('workflow', service.id, version, saved);
+  // Approval belongs to the workflow version; concurrency belongs to its service rule.
+  const next = (policy?.workflow?.version ?? 0) + 1;
+  return <details className="response-policy service-workflow"><summary>Approved workflows · version {policy?.workflow?.version ?? 0}</summary>
+    {policy?.workflow?.held && <p>Approval is needed after restoring this workflow.</p>}
+    {policy?.action === 'suppress' && <p>Change the service’s suppression rule in Settings › Routing before approving a workflow.</p>}
+    <DraftComparison stale={draft.stale} baseVersion={draft.baseVersion} currentVersion={version} useMine={draft.useMine}><WorkflowFields value={saved} change={() => {}} state={state} readOnly/></DraftComparison>
+    <form onSubmit={event => event.preventDefault()}><WorkflowFields value={admin ? draft.value : saved} change={draft.change} state={state} readOnly={!admin || policy?.action === 'suppress'}/>
+      {admin && policy?.action !== 'suppress' && <PolicyPublication dirty={draft.dirty} stale={draft.stale} version={next} approve publish={async reason => {
+        const result = await request('/api/command', {type:'policy',service:service.id,severity:'*',action:policy?.action ?? 'route',owner:policy?.owner || service.owner,reason,baseVersion:draft.baseVersion,
+          ...(policy?.suppressionWindow ? {suppressionWindow:policy.suppressionWindow} : {}),
+          ...(policy?.correlation ? {correlation:policy.correlation} : {}),
+          ...(policy?.transformation ? {transformation:policy.transformation} : {}),
+          workflow:{version:next,approved:true,member:draft.value.member,reason:draft.value.reason}});
+        await refresh?.(); draft.published(); return result;
+      }}/>}
+    </form>
+    <details className="service-policy-history"><summary>Workflow history</summary><p>{policy?.workflow ? `Version ${policy.workflow.version}: ${policy.workflow.reason}` : 'No workflow approved.'}</p></details>
+  </details>;
 }

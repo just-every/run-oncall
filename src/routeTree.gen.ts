@@ -25,6 +25,7 @@ import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IncidentsIdRouteImport } from './routes/incidents.$id'
 import { Route as SigninLocalRouteImport } from './routes/signin.local'
+import { Route as SettingsServicesServiceIdRouteImport } from './routes/settings.services.$serviceId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -106,6 +107,12 @@ const SigninLocalRoute = SigninLocalRouteImport.update({
   path: '/signin/local',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsServicesServiceIdRoute =
+  SettingsServicesServiceIdRouteImport.update({
+    id: '/settings/services/$serviceId',
+    path: '/settings/services/$serviceId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/incidents/$id': typeof IncidentsIdRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs/': typeof DocsIndexRoute
+  '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,6 +150,7 @@ export interface FileRoutesByTo {
   '/incidents/$id': typeof IncidentsIdRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs': typeof DocsIndexRoute
+  '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,6 +170,7 @@ export interface FileRoutesById {
   '/incidents/$id': typeof IncidentsIdRoute
   '/signin/local': typeof SigninLocalRoute
   '/docs/': typeof DocsIndexRoute
+  '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/incidents/$id'
     | '/signin/local'
     | '/docs/'
+    | '/settings/services/$serviceId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/incidents/$id'
     | '/signin/local'
     | '/docs'
+    | '/settings/services/$serviceId'
   id:
     | '__root__'
     | '/'
@@ -217,6 +229,7 @@ export interface FileRouteTypes {
     | '/incidents/$id'
     | '/signin/local'
     | '/docs/'
+    | '/settings/services/$serviceId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -235,6 +248,7 @@ export interface RootRouteChildren {
   DocsSlugRoute: typeof DocsSlugRoute
   SigninLocalRoute: typeof SigninLocalRoute
   DocsIndexRoute: typeof DocsIndexRoute
+  SettingsServicesServiceIdRoute: typeof SettingsServicesServiceIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -351,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SigninLocalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/services/$serviceId': {
+      id: '/settings/services/$serviceId'
+      path: '/settings/services/$serviceId'
+      fullPath: '/settings/services/$serviceId'
+      preLoaderRoute: typeof SettingsServicesServiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -382,6 +403,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsSlugRoute: DocsSlugRoute,
   SigninLocalRoute: SigninLocalRoute,
   DocsIndexRoute: DocsIndexRoute,
+  SettingsServicesServiceIdRoute: SettingsServicesServiceIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
