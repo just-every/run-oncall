@@ -15,6 +15,7 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
   const [pendingCheck, setPendingCheck] = useState<{ id: string; done: boolean } | null>(null);
   const [confirm, setConfirm] = useState<any>(null);
   const [error, setError] = useState('');
+  const [outcome, setOutcome] = useState<{kind: 'merge' | 'split'; incidents: {id: string; title: string}[]; count: number} | null>(null);
   const [sources, setSources] = useState<{ id: string; revision: number }[]>([]);
   const [alerts, setAlerts] = useState<string[]>([]);
   const editable = member.active && !member.machine && member.role !== 'viewer' && !incident.mergedInto && incident.state !== 'resolved';
@@ -47,6 +48,11 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
 
   return <section className="response-controls incident-workflows" aria-label="Incident workflows">
     {!view && <h3>Incident workflows</h3>}
+    {outcome && <p role="status" aria-atomic="true">
+      {outcome.kind === 'split' ? `Moved ${outcome.count} alert ${outcome.count === 1 ? 'group' : 'groups'} to ` : 'Merged '}
+      {outcome.incidents.map((item, index) => <span key={item.id}>{index > 0 && ', '}<a href={`/incidents/${encodeURIComponent(item.id)}`}>{item.title}</a></span>)}
+      {outcome.kind === 'merge' && ' into this incident.'}
+    </p>}
     {(!view || view === 'context') && incident.splitFrom && <p>Split from <a href={`/incidents/${encodeURIComponent(incident.splitFrom.incident)}`}>{state.incidents.find(item => item.id === incident.splitFrom?.incident)?.title ?? 'Original incident'}</a> by {name(incident.splitFrom.by)} · {time(incident.splitFrom.at)}. {incident.splitFrom.reason}</p>}
     {!view && incident.template && <section aria-label="Incident template snapshot">
       <h4>Response template · version {incident.template.version}</h4>
@@ -69,7 +75,7 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
       {incident.template.checklist.length > 0 && incident.commander !== member.id && <p className="workflow-help">The current commander updates this checklist.</p>}
       <p className="workflow-help">Copied at declaration from {service(incident.template.service)}. Later template versions apply to new incidents.</p>
     </section>}
-    {editable && (!view || view === 'merge' || view === 'split') && <>
+    {editable && !outcome && (!view || view === 'merge' || view === 'split') && <>
       {(!view || view === 'merge') && <details open={!!view || undefined}>
         <summary>Merge related incidents into this incident</summary>
         <p>This incident keeps its response roles. Source incidents retain their history and become aliases here.</p>
@@ -115,7 +121,12 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
     </>}
     {confirm && <InlineConfirm action={confirm.type === 'merge-incidents' ? 'Merge selected incidents' : 'Split selected alerts'} keep="Keep incidents as they are" busy={busy} onCancel={() => setConfirm(null)} onConfirm={async () => {
       const result = await save(confirm);
-      if (result) {setConfirm(null);setSources([]);setAlerts([]);}
+      if (result) {
+        setOutcome(confirm.type === 'split-incident'
+          ? {kind: 'split', count: confirm.alerts.length, incidents: [{id: result.id, title: result.title}]}
+          : {kind: 'merge', count: confirm.sources.length, incidents: confirm.sources.map((source: {id: string}) => ({id: source.id, title: state.incidents.find(item => item.id === source.id)?.title ?? 'Related incident'}))});
+        setConfirm(null);setSources([]);setAlerts([]);
+      }
     }}>{confirm.type === 'merge-incidents' ? 'Merge the selected incidents and retain their history?' : 'Move these alerts into the new incident?'}</InlineConfirm>}
     {error && <p role="alert">{error}</p>}
     {(!view || view === 'context') && retained.length > 0 && <section aria-label="Retained merged incidents">
