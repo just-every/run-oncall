@@ -7,7 +7,7 @@ import {Declare} from '../incident/Declare';
 import '../incident/incident.css';
 
 export function IncidentsSection() {
-  const {w, page, selected, selectIncident, declare, setDeclare, setListedRevision, s, actor, canEdit, incident, name, command, mutate} = useWorkspaceContext();
+  const {w, page, selected, selectIncident, declare, setDeclare, listedRevision, setListedRevision, s, actor, canEdit, incident, name, command, mutate} = useWorkspaceContext();
   const listScroll = useRef(0), previous = useRef(selected);
   const open = (id: string) => {if (!selected) listScroll.current = window.scrollY;void selectIncident(id);};
   useLayoutEffect(() => {
@@ -18,7 +18,7 @@ export function IncidentsSection() {
   if (selected && !incident) return <WorkspaceNotFound incident />;
   const reminders = s.incidents.filter(item => item.state !== 'resolved' && !item.mergedInto && item.sourceRecovery?.reminder.state === 'recorded' && item.sourceRecovery.reminder.commander === actor.id);
   return <div className={'incident-board' + (selected ? ' has-incident' : '')}>
-    <IncidentTriage onUpdated={setListedRevision} state={s} actor={actor} current={selected || undefined} select={open} busy={w.busy} run={w.run}>
+    <IncidentTriage onUpdated={setListedRevision} state={s} actor={actor} current={selected || undefined} select={open} busy={w.busy || listedRevision !== s.revision} run={w.run}>
       <div className="list-toolbar"><strong>Incidents</strong>{canEdit && <button className="primary" aria-label="Declare incident" onClick={() => setDeclare(!declare)}>Declare</button>}</div>
       {(declare || !s.incidents.length) && canEdit && <div className="inline-form"><h2>Declare incident</h2>
         {s.services.length ? <Declare state={s} busy={w.busy} submit={async data => {

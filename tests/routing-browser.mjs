@@ -1,3 +1,4 @@
+import {openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {mkdir} from 'node:fs/promises';
@@ -5,7 +6,7 @@ import {keyboardUser} from './keyboard.mjs';
 
 export async function routingBrowser(page,context,width) {
  const key=keyboardUser(page);
- await page.getByRole('link',{name:'Routing & replay',exact:true}).click();
+ await openWorkspaceSection(page,'routing');
  const create=page.locator('.routing-create');
  await key.activate(create.locator('summary'));
  await key.text(create.getByLabel('Routed key ID',{exact:true}),'native-browser-'+width);
@@ -35,7 +36,7 @@ export async function routingBrowser(page,context,width) {
  await key.activate(rules.getByRole('button',{name:'Publish routing rules',exact:true}));
  await page.getByRole('alert').filter({hasText:'Routing base version is stale'}).waitFor();
  await page.screenshot({path:'evidence/browser/native-routing-stale-'+width+'.png',fullPage:true});
- await page.reload();await page.getByRole('link',{name:'Routing & replay',exact:true}).click();
+ await page.reload();await openWorkspaceSection(page,'routing');
  await page.getByLabel('Routed integration',{exact:true}).selectOption(source.id);
  await key.activate(rules.getByText('Rotate or revoke this key',{exact:true}));
  await key.text(rules.getByLabel(/^Replacement private key/),randomBytes(32).toString('hex'));

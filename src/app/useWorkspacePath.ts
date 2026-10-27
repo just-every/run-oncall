@@ -2,16 +2,17 @@ import {useEffect} from 'react';
 import {useLocation, useNavigate} from '@tanstack/react-router';
 import {incidentPath, isWorkspacePath, legacyWorkspacePath, workspaceAddress} from './paths';
 
-export function useWorkspacePath() {
+export function useWorkspacePath({ready = true, stakeholder = false} = {}) {
   const location = useLocation(), navigate = useNavigate();
   const go = (to: string, replace = false) => navigate({to, replace, resetScroll: false} as any);
   useEffect(() => {
-    const canonical = legacyWorkspacePath(new URL(window.location.href));
+    if (!ready) return;
+    const canonical = stakeholder ? (location.pathname !== "/status" ? "/status" : null) : legacyWorkspacePath(new URL(window.location.href));
     if (canonical) {
       if (workspaceAddress(new URL(canonical, window.location.origin).pathname).page === "not-found") window.location.replace(canonical);
       else void go(canonical, true);
     }
-  }, [location.pathname, location.searchStr, location.hash]);
+  }, [location.pathname, location.searchStr, location.hash, ready, stakeholder]);
   useEffect(() => {
     const follow = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -26,6 +27,6 @@ export function useWorkspacePath() {
     return () => document.removeEventListener('click', follow);
   }, []);
   const legacyIncident = location.pathname === '/' ? new URLSearchParams(location.searchStr).get('incident') : null;
-  const address = location.pathname === '/' ? legacyIncident ? {page:'incidents', incident:legacyIncident} : workspaceAddress(location.hash ? '/' + location.hash : '/incidents') : workspaceAddress(location.pathname);
+  const address = location.pathname === '/' ? legacyIncident ? {page:'incidents', incident:legacyIncident} : workspaceAddress(location.hash ? '/' + location.hash : '/on-call') : workspaceAddress(location.pathname);
   return {...address, selectIncident: (id: string, replace = false) => go((id ? incidentPath(id) : '/incidents') + location.searchStr, replace), go};
 }
