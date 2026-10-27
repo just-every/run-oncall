@@ -217,10 +217,24 @@ try {
  assert.equal(routedReplay.decisions[0].proposed.version,1);assert.equal(routedReplay.decisions[0].proposed.serviceDecision.version,transformPolicy.version);assert.equal(routedReplay.decisions[0].proposed.serviceDecision.transformation.severity,'warning');assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),routedAudit);assert.deepEqual(routedCounts(),beforeRoutedCounts);assert.deepEqual(ok(await req('/api/archive')),routedBefore);
  console.log('PASS OC-043 routed severity/priority transformation: OC-072 routing version then selected service version, original event, label action and zero-write replay table counts');
 
+ // Team-owned keys refuse outside services without committing and preserve ownership through restore.
+ const team=ok(await req('/api/teams',{name:'Payments routing team',visibility:'public',active:true,revision:0,members:[actor.id],managers:[actor.id]}));
+ ok(await req('/api/teams/ownership',{service:'payments',team:team.id,workspaceRevision:ok(await req('/api/state')).revision}));
+ const teamKey=secret(),teamDefinition={id:'team-monitor',name:'Payments team monitor',provider:'pagerduty',team:team.id,scope:['payments'],owner:actor.id,key:teamKey,revision:0,rules:[],catchAll:'payments'};
+ const teamBefore=ok(await req('/api/state'));
+ ok(await req('/api/routing/keys',{...teamDefinition,team:'unavailable-routing-team'}),400);assert.equal(ok(await req('/api/state')).revision,teamBefore.revision);
+ const refusedTeam=await req('/api/routing/keys',{...teamDefinition,scope:['payments','search']});ok(refusedTeam,400);assert.ok(refusedTeam.value.error.includes(teamBefore.services.find(s=>s.id==='search').name));assert.equal(ok(await req('/api/state')).revision,teamBefore.revision);
+ const createdTeam=ok(await req('/api/routing/keys',teamDefinition),201);assert.equal(createdTeam.routing.team,team.id);assert.equal(ok(await req('/api/state')).intakeSources.find(s=>s.id===createdTeam.id).routing.team,team.id);
+ ok(await external('/v2/enqueue',{routing_key:teamKey,event_action:'trigger',dedup_key:'team-owned-event',payload:{summary:'Payments team signal',source:'team-monitor',severity:'warning'}}),202);
+ const teamAdmitted=ok(await req('/api/state'));assert.equal(teamAdmitted.intakeReceipts.find(r=>r.source===createdTeam.id).service,'payments');
+ ok(await req('/api/routing/keys',{...teamDefinition,revision:createdTeam.revision,team:undefined}),400);assert.equal(ok(await req('/api/state')).revision,teamAdmitted.revision);
+ console.log('PASS team routed key: outside scope 400/revision unchanged; own scope 201/read team retained; event 202 to payments; later team change 400/revision unchanged');
+
  const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey,groupKey,amKey,errorKey,depKey,stageKey,flapKey,transformationKey])assert.ok(!JSON.stringify(archive).includes(key));
+ const unavailableTeamArchive=structuredClone(archive);unavailableTeamArchive.intakeSources.find(s=>s.id==='team-monitor').routing.team='unavailable-routing-team';ok(await req('/api/restore',{mode:'replace',archive:unavailableTeamArchive}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const malformed=structuredClone(archive);malformed.intakeSources.find(s=>s.id==='pd').routing.versions[0].catchAll='foreign';ok(await req('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
- state=ok(await req('/api/state'));assert.deepEqual(ok(await req('/api/archive')).intakeReceipts,archive.intakeReceipts);assert.deepEqual(state.keyAllowances,archive.keyAllowances);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
+ state=ok(await req('/api/state'));assert.equal(state.intakeSources.find(s=>s.id==='team-monitor').routing.team,team.id);console.log('PASS team routed key export/restore retains team ownership');assert.deepEqual(ok(await req('/api/archive')).intakeReceipts,archive.intakeReceipts);assert.deepEqual(state.keyAllowances,archive.keyAllowances);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
  await w.stop();await w.start();assert.deepEqual(ok(await req('/api/archive')).intakeReceipts,archive.intakeReceipts);
  console.log('OC-070 modes and rules map email onto derived generations. Routed intake: scoped fixed/dynamic rules, per-service generations, suppression ordering, replay/no writes, stale publish, readmission, authority, rollback, rotation and inactive archive/restart');
 } finally {await w.close();}
