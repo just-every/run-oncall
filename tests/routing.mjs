@@ -5,6 +5,11 @@ import {nativeRouting,nativeCapacity} from './routing-native.mjs';
 import {localWorker} from './worker.mjs';
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs';
 
+// D1 inspection blocks the client event loop long enough for the local Worker's idle
+// socket to close. Match worker.request's fresh-connection transport for email and ingress.
+const platformFetch=globalThis.fetch;
+globalThis.fetch=(input,init={})=>{const headers=new Headers(init.headers??(input instanceof Request?input.headers:undefined));headers.set('connection','close');return platformFetch(input,{...init,headers});};
+
 // One public Worker journey: real admission, replay, authority and archive doors.
 const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const secret=()=>randomBytes(32).toString('hex'),keys={pd:secret(),og:secret(),sp:secret()};
@@ -230,7 +235,7 @@ try {
  ok(await req('/api/routing/keys',{...teamDefinition,revision:createdTeam.revision,team:undefined}),400);assert.equal(ok(await req('/api/state')).revision,teamAdmitted.revision);
  console.log('PASS team routed key: outside scope 400/revision unchanged; own scope 201/read team retained; event 202 to payments; later team change 400/revision unchanged');
 
- const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey,groupKey,amKey,errorKey,depKey,stageKey,flapKey,transformationKey])assert.ok(!JSON.stringify(archive).includes(key));
+ const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey,groupKey,amKey,errorKey,depKey,stageKey,flapKey,transformationKey,teamKey])assert.ok(!JSON.stringify(archive).includes(key));
  const unavailableTeamArchive=structuredClone(archive);unavailableTeamArchive.intakeSources.find(s=>s.id==='team-monitor').routing.team='unavailable-routing-team';ok(await req('/api/restore',{mode:'replace',archive:unavailableTeamArchive}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const malformed=structuredClone(archive);malformed.intakeSources.find(s=>s.id==='pd').routing.versions[0].catchAll='foreign';ok(await req('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;

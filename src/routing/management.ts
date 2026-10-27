@@ -40,13 +40,13 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     const key=text(input.key,'Integration key',200);if(key.length<32)fail('Integration key needs at least 32 characters');
     const at=new Date().toISOString(),definition=previous?.routing??{...(team?{team:team.id}:{}),scope,owner:input.owner,versions:[{version:1,...routingRules(scope,input.rules??[],input.catchAll??null),publishedBy:actor.id,publishedAt:at}]};
     const source:IntakeSource={id,name:text(input.name,'Integration name',200),provider:input.provider,service:scope[0],active:true,revision:(previous?.revision??0)+1,createdBy:previous?.createdBy??actor.id,updatedAt:at,routing:{...definition,owner:input.owner},...(authentication?{authentication}:{} )};
-    refuseKeyEcho([JSON.stringify(source)],key);
+    refuseKeyEcho([JSON.stringify(source),team?.name??''],key);
     const custody=authentication==='signed'?await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET,sourceCustody):null;
     const digest=await intakeHash(key),other=await c.env.DB.prepare('SELECT source FROM oc_intake_credentials WHERE key_digest=? AND source<>?').bind(digest,id).first();
     if(other)fail('Use a distinct key for each integration',409);
     if(await c.env.DB.prepare('SELECT id FROM sources WHERE id=?').bind('intake:'+id).first())fail('A held native source occupies this integration identity; choose another ID',409);
     if(previous)state.intakeSources![state.intakeSources!.indexOf(previous)]=source;else(state.intakeSources??=[]).push(source);
-    state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-key',text:`Configured routed ${source.provider} key ${id}${team?` for team ${team.name}`:''}; revision ${source.revision}; rule version ${definition.versions.at(-1)!.version}`});
+    state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-key',text:`Configured routed ${source.provider} key ${source.name}${team?` for team ${team.name}`:''}; revision ${source.revision}; rule version ${definition.versions.at(-1)!.version}`});
     auditIdentity(c.env.DB,{source:{kind:'intake-source',id:source.id},subject:{kind:'intake-source',id:source.id}});
     const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest,signing_custody) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,signing_custody=excluded.signing_custody').bind(id,digest,custody,token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload',409);
