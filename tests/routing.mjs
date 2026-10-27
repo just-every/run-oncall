@@ -22,6 +22,17 @@ try {
  const actor=ok(await req('/api/session')).member;
  for(const id of ['payments','search','foreign'])ok(await req('/api/command',{type:'service',id,name:id,environment:'production',owner:actor.id,runbook:[],pager:''}));
  for(const service of ['payments','search'])ok(await req('/api/command',{type:'policy',service,severity:'*',action:service==='search'?'suppress':'route',owner:actor.id,reason:service==='search'?'Search maintenance coordination':'Payments owner'}));
+
+ // Plain coordination rules use the same compare-and-publish guard as richer rules.
+ const plainBefore=ok(await req('/api/state')),plainBase=plainBefore.policies.find(p=>p.service==='payments'&&p.severity==='info');
+ const plainAttempt={type:'policy',service:'payments',severity:'info',action:'route',owner:actor.id,reason:'Reviewed payments coordination',baseVersion:plainBase?.version??0};
+ const plainAuditBefore=w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE kind='command.policy' AND outcome='accepted'")[0].n;
+ const plainAccepted=ok(await req('/api/command',plainAttempt));
+ ok(await req('/api/command',{...plainAttempt,action:'suppress',reason:'Stale replacement'}),409);
+ const plainAfter=ok(await req('/api/state')),plainStored=plainAfter.policies.find(p=>p.service===plainAttempt.service&&p.severity===plainAttempt.severity);
+ assert.equal(plainStored.version,plainAccepted.version);assert.equal(plainStored.owner,plainAttempt.owner);assert.equal(plainStored.reason,plainAttempt.reason);assert.equal(plainStored.action,plainAttempt.action);
+ assert.equal(plainAfter.revision,plainBefore.revision+1);assert.equal(w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE kind='command.policy' AND outcome='accepted'")[0].n,plainAuditBefore+1);
+ console.log('PASS plain coordination CAS: 200 then 409, first owner/reason/version retained; accepted audit entries +1, workspace revisions +1');
  const local=localPart(),second=localPart();
  const emailCreate=(id,localPart,service,mode='custom',rules=recoveryRules())=>req('/api/email/addresses',{id,name:id+' integration',localPart,service,owner:actor.id,mode,fallback:'subject',rules});
  ok(await emailCreate('nightly',local,'payments'),201);ok(await emailCreate('second',second,'search'),201);
