@@ -29,7 +29,7 @@ ONCALL_REQUEST` : `curl --fail-with-body ${quote(endpoint)} \\
   --data-binary ${quote(JSON.stringify(payload, null, 2))}`;
   return <details className="ingress-example"><summary>Sample request</summary>
     <p>Keep the private key in your sender’s environment, then run this request.</p>
-    <label className="field"><span>Sample request</span><textarea readOnly value={example} rows={12} spellCheck={false} /></label>
+    <label className="field"><span>Sample request</span><textarea aria-label="Sample request" readOnly value={example} rows={12} spellCheck={false} /></label>
     <button type="button" disabled={!origin || !source} onClick={async () => {
       try { await navigator.clipboard.writeText(example); setCopied('Copied'); }
       catch { setCopied('Select the request above and copy it.'); }
