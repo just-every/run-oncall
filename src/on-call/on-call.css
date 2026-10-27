@@ -57,6 +57,7 @@
 .oc-rota-actions { display:flex; gap:12px; flex-wrap:wrap; margin:18px 0; }
 .oc-cover-list { list-style:none; margin:0; padding:0; }
 .oc-cover-list li { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.oc-cover-list li > .oncall-tooltip { flex:none; }
 .oc-cover-list li + li { margin-top:16px; }
 .oc-cover-list p { color:var(--oc-muted); font-size:14px; }
 .oc-cover-list button { width:44px; padding:0; }
