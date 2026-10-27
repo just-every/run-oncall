@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Field, Form } from '../forms';
 import type { Incident, Member, State } from '../family/response-operations/domain';
 import { incidentAssignee } from '../family/response-operations/incident-controls';
+import {timelineText} from '../incident/types';
 import './workflows.css';
 
 type Props = { state: State; incident: Incident; member: Member; send: (command: any) => Promise<any>; view?: 'merge' | 'split' | 'context' };
@@ -18,7 +19,7 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
   const [alerts, setAlerts] = useState<string[]>([]);
   const editable = member.active && !member.machine && member.role !== 'viewer' && !incident.mergedInto && incident.state !== 'resolved';
   const name = (id: string | null | undefined) => state.members.find(m => m.id === id)?.name ?? (id ? 'Erased member' : 'Unassigned');
-  const service = (id: string | null) => state.services.find(s => s.id === id)?.name ?? id ?? 'Unknown service';
+  const service = (id: string | null) => state.services.find(s => s.id === id)?.name ?? 'Unavailable service';
   async function save(command: any) {
     setBusy(true);
     setError('');
@@ -103,7 +104,7 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
           <fieldset className="workflow-options"><legend>Alert groups</legend>
             {attached.map(alert => <label className="workflow-choice" key={alert.id}>
               <input type="checkbox" checked={alerts.includes(alert.id)} onChange={e => setAlerts(current => e.target.checked ? [...current, alert.id] : current.filter(id => id !== alert.id))} />
-              <span>{alert.key}<small>{service(alert.service)} · {alert.environment} · {alert.source} · generation {alert.generation} · {alert.state}</small></span>
+              <span>{alert.key}<small>{service(alert.service)} · {alert.environment}{!view && <> · {alert.source} · generation {alert.generation}</>} · {alert.state}</small></span>
             </label>)}
           </fieldset>
           <Field name="title" label="New incident title" />
@@ -151,7 +152,7 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
         <ol className="events">{source.timeline.map(entry => <li className="event" key={entry.id}>
           <span className="event-symbol" aria-hidden />
           <div><div className="event-line"><strong>{entry.kind}</strong><time dateTime={entry.at}>{time(entry.at)}</time></div>
-            <p>{entry.text}</p><small>{name(entry.actor)}</small>
+            <p>{timelineText(entry, state)}</p><small>{name(entry.actor)}</small>
             {entry.lifecycle?.member !== undefined && <small>Named responder: {name(entry.lifecycle.member)}</small>}
           </div>
         </li>)}</ol>
