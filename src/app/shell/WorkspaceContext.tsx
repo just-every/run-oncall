@@ -75,7 +75,7 @@ export function useWorkspaceValue() {
     incident
       ? command({ ...data, incident: incident.id, revision: incident.revision })
       : Promise.resolve(null);
-  return {w,page,selected,selectIncident,declare,setDeclare,declarationService,setDeclarationService,signingOut,setSigningOut,replay,setReplay,handoff,setHandoff,pendingSteps,setPendingSteps,setListedRevision,s,actor,activeIncidents,admin,canEdit,incident,service,name,memberOptions,serviceOptions,declarationTemplate,rememberBase,command,mutate};
+  return {w,page,selected,selectIncident,declare,setDeclare,declarationService,setDeclarationService,signingOut,setSigningOut,replay,setReplay,handoff,setHandoff,pendingSteps,setPendingSteps,listedRevision,setListedRevision,s,actor,activeIncidents,admin,canEdit,incident,service,name,memberOptions,serviceOptions,declarationTemplate,rememberBase,command,mutate};
 }
 
 export type WorkspaceValue = ReturnType<typeof useWorkspaceValue>;
