@@ -23,7 +23,7 @@ export function alertUrgency(state: State, alert: Alert): Urgency {
   }) ? 'high' : 'low';
 }
 export const urgencyEntryText = (alert: Alert, entry: AlertUrgencyEntry) =>
-  `Alert ${alert.id}: ${entry.from ?? 'unset'} → ${entry.to}; rule ${entry.ruleVersion ?? 'human'}: ${entry.reason}`;
+  `Alert ${alert.id}: ${entry.from ?? 'unset'} → ${entry.to}; rule ${entry.ruleVersion ?? 'human'}${entry.reason ? ': ' + entry.reason : ''}`;
 function append(state: State, alert: Alert, entry: AlertUrgencyEntry) {
   if ((alert.urgencyHistory?.length ?? 0) >= 10000) fail('Alert urgency history capacity reached', 429);
   alert.urgency = entry.to;
@@ -49,15 +49,16 @@ export function raiseIncompleteUrgency(state: State, alert: Alert, receipt: {id:
 }
 export function changeAlertUrgency(state: State, actor: Member, alertId: string, input: unknown, at: string): {alert: Alert; changed: boolean} {
   authority(state, actor);
-  const v = exact(input, ['revision', 'urgency', 'reason']), alert = state.alerts.find(a => a.id === alertId);
+  const v = exact(input, ['revision', 'urgency'], ['reason']), alert = state.alerts.find(a => a.id === alertId);
   if (!alert) fail('Unknown alert', 404);
   if(alert.service===null)fail('Incomplete unrouted alerts remain high urgency until assigned to a service',409);
   if (v.revision !== (alert.urgencyRevision ?? 0)) fail('Alert urgency changed; reload before saving', 409);
   if (v.urgency !== 'high' && v.urgency !== 'low') fail('Choose high or low urgency');
-  if (typeof v.reason !== 'string' || !v.reason.trim() || v.reason.length > 500) fail('An urgency reason of at most 500 characters is required');
+  const lowering = (alert.urgency ?? 'high') === 'high' && v.urgency === 'low';
+  if (lowering && (typeof v.reason !== 'string' || !v.reason.trim()) || v.reason !== undefined && (typeof v.reason !== 'string' || v.reason.length > 500)) fail('An urgency reason of at most 500 characters is required');
   const changed = alert.urgency === undefined || alert.urgency !== v.urgency;
   if (changed) append(state, alert, {id: crypto.randomUUID(), at, by: actor.id, from: alert.urgency ?? null,
-    to: v.urgency, reason: v.reason, ruleVersion: null});
+    to: v.urgency, reason: typeof v.reason === 'string' ? v.reason.trim() : '', ruleVersion: null});
   return {alert, changed};
 }
 export const ruleAuditText = (service: Service, rule: UrgencyRule) => `Service ${service.id} urgency rule ${rule.version}: ${rule.reason}`;

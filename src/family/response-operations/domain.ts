@@ -163,6 +163,8 @@ export type Incident = IncidentRelations & {
   actions: Action[];
   recovery: string;
   review: string;
+  rootCause?: string;
+  impact?: string;
   manualPage?: ManualPage;
   responderRequests?: ResponderRequest[];
   responders?: string[];
@@ -449,8 +451,35 @@ function applyCommand(
     if (input.workspaceRevision !== state.revision) fail("Workspace changed. Reload dependencies before saving.", 409);
     const service = state.services.find(s => s.id === input.service);
     if (!service) fail("Unknown service", 404);
-    service.dependencies = dependencies(state, service.id, input.dependencies);
+    const next = dependencies(state, service.id, input.dependencies);
+    if (JSON.stringify([...(service.dependencies ?? [])].sort()) === JSON.stringify([...next].sort())) return {changed: false, message: 'Nothing to change'};
+    service.dependencies = next;
     state.audit.push(stamp(actor.id, "service-dependencies", `Saved direct dependencies for ${service.name}`, at));
+    return service;
+  }
+  if (input.type === "service" && input.field !== undefined) {
+    const service = state.services.find(row => row.id === input.id);
+    if (!service) fail("Unknown service", 404);
+    if (!["name", "owner", "runbook", "pager", "team"].includes(input.field)) fail("Choose a service field");
+    const field = input.field as 'name' | 'owner' | 'runbook' | 'pager' | 'team';
+    const current = field === 'team' ? service.team ?? null : service[field];
+    if (JSON.stringify(current) !== JSON.stringify(input.from)) fail("This value changed. Review the saved value before applying your edit.", 409);
+    let value: any;
+    if (field === 'name') value = text(input.to, 'name', 200);
+    else if (field === 'owner') {
+      value = input.to === null || input.to === '' ? '' : text(input.to, 'owner', 100);
+      if (value && !state.members.some(m => m.id === value && m.active && ['admin', 'responder'].includes(m.role))) fail('Owner must be an active responder');
+    } else if (field === 'runbook') {
+      if (!Array.isArray(input.to) || input.to.length > 30) fail('Maximum 30 runbook steps');
+      value = input.to.map((step: unknown) => text(step, 'runbook step', 500));
+    } else if (field === 'pager') value = link(input.to);
+    else {
+      value = input.to === null || input.to === '' ? null : text(input.to, 'owning team', 100);
+      if (value !== null && !state.teams?.some(team => team.id === value && team.active)) fail('Choose an available owning team or Unassigned.');
+    }
+    if (JSON.stringify(current) === JSON.stringify(value)) return {changed: false, message: 'Nothing to change'};
+    (service as any)[field] = value;
+    state.audit.push(stamp(actor.id, 'service', `Changed ${field === 'team' ? 'owning team' : field} of ${service.name}`, at));
     return service;
   }
   if (input.type === "service") {
@@ -545,6 +574,13 @@ function applyCommand(
     const member = state.members.find((m) => m.id === input.id);
     if (!member) fail("Unknown member");
     if(member.erased)fail("Erased identities cannot be reactivated; create a new member explicitly",410);
+    if (input.field !== undefined) {
+      if (!['role', 'active', 'access'].includes(input.field)) fail('Choose role or access');
+      const field = input.field === 'access' ? 'active' : input.field;
+      if (JSON.stringify((member as any)[field]) !== JSON.stringify(input.from)) fail('This value changed. Review the saved value before applying your edit.', 409);
+      if (field === 'active' && typeof input.to !== 'boolean') fail('Choose active or revoked access');
+      input = {...input, role: field === 'role' ? input.to : member.role, active: field === 'active' ? input.to : member.active};
+    }
     if (!["admin", "responder", "viewer", "stakeholder"].includes(input.role))
       fail("Invalid role");
     if (
@@ -553,11 +589,12 @@ function applyCommand(
       state.members.filter((m) => m.role === "admin" && m.active).length === 1
     )
       fail("Cannot remove last admin");
+    if (member.role === input.role && member.active === Boolean(input.active)) return {changed: false, message: 'Nothing to change'};
     if(!['admin','responder'].includes(input.role))for(const team of state.teams??[])if(team.managers.includes(member.id)){team.managers=team.managers.filter(id=>id!==member.id);team.revision++;}
     member.role = input.role;
     member.active = Boolean(input.active);
     state.audit.push(
-      stamp(actor.id, "member", `Changed ${member.name} role/access`, at),
+      stamp(actor.id, "member", `Changed ${member.name} ${input.field === 'role' ? 'role' : input.field ? 'access' : 'role/access'}`, at),
     );
     return member;
   }
@@ -906,7 +943,7 @@ export function validateArchive(value: any): State {
       "actions",
       "recovery",
       "review",
-    ], ["assignee", "urgency", "priority", "scribe", "communications", "reviewAcceptance", "automaticDeclaration", "sourceRecovery", "sourceRecoveryHistory", "template", "mergedInto", "mergedSources", "splitFrom", "manualPage", "responderRequests", "responders", "deadlines"]);
+    ], ["assignee", "urgency", "priority", "scribe", "communications", "rootCause", "impact", "reviewAcceptance", "automaticDeclaration", "sourceRecovery", "sourceRecoveryHistory", "template", "mergedInto", "mergedSources", "splitFrom", "manualPage", "responderRequests", "responders", "deadlines"]);
     validateIncidentControls(i, value.members);
     text(i.title, "incident", 300);
     if (
