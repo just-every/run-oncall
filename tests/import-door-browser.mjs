@@ -25,6 +25,7 @@ export async function journal(page,origin,vendor,jobId,state) {
   await openWorkspaceSection(page,'move-in')
   await page.getByLabel('Source',{exact:true}).selectOption(vendor)
   await page.getByLabel('Saved import journal',{exact:true}).or(page.getByRole('button',{name:'Open saved import',exact:true})).waitFor();if(await page.getByLabel('Saved import journal',{exact:true}).count())await page.getByLabel('Saved import journal',{exact:true}).selectOption(jobId);else await page.getByRole('button',{name:'Open saved import',exact:true}).click()
+  await page.getByText('Approval details',{exact:true}).click()
   await page.getByText(/^approved via Business by /).waitFor()
   await page.getByRole('status').filter({hasText:'Import journal'}).getByText(new RegExp(state)).first().waitFor()
   await screenshot(page,`journal-${vendor}-${state}-${width}`)

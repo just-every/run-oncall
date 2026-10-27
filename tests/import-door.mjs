@@ -393,6 +393,7 @@ try {
   await page.goto(w.origin+'/move-in')
   await page.getByLabel('Source',{exact:true}).selectOption('pagerduty')
   await page.getByLabel('Saved import journal',{exact:true}).selectOption(failedJob.id)
+  await page.getByText('Approval details',{exact:true}).click()
   await page.getByText(/^approved, then failed /).waitFor()
   assert.equal(await page.getByRole('button',{name:'Resume import',exact:true}).count(),0,'the journal offers no resume for a failed Business import')
  }
