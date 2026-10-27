@@ -27,14 +27,12 @@ ONCALL_REQUEST` : `curl --fail-with-body ${quote(endpoint)} \\
   -H 'Content-Type: application/json' \\
   -H "Authorization: Bearer \${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}" \\
   --data-binary ${quote(JSON.stringify(payload, null, 2))}`;
-  return <div className="ingress-example">
-    <p>On the computer that will send events, open a terminal and run <code>bash</code>. Run <code>read -rs ONCALL_SOURCE_KEY</code>, paste your copied key at the hidden prompt and press Enter. Then run <code>export ONCALL_SOURCE_KEY</code>. This keeps the key out of command history. Now run this {mode === 'signed' ? 'Node 22+' : 'curl'} request. Afterwards, run <code>unset ONCALL_SOURCE_KEY</code>.</p>
-    <p>The service ID, environment and app address are filled in for <strong>{service.name}</strong>. Save the source above before sending. For a first check without a terminal, expand <strong>Send an integration event</strong> below.</p>
-    <label className="field"><span>Example request</span><textarea readOnly value={example} rows={12} spellCheck={false} /></label>
+  return <details className="ingress-example"><summary>Sample request</summary>
+    <p>Keep the private key in your sender’s environment, then run this request.</p>
+    <label className="field"><span>Sample request</span><textarea readOnly value={example} rows={12} spellCheck={false} /></label>
     <button type="button" disabled={!origin || !source} onClick={async () => {
-      try { await navigator.clipboard.writeText(example); setCopied('Request copied.'); }
+      try { await navigator.clipboard.writeText(example); setCopied('Copied'); }
       catch { setCopied('Select the request above and copy it.'); }
-    }}>Copy request</button><p role="status">{copied}</p>
-    <p>A new event returns HTTP 201; copying this request again retries the same observation and returns 200. Reopening this page generates a new example event ID. Use a new event ID and observation time for the next observation. Change the example's title and alert identifiers to match your monitor. HTTP 409 means that event ID was already used with different content: restore the original request for a retry, or give a new observation a new event ID. HTTP 401 means the source, key or authentication mode does not match; 403 means the key is not allowed for that service.</p>
-  </div>;
+    }}>Copy sample request</button><p role="status">{copied}</p>
+  </details>;
 }

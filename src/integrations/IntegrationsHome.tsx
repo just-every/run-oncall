@@ -15,8 +15,8 @@ export function IntegrationsHome(props: IntegrationProps & { native: NativeDefin
         if (!rows.length) return null;
         return <div className="integration-group" key={kind}><h3>{label}</h3><ul className="integration-rows">{rows.map(s => <li key={s.id}><a href={sourcePath(s.id)} onClick={remember}><strong>{s.name}</strong><small>{props.state.services.find(v => v.id === s.service)?.name ?? 'Service unavailable'}{!s.active&&s.statusKnown!==false ? ' · Inactive' : ''}</small></a></li>)}</ul></div>;
       })}
+      <div className="integration-home-panels">{props.panels}</div>
     </section>
     {!sources.length && props.admin && <AddIntegration {...props} />}
-    {props.panels}
   </div>;
 }

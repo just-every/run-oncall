@@ -46,3 +46,5 @@
 
 .integration-entry-actions { opacity:0; pointer-events:none; }
 .integrations li:hover>.integration-entry-actions, .integrations li:focus-within>.integration-entry-actions { opacity:1; pointer-events:auto; }
+
+.integration-home-panels #response-api { border:0; padding:0; background:transparent; box-shadow:none; }

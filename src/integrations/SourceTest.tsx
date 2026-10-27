@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Form } from '../forms';
+import { RequestExample } from './RequestExample';
 import type { Service } from '../family/response-operations/domain';
 import type { IntakeRun } from '../intake/CompatibleTest';
 import { newIdentity, type SourceRecord } from './catalog';
@@ -57,6 +58,6 @@ export function SourceTest({ source, service, busy, run }: { source: SourceRecor
       <label className="field">Intent<select aria-label="Intent" value={intent} onChange={e => setIntent(e.target.value)}><option value="trigger">Trigger</option><option value="recover">Recover</option></select></label>
       {source.kind === 'grafana' && <label className="field">Signing secret, if enabled<input type="password" autoComplete="off" value={signing} onChange={e => setSigning(e.target.value)} /></label>}
     </Form>{notice && <p role="status">{notice}</p>}</details>
-    <details><summary>Sample request</summary><pre tabIndex={0}>{sample}</pre><button type="button" onClick={async () => { try { await navigator.clipboard.writeText(sample); setCopied(true); } catch { setCopied(false); } }}>Copy sample request</button>{copied && <p role="status">Copied</p>}</details>
+    {source.kind === 'events' ? <RequestExample source={source.id.slice(source.id.indexOf(':') + 1)} service={service} mode={source.native?.authentication || 'bearer'} /> : <details><summary>Sample request</summary><pre tabIndex={0}>{sample}</pre><button type="button" onClick={async () => { try { await navigator.clipboard.writeText(sample); setCopied(true); } catch { setCopied(false); } }}>Copy sample request</button>{copied && <p role="status">Copied</p>}</details>}
   </>;
 }
