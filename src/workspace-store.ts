@@ -23,7 +23,9 @@ export function decodeWorkspace(rows:{collection:string;ordinal:number;data:stri
   for(const row of rows) {
     if(row.collection==='control')continue
     if(row.collection==='erasureFences'){(state.erasureFences??=[]).push(JSON.parse(row.data));continue}
-    const key=row.collection as keyof typeof tables,value=JSON.parse(row.data)
+    const key=row.collection as keyof typeof tables,parsed=JSON.parse(row.data)
+    // Legacy embedded evidence stays in storage, never in ordinary API/UI reads.
+    const value=key==='intakeReceipts'?storedReceipt(parsed):parsed
     ;((state as any)[key]??=[]).push(value)
     previous.get(key)!.set(value.id,{ordinal:row.ordinal,data:row.data})
   }

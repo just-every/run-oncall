@@ -1,6 +1,6 @@
 import { fail, type State } from './family/response-operations/domain';
 import type { IntakeReceipt } from './intake/model';
-import { nativeIncompleteDetails, nativePrefixMaximum, nativePrefixReference } from './native-incomplete-model';
+import { nativeIncompleteDetails, nativePrefixMaximum, nativePrefixReference, nativePrefixValue } from './native-incomplete-model';
 
 /** A stored receipt keeps encoding, length and request hash; the bytes live in oc_native_prefixes. */
 export function storedReceipt(receipt:IntakeReceipt):IntakeReceipt {
@@ -24,15 +24,18 @@ export function nativePrefixWrites(db:D1Database,receipts:IntakeReceipt[],token:
 /** Prefixes are read only for an explicit protected custody export, never by intake or human writes.
  * The JSON door keeps its restore limit; a larger custody uses the streaming portable export. */
 export async function hydrateNativePrefixes(db:D1Database,state:State,limit:number):Promise<State> {
- const held=(state.intakeReceipts??[]).filter(receipt=>nativePrefixReference(receipt));
+ const held=(state.intakeReceipts??[]).filter(receipt=>receipt.provider==='native'&&receipt.incomplete);
  if(!held.length)return state;
- const total=await db.prepare('SELECT COALESCE(SUM(length(prefix)),0) AS bytes FROM oc_native_prefixes').first<{bytes:number}>();
- if((total?.bytes??0)+new TextEncoder().encode(JSON.stringify(state)).length>limit)fail('Native custody exceeds this export limit; use the streaming portable export',413);
+ let bytes=new TextEncoder().encode(JSON.stringify(state)).length;
  for(const receipt of held) {
-  const row=await db.prepare('SELECT prefix,bytes,request_sha256 FROM oc_native_prefixes WHERE id=?').bind(receipt.id).first<{prefix:string;bytes:number;request_sha256:string}>();
-  if(!row||row.bytes!==Math.min(nativePrefixMaximum,receipt.incomplete!.bytes)||row.request_sha256!==receipt.incomplete!.sha256)fail('Native custody is unavailable',503);
-  receipt.details={...receipt.details,nativePrefix:{encoding:'base64',value:row.prefix}};
-  if(!nativeIncompleteDetails(receipt))fail('Native custody is invalid',503);
+  const row=await db.prepare('SELECT prefix,bytes,request_sha256 FROM oc_native_prefixes WHERE id=?').bind(receipt.id).first<{prefix:string;bytes:number;request_sha256:string}>()
+   ??await db.prepare(`SELECT json_extract(data,'$.details.nativePrefix.value') AS prefix,min(65536,json_extract(data,'$.incomplete.bytes')) AS bytes,json_extract(data,'$.incomplete.sha256') AS request_sha256 FROM oc_intake_receipts WHERE id=? AND json_type(data,'$.details.nativePrefix.value')='text'`).bind(receipt.id).first<{prefix:string;bytes:number;request_sha256:string}>();
+  const value=nativePrefixValue(receipt,row);
+  if(value===undefined)fail('Native custody is unavailable',503);
+  const prefix={encoding:'base64',value};
+  bytes+=JSON.stringify(prefix).length-JSON.stringify(receipt.details.nativePrefix).length;
+  if(bytes>limit)fail('Native custody exceeds this export limit; use the streaming portable export',413);
+  receipt.details={...receipt.details,nativePrefix:prefix};
  }
  return state;
 }

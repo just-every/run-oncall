@@ -17,3 +17,14 @@ export function nativeIncompleteDetails(receipt:IntakeReceipt):boolean {
   return btoa(prefix)===nativePrefix.value&&prefix.length===Math.min(nativePrefixMaximum,receipt.incomplete.bytes);
  }catch{return false;}
 }
+
+/** Table custody is authoritative. Only a legacy embedded value can cover a missing row. */
+export function nativePrefixValue(receipt:IntakeReceipt,row:{prefix:string;bytes:number;request_sha256:string}|null):string|undefined {
+ if(!nativeIncompleteDetails(receipt))return;
+ if(!row) {
+  const prefix=receipt.details.nativePrefix as {value?:string};
+  return prefix.value;
+ }
+ if(row.bytes!==Math.min(nativePrefixMaximum,receipt.incomplete!.bytes)||row.request_sha256!==receipt.incomplete!.sha256)return;
+ return nativeIncompleteDetails({...receipt,details:{...receipt.details,nativePrefix:{encoding:'base64',value:row.prefix}}})?row.prefix:undefined;
+}

@@ -103,6 +103,7 @@ try{
  assert.ok(ok(await req('/api/state')).audit.some(row=>row.kind==='intake-throttled'));
  const prefixesBefore=sql('SELECT id,bytes,request_sha256,prefix FROM oc_native_prefixes ORDER BY id');
  assert.deepEqual(prefixesBefore.map(row=>row.prefix).sort(),nativePrefixes.map(raw=>Buffer.from(raw).subarray(0,65536).toString('base64')).sort());
+ assert.equal(sql("SELECT COUNT(*) AS n FROM oc_intake_receipts WHERE json_type(data,'$.details.nativePrefix.value')='text'")[0].n,0,'new native rows retain descriptors only');
  const monitoringKey=randomBytes(32).toString('hex')
  assert.equal((await req('/api/routing/keys',{id:'portable-alertmanager',name:'Portable Alertmanager',provider:'alertmanager',scope:['transfer'],owner:member.id,revision:0,key:monitoringKey,rules:[{id:'portable-readable',match:'all',conditions:[{field:'labels.alertname',op:'equals',value:'Portable monitor'}],target:{service:'transfer'}}],catchAll:null})).status,201)
  const monitoringBody={version:'4',receiver:'portable',status:'firing',alerts:[{status:'firing',labels:{alertname:'Portable monitor',severity:'warning'},annotations:{summary:'Retain native monitoring lifecycle'},startsAt:'2026-10-17T10:00:00.123456Z',endsAt:'0001-01-01T00:00:00Z',fingerprint:'portable-monitoring'},{status:'resolved'}]}
@@ -208,6 +209,9 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const importTables=sql("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'ik_*' OR name GLOB 'move_in_*') ORDER BY name").map(r=>r.name)
  const importRows=()=>Object.fromEntries(statements(importTables.map(table=>'SELECT * FROM '+table).join(';')).map((rows,index)=>[importTables[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
  const importHistory=importRows(),interruptedPlans=sql("SELECT plan_id FROM oc_import_lifecycle WHERE job_id IN (SELECT id FROM ik_jobs WHERE state IN ('queued','applying'))").map(row=>row.plan_id).filter(Boolean)
+ // A live-upgraded installation may still carry the original embedded legacy bytes.
+ const legacyPrefix=prefixesBefore[0];
+ sql(`UPDATE oc_intake_receipts SET data=json_set(data,'$.details.nativePrefix',json_object('encoding','base64','value','${legacyPrefix.prefix}')) WHERE id='${legacyPrefix.id}'`)
  await m.close();await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
@@ -228,6 +232,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_members UNION ALL SELECT COUNT(*) FROM move_in_objects')[0].n,0,'valid-checksum invalid product records never publish')
  await m.command(['import','--input',archive,'--yes','--non-interactive'])
  assert.deepEqual(sql('SELECT id,bytes,request_sha256,prefix FROM oc_native_prefixes ORDER BY id'),prefixesBefore,'portable reset/import preserves exact native custody')
+ assert.equal(sql(`SELECT json_extract(data,'$.details.nativePrefix.value') AS prefix FROM oc_intake_receipts WHERE id='${legacyPrefix.id}'`)[0].prefix,legacyPrefix.prefix,'portable restore preserves the archived legacy row without rewriting it')
  assert.equal(sql('SELECT COUNT(*) AS n FROM credentials UNION ALL SELECT COUNT(*) FROM sessions UNION ALL SELECT COUNT(*) FROM operator_members UNION ALL SELECT COUNT(*) FROM oc_audit_identities').every(r=>r.n===0),true,'credentials, authority and audit identity associations do not travel')
  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_api_credentials UNION ALL SELECT COUNT(*) FROM oc_endpoint_credentials').every(r=>r.n===0),true,'machine and egress credentials never transfer')
  const restoredJob=JSON.parse(sql("SELECT data FROM paging_jobs WHERE id='held-pending'")[0].data);assert.equal(restoredJob.status,'paused');assert.equal(restoredJob.nextDue,null);assert.deepEqual(restoredJob.history.slice(0,-1),pending.history)

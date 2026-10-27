@@ -118,6 +118,23 @@ export async function nativeCapacity() {
   const post=(id,secret,raw)=>w.send('/api/ingress/'+id,raw,{authorization:'Bearer '+secret,'content-type':'application/json'});
   const pager=n=>w.send('/v2/enqueue',JSON.stringify({routing_key:keys.pd,event_action:'trigger',dedup_key:'capacity-'+n,payload:{summary:'Capacity '+n,source:'capacity',severity:'warning'}}),{'content-type':'application/json'});
   await w.time(Date.now());await configure('');
+  // A pre-0135 receipt retains its embedded bytes, but ordinary reads expose only the descriptor.
+  const legacyKey=key();ok(await req('/api/sources',{id:'legacy-native',key:legacyKey,scopes:['payments']}));
+  const legacy=ok(await post('legacy-native',legacyKey,body('legacy')),202),legacyId=legacy.incomplete.receipt;
+  const legacyReceipt=ok(await req('/api/archive')).intakeReceipts.find(r=>r.id===legacyId);
+  const prefixRow=w.sql(`SELECT * FROM oc_native_prefixes WHERE id='${legacyId}'`)[0];
+  const embed=receipt=>w.sql(`UPDATE oc_intake_receipts SET data='${JSON.stringify(receipt).replaceAll("'","''")}' WHERE id='${legacyId}'`);
+  const stale=structuredClone(legacyReceipt);stale.details.nativePrefix.value=Buffer.alloc(65536,122).toString('base64');embed(stale);
+  assert.equal(ok(await req('/api/archive')).intakeReceipts.find(r=>r.id===legacyId).details.nativePrefix.value,prefixRow.prefix,'table custody takes precedence over legacy embedded bytes');
+  assert.deepEqual(Object.keys(ok(await req('/api/state')).intakeReceipts.find(r=>r.id===legacyId).details.nativePrefix).sort(),['bytes','encoding','sha256']);
+  assert.ok(!JSON.stringify(ok(await req('/api/audit/export'))).includes(prefixRow.prefix),'audit never exposes native bytes');
+  embed(legacyReceipt);w.sql(`DELETE FROM oc_native_prefixes WHERE id='${legacyId}'`);
+  assert.equal(ok(await req('/api/archive')).intakeReceipts.find(r=>r.id===legacyId).details.nativePrefix.value,prefixRow.prefix,'legacy embedded bytes cover a missing custody row');
+  w.sql(`INSERT INTO oc_native_prefixes(id,bytes,request_sha256,prefix) VALUES('${legacyId}',${prefixRow.bytes},'${prefixRow.request_sha256}','${prefixRow.prefix}')`);
+  const erased=ok(await req('/api/erasure/native/legacy-native',{workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase legacy-native'}));
+  assert.equal(erased.stores.oc_native_prefixes.deleted,1);
+  assert.equal(w.sql(`SELECT COUNT(*) AS n FROM oc_intake_receipts WHERE id='${legacyId}'`)[0].n,0);
+  assert.equal(w.sql(`SELECT COUNT(*) AS n FROM oc_native_prefixes WHERE id='${legacyId}'`)[0].n,0,'erasure removes both copies of legacy evidence');
   // Separated prefixes travel with archive restore; restoring an earlier archive removes later custody rows with their receipts.
   for(let n=1;n<=4;n++)ok(await post('capacity-a',keys.a,body(n)),202);
   const earlier=ok(await req('/api/archive'));
