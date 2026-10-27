@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {SavedState, SaveFeedback} from '../app/autosave/SavedState';
 import {Tooltip} from '../app/Tooltip';
-import {useIncidentValues} from './useIncidentValues';
+import {savedResponseValue, useIncidentValues} from './useIncidentValues';
 import type {IncidentProps} from './types';
 
 export function PeoplePicker(props: IncidentProps & {field: 'commander' | 'assignee'; label: string}) {
@@ -33,7 +33,7 @@ export function PeoplePicker(props: IncidentProps & {field: 'commander' | 'assig
       setOpen(true);setAnswer('');
     }}><span className="incident-person-label">{label}</span> {props.state.members.find(member => member.id === value)?.name ?? 'Unassigned'} ▾</button>
     <SavedState state={answer ? undefined : save.states[field]} />
-    <SaveFeedback state={save.states[field]} retry={() => save.retry(field)} useMine={() => save.useMine(field)} format={id => props.state.members.find(member => member.id === id)?.name ?? 'Unassigned'} />
+    <SaveFeedback state={save.states[field]} retry={() => save.retry(field)} useMine={() => save.useMine(field)} format={id => props.state.members.find(member => member.id === savedResponseValue(id))?.name ?? 'Unassigned'} />
     {answer && <p role="status">{answer}</p>}
     {open && createPortal(<dialog ref={dialog} className="incident-people-dialog" aria-label={`Choose ${label.toLowerCase()}`} style={{left: position.left, top: position.top}} onClick={event => {if (event.target === event.currentTarget) close();}}>
       <div className="incident-sheet-head"><h2>{label}</h2><Tooltip label="Close picker"><button type="button" className="incident-icon" aria-label="Close picker" onClick={close}>×</button></Tooltip></div>

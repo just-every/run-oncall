@@ -96,3 +96,12 @@ body:has(.incident-sheet[open], .incident-people-dialog[open]) { overflow: hidde
 .workspace:has(.incident-board.has-incident) > .notice:empty { display: none; }
 .workspace:has(.incident-board.has-incident) > .notice { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 899px) { .oncall-frame .incident-back { margin-top: 10px; } }
+@media (max-width: 899px) {
+  .incident-page { padding-bottom: 16px; gap: 12px; }
+  .incident-body { gap: 12px; }
+  .incident-runbook, .incident-timeline { padding: 14px; }
+  .incident-timeline .event { padding-bottom: 12px; }
+  .incident-timeline .composer form { margin-top: 12px; }
+  .incident-timeline .composer .field { margin-bottom: 12px; }
+  .incident-timeline .composer textarea { min-height: 64px; }
+}

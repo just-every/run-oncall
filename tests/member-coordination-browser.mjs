@@ -57,8 +57,8 @@ try {
  const autosaveCard=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'Checkout',exact:true})});
  await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();
  const timeoutField=autosaveCard.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true});
- await timeoutField.fill('2');await owner.page.getByRole('link',{name:'Team',exact:true}).click();await owner.page.waitForURL(worker.origin+'/team');
- await owner.page.getByRole('link',{name:'Services',exact:true}).click();await owner.page.reload();
+ await timeoutField.fill('2');await openWorkspaceSection(owner.page,'team');
+ await openWorkspaceSection(owner.page,'services');await owner.page.reload();
  await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();await expect(timeoutField).toHaveValue('2');
  const beforeRetry=ok(await call(owner.page,'/api/state')).audit.length;
  const blockWrite=route=>route.request().postDataJSON()?.type==='acknowledgment-timeout'?route.abort():route.continue();
@@ -274,7 +274,7 @@ try {
   await samView.page.setViewportSize({width,height:1000});await samView.page.reload()
   await samView.page.getByRole('heading',{name:'Recorded impact obligations',exact:true}).waitFor()
   assert.equal(await samView.page.locator('.timeline').count(),0)
-  assert.equal(await samView.page.getByRole('link',{name:'Incidents',exact:true}).count(),0)
+  assert.equal(await samView.page.locator('nav a[href="/incidents"]').count(),0)
   for(const path of ['/api/state','/api/triage','/api/archive','/api/recovery/checkpoint','/api/audit/export','/api/handoffs/context/'+statusIncident.id,'/api/paging/state','/api/email','/api/automation/clients'])ok(await call(samView.page,path),403)
   ok(await call(samView.page,'/api/v1/incidents'),401)
   ok(await call(samView.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',title:'Refused page',severity:'warning',summary:'No authority'}),403)

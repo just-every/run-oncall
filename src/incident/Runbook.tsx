@@ -16,7 +16,7 @@ export function Runbook(props: IncidentProps) {
     if (!record) throw Error('This incident is no longer available.');
     return snapshot(record);
   };
-  const save = useAutosave({snapshot: snapshot(incident), read, write: async change => {
+  const save = useAutosave({storageKey: 'incident:' + incident.id + ':runbook', snapshot: snapshot(incident), read, write: async change => {
     const [kind, id] = change.field.split(':');
     const result = await autosaveRequest('/api/command', {type: kind === 'runbook' ? 'runbook' : 'template-check', ...(kind === 'runbook' ? {index: Number(id)} : {item: id}), done: change.to, incident: incident.id, revision: change.revision});
     await props.refresh().catch(() => {});

@@ -17,23 +17,30 @@ export function responseCommand(field: string, value: string, reason?: string) {
     : {type: 'set-' + field, [field]: value || null};
   return {...command, ...(reason ? {reason} : {})};
 }
+export const savedResponseValue = (value: unknown) => value && typeof value === 'object' && 'value' in value ? (value as {value: string}).value : value;
+
+type Choice = {value: string; reason: string};
 export function useIncidentValues(props: Pick<IncidentProps, 'incident' | 'refresh'>, fields: string[]) {
   const {incident} = props;
   const reasons = useRef<Record<string, string>>({});
-  const snapshot = (record: Incident) => ({revision: record.revision, values: Object.fromEntries(fields.map(field => [field, responseValue(record, field)]))});
+  const snapshot = (record: Incident) => ({revision: record.revision, values: Object.fromEntries(fields.map(field => [field, {value: responseValue(record, field), reason: ''}])) as Record<string, Choice>});
   const read = async () => {
     const state: State = await request('/api/state');
     const record = state.incidents.find(item => item.id === incident.id);
     if (!record) throw Error('This incident is no longer available.');
     return snapshot(record);
   };
-  const save = useAutosave({snapshot: snapshot(incident), read, write: async change => {
-    const result = await autosaveRequest('/api/command', {...responseCommand(change.field, change.to, reasons.current[change.field]), incident: incident.id, revision: change.revision});
+  const save = useAutosave({storageKey: 'incident:' + incident.id + ':response:' + fields.join(','), snapshot: snapshot(incident), read, write: async change => {
+    const result = await autosaveRequest('/api/command', {...responseCommand(change.field, change.to.value, Object.hasOwn(reasons.current, change.field) ? reasons.current[change.field] : change.to.reason), incident: incident.id, revision: change.revision});
     const answer = result.changed === false ? await read() : snapshot(result);
     // The field is already durable. A later workspace read failure must not
     // turn that accepted write into another response command.
     await props.refresh().catch(() => {});
-    return answer;
+    return {...answer, changed: result.changed !== false};
   }});
-  return {...save, reasons};
+  return {...save, reasons,
+    values: Object.fromEntries(fields.map(field => [field, save.values[field].value])),
+    reasonValues: Object.fromEntries(fields.map(field => [field, save.values[field].reason])),
+    change: (field: string, value: string, kind: 'choice' | 'text' = 'choice') => save.change(field, {value, reason: reasons.current[field] ?? ''}, kind),
+  };
 }
