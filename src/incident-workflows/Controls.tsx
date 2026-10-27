@@ -153,7 +153,7 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
           <span className="event-symbol" aria-hidden />
           <div><div className="event-line"><strong>{entry.kind}</strong><time dateTime={entry.at}>{time(entry.at)}</time></div>
             <p>{timelineText(entry, state)}</p><small>{name(entry.actor)}</small>
-            {entry.lifecycle?.member !== undefined && <small>Named responder: {name(entry.lifecycle.member)}</small>}
+            {entry.lifecycle?.member !== undefined && <small>Named responder: <strong>{entry.lifecycle.member === null ? 'Erased member' : name(entry.lifecycle.member)}</strong></small>}
           </div>
         </li>)}</ol>
       </details>)}

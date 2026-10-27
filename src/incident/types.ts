@@ -15,7 +15,7 @@ export const shortTime = (value: string) => new Date(value).toLocaleString([], {
   month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
 });
 export const memberName = (state: State, id: string | null | undefined) =>
-  state.members.find(member => member.id === id)?.name ?? (id?.startsWith('api-') ? 'Service account' : 'Unassigned');
+  state.members.find(member => member.id === id)?.name ?? (id ? id.startsWith('api-') ? 'Service account' : 'Erased member' : 'Unassigned');
 
 export function timelineText(entry: Entry, state: State) {
   // Only format generated workflow prefixes. Authored notes and reasons remain
