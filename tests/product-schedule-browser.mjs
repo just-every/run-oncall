@@ -29,7 +29,9 @@ async function retainPreview(page, change, submit) {
   assert.equal(probe.minWeeks,probe.weeks,'typing and valid changes never blank the weeks');
   assert.equal(probe.minHeight,probe.height,'the pending preview never collapses');
   if(submit)assert.equal(await submit.isDisabled(),true,'visible old weeks never authorize saving a new draft');
-  const answered=page.waitForResponse(response=>response.request()===latest);release();await(await answered).finished();
+  const answered=page.waitForResponse(response=>response.request()===latest);release();const response=await answered;await response.finished();
+  const windows=await response.json();
+  await page.waitForFunction(times=>JSON.stringify([...document.querySelectorAll('.oc-preview time')].map(time=>time.dateTime))===JSON.stringify(times),windows.map(window=>new Date(window.at).toISOString()));
  }finally{release();await Promise.all(pending);await page.unroute('**/api/paging/preview',hold);await page.evaluate(()=>window.stopRotaPreviewProbe());}
 }
 
@@ -67,8 +69,9 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  const remove=page.getByRole('button',{name:'Remove person',exact:true}).first();await remove.focus();await page.getByRole('tooltip',{name:'Remove person',exact:true}).first().waitFor();
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Hand-over',exact:true}).waitFor();
  const own=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);assert.equal(await page.getByLabel('Time zone',{exact:true}).inputValue(),own);assert.equal(await page.getByLabel('Time zone',{exact:true}).locator('option').first().getAttribute('value'),own);
- await page.getByLabel('Starts',{exact:true}).fill(new Date(Date.now()+86400000).toISOString().slice(0,10));
- if(width===1440)await retainPreview(page,()=>page.getByLabel('At',{exact:true}).fill('10:30'));
+ const starts=new Date(Date.now()+86400000).toISOString().slice(0,10);
+ if(width===1440)await retainPreview(page,async()=>{await page.getByLabel('Starts',{exact:true}).fill(starts);await page.getByLabel('At',{exact:true}).fill('10:30');});
+ else await page.getByLabel('Starts',{exact:true}).fill(starts);
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Check',exact:true}).waitFor();
  if(width===1440){
   await retainPreview(page,()=>page.getByLabel('Ends (optional)',{exact:true}).fill(new Date(Date.now()+60*86400000).toISOString().slice(0,10)),page.getByRole('button',{name:'Create rota',exact:true}));
@@ -95,8 +98,9 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  await page.reload();await key.activate(page.getByRole('link',{name:'Edit rota',exact:true}));await page.getByLabel('Rota name',{exact:true}).waitFor();
  if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Hand-over',exact:true}).waitFor();
- await page.getByLabel('Time zone',{exact:true}).selectOption('Europe/London');await page.getByLabel('Starts',{exact:true}).fill(future.previewFrom.slice(0,10));
- if(width===1440)await retainPreview(page,()=>page.getByLabel('At',{exact:true}).fill('09:00'));
+ const handover=async()=>{await page.getByLabel('Time zone',{exact:true}).selectOption('Europe/London');await page.getByLabel('Starts',{exact:true}).fill(future.previewFrom.slice(0,10));};
+ if(width===1440)await retainPreview(page,async()=>{await handover();await page.getByLabel('At',{exact:true}).fill('09:00');});
+ else await handover();
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Check',exact:true}).waitFor();
  if(width===1440){
   await retainPreview(page,()=>page.getByLabel('Ends (optional)',{exact:true}).fill(new Date(Date.parse(future.previewFrom+'Z')+60*86400000).toISOString().slice(0,10)),page.getByRole('button',{name:'Review change',exact:true}));
