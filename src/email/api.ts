@@ -2,7 +2,7 @@ import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import { syncErasureFences } from '../erasure-fence'
 import { authority, fail, text, type State } from '../family/response-operations/domain.ts';
 import { workspaceWrite } from '../workspace-store.ts';
-import { auditIdentity, auditKind } from '../audit-store.ts';
+import { auditIdentity, auditKind, auditOutcome } from '../audit-store.ts';
 import { changeHash } from '../changes/credentials.ts';
 import { refuseKeyEcho } from '../native-sources.ts';
 import { createPortability } from '../modules/portability/index.mjs';
@@ -45,7 +45,10 @@ export function installEmailManagement(api:any,deps:Deps) {
     auditIdentity(c.env.DB,{source:{kind:'email-address',id:address.id},subject:{kind:'email-address',id:address.id}});
     if(input.revision!==address.revision)fail('Address changed; reload',409);
     if(action==='field') {
-      if(!editEmailField(state,address,input))return c.json({...address,changed:false,message:'Nothing to change'});
+      if(!editEmailField(state,address,input)) {
+        auditKind(c.env.DB,'email.'+input.field+'.no-change');auditOutcome(c.env.DB,'accepted');
+        return c.json({...address,changed:false,message:'Nothing to change'});
+      }
       auditKind(c.env.DB,'email.'+input.field);await commit(c,state);return c.json(address);
     }
     if(action==='preview') {

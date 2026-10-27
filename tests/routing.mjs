@@ -36,6 +36,14 @@ try {
  const local=localPart(),second=localPart();
  const emailCreate=(id,localPart,service,mode='custom',rules=recoveryRules())=>req('/api/email/addresses',{id,name:id+' integration',localPart,service,owner:actor.id,mode,fallback:'subject',rules});
  ok(await emailCreate('nightly',local,'payments'),201);ok(await emailCreate('second',second,'search'),201);
+ // ct O6: an accepted same-value attempt keeps one value-free ledger fact, with no workspace commit.
+ const noopBefore=ok(await req('/api/state')),noopAddress=noopBefore.emailAddresses.find(a=>a.id==='nightly'),noopBytes=JSON.stringify(noopAddress);
+ const noopAuditBefore=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+ ok(await req('/api/email/addresses/nightly/field',{revision:noopAddress.revision,field:'name',from:noopAddress.name,to:noopAddress.name}));
+ const noopAfter=ok(await req('/api/state')),noopRows=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').slice(noopAuditBefore.length);
+ assert.equal(JSON.stringify(noopAfter.emailAddresses.find(a=>a.id==='nightly')),noopBytes);assert.equal(noopAfter.revision,noopBefore.revision);assert.deepEqual(noopAfter,noopBefore);
+ assert.equal(noopRows.length,1);assert.equal(noopRows[0].kind,'email.name.no-change');assert.equal(noopRows[0].outcome,'accepted');assert.ok(noopRows[0].actor);assert.ok(noopRows[0].at);assert.equal(noopRows[0].workspace_before,noopBefore.revision);assert.equal(noopRows[0].workspace_after,noopBefore.revision);assert.ok(!JSON.stringify(noopRows).includes(noopAddress.name));
+ console.log('PASS ct email field no-op: address bytes/version equal, workspace revision unchanged, all state equal, one accepted email.name.no-change ledger row; field door has no request-id contract');
  for(const subject of ['FAILED: nightly-db','FAILED: nightly-web','OK: nightly-db','OK: missing'])await mail(w,local,subject);
  let email=ok(await req('/api/email'));const db=email.receipts.find(r=>r.decision?.key==='nightly-db'),web=email.receipts.find(r=>r.decision?.key==='nightly-web');
  assert.notEqual(db.generation,web.generation);assert.equal(email.receipts.at(-2).stop,'stopped by source recovery');assert.equal(email.receipts.at(-1).outcome,'no-effect');
