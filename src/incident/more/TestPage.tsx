@@ -17,6 +17,9 @@ export function TestPage({incident, refresh}: IncidentProps) {
         accepted = true;
         setSent(true);
       }
+      // refresh shares an in-flight poll. Let that settle, then start a read
+      // that is guaranteed to follow the accepted page job.
+      await refresh();
       await refresh();
       setAnswer('Test page sent');
     } catch (cause) {
