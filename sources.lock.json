@@ -940,7 +940,7 @@
       "executable": false
     },
     "src/app/IncidentTriage.tsx": {
-      "sha256": "353be7097caa15d7e256696a8f5abb309578d29ddad67101dfe31b07ba1503c4",
+      "sha256": "650cb7229076004597ed13ec12d4744e32786a53924bd8f925264b13d8c69e1d",
       "executable": false
     },
     "src/app/lobbyPaths.ts": {
@@ -4428,7 +4428,7 @@
       "executable": false
     },
     "tests/triage-bulk-browser.mjs": {
-      "sha256": "5d85de5ca1cbf08eec51c7a5e302591543b7df1cae51dfcd6141f89a2d31baab",
+      "sha256": "eaaa5436ba828e00d7ecafcb0a66d7484a24f1c460b44e482c91707aa6a85505",
       "executable": false
     },
     "tests/triage-bulk.mjs": {
