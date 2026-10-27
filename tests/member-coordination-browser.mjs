@@ -58,7 +58,7 @@ try {
  const autosaveCard=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'Checkout',exact:true})});
  await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();
  const timeoutField=autosaveCard.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true});
- await timeoutField.fill('2');await owner.page.getByRole('link',{name:'Team',exact:true}).click();await owner.page.waitForURL(worker.origin+'/team');
+ await timeoutField.fill('2');await owner.page.getByRole('link',{name:'Team',exact:true}).click();await owner.page.waitForURL(worker.origin+'/settings/team');
  await owner.page.getByRole('link',{name:'Services',exact:true}).click();await owner.page.reload();
  await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();await expect(timeoutField).toHaveValue('2');
  const beforeRetry=ok(await call(owner.page,'/api/state')).audit.length;
