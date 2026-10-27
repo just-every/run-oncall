@@ -34,5 +34,5 @@ export function usePolicyDraft<T>(kind: string, id: string, version: number, cur
     if (draft) removeLocalDraft(kind, id, draft.baseVersion);
     setDraft(null); setStorageFailed(false);
   };
-  return {value: draft?.value ?? current, change, dirty: !!draft, stale: !!draft && draft.baseVersion !== version, baseVersion: draft?.baseVersion ?? version, useMine, published, storageFailed, retryStorage: () => {if (draft) persist(draft);}};
+  return {value: draft?.value ?? current, change, begin: () => {edited.current=true;persist({kind,id,baseVersion:version,value:current});}, dirty: !!draft, stale: !!draft && draft.baseVersion !== version, baseVersion: draft?.baseVersion ?? version, useMine, published, storageFailed, retryStorage: () => {if (draft) persist(draft);}};
 }

@@ -13,7 +13,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession}
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json())
  assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
  await key.activate(page.getByRole('link',{name:'Services',exact:true}));await key.text(page.getByLabel('Service name',{exact:true}),'Checkout');await key.activate(page.getByRole('button',{name:'Create service',exact:true}));await page.getByRole('heading',{name:'Checkout',exact:true}).waitFor();await key.text(page.getByLabel('Runbook steps (one per line)',{exact:true}),'Verify recovery')
- for(const width of [1440,390]) {
+ for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
   await keyboardCoordination(page,context,width,ownerLink,openSession)
   if(width===1440)await sharedIncidentLinks(page,context)

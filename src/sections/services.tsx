@@ -9,5 +9,5 @@ export function ServicesSection() {
   const match = /^\/settings\/services\/([^/]+)\/?$/.exec(pathname);
   let selected = '';
   try {selected = match ? decodeURIComponent(match[1]) : '';} catch {selected = ''}
-  return <><ServicesHome state={s} actor={actor} admin={admin} busy={w.busy} command={command} run={w.run} refresh={w.refresh} selected={selected} open={path => {void navigate({to: path, resetScroll: false} as any);}}/>{!selected && admin && <ChangeSources state={s} busy={w.busy} run={w.run}/>}</>;
+  return <><ServicesHome state={s} actor={actor} admin={admin} busy={w.busy} command={async input => {const result=await command(input);if(result)w.setNotice('');return result;}} run={w.run} refresh={w.refresh} selected={selected} open={path => {void navigate({to: path, resetScroll: false} as any);}}/>{!selected && admin && <ChangeSources state={s} busy={w.busy} run={w.run}/>}</>;
 }

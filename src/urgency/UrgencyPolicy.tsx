@@ -4,6 +4,7 @@ import {resolveLocal} from '../family/response-operations/schedules';
 import type {IntakeRun} from '../intake/CompatibleTest';
 import type {UrgencyDecision, UrgencyDraft} from './types';
 import {request} from '../useWorkspace';
+import {autosaveRequest} from '../app/autosave/useAutosave';
 import {usePolicyDraft} from '../services/usePolicyDraft';
 import {PolicyPublication} from '../services/PolicyPublication';
 import {DraftComparison} from '../services/DraftComparison';
@@ -39,7 +40,7 @@ export function UrgencyPolicy({service, state, admin, refresh}: {service: Servic
     <DraftComparison stale={draft.stale} baseVersion={draft.baseVersion} currentVersion={version} useMine={draft.useMine}><UrgencyFields value={saved} change={() => {}} readOnly/></DraftComparison>
     <form onSubmit={event => event.preventDefault()}><UrgencyFields value={value} change={draft.change} readOnly={!admin}/>
       {admin && <PolicyPublication dirty={draft.dirty} stale={draft.stale} version={version + 1} publish={async reason => {
-        const result = await request('/api/urgency/services/' + encodeURIComponent(service.id), {baseVersion:draft.baseVersion, ...draft.value, holidays:draft.value.holidays.map(date => date.trim()).filter(Boolean), reason});
+        const result = await autosaveRequest('/api/urgency/services/' + encodeURIComponent(service.id), {baseVersion:draft.baseVersion, ...draft.value, holidays:draft.value.holidays.map(date => date.trim()).filter(Boolean), reason});
         await refresh?.(); draft.published(); return result;
       }}/>}
     </form>

@@ -6,7 +6,8 @@ export function isWorkspacePath(path: string) {
   return !/^\/(?:api|auth|signin|setup|docs|run|contract|health|move-in-guide|__dev|\.well-known|integrations|generic|v2)(?:\/|$)/.test(path);
 }
 export function workspaceAddress(path: string) {
-  if (/^\/settings\/services(?:\/[^/]+)?\/?$/.test(path)) return {page: 'services', incident: ''};
+  const service = /^\/settings\/services(?:\/([^/]+))?\/?$/.exec(path);
+  if (service) {try {if (service[1]) decodeURIComponent(service[1]);return {page: 'services', incident: ''};} catch {return {page: 'not-found', incident: ''};}}
   if (path === '/') return {page: 'incidents', incident: ''};
   const section = workspaceSections.find(section => path === `/${section}` || path === `/${section}/`);
   if (section) return {page: section, incident: ''};

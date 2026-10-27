@@ -1,5 +1,5 @@
 import type {Member, Service, State} from '../family/response-operations/domain';
-import {request} from '../useWorkspace';
+import {autosaveRequest} from '../app/autosave/useAutosave';
 import {usePolicyDraft} from '../services/usePolicyDraft';
 import {PolicyPublication} from '../services/PolicyPublication';
 import {DraftComparison} from '../services/DraftComparison';
@@ -14,7 +14,7 @@ export function ServiceTemplateSettings({state, service, member, refresh}: Props
     <DraftComparison stale={draft.stale} baseVersion={draft.baseVersion} currentVersion={version} useMine={draft.useMine}><TemplateFields value={saved} change={() => {}} readOnly/></DraftComparison>
     <form onSubmit={event => event.preventDefault()}><TemplateFields value={admin ? draft.value : saved} change={draft.change} readOnly={!admin}/>
       {admin && <PolicyPublication dirty={draft.dirty} stale={draft.stale} version={version + 1} publish={async reason => {
-        const result = await request('/api/command', {type:'service-template', service:service.id, baseVersion:draft.baseVersion, ...draft.value, incidentTypes:draft.value.incidentTypes.map(value => value.trim()).filter(Boolean), reason});
+        const result = await autosaveRequest('/api/command', {type:'service-template', service:service.id, baseVersion:draft.baseVersion, ...draft.value, incidentTypes:draft.value.incidentTypes.map(value => value.trim()).filter(Boolean), reason});
         await refresh?.(); draft.published(); return result;
       }}/>}
     </form>

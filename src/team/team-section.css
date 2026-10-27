@@ -32,3 +32,5 @@
  .team-section .team-member {padding:10px;gap:6px;}
  .team-section .team-member-role .field > span {display:none;}
 }
+.team-section [data-tip-dismissed] .oncall-tooltip-content {visibility:hidden;opacity:0;}
+.team-section .field :is(input,select,textarea):focus-visible {outline-offset:-2px;}

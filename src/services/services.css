@@ -64,3 +64,5 @@
  .service-head-fields {gap:12px;}
  .service-page {gap:12px;}
 }
+.service-page .field :is(input,select,textarea):focus-visible,
+.service-list .field :is(input,select,textarea):focus-visible {outline-offset:-2px;}

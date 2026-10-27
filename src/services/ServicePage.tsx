@@ -16,6 +16,7 @@ export type ServicePageProps = {service: Service; state: State; actor: Member; a
 export function ServicePage({service, state, actor, admin, busy, command, run, refresh, focusName}: ServicePageProps) {
   const policies = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    window.scrollTo({top:0});
     const root = policies.current;
     if (!root) return;
     const toggle = (event: Event) => {

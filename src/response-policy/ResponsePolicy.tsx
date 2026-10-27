@@ -1,6 +1,6 @@
 import type {Service, State} from '../family/response-operations/domain';
 import type {IntakeRun} from '../intake/CompatibleTest';
-import {request} from '../useWorkspace';
+import {autosaveRequest} from '../app/autosave/useAutosave';
 import {usePolicyDraft} from '../services/usePolicyDraft';
 import {PolicyPublication} from '../services/PolicyPublication';
 import {DraftComparison} from '../services/DraftComparison';
@@ -16,7 +16,7 @@ export function ResponsePolicy({service, state, admin, refresh}: {service: Servi
     <form onSubmit={event => event.preventDefault()}>
       <ResponseFields value={admin ? draft.value : saved} change={draft.change} state={state} service={service} readOnly={!admin}/>
       {admin && <PolicyPublication dirty={draft.dirty} stale={draft.stale} version={version + 1} publish={async reason => {
-        const result = await request('/api/response/services/' + encodeURIComponent(service.id), {baseVersion: draft.baseVersion, ...draft.value, reason});
+        const result = await autosaveRequest('/api/response/services/' + encodeURIComponent(service.id), {baseVersion: draft.baseVersion, ...draft.value, reason});
         await refresh?.(); draft.published(); return result;
       }}/>}
       {draft.storageFailed && <p role="alert">This browser could not keep the draft. Keep this page open. <button type="button" onClick={draft.retryStorage}>Retry</button></p>}

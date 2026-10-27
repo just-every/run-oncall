@@ -8,10 +8,11 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  // OC-008: author a runbook containing a link and HTML, then use its copied incident step.
  const runbookText=`https://hostile.invalid/runbook ${hostile}`
  await key.activate(page.getByRole('link',{name:'Services',exact:true}))
+ await key.activate(page.getByRole('button',{name:'Add service',exact:true}))
  await key.text(page.getByLabel('Service name',{exact:true}),`Literal runbook ${width}`)
- await key.text(page.locator('form').filter({has:page.getByRole('button',{name:'Create service',exact:true})}).getByLabel('Runbook steps (one per line)'),runbookText)
  await key.activate(page.getByRole('button',{name:'Create service',exact:true}))
  await page.getByRole('heading',{name:`Literal runbook ${width}`,exact:true}).waitFor()
+ await key.text(page.getByLabel('Runbook steps (one per line)',{exact:true}),runbookText)
  const stored=await (await context.request.get('/api/state')).json()
  const service=stored.services.find(item=>item.name===`Literal runbook ${width}`)
  await key.activate(page.getByRole('link',{name:'Incidents',exact:true}))
