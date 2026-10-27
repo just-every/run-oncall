@@ -211,7 +211,7 @@ try {
  // A public-team manager can edit own coverage without workspace configuration authority.
  const managedRotation={anchorLocal:'2026-01-01T00:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'};
  ok(await call(owner.page,'/api/paging/schedules',{id:'synthetic-oncall-145',name:'synthetic-oncall-145',service:'checkout',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:managedRotation,backup:{...managedRotation,members:[]},overrides:[]}));
- for(const width of [1440]){
+ for(const width of [1440,390]){
   await rosa.page.setViewportSize({width,height:1000});await rosa.page.goto(worker.origin+'/on-call/synthetic-oncall-145/edit');
   await expect(rosa.page.getByLabel('Rota name',{exact:true})).toBeEnabled();
   const draft=rosa.page.waitForRequest(request=>new URL(request.url()).pathname==='/api/paging/preview'&&!!request.postDataJSON()?.schedule);

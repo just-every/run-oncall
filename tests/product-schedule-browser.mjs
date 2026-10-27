@@ -27,6 +27,7 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  const own=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);assert.equal(await page.getByLabel('Time zone',{exact:true}).inputValue(),own);assert.equal(await page.getByLabel('Time zone',{exact:true}).locator('option').first().getAttribute('value'),own);
  await page.getByLabel('Starts',{exact:true}).fill(new Date(Date.now()+86400000).toISOString().slice(0,10));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Check',exact:true}).waitFor();
+ if(width<761)await key.activate(page.locator('.oc-preview > summary'));
  await key.focusScreenshot(page.getByRole('button',{name:'Create rota',exact:true}),`${directory}/keyboard-rota-create-${width}.png`);
  assert.deepEqual(await api('/api/paging/state'),previewBefore,'live draft previews write no schedule, job or scheduling revision');assert.deepEqual(await api('/api/state'),workspaceBefore,'live draft previews preserve workspace records and revision');const auditAfter=await api('/api/audit/export');assert.deepEqual(auditAfter.rows.filter(row=>row.kind!=='audit.export'),auditBefore.rows.filter(row=>row.kind!=='audit.export'),'draft previews append no permanent audit record; the observing exports keep their own audits');
  await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]')?.disabled);await page.getByRole('button',{name:'Create rota',exact:true}).click();await page.waitForURL(/\/on-call\/rota-[a-f0-9]{8}$/);
@@ -66,11 +67,15 @@ if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1]){
   const service=await worker.request('/api/command',{type:'service',id:'synthetic-oncall-1',name:'Schedule review service',environment:'production',owner:owner.value.member.id,runbook:['Inspect coverage'],pager:''},owner.cookie);assert.equal(service.status,200);
   browser=await chromium.launch({headless:true,...(process.env.ONCALL_CHROMIUM_EXECUTABLE?{executablePath:process.env.ONCALL_CHROMIUM_EXECUTABLE}:{}),args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:900}}),page=await context.newPage(),errors=[];
   await context.addCookies(owner.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'};}));page.on('pageerror',error=>errors.push(error.message));await page.goto(worker.origin);
-  await productSchedule(page,context,1440,owner.value);assert.deepEqual(errors,[]);
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});const started=performance.now();
+   await productSchedule(page,context,width,owner.value);assert.deepEqual(errors,[]);
+   console.log(`PASS OC-020 / OC-011 / OC-024 browser ${width}: all rota rows, four-step weekly create, zero-write live preview, matching first hand-over, cover review, named-zone clocks, confirmation, saved edit, ICS, tooltips, overflow and axe (${((performance.now()-started)/1000).toFixed(2)}s)`);
+  }
   const ended=await worker.request('/api/login',{name:'synthetic-oncall-1',password:'synthetic-oncall-browser-password'});assert.equal(ended.status,200);assert.equal((await worker.request('/api/logout',{},ended.cookie)).status,200);
   const expired=await worker.request('/api/login',{name:'synthetic-oncall-1',password:'synthetic-oncall-browser-password'});assert.equal(expired.status,200);worker.sql('UPDATE sessions SET expires=0');
   for(const action of ['review','apply'])for(const cookie of [ended.cookie,expired.cookie])assert.equal((await worker.request('/api/schedules/unavailable/'+action,{},cookie)).status,401);
-  console.log('PASS OC-020 / OC-011 / OC-024 browser 1440: all rota rows, four-step weekly create, zero-write live preview, matching first hand-over, cover review, named-zone clocks, confirmation, saved edit, ICS, tooltips, overflow, axe and revoked/expired doors');
+  console.log('PASS OC-024 revoked/expired review and apply doors');
  }finally{await browser?.close();await worker.close();}
 }
 // Pair the next nearby offset changes from the zones themselves, beyond tomorrow.
