@@ -30,6 +30,8 @@ export interface Bindings {
  RER_INSTALLATION_ID?: string
  RER_MANAGEMENT_ORIGIN?: string
  OWNER_EMAIL: string
+ PAGERDUTY_OAUTH_CLIENT_ID?: string
+ PAGERDUTY_OAUTH_CLIENT_SECRET?: string
  SESSION_SECRET: string
  SETUP_TOKEN?: string
  MAIL_PROVIDER?: 'development' | 'rer' | 'resend' | 'sendgrid' | 'cloudflare'

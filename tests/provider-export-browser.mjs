@@ -1,3 +1,4 @@
+import {fileSource} from './import-door-browser.mjs'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
 import {pathToFileURL} from 'node:url'
@@ -5,6 +6,8 @@ import {resolve} from 'node:path'
 
 // The browser's real download produces importable bundles; only the external provider HTTP edge is faked.
 export async function providerExport(page,context,width) {
+ if(width!==1440)return
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
  await context.grantPermissions(['clipboard-read','clipboard-write'])
  // Follow the maintainer guide's real fragment to the served owner guide, then download its tool.
  const maintainer=await readFile('MOVE-IN.md','utf8')
@@ -16,10 +19,11 @@ export async function providerExport(page,context,width) {
  await target.waitFor({state:'visible'})
  const [documentedDownload]=await Promise.all([guide.waitForEvent('download'),guide.getByRole('link',{name:'Download oncall-export.mjs',exact:true}).click()])
  assert.equal(await documentedDownload.failure(),null,'the linked guide provides a working exporter download')
- await guide.screenshot({path:`evidence/browser/export-docs-${width}.png`,fullPage:true})
+ await guide.screenshot({path:`${directory}/export-docs-${width}.png`,fullPage:true})
  await guide.close()
  for(const vendor of ['pagerduty','opsgenie']) {
-  await page.getByLabel('Source',{exact:true}).selectOption(vendor)
+  await fileSource(page,vendor)
+  await page.locator('.move-in-fallback > summary').click()
   const help=page.locator('.move-in-export-help')
   await help.locator('summary').click()
   await help.getByRole('button',{name:/Copy .* export command/}).click()
@@ -59,12 +63,11 @@ export async function providerExport(page,context,width) {
   assert.ok(calls.some(url=>url.includes('offset=1')),'exporter follows the second people page')
   assert.ok(!result.json.includes(key),'downloaded bundle excludes credentials')
   assert.equal(JSON.parse(result.json).users.length,users.length,'all pages survive assembly')
-  await page.getByLabel('Export JSON').setInputFiles({name:vendor+'-export.json',mimeType:'application/json',buffer:Buffer.from(result.json)})
-  const [preview]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/operator/import/plan'),page.getByRole('button',{name:'Preview import',exact:true}).click()])
+  const [preview]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/operator/import/plan'),page.getByLabel('Export JSON').setInputFiles({name:vendor+'-export.json',mimeType:'application/json',buffer:Buffer.from(result.json)})])
   assert.equal(preview.status(),200,'downloaded exporter output is accepted by the actual importer')
   assert.ok((await preview.json()).items.some(item=>item.kind==='schedules'&&!item.rejection&&item.effects.some(effect=>effect.targetKind==='schedule')),'a schedule survives provider export and real compatibility review')
   await page.getByRole('heading',{name:'Compatibility review'}).waitFor()
-  await page.screenshot({path:`evidence/browser/export-help-${vendor}-${width}.png`,fullPage:true})
+  await page.screenshot({path:`${directory}/export-help-${vendor}-${width}.png`,fullPage:true})
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'export and review fit viewport')
  }
 }

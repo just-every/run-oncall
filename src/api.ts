@@ -53,6 +53,7 @@ import { admitted } from './base/setup-state';
 import { isLoopbackHost } from './modules/operator-auth/index.mjs';
 import { installSchedules } from './schedule-api';
 import { installMoveIn } from './move-in/api';
+import { pagerdutyConnect } from './move-in/pagerduty-oauth';
 import { Refusal } from './move-in/refusals';
 import { Hono } from "hono";
 import { deploymentHealth } from "./base/deployment-health";
@@ -243,7 +244,7 @@ api.get("/api/workspace", async (c) => {
   const current = await authorizedState(c, false, true);
   const currentMember = current.members.find(m => m.id === member.id)!;
   if (currentMember.role === "stakeholder") return c.json({setup:false, member:currentMember, demo:false, state:null});
-  return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", state: memberWorkspace(current, member)});
+  return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", moveIn: {pagerdutyConnect: pagerdutyConnect(runtimeBindings(c.env))}, state: memberWorkspace(current, member)});
 });
 async function session(c: any, state: State): Promise<Member | null> {
   const token = readSessionCookie(c.req.raw);

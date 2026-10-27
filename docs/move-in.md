@@ -1,12 +1,18 @@
 # Move in from Opsgenie or PagerDuty
 
-You can bring your rota across from Opsgenie or PagerDuty without connecting Oncall to either of them. You save export files yourself, Oncall reads those files, and you review what it understood before anything is kept. It asks for no API key, makes no request to Opsgenie or PagerDuty and changes nothing there.
+Open **Settings → Move in** to read schedules from PagerDuty or Opsgenie, then review the result before anything is imported. PagerDuty uses its own sign-in when this installation has a PagerDuty app; either provider can use a read-only key for this one read. The key stays in page and request memory and is never kept in an archive, audit entry or log. No provider schedules or routing are changed, and everything imported arrives paused. Paging stays off.
 
-Only an admin can use the **Move-in kit**, the screen with the arrows icon in the app. Your pager stays in charge of waking people up: everything you move in arrives **paused**, and paging stays off.
+Choose **Other: from a file** for a saved export. The private terminal fallback is folded under **No key? Use the exporter on your computer**. Both paths lead to Review, then Import paused. Adoption, Undo and integration activation each ask once on the same page.
+
+### Connect this installation’s PagerDuty app
+
+The installer can supply the two optional settings in `rer setup`: `PAGERDUTY_OAUTH_CLIENT_ID` and `PAGERDUTY_OAUTH_CLIENT_SECRET`. Register `<app address>/api/move-in/pagerduty/callback` as the app’s redirect address, with only `users.read`, `schedules.read` and `escalation_policies.read` scopes. Without both settings the app offers the key path. Opsgenie always uses a read-only key.
+
+Provider reads go only to the US or EU API host for the provider selected. Every request refuses redirects, times out after ten seconds, and runs within a bounded step. Reads stop rather than truncate at 500 objects or 512 KiB. The signed-in administrator remains required throughout. PagerDuty tokens are sealed under this installation’s key in an HttpOnly cookie for at most ten minutes, revoked when the read ends, and cleared. The installation’s minute task also revokes abandoned connections; a provider failure is recorded as a failure and expired local custody is discarded. If PagerDuty cannot close a connection, revoke the app in PagerDuty.
 
 ## Save your export with the downloadable tool
 
-In **Move-in kit**, choose **Opsgenie** or **PagerDuty** under **Source**, then expand **How to export from…**. That panel includes the download, runnable commands, provider key steps and troubleshooting. No API client, paging knowledge or manual JSON assembly is needed. Calendar (.ics) and CSV files do not contain the required rotation definitions.
+In **Settings → Move in**, choose **Opsgenie** or **PagerDuty** under **Source**, expand **No key? Use the exporter on your computer**, then **How to export from…**. That panel includes the download, runnable commands, provider key steps and troubleshooting. No API client, paging knowledge or manual JSON assembly is needed. Calendar (.ics) and CSV files do not contain the required rotation definitions.
 
 ### Prepare a read-only API key
 
@@ -20,7 +26,7 @@ On plans without Settings → Integrations, start at **Teams → your team → I
 
 **PagerDuty:** ask an admin or account owner to open **Integrations → Developer Tools → API Access Keys → Create New API Key**. Enter **Oncall export** as its description, check **Read-only API Key**, and select **Create Key**. Copy the key privately before selecting **Close**; it is shown in full only once. This must be a REST API key; a service's Events API key cannot read configuration. See [PagerDuty's key instructions](https://support.pagerduty.com/main/docs/api-access-keys).
 
-Keep the key out of commands and files. Paste it only when the exporter asks for it at its hidden terminal prompt. The exporter keeps it in memory, makes only GET requests to the selected provider region, and never sends the key to Oncall.
+Keep the key out of commands and files. For an in-app read, paste it in the read-only key field. For a private file export, paste it only at the exporter’s hidden terminal prompt. The exporter keeps it in memory, makes only GET requests to the selected provider region, and never sends the key to Oncall.
 
 ### Download and run
 
@@ -54,7 +60,7 @@ The exporter reads all people, schedules and policies accessible to the key. It 
 
 A successful run prints **Saved**, the full filename, object count and comparison window. The file is created in the folder where you ran the command, normally Downloads, with a name like `opsgenie-export-DATE-TIME.json` or `pagerduty-export-DATE-TIME.json`. Each run uses a new name. Keep it private: it contains names, email addresses and schedules. File permissions are owner-only on systems supporting Unix file modes.
 
-Return to **Move-in kit**, keep the matching **Source** selected, choose that file under **Export JSON**, and press **Preview import**. Export success means the file was collected; the preview decides which settings are compatible. Read every rejection, difference and coverage comparison before confirming. Ask your administrator to revoke the dedicated export key after use.
+Return to **Settings → Move in**, keep the matching **Source** selected, choose that file under **Export JSON**, and press **Preview import**. Export success means the file was collected; the preview decides which settings are compatible. Read every rejection, difference and coverage comparison before confirming. Ask your administrator to revoke the dedicated export key after use.
 
 If the tool stops:
 
@@ -72,7 +78,7 @@ Exporter references checked on 16 October 2026: Opsgenie's [pagination](https://
 
 ## Preview, then import
 
-1. Open **Move-in kit** and choose **Opsgenie** or **PagerDuty** under **Source**.
+1. Open **Settings → Move in** and choose **Opsgenie** or **PagerDuty** under **Source**.
 2. Choose your file under **Export JSON**.
 3. Press **Preview import**. This is a dry run: it changes nothing in your workspace, however often you press it. Oncall keeps the file with its review in the import journal, so the import applies exactly what you reviewed. If this source already holds an import, the review shows what the new file adds or changes; people or schedules edited in Oncall since are refused by name, and anything missing from the file stays.
 4. Read the **Compatibility review**. It counts what mapped, what was rejected and what came across with differences, then lists every object with its reason. Nothing is skipped quietly.
