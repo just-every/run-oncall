@@ -71,7 +71,7 @@ try {
  const afterRetry=ok(await call(owner.page,'/api/state'));assert.equal(afterRetry.audit.length,beforeRetry+1,'Retry adds exactly one audit row');assert.equal(afterRetry.services.find(s=>s.id==='checkout').owner,rosaRecord.id);
  console.log('OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1');
  // OC-023 public-team forms use the existing Team section at both widths.
- for(const width of [1440]){
+ for(const width of [1440,390]){
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/team');await owner.page.reload();
   const panel=owner.page.getByRole('region',{name:'Teams',exact:true});await panel.getByRole('heading',{name:'Teams',exact:true}).waitFor();
   const teamWrite=()=>owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/teams'&&response.request().method()==='POST');
@@ -136,7 +136,7 @@ try {
   await panel.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/oc023-public-teams-${width}.png`,fullPage:true});
  }
  // OC-023: both service forms preserve explicit unassigned ownership.
- for(const width of [1440]) {
+ for(const width of [1440,390]) {
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/services');await owner.page.reload();
   await owner.page.getByRole('button',{name:'Add service',exact:true}).click();
   const add=owner.page.locator('.service-create');
@@ -175,7 +175,7 @@ try {
  await entry(rosa.page,noteText).waitFor()
  assert.equal(await rosa.page.getByRole('button',{name:/Send test page/}).count(),0,'no paging control is offered')
  for(const page of [rosa.page,owner.page])assert.equal((await call(page,'/api/paging/jobs',{incident:declared.id})).status,409,'paging stays OFF and refuses')
- for(const width of [1440]) {
+ for(const width of [1440,390]) {
   await rosa.page.setViewportSize({width,height:1000});await rosa.page.reload();await rosa.page.locator('.detail h2').waitFor()
   for(const text of [ackText,noteText])assert.match(await entry(rosa.page,text).innerText(),new RegExp(responder.name),`"${text}" stays attributed to the member after reload`)
   assert.equal(await rosa.page.locator('.detail .tag.state-acknowledged').count(),1,'acknowledgement persists after reload')
@@ -208,7 +208,7 @@ try {
  // A public-team manager can edit own coverage without workspace configuration authority.
  const managedRotation={anchorLocal:'2026-01-01T00:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'};
  ok(await call(owner.page,'/api/paging/schedules',{id:'synthetic-oncall-145',name:'synthetic-oncall-145',service:'checkout',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:managedRotation,backup:{...managedRotation,members:[]},overrides:[]}));
- for(const width of [1440]){
+ for(const width of [1440,390]){
   await rosa.page.setViewportSize({width,height:1000});await rosa.page.goto(worker.origin+'/on-call');await rosa.page.reload();
   await rosa.page.getByLabel('Schedule',{exact:true}).selectOption('synthetic-oncall-145');
   await expect(rosa.page.getByLabel('Schedule name',{exact:true})).toBeEnabled();
@@ -254,22 +254,23 @@ try {
   assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0,'no hydration mismatch')
   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
   assert.deepEqual(axe.violations.filter(row=>['serious','critical'].includes(row.impact)),[],screen+' has no serious accessibility finding')
+  console.log(`Member coordination ${screen} at ${width}: overflow, hydration and accessibility passed`);
   await page.screenshot({path:`${captureDirectory}/${(/^(oc068|oc058)-/.test(screen))?screen:'oc061-'+screen}-${width}.png`,fullPage:true})
  }
- for(const width of [1440])await statusCapture(owner.page,'derived-status',width)
+ for(const width of [1440,390])await statusCapture(owner.page,'derived-status',width)
  await checkout.getByText('Manage internal status',{exact:true}).click()
  await checkout.getByLabel('Override status',{exact:true}).selectOption('operational')
  await checkout.getByLabel('Override reason',{exact:true}).fill('Alternate gateway is processing payments')
  await checkout.getByRole('button',{name:'Set status override',exact:true}).click()
  await checkout.getByText(/Manual override: operational/).waitFor()
- for(const width of [1440])await statusCapture(owner.page,'override-reason',width)
+ for(const width of [1440,390])await statusCapture(owner.page,'override-reason',width)
  const samView=await open(1440);await passwordSignIn(samView.page,stakeholder)
  await samView.page.getByRole('heading',{name:'Internal status',exact:true}).waitFor()
  const samCheckout=samView.page.getByRole('article',{name:'Checkout',exact:true})
  await samCheckout.getByLabel('Your subscription',{exact:true}).selectOption('true')
  await samCheckout.getByRole('button',{name:'Save subscription',exact:true}).click()
  await samCheckout.getByRole('heading',{name:'Recorded impact obligations',exact:true}).waitFor()
- for(const width of [1440]){
+ for(const width of [1440,390]){
   await samView.page.setViewportSize({width,height:1000});await samView.page.reload()
   await samView.page.getByRole('heading',{name:'Recorded impact obligations',exact:true}).waitFor()
   assert.equal(await samView.page.locator('.timeline').count(),0)
@@ -282,11 +283,11 @@ try {
   assert.ok(!html.includes('Private gateway timeouts')&&!html.includes('Private gateway recovery instructions'),'stakeholder HTML bootstrap contains no response data')
   await statusCapture(samView.page,'stakeholder-status-and-refusals',width)
  }
- console.log('OC-061 browser: existing internal-status panel, derived degraded, attributed override and reason, stakeholder subscription and private-door refusals at 1440')
+ console.log('OC-061 browser: existing internal-status panel, derived degraded, attributed override and reason, stakeholder subscription and private-door refusals at 1440/390')
  await samView.context.close()
 
  // OC-061 email lists: configure in Settings, inspect start/end records, unsubscribe and use shared erasure.
- for(const width of [1440]){
+ for(const width of [1440,390]){
   await owner.page.setViewportSize({width,height:1000});const serviceId='synthetic-oncall-614-'+width,name='Synthetic list status '+width,address='synthetic-oncall-614-'+width+'@example.test';
   ok(await call(owner.page,'/api/command',{type:'service',id:serviceId,name:'Synthetic list service '+width,environment:'test',owner:ownerMember.id,runbook:[],pager:''}));
   ok(await call(owner.page,'/api/status',{action:'create',name,owningTeam:'Synthetic team label',supporting:[serviceId],communicationsOwner:ownerMember.id,audience:[],highUrgencyImpact:false}));
@@ -301,7 +302,7 @@ try {
   await erasure.getByLabel('Erasure category',{exact:true}).selectOption('email-list');await erasure.getByLabel('Erasure subject',{exact:true}).selectOption(list.id);await erasure.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+list.id);await erasure.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await statusCapture(owner.page,'email-list-erasure-review',width);
   const erased=owner.page.waitForResponse(response=>response.url().endsWith('/api/erasure/email-list/'+list.id));await erasure.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await erased).status(),200);await erasure.getByText('oc_business_services: 0 deleted, 1 updated',{exact:true}).waitFor();await erasure.getByRole('status').scrollIntoViewIfNeeded();await statusCapture(owner.page,'email-list-erasure-receipt',width);await owner.page.screenshot({path:`${captureDirectory}/oc061-email-list-erasure-receipt-focus-${width}.png`});assert.ok(!JSON.stringify(ok(await call(owner.page,'/api/state'))).includes(address));
  }
- console.log('OC-061 email-list browser: Settings authoring, started/ended recorded no-sender obligations, unsubscribe prevents future records and shared erasure receipt at 1440; overflow, axe and hydration passed')
+ console.log('OC-061 email-list browser: Settings authoring, started/ended recorded no-sender obligations, unsubscribe prevents future records and shared erasure receipt at 1440/390; overflow, axe and hydration passed')
 
  // The new role is excluded from every responder selector on the existing screens.
  ok(await call(owner.page,'/api/paging/schedules',{id:'synthetic-oncall-62',name:'Payments primary',service:'synthetic-oncall-61',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T09:00',periodDays:1,members:[ownerMember.id],ambiguity:'earlier'},overrides:[]}))
@@ -325,10 +326,10 @@ try {
    await owner.page.getByText('Change response ownership or priority',{exact:true}).click()
    await excludesStakeholder(owner.page.getByLabel('Assigned responder',{exact:true}))
   }
-  for(const width of [1440])await statusCapture(owner.page,'role-'+screen,width)
+  for(const width of [1440,390])await statusCapture(owner.page,'role-'+screen,width)
  }
  await roleSession.send('Emulation.setCPUThrottlingRate',{rate:1});await roleSession.detach()
- console.log('OC-061 role selectors and tooltips: team, service, routing, schedule and incident/bulk screens at 1440 with own browser CPU rate 4; stakeholder excluded from response owners and keyboard tooltip immediate')
+ console.log('OC-061 role selectors and tooltips: team, service, routing, schedule and incident/bulk screens at 1440/390 with own browser CPU rate 4; stakeholder excluded from response owners and keyboard tooltip immediate')
 
  // OC-068 uses the real manual-page form and independent target response controls.
  await owner.page.goto(worker.origin+'/incidents');await owner.page.reload()
@@ -341,7 +342,7 @@ try {
  const manualForm68=owner.page.locator('form').filter({has:owner.page.getByRole('button',{name:'Declare',exact:true})})
  await manualForm68.getByLabel('Named responders',{exact:true}).selectOption(rosaRecord.id)
  await owner.page.getByRole('button',{name:'Declare',exact:true}).waitFor()
- for(const width of [1440])await statusCapture(owner.page,'oc068-manual-page-form',width)
+ for(const width of [1440,390])await statusCapture(owner.page,'oc068-manual-page-form',width)
  await owner.page.getByRole('button',{name:'Declare',exact:true}).click()
  await owner.page.locator('.detail h2').filter({hasText:'Manual checkout responder request'}).waitFor()
  const manual68=ok(await call(owner.page,'/api/state')).incidents.find(i=>i.title==='Manual checkout responder request')
@@ -361,11 +362,11 @@ try {
  await responseRegion.getByRole('article').filter({hasText:'Inspect payment network'}).getByRole('button',{name:'Decline request',exact:true}).click()
  await responseRegion.getByRole('article').filter({hasText:'Inspect payment network'}).getByText(/^declined · requested/).waitFor()
  await responseRegion.getByText('Primary acknowledgment: Unacknowledged',{exact:true}).waitFor()
- for(const width of [1440])await statusCapture(rosa.page,'oc068-requests-and-obligations',width)
+ for(const width of [1440,390])await statusCapture(rosa.page,'oc068-requests-and-obligations',width)
  await openIncident(vic.page,manual68.id);await vic.page.reload()
  await vic.page.getByText('Only responders and admins may create manual pages or request responders.',{exact:true}).waitFor()
  ok(await call(vic.page,'/api/command',{type:'manual-page',operationId:'synthetic-oncall-68-viewer',service:'checkout',title:'Refused',severity:'critical'}),403)
- for(const width of [1440])await statusCapture(vic.page,'oc068-viewer-refusal',width)
+ for(const width of [1440,390])await statusCapture(vic.page,'oc068-viewer-refusal',width)
  await owner.page.goto(worker.origin+'/settings/services/checkout');await owner.page.reload()
  const assignment68=owner.page.locator('.service-page')
  await assignment68.getByText('Assign new incidents',{exact:true}).click()
@@ -376,22 +377,22 @@ try {
  await assignment68.getByLabel('Assignment delay (minutes)',{exact:true}).blur();assert.equal((await assignmentText).status(),200);
  assert.equal(ok(await call(owner.page,'/api/state')).services.find(s=>s.id==='checkout').userAssignments.at(-1).minutes,7)
  assert.equal(await assignment68.getByLabel('User-assignment outcome',{exact:true}).inputValue(),'repeat')
- for(const width of [1440])await statusCapture(owner.page,'oc068-service-assignment-rule',width)
- console.log('OC-068 browser: manual page urgency/target, recorded obligations, independent accepted and declined responder requests, viewer refusal and versioned assignment setting at 1440')
+ for(const width of [1440,390])await statusCapture(owner.page,'oc068-service-assignment-rule',width)
+ console.log('OC-068 browser: manual page urgency/target, recorded obligations, independent accepted and declined responder requests, viewer refusal and versioned assignment setting at 1440/390')
  await assignment68.getByText('Acknowledgment timeout',{exact:true}).click()
  await assignment68.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true}).fill('1')
  const timeoutSave=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='acknowledgment-timeout');
  await assignment68.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true}).blur();assert.equal((await timeoutSave).status(),200);
  assert.equal(ok(await call(owner.page,'/api/state')).services.find(s=>s.id==='checkout').ackTimeouts.at(-1).minutes,1)
- for(const width of [1440])await statusCapture(owner.page,'oc058-service-timeout',width)
+ for(const width of [1440,390])await statusCapture(owner.page,'oc058-service-timeout',width)
  let incident58=ok(await call(owner.page,'/api/command',{type:'manual-page',operationId:'synthetic-oncall-58-browser',service:'checkout',title:'Snoozed checkout investigation',severity:'warning',summary:'Investigating a customer checkout delay'}))
  incident58=ok(await call(owner.page,'/api/command',{type:'transition',incident:incident58.id,revision:incident58.revision,state:'acknowledged',summary:'Owner investigating'}))
  await openIncident(owner.page,incident58.id)
  await owner.page.getByLabel('Snooze duration (minutes)',{exact:true}).fill('1')
- for(const width of [1440])await statusCapture(owner.page,'oc058-snooze-form',width)
+ for(const width of [1440,390])await statusCapture(owner.page,'oc058-snooze-form',width)
  await owner.page.getByRole('button',{name:'Snooze incident',exact:true}).click()
  await owner.page.getByRole('status').filter({hasText:'Snoozed / acknowledgment held until'}).waitFor()
- for(const width of [1440])await statusCapture(owner.page,'oc058-snoozed',width)
+ for(const width of [1440,390])await statusCapture(owner.page,'oc058-snoozed',width)
  incident58=ok(await call(owner.page,'/api/state')).incidents.find(i=>i.id===incident58.id)
  await worker.time(Date.parse(incident58.deadlines.at(-1).dueAt))
  const expired58=await worker.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(expired58.status,200)
@@ -401,8 +402,8 @@ try {
  await owner.page.getByRole('region',{name:'Manual obligations and responder requests'}).getByText('Primary acknowledgment: Unacknowledged',{exact:true}).waitFor()
  await owner.page.getByText(/^Earlier manual-page acknowledgment:/).waitFor()
  await owner.page.getByText('Deadline scheduler',{exact:true}).waitFor()
- for(const width of [1440])await statusCapture(owner.page,'oc058-expired-triggered',width)
- console.log('OC-058 browser: timeout setting, snooze duration, persisted snoozed state and scheduled expiry back to triggered at 1440; paging OFF')
+ for(const width of [1440,390])await statusCapture(owner.page,'oc058-expired-triggered',width)
+ console.log('OC-058 browser: timeout setting, snooze duration, persisted snoozed state and scheduled expiry back to triggered at 1440/390; paging OFF')
 
 
  // Signed out, anonymous and revoked sessions see no workspace.
@@ -422,7 +423,7 @@ try {
  const after=ok(await call(owner.page,'/api/workspace')).state.incidents.find(i=>i.id===declared.id)
  assert.ok(after.timeline.some(e=>e.text===noteText&&e.actor===rosaMember.id),'revocation keeps the attributed history')
  assert.deepEqual(errors,[])
- console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
+ console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440/390 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
 } finally {
  await browser?.close()
  await worker.close()
