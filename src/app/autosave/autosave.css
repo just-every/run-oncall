@@ -5,6 +5,7 @@
 .autosave-confirm { margin-block: 12px; color: var(--oc-ink); }
 .autosave-confirm textarea { font: inherit; }
 .autosave-form { min-width: 0; }
+.autosave-form output { overflow-wrap: anywhere; }
 .autosave-form .field, .autosave-form .scheduling-field { min-width: 0; }
 @media (max-width: 600px) {
   .autosave-form input:not([type=checkbox]), .autosave-form select, .autosave-feedback button, .autosave-confirm button { min-height: 44px; }
