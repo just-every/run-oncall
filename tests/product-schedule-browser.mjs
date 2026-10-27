@@ -4,6 +4,46 @@ import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {keyboardUser} from './keyboard.mjs';
 
+// Extend this journey: pending valid answers retain coverage, but cannot be saved.
+async function retainPreview(page, change, submit) {
+ await page.waitForLoadState('networkidle');
+ await page.waitForFunction(()=>document.querySelectorAll('.oc-preview li').length>0);
+ const preview=page.locator('.oc-preview'),before=await preview.innerText();
+ await preview.evaluate(element=>{
+  const probe={minWeeks:element.querySelectorAll('li').length,minHeight:element.getBoundingClientRect().height};
+  probe.weeks=probe.minWeeks;probe.height=probe.minHeight;
+  let active=true;
+  const sample=()=>{probe.minWeeks=Math.min(probe.minWeeks,element.querySelectorAll('li').length);probe.minHeight=Math.min(probe.minHeight,element.getBoundingClientRect().height);};
+  const observer=new MutationObserver(sample);observer.observe(element,{childList:true,subtree:true});
+  const frame=()=>{if(active){sample();requestAnimationFrame(frame);}};requestAnimationFrame(frame);
+  window.stopRotaPreviewProbe=()=>{sample();active=false;observer.disconnect();return probe;};
+ });
+ let release,latest;const gate=new Promise(resolve=>{release=resolve;}),pending=[];
+ const hold=route=>{latest=route.request();const task=(async()=>{const response=await route.fetch();await gate;await route.fulfill({response});})();pending.push(task);return task;};
+ await page.route('**/api/paging/preview',hold);
+ try{
+  await change();await page.waitForTimeout(2000);
+  assert.ok(latest,'the valid change requests a new preview');
+  assert.equal(await preview.innerText(),before,'the last coverage stays visible for the entire delayed answer');
+  const probe=await page.evaluate(()=>window.stopRotaPreviewProbe());
+  assert.equal(probe.minWeeks,probe.weeks,'typing and valid changes never blank the weeks');
+  assert.equal(probe.minHeight,probe.height,'the pending preview never collapses');
+  if(submit)assert.equal(await submit.isDisabled(),true,'visible old weeks never authorize saving a new draft');
+  const answered=page.waitForResponse(response=>response.request()===latest);release();await(await answered).finished();
+ }finally{release();await Promise.all(pending);await page.unroute('**/api/paging/preview',hold);await page.evaluate(()=>window.stopRotaPreviewProbe());}
+}
+
+async function invalidWindow(page) {
+ const ends=page.getByLabel('Ends (optional)',{exact:true}),submit=page.locator('.oc-step-actions button[type=submit]'),starts=await ends.getAttribute('min');
+ await ends.fill(new Date(Date.parse(starts+'T00:00:00Z')-86400000).toISOString().slice(0,10));
+ await page.getByRole('alert').filter({hasText:'Choose an end after the rota starts.'}).waitFor();
+ assert.equal(await ends.getAttribute('aria-invalid'),'true');
+ assert.equal(await page.locator('.oc-preview li').count(),0,'an invalid window clears stale coverage');
+ assert.equal(await submit.isDisabled(),true,'an invalid window clears readiness');
+ await ends.fill('');await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);
+ assert.ok(await page.locator('.oc-preview li').count()>0,'fixing the window restores coverage');
+}
+
 export async function productSchedule(page,context,width,session,{ownerLink}={}) {
  const key=keyboardUser(page),origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const api=async(path,input)=>{const response=await (input===undefined?context.request.get(origin+path):context.request.post(origin+path,{headers:{origin},data:input}));assert.equal(response.status(),200);return response.json();};
@@ -20,13 +60,20 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  const auditBefore=await api('/api/audit/export'),previewBefore=await api('/api/paging/state'),workspaceBefore=await api('/api/state'),previews=[];
  const observe=async response=>{if(new URL(response.url()).pathname!=='/api/paging/preview'||response.request().method()!=='POST')return;const input=response.request().postDataJSON();if(input?.schedule&&response.ok())previews.push({input,windows:await response.json()});};
  page.on('response',observe);
- await key.activate(page.locator('.oc-page-head').getByRole('link',{name:'New rota',exact:true}));await key.text(page.getByLabel('Rota name',{exact:true}),'Checkout rota '+width);
+ await key.activate(page.locator('.oc-page-head').getByRole('link',{name:'New rota',exact:true}));
+ if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
+ await key.text(page.getByLabel('Rota name',{exact:true}),'Checkout rota '+width);
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();
  const remove=page.getByRole('button',{name:'Remove person',exact:true}).first();await remove.focus();await page.getByRole('tooltip',{name:'Remove person',exact:true}).first().waitFor();
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Hand-over',exact:true}).waitFor();
  const own=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);assert.equal(await page.getByLabel('Time zone',{exact:true}).inputValue(),own);assert.equal(await page.getByLabel('Time zone',{exact:true}).locator('option').first().getAttribute('value'),own);
  await page.getByLabel('Starts',{exact:true}).fill(new Date(Date.now()+86400000).toISOString().slice(0,10));
+ if(width===1440)await retainPreview(page,()=>page.getByLabel('At',{exact:true}).fill('10:30'));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Check',exact:true}).waitFor();
+ if(width===1440){
+  await retainPreview(page,()=>page.getByLabel('Ends (optional)',{exact:true}).fill(new Date(Date.now()+60*86400000).toISOString().slice(0,10)),page.getByRole('button',{name:'Create rota',exact:true}));
+  await invalidWindow(page);
+ }
  if(width<761)await key.activate(page.locator('.oc-preview > summary'));
  await key.focusScreenshot(page.getByRole('button',{name:'Create rota',exact:true}),`${directory}/keyboard-rota-create-${width}.png`);
  assert.deepEqual(await api('/api/paging/state'),previewBefore,'live draft previews write no schedule, job or scheduling revision');assert.deepEqual(await api('/api/state'),workspaceBefore,'live draft previews preserve workspace records and revision');const auditAfter=await api('/api/audit/export');assert.deepEqual(auditAfter.rows.filter(row=>row.kind!=='audit.export'),auditBefore.rows.filter(row=>row.kind!=='audit.export'),'draft previews append no permanent audit record; the observing exports keep their own audits');
@@ -46,8 +93,15 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  let current=(await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id),from=Date.parse(future.previewFrom+'Z'),to=Date.parse(future.previewTo+'Z');
  const named={...current,timezone:'America/New_York'},namedReview=await api('/api/schedules/'+id+'/review',{schedule:named,from,to});await api('/api/schedules/'+id+'/apply',{schedule:named,from,to,digest:namedReview.digest,confirmed:true});
  await page.reload();await key.activate(page.getByRole('link',{name:'Edit rota',exact:true}));await page.getByLabel('Rota name',{exact:true}).waitFor();
+ if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Hand-over',exact:true}).waitFor();
- await page.getByLabel('Time zone',{exact:true}).selectOption('Europe/London');await page.getByLabel('Starts',{exact:true}).fill(future.previewFrom.slice(0,10));await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Check',exact:true}).waitFor();
+ await page.getByLabel('Time zone',{exact:true}).selectOption('Europe/London');await page.getByLabel('Starts',{exact:true}).fill(future.previewFrom.slice(0,10));
+ if(width===1440)await retainPreview(page,()=>page.getByLabel('At',{exact:true}).fill('09:00'));
+ await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Check',exact:true}).waitFor();
+ if(width===1440){
+  await retainPreview(page,()=>page.getByLabel('Ends (optional)',{exact:true}).fill(new Date(Date.parse(future.previewFrom+'Z')+60*86400000).toISOString().slice(0,10)),page.getByRole('button',{name:'Review change',exact:true}));
+  await invalidWindow(page);
+ }
  await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]')?.disabled);await key.activate(page.getByRole('button',{name:'Review change',exact:true}));
  const review=page.getByRole('region',{name:'Review schedule changes',exact:true});await review.waitFor();assert.ok(await review.getByText(/DST \/ clock change: Europe\/London/).count());assert.ok(await review.getByText(/DST \/ clock change: America\/New_York/).count());assert.equal(await review.getByRole('button',{name:'Apply reviewed change',exact:true}).isDisabled(),true);
  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'review fits the viewport');
