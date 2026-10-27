@@ -230,12 +230,13 @@ try {
  ok(await req('/api/routing/keys',{...teamDefinition,team:'unavailable-routing-team'}),400);assert.equal(ok(await req('/api/state')).revision,teamBefore.revision);
  const refusedTeam=await req('/api/routing/keys',{...teamDefinition,scope:['payments','search']});ok(refusedTeam,400);assert.ok(refusedTeam.value.error.includes(teamBefore.services.find(s=>s.id==='search').name));assert.equal(ok(await req('/api/state')).revision,teamBefore.revision);
  const createdTeam=ok(await req('/api/routing/keys',teamDefinition),201);assert.equal(createdTeam.routing.team,team.id);assert.equal(ok(await req('/api/state')).intakeSources.find(s=>s.id===createdTeam.id).routing.team,team.id);
- ok(await external('/v2/enqueue',{routing_key:teamKey,event_action:'trigger',dedup_key:'team-owned-event',payload:{summary:'Payments team signal',source:'team-monitor',severity:'warning'}}),202);
+ const rotatedTeamKey=secret(),rotatedTeam=ok(await req('/api/routing/keys',{...teamDefinition,key:rotatedTeamKey,revision:createdTeam.revision}));assert.equal(rotatedTeam.routing.team,team.id);assert.equal(ok(await req('/api/state')).intakeSources.find(s=>s.id===createdTeam.id).routing.team,team.id);
+ ok(await external('/v2/enqueue',{routing_key:rotatedTeamKey,event_action:'trigger',dedup_key:'team-owned-event',payload:{summary:'Payments team signal',source:'team-monitor',severity:'warning'}}),202);
  const teamAdmitted=ok(await req('/api/state'));assert.equal(teamAdmitted.intakeReceipts.find(r=>r.source===createdTeam.id).service,'payments');
- ok(await req('/api/routing/keys',{...teamDefinition,revision:createdTeam.revision,team:undefined}),400);assert.equal(ok(await req('/api/state')).revision,teamAdmitted.revision);
- console.log('PASS team routed key: outside scope 400/revision unchanged; own scope 201/read team retained; event 202 to payments; later team change 400/revision unchanged');
+ ok(await req('/api/routing/keys',{...teamDefinition,revision:rotatedTeam.revision,team:undefined}),400);assert.equal(ok(await req('/api/state')).revision,teamAdmitted.revision);
+ console.log('PASS team routed key: outside scope 400/revision unchanged; own scope 201; rotate 200/read team retained; event 202 to payments; later team change 400/revision unchanged');
 
- const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey,groupKey,amKey,errorKey,depKey,stageKey,flapKey,transformationKey,teamKey])assert.ok(!JSON.stringify(archive).includes(key));
+ const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey,groupKey,amKey,errorKey,depKey,stageKey,flapKey,transformationKey,teamKey,rotatedTeamKey])assert.ok(!JSON.stringify(archive).includes(key));
  const unavailableTeamArchive=structuredClone(archive);unavailableTeamArchive.intakeSources.find(s=>s.id==='team-monitor').routing.team='unavailable-routing-team';ok(await req('/api/restore',{mode:'replace',archive:unavailableTeamArchive}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const malformed=structuredClone(archive);malformed.intakeSources.find(s=>s.id==='pd').routing.versions[0].catchAll='foreign';ok(await req('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;

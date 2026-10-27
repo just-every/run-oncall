@@ -31,7 +31,8 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     const scope=routingScope(state,input.scope);
     if(!intakeProviders.includes(input.provider))fail('Choose a supported provider');
     if(!state.members.some(m=>m.id===input.owner&&m.active&&["admin", "responder"].includes(m.role)))fail('Integration owner must be an active responder');
-    if(previous&&(!previous.routing||previous.provider!==input.provider||JSON.stringify(previous.routing.scope)!==JSON.stringify(scope)||previous.routing.team!==input.team))fail('Provider and routing scope are immutable; create another integration');
+    if(previous&&(!previous.routing||previous.provider!==input.provider||JSON.stringify(previous.routing.scope)!==JSON.stringify(scope)))fail('Provider and routing scope are immutable; create another integration');
+    if(previous&&previous.routing!.team!==input.team)fail("A routed key's team cannot change; create another key for the other team.");
     const team=input.team===undefined?undefined:state.teams?.find(t=>t.id===input.team);
     if(input.team!==undefined&&(!team||!previous&&!team.active))fail('Choose an active team for this routed key');
     if(!previous&&team){const outside=scope.map(id=>state.services.find(s=>s.id===id)!).find(s=>s.team!==team.id);if(outside)fail(outside.name+' is outside '+team.name+'. Choose only services owned by this team.');}
