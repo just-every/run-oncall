@@ -5,6 +5,6 @@ export function InlineConfirm({children, action, keep = 'Keep the old value', re
   return <div className="autosave-confirm" role="group" aria-labelledby={id}>
     <p id={id}>{children}</p>
     {reasonRequired && <label className="field"><span>Reason</span><textarea value={reason} onChange={event => setReason(event.target.value)} required rows={2} /></label>}
-    <div className="routing-actions"><button type="button" disabled={busy || reasonRequired && !reason.trim()} onClick={() => onConfirm(reason.trim() || undefined)}>{action}</button><button type="button" disabled={busy} onClick={onCancel}>{keep}</button></div>
+    <div className="routing-actions"><button className="primary" type="button" disabled={busy || reasonRequired && !reason.trim()} onClick={() => onConfirm(reason.trim() || undefined)}>{action}</button><button type="button" disabled={busy} onClick={onCancel}>{keep}</button></div>
   </div>;
 }
