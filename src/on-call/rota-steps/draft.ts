@@ -1,6 +1,9 @@
 import {resolveLocal, type Ambiguity, type Schedule} from '../../family/response-operations/schedules';
 
 const DAY = 86_400_000;
+export class RotaDraftError extends Error {
+  constructor(readonly field: 'handover' | 'ends', message: string) {super(message);}
+}
 export type RotaDraft = {
   id: string; revision: number; name: string; service: string; zone: string;
   primary: string[]; differentBackup: boolean; backup: string[];
@@ -27,10 +30,10 @@ export function editDraft(schedule: Schedule): RotaDraft {
 export function toSchedule(draft: RotaDraft): Schedule {
   const anchorLocal = draft.starts + 'T' + draft.time;
   const at = resolveLocal(anchorLocal, draft.zone, draft.ambiguity);
-  if (at === null) throw Error('This hand-over time does not occur in the chosen time zone. Choose another time.');
+  if (at === null) throw new RotaDraftError('handover', 'This hand-over time does not occur in the chosen time zone. Choose another time.');
   const unchangedAnchor = draft.original?.primary.anchorLocal === anchorLocal && draft.original.timezone === draft.zone;
   const end = draft.ends ? resolveLocal(draft.ends + 'T' + draft.time, draft.zone, draft.ambiguity) : null;
-  if (draft.ends && (end === null || end <= at)) throw Error('Choose an end after the rota starts.');
+  if (draft.ends && (end === null || end <= at)) throw new RotaDraftError('ends', 'Choose an end after the rota starts.');
   const rotation = {anchorLocal, periodDays: draft.every, ambiguity: draft.ambiguity};
   const unchangedHandover = unchangedAnchor && draft.every === draft.original?.primary.periodDays && draft.ambiguity === draft.original.primary.ambiguity;
   const backupRotation = unchangedHandover ? {anchorLocal:draft.original!.backup.anchorLocal,periodDays:draft.original!.backup.periodDays,ambiguity:draft.original!.backup.ambiguity} : rotation;

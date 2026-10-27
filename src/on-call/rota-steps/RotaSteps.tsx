@@ -9,7 +9,7 @@ import type {Schedule} from '../../family/response-operations/schedules';
 import type {Member, State} from '../../family/response-operations/domain';
 import {teamCoverage} from '../../teams/model';
 import {readLocalDraft, writeLocalDraft, removeLocalDraft, policyDrafts} from '../../app/autosave/localDraft';
-import {newDraft, editDraft, toSchedule, isRotaDraft, sameRota, type RotaDraft} from './draft';
+import {newDraft, editDraft, toSchedule, isRotaDraft, sameRota, RotaDraftError, type RotaDraft} from './draft';
 import {StepService} from './StepService';
 import {StepPeople} from './StepPeople';
 import {StepHandover} from './StepHandover';
@@ -25,7 +25,11 @@ export function RotaSteps({state, actor, schedule, service = '', refresh}: {stat
   const [draft, setDraft] = useState<RotaDraft>(() => {const kept=(readLocalDraft<RotaDraft>('rota', draftId, baseVersion) ?? policyDrafts<RotaDraft>('rota', draftId)[0])?.value;return isRotaDraft(kept)?kept:schedule?editDraft(schedule):newDraft(available.some(row=>row.id===service)?service:available[0]?.id??'',state.members.filter(person=>person.active&&['admin','responder'].includes(person.role)).slice(0,2).map(person=>person.id));});
   const [step, setStep] = useState(0), [busy, setBusy] = useState(false), [review, setReview] = useState<ScheduleReview | null>(null), [notice, setNotice] = useState('');
   const [previewed, setPreviewed] = useState<Schedule | null>(null), failures = useActionFailure(), navigate = useNavigate(), form = useRef<HTMLFormElement>(null);
-  const proposed = useMemo(() => {try {return toSchedule(draft);} catch {return null;}}, [draft]);
+  const validation = useMemo(() => {
+    try {return {schedule: toSchedule(draft), error: null};}
+    catch (error) {return {schedule: null, error: {field: error instanceof RotaDraftError ? error.field : 'handover', message: error instanceof Error ? error.message : String(error)}};}
+  }, [draft]);
+  const proposed = validation.schedule;
   const update = (value: Partial<RotaDraft>) => {setDraft(current => {const next = {...current, ...value};writeLocalDraft({kind:'rota', id:draftId, baseVersion, value:next});return next;});setReview(null);setNotice('');failures.clear();};
   const canEdit = available.some(service => service.id === draft.service);
   const finish = async () => {
@@ -66,9 +70,9 @@ export function RotaSteps({state, actor, schedule, service = '', refresh}: {stat
   return <div ref={tooltips} className="oc-oncall oc-rota-steps"><Link className="oc-back" to={schedule ? '/on-call/' + encodeURIComponent(schedule.id) as any : '/on-call' as any}>‹ {schedule ? schedule.name : 'On call'}</Link><header className="oc-page-head"><h1>{schedule ? 'Edit rota' : 'New rota'}</h1></header>
     {canEdit ? <div className="oc-step-layout"><div><nav className="oc-step-nav" aria-label="Rota steps">{steps.map((label, index) => <button type="button" key={label} aria-current={step === index ? 'step' : undefined} disabled={index > step} onClick={() => {setStep(index);setReview(null);}}><span>{index + 1}</span>{label}</button>)}</nav>
       <form ref={form} className="oc-card oc-step-card" onSubmit={event => {event.preventDefault();if(step < 3) setStep(step + 1);else void finish();}}>
-        {step === 0 ? <StepService {...content}/> : step === 1 ? <StepPeople {...content}/> : step === 2 ? <StepHandover {...content}/> : <StepCheck {...content}/>}
+        {step === 0 ? <StepService {...content}/> : step === 1 ? <StepPeople {...content}/> : step === 2 ? <StepHandover {...content}/> : <StepCheck {...content} endError={validation.error?.field === 'ends' ? validation.error.message : undefined}/>}
         {schedule && schedule.revision !== draft.revision && <div className="oc-draft-conflict"><p>A newer rota is available: {schedule.name}. Your draft is kept.</p><button type="button" onClick={() => update({revision:schedule.revision, original:schedule})}>Use mine</button></div>}
-        {!proposed && draft.starts && draft.time && <p role="alert">Choose a real starts date and hand-over time in this time zone.</p>}
+        {step >= 2 && validation.error?.field === 'handover' && draft.starts && draft.time && <p role="alert">{validation.error.message}</p>}
         <FailureLine failure={failures.failure}/>{notice && <p role="status">{notice}</p>}
         <div className="oc-step-actions">{step > 0 && <button type="button" onClick={() => {setStep(step - 1);setReview(null);}}>Back</button>}<button className="primary" type="submit" disabled={busy || step === 3 && (!proposed || JSON.stringify(proposed) !== JSON.stringify(previewed))}>{step < 3 ? 'Continue' : schedule ? 'Review change' : 'Create rota'}</button></div>
       </form>
