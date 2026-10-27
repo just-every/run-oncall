@@ -1,8 +1,20 @@
 {
-  "version": "0.4.2",
-  "date": "2026-10-20",
-  "publicReleaseNotes": "Oncall 0.4.2: the move-in kit now runs Base's shared import door exactly as Base ships it, with no Oncall-specific changes. Updates the pinned rer runtime and vendored Base modules to 0.2.71. Adds migration 0128 for the door's archives of a tool's final export. Erasing a person also withdraws an archive that holds them. A backup made by 0.4.1, including one from an installation managed by Platform, restores with every row kept. Paging stays OFF; keep your existing pager active. Product screenshot: .github/assets/release/oncall-0.4.0-incident-1440.png",
-  "contractChanges": {},
+  "version": "0.5.0",
+  "date": "2026-10-27",
+  "publicReleaseNotes": "Oncall 0.5.0: the managed build now accompanies the source for Assisted and Managed installations. Adds inbound integration email and versioned email rules, permanent operational audit, scoped API automation, alert response policies, schedule coordination records, internal business status and public-team records. Partial features retain their documented gaps; paging stays OFF and recorded notices are non-automatic. Repairs restoration of v0.4.2 archives while preserving archived receipts. Adds 15 migrations while keeping the rer 0.2.71 and Base pins unchanged. Back up first. Product screenshot: .github/assets/release/oncall-0.5.0-incident-1440.png",
+  "contractChanges": {
+    "OC-003": "Deliberate 21 October policy change: explicit service-scoped /api/v1 tokens may read granted records, and services:write may update granted service definitions without widening the grant or accessing archive, export or audit doors. Human roles and session-only protected doors remain required. A machine acknowledgment names an active responder and remains a service-account act, never a human acknowledgment. Status remains done.",
+    "OC-006": "Deliberate 21 October policy change: administrator-approved minimal signed response events through the OC-053 outbox are permitted outbound effects. Delivery records receiver acceptance, not human acknowledgment or review. Ordinary coordination with no approved endpoint publishes nothing; human-review requirements and paging OFF remain. Status remains done.",
+    "OC-033": "Generic email and Events API: the Status table moves from partial to done.",
+    "OC-041": "Durable operational audit: the Status table moves from partial to done.",
+    "OC-053": "Public API, outbound events and reliable automation: the Status table moves from partial to done.",
+    "OC-056": "Alert-only pages, and source recovery that stops paging: the Status table moves from partial to done.",
+    "OC-058": "Snooze and acknowledgment-timeout re-trigger: the Status table moves from missing to partial.",
+    "OC-061": "Business services, stakeholder subscriptions and internal status: the Status table moves from missing to partial.",
+    "OC-070": "Email integration modes, trigger and resolve rules: the Status table moves from missing to done.",
+    "OC-073": "Added target clause Intake stays inside the Workers memory limit at stated receipt capacity; Status is missing, with no shipped completion claim.",
+    "OC-074": "Added target clause Live incumbent API pull and account reconciliation; Status is missing, with no shipped completion claim."
+  },
   "extensionPointChanges": [],
   "migrations": [
     {
@@ -140,9 +152,69 @@
     {
       "id": "0128_import_door_archive.sql",
       "buyerSteps": "Apply in filename order after a verified backup. Adds two empty tables for the import door's archives of a tool's final export; no existing row changes. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0129_admin_audit.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0130_import_audit_lifecycle.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0131_inbound_email.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0132_scoped_automation.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0133_native_routed_keys.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0134_key_allowances.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0135_native_prefix_custody.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0136_subject_erasure_fences.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0137_named_responder_audit.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0140_incumbent_intake_credentials.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0141_business_status.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0142_manual_command_receipts.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0143_schedule_coordination.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0144_erased_report_cases.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0145_teams.sql",
+      "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
     }
   ],
   "breaking": false,
-  "agentUpdateInstructions": "From 0.4.1, back up first with rer export --output exports/before-0.4.2.rer (hosted: export the D1 database with npx wrangler d1 export DATABASE --remote --output exports/DATABASE.sql using the deploying Cloudflare credentials). Stop the local app with Ctrl-C, run git pull --ff-only, then rer dev. For hosted installations, run git pull --ff-only and rer deploy --environment ENVIRONMENT from the original deploying checkout with the same credentials. The update applies one additive migration, 0128_import_door_archive.sql; keep all 34 applied migrations unchanged and do not reset a populated installation. A backup made by 0.4.1 restores into a fresh empty destination with rer import --input exports/before-0.4.2.rer --yes; credentials and sessions do not transfer, and receiving integrations stay inactive until locally authorized. Paging stays OFF; keep the existing pager. Earlier upgrade instructions follow. From 0.4.0, back up first with rer export --output exports/before-0.4.1.rer. Stop the local app with Ctrl-C, run git pull --ff-only, then rer dev. For hosted installations, retain a verified hosted D1 export and private settings, then run git pull --ff-only and rer deploy --environment ENVIRONMENT from the original deploying checkout with the same credentials. Main also carries migration 0127 for installation-local signed-source credential custody; keep every applied migration byte unchanged and do not reset a populated installation. A backup made by the previous version now restores into a fresh empty destination with rer import --input exports/before-0.4.1.rer --yes. Restore retains authored records and import history; credentials and sessions do not transfer, and receiving integrations remain inactive until locally authorized. Paging stays OFF; keep the existing pager. Earlier upgrade instructions follow. To update from 0.3.0, back up first: locally with `rer export --output exports/NAME.rer`; for a hosted installation export its D1 database with `npx wrangler d1 export DATABASE --remote --output exports/DATABASE.sql` (the name is in `.rer/deploy/ENVIRONMENT.json`) using the deploying Cloudflare credentials. Locally, stop `rer dev` with Ctrl-C, run `git pull --ff-only`, then `rer dev`. Hosted, from the checkout that deployed, run `git pull --ff-only` and `rer deploy --environment ENVIRONMENT` with the same credentials; the owner, schedules and incidents are kept. The update applies ten additive migrations (0117-0126); keep all 32 applied migrations unchanged and do not reset to upgrade. Restore a backup only into an empty destination (`rer import --input exports/NAME.rer --yes` locally, a fresh empty installation when hosted). Paging stays OFF; keep your existing pager active. From 0.2.0, stop with `rer dev --stop` and `rer preview --stop`, then run `git pull --ff-only` and `rer dev`. The update applies four additive migrations (0113–0116); keep all 22 applied migrations unchanged and do not reset to upgrade. Data, the owner and password accounts are kept. People who sign in with a workspace password sign in once more, because the held session cookie is now named `oncall_session_<port>`. Captured local sign-in mail is removed with the development outbox; open the app with the `RER_OPEN` link that `rer dev` prints. To update from 0.1.0, stop the old servers before pulling with `node scripts/rer.mjs dev --stop` and `node scripts/rer.mjs preview --stop`, install the global rer command with `curl -fsSL https://runeditrun.com/install.sh | sh` (or `npm install -g @runeditrun/rer`), then run `git pull --ff-only` and `rer dev`. Back up first with `rer export --output exports/NAME.rer` (0.1.0: `node scripts/rer.mjs export --output exports/NAME.rer` while its servers are stopped). Restore only into an empty destination with `rer import --input exports/NAME.rer --yes` after restoring the original private settings. For hosted coordination, follow Install and run → Host for your team: configure remote sign-in mail and run `rer deploy` with your Cloudflare credentials; rer claims the owner and retires the setup token. Open the app address and sign in by emailed link, or with `rer signin`. Update an existing hosted installation with `rer deploy`, preserving its owner and data. Remove with `rer deploy --remove --yes` and confirm its empty readback. Paging stays OFF; keep your existing pager active. Independent standby and paging delivery are outside this release.",
-  "previousVersion": "0.4.1"
+  "agentUpdateInstructions": "From 0.4.2, back up local data with rer export --output exports/before-0.5.0.rer. For a hosted installation, export its D1 database with npx wrangler d1 export DATABASE --remote --output exports/DATABASE.sql using the deploying CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN; DATABASE is recorded in .rer/deploy/ENVIRONMENT.json. Keep the backup private. Stop the local app with Ctrl-C, run git pull --ff-only, then rer dev; from the hosted checkout run git pull --ff-only then rer deploy --environment ENVIRONMENT with the same credentials. The update applies 15 additive migrations (0129-0137, 0140-0145); keep all 49 applied migrations unchanged and do not reset a populated installation. Restore only into an empty destination with rer import --input exports/before-0.5.0.rer --yes, then check the owner, schedules and incidents. Paging stays OFF; keep the existing pager active. Earlier upgrade instructions follow. From 0.4.1, back up first with rer export --output exports/before-0.4.2.rer (hosted: export the D1 database with npx wrangler d1 export DATABASE --remote --output exports/DATABASE.sql using the deploying Cloudflare credentials). Stop the local app with Ctrl-C, run git pull --ff-only, then rer dev. For hosted installations, run git pull --ff-only and rer deploy --environment ENVIRONMENT from the original deploying checkout with the same credentials. The update applies one additive migration, 0128_import_door_archive.sql; keep all 34 applied migrations unchanged and do not reset a populated installation. A backup made by 0.4.1 restores into a fresh empty destination with rer import --input exports/before-0.4.2.rer --yes; credentials and sessions do not transfer, and receiving integrations stay inactive until locally authorized. Paging stays OFF; keep the existing pager. Earlier upgrade instructions follow. From 0.4.0, back up first with rer export --output exports/before-0.4.1.rer. Stop the local app with Ctrl-C, run git pull --ff-only, then rer dev. For hosted installations, retain a verified hosted D1 export and private settings, then run git pull --ff-only and rer deploy --environment ENVIRONMENT from the original deploying checkout with the same credentials. Main also carries migration 0127 for installation-local signed-source credential custody; keep every applied migration byte unchanged and do not reset a populated installation. A backup made by the previous version now restores into a fresh empty destination with rer import --input exports/before-0.4.1.rer --yes. Restore retains authored records and import history; credentials and sessions do not transfer, and receiving integrations remain inactive until locally authorized. Paging stays OFF; keep the existing pager. Earlier upgrade instructions follow. To update from 0.3.0, back up first: locally with `rer export --output exports/NAME.rer`; for a hosted installation export its D1 database with `npx wrangler d1 export DATABASE --remote --output exports/DATABASE.sql` (the name is in `.rer/deploy/ENVIRONMENT.json`) using the deploying Cloudflare credentials. Locally, stop `rer dev` with Ctrl-C, run `git pull --ff-only`, then `rer dev`. Hosted, from the checkout that deployed, run `git pull --ff-only` and `rer deploy --environment ENVIRONMENT` with the same credentials; the owner, schedules and incidents are kept. The update applies ten additive migrations (0117-0126); keep all 32 applied migrations unchanged and do not reset to upgrade. Restore a backup only into an empty destination (`rer import --input exports/NAME.rer --yes` locally, a fresh empty installation when hosted). Paging stays OFF; keep your existing pager active. From 0.2.0, stop with `rer dev --stop` and `rer preview --stop`, then run `git pull --ff-only` and `rer dev`. The update applies four additive migrations (0113–0116); keep all 22 applied migrations unchanged and do not reset to upgrade. Data, the owner and password accounts are kept. People who sign in with a workspace password sign in once more, because the held session cookie is now named `oncall_session_<port>`. Captured local sign-in mail is removed with the development outbox; open the app with the `RER_OPEN` link that `rer dev` prints. To update from 0.1.0, stop the old servers before pulling with `node scripts/rer.mjs dev --stop` and `node scripts/rer.mjs preview --stop`, install the global rer command with `curl -fsSL https://runeditrun.com/install.sh | sh` (or `npm install -g @runeditrun/rer`), then run `git pull --ff-only` and `rer dev`. Back up first with `rer export --output exports/NAME.rer` (0.1.0: `node scripts/rer.mjs export --output exports/NAME.rer` while its servers are stopped). Restore only into an empty destination with `rer import --input exports/NAME.rer --yes` after restoring the original private settings. For hosted coordination, follow Install and run → Host for your team: configure remote sign-in mail and run `rer deploy` with your Cloudflare credentials; rer claims the owner and retires the setup token. Open the app address and sign in by emailed link, or with `rer signin`. Update an existing hosted installation with `rer deploy`, preserving its owner and data. Remove with `rer deploy --remove --yes` and confirm its empty readback. Paging stays OFF; keep your existing pager active. Independent standby and paging delivery are outside this release.",
+  "previousVersion": "0.4.2"
 }

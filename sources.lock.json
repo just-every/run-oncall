@@ -107,6 +107,10 @@
       "sha256": "8fb13cc6e373a5b26bd99aaed0255373c5a55eacc9be25a24d19904b419c9128",
       "executable": false
     },
+    ".github/assets/release/oncall-0.5.0-incident-1440.png": {
+      "sha256": "db3eea9c1c628caaa6a90e5c3d387460165392acb3bb07f263ee5ff2c71b1863",
+      "executable": false
+    },
     ".github/workflows/rer-managed.yml": {
       "sha256": "4438b6e2ab1aa8eac1ccb92a7a6063ed222ac3b8575417824951e80a0bf4c40a",
       "executable": false
@@ -152,7 +156,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "d46aa27fcf423d7f03e4df0d403f7683ea8d2db10de9800f3a2326b64cb7e669",
+      "sha256": "a1d1f3e3e3310f76b4e0abc819d81f0797b9376012971fc21f15250f3b6d3307",
       "executable": false
     },
     "CLAUDE.md": {
@@ -608,7 +612,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "e10fb52ec83394620957130ad2ca62b2c1d14033a57d447e50d29b885cf8544a",
+      "sha256": "ea4e9bf047b8defe823c38c734b9b2b8b713bf6dc1091af1764c6aa821a0bdfc",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -700,15 +704,15 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "89f9aa1330d0ff4b6a1aec696787d4abb2ff5002e15ea4f89cb9f7473c1c2d3b",
+      "sha256": "9b0ecf5138cb113dc4a79af2464a46f2466382ce26eb75174566eeb06de38696",
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "e62992824fe291fef19a22ee66811fdb613d33914a40d0c9766c32845cc93436",
+      "sha256": "1a80d3699ec337e1bfc2a588a8be2499e9f7c51e49cde6b3d68ac551d88aab24",
       "executable": false
     },
     "RELEASE.md": {
-      "sha256": "694de9484daf82b56f8e5afe435fe9f78a9a6da3188a1317df2ce0a5aadeefa8",
+      "sha256": "f2d36c18a87cb49577ae633f04a72516f710484801e46d5b9f2c021b5b4e247f",
       "executable": false
     },
     "rer-project.json": {
@@ -892,7 +896,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "447d7e25edf8e73a7396794c767d94ca9b7a829b1308d69abf55865a1423d452",
+      "sha256": "da0de12dcda6da057e5e4a54d7bdf3c3dba12643f6c07ac22885adc95485ac41",
       "executable": false
     },
     "src/alert-obligation.ts": {

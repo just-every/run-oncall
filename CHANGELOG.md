@@ -1,9 +1,48 @@
-# Unreleased
+# 0.5.0 · 2026-10-27
 
-## Inbound integration email
+Incident coordination beside your existing pager, with a managed build for Assisted and Managed installations, inbound integration email, permanent audit and more schedule and response coordination. Paging stays OFF.
 
+Product screenshot: [`.github/assets/release/oncall-0.5.0-incident-1440.png`](.github/assets/release/oncall-0.5.0-incident-1440.png).
+
+**What you get**
+
+- Managed installations carry Base's dispatch-only managed workflow and the project artifact producer. The workflow calls the pinned trusted build and emits `rer-worker-artifact.json`.
 - Added opt-in Cloudflare Email Routing intake, private revocable per-service addresses, four versioned email modes, ordered RE2 trigger/recovery rules, saved-mail draft replay, owner activity and quarantine.
 - Email generations retain one paging-OFF obligation, explicit source recovery and atomic secret-free permanent audit. Portable restore keeps email history inactive without keys; erasure fences older source copies. Additive migration 0131 preserves released data.
+- Workspace sections and incidents have stable addresses. Live updates preserve in-progress forms, and failed saves keep the relevant form and its refusal visible.
+- Permanent operational audit commits accepted state and its audit entry together, retains pseudonymous facts through subject erasure, and provides an administrator export without secrets.
+- Administrator-scoped API keys and minimal signed outbound response events use declared services and permissions, revocation fences and retained delivery receipts. Machine actions stay attributed to the service account. The policy now also permits explicit service-scoped clients at `/api/v1` and administrator-approved minimal signed response events. A machine acknowledgment names an active responder and remains a service-account act, never a human acknowledgment; human-review and protected archive/export doors stay human-only.
+- Response policies distinguish alert-only work from incidents and retain explicit source recovery. Notices and reminders are recorded non-automatic obligations while paging is OFF.
+- Schedule coordination is partial: web swap requests name a substitute and bounded interval, require that person's decision and the configured administrator approval, and keep revision-checked overrides. Calendar subscription records and reminder due times exist; automatic notification and reminder delivery do not.
+- Internal business status and explicit member audiences are partial: status and subscription records exist; delivery, team/channel subscribers and private-team visibility remain gaps. Public-team records and explicit service ownership ship; team privacy and manager scope remain incomplete.
+- A populated v0.4.2 archive can restore into the new schema without rewriting its archived intake receipts; legacy native-prefix custody is derived when the current key is read.
+- The rer pin stays `@runeditrun/rer` 0.2.71. This release adds 15 migrations (0129-0137, 0140-0145), preserving the prior 34.
+
+**Checked for this release**
+
+The release requires a complete publication scan, source and Base checks, typecheck and application build; populated 0.4.2 upgrades through the native and Platform migration runners; a retained 0.4.2 Platform-ledger archive restored into an empty installation; Managed source materialization and catalogue admission; the README install and backup/restore journey; and the core owner/member loop locally and on a hosted installation using a real emailed sign-in, at 1440 and 390 wide. Exact-SHA branch, full-tier main and tag Verify runs and Run site must pass before publication. Paging requests are refused.
+
+**Not in this release**
+
+- Paging. Oncall does not call, text, push or escalate. A page request is refused with "Paging is OFF", and the escalation policy is stored as data only. Keep your existing pager. An alert is owned by the coordination owner named in **Routing & replay**, not looked up from the schedule, so update the routing rule when the rota changes hands. Release 2 paging and its independent standby are not built.
+- Automatic schedule notices and reminder delivery; mobile swaps; private teams and team-manager privacy rules; stakeholder status pages; Slack/Microsoft Teams; phone bridges; native mobile apps; AWS CloudWatch/SNS; live incumbent API pull and reconciliation.
+
+**Known issues**
+
+- The provider receivers have been checked with local and PagerDuty-shaped requests only. A provider's own test/send button and a real firing and recovering rule are not part of this release's core-loop checks.
+- The existing UI review records small text on incident, schedule and review screens, schedule controls with incomplete tooltips, and small phone-width inputs. Simultaneous background-read notices can overlap, and the Grafana signing read notice can persist until another workspace revision.
+- Accessibility conformance is not established. Keyboard and phone-width journeys are maintained, but no screen-reader journeys have been run and no conformance report has been written.
+- The homepage's "alternative to PagerDuty and Opsgenie" is ahead of the code on paging (see above).
+- The current rer pin is below the later catalogue recipe's 0.2.79 minimum; the existing Base refresh hold keeps it at 0.2.71. The accepted brand mark also remains unchanged.
+
+**Back up first**
+
+- Local: `rer export --output exports/before-0.5.0.rer`. Restore only into an empty destination with `rer import --input exports/before-0.5.0.rer --yes`.
+- Hosted: `npx wrangler d1 export DATABASE --remote --output exports/DATABASE.sql` with the deploying `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, where `DATABASE` is the D1 name in `.rer/deploy/ENVIRONMENT.json`. Keep the file private.
+
+**Update**
+
+- Local: stop `rer dev` (Ctrl-C), `git pull --ff-only`, then `rer dev`. Hosted: from the checkout that deployed, `git pull --ff-only` then `rer deploy --environment ENVIRONMENT` with the same credentials. The update applies 15 additive migrations (0129-0137, 0140-0145); keep all 49 applied migrations unchanged and do not reset a populated installation. Restore only into an empty destination. Paging stays OFF.
 
 # 0.4.2 · 2026-10-20
 
