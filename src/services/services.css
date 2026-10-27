@@ -66,3 +66,6 @@
 }
 .service-page .field :is(input,select,textarea):focus-visible,
 .service-list .field :is(input,select,textarea):focus-visible {outline-offset:-2px;}
+@media(max-width:760px) {
+ .service-list :is(input:not([type=checkbox]),select,textarea) {min-height:44px;}
+}

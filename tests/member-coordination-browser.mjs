@@ -368,7 +368,7 @@ try {
  for(const width of [1440])await statusCapture(vic.page,'oc068-viewer-refusal',width)
  await owner.page.goto(worker.origin+'/settings/services/checkout');await owner.page.reload()
  const assignment68=owner.page.locator('.service-page')
- await assignment68.getByText('User-assignment rule',{exact:true}).click()
+ await assignment68.getByText('Assign new incidents',{exact:true}).click()
  const assignmentChoice=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='user-assignment');
  await assignment68.getByLabel('User-assignment outcome',{exact:true}).selectOption('repeat');assert.equal((await assignmentChoice).status(),200)
  await assignment68.getByLabel('Assignment delay (minutes)',{exact:true}).fill('7')
