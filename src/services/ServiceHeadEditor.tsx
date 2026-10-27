@@ -9,7 +9,11 @@ import {readLocalDraft, removeLocalDraft, writeLocalDraft} from '../app/autosave
 import {ServiceHead, serviceValues, type ServiceValues} from './ServiceHead';
 type Pending = Partial<Pick<ServiceValues, 'pager' | 'team'>>;
 type KeptConfirm = {values: Pending; bases: Pending};
-export function ServiceHeadEditor({service, state, admin, refresh, focusName}: {service: Service; state: State; admin: boolean; refresh: () => Promise<void>; focusName?: boolean}) {
+type Props = {service: Service; state: State; admin: boolean; refresh: () => Promise<void>; focusName?: boolean};
+export function ServiceHeadEditor(props: Props) {
+  return props.admin ? <EditableServiceHead {...props}/> : <ServiceHead service={props.service} state={props.state} admin={false} values={serviceValues(props.service)} change={() => {}} blur={() => {}}/>;
+}
+function EditableServiceHead({service, state, admin, refresh, focusName}: Props) {
   const snapshot = (service: Service, revision: number) => ({values:serviceValues(service), revision});
   const save = useAutosave<ServiceValues>({storageKey:'service:'+service.id,equal:(a,b) => {const clean=(value:unknown) => Array.isArray(value) ? value.map(item => typeof item === 'string' ? item.trim() : item).filter(Boolean) : typeof value === 'string' ? value.trim() : value;return JSON.stringify(clean(a)) === JSON.stringify(clean(b));},snapshot:snapshot(service,state.revision), read:async () => {
     const latest: State = await request('/api/state');

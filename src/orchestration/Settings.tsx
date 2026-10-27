@@ -3,13 +3,13 @@ import type {IntakeRun} from '../intake/CompatibleTest';
 import {autosaveRequest} from '../app/autosave/useAutosave';
 import {usePolicyDraft} from '../services/usePolicyDraft';
 import {PolicyPublication} from '../services/PolicyPublication';
-import {DraftComparison} from '../services/DraftComparison';
+import {DraftComparison, DraftStorageFeedback} from '../services/DraftComparison';
 import {GroupingFields, groupingDraft} from '../services/sections/GroupingSection';
 import {WorkflowFields, type WorkflowDraft} from '../services/sections/WorkflowSection';
 type Props = {service: Service; state: State; busy: boolean; run: IntakeRun; refresh?: () => Promise<void>; admin?: boolean};
 export function CorrelationSettings({service, state, refresh, admin = true}: Props) {
   const policy = state.policies.find(row => row.service === service.id && row.severity === '*'), version = policy?.version ?? 0;
-  const saved = groupingDraft(service, state), draft = usePolicyDraft('grouping', service.id, version, saved);
+  const saved = groupingDraft(service, state), draft = usePolicyDraft('grouping', service.id, version, saved, !!admin);
   return <details className="response-policy service-grouping"><summary>Grouping · version {version}</summary>
     <DraftComparison stale={draft.stale} baseVersion={draft.baseVersion} currentVersion={version} useMine={draft.useMine}><GroupingFields value={saved} change={() => {}} state={state} readOnly/></DraftComparison>
     <form onSubmit={event => event.preventDefault()}><GroupingFields value={admin ? draft.value : saved} change={draft.change} state={state} readOnly={!admin}/>
@@ -21,6 +21,7 @@ export function CorrelationSettings({service, state, refresh, admin = true}: Pro
           correlation:value.enabled ? {field:value.field,windowSeconds:value.seconds,includeDependencies:value.dependencies,flappingCount:value.flapping} : null});
         await refresh?.(); draft.published(); return result;
       }}/>}
+      <DraftStorageFeedback failed={draft.storageFailed} retry={draft.retryStorage}/>
     </form>
     <PolicyHistory state={state} policy={policy?.id} label="Grouping history"/>
   </details>;
@@ -28,7 +29,7 @@ export function CorrelationSettings({service, state, refresh, admin = true}: Pro
 export function WorkflowSettings({service, state, refresh, admin = true}: Props) {
   const policy = state.policies.find(row => row.service === service.id && row.severity === '*'), version = policy?.version ?? 0;
   const saved: WorkflowDraft = {member:policy?.workflow?.member ?? service.owner, reason:policy?.workflow?.reason ?? 'Coordinate this alert'};
-  const draft = usePolicyDraft('workflow', service.id, version, saved);
+  const draft = usePolicyDraft('workflow', service.id, version, saved, !!admin);
   // Approval belongs to the workflow version; concurrency belongs to its service rule.
   const next = (policy?.workflow?.version ?? 0) + 1;
   return <details className="response-policy service-workflow"><summary>Approved workflows · version {policy?.workflow?.version ?? 0}</summary>
@@ -46,6 +47,7 @@ export function WorkflowSettings({service, state, refresh, admin = true}: Props)
           workflow:{version:next,approved:true,member:draft.value.member,reason:draft.value.reason}});
         await refresh?.(); draft.published(); return result;
       }}/>}
+      <DraftStorageFeedback failed={draft.storageFailed} retry={draft.retryStorage}/>
     </form>
     <PolicyHistory state={state} policy={policy?.id} label="Workflow history"/>
   </details>;

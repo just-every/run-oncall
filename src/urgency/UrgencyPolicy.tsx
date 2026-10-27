@@ -7,7 +7,7 @@ import {request} from '../useWorkspace';
 import {autosaveRequest} from '../app/autosave/useAutosave';
 import {usePolicyDraft} from '../services/usePolicyDraft';
 import {PolicyPublication} from '../services/PolicyPublication';
-import {DraftComparison} from '../services/DraftComparison';
+import {DraftComparison, DraftStorageFeedback} from '../services/DraftComparison';
 import {UrgencyFields, defaultUrgency} from '../services/sections/UrgencySection';
 import './urgency.css';
 function wallTime(zone: string) {
@@ -19,9 +19,9 @@ export function UrgencyPolicy({service, state, admin, refresh}: {service: Servic
   const [browserZone, setBrowserZone] = useState('UTC');
   useEffect(() => {setBrowserZone(Intl.DateTimeFormat().resolvedOptions().timeZone);}, []);
   const saved: UrgencyDraft = current ? {mode:current.mode, timezone:current.timezone, weekly:current.weekly, holidays:current.holidays, inside:current.inside, outside:current.outside, reason:''} : {...defaultUrgency(), timezone:browserZone};
-  const draft = usePolicyDraft('urgency', service.id, version, saved), value = admin ? draft.value : saved;
+  const draft = usePolicyDraft('urgency', service.id, version, saved, !!admin), value = admin ? draft.value : saved;
   const [at, setAt] = useState(''), [severity, setSeverity] = useState('warning'), [preview, setPreview] = useState<UrgencyDecision | null>(null), [previewError, setPreviewError] = useState('');
-  useEffect(() => {setAt(wallTime(value.timezone));}, []);
+  useEffect(() => {setAt(wallTime(value.timezone));}, [value.timezone]);
   const previewRule = JSON.stringify({...value, holidays:value.holidays.map(date => date.trim()).filter(Boolean), reason:'Sample alert'});
   useEffect(() => {
     let live = true;
@@ -43,6 +43,7 @@ export function UrgencyPolicy({service, state, admin, refresh}: {service: Servic
         const result = await autosaveRequest('/api/urgency/services/' + encodeURIComponent(service.id), {baseVersion:draft.baseVersion, ...draft.value, holidays:draft.value.holidays.map(date => date.trim()).filter(Boolean), reason});
         await refresh?.(); draft.published(); return result;
       }}/>}
+      <DraftStorageFeedback failed={draft.storageFailed} retry={draft.retryStorage}/>
     </form>
     <section aria-label="Sample alert"><h4>Sample alert</h4><div className="urgency-fields">
       <label className="field">Time in {value.timezone.replaceAll('_',' ')}<input type="datetime-local" value={at} onChange={event => setAt(event.target.value)}/></label>
