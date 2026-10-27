@@ -7,8 +7,10 @@ import {savedResponseValue, useIncidentValues} from '../incident/useIncidentValu
 export function IncidentResponseControls({incident, members, canEdit, refresh = async () => {}}: {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>; refresh?: () => Promise<void>}) {
   const id = useId();
   const fields = ['scribe', 'communications', 'priority', 'urgency', 'severity'];
-  const save = useIncidentValues({incident, refresh}, fields);
   const [reasonInputs, setReasonInputs] = useState<Record<string, string>>({});
+  const save = useIncidentValues({incident, refresh}, fields, (field, reason) => {
+    setReasonInputs(previous => previous[field] === reason ? {...previous, [field]: ''} : previous);
+  });
   const [lowering, setLowering] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const eligible = members.filter(member => member.active && !member.machine && ['admin', 'responder'].includes(member.role));
@@ -33,7 +35,7 @@ export function IncidentResponseControls({incident, members, canEdit, refresh = 
       {options[field].map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
     </select>
     {canEdit && !(field === 'urgency' && lowering) && <label className="field incident-optional-reason"><span>Reason for {labels[field].toLowerCase()} (optional)</span><input aria-label={`Reason for ${labels[field].toLowerCase()} (optional)`} value={reasonInputs[field] ?? save.reasonValues[field] ?? ''} onChange={event => {const value=event.target.value;save.reasons.current[field] = value;setReasonInputs(previous => ({...previous, [field]: value}));}} /></label>}
-    {field === 'urgency' && lowering && <InlineConfirm action="Lower urgency" keep="Keep high urgency" reasonRequired onConfirm={reason => {save.reasons.current.urgency = reason ?? '';setReasonInputs(previous => ({...previous, urgency: reason ?? ''}));save.change('urgency', 'low', 'choice');setLowering(false);}} onCancel={() => setLowering(false)}>Lower this incident to low urgency?</InlineConfirm>}
+    {field === 'urgency' && lowering && <InlineConfirm action="Lower urgency" keep="Keep high urgency" reasonRequired onConfirm={reason => {setReasonInputs(previous => ({...previous, urgency: ''}));save.change('urgency', 'low', 'choice', reason ?? '');setLowering(false);}} onCancel={() => setLowering(false)}>Lower this incident to low urgency?</InlineConfirm>}
     <SaveFeedback state={save.states[field]} retry={() => save.retry(field)} useMine={() => save.useMine(field)} format={value => ['scribe', 'communications'].includes(field) ? members.find(member => member.id === savedResponseValue(value))?.name ?? 'Unassigned' : String(savedResponseValue(value) || 'Unset')} />
     {answers[field] && <p role="status">{answers[field]}</p>}
   </div>)}</section>;
