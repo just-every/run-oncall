@@ -27,7 +27,7 @@ export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSou
 const RealDate=Date;let at;
 // The test platform clock must agree for Date.now() and no-argument new Date().
 // Explicit source timestamps and all native Date parsing remain unchanged.
-globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
+if(${clock})globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
 ${fetchSource}
 export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__provider_control'&&${Boolean(fetchSource)}){const input=await request.json();providerMode=input.mode??'normal';providerCalls=[];pkceChallenge=input.challenge??pkceChallenge;return Response.json({ok:true});}if(new URL(request.url).pathname==='/__provider_calls'&&${Boolean(fetchSource)})return Response.json({calls:providerCalls,pkceValid,revoked});if(new URL(request.url).pathname==='/__provider_cron'&&${Boolean(fetchSource)}){await app.scheduled({},env,ctx);return Response.json({ok:true});}if(new URL(request.url).pathname==='/__test_clock'){at=Number(await request.text());return new Response('clock injected');}return app.fetch(request,env,ctx);}};`);
   await writeFile(config,JSON.stringify({...built,main:name+'.js'}));

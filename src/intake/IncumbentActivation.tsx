@@ -15,7 +15,7 @@ function transportError(error: unknown) {
 }
 
 export function IncumbentActivation({row,services,request,reload}:{row:any;services:any[];request:(path:string,input?:unknown)=>Promise<any>;reload:()=>Promise<void>}) {
- const [id,setId]=useState(row.value.intakeSource??('import-'+row.value.sourceId).slice(0,80));
+ const [id,setId]=useState(row.value.intakeSource??('import-'+crypto.randomUUID()));
  const [service,setService]=useState(services[0]?.id??'');
  const [secret,setSecret]=useState('');
  const [status,setStatus]=useState<any>(null);
@@ -59,14 +59,7 @@ export function IncumbentActivation({row,services,request,reload}:{row:any;servi
  const name=row.value.name??'Imported integration';
  const retryAllowed=(revision:unknown)=>hasChangeBase({revision});
  const refreshAfterSave=async()=>{try{await reload()}catch(error){failures.show(transportError(error),{read:true,target:null})}};
-
- return <section aria-label={'Activate imported integration '+name}>
-  <h3>Activate imported integration</h3>
-  <FailureLine failure={failures.failure}/>
-  <p>{name}. {status?.source.active?'Active compatible intake':'Inactive compatible intake'}. Paging OFF. {status?.keySupplied?'Incumbent key supplied; never shown again.':'Incumbent key: not supplied.'}</p>
-  <p>Supply the integration credential separately. It is never read from your saved file. Supplying or rotating it leaves intake inactive until you confirm activation.</p>
-  <form onSubmit={e=>{
-   e.preventDefault();
+ const supply=()=>{
    const input={importedId:row.targetId,importedRevision:row.revision,id,service,name,revision:status?.source.revision??0,key:secret};
    const retryInput=retryAllowed(input.importedRevision)&&retryAllowed(input.revision);
    void run(async()=>{
@@ -74,15 +67,25 @@ export function IncumbentActivation({row,services,request,reload}:{row:any;servi
     setStatus(value);
     setNativeKey('');
     setSecret('');
+    setConfirmation('');
     await refreshAfterSave();
    },{retryInput});
-  }}>
+ };
+
+ return <section aria-label={'Activate imported integration '+name}>
+  <h3>Activate imported integration</h3>
+  <FailureLine failure={failures.failure}/>
+  <p>{name}. {status?.source.active?'Active compatible intake':'Inactive compatible intake'}. Paging OFF. {status?.keySupplied?'Incumbent key supplied; never shown again.':'Incumbent key: not supplied.'}</p>
+  <p>Supply the integration credential separately. It is never read from your saved file. Supplying or rotating it leaves intake inactive until you confirm activation.</p>
+  <form onSubmit={e=>{e.preventDefault();if(status)setConfirmation('replace');else supply()}}>
+
    <fieldset disabled={busy}>
     {services.length>1?<label className="scheduling-field"><span id={id+'-service-label'}>Service for imported integration</span><select aria-labelledby={id+'-service-label'} value={service} onChange={e=>setService(e.target.value)} disabled={Boolean(row.value.intakeSource)} required>{services.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label>:<p>Service: {services[0]?.name??'Add a service before activating this integration.'}</p>}
-    <label className="scheduling-field">Incumbent integration key<input type="password" value={secret} onChange={e=>setSecret(e.target.value)} autoComplete="new-password" required minLength={32} maxLength={200}/></label>
+    <label className="scheduling-field">Incumbent integration key<input type="password" value={secret} onChange={e=>{setSecret(e.target.value);setConfirmation('');failures.clear()}} autoComplete="new-password" required minLength={32} maxLength={200}/></label>
     <button type="submit" disabled={!secret||!service}>{status?'Replace incumbent key · leave inactive':'Supply incumbent key · leave inactive'}</button>
    </fieldset>
   </form>
+  {confirmation==='replace'&&<InlineConfirm action="Confirm key replacement" keep="Keep the old key" busy={busy} onCancel={()=>setConfirmation('')} onConfirm={supply}>Replace this credential and leave compatible intake inactive?</InlineConfirm>}
   {status?.keySupplied&&!status.source.active&&<button type="button" disabled={busy} onClick={()=>setConfirmation('activate')}>Activate integration</button>}
   {confirmation==='activate'&&<InlineConfirm action="Confirm activation" keep="Keep inactive" busy={busy} onCancel={()=>setConfirmation('')} onConfirm={()=>{
    const input={revision:status.source.revision,confirmed:true};

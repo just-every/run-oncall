@@ -34,12 +34,20 @@ export const bundleCount = (bundle: Bundle) => Object.values(bundle).reduce((n, 
 export function checkBundle(bundle: Bundle) {
  if (bundleCount(bundle) > 500 || new TextEncoder().encode(bundleJSON(bundle)).length > 512 * 1024) throw new CollectionRefusal(collectionLimit)
 }
+function containsKey(value: string, key: string) {
+ let decoded = value
+ for (let n = 0; n < 4; n++) {
+  if (decoded.includes(key)) return true
+  try { const next = decodeURIComponent(decoded); if (next === decoded) break; decoded = next } catch { break }
+ }
+ return false
+}
 function cleanResponse(value: any, key: string, removed: { count: number }): any {
- if (typeof value === 'string' && value.includes(key)) throw new CollectionRefusal('The provider returned the credential inside its data. Nothing was imported; ask your provider administrator for help.')
+ if (typeof value === 'string' && containsKey(value, key)) throw new CollectionRefusal('The provider returned the credential inside its data. Nothing was imported; ask your provider administrator for help.')
  if (Array.isArray(value)) return value.map(item => cleanResponse(item, key, removed))
  if (!value || typeof value !== 'object') return value
  return Object.fromEntries(Object.entries(value).flatMap(([field, child]) => {
-  if (field.includes(key)) throw new CollectionRefusal('The provider returned the credential inside its data. Nothing was imported; ask your provider administrator for help.')
+  if (containsKey(field, key)) throw new CollectionRefusal('The provider returned the credential inside its data. Nothing was imported; ask your provider administrator for help.')
   if (credentialField.test(field)) { removed.count++; return [] }
   return [[field, cleanResponse(child, key, removed)]]
  }))
@@ -78,12 +86,14 @@ export async function collectStep(options: CollectOptions, previous?: Collection
  function safeURL(path: string, initial?: URL) {
   const url = new URL(path, base)
   if (url.origin !== base || url.username || url.password || url.hash || (initial && url.pathname !== initial.pathname)) throw new CollectionRefusal('The provider returned an unsafe pagination link. Nothing was imported.')
+  if (containsKey(url.href, key)) throw new CollectionRefusal('The provider returned a credential in its pagination link. Nothing was imported.')
+  if ([...url.searchParams.keys()].some(field => credentialField.test(field))) throw new CollectionRefusal('The provider returned a credential in its pagination link. Nothing was imported.')
   return url
  }
  while (state.tasks.length && requests < budget) {
   const task = state.tasks[0], initial = safeURL(task.path), visited = task.visited ?? [], identities = task.identities ?? []
   if (visited.includes(initial.href) || visited.length >= 100) throw new CollectionRefusal('Provider pagination did not complete safely. Read again while settings are unchanged.')
-  progress(`Reading ${task.kind === 'schedule-list' ? 'schedules' : task.kind}…`)
+  progress(`Reading ${task.kind === 'schedule-list' ? 'schedules' : task.kind.replaceAll('_', ' ')}…`)
   const headers = { Authorization: ops ? `GenieKey ${key}` : bearer ? `Bearer ${key}` : `Token token=${key}`, Accept: ops ? 'application/json' : 'application/vnd.pagerduty+json;version=2' }
   const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 10000)
   let body: any, response: Response
@@ -92,7 +102,7 @@ export async function collectStep(options: CollectOptions, previous?: Collection
    response = await request(initial, { method: 'GET', headers, redirect: 'manual', signal: controller.signal })
    if (response.status >= 300 && response.status < 400) throw new CollectionRefusal('The provider redirected the read. Redirects are refused; check the account region. Nothing was imported.')
    if (!response.ok) throw new CollectionRefusal(response.status === 401 || response.status === 403 || response.status === 422
-    ? 'The provider refused this key. Check the account region and read-only configuration access. Nothing was imported.'
+    ? bearer ? 'PagerDuty refused this connection. Connect again. Nothing was imported.' : 'The provider refused this key. Check the account region and read-only configuration access. Nothing was imported.'
     : response.status === 429 ? 'The provider’s rate limit was reached. Wait a few minutes and read again. Nothing was imported.' : 'The provider could not complete the read. Check its status and try again. Nothing was imported.')
    body = cleanResponse(await boundedJSON(response), key, removed)
   } catch (error) {

@@ -53,8 +53,14 @@ export function installMoveInRead(api: any) {
   if (typeof key !== 'string' || !key.trim()) fail('Paste a read-only key, or connect PagerDuty.')
   let closing = false
   try {
-   const result = await collectStep({ vendor: source, region, key, bearer: Boolean(held), request: async (url, options) => { await currentMoveInAdmin(c); return fetch(url, options) } }, previous?.state, held ? 39 : 40)
+   // Leave room under the Worker's subrequest limit for session checks, custody and audit.
+   const result = await collectStep({ vendor: source, region, key, bearer: Boolean(held), request: async (url, options) => {
+    if (held && held.expires <= Date.now()) throw new CollectionRefusal('The PagerDuty connection expired. Connect again. Nothing was imported.')
+    const signal = held ? AbortSignal.any([...(options?.signal ? [options.signal] : []), AbortSignal.timeout(Math.max(1, held.expires - Date.now()))]) : options?.signal
+    return fetch(url, { ...options, signal })
+   } }, previous?.state, held ? 29 : 30)
    await currentMoveInAdmin(c)
+   if (held && held.expires <= Date.now()) throw new CollectionRefusal('The PagerDuty connection expired. Connect again. Nothing was imported.')
    const next = result.next ? await cursor({ member: c.get('actor').id, source, region, expires: previous?.expires ?? Date.now() + 600000, state: result.next }, env.SESSION_SECRET) : null
    if (!next) {
     // Counts only: provider values and the credential never become an audit identity or row.
@@ -70,7 +76,7 @@ export function installMoveInRead(api: any) {
    if (held && !closing) await endConsent(c, held)
    // The collector exposes only fixed sentences. Never serialize the provider response or fetch exception.
    const message = (error instanceof CollectionRefusal || error instanceof Fault) && !error.message.includes(key) ? error.message : 'The provider could not complete this read. Nothing was imported.'
-   return c.json({ error: message }, 400)
+   return c.json({ error: message }, error instanceof Fault && error.status < 500 ? error.status : 400)
   }
  })
 }
