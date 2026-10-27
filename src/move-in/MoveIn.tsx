@@ -55,11 +55,13 @@ export function MoveIn({admin,request}:{admin:boolean;request:(path:string,data?
 
  const load=async()=>{
   const version=++loadVersion.current
-  let objects:any,latest:any,options:any
-  try { [objects,latest,options]=await Promise.all([request('/api/move-in/objects'),request('/api/move-in/jobs?vendor='+vendor),request('/api/move-in/adoption')]) } catch(error){if(version!==loadVersion.current||vendor!==activeVendor.current)return;throw error}
+  let objects:any,latest:any,options:any,histories:any[]
+  try { [objects,histories,options]=await Promise.all([request('/api/move-in/objects'),Promise.all(Object.keys(vendorNames).map(source=>request('/api/move-in/jobs?vendor='+source))),request('/api/move-in/adoption')]);latest=histories[Object.keys(vendorNames).indexOf(vendor)] } catch(error){if(version!==loadVersion.current||vendor!==activeVendor.current)return;throw error}
   if(version!==loadVersion.current||vendor!==activeVendor.current)return
   setChoices(options);setRows(objects);setJobs(latest)
-  setLabels(current=>Object.assign({},current,...[...latest].reverse().map((saved:any)=>saved.labels??{})))
+  // Names remain in erasable journal custody. Read every source so a reload or
+  // another Source selection cannot replace distinct integration names.
+  setLabels(Object.assign({},...histories.flatMap(history=>[...history].reverse().map((saved:any)=>saved.labels??{}))))
   setJob((current:any)=>current?latest.find((saved:any)=>saved.id===current.id)??null:null)
  }
  const refreshAfterSave=async()=>{try{await load()}catch(error){failures.show(transportError(error),{read:true,target:null})}}
@@ -118,7 +120,7 @@ export function MoveIn({admin,request}:{admin:boolean;request:(path:string,data?
  }}>Remove the unchanged objects from this import? Adopted or edited data cannot be undone.</InlineConfirm>}
 
 
- </section>}<section className="scheduling-panel move-in-data" hidden={!rows.length&&!erased}><h2>Imported data</h2><p>Data stays paused until you adopt a schedule or activate an integration.</p>{erased&&<p role="status">Erased. Receipt {erased.receiptId}.{erased.nativeMember==='kept'&&' A native member with this email was not changed.'}</p>}{rows.length?<ul className="move-in-objects">{rows.map(row=>{const email=row.value.email??row.targetId,label=row.value.name??row.value.schedule?.name??labels[row.targetKind+':'+row.targetId]??row.value.email??'Imported item';return <li key={row.targetKind+row.targetId}><strong>{label}</strong> {row.value.adopted&&<span>Adopted · source paused</span>}{row.targetKind==='user'&&<> <button type="button" disabled={busy} onClick={()=>{setErasing(erasing===row.targetId?'':row.targetId);setTyped('');setErased(null)}}>Erase person</button></>}
+ </section>}<section className="scheduling-panel move-in-data" hidden={!rows.length&&!erased}><h2>Imported data</h2><p>Data stays paused until you adopt a schedule or activate an integration.</p>{erased&&<p role="status">Erased. Receipt {erased.receiptId}.{erased.nativeMember==='kept'&&' A native member with this email was not changed.'}</p>}{rows.length?<ul className="move-in-objects">{rows.map((row,index)=>{const email=row.value.email??row.targetId,label=[row.value.name,row.value.schedule?.name,labels[row.targetKind+':'+row.targetId],row.value.email].find(value=>typeof value==='string'&&value.trim())??`${vendorNames[(row.value.vendor??row.targetId.split(':')[0]) as keyof typeof vendorNames]??'Imported'} ${row.targetKind==='user'?'person':row.targetKind==='policy'?'escalation policy':row.targetKind} ${index+1}`;return <li key={row.targetKind+row.targetId}><strong>{label}</strong> {row.value.adopted&&<span>Adopted · source paused</span>}{row.targetKind==='user'&&<> <button type="button" disabled={busy} onClick={()=>{setErasing(erasing===row.targetId?'':row.targetId);setTyped('');setErased(null)}}>Erase person</button></>}
  {row.targetKind==='integration'&&<IncumbentActivation row={{...row,value:{...row.value,name:label}}} services={choices.services} request={request} reload={load}/>}
  {row.targetKind==='schedule'&&<MoveInAdoption row={row} rows={rows} choices={choices} busy={busy} adopt={input=>run(async()=>{await request('/api/move-in/adopt',input);await refreshAfterSave()},{retryInput:hasChangeBase(input)})}/>}
  {erasing===row.targetId&&<form onSubmit={e=>{e.preventDefault();void run(async()=>{const receipt=await request('/api/move-in/erase',{email,confirmation:typed});await refreshAfterSave();setErasing('');setTyped('');setErased(receipt)})}}><label className="scheduling-field">Type "erase {email}" to erase this person from imported data<input value={typed} onChange={e=>setTyped(e.target.value)} autoComplete="off"/></label><button type="submit" disabled={busy||typed!==`erase ${email}`}>Erase permanently</button></form>}</li>})}</ul>:<p>No imported objects.</p>}</section><a className="move-in-footer" href="/docs/move-in">How move-in works</a></section>
