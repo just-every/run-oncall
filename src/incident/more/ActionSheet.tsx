@@ -15,7 +15,7 @@ export function ActionSheet({title, children, close, menu = false}: {title: stri
     return () => {node.removeEventListener('cancel', cancel); node.close(); (opener?.isConnected ? opener : document.querySelector<HTMLElement>('.incident-page [aria-label="Incident actions"]'))?.focus({preventScroll: true});};
   }, []);
   return createPortal(<dialog ref={dialog} className={'incident-sheet' + (menu ? ' incident-menu-sheet' : '')} aria-label={title}>
-    <div className="incident-sheet-head"><h2>{title}</h2><Tooltip label="Close"><button type="button" className="incident-icon" aria-label="Close" onClick={close}>×</button></Tooltip></div>
+    <div className="incident-sheet-head"><h2>{title}</h2><Tooltip label="Close" dismissOnEscape><button type="button" className="incident-icon" aria-label="Close" onClick={close}>×</button></Tooltip></div>
     <div className="incident-sheet-body">{children}</div>
   </dialog>, document.body);
 }

@@ -36,7 +36,7 @@ export function PeoplePicker(props: IncidentProps & {field: 'commander' | 'assig
     <SaveFeedback state={save.states[field]} retry={() => save.retry(field)} useMine={() => save.useMine(field)} format={id => props.state.members.find(member => member.id === savedResponseValue(id))?.name ?? 'Unassigned'} />
     {answer && <p role="status">{answer}</p>}
     {open && createPortal(<dialog ref={dialog} className="incident-people-dialog" aria-label={`Choose ${label.toLowerCase()}`} style={{left: position.left, top: position.top}} onClick={event => {if (event.target === event.currentTarget) close();}}>
-      <div className="incident-sheet-head"><h2>{label}</h2><Tooltip label="Close picker"><button type="button" className="incident-icon" aria-label="Close picker" onClick={close}>×</button></Tooltip></div>
+      <div className="incident-sheet-head"><h2>{label}</h2><Tooltip label="Close picker" dismissOnEscape><button type="button" className="incident-icon" aria-label="Close picker" onClick={close}>×</button></Tooltip></div>
       <div role="listbox" aria-label={label} onKeyDown={event => {
         const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role=option]'));
         const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
