@@ -29,15 +29,15 @@ export function TeamSection() {
 }
 function MemberEditor({member, state, admin, refresh}: {member: Member; state: State; admin: boolean; refresh: () => Promise<void>}) {
   const snapshot = (member: Member, revision: number) => ({values:{role:member.role, active:member.active}, revision});
-  const save = useAutosave({snapshot:snapshot(member,state.revision), read:async () => {
+  const save = useAutosave({storageKey:'member:'+member.id,snapshot:snapshot(member,state.revision), read:async () => {
     const latest: State = await request('/api/state');
     const found = latest.members.find(row => row.id === member.id);
     if (!found) throw Error('This member is no longer available.');
     return snapshot(found,latest.revision);
   }, write:async change => {
-    await autosaveRequest('/api/command', {type:'member',id:member.id,field:change.field,from:change.from,to:change.to});
+    const result = await autosaveRequest('/api/command', {type:'member',id:member.id,field:change.field,from:change.from,to:change.to});
     const latest: State = await request('/api/state');
-    void refresh();return snapshot(latest.members.find(row => row.id === member.id)!,latest.revision);
+    void refresh();return {...snapshot(latest.members.find(row => row.id === member.id)!,latest.revision),changed:result.changed !== false};
   }});
   const [adminConfirm, setAdminConfirm] = useState(false), [action, setAction] = useState<'access' | 'password' | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [resetVersion, setResetVersion] = useState(0), [resetSaved, setResetSaved] = useState(false);

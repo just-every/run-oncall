@@ -11,7 +11,7 @@ type Pending = Partial<Pick<ServiceValues, 'pager' | 'team'>>;
 type KeptConfirm = {values: Pending; bases: Pending};
 export function ServiceHeadEditor({service, state, admin, refresh, focusName}: {service: Service; state: State; admin: boolean; refresh: () => Promise<void>; focusName?: boolean}) {
   const snapshot = (service: Service, revision: number) => ({values:serviceValues(service), revision});
-  const save = useAutosave<ServiceValues>({equal:(a,b) => {const clean=(value:unknown) => Array.isArray(value) ? value.map(item => typeof item === 'string' ? item.trim() : item).filter(Boolean) : typeof value === 'string' ? value.trim() : value;return JSON.stringify(clean(a)) === JSON.stringify(clean(b));},snapshot:snapshot(service,state.revision), read:async () => {
+  const save = useAutosave<ServiceValues>({storageKey:'service:'+service.id,equal:(a,b) => {const clean=(value:unknown) => Array.isArray(value) ? value.map(item => typeof item === 'string' ? item.trim() : item).filter(Boolean) : typeof value === 'string' ? value.trim() : value;return JSON.stringify(clean(a)) === JSON.stringify(clean(b));},snapshot:snapshot(service,state.revision), read:async () => {
     const latest: State = await request('/api/state');
     const found = latest.services.find(row => row.id === service.id);
     if (!found) throw Error('This service is no longer available.');
@@ -21,7 +21,7 @@ export function ServiceHeadEditor({service, state, admin, refresh, focusName}: {
     const result = await autosaveRequest('/api/command', {type:'service', id:service.id, field:change.field, from:change.from, to:value});
     const latest: State = await request('/api/state');
     void refresh();
-    return snapshot(latest.services.find(row => row.id === service.id) ?? result, latest.revision);
+    return {...snapshot(latest.services.find(row => row.id === service.id) ?? result, latest.revision), changed:result.changed !== false};
   }});
   const [pending, setPending] = useState<Pending>({}), [pagerAsk, setPagerAsk] = useState(false), [staleConfirm, setStaleConfirm] = useState<'pager' | 'team' | null>(null);
   const bases = useRef<Pending>({});
