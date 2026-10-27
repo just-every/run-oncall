@@ -12,7 +12,7 @@ export function isOverdue(action: Action, now = Date.now()) {
 }
 type Props = {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>; incidentMode?: boolean};
 export function Followups({incident, members, busy, canEdit, mutate, incidentMode = false}: Props) {
-  const name = (id: string) => members.find(member => member.id === id)?.name ?? 'Erased member';
+  const name = (id: string) => members.find(member => member.id === id)?.name ?? (incidentMode ? 'Erased member' : id);
   return <section className="followups">
     <div className="right-title owners-heading"><h3>Follow-up owners</h3><span>{incident.actions.filter(action => !action.done).length} open</span></div>
     {!incidentMode && <p className="review-meta">Due dates run through the end of the named UTC day. Overdue starts at 00:00 UTC the next day. Escalation contacts are for manual coordination; no automatic reminders or escalation are sent.</p>}
@@ -46,8 +46,14 @@ function CreateFollowup({members, busy, mutate, incidentMode = false, initiallyO
   const labelId = useId();
   const [priority, setPriority] = useState('P2'), [policy, setPolicy] = useState('human-review');
   const eligible = members.filter(member => member.active && ["admin", "responder"].includes(member.role));
-  const Advanced = incidentMode ? 'details' : 'div';
   const options = eligible.map(member => <option value={member.id} key={member.id}>{member.name}</option>);
+  const priorityField = <label className="field"><span id={labelId + '-priority'}>Priority</span><select name="priority" aria-labelledby={labelId + '-priority'} value={priority} onChange={e => {setPriority(e.target.value); if (e.target.value === 'P1') setPolicy('human-review');}}>
+    <option value="P1">P1 · critical</option><option value="P2">P2</option><option value="P3">P3</option>
+  </select></label>;
+  const policyField = incidentMode && priority === 'P1' ? <><p>P1 requires human review.</p><input type="hidden" name="completionPolicy" value="human-review" /></> : <label className="field"><span id={labelId + '-policy'}>Completion policy</span><select name="completionPolicy" aria-labelledby={labelId + '-policy'} value={policy} onChange={e => setPolicy(e.target.value)}>
+    <option value="human-review">{incidentMode ? 'Human review' : 'Human review · evidence, then acceptance'}</option><option value="evidence" disabled={priority === 'P1'}>{incidentMode ? 'Evidence' : 'Evidence · completes on submission'}</option>
+  </select><small>P1 requires human review. New follow-ups default to human review.</small></label>;
+  const escalationField = incidentMode && eligible.length === 1 ? <><p>Escalation contact: {eligible[0].name}</p><input type="hidden" name="escalationRecipient" value={eligible[0].id} /></> : <Field name="escalationRecipient" label="Manual escalation contact" help="A recorded contact only. Contact them yourself when escalation is needed.">{options}</Field>;
   return <details className="followup-create" open={initiallyOpen || undefined}><summary>Add a follow-up</summary>
     {!eligible.length && <p>No active responders are available to own a follow-up.</p>}
     <Form busy={busy} disabled={!eligible.length} label="Add follow-up" onSubmit={async data => {
@@ -58,17 +64,7 @@ function CreateFollowup({members, busy, mutate, incidentMode = false, initiallyO
       <Field name="title" label="Improvement action" />
       {incidentMode && eligible.length === 1 ? <><p>Owner: {eligible[0].name}</p><input type="hidden" name="owner" value={eligible[0].id} /></> : <Field name="owner" label="Owner">{options}</Field>}
       <Field name="due" label={incidentMode ? "Due date (UTC)" : "Due date · through end of day UTC"} type="date" />
-      <div className="review-pair">
-        <label className="field"><span id={labelId + '-priority'}>Priority</span><select name="priority" aria-labelledby={labelId + '-priority'} value={priority} onChange={e => {setPriority(e.target.value); if (e.target.value === 'P1') setPolicy('human-review');}}>
-          <option value="P1">P1 · critical</option><option value="P2">P2</option><option value="P3">P3</option>
-        </select></label>
-      </div>
-      <Advanced>{incidentMode && <summary>More options</summary>}
-        <label className="field"><span id={labelId + '-policy'}>Completion policy</span><select name="completionPolicy" aria-labelledby={labelId + '-policy'} value={policy} onChange={e => setPolicy(e.target.value)}>
-          <option value="human-review">Human review</option><option value="evidence" disabled={priority === 'P1'}>Evidence</option>
-        </select><small>P1 requires human review. New follow-ups default to human review.</small></label>
-      {incidentMode && eligible.length === 1 ? <><p>Escalation contact: {eligible[0].name}</p><input type="hidden" name="escalationRecipient" value={eligible[0].id} /></> : <Field name="escalationRecipient" label="Manual escalation contact" help="A recorded contact only. Contact them yourself when escalation is needed.">{options}</Field>}
-      </Advanced>
+      {incidentMode ? <>{priorityField}<details><summary>More options</summary>{policyField}{escalationField}</details></> : <><div className="review-pair">{priorityField}{policyField}</div>{escalationField}</>}
     </Form>
   </details>;
 }
