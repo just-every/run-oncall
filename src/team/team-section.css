@@ -7,6 +7,13 @@
 .team-section .team-member-role .field {margin:0;}
 .team-section .team-member-role .field > span {font-size:13px;}
 .team-section .team-member-actions {position:relative;}
+.team-section .team-member-feedback {grid-column:1 / -1;}
+.team-section .team-member-feedback:empty {display:none;}
+@media(min-width:761px) and (hover:hover) {
+ .team-section .team-member-actions {opacity:0;}
+ .team-section .team-member:is(:hover,:focus-within) .team-member-actions,
+ .team-section .team-member-actions:has([aria-expanded=true]) {opacity:1;}
+}
 .team-section .team-member-actions > .oncall-tooltip > button {width:44px; height:44px; padding:0;}
 .team-section .team-row-menu {position:absolute; z-index:30; right:0; top:50px; width:min(340px, calc(100vw - 48px)); padding:20px; border:1px solid var(--oc-line); border-radius:var(--oc-radius-card); background:var(--oc-surface); box-shadow:var(--oc-shadow-card); display:grid; gap:12px;}
 .team-section .team-row-menu h4 {margin:0;}
