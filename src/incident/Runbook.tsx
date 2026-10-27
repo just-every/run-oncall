@@ -2,6 +2,7 @@ import {autosaveRequest, useAutosave} from '../app/autosave/useAutosave';
 import {SavedState, SaveFeedback} from '../app/autosave/SavedState';
 import {request} from '../useWorkspace';
 import type {Incident} from '../family/response-operations/domain';
+import {refreshAfterWrite} from './refreshAfterWrite';
 import type {IncidentProps} from './types';
 
 export function Runbook(props: IncidentProps) {
@@ -19,7 +20,7 @@ export function Runbook(props: IncidentProps) {
   const save = useAutosave({storageKey: 'incident:' + incident.id + ':runbook', snapshot: snapshot(incident), read, write: async change => {
     const [kind, id] = change.field.split(':');
     const result = await autosaveRequest('/api/command', {type: kind === 'runbook' ? 'runbook' : 'template-check', ...(kind === 'runbook' ? {index: Number(id)} : {item: id}), done: change.to, incident: incident.id, revision: change.revision});
-    await props.refresh().catch(() => {});
+    await refreshAfterWrite(props.refresh).catch(() => {});
     return snapshot(result);
   }});
   const steps = [...incident.runbook.map((step, index) => ({...step, key: 'runbook:' + index, editable: props.canEdit, history: [] as {by: string; at: string}[]})), ...(incident.template?.checklist ?? []).map(step => ({...step, key: 'template:' + step.id, editable: props.canEdit && incident.commander === props.actor.id && incident.state !== 'resolved'}))];

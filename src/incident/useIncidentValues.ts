@@ -3,6 +3,7 @@ import {request} from '../useWorkspace';
 import type {Incident, State} from '../family/response-operations/domain';
 import {autosaveRequest, useAutosave} from '../app/autosave/useAutosave';
 import {incidentAssignee, incidentUrgency} from '../family/response-operations/incident-controls';
+import {refreshAfterWrite} from './refreshAfterWrite';
 import type {IncidentProps} from './types';
 
 export function responseValue(incident: Incident, field: string) {
@@ -40,7 +41,7 @@ export function useIncidentValues(props: Pick<IncidentProps, 'incident' | 'refre
     onSaved?.(change.field, draftReason);
     // The field is already durable. A later workspace read failure must not
     // turn that accepted write into another response command.
-    await props.refresh().catch(() => {});
+    await refreshAfterWrite(props.refresh).catch(() => {});
     return {...answer, changed: result.changed !== false};
   }});
   return {...save, reasons,

@@ -17,13 +17,16 @@ import {TestPage} from './more/TestPage';
 import {Handoff} from './more/Handoff';
 import {Changes} from './more/Changes';
 import {ServiceContext} from './more/ServiceContext';
+import {useMutateAfterSaves} from './refreshAfterWrite';
 import type {IncidentProps} from './types';
 import './incident.css';
 
 const sheets = {followups: Followups, people: People, responders: Responders, snooze: Snooze, merge: Merge, split: Split, test: TestPage, handoff: Handoff, changes: Changes, context: ServiceContext};
-export function IncidentPage(props: IncidentProps) {
+export function IncidentPage(incidentProps: IncidentProps) {
   const [menu, setMenu] = useState(false);
   const [action, setAction] = useState<IncidentAction | null>(null);
+  const after = useMutateAfterSaves(incidentProps.mutate);
+  const props = {...incidentProps, mutate: after.mutate, busy: incidentProps.busy || after.waiting};
   const Sheet = action ? sheets[action] : null;
   useEffect(() => {
     const heading = document.querySelector<HTMLElement>('.incident-head h1');
