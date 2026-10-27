@@ -6,6 +6,9 @@ import { adminSession } from './owner-door'
 import type { Region } from './collect/bundle'
 
 const tokenCookie = 'oncall_move_in_token', transactionCookie = 'oncall_move_in_consent'
+// A revocation PagerDuty refused leaves a duty, never a lease: its row id never matches a
+// cookie's lease, it sits outside the lease cap, and the minute sweep retries it.
+const revocationDuty = 'revoke:'
 const tokenCustody: Custody = { label: 'oncall-move-in-token-v1', unavailable: 'Finish installation setup before connecting PagerDuty.', unreadable: 'The PagerDuty connection expired. Connect again.' }
 const transactionCustody = { ...tokenCustody, label: 'oncall-move-in-consent-v1' }
 export const pagerdutyScopes = 'users.read schedules.read escalation_policies.read'
@@ -41,7 +44,7 @@ export async function consentToken(c: any): Promise<ConsentToken | null> {
  if (!value) return null
  let held: ConsentToken
  try { held = JSON.parse(await openCredential(value, runtimeBindings(c.env).SESSION_SECRET, tokenCustody)) } catch { return fail('The PagerDuty connection expired. Connect again.', 401) }
- const lease = await c.env.DB.prepare('SELECT id FROM oc_move_in_consent WHERE id=? AND expires>?').bind(held.id, Date.now()).first()
+ const lease = await c.env.DB.prepare('SELECT id FROM oc_move_in_consent WHERE id=? AND id NOT LIKE ? AND expires>?').bind(held.id, revocationDuty + '%', Date.now()).first()
  if (!lease) fail('The PagerDuty connection expired. Connect again.', 401)
  if (held.member !== c.get('actor').id || !['us', 'eu'].includes(held.region) || typeof held.token !== 'string') fail('Connect PagerDuty again as this administrator.', 403)
  if (held.expires <= Date.now()) {
@@ -72,7 +75,7 @@ async function consentLanding(c: any, path: string) {
   c.header('Content-Security-Policy', "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
   c.header('Referrer-Policy', 'no-referrer')
   c.header('Location', path)
-  // Both destinations are fixed local paths, with no provider or user content.
+  // Every destination is a fixed local path, with no provider or user content.
   return c.html(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=${path}"><title>Opening Move in</title></head><body><p>Opening Move in… <a href="${path}">Continue to Move in</a></p></body></html>`)
  }
  return c.redirect(path, 302)
@@ -95,14 +98,14 @@ export function installPagerdutyConsent(api: any) {
  api.get('/api/move-in/pagerduty/callback', async (c: any) => {
   const env = runtimeBindings(c.env), encoded = getCookie(c.req.raw, transactionCookie)
   c.header('Set-Cookie', cookie(transactionCookie, '', env.AUTH_ORIGIN, 0), { append: true })
-  let issued: ConsentToken | null = null
+  let issued: ConsentToken | null = null, revokeFailed = false
   try {
    // Retire a previous lease before replacing it, including on a refused return.
    const prior = getCookie(c.req.raw, tokenCookie)
    if (prior) {
     const held = JSON.parse(await openCredential(prior, env.SESSION_SECRET, tokenCustody)) as ConsentToken
     const lease = await c.env.DB.prepare('SELECT id FROM oc_move_in_consent WHERE id=? AND custody=?').bind(held.id, prior).first()
-    if (lease) await endConsent(c, held)
+    if (lease) try { await endConsent(c, held) } catch (error) { revokeFailed = true; throw error }
    }
    if (!pagerdutyConnect(env) || !encoded) throw Error()
    const transaction = JSON.parse(await openCredential(encoded, env.SESSION_SECRET, transactionCustody))
@@ -130,19 +133,21 @@ export function installPagerdutyConsent(api: any) {
    const sealed = await sealCredential(JSON.stringify(issued), env.SESSION_SECRET, tokenCustody)
    if (encodeURIComponent(sealed).length > 3700) throw Error()
    const guard = consentAdmin(issued.member)
-   const inserted = await c.env.DB.prepare(`INSERT INTO oc_move_in_consent(id,custody,revoke_at,expires) SELECT ?,?,?,? WHERE (SELECT COUNT(*) FROM oc_move_in_consent)<10 AND (${guard.sql})`).bind(issued.id, sealed, Math.min(expires, Date.now() + 480000), expires, ...guard.params!).run()
+   const inserted = await c.env.DB.prepare(`INSERT INTO oc_move_in_consent(id,custody,revoke_at,expires) SELECT ?,?,?,? WHERE (SELECT COUNT(*) FROM oc_move_in_consent WHERE id NOT LIKE ?)<10 AND (${guard.sql})`).bind(issued.id, sealed, Math.min(expires, Date.now() + 480000), expires, revocationDuty + '%', ...guard.params!).run()
    if (inserted.meta.changes !== 1) throw Error()
    c.header('Set-Cookie', cookie(tokenCookie, sealed, env.AUTH_ORIGIN, Math.max(1, Math.floor((expires - Date.now()) / 1000))), { append: true })
    return consentLanding(c, '/settings/move-in?connected=pagerduty')
   } catch {
    c.header('Set-Cookie', cookie(tokenCookie, '', env.AUTH_ORIGIN, 0), { append: true })
    auditOutcome(env.DB,'failed')
-   let revokeFailed=false
    if (issued) {
     try { await revokeConsent(env, issued) } catch { revokeFailed=true }
-    if(!revokeFailed)await c.env.DB.prepare('DELETE FROM oc_move_in_consent WHERE id=?').bind(issued.id).run()
+    const lease = c.env.DB.prepare('DELETE FROM oc_move_in_consent WHERE id=?').bind(issued.id)
+    // No cookie carries this token and no lease remains; only sealed custody for the sweep to retry now.
+    if (revokeFailed) await c.env.DB.batch([lease, c.env.DB.prepare('INSERT INTO oc_move_in_consent(id,custody,revoke_at,expires) VALUES(?,?,?,?)').bind(revocationDuty + issued.id, await sealCredential(JSON.stringify(issued), env.SESSION_SECRET, tokenCustody), Date.now(), issued.expires)])
+    else await lease.run()
    }
-   return consentLanding(c, '/settings/move-in?connection=failed')
+   return consentLanding(c, '/settings/move-in?connection=' + (revokeFailed ? 'revoke-failed' : 'failed'))
   }
  })
 }

@@ -241,6 +241,19 @@ try {
   assert.ok(refusedClose.headers.getSetCookie().some(line=>/Max-Age=0/.test(line)));assert.equal(w.sql("SELECT outcome FROM oc_admin_audit WHERE kind LIKE 'move-in.read.%' ORDER BY ordinal DESC LIMIT 1")[0].outcome,'failed');
   const retryLease=w.sql('SELECT revoke_at FROM oc_move_in_consent')[0];assert.ok(retryLease);await control();w.sql('UPDATE oc_move_in_consent SET revoke_at=0');ok(await w.request('/__provider_cron'));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
   console.log('O2 failed revocation: plain refusal, cleared cookie, permanent failed audit, sealed retry and scheduled cleanup passed');
+  // A return that fails after the exchange (the lease cap is full) while PagerDuty refuses the revocation
+  // sets no token, and keeps one sealed revocation duty that no cookie can read and the sweep retries.
+  await control();const cappedStart=await req('/api/move-in/pagerduty/start');const cappedAddress=new URL(cappedStart.headers.get('location'));await control('revoke-failure',{challenge:cappedAddress.searchParams.get('code_challenge')});
+  w.sql(`INSERT INTO oc_move_in_consent(id,custody,revoke_at,expires) VALUES ${Array.from({length:10},(_,n)=>`('synthetic-lease-${n}','synthetic-lease',${Date.now()+600000},${Date.now()+600000})`).join(',')}`);
+  const cappedReturn=await w.request('/api/move-in/pagerduty/callback?code=synthetic-capped-code&state='+cappedAddress.searchParams.get('state'),undefined,cappedStart.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(cappedReturn,302);
+  assert.equal(cappedReturn.headers.get('location'),'/settings/move-in?connection=revoke-failed');
+  assert.ok(!cappedReturn.headers.getSetCookie().some(line=>/^oncall_move_in_token=[^;]/.test(line)));
+  w.sql("DELETE FROM oc_move_in_consent WHERE id LIKE 'synthetic-lease-%'");
+  const duty=w.sql('SELECT custody FROM oc_move_in_consent');assert.equal(duty.length,1);assert.ok(!duty[0].custody.includes('synthetic-provider-consent-private'));
+  const dutyRead=await w.request('/api/move-in/read',{source:'pagerduty',region:'us'},owner.cookie+'; oncall_move_in_token='+encodeURIComponent(duty[0].custody));ok(dutyRead,401);responses.push(JSON.stringify(dutyRead.value));
+  const revokedBefore=(await observed()).revoked;await control();w.sql('UPDATE oc_move_in_consent SET revoke_at=0');ok(await w.request('/__provider_cron'));
+  assert.equal((await observed()).revoked,revokedBefore+1);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
+  console.log('O2 failed return, refused revocation: revoke-failed landing, no token cookie, one sealed duty no cookie can read, revoked by the sweep');
   // An abandoned consent is revoked by the existing scheduled handler, without a browser request.
   await control();const start=await req('/api/move-in/pagerduty/start');const address=new URL(start.headers.get('location'));await control('normal',{challenge:address.searchParams.get('code_challenge')});
   const callback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-abandoned-code&state='+address.searchParams.get('state'),undefined,start.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(callback,302);
