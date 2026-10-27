@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {InterruptedTransport, request} from '../../useWorkspace';
 import {failureMessage} from '../../app/FailureLine';
+import {refreshAfterWrite} from '../refreshAfterWrite';
 import type {IncidentProps} from '../types';
 
 export function TestPage({incident, refresh}: IncidentProps) {
@@ -17,10 +18,7 @@ export function TestPage({incident, refresh}: IncidentProps) {
         accepted = true;
         setSent(true);
       }
-      // refresh shares an in-flight poll. Let that settle, then start a read
-      // that is guaranteed to follow the accepted page job.
-      await refresh();
-      await refresh();
+      await refreshAfterWrite(refresh);
       setAnswer('Test page sent');
     } catch (cause) {
       setAnswer((accepted ? 'Test page sent. ' : '') + failureMessage(cause, accepted));
