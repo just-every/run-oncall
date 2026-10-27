@@ -101,3 +101,5 @@ body:has(.incident-sheet[open], .incident-people-dialog[open]) { overflow: hidde
   .incident-timeline .composer .field { margin-bottom: 12px; }
   .incident-timeline .composer textarea { min-height: 64px; }
 }
+
+.incident-sheet .recent-changes > summary { display: none; }
