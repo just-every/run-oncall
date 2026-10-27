@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef, useState } from 'react';
+import { memo, useCallback, useRef, useState, type RefObject } from 'react';
 import {request} from '../useWorkspace';
 import {useAutosave,autosaveRequest} from '../app/autosave/useAutosave';
 import {SavedState,SaveFeedback} from '../app/autosave/SavedState';
@@ -17,8 +17,8 @@ function SupportStart({rule}:{rule:UrgencyRule}) {
   return <p className="urgency-support-start" role="note">Support-start raises are not automatic. Raise urgency here{when?<> when support opens at <time dateTime={new Date(next!).toISOString()}>{when}</time></>: ' when support begins'}.</p>;
 }
 
-const UrgencySelect=memo(function UrgencySelect({value,onChoose}:{value:'high'|'low';onChoose:(value:'high'|'low')=>void}) {
-  return <select aria-label="Urgency" value={value} onChange={event=>onChoose(event.currentTarget.value as 'high'|'low')}><option value="high">High</option><option value="low">Low</option></select>;
+const UrgencySelect=memo(function UrgencySelect({value,onChoose,selectRef}:{value:'high'|'low';onChoose:(value:'high'|'low')=>void;selectRef:RefObject<HTMLSelectElement|null>}) {
+  return <select ref={selectRef} aria-label="Urgency" value={value} onChange={event=>onChoose(event.currentTarget.value as 'high'|'low')}><option value="high">High</option><option value="low">Low</option></select>;
 });
 
 export function AlertUrgency({alert,state,canEdit,busy,run,onSaved,storageKey}:{alert:Alert;state:State;canEdit:boolean;busy:boolean;run:IntakeRun;onSaved?:(alert:Alert)=>void;storageKey?:string}) {
@@ -30,6 +30,8 @@ export function AlertUrgency({alert,state,canEdit,busy,run,onSaved,storageKey}:{
     setLatest(value);onSaved?.(value);return snapshot(value);
   }});
   const selectedValue=save.values.urgency?.value??current.urgency??'high';
+  const selectRef=useRef<HTMLSelectElement>(null);
+  const finishSave=async()=>{if(!await save.flush())return false;setLowering(false);selectRef.current?.focus({preventScroll:true});return true;};
   const choose=useRef<(value:'high'|'low')=>void>(()=>{});
   choose.current=value=>{
     if(value==='low'&&(current.urgency==='high'||selectedValue==='high'&&save.states.urgency?.status==='pending'))setLowering(true);
@@ -39,9 +41,9 @@ export function AlertUrgency({alert,state,canEdit,busy,run,onSaved,storageKey}:{
   const rule=state.services.find(s=>s.id===alert.service)?.urgencyRules?.at(-1);
   const raise=current.state==='active'&&current.urgency==='low'&&rule?.mode==='support-hours'&&rule.inside==='high'&&rule.outside==='low';
   return <div className="alert-urgency">
-    <label className="field"><span>Urgency <SavedState state={save.states.urgency}/></span>{canEdit&&alert.state==='active'?<UrgencySelect value={lowering?'low':selectedValue} onChoose={onChoose}/>:<span>{current.urgency??'Unknown'}</span>}</label>
-    <SaveFeedback format={value=>(value as {value?:string})?.value??'Unknown'} state={save.states.urgency} retry={()=>save.retry('urgency')} useMine={()=>save.useMine('urgency')}/>
-    {lowering&&<InlineConfirm action="Lower urgency" reasonRequired busy={busy||save.states.urgency?.status==='pending'} onConfirm={reason=>{setLowering(false);save.change('urgency',{value:'low',reason:reason??''},'choice');}} onCancel={()=>setLowering(false)}>Lower this alert’s urgency? The reason is recorded with your name.</InlineConfirm>}
+    <label className="field"><span>Urgency <SavedState state={save.states.urgency}/></span>{canEdit&&alert.state==='active'?<UrgencySelect selectRef={selectRef} value={lowering?'low':selectedValue} onChoose={onChoose}/>:<span>{current.urgency??'Unknown'}</span>}</label>
+    <SaveFeedback format={value=>(value as {value?:string})?.value??'Unknown'} state={save.states.urgency} retry={async()=>{await save.retry('urgency');return finishSave();}} useMine={async()=>{await save.useMine('urgency');return finishSave();}}/>
+    {lowering&&<fieldset disabled={busy||save.states.urgency?.status==='pending'}><InlineConfirm action="Lower urgency" reasonRequired busy={busy||save.states.urgency?.status==='pending'} onConfirm={reason=>{save.change('urgency',{value:'low',reason:reason??''},'choice');return finishSave();}} onCancel={()=>{setLowering(false);save.change('urgency',{value:current.urgency??'high',reason:''},'choice');selectRef.current?.focus({preventScroll:true});}}>Lower this alert’s urgency? The reason is recorded with your name.</InlineConfirm></fieldset>}
     {raise&&<SupportStart rule={rule}/>}
     <details><summary>History</summary>{current.urgencyHistory?.map(entry=><article key={entry.id}><p><strong>{entry.from??'New'} → {entry.to}</strong> · {shortTime(entry.at)}</p>{entry.reason&&<p>{entry.reason}</p>}<span>{state.members.find(m=>m.id===entry.by)?.name??'Admission rule'} · {entry.ruleVersion===null?(state.members.some(m=>m.id===entry.by)?'Human decision':'Admission decision'):'Rule version '+entry.ruleVersion}</span></article>)??<p>No retained urgency history.</p>}</details>
   </div>;
