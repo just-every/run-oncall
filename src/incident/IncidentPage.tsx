@@ -26,7 +26,7 @@ export function IncidentPage(props: IncidentProps) {
   const [action, setAction] = useState<IncidentAction | null>(null);
   const Sheet = action ? sheets[action] : null;
   useEffect(() => {
-    const heading = document.querySelector<HTMLElement>('.incident-head h2');
+    const heading = document.querySelector<HTMLElement>('.incident-head h1');
     heading?.focus({preventScroll: true});
     window.scrollTo({top: 0, behavior: 'instant'});
   }, [props.incident.id]);

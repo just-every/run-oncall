@@ -28,7 +28,7 @@ async function passwordSignIn(page,who){
  await page.waitForURL(worker.origin+'/incidents')
  return (await call(page,'/api/session')).value.member
 }
-async function openIncident(page,id){await page.goto(`${worker.origin}/incidents/${encodeURIComponent(id)}`);await page.reload();await page.locator('.detail h2').waitFor()}
+async function openIncident(page,id){await page.goto(`${worker.origin}/incidents/${encodeURIComponent(id)}`);await page.reload();await page.locator('.detail h1').waitFor()}
 const entry=(page,text)=>page.locator('.timeline .event').filter({hasText:text})
 async function denied(page,label,id){
  const state=await page.context().request.get(worker.origin+'/api/state'),workspace=await (await page.context().request.get(worker.origin+'/api/workspace')).json()
@@ -156,7 +156,7 @@ try {
  assert.equal(await rosa.page.getByRole('button',{name:/Send test page/}).count(),0,'no paging control is offered')
  for(const page of [rosa.page,owner.page])assert.equal((await call(page,'/api/paging/jobs',{incident:declared.id})).status,409,'paging stays OFF and refuses')
  for(const width of [1440,390]) {
-  await rosa.page.setViewportSize({width,height:1000});await rosa.page.reload();await rosa.page.locator('.detail h2').waitFor()
+  await rosa.page.setViewportSize({width,height:1000});await rosa.page.reload();await rosa.page.locator('.detail h1').waitFor()
   for(const text of [ackText,noteText])assert.match(await entry(rosa.page,text).innerText(),new RegExp(responder.name),`"${text}" stays attributed to the member after reload`)
   assert.equal(await rosa.page.locator('.incident-state.state-acknowledged').count(),1,'acknowledgement persists after reload')
   assert.ok(await rosa.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`no horizontal scroll at ${width}`)
@@ -326,7 +326,7 @@ try {
  await owner.page.getByRole('button',{name:'Declare',exact:true}).waitFor()
  for(const width of [1440,390])await statusCapture(owner.page,'oc068-manual-page-form',width)
  await owner.page.getByRole('button',{name:'Declare',exact:true}).click()
- await owner.page.locator('.detail h2').filter({hasText:'Manual checkout responder request'}).waitFor()
+ await owner.page.locator('.detail h1').filter({hasText:'Manual checkout responder request'}).waitFor()
  const manual68=ok(await call(owner.page,'/api/state')).incidents.find(i=>i.title==='Manual checkout responder request')
  assert.equal(manual68.manualPage.creator,ownerMember.id);assert.equal(manual68.manualPage.obligations[0].target.id,rosaRecord.id)
  await openIncidentAction(owner.page,'Request responders')

@@ -7,13 +7,14 @@ import {Declare} from '../incident/Declare';
 import '../incident/incident.css';
 
 export function IncidentsSection() {
-  const {w, selected, selectIncident, declare, setDeclare, setListedRevision, s, actor, canEdit, incident, name, command, mutate} = useWorkspaceContext();
+  const {w, page, selected, selectIncident, declare, setDeclare, setListedRevision, s, actor, canEdit, incident, name, command, mutate} = useWorkspaceContext();
   const listScroll = useRef(0), previous = useRef(selected);
   const open = (id: string) => {if (!selected) listScroll.current = window.scrollY;void selectIncident(id);};
   useLayoutEffect(() => {
-    if (!selected && previous.current) window.scrollTo({top: listScroll.current, behavior: 'instant'});
+    if (page === 'incidents' && !selected && previous.current) window.scrollTo({top: listScroll.current, behavior: 'instant'});
     previous.current = selected;
-  }, [selected]);
+  }, [page, selected]);
+  if (page !== 'incidents') return null;
   if (selected && !incident) return <WorkspaceNotFound incident />;
   const reminders = s.incidents.filter(item => item.state !== 'resolved' && !item.mergedInto && item.sourceRecovery?.reminder.state === 'recorded' && item.sourceRecovery.reminder.commander === actor.id);
   return <div className={'incident-board' + (selected ? ' has-incident' : '')}>
