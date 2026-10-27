@@ -14,9 +14,6 @@
 .incident-person { position: relative; min-width: 0; }
 .incident-person > button { padding: 8px 10px; background: transparent; border-color: transparent; text-align: left; min-height: 44px; }
 .incident-person-label { color: var(--oc-muted); margin-right: 6px; }
-.incident-picker { position: absolute; z-index: 5; top: 100%; left: 0; width: 280px; max-width: calc(100vw - 32px); max-height: 320px; overflow: auto; padding: 8px; border: 1px solid var(--oc-line); border-radius: 12px; background: var(--oc-surface); box-shadow: var(--oc-shadow-card); }
-.incident-picker button { display: block; width: 100%; border-color: transparent; border-radius: 8px; min-height: 44px; text-align: left; }
-.incident-picker [aria-selected=true] { background: var(--oc-paper-deep); }
 .incident-step-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
 .incident-other-steps { margin-top: 8px; }
 .incident-step-confirm { margin-top: 12px; }
@@ -61,7 +58,6 @@
   .incident-sheet :is(button, select, input:not([type=checkbox]), summary) { min-height: 44px; }
   .incident-sheet summary { display: flex; align-items: center; }
   .incident-sheet a { display: inline-flex; min-height: 44px; align-items: center; }
-  .incident-picker { position: fixed; inset: auto 0 0; width: 100%; max-width: none; max-height: 70dvh; padding: 16px; border-radius: 16px 16px 0 0; z-index: 50; }
 }
 .incident-response-fields select { min-height: 44px; padding: 10px 12px; border: 1px solid var(--app-field-line); border-radius: 10px; background: var(--app-field); font: inherit; }
 .incident-response-fields .incident-optional-reason { margin-top: 8px; }
