@@ -7,6 +7,7 @@ import {InlineConfirm} from '../app/autosave/InlineConfirm';
 import {useAutosave,autosaveRequest} from '../app/autosave/useAutosave';
 import {SavedState,SaveFeedback} from '../app/autosave/SavedState';
 import './status-work.css';
+import {shortTime} from '../reviews/time';
 import type { Member, State } from '../family/response-operations/domain';
 
 export function StatusPanel({actor, state}: {actor: Member; state?: State | null}) {
@@ -35,7 +36,7 @@ export function StatusPanel({actor, state}: {actor: Member; state?: State | null
     {services.map(service => <article className="service-card" key={service.id} aria-label={service.name}>
       <h3>{service.name}</h3><p>Owning team: {service.owningTeam}</p>
       <p><strong>Derived status: {service.derived}</strong>{!service.active && ' · inactive after restore'}</p>
-      {service.override && <p>Manual override: <strong>{service.override.value}</strong> · {service.override.reason} · {new Date(service.override.at).toLocaleString()}{service.override.by && ` · ${state?.members.find(member => member.id === service.override.by)?.name ?? 'Erased member'}`}</p>}
+      {service.override && <p>Manual override: <strong>{service.override.value}</strong> · {service.override.reason} · {shortTime(service.override.at)}{service.override.by && ` · ${state?.members.find(member => member.id === service.override.by)?.name ?? 'Erased member'}`}</p>}
       <StatusSubscription actorId={actor.id} service={service}/>
       {service.notices.length > 0 && <div aria-label="Recorded impact obligations"><h4>Recorded impact obligations</h4>{service.notices.map((record: any) => <p key={record.id}>{record.businessName} · {record.phase?`impact ${record.phase} · `:''}{record.derivedStatus} · {record.channel} · {record.state} · no sender · non-automatic · paging OFF. {record.approvedUpdate === null && 'No approved update is available.'}</p>)}</div>}
       {(admin || actor.id === service.communicationsOwner) && <details><summary>Manage internal status</summary>

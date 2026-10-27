@@ -47,7 +47,7 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
         if(!await save.flush())return;setAccepting(true);failures.clear();
         try{const retained:Material=await request('/api/reviews/'+encodeURIComponent(incident.id)+'/material');const result:Incident=await autosaveRequest('/api/command',{type:'review',incident:incident.id,revision:retained.incidentRevision,...save.values,accept:true,materialRevision:retained.incidentRevision,materialWorkspaceRevision:retained.workspaceRevision});setLatest(result);onSaved?.(result);setConfirm(false);await refresh();}catch(error){failures.show(error);}finally{setAccepting(false);}
       }}>Accept the Review, Root cause and Impact on screen now as your human assessment?</InlineConfirm>}
-      {material&&<ReviewMaterial material={material}/>}
+      {material&&<ReviewMaterial material={material} name={id=>state.members.find(m=>m.id===id)?.name??'Former member'}/>}
       <p><a href={'/incidents/'+encodeURIComponent(incident.id)}>Add a follow-up on this incident</a></p>
     </div>
   </div>;

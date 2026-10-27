@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { Action, Incident, Member } from '../family/response-operations/domain';
 import { Field, Form } from '../forms';
 import { EvidenceLink, utc } from './display';
@@ -75,11 +75,12 @@ function CreateFollowup({members, busy, mutate}: Pick<Props, 'members' | 'busy' 
 
 function CompactFollowup({action,members,busy,canEdit,mutate,zone}:{action:Action;members:Member[];busy:boolean;canEdit:boolean;mutate:Props['mutate'];zone:string}) {
  const [accept,setAccept]=useState(false),[evidence,setEvidence]=useState(false);
+ const evidenceRoot=useRef<HTMLDetailsElement>(null);
  return <article className="followup-item" aria-label={action.title}><strong>{action.title}</strong><p className="review-meta">{members.find(m=>m.id===action.owner)?.name??'Former member'} · due {shortDate(action.due,zone)}{action.submission?' · awaiting acceptance':''}</p>
-  {action.evidence&&<EvidenceLink url={action.evidence}>Completion evidence</EvidenceLink>}
-  {canEdit&&<><details open={evidence} onToggle={e=>setEvidence(e.currentTarget.open)}><summary>{action.submission?'Replace evidence':'Add evidence'}</summary><Form busy={busy} label={action.submission?'Replace evidence':'Add evidence'} onSubmit={async data=>{const result=await mutate({...data,type:'complete',action:action.id});if(result)setEvidence(false);return result;}}><Field name="evidence" label="Completion evidence" type="url" value={action.submission?.evidence??''}/></Form></details>
+  <div className="followup-row-actions">{action.evidence&&<EvidenceLink url={action.evidence}>Completion evidence</EvidenceLink>}
+  {canEdit&&<><details ref={evidenceRoot} open={evidence} onToggle={e=>setEvidence(e.currentTarget.open)}><summary>{action.submission?'Replace evidence':'Add evidence'}</summary><Form busy={busy} label={action.submission?'Replace evidence':'Add evidence'} onSubmit={async data=>{const result=await mutate({...data,type:'complete',action:action.id});if(result){setEvidence(false);evidenceRoot.current?.querySelector('summary')?.focus();}return result;}}><Field name="evidence" label="Completion evidence" type="url" value={action.submission?.evidence??''}/></Form></details>
    {action.completionPolicy==='human-review'&&action.submission&&<button disabled={busy} onClick={()=>setAccept(true)}>Accept completion</button>}
    {accept&&<InlineConfirm action="Accept this completion" keep="Keep open" reasonRequired busy={busy} onCancel={()=>setAccept(false)} onConfirm={async reason=>{if(await mutate({type:'accept-action',action:action.id,reason}))setAccept(false);}}>Accept this completion evidence as finishing the follow-up? Your reason is recorded.</InlineConfirm>}
-  </>}
+  </>}</div>
  </article>;
 }

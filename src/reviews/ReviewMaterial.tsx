@@ -1,16 +1,16 @@
 import type { reviewMaterial } from './material';
 import { DurationSource, EvidenceLink, utc } from './display';
+import {shortDate} from './time';
 
 export type Material = ReturnType<typeof reviewMaterial>;
-export function ReviewMaterial({material}: {material: Material}) {
+export function ReviewMaterial({material,name=()=> 'Former member'}: {material: Material;name?:(id:string)=>string}) {
   return <div className="review-material-body">
-    <p><strong>{material.notice}</strong></p>
     <p className="review-meta">Updated {utc(material.generatedAt)}</p>
     <details><summary>Timings</summary>
       {material.response ? <div className="response-metrics">{(['mtta', 'mttr', 'recovery', 'sourceRecovery'] as const).map(key => <section key={key}><h4>{key === 'mtta' ? 'Acknowledgement' : key === 'mttr' ? 'Resolution' : key === 'recovery' ? 'Human recovery attestation' : 'Source-reported recovery'}</h4><DurationSource value={material.response![key]} /></section>)}</div> : <p>No response record could be assigned.</p>}
     </details>
     <details><summary>Evidence ({material.observations.length})</summary>
-      <p>Retained source observations. Their presence does not establish incident cause, impact or recovery.</p>
+      <p>{material.notice}</p>
       {!material.observations.length && <p>No retained source observations linked to this incident.</p>}
       <ol className="review-records">{material.observations.map(observation => <li key={observation.id}>
         <p className="review-literal">{observation.title}</p>
@@ -18,6 +18,7 @@ export function ReviewMaterial({material}: {material: Material}) {
           Observed <time>{utc(observation.at)}</time> · ingested <time>{utc(observation.acceptedAt)}</time></p>
         <EvidenceLink url={observation.evidence}>Source evidence</EvidenceLink>
       </li>)}</ol>
+    <div className="review-snapshot"><h4>Missing material</h4><ul>{material.missing.map(item => <li key={item}>{item}</li>)}</ul></div>
     </details>
     <details><summary>From the timeline ({material.assertions.length})</summary>
       <p>Human-authored records, kept separate from automated observations. No assertion is automatically accepted as root cause or impact.</p>
@@ -41,8 +42,7 @@ export function ReviewMaterial({material}: {material: Material}) {
       </li>)}</ol>
     </details>
     <details><summary>Follow-ups ({material.followups.length})</summary>
-      <ul>{material.followups.map(action => <li key={action.id}>{action.title} · {action.priority ?? 'P2 (legacy default)'} · due {new Date(action.due+'T12:00:00Z').toLocaleDateString([], {month:'short',day:'numeric'})} · {action.done ? 'Complete' : action.submission ? 'Awaiting acceptance' : 'Open'} · {action.completionPolicy ?? 'legacy evidence policy'} {action.evidence && <EvidenceLink url={action.evidence}>Evidence</EvidenceLink>}</li>)}</ul>
+      <ul>{material.followups.map(action => <li key={action.id}>{action.title} · {name(action.owner)} · {action.priority ?? 'P2 (legacy default)'} · due {shortDate(action.due)} · {action.done ? 'Complete' : action.submission ? 'Awaiting acceptance' : 'Open'} · {action.completionPolicy ?? 'legacy evidence policy'} {action.evidence && <EvidenceLink url={action.evidence}>Evidence</EvidenceLink>}</li>)}</ul>
     </details>
-    <div className="review-snapshot"><h4>Missing material</h4><ul>{material.missing.map(item => <li key={item}>{item}</li>)}</ul></div>
   </div>;
 }
