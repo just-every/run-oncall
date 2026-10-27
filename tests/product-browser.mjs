@@ -369,8 +369,8 @@ async function changeAndSigningBrowser(page,context){
   assert.ok(!erasedBusiness.audience.includes(erasedMember.id));assert.ok(!erasedBusiness.subscriptions.some(row=>row.member===erasedMember.id));
   await settings.getByText(/oc_business_services:/).waitFor();
 
-  await openWorkspaceSection(page,'schedules');await page.getByLabel('Schedule',{exact:true}).selectOption(memberScheduleId);
-  await page.locator('.scheduling-now-next').getByText('Now: Coverage gap',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
+  await page.goto(new URL('/on-call/'+encodeURIComponent(memberScheduleId),page.url()).href);
+  await page.locator('.scheduling-now-next').getByText('Now: Nobody on call',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
   await openWorkspaceSection(page,'reviews');
   const responseReport=page.locator('.response-report');
   await responseReport.getByText(/Incident durations and source entries/).click();
