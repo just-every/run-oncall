@@ -12,7 +12,18 @@ export async function triageBulkBrowser(page,context,width){
  for(const i of [a,b])await call('/api/command',{type:'transition',incident:i.id,revision:i.revision,state:'acknowledged',summary:'Take responsibility'});
  await page.goto(origin+'/incidents');await page.getByLabel('Search incidents',{exact:true}).fill(prefix);await page.getByText('3 matching incidents',{exact:true}).waitFor();
  const selectSources=async()=>{await page.getByLabel('Select '+a.title,{exact:true}).check();await page.getByLabel('Select '+b.title,{exact:true}).check();};
- await selectSources();let bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('snooze');await bulk.getByLabel('Snooze minutes',{exact:true}).fill('15');await bulk.getByLabel('Bulk action reason',{exact:true}).fill('Wait for the dependency owner');await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();
+ await selectSources();let bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('snooze');await bulk.getByLabel('Snooze minutes',{exact:true}).fill('15');await bulk.getByLabel('Bulk action reason',{exact:true}).fill('Wait for the dependency owner');
+ // Hold the real post-save list read: the workspace confirmation must not make
+ // pre-snooze row revisions selectable while their replacements are in flight.
+ let releaseRefresh;const refreshGate=new Promise(resolve=>{releaseRefresh=resolve;});
+ const heldRefreshes=[];
+ const holdRefresh=route=>{const pending=(async()=>{const response=await route.fetch();await refreshGate;await route.fulfill({response});})();heldRefreshes.push(pending);return pending;};
+ if(width===1440)await page.route('**/api/triage?*',holdRefresh);
+ try{
+  const refreshing=width===1440?page.waitForRequest(request=>new URL(request.url()).pathname==='/api/triage'):null;
+  await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();
+  if(refreshing){await refreshing;assert.equal(await page.getByLabel('Select '+a.title,{exact:true}).isDisabled(),true,'post-save triage refresh keeps stale row revisions unselectable');}
+ }finally{releaseRefresh();await Promise.all(heldRefreshes);if(width===1440)await page.unroute('**/api/triage?*',holdRefresh);}
  await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();await selectSources();bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('merge');await bulk.getByLabel('Merge target',{exact:true}).selectOption(target.id);await bulk.getByLabel('Bulk action reason',{exact:true}).fill('One response owns the common failure');await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();await bulk.getByText(/saved · revision/).first().waitFor();
  await bulk.screenshot({path:`${directory}/OC-060-merge-${width}.png`});await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();
  const source='synthetic-oncall-'+(6600+width),key=randomBytes(32).toString('hex');await call('/api/sources',{id:source,key,scopes:[service.id]});
