@@ -55,8 +55,9 @@ export function installPaging(api:any,body:(c:any,max?:number)=>Promise<any>) {
     return c.json(policy)
   })
   api.post('/api/paging/preview',async(c:any)=>{
-    const {s}=await context(c),v=exact(await body(c),['scheduleId','from','to'])
-    const schedule=s.archive.schedules.find(x=>x.id===v.scheduleId);if(!schedule) fail('Unknown schedule',404)
+    const {s}=await context(c),v=exact(await body(c),['scheduleId','schedule','from','to'])
+    if (Object.hasOwn(v,'schedule') === Object.hasOwn(v,'scheduleId')) fail('Choose a saved rota or a draft, not both')
+    const schedule=Object.hasOwn(v,'schedule') ? validateSchedule(v.schedule,s.workspace) : s.archive.schedules.find(x=>x.id===v.scheduleId);if(!schedule) fail('Unknown schedule',404)
     return c.json(preview(schedule,s.workspace.members,clock(v.from),clock(v.to)))
   })
   api.post('/api/paging/jobs',async(c:any)=>c.json(await demoEffect(deliver,()=>sendDemoPage(c,body))))
