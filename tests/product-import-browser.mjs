@@ -1,4 +1,5 @@
 import {fileSource,confirmImport,confirmUndo,fileJourney} from './import-door-browser.mjs'
+import {openWorkspaceSection} from './keyboard.mjs'
 import AxeBuilder from '@axe-core/playwright'
 import assert from 'node:assert/strict'
 import {providerExport} from './provider-export-browser.mjs'
@@ -6,7 +7,7 @@ import {providerExport} from './provider-export-browser.mjs'
 export async function productImport(page,context,width,session) {
   if(width!==1440)return
   const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
-  await page.goto(new URL('/move-in',page.url()).href)
+  await openWorkspaceSection(page,'move-in')
   await fileJourney(page,context,new URL(page.url()).origin)
   await providerExport(page,context,width)
   // OC-038 source-specific file guidance and a new-source review at both viewports.
@@ -54,7 +55,7 @@ export async function productImport(page,context,width,session) {
   await page.getByLabel('Schedule',{exact:true}).selectOption(await adoptedOption.getAttribute('value'))
   assert.equal(await page.getByLabel('Schedule name',{exact:true}).inputValue(),rota,'adopted coverage opens as a native schedule')
   assert.equal(await page.getByLabel('Primary responder 1',{exact:true}).inputValue(),session.member.id,'explicit person mapping survives adoption')
-  await page.goto(new URL('/move-in',page.url()).href)
+  await openWorkspaceSection(page,'move-in')
   const person=page.getByRole('listitem').filter({hasText:`Erase ${width}`})
   await person.getByRole('button',{name:'Erase person',exact:true}).click()
   const typed=page.getByLabel(`Type "erase ${email}" to erase this person from imported data`);assert.equal(await person.getByRole('button',{name:'Erase permanently',exact:true}).isDisabled(),true,'erasing needs the typed confirmation')
@@ -107,7 +108,7 @@ if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1]) {
   browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
   const context=await browser.newContext({baseURL:worker.origin}),page=await context.newPage(),errors=[]
   await context.addCookies(owner.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}}))
-  page.on('pageerror',error=>errors.push(error.message));await page.goto(worker.origin+'/move-in');await page.getByRole('heading',{name:'1 · Connect',exact:true}).waitFor()
+  page.on('pageerror',error=>errors.push(error.message));await page.goto(worker.origin);await page.locator('.oncall-frame').waitFor()
   for(const width of [1440]){await page.setViewportSize({width,height:1000});await productImport(page,context,width,owner.value);console.log(`OC-038 browser ${width}: source guidance, inactive integration review, named refusal, apply/undo, overflow, axe and hydration passed`)}
   assert.deepEqual(errors,[])
   const login={name:'synthetic-oncall-1',password:'synthetic-oncall-browser-password'},revoked=await worker.request('/api/login',login)

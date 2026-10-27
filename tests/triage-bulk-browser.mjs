@@ -1,3 +1,4 @@
+import {openWorkspaceSection} from './keyboard.mjs'
 import {focusWorkspace} from './keyboard.mjs'
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
@@ -24,7 +25,7 @@ export async function triageBulkBrowser(page,context,width){
  await page.getByRole('button',{name:'Select all 2 matching',exact:true}).click();bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('resolve');await bulk.getByRole('button',{name:'Apply to 2 alert-only items',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));const axe=await new AxeBuilder({page}).include('[aria-label="Bulk incident actions"]').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
  await page.getByRole('region',{name:'Incident triage',exact:true}).screenshot({path:`${directory}/OC-060-alert-close-${width}.png`});
- await page.getByRole('link',{name:'Alerts & events',exact:true}).click();const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:prefix+' alert 0',exact:true})});await card.getByText(/Coordination: closed/).waitFor();await card.getByText('Coordination history',{exact:true}).click();await card.getByText(/stopped by human resolution/).waitFor();await card.screenshot({path:`${directory}/OC-060-alert-history-${width}.png`});
+ await openWorkspaceSection(page,'alerts');const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:prefix+' alert 0',exact:true})});await card.getByText(/Coordination: closed/).waitFor();await card.getByText('Coordination history',{exact:true}).click();await card.getByText(/stopped by human resolution/).waitFor();await card.screenshot({path:`${directory}/OC-060-alert-history-${width}.png`});
  const after=await call('/api/state');assert.equal(after.incidents.length,state.incidents.length+3,'alert-only close creates no incident');assert.ok(after.incidents.filter(i=>[a.id,b.id].includes(i.id)).every(i=>i.mergedInto.target===target.id));
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.goto(origin+'/incidents');
  // OC-043: author a durable selected-alert workflow, close its client state, then resume from saved custody.
@@ -62,13 +63,13 @@ export async function triageBulkBrowser(page,context,width){
  const transformIdentity='synthetic-oncall-438-'+width,transformTitle='Synthetic transformed alert '+width;
  const transformationPolicy=await call('/api/command',{type:'policy',service:newServiceId,severity:'*',action:'route',owner:coordinator.id,reason:'Synthetic reviewed classification',baseVersion:0,transformation:{field:'severity',values:{critical:{severity:'warning',priority:'P3'}},allowLowering:true,reason:'Synthetic reviewed customer-impact lowering'}});
  const transformResponse=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:{source:newSource,eventId:transformIdentity,service:newServiceId,environment:'test',key:transformIdentity,generation:transformIdentity,intent:'trigger',severity:'critical',priority:'P1',title:transformTitle,observedAt:new Date().toISOString(),evidence:''}});assert.equal(transformResponse.status(),201);
- await page.goto(origin+'/alerts');await page.getByRole('link',{name:'Alerts & events',exact:true}).click();await focusWorkspace(page);
+ await page.goto(origin+'/alerts');await openWorkspaceSection(page,'alerts');await focusWorkspace(page);
  const transformCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:transformTitle,exact:true})});await transformCard.getByText('warning',{exact:true}).waitFor();await transformCard.getByText('Priority: P3',{exact:true}).waitFor();await transformCard.getByText(/Original event .*critical \/ P1 → warning \/ P3/).waitFor();await transformCard.getByText(/Synthetic reviewed customer-impact lowering/).waitFor();await workflowCheck('transformation-alert');
  await page.goto(origin+'/incidents?triage_kind=alerts&triage_q='+encodeURIComponent(transformTitle));await page.getByText('1 matching alert-only items',{exact:true}).waitFor();await page.getByRole('region',{name:'Incident triage',exact:true}).getByRole('button').filter({has:page.getByRole('heading',{name:'Alert-only: '+transformTitle,exact:true})}).getByText('warning',{exact:true}).waitFor();await workflowCheck('transformation-triage');
  const replayEvent=(await call('/api/state')).events.find(event=>event.title===transformTitle),routedId='synthetic-oncall-445-'+width,routedKey=randomBytes(32).toString('hex');
  const routedDefinition=await call('/api/routing/keys',{id:routedId,name:'Synthetic transformed routing '+width,provider:'pagerduty',scope:[newServiceId],owner:coordinator.id,key:routedKey,revision:0,rules:[],catchAll:newServiceId},201);
  const routedResponse=await context.request.post(origin+'/v2/enqueue',{data:{routing_key:routedKey,event_action:'trigger',dedup_key:routedId,payload:{summary:'Synthetic routed transformation '+width,source:routedId,severity:'critical'}}});assert.equal(routedResponse.status(),202);
- await page.reload();await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel('Routed integration',{exact:true}).selectOption(routedId);
+ await page.reload();await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(routedId);
  let routedAttempts=0;const routedPath='**/api/routing/keys/'+routedId+'/preview';
  const loseRoutingResponse=async route=>{routedAttempts++;if(routedAttempts===1){const actual=await route.fetch();assert.equal(actual.status(),200);await actual.dispose();await route.abort('connectionfailed');}else await route.continue();};
  await page.route(routedPath,loseRoutingResponse);
@@ -86,7 +87,7 @@ export async function triageBulkBrowser(page,context,width){
  console.log(`OC-043 declaration browser ${width}: zero-write ordered comparison, saved pending declaration/notification progress after reload, explicit completion, frozen checklist and recorded no-sender obligations; axe, overflow and hydration passed`);
  console.log(`OC-060 browser ${width}: selected snooze, merge target and per-item receipts, confirmed alert-only close, retained human-resolution history, no fabricated incident, axe and overflow passed`);
  // Rule approval uses the service's existing Settings controls and saved progress.
- await page.getByRole('link',{name:'Services',exact:true}).click();
+ await openWorkspaceSection(page,'services');
  const ruleCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Synthetic coordination '+width,exact:true})});
  await ruleCard.getByText('Settings · approved workflows',{exact:true}).click();
  const ruleForm=ruleCard.getByRole('form',{name:'Approved workflow settings',exact:true});
@@ -94,7 +95,7 @@ export async function triageBulkBrowser(page,context,width){
  await ruleForm.getByRole('button',{name:'Approve workflow rule',exact:true}).click();await ruleCard.getByText(/^Workflow v1 · service rule/).waitFor();await workflowCheck('rule-authoring');
  const approvedState=await call('/api/state'),approvedPolicy=approvedState.policies.find(p=>p.service===newServiceId&&p.severity==='*'),ruleIdentity='synthetic-oncall-446-'+width;
  const ruleSignal={source:newSource,eventId:ruleIdentity,service:newServiceId,environment:'test',key:ruleIdentity,generation:ruleIdentity,intent:'trigger',severity:'warning',title:'Synthetic approved launch '+width,observedAt:new Date().toISOString(),evidence:''};
- await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel('Event JSON array',{exact:true}).fill(JSON.stringify([ruleSignal]));await page.getByRole('button',{name:'Compare decisions',exact:true}).click();const ruleReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await ruleReplay.getByText('Proposed workflow v1: reassign → declare → notify. Recorded obligation only; no effects.',{exact:true}).waitFor();await ruleReplay.scrollIntoViewIfNeeded();await workflowCheck('rule-replay');
+ await openWorkspaceSection(page,'routing');await page.getByLabel('Event JSON array',{exact:true}).fill(JSON.stringify([ruleSignal]));await page.getByRole('button',{name:'Compare decisions',exact:true}).click();const ruleReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await ruleReplay.getByText('Proposed workflow v1: reassign → declare → notify. Recorded obligation only; no effects.',{exact:true}).waitFor();await ruleReplay.scrollIntoViewIfNeeded();await workflowCheck('rule-replay');
  const admitted=await context.request.post(origin+'/api/ingress/'+newSource,{headers:{origin,authorization:'Bearer '+newKey},data:ruleSignal});assert.equal(admitted.status(),201);
  const launched=(await call('/api/state')).triage.find(r=>r.kind==='bulk'&&r.rule?.policy===approvedPolicy.id);assert.equal(launched.results.length,1);assert.equal(launched.results[0].step,'reassign');
  await page.goto(origin+'/incidents');await page.getByText('Recorded coordination workflows',{exact:true}).click();
