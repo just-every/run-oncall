@@ -3,11 +3,12 @@ import {HttpFailure, InterruptedTransport} from '../../useWorkspace';
 import {failureMessage} from '../FailureLine';
 import {useLeaveGuard} from './leaveGuard';
 
-export type SaveSnapshot<T, R = number> = {values: T; revision: R};
+export type SaveSnapshot<T, R = number> = {values: T; revision: R; changed?: boolean};
 export type SaveChange<T, R> = {[K in keyof T]: {field: K; from: T[K]; to: T[K]; revision: R; values: T}}[keyof T];
 export type FieldSaveState = {status: 'idle' | 'pending' | 'saved' | 'failed' | 'conflict'; message?: string; savedValue?: unknown};
 export type AutosaveOptions<T, R> = {
   snapshot: SaveSnapshot<T, R>;
+  storageKey?: string;
   read: () => Promise<SaveSnapshot<T, R>>;
   write: (change: SaveChange<T, R>, transport: {keepalive: boolean}) => Promise<SaveSnapshot<T, R>>;
   equal?: (a: unknown, b: unknown) => boolean;
@@ -35,6 +36,16 @@ export function useAutosave<T extends Record<string, any>, R = number>(options: 
   const mounted = useRef(true);
   const repaint = () => {if (mounted.current) render(n => n + 1);};
   const equal = (a: unknown, b: unknown) => (opts.current.equal ?? same)(a, b);
+  // Pending field edits are separate from versioned policy drafts. A tab can
+  // close offline, or before the response for its keepalive write arrives.
+  function persist() {
+    if (!opts.current.storageKey) return;
+    try {
+      const key = 'oncall:pending:' + opts.current.storageKey;
+      if (model.current.edits.size) localStorage.setItem(key, JSON.stringify({version: 1, edits: [...model.current.edits.values()]}));
+      else localStorage.removeItem(key);
+    } catch { /* Storage may be unavailable; the live field and Retry remain. */ }
+  }
   function accept(snapshot: SaveSnapshot<T, R>) {
     const m = model.current;
     if (typeof snapshot.revision === 'number' && typeof m.saved.revision === 'number' && snapshot.revision < m.saved.revision) return;
@@ -45,7 +56,7 @@ export function useAutosave<T extends Record<string, any>, R = number>(options: 
     const m = model.current;
     clearTimeout(m.marks.get(key));
     m.states[key] = state;
-    if (state.status === 'saved') m.marks.set(key, setTimeout(() => {m.states[key] = {status: 'idle'}; repaint();}, 2000));
+    if (state.status === 'saved' || state.message === 'Nothing to change') m.marks.set(key, setTimeout(() => {m.states[key] = {status: 'idle'}; repaint();}, 2000));
     repaint();
   }
   async function execute(edit: Edit, keepalive: boolean) {
@@ -71,20 +82,22 @@ export function useAutosave<T extends Record<string, any>, R = number>(options: 
       if (equal(edit.to, sent.to)) {
         m.edits.delete(sent.field);
         m.values[sent.field] = snapshot.values[sent.field];
-        mark(sent.field, {status: 'saved'});
+        const changed = snapshot.changed ?? !(Object.is(snapshot.revision, sent.revision) && equal(snapshot.values[sent.field], sent.from));
+        mark(sent.field, changed ? {status: 'saved'} : {status: 'idle', message: 'Nothing to change'});
       } else {
         edit.from = snapshot.values[sent.field]; edit.revision = snapshot.revision;
       }
       // Other queued fields keep their original from value, on the new revision.
       for (const queued of m.edits.values()) if (queued !== edit && equal(queued.from, snapshot.values[queued.field])) queued.revision = snapshot.revision;
     } catch (error) {mark(sent.field, {status: 'failed', message: failureMessage(error)});}
+    finally {persist();}
   }
   function drain(keepalive = false): Promise<void> {
     const m = model.current;
     if (m.active) return m.active.then(() => drain(keepalive));
     const edit = [...m.edits.values()].find(e => e.ready && !['failed', 'conflict'].includes(m.states[e.field]?.status ?? ''));
     if (!edit) return Promise.resolve();
-    if (equal(edit.to, edit.from)) {m.edits.delete(edit.field); mark(edit.field, {status: 'idle'}); return drain(keepalive);}
+    if (equal(edit.to, edit.from)) {m.edits.delete(edit.field); persist(); mark(edit.field, {status: 'idle'}); return drain(keepalive);}
     // Set active before the async write can complete. Every error stays in state.
     m.active = execute(edit, keepalive).finally(() => {m.active = null;});
     return m.active.then(() => drain(keepalive));
@@ -94,11 +107,12 @@ export function useAutosave<T extends Record<string, any>, R = number>(options: 
     clearTimeout(m.timers.get(field));
     m.values[field] = value;
     const old = m.edits.get(field);
-    if (!old && equal(value, m.saved.values[field])) {mark(field, {status: 'idle'}); return;}
+    if (equal(value, m.saved.values[field]) && !m.active) {m.edits.delete(field); persist(); mark(field, {status: 'idle'}); return;}
     if (old) {old.to = value; old.ready = kind === 'choice';}
     else m.edits.set(field, {field, from: m.saved.values[field], to: value, revision: m.saved.revision, ready: kind === 'choice'});
     // Editing a failed field retains its original base; it never silently takes
     // a teammate's newer value as permission to overwrite it.
+    persist();
     mark(field, {status: 'pending'});
     if (kind === 'choice') void drain();
     else m.timers.set(field, setTimeout(() => {const edit = m.edits.get(field); if (edit) edit.ready = true; void drain();}, 2000));
@@ -120,6 +134,7 @@ export function useAutosave<T extends Record<string, any>, R = number>(options: 
     const m = model.current, edit = m.edits.get(field);
     if (!edit) return;
     edit.from = m.saved.values[field]; edit.revision = m.saved.revision;
+    persist();
     return retry(field);
   }
   const guard = useRef({flush: () => flush(), pagehide: () => {
@@ -133,8 +148,28 @@ export function useAutosave<T extends Record<string, any>, R = number>(options: 
   const snapshotKey = JSON.stringify(options.snapshot);
   useEffect(() => {accept(opts.current.snapshot); repaint();}, [snapshotKey]);
   useEffect(() => {
+    if (!options.storageKey || model.current.edits.size) return;
+    try {
+      const raw = localStorage.getItem('oncall:pending:' + options.storageKey);
+      if (!raw || raw.length > 65536) return;
+      const draft = JSON.parse(raw), m = model.current;
+      if (draft?.version !== 1 || !Array.isArray(draft.edits)) return;
+      for (const edit of draft.edits) {
+        if (!edit || !Object.hasOwn(m.values, edit.field) || !Object.hasOwn(edit, 'from') || !Object.hasOwn(edit, 'to') || !Object.hasOwn(edit, 'revision')) continue;
+        const field = edit.field as Key;
+        if (typeof edit.to !== typeof m.values[field] || Array.isArray(edit.to) !== Array.isArray(m.values[field])) continue;
+        // A lost response may have hidden a successful write. Never repeat it.
+        if (equal(edit.to, m.saved.values[field])) continue;
+        m.values[field] = edit.to;
+        m.edits.set(field, {...edit, field, ready: true});
+        m.states[field] = {status: 'failed', message: 'Your unfinished change is still here. Saving was not confirmed.'};
+      }
+      persist(); repaint();
+    } catch { /* A damaged or unavailable cache never replaces server values. */ }
+  }, [options.storageKey]);
+  useEffect(() => {
     mounted.current = true;
-    return () => {mounted.current = false; for (const timer of [...model.current.timers.values(), ...model.current.marks.values()]) clearTimeout(timer);};
+    return () => {mounted.current = false; guard.current.pagehide(); for (const timer of [...model.current.timers.values(), ...model.current.marks.values()]) clearTimeout(timer);};
   }, []);
   return {values: model.current.values, states: model.current.states, change, blur, flush, retry, useMine, pending: model.current.edits.size > 0};
 }

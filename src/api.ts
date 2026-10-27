@@ -466,7 +466,9 @@ api.post("/api/command", async (c) => {
       if(!current?.activeSession||!current.role)fail('Access revoked',401);
       if(!['admin','responder'].includes(current.role))fail('Insufficient role',403);
       if(current.revision!==revision)fail('Workspace changed. Reload before applying your edit.',409);
-      markCommandNoop(c.env.DB);
+      // Keep the existing security ledger exception limited to response-value
+      // comparisons. Other doors retain their accepted-attempt audit facts.
+      if (isResponseChange(input.type)) markCommandNoop(c.env.DB);
       return {changed:false,message:'Nothing to change'};
     }
     if(snapshot){guard.sql+=' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)';guard.values.push(snapshot.revision);}
