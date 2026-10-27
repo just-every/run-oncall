@@ -49,7 +49,7 @@ export function validateUrgencyArchive(state: State) {
       if (typeof entry.id !== 'string' || !entry.id.trim() || entry.id.length > 150 || identities.has(entry.id) ||
         typeof entry.at !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(entry.at) || !Number.isFinite(Date.parse(entry.at)) ||
         Date.parse(entry.at) < previousAt || entry.from !== previous || !['high', 'low'].includes(entry.to) || entry.from === entry.to ||
-        typeof entry.reason !== 'string' || !entry.reason.trim() || entry.reason.length > 1000) fail('Invalid alert urgency transition');
+        typeof entry.reason !== 'string' || entry.reason.length > 1000) fail('Invalid alert urgency transition');
       const recorded = audit.get(entry.id);
       if (!recorded || recorded.kind !== 'alert-urgency' || recorded.actor !== entry.by || recorded.at !== entry.at ||
         recorded.text !== urgencyEntryText(alert, entry)) fail('Missing alert urgency audit attribution');
@@ -61,7 +61,7 @@ export function validateUrgencyArchive(state: State) {
         const receipt=state.emailReceipts?.find(r=>r.id===entry.id.slice(6));
         if(!receipt||receipt.alert!==alert.id||receipt.decision?.action!=='trigger'||receipt.decision.urgency!==entry.to||entry.by!=='source:email:'+receipt.address||entry.at!==receipt.at||entry.reason!==`Email rule ${receipt.decision.rule} version ${receipt.decision.version}`||entry.ruleVersion!==null||alert.events.indexOf(receipt.event!)>0&&entry.to!=='high')fail('Invalid email urgency transition');
       } else if (entry.ruleVersion === null) {
-        if (!members.has(entry.by)) fail('Invalid human alert urgency attribution');
+        if (!members.has(entry.by) || entry.reason.length > 500 || entry.to === 'low' && !entry.reason.trim()) fail('Invalid human alert urgency attribution or reason');
       } else {
         const event = events.get(entry.id.replace(/^urgency:/, ''));
         if (!entry.id.startsWith('urgency:') || !event || !alert.events.includes(event.id) || !event.urgency ||
