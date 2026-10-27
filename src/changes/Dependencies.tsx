@@ -7,11 +7,12 @@ import './changes.css';
 export function ServiceDependencies({service, services, revision}: {service: Service; services: Service[]; revision: number; busy: boolean; run: (path: string, data: any, message?: string) => Promise<any>}) {
   const snapshot = (state: State) => ({values: {dependencies: state.services.find(row => row.id === service.id)?.dependencies ?? []}, revision: state.revision});
   const save = useAutosave({
+    storageKey: `dependencies:${service.id}`,
     snapshot: {values: {dependencies: service.dependencies ?? []}, revision},
     read: async () => snapshot(await request('/api/state')),
     write: async ({to, revision}, {keepalive}) => {
       const result = await autosaveRequest('/api/command', {type: 'service-dependencies', service: service.id, dependencies: to, workspaceRevision: revision});
-      return keepalive ? {values: {dependencies: result.dependencies ?? to}, revision: revision + 1} : snapshot(await request('/api/state'));
+      return keepalive ? {values: {dependencies: result.dependencies ?? to}, revision: revision + (result.changed === false ? 0 : 1), changed: result.changed} : {...snapshot(await request('/api/state')), changed: result.changed};
     },
     equal: (a, b) => Array.isArray(a) && Array.isArray(b) ? JSON.stringify([...a].sort()) === JSON.stringify([...b].sort()) : a === b,
   });

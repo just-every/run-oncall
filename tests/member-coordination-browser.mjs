@@ -41,7 +41,7 @@ async function denied(page,label,id){
 try {
  const claimed=await worker.request('/auth/bootstrap',{token:worker.vars.SETUP_TOKEN,displayName:'Oncall lead'},undefined,{'CF-Connecting-IP':'127.0.0.1'})
  assert.equal(claimed.status,303,JSON.stringify(claimed.value))
- browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']})
+ browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.CHROMIUM_EXECUTABLE_PATH}:{}),args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
  const owner=await open(1440)
  await owner.context.addCookies(claimed.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}}))
  await owner.page.goto(worker.origin+'/setup')
@@ -52,6 +52,27 @@ try {
  const rosaRecord=ok(await call(owner.page,'/api/members',{...responder,role:'responder'}),201)
  ok(await call(owner.page,'/api/members',{...viewer,role:'viewer'}),201)
  ok(await call(owner.page,'/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:rosaRecord.id,runbook:['Check payment provider status'],pager:''}))
+ // OC4: per-value save survives immediate menu departure; offline Retry commits once.
+ await owner.page.goto(worker.origin+'/services');
+ const autosaveCard=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'Checkout',exact:true})});
+ await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();
+ const timeoutField=autosaveCard.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true});
+ await timeoutField.fill('2');await owner.page.getByRole('link',{name:'Team',exact:true}).click();await owner.page.waitForURL(worker.origin+'/team');
+ await owner.page.getByRole('link',{name:'Services',exact:true}).click();await owner.page.reload();
+ await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();await expect(timeoutField).toHaveValue('2');
+ const beforeRetry=ok(await call(owner.page,'/api/state')).audit.length;
+ const blockWrite=route=>route.request().postDataJSON()?.type==='acknowledgment-timeout'?route.abort():route.continue();
+ await owner.page.route('**/api/command',blockWrite);await timeoutField.fill('3');await timeoutField.blur();
+ await expect(autosaveCard.getByRole('button',{name:'Retry',exact:true})).toBeVisible();await expect(timeoutField).toHaveValue('3');
+ assert.equal(await autosaveCard.getByText('Saved',{exact:true}).count(),0,'failed save never announces success');
+ await owner.page.unroute('**/api/command',blockWrite);
+ const retryWrite=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='acknowledgment-timeout');
+ await autosaveCard.getByRole('button',{name:'Retry',exact:true}).click();assert.equal((await retryWrite).status(),200);
+ await expect(autosaveCard.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
+ const afterRetry=ok(await call(owner.page,'/api/state'));assert.equal(afterRetry.audit.length,beforeRetry+1,'Retry adds exactly one audit row');assert.equal(afterRetry.services.find(s=>s.id==='checkout').ackTimeouts.at(-1).minutes,3);
+ const resetTimeout=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='acknowledgment-timeout');
+ await timeoutField.fill('0');await timeoutField.blur();assert.equal((await resetTimeout).status(),200);
+ console.log('OC4 autosave: menu departure retains value after reload; offline retains input; Retry audit +1');
  // OC-023 public-team forms use the existing Team section at both widths.
  for(const width of [1440]){
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/team');await owner.page.reload();
@@ -351,17 +372,20 @@ try {
  await owner.page.goto(worker.origin+'/settings/services/checkout');await owner.page.reload()
  const assignment68=owner.page.locator('.service-page')
  await assignment68.getByText('User-assignment rule',{exact:true}).click()
- await assignment68.getByLabel('User-assignment outcome',{exact:true}).selectOption('repeat')
+ const assignmentChoice=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='user-assignment');
+ await assignment68.getByLabel('User-assignment outcome',{exact:true}).selectOption('repeat');assert.equal((await assignmentChoice).status(),200)
  await assignment68.getByLabel('Assignment delay (minutes)',{exact:true}).fill('7')
- await assignment68.getByRole('button',{name:'Save user assignment for Checkout',exact:true}).click()
- await assignment68.getByText(/Repeat to the user after 7 minutes · version 1/).waitFor()
+ const assignmentText=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='user-assignment');
+ await assignment68.getByLabel('Assignment delay (minutes)',{exact:true}).blur();assert.equal((await assignmentText).status(),200);
+ assert.equal(ok(await call(owner.page,'/api/state')).services.find(s=>s.id==='checkout').userAssignments.at(-1).minutes,7)
  assert.equal(await assignment68.getByLabel('User-assignment outcome',{exact:true}).inputValue(),'repeat')
  for(const width of [1440])await statusCapture(owner.page,'oc068-service-assignment-rule',width)
  console.log('OC-068 browser: manual page urgency/target, recorded obligations, independent accepted and declined responder requests, viewer refusal and versioned assignment setting at 1440')
- await assignment68.getByText('Acknowledgment timeout · off',{exact:true}).click()
+ await assignment68.getByText('Acknowledgment timeout',{exact:true}).click()
  await assignment68.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true}).fill('1')
- await assignment68.getByRole('button',{name:'Save acknowledgment timeout for Checkout',exact:true}).click()
- await assignment68.getByText('Acknowledgment timeout · 1 minutes',{exact:true}).waitFor()
+ const timeoutSave=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='acknowledgment-timeout');
+ await assignment68.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true}).blur();assert.equal((await timeoutSave).status(),200);
+ assert.equal(ok(await call(owner.page,'/api/state')).services.find(s=>s.id==='checkout').ackTimeouts.at(-1).minutes,1)
  for(const width of [1440])await statusCapture(owner.page,'oc058-service-timeout',width)
  let incident58=ok(await call(owner.page,'/api/command',{type:'manual-page',operationId:'synthetic-oncall-58-browser',service:'checkout',title:'Snoozed checkout investigation',severity:'warning',summary:'Investigating a customer checkout delay'}))
  incident58=ok(await call(owner.page,'/api/command',{type:'transition',incident:incident58.id,revision:incident58.revision,state:'acknowledged',summary:'Owner investigating'}))
