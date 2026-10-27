@@ -8,6 +8,7 @@ export function ServiceContext(props: IncidentProps) {
     <p>{service?.name} · {service?.environment}</p>
     <p>Owner: {memberName(state, service?.owner)}</p>
     {service?.pager ? <p><a href={service.pager} target="_blank" rel="noreferrer">Open existing pager →</a></p> : <p>No existing pager link configured.</p>}
+    {incident.template && <section aria-label="Incident template snapshot"><h3>Response template · version {incident.template.version}</h3><p>{incident.template.severityWording[incident.severity as 'critical' | 'warning' | 'info']} · {incident.template.incidentType ?? 'General incident'}</p><p>{incident.template.impactPrompt}</p></section>}
     {incident.automaticDeclaration && <p>Automatic declaration · service response policy</p>}
     {incident.sourceRecovery && <section aria-label="Source recovery">
       {incident.state !== 'resolved' && <strong>all alerts recovered — awaiting resolution</strong>}
