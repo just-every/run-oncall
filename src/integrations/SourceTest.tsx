@@ -26,8 +26,8 @@ async function signature(key: string, input: string) {
 export function SourceTest({ source, service, busy, run }: { source: SourceRecord; service: Service; busy: boolean; run: IntakeRun }) {
   const [secret, setSecret] = useState(''), [signing, setSigning] = useState(''), [title, setTitle] = useState('Service latency is above normal');
   const [severity, setSeverity] = useState('warning'), [intent, setIntent] = useState('trigger'), [cycle,setCycle] = useState(() => ({identity:newIdentity('check'),startedAt:new Date().toISOString(),lastIntent:''}));
-  const [notice, setNotice] = useState(''), [copied, setCopied] = useState(false);
-  const example = sender(source, service, 'YOUR_PRIVATE_KEY', 'Service latency is above normal', 'warning', 'trigger', 'receiver-check');
+  const [copied, setCopied] = useState(false);
+  const [example] = useState(() => sender(source, service, 'YOUR_PRIVATE_KEY', 'Service latency is above normal', 'warning', 'trigger', 'receiver-check'));
   if (source.kind === 'email' || source.kind === 'changes') return null;
   const sample = `POST ${example.path}\n${JSON.stringify({ ...example.headers, ...(source.kind === 'events' ? { authorization: 'Bearer YOUR_PRIVATE_KEY' } : {}) }, null, 2)}\n\n${JSON.stringify(example.body, null, 2)}`;
   return <>
@@ -49,7 +49,7 @@ export function SourceTest({ source, service, busy, run }: { source: SourceRecor
         if (!response.ok) throw Error('The receiver refused this test. Check the private key and sender settings.');
         return response.json();
       }, undefined, 'Test event accepted');
-      if (result) { setCycle(next); setSecret(''); setSigning(''); setNotice('Test event accepted. Its receipt is below.'); }
+      if (result) { setCycle(next); setSecret(''); setSigning(''); }
       return false;
     }}>
       <label className="field">Private key<input type="password" autoComplete="off" required value={secret} onChange={e => setSecret(e.target.value)} /></label>
@@ -57,7 +57,7 @@ export function SourceTest({ source, service, busy, run }: { source: SourceRecor
       <label className="field">Severity<select aria-label="Severity" value={severity} onChange={e => setSeverity(e.target.value)}><option value="warning">Warning</option><option value="critical">Critical</option><option value="info">Information</option></select></label>
       <label className="field">Intent<select aria-label="Intent" value={intent} onChange={e => setIntent(e.target.value)}><option value="trigger">Trigger</option><option value="recover">Recover</option></select></label>
       {source.kind === 'grafana' && <label className="field">Signing secret, if enabled<input type="password" autoComplete="off" value={signing} onChange={e => setSigning(e.target.value)} /></label>}
-    </Form>{notice && <p role="status">{notice}</p>}</details>
+    </Form></details>
     {source.kind === 'events' ? <RequestExample source={source.id.slice(source.id.indexOf(':') + 1)} service={service} mode={source.native?.authentication || 'bearer'} /> : <details><summary>Sample request</summary><pre tabIndex={0}>{sample}</pre><button type="button" onClick={async () => { try { await navigator.clipboard.writeText(sample); setCopied(true); } catch { setCopied(false); } }}>Copy sample request</button>{copied && <p role="status">Copied</p>}</details>}
   </>;
 }

@@ -27,7 +27,7 @@ export function RoutingWorkspace(props:Props) {
   const [selected,setSelected]=useState(''),uid=useId(),sources=(props.state.intakeSources??[]).filter(s=>s.routing&&!s.id.startsWith('native:'));
   const source=sources.find(s=>s.id===selected)??sources[0];
   return <div className="routing-workspace">
-    {sources.length>0&&<label className="field"><span id={uid}>Routed integration</span><select aria-labelledby={uid} value={source?.id} onChange={e=>setSelected(e.target.value)}>{sources.map(s=><option key={s.id} value={s.id}>{s.name} · {s.active?'active':'inactive'}</option>)}</select></label>}
+    {sources.length>1&&<label className="field"><span id={uid}>Routed integration</span><select aria-labelledby={uid} value={source?.id} onChange={e=>setSelected(e.target.value)}>{sources.map(s=><option key={s.id} value={s.id}>{s.name} · {s.active?'active':'inactive'}</option>)}</select></label>}
     {source?<RoutingKey key={source.id} {...props} source={source}/>:<section className="panel padded"><h2>Routed integration keys</h2><p>Send several services through one monitoring key. Ordered rules choose one allowed service for each event, before that service’s coordination policy runs.</p></section>}
     {props.admin&&<RoutingKeyForm state={props.state} busy={props.busy} run={props.run} defaultOpen={!sources.length} onCreated={setSelected}/>}
   </div>;

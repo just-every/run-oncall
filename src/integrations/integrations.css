@@ -50,3 +50,7 @@
 .integration-home-panels #response-api { border:0; padding:0; background:transparent; box-shadow:none; }
 
 .integrations-home .integration-group h3 { margin-top:4px; }
+
+.integrations fieldset { border:0; padding:0; min-width:0; }
+.integrations form>fieldset { margin:0; }
+.integrations .email-workspace fieldset { border:0; padding:0; margin:16px 0; }
