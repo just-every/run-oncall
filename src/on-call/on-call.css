@@ -153,3 +153,6 @@
 .oncall-frame .workspace:has(>.oc-oncall) > .header, .oncall-frame .workspace:has(>.oc-oncall) > .notice:empty { display:none; }
 @media (max-width:900px) { .oncall-frame .workspace:has(>.oc-oncall) { padding-top:24px; } }
 .oc-coordination details > p > a { display:inline-flex; align-items:center; min-height:44px; }
+/* The route body supplies its title; retain the frame's top gutter. */
+.oncall-frame .workspace:has(>.oc-oncall) { padding-top:40px; }
+@media (max-width:900px) { .oncall-frame .workspace:has(>.oc-oncall) { padding-top:39px; } }

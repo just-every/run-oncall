@@ -17,7 +17,7 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  await page.goto(origin+'/on-call');
  const onCall=await api('/api/on-call');
  for(const fixture of fixtures){const row=page.locator('[data-rota="'+fixture.id+'"]');await row.waitFor();const coverage=onCall.rotas.find(rota=>rota.id===fixture.id);assert.ok((await row.innerText()).includes(coverage.now.primary.name));assert.ok((await row.innerText()).includes(coverage.next.primary.name));assert.ok((await row.innerText()).includes(coverage.now.backup.name));}
- const previewBefore=await api('/api/paging/state'),workspaceBefore=await api('/api/state'),previews=[];
+ const auditBefore=await api('/api/audit/export'),previewBefore=await api('/api/paging/state'),workspaceBefore=await api('/api/state'),previews=[];
  const observe=async response=>{if(new URL(response.url()).pathname!=='/api/paging/preview'||response.request().method()!=='POST')return;const input=response.request().postDataJSON();if(input?.schedule&&response.ok())previews.push({input,windows:await response.json()});};
  page.on('response',observe);
  await key.activate(page.locator('.oc-page-head').getByRole('link',{name:'New rota',exact:true}));await key.text(page.getByLabel('Rota name',{exact:true}),'Checkout rota '+width);
@@ -28,7 +28,7 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  await page.getByLabel('Starts',{exact:true}).fill(new Date(Date.now()+86400000).toISOString().slice(0,10));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Check',exact:true}).waitFor();
  await key.focusScreenshot(page.getByRole('button',{name:'Create rota',exact:true}),`${directory}/keyboard-rota-create-${width}.png`);
- assert.deepEqual(await api('/api/paging/state'),previewBefore,'live draft previews write no schedule, job or scheduling revision');assert.deepEqual(await api('/api/state'),workspaceBefore,'live draft previews write no audit or workspace revision');
+ assert.deepEqual(await api('/api/paging/state'),previewBefore,'live draft previews write no schedule, job or scheduling revision');assert.deepEqual(await api('/api/state'),workspaceBefore,'live draft previews preserve workspace records and revision');const auditAfter=await api('/api/audit/export');assert.deepEqual(auditAfter.rows.filter(row=>row.kind!=='audit.export'),auditBefore.rows.filter(row=>row.kind!=='audit.export'),'draft previews append no permanent audit record; the observing exports keep their own audits');
  await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]')?.disabled);await page.getByRole('button',{name:'Create rota',exact:true}).click();await page.waitForURL(/\/on-call\/rota-[a-f0-9]{8}$/);
  const id=decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1)),created=(await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id),last=previews.filter(value=>value.input.schedule.id===id).at(-1);page.off('response',observe);
  assert.ok(last?.windows.length>1);assert.equal(created.timezone,own);
