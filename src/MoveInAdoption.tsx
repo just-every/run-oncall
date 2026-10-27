@@ -5,7 +5,7 @@ export function MoveInAdoption({row,rows,choices,busy,adopt}:{row:any;rows:any[]
  const schedule=row.value.schedule
  const people=[...new Set<string>([...schedule.primary.members,...schedule.backup.members,...schedule.overrides.flatMap((o:any)=>o.member===null?[]:[o.member])])]
  const names=new Map(rows.filter(r=>r.targetKind==='user').map(r=>[r.targetId,r.value.name]))
- if(row.value.adopted)return <p>Adopted into <a href="#schedules">Schedules</a>. Paging is OFF. Once a schedule is live, this import can no longer be undone.</p>
+ if(row.value.adopted)return <p>Adopted into <a href="/schedules">Schedules</a>. Paging is OFF. Once a schedule is live, this import can no longer be undone.</p>
  return <div><button type="button" disabled={busy} onClick={()=>setOpen(!open)}>{open?'Close adoption':'Make schedule live'}</button>
  {open&&<form onSubmit={e=>{e.preventDefault();void adopt({id:row.targetId,revision:row.revision,service,members,confirm:true})}}>
  <p>Choose an existing service and match each person to an active workspace member. Create missing people under Team first. This makes coverage visible in Schedules, now/next and the calendar; paging stays OFF. Policies and sign-in are not activated.</p>

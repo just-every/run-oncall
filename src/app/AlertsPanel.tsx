@@ -17,7 +17,7 @@ export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpen
   return <section className="panel padded">
     <h2>Alerts</h2>
     <p>Signals remain separate from incidents. Recovery affects only its lifecycle generation.
-      This list refreshes every 10 seconds while visible; use Refresh for an immediate update.</p>
+      This list refreshes every 10 seconds while visible.</p>
     <p>Severity is the highest effective trigger severity. Versioned transformations retain the original event and explain every lowering. Declaring an incident keeps the effective severity.</p>
     {[...heldGroups].map(([identity,alerts])=>{const events=alerts.flatMap(alert=>alert.events.map(id=>state.events.find(e=>e.id===id)!)),latest=events.filter(e=>e.intent==='trigger').sort((a,b)=>b.acceptedAt.localeCompare(a.acceptedAt))[0],severity=['critical','warning','info'].find(level=>events.some(e=>e.intent==='trigger'&&(e.decision.transformation?.severity??e.severity)===level));return <article className="service-card" key={identity} style={{overflowWrap:'anywhere'}}><h3>Flapping signal: {latest.title}</h3><p><strong>{severity}</strong> · {alerts.length} held active {alerts.length===1?'generation':'generations'} · {latest.source} · {latest.service}</p><CorrelationExplanation decision={latest.decision}/><p>Held locally, paging OFF. Source recoveries still affect only their own generation.</p><details><summary>Retained generations and evidence</summary>{alerts.map(alert=><p key={alert.id} style={{overflowWrap:'anywhere'}}>Generation {alert.generation} · owner {name(alert.owner)} · alert {alert.id} · events {alert.events.join(', ')}</p>)}</details></article>})}
     {state.alerts.filter(alert=>!held.includes(alert)).map((alert: Alert) => {
@@ -52,7 +52,7 @@ export function AlertsPanel({ state, canEdit, busy, run, name, onDeclare, onOpen
         <p>{alert.suppressed ? 'Suppressed'+(alert.owner?' · Owner: '+name(alert.owner):'') : name(alert.owner)} · {alert.events.length} events</p>
         <AlertUrgency alert={alert} state={state} canEdit={canEdit&&alert.service!==null} busy={busy} run={run}/><details><summary>Service runbook</summary>{state.services.find(s=>s.id===alert.service)?.runbook.length ? <ol>{state.services.find(s=>s.id===alert.service)!.runbook.map((step,n)=><li key={n}>{step}</li>)}</ol> : <p>No service runbook is configured.</p>}</details>
         {alert.service!==null&&<RecentChanges service={alert.service} at={triggers[0]?.observedAt ?? events[0]?.observedAt} revision={state.revision} />}
-        {incidents.map(incident => <p key={incident.id}><a href="#incidents" onClick={() => onOpenIncident(incident.id)}>Open incident: {incident.title}</a> · {incident.state}</p>)}
+        {incidents.map(incident => <p key={incident.id}><a href={`/incidents/${encodeURIComponent(incident.id)}`} onClick={event => {event.preventDefault(); onOpenIncident(incident.id);}}>Open incident: {incident.title}</a> · {incident.state}</p>)}
         {canEdit && incidents.length === 0 && alert.service === null && <label className="field">Incident service<select aria-label="Incident service" value={incidentServices[alert.id] ?? ''} onChange={event => setIncidentServices(previous => ({...previous, [alert.id]: event.target.value}))} required disabled={busy}>
           <option value="">Choose a service in this integration’s scope</option>
           {scopedServices.map(service => <option key={service.id} value={service.id}>{service.name} · {service.environment}</option>)}

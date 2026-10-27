@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
+import {savedIncidentSummary, savedRecordSummary} from './app/savedEditSummary';
+import {useViewAnchor} from "./app/useViewAnchor";
+import {useActionFailure, failureMessage, hasChangeBase} from "./app/FailureLine";
 import type { Member, State } from "./family/response-operations/domain";
-class InterruptedTransport extends Error {
+export class InterruptedTransport extends Error {
   constructor(){super('Connection interrupted; no success confirmed');}
+}
+export class HttpFailure extends Error {
+  constructor(public status: number, message: string, public human = true) {super(message);}
 }
 export async function request(path: string, data?: unknown): Promise<any> {
   const body=data===undefined?undefined:JSON.stringify(data);
@@ -13,9 +19,9 @@ export async function request(path: string, data?: unknown): Promise<any> {
   let value:any;
   try {value=JSON.parse(raw);} catch {
     if(response.status>=500)throw new InterruptedTransport();
-    throw Error(`Invalid server response (${response.status}); no success confirmed`);
+    throw new HttpFailure(response.status, "The server response could not be read; saving was not confirmed.", false);
   }
-  if(!response.ok)throw Error(value?.error??`Request failed (${response.status})`);
+  if(!response.ok)throw new HttpFailure(response.status, typeof value?.error === 'string' ? value.error : 'This request could not be completed.', typeof value?.error === 'string');
   return value;
 }
 /** Only these effect-free comparison contracts may repeat a request whose response was lost. */
@@ -32,18 +38,39 @@ export function useWorkspace() {
   const [demo, setDemo] = useState(false);
   const [setup, setSetup] = useState(false);
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState("");
+  const [error, updateError] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
-  async function refresh() {
-    apply(await request("/api/workspace"));
+  const failures = useActionFailure();
+  const preserveView = useViewAnchor();
+  const reading = useRef<Promise<void> | null>(null);
+  const currentState = useRef<State | null>(null);
+  function refresh(): Promise<void> {
+    if (reading.current) return reading.current;
+    const pending = request("/api/workspace").then(session => {
+      apply(session);
+      if (failures.current.current?.read) {updateError(""); failures.clear();}
+    }).finally(() => { if (reading.current === pending) reading.current = null; });
+    reading.current = pending;
+    return pending;
   }
   function apply(session: {member: Member | null; demo?: boolean; setup: boolean; state: State | null}) {
+    preserveView();
     setMember(session.member);
     setDemo(session.demo === true);
     setSetup(session.setup);
+    currentState.current = session.state;
     setState(session.state);
     setReady(true);
+  }
+  function setError(message: string) {
+    updateError(message ? failureMessage(new Error(message)) : "");
+    if (message) failures.show(new Error(message)); else failures.clear();
+  }
+  function readFailed(error: unknown) {
+    if (failures.current.current && !failures.current.current.read) return;
+    updateError(failureMessage(error, true));
+    failures.show(error, {read: true, target: null, retry: async () => {try {await refresh(); updateError(""); failures.clear();} catch (error) {readFailed(error);}}});
   }
   const initialized = useRef(false);
   useEffect(() => {
@@ -56,43 +83,108 @@ export function useWorkspace() {
       apply(snapshot);
       return;
     }
-    refresh().catch((e) => {
-      setError(e.message);
-      setReady(true);
-    });
+    refresh().catch((error) => {readFailed(error); setReady(true);});
   }, []);
+  // One visible-tab clock for the whole workspace, including focus and resume.
+  useEffect(() => {
+    if (!ready || !member) return;
+    const update = () => {if (document.visibilityState === "visible") void refresh().catch(readFailed);};
+    const timer = window.setInterval(update, 10000);
+    window.addEventListener("focus", update);
+    document.addEventListener("visibilitychange", update);
+    return () => {window.clearInterval(timer); window.removeEventListener("focus", update); document.removeEventListener("visibilitychange", update);};
+  }, [ready, member?.id]);
+  const pendingAction = useRef<((value: any) => void) | null>(null);
   async function run(
     path: string | (() => Promise<any>),
     data?: unknown,
     success: string | ((result: any) => string) = "Saved",
   ) {
-    setBusy(true);
-    setError("");
-    setNotice("");
-    try {
-      const result = await (typeof path === "function" ? path() : request(path, data));
-      await refresh();
-      setNotice(typeof success === "function" ? success(result) : success);
-      return result;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Request failed");
-      return null;
-    } finally {
+    const change = data === undefined ? undefined : structuredClone(data);
+    const target = failures.action.current;
+    const form = target?.closest('form');
+    const formValues = () => form ? JSON.stringify(Array.from(form.elements).filter(element => 'name' in element && element.name).map(element => {
+      const field = element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+      return [field.name, field.value, 'checked' in field ? field.checked : null, 'selectedOptions' in field ? Array.from(field.selectedOptions).map(option => option.value) : null];
+    })) : null;
+    const values = formValues();
+    pendingAction.current?.(null);
+    let resolve!: (value: any) => void;
+    const completion = new Promise<any>(done => {resolve = done;});
+    pendingAction.current = resolve;
+    const finish = (result: any) => {
+      if (pendingAction.current !== resolve) return;
+      pendingAction.current = null;
+      resolve(result && (!form?.isConnected || formValues() === values) ? result : null);
+    };
+    const guarded = hasChangeBase(change);
+    const original = currentState.current;
+    const originalNotes = new Set(original?.incidents.find(row => row.id === (change as any)?.incident)?.timeline.map(entry => entry.id));
+    let lostResponse = false;
+    const execute = async (): Promise<any> => {
+      setBusy(true); updateError(""); failures.clear(); setNotice("");
+      let result: any;
+      try {
+        result = await (typeof path === "function" ? path() : request(path, change));
+      } catch (error) {
+        if (error instanceof InterruptedTransport) lostResponse = true;
+        if (error instanceof HttpFailure && error.status === 409 && change && typeof change === 'object') {
+          let confirmed = false;
+          try {
+            if (reading.current) await reading.current.catch(() => {});
+            await refresh(); confirmed = true;
+          } catch { /* A new base is offered only after a healthy read. */ }
+          const input = change as any;
+          const record = confirmed ? input.type === 'service' ? currentState.current?.services.find(row => row.id === input.id) : input.type === 'member' ? currentState.current?.members.find(row => row.id === input.id) : currentState.current?.incidents.find(row => row.id === input.incident) : undefined;
+          if (!record || ((input.type === 'service' || input.type === 'member') && !input.baseValues)) {
+            failures.show(error, {target});
+            setBusy(false); finish(null); return null;
+          }
+          const base = record && input.baseValues && Object.fromEntries(Object.keys(input.baseValues).map(key => [key, (record as any)[key]]));
+          const note = record && 'timeline' in record && input.type === 'note' ? record.timeline.find(entry => !originalNotes.has(entry.id) && entry.actor === member?.id && entry.kind === 'note' && entry.text === input.text.trim()) : undefined;
+          const desiredValue = (key: string) => {
+            const value = input[key];
+            if (input.type !== 'service') return value;
+            if (key === 'runbook' && Array.isArray(value)) return value.map(item => typeof item === 'string' ? item.trim() : item);
+            return typeof value === 'string' ? value.trim() : value;
+          };
+          const sameValue = base && Object.keys(base).every(key => JSON.stringify(base[key]) === JSON.stringify(desiredValue(key)));
+          if (lostResponse && (note || sameValue)) {
+            failures.clear(); updateError(''); setNotice('Saved'); setBusy(false); finish(record); return record;
+          }
+          if (!input.baseValues) {
+            const incident = record && 'timeline' in record ? record : undefined;
+            const saved = incident ? savedIncidentSummary(input, incident, currentState.current?.members ?? []) : undefined;
+            const apply = incident && input.type === 'note' ? async () => {input.revision = incident.revision; return execute();} : undefined;
+            failures.show(error, {target, saved, retryLabel: 'Apply my edit', retry: apply});
+            setBusy(false); if (!apply) finish(null); return null;
+          }
+          failures.show(error, {target, saved: base ? savedRecordSummary(input, base, desiredValue, currentState.current?.members ?? []) : undefined, retryLabel: 'Apply my edit', retry: base ? async () => {input.baseValues = base; return execute();} : undefined});
+          setBusy(false);
+          if (!base) finish(null);
+          return null;
+        }
+        updateError(failureMessage(error));
+        const retry = typeof path === 'string' && (guarded || change === undefined) && (!(error instanceof HttpFailure) || error.status >= 500) ? execute : undefined;
+        failures.show(error, {target, retry});
+        if (!retry) finish(null);
+        // A refusal may describe a stale base. Show current saved records alongside the retained edit.
+        if (!(error instanceof InterruptedTransport)) {try {await refresh();} catch { /* Keep the action's failure in place. */ }}
+        setBusy(false);
+        return null;
+      }
+      try {
+        // A read begun before this write cannot be the write's confirmation read.
+        if (reading.current) await reading.current.catch(() => {});
+        await refresh();
+      } catch (error) {readFailed(error);}
+      setNotice(result?.changed === false ? '' : typeof success === "function" ? success(result) : success);
       setBusy(false);
-    }
+      finish(result);
+      return result;
+    };
+    void execute();
+    return completion;
   }
-  return {
-    state,
-    demo,
-    member,
-    setup,
-    ready,
-    error,
-    busy,
-    notice,
-    run,
-    refresh,
-    setError,
-    setNotice,
-  };
+  return {state, demo, member, setup, ready, error, busy, notice, run, refresh, setError, setNotice, failure: failures.failure};
 }

@@ -127,7 +127,7 @@ export function responseReport(state: State, input: {from?: string; to?: string;
     .sort((a, b) => clock(a.createdAt) - clock(b.createdAt) || a.id.localeCompare(b.id))
     .map(i => ({id: i.id, title: i.title, service: i.service, serviceName: state.services.find(s => s.id === i.service)?.name ?? null,
       state: i.state as string, severity: i.severity as string, incidentRevision: i.revision as number|null, declaredAt: new Date(clock(i.createdAt)).toISOString(),
-      href: `/?incident=${encodeURIComponent(i.id)}#incidents`, ...durations(state, i, observed)}));
+      href: `/incidents/${encodeURIComponent(i.id)}`, ...durations(state, i, observed)}));
   const erasedDuration=():ResponseDuration=>({status:'unknown',seconds:null,sourceEntryId:null,sourceAt:null,sourceKind:null,reason:'Incident explicitly erased; anonymous declaration case retained in the denominator',evidence:null});
   for(const row of state.erasedReportCases??[])if(clock(row.declaredAt)>=from&&clock(row.declaredAt)<to&&(input.service===undefined||row.service===input.service)){
     incidents.push({id:row.id,title:'Erased incident',service:row.service,serviceName:state.services.find(service=>service.id===row.service)?.name??null,state:'erased',severity:'unknown',incidentRevision:null,declaredAt:new Date(clock(row.declaredAt)).toISOString(),href:'',mtta:erasedDuration(),mttr:erasedDuration(),recovery:erasedDuration(),sourceRecovery:erasedDuration()});

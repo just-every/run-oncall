@@ -1,3 +1,4 @@
+import {focusWorkspace} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {mkdir} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
@@ -24,16 +25,16 @@ async function passwordSignIn(page,who){
  await page.getByLabel('Name',{exact:true}).fill(who.name)
  await page.getByLabel('Password',{exact:true}).fill(who.password)
  await page.getByRole('button',{name:'Sign in',exact:true}).click()
- await page.waitForURL(worker.origin+'/')
+ await page.waitForURL(worker.origin+'/incidents')
  return (await call(page,'/api/session')).value.member
 }
-async function openIncident(page,id){await page.goto(`${worker.origin}/?incident=${id}#incidents`);await page.reload();await page.locator('.detail h2').waitFor()}
+async function openIncident(page,id){await page.goto(`${worker.origin}/incidents/${encodeURIComponent(id)}`);await page.reload();await page.locator('.detail h2').waitFor()}
 const entry=(page,text)=>page.locator('.timeline .event').filter({hasText:text})
 async function denied(page,label,id){
  const state=await page.context().request.get(worker.origin+'/api/state'),workspace=await (await page.context().request.get(worker.origin+'/api/workspace')).json()
  assert.equal(state.status(),401,`${label}: protected state refused`)
  assert.equal(workspace.state,null,`${label}: no workspace returned`)
- await page.goto(`${worker.origin}/?incident=${id}#incidents`);await page.reload();await page.waitForLoadState('networkidle')
+ await page.goto(`${worker.origin}/incidents/${encodeURIComponent(id)}`);await page.reload();await page.waitForLoadState('networkidle')
  assert.equal(await page.locator('.timeline').count(),0,`${label}: no incident history rendered`)
  assert.ok(!(await page.locator('body').innerText()).includes(noteText),`${label}: no coordination text in the page`)
 }
@@ -53,7 +54,7 @@ try {
  ok(await call(owner.page,'/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:rosaRecord.id,runbook:['Check payment provider status'],pager:''}))
  // OC-023 public-team forms use the existing Team section at both widths.
  for(const width of [1440,390]){
-  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/#team');await owner.page.reload();
+  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/team');await owner.page.reload();
   const panel=owner.page.getByRole('region',{name:'Teams',exact:true});await panel.getByRole('heading',{name:'Teams',exact:true}).waitFor();
   const teamWrite=()=>owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/teams'&&response.request().method()==='POST');
   await panel.locator('summary').filter({hasText:/^Create team$/}).click();
@@ -86,7 +87,7 @@ try {
   const teamState=ok(await call(owner.page,'/api/state')),owning=teamState.teams.find(t=>t.name===edited);
   assert.ok(owning.members.includes(rosaRecord.id));assert.equal(owning.members.length,2);assert.deepEqual(owning.managers,[rosaRecord.id]);
   // A stale edit keeps a different member change saved by another administrator.
-  const other=await owner.context.newPage();await other.goto(worker.origin+'/#team');
+  const other=await owner.context.newPage();await other.goto(worker.origin+'/team');
   const otherCard=other.getByRole('region',{name:'Teams',exact:true}).getByRole('article').filter({has:other.getByRole('heading',{name:edited,exact:true})});
   await otherCard.getByText('Edit team',{exact:true}).click();
   const otherWrite=other.waitForResponse(response=>new URL(response.url()).pathname==='/api/teams'&&response.request().method()==='POST'&&response.status()===200);
@@ -119,7 +120,7 @@ try {
  }
  // OC-023: both service forms preserve explicit unassigned ownership.
  for(const width of [1440,390]) {
-  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/#services');await owner.page.reload();
+  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/services');await owner.page.reload();
   const add=owner.page.locator('section').filter({has:owner.page.getByRole('heading',{name:'Add service',exact:true})});
   await add.getByLabel('Service name',{exact:true}).fill('synthetic-oncall-23-'+width);
   await add.getByLabel('Service owner',{exact:true}).selectOption('');
@@ -167,11 +168,29 @@ try {
  for(const text of [ackText,noteText])assert.equal(kept.timeline.find(e=>e.text.includes(text)).actor,rosaMember.id,'the stored entry names the member')
  assert.ok(kept.timeline.some(e=>e.kind==='declared'&&e.actor===ownerMember.id),'the declaration stays the owner’s')
 
+ // The independently signed-in responder sees a second session's note on return.
+ const responseSettings=rosa.page.getByText('Change response ownership or priority',{exact:true}).locator('..')
+ await responseSettings.locator('summary').click()
+ const draft='Rosa draft: checking the next provider update.'
+ await rosa.page.getByLabel('Observation, decision or evidence',{exact:true}).fill(draft)
+ await openIncident(owner.page,declared.id)
+ const secondNote='Owner update: provider recovery is being verified.'
+ await owner.page.getByLabel('Observation, decision or evidence',{exact:true}).fill(secondNote)
+ const written=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST')
+ await owner.page.getByRole('button',{name:'Add timeline note',exact:true}).click()
+ assert.equal((await written).status(),200)
+ await entry(owner.page,secondNote).waitFor()
+ await focusWorkspace(rosa.page)
+ await entry(rosa.page,secondNote).waitFor()
+ assert.match(await entry(rosa.page,secondNote).innerText(),new RegExp(ownerMember.name),'the second session note stays attributed to its author')
+ assert.equal(await rosa.page.getByLabel('Observation, decision or evidence',{exact:true}).inputValue(),draft,'background refresh preserves the typed note')
+ assert.equal(await responseSettings.evaluate(element=>element.open),true,'background refresh preserves the open response disclosure')
+
  // A public-team manager can edit own coverage without workspace configuration authority.
  const managedRotation={anchorLocal:'2026-01-01T00:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'};
  ok(await call(owner.page,'/api/paging/schedules',{id:'synthetic-oncall-145',name:'synthetic-oncall-145',service:'checkout',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:managedRotation,backup:{...managedRotation,members:[]},overrides:[]}));
  for(const width of [1440,390]){
-  await rosa.page.setViewportSize({width,height:1000});await rosa.page.goto(worker.origin+'/#schedules');await rosa.page.reload();
+  await rosa.page.setViewportSize({width,height:1000});await rosa.page.goto(worker.origin+'/schedules');await rosa.page.reload();
   await rosa.page.getByLabel('Schedule',{exact:true}).selectOption('synthetic-oncall-145');
   await expect(rosa.page.getByLabel('Schedule name',{exact:true})).toBeEnabled();
   await rosa.page.getByRole('button',{name:'New schedule',exact:true}).click();
@@ -181,6 +200,7 @@ try {
   assert.deepEqual((await new AxeBuilder({page:rosa.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
   await rosa.page.screenshot({path:`${captureDirectory}/oc023-manager-coverage-${width}.png`,fullPage:true});
  }
+
  // A second permitted session, the viewer, reads the same history and cannot write.
  const vic=await open(390)
  assert.equal((await passwordSignIn(vic.page,viewer)).role,'viewer')
@@ -194,7 +214,7 @@ try {
  const stakeholder={name:'Sam Stakeholder',password:'synthetic-oncall-61-password'}
  const sam=ok(await call(owner.page,'/api/members',{...stakeholder,role:'stakeholder'}),201)
  ok(await call(owner.page,'/api/command',{type:'service',id:'synthetic-oncall-61',name:'Payment gateway',environment:'production',owner:rosaRecord.id,runbook:['Private gateway recovery instructions'],pager:''}))
- await owner.page.goto(worker.origin+'/#status');await owner.page.reload()
+ await owner.page.goto(worker.origin+'/status');await owner.page.reload()
  const statusPanel=owner.page.getByRole('region',{name:'Internal business status'})
  await statusPanel.getByRole('heading',{name:'Internal status',exact:true}).waitFor()
  await statusPanel.getByText('Add business service',{exact:true}).click()
@@ -207,7 +227,7 @@ try {
  const checkout=statusPanel.getByRole('article',{name:'Checkout',exact:true})
  await checkout.getByText('Derived status: operational',{exact:true}).waitFor()
  const statusIncident=ok(await call(owner.page,'/api/command',{type:'declare',service:'synthetic-oncall-61',severity:'warning',title:'Private gateway timeouts',summary:'Customer payment attempts delayed',alerts:[]}))
- await statusPanel.getByRole('button',{name:'Refresh status',exact:true}).click()
+ await focusWorkspace(owner.page)
  await checkout.getByText('Derived status: degraded',{exact:true}).waitFor()
  const statusCapture=async(page,screen,width)=>{
   await page.setViewportSize({width,height:1000})
@@ -251,14 +271,14 @@ try {
   await owner.page.setViewportSize({width,height:1000});const serviceId='synthetic-oncall-614-'+width,name='Synthetic list status '+width,address='synthetic-oncall-614-'+width+'@example.test';
   ok(await call(owner.page,'/api/command',{type:'service',id:serviceId,name:'Synthetic list service '+width,environment:'test',owner:ownerMember.id,runbook:[],pager:''}));
   ok(await call(owner.page,'/api/status',{action:'create',name,owningTeam:'Synthetic team label',supporting:[serviceId],communicationsOwner:ownerMember.id,audience:[],highUrgencyImpact:false}));
-  await owner.page.goto(worker.origin+'/#status');await owner.page.reload();const panel=owner.page.getByRole('region',{name:'Internal business status'}),card=panel.getByRole('article',{name,exact:true});
+  await owner.page.goto(worker.origin+'/status');await owner.page.reload();const panel=owner.page.getByRole('region',{name:'Internal business status'}),card=panel.getByRole('article',{name,exact:true});
   await card.getByText('Manage internal status',{exact:true}).click();await card.getByText('Email-list subscription settings',{exact:true}).click();await card.getByLabel('Email-list address',{exact:true}).fill(address);await card.getByRole('button',{name:'Add email-list subscriber',exact:true}).click();await card.getByText(address+' · email · subscribed',{exact:true}).waitFor();
-  let impact=ok(await call(owner.page,'/api/command',{type:'declare',service:serviceId,title:'Synthetic private list impact '+width,summary:'Synthetic local response context',severity:'warning'}));await panel.getByRole('button',{name:'Refresh status',exact:true}).click();await card.getByText(/impact started/).first().waitFor();await card.scrollIntoViewIfNeeded();await statusCapture(owner.page,'email-list-started',width);await owner.page.screenshot({path:`${captureDirectory}/oc061-email-list-started-focus-${width}.png`});
-  for(const state of ['acknowledged','recovered','resolved'])impact=ok(await call(owner.page,'/api/command',{type:'transition',incident:impact.id,revision:impact.revision,state,summary:'Synthetic recovery verified',evidence:'https://example.test/synthetic-oncall-614'}));await panel.getByRole('button',{name:'Refresh status',exact:true}).click();await card.getByText(/impact ended/).first().waitFor();await statusCapture(owner.page,'email-list-ended',width);
+  let impact=ok(await call(owner.page,'/api/command',{type:'declare',service:serviceId,title:'Synthetic private list impact '+width,summary:'Synthetic local response context',severity:'warning'}));await focusWorkspace(owner.page);await card.getByText(/impact started/).first().waitFor();await card.scrollIntoViewIfNeeded();await statusCapture(owner.page,'email-list-started',width);await owner.page.screenshot({path:`${captureDirectory}/oc061-email-list-started-focus-${width}.png`});
+  for(const state of ['acknowledged','recovered','resolved'])impact=ok(await call(owner.page,'/api/command',{type:'transition',incident:impact.id,revision:impact.revision,state,summary:'Synthetic recovery verified',evidence:'https://example.test/synthetic-oncall-614'}));await focusWorkspace(owner.page);await card.getByText(/impact ended/).first().waitFor();await statusCapture(owner.page,'email-list-ended',width);
   const listRow=card.locator('.saved-view').filter({hasText:address});await listRow.getByRole('button',{name:'Unsubscribe email list',exact:true}).click();await card.getByText(address+' · email · unsubscribed',{exact:true}).waitFor();
-  ok(await call(owner.page,'/api/command',{type:'declare',service:serviceId,title:'Synthetic subsequent impact '+width,summary:'Synthetic local response only',severity:'warning'}));await panel.getByRole('button',{name:'Refresh status',exact:true}).click();
+  ok(await call(owner.page,'/api/command',{type:'declare',service:serviceId,title:'Synthetic subsequent impact '+width,summary:'Synthetic local response only',severity:'warning'}));await focusWorkspace(owner.page);
   const saved=ok(await call(owner.page,'/api/state')).businessServices.find(row=>row.name===name),list=saved.emailLists.find(row=>row.address===address);assert.equal(saved.notices.filter(row=>row.target.kind==='email-list'&&row.target.id===list.id).length,2);assert.ok(saved.notices.every(row=>row.label==='no sender'&&row.automatic===false));assert.ok(!JSON.stringify(saved.notices).includes('Synthetic private list impact'));await statusCapture(owner.page,'email-list-unsubscribed',width);
-  await owner.page.getByRole('link',{name:'Services',exact:true}).click();await owner.page.getByRole('button',{name:'Refresh',exact:true}).click();const erasure=owner.page.getByText('Data erasure settings',{exact:true}).locator('..');if(!await erasure.getByLabel('Erasure category',{exact:true}).isVisible())await erasure.locator('summary').click();
+  await owner.page.getByRole('link',{name:'Services',exact:true}).click();await focusWorkspace(owner.page);const erasure=owner.page.getByText('Data erasure settings',{exact:true}).locator('..');if(!await erasure.getByLabel('Erasure category',{exact:true}).isVisible())await erasure.locator('summary').click();
   await erasure.getByLabel('Erasure category',{exact:true}).selectOption('email-list');await erasure.getByLabel('Erasure subject',{exact:true}).selectOption(list.id);await erasure.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+list.id);await erasure.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await statusCapture(owner.page,'email-list-erasure-review',width);
   const erased=owner.page.waitForResponse(response=>response.url().endsWith('/api/erasure/email-list/'+list.id));await erasure.getByRole('button',{name:'Erase selected subject',exact:true}).click();assert.equal((await erased).status(),200);await erasure.getByText('oc_business_services: 0 deleted, 1 updated',{exact:true}).waitFor();await erasure.getByRole('status').scrollIntoViewIfNeeded();await statusCapture(owner.page,'email-list-erasure-receipt',width);await owner.page.screenshot({path:`${captureDirectory}/oc061-email-list-erasure-receipt-focus-${width}.png`});assert.ok(!JSON.stringify(ok(await call(owner.page,'/api/state'))).includes(address));
  }
@@ -269,7 +289,7 @@ try {
  const roleSession=await owner.context.newCDPSession(owner.page);await roleSession.send('Emulation.setCPUThrottlingRate',{rate:4})
  const excludesStakeholder=async locator=>assert.ok(!(await locator.locator('option').evaluateAll(options=>options.map(option=>option.value))).includes(sam.id),'stakeholders are never offered as responders')
  for(const screen of ['team','services','routing','schedules','incidents']){
-  await owner.page.goto(worker.origin+'/#'+screen);await owner.page.reload()
+  await owner.page.goto(worker.origin+'/'+screen);await owner.page.reload()
   if(screen==='team')await owner.page.getByRole('heading',{name:'Team and access',exact:true}).waitFor()
   if(screen==='services'){await owner.page.getByRole('heading',{name:'Service ownership',exact:true}).waitFor();await excludesStakeholder(owner.page.getByLabel('Service owner',{exact:true}))}
   if(screen==='routing'){await owner.page.getByText('Create a routed integration key',{exact:true}).click();await excludesStakeholder(owner.page.getByLabel('Integration owner',{exact:true}))}
@@ -292,7 +312,7 @@ try {
  console.log('OC-061 role selectors and tooltips: team, service, routing, schedule and incident/bulk screens at 1440/390 with own browser CPU rate 4; stakeholder excluded from response owners and keyboard tooltip immediate')
 
  // OC-068 uses the real manual-page form and independent target response controls.
- await owner.page.goto(worker.origin+'/#incidents');await owner.page.reload()
+ await owner.page.goto(worker.origin+'/incidents');await owner.page.reload()
  await owner.page.getByRole('button',{name:'Declare incident',exact:true}).click()
  await owner.page.getByLabel('Incident title',{exact:true}).fill('Manual checkout responder request')
  await owner.page.getByLabel('Service',{exact:true}).selectOption('checkout')
@@ -327,7 +347,7 @@ try {
  await vic.page.getByText('Only responders and admins may create manual pages or request responders.',{exact:true}).waitFor()
  ok(await call(vic.page,'/api/command',{type:'manual-page',operationId:'synthetic-oncall-68-viewer',service:'checkout',title:'Refused',severity:'critical'}),403)
  for(const width of [1440,390])await statusCapture(vic.page,'oc068-viewer-refusal',width)
- await owner.page.goto(worker.origin+'/#services');await owner.page.reload()
+ await owner.page.goto(worker.origin+'/services');await owner.page.reload()
  const assignment68=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'Checkout',exact:true})})
  await assignment68.getByText('User-assignment rule',{exact:true}).click()
  await assignment68.getByLabel('User-assignment outcome',{exact:true}).selectOption('repeat')
@@ -364,12 +384,12 @@ try {
 
 
  // Signed out, anonymous and revoked sessions see no workspace.
- await rosa.page.setViewportSize({width:1440,height:1000});await rosa.page.goto(worker.origin+'/#incidents')
+ await rosa.page.setViewportSize({width:1440,height:1000});await rosa.page.goto(worker.origin+'/incidents')
  await rosa.page.getByRole('button',{name:'Sign out',exact:true}).click();await rosa.page.waitForURL(u=>u.pathname.startsWith('/signin'))
  await denied(rosa.page,'signed-out member',declared.id)
  const anonymous=await open(390);await denied(anonymous.page,'anonymous visitor',declared.id)
  const again=await open(390);await passwordSignIn(again.page,responder);await openIncident(again.page,declared.id)
- await owner.page.goto(worker.origin+'/#team');await owner.page.reload()
+ await owner.page.goto(worker.origin+'/team');await owner.page.reload()
  const card=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:responder.name,exact:true})})
  await card.getByLabel('Access',{exact:true}).selectOption('false')
  await card.getByRole('button',{name:'Update access'}).click()
