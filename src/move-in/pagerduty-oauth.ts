@@ -1,5 +1,5 @@
 import { auditIdentity, auditOutcome } from '../audit-store'
-import { runtimeBindings, type Bindings } from '../auth.server'
+import { operatorAuth, runtimeBindings, type Bindings } from '../auth.server'
 import { openCredential, sealCredential, type Custody } from '../changes/credentials'
 import { fail } from '../family/response-operations/domain'
 import { adminSession } from './owner-door'
@@ -61,6 +61,22 @@ export async function endConsent(c: any, held: ConsentToken, request: typeof fet
  try { await revokeConsent(runtimeBindings(c.env), held, request); await c.env.DB.prepare('DELETE FROM oc_move_in_consent WHERE id=?').bind(held.id).run() }
  catch { fail('PagerDuty could not close this connection. Revoke this app in PagerDuty before continuing.', 502) }
 }
+async function consentLanding(c: any, path: string) {
+ // Strict cookies are withheld through the whole cross-site redirect chain.
+ // A native Lax operator session can open the landing immediately. Otherwise
+ // a browser navigation gets a same-origin document handoff: its next request
+ // carries the existing Strict session, without changing that cookie's policy.
+ const native = await operatorAuth(runtimeBindings(c.env)).getSession(c.req.raw).catch(() => null)
+ if (!native && c.req.header('Sec-Fetch-Mode') === 'navigate') {
+  c.header('Cache-Control', 'no-store')
+  c.header('Content-Security-Policy', "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+  c.header('Referrer-Policy', 'no-referrer')
+  c.header('Location', path)
+  // Both destinations are fixed local paths, with no provider or user content.
+  return c.html(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=${path}"><title>Opening Move in</title></head><body><p>Opening Move in… <a href="${path}">Continue to Move in</a></p></body></html>`)
+ }
+ return c.redirect(path, 302)
+}
 export function installPagerdutyConsent(api: any) {
  api.get('/api/move-in/pagerduty/start', async (c: any) => {
   await currentMoveInAdmin(c)
@@ -117,7 +133,7 @@ export function installPagerdutyConsent(api: any) {
    const inserted = await c.env.DB.prepare(`INSERT INTO oc_move_in_consent(id,custody,revoke_at,expires) SELECT ?,?,?,? WHERE (SELECT COUNT(*) FROM oc_move_in_consent)<10 AND (${guard.sql})`).bind(issued.id, sealed, Math.min(expires, Date.now() + 480000), expires, ...guard.params!).run()
    if (inserted.meta.changes !== 1) throw Error()
    c.header('Set-Cookie', cookie(tokenCookie, sealed, env.AUTH_ORIGIN, Math.max(1, Math.floor((expires - Date.now()) / 1000))), { append: true })
-   return c.redirect('/settings/move-in?connected=pagerduty', 302)
+   return consentLanding(c, '/settings/move-in?connected=pagerduty')
   } catch {
    c.header('Set-Cookie', cookie(tokenCookie, '', env.AUTH_ORIGIN, 0), { append: true })
    auditOutcome(env.DB,'failed')
@@ -126,7 +142,7 @@ export function installPagerdutyConsent(api: any) {
     try { await revokeConsent(env, issued) } catch { revokeFailed=true }
     if(!revokeFailed)await c.env.DB.prepare('DELETE FROM oc_move_in_consent WHERE id=?').bind(issued.id).run()
    }
-   return c.redirect('/settings/move-in?connection=failed', 302)
+   return consentLanding(c, '/settings/move-in?connection=failed')
   }
  })
 }
