@@ -11,7 +11,7 @@ const time = (value: string) =>
 export function SchedulesSection() {
   const {w, page, s, actor} = useWorkspaceContext();
   return <>
-        {page === "schedules" && (
+        {page === "on-call" && (
           <SchedulingWorkspace page="schedules" actor={actor} state={s} request={request} refreshWorkspace={w.refresh} demo={w.demo} />
         )}
   </>;

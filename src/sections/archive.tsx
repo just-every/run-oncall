@@ -1,3 +1,4 @@
+import {ConfigurationAudit} from "../archive/ConfigurationAudit";
 import { ArchiveWorkspace } from "../app/ArchiveWorkspace";
 import { useWorkspaceContext } from "../app/shell/WorkspaceContext";
 const time = (value: string) =>
@@ -13,10 +14,7 @@ export function ArchiveSection() {
         {page === "archive" && <>
           <ArchiveWorkspace state={s} actor={actor} busy={w.busy} run={w.run} setError={w.setError} setNotice={w.setNotice}
             onRestored={() => { setReplay(null); setHandoff(null); selectIncident(""); }} />
-          <details className="panel padded">
-            <summary>Configuration audit ({s.audit.length})</summary>
-            {s.audit.slice().reverse().map(entry => <p key={entry.id}>{time(entry.at)} · {entry.kind} · {entry.text}</p>)}
-          </details>
+          <ConfigurationAudit state={s} />
         </>}
   </>;
 }
