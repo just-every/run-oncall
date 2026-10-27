@@ -1,15 +1,18 @@
+import {InlineConfirm} from '../app/autosave/InlineConfirm';
+import {failureMessage} from '../app/FailureLine';
 import { useState } from 'react';
 import { Field, Form } from '../forms';
 import type { Incident, Member, State } from '../family/response-operations/domain';
 import { incidentAssignee } from '../family/response-operations/incident-controls';
 import './workflows.css';
 
-type Props = { state: State; incident: Incident; member: Member; send: (command: any) => Promise<any> };
-const time = (value: string) => new Date(value).toLocaleString();
+type Props = { state: State; incident: Incident; member: Member; send: (command: any) => Promise<any>; view?: 'merge' | 'split' | 'context' };
+const time = (value: string) => new Date(value).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 
-export function IncidentWorkflows({ state, incident, member, send }: Props) {
+export function IncidentWorkflows({ state, incident, member, send, view }: Props) {
   const [busy, setBusy] = useState(false);
   const [pendingCheck, setPendingCheck] = useState<{ id: string; done: boolean } | null>(null);
+  const [confirm, setConfirm] = useState<any>(null);
   const [error, setError] = useState('');
   const [sources, setSources] = useState<{ id: string; revision: number }[]>([]);
   const [alerts, setAlerts] = useState<string[]>([]);
@@ -21,10 +24,9 @@ export function IncidentWorkflows({ state, incident, member, send }: Props) {
     setError('');
     try {
       const result = await send(command);
-      if (!result) setError('Change was not saved. Check the workspace error and refresh before trying again.');
       return result;
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Change could not be saved.');
+      setError(failureMessage(cause));
       return null;
     } finally { setBusy(false); }
   }
@@ -43,9 +45,9 @@ export function IncidentWorkflows({ state, incident, member, send }: Props) {
   const attached = state.alerts.filter(a => incident.alerts.includes(a.id));
 
   return <section className="response-controls incident-workflows" aria-label="Incident workflows">
-    <h3>Incident workflows</h3>
-    {incident.splitFrom && <p>Split from <a href={`/incidents/${encodeURIComponent(incident.splitFrom.incident)}`}>{incident.splitFrom.incident}</a> by {name(incident.splitFrom.by)} · {time(incident.splitFrom.at)}. {incident.splitFrom.reason}</p>}
-    {incident.template && <section aria-label="Incident template snapshot">
+    {!view && <h3>Incident workflows</h3>}
+    {(!view || view === 'context') && incident.splitFrom && <p>Split from <a href={`/incidents/${encodeURIComponent(incident.splitFrom.incident)}`}>{state.incidents.find(item => item.id === incident.splitFrom?.incident)?.title ?? 'Original incident'}</a> by {name(incident.splitFrom.by)} · {time(incident.splitFrom.at)}. {incident.splitFrom.reason}</p>}
+    {!view && incident.template && <section aria-label="Incident template snapshot">
       <h4>Response template · version {incident.template.version}</h4>
       <p>{incident.template.severityWording[incident.severity as 'critical' | 'warning' | 'info']} · {incident.template.incidentType ?? 'No incident type selected'}</p>
       <p>{incident.template.impactPrompt}</p>
@@ -66,15 +68,14 @@ export function IncidentWorkflows({ state, incident, member, send }: Props) {
       {incident.template.checklist.length > 0 && incident.commander !== member.id && <p className="workflow-help">The current commander updates this checklist.</p>}
       <p className="workflow-help">Copied at declaration from {service(incident.template.service)}. Later template versions apply to new incidents.</p>
     </section>}
-    {editable && <>
-      <details>
+    {editable && (!view || view === 'merge' || view === 'split') && <>
+      {(!view || view === 'merge') && <details open={!!view || undefined}>
         <summary>Merge related incidents into this incident</summary>
         <p>This incident keeps its response roles. Source incidents retain their history and become aliases here.</p>
-        {candidates.length ? <Form busy={busy} label="Merge selected incidents" onSubmit={async data => {
+        {candidates.length ? <Form busy={busy} disabled={!!confirm} label="Review merge" onSubmit={async data => {
           if (!sources.length) { setError('Select at least one related incident to merge.'); return null; }
-          const result = await save({ type: 'merge-incidents', incident: incident.id, revision: incident.revision, sources, reason: data.reason });
-          if (result) setSources([]);
-          return result;
+          setConfirm({type: 'merge-incidents', incident: incident.id, revision: incident.revision, sources: structuredClone(sources), reason: data.reason});
+          return null;
         }}>
           <fieldset className="workflow-options"><legend>Related incidents</legend>
             {candidates.map(candidate => {
@@ -83,41 +84,44 @@ export function IncidentWorkflows({ state, incident, member, send }: Props) {
                 <input type="checkbox" checked={!!selected} onChange={e => setSources(current => e.target.checked
                   ? [...current, { id: candidate.id, revision: candidate.revision }]
                   : current.filter(s => s.id !== candidate.id))} />
-                <span>{candidate.title}<small>{service(candidate.service)} · {candidate.state} · revision {selected?.revision ?? candidate.revision} · {candidate.id}</small>
+                <span>{candidate.title}<small>{service(candidate.service)} · {candidate.state}</small>
                   {selected && selected.revision !== candidate.revision && <small>Changed since selection. Deselect and review before selecting again.</small>}</span>
               </label>;
             })}
           </fieldset>
           <Field name="reason" label="Reason for merging" type="textarea" />
         </Form> : <p>No other open incidents are available to merge.</p>}
-      </details>
-      <details>
+      </details>}
+      {(!view || view === 'split') && <details open={!!view || undefined}>
         <summary>Split unrelated alerts into a new incident</summary>
         <p>Selected alert groups move to a new incident. Their source and generation stay attached to each alert.</p>
-        {attached.length ? <Form busy={busy} label="Split selected alerts" onSubmit={async data => {
+        {attached.length ? <Form busy={busy} disabled={!!confirm} label="Review split" onSubmit={async data => {
           if (!alerts.length) { setError('Select at least one alert group to split.'); return null; }
-          const result = await save({ type: 'split-incident', incident: incident.id, revision: incident.revision, alerts, title: data.title, summary: data.summary, reason: data.reason });
-          if (result) setAlerts([]);
-          return result;
+          setConfirm({type: 'split-incident', incident: incident.id, revision: incident.revision, alerts: [...alerts], title: data.title, summary: data.summary, reason: data.reason});
+          return null;
         }}>
           <fieldset className="workflow-options"><legend>Alert groups</legend>
             {attached.map(alert => <label className="workflow-choice" key={alert.id}>
               <input type="checkbox" checked={alerts.includes(alert.id)} onChange={e => setAlerts(current => e.target.checked ? [...current, alert.id] : current.filter(id => id !== alert.id))} />
-              <span>{alert.key}<small>{service(alert.service)} · {alert.environment} · {alert.source} · generation {alert.generation} · {alert.state}</small><small>{alert.id}</small></span>
+              <span>{alert.key}<small>{service(alert.service)} · {alert.environment} · {alert.source} · generation {alert.generation} · {alert.state}</small></span>
             </label>)}
           </fieldset>
           <Field name="title" label="New incident title" />
           <Field name="summary" label="New incident impact summary" type="textarea" />
           <Field name="reason" label="Reason for splitting" type="textarea" />
         </Form> : <p>No attached alerts are available to split.</p>}
-      </details>
+      </details>}
     </>}
+    {confirm && <InlineConfirm action={confirm.type === 'merge-incidents' ? 'Merge selected incidents' : 'Split selected alerts'} keep="Keep incidents as they are" busy={busy} onCancel={() => setConfirm(null)} onConfirm={async () => {
+      const result = await save(confirm);
+      if (result) {setConfirm(null);setSources([]);setAlerts([]);}
+    }}>{confirm.type === 'merge-incidents' ? 'Merge the selected incidents and retain their history?' : 'Move these alerts into the new incident?'}</InlineConfirm>}
     {error && <p role="alert">{error}</p>}
-    {retained.length > 0 && <section aria-label="Retained merged incidents">
+    {(!view || view === 'context') && retained.length > 0 && <section aria-label="Retained merged incidents">
       <h4>Retained source incidents</h4>
       {retained.map(source => <details key={source.id}>
         <summary>{source.title} · {service(source.service)}</summary>
-        <p>Source {source.id} · {source.state} · revision {source.revision}</p>
+        <p>{source.state}</p>
         {source.mergedInto && <p>Merged by {name(source.mergedInto.by)} · {time(source.mergedInto.at)}. {source.mergedInto.reason}</p>}
         <dl className="response-roles">
           <div><dt>Source assignee</dt><dd>{name(incidentAssignee(source))}</dd></div>
@@ -147,7 +151,7 @@ export function IncidentWorkflows({ state, incident, member, send }: Props) {
         <ol className="events">{source.timeline.map(entry => <li className="event" key={entry.id}>
           <span className="event-symbol" aria-hidden />
           <div><div className="event-line"><strong>{entry.kind}</strong><time dateTime={entry.at}>{time(entry.at)}</time></div>
-            <p>{entry.text}</p><small>{name(entry.actor)} · source {source.id}{entry.operationId && ` · operation ${entry.operationId}`}</small>
+            <p>{entry.text}</p><small>{name(entry.actor)}</small>
             {entry.lifecycle?.member !== undefined && <small>Named responder: {name(entry.lifecycle.member)}</small>}
           </div>
         </li>)}</ol>

@@ -47,3 +47,10 @@ export function keyboardUser(page) {
   },
  }
 }
+
+/** Follow an incident action through its one menu and its own sheet. */
+export async function openIncidentAction(page, name) {
+ await page.getByRole('button',{name:'Incident actions',exact:true}).click()
+ await page.getByRole('menuitem',{name,exact:true}).click()
+ return page.getByRole('dialog',{name,exact:true})
+}

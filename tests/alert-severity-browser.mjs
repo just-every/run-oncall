@@ -1,4 +1,4 @@
-import {focusWorkspace} from './keyboard.mjs'
+import {focusWorkspace,openIncidentAction} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 
@@ -33,7 +33,9 @@ export async function alertSeverity(page,context,width) {
   const incident=stored.incidents.find(incident=>incident.title===title)
   assert.equal(incident.severity,severity,'declaring from alert preserves its severity')
   assert.equal(incident.alerts.length,1,'declaration keeps the source alert linked')
-  await page.locator('.priority').filter({hasText:severity}).first().waitFor()
+  const people=await openIncidentAction(page,'People and priority')
+  assert.equal(await people.getByLabel('Severity',{exact:true}).inputValue(),severity,'the incident severity is preserved in its per-value control')
+  await people.getByRole('button',{name:'Close',exact:true}).click()
   if(severity==='critical') await page.screenshot({path:`evidence/browser/declared-critical-${width}.png`,fullPage:true})
   await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
  }
