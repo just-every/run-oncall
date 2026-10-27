@@ -156,3 +156,9 @@
 /* The route body supplies its title; retain the frame's top gutter. */
 .oncall-frame .workspace:has(>.oc-oncall) { padding-top:40px; }
 @media (max-width:900px) { .oncall-frame .workspace:has(>.oc-oncall) { padding-top:39px; } }
+.oc-oncall .oc-review { margin-top:18px; }
+.oc-review > p, .oc-review > ul { margin-bottom:16px; }
+.oc-review details { margin-top:8px; }
+.oc-review summary { display:flex; align-items:center; min-height:44px; cursor:pointer; }
+.oc-review summary::before { content:'›'; margin-right:8px; }
+.oc-review details[open] > summary::before { content:'⌄'; }
