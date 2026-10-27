@@ -29,7 +29,7 @@
   .app.oncall-frame {display: block; background: var(--oc-paper);}
   .oncall-frame .shell-rail {display: none;}
   .oncall-frame .mobile-bar {height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; background: var(--oc-paper-deep);}
-  .oncall-frame .mobile-bar .brand {padding: 0; font-size: 22px; flex: 1;}
+  .oncall-frame .mobile-bar .brand {padding: 0; font-size: 22px; flex: 1; min-height: 44px; display: flex; align-items: center;}
   .oncall-frame .mobile-bar button {min-height: 44px; flex: none;}
   .oncall-frame .workspace {padding: 0 16px 40px;}
   .oncall-frame .header {padding: 24px 0 12px;}
