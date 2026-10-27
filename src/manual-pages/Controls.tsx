@@ -1,3 +1,5 @@
+import {autosaveRequest,useAutosave} from '../app/autosave/useAutosave';
+import {SavedState,SaveFeedback} from '../app/autosave/SavedState';
 import {FailureLine,useActionFailure} from '../app/FailureLine';
 import {useEffect,useState} from 'react';
 import {Field,Form} from '../forms';
@@ -26,13 +28,19 @@ export function ManualDeclare({state,busy,submit}:{state:State;busy:boolean;subm
  <Field name="summary" label="Customer impact and current evidence" help={template?.impactPrompt} type="textarea" required={false}/><Targets state={state} policies={policies??[]}/>
  </Form></>;
 }
-export function UserAssignment({service,state,busy,submit}:{service:Service;state:State;busy:boolean;submit:(data:any)=>Promise<any>}){
+export function UserAssignment({service,state}:{service:Service;state:State;busy:boolean;submit:(data:any)=>Promise<any>}){
  const {policies,failure}=usePolicies(),rule=assignmentRule(state,service.id);
- return <details><summary>User-assignment rule</summary><p>{rule.mode==='repeat'?'Repeat to the user':'Escalate to the policy'} after {rule.minutes} minutes · version {rule.version}. Recorded setting only; automatic action unavailable.</p><FailureLine failure={failure}/><Form key={service.id} busy={busy} disabled={policies===null} label={'Save user assignment for '+service.name} onSubmit={async data=>{await submit({...data,type:'user-assignment',service:service.id,baseVersion:rule.version,minutes:Number(data.minutes)});}}>
- <Field name="mode" label="User-assignment outcome" value={rule.mode}><option value="escalate">Escalate to policy</option><option value="repeat">Repeat to user</option></Field>
- <Field name="minutes" label="Assignment delay (minutes)" type="number" value={String(rule.minutes)}/>
- <Field name="policy" label="Assignment policy" value={rule.policy} required={false}>{!(policies??[]).some(p=>p.service===rule.policy)&&<option value={rule.policy}>No policy configured</option>}{(policies??[]).map(p=><option key={p.service} value={p.service}>{state.services.find(s=>s.id===p.service)?.name} · version {p.revision}</option>)}</Field>
- </Form></details>;
+ const snapshot=(current:State)=>{const value=assignmentRule(current,service.id);return {values:{mode:value.mode,minutes:String(value.minutes),policy:value.policy},revision:value.version}};
+ const save=useAutosave({storageKey:'assignment:'+service.id,snapshot:snapshot(state),read:async()=>snapshot(await request('/api/state')),write:async({values,revision},{keepalive})=>{
+  await autosaveRequest('/api/command',{...values,type:'user-assignment',service:service.id,baseVersion:revision,minutes:Number(values.minutes)});
+  return keepalive?{values,revision:revision+1}:snapshot(await request('/api/state'));
+ }});
+ const feedback=(field:'mode'|'minutes'|'policy')=><SaveFeedback state={save.states[field]} retry={()=>save.retry(field)} useMine={()=>save.useMine(field)} format={value=>field==='policy'?state.services.find(s=>s.id===value)?.name??'No policy':field==='mode'?value==='repeat'?'Repeat to user':'Escalate to policy':String(value)}/>;
+ return <details><summary>User-assignment rule</summary><FailureLine failure={failure}/><div className="autosave-form">
+ <label className="field"><span>User-assignment outcome <SavedState state={save.states.mode}/></span><select aria-label="User-assignment outcome" disabled={policies===null} value={save.values.mode} onChange={e=>save.change('mode',e.target.value as typeof rule.mode,'choice')}><option value="escalate">Escalate to policy</option><option value="repeat">Repeat to user</option></select></label>{feedback('mode')}
+ <label className="field"><span>Assignment delay (minutes) <SavedState state={save.states.minutes}/></span><input aria-label="Assignment delay (minutes)" type="number" min="1" max="1440" value={save.values.minutes} onChange={e=>save.change('minutes',e.target.value,'text')} onBlur={()=>save.blur('minutes')}/></label>{feedback('minutes')}
+ {(policies??[]).length>1&&<><label className="field"><span>Assignment policy <SavedState state={save.states.policy}/></span><select aria-label="Assignment policy" value={save.values.policy} onChange={e=>save.change('policy',e.target.value,'choice')}>{!(policies??[]).some(p=>p.service===save.values.policy)&&<option value={save.values.policy}>No policy configured</option>}{(policies??[]).map(p=><option key={p.service} value={p.service}>{state.services.find(s=>s.id===p.service)?.name}</option>)}</select></label>{feedback('policy')}</>}
+ </div></details>;
 }
 export function ResponderRequests({incident,state,actor,busy,submit}:{incident:Incident;state:State;actor:Member;busy:boolean;submit:(data:any)=>Promise<any>}){
  const {policies,failure}=usePolicies(),editable=['admin','responder'].includes(actor.role),name=(id:string)=>state.members.find(m=>m.id===id)?.name??state.services.find(s=>s.id===id)?.name??'Erased member';
