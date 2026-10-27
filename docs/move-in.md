@@ -60,7 +60,7 @@ The exporter reads all people, schedules and policies accessible to the key. It 
 
 A successful run prints **Saved**, the full filename, object count and comparison window. The file is created in the folder where you ran the command, normally Downloads, with a name like `opsgenie-export-DATE-TIME.json` or `pagerduty-export-DATE-TIME.json`. Each run uses a new name. Keep it private: it contains names, email addresses and schedules. File permissions are owner-only on systems supporting Unix file modes.
 
-Return to **Settings → Move in**, keep the matching **Source** selected, choose that file under **Export JSON**, and press **Preview import**. Export success means the file was collected; the preview decides which settings are compatible. Read every rejection, difference and coverage comparison before confirming. Ask your administrator to revoke the dedicated export key after use.
+Return to **Settings → Move in**, choose **Other: from a file** under **Source** and the matching **File source**, then choose that file under **Export JSON**. Oncall shows its review at once. Export success means the file was collected; the preview decides which settings are compatible. Read every rejection, difference and coverage comparison before confirming. Ask your administrator to revoke the dedicated export key after use.
 
 If the tool stops:
 
@@ -78,27 +78,25 @@ Exporter references checked on 16 October 2026: Opsgenie's [pagination](https://
 
 ## Preview, then import
 
-1. Open **Settings → Move in** and choose **Opsgenie** or **PagerDuty** under **Source**.
-2. Choose your file under **Export JSON**.
-3. Press **Preview import**. This is a dry run: it changes nothing in your workspace, however often you press it. Oncall keeps the file with its review in the import journal, so the import applies exactly what you reviewed. If this source already holds an import, the review shows what the new file adds or changes; people or schedules edited in Oncall since are refused by name, and anything missing from the file stays.
-4. Read the **Compatibility review**. It counts what mapped, what was rejected and what came across with differences, then lists every object with its reason. Nothing is skipped quietly.
-5. If you are happy, press **Confirm paused import**. Oncall applies exactly the preview you reviewed, so if you pick a different file you preview again first.
+1. **Connect:** open **Settings → Move in**. Connect PagerDuty or read schedules with a read-only key. For a saved file, choose **Other: from a file** under **Source**, choose the matching **File source**, and choose the file under **Export JSON**. Oncall shows its review at once.
+2. **Review:** this is a dry run: it changes nothing in your workspace, however often you choose a file. Oncall keeps the file with its review in the import journal, so the import applies exactly what you reviewed. Read the **Compatibility review**: it counts what mapped, what was rejected and what came across with differences, then lists every object with its reason. Nothing is skipped quietly. If this source already holds an import, the review shows what the new file adds or changes; people or schedules edited in Oncall since are refused by name, and anything missing from the file stays.
+3. **Import paused:** if you are happy, press **Import paused**, review the confirmation, then press **Confirm paused import**. Oncall applies exactly the review you saw. If you pick a different file, it shows a new review first.
 
-The people, schedules and escalation policies land in **Paused imported data**. They do not get a sign-in or page anyone. Schedules stay out of live coverage until you explicitly adopt them below. If the import is interrupted, choose it under **Saved import journal** and press **Resume import**.
+The people, schedules and escalation policies land in **Imported data**. They do not get a sign-in or page anyone. Schedules stay out of live coverage until you explicitly adopt them below. If the import is interrupted, choose it under **Saved import journal** and press **Resume import**.
 
 ## Make an imported schedule live
 
 After the import has completed:
 
-1. Under **Paused imported data**, press **Make schedule live** beside the schedule.
-2. Choose a service already in this workspace. Create it under **Services** first if needed.
-3. Match every imported person to a different, active responder or admin in this workspace. Create missing members under **Team** first. Oncall does not guess identities from names or grant access to imported people.
+1. Under **Imported data**, press **Make schedule live** beside the schedule.
+2. Choose a service already in this workspace. Create it under **Settings → Services** first if needed.
+3. Match every imported person to a different, active responder or admin in this workspace. Create missing members under **Settings → Team** first. Oncall does not guess identities from names or grant access to imported people.
 4. Review those mappings and press **Confirm live schedule · paging OFF**.
-5. Open **Schedules**. The adopted rotation and its overrides now appear there, including now/next and the private calendar. Check the coverage and add a backup if needed.
+5. Open **On call**. The adopted rotation and its overrides now appear there, including now/next and the private calendar. Check the coverage and add a backup if needed.
 
 Adoption preserves the source timezone, calendar hand-overs, validity and overrides. It refuses incomplete imports, missing or erased people, stale revisions, duplicate person mappings and schedule ID collisions. A concurrent member change, undo or erasure stops the write; reload and review again. Imported policies remain paused and paging stays off.
 
-Adoption is a native edit. Once a schedule is live, **Undo this import** refuses with `NATIVE_EDIT_CONFLICT` ("made live, so this import can no longer be undone") and keeps the adopted schedule and the import. Edit the schedule under **Schedules**. Erasing an imported person affects the paused import and its journal, not the workspace members or the adopted native schedule; manage those separately.
+Adoption is a native edit. Once a schedule is live, **Undo this import** refuses with `NATIVE_EDIT_CONFLICT` ("made live, so this import can no longer be undone") and keeps the adopted schedule and the import. Edit the rota under **On call**. Erasing an imported person affects the paused import and its journal, not the workspace members or the adopted native schedule; manage those separately.
 
 ## What the preview checks
 
@@ -108,11 +106,11 @@ An agreement is only about that window. It does not promise the next clock chang
 
 ## Undo
 
-Press **Undo this import** on an import in the journal to reverse it. Oncall removes what that import added and puts back what was there before. If anything it added has been changed since, Oncall keeps your change, stops with a conflict named `NATIVE_EDIT_CONFLICT` rather than overwrite it. The file you supplied stays in the journal as a record. Once the journal says **undone**, you can import the exact same file again: press **Preview import**, review it, then **Confirm paused import**. If you reloaded the page, choose the file first. The new import gets a separate journal entry. If undo is still in progress, choose that import in **Saved import journal** and press **Continue undo** until it finishes.
+Press **Undo this import** on an import in the journal to reverse it. Oncall removes what that import added and puts back what was there before. If anything it added has been changed since, Oncall keeps your change, stops with a conflict named `NATIVE_EDIT_CONFLICT` rather than overwrite it. The file you supplied stays in the journal as a record. Once the journal says **undone**, you can import the exact same file again: choose the file under **Export JSON** to open its review, then press **Import paused** and **Confirm paused import**. The new import gets a separate journal entry. If undo is still in progress, choose that import in **Saved import journal** and press **Continue undo** until it finishes.
 
 ## Erase a person
 
-Under **Paused imported data**, press **Erase person** beside someone you imported, type `erase` followed by their exact email, and press **Erase permanently**. Oncall removes that paused person, leaves their slots in imported rotations as explicit gaps, and erases them from the import journal. Every export made before the erasure is refused whole if you try to bring it back in. Imports that named them can no longer be undone, and anything still waiting in an import that names them is never brought in. The answer shows a receipt number, and says so if a member of your workspace shares the email; that member is not changed.
+Under **Imported data**, press **Erase person** beside someone you imported, type `erase` followed by their exact email, and press **Erase permanently**. Oncall removes that paused person, leaves their slots in imported rotations as explicit gaps, and erases them from the import journal. Every export made before the erasure is refused whole if you try to bring it back in. Imports that named them can no longer be undone, and anything still waiting in an import that names them is never brought in. The answer shows a receipt number, and says so if a member of your workspace shares the email; that member is not changed.
 
 People are matched by their exact email, so someone whose address merely contains theirs is left alone.
 
@@ -146,19 +144,19 @@ Format references, read on 13 October 2026: Opsgenie's [Schedule API](https://do
 
 ## Splunk saved responses
 
-Choose **Splunk On-Call**. Its [public API reference](https://portal.victorops.com/public/api-docs.html) documents the saved response surface. The adapter recognizes `users.users` (including nested lists), bare team arrays and `oncall.teamsOnCall`. User identity uses exported email, with username retained as the foreign ID. Current on-call users are a snapshot: neither they nor an undocumented rotation object become recurring coverage. Each unsupported object is named and its original bytes remain in the journal.
+Choose **Other: from a file**, then **Splunk On-Call** under **File source**. Its [public API reference](https://portal.victorops.com/public/api-docs.html) documents the saved response surface. The adapter recognizes `users.users` (including nested lists), bare team arrays and `oncall.teamsOnCall`. User identity uses exported email, with username retained as the foreign ID. Current on-call users are a snapshot: neither they nor an undocumented rotation object become recurring coverage. Each unsupported object is named and its original bytes remain in the journal.
 
 **Unverified assumptions:** response wrappers are based on published examples and the Splunk-maintained connector, not a live account export. The top-level collection bundle is assembled locally. Integration metadata needs a non-secret `id` and `type`/`kind`; full integration export shape and recurring schedule conversion are unverified and remain gaps. Remove keys before saving; credential-bearing files are refused in full.
 
 ## JSM saved responses
 
-Choose **Jira Service Management Ops**. Save all `values` pages for [schedules](https://developer.atlassian.com/cloud/jira/service-desk-ops/rest/v2/api-group-schedules/) and [integrations](https://developer.atlassian.com/cloud/jira/service-desk-ops/rest/v2/api-group-integrations/) under the matching collection names. Include rotation details and every referenced person. An override page has an administrator-added `scheduleId` beside `values`; `responder` and `rotationIds` map to the existing strict individual override converter. A single daily/weekly rotation can map; team participants, repeats, unknown rule fields and restricted windows are refused individually.
+Choose **Other: from a file**, then **Jira Service Management Ops** under **File source**. Save all `values` pages for [schedules](https://developer.atlassian.com/cloud/jira/service-desk-ops/rest/v2/api-group-schedules/) and [integrations](https://developer.atlassian.com/cloud/jira/service-desk-ops/rest/v2/api-group-integrations/) under the matching collection names. Include rotation details and every referenced person. An override page has an administrator-added `scheduleId` beside `values`; `responder` and `rotationIds` map to the existing strict individual override converter. A single daily/weekly rotation can map; team participants, repeats, unknown rule fields and restricted windows are refused individually.
 
 **Unverified assumptions:** user `accountId`/`emailAddress`/`displayName` aliases and the account's export permissions need account verification. Email must be present; an account ID never grants login. `teamId` remains source metadata. `API` integration metadata is inventoried as an inactive Opsgenie-lineage integration, with incumbent key **not supplied**. No native endpoint is created or activated by import.
 
 ## Better Stack saved responses
 
-Choose **Better Stack**. Save [on-call calendar JSON:API responses](https://betterstack.com/docs/uptime/api/list-all-existing-on-call-calendars/) under `schedules`, their `included` user resources under `users`, and [calendar events](https://betterstack.com/docs/uptime/api/list-on-call-calendar-events/) under `events`. Preserve every page, foreign ID and timestamp. A user's E.164 `phone_numbers` remain unverified contact history; they never count as paging routes. Numbers are labelled unlisted for paging until a maintained country list and verification establish coverage; country is not guessed from a shared calling prefix.
+Choose **Other: from a file**, then **Better Stack** under **File source**. Save [on-call calendar JSON:API responses](https://betterstack.com/docs/uptime/api/list-all-existing-on-call-calendars/) under `schedules`, their `included` user resources under `users`, and [calendar events](https://betterstack.com/docs/uptime/api/list-on-call-calendar-events/) under `events`. Preserve every page, foreign ID and timestamp. A user's E.164 `phone_numbers` remain unverified contact history; they never count as paging routes. Numbers are labelled unlisted for paging until a maintained country list and verification establish coverage; country is not guessed from a shared calling prefix.
 
 **Unverified assumptions:** the top-level bundle is our assembly convention, not a whole-account export. User resources use `attributes.email`, `first_name`, `last_name` and `phone_numbers`. Calendar `on_call_users` and finite events with `starts_at`/`ends_at`/`override` do not define a recurring rotation; all are retained individually as unsupported source evidence. Integration metadata needs non-secret `id` and `type`/`kind`; that account export shape remains unverified. No provider equivalence is claimed.
 
