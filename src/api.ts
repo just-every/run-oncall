@@ -415,6 +415,8 @@ installMonitoringIntake(api, changeDeps);
 api.get("/api/identity-link/administrators",restoredAdministrators);
 api.post("/api/identity-link",async c=>linkRestoredOwner(c,await body(c)));
 api.use("/api/*", async (c, next) => {
+  // PagerDuty returns cross-site: only this callback authenticates its sealed transaction.
+  if (c.req.method === "GET" && c.req.path === "/api/move-in/pagerduty/callback") return next();
   const state = await load(c.env.DB);
   const actor = await session(c, state);
   if (!actor) {

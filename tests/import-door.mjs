@@ -202,25 +202,40 @@ try {
   }
   assert.deepEqual(ok(await req('/api/move-in/objects')),nativeBefore,'reading and refusing never import objects');
   console.log('O2 read door: steps='+counts.join(',')+'; non-admin 403, anonymous 401, cross-origin 403, wrong key, redirect, 501 objects, 512 KiB and echo refusals passed; hosts='+[...hosts].sort().join(','));
+  // A local admin's cross-site top-level callback carries only the Lax transaction,
+  // while the app session remains Strict. Do not attach that session by hand.
+  const consentAdmin=ok(await req('/api/members',{name:'Consent local admin',password:'synthetic-consent-admin-password',role:'admin'}),201);
+  const consentSession=await w.request('/api/login',{name:consentAdmin.name,password:'synthetic-consent-admin-password'});ok(consentSession);
+  const consentReq=(path,input)=>w.request(path,input,consentSession.cookie);
   // PKCE, region binding, installation custody and both successful and abandoned-read revocation.
   for(const region of ['us','eu']) {
    await control();
-   const start=await req('/api/move-in/pagerduty/start?region='+region);ok(start,302);
+   const start=await consentReq('/api/move-in/pagerduty/start?region='+region);ok(start,302);
    const address=new URL(start.headers.get('location'));assert.equal(address.hostname,region==='eu'?'identity.eu.pagerduty.com':'identity.pagerduty.com');assert.equal(address.searchParams.get('code_challenge_method'),'S256');assert.ok(address.searchParams.get('scope').split(' ').every(scope=>scope.endsWith('.read')));
    await control('normal',{challenge:address.searchParams.get('code_challenge')});
    const transaction=start.headers.getSetCookie().map(value=>value.split(';')[0]).join('; ');
-   const callback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-consent-code&state='+address.searchParams.get('state'),undefined,owner.cookie+'; '+transaction);ok(callback,302);
+   const callback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-consent-code&state='+address.searchParams.get('state'),undefined,transaction);ok(callback,302);
    assert.equal(callback.headers.get('location'),'/settings/move-in?connected=pagerduty');ok(await req(callback.headers.get('location')));
    const tokenCookie=callback.headers.getSetCookie().find(line=>line.startsWith('oncall_move_in_token='));
    assert.ok(/HttpOnly/i.test(tokenCookie)&&/SameSite=Lax/i.test(tokenCookie)&&/Path=\/api\/move-in\//i.test(tokenCookie));assert.ok(Number(tokenCookie.match(/Max-Age=(\d+)/)[1])<=600);assert.ok(!tokenCookie.includes('synthetic-provider-consent-private'));
    assert.equal((await observed()).pkceValid,true);
-   const read=await w.request('/api/move-in/read',{source:'pagerduty',region},owner.cookie+'; '+tokenCookie.split(';')[0]);ok(read);responses.push(JSON.stringify(read.value));
+   const read=await w.request('/api/move-in/read',{source:'pagerduty',region},consentSession.cookie+'; '+tokenCookie.split(';')[0]);ok(read);responses.push(JSON.stringify(read.value));
    assert.equal(read.value.next,null);assert.ok(read.headers.getSetCookie().some(line=>line.startsWith('oncall_move_in_token=')&&/Max-Age=0/.test(line)));assert.ok((await observed()).revoked>0);
    assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
   }
+  // Demotion between start and the session-free callback is refused before any exchange.
+  await control();const demotedStart=await consentReq('/api/move-in/pagerduty/start');ok(demotedStart,302);
+  const demotedAddress=new URL(demotedStart.headers.get('location'));
+  ok(await req('/api/command',{type:'member',id:consentAdmin.id,field:'role',from:'admin',to:'responder'}));
+  const demotedReturn=await w.request('/api/move-in/pagerduty/callback?code=synthetic-demoted-code&state='+demotedAddress.searchParams.get('state'),undefined,demotedStart.cookie);ok(demotedReturn,302);
+  assert.equal(demotedReturn.headers.get('location'),'/settings/move-in?connection=failed');
+  assert.ok(!demotedReturn.headers.getSetCookie().some(line=>line.startsWith('oncall_move_in_token=')&&!/Max-Age=0/.test(line)));
+  assert.equal((await observed()).calls.length,0,'a member no longer admin cannot exchange a code');
+  assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
+  console.log('O2 local-admin consent: transaction-only cross-site callback succeeds; demotion redirects to connection=failed with zero exchanges and tokens');
   // Failed revocation is a durable failure, clears the browser cookie, and keeps only sealed custody for retry.
   await control();const failedStart=await req('/api/move-in/pagerduty/start');const failedAddress=new URL(failedStart.headers.get('location'));await control('normal',{challenge:failedAddress.searchParams.get('code_challenge')});
-  const failedCallback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-revocation-code&state='+failedAddress.searchParams.get('state'),undefined,owner.cookie+'; '+failedStart.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(failedCallback,302);
+  const failedCallback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-revocation-code&state='+failedAddress.searchParams.get('state'),undefined,failedStart.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(failedCallback,302);
   const failedCookie=failedCallback.headers.getSetCookie().find(line=>line.startsWith('oncall_move_in_token='));await control('revoke-failure');
   const refusedClose=await w.request('/api/move-in/read',{source:'pagerduty',region:'us'},owner.cookie+'; '+failedCookie.split(';')[0]);ok(refusedClose,400);responses.push(JSON.stringify(refusedClose.value));
   assert.ok(refusedClose.headers.getSetCookie().some(line=>/Max-Age=0/.test(line)));assert.equal(w.sql("SELECT outcome FROM oc_admin_audit WHERE kind LIKE 'move-in.read.%' ORDER BY ordinal DESC LIMIT 1")[0].outcome,'failed');
@@ -228,7 +243,7 @@ try {
   console.log('O2 failed revocation: plain refusal, cleared cookie, permanent failed audit, sealed retry and scheduled cleanup passed');
   // An abandoned consent is revoked by the existing scheduled handler, without a browser request.
   await control();const start=await req('/api/move-in/pagerduty/start');const address=new URL(start.headers.get('location'));await control('normal',{challenge:address.searchParams.get('code_challenge')});
-  const callback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-abandoned-code&state='+address.searchParams.get('state'),undefined,owner.cookie+'; '+start.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(callback,302);
+  const callback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-abandoned-code&state='+address.searchParams.get('state'),undefined,start.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(callback,302);
   const pending=w.sql('SELECT custody,revoke_at,expires FROM oc_move_in_consent');assert.equal(pending.length,1);assert.ok(!pending[0].custody.includes('synthetic-provider-consent-private'));assert.ok(pending[0].expires-pending[0].revoke_at>0);
   const activeArchive=JSON.stringify(ok(await req('/api/archive')));assert.ok(!activeArchive.includes(pending[0].custody)&&!activeArchive.includes('synthetic-provider-consent-private'),'an active sealed connection is absent from the archive');
   w.sql('UPDATE oc_move_in_consent SET revoke_at=0');ok(await w.request('/__provider_cron'));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
