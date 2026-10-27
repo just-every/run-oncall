@@ -21,7 +21,7 @@ export function MemberRow({member, admin, role, roleChanged, roleMark, roleFeedb
     return () => {document.removeEventListener('pointerdown', outside);window.removeEventListener('keydown', escape);};
   }, [open]);
   return <article className="team-member" aria-label={member.name}>
-    <div className="team-member-main"><h3>{member.name}</h3>{(!admin || !member.active) && <p>{!admin ? roleName(member.role) : ''}{!member.active ? ' · Access revoked' : ''}</p>}</div>
+    <div className="team-member-main"><h3>{member.name}</h3>{(!admin || !member.active) && <p>{!admin ? roleName(member.role) + (!member.active ? ' · Access revoked' : '') : 'Access revoked'}</p>}</div>
     {admin && !member.erased ? <>
       <div className="team-member-role"><label className="field"><span>Role {roleMark}</span><select aria-label={'Role for ' + member.name} value={role} onChange={event => roleChanged(event.target.value as Role)}>{(['viewer', 'stakeholder', 'responder', 'admin'] as const).map(value => <option key={value} value={value}>{roleName(value)}</option>)}</select></label>{roleConfirm}{roleFeedback}</div>
       <div className="team-member-actions" data-tip-dismissed={tipDismissed || undefined}><Tooltip label="Member actions"><button ref={opener} type="button" onMouseEnter={() => setTipDismissed(false)} onFocus={() => setTipDismissed(false)} onKeyDown={event => {if (event.key === 'Escape') setTipDismissed(true);}} aria-label="Member actions" aria-expanded={open} aria-controls={id} onClick={() => setOpen(value => !value)}>⋯</button></Tooltip>

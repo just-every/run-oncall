@@ -7,6 +7,7 @@ import {CorrelationSettings, WorkflowSettings} from '../orchestration/Settings';
 import {ServiceDependencies} from '../changes/Dependencies';
 import {TimeoutSetting} from '../incident-deadlines/Controls';
 import {UserAssignment} from '../manual-pages/Controls';
+import {assignmentRule} from '../manual-pages/model';
 import {RecentChanges} from '../changes/RecentChanges';
 import type {IntakeRun} from '../intake/CompatibleTest';
 import './services.css';
@@ -47,11 +48,10 @@ export function ServicePage({service, state, actor, admin, busy, command, run, r
 }
 
 function ServiceSettingsValues({service, state}: {service: Service; state: State}) {
-  const policy = state.policies.find(value => value.service === service.id && value.severity === '*');
-  const assignment = service.userAssignments?.at(-1);
+  const assignment = assignmentRule(state,service.id);
   return <>
     <details><summary>Depends on</summary><p>{service.dependencies?.map(id => state.services.find(value => value.id === id)?.name ?? 'Unavailable service').join(', ') || 'No dependencies'}</p></details>
     <details><summary>Acknowledgment timeout</summary><p>{service.ackTimeouts?.at(-1)?.minutes || 'Off'}{service.ackTimeouts?.at(-1)?.minutes ? ' minutes' : ''}</p></details>
-    <details><summary>Assign new incidents</summary><p>{assignment ? `${assignment.mode === 'repeat' ? 'Repeat to the user' : 'Escalate to the policy'} after ${assignment.minutes} minutes` : 'No assignment rule'}</p></details>
+    <details><summary>Assign new incidents</summary><p>{assignment.mode === 'repeat' ? 'Repeat to the user' : 'Escalate to the policy'} after {assignment.minutes} minutes</p><p>Policy: {state.services.find(value => value.id === assignment.policy)?.name ?? 'No policy configured'}</p></details>
   </>;
 }
