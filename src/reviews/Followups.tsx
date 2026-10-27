@@ -12,6 +12,7 @@ export function isOverdue(action: Action, now = Date.now()) {
 }
 type Props = {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>; incidentMode?: boolean};
 export function Followups({incident, members, busy, canEdit, mutate, incidentMode = false}: Props) {
+  const shownTime = incidentMode ? (value: string) => new Date(value).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : utc;
   const name = (id: string) => members.find(member => member.id === id)?.name ?? (incidentMode ? 'Erased member' : id);
   return <section className="followups">
     <div className="right-title owners-heading"><h3>Follow-up owners</h3><span>{incident.actions.filter(action => !action.done).length} open</span></div>
@@ -19,13 +20,13 @@ export function Followups({incident, members, busy, canEdit, mutate, incidentMod
     {!incidentMode && !incident.actions.length && <p className="muted">No follow-ups recorded.</p>}
     <ul className="followup-list">{[...incident.actions].sort(followupOrder).map(action => <li className="followup-item" key={action.id}>
       <div className="review-heading"><strong>{action.title}</strong><span className={'tag ' + (action.done ? 'state-resolved' : '')}>{action.done ? 'Complete' : action.submission ? 'Awaiting acceptance' : 'Open'}</span></div>
-      <p>{name(action.owner)} · {action.priority ?? 'P2 (legacy default)'} · due <strong>{action.due}, end of day UTC</strong>{isOverdue(action) && <span className="tag state-declared">Overdue</span>}</p>
+      <p>{name(action.owner)} · {action.priority ?? 'P2 (legacy default)'} · due <strong>{incidentMode ? new Date(action.due + 'T00:00:00Z').toLocaleDateString([], {timeZone:'UTC', month:'short', day:'numeric'}) : action.due}, end of day UTC</strong>{isOverdue(action) && <span className="tag state-declared">Overdue</span>}</p>
       {!incidentMode && <p className="review-meta">Action {action.id}<br />
         {action.completionPolicy === undefined ? 'Legacy evidence policy · submission of evidence completes this action.' : action.completionPolicy === 'human-review' ? 'Human-review policy · submit evidence, then explicitly accept completion.' : 'Evidence policy · submission of evidence completes this action.'}<br />
         Manual escalation contact: {action.escalationRecipient ? name(action.escalationRecipient) : 'Not recorded (legacy)'}</p>}
       {action.evidence && <p><EvidenceLink url={action.evidence}>Completion evidence</EvidenceLink></p>}
-      {action.submission && <p className="review-meta">Evidence submitted by {name(action.submission.by)} {!incidentMode && ` (${action.submission.by})`} at <time>{utc(action.submission.at)}</time>.</p>}
-      {action.accepted ? <p className="review-meta">{action.completionPolicy === 'human-review' ? 'Completion accepted' : 'Evidence-policy completion recorded'} by {name(action.accepted.by)} {!incidentMode && ` (${action.accepted.by})`} at <time>{utc(action.accepted.at)}</time>.</p>
+      {action.submission && <p className="review-meta">Evidence submitted by {name(action.submission.by)} {!incidentMode && ` (${action.submission.by})`} at <time>{shownTime(action.submission.at)}</time>.</p>}
+      {action.accepted ? <p className="review-meta">{action.completionPolicy === 'human-review' ? 'Completion accepted' : 'Evidence-policy completion recorded'} by {name(action.accepted.by)} {!incidentMode && ` (${action.accepted.by})`} at <time>{shownTime(action.accepted.at)}</time>.</p>
         : action.done && <p className="review-meta">Recorded legacy completion; acceptance actor and time were not retained.</p>}
       {!action.done && canEdit && <>
         <Form busy={busy} label={incidentMode ? 'Add evidence' : action.completionPolicy === 'human-review' ? action.submission ? 'Replace submitted evidence' : 'Submit completion evidence' : 'Complete with evidence'} onSubmit={data => mutate({...data, type: 'complete', action: action.id})}>
