@@ -1,3 +1,4 @@
+import {openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {keyboardUser,focusWorkspace} from './keyboard.mjs'
 
@@ -7,7 +8,7 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  const external=[];const observe=request=>{if(request.url().startsWith('https://hostile.invalid/'))external.push(request.url())};page.on('request',observe)
  // OC-008: author a runbook containing a link and HTML, then use its copied incident step.
  const runbookText=`https://hostile.invalid/runbook ${hostile}`
- await key.activate(page.getByRole('link',{name:'Services',exact:true}))
+ await openWorkspaceSection(page,'services',{keyboard:true})
  await key.activate(page.getByRole('button',{name:'Add service',exact:true}))
  await key.text(page.getByLabel('Service name',{exact:true}),`Literal runbook ${width}`)
  await key.activate(page.getByRole('button',{name:'Create service',exact:true}))
@@ -15,7 +16,7 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  await key.text(page.getByLabel('Runbook steps (one per line)',{exact:true}),runbookText)
  const stored=await (await context.request.get('/api/state')).json()
  const service=stored.services.find(item=>item.name===`Literal runbook ${width}`)
- await key.activate(page.getByRole('link',{name:'Incidents',exact:true}))
+ await openWorkspaceSection(page,'incidents',{keyboard:true})
  await key.activate(page.getByRole('button',{name:'Declare incident',exact:true}),'Space')
  await key.text(page.getByLabel('Incident title',{exact:true}),`Keyboard incident ${width}`)
  await key.option(page.getByLabel('Service',{exact:true}),service.id)
@@ -65,8 +66,8 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
   const secondPage=await second.newPage()
   if(openSession) await openSession(second,secondPage)
   else await secondPage.goto(ownerLink)
-  await secondPage.waitForURL(url=>url.pathname==='/incidents'&&!url.hash,{timeout:60000})
-  await secondPage.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
+  await secondPage.waitForURL(url=>url.pathname==='/on-call'&&!url.hash,{timeout:60000})
+  await secondPage.locator('.oncall-frame').waitFor({timeout:60000})
   const secondSession=await second.request.get('/api/session');assert.equal(secondSession.status(),200)
   assert.equal((await secondSession.json()).member.role,'admin','second session authenticates independently')
   assert.notDeepEqual(await second.cookies(),await context.cookies(),'second owner-open establishes independent session cookies')

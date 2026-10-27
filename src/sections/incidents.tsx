@@ -20,12 +20,12 @@ const time = (value: string) =>
     minute: "2-digit",
   });
 export function IncidentsSection() {
-  const {w, page, selected, selectIncident, declare, setDeclare, handoff, setHandoff, pendingSteps, setPendingSteps, setListedRevision, s, actor, canEdit, incident, service, name, command, mutate} = useWorkspaceContext();
+  const {w, page, selected, selectIncident, declare, setDeclare, handoff, setHandoff, pendingSteps, setPendingSteps, listedRevision, setListedRevision, s, actor, canEdit, incident, service, name, command, mutate} = useWorkspaceContext();
   return <>
         {page === "incidents" && selected && !incident && <WorkspaceNotFound incident />}
         {page === "incidents" && (!selected || incident) && (
           <div className="board">
-            <IncidentTriage onUpdated={setListedRevision} state={s} actor={actor} current={incident?.id} select={id => {selectIncident(id); setHandoff(null); if (window.innerWidth < 900) requestAnimationFrame(() => document.querySelector(".detail")?.scrollIntoView({block: "start"}));}} busy={w.busy} run={w.run}>
+            <IncidentTriage onUpdated={setListedRevision} state={s} actor={actor} current={incident?.id} select={id => {selectIncident(id); setHandoff(null); if (window.innerWidth < 900) requestAnimationFrame(() => document.querySelector(".detail")?.scrollIntoView({block: "start"}));}} busy={w.busy || listedRevision !== s.revision} run={w.run}>
               <div className="list-toolbar">
                 <strong>Incidents {s.incidents.length}</strong>
                 {canEdit && (

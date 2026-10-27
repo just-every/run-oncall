@@ -29,7 +29,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
   assert.equal(member.id,substitute.id,'the independently opened context acts as the substitute');assert.equal(member.role,'responder');assert.notEqual(member.id,session.member.id);
   assert.equal((await relief.cookies()).some(cookie=>/^(?:__Host-operator_session|operator_session_local(?:_\d+)?)$/.test(cookie.name)),false,'no owner Auth session is copied or created');
   const reliefPage=await relief.newPage(),errors=[];reliefPage.on('pageerror',error=>errors.push(error.message));
-  const document=await reliefPage.goto(origin+'/schedules');assert.equal(document.status(),200);await reliefPage.getByLabel('Schedule',{exact:true}).selectOption('browser-'+width);
+  const document=await reliefPage.goto(origin+'/on-call');assert.equal(document.status(),200);await reliefPage.getByLabel('Schedule',{exact:true}).selectOption('browser-'+width);
 
 
   const substituteView=reliefPage.getByRole('region',{name:'Shift coordination',exact:true});await substituteView.getByRole('button',{name:'Accept swap',exact:true}).click();await substituteView.getByText(/accepted/).waitFor();

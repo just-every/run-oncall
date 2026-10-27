@@ -47,3 +47,26 @@ export function keyboardUser(page) {
   },
  }
 }
+
+/** Open a section through the current rail or the phone Menu sheet. */
+export async function openWorkspaceSection(page, section, {keyboard = false} = {}) {
+ await page.locator('.oncall-frame').waitFor({state:'visible'})
+ const paths={incidents:'/incidents',alerts:'/alerts',reviews:'/reviews',status:'/status',schedules:'/on-call','on-call':'/on-call',services:'/settings/services',integrations:'/settings/integrations',routing:'/settings/routing',team:'/settings/team','move-in':'/settings/move-in',archive:'/settings/archive'}
+ const path=paths[section]
+ assert.ok(path,'workspace section has a destination')
+ const key=keyboardUser(page),activate=async control=>keyboard?key.activate(control):control.click()
+ const phone=await page.getByRole('button',{name:'Menu',exact:true}).isVisible()
+ if(phone) {
+  await activate(page.getByRole('button',{name:'Menu',exact:true}))
+  const sheet=page.getByRole('dialog',{name:'Menu',exact:true})
+  if(path.startsWith('/settings/')&&!await sheet.locator(`a[href="${path}"]`).isVisible()) await activate(sheet.getByRole('button',{name:'Settings',exact:true}))
+  if(!path.startsWith('/settings/')&&!await sheet.locator(`a[href="${path}"]`).isVisible()) await activate(sheet.getByRole('button',{name:'‹ Oncall',exact:true}))
+  await activate(sheet.locator(`nav a[href="${path}"]`))
+ } else {
+  const rail=page.locator('.shell-rail')
+  if(path.startsWith('/settings/')&&!await rail.locator(`nav a[href="${path}"]`).isVisible()) await activate(rail.locator('a[href="/settings/services"]'))
+  if(!path.startsWith('/settings/')&&!await rail.locator(`nav a[href="${path}"]`).isVisible()) await activate(rail.locator('.settings-back'))
+  await activate(rail.locator(`nav a[href="${path}"]`))
+ }
+ await page.waitForURL(url=>url.pathname===path)
+}
