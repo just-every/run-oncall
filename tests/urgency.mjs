@@ -76,12 +76,15 @@ try {
     w.request('/api/urgency/services/checkout',{baseVersion:severity.version,...draft('high')},responderCookie),
   ]);
   denied.forEach((r,i)=>ok(r,i<2?401:403));assert.deepEqual(await archive(),beforeDenied);
-  const lowered=ok(await w.request(alertPath,edit,responderCookie));
+  ok(await w.request(alertPath,{revision:edit.revision,urgency:'low'},responderCookie),400);
+  let lowered=ok(await w.request(alertPath,edit,responderCookie));
   assert.equal(lowered.urgency,'low');assert.equal(lowered.urgencyRevision,edit.revision+1);
   const human=lowered.urgencyHistory.at(-1);assert.equal(human.by,responder.id);assert.equal(human.reason,edit.reason);assert.equal(human.ruleVersion,null);
   assert.ok((await archive()).audit.some(e=>e.id===human.id&&e.actor===responder.id&&e.kind==='alert-urgency'));
   const beforeStale=await archive();ok(await w.request(alertPath,{...edit,urgency:'high'},responderCookie),409);
-  ok(await w.request(alertPath,{...edit,revision:lowered.urgencyRevision,reason:''},responderCookie),400);assert.deepEqual(await archive(),beforeStale);
+  ok(await w.request(alertPath,{...edit,revision:lowered.urgencyRevision,reason:''},responderCookie));assert.deepEqual(await archive(),beforeStale);
+  const humanRaised=ok(await w.request(alertPath,{revision:lowered.urgencyRevision,urgency:'high'},responderCookie));assert.equal(humanRaised.urgency,'high');assert.equal(humanRaised.urgencyHistory.at(-1).reason,'');
+  lowered=ok(await w.request(alertPath,{...edit,revision:humanRaised.urgencyRevision},responderCookie));
   ok(await send(signal('warning-after-human-lowering','warning')),201);
   assert.deepEqual(alertIn(await state(),alertId).urgencyHistory,lowered.urgencyHistory);
   ok(await send(signal('critical-after-human-lowering','critical')),201);alert=alertIn(await state(),alertId);assert.equal(alert.urgency,'high');
