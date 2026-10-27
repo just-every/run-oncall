@@ -1,3 +1,31 @@
+# 0.5.1 · 2026-10-27
+
+Bulk triage keeps its selection current after a save. This is the first published release of the 0.5 line: 0.5.0 was tagged but never released, so everything listed under 0.5.0 in CHANGELOG.md ships for the first time in 0.5.1. Paging stays OFF.
+
+Product screenshot: [`.github/assets/release/oncall-0.5.0-incident-1440.png`](.github/assets/release/oncall-0.5.0-incident-1440.png).
+
+**Fixed**
+
+- Bulk triage no longer refuses a selection made just after a saved change such as a bulk snooze. Selection and bulk actions now stay disabled until the incident list has refreshed, so a new selection carries current revisions. An edit that genuinely conflicts with a newer change is still refused.
+
+**Checked for this release**
+
+The release requires the same checks as 0.5.0, run again on this release's exact source: a complete publication scan, source and Base checks, typecheck and application build; populated 0.4.2 upgrades through the native and Platform migration runners; a retained 0.4.2 Platform-ledger archive restored into an empty installation; Managed source materialization and catalogue admission; the README install and backup/restore journey; and the core owner/member loop, including a bulk snooze followed at once by a bulk merge, locally and on a hosted installation using a real emailed sign-in, at 1440 and 390 wide. Exact-SHA branch, full-tier main and tag Verify runs and Run site must pass before publication. Paging requests are refused.
+
+**Not in this release and known issues**
+
+The **Not in this release** and **Known issues** lists under 0.5.0 still apply unchanged.
+
+**Back up first**
+
+- Local: `rer export --output exports/before-0.5.1.rer`. Restore only into an empty destination with `rer import --input exports/before-0.5.1.rer --yes`.
+- Hosted: `npx wrangler d1 export DATABASE --remote --output exports/DATABASE.sql` with the deploying `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, where `DATABASE` is the D1 name in `.rer/deploy/ENVIRONMENT.json`. Keep the file private.
+
+**Update**
+
+- Local: stop `rer dev` (Ctrl-C), `git pull --ff-only`, then `rer dev`. Hosted: from the checkout that deployed, `git pull --ff-only` then `rer deploy --environment ENVIRONMENT` with the same credentials. From a checkout of the `v0.5.0` tag, run `git fetch --tags && git checkout v0.5.1` instead of `git pull --ff-only`.
+- From 0.4.2 the update applies the 15 additive migrations listed under 0.5.0 (0129-0137, 0140-0145); from the `v0.5.0` tag it applies none. Keep all 49 applied migrations unchanged and do not reset a populated installation. The rer pin stays `@runeditrun/rer` 0.2.71. Paging stays OFF.
+
 # 0.5.0 · 2026-10-27
 
 Incident coordination beside your existing pager, with a managed build for Assisted and Managed installations, inbound integration email, permanent audit and more schedule and response coordination. Paging stays OFF.
