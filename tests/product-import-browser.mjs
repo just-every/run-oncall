@@ -5,7 +5,6 @@ import assert from 'node:assert/strict'
 import {providerExport} from './provider-export-browser.mjs'
 
 export async function productImport(page,context,width,session) {
-  if(width!==1440)return
   const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
   await openWorkspaceSection(page,'move-in')
   await fileJourney(page,context,new URL(page.url()).origin)
@@ -37,7 +36,7 @@ export async function productImport(page,context,width,session) {
   assert.ok(await page.getByText(/Eight-hour shift/).count()>0)
   await page.screenshot({path:`${directory}/import-review-${width}.png`,fullPage:true})
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'import viewport has no horizontal overflow')
-  if(width===1440){await confirmImport(page);await confirmUndo(page);await page.locator('[role="status"] p').filter({hasText:/undone/}).waitFor()}
+  await confirmImport(page);await confirmUndo(page);await page.locator('[role="status"] p').filter({hasText:/undone/}).waitFor()
   // Follow the bundle instructions through paused import, explicit adoption, native coverage and erasure.
   const email=`erase-${width}@example.test`,rota=`Move-in rota ${width}`,personId='erase-'+width
   bundle.users.push({data:[{id:personId,username:email,fullName:'Erase '+width}]})
@@ -110,7 +109,7 @@ if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1]) {
   const context=await browser.newContext({baseURL:worker.origin}),page=await context.newPage(),errors=[]
   await context.addCookies(owner.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}}))
   page.on('pageerror',error=>errors.push(error.message));await page.goto(worker.origin);await page.locator('.oncall-frame').waitFor()
-  for(const width of [1440]){await page.setViewportSize({width,height:1000});await productImport(page,context,width,owner.value);console.log(`OC-038 browser ${width}: source guidance, inactive integration review, named refusal, apply/undo, overflow, axe and hydration passed`)}
+  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await productImport(page,context,width,owner.value);console.log(`OC-038 browser ${width}: source guidance, inactive integration review, named refusal, apply/undo, overflow, axe and hydration passed`)}
   assert.deepEqual(errors,[])
   const login={name:'synthetic-oncall-1',password:'synthetic-oncall-browser-password'},revoked=await worker.request('/api/login',login)
   assert.equal((await worker.request('/api/logout',{},revoked.cookie)).status,200)
