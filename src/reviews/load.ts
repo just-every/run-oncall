@@ -1,6 +1,6 @@
 import type { State } from '../family/response-operations/domain.ts';
 import { coverageSpans, type Schedule } from '../family/response-operations/schedules.ts';
-import { firstAcknowledgement, type ResponseReport } from './report.ts';
+import { firstAcknowledgement, entryAttribution, type ResponseReport } from './report.ts';
 import type { AlertNoise } from './noise.ts';
 
 export type Scheduling = {revision: number; schedules: Schedule[]};
@@ -37,9 +37,13 @@ export function coverageLoad(state: State, scheduling: Scheduling, report: Respo
   }
   const scheduledAt = (member: string, service: string, at: number) => schedules.some(s => s.service === service &&
     coverageSpans(s, state.members, at, at + 1).some(span => span.coverage.primary === member || span.coverage.backup === member));
+  let coordinatedAcknowledgements=0,unknownActorAcknowledgements=0;
   const acknowledgements = report.incidents.flatMap(row => {
     const incident = state.incidents.find(i => i.id === row.id), entry = incident && firstAcknowledgement(incident);
     if (!incident || !entry) return [];
+    const actor=entryAttribution(state,entry);
+    if(actor==='agent'){coordinatedAcknowledgements++;return [];}
+    if(actor==='unknown'){unknownActorAcknowledgements++;return [];}
     const at = Date.parse(entry.at);
     return [{member: entry.actor, service: incident.service, scheduled: Number.isFinite(at) ? scheduledAt(entry.actor, incident.service, at) : null}];
   });
@@ -66,12 +70,12 @@ export function coverageLoad(state: State, scheduling: Scheduling, report: Respo
   });
   return {schedulingRevision: scheduling.revision, from: new Date(from).toISOString(), through: new Date(through).toISOString(),
     schedules: schedules.map(s => ({id: s.id, name: s.name, service: s.service, revision: s.revision, timezone: s.timezone})),
-    acknowledged: acknowledgements.length, unacknowledged: report.incidents.length - acknowledgements.length - report.cohort.erased, unknownAcknowledgements:report.cohort.erased, responders, services,
+    acknowledged: acknowledgements.length, coordinatedAcknowledgements, unacknowledged: report.incidents.length - acknowledgements.length - coordinatedAcknowledgements - unknownActorAcknowledgements - report.cohort.erased, unknownAcknowledgements:report.cohort.erased+unknownActorAcknowledgements, responders, services,
     basis: [
       'Scheduled hours come from the current revision of each schedule (its rotations and overrides) and current membership, over the cohort range up to the observation time. They are scheduled hours, not worked hours.',
       'Earlier schedule revisions are not retained, so a schedule change recomputes past scheduled hours; the schedule revisions used are listed. A slot held by a member who is now inactive or not a responder counts as uncovered.',
       'Erased declaration cases have unknown acknowledgment state, shown separately from unacknowledged incidents. Shares use only observed retained acknowledgments; no erased case is attributed or treated as zero.',
-      'Load is the first explicit acknowledgement of each cohort incident, the entry acknowledgement time is measured to. Unacknowledged incidents are counted as unattributed, never assigned to anyone.',
+      'Person load uses only an acknowledgement recorded by a known native person. Agent and service-account acknowledgements are counted separately; naming a responder never credits that person with acting. Retained erased-person activity stays anonymous; unknown actors and erased declaration cases remain unattributed.',
       'Load is normalised by scheduled primary hours, the role a page reaches first; backup hours are shown separately. Load to coverage is the share of acknowledgements divided by the share of primary hours: 1 means load in proportion to coverage. Without primary hours no rate is given.',
       'Outside coverage counts acknowledgements made while the responder held neither primary nor backup on a schedule of that incident\'s service. Overlapping schedules count each hour once.',
       'Teams are not modelled yet, so load is broken out by responder and by service.',

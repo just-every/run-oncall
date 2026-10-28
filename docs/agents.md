@@ -52,7 +52,9 @@ sponsor**; naming a responder is not that person's attestation.
 Submit cited follow-up evidence. A `human-review` action, including every P1
 follow-up, stays open until an eligible person accepts in the native screen.
 There is no machine acceptance tool. Agent assertions, source observations,
-recovery evidence and human acceptance remain distinct.
+recovery evidence and human acceptance remain distinct. Agent recovery evidence
+does not produce a human recovery-attestation measurement. Response reports
+count machine acknowledgments separately from person workload.
 
 Preview a complete coverage change, then apply the same native review digest.
 Intervening schedule or membership changes require another review. Overrides

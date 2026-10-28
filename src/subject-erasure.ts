@@ -103,6 +103,14 @@ export async function eraseNativeSubject(c:any,deps:Dependencies) {
    eraseCredential('oc_endpoint_credentials','endpoint',endpoints)
    if(client){
     const label=await anonymous('client',targetId)
+    // Released machine history may predate the preparer field. Its immutable
+    // creating administrator supplies the existing sponsor, never the eraser.
+    const sponsor=state.members.find(m=>m.id===client.owner)
+    const legacy={agent:{id:targetId,name:'Erased agent'},sponsor:{id:client.owner,name:sponsor?.name??'Unavailable member'},label:'Erased agent for '+(sponsor?.name??'Unavailable member'),approvers:[]}
+    for(const incident of state.incidents){
+     for(const entry of incident.timeline)if(entry.actor===targetId&&!entry.preparedBy)entry.preparedBy=structuredClone(legacy)
+     for(const action of incident.actions)if(action.submission?.by===targetId&&!action.submission.preparedBy)action.submission.preparedBy=structuredClone(legacy)
+    }
     eraseAttribution(state,attributionSubjects)
     // Preserve historical machine attribution as an inactive, credential-free
     // erased identity. Never transfer a machine's claims to the erasing admin.

@@ -29,7 +29,8 @@ export function transferDoor(m) {
    ok(await m.request('/api/rer/business-settings',{settings:jwt('rer-business-settings+jwt',{...common,jti:randomUUID(),rev:revision,owner_id:'transfer-owner-'+installationId,values:{},logo:null,team:null})}))
    const document={schema:'rer-agent-policy/1',catalogue:'rer-agent-classes/1',rules:[{id:'business-coordination-choice',class:'*',do:'autonomous'}],spend:{none:true}}
    const revision_signature=jwt('rer-agent-policy-revision+jwt',{business,revision,document_sha256:hash(canonical(document))})
-   ok(await m.request('/api/rer/agent-policy',{policy:jwt('rer-agent-policy+jwt',{...common,seq:revision,revision,paused:false,catalogue:document.catalogue,document,revision_signature})}))
+   const {email:_email,...policyClaims}=common
+   ok(await m.request('/api/rer/agent-policy',{policy:jwt('rer-agent-policy+jwt',{...policyClaims,seq:revision,revision,paused:false,catalogue:document.catalogue,document,revision_signature})}))
    ok(await m.request('/agents/api/pause',{paused:false},cookie))
   },
   async prepare(cookie) {

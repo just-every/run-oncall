@@ -38,6 +38,11 @@ export default async function specialist({request,origin,cookie,tool}) {
  assert.equal(native.commander,responder.id)
  assert.equal(native.timeline.at(-1).actor,client.id)
  assert.equal(native.timeline.at(-1).preparedBy.label,'Payments coordination client for '+workspace.member.name)
+ await call('oncall.incidents.update',{id:fresh.id,field:'state',value:'recovered',evidence:'https://evidence.example.test/machine-recovery-claim'})
+ await call('oncall.incidents.resolve',{id:fresh.id,summary:'Coordination closed with an agent evidence claim; independent recovery is unknown'})
+ const recovery=await call('oncall.reviews.read',{id:fresh.id})
+ assert.equal(recovery.response.recovery.status,'unknown','an agent recovery claim must not become a human attestation')
+ assert.match(recovery.response.recovery.reason,/Agent|machine/)
  console.log('PASS ONCALL probe 1: Business and retained scoped client acknowledgment, named responder, one effect and stale revision refusal; paging OFF')
  // Probe 2: submission cannot complete human-review work or become observed recovery.
  const action=await call('oncall.actions.create',{incident:ack.id,title:'Review the mitigation evidence',owner:responder.id,due:'2099-12-01',priority:'P1',completionPolicy:'human-review'})

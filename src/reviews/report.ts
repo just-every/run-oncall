@@ -33,6 +33,12 @@ function marks(incident: Incident): Mark[] {
       ? [{entry, from: match[1], to: match[2], kind: 'legacy-derived'}] : [];
   });
 }
+/** Machine preparation is kept separate from retained person attribution. */
+export function entryAttribution(state:State,entry:Entry):'agent'|'person'|'unknown' {
+ if(entry.preparedBy||entry.actor.startsWith('api-'))return 'agent'
+ const member=state.members.find(m=>m.id===entry.actor)
+ return member?'person':'unknown'
+}
 /** The first explicit acknowledgement entry, the one acknowledgement time is measured to. */
 export const firstAcknowledgement = (incident: Incident) => marks(incident).find(m => m.to === 'acknowledged')?.entry;
 function value(status: ResponseDuration['status'], seconds: number | null, mark: Mark | undefined, reason: string): ResponseDuration {
@@ -86,6 +92,8 @@ function durations(state: State, incident: Incident, now: number) {
   if (recoveryIndex <= lastMitigation || !recoveryMark) {
     recovery = missing(!['recovered', 'resolved'].includes(incident.state),
       'No recovery attestation after the last mitigation; earlier recovery cannot establish final recovery');
+  } else if (entryAttribution(state,recoveryMark.entry)!=='person') {
+    recovery = value('unknown',null,recoveryMark,'Agent, machine or unknown-actor recovery evidence is not a human recovery attestation or independent observation');
   } else if (recoveryMark.kind === 'legacy-derived') {
     recovery = value('unknown', null, recoveryMark, 'Legacy recovery has no immutable evidence at this entry; current incident recovery URL cannot establish historical evidence');
   } else if (!evidence(recoveryMark.evidence)) {

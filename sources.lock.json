@@ -188,7 +188,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "b3d808e0fddc1013c6ede63552496785e37d3a1f8160a9c0de23fa5c0546222f",
+      "sha256": "e297073e3b151d9863cda3d59edd3453883652af6943fd7fc7fd71ee0092984e",
       "executable": false
     },
     "docs/audit.md": {
@@ -1044,7 +1044,7 @@
       "executable": false
     },
     "src/app/flows.css": {
-      "sha256": "c3b955a6a7517a82248a269d8de46e1edef3bcab23f4c47efdd5065b57bfc303",
+      "sha256": "d7c54362b386aa2a1c4f3409d6f6132327a8372f6a6005b91bce67e5a1530346",
       "executable": false
     },
     "src/app/HandoffPreview.tsx": {
@@ -4656,7 +4656,7 @@
       "executable": false
     },
     "src/reviews/CoverageLoad.tsx": {
-      "sha256": "aa7b6fd7de29bd09b5a2a9c88404471852ea88d45df87b862ac46f3e08d13474",
+      "sha256": "1db045c069984b309913e20de7f565c7294472ab68d67eac29558067a4a98d2b",
       "executable": false
     },
     "src/reviews/csv.ts": {
@@ -4672,7 +4672,7 @@
       "executable": false
     },
     "src/reviews/load.ts": {
-      "sha256": "811d9c01a02fcbcad1d48bc03b4c19266ff58f33deae3e8ba6643f562e219627",
+      "sha256": "55a39ad29bfba9362ff8c642b499eee19bb2c867e87b1b29f86f8cbe79c940f1",
       "executable": false
     },
     "src/reviews/material.ts": {
@@ -4684,7 +4684,7 @@
       "executable": false
     },
     "src/reviews/report.ts": {
-      "sha256": "4254596cb65c1827000242e1c5b6ba9d05d86717357ce1907319569c63494e2e",
+      "sha256": "59039b004dd1f4b1878f8c1886cd32b7ce0215b4b47647d87753d8393aef74c8",
       "executable": false
     },
     "src/reviews/ResponseReport.tsx": {
@@ -5116,7 +5116,7 @@
       "executable": false
     },
     "src/subject-erasure.ts": {
-      "sha256": "94eeba302835f5cd2f9d78b6238cad6e0cd3bae1d5818131b4755c3b08da177c",
+      "sha256": "2553c3d249c26618d57f1bf0dc3de5c7bf7fd52021ff3b587b3709d4ba8832bb",
       "executable": false
     },
     "src/team/MemberRow.tsx": {
@@ -5272,7 +5272,7 @@
       "executable": false
     },
     "tests/agent-specialist.mjs": {
-      "sha256": "a5a074d17d02612f57b94da288587dcf1ab0544f5ba2e77715b9acdd01c6c509",
+      "sha256": "317252aab48df3b009562842a0e87276442542ea7f4a14d93197e6ff450acd70",
       "executable": false
     },
     "tests/alert-severity-browser.mjs": {
@@ -5540,7 +5540,7 @@
       "executable": false
     },
     "tests/transfer-door.mjs": {
-      "sha256": "fa0d48f8287885b493bf8bb44dabd9afc00149c774d03cc4fcd890920d06ad2a",
+      "sha256": "d55429a4f79bc8d14da893cf5969ad96aea5c8d48c8c5b8212d97474faeeaab9",
       "executable": false
     },
     "tests/transfer.mjs": {
