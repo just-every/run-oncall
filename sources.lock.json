@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "fed741dc46728d88622e7852ec9816358019b74a9f12aee57818a843082e012e"
+    "sha256": "c52b4ddbfad26af8c28cdcad563e101f44d5a455a4f8133ca7235408c752a844"
   },
   "components": [
     {
@@ -4112,7 +4112,7 @@
       "executable": false
     },
     "src/readiness/api.ts": {
-      "sha256": "8c2c4050a5b66ea7ff1c3dfc420a7845a399b98bcd724c2ff4d204bad2c3eeba",
+      "sha256": "d80796b4d7d61f04a47cacfc6b09a26c6146d004b0765955330f398323886bb7",
       "executable": false
     },
     "src/readiness/authority.ts": {
@@ -4788,7 +4788,7 @@
       "executable": false
     },
     "tests/coordination-health.mjs": {
-      "sha256": "13de33b2c6b76539dd35e2fd21f1378337448c8e6ccc7c3a120d7e040cdaaced",
+      "sha256": "eaf57699947cb226112b895563ffe6c3386b17bcb2992aa645d2d490366ef926",
       "executable": false
     },
     "tests/demo.mjs": {
@@ -5048,7 +5048,7 @@
       "executable": false
     },
     "vite.config.ts": {
-      "sha256": "876e0e8f81cca29ce4982776be2b56bd27f96863a99d0984820cd24bcc69ba06",
+      "sha256": "92def11530d21cf2b031ccefa2f1a38640df2342dfa3f0ee039894848f954a0a",
       "executable": false
     },
     "vite.site.config.ts": {

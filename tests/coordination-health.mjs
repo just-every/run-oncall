@@ -90,6 +90,18 @@ async function readinessHealth(deployment) {
   }
   const baseline=await value('/api/readiness');assert.equal(baseline.complete,true);assert.deepEqual(baseline.release.deployment,deployment);
   const pkg=JSON.parse(await readFile('package.json','utf8'));assert.equal(baseline.release.version,pkg.version);assert.equal(baseline.release.package,pkg.name);
+  const {managedSeed}=await import('./managed.mjs');
+  const dev=await managedSeed();
+  try {
+   await dev.command(['setup','--non-interactive','--port',String(dev.port),'--owner-email',runtime.vars.OWNER_EMAIL]);
+   await dev.startHttp();
+   const report=await dev.request('/api/readiness',undefined,await dev.owner());
+   assert.equal(report.status,200,'the development Worker serves readiness to its configured owner');
+   assert.equal(report.value.release.package,baseline.release.package);assert.equal(report.value.release.version,baseline.release.version);
+   assert.deepEqual(report.value.matrix.map(row=>[row.id,row.state]),baseline.matrix.map(row=>[row.id,row.state]));
+   assert.deepEqual(report.value.signals.map(row=>row.id),baseline.signals.map(row=>row.id));
+   assert.deepEqual(report.value.pagerCoverage,baseline.pagerCoverage);
+  } finally {await dev.close();}
   assert.equal(new Set(baseline.matrix.map(row=>row.id)).size,baseline.matrix.length);
   for(const row of baseline.matrix){assert.ok(['working-here','off','not-built','unproven-live'].includes(row.state));assert.ok(['maintained-journey','dated-owner-evidence','none'].includes(row.evidence.kind));if(row.id!=='coordination')assert.notEqual(row.state,'working-here');if(row.observation){assert.equal(row.observation.configured,0);assert.equal(row.observation.active,0);assert.equal(row.observation.lastAcceptedAt,null);}}
   for(const row of baseline.signals){assert.ok(['ok','degraded','failing','unavailable'].includes(row.state));assert.equal(row.observedAt,new Date(at).toISOString());assert.ok(row.ageSeconds===null||row.ageSeconds>=0);}
