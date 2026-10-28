@@ -67,7 +67,7 @@ export function Hero({ variant = "instance" }: { variant?: SiteVariant }) {
           {variant === "site" && <a className="oc-link" href={demoUrl}>Try the demo</a>}
           <a className="oc-link" href={docsUrl}>Read the docs</a>
         </div>
-        <p className="oc-hero-free" data-intro>100% free, open source alternative to <strong>PagerDuty</strong> and <strong>Opsgenie</strong></p>
+        <p className="oc-hero-free" data-intro>Open source alternative to <strong>PagerDuty</strong> and <strong>Opsgenie</strong></p>
       </div>
       <div className="oc-hero-art" data-intro><Handover /></div>
       <Band intro className="oc-rota" stack label="Checkout rota, weekly in Europe/London" segments={rota} />

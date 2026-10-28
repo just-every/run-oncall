@@ -107,6 +107,7 @@
 .oc-closing h2 { font-size: clamp(40px, 4.8vw, 72px); }
 .oc-closing-copy > p { margin: 22px 0 0; font-size: 21px; color: var(--oc-muted); }
 .oc-closing .oc-actions { gap: 20px 40px; margin-top: 40px; }
+.oc-closing-copy > .oc-closing-note { margin: 28px 0 0; font-size: 14px; }
 
 /* Footer */
 .oc-footer {
