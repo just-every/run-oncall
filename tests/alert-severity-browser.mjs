@@ -1,3 +1,4 @@
+import {openWorkspaceSection} from './keyboard.mjs'
 import {focusWorkspace} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
@@ -16,7 +17,7 @@ export async function alertSeverity(page,context,width) {
   // A lower-severity recovery receipt must not erase the urgent trigger's severity.
   if(severity==='critical') assert.equal((await context.request.post('/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:{...event,eventId:'critical-recovery',intent:'recover',severity:'info'}})).status(),201)
  }
- await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
+ await openWorkspaceSection(page,'alerts')
  await focusWorkspace(page)
  for(const severity of ['critical','warning','info']) {
   const title=`Checkout ${severity} ${width}`
@@ -35,7 +36,7 @@ export async function alertSeverity(page,context,width) {
   assert.equal(incident.alerts.length,1,'declaration keeps the source alert linked')
   await page.locator('.priority').filter({hasText:severity}).first().waitFor()
   if(severity==='critical') await page.screenshot({path:`evidence/browser/declared-critical-${width}.png`,fullPage:true})
-  await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
+  await openWorkspaceSection(page,'alerts')
  }
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'alert list fits viewport')
  await singleIncidentPerAlert(page,context,width,service,source,key)
@@ -63,5 +64,5 @@ async function singleIncidentPerAlert(page,context,width,service,source,key) {
  await link.click()
  await page.locator('.detail').getByRole('heading',{name:title,exact:true}).waitFor()
  await page.screenshot({path:`evidence/browser/alert-linked-incident-open-${width}.png`,fullPage:true})
- await page.getByRole('link',{name:'Alerts & events',exact:true}).click()
+ await openWorkspaceSection(page,'alerts')
 }

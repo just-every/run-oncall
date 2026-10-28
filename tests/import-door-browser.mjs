@@ -1,3 +1,4 @@
+import {openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {mkdir} from 'node:fs/promises'
 
@@ -21,7 +22,7 @@ export async function journal(page,origin,vendor,jobId,state) {
  for(const width of [1440,390]) {
   await page.setViewportSize({width,height:1000})
   await page.goto(origin)
-  await page.getByRole('link',{name:'Move-in kit',exact:true}).click()
+  await openWorkspaceSection(page,'move-in')
   await page.getByLabel('Source',{exact:true}).selectOption(vendor)
   await page.getByLabel('Saved import journal',{exact:true}).selectOption(jobId)
   await page.getByText(/^approved via Business by /).waitFor()

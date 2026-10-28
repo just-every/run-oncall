@@ -1,3 +1,4 @@
+import {openWorkspaceSection} from './keyboard.mjs'
 import {triageBulkBrowser} from './triage-bulk-browser.mjs';
 import assert from 'node:assert/strict'
 import {routingBrowser} from './routing-browser.mjs';
@@ -12,7 +13,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession}
  const key=keyboardUser(page)
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json())
  assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
- await key.activate(page.getByRole('link',{name:'Services',exact:true}));await key.text(page.getByLabel('Service name',{exact:true}),'Checkout');await key.text(page.getByLabel('Runbook steps (one per line)'),'Verify recovery');await key.activate(page.getByRole('button',{name:'Create service',exact:true}));await page.getByRole('heading',{name:'Checkout',exact:true}).waitFor()
+ await openWorkspaceSection(page,'services',{keyboard:true});await key.text(page.getByLabel('Service name',{exact:true}),'Checkout');await key.text(page.getByLabel('Runbook steps (one per line)'),'Verify recovery');await key.activate(page.getByRole('button',{name:'Create service',exact:true}));await page.getByRole('heading',{name:'Checkout',exact:true}).waitFor()
  for(const width of [1440,390]) {
   await page.setViewportSize({width,height:1000})
   await keyboardCoordination(page,context,width,ownerLink,openSession)
@@ -22,7 +23,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession}
   await triageBulkBrowser(page,context,width)
   await productImport(page,context,width,session)
   await routingBrowser(page,context,width)
-  await page.getByRole('link',{name:'Routing & replay',exact:true}).click();await page.getByLabel(/^Event JSON array/).fill(JSON.stringify([{source:'browser',eventId:'replay-'+width,service:'checkout',environment:'production',key:'browser',generation:'g1',intent:'trigger',severity:'critical',title:'Replay '+width,observedAt:'2026-10-12T00:00:00.000Z'}]))
+  await openWorkspaceSection(page,'routing');await page.getByLabel(/^Event JSON array/).fill(JSON.stringify([{source:'browser',eventId:'replay-'+width,service:'checkout',environment:'production',key:'browser',generation:'g1',intent:'trigger',severity:'critical',title:'Replay '+width,observedAt:'2026-10-12T00:00:00.000Z'}]))
   // An ordinary pointer click where the button sits at the viewport's lower edge;
   // anything covering it there (such as a fixed dev identity badge) takes the click.
   const compare=page.getByRole('button',{name:'Compare decisions',exact:true});await compare.evaluate(button=>button.scrollIntoView({block:'end'}));const box=await compare.boundingBox()
@@ -45,17 +46,24 @@ async function sharedIncidentLinks(page,context) {
    return replace(data,unused,url)
   }
  })
- const sections=['incidents','alerts','services','status','routing','schedules','move-in','reviews','team','archive']
- for(const [entry,path] of [['/','/incidents'],...sections.map(section=>['/#'+section,'/'+section]),['/?incident='+encodeURIComponent(incident.id)+'#incidents','/incidents/'+encodeURIComponent(incident.id)]]){
-  await page.goto(origin+entry)
+ const destinations={incidents:'/incidents',alerts:'/alerts',services:'/settings/services',status:'/status',routing:'/settings/routing',schedules:'/on-call','move-in':'/settings/move-in',reviews:'/reviews',team:'/settings/team',archive:'/settings/archive'}
+ const sections=Object.keys(destinations)
+ // O4: the existing shared-entry step now exercises every moved server and hash address.
+ const entries=[['/','/on-call'],...sections.map(section=>['/#'+section,destinations[section]]),...['services','routing','schedules','team','move-in','archive'].map(section=>['/'+section,destinations[section]]),['/settings','/settings/services'],['/?incident='+encodeURIComponent(incident.id)+'#incidents','/incidents/'+encodeURIComponent(incident.id)]]
+ for(const [entry,path] of entries){
+  const response=await page.goto(origin+entry)
   await page.waitForURL(url=>url.pathname===path)
-  await page.locator('.navigation').waitFor()
-  assert.deepEqual(await page.evaluate(()=>window.__routeReplacements),[path],'a shared entry canonicalizes in one client replace hop')
+  await page.locator('.shell-rail .navigation').waitFor()
+  let redirects=0,request=response.request()
+  while(request.redirectedFrom()){redirects++;request=request.redirectedFrom()}
+  const replacements=await page.evaluate(()=>window.__routeReplacements)
+  assert.equal(redirects+replacements.length,1,'a shared entry lands at its final section in one hop')
+  console.log('Workspace path',entry,response.status(),new URL(page.url()).pathname,'hops',redirects+replacements.length)
  }
  const visitor=await context.browser().newContext()
  try{
   const entry=await visitor.newPage()
-  for(const [old,path] of [['/#alerts','/alerts'],['/#schedules','/schedules'],['/?incident='+encodeURIComponent(incident.id)+'#incidents','/incidents/'+encodeURIComponent(incident.id)]]){
+  for(const [old,path] of [['/#alerts','/alerts'],['/#schedules','/on-call'],['/?incident='+encodeURIComponent(incident.id)+'#incidents','/incidents/'+encodeURIComponent(incident.id)]]){
    await entry.goto(origin+old)
    await entry.waitForURL(url=>url.pathname===path)
    assert.equal(await entry.locator('.detail').count(),0,'shared guest entries retain the sign-in lobby without incident data')
@@ -65,8 +73,7 @@ async function sharedIncidentLinks(page,context) {
  const shell=await page.locator('.app').elementHandle()
  try{
   for(const section of sections){
-   await page.locator('.navigation a[href="/'+section+'"]').click()
-   await page.waitForURL(url=>url.pathname==='/'+section)
+   await openWorkspaceSection(page,section)
    assert.ok(await shell.evaluate(element=>element.isConnected),'workspace navigation retains the shell')
   }
  }finally{await shell.dispose()}

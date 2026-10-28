@@ -30,9 +30,9 @@ try {
  const context=await browser.newContext({baseURL:origin,viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
  page.on('pageerror',error=>errors.push(error.message))
  await context.addCookies([{name:`oncall_session_${new URL(origin).port}`,value:'retired-installation-session',url:origin}])
- await page.goto(link);await page.waitForURL(url=>url.pathname==='/setup'||url.pathname==='/incidents'&&!url.hash,{timeout:60000})
+ await page.goto(link);await page.waitForURL(url=>url.pathname==='/setup'||url.pathname==='/on-call'&&!url.hash,{timeout:60000})
  await page.goto(origin+'/setup');const confirm=page.getByRole('checkbox');if(await confirm.count()){await confirm.check();await page.getByRole('button',{name:'Finish setup'}).click()}
- await page.getByRole('link',{name:'Services',exact:true}).waitFor({timeout:60000})
+ await page.locator('.oncall-frame').waitFor({timeout:60000})
  assert.equal((await context.cookies()).some(cookie=>cookie.name===`oncall_session_${new URL(origin).port}`),false,'explicit local sign-in clears a previous installation cookie')
  await productBrowserJourney(page,context,{ownerLink:link})
  assert.deepEqual(errors,[],'no browser application errors')
