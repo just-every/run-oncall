@@ -10,7 +10,7 @@ import {fixtureDatabase} from './fixture-database.mjs'
 import assert from 'node:assert/strict'
 import {ownerDoor,localWorker} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
-import {checkpointCli,checkpointErasureCli} from './checkpoint-cli.mjs'
+import {checkpointRoundTrip,checkpointErasureCli} from './checkpoint-cli.mjs'
 const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
 
 
@@ -319,7 +319,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  // Remove only our pressure fixtures; retain every actual HTTP-created record.
  sql("DELETE FROM oc_api_outbox WHERE id IN ("+pressureIds.map(id=>"'"+id+"'").join(',')+")")
  assert.ok(ok(await req('/api/state')).apiOutbox.some(row=>row.id===capacityOutcome.id))
- cookie=await checkpointCli(m,cookie)
+ cookie=await checkpointRoundTrip(m,cookie)
  const heldBeforeTick=ok(await req('/api/state')),heldTick=await fetch(m.origin+'/cdn-cgi/local/scheduled');assert.equal(heldTick.status,200);await heldTick.text();assert.deepEqual(ok(await req('/api/state')),heldBeforeTick,'an actual scheduled handler cannot resume restored outbox work')
  await m.close();await m.start()
  assert.deepEqual(sql('SELECT id,bytes,request_sha256,prefix FROM oc_native_prefixes ORDER BY id'),prefixesBefore,'checkpoint restore preserves exact native custody');
