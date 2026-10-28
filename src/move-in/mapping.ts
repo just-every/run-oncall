@@ -1,3 +1,4 @@
+import {addressRanges} from './address-match'
 import {pagerdutyContacts,pagerdutyEvidence} from './pagerduty-mapping'
 import {mappingPayload,importedContacts,opsFamily} from './vendor-formats'
 import { compare, crossesOffsetChange } from './equivalence';
@@ -134,7 +135,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
   const result=adapter.map(record)
   if(['pagerduty','splunk','jsm','betterstack'].includes(vendor)) {
    const related=new Set<string>()
-   const visit=(value:unknown):void=>{if(typeof value==='string'&&emails.has(value))related.add(emails.get(value)!);else if(Array.isArray(value))value.forEach(visit);else if(value&&typeof value==='object')Object.values(value).forEach(visit)}
+   const visit=(value:unknown):void=>{if(typeof value==='string'){if(emails.has(value))related.add(emails.get(value)!);if(vendor==='pagerduty')for(const email of new Set(emails.values()))if(addressRanges(value,email).length)related.add(email)}else if(Array.isArray(value))value.forEach(visit);else if(value&&typeof value==='object')Object.values(value).forEach(visit)}
    visit(record.payload)
    if(related.size)(result.unmapped??=[]).push({field:'related-users',reason:`Retained source references: ${[...related].join(', ')}. No login or paging authority is granted.`})
   }

@@ -218,6 +218,7 @@ try {
  const duplicateAccount=structuredClone(account);duplicateAccount.users.push({user:structuredClone(account.users[0].users[0])})
  const danglingAccount=structuredClone(account);danglingAccount.services[0].services[0].escalation_policy.id='synthetic-oncall-missing-policy'
  const danglingTeam=structuredClone(account);danglingTeam.services[0].services[0].teams[0].id='synthetic-oncall-missing-team'
+ const danglingRoute=structuredClone(account);danglingRoute.event_orchestrations[0].orchestration_path.sets[0].rules[0].actions.route_to='synthetic-oncall-missing-service'
  const oversized=JSON.stringify({users:[{id:'synthetic-oncall-large',email:'large@example.test',name:'x'.repeat(512*1024)}]})
  const tooMany=JSON.stringify({users:Array.from({length:501},(_,i)=>({id:'synthetic-oncall-limit-'+i,email:'pd-limit-'+i+'@example.test'}))})
  const badAccounts=[
@@ -228,6 +229,7 @@ try {
   ['record limit',tooMany,413,[/501 records/,/500-record limit/,/narrow the export/,/Nothing was imported or truncated/]],
   ['duplicate identity',JSON.stringify(duplicateAccount),400,[/Duplicate PagerDuty users source id/,/synthetic-oncall-u1/,/\/users\//,/keep one saved detail/]],
   ['missing policy',JSON.stringify(danglingAccount),400,[/dangling escalation_policies reference/,/synthetic-oncall-missing-policy/,/\/services\/0\/services\/0\/escalation_policy/,/include that object's saved detail/]],
+  ['missing route',JSON.stringify(danglingRoute),400,[/dangling services route/,/synthetic-oncall-missing-service/,/\/route_to/,/include that service's saved detail/]],
   ['missing team',JSON.stringify(danglingTeam),400,[/dangling teams reference/,/synthetic-oncall-missing-team/,/\/teams\/0/,/include that object's saved detail/]],
  ]
  for(const [name,raw,status,patterns] of badAccounts) {

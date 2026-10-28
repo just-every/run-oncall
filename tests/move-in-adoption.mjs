@@ -114,6 +114,17 @@ try {
    return [kind,[pages].flat().flatMap(page=>page[kind]??[page[detail]??page])]
   }))
   const expected={...Object.fromEntries(Object.entries(records).map(([kind,rows])=>[kind,rows.length])),integrations:records.services.reduce((sum,service)=>sum+service.integrations.length,0)}
+  // List orchestration envelopes and ordinary single-detail envelopes are also public saved-file inputs.
+  const detailVariant=structuredClone(bundle)
+  detailVariant.incidents=records.incidents.map(incident=>({incident}))
+  const orchestrationMetadata={id:records.event_orchestrations[0].parent.id,name:'Account event routing',team:{id:records.teams[0].id,type:'team_reference'}}
+  detailVariant.event_orchestrations={orchestrations:[orchestrationMetadata],limit:25,offset:0,more:false,total:null}
+  const lists=ok(await door.preview('pagerduty',JSON.stringify(detailVariant)))
+  assert.deepEqual(lists.counts.byKind,expected)
+  detailVariant.event_orchestrations={orchestration:orchestrationMetadata}
+  const details=ok(await door.preview('pagerduty',JSON.stringify(detailVariant)))
+  assert.deepEqual(details.counts.byKind,expected)
+  assert.equal(ok(await door.call('pagerduty','undo',{planId:details.planId})).state,'cancelled')
   const beforeObjects=await imported(),beforeNative=ok(await req('/api/state')),beforePaging=ok(await req('/api/paging/state'))
   const durable=()=>w.sql('SELECT COUNT(*) AS n FROM ik_jobs UNION ALL SELECT COUNT(*) FROM ik_batches UNION ALL SELECT COUNT(*) FROM ik_d1_assertions UNION ALL SELECT COUNT(*) FROM move_in_objects')
   const beforeDurable=durable(),preview=ok(await door.preview('pagerduty',raw))
@@ -182,10 +193,9 @@ try {
   assert.equal(reconciled.ok,true);assert.equal(reconciled.counts.sourceRecords,preview.items.length);assert.equal(reconciled.counts.present+reconciled.counts.explained,preview.items.length)
   assert.equal(new Set(reconciled.sourceIds.map(row=>JSON.stringify(row))).size,preview.items.length)
   const repeated=ok(await door.preview('pagerduty',raw))
-  assert.equal(repeated.summary.created,0);assert.equal(repeated.summary.updated,0);assert.equal(repeated.summary.unchanged,preview.items.length)
-  ok(await door.apply('pagerduty',repeated));assert.deepEqual(await imported(),applied,'identical bytes add and change no imported objects')
-  ok(await door.undo('pagerduty',repeated.planId))
-  assert.deepEqual(await imported(),applied,'undoing a zero-change catch-up leaves its baseline intact')
+  assert.equal(repeated.planId,preview.planId,'identical bytes reuse the reviewed applied plan')
+  const repeatedJob=ok(await door.apply('pagerduty',repeated)).job
+  assert.equal(repeatedJob.id,first.job.id);assert.deepEqual(await imported(),applied,'identical bytes add and change no imported objects')
   ok(await door.undo('pagerduty',preview.planId));assert.deepEqual(await imported(),beforeObjects)
   // A fresh account import participates in the existing person's erasure custody.
   const again=ok(await door.preview('pagerduty',raw));ok(await door.apply('pagerduty',again))
@@ -194,7 +204,8 @@ try {
   ok(await req('/api/move-in/erase',{email:person.email,confirmation:'erase '+person.email}))
   const tables=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").map(row=>row.name)
   const held=JSON.stringify(w.statements(tables.map(table=>'SELECT * FROM "'+table.replaceAll('"','""')+'"').join(';')))
-  for(const token of [person.id,person.email,person.name,number,person.contact_methods[1].address])assert.ok(!held.includes(token),'erasure retires source references, notes and contact numbers: '+token)
+  assert.doesNotMatch(held,new RegExp('(^|[^a-zA-Z0-9_-])'+person.id+'($|[^a-zA-Z0-9_-])'),'the erased foreign ID is absent while distinct IDs with the same prefix remain')
+  for(const token of [person.email,person.name,number,person.contact_methods[1].address])assert.ok(!held.includes(token),'erasure retires source references, notes and contact numbers: '+token)
   assert.ok(!(await imported()).some(row=>row.targetId===person.email))
   console.log('OC-038 PagerDuty account: '+JSON.stringify({records:preview.items.length,kinds:expected,classification:preview.classification})+'; contacts, source-bound keyless inventory, named evidence/refusals, zero-write preview, paused apply/restart/reconcile/idempotence/undo and related-person erasure passed')
  }

@@ -27,20 +27,24 @@ export function pagerdutyRecords(input:ParsedRecord[]):ParsedRecord[] {
   const key=JSON.stringify([row.kind,row.sourceId]),prior=identities.get(key)
   if(prior)fail(`Duplicate PagerDuty ${row.kind} source id "${row.sourceId}" at ${row.pointer} and ${prior.pointer}; keep one saved detail per object and preview again. Nothing was imported.`)
   identities.set(key,row)
-  if(accountKinds.has(row.kind)&&(!row.sourceId||(row.payload as any)?.id===undefined&&row.kind!=='event_orchestrations'))
+  if(accountKinds.has(row.kind)&&(!row.sourceId||((row.payload as any)?.id??(row.kind==='event_orchestrations'?(row.payload as any)?.parent?.id:undefined))===undefined))
    fail(`PagerDuty ${row.kind} at ${row.pointer} has no source id; save the full object detail and preview again. Nothing was imported.`)
  }
  const has=(kind:string,id:unknown)=>identities.has(JSON.stringify([kind,String(id)]))
  // Keep the established strict converter's schedule/policy refusals unchanged.
  // Account evidence may not claim a relationship to an object the file omitted.
- for(const row of records.filter(row=>accountKinds.has(row.kind))) {
+ for(const row of records.filter(row=>accountKinds.has(row.kind)||row.kind==='users')) {
   const visit=(value:any,pointer:string):void=>{
    if(Array.isArray(value)){value.forEach((item,index)=>visit(item,`${pointer}/${index}`));return}
    if(!value||typeof value!=='object')return
    const type=typeof value.type==='string'?value.type.replace(/_reference$/,''):'',kind=referenceKinds[type]
    if(kind&&value.id!==undefined&&!has(kind,value.id))
     fail(`PagerDuty ${row.kind} ${(row.payload as any)?.name??row.sourceId} has a dangling ${kind} reference "${value.id}" at ${pointer}; include that object's saved detail or correct the reference and preview again. Nothing was imported.`)
-   for(const [key,child] of Object.entries(value))visit(child,`${pointer}/${escape(key)}`)
+   for(const [key,child] of Object.entries(value)) {
+    if(row.kind==='event_orchestrations'&&key==='route_to'&&typeof child==='string'&&child!=='unrouted'&&!has('services',child))
+     fail(`PagerDuty orchestration ${row.sourceId} has a dangling services route "${child}" at ${pointer}/route_to; include that service's saved detail or correct the route and preview again. Nothing was imported.`)
+    visit(child,`${pointer}/${escape(key)}`)
+   }
   }
   visit(row.payload,row.pointer??'')
  }

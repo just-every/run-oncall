@@ -33,6 +33,8 @@ function entries(vendor:Vendor,kind:string,body:any,pointer:string):Entry[] {
  else if(vendor==='splunk'&&Array.isArray(body[kind]))at=`${pointer}/${escape(kind)}`,items=body[kind]
  else if(vendor==='splunk'&&kind==='oncall'&&Array.isArray(body.teamsOnCall))at=`${pointer}/teamsOnCall`,items=body.teamsOnCall
  else if(vendor==='opsgenie'&&body.data!==undefined)at=`${pointer}/data`,items=body.data
+ else if(vendor==='pagerduty'&&kind==='event_orchestrations'&&Array.isArray(body.orchestrations))at=`${pointer}/orchestrations`,items=body.orchestrations
+ else if(vendor==='pagerduty'&&kind==='event_orchestrations'&&body.orchestration&&typeof body.orchestration==='object')at=`${pointer}/orchestration`,items=body.orchestration
  else if(vendor==='pagerduty'&&Array.isArray(body[kind]))at=`${pointer}/${escape(kind)}`,items=body[kind]
  else if(vendor==='pagerduty'&&detail[kind]&&body[detail[kind]]&&typeof body[detail[kind]]==='object')at=`${pointer}/${detail[kind]}`,items=body[detail[kind]]
  else return [{payload:body,pointer}]

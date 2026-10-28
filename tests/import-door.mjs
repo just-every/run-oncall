@@ -341,7 +341,9 @@ try {
  }
  // A credential field reaches the same refusal as the ordinary saved-file door.
  const bad=await upload('pagerduty',Buffer.from(JSON.stringify({users:{users:[{id:'refused',email:'refused@example.test',api_key:'synthetic-example-refused'}]}})))
- assert.equal(ok(await call('plan','pagerduty',{uploadId:bad}),422).error,'source_parser_failed')
+ const credentialRefusal=ok(await call('plan','pagerduty',{uploadId:bad}),400)
+ assert.match(credentialRefusal.error,/Credential-bearing field \"api_key\".*\/users\/users\/0\/api_key.*remove/)
+ assert.equal(w.sql("SELECT COUNT(*) AS n FROM ik_door_uploads WHERE id='"+bad+"'")[0].n,0,'the refused signed upload and its raw credential bytes are withdrawn')
  const retained=w.sql('SELECT COUNT(*) AS count FROM ik_door_uploads')[0].count
  assert.ok(retained>0,'original upload custody stays in this installation')
  // One server-owned allow-list resolves every grant's namespace: an unlisted one
@@ -355,8 +357,8 @@ try {
  const opsgenieBytes=await readFile('tests/fixtures/opsgenie-saved.json')
  const beforeCross=w.sql('SELECT * FROM move_in_objects ORDER BY kind,id')
  const crossed=await call('plan','pagerduty',{uploadId:await upload('pagerduty',opsgenieBytes,'opsgenie-bytes.json')})
- ok(crossed,422)
- assert.equal(crossed.value.error,'source_parser_failed')
+ ok(crossed,400)
+ assert.match(crossed.value.error,/Opsgenie-shaped.*choose Opsgenie/)
  const wrongOwner=ok(await door.preview('pagerduty',opsgenieBytes),400)
  assert.match(wrongOwner.error,/Opsgenie-shaped.*choose Opsgenie/)
  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),beforeCross)
@@ -389,6 +391,13 @@ try {
   const raw=await readFile('tests/fixtures/pagerduty-account.json'),saved=JSON.parse(raw),objects=()=>okSnapshot('/api/move-in/objects')
   async function okSnapshot(path){return ok(await req(path))}
   const baseline=await objects(),native=await okSnapshot('/api/state'),paging=await okSnapshot('/api/paging/state')
+  const keyBearing=structuredClone(saved);keyBearing.services[0].services[0].integrations[0].integration_key='synthetic-oncall-grant-refused-key'
+  const keyUpload=await upload('pagerduty',Buffer.from(JSON.stringify(keyBearing)),'pagerduty-key-refused.json')
+  const keyRefused=ok(await call('plan','pagerduty',{uploadId:keyUpload}),400)
+  assert.match(keyRefused.error,/integration_key.*\/services\/0\/services\/0\/integrations\/0\/integration_key.*remove/)
+  assert.equal(w.sql("SELECT COUNT(*) AS n FROM ik_door_chunks WHERE upload_id='"+keyUpload+"'")[0].n,0,'the signed door also withdraws refused credential bytes')
+  assert.equal(w.sql("SELECT COUNT(*) AS n FROM ik_door_uploads WHERE id='"+keyUpload+"'")[0].n,0)
+  assert.deepEqual(await objects(),baseline)
   const savedUpload=await upload('pagerduty',raw,'pagerduty-account.json'),plan=ok(await call('plan','pagerduty',{uploadId:savedUpload}))
   const approval={fingerprint:plan.fingerprint,approvalRecordId:'synthetic-oncall-account-approval',approvedAt:new Date().toISOString()}
   // An authority change at SQL publication is rechecked inside the committing batch.
@@ -418,7 +427,9 @@ try {
   const report=ok(await call('reconcile','pagerduty',{planId:reviewed.planId}))
   assert.equal(report.ok,true);assert.equal(report.counts.present+report.counts.explained,report.counts.sourceRecords)
   // The exact same bytes through the owner are a zero-change catch-up.
-  const repeated=ok(await door.preview('pagerduty',raw))
+  const reused=ok(await door.preview('pagerduty',raw));assert.equal(reused.planId,reviewed.planId)
+  ok(await door.apply('pagerduty',reused));assert.deepEqual(await objects(),initial)
+  const repeated=ok(await door.call('pagerduty','plan',{uploadId:savedUpload,catchup:true}))
   assert.deepEqual([repeated.summary.created,repeated.summary.updated,repeated.summary.gone],[0,0,0])
   assert.equal(repeated.summary.unchanged,reviewed.summary.sourceRecords)
   ok(await door.apply('pagerduty',repeated));assert.deepEqual(await objects(),initial)

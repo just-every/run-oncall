@@ -393,7 +393,7 @@
           ]
         }
       ],
-      "limit": 25,
+      "limit": 6,
       "offset": 0,
       "more": true,
       "total": null
@@ -2448,7 +2448,7 @@
           "resolved_at": "2026-10-20T10:20:00Z"
         }
       ],
-      "limit": 25,
+      "limit": 6,
       "offset": 0,
       "more": true,
       "total": null
@@ -2666,7 +2666,7 @@
           "resolved_at": "2026-10-20T10:20:00Z"
         }
       ],
-      "limit": 25,
+      "limit": 6,
       "offset": 6,
       "more": false,
       "total": null

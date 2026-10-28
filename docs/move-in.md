@@ -186,6 +186,8 @@ Format references read on **28 October 2026**: PagerDuty's
 [incidents](https://docs.pagerduty.com/developer/api/reference/rest/incidents/list-incidents),
 [maintenance windows](https://docs.pagerduty.com/developer/api/reference/rest/maintenance-windows/list-maintenance-windows),
 [business service](https://docs.pagerduty.com/developer/api/reference/rest/business-services/get-business-service),
+[orchestration lists](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/list-event-orchestrations),
+[orchestration detail](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/get-orchestration),
 [router](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/get-orch-path-router)
 and [dynamic router rule](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/update-orch-path-router)
 references. The shipped exporter and in-app read still collect only users,
@@ -195,7 +197,8 @@ they do not collect the whole account. No OAuth scope is widened here.
 The saved-file reader accepts list pages and single-detail wrappers for `users`,
 `schedules`, `overrides`, `escalation_policies`, `services`, `integrations`,
 `teams`, `incidents`, `maintenance_windows`, `business_services` and
-`event_orchestrations` (including the router's `orchestration_path` detail).
+`event_orchestrations` (the `orchestrations` list, `orchestration` detail,
+or the router's `orchestration_path` detail).
 Keep every page in the bundle. An override list must carry its `schedule_id`
 when more than one schedule is present. The reader inventories each service's
 embedded integration separately, at its original pointer; the service remains
@@ -240,7 +243,8 @@ present objects and explained source-only records.
   counted source evidence. Imported history never counts as live delivery.
 
 Apply requires the reviewed fingerprint and retains paused, non-paging,
-non-login data. Identical bytes produce a zero-change catch-up. A changed file
+non-login data. Identical bytes reuse the applied plan; an explicit catch-up
+of those bytes proposes zero changes. A changed file
 adds new objects and replaces unchanged imported targets; it names native edits
 as conflicts and lists missing source objects without deleting them. The
 existing strict undo refuses before changing anything when an affected imported
