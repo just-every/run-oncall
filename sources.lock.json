@@ -1096,7 +1096,7 @@
       "executable": false
     },
     "src/audit-request.ts": {
-      "sha256": "ba26096a6b30eb9c60883b116a788da4b0ed8d284046dc927c5c360c4515a650",
+      "sha256": "142ea1ef97cc1ba597d31fcfbf603c45b7a4356a55f4fec819ce9211a9812edf",
       "executable": false
     },
     "src/audit-store.ts": {
@@ -4112,7 +4112,7 @@
       "executable": false
     },
     "src/readiness/api.ts": {
-      "sha256": "22e97edf5b21e52dcc16b299c7e3eca1e670e9a73adb9f75a8f377e50ce43fce",
+      "sha256": "8c2c4050a5b66ea7ff1c3dfc420a7845a399b98bcd724c2ff4d204bad2c3eeba",
       "executable": false
     },
     "src/readiness/authority.ts": {
@@ -4129,6 +4129,10 @@
     },
     "src/readiness/observations.ts": {
       "sha256": "48026729e9f8331ffc1fad7f95a3032b499e3f8e47629d9f0a01e7778613b978",
+      "executable": false
+    },
+    "src/readiness/read-audit.ts": {
+      "sha256": "9c6d1bff15b6a1435678c04049ce937a726a2750573a6fcfe373b98611fd7a39",
       "executable": false
     },
     "src/readiness/readiness.css": {
@@ -4784,7 +4788,7 @@
       "executable": false
     },
     "tests/coordination-health.mjs": {
-      "sha256": "5bf5da3ef90752a2e7c5f69d8bc437c438c013e2e0314067d5c4287ad9f17d72",
+      "sha256": "13de33b2c6b76539dd35e2fd21f1378337448c8e6ccc7c3a120d7e040cdaaced",
       "executable": false
     },
     "tests/demo.mjs": {

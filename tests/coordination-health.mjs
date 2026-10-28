@@ -130,6 +130,13 @@ async function readinessHealth(deployment) {
    assert.equal(partial.pagerCoverage.state,'unproven');assert.equal((await value('/health')).storage,'available','web storage can remain healthy during a signal outage');
   } finally {runtime.sql('ALTER TABLE synthetic_oncall_540_fault RENAME TO oc_key_rate_usage');}
   const recovered=await value('/api/readiness');assert.equal(recovered.complete,true);assert.deepEqual(signal(recovered,'intake'),signal(overdue,'intake'),'restoring the source restores its real measurement');
+  const beforeControlFault=digest();runtime.sql('ALTER TABLE workspace_control RENAME TO synthetic_oncall_540_control');
+  try {
+   const partial=await value('/api/readiness',undefined,503);assert.equal(partial.complete,false);assert.equal(signal(partial,'authority').state,'unavailable');
+   for(const row of overdue.signals.filter(row=>row.id!=='authority'))assert.deepEqual(signal(partial,row.id),row,'control-table outage retains independent observations');
+   assert.equal((await call('/health')).status,503);assert.equal(partial.pagerCoverage.state,'unproven');
+  } finally {runtime.sql('ALTER TABLE synthetic_oncall_540_control RENAME TO workspace_control');}
+  assert.equal(digest(),beforeControlFault,'partial readiness reads perform zero writes even when the ordinary audit control source is unavailable');assert.equal(signal(await value('/api/readiness'),'authority').state,signal(overdue,'authority').state);
   await value('/api/sources/'+source+'/revoke',{});const revoked=await value('/api/readiness');assert.equal(revoked.matrix.find(row=>row.id==='events').observation.active,0);assert.equal(revoked.matrix.find(row=>row.id==='events').observation.lastAcceptedAt,new Date(at).toISOString());
   await value('/api/intake/sources/'+adapterId+'/revoke',{revision:adapter.revision});const inactive=(await value('/api/readiness')).matrix.find(row=>row.id==='pagerduty');assert.equal(inactive.observation.configured,1);assert.equal(inactive.observation.active,0);assert.equal(inactive.observation.lastAcceptedAt,new Date(at).toISOString());
   await runtime.time(at+180000);await value('/api/command',{type:'acknowledgment-timeout',service:service.id,baseVersion:0,minutes:0});

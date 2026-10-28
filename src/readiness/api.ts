@@ -1,3 +1,4 @@
+import {markReadinessReport} from './read-audit';
 import {deploymentHealth} from '../base/deployment-health';
 import pkg from '../../package.json';
 import {readinessMember} from './authority';
@@ -21,6 +22,7 @@ export function installReadiness(api:any) {
   const report:Readiness={observedAt:new Date(now).toISOString(),complete,
    release:{package:pkg.name,version:pkg.version,deployment:deploymentHealth(c.env).deployment},matrix,signals,
    pagerCoverage:{state:'unproven',paging:'off',reason:'Paging is OFF. Web and storage health cannot prove pager coverage. No localhost test, demo or provider sandbox substitutes for live acceptance. Keep your existing pager.'}};
+  markReadinessReport(c.env.DB);
   return c.json(report,complete?200:503);
  });
 }
