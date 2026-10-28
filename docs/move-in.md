@@ -167,3 +167,27 @@ No live API pull, account completeness reconciliation, phone cutover or parallel
 ### Separate administrator key activation
 
 After a reviewed import, a supported PagerDuty Events v1/v2, Opsgenie/JSM API, or Splunk REST integration has an **Activate imported integration** panel. Bind its Oncall ID and service, then supply its incumbent key in the password field. The field clears immediately; the key is never shown again or accepted from a saved file. Supplying or replacing a key leaves intake inactive. Confirm **Activate compatible intake · paging OFF** separately; a new native Oncall key is shown once alongside the now-active definition. Both credentials address the same integration. Revoke removes both verification hashes. A restore keeps the definition inactive and requires keys again. Supplying a key marks the imported object as locally edited, so undo cannot overwrite that custody decision. Unsupported kinds stay inactive. See [credential and identity assumptions](compatible-intake.md).
+
+## PagerDuty account saved responses
+
+The synthetic [account fixture](../tests/fixtures/pagerduty-account.json) uses
+invented people at example.test and saved REST list/detail responses, including
+pagination fields. The outer bundle and enrichment of users' contact methods,
+notification rules and team members are assembled by the owner's own tooling.
+Integration keys are removed before saving. This is documented-shape evidence;
+it has not been verified against a live account.
+
+Format references read on **28 October 2026**: PagerDuty's
+[user](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user),
+[contact methods](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user-contact-methods),
+[notification rules](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user-notification-rules),
+[service and integrations](https://docs.pagerduty.com/developer/api/reference/rest/services/get-service),
+[team](https://docs.pagerduty.com/developer/api/reference/rest/teams/get-team),
+[incidents](https://docs.pagerduty.com/developer/api/reference/rest/incidents/list-incidents),
+[maintenance windows](https://docs.pagerduty.com/developer/api/reference/rest/maintenance-windows/list-maintenance-windows),
+[business service](https://docs.pagerduty.com/developer/api/reference/rest/business-services/get-business-service),
+[router](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/get-orch-path-router)
+and [dynamic router rule](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/update-orch-path-router)
+references. The shipped exporter and in-app read still collect only users,
+schedules, overrides and escalation policies (with schedule comparison timelines);
+they do not collect the whole account. No OAuth scope is widened here.
