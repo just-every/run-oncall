@@ -458,14 +458,16 @@ api.post("/api/command", async (c) => {
     const result=command(state,actor,input,new Date(Date.now()).toISOString(),snapshot?responseContext(snapshot,Date.now()):undefined);
     if(['declare','manual-page'].includes(input.type)&&result&&typeof result==='object'&&'id' in result)setAuditSubject(c.env.DB,'entity',String(result.id));
     const guard=sessionGuard(c);
-    if(isResponseChange(input.type)&&result&&'timeline' in result&&result.revision===input.revision){
+    if(result && ('changed' in result && result.changed === false || isResponseChange(input.type) && 'timeline' in result && result.revision === input.revision)){
       // A read fence preserves current authority and the compared snapshot without a write.
       const current=await c.env.DB.prepare(`SELECT revision,${guard.sql} AS activeSession,(SELECT json_extract(data,'$.role') FROM oc_members WHERE id=? AND json_extract(data,'$.active')=1) AS role FROM workspace_control WHERE id=1`)
         .bind(...guard.values,actor.id).first<{revision:number;activeSession:number;role:string|null}>();
       if(!current?.activeSession||!current.role)fail('Access revoked',401);
       if(!['admin','responder'].includes(current.role))fail('Insufficient role',403);
       if(current.revision!==revision)fail('Workspace changed. Reload before applying your edit.',409);
-      markCommandNoop(c.env.DB);
+      // Keep the existing security ledger exception limited to response-value
+      // comparisons. Other doors retain their accepted-attempt audit facts.
+      if (isResponseChange(input.type)) markCommandNoop(c.env.DB);
       return {changed:false,message:'Nothing to change'};
     }
     if(snapshot){guard.sql+=' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)';guard.values.push(snapshot.revision);}

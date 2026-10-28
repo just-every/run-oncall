@@ -1,5 +1,8 @@
+import {autosaveRequest,useAutosave} from '../app/autosave/useAutosave';
+import {SavedState,SaveFeedback} from '../app/autosave/SavedState';
+import {request} from '../useWorkspace';
 import {Field,Form} from '../forms';
-import type {Incident,Member,Service} from '../family/response-operations/domain';
+import type {Incident,Member,Service,State} from '../family/response-operations/domain';
 export function DeadlineControls({incident,actor,busy,submit}:{incident:Incident;actor:Member;busy:boolean;submit:(input:any)=>Promise<any>}) {
  const editable=['admin','responder'].includes(actor.role),pending=incident.deadlines?.find(d=>d.state==='pending');
  return <section aria-label="Incident deadlines"><h3>Incident deadlines</h3>
@@ -9,7 +12,10 @@ export function DeadlineControls({incident,actor,busy,submit}:{incident:Incident
  {editable&&pending&&<button disabled={busy} onClick={()=>submit({type:'cancel-deadline',incident:incident.id,revision:incident.revision})}>Cancel pending deadline</button>}
  </section>;
 }
-export function TimeoutSetting({service,busy,submit}:{service:Service;busy:boolean;submit:(input:any)=>Promise<any>}) {
+export function TimeoutSetting({service}:{service:Service;busy:boolean;submit:(input:any)=>Promise<any>}) {
  const setting=service.ackTimeouts?.at(-1);
- return <details><summary>Acknowledgment timeout · {setting?.minutes?setting.minutes+' minutes':'off'}</summary><p>Version {setting?.version??0}. A new acknowledgment starts this timeout; a snooze replaces it. Expiry records a level-one re-trigger obligation; paging OFF.</p><Form key={service.id} busy={busy} label={'Save acknowledgment timeout for '+service.name} onSubmit={async input=>{await submit({type:'acknowledgment-timeout',service:service.id,baseVersion:setting?.version??0,minutes:Number(input.minutes)});}}><Field name="minutes" label="Acknowledgment timeout (minutes, 0 is off)" type="number" value={String(setting?.minutes??0)}/></Form></details>;
+ const snapshot=(state:State)=>{const value=state.services.find(s=>s.id===service.id)?.ackTimeouts?.at(-1);return {values:{minutes:String(value?.minutes??0)},revision:value?.version??0}};
+ const save=useAutosave({storageKey:'timeout:'+service.id,snapshot:{values:{minutes:String(setting?.minutes??0)},revision:setting?.version??0},read:async()=>snapshot(await request('/api/state')),
+  write:async({to,revision},{keepalive})=>{if(!to.trim())throw Error('Enter the timeout in minutes.');const result=await autosaveRequest('/api/command',{type:'acknowledgment-timeout',service:service.id,baseVersion:revision,minutes:Number(to)});return keepalive?{values:{minutes:to},revision:revision+1}:snapshot(await request('/api/state'));}});
+ return <details><summary>Acknowledgment timeout</summary><p>Expiry records a response obligation; paging is off.</p><div className="autosave-form"><label className="field"><span>Acknowledgment timeout (minutes, 0 is off) <SavedState state={save.states.minutes}/></span><input aria-label="Acknowledgment timeout (minutes, 0 is off)" type="number" min="0" max="1440" value={save.values.minutes} onChange={e=>save.change('minutes',e.target.value,'text')} onBlur={()=>save.blur('minutes')}/></label><SaveFeedback state={save.states.minutes} retry={()=>save.retry('minutes')} useMine={()=>save.useMine('minutes')}/></div></details>;
 }
