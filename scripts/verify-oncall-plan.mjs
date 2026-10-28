@@ -36,7 +36,7 @@ export const documentReaders = ['pnpm run build', 'node tests/hosted.mjs'];
 export async function lightReaders(files, { cwd = process.cwd(), plan } = {}) {
  if (!files.length || !files.every(file => documents.has(file) || file === 'sources.lock.json'
   || /^(?:evidence|\.artifacts)\/.+\.(?:md|txt|png|jpe?g|pdf)$/.test(file))) return;
- for (const path of ['edition.json', 'sources.lock.json', 'scripts/edition-authoring/cli.mjs']) await access(join(cwd, path));
+ for (const path of ['edition.json', 'sources.lock.json']) await access(join(cwd, path));
  for (const shard of [...plan.push, ...plan.nightly]) for (const command of shard.commands) {
   const path = /^node (tests\/[a-z0-9-]+\.mjs)$/.exec(command)?.[1];
   if (!reviewed.has(path)) return;

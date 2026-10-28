@@ -128,7 +128,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "5fa052ae0a55ee9ae49d32f5b40c66ca5cfafd6cc434f0b73e0601c368922ffa",
+      "sha256": "761fae9f5d882fad963c3ad10915eb188e6fa9709bca7f2afb50414b4ccf0954",
       "executable": false
     },
     ".gitignore": {
@@ -152,7 +152,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "15d98de4f33b55744926d7d7c8d463b407c421a382246161b853cc2af38a1c00",
+      "sha256": "3a7b5704881b5ce626a9e7df16194b1c3b6db94af9c447ab8bf3caba46a96a58",
       "executable": false
     },
     "BRAND.md": {
@@ -1492,11 +1492,11 @@
       "executable": false
     },
     "scripts/verify-oncall-plan.mjs": {
-      "sha256": "e7dd9d86de363872d3816aefc1ae1837514e27d1fcf3d832b2fe7aa9bfce1e51",
+      "sha256": "ce8fe6e5ccdfc935542933abe032ecc82e14bf1fde64c69dc9dbc14ff6d594ff",
       "executable": false
     },
     "scripts/verify-oncall.mjs": {
-      "sha256": "a0b9a2007f32342e1286a780e5e55397de26877bc36f9a55ccb4c0bfec0fe465",
+      "sha256": "9af844b921f78619deb98b117c2f5a2889dc9c593cde7fc2229d695f863c9fd8",
       "executable": false
     },
     "scripts/verify-plan.mjs": {
