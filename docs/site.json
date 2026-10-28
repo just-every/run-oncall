@@ -344,6 +344,10 @@
       "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
     },
     {
+      "source": "src/modules/agent-door/CLAUSES.md",
+      "reason": "Base-delivered shared requirements for contract synchronization; developer reference, not an owner-facing guide."
+    },
+    {
       "source": "src/modules/agent-door/policy/PROVENANCE.md",
       "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
     },
