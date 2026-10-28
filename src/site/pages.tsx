@@ -1,10 +1,12 @@
 import type { ReactElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { contractPageHtml } from '../base/contract-page'
+import { hostingPageHtml } from '../base/hosting-page'
 import { runPageHtml, siteNotFoundHtml, type SiteBuild, type SiteContext } from '../base/run-site'
 import { fontLinks } from '../brand/font-head'
 import { identity } from '../identity'
 import { Home } from '../landing/Home'
+import { LandingHeader } from '../landing/Hero'
 import { DocsIndex } from '../docs/DocsIndex'
 import { DocsArticle } from '../docs/DocsArticle'
 import { docsHead, docsPages } from '../docs/pages'
@@ -13,7 +15,8 @@ import '../brand/tokens.css'
 // The approved homepage inherits these document defaults from the workspace route.
 import '../app/shell.css'
 
-export function sitePages({ styles, contract }: SiteContext): SiteBuild {
+export function sitePages({ styles, contract, hosting }: SiteContext): SiteBuild {
+  const homepageHeader = { html: renderToStaticMarkup(<div className="oc-landing"><LandingHeader signIn={false} /></div>), styles }
   const document = (title: string, description: string | undefined, body: ReactElement) => '<!doctype html>' + renderToStaticMarkup(
     <html lang="en"><head><meta charSet="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>{title}</title>
       {description && <meta name="description" content={description} />}
@@ -29,7 +32,8 @@ export function sitePages({ styles, contract }: SiteContext): SiteBuild {
   return {
     pages: [
       { path: '/', html: document("Oncall — who's on call, now and next", identity.tagline, <Home variant="site" />) },
-      { path: '/run', html: runPageHtml(identity, run, contract) },
+      { path: '/run', html: runPageHtml(identity, run, contract, homepageHeader) },
+      { path: '/docs/hosting', html: hostingPageHtml(identity, run, hosting ?? null, contract, homepageHeader) },
       ...(contract ? [{ path: '/contract', html: contractPageHtml(identity, run, contract) }] : []),
       { path: '/docs', html: document(...head(), <DocsIndex variant="site" />) },
       ...docsPages.map(page => ({ path: `/docs/${page.slug}`, html: document(...head(page.slug), <DocsArticle slug={page.slug} variant="site" />) })),
