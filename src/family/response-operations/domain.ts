@@ -37,7 +37,7 @@ import { validateUrgencyArchive } from '../../urgency/archive.ts';
 export type Role = "admin" | "responder" | "viewer" | "stakeholder";
 export type Member = { id: string; name: string; role: Role; active: boolean; erased?:true; machine?: true };
 export type Service = {
-  team?: string | null;
+  team?: string | null; ownership?: { source: "backstage"; entity: string; importId: string; importedAt: string };
   id: string;
   name: string;
   environment: string;
@@ -479,6 +479,7 @@ function applyCommand(
     }
     if (JSON.stringify(current) === JSON.stringify(value)) return {changed: false, message: 'Nothing to change'};
     (service as any)[field] = value;
+    if (field === 'team') delete service.ownership;
     state.audit.push(stamp(actor.id, 'service', `Changed ${field === 'team' ? 'owning team' : field} of ${service.name}`, at));
     return service;
   }
@@ -815,7 +816,7 @@ export function validateArchive(value: any): State {
   )
     fail("Duplicate member names");
   for (const s of value.services) {
-    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["team", "dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
+    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["team", "ownership", "dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
     if (s.owner !== "" && !hasMember(s.owner)) fail("Invalid service references");

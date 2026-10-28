@@ -24,7 +24,7 @@ export function TeamSection() {
         <Field name="password" label="Password" type="password"/>
       </Form></section>}
     </section>
-    <TeamsPanel state={s} actor={actor} refresh={w.refresh} showOwnership={false}/>
+    <TeamsPanel state={s} actor={actor} refresh={w.refresh}/>
   </div>;
 }
 function MemberEditor({member, state, admin, refresh}: {member: Member; state: State; admin: boolean; refresh: () => Promise<void>}) {

@@ -175,7 +175,8 @@ async function responsePolicyBrowser(page,context) {
   await incidentContext.getByText('Automatic declaration · service response policy',{exact:true}).waitFor()
   await incidentContext.getByRole('button',{name:'Close',exact:true}).click()
   await detail.getByRole('button',{name:'Acknowledge',exact:true}).click()
-  await detail.locator('.incident-state').filter({hasText:/^acknowledged$/}).waitFor()
+  // The state class carries the enum; the visible label can change independently.
+  await detail.locator('.incident-state.state-acknowledged').waitFor()
   // A different assignee must not hide the commander's recovery reminder.
   await detail.getByRole('button',{name:/^Assignee:/}).click()
   await page.getByRole('listbox',{name:'Assignee',exact:true}).getByRole('option',{name:'Unassigned',exact:true}).click()
@@ -208,7 +209,7 @@ async function responsePolicyBrowser(page,context) {
   await detail.getByRole('button',{name:'Mark recovered',exact:true}).click()
   await detail.getByLabel('Recovery evidence URL',{exact:true}).fill('https://monitoring.example.test/checkout/recovery')
   await detail.getByRole('button',{name:'Mark recovered',exact:true}).last().click()
-  await detail.locator('.incident-state').filter({hasText:/^recovered$/}).waitFor()
+  await detail.locator('.incident-state.state-recovered').waitFor()
   await detail.getByRole('button',{name:'Resolve',exact:true}).last().click()
   const summary=detail.getByLabel('Resolution summary',{exact:true})
   await summary.fill('')
@@ -387,13 +388,20 @@ async function changeAndSigningBrowser(page,context){
   await page.goto(new URL('/on-call/'+encodeURIComponent(memberScheduleId),page.url()).href);
   await page.locator('.scheduling-now-next').getByText('Now: Nobody on call',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
   await openWorkspaceSection(page,'reviews');
+  const reportResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/reports/response'&&r.request().method()==='GET');
   await page.getByText('Response numbers',{exact:true}).click();
+  const reportReply=await reportResponse;assert.equal(reportReply.status(),200);
+  const erasedCases=(await reportReply.json()).incidents.filter(row=>row.state==='erased');
+  assert.ok(erasedCases.length>0,'the response report retains erased cases');
+  for(const row of erasedCases){assert.equal(row.incidentRevision,null);assert.equal(row.href,'');}
   const responseReport=page.locator('.response-report');
   await responseReport.getByText(/Incidents in this period/).click();
-  await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().waitFor();
+  const erasedRecords=responseReport.locator('article.review-record').filter({has:page.locator('.review-meta').filter({hasText:'Retained erased case; durations unknown'})});
+  await expect(erasedRecords).toHaveCount(erasedCases.length);
+  await erasedRecords.first().getByRole('heading',{level:3}).waitFor();
   await responseReport.getByText(/Retained erased case; durations unknown/).first().waitFor();
-  assert.equal(await responseReport.getByRole('link',{name:'Erased incident',exact:true}).count(),0,'erased cases have no personal incident drilldown');
-  await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().scrollIntoViewIfNeeded();await check('oc040-erased-response-report',width);
+  assert.equal(await erasedRecords.getByRole('link').count(),0,'erased cases have no personal incident drilldown');
+  await erasedRecords.first().getByRole('heading',{level:3}).scrollIntoViewIfNeeded();await check('oc040-erased-response-report',width);
   await page.goto(origin+'/settings/archive');await settings.locator(':scope > summary').click();await settings.getByLabel('Erasure category',{exact:true}).waitFor();
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // Publish grouping through the existing service settings, then inspect its public admissions.

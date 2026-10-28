@@ -1,3 +1,4 @@
+import {validateAdditions, layeredWindow, type LayerDecision, type Layer, type CompanyDate, type PTO} from "../../schedule-coverage/layers.ts";
 import { fail } from "./domain.ts";
 
 export type Ambiguity = "earlier" | "later" | "reject";
@@ -25,14 +26,19 @@ export type Schedule = {
   primary: Rotation;
   backup: Rotation;
   overrides: Override[];
+  layers?: Layer[];
+  companyDates?: CompanyDate[];
+  pto?: PTO[];
 };
-export type CoverageMember = { id: string; name?: string; active: boolean; role: string };
+export type CoverageMember = { id: string; name?: string; active: boolean; role: string; erased?: boolean };
 export type CoverageWindow = {
   role: "primary" | "backup";
   member: string | null;
   start: string | null;
   end: string | null;
-  origin: "rotation" | "override" | "gap";
+  origin: "rotation" | "override" | "gap" | "layer";
+  explanation?: string;
+  decisions?: LayerDecision[];
 };
 export type Coverage = {
   at: number;
@@ -134,7 +140,8 @@ export function validateSchedule(input: unknown, known?: {
   services: { id: string }[];
   members: CoverageMember[];
 }): Schedule {
-  const value = object(input, ["id", "name", "service", "revision", "timezone", "validFrom", "validUntil", "primary", "backup", "overrides"], "Schedule");
+  const optional = ["layers", "companyDates", "pto"].filter(key => input && typeof input === "object" && Object.hasOwn(input, key));
+  const value = object(input, ["id", "name", "service", "revision", "timezone", "validFrom", "validUntil", "primary", "backup", "overrides", ...optional], "Schedule");
   const timezone = string(value.timezone, "timezone");
   const canonicalZone = formatter(timezone).resolvedOptions().timeZone;
   const validFrom = utc(value.validFrom, "validFrom");
@@ -170,13 +177,15 @@ export function validateSchedule(input: unknown, known?: {
     const ordered = overrides.filter(o => o.role === role).sort((a, b) => a.start.localeCompare(b.start));
     for (let i = 1; i < ordered.length; i++) if (ordered[i].start < ordered[i - 1].end) fail(`Overlapping ${role} overrides`);
   }
+  const additions = validateAdditions(value, rotation, references);
+  if(known&&additions.pto?.some(entry=>entry.member!==null&&known.members.some(member=>member.id===entry.member&&member.erased)))fail("PTO member was erased");
   const service = string(value.service, "service ID");
   if (known && !known.services.some(s => s.id === service)) fail("Unknown schedule service");
   if (known && references.some(id => !known.members.some(m => m.id === id))) fail("Unknown schedule member");
   return {
     id: string(value.id, "schedule ID"), name: string(value.name, "schedule name", 200),
     service, revision: integer(value.revision, "schedule revision", 0, Number.MAX_SAFE_INTEGER),
-    timezone: canonicalZone, validFrom, validUntil, primary, backup, overrides,
+    timezone: canonicalZone, validFrom, validUntil, primary, backup, overrides, ...additions,
   };
 }
 
@@ -184,7 +193,7 @@ function evaluationClock(at: number, endpoint = false): void {
   if (!Number.isSafeInteger(at) || at < MIN || (endpoint ? at > MAX : at >= MAX))
     fail("Evaluation clock must be integer epoch milliseconds in 2000–2100");
 }
-type RawWindow = { member: string | null; start: number | null; end: number | null; origin: CoverageWindow["origin"]; warning?: string };
+type RawWindow = { member: string | null; start: number | null; end: number | null; origin: CoverageWindow["origin"]; warning?: string; explanation?: string; decisions?: LayerDecision[] };
 function evaluator(schedule: Schedule, members: CoverageMember[]) {
   const format = formatter(schedule.timezone), resolve = localResolver(format);
   const from = Date.parse(schedule.validFrom), until = schedule.validUntil === null ? null : Date.parse(schedule.validUntil);
@@ -218,7 +227,7 @@ function evaluator(schedule: Schedule, members: CoverageMember[]) {
         const active = overrides.find(o => Date.parse(o.start) <= at && at < Date.parse(o.end));
         window = active
           ? { member: active.member, start: Date.parse(active.start), end: Date.parse(active.end), origin: "override", warning: active.member === null ? "override explicitly leaves coverage empty" : undefined }
-          : rotationWindow(schedule[role], at);
+          : schedule.layers?.some(layer => layer.role === role) ? layeredWindow(schedule.layers.filter(layer => layer.role === role), schedule.companyDates ?? [], schedule.pto ?? [], members, at) : rotationWindow(schedule[role], at);
         window.start = Math.max(window.start ?? from, from);
         if (until !== null) window.end = Math.min(window.end ?? until, until);
         if (!active) for (const o of overrides) {
@@ -227,21 +236,29 @@ function evaluator(schedule: Schedule, members: CoverageMember[]) {
           if (start > at) window.end = Math.min(window.end ?? start, start);
         }
       }
+      if (window.member !== null) for (const entry of schedule.pto ?? []) if (entry.member === window.member) {
+        const start = Date.parse(entry.start), end = Date.parse(entry.end);
+        if (start <= at && at < end) { window.member = null; window.origin = "gap"; window.warning = "member on PTO; slot retained as gap"; window.start = Math.max(window.start ?? start, start); window.end = Math.min(window.end ?? end, end); }
+        else if (start > at) window.end = Math.min(window.end ?? start, start);
+        else if (end <= at) window.start = Math.max(window.start ?? end, end);
+      }
+      if (window.explanation) warnings.push(`${role}: ${window.explanation}`);
       if (window.warning) warnings.push(`${role}: ${window.warning}`);
       if (window.member !== null) {
         const member = members.find(m => m.id === window.member);
         if (!member || !member.active || !["admin", "responder"].includes(member.role)) {
-          warnings.push(`${role}: member ${member?.name ?? window.member} is ${!member ? "missing" : !member.active ? "inactive" : "not an authorized responder"}; slot is retained`);
+          warnings.push(`${role}: member ${member?.name ?? "Unavailable member"} is ${!member ? "missing" : !member.active ? "inactive" : "not an authorized responder"}; slot is retained`);
           window.member = null;
           window.origin = "gap";
         }
       }
-      return { role, member: window.member, start: window.start === null ? null : new Date(window.start).toISOString(), end: window.end === null ? null : new Date(window.end).toISOString(), origin: window.origin };
+      return { role, member: window.member, start: window.start === null ? null : new Date(window.start).toISOString(), end: window.end === null ? null : new Date(window.end).toISOString(), origin: window.origin, ...(window.explanation ? {explanation: window.explanation, decisions: window.decisions} : {}) };
     });
     if (windows[0].member !== null && windows[0].member === windows[1].member) {
-      warnings.push(`backup: same member ${members.find(member => member.id === windows[0].member)?.name ?? windows[0].member} as primary; backup is unavailable`);
+      warnings.push(`backup: same member ${members.find(member => member.id === windows[0].member)?.name ?? "Unavailable member"} as primary; backup is unavailable`);
       windows[1].member = null;
       windows[1].origin = "gap";
+      if(windows[1].explanation)windows[1].explanation += "; backup unavailable because primary has the same member; slot retained as gap";
       if (windows[0].start !== null) windows[1].start = windows[1].start === null ? windows[0].start : [windows[0].start, windows[1].start].sort()[1];
       if (windows[0].end !== null) windows[1].end = windows[1].end === null ? windows[0].end : [windows[0].end, windows[1].end].sort()[0];
     }
@@ -274,8 +291,10 @@ function walk(schedule: Schedule, members: CoverageMember[], from: number, to: n
 /** Half-open preview, containing the initial evaluation and every effective window boundary. */
 export function preview(schedule: Schedule, members: CoverageMember[], from: number, to: number): Coverage[] {
   evaluationClock(from); evaluationClock(to, true);
-  if (to <= from || to - from > 31 * DAY) fail("Preview must be positive and at most 31 elapsed days");
-  return walk(schedule, members, from, to, 200, "Preview");
+  if (to <= from || to - from > 366 * DAY) fail("Preview must be positive and at most 366 elapsed days");
+  const values=walk(schedule, members, from, to, 20_000, "Preview");
+  if(new TextEncoder().encode(JSON.stringify(values)).length>8*1024*1024)fail("Preview exceeds maximum 8 MiB; shorten the range or simplify layers");
+  return values;
 }
 
 export type CoverageSpan = { start: number; end: number; coverage: Coverage };

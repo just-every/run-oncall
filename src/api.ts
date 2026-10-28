@@ -136,10 +136,10 @@ async function save(db:D1Database,state:State,revision:number,authority:WriteGua
  const result=await db.batch(workspaceWrite(db,state,revision,authority));
  if(result[0].meta.changes!==1){auditRefusalCommitted(db);fail('Workspace changed. Reload and retry.',409);}
 }
-async function body(c: any, max = 65536) {
+async function body(c: any, max = 65536, tooLarge = "Request too large") {
   const raw = await c.req.text();
   if (new TextEncoder().encode(raw).length > max)
-    fail("Request too large", 413);
+    fail(tooLarge, 413);
   try {
     const input = JSON.parse(raw);
     auditInput(c.env.DB, input, c.req.path);

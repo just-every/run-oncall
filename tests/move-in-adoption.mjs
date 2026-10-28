@@ -106,6 +106,120 @@ try {
   assert.ok(!held.includes('synthetic-oncall-credential-must-not-persist'),'credential-bearing file never persists')
   console.log(`OC-038 ${vendor}: credential refusal, named unsupported objects, inactive integrations, no login/send authority, preview/apply/restart/reconcile/undo and related-person erasure passed`)
  }
+ // OC-038 PagerDuty whole-account saved responses: one classification per source object.
+ {
+  const raw=await readFile('tests/fixtures/pagerduty-account.json','utf8'),bundle=JSON.parse(raw)
+  const records=Object.fromEntries(Object.entries(bundle).map(([kind,pages])=>{
+   const detail={users:'user',schedules:'schedule',escalation_policies:'escalation_policy',services:'service',teams:'team',incidents:'incident',maintenance_windows:'maintenance_window',business_services:'business_service',event_orchestrations:'orchestration_path',overrides:'override'}[kind]
+   return [kind,[pages].flat().flatMap(page=>page[kind]??[page[detail]??page])]
+  }))
+  const expected={...Object.fromEntries(Object.entries(records).map(([kind,rows])=>[kind,rows.length])),integrations:records.services.reduce((sum,service)=>sum+service.integrations.length,0)}
+  // The unchanged four-category exporter can retain user team references without collecting teams.
+  const scheduleOnly=Object.fromEntries(['users','schedules','overrides','escalation_policies'].map(kind=>[kind,bundle[kind]]))
+  const beforeScheduleOnly=await imported(),scheduleReview=ok(await door.preview('pagerduty',JSON.stringify(scheduleOnly)))
+  assert.equal(scheduleReview.items.filter(item=>item.kind==='users'&&item.effects.some(effect=>effect.targetKind==='user')).length,records.users.length)
+  assert.ok(scheduleReview.items.filter(item=>item.kind==='users').every(item=>item.unmapped.some(note=>note.field==='teams.0')),'team metadata remains named evidence in a schedule-only file')
+  assert.deepEqual(await imported(),beforeScheduleOnly)
+  assert.equal(ok(await door.call('pagerduty','undo',{planId:scheduleReview.planId})).state,'cancelled')
+  // List orchestration envelopes and ordinary single-detail envelopes are also public saved-file inputs.
+  const detailVariant=structuredClone(bundle)
+  detailVariant.incidents=records.incidents.map(incident=>({incident}))
+  const orchestrationMetadata={id:records.event_orchestrations[0].parent.id,name:'Account event routing',team:{id:records.teams[0].id,type:'team_reference'}}
+  detailVariant.event_orchestrations={orchestrations:[orchestrationMetadata],limit:25,offset:0,more:false,total:null}
+  const lists=ok(await door.preview('pagerduty',JSON.stringify(detailVariant)))
+  assert.deepEqual(lists.counts.byKind,expected)
+  detailVariant.event_orchestrations={orchestration:orchestrationMetadata}
+  const details=ok(await door.preview('pagerduty',JSON.stringify(detailVariant)))
+  assert.deepEqual(details.counts.byKind,expected)
+  assert.equal(ok(await door.call('pagerduty','undo',{planId:details.planId})).state,'cancelled')
+  const beforeObjects=await imported(),beforeNative=ok(await req('/api/state')),beforePaging=ok(await req('/api/paging/state'))
+  const durable=()=>w.sql('SELECT COUNT(*) AS n FROM ik_jobs UNION ALL SELECT COUNT(*) FROM ik_batches UNION ALL SELECT COUNT(*) FROM ik_d1_assertions UNION ALL SELECT COUNT(*) FROM move_in_objects')
+  const beforeDurable=durable(),preview=ok(await door.preview('pagerduty',raw))
+  assert.deepEqual(durable(),beforeDurable,'account preview changes no durable product or apply-journal rows')
+  assert.deepEqual(await imported(),beforeObjects);assert.deepEqual(ok(await req('/api/state')),beforeNative);assert.deepEqual(ok(await req('/api/paging/state')),beforePaging)
+  assert.equal(preview.summary.sourceRecords,Object.values(expected).reduce((sum,count)=>sum+count,0))
+  assert.deepEqual(preview.counts.byKind,expected)
+  assert.equal(preview.items.length,preview.summary.sourceRecords)
+  assert.equal(new Set(preview.items.map(item=>JSON.stringify([item.kind,item.id]))).size,preview.items.length)
+  assert.equal(Object.values(preview.classification).reduce((sum,count)=>sum+count,0),preview.items.length,'exclusive classifications reconcile every object')
+  for(const item of preview.items) {
+   assert.equal(item.disposition,item.rejection?'rejected':item.unmapped.length?'mapped-with-differences':'mapped')
+   let original=bundle;for(const key of item.location.pointer.slice(1).split('/').map(key=>key.replaceAll('~1','/').replaceAll('~0','~')))original=original?.[key]
+   assert.ok(original,'every review entry points into the original account bytes')
+   assert.ok(item.effects.length||item.rejection||item.unmapped.length,'nothing silently disappears')
+   if(item.rejection)assert.equal(item.effects.length,0)
+  }
+  assert.deepEqual([...new Set(preview.items.flatMap(item=>item.effects).map(effect=>effect.targetKind))].sort(),['integration','policy','schedule','user'],'account import adds no active integration, routed key or other native target kind')
+  const find=(kind,id)=>preview.items.find(item=>item.kind===kind&&item.id===id)
+  for(const user of records.users) {
+   const item=find('users',user.id),value=item.effects[0].value
+   assert.equal(value.contacts.length,1,'phone and SMS sharing a number become one unverified contact')
+   assert.deepEqual(value.contacts[0],{number:'+'+user.contact_methods[1].country_code+user.contact_methods[1].address,verified:false,paging:false,country:'unverified'})
+   for(const [index,method] of user.contact_methods.entries())assert.ok(item.unmapped.some(note=>note.field==='contact_methods.'+index),'every contact method has its own decision')
+   assert.ok(item.unmapped.some(note=>/two-route/.test(note.reason)))
+   assert.ok(item.unmapped.some(note=>note.field.startsWith('notification_rules.')))
+  }
+  for(const id of ['synthetic-oncall-u2','synthetic-oncall-u3'])assert.ok(find('users',id).unmapped.some(note=>/ambiguous or malformed/.test(note.reason)))
+  const supported=['events_api_v1_inbound_integration','events_api_v2_inbound_integration','generic_events_api_inbound_integration']
+  for(const service of records.services) {
+   const evidence=find('services',service.id);assert.equal(evidence.effects.length,0)
+   for(const field of ['alert_grouping_parameters','incident_urgency_rule','support_hours','auto_resolve_timeout','acknowledgement_timeout','escalation_policy','teams'])assert.ok(evidence.unmapped.some(note=>note.field===field))
+   for(const integration of service.integrations) {
+    const item=find('integrations',integration.id)
+    if(supported.includes(integration.type)) {
+     assert.equal(item.effects[0].targetKind,'integration')
+     assert.deepEqual(item.effects[0].value.serviceSource,{namespace:'pagerduty',kind:'services',sourceId:service.id})
+     assert.equal(item.effects[0].value.provider,'pagerduty');assert.equal(item.effects[0].value.active,false);assert.equal(item.effects[0].value.incumbentKey,'not supplied')
+    }else{assert.equal(item.effects.length,0);assert.match(item.rejection,integration.type==='email_inbound_integration'?/OC-070/:/matching Oncall source.*generic webhook/);assert.ok(item.rejection.includes(integration.name))}
+   }
+  }
+  for(const [kind,clause] of [['teams','OC-023'],['business_services','OC-061'],['maintenance_windows','OC-043'],['event_orchestrations','OC-072']])for(const item of preview.items.filter(item=>item.kind===kind))assert.ok(item.rejection.includes(clause)&&item.effects.length===0)
+  const orchestration=preview.items.find(item=>item.kind==='event_orchestrations'),router=records.event_orchestrations[0]
+  assert.equal(orchestration.unmapped.filter(note=>/^sets\.\d+\.rules\.\d+$/.test(note.field)).length,router.sets.reduce((sum,set)=>sum+set.rules.length,0))
+  assert.ok(orchestration.unmapped.some(note=>note.field==='catch_all'));assert.ok(orchestration.unmapped.some(note=>/dynamic routing/.test(note.reason)))
+  for(const incident of records.incidents) {
+   const item=find('incidents',incident.id);assert.equal(item.effects.length,0)
+   if(incident.status==='resolved')assert.ok(item.unmapped.some(note=>note.field==='history'))
+   else {assert.ok(item.rejection.includes(incident.id));assert.match(item.rejection,/not imported as a live incident/)}
+  }
+  for(const [id,cause] of [['s7',/Concurrent\/layered rotations/],['s8',/time restrictions/],['p4',/repeats are unsupported/],['p5',/more than two steps/],['p6',/direct user/],['p7',/nested/],['p8',/unmapped schedule/]])
+   assert.match(find(id[0]==='s'?'schedules':'escalation_policies','synthetic-oncall-'+id).rejection,cause)
+  const wrong=(preview.fingerprint[0]==='0'?'1':'0')+preview.fingerprint.slice(1)
+  ok(await door.call('pagerduty','apply',{planId:preview.planId,reviewedFingerprint:wrong}),403)
+  assert.deepEqual(await imported(),beforeObjects,'only the reviewed fingerprint can publish')
+  let first=ok(await door.call('pagerduty','apply',{planId:preview.planId,reviewedFingerprint:preview.fingerprint}))
+  assert.ok(['queued','applying'].includes(first.job.state),'the account requires multiple bounded steps')
+  const partial=await imported();assert.ok(partial.length>beforeObjects.length)
+  await w.stop();await w.start()
+  assert.deepEqual(await imported(),partial,'restart retains the committed prefix')
+  assert.equal(ok(await door.apply('pagerduty',preview)).job.state,'completed')
+  const applied=await imported()
+  assert.deepEqual(ok(await req('/api/state')),beforeNative,'account import creates no member, service, incident, delivery, active integration or routed key')
+  assert.deepEqual(ok(await req('/api/paging/state')),beforePaging,'paging and native schedule authority stay unchanged')
+  assert.ok(applied.filter(row=>!beforeObjects.some(old=>old.targetId===row.targetId&&old.targetKind===row.targetKind)).every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
+  const reconciled=ok(await door.call('pagerduty','reconcile',{planId:preview.planId}))
+  assert.equal(reconciled.ok,true);assert.equal(reconciled.counts.sourceRecords,preview.items.length);assert.equal(reconciled.counts.present+reconciled.counts.explained,preview.items.length)
+  assert.equal(new Set(reconciled.sourceIds.map(row=>JSON.stringify(row))).size,preview.items.length)
+  const repeated=ok(await door.preview('pagerduty',raw))
+  assert.equal(repeated.planId,preview.planId,'identical bytes reuse the reviewed applied plan')
+  const repeatedJob=ok(await door.apply('pagerduty',repeated)).job
+  assert.equal(repeatedJob.id,first.job.id);assert.deepEqual(await imported(),applied,'identical bytes add and change no imported objects')
+  ok(await door.undo('pagerduty',preview.planId));assert.deepEqual(await imported(),beforeObjects)
+  // A fresh account import participates in the existing person's erasure custody.
+  const again=ok(await door.preview('pagerduty',raw));ok(await door.apply('pagerduty',again))
+  const person=records.users[0],number='+'+person.contact_methods[1].country_code+person.contact_methods[1].address
+  for(const kind of ['services','teams','incidents','escalation_policies'])assert.ok(again.items.some(item=>item.kind===kind&&(JSON.stringify(item).includes(person.email)||JSON.stringify(item).includes(person.id))))
+  ok(await req('/api/move-in/erase',{email:person.email,confirmation:'erase '+person.email}))
+  const tables=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").map(row=>row.name)
+  const held=JSON.stringify(w.statements(tables.map(table=>'SELECT * FROM "'+table.replaceAll('"','""')+'"').join(';')))
+  assert.doesNotMatch(held,new RegExp('(^|[^a-zA-Z0-9_-])'+person.id+'($|[^a-zA-Z0-9_-])'),'the erased foreign ID is absent while distinct IDs with the same prefix remain')
+  for(const token of [person.email,person.name,number,person.contact_methods[1].address])assert.ok(!held.includes(token),'erasure retires source references, notes and contact numbers: '+token)
+  const remainingPeople=(await imported()).filter(row=>row.targetKind==='user'&&records.users.some(user=>user.email===row.targetId))
+  assert.equal(remainingPeople.length,records.users.length-1,'erasure preserves every other imported person')
+  assert.ok(remainingPeople.some(row=>row.value.sourceId===records.users.at(-1).id),'a distinct foreign ID sharing the erased ID prefix stays intact')
+  assert.ok(!(await imported()).some(row=>row.targetId===person.email))
+  console.log('OC-038 PagerDuty account: '+JSON.stringify({records:preview.items.length,kinds:expected,classification:preview.classification})+'; contacts, source-bound keyless inventory, named evidence/refusals, zero-write preview, paused apply/restart/reconcile/idempotence/undo and related-person erasure passed')
+ }
  // OC-055 activation is a separate administrator action after reviewed file import.
  const heldIntegration=(await imported()).find(row=>row.targetKind==='integration'&&row.value.provider==='opsgenie')
  assert.ok(heldIntegration)

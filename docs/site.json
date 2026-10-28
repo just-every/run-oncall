@@ -334,6 +334,30 @@
     {
       "source": "tests/fixtures/change-sources.md",
       "reason": "Provenance and license details for network-edge change intake fixtures used by maintainers."
+    },
+    {
+      "source": "RULINGS.md",
+      "reason": "Contract rulings and why each clause reads as it does, for maintainers"
+    },
+    {
+      "source": "docs/CLAIMS.md",
+      "reason": "Homepage claims with their clause status, generated from CONTRACT.md"
+    },
+    {
+      "source": "docs/contract/DONE-AUDIT.md",
+      "reason": "Carried-done audit of the contract cleanup: the asserting test for each done point"
+    },
+    {
+      "source": "docs/contract/doors.md",
+      "reason": "HTTP doors, settings and limits behind the contract clauses, for maintainers"
+    },
+    {
+      "source": "docs/contract/references.md",
+      "reason": "Incumbent and provider reference interfaces the contract cites"
+    },
+    {
+      "source": "docs/contract/acceptance-before-cleanup.md",
+      "reason": "Historical hand-written ACCEPTANCE.md before the 28 October 2026 contract cleanup"
     }
   ]
 }

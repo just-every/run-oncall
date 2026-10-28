@@ -44,6 +44,7 @@ try {
  assert.equal(ok(await req('/api/schedules/daily/now-next?at=2026-03-08T15:00:00Z')).now.primary,null,'inactive member keeps its slot as a gap')
  ok(await req('/api/command',{type:'member',id:b.id,active:true,role:'responder'}))
  ok(await req('/api/paging/policies',{service:'checkout',scheduleId:'daily',revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}))
+ // OC-024 layer, holiday, PTO and long-range doors run in scheduleCoordination above.
  // OC-024 reviewed schedule changes bind the full proposal and coverage to the revision.
  const reviewFrom=Date.parse('2026-10-24T00:00:00Z'),reviewTo=Date.parse('2026-11-09T00:00:00Z')
  const reviewBase=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-1',name:'Reviewed multi-zone rota',primary:{...schedule.primary,members:[a.id]},backup:{...schedule.backup,members:[b.id]}}))
@@ -212,6 +213,36 @@ try {
  const chunksHolding=secret=>w.sql('SELECT base64 FROM ik_door_chunks').filter(c=>Buffer.from(c.base64,'base64').toString().includes(secret)).length
  for(const [vendor,file,field] of [['opsgenie','credential-opsgenie','apiKey'],['pagerduty','credential-pagerduty','integration_key']]){const rows=rowCounts(),refused=ok(await door.preview(vendor,await readFile(`tests/fixtures/${file}.json`,'utf8')),400);assert.match(refused.error,new RegExp(`^Credential-bearing field "${field}"`));assert.ok(refused.code,'the refusal carries a code, so the screen shows its sentence as written')
   assert.equal(chunksHolding('synthetic-fixture-credential'),0,`no ik_door_chunks row decodes to the refused ${field}`);wroteNothing(rows,'the refused preview retained audit without import rows or bytes')}
+ // OC-038 PagerDuty account refusal matrix: each invalid file leaves no import custody or product writes.
+ const account=JSON.parse(await readFile('tests/fixtures/pagerduty-account.json','utf8'))
+ const credentialAccount=structuredClone(account);credentialAccount.services[0].services[0].integrations[0].integration_key='synthetic-oncall-refused-key'
+ const duplicateAccount=structuredClone(account);duplicateAccount.users.push({user:structuredClone(account.users[0].users[0])})
+ const danglingAccount=structuredClone(account);danglingAccount.services[0].services[0].escalation_policy.id='synthetic-oncall-missing-policy'
+ const danglingTeam=structuredClone(account);danglingTeam.services[0].services[0].teams[0].id='synthetic-oncall-missing-team'
+ const danglingRoute=structuredClone(account);danglingRoute.event_orchestrations[0].orchestration_path.sets[0].rules[0].actions.route_to='synthetic-oncall-missing-service'
+ const oversized=JSON.stringify({users:[{id:'synthetic-oncall-large',email:'large@example.test',name:'x'.repeat(512*1024)}]})
+ const tooMany=JSON.stringify({users:Array.from({length:501},(_,i)=>({id:'synthetic-oncall-limit-'+i,email:'pd-limit-'+i+'@example.test'}))})
+ const badAccounts=[
+  ['integration key',JSON.stringify(credentialAccount),400,[/integration_key/,/\/services\/0\/services\/0\/integrations\/0\/integration_key/,/remove/]],
+  ['malformed JSON','{"users":[',400,[/Malformed JSON/,/save a complete JSON response/]],
+  ['wrong vendor',await readFile('tests/fixtures/opsgenie-saved.json','utf8'),400,[/PagerDuty users/,/Opsgenie-shaped/,/choose Opsgenie/]],
+  ['byte limit',oversized,413,[new RegExp(String(Buffer.byteLength(oversized))),/512 KiB/,/narrow the export/,/Nothing was imported or truncated/]],
+  ['record limit',tooMany,413,[/501 records/,/500-record limit/,/narrow the export/,/Nothing was imported or truncated/]],
+  ['duplicate identity',JSON.stringify(duplicateAccount),400,[/Duplicate PagerDuty users source id/,/synthetic-oncall-u1/,/\/users\//,/keep one saved detail/]],
+  ['missing policy',JSON.stringify(danglingAccount),400,[/dangling escalation_policies reference/,/synthetic-oncall-missing-policy/,/\/services\/0\/services\/0\/escalation_policy/,/include that object's saved detail/]],
+  ['missing route',JSON.stringify(danglingRoute),400,[/dangling services route/,/synthetic-oncall-missing-service/,/\/route_to/,/include that service's saved detail/]],
+  ['missing team',JSON.stringify(danglingTeam),400,[/dangling teams reference/,/synthetic-oncall-missing-team/,/\/teams\/0/,/include that object's saved detail/]],
+ ]
+ for(const [name,raw,status,patterns] of badAccounts) {
+  const rows=rowCounts(),objects=w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state'))
+  const refused=ok(await door.preview('pagerduty',raw),status)
+  for(const pattern of patterns)assert.match(refused.error,pattern,name)
+  wroteNothing(rows,'PagerDuty '+name+' retains only refusal audit')
+  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),objects,name)
+  assert.deepEqual(ok(await req('/api/state')),workspace,name);assert.deepEqual(ok(await req('/api/paging/state')),paging,name)
+ }
+ assert.equal(chunksHolding('synthetic-oncall-refused-key'),0)
+ record('OC-038 PagerDuty account refusal matrix: named credential field/pointer, malformed JSON, wrong vendor, byte/count bounds, duplicate source IDs and dangling policy/team references; no truncation, rows or retained upload bytes')
  record('OC-021: every shape Oncall cannot hold exactly was rejected by name with no effect; ended layers kept as history; credential-bearing keys refused and not kept')
  // Variants of the bare fixtures run preview, apply, coverage at a sample instant and undo: a refused schedule keeps every reason and is never imported, so it names no one.
  const variant=(vendor,change)=>{const value=JSON.parse(sources[vendor]);change(value);return JSON.stringify(value)}
