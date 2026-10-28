@@ -180,7 +180,7 @@ Each ruling that shapes a clause, moved verbatim from CONTRACT.md before the 28 
 
 - **Date:** 22 October 2026
 - **Ruled by:** ct
-- **Governs:** OC-059, OC-072, OC-073
+- **Governs:** OC-059, OC-073, OC-084
 
 > Events, alerts, receipts and audit are loaded in pages or lazily, so request time and memory do not grow with the number of held receipts. The stated receipt capacity is a hosted claim only after a hosted run stays inside the Cloudflare Workers 128 MB memory limit; until then the count is a local limit. The 413 limits on the JSON archive and checkpoint and the streaming portable export and import stand. (CT, 22 October 2026.)
 >

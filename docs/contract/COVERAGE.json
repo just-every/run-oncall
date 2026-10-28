@@ -3389,7 +3389,37 @@
     {
       "file": "CONTRACT.md",
       "line": 499,
-      "text": "**OC-072 — Routed intake keys that pick the service per event.** Beside the service-scoped key, Oncall offers a **routed integration key**, created at workspace level or team level. Each routed key has an **allowed scope**: the explicit set of services it may route to. A team-level key's scope can hold only that team's services. A routed key is accepted wherever a service key is: on every OC-055 endpoint (PagerDuty Events v2 `routing_key` and v1 `service_key`, Opsgenie Alert API `GenieKey`, and Splunk On-Call REST, whose URL routing key becomes a matchable field), on the OC-030/031 adapters, on OC-033 webhooks and on the native Events API. Authentication, revocation, rotation, rate limits and minimal receipts are the same as for a service key, and so are the incumbent-shaped responses. Each service key and each routed key has its own rate allowance, owned by the key's record and not by its secret: rotating a key neither resets nor doubles it, and revoking it ends it. Two things are counted per key over a rolling one-minute window. (1) Requests: every authenticated request, including duplicates and rejected payloads, default 600 per minute. (2) Newly admitted events: an event that creates a new receipt counts once, a repeat of an already-admitted event and a further alert grouped into an existing group count zero, default 120 per minute. An owner or admin may set lower or higher values per key within a documented ceiling. A request over either allowance gets HTTP 429 with a Retry-After computed from when the allowance actually frees, and nothing is silently dropped: the sender is told, and the owner is notified once per window, with the key name and count, that a key was throttled. The allowance recovers after the actual window, not on a reset timer. Email intake keeps its separate 60 new receipts per minute per address, and a throttle refusal happens before grouping so it never changes grouped-alert custody. The 10,000-receipt capacity stays a separate storage bound. The 10,000-receipt count is a local limit; it becomes a hosted capacity only under OC-073. An atomic batch whose new-event count exceeds the key's configured allowance is refused whole with 429, a machine-readable batch_exceeds_allowance code, the batch count, the key's allowance and an instruction to split the request or raise the allowance, without Retry-After because it can never fit unchanged. Ordinary temporary throttles retain actual-expiry Retry-After. No grouped custody is partially mutated; the owner is still notified once per window with the key name and count. **Routing rules:** each routed key has one versioned, ordered rule set of up to 100 rules, and the first matching rule picks exactly one service. A condition is equals, contains, exists, or a regex match or non-match on the linear-time engine of OC-070, and conditions combine with all or any. Conditions read the transformed event (summary, source, severity, component, group, class, urgency) and the raw payload by path. The paths include PagerDuty `payload.source`, `payload.component`, `payload.group`, `payload.class` and `payload.custom_details.*`; Alertmanager `labels.*`, `annotations.*`, `commonLabels.*` and `groupLabels.*`; Datadog `tags` as key:value pairs; Opsgenie `responders`, `teams`, `tags`, `details.*`, `entity` and `source`; and the Splunk On-Call routing key, `entity_id` and custom fields. **Dynamic routing:** a rule can take a service name or ID from a chosen field, optionally through a regex capture group. The value resolves only within the key's allowed scope. A value that names an unknown service, or one outside the scope, never routes there: the event goes to the catch-all, with the diagnostic \"dynamic route target outside key scope\" naming the field and value. A rule that names a fixed service outside the scope is refused when it is saved. **Catch-all:** every routed key states its catch-all, and an event is never silently dropped. The catch-all is either (a) **record unrouted**, the default as in PagerDuty: the event is retained as a suppressed, unrouted alert that never pages, shown in the integration owner's unrouted queue with the rules evaluated and counted on the key's health; or (b) **route to a named service** in the scope. A catch-all change applies to later events only. An integration owner can re-admit a retained unrouted event to a chosen in-scope service as a new, attributed admission that keeps the original receipt.",
+      "text": "**OC-072 — Routed intake keys that pick the service per event.** Beside the service-scoped key, Oncall offers a **routed integration key**, created at workspace level or team level. Each routed key has an **allowed scope**: the explicit set of services it may route to. A team-level key's scope can hold only that team's services. A routed key is accepted wherever a service key is: on every OC-055 endpoint (PagerDuty Events v2 `routing_key` and v1 `service_key`, Opsgenie Alert API `GenieKey`, and Splunk On-Call REST, whose URL routing key becomes a matchable field), on the OC-030/031 adapters, on OC-033 webhooks and on the native Events API. Authentication, revocation, rotation, rate limits and minimal receipts are the same as for a service key, and so are the incumbent-shaped responses. ",
+      "to": "clause",
+      "ids": [
+        "OC-072"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/doors.md"
+        }
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 499,
+      "text": "Each service key and each routed key has its own rate allowance, owned by the key's record and not by its secret: rotating a key neither resets nor doubles it, and revoking it ends it. Two things are counted per key over a rolling one-minute window. (1) Requests: every authenticated request, including duplicates and rejected payloads, default 600 per minute. (2) Newly admitted events: an event that creates a new receipt counts once, a repeat of an already-admitted event and a further alert grouped into an existing group count zero, default 120 per minute. An owner or admin may set lower or higher values per key within a documented ceiling. A request over either allowance gets HTTP 429 with a Retry-After computed from when the allowance actually frees, and nothing is silently dropped: the sender is told, and the owner is notified once per window, with the key name and count, that a key was throttled. The allowance recovers after the actual window, not on a reset timer. Email intake keeps its separate 60 new receipts per minute per address, and a throttle refusal happens before grouping so it never changes grouped-alert custody. The 10,000-receipt capacity stays a separate storage bound. The 10,000-receipt count is a local limit; it becomes a hosted capacity only under OC-073. An atomic batch whose new-event count exceeds the key's configured allowance is refused whole with 429, a machine-readable batch_exceeds_allowance code, the batch count, the key's allowance and an instruction to split the request or raise the allowance, without Retry-After because it can never fit unchanged. Ordinary temporary throttles retain actual-expiry Retry-After. No grouped custody is partially mutated; the owner is still notified once per window with the key name and count. ",
+      "to": "clause",
+      "ids": [
+        "OC-084"
+      ],
+      "also": [
+        {
+          "to": "docs",
+          "path": "docs/contract/doors.md"
+        }
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 499,
+      "text": "**Routing rules:** each routed key has one versioned, ordered rule set of up to 100 rules, and the first matching rule picks exactly one service. A condition is equals, contains, exists, or a regex match or non-match on the linear-time engine of OC-070, and conditions combine with all or any. Conditions read the transformed event (summary, source, severity, component, group, class, urgency) and the raw payload by path. The paths include PagerDuty `payload.source`, `payload.component`, `payload.group`, `payload.class` and `payload.custom_details.*`; Alertmanager `labels.*`, `annotations.*`, `commonLabels.*` and `groupLabels.*`; Datadog `tags` as key:value pairs; Opsgenie `responders`, `teams`, `tags`, `details.*`, `entity` and `source`; and the Splunk On-Call routing key, `entity_id` and custom fields. **Dynamic routing:** a rule can take a service name or ID from a chosen field, optionally through a regex capture group. The value resolves only within the key's allowed scope. A value that names an unknown service, or one outside the scope, never routes there: the event goes to the catch-all, with the diagnostic \"dynamic route target outside key scope\" naming the field and value. A rule that names a fixed service outside the scope is refused when it is saved. **Catch-all:** every routed key states its catch-all, and an event is never silently dropped. The catch-all is either (a) **record unrouted**, the default as in PagerDuty: the event is retained as a suppressed, unrouted alert that never pages, shown in the integration owner's unrouted queue with the rules evaluated and counted on the key's health; or (b) **route to a named service** in the scope. A catch-all change applies to later events only. An integration owner can re-admit a retained unrouted event to a chosen in-scope service as a new, attributed admission that keeps the original receipt.",
       "to": "clause",
       "ids": [
         "OC-072"
@@ -4854,11 +4884,43 @@
       "file": "CONTRACT.md",
       "line": 639,
       "cell": "gap",
-      "text": "Workspace-admin compatible and Alertmanager/Grafana/Datadog routed keys choose fixed or dynamic in-scope services with ordered versioned RE2 rules, catch-all/unrouted custody, idempotent attributed re-admission and both routing stages. Read-only replay retains open-generation warnings. Native bearer/HMAC routed credentials reuse native authentication and retain original retry decisions, scoped recovery and secret-free inactive archives (`tests/routing.mjs` / `tests/routing-native.mjs`). Team authority, SNS routed credentials, incumbent account/router import and move reports, OC-053 routing-management API, Terraform and dated unmodified Alertmanager acceptance remain gaps. Per-key rolling request/event accounting, rotation continuity, isolation, grouped refusal, owner notices and actual-window recovery are exercised through native and currently built compatible/monitoring HTTP doors (`tests/routing-rate.mjs`); native authenticated oversized/unparseable input retains bounded incomplete custody and returns 202 (`tests/runtime.mjs`, `tests/routing-native.mjs`). Inherently over-allowance atomic batches are refused whole with a machine-readable count/allowance and split/raise instruction, without a fabricated Retry-After (CT, 22 October). Record-unrouted retains incomplete-intake alerts with recorded high-urgency integration-owner obligations, while ordinary unrouted events remain receipts; re-admission requires workspace admin; general `/api/replay` lacks routed-key metadata (the routed-key preview retains it). Incomplete intake follows OC-059 (catch-all or unrouted custody with a recorded owner notice; paging inherited by OC-026/OC-068). Paging stays OFF.",
+      "text": "Workspace-admin compatible and Alertmanager/Grafana/Datadog routed keys choose fixed or dynamic in-scope services with ordered versioned RE2 rules, catch-all/unrouted custody, idempotent attributed re-admission and both routing stages. Read-only replay retains open-generation warnings. Native bearer/HMAC routed credentials reuse native authentication and retain original retry decisions, scoped recovery and secret-free inactive archives (`tests/routing.mjs` / `tests/routing-native.mjs`). Team authority, SNS routed credentials, incumbent account/router import and move reports, OC-053 routing-management API, Terraform and dated unmodified Alertmanager acceptance remain gaps. ",
       "to": "gap",
       "ids": [
         "OC-072",
         "OC-083"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 639,
+      "cell": "gap",
+      "text": "Per-key rolling request/event accounting, rotation continuity, isolation, grouped refusal, owner notices and actual-window recovery are exercised through native and currently built compatible/monitoring HTTP doors (`tests/routing-rate.mjs`); ",
+      "to": "gap",
+      "ids": [
+        "OC-084"
+      ],
+      "also": []
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 639,
+      "cell": "gap",
+      "text": "native authenticated oversized/unparseable input retains bounded incomplete custody and returns 202 (`tests/runtime.mjs`, `tests/routing-native.mjs`). ",
+      "to": "gap",
+      "ids": [
+        "OC-072",
+        "OC-083"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 639,
+      "cell": "gap",
+      "text": "Inherently over-allowance atomic batches are refused whole with a machine-readable count/allowance and split/raise instruction, without a fabricated Retry-After (CT, 22 October). ",
+      "to": "gap",
+      "ids": [
+        "OC-084"
       ],
       "also": [
         {
@@ -4867,6 +4929,17 @@
             "RL-6"
           ]
         }
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 639,
+      "cell": "gap",
+      "text": "Record-unrouted retains incomplete-intake alerts with recorded high-urgency integration-owner obligations, while ordinary unrouted events remain receipts; re-admission requires workspace admin; general `/api/replay` lacks routed-key metadata (the routed-key preview retains it). Incomplete intake follows OC-059 (catch-all or unrouted custody with a recorded owner notice; paging inherited by OC-026/OC-068). Paging stays OFF.",
+      "to": "gap",
+      "ids": [
+        "OC-072",
+        "OC-083"
       ]
     },
     {
