@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {generateKeyPairSync,sign,createHash,randomUUID} from 'node:crypto'
 import {readFile} from 'node:fs/promises'
 import {localWorker,ownerDoor} from './worker.mjs'
+import {standingCatchup} from './import-door-catchup.mjs'
 
 // One public-door journey, with real D1 and only synthetic saved vendor exports.
 const {privateKey,publicKey}=generateKeyPairSync('ec',{namedCurve:'prime256v1'})
@@ -480,6 +481,7 @@ try {
  assert.ok(ok(await req('/api/move-in/objects')).some(row=>row.targetId==='new@example.test'))
  assert.equal(ok(await door.undo('opsgenie',after.planId)).job.state,'undone')
  console.log('Business import door: person erasure with door custody present answered 200 and withdrew every door copy')
+ await standingCatchup({w,req,call,upload,ok,ownerId:session.member.id})
  if(page) {
   await page.goto(w.origin+'/auth/settings/identity')
   await page.getByLabel('Revoke grant key',{exact:true}).selectOption(kid)
