@@ -1303,7 +1303,7 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
 1. `oncall.intake.keys` carries security and adds live when a mode, trigger or resolve rule, activation, revocation, allowance or adapter binding changes which events admit or page.
 2. `oncall.services.update` adds live when an edit changes whom an active service pages; a runbook-only edit remains standard.
 3. `oncall.members.update` carries access and adds live when a role or activation change affects current or future coverage; changing an unscheduled member carries access alone.
-4. `oncall.erasure.run` carries destructive, adds live when the erased subject changes coverage, intake or pending delivery, and adds access when it removes a member or standing grant; an incident-history-only erasure carries destructive alone.
+4. `oncall.erasure.run` carries destructive, adds live when the erased subject changes coverage, intake or pending delivery, and adds access when it removes a member or an API client's authority; an incident-history-only erasure carries destructive alone.
 5. `oncall.archive.restore` carries destructive, live and access when it replaces state, pauses sends and schedules and revokes prior authority.
 6. `oncall.sso.configure` carries security and adds access when it enables or changes just-in-time accounts, their default role or group mapping; a signing-certificate-only rotation carries security alone.
 7. `oncall.actions.update` adds security when it changes an executor binding, second-person approval for runs by people or output redaction rules; a description-only edit remains standard.
