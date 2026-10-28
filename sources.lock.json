@@ -4796,7 +4796,7 @@
       "executable": false
     },
     "tests/fixture-database.mjs": {
-      "sha256": "25120e7d429b424098c61d5a691358abf4c8cdc723e7661ddc8bdc3dda4c9573",
+      "sha256": "048d6c8710fe34968dcac95fd5c06f9d1d32b5b9374bb8eee5c3a2fedc3e22b2",
       "executable": false
     },
     "tests/fixtures/backstage-catalog.json": {
