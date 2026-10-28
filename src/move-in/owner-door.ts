@@ -1,8 +1,7 @@
 import {vendorName} from './vendor-formats'
 import { auditIdentity } from '../audit-store'
 import { createImportOperatorHandler } from '../modules/import-kit/src/door/operator'
-import { loadSnapshot, planRow, sql, transact } from '../modules/import-kit/src/door/store'
-import { bundleBytes, uploadRow } from '../modules/import-kit/src/door/uploads'
+import { loadSnapshot, planRow } from '../modules/import-kit/src/door/store'
 import type { DoorRequest } from '../modules/import-kit/src/door/types'
 import type { D1Sql } from '../modules/import-kit/src/d1/types'
 import type { ImportPlan } from '../modules/import-kit/src/types'
@@ -11,9 +10,9 @@ import { Fault, type Member } from '../family/response-operations/domain'
 import { DOOR_LIMITS, importSource } from './door'
 import { IMPORT_DOOR_KEY } from './door-key'
 import { targets } from './target'
-import { fileSource, type Vendor } from './source'
-import { mapping } from './mapping'
-import { alreadyImported, changedSinceImport, duplicateTargets, Refusal, supersededBy } from './refusals'
+import type { Vendor } from './source'
+import { sourceRefusal, withdrawUpload } from './saved-file-refusals'
+import { alreadyImported, changedSinceImport, Refusal, supersededBy } from './refusals'
 import { expireInterruptedImports, importAttempt } from './import-lifecycle'
 
 // The owner's move-in screen imports through Base's owner-session door, the
@@ -55,35 +54,10 @@ async function body(request: Request): Promise<Record<string, unknown> | undefin
 const review = (plan: ImportPlan) => plan.entries.map(entry => {
  const value = entry.source.payload as any
  return { kind: entry.source.kind, id: entry.source.sourceId, location: entry.source.location,
-  name: value?.fullName ?? value?.name ?? value?.summary ?? value?.username ?? value?.email ?? entry.source.sourceId,
+  disposition: entry.rejection ? 'rejected' : entry.unmapped.length ? 'mapped-with-differences' : 'mapped',
+  name: value?.fullName ?? value?.name ?? value?.title ?? value?.summary ?? value?.username ?? value?.email ?? entry.source.sourceId,
   rejection: entry.rejection, unmapped: entry.unmapped, effects: entry.effects }
 })
-
-/** A door plan that failed on the file itself, named as the saved-file reader names it: a credential field, unreadable JSON or two records that become one object. */
-async function sourceRefusal(read: DoorRequest, uploadId: string, vendor: Vendor): Promise<Fault | null> {
- let text: string, name: string
- try { const row = await uploadRow(read, uploadId); name = row.name; text = new TextDecoder().decode(await bundleBytes(read, row)) } catch { return null }
- try { const source = await fileSource(vendor, text, name); return duplicateTargets(source, mapping(vendor, source, Date.now())) }
- catch (error) {
-  if (error instanceof Fault) return error
-  const kit = (error as Error).message
-  return /^[A-Z][A-Z0-9_]+$/.test(kit) ? new Refusal(400, "The import journal refused this request; check the job's state before trying again.", kit) : null
- }
-}
-
-/** A file the preview refuses goes with its refusal: under the owner's session the upload and its chunks are
- * withdrawn (as the door drops an upload holding an erased record), and the namespace binding that upload made
- * when nothing else in the source holds it, so a refused preview leaves no row behind. */
-async function withdrawUpload(db: D1Database, session: D1Sql, vendor: string, uploadId: unknown) {
- if (typeof uploadId !== 'string') return
- const scope = [IMPORT_DOOR_KEY, vendor]
- await transact(db, session, [
-  sql('DELETE FROM ik_door_chunks WHERE upload_id IN (SELECT id FROM ik_door_uploads WHERE id=? AND installation_id=? AND namespace=?)', uploadId, ...scope),
-  sql('DELETE FROM ik_door_uploads WHERE id=? AND installation_id=? AND namespace=?', uploadId, ...scope),
-  sql(`DELETE FROM ik_door_scopes WHERE installation_id=? AND namespace=? AND NOT EXISTS(SELECT 1 FROM ik_door_uploads WHERE installation_id=? AND namespace=?)
-   AND NOT EXISTS(SELECT 1 FROM ik_door_plans WHERE installation_id=? AND namespace=?)`, ...scope, ...scope, ...scope),
- ])
-}
 
 /** Why Undo cannot run on this import yet, named before the door records reversal intent: a later import replaced
  * its records (undo that one first), or something changed in Oncall since. Null when Undo can proceed. */
@@ -112,6 +86,8 @@ export async function ownerImport(c: any): Promise<Response> {
  await expireInterruptedImports(base)
  const action = new URL(request.url).pathname.slice(PREFIX.length), input = await body(request)
  if(typeof input?.planId==='string')auditIdentity(base,{subject:{kind:'import-plan',id:input.planId}})
+ if(action==='uploads'&&typeof input?.totalBytes==='number'&&input.totalBytes>DOOR_LIMITS.maxBytes)
+  return refusal(new Refusal(413,`The saved export is ${input.totalBytes} bytes, above the ${DOOR_LIMITS.maxBytes}-byte (512 KiB) limit; narrow the export and preview again. Nothing was imported or truncated.`,'SOURCE_BYTE_LIMIT'))
  const attempt = action === 'apply' && typeof input?.planId === 'string' ? importAttempt(base, { planId: input.planId }) : undefined
  const db = (attempt?.database ?? base) as D1Database
  const session = adminSession(c.get('sessionDigest'), actor.id)
@@ -170,7 +146,10 @@ export async function ownerImport(c: any): Promise<Response> {
   if (plan.planId !== before) await db.prepare(`INSERT OR IGNORE INTO move_in_previews(plan_id) SELECT id FROM ik_door_plans WHERE id=? AND job_id IS NULL
    AND NOT EXISTS(SELECT 1 FROM ik_jobs WHERE operation_key='door:'||?)`).bind(plan.planId, plan.planId).run()
   const snapshot = await loadSnapshot(read, await planRow(read, plan.planId))
-  return answer({ ...plan, items: review(snapshot.plan) })
+  const items=review(snapshot.plan)
+  const classification={mapped:0,mappedWithDifferences:0,rejected:0}
+  for(const item of items)classification[item.disposition==='mapped-with-differences'?'mappedWithDifferences':item.disposition==='rejected'?'rejected':'mapped']++
+  return answer({ ...plan, items, classification })
  }
  if (action === 'apply' && typeof input?.planId === 'string') {
   // Name people or schedules another import already holds before the door starts a job that could only fail.

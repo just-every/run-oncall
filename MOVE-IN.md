@@ -28,11 +28,32 @@ Return to Move-in kit, select the matching source and choose the saved JSON unde
 
 Opsgenie first: save each documented response unchanged (users, schedules with their rotations, schedule overrides, escalations and schedule timelines) and bundle them under `users`, `schedules`, `overrides`, `escalations` and `timelines`. Each key holds one saved response or an array of saved responses, for example one detail response per schedule. A saved response is a list (`{"data":[...],"requestId":...,"took":...,"totalCount":...,"expandable":[...]}`) or a single detail (`{"data":{...},...}`); the envelope fields are not records. The override list names no schedule, so add one field `scheduleId` beside `data` in that saved file; without it the overrides belong to the bundle's only schedule, and when the bundle holds several schedules the overrides and every schedule they could change are refused by name; a single override detail names its schedule in `_parent`. Timelines name theirs in `_parent`.
 
-PagerDuty next: save users, each detailed schedule including `schedule_layers` (the list response omits them unless asked), overrides, and escalation policies, and bundle them under `users`, `schedules`, `overrides` and `escalation_policies`. Each key holds a list response (`{"users":[...],"limit":25,"offset":0,"more":false,"total":null}`, likewise `schedules`, `escalation_policies`, `overrides`), a single detail (`{"user":{...}}`, `{"schedule":{...}}`, `{"escalation_policy":{...}}`) or an array of saved responses. The override list names no schedule, so add one field `schedule_id` beside `overrides`; without it the overrides belong to the bundle's only schedule, and when the bundle holds several schedules the overrides and every schedule they could change are refused by name. Match users by normalized email; a missing user detail rejects a rotation, and an override for a user who is not in the export rejects that override and its schedule, rather than inventing a responder.
+For the shipped exporter and in-app schedule read, PagerDuty next: save users, each detailed schedule including `schedule_layers` (the list response omits them unless asked), overrides, and escalation policies, and bundle them under `users`, `schedules`, `overrides` and `escalation_policies`. Each key holds a list response (`{"users":[...],"limit":25,"offset":0,"more":false,"total":null}`, likewise `schedules`, `escalation_policies`, `overrides`), a single detail (`{"user":{...}}`, `{"schedule":{...}}`, `{"escalation_policy":{...}}`) or an array of saved responses. The override list names no schedule, so add one field `schedule_id` beside `overrides`; without it the overrides belong to the bundle's only schedule, and when the bundle holds several schedules the overrides and every schedule they could change are refused by name. Match users by normalized email; a missing user detail rejects a rotation, and an override for a user who is not in the export rejects that override and its schedule, rather than inventing a responder.
 
 Opsgenie fields read (13 October 2026). Users: id, username, fullName and profile fields, retained only. Schedule (list with `expand=rotation`, or detail): id, name, description, timezone, enabled, ownerTeam {id, name} and rotations[] with id, name, startDate, endDate, type (daily, weekly, hourly), length, participants[] (type user, team, escalation or none, with id, username or name) and timeRestriction (time-of-day with one restriction, weekday-and-time-of-day with restrictions[]). Override: alias, user {type, id, username}, startDate, endDate, rotations[] {id, name}; the detail adds `_parent` {id, name, enabled}. Timeline: `_parent`, startDate, endDate and finalTimeline, baseTimeline, overrideTimeline and forwardingTimeline, each with rotations[] {id, name, order, periods[] {startDate, endDate, type, recipient {type, id, name}}}. Escalation: id, name, description, ownerTeam, rules[] {condition (if-not-acked or if-not-closed), notifyType, delay {timeAmount, timeUnit}, recipient {type user, schedule or team; id, name or username}} and repeat {waitInterval, count, resetRecipientStates, closeAlertAfterAll}. The Schedule pages show no `totalCount`; Oncall ignores it where a response carries one.
 
-PagerDuty fields read (13 October 2026). User: id, type, summary, self, html_url, name, email, time_zone, color, role, avatar_url, description, job_title, invitation_sent, created_via_sso, contact_methods[], notification_rules[], teams[]. Schedule (detail): id, type, summary, self, html_url, name, time_zone, description, escalation_policies[], users[], teams[], schedule_layers[] {id, name, start, end, rotation_virtual_start, rotation_turn_length_seconds, users[] {user {id, type, summary}}, restrictions[] {type, start_time_of_day, duration_seconds, start_day_of_week}, rendered_schedule_entries, rendered_coverage_percentage}, overrides_subschedule, final_schedule {name, rendered_schedule_entries[] {start, end, user}, rendered_coverage_percentage} and next_oncall_for_user. Override: id, start, end, user {id, type, summary, self, html_url}; it embeds no schedule. Escalation policy: id, type, summary, self, html_url, name, description, on_call_handoff_notifications, num_loops, escalation_rules[] {id, escalation_delay_in_minutes, targets[] {id, type user_reference or schedule_reference, summary, self, html_url}}, services[] and teams[]. The list envelopes carry limit, offset, more and total (null unless requested). The reference pages show a layer's `end` only in the update-schedule example request; its meaning (the end time of the layer, null while it does not end) is the OpenAPI field description.
+PagerDuty schedule fields read (13 October 2026; account additions below read 28 October 2026). User: id, type, summary, self, html_url, name, email, time_zone, color, role, avatar_url, description, job_title, invitation_sent, created_via_sso, contact_methods[], notification_rules[], teams[]. Schedule (detail): id, type, summary, self, html_url, name, time_zone, description, escalation_policies[], users[], teams[], schedule_layers[] {id, name, start, end, rotation_virtual_start, rotation_turn_length_seconds, users[] {user {id, type, summary}}, restrictions[] {type, start_time_of_day, duration_seconds, start_day_of_week}, rendered_schedule_entries, rendered_coverage_percentage}, overrides_subschedule, final_schedule {name, rendered_schedule_entries[] {start, end, user}, rendered_coverage_percentage} and next_oncall_for_user. Override: id, start, end, user {id, type, summary, self, html_url}; it embeds no schedule. Escalation policy: id, type, summary, self, html_url, name, description, on_call_handoff_notifications, num_loops, escalation_rules[] {id, escalation_delay_in_minutes, targets[] {id, type user_reference or schedule_reference, summary, self, html_url}}, services[] and teams[]. The list envelopes carry limit, offset, more and total (null unless requested). The reference pages show a layer's `end` only in the update-schedule example request; its meaning (the end time of the layer, null while it does not end) is the OpenAPI field description.
+
+Additional PagerDuty saved-account fields read (28 October 2026): users'
+`contact_methods[]` use `id`, `type`, `label`, `country_code` and `address` for
+named contact decisions; remaining method settings and `notification_rules[]`
+are retained notes. Only full phone/SMS details can compose a number: a reference
+with just an ID is named as missing detail. Services retain `id`, `name`,
+`escalation_policy`, `teams`, `alert_grouping_parameters`, `support_hours`,
+`incident_urgency_rule`, `auto_resolve_timeout` and `acknowledgement_timeout`;
+embedded `integrations[]` carry their own ID, name and type and inherit only the
+source service identity. Teams and business-service details remain original
+source evidence. Incidents use `id`, `title`, `status` and retain timestamps,
+assignments and acknowledgments. Maintenance keeps its original start/end,
+services and creator. Orchestration lists use `orchestrations`, ordinary details
+use `orchestration`, and router details use `orchestration_path` with `parent.id`,
+`sets[].rules[]`, `actions.dynamic_route_to` and `catch_all`. All original fields
+remain in erasable custody; reading a field never grants delivery authority.
+Schedule-only exports retain user team references as notes without requiring
+team records. Account bundles check those references against the supplied team
+details, alongside the service, policy and incident relationships.
+See [account file limits and receiving clauses](docs/move-in.md#pagerduty-account-saved-responses).
+
 
 Supported: one daily/weekly Opsgenie rotation with individual users, an exact calendar-minute hand-off and no time restrictions; one full-day PagerDuty layer in UTC; non-overlapping individual overrides; one or two schedule-recipient policy steps with ordinary unacknowledged delays and no repeats. A 0-minute first notification maps to 1 minute in the paused policy, with a named, non-equivalent timing difference in the preview; later steps must wait at least 1 minute. Original source timing remains in the journal, and no policy is activated. A PagerDuty schedule may also list layers that ended before the one open-ended layer began and have ended by the time of the preview: that layer is mapped and each ended layer is retained as named history in the review, never as concurrent coverage. A layer is active from its own start until its own end, so a layer that is still running when previewed, with its replacement starting later, is refused by name with the time it ends. A PagerDuty layer in a zone with offset changes (for example America/New_York) and a whole number of days per turn maps only when the supplied `final_schedule` is equivalent over its window to Oncall's calendar-day result and that window crosses an offset change of the zone; otherwise it stays rejected with "need incumbent DST equivalence evidence" and, for a differing timeline, the first differing instant. Backup coverage stays an explicit gap; source layers are never silently relabelled as backup. Unknown rotation/rule fields reject the whole schedule or policy. All source bytes and every unmapped/rejected object remain in Base's journal.
 
@@ -130,3 +151,39 @@ The same reviewed file door now inventories [Splunk](docs/move-in.md#splunk-save
 `POST /api/move-in/read {source, region, key?, cursor?}` requires a current administrator and returns `{part,next}`. Each app step makes at most 30 provider requests (29 plus revocation for a PagerDuty consent read), leaving room for session and audit queries below the Worker subrequest limit, with a ten-second timeout and manual redirect refusal. The fixed recipients are `api.pagerduty.com`, `api.eu.pagerduty.com`, `api.opsgenie.com`, `api.eu.opsgenie.com`, `identity.pagerduty.com` and `identity.eu.pagerduty.com`; no input chooses a host. The categories are users, schedules, overrides, final coverage and escalation policies. Credential fields are removed; a credential echoed into data refuses the read. Limits are the unchanged import limits, 500 objects and 512 KiB. A finished read audits only provider, region and counts.
 
 The callback uses PKCE and the installation’s two optional settings, seals a token with AES-GCM under `SESSION_SECRET` with label `oncall-move-in-token-v1`, and lands on `/settings/move-in?connected=pagerduty`. The HttpOnly, SameSite=Lax cookie is scoped to `/api/move-in/` for at most ten minutes. Encrypted, archive-excluded consent leases let the existing minute task revoke abandoned connections starting at eight minutes. A completed read revokes and clears custody. Provider outages cannot establish successful revocation: the app names the failure and the minute task discards expired custody, with manual app revocation at PagerDuty as the recovery.
+
+## PagerDuty account files from the owner's tooling
+
+The saved-file door additionally reads PagerDuty `services` with embedded
+`integrations`, `teams`, `incidents`, `maintenance_windows`, `business_services`
+and `event_orchestrations`, using REST list pages and single-detail wrappers.
+These account objects come from a saved file **the owner's own tooling
+produced**. The shipped downloadable exporter and in-app read still collect only
+users, schedules, overrides and escalation policies, with schedule comparison
+timelines. Their code and OAuth scopes are unchanged.
+
+Every source object, including each embedded integration, has one review
+decision and retained provenance. Phone/SMS country code plus national digits
+become unverified E.164 contacts; malformed or ambiguous methods are named, and
+email, push and notification rules remain notes. No imported contact satisfies
+paging or two-route coverage before OC-026/OC-066 verification and country
+coverage checks. Supported Events v1/v2/generic API inventory stays inactive,
+keyless and bound to the source service; no native service is created.
+Email integrations name OC-070 and OC-038's inherited duty; vendor integrations
+name re-creation as the matching Oncall source or generic webhook.
+
+Service grouping, urgency, support hours and both timeouts are individually
+unconverted. Teams (OC-023), business services (OC-061), maintenance (OC-043)
+and each orchestration rule/dynamic route/catch-all (OC-072) retain their
+originals without native authority. Open incidents are named refusals with no
+live timeline or state change; resolved history stays source evidence, never
+delivery. The strict schedule/policy converter is unchanged.
+
+Keys or credential fields refuse the whole file with their field and pointer.
+Wrong-vendor envelopes, duplicate kind/ID pairs and dangling account references
+also refuse; bounds name the count or size and ask to narrow the export, with
+no truncation. Reviewed apply, restart, catch-up, strict guarded undo and
+person-erasure use the existing doors. See [the field-by-field behavior and
+dated format references](docs/move-in.md#pagerduty-account-saved-responses).
+The 75-record synthetic account is documented-shape proof, **unverified against
+a live account**. OC-038 remains PARTIAL; paging stays OFF.

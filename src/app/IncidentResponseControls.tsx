@@ -1,3 +1,4 @@
+import {severityLabel, urgencyLabel} from '../reviews/display';
 import {useId, useState} from 'react';
 import type {Incident, Member} from '../family/response-operations/domain';
 import {InlineConfirm} from './autosave/InlineConfirm';
@@ -19,7 +20,7 @@ export function IncidentResponseControls({incident, members, canEdit, refresh = 
     communications: [{value: '', label: 'Unassigned'}, ...eligible.map(member => ({value: member.id, label: member.name}))],
     priority: [{value: '', label: 'Unset'}, ...['P1', 'P2', 'P3', 'P4', 'P5'].map(value => ({value, label: value}))],
     urgency: [{value: 'high', label: 'High'}, {value: 'low', label: 'Low'}],
-    severity: ['critical', 'warning', 'info'].map(value => ({value, label: value})),
+    severity: ['critical', 'warning', 'info'].map(value => ({value, label: severityLabel(value)})),
   };
   const labels: Record<string, string> = {scribe: 'Scribe', communications: 'Communications', priority: 'Priority', urgency: 'Urgency', severity: 'Severity'};
   return <section className="incident-response-fields" aria-label="People and priority">{fields.map(field => <div key={field}>
@@ -36,7 +37,7 @@ export function IncidentResponseControls({incident, members, canEdit, refresh = 
     </select>
     {canEdit && !(field === 'urgency' && lowering) && <label className="field incident-optional-reason"><span>Reason for {labels[field].toLowerCase()} (optional)</span><input aria-label={`Reason for ${labels[field].toLowerCase()} (optional)`} value={reasonInputs[field] ?? save.reasonValues[field] ?? ''} onChange={event => {const value=event.target.value;save.reasons.current[field] = value;setReasonInputs(previous => ({...previous, [field]: value}));}} /></label>}
     {field === 'urgency' && lowering && <InlineConfirm action="Lower urgency" keep="Keep high urgency" reasonRequired onConfirm={reason => {setReasonInputs(previous => ({...previous, urgency: ''}));save.change('urgency', 'low', 'choice', reason ?? '');setLowering(false);}} onCancel={() => setLowering(false)}>Lower this incident to low urgency?</InlineConfirm>}
-    <SaveFeedback state={save.states[field]} retry={() => save.retry(field)} useMine={() => save.useMine(field)} format={value => ['scribe', 'communications'].includes(field) ? members.find(member => member.id === savedResponseValue(value))?.name ?? 'Unassigned' : String(savedResponseValue(value) || 'Unset')} />
+    <SaveFeedback state={save.states[field]} retry={() => save.retry(field)} useMine={() => save.useMine(field)} format={value => ['scribe', 'communications'].includes(field) ? members.find(member => member.id === savedResponseValue(value))?.name ?? 'Unassigned' : field === 'severity' ? severityLabel(String(savedResponseValue(value))) : field === 'urgency' ? urgencyLabel(String(savedResponseValue(value))) : String(savedResponseValue(value) || 'Unset')} />
     {answers[field] && <p role="status">{answers[field]}</p>}
   </div>)}</section>;
 }

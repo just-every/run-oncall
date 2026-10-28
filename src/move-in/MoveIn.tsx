@@ -12,7 +12,7 @@ import { readAccount } from './read-client'
 import type { Provider, Region } from './collect/bundle'
 import './move-in.css'
 import { ImportJournal } from './ImportJournal'
-import { applyPlan, doorClient, previewFile, undoPlan } from './door-client'
+import { applyPlan, doorClient, previewFile, reconcilePlan, undoPlan, type Reconciliation } from './door-client'
 
 type RunOptions={read?:boolean;retryInput?:boolean}
 
@@ -29,6 +29,7 @@ function transportError(error:unknown) {
 export function MoveIn({admin,request}:{admin:boolean;request:(path:string,data?:unknown)=>Promise<any>}) {
  const [vendor,setVendor]=useState('pagerduty'),[source,setSource]=useState<Uint8Array|null>(null),[filename,setFilename]=useState(''),[preview,setPreview]=useState<any>(null),[job,setJob]=useState<any>(null),[jobs,setJobs]=useState<any[]>([]),[rows,setRows]=useState<any[]>([]),[choices,setChoices]=useState<any>({services:[],members:[]}),[busy,setBusy]=useState(false),[erasing,setErasing]=useState(''),[typed,setTyped]=useState(''),[erased,setErased]=useState<any>(null)
  const [step,setStep]=useState(1),[sourceChoice,setSourceChoice]=useState('pagerduty'),[connect,setConnect]=useState(false),[confirmUndo,setConfirmUndo]=useState(false),[labels,setLabels]=useState<Record<string,string>>({})
+ const [reconciliation,setReconciliation]=useState<Reconciliation|null>(null)
  const pending=useRef(0),loadVersion=useRef(0),activeVendor=useRef(vendor)
  activeVendor.current=vendor
  const failures=useActionFailure()
@@ -65,12 +66,27 @@ export function MoveIn({admin,request}:{admin:boolean;request:(path:string,data?
   setJob((current:any)=>current?latest.find((saved:any)=>saved.id===current.id)??null:null)
  }
  const refreshAfterSave=async()=>{try{await load()}catch(error){failures.show(transportError(error),{read:true,target:null})}}
+ const checkImport=async(planId:string)=>{
+  setReconciliation(null);setStep(4)
+  const result=await reconcilePlan(door,planId)
+  setReconciliation(result)
+  return result
+ }
+ const applyAndCheck=async(planId:string,fingerprint:string)=>{
+  setReconciliation(null)
+  try {
+   const result=await applyPlan(door,planId,fingerprint)
+   setJob(result)
+   if(result.state==='completed')await checkImport(planId)
+   return result
+  } finally {await refreshAfterSave()}
+ }
 
  useEffect(()=>{if(admin){const read=()=>load();void run(read,{read:true,retryInput:true})}},[admin,vendor])
 
  const previewBytes=async(bytes:Uint8Array,name:string,provider=vendor)=>{
   const result=await run(()=>previewFile(doorClient(provider),bytes,name,provider),{read:true})
-  if(result){setSource(bytes);setFilename(name);setPreview(result);setJob(null);setStep(2)}
+  if(result){setSource(bytes);setFilename(name);setPreview(result);setJob(null);setReconciliation(null);setStep(2)}
  }
  const read=async(provider:Provider,region:Region,key?:string)=>{
   const bytes=await run(()=>readAccount(request,provider,region,key),{read:true})
@@ -98,15 +114,24 @@ export function MoveIn({admin,request}:{admin:boolean;request:(path:string,data?
  {step===2&&preview&&<ReviewStep preview={preview} bytes={source} filename={filename} busy={busy} back={()=>setStep(1)} next={()=>setStep(3)}/>}
  {step===3&&preview&&!job&&<ImportStep busy={busy} back={()=>setStep(2)} confirm={()=>{
   const planId=preview.planId,fingerprint=preview.fingerprint
-  void run(async()=>{const result=await applyPlan(door,planId,fingerprint);setJob(result);setStep(4);await refreshAfterSave();return result},{retryInput:Boolean(planId)})
+  void run(()=>applyAndCheck(planId,fingerprint),{retryInput:Boolean(planId)})
  }}/>}
- {step===4&&<section className="scheduling-panel move-in-data"><h2>Import complete</h2><p>Review imported data below. Adopt a schedule when you’re ready.</p><button onClick={()=>{setStep(1);setPreview(null)}}>Read another account or file</button></section>}
+ {step===4&&<section className="scheduling-panel move-in-data" aria-live="polite">
+ <h2>{reconciliation?.ok?'Import complete':reconciliation?'Import differences':busy?'Checking imported data':'Import needs checking'}</h2>
+ {reconciliation?<>
+ <p>{reconciliation.ok?'Matched. The imported data agrees with the saved export.':'The native data differs from the saved export. Review these differences before continuing.'}</p>
+ <p>{reconciliation.counts.sourceRecords} source objects · {reconciliation.counts.present} present · {reconciliation.counts.explained} explained · {reconciliation.counts.nativeTargets} matching native objects</p>
+ {!reconciliation.ok&&<ul>{reconciliation.sourceIds.filter(row=>row.status==='mismatched').map(row=><li key={JSON.stringify([row.kind,row.sourceId])}>{row.kind}: {row.sourceId}<ul>{row.conflicts?.map(conflict=><li key={conflict}>Changed or missing native object: {conflict}</li>)}</ul></li>)}</ul>}
+ {reconciliation.ok&&<p>Review imported data below. Adopt a schedule when you’re ready.</p>}
+ </>:<p>Check the native data before treating this import as complete. Use Check imported data in the saved journal to try again.</p>}
+ <button onClick={()=>{setStep(1);setPreview(null);setReconciliation(null)}}>Read another account or file</button></section>}
  {(jobs.length>0||job)&&<section className="scheduling-panel move-in-data">
- <ImportJournal jobs={jobs} job={job} busy={busy} select={setJob} resume={()=>{
+ <ImportJournal jobs={jobs} job={job} busy={busy} select={selected=>{setJob(selected);setReconciliation(null);setStep(1)}} reconcile={()=>{void run(()=>checkImport(job.door.planId),{read:true,retryInput:true})}} resume={()=>{
   const selected=job
   const hasPlan=Boolean(selected?.door?.planId)
   void run(async()=>{
-   const result=selected.door?selected.state==='rolling_back'?await undoPlan(door,selected.door.planId):await applyPlan(door,selected.door.planId,selected.door.fingerprint):await request(`/api/move-in/${selected.id}/resume`,{vendor})
+   if(selected.door&&selected.state!=='rolling_back')return applyAndCheck(selected.door.planId,selected.door.fingerprint)
+   const result=selected.door?await undoPlan(door,selected.door.planId):await request(`/api/move-in/${selected.id}/resume`,{vendor})
    setJob(result);await refreshAfterSave();return result
   },{retryInput:hasPlan||Boolean(selected?.id)})
  }} undo={()=>setConfirmUndo(true)}/>

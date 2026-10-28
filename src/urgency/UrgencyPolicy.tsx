@@ -36,7 +36,7 @@ export function UrgencyPolicy({service, state, admin, refresh}: {service: Servic
     }, 250);
     return () => {live = false; clearTimeout(timer);};
   }, [previewRule, at, severity, admin, service.id]);
-  return <details className="urgency-policy service-urgency"><summary>Urgency · version {version}</summary>
+  return <details className="urgency-policy service-urgency"><summary>Urgency</summary>
     <DraftComparison stale={draft.stale} baseVersion={draft.baseVersion} currentVersion={version} useMine={draft.useMine}><UrgencyFields value={saved} change={() => {}} readOnly/></DraftComparison>
     <form onSubmit={event => event.preventDefault()}><UrgencyFields value={value} change={draft.change} readOnly={!admin}/>
       {admin && <PolicyPublication dirty={draft.dirty} stale={draft.stale} version={version + 1} publish={async reason => {

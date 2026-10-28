@@ -1,3 +1,5 @@
+import {shortDate, shortTime} from '../reviews/time';
+export {shortTime} from '../reviews/time';
 import type {Entry, Incident, Member, State} from '../family/response-operations/domain';
 
 export type IncidentProps = {
@@ -11,9 +13,6 @@ export type IncidentProps = {
   command: (data: any) => Promise<any>;
   mutate: (data: any) => Promise<any>;
 };
-export const shortTime = (value: string) => new Date(value).toLocaleString([], {
-  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-});
 export const memberName = (state: State, id: string | null | undefined) =>
   state.members.find(member => member.id === id)?.name ?? (id ? id.startsWith('api-') ? 'Service account' : 'Erased member' : 'Unassigned');
 
@@ -45,6 +44,8 @@ export function timelineText(entry: Entry, state: State) {
     return entry.text.replace(/^Responder request \S+ (accepted|declined|cancelled) by /, 'Responder request $1 by ');
   }
   if (entry.kind === 'manual-page') {
+    const incident = state.incidents.find(incident => incident.manualPage && incident.timeline.some(row => row.id === entry.id));
+    if (incident?.manualPage) return `Incident declared for coordination with ${incident.manualPage.obligations.map(obligation => targetName(obligation.target.kind, obligation.target.id)).join(', ')}. Paging is off; contact responders through your existing pager.`;
     return entry.text.replace(/\b(user|policy) (.+?)(?=, |\. User assignment)/g, (_, kind, id) => targetName(kind, id));
   }
   if (['incident-deadline', 'deadline-cancelled', 'deadline-fired'].includes(entry.kind)) {
@@ -54,8 +55,8 @@ export function timelineText(entry: Entry, state: State) {
   if (entry.kind === 'action') {
     const match = /^(Follow-up P[1-3]: [\s\S]*) due (\d{4}-\d{2}-\d{2}) \(UTC calendar date\); completion (human-review|evidence)$/.exec(entry.text);
     if (match) {
-      const day = new Date(match[2] + 'T00:00:00Z').toLocaleDateString([], {timeZone: 'UTC', month: 'short', day: 'numeric'});
-      return `${match[1]} due ${day} UTC; ${match[3] === 'human-review' ? 'human review' : 'evidence'}`;
+      const day = shortDate(match[2]);
+      return `${match[1]} due ${day}, end of day UTC; ${match[3] === 'human-review' ? 'human review' : 'evidence'}`;
     }
   }
   return entry.text;
