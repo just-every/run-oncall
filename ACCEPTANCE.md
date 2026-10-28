@@ -1268,13 +1268,13 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
 
 **Acceptance.** Through MCP on Oncall's fixtures:
 1. `oncall.services.update` is standard for a runbook edit and adds access when it changes a team's members or a private team's scope. `oncall.actions.update` is standard for a library definition edit and adds access when it changes the action's allowed teams or roles.
-2. `oncall.contacts.update` is standard for a notification-rule edit and adds gated when it verifies a destination.
-3. `oncall.triage.bulk` adds commitment when it resolves a declared incident, carrying the summary and evidence as its facts.
+2. `oncall.contacts.update` is standard for a destination-label edit, adds live when a notification-channel or delay change affects who is paged or when, and adds gated when it verifies a destination.
+3. `oncall.triage.bulk` is standard for a reversible triage edit, adds live for an urgency change or another action that changes who is paged or when, and adds commitment when it resolves a declared incident, carrying the summary and evidence as its facts.
 4. `oncall.followups.update` adds commitment when it accepts a root cause, impact, review or completion.
 5. `oncall.actions.run` is live and adds destructive when the library action's definition marks it irreversible.
 6. `oncall.remediation.run` is live and adds destructive when any planned action is irreversible.
-7. `oncall.ownership.propose` adds access when the change grants or removes a team's access.
-8. `oncall.ownership.propose` adds live when the change alters whom an active service pages.
+7. `oncall.ownership.propose` adds access when the change grants or removes a team's access and adds live when the change alters whom an active service pages.
+8. `oncall.incidents.update` is standard for an incident note and adds live when escalation or another incident update changes who is paged or when.
 
 **Evidence.** None.
 **Gap.** No implementing flow. No tool or server-side class computation exists.

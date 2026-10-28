@@ -984,7 +984,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 **How Oncall computes each class.**
 - **standard**: a call that stays inside the workspace and can be undone or superseded in Oncall: reads, notes, acknowledgment, reassignment, snooze, merges, drafts, triage views and follow-up edits; measured in items.
-- **live**: a call that changes who is paged or when, or how a production service behaves: rotations, overrides and swaps, escalation, urgency, response and user-assignment rules, routing rule sets, pages and responder requests, readiness drills, and library actions and remediation plans; measured by service.
+- **live**: a call that changes who is paged or when, or how a production service behaves: rotations, overrides and swaps, escalation, urgency, response and user-assignment rules, notification channels and delays, routing rule sets, pages and responder requests, readiness drills, and library actions and remediation plans; measured by service.
 - **external**: a call that sends or exposes something to someone outside the business: a published internal or customer update, a Zoom or Teams incident bridge sent to its provider, a registered outbound endpoint and its replay, and a calendar feed an outside calendar service fetches; the counterparty is known for a recipient on record, new otherwise, and public for a public status page.
 - **commitment**: a sign-off others rely on: resolving a declared incident with its summary and evidence, reviewing hand-off copy, publishing an update, and accepting a root cause, impact, review or completion.
 - **access**: a call that changes standing authority: member roles and deactivation, team membership and private scope, a library action's allowed teams and roles, and API client grants; its direction is widens or narrows.
@@ -998,12 +998,12 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.alerts.list` | Read alerts, events and their routing explanations | OC-001, OC-002, OC-059 | standard | API (integrations) |
 | `oncall.alerts.replay` | Replay events against the current or a draft policy with zero writes | OC-002, OC-014, OC-043, OC-070 | standard | none |
 | `oncall.incidents.declare` | Declare an incident from alerts | OC-004, OC-050, OC-056 | standard | API (incidents) |
-| `oncall.incidents.update` | Acknowledge, note, reassign, snooze or escalate an incident and assign its roles | OC-004, OC-027, OC-050, OC-058 | standard | API (incidents) |
+| `oncall.incidents.update` | Acknowledge, note, reassign, snooze or escalate an incident and assign its roles | OC-004, OC-027, OC-050, OC-058 | standard (+ live) | API (incidents) |
 | `oncall.bridges.create` | Create or join a Zoom or Teams incident bridge and record its participants and link | OC-035 | external | none |
 | `oncall.incidents.resolve` | Resolve a declared incident with its summary and evidence | OC-004, OC-056 | commitment | API (incidents) |
 | `oncall.incidents.merge` | Merge related incidents or split an unrelated alert group | OC-050 | standard | none |
 | `oncall.triage.list` | Search, filter and save triage views | OC-060 | standard | none |
-| `oncall.triage.bulk` | Apply one action to selected or matching items | OC-079 | standard (+ commitment) | none |
+| `oncall.triage.bulk` | Apply one action to selected or matching items | OC-079 | standard (+ commitment) (+ live) | none |
 | `oncall.pages.create` | Page a service, a person or a policy, or request responders | OC-026, OC-068 | live | API (incidents) |
 | `oncall.schedules.update` | Change rotations, layers, overrides, holiday and PTO coverage | OC-011, OC-024, OC-077 | live | API (schedules) |
 | `oncall.swaps.respond` | Request, accept or decline a swap | OC-025 | live | none |
@@ -1014,7 +1014,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.intake.keys` | Create, rotate, activate or revoke intake keys, allowances, email addresses, modes and adapters | OC-030, OC-031, OC-033, OC-042, OC-055, OC-070, OC-072, OC-084 | security | API (integrations) |
 | `oncall.services.update` | Maintain services, teams, ownership, dependencies and business services | OC-023, OC-061 | standard (+ access) | API (services) |
 | `oncall.members.update` | Add members, change roles and deactivate | OC-003, OC-039 | access | none |
-| `oncall.contacts.update` | Enroll and verify a responder's destinations and notification rules | OC-026, OC-066 | standard (+ gated) | none |
+| `oncall.contacts.update` | Enroll and verify a responder's destinations and notification rules | OC-026, OC-066 | standard (+ gated) (+ live) | none |
 | `oncall.handoffs.prepare` | Prepare or withdraw hand-off copy | OC-017 | standard | none |
 | `oncall.handoffs.review` | Review exact hand-off copy | OC-017 | commitment | none |
 | `oncall.updates.publish` | Publish a reviewed internal or customer update | OC-051, OC-061 | external · commitment | none |
@@ -1060,13 +1060,13 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 **Acceptance.** Through MCP on Oncall's fixtures:
 1. `oncall.services.update` is standard for a runbook edit and adds access when it changes a team's members or a private team's scope. `oncall.actions.update` is standard for a library definition edit and adds access when it changes the action's allowed teams or roles.
-2. `oncall.contacts.update` is standard for a notification-rule edit and adds gated when it verifies a destination.
-3. `oncall.triage.bulk` adds commitment when it resolves a declared incident, carrying the summary and evidence as its facts.
+2. `oncall.contacts.update` is standard for a destination-label edit, adds live when a notification-channel or delay change affects who is paged or when, and adds gated when it verifies a destination.
+3. `oncall.triage.bulk` is standard for a reversible triage edit, adds live for an urgency change or another action that changes who is paged or when, and adds commitment when it resolves a declared incident, carrying the summary and evidence as its facts.
 4. `oncall.followups.update` adds commitment when it accepts a root cause, impact, review or completion.
 5. `oncall.actions.run` is live and adds destructive when the library action's definition marks it irreversible.
 6. `oncall.remediation.run` is live and adds destructive when any planned action is irreversible.
-7. `oncall.ownership.propose` adds access when the change grants or removes a team's access.
-8. `oncall.ownership.propose` adds live when the change alters whom an active service pages.
+7. `oncall.ownership.propose` adds access when the change grants or removes a team's access and adds live when the change alters whom an active service pages.
+8. `oncall.incidents.update` is standard for an incident note and adds live when escalation or another incident update changes who is paged or when.
 
 #### SURFACE-003 — A stranger agent runs a seeded on-call week under two company policies
 
