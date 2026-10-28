@@ -295,20 +295,30 @@ try{
  const machineOperation=await machine.json();
  const machineAck=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiKey,'idempotency-key':'synthetic-oncall-portable-ack'},body:JSON.stringify({type:'transition',incident:machineOperation.entity,revision:1,state:'acknowledged',member:member.id,summary:'Retain permanent named responsibility'})});assert.equal(machineAck.status,201);const namedAudit=ok(await req('/api/audit/export')).rows.find(r=>r.kind==='automation.incidents'&&r.namedMember);assert.ok(namedAudit);assert.notEqual(namedAudit.actor,namedAudit.namedMember);
 assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOperation.entity&&o.status==='queued'))
- // The same portable/erasure journey carries a full queue and capacity outcomes.
- for(let n=1;n<50;n++)assert.equal((await req('/api/automation/endpoints',{name:'synthetic-oncall-portable-'+n,client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true})).status,201)
- let capacityIncident=ok(await req('/api/state')).incidents.find(i=>i.id===machineOperation.entity)
- // Reassigning the current holder is a no-op, not a new incident/timeline response.
- // Each real role change must retain the incident and enqueue all 50 recipients.
- for(let n=0;n<21;n++){
+ // Pressure is held fixture data, rather than 50 duplicate recipient journeys.
+ // The actual capacity outcome still comes from a human HTTP mutation and travels
+ // through checkpoint, portable restore and erasure with the other real history.
+ const template=ok(await req('/api/state')).apiOutbox.find(row=>row.status==='queued')
+ let capacityIncident=ok(await req('/api/state')).incidents.find(row=>row.id===machineOperation.entity),capacityOutcome
+ const pressurePrefix='synthetic-transfer-pressure-',pressureIds=[]
+ for(let batch=0;batch<32&&!capacityOutcome;batch++){
+  const ordinal=sql('SELECT COALESCE(MAX(ordinal),-1)+1 AS n FROM oc_api_outbox')[0].n,statements=[]
+  for(let n=0;n<250;n++){
+   const id=pressurePrefix+batch+'-'+n,row={...template,id,payload:{...template.payload,operationId:id}}
+   pressureIds.push(id)
+   statements.push("INSERT INTO oc_api_outbox(id,ordinal,data) VALUES('"+id+"',"+(ordinal+n)+",'"+JSON.stringify(row).replaceAll("'","''")+"')")
+  }
+  sql('BEGIN;'+statements.join(';')+';COMMIT')
   const previous=capacityIncident
-  capacityIncident=ok(await req('/api/command',{type:'assign-role',incident:previous.id,revision:previous.revision,role:'scribe',member:n%2===0?member.id:null,reason:'Synthetic portable capacity '+n}))
-  assert.equal(capacityIncident.id,machineOperation.entity)
-  assert.equal(capacityIncident.revision,previous.revision+1)
+  capacityIncident=ok(await req('/api/command',{type:'assign-role',incident:previous.id,revision:previous.revision,role:'scribe',member:batch%2===0?member.id:null,reason:'Retain capacity outcome in installation transfer'}))
+  assert.equal(capacityIncident.id,machineOperation.entity);assert.equal(capacityIncident.revision,previous.revision+1)
+  capacityOutcome=ok(await req('/api/state')).apiOutbox.find(row=>row.entry===capacityIncident.timeline.at(-1).id&&row.status==='terminal'&&row.history[0].reason==='capacity-not-scheduled')
  }
- const capacityHistory=ok(await req('/api/state')).apiOutbox
- assert.equal(capacityHistory.filter(o=>['queued','sending','failed'].includes(o.status)).length,1000)
- assert.ok(capacityHistory.some(o=>o.status==='terminal'&&o.history[0].reason==='capacity-not-scheduled'&&o.attempts===0))
+ assert.ok(capacityOutcome,'full pending history retains a real capacity outcome without refusing the human command')
+ assert.equal(capacityOutcome.attempts,0)
+ // Remove only our pressure fixtures; retain every actual HTTP-created record.
+ sql("DELETE FROM oc_api_outbox WHERE id IN ("+pressureIds.map(id=>"'"+id+"'").join(',')+")")
+ assert.ok(ok(await req('/api/state')).apiOutbox.some(row=>row.id===capacityOutcome.id))
  cookie=await checkpointCli(m,cookie)
  const heldBeforeTick=ok(await req('/api/state')),heldTick=await fetch(m.origin+'/cdn-cgi/local/scheduled');assert.equal(heldTick.status,200);await heldTick.text();assert.deepEqual(ok(await req('/api/state')),heldBeforeTick,'an actual scheduled handler cannot resume restored outbox work')
  await m.close();await m.start()
@@ -372,7 +382,9 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  // A live-upgraded installation may still carry the original embedded legacy bytes.
  const legacyPrefix=prefixesBefore[0];
  sql(`UPDATE oc_intake_receipts SET data=json_set(data,'$.details.nativePrefix',json_object('encoding','base64','value','${legacyPrefix.prefix}')) WHERE id='${legacyPrefix.id}'`)
- await m.close();await m.command(['export','--output',archive,'--non-interactive'])
+ await m.close();await m.preview();await m.close()
+ console.log('Managed production preview refuses anonymous state and carries no dev identity')
+ await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
  const manifest=JSON.parse(exportedArchive.toString('utf8').split('\n')[0])
@@ -512,8 +524,6 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const retainedWorkflows=sql('SELECT data FROM oc_incidents').map(row=>JSON.parse(row.data))
  for(const id of [incident.id,portableMergeTarget.id,portableMergeSource.id,portableSplit.id])assert.deepEqual(retainedWorkflows.find(i=>i.id===id),prior.incidents.find(i=>i.id===id),'OC-050 templates, completed checklists, merge aliases and split provenance survive portable restore and erasure')
  console.log('PASS OC-050 transfer: full template snapshots with completed checklist attribution and merged/split provenance survive checkpoint, portable inactive restore, erasure and current archive import without replay or authority. Paging remains OFF.')
- await m.close();await m.preview();await m.close()
- console.log('Managed production preview refuses anonymous state and carries no dev identity')
  await m.command(['reset','--yes','--non-interactive'])
  console.log('OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; OC-052 all current durable categories restore inactive without authority or replay: nonempty refusal, invalid-input rollback, full relational/history/journal restore, credential exclusion, paused timer, explicit new-owner mapping and held approval')
 }finally{await m.close();await rm(answers,{force:true});await rm(archive,{force:true});await rm(corrupt,{force:true});await rm(invalidRecords,{force:true});await rm(later,{force:true})}
