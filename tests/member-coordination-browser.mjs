@@ -134,6 +134,10 @@ try {
   assert.deepEqual((await new AxeBuilder({page:owner.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
   await panel.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/oc023-public-teams-${width}.png`,fullPage:true});
  }
+ // The same Teams panel imports the pasted catalog through Preview and Apply at the journey's desktop width.
+ await owner.page.setViewportSize({width:1440,height:1000});await owner.page.goto(worker.origin+'/settings/team');const importPanel=owner.page.locator('.teams-import'),catalogTeam=ok(await call(owner.page,'/api/state')).teams[0];
+ await importPanel.getByText('Import from Backstage',{exact:true}).click();await importPanel.getByLabel('Backstage catalog',{exact:true}).fill(JSON.stringify([{kind:'Component',metadata:{name:'checkout'},spec:{owner:catalogTeam.name}}]));await importPanel.getByRole('button',{name:'Preview import',exact:true}).click();await importPanel.getByLabel('Import choice for Checkout',{exact:true}).selectOption('backstage');
+ await importPanel.getByRole('button',{name:'Apply import',exact:true}).click();await expect(importPanel.getByRole('status')).toHaveText('Saved');assert.equal(ok(await call(owner.page,'/api/state')).services.find(s=>s.id==='checkout').ownership.source,'backstage');
  // OC-023: both service forms preserve explicit unassigned ownership.
  for(const width of [1440,390]) {
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/services');await owner.page.reload();

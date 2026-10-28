@@ -1,4 +1,4 @@
-Old reference: `48f0ec81477e3270d90bb2460fa6412bdfc693dd` (main, 28 October 2026). Clauses done there: OC-001, OC-002, OC-003, OC-004, OC-005, OC-006, OC-007, OC-008, OC-010, OC-011, OC-012, OC-013, OC-014, OC-015, OC-016, OC-017, OC-018, OC-019, OC-020, OC-021, OC-022, OC-033, OC-037, OC-041, OC-042, OC-052, OC-053, OC-056, OC-057, OC-059 and OC-070.
+Old reference: `ab49afbe8bfc3f196b29aa1c82edc7647d8b743a` (main, 28 October 2026). Clauses done there: OC-001, OC-002, OC-003, OC-004, OC-005, OC-006, OC-007, OC-008, OC-010, OC-011, OC-012, OC-013, OC-014, OC-015, OC-016, OC-017, OC-018, OC-019, OC-020, OC-021, OC-022, OC-033, OC-037, OC-041, OC-042, OC-052, OC-053, OC-056, OC-057, OC-059 and OC-070.
 
 # Carried-done audit
 
@@ -32,7 +32,7 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-003 | 1 | A viewer reads the workspace | `tests/runtime.mjs:366` | asserted |
 | OC-003 | 1 | A viewer command is refused | `tests/runtime.mjs:367` | asserted |
 | OC-003 | 1 | A viewer archive and audit export are refused | `tests/runtime.mjs:371` | asserted |
-| OC-003 | 1 | A responder coordinates | none in a cited file: `tests/member-coordination-browser.mjs:178` shows it | none |
+| OC-003 | 1 | A responder coordinates | none in a cited file: `tests/member-coordination-browser.mjs:182` shows it | none |
 | OC-003 | 1 | A responder is refused administrator actions | none in a cited file | none |
 | OC-003 | 1 | An admin manages member roles | `tests/runtime.mjs:386` | asserted |
 | OC-003 | 1 | A held mutation whose author is downgraded publishes nothing | `tests/runtime-authority.mjs:59` | asserted |
@@ -169,7 +169,7 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-018 | 1 | The archive imports through rer import | `tests/transfer.mjs:241` | asserted |
 | OC-018 | 1 | The deploy dry run runs | none in a cited file | none |
 | OC-018 | 1 | Owner entry opens the workspace | `tests/activation-browser.mjs:35` | asserted |
-| OC-018 | 1 | An admin-created member signs in by password | `tests/member-coordination-browser.mjs:165` | asserted |
+| OC-018 | 1 | An admin-created member signs in by password | `tests/member-coordination-browser.mjs:169` | asserted |
 | OC-018 | old 2 | Hosted deploy, setup retirement, real emailed link, member reload and removal readback | moved to the register (R-1) | moved |
 | OC-019 | 1 | The held one-row data migrates with every held row unchanged | `tests/runtime.mjs:264` | asserted |
 | OC-019 | 1 | The held password signs in | `tests/runtime.mjs:273` | asserted |
