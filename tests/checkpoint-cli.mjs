@@ -263,7 +263,11 @@ export async function checkpointRoundTrip(w,cookie) {
   const checkpoint=JSON.parse(await readFile(file,'utf8'));exported(checkpoint,before)
   assert.equal(await cli(['restore',file,'--replace']),0,'populated CLI replacement succeeds')
   const next=(await readFile(session,'utf8')).trim()
-  assert.equal((await w.request('/api/state',undefined,cookie)).status,401,'CLI replacement revokes prior authority')
+  assert.notEqual(next,cookie,'CLI replacement publishes a new local session')
+  // Base installation identity is deliberately retained; only an existing
+  // Oncall session is revoked. Activation covers repeated-session revocation.
+  for(const local of cookie.split('; ').filter(c=>!c.startsWith('oncall_session_')))assert.ok(next.split('; ').includes(local),'CLI replacement retains installation cookies')
+  if(cookie.includes('oncall_session_'))assert.equal((await w.request('/api/state',undefined,cookie)).status,401,'CLI replacement revokes prior Oncall authority')
   assertCheckpointRestored(checkpoint,await checkpointReadback(w,next))
   return next
  }finally{await rm(directory,{recursive:true,force:true})}

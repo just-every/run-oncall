@@ -124,7 +124,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "36af690e298b5ee31c61db90cdf366c75653547aef238e5378f3b267165c3a3a",
+      "sha256": "163714f96b58baa02bb95afa483f35a43a7c711fa4f1fce7b79f3d8b0a2ba425",
       "executable": false
     },
     ".gitignore": {
@@ -616,7 +616,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "c414f50fd886209cdb8ebdc857e774bcfa9792fd3b233f5a75b17869671051c5",
+      "sha256": "83e32944fc004c33d8d21189e67aa6dec0523830dfe7d23f05502defadce4275",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -4748,7 +4748,7 @@
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
-      "sha256": "755fabb7fad10b412c1f59b4f0218c0ed75c975d4d87aaa348b8de76e8b354cf",
+      "sha256": "2b41910beec3b161bad5780b43d2875f1e3a583a7cefd9af8615019de9e02c7c",
       "executable": false
     },
     "tests/diagnostics.mjs": {
@@ -4896,7 +4896,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "af8f046462eaaf40143d6df3f2aa2798583e98541ffacd31559130892039c83a",
+      "sha256": "575a9b455a04c92ddf667547e9509ed9adc103b554a6c128d5de2f98b8703559",
       "executable": false
     },
     "tests/triage.mjs": {
@@ -4904,7 +4904,7 @@
       "executable": false
     },
     "tests/verify.mjs": {
-      "sha256": "14ced16c56c726f08f269402d4879f65d4d3597607c52452d0034b2e9377ab79",
+      "sha256": "59bf1bb9829223cd3cc9061e5e097aa5b6758a2c9084480c20309d51a6244f81",
       "executable": false
     },
     "tests/worker-server.mjs": {
