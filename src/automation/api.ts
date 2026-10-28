@@ -113,7 +113,7 @@ export function installAutomationManagement(api:any,deps:Deps) {
   item.clientRevision=client.revision;item.receiverRevision=receiver.revision;item.endpointRevision=endpoint.revision;
   item.authorized=true;item.due=new Date().toISOString();updateOutcome(item,'queued','protected-replay');
   auditKind(c.env.DB,'automation.replay');setAuditSubject(c.env.DB,'outbox',item.id);
-  await commitAutomation(c,state,deps.guard(c));return c.json(item);
+  await commitAutomation(c,state,deps.guard(c),token=>[c.env.DB.prepare("UPDATE oc_agent_outbox SET operation_key=? WHERE id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind('agent-replay-'+item.id+'-'+item.revision,item.id,token)]);return c.json(item);
  });
 }
 function clientGuard(client:Client,digest:string):Guard {

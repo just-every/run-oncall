@@ -14,6 +14,7 @@ import { commitSubjectErasure } from './changes/erasure'
 import { subjectErasureIdentity } from './subject-erasure-identity.ts'
 import { fail, validateArchive, type State } from './family/response-operations/domain'
 import { handoffSnapshot } from './handoff-store'
+import {eraseAttribution,doorErasure} from './agent-door/erasure'
 
 type Dependencies={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}}
 const guardStatement=(db:D1Database,sql:string,...values:(string|number|null)[])=>db.prepare(`INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN ${sql} THEN 1 ELSE 0 END`).bind(...values)
@@ -33,6 +34,7 @@ export async function eraseNativeSubject(c:any,deps:Dependencies) {
   const statements:D1PreparedStatement[]=[],tables:string[]=[],identities=[id],updated:Record<string,number>={},inserted:Record<string,number>={}
   const outstanding:{destination:string;state:string;reason:string}[]=[]
   const changedIncidents=new Set<string>()
+  const erasedNames:string[]=[],attributionSubjects=new Map<string,string>()
   let imported:Awaited<ReturnType<typeof prepareImportCustodyErasure>>|undefined
   const remember=(table:string)=>{if(!tables.includes(table))tables.push(table)}
   const remove=(key:keyof State,table:string,predicate:(row:any)=>boolean)=>{
@@ -93,12 +95,15 @@ export async function eraseNativeSubject(c:any,deps:Dependencies) {
    const client=targetKind==='client'?state.apiClients?.find(r=>r.id===targetId):undefined
    const endpoint=targetKind==='endpoint'?state.apiEndpoints?.find(r=>r.id===targetId):undefined
    if(!client&&!endpoint)fail('Unknown integration',404)
+   if(client){erasedNames.push(client.name);attributionSubjects.set(client.id,'Erased agent')}
+   if(endpoint)erasedNames.push(endpoint.name)
    const endpoints=(state.apiEndpoints??[]).filter(e=>targetKind==='endpoint'?e.id===targetId:e.client===targetId).map(e=>e.id)
    outbox(o=>endpoints.includes(o.endpoint)||targetKind==='client'&&o.client===targetId)
    remove('apiEndpoints','oc_api_endpoints',e=>endpoints.includes(e.id))
    eraseCredential('oc_endpoint_credentials','endpoint',endpoints)
    if(client){
     const label=await anonymous('client',targetId)
+    eraseAttribution(state,attributionSubjects)
     // Preserve historical machine attribution as an inactive, credential-free
     // erased identity. Never transfer a machine's claims to the erasing admin.
     for(const key of ['incidents','audit','services'] as const){
@@ -175,6 +180,7 @@ export async function eraseNativeSubject(c:any,deps:Dependencies) {
    remove('triage','oc_triage',r=>r.kind==='bulk'&&r.workflow&&(r.actor===id||r.workflow.member===id))
    for(const team of state.teams??[])if(team.members.includes(id)||team.managers.includes(id)){team.members=team.members.filter(member=>member!==id);team.managers=team.managers.filter(member=>member!==id);team.revision++;remember('oc_teams')}
    const oldName=member.name,names=new Set([oldName,...aliases])
+   erasedNames.push(...names);attributionSubjects.set(id,'Erased member')
    const redact=(text:string)=>{for(const name of names){const ranges=addressRanges(text,name).filter(([start,end])=>name.includes('@')||text.slice(start,end)===name&&!/[\p{L}\p{N}]/u.test(text[start-1]??'')&&!/[\p{L}\p{N}]/u.test(text[end]??''));text=ranges.reduceRight((value,[start,end])=>value.slice(0,start)+'Erased member'+value.slice(end),text)}return text}
    remove('triage','oc_triage',record=>{const selected=record.kind==='bulk'&&record.workflow&&redact(record.workflow.reason)!==record.workflow.reason;if(selected)erasedWorkflows.add(record.id);return selected})
    for(const operation of erasedWorkflows)await fence('workflow',operation)
@@ -276,6 +282,9 @@ export async function eraseNativeSubject(c:any,deps:Dependencies) {
   } else {
    fail('Choose an incident, native integration, API client or endpoint',400)
   }
+  eraseAttribution(state,attributionSubjects)
+  const door=await doorErasure(db,identities,erasedNames)
+  statements.push(...door.statements);for(const table of door.tables)remember(table)
   validateArchive(state)
   // The digest holds no subject content. It also rejects old rows maliciously
   // paired with a newer native journal on either restore door.

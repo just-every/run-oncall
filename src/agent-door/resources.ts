@@ -9,7 +9,7 @@ export function oncallResources(env:Bindings):ResourceDefinition[] {
   ['oncall://services/{id}/changes','Recent changes','incidents:read','changes','read'],
   ['oncall://schedules/{id}/coverage','Coordination coverage','schedules:read','schedules','coverage'],
   ['oncall://actions/{id}','Follow-up','actions:read','actions','read'],
-  ['oncall://automation/outbox/{id}','Minimal event outcome','integrations:read','automation','outbox'],
+  ['oncall://automation/outbox/{id}','Minimal event outcome','automation:read','automation','outbox'],
  ]
  return definitions.map(([uriTemplate,name,scope,area,verb])=>({uriTemplate,name,scope,classes:['standard'],mimeType:'application/json',
   classify:()=>[{class:'standard',facts:{measure:1}}],
@@ -25,7 +25,7 @@ export function oncallResources(env:Bindings):ResourceDefinition[] {
      if(!i)return null
      data=await readNative(env,ctx,area,verb,{id,incident:i.id})
     } else if(verb==='outbox') {
-     const n=await nativeContext(env,ctx,scope)
+     const n=await nativeContext(env,ctx,scope,true)
      data=n.state.apiOutbox?.find(o=>o.id===id&&n.services.includes(o.service))??refuse('not_found')
     } else data=await readNative(env,ctx,area,verb,area==='changes'?{service:id}:{id})
     return {json:data,untrusted:true}

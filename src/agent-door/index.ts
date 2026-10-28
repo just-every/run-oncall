@@ -43,14 +43,31 @@ export async function agentDoorResponse(request:Request,original:Bindings) {
 export async function personChange(request:Request,response:Response,env:Bindings,input:any) {
  if(!response.ok||request.method!=='POST'||request.headers.has('authorization')||!input)return
  const path=new URL(request.url).pathname
- if(!['/api/command','/api/teams'].includes(path)&&!/^\/api\/schedules\/[^/]+\/(?:apply|overrides)$/.test(path))return
+ if(!['/api/command','/api/teams','/api/paging/schedules'].includes(path)&&!/^\/api\/schedules\/[^/]+\/(?:apply|overrides)$/.test(path)&&!path.startsWith('/api/automation/'))return
  const session=await nativeSession(env,request)
  if(!session)return
  let output:any;try{output=await response.clone().json()}catch{return}
  if(output.changed===false)return
- const uri=path==='/api/command'?input.type==='service'?'oncall://services/'+output.id:input.incident?'oncall://incidents/'+input.incident:input.type==='declare'?'oncall://incidents/'+output.id:null:
-  path.startsWith('/api/schedules/')?'oncall://schedules/'+path.split('/')[3]+'/coverage':null
- if(!uri||uri.endsWith('undefined'))return
+ const uris=new Set<string>()
+ if(path==='/api/command') {
+  if(input.type==='service')uris.add('oncall://services/'+output.id)
+  else if(input.incident||input.type==='declare') {
+   const id=input.incident??output.id
+   uris.add('oncall://incidents/'+id);uris.add('oncall://incidents/'+id+'/review-material')
+   if(['action','action-update','complete','accept-action'].includes(input.type)) {
+    const action=input.action??(input.type==='action'?output.actions?.at(-1)?.id:undefined)
+    if(action)uris.add('oncall://actions/'+action)
+   }
+  }
+ } else if(path==='/api/paging/schedules'||path.startsWith('/api/schedules/'))uris.add('oncall://schedules/'+(path==='/api/paging/schedules'?output.id:path.split('/')[3])+'/coverage')
+ else {
+  for(const id of output.services??[])uris.add('oncall://services/'+id)
+  if(path==='/api/teams') {
+   const {loadWorkspace}=await import('../workspace-store')
+   for(const service of (await loadWorkspace(env.DB)).services.filter(s=>s.team===output.id))uris.add('oncall://services/'+service.id)
+  }
+  if(path==='/api/automation/dispatch'&&output.id)uris.add('oncall://automation/outbox/'+output.id)
+ }
  const person=await oncallPeople(env).person(session.member.id)
- if(person?.active)await oncallAgentDoor(env).emit({type:'native.updated',uri,person,data:{revision:output.revision??output.schedule?.revision}})
+ if(person?.active)for(const uri of uris)if(!uri.includes('undefined'))await oncallAgentDoor(env).emit({type:'native.updated',uri,person,data:{revision:output.revision??output.schedule?.revision}})
 }

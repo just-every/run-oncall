@@ -20,7 +20,7 @@ export default async function specialist({request,origin,cookie,tool}) {
  assert.deepEqual(again,ack)
  assert.equal(ack.commander,responder.id)
  assert.equal(ack.timeline.at(-1).preparedBy.sponsor.id,workspace.member.id)
- assert.match(ack.timeline.at(-1).preparedBy.label,/ for Rowan Ellis$/)
+ assert.ok(ack.timeline.at(-1).preparedBy.label.endsWith(' for '+workspace.member.name))
  const stale=await tool('oncall.notes.add',{incident:ack.id,text:'Stale note',expected_revision:1,idempotency_key:randomUUID()})
  assert.equal(stale.result?._meta?.['com.runeditrun/error']?.code,'revision_conflict')
  const clientKey=randomBytes(32).toString('hex')
@@ -37,7 +37,7 @@ export default async function specialist({request,origin,cookie,tool}) {
  const native=await record.json()
  assert.equal(native.commander,responder.id)
  assert.equal(native.timeline.at(-1).actor,client.id)
- assert.equal(native.timeline.at(-1).preparedBy.label,'Payments coordination client for Rowan Ellis')
+ assert.equal(native.timeline.at(-1).preparedBy.label,'Payments coordination client for '+workspace.member.name)
  console.log('PASS ONCALL probe 1: Business and retained scoped client acknowledgment, named responder, one effect and stale revision refusal; paging OFF')
  // Probe 2: submission cannot complete human-review work or become observed recovery.
  const action=await call('oncall.actions.create',{incident:ack.id,title:'Review the mitigation evidence',owner:responder.id,due:'2099-12-01',priority:'P1',completionPolicy:'human-review'})

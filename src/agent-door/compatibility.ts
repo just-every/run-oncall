@@ -28,20 +28,32 @@ export async function compatibilityMutation(c:any,family:string,input:any,key:st
  const service=family==='services'?input.id:['declare','manual-page'].includes(input.type)?input.service:family==='schedules'?input.service:incident?.service
  if(!client.services.includes(service)||!state.services.some(s=>s.id===service))fail('Record not found in this client scope',404)
  if(input.dependencies?.some((id:string)=>!client.services.includes(id)))fail('Cross-service reference refused',404)
- if(family==='services') {
+ const request=await changeHash(JSON.stringify([family,input])),keyHash=await changeHash(key)
+ const retained=state.apiOperations?.find(o=>o.client===client.id&&o.key===keyHash)
+ if(retained&&retained.request!==request)fail('Idempotency key already names different input',409)
+ const doorKey=key+'-credential-'+client.revision
+ const existing=await env.DB.prepare('SELECT id,request_hash,tool,args FROM oc_agent_transport WHERE client=? AND key_hash=?').bind(client.id,keyHash).first<{id:string;request_hash:string;tool:string|null;args:string}>()
+ if(existing&&existing.request_hash!==request)fail('Idempotency key already names different input',409)
+ if(existing?.tool) {
+  const saved=JSON.parse(existing.args),args={...saved,idempotency_key:doorKey}
+  if(retained&&saved.idempotency_key!==doorKey)delete args.expected_revision
+  const answer=await oncallAgentDoor(env).invoke(existing.tool,args,{...credential,person})
+  if(answer.outcome!=='done')return compatibilityRefusal(c,answer)
+  const operation=(answer.result as {data:any}).data.operation
+  if(!operation)fail('Native operation receipt unavailable; do not repeat with a new key',503)
+  return c.json(operation,200)
+ }
+ if(family==='services'&&!retained) {
   const current=state.services.find(s=>s.id===service)!
   if(input.etag!==await changeHash(JSON.stringify({...current,dependencies:(current.dependencies??[]).filter(id=>client.services.includes(id))})))fail('Service changed; supply its current etag',409)
  }
- const request=await changeHash(JSON.stringify([family,input])),keyHash=await changeHash(key)
- const existing=await env.DB.prepare('SELECT id,request_hash FROM oc_agent_transport WHERE client=? AND key_hash=?').bind(client.id,keyHash).first<{id:string;request_hash:string}>()
- if(existing&&existing.request_hash!==request)fail('Idempotency key already names different input',409)
- const operationId=existing?.id??crypto.randomUUID()
+ const operationId=existing?.id??retained?.id??crypto.randomUUID()
  let tool='',args:Record<string,any>={}
  if(family==='services'&&input.type==='service'){
   tool='services.update';args={...input}
   if(input.field!==undefined) {
    const current=state.services.find(s=>s.id===service)!
-   if(!['name','owner','runbook','pager','team'].includes(input.field)||JSON.stringify((current as any)[input.field]??null)!==JSON.stringify(input.from))fail('This value changed; reload before editing',409)
+   if(!['name','owner','runbook','pager','team'].includes(input.field)||!retained&&JSON.stringify((current as any)[input.field]??null)!==JSON.stringify(input.from))fail('This value changed; reload before editing',409)
    if(input.field==='team'){tool='services.ownership';args={id:current.id,team:input.to}}
    else args={...current,[input.field]:input.to}
   }
@@ -57,27 +69,34 @@ export async function compatibilityMutation(c:any,family:string,input:any,key:st
  if(family==='actions'&&['action','complete'].includes(input.type)){tool='actions.'+(input.type==='action'?'create':'submit');args={...input,id:input.action}}
  if(family==='schedules') {
   const {pagingSnapshot}=await import('../paging-store'),old=(await pagingSnapshot(env.DB)).archive.schedules.find(s=>s.id===input.id)
+  if(old&&(!client.services.includes(old.service)||old.service!==service))fail('Record not found in this client scope',404)
   // The retained API already uses an exact saved schedule revision. The native
   // coverage review is computed here, then checked again inside the typed tool.
-  if(old) {
+  if(retained) {
+   if(input.revision===0){tool='schedules.create';args={schedule:input}}
+   else {const from=Date.parse(retained.at);tool='schedules.update';args={id:input.id,schedule:input,from,to:from+7*86400000,digest:request}}
+  } else if(old) {
    const {reviewSchedule}=await import('../schedule-coverage/review'),from=Date.now(),to=from+7*86400000
    const review=await reviewSchedule(old,input,state,from,to)
    tool='schedules.update';args={id:old.id,schedule:input,from,to,digest:review.digest}
   } else {tool='schedules.create';args={schedule:input}}
  }
  if(!tool)fail('Action is not available in this API family',403)
- args={...args,operation_id:operationId,idempotency_key:key,...(input.revision===undefined?{}:{expected_revision:input.revision})}
- if(!existing)await env.DB.prepare('INSERT INTO oc_agent_transport(id,client,key_hash,request_hash,family,service,args) VALUES(?,?,?,?,?,?,?)')
-  .bind(operationId,client.id,keyHash,request,family,service,JSON.stringify(args)).run()
+ args={...args,operation_id:operationId,idempotency_key:doorKey,...(input.revision===undefined||retained?{}:{expected_revision:input.revision})}
+ if(!existing)await env.DB.prepare('INSERT INTO oc_agent_transport(id,client,key_hash,request_hash,family,service,args,tool) VALUES(?,?,?,?,?,?,?,?)')
+  .bind(operationId,client.id,keyHash,request,family,service,JSON.stringify(args),'oncall.'+tool).run()
  else {
   // Preserve exact preview time/digest and body on a retry.
   const saved=await env.DB.prepare('SELECT args FROM oc_agent_transport WHERE id=?').bind(operationId).first<{args:string}>()
   args=JSON.parse(saved!.args)
+  if(retained&&args.idempotency_key!==doorKey)delete args.expected_revision
+  args.idempotency_key=doorKey
+  await env.DB.prepare('UPDATE oc_agent_transport SET tool=? WHERE id=? AND tool IS NULL AND request_hash=?').bind('oncall.'+tool,operationId,request).run()
  }
  const answer=await oncallAgentDoor(env).invoke('oncall.'+tool,args,{...credential,person})
  if(answer.outcome!=='done')return compatibilityRefusal(c,answer)
  const data=(answer.result as {data:any}).data
  const operation=data.operation??state.apiOperations?.find(o=>o.id===operationId)
  if(!operation)fail('Native operation receipt unavailable; do not repeat with a new key',503)
- return c.json(operation,existing?200:201)
+ return c.json(operation,existing||retained?200:201)
 }

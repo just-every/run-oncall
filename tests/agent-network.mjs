@@ -8,6 +8,8 @@ export default {async fetch(request,{fixture}={}) {
  if(!fixture?.key||request.method!=='POST')return new Response('Refused',{status:403})
  const raw=await request.text(),timestamp=request.headers.get('x-oncall-timestamp'),signature=request.headers.get('x-oncall-signature')
  if(signature!==await hmac(fixture.key,timestamp+'.'+raw))return new Response('Signature refused',{status:401})
+ const attribution=request.headers.get('x-oncall-prepared-by')
+ if(attribution&&request.headers.get('x-oncall-prepared-signature')!==await hmac(fixture.key,timestamp+'.'+attribution+'.'+raw))return new Response('Attribution signature refused',{status:401})
  let body;try{body=JSON.parse(raw)}catch{return new Response('Invalid body',{status:400})}
  if(Object.keys(body).sort().join(',')!=='at,incident,operationId,revision,service,state,type'||body.service!=='agent-service'||request.headers.get('x-oncall-operation')!==body.operationId)return new Response('Projection refused',{status:403})
  const count=(attempts.get(body.operationId)??0)+1;attempts.set(body.operationId,count)

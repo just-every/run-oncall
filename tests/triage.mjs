@@ -1,5 +1,6 @@
 import {triageBulkCompletion} from './triage-bulk.mjs';
 import assert from 'node:assert/strict';
+import {allowAgentCoordination} from './agent-policy-fixture.mjs';
 import {randomBytes} from 'node:crypto';
 import {localWorker,ownerDoor} from './worker.mjs';
 import {localPart, mail, recoveryRules} from './email-fixtures.mjs';
@@ -13,6 +14,7 @@ const ok = (r, status = 200) => {assert.equal(r.status, status, JSON.stringify(r
 try {
   const setup = await w.request('/api/setup', {name: 'Storm commander', password: passwords.owner});
   const cookie = setup.cookie; ok(setup);
+  await allowAgentCoordination(w,cookie);
   let continuations = 0;
   const req = async (path, data) => {
     let response;

@@ -1,14 +1,15 @@
-import { fail, type State } from '../family/response-operations/domain';
+import { fail, type State, type AgentAttribution } from '../family/response-operations/domain';
 import { loadWorkspace, workspaceWrite } from '../workspace-store';
 import { changeHmac, equalSignature, openCredential } from '../changes/credentials';
 import { runtimeBindings } from '../auth.server';
 import { auditIdentity, auditKind, auditOutcome } from '../audit-store';
 import { activeOwner, endpointUrl, type Outbox, type OutboxState } from './model';
 import { endpointCustody } from './api';
+import {ToolRefusal} from '../modules/agent-door/index.ts';
 type Guard={sql:string;values:(string|number|null)[]};
 const now=()=>new Date().toISOString();
-export function updateOutcome(item:Outbox,status:OutboxState,reason:string) {
- item.status=status;item.revision++;item.history.push({at:now(),status,reason});
+export function updateOutcome(item:Outbox,status:OutboxState,reason:string,preparedBy?:AgentAttribution) {
+ item.status=status;item.revision++;item.history.push({at:now(),status,reason,...(preparedBy?{preparedBy}:{})});
  if(status!=='sending'){item.lease=null;item.leaseUntil=null;}
  if(item.history.length>100)fail('Operation history capacity reached',429);
 }
@@ -26,7 +27,7 @@ async function persist(env:any,state:State,guard:Guard) {
  if(result[0].meta.changes!==1)fail('Outbox state or authority changed; retry',409);
 }
 /** A bounded dispatch step. Only queued or explicitly retryable work runs; uncertainty never retries itself. */
-export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},selection?:{id:string;agentAdmitted:boolean}) {
+export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},selection?:{id:string;agentAdmitted:boolean;preparedBy?:AgentAttribution}) {
  const state=await loadWorkspace(env.DB);
  auditKind(env.DB,'automation.dispatch');
  const expired=expireLeases(state);
@@ -35,10 +36,17 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},sel
  const custody=await env.DB.prepare('SELECT principal,operation_key FROM oc_agent_outbox WHERE id=?').bind(item.id).first()
  if(custody&&!selection?.agentAdmitted) {
   const saved=JSON.parse(custody.principal),{oncallAgentDoor}=await import('../agent-door/index')
-  const admission=await oncallAgentDoor(env).invoke('oncall.automation.dispatch',{id:item.id,idempotency_key:custody.operation_key,expected_revision:item.revision},{
+  const admission=await oncallAgentDoor(env).invoke('oncall.automation.dispatch',{id:item.id,idempotency_key:custody.operation_key+'-attempt-'+item.attempts,expected_revision:item.revision},{
    person:{id:saved.sponsorId},agent:saved.agent,consent:saved.consent,clientId:saved.clientId,scopes:saved.scopes,
   })
-  return {processed:admission.outcome==='done'?1:0,id:item.id,admission:admission.outcome,code:admission.code}
+  if(admission.outcome==='refused'&&['unauthenticated','sponsor_unavailable','insufficient_scope'].includes(admission.code??'')) {
+   const fresh=await loadWorkspace(env.DB),pending=fresh.apiOutbox?.find(o=>o.id===item.id&&o.revision===item.revision)
+   if(pending){auditIdentity(env.DB,{actor:{kind:'agent',id:saved.agent.id},subject:{kind:'outbox',id:item.id},source:{kind:'member',id:saved.sponsorId}});updateOutcome(pending,'terminal','authority-revoked');await persist(env,fresh,{sql:'1',values:[]})}
+   return {processed:1,id:item.id,status:'terminal',admission:'refused',code:admission.code}
+  }
+  if(admission.code==='storage_unavailable')fail('Storage unavailable; no network admission occurred',503)
+  return admission.outcome==='done'?{...(admission.result as {data:object}).data,admission:'done'}:
+   {processed:0,id:item.id,status:item.status,admission:admission.outcome,code:admission.code??(admission.outcome==='pending'?'approval_required':undefined),...(admission.approval?{approval:admission.approval}:{})}
  }
  auditIdentity(env.DB,{subject:{kind:'outbox',id:item.id},source:{kind:'endpoint',id:item.endpoint}});
  const access=authorized(state,item),credential=await env.DB.prepare('SELECT custody FROM oc_endpoint_credentials WHERE endpoint=?').bind(item.endpoint).first();
@@ -49,8 +57,8 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},sel
  try {key=await openCredential(credential.custody,runtimeBindings(env).SESSION_SECRET,endpointCustody);}catch {
   updateOutcome(item,'terminal','credential-unavailable');auditOutcome(env.DB,'failed');await persist(env,state,guard);return {processed:1,id:item.id,status:item.status};
  }
- const lease=crypto.randomUUID();item.lease=lease;item.leaseUntil=new Date(Date.now()+30000).toISOString();item.attempts++;updateOutcome(item,'sending','dispatch');
- await persist(env,state,guard);
+ const lease=crypto.randomUUID();item.lease=lease;item.leaseUntil=new Date(Date.now()+30000).toISOString();item.attempts++;updateOutcome(item,'sending','dispatch',selection?.preparedBy);
+ try{await persist(env,state,guard)}catch{throw new ToolRefusal('storage_unavailable')}
  // No network effect precedes the durable lease/audit commit. Re-read all authority after custody work.
  const beforeSend=await loadWorkspace(env.DB),held=beforeSend.apiOutbox?.find(o=>o.id===item.id&&o.lease===lease&&o.status==='sending'),current=held&&authorized(beforeSend,held);
  const keys=await env.DB.prepare('SELECT custody FROM oc_endpoint_credentials WHERE endpoint=? AND custody=? AND EXISTS(SELECT 1 FROM oc_api_credentials WHERE client=?) AND EXISTS(SELECT 1 FROM oc_api_credentials WHERE client=?)').bind(item.endpoint,credential.custody,access.origin.id,access.receiver.id).first();
@@ -60,6 +68,15 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},sel
   return {processed:1,id:item.id,status:'terminal'};
  }
  const body=JSON.stringify(held.payload),timestamp=String(Math.floor(Date.now()/1000)),signature=await changeHmac(key,timestamp+'.'+body);
+ let attribution:Record<string,string>={}
+ if(custody) {
+  const saved=JSON.parse(custody.principal),sponsor=beforeSend.members.find(m=>m.id===saved.sponsorId)
+  if(sponsor) {
+   const label=saved.agent.name+' for '+sponsor.name
+   const shown=/^[\x20-\x7e]*$/.test(label)?label:'=?base64?'+btoa(String.fromCharCode(...new TextEncoder().encode(label)))+'?='
+   attribution={'x-oncall-prepared-by':shown,'x-oncall-prepared-signature':await changeHmac(key,timestamp+'.'+shown+'.'+body)}
+  }
+ }
  if(!await env.DB.prepare('SELECT 1 WHERE '+guard.sql).bind(...guard.values).first()) {
   const stopped=await loadWorkspace(env.DB),lease=stopped.apiOutbox?.find(o=>o.id===item.id&&o.lease===held.lease)
   if(lease){updateOutcome(lease,'interrupted','authority-revoked');await persist(env,stopped,{sql:'1',values:[]})}
@@ -68,7 +85,7 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},sel
  let status:OutboxState='uncertain',reason='network-ambiguous';
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
  try {
-  const response=await fetch(url,{method:'POST',redirect:'manual',signal:controller.signal,headers:{'content-type':'application/json','x-oncall-operation':item.id,'x-oncall-timestamp':timestamp,'x-oncall-signature':signature},body});
+  const response=await fetch(url,{method:'POST',redirect:'manual',signal:controller.signal,headers:{'content-type':'application/json','x-oncall-operation':item.id,'x-oncall-timestamp':timestamp,'x-oncall-signature':signature,...attribution},body});
   const disposition=response.headers.get('x-oncall-result')??'',receipt=response.headers.get('x-oncall-receipt')??'';
   const verified=equalSignature(receipt,await changeHmac(key,item.id+'.'+timestamp+'.'+disposition));
   if(verified&&disposition==='accepted'&&response.status>=200&&response.status<300){status='sent';reason='accepted';}
@@ -82,7 +99,7 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},sel
  // A revocation during flight cannot retract bytes. Keep the ambiguous boundary visible.
  if(!authorized(after,pending)){status='uncertain';reason='network-ambiguous';}
  if(status==='failed')pending.due=new Date(Date.now()+Math.min(3600000,30000*2**pending.attempts)).toISOString();
- updateOutcome(pending,status,reason);if(status==='uncertain')auditOutcome(env.DB,'uncertain');
+ updateOutcome(pending,status,reason,selection?.preparedBy);if(status==='uncertain')auditOutcome(env.DB,'uncertain');
  await persist(env,after,{sql:'1',values:[]});
  return {processed:1,id:item.id,status};
 }

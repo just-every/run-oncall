@@ -15,11 +15,27 @@ import {auditIdentity,auditKind,setAuditSubject} from '../audit-store'
 import {clientIdentity,clientScopes,isNativeClient} from './people'
 import {responseContext} from '../manual-pages/context'
 import {fireDeadline} from '../incident-deadlines/model'
+import catalogue from './catalogue.json'
+import {canonical} from '../modules/agent-door/policy/document.ts'
 import type {Bindings} from '../auth.server'
 type Context=ToolContext|ResourceContext
 export type NativeContext={state:State;member:Member;services:string[];guard:{sql:string;values:(string|number|null)[]}}
 export const refuse=(code:string):never=>{throw new ToolRefusal(code)}
+/** Credential-use metadata follows successful policy admission, never a refusal. */
+export async function touchClient(env:Bindings,ctx:ToolContext) {
+ if(!isNativeClient(ctx.clientId))return
+ const client=clientIdentity(ctx.clientId),at=new Date().toISOString(),token=crypto.randomUUID()
+ auditKind(env.DB,'automation.read')
+ auditIdentity(env.DB,{actor:{kind:'api-client',id:client.id},source:{kind:'api-client',id:client.id}})
+ const guard="EXISTS(SELECT 1 FROM oc_api_clients c JOIN oc_api_credentials k ON k.client=c.id JOIN oc_members m ON m.id=json_extract(c.data,'$.owner') WHERE c.id=? AND json_extract(c.data,'$.revision')=? AND json_extract(c.data,'$.active')=1 AND m.id=? AND json_extract(m.data,'$.role')='admin' AND json_extract(m.data,'$.active')=1)"
+ const result=await env.DB.batch([
+  env.DB.prepare('UPDATE workspace_control SET revision=revision+1,write_token=? WHERE id=1 AND '+guard).bind(token,client.id,client.revision,ctx.person.id),
+  env.DB.prepare("UPDATE oc_api_clients SET data=json_set(data,'$.lastUsed',?) WHERE id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(at,client.id,token),
+ ])
+ if(result[0].meta.changes!==1)return refuse('unauthenticated')
+}
 export async function nativeContext(env:Bindings,ctx:Context,scope:string,admin=false):Promise<NativeContext> {
+ if(ctx.agent.id.length>200||ctx.agent.name.length>200||/[\x00-\x1f\x7f-\x9f]/.test(ctx.agent.id+ctx.agent.name))return refuse('invalid_arguments')
  if(!ctx.scopes.includes(scope))return refuse('insufficient_scope')
  const state=await loadWorkspace(env.DB),member=state.members.find(m=>m.id===ctx.person.id&&m.active&&!m.erased)
  if(!member||member.role==='stakeholder')return refuse('unauthenticated')
@@ -62,7 +78,7 @@ export function projected(n:NativeContext):State {
 }
 export async function readNative(env:Bindings,ctx:Context,area:string,verb:string,args:Record<string,any>):Promise<any> {
  const scope=area==='changes'||area==='reviews'?'incidents:read':area+':read'
- const n=await nativeContext(env,ctx,scope,['access','imports'].includes(area))
+ const n=await nativeContext(env,ctx,scope,['access','imports','automation'].includes(area))
  if(area==='services') {
   const project=(s:State['services'][number])=>({...s,dependencies:(s.dependencies??[]).filter(id=>n.services.includes(id))})
   return verb==='list'?n.state.services.filter(s=>n.services.includes(s.id)).map(project):project(service(n,args.id))
@@ -121,6 +137,18 @@ export function prepared(ctx:ToolContext) {
 export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb:string,args:Record<string,any>):Promise<any> {
  const scope=['notes','deadlines'].includes(area)||area==='automation'&&verb==='dispatch'?'incidents:write':area==='automation'?'automation:write':area+':write'
  const n=await nativeContext(env,ctx,scope,['services','access','clients','endpoints','automation','teams'].includes(area))
+ if(args.operation_id&&isNativeClient(ctx.clientId)) {
+  const client=clientIdentity(ctx.clientId).id,prior=n.state.apiOperations?.find(o=>o.id===args.operation_id&&o.client===client&&n.services.includes(o.service))
+  if(prior){
+   const record=await env.DB.prepare('SELECT args,tool,client FROM oc_agent_transport WHERE id=?').bind(args.operation_id).first<{args:string;tool:string;client:string}>()
+   const definition=catalogue.find(t=>t.name==='oncall.'+area+'.'+verb)
+   const properties=definition?.inputSchema.properties??{}
+   const saved=record?JSON.parse(record.args):{}
+   const projected=Object.fromEntries(Object.entries(saved).filter(([key])=>Object.hasOwn(properties,key)))
+   if(!record||record.client!==client||record.tool!==definition?.name||canonical(projected)!==canonical(args))return refuse('idempotency_conflict')
+   return {id:prior.entity,revision:prior.revision,operation:prior}
+  }
+ }
  const before=new Set(n.state.incidents.flatMap(i=>i.timeline.map(e=>e.id)))
  const oldOutbox=new Set(n.state.apiOutbox?.map(o=>o.id)??[])
  const oldDeadlines=new Set(n.state.incidents.flatMap(i=>(i.deadlines??[]).map(d=>d.id)))
@@ -131,6 +159,7 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
   ...(area==='incidents'&&verb==='acknowledge'?{namedMember:{kind:'member',id:String(args.member)}}:{})})
  let result:any
  if(area==='deadlines') {
+  authority(n.state,n.member)
   const i=incident(n,args.incident),deadline=i.deadlines?.find(d=>d.id===args.id)
   const record=await env.DB.prepare('SELECT principal FROM oc_agent_deadlines WHERE id=? AND incident=?').bind(args.id,i.id).first<{principal:string}>()
   const saved=record?JSON.parse(record.principal):null
@@ -192,7 +221,7 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
    if(proposed.revision!==0||snapshot.archive.schedules.some(s=>s.id===proposed.id))return refuse('revision_conflict')
    const next=validateSchedule({...proposed,revision:1},n.state)
    bound({...snapshot.archive,schedules:[...snapshot.archive.schedules,next]})
-   scheduleChanges(n.state,[],[next],n.member.id)
+   scheduleChanges(n.state,[],[next],actor.id,who)
    const returned=await operationResult(env,n,ctx,args,next)
    n.guard.sql+=' AND EXISTS(SELECT 1 FROM paging_control WHERE revision=?)';n.guard.values.push(snapshot.revision)
    await saveNative(env,n,token=>[env.DB.prepare("UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(token,snapshot.revision,token),putSchedule(env.DB,next,token)])
@@ -210,7 +239,7 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
    schedule=review.schedule
   }
   bound({...snapshot.archive,schedules:snapshot.archive.schedules.map(s=>s.id===old.id?schedule:s)})
-  scheduleChanges(n.state,[old],[schedule],n.member.id)
+  scheduleChanges(n.state,[old],[schedule],actor.id,who)
   const returned=await operationResult(env,n,ctx,args,schedule)
   n.guard.sql+=' AND EXISTS(SELECT 1 FROM paging_control WHERE revision=?)';n.guard.values.push(snapshot.revision)
   await saveNative(env,n,token=>[env.DB.prepare("UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(token,snapshot.revision,token),putSchedule(env.DB,schedule,token)])
@@ -220,7 +249,7 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
   const item=n.state.apiOutbox?.find(o=>o.id===args.id&&n.services.includes(o.service))
   if(!item)return refuse('not_found')
   if(isNativeClient(ctx.clientId)&&item.client!==clientIdentity(ctx.clientId).id)return refuse('not_found')
-  if(verb==='dispatch')return dispatchOutbox(env,n.guard,{id:item.id,agentAdmitted:true})
+  if(verb==='dispatch')return dispatchOutbox(env,n.guard,{id:item.id,agentAdmitted:true,preparedBy:who})
   if(!['failed','terminal','interrupted'].includes(item.status)||item.history.some(h=>h.reason==='network-ambiguous'||h.reason==='lease-expired'))return refuse('outcome_uncertain')
   if(item.attempts>=5||unfinishedDeliveries(n.state)>=deliveryCapacity)return refuse('capacity_exhausted')
   const endpoint=n.state.apiEndpoints?.find(e=>e.id===item.endpoint&&e.active),client=n.state.apiClients?.find(c=>c.id===item.client&&c.active)
@@ -245,8 +274,8 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
  await saveNative(env,n,token=>[
   ...(n.state.apiOutbox??[]).filter(o=>!oldOutbox.has(o.id)).map(o=>env.DB.prepare("INSERT INTO oc_agent_outbox(id,principal,operation_key) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(o.id,JSON.stringify(custody),'agent-dispatch-'+o.id,token)),
   ...n.state.incidents.flatMap(i=>(i.deadlines??[]).filter(d=>!oldDeadlines.has(d.id)).map(d=>env.DB.prepare("INSERT INTO oc_agent_deadlines(id,incident,principal,operation_key) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(d.id,i.id,JSON.stringify(custody),'agent-deadline-'+d.id,token))),
+  ...(area==='automation'?[env.DB.prepare("UPDATE oc_agent_outbox SET operation_key=? WHERE id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind('agent-replay-'+result.id+'-'+result.revision,result.id,token)]:[]),
  ])
- if(area==='automation')await env.DB.prepare('UPDATE oc_agent_outbox SET operation_key=? WHERE id=?').bind('agent-replay-'+result.id+'-'+result.revision,result.id).run()
  if(area==='actions')ctx.emit('action.updated','oncall://actions/'+result.id,{incident:result.incident,revision:result.revision})
  if(area==='services'||area==='teams'||area==='access')ctx.emit(area+'.updated','oncall://services/'+(area==='services'?result.id:n.services[0]),{id:target})
  return result

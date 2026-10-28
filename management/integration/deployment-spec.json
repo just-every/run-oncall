@@ -339,6 +339,12 @@
       "name": "0151_agent_deadlines.sql",
       "sha256": "fa5c96036838a23384abfe7ea636e4e34d6df7503ceda010dd2ece3b47ea39c4",
       "sql": "CREATE TABLE oc_agent_deadlines (\n id TEXT PRIMARY KEY,\n incident TEXT NOT NULL REFERENCES oc_incidents(id) ON DELETE CASCADE,\n principal TEXT NOT NULL CHECK(json_valid(principal)),\n operation_key TEXT NOT NULL\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0152_agent_transport_tool.sql",
+      "sha256": "0afdf3cf2f2c74e8da44014ff1d9d12e2769a7a10e2392fbc410278479b4e9b1",
+      "sql": "-- Retain the exact typed action beside a compatibility request for restart/replay.\nALTER TABLE oc_agent_transport ADD COLUMN tool TEXT;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

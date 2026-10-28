@@ -11,6 +11,8 @@ export default async function initialize({request,origin,email,displayName,token
  const workspace=await call('/api/workspace')
  if(!workspace.member)throw Error('Native owner did not acquire a domain member binding')
  const owner=workspace.member.id
+ const finished=await request(new URL('/setup',origin).href,{method:'POST',redirect:'manual',headers:{origin,cookie,'content-type':'application/x-www-form-urlencoded'},body:'confirm=yes'})
+ if(finished.status!==303)throw Error('Native owner setup confirmation failed: HTTP '+finished.status)
  await call('/api/command',{type:'service',id:'agent-service',name:'Payments API',environment:'production',owner,runbook:['Inspect independent source evidence','Coordinate through the existing pager','Record what is known and uncertain'],pager:'',dependencies:[]})
  await call('/api/command',{type:'service',id:'agent-foreign',name:'Search API',environment:'production',owner,runbook:[],pager:''})
  const password='synthetic-agent-workspace-password'
