@@ -49,6 +49,9 @@ services and creator. Orchestration lists use `orchestrations`, ordinary details
 use `orchestration`, and router details use `orchestration_path` with `parent.id`,
 `sets[].rules[]`, `actions.dynamic_route_to` and `catch_all`. All original fields
 remain in erasable custody; reading a field never grants delivery authority.
+Schedule-only exports retain user team references as notes without requiring
+team records. Account bundles check those references against the supplied team
+details, alongside the service, policy and incident relationships.
 See [account file limits and receiving clauses](docs/move-in.md#pagerduty-account-saved-responses).
 
 

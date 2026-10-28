@@ -207,8 +207,10 @@ those integrations. Nothing is truncated. Narrow an export that exceeds either
 limit. Duplicate IDs within a kind, Opsgenie `data` envelopes selected as
 PagerDuty, and account objects with missing referenced users, policies, teams,
 schedules or services refuse the file. Include the missing details or correct
-the reference and preview again. Strict schedule and policy conversion refusals
-remain as described above.
+the reference and preview again. Schedule-only files from the unchanged
+four-category exporter retain user team references as notes without requiring
+a team collection. Strict schedule and policy conversion refusals remain as
+described above.
 
 Each source record has one review entry and one exclusive disposition: mapped,
 mapped with differences (including retained source evidence), or rejected. The
