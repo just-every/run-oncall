@@ -7,3 +7,9 @@ export const portabilityPolicy = {
   excludeTables: ['oc_move_in_consent','rer_command_receipts','oc_incumbent_credentials','oc_key_rate_usage','oc_key_rate_notified','oc_api_credentials','oc_endpoint_credentials','oc_email_erased_samples', 'oc_email_credentials', 'oc_audit_identities', 'oc_intake_credentials', 'oc_change_credentials', 'credentials', 'sessions', 'sources', 'login_attempts', 'operator_members', 'rer_erasure_blobs', 'rer_erasure_guard', 'rer_erasure_scope'],
   requiredConfiguration: ['OWNER_EMAIL', 'SESSION_SECRET', 'SETUP_TOKEN', 'AUTH_ORIGIN', 'MAIL_PROVIDER', 'MAIL_FROM'],
 }
+// Oncall tables that travel under Base's default rules (schedules with their overrides,
+// escalation policies, paused jobs, receipts, move-in records). Naming them lets a restore
+// refuse any table this policy does not classify (scripts/installer/archive-inventory.mjs).
+export const portableTables = ['paging_schedules', 'paging_policies', 'paging_jobs', 'paging_receipts', 'paging_callbacks', 'move_in_objects', 'move_in_previews']
+// Superseded by later migrations; archives made before them still carry it.
+export const historicalTables = ['workspace']

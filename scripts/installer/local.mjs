@@ -36,7 +36,8 @@ export const commandAdapter = createCommandAdapter(lifecycle, {
  site: { entry: 'src/site/pages.tsx', output: 'dist/site', declaration: 'deploy-site.json', config: 'vite.site.config.ts' },
  publicPages: ['/', '/docs', '/docs/install', '/signin/local'],
  dev: developmentTarget, preview: previewTarget, verify: ['pnpm', ['run', 'verify:app']], deploy: ownerDeploy('deploy.json', lifecycle),
- portability: localPortability({ database: 'oncall-local', policyModule: 'scripts/installer/archive-policy.mjs', transient: ['local runtime caches and logs'] }),
+ // managedData: a Platform data download (.zip) is staged in isolation and restored natively.
+ portability: localPortability({ database: 'oncall-local', policyModule: 'scripts/installer/archive-policy.mjs', transient: ['local runtime caches and logs'], managedData: true }),
  setup: { manifestFile: 'rer-setup.json' }, browserModule: 'scripts/installer/ui/seed.mjs',
  // Local dev identity: the local-only Worker entry, the build output rer build
  // scans for the dev layer.

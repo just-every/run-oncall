@@ -1455,8 +1455,12 @@
       "sha256": "d3027108ad8e08ceeddb0ed477d967b1207e40bb6bf5ae941854c534c2cf4004",
       "executable": false
     },
+    "scripts/installer/archive-inventory.mjs": {
+      "sha256": "2a27b77ecd47de63976ebc44a1a062847a466e89a27839aefe0a1fe359ff3afa",
+      "executable": false
+    },
     "scripts/installer/archive-policy.mjs": {
-      "sha256": "65d2152dc8076a63802b57bc9986ea3828cd14dd1c9f4fa41439717133a5a2b1",
+      "sha256": "95fa4a3706cf76b457f54eacc79e8909f7a346283a386032df3b883240b123cf",
       "executable": false
     },
     "scripts/installer/audit-archive.mjs": {
@@ -1464,7 +1468,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "477bb108e9d9fcb8abc96ed2e3e6491c51aa34f654943edc6dd657dd9f56ac2b",
+      "sha256": "eec575c9374a624987a3b03dcb4af9cc88849ba451e2781fa6e10d8ebc06e679",
       "executable": false
     },
     "scripts/installer/native-prefix-archive.mjs": {
@@ -4888,11 +4892,11 @@
       "executable": false
     },
     "src/portability-policy.d.mts": {
-      "sha256": "429feaf69bacf4ae689346c82edf809167f3a64adc03b874c547a04bc693f282",
+      "sha256": "106f53f462633f3295549238f89eb698500a957561b0dc5208527c7effdf8550",
       "executable": false
     },
     "src/portability-policy.mjs": {
-      "sha256": "784bf2505e6a94c9450c2c379f2b1a529f7ec2e5fc09c89d849e3208a2057e95",
+      "sha256": "6bd892c19986021980d69f48ac5922a439e4a4417cc3f13a1e03194a583c41fe",
       "executable": false
     },
     "src/raw.d.ts": {
