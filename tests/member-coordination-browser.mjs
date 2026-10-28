@@ -233,13 +233,22 @@ try {
  ok(await call(owner.page,'/api/command',{type:'service',id:'synthetic-oncall-61',name:'Payment gateway',environment:'production',owner:rosaRecord.id,runbook:['Private gateway recovery instructions'],pager:''}))
  await owner.page.goto(worker.origin+'/status');await owner.page.reload()
  const statusPanel=owner.page.getByRole('region',{name:'Internal business status'})
- await statusPanel.getByRole('heading',{name:'Internal status',exact:true}).waitFor()
- await statusPanel.getByText('Add business service',{exact:true}).click()
+ await statusPanel.getByRole('heading',{name:'Business services',exact:true}).waitFor()
+ // With no business services, creation opens automatically after the status read.
  await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
- await statusPanel.getByLabel('Owning team label',{exact:true}).fill('Payments')
+ const teamField=statusPanel.getByLabel('Owning team',{exact:true})
+ if(await teamField.count()){
+  if(await teamField.evaluate(e=>e.tagName==='SELECT'))await teamField.selectOption({index:0});else await teamField.fill('Payments')
+ }else{
+  const teams=ok(await call(owner.page,'/api/state')).teams
+  assert.equal(teams.length,1,'a form without an Owning team control has one team')
+  await expect(statusPanel.locator('input[type="hidden"][name="owningTeam"]')).toHaveValue(teams[0].name)
+  await expect(statusPanel.getByText('Owning team: '+teams[0].name,{exact:true})).toBeVisible()
+  console.log('OC-061 one-team branch: the form names its sole created team',teams[0].name)
+ }
  await statusPanel.getByLabel('Supporting technical services',{exact:true}).selectOption('synthetic-oncall-61')
  await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id)
- await statusPanel.getByLabel('Stakeholder audience',{exact:true}).selectOption(sam.id)
+ await statusPanel.getByRole('group',{name:'Stakeholder audience',exact:true}).getByRole('checkbox',{name:sam.name,exact:true}).check()
  await statusPanel.getByRole('button',{name:'Create business service',exact:true}).click()
  const checkout=statusPanel.getByRole('article',{name:'Checkout',exact:true})
  await checkout.getByText('Derived status: operational',{exact:true}).waitFor()
@@ -257,16 +266,18 @@ try {
  }
  for(const width of [1440,390])await statusCapture(owner.page,'derived-status',width)
  await checkout.getByText('Manage internal status',{exact:true}).click()
- await checkout.getByLabel('Override status',{exact:true}).selectOption('operational')
- await checkout.getByLabel('Override reason',{exact:true}).fill('Alternate gateway is processing payments')
- await checkout.getByRole('button',{name:'Set status override',exact:true}).click()
+ await checkout.getByLabel('Status set by hand',{exact:true}).selectOption('operational')
+ await checkout.getByLabel('Reason',{exact:true}).fill('Alternate gateway is processing payments')
+ await checkout.getByRole('button',{name:'Set status',exact:true}).click()
  await checkout.getByText(/Manual override: operational/).waitFor()
  for(const width of [1440,390])await statusCapture(owner.page,'override-reason',width)
  const samView=await open(1440);await passwordSignIn(samView.page,stakeholder)
- await samView.page.getByRole('heading',{name:'Internal status',exact:true}).waitFor()
+ await samView.page.getByRole('heading',{name:'Status',exact:true}).waitFor()
  const samCheckout=samView.page.getByRole('article',{name:'Checkout',exact:true})
- await samCheckout.getByLabel('Your subscription',{exact:true}).selectOption('true')
- await samCheckout.getByRole('button',{name:'Save subscription',exact:true}).click()
+ await samCheckout.getByText('Your subscription',{exact:true}).click()
+ const subscribed=samView.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/status'&&r.request().method()==='POST');
+ await samCheckout.getByLabel('Subscription',{exact:true}).selectOption('true')
+ assert.equal((await subscribed).status(),200)
  await samCheckout.getByRole('heading',{name:'Recorded impact obligations',exact:true}).waitFor()
  for(const width of [1440,390]){
   await samView.page.setViewportSize({width,height:1000});await samView.page.reload()

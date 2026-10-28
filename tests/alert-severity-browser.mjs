@@ -20,13 +20,16 @@ export async function alertSeverity(page,context,width) {
  await focusWorkspace(page)
  for(const severity of ['critical','warning','info']) {
   const title=`Checkout ${severity} ${width}`
-  const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true})})
+  await page.locator('.alert-row').filter({hasText:title}).click()
+  const card=page.getByRole('article',{name:'Alert details',exact:true})
   await card.locator('.priority').filter({hasText:severity}).waitFor()
+  await page.goto(origin+'/alerts')
  }
  await page.screenshot({path:`evidence/browser/alert-severity-${width}.png`,fullPage:true})
  for(const severity of ['critical','warning','info']) {
   const title=`Checkout ${severity} ${width}`
-  const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true})})
+  await page.locator('.alert-row').filter({hasText:title}).click()
+  const card=page.getByRole('article',{name:'Alert details',exact:true})
   await card.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
   await page.locator('.detail').getByRole('heading',{name:title,exact:true}).waitFor()
   const stored=await (await context.request.get('/api/state')).json()
@@ -55,8 +58,9 @@ async function singleIncidentPerAlert(page,context,width,service,source,key) {
  assert.deepEqual(results.map(result=>result.status()).sort(),[200,409],'only one simultaneous declaration is saved')
  assert.equal((await context.request.post('/api/command',{headers:{origin},data})).status(),409,'a repeated declaration is refused')
  await page.reload()
- const card=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true})})
- const link=card.getByRole('link',{name:'Open incident: '+title,exact:true})
+ await page.locator('.alert-row').filter({hasText:title}).click()
+ const card=page.getByRole('article',{name:'Alert details',exact:true})
+ const link=card.getByRole('link',{name:'In incident '+title,exact:true})
  await link.waitFor()
  assert.equal(await card.getByRole('button',{name:'Declare incident from alert',exact:true}).count(),0)
  const saved=await (await context.request.get('/api/state')).json()

@@ -1,8 +1,10 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { Action, Incident, Member } from '../family/response-operations/domain';
 import { Field, Form } from '../forms';
 import { EvidenceLink, utc } from './display';
 import './reviews.css';
+import {InlineConfirm} from '../app/autosave/InlineConfirm';
+import {shortDate,browserZone} from './time';
 
 export function followupOrder(a: Action, b: Action) {
   return Number(a.done) - Number(b.done) || (a.priority ?? 'P2').localeCompare(b.priority ?? 'P2') || a.due.localeCompare(b.due) || a.id.localeCompare(b.id);
@@ -10,8 +12,9 @@ export function followupOrder(a: Action, b: Action) {
 export function isOverdue(action: Action, now = Date.now()) {
   return !action.done && now >= Date.parse(action.due + 'T00:00:00.000Z') + 86400000;
 }
-type Props = {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>; incidentMode?: boolean};
-export function Followups({incident, members, busy, canEdit, mutate, incidentMode = false}: Props) {
+type Props = {incident: Incident; members: Member[]; busy: boolean; canEdit: boolean; mutate: (data: any) => Promise<any>; incidentMode?: boolean; onlyAction?:string; compact?:boolean; zone?:string};
+export function Followups({incident, members, busy, canEdit, mutate, incidentMode = false, onlyAction, compact=false, zone=browserZone()}: Props) {
+  if(compact)return <section className="followups">{incident.actions.filter(a=>(!onlyAction||a.id===onlyAction)&&!a.done).map(action=><CompactFollowup key={action.id} action={action} members={members} busy={busy} canEdit={canEdit} mutate={mutate} zone={zone}/>)}</section>;
   const shownTime = incidentMode ? (value: string) => new Date(value).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : utc;
   const name = (id: string) => members.find(member => member.id === id)?.name ?? (incidentMode ? 'Erased member' : id);
   return <section className="followups">
@@ -68,4 +71,16 @@ function CreateFollowup({members, busy, mutate, incidentMode = false, initiallyO
       {incidentMode ? <>{priorityField}<details><summary>More options</summary>{policyField}{escalationField}</details></> : <><div className="review-pair">{priorityField}{policyField}</div>{escalationField}</>}
     </Form>
   </details>;
+}
+
+function CompactFollowup({action,members,busy,canEdit,mutate,zone}:{action:Action;members:Member[];busy:boolean;canEdit:boolean;mutate:Props['mutate'];zone:string}) {
+ const [accept,setAccept]=useState(false),[evidence,setEvidence]=useState(false);
+ const evidenceRoot=useRef<HTMLDetailsElement>(null);
+ return <article className="followup-item" aria-label={action.title}><strong>{action.title}</strong><p className="review-meta">{members.find(m=>m.id===action.owner)?.name??'Former member'} · due {shortDate(action.due,zone)}{action.submission?' · awaiting acceptance':''}</p>
+  <div className="followup-row-actions">{action.evidence&&<EvidenceLink url={action.evidence}>Completion evidence</EvidenceLink>}
+  {canEdit&&<><details ref={evidenceRoot} open={evidence} onToggle={e=>setEvidence(e.currentTarget.open)}><summary>{action.submission?'Replace evidence':'Add evidence'}</summary><Form busy={busy} label={action.submission?'Replace evidence':'Add evidence'} onSubmit={async data=>{const result=await mutate({...data,type:'complete',action:action.id});if(result){setEvidence(false);evidenceRoot.current?.querySelector('summary')?.focus();}return result;}}><Field name="evidence" label="Completion evidence" type="url" value={action.submission?.evidence??''}/></Form></details>
+   {action.completionPolicy==='human-review'&&action.submission&&<button disabled={busy} onClick={()=>setAccept(true)}>Accept completion</button>}
+   {accept&&<InlineConfirm action="Accept this completion" keep="Keep open" reasonRequired busy={busy} onCancel={()=>setAccept(false)} onConfirm={async reason=>{if(await mutate({type:'accept-action',action:action.id,reason}))setAccept(false);}}>Accept this completion evidence as finishing the follow-up? Your reason is recorded.</InlineConfirm>}
+  </>}</div>
+ </article>;
 }

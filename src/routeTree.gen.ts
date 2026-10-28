@@ -22,12 +22,14 @@ import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as TeamRouteImport } from './routes/team'
+import { Route as AlertsAlertIdRouteImport } from './routes/alerts.$alertId'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IncidentsIdRouteImport } from './routes/incidents.$id'
 import { Route as OnCallIndexRouteImport } from './routes/on-call.index'
 import { Route as OnCallRotaRouteImport } from './routes/on-call.$rota'
 import { Route as OnCallNewRouteImport } from './routes/on-call.new'
+import { Route as ReviewsIncidentIdRouteImport } from './routes/reviews.$incidentId'
 import { Route as SettingsIndexRouteImport } from './routes/settings.index'
 import { Route as SettingsArchiveRouteImport } from './routes/settings.archive'
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings.integrations'
@@ -104,6 +106,11 @@ const TeamRoute = TeamRouteImport.update({
   path: '/team',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlertsAlertIdRoute = AlertsAlertIdRouteImport.update({
+  id: '/$alertId',
+  path: '/$alertId',
+  getParentRoute: () => AlertsRoute,
+} as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
@@ -133,6 +140,11 @@ const OnCallNewRoute = OnCallNewRouteImport.update({
   id: '/on-call/new',
   path: '/on-call/new',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewsIncidentIdRoute = ReviewsIncidentIdRouteImport.update({
+  id: '/$incidentId',
+  path: '/$incidentId',
+  getParentRoute: () => ReviewsRoute,
 } as any)
 const SettingsIndexRoute = SettingsIndexRouteImport.update({
   id: '/',
@@ -189,21 +201,23 @@ const SettingsServicesServiceIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/alerts': typeof AlertsRoute
+  '/alerts': typeof AlertsRouteWithChildren
   '/archive': typeof ArchiveRoute
   '/incidents': typeof IncidentsRouteWithChildren
   '/move-in': typeof MoveInRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/routing': typeof RoutingRoute
   '/schedules': typeof SchedulesRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRouteWithChildren
   '/status': typeof StatusRoute
   '/team': typeof TeamRoute
+  '/alerts/$alertId': typeof AlertsAlertIdRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
   '/on-call/$rota': typeof OnCallRotaRouteWithChildren
   '/on-call/new': typeof OnCallNewRoute
+  '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/settings/archive': typeof SettingsArchiveRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/move-in': typeof SettingsMoveInRoute
@@ -220,20 +234,22 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/alerts': typeof AlertsRoute
+  '/alerts': typeof AlertsRouteWithChildren
   '/archive': typeof ArchiveRoute
   '/incidents': typeof IncidentsRouteWithChildren
   '/move-in': typeof MoveInRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/routing': typeof RoutingRoute
   '/schedules': typeof SchedulesRoute
   '/services': typeof ServicesRoute
   '/status': typeof StatusRoute
   '/team': typeof TeamRoute
+  '/alerts/$alertId': typeof AlertsAlertIdRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
   '/on-call/$rota': typeof OnCallRotaRouteWithChildren
   '/on-call/new': typeof OnCallNewRoute
+  '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/settings/archive': typeof SettingsArchiveRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/move-in': typeof SettingsMoveInRoute
@@ -251,21 +267,23 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/alerts': typeof AlertsRoute
+  '/alerts': typeof AlertsRouteWithChildren
   '/archive': typeof ArchiveRoute
   '/incidents': typeof IncidentsRouteWithChildren
   '/move-in': typeof MoveInRoute
-  '/reviews': typeof ReviewsRoute
+  '/reviews': typeof ReviewsRouteWithChildren
   '/routing': typeof RoutingRoute
   '/schedules': typeof SchedulesRoute
   '/services': typeof ServicesRoute
   '/settings': typeof SettingsRouteWithChildren
   '/status': typeof StatusRoute
   '/team': typeof TeamRoute
+  '/alerts/$alertId': typeof AlertsAlertIdRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
   '/on-call/$rota': typeof OnCallRotaRouteWithChildren
   '/on-call/new': typeof OnCallNewRoute
+  '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/settings/archive': typeof SettingsArchiveRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/move-in': typeof SettingsMoveInRoute
@@ -295,10 +313,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/status'
     | '/team'
+    | '/alerts/$alertId'
     | '/docs/$slug'
     | '/incidents/$id'
     | '/on-call/$rota'
     | '/on-call/new'
+    | '/reviews/$incidentId'
     | '/settings/archive'
     | '/settings/integrations'
     | '/settings/move-in'
@@ -325,10 +345,12 @@ export interface FileRouteTypes {
     | '/services'
     | '/status'
     | '/team'
+    | '/alerts/$alertId'
     | '/docs/$slug'
     | '/incidents/$id'
     | '/on-call/$rota'
     | '/on-call/new'
+    | '/reviews/$incidentId'
     | '/settings/archive'
     | '/settings/integrations'
     | '/settings/move-in'
@@ -356,10 +378,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/status'
     | '/team'
+    | '/alerts/$alertId'
     | '/docs/$slug'
     | '/incidents/$id'
     | '/on-call/$rota'
     | '/on-call/new'
+    | '/reviews/$incidentId'
     | '/settings/archive'
     | '/settings/integrations'
     | '/settings/move-in'
@@ -377,11 +401,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
-  AlertsRoute: typeof AlertsRoute
+  AlertsRoute: typeof AlertsRouteWithChildren
   ArchiveRoute: typeof ArchiveRoute
   IncidentsRoute: typeof IncidentsRouteWithChildren
   MoveInRoute: typeof MoveInRoute
-  ReviewsRoute: typeof ReviewsRoute
+  ReviewsRoute: typeof ReviewsRouteWithChildren
   RoutingRoute: typeof RoutingRoute
   SchedulesRoute: typeof SchedulesRoute
   ServicesRoute: typeof ServicesRoute
@@ -489,6 +513,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alerts/$alertId': {
+      id: '/alerts/$alertId'
+      path: '/$alertId'
+      fullPath: '/alerts/$alertId'
+      preLoaderRoute: typeof AlertsAlertIdRouteImport
+      parentRoute: typeof AlertsRoute
+    }
     '/docs/': {
       id: '/docs/'
       path: '/docs'
@@ -530,6 +561,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/on-call/new'
       preLoaderRoute: typeof OnCallNewRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/reviews/$incidentId': {
+      id: '/reviews/$incidentId'
+      path: '/$incidentId'
+      fullPath: '/reviews/$incidentId'
+      preLoaderRoute: typeof ReviewsIncidentIdRouteImport
+      parentRoute: typeof ReviewsRoute
     }
     '/settings/': {
       id: '/settings/'
@@ -604,6 +642,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AlertsRouteChildren {
+  AlertsAlertIdRoute: typeof AlertsAlertIdRoute
+}
+
+const AlertsRouteChildren: AlertsRouteChildren = {
+  AlertsAlertIdRoute: AlertsAlertIdRoute,
+}
+
+const AlertsRouteWithChildren =
+  AlertsRoute._addFileChildren(AlertsRouteChildren)
+
 interface IncidentsRouteChildren {
   IncidentsIdRoute: typeof IncidentsIdRoute
 }
@@ -626,6 +675,17 @@ const SettingsServicesRouteChildren: SettingsServicesRouteChildren = {
 
 const SettingsServicesRouteWithChildren =
   SettingsServicesRoute._addFileChildren(SettingsServicesRouteChildren)
+
+interface ReviewsRouteChildren {
+  ReviewsIncidentIdRoute: typeof ReviewsIncidentIdRoute
+}
+
+const ReviewsRouteChildren: ReviewsRouteChildren = {
+  ReviewsIncidentIdRoute: ReviewsIncidentIdRoute,
+}
+
+const ReviewsRouteWithChildren =
+  ReviewsRoute._addFileChildren(ReviewsRouteChildren)
 
 interface SettingsRouteChildren {
   SettingsArchiveRoute: typeof SettingsArchiveRoute
@@ -666,11 +726,11 @@ const OnCallRotaRouteWithChildren = OnCallRotaRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
-  AlertsRoute: AlertsRoute,
+  AlertsRoute: AlertsRouteWithChildren,
   ArchiveRoute: ArchiveRoute,
   IncidentsRoute: IncidentsRouteWithChildren,
   MoveInRoute: MoveInRoute,
-  ReviewsRoute: ReviewsRoute,
+  ReviewsRoute: ReviewsRouteWithChildren,
   RoutingRoute: RoutingRoute,
   SchedulesRoute: SchedulesRoute,
   ServicesRoute: ServicesRoute,
