@@ -44,7 +44,9 @@ export async function openHistoryComparison(page) {
 export async function selectRoutedSource(page,input) {
  const source=typeof input==='string'?await page.evaluate(async id=>{const response=await fetch('/api/state');if(!response.ok)throw Error('Current routing sources could not be read');return ((await response.json()).intakeSources??[]).find(row=>row.id===id)},input):input;
  assert.ok(source,'the requested routed source is retained');
+ const rules=page.getByRole('region',{name:'Routing rules',exact:true});
+ await rules.waitFor();
  const picker=page.getByLabel('Routed integration',{exact:true});
  if(await picker.count())await picker.selectOption(source.id);
- await page.getByRole('region',{name:'Routing rules',exact:true}).getByRole('heading',{name:source.name,exact:true}).waitFor();
+ await rules.getByRole('heading',{name:source.name,exact:true}).waitFor();
 }

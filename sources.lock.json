@@ -4972,7 +4972,7 @@
       "executable": false
     },
     "tests/routing-browser.mjs": {
-      "sha256": "1c03c0ae3fe1fe81f7d4eefea02fbab2195f4d549c2028fd790223d7561671f8",
+      "sha256": "6a5cc54e215762f77a4288511ab7aa7a4f0d17f1d04680f9f1d3e638de95fa54",
       "executable": false
     },
     "tests/routing-native.mjs": {
