@@ -1,22 +1,18 @@
 import {spawnSync} from 'node:child_process'
 
 // The production build is shared; each registration walks a whole public flow.
-// Runtime's human and machine lifecycles are independent cases, so slow receipt
-// and dispatcher journeys do not hold up coordination and response reporting.
+// Human and machine lifecycles remain distinct cases. Related API and browser
+// flows share a shard to balance the complete installation transfer journey.
 const suites={
- runtime:[{file:'tests/runtime.mjs',part:'core'},'tests/changes.mjs','tests/triage.mjs'],
- machines:[{file:'tests/runtime.mjs',part:'machines'}],
- activation:['tests/activation.mjs'],
- intake:['tests/intake.mjs','tests/routing.mjs'],
- adoption:['tests/import-door.mjs'],
- signin:['tests/member-coordination-browser.mjs'],
- 'product-browser':['tests/product-browser.mjs'],
+ runtime:[{file:'tests/runtime.mjs',part:'core'},'tests/changes.mjs','tests/triage.mjs','tests/activation.mjs'],
+ intake:[{file:'tests/runtime.mjs',part:'machines'},'tests/intake.mjs','tests/routing.mjs','tests/import-door.mjs'],
+ browser:['tests/member-coordination-browser.mjs','tests/product-browser.mjs'],
  transfer:['tests/transfer.mjs'],
 }
 const lane=process.env.ONCALL_VERIFY_LANE,category=process.argv[2]
 if(lane&&!Object.hasOwn(suites,lane))throw Error(`Unknown verification lane: ${lane}`)
 if(category&&!['--flows','--browser'].includes(category))throw Error(`Unknown journey group: ${category}`)
-const browserLanes=new Set(['signin','product-browser','transfer'])
+const browserLanes=new Set(['browser','transfer'])
 const selected=Object.entries(suites).filter(([name])=>lane?name===lane:category==='--browser'?browserLanes.has(name):category==='--flows'?!browserLanes.has(name):true).flatMap(([,files])=>files)
 const commands=[
  ...(process.env.ONCALL_VERIFY_PREBUILT==='1'?[]:[
