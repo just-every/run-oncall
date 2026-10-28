@@ -16,7 +16,7 @@
     "deploy": "rer deploy",
     "test:runtime": "rer queue test:runtime -- sh -c \"node tests/runtime.mjs\"",
     "build:app": "rer queue build:app -- sh -c \"node scripts/build-exporter.mjs && vite build && node scripts/deployment-spec.mjs\"",
-    "verify:app": "node tests/verify.mjs",
+    "verify:app": "node scripts/verify-app.mjs",
     "reset": "rer reset",
     "export": "rer export",
     "import": "rer import",

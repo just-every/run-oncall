@@ -1,0 +1,145 @@
+{
+  "push": [
+    {
+      "name": "runtime",
+      "browser": false,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/runtime.mjs"
+      ]
+    },
+    {
+      "name": "activation",
+      "browser": false,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/activation.mjs"
+      ]
+    },
+    {
+      "name": "triage",
+      "browser": false,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/triage.mjs"
+      ]
+    },
+    {
+      "name": "changes",
+      "browser": false,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/changes.mjs"
+      ]
+    },
+    {
+      "name": "intake",
+      "browser": false,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/intake.mjs",
+        "node tests/routing.mjs",
+        "node tests/monitoring.mjs",
+        "node tests/urgency.mjs"
+      ]
+    },
+    {
+      "name": "reviews",
+      "browser": false,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/reviews.mjs"
+      ]
+    },
+    {
+      "name": "adoption-demo",
+      "browser": false,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/demo.mjs",
+        "node tests/move-in-adoption.mjs",
+        "node tests/import-door.mjs"
+      ]
+    },
+    {
+      "name": "signin",
+      "browser": true,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/signin-browser.mjs",
+        "node tests/member-coordination-browser.mjs"
+      ]
+    },
+    {
+      "name": "product-browser",
+      "browser": true,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/product-browser.mjs",
+        "node tests/automation-browser.mjs"
+      ]
+    },
+    {
+      "name": "hosted",
+      "browser": true,
+      "hosted": true,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/hosted.mjs"
+      ]
+    }
+  ],
+  "nightly": [
+    {
+      "name": "managed-browser",
+      "browser": true,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/activation-browser.mjs"
+      ]
+    },
+    {
+      "name": "transfer",
+      "browser": false,
+      "hosted": false,
+      "commands": [
+        "pnpm run check --profile first-party",
+        "pnpm run build",
+        "pnpm run typecheck",
+        "node tests/transfer.mjs"
+      ]
+    }
+  ]
+}
