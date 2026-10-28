@@ -4788,11 +4788,11 @@
       "executable": false
     },
     "tests/coordination-health.mjs": {
-      "sha256": "eaf57699947cb226112b895563ffe6c3386b17bcb2992aa645d2d490366ef926",
+      "sha256": "13de33b2c6b76539dd35e2fd21f1378337448c8e6ccc7c3a120d7e040cdaaced",
       "executable": false
     },
     "tests/demo.mjs": {
-      "sha256": "8a14b76194e5725db8fcf3defd4914ab8f2c321acd1001f20a16dab2734e55c4",
+      "sha256": "311e93646a8d19a4f399af288f27ab7073edbb29f54dd3718b72241f2f5479ec",
       "executable": false
     },
     "tests/diagnostics.mjs": {
@@ -5048,7 +5048,7 @@
       "executable": false
     },
     "vite.config.ts": {
-      "sha256": "92def11530d21cf2b031ccefa2f1a38640df2342dfa3f0ee039894848f954a0a",
+      "sha256": "45fad3a4efd1c74715fc46c7a979a10241df1094b3ccd4b8d590895f6253c787",
       "executable": false
     },
     "vite.site.config.ts": {

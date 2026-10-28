@@ -5,7 +5,7 @@ import { defineConfig } from 'vite'
 import { archiveOutputGuard } from '@runeditrun/rer/archive-output'
 import { docsSite } from './src/docs/build/plugin.ts'
 import { demoSockets } from './src/modules/demo/vite.mjs'
-import pkg from './package.json'
+import pkg from './package.json' with { type: 'json' }
 
 // Only `vite dev` loads the local-only entry and the checkout's dev key; a build
 // keeps src/server.ts and never sees either (rer build checks its output).
