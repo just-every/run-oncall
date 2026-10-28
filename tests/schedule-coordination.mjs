@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {localWorker} from './worker.mjs';
 const ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value;};
 export async function scheduleCoordination(){
+ await scheduleLayers();
  const w=await localWorker({}, {clock:true});
  try{
   const owner=await w.request('/api/setup',{name:'synthetic-oncall-250',password:'synthetic-oncall-250-password'});ok(owner);let cookie=owner.cookie;
@@ -114,3 +115,107 @@ export async function scheduleCoordination(){
  }finally{await w.close();}
 }
 if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1])await scheduleCoordination();
+
+export async function scheduleLayers(){
+ const w=await localWorker();
+ try{
+  const owner=await w.request('/api/setup',{name:'synthetic-oncall-240',password:'synthetic-oncall-240-password'});ok(owner);const cookie=owner.cookie,req=(path,input)=>w.request(path,input,cookie);
+  const first=owner.value.member,second=ok(await req('/api/members',{name:'synthetic-oncall-241',role:'responder',password:'synthetic-oncall-241-password'}),201),third=ok(await req('/api/members',{name:'synthetic-oncall-242',role:'responder',password:'synthetic-oncall-242-password'}),201);
+  const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-240',name:'synthetic-oncall-240',environment:'test',owner:first.id,runbook:[],pager:''}));
+  const rotation={anchorLocal:'2026-01-01T00:00',periodDays:1,members:[first.id],ambiguity:'earlier'};
+  let saved=ok(await req('/api/paging/schedules',{id:'synthetic-oncall-940',name:'synthetic-oncall-340',service:service.id,revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:rotation,backup:{...rotation,members:[]},overrides:[]}));
+  const from=Date.UTC(2026,0,1),to=from+366*86400000,path='/api/schedules/'+saved.id;
+  const legacy=ok(await req('/api/paging/preview',{scheduleId:saved.id,from,to:from+2*86400000}));
+  const layer=(n,timezone,member,startHour,endHour)=>({id:'synthetic-oncall-'+n,name:'synthetic-oncall-'+(n+100),role:'primary',timezone,kind:'business',rotation:{...rotation,members:[member]},start:saved.validFrom,end:null,weekdays:[1,2,3,4,5],startHour,endHour,holidayCalendars:[],holidayAction:'next',ptoAction:'next'});
+  const layers=[layer(244,'Europe/London',first.id,9,17),layer(245,'America/New_York',second.id,9,17),layer(246,'America/Los_Angeles',third.id,9,17)];
+  let draft={...saved,layers},input={schedule:draft,from,to},review=ok(await req(path+'/review',input));
+  assert.ok(review.clocks.some(c=>c.zone==='Europe/London'&&c.before!==c.after));assert.ok(review.clocks.some(c=>c.zone==='America/New_York'&&c.before!==c.after));assert.ok(review.clocks.some(c=>c.zone==='America/Los_Angeles'&&c.before!==c.after));
+  assert.ok(review.intervals.some(r=>r.newGap));assert.ok(review.coverage.length>0&&review.coverage.length<=20000);
+  ok(await req('/api/paging/preview',{schedule:draft,from,to:to+1}),400);
+  const preview=async(schedule,at)=>ok(await req('/api/paging/preview',{schedule,from:Date.parse(at),to:Date.parse(at)+3600000}))[0];
+  for(const [at,member] of [['2026-11-02T10:00:00Z',first.id],['2026-11-02T18:00:00Z',second.id],['2026-11-02T23:00:00Z',third.id],['2026-11-03T02:00:00Z',null]])assert.equal((await preview(draft,at)).primary,member);
+  const overlap=await preview(draft,'2026-11-02T15:00:00Z');assert.equal(overlap.primary,first.id);assert.deepEqual(overlap.windows[0].decisions.map(d=>d.state),['winner','overridden','business-off']);
+  const holiday={...draft,layers:layers.map(l=>({...l,holidayCalendars:['us-federal']}))};
+  const holidayAt='2026-11-26T15:00:00Z';assert.equal((await preview(draft,holidayAt)).primary,first.id);const off=await preview(holiday,holidayAt);assert.equal(off.primary,null);assert.ok(off.windows[0].decisions.some(d=>d.state==='holiday-off'));
+  const selectedHandoff={...draft,layers:layers.map((l,index)=>({...l,holidayCalendars:index<2?['us-federal']:[]}))};assert.equal((await preview(selectedHandoff,'2026-11-26T18:00:00Z')).primary,third.id);
+  assert.equal((await preview(holiday,'2026-07-03T10:00:00Z')).windows[0].decisions[0].state,'holiday-off');
+  const company={...draft,companyDates:[{id:'synthetic-oncall-247',name:'synthetic-oncall-247',date:'2026-11-02',timezone:'Europe/London',revision:1}],layers:layers.map(l=>({...l,holidayCalendars:['company']}))};const companyAt=await preview(company,'2026-11-02T15:00:00Z');assert.equal(companyAt.primary,second.id);assert.equal(companyAt.windows[0].decisions[0].state,'company-off');
+  const pto={id:'synthetic-oncall-248',member:first.id,start:'2026-11-02T09:00:00.000Z',end:'2026-11-02T17:00:00.000Z',reason:''};
+  const absence={...draft,pto:[pto]};assert.equal((await preview(absence,'2026-11-02T15:00:00Z')).primary,second.id);assert.equal((await preview(absence,'2026-11-02T10:00:00Z')).primary,null);
+  const gap=await preview({...absence,layers:layers.map(l=>({...l,ptoAction:'gap'}))},'2026-11-02T15:00:00Z');assert.equal(gap.primary,null);assert.equal(gap.windows[0].decisions[0].state,'pto-gap');
+  for(const kind of ['daily','weekly','custom']){const value=await preview({...draft,layers:[{...layers[0],kind,rotation:{...rotation,periodDays:kind==='weekly'?7:kind==='custom'?3:1}}]},'2026-11-02T23:00:00Z');assert.equal(value.primary,first.id);}
+  const repeated={...draft,layers:[{...layers[1],kind:'daily',rotation:{...rotation,anchorLocal:'2026-10-31T01:30',members:[first.id,second.id]}}]};
+  for(const at of ['2026-11-01T05:45:00Z','2026-11-01T06:15:00Z'])assert.equal((await preview(repeated,at)).primary,second.id);
+  const skipped=await preview({...repeated,layers:[{...repeated.layers[0],rotation:{...repeated.layers[0].rotation,anchorLocal:'2026-03-07T02:30'}}]},'2026-03-08T08:00:00Z');assert.equal(skipped.primary,null);assert.equal(skipped.windows[0].decisions[0].state,'unavailable');
+  for(const limits of [{validFrom:'2026-12-01T00:00:00.000Z'},{validUntil:'2026-10-01T00:00:00.000Z'}])assert.equal((await preview({...draft,...limits},'2026-11-02T15:00:00Z')).primary,null);
+  const login=await w.request('/api/login',{name:second.name,password:'synthetic-oncall-241-password'});ok(login);
+  ok(await w.request(path+'/pto-review',{revision:saved.revision,member:second.id,entries:[{...pto,member:second.id}],from,to},login.cookie),403);
+  const invalid=structuredClone(draft);invalid.layers[0].unknown=true;ok(await req('/api/paging/preview',{schedule:invalid,from,to:from+86400000}),400);
+  const workspaceBeforeFailure=ok(await req('/api/state'));
+  w.sql("CREATE TRIGGER synthetic_layers_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'SYNTHETIC_LAYERS_AUDIT_FAILURE'); END");
+  try{ok(await req(path+'/apply',{...input,digest:review.digest,confirmed:true}),503);assert.deepEqual(ok(await req('/api/paging/preview',{scheduleId:saved.id,from,to:from+2*86400000})),legacy);assert.deepEqual(ok(await req('/api/state')),workspaceBeforeFailure);}finally{w.sql('DROP TRIGGER synthetic_layers_audit');}
+  saved=ok(await req(path+'/apply',{...input,digest:review.digest,confirmed:true})).schedule;
+  for(const member of [first.id,second.id,third.id])assert.ok(ok(await req('/api/state')).scheduleRecords.some(row=>row.kind==='notice'&&row.member===member&&row.data.schedule===saved.id));
+  assert.deepEqual(ok(await req('/api/paging/preview',{scheduleId:saved.id,from,to})),review.coverage);ok(await req(path+'/apply',{...input,digest:review.digest,confirmed:true}),409);
+  const at='2026-11-02T15:00:00Z',now=ok(await req(path+'/now-next?at='+at)).now,values=ok(await req('/api/paging/preview',{scheduleId:saved.id,from:Date.parse(at),to:Date.parse(at)+3600000}));assert.deepEqual(values[0],now);
+  const feed=ok(await req(path+'/calendar.ics?from='+at+'&to=2026-11-02T16:00:00Z')).replace(/\r\n /g,'');for(const id of [...layers.map(l=>l.id),first.id,second.id,third.id])assert.equal(feed.includes(id),false);
+  for(const window of now.windows)if(window.explanation)assert.ok(feed.includes(window.explanation.replaceAll(';','\\;').replaceAll(',','\\,')));
+  const upload={revision:saved.revision,member:first.id,content:await (await import('node:fs/promises')).readFile('tests/fixtures/pto-calendar.ics','utf8'),from,to};
+  const imported=ok(await req(path+'/pto-review',upload));assert.equal(imported.import.entries.length,3);assert.equal(imported.import.refused.length,1);assert.ok(imported.import.refused[0].line>0);
+  for(const action of ['pto-review','pto-apply'])ok(await w.request(path+'/'+action,upload),401);
+  const before=ok(await req('/api/paging/archive'));ok(await req(path+'/pto-apply',{...upload,digest:imported.digest,confirmed:false}),409);assert.deepEqual(ok(await req('/api/paging/archive')),before);
+  saved=ok(await req(path+'/pto-apply',{...upload,digest:imported.digest,confirmed:true})).schedule;assert.equal(saved.pto.length,3);
+  const nextInput={revision:saved.revision,member:second.id,entries:[{...pto,id:'synthetic-oncall-249',member:second.id}],from,to},nextReview=ok(await req(path+'/pto-review',nextInput));saved=ok(await req(path+'/pto-apply',{...nextInput,digest:nextReview.digest,confirmed:true})).schedule;assert.equal(saved.pto.length,4);ok(await req(path+'/pto-apply',{...upload,digest:imported.digest,confirmed:true}),409);
+  // Ordinary members use only the PTO doors; team-management authority stays intact.
+  let team=ok(await req('/api/teams',{id:'synthetic-pto-team',name:'Synthetic PTO team',visibility:'public',active:true,revision:0,members:[second.id,third.id],managers:[third.id]}));
+  ok(await req('/api/teams/ownership',{service:service.id,team:team.id,workspaceRevision:ok(await req('/api/state')).revision}));
+  let own=ok(await req('/api/paging/schedules',{...saved,id:'synthetic-self-pto',revision:0,primary:{...rotation,members:[second.id]},backup:{...rotation,members:[]},layers:[],pto:[]}));
+  const ownPath='/api/schedules/'+own.id,asMember=(action,body)=>w.request(ownPath+'/'+action,body,login.cookie);
+  const range={from:Date.UTC(2026,10,2),to:Date.UTC(2026,10,3)},self={revision:own.revision,member:second.id,entries:[{...pto,id:'synthetic-self-entry',member:second.id}],...range};
+  const noWrite=async(perform,status)=>{const workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state'));ok(await perform(),status);assert.deepEqual(ok(await req('/api/state')),workspace);assert.deepEqual(ok(await req('/api/paging/state')),paging);};
+  let selfReview=ok(await asMember('pto-review',self));
+  assert.ok(selfReview.intervals.some(row=>row.before===second.id&&row.after===null&&row.newGap));
+  await noWrite(()=>asMember('pto-apply',{...self,digest:selfReview.digest,confirmed:false}),409);
+  own=ok(await asMember('pto-apply',{...self,digest:selfReview.digest,confirmed:true})).schedule;
+  assert.equal(own.revision,self.revision+1);assert.equal(own.pto[0].member,second.id);assert.deepEqual(own.primary.members,[second.id]);
+  const afterPTO=ok(await req('/api/paging/preview',{scheduleId:own.id,...range}));assert.ok(afterPTO.some(row=>row.primary===null));assert.deepEqual(afterPTO,selfReview.coverage);
+  const selfICS={revision:own.revision,member:second.id,content:'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20261103T090000Z\nDTEND:20261103T170000Z\nSTATUS:CONFIRMED\nEND:VEVENT\nEND:VCALENDAR',...range};
+  selfReview=ok(await asMember('pto-review',selfICS));assert.equal(selfReview.import.entries.length,1);
+  own=ok(await asMember('pto-apply',{...selfICS,digest:selfReview.digest,confirmed:true})).schedule;
+  assert.equal(own.revision,self.revision+2);assert.equal(own.pto.length,2);
+  await noWrite(()=>asMember('pto-apply',{...self,digest:selfReview.digest,confirmed:true}),409);
+  for(const action of ['pto-review','pto-apply']){
+   await noWrite(()=>asMember(action,{...self,revision:own.revision,member:third.id,entries:[{...pto,member:third.id}]}),403);
+   await noWrite(()=>asMember(action,{...self,revision:own.revision,entries:[{...pto,member:third.id}]}),400);
+  }
+  // The same authenticated member cannot repurpose the general editing doors.
+  for(const action of ['review','apply'])await noWrite(()=>asMember(action,{schedule:{...own,name:'Unauthorized rename'},...range}),404);
+  await noWrite(()=>asMember('overrides',{revision:own.revision,override:{id:'synthetic-denied-cover',member:second.id,role:'primary',start:pto.start,end:pto.end}}),404);
+  const otherTeam=ok(await req('/api/teams',{id:'synthetic-other-team',name:'Synthetic other team',visibility:'public',active:true,revision:0,members:[third.id],managers:[third.id]}));
+  const otherService=ok(await req('/api/command',{type:'service',id:'synthetic-other-service',name:'Synthetic other service',environment:'test',owner:first.id,runbook:[],pager:'',team:otherTeam.id}));
+  ok(await req('/api/teams/ownership',{service:otherService.id,team:otherTeam.id,workspaceRevision:ok(await req('/api/state')).revision}));
+  const other=ok(await req('/api/paging/schedules',{...own,id:'synthetic-other-rota',service:otherService.id,revision:0,pto:[]}));
+  for(const action of ['pto-review','pto-apply'])await noWrite(()=>w.request('/api/schedules/'+other.id+'/'+action,{...self,revision:other.revision},login.cookie),403);
+  const pending={...self,revision:own.revision,entries:[{...pto,id:'synthetic-revoked-entry',member:second.id}]},pendingReview=ok(await asMember('pto-review',pending));
+  team=ok(await req('/api/teams',{...team,members:[third.id]}));
+  for(const action of ['pto-review','pto-apply'])await noWrite(()=>asMember(action,action==='pto-apply'?{...pending,digest:pendingReview.digest,confirmed:true}:pending),403);
+  team=ok(await req('/api/teams',{...team,members:[second.id,third.id]}));
+  await noWrite(()=>asMember('pto-apply',{...pending,digest:pendingReview.digest,confirmed:true}),409);
+  ok(await req('/api/command',{type:'member',id:second.id,role:'responder',active:false}));
+  for(const action of ['pto-review','pto-apply'])await noWrite(()=>asMember(action,action==='pto-apply'?{...pending,digest:pendingReview.digest,confirmed:true}:pending),401);
+  ok(await req('/api/command',{type:'member',id:second.id,role:'responder',active:true}));
+  const managerLogin=await w.request('/api/login',{name:third.name,password:'synthetic-oncall-242-password'});ok(managerLogin);
+  const managerInput={...pending,member:third.id,entries:[{...pto,id:'synthetic-manager-entry',member:third.id}]};
+  const managerReview=ok(await w.request(ownPath+'/pto-review',managerInput,managerLogin.cookie));
+  own=ok(await w.request(ownPath+'/pto-apply',{...managerInput,digest:managerReview.digest,confirmed:true},managerLogin.cookie)).schedule;
+  const managerEdit={schedule:{...own,name:own.name+' managed'},...range},managerChange=ok(await w.request(ownPath+'/review',managerEdit,managerLogin.cookie));
+  own=ok(await w.request(ownPath+'/apply',{...managerEdit,digest:managerChange.digest,confirmed:true},managerLogin.cookie)).schedule;
+  assert.equal(own.name,managerEdit.schedule.name);
+  console.log('PASS OC-024 member PTO: ordinary self review/apply 200, self ICS 200, revisions 1→2→3, preview gap and retained slots; other member/team 403, spoofed entry 400, general edit 404, revoked team 403/session 401, stale 409 with no writes; manager own PTO and general editing 200; administrator PTO preserved');
+  const archive=ok(await req('/api/paging/archive'));assert.deepEqual(ok(await req('/api/paging/restore',{mode:'replace',archive})).schedules[0],saved);
+  const bad=structuredClone(archive);bad.schedules[0].pto[0].unknown=true;ok(await req('/api/paging/restore',{mode:'replace',archive:bad}),400);
+  for(const [key,count] of [['layers',25],['pto',1001],['companyDates',367]]){const excessive=structuredClone(archive);excessive.schedules[0][key]=Array.from({length:count},(_,index)=>({...((archive.schedules[0][key]??[])[0]??{}),id:'synthetic-oncall-'+(1000+index)}));ok(await req('/api/paging/restore',{mode:'replace',archive:excessive}),400);}
+  const workspace=ok(await req('/api/state'));ok(await req('/api/erasure/member/'+second.id,{workspaceRevision:workspace.revision,confirmation:'erase '+second.id,identitiesReviewed:true,importedPeople:[]}));const erased=ok(await req('/api/paging/state')).schedules.find(s=>s.id===saved.id);assert.equal(erased.pto.find(e=>e.id==='synthetic-oncall-249').member,null);assert.equal(erased.pto.length,4);assert.equal((await preview(erased,'2026-11-02T18:00:00Z')).primary,null);ok(await req('/api/paging/restore',{mode:'replace',archive}),409);
+  console.log('PASS OC-024 public layers: three-zone handoffs, overlap decisions, federal and company selections, PTO next and gap, rotation kinds, 366-day review, both DST transitions, stale review, atomic rollback, equality, ICS review and refusal, consecutive writes, archive strictness and non-attributing erasure');
+ }finally{await w.close();}
+}

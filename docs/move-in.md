@@ -1,8 +1,17 @@
-# Move in from Opsgenie or PagerDuty
+# Move in from a saved on-call export
 
 Open **Settings → Move in** to read schedules from PagerDuty or Opsgenie, then review the result before anything is imported. PagerDuty uses its own sign-in when this installation has a PagerDuty app; either provider can use a read-only key for this one read. The key stays in page and request memory and is never kept in an archive, audit entry or log. No provider schedules or routing are changed, and everything imported arrives paused. Paging stays off.
 
 Choose **Other: from a file** for a saved export. The private terminal fallback is folded under **No key? Use the exporter on your computer**. Both paths lead to Review, then Import paused. Adoption, Undo and integration activation each ask once on the same page.
+
+The shared file door accepts **PagerDuty, Opsgenie, Splunk On-Call, Jira Service
+Management Ops and Better Stack** exports. Choose **Other: from a file** for the
+additional sources. Preview retains the uploaded file and import bookkeeping;
+it writes zero native objects and grants no login or paging authority. These
+adapters have synthetic saved-response proof within their documented mapping
+limits; no real customer export, complete account migration or live cutover is
+certified. [Business imports and bounded catch-up](../MOVE-IN.md#optional-business-imports)
+use the same door and source allow-list.
 
 ### Connect this installation’s PagerDuty app
 

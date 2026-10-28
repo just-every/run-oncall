@@ -161,3 +161,19 @@
 .scheduling-escalation button { grid-column: 1 / -1; justify-self: start; }
 @media (max-width: 899px) { .scheduling-escalation fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 699px) { .scheduling-now-next .scheduling-form-grid { grid-template-columns: 1fr; } }
+
+.oc-coverage-rules {font-size: 14px; min-width: 0; overflow-wrap: anywhere;}
+.oc-coverage-rules fieldset {min-width: 0; margin: 1rem 0; padding: .75rem;}
+.oc-coverage-rules input, .oc-coverage-rules select, .oc-coverage-rules button {font-size: 14px; min-height: 44px; max-width: 100%;}
+.oc-rule-weekdays {display: flex; flex-wrap: wrap; gap: .5rem;}
+.oc-rule-weekdays label {display: flex; align-items: center; min-height: 44px; gap: .5rem;}
+.oc-rule-weekdays input {width: 20px;}
+.oc-coverage-rules [role="status"]:focus {outline: 2px solid currentColor;}
+
+.scheduling-now-role .scheduling-rule {font-size: 14px; overflow-wrap: anywhere;}
+
+.oc-preview ol {max-height: 32rem; overflow: auto;}
+.oc-preview details ul, .oc-coverage-rules details ul {max-height: 20rem; overflow: auto;}
+.oc-preview .oc-rule-explanation {font-size: 14px;}
+
+.oc-preview {overflow-wrap: anywhere;}
