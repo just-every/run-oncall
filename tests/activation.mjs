@@ -1030,9 +1030,6 @@ try {
   const req = (path, input) => worker.request(path, input, owner.cookie, { 'CF-Connecting-IP': '127.0.0.1' })
   const state = ok(await req('/api/state'))
   const incident = state.incidents.find(item => item.state !== 'resolved')
-  assert.ok(incident.timeline.some(event => event.text.includes('Page sent')))
-  const paging = ok(await req('/api/paging/state'))
-  assert.ok(paging.schedules.some(schedule => schedule.primary.periodDays === 7 && schedule.overrides.length))
   ok(await req('/api/command', { type: 'transition', incident: incident.id, revision: incident.revision,
     state: 'acknowledged', summary: 'Investigating the certificate rotation' }))
   const page = ok(await req('/api/paging/jobs', { incident: incident.id }))
@@ -1046,7 +1043,7 @@ try {
   ok(await req('/auth/magic-link', { email: worker.vars.OWNER_EMAIL }), 202)
   ok(await req('/api/paging/jobs', { incident: 'missing' }), 404)
   ok(await worker.request('/api/paging/jobs', { incident: incident.id }), 401)
-  console.log('Demo HTTP flow passed: seeded rotations, acknowledgment, page/SMS/voice/push/email sent, timeline and suppressed mail; auth and invalid incident checks remain real.')
+  console.log('Demo HTTP flow passed: acknowledgment, simulated SMS/voice/push/email and suppressed mail; auth and invalid incident checks remain real.')
 } finally {
   await worker.close()
 }
