@@ -125,13 +125,13 @@ try {
    assert.equal(provenance[i].source,'backstage');
    assert.equal(provenance[i].entity,'component:default/'+id);
   }
-  const overCatalog=[...largeCatalog,{kind:'Component',metadata:{name:'synthetic-oncall-1231'},spec:{}}],overFacts=await teamFacts();
+  const overCatalog=[...largeCatalog,{kind:'Component',metadata:{name:'synthetic-oncall-1231'},spec:{}}],overFacts=await acceptedImports();
   const overPreview=ok(await req('/api/teams/backstage/preview',{catalog:overCatalog}),413);
   const overApply=ok(await req('/api/teams/backstage/apply',{catalog:overCatalog,digest:largePreview.digest,choices:{}}),413);
   assert.ok(typeof overPreview.error==='string'&&overPreview.error.length>0,'oversize import explains its refusal');
   assert.equal(overApply.error,overPreview.error,'both import doors share their refusal');
   assert.deepEqual(await records(),largeAfter,'oversize import writes no workspace records');
-  assert.deepEqual(await teamFacts(),overFacts,'oversize import writes no permanent audit');
+  assert.deepEqual(await acceptedImports(),overFacts,'oversize import records no accepted change');
   console.log('PASS OC-023 public teams and Backstage ownership: manager coverage, zero-write preview/refusals, atomic provenance, explicit conflict choice with history, manual ownership and repeat safety');
   // OC-023 ownerless services stay visible without turning the current admin into an owner.
   const unassigned={type:'service',id:'synthetic-oncall-23',name:'synthetic-oncall-23',environment:'production',owner:null,runbook:['synthetic-oncall-23 inspect retained evidence'],pager:''};

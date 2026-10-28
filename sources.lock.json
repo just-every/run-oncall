@@ -4752,7 +4752,7 @@
       "executable": false
     },
     "tests/changes.mjs": {
-      "sha256": "b6ecf9d66bda0511df62f312ab63a695da8f9e3a171137f3555427aacf67c2e3",
+      "sha256": "3ebda951687c1dbed0bc5f6d56dfe360d234e6daf0966ad86a1c785513c28e8a",
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
