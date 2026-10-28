@@ -1,0 +1,14 @@
+.autosave-saved { color: var(--oc-muted); font-size: 13px; font-weight: 400; margin-inline-start: 8px; }
+.autosave-feedback { font-size: 13px; color: var(--oc-ink); }
+.autosave-feedback .failure-line { margin-block: 8px; }
+.autosave-conflict { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; overflow-wrap: anywhere; }
+.autosave-confirm { margin-block: 12px; color: var(--oc-ink); }
+.autosave-confirm textarea { font: inherit; }
+.autosave-form { min-width: 0; }
+.scheduling-escalation.autosave-form fieldset { align-items: start; }
+.autosave-form output { overflow-wrap: anywhere; }
+.autosave-form .field, .autosave-form .scheduling-field { min-width: 0; }
+@media (max-width: 600px) {
+  .autosave-form input:not([type=checkbox]), .autosave-form select, .autosave-feedback button, .autosave-confirm button { min-height: 44px; }
+  .autosave-form .dependency-choice { display: flex; align-items: center; min-height: 44px; width: 100%; }
+}

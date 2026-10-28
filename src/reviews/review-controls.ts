@@ -23,7 +23,15 @@ export function reviewCommand(state:State,actor:Member,incident:Incident,input:a
  }
  if(input.type==='review'){
   if(incident.state!=='resolved')fail('Review requires resolved incident');
-  const review=text(input.text,'review',10000);
+  if (input.field !== undefined) {
+   if (!['review','rootCause','impact'].includes(input.field)) fail('Choose a review field');
+   input = {...input, [input.field === 'review' ? 'text' : input.field]: input.to};
+  }
+  const draftText=(value:unknown,label:string,max:number)=>{if(typeof value!=='string'||value.length>max)fail(`${label} must be at most ${max} characters`);return value.trim();};
+  if (input.text === undefined && input.rootCause === undefined && input.impact === undefined) fail('Choose a review field');
+  const review=input.accept===true?text(input.text,'review',10000):input.text===undefined?incident.review:draftText(input.text,'Review',10000);
+  if(input.rootCause!==undefined)incident.rootCause=draftText(input.rootCause,'Root cause',3000);
+  if(input.impact!==undefined)incident.impact=draftText(input.impact,'Impact',3000);
   if(input.accept===true){
    if(input.materialRevision!==incident.revision||input.materialWorkspaceRevision!==state.revision)fail('Review material changed; reload before accepting',409);
    incident.reviewAcceptance={rootCause:text(input.rootCause,'Human-accepted root cause',3000),impact:text(input.impact,'Human-accepted impact',3000),by:actor.id,at,materialRevision:incident.revision,workspaceRevision:state.revision};
@@ -36,6 +44,7 @@ export function validateReviewFields(state:State){
  const member=(id:any)=>state.members.some(m=>m.id===id),date=(v:any)=>typeof v==='string'&&Number.isFinite(Date.parse(v));
  const exact=(v:any,keys:string[])=>v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length===keys.length&&keys.every(k=>Object.hasOwn(v,k));
  for(const incident of state.incidents){
+  for(const field of ['rootCause','impact'] as const)if(incident[field]!==undefined&&(typeof incident[field]!=='string'||incident[field]!.length>3000))fail('Invalid review draft');
   const review=incident.reviewAcceptance;
   if(review!==undefined&&(!exact(review,['rootCause','impact','by','at','materialRevision','workspaceRevision'])||!member(review.by)||!date(review.at)||!Number.isSafeInteger(review.workspaceRevision)||review.workspaceRevision<0||!Number.isSafeInteger(review.materialRevision)||review.materialRevision<1||review.materialRevision>=incident.revision||!incident.review||incident.state!=='resolved'))fail('Invalid accepted review');
   if(review){text(review.rootCause,'Accepted root cause',3000);text(review.impact,'Accepted impact',3000);}
