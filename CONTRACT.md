@@ -826,7 +826,7 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 1. During a New York-to-London handoff, trigger a high-urgency alert: the London responder receives the voice call and the SMS, acknowledges by SMS reply, and the timeline records each attempt with its provider and country.
 2. Disable the first provider for the UK and observe the second provider reach the same handset.
 3. Compare the per-country provider-acceptance times with the OC-064 bar and the per-country USD charges with the usage report.
-4. Trigger three pages to the London responder together and acknowledge all of them from one bundled SMS reply code (OC-082).
+4. Trigger three pages to the London responder together and acknowledge all of them from one bundled SMS reply code (OC-071 bundle, OC-082 reply code).
 5. International provider attempts prove door rule D-1: atomic rollback, subject-erasure-safe export and interruption at the execution boundary.
 
 #### OC-067 — Service alert channels and interactive alert messages
