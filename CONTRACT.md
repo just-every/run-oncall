@@ -69,7 +69,7 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 | BASE-AGENT-003 | Records are resources | SURFACE-001 | not run |
 | BASE-AGENT-004 | Business identity and short-lived tokens | SURFACE-003 | not run |
 | BASE-AGENT-005 | An agent acts as a person in a role | SURFACE-003 | not run |
-| BASE-AGENT-006 | Every action declares its risk class | SURFACE-002 | not run |
+| BASE-AGENT-006 | Every action declares its risk class | SURFACE-002, SURFACE-004 | not run |
 | BASE-AGENT-007 | The company's policy decides | SURFACE-003 | not run |
 | BASE-AGENT-008 | Truthful attribution | SURFACE-003 | not run |
 | BASE-AGENT-009 | Every agent action is audited | SURFACE-003 | not run |
@@ -984,11 +984,11 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 **How Oncall computes each class.**
 - **standard**: a call that stays inside the workspace and can be undone or superseded in Oncall: reads, notes, acknowledgment, reassignment, snooze, merges, drafts, triage views and follow-up edits; measured in items.
-- **live**: a call that changes who is paged or when, or how a production service behaves: rotations, overrides and swaps, escalation, urgency, response and user-assignment rules, notification channels and delays, routing rule sets, pages and responder requests, readiness drills, and library actions and remediation plans; measured by service.
+- **live**: a call that changes who is paged or when, or how a production service behaves: rotations, overrides and swaps, escalation, urgency, response and user-assignment rules, notification channels and delays, routing rule sets, pages and responder requests, readiness drills, and library actions and remediation plans. It also covers intake modes, trigger and resolve rules, key activation or revocation, allowances and adapter bindings when they change which events admit or page; service edits that alter whom an active service pages; member changes affecting current or future coverage; erasure that changes coverage, intake or pending delivery; and state-replacing restore; measured by service.
 - **external**: a call that sends or exposes something to someone outside the business: a published internal or customer update, a Zoom or Teams incident bridge sent to its provider, a registered outbound endpoint and its replay, and a calendar feed an outside calendar service fetches; the counterparty is known for a recipient on record, new otherwise, and public for a public status page.
 - **commitment**: a sign-off others rely on: resolving a declared incident with its summary and evidence, reviewing hand-off copy, publishing an update, and accepting a root cause, impact, review or completion.
-- **access**: a call that changes standing authority: member roles and deactivation, team membership and private scope, a library action's allowed teams and roles, and API client grants; its direction is widens or narrows.
-- **security**: a call that handles credentials or protective settings: intake keys and email addresses, API client and endpoint keys, calendar feed secrets and SSO settings.
+- **access**: a call that changes standing authority: member roles and deactivation, team membership and private scope, a library action's allowed teams and roles, and API client grants. It also covers erasure of a member or standing grant, state-replacing restore, and SSO configuration that enables or changes just-in-time accounts, their default role or group-to-team or group-to-role mapping; its direction is widens or narrows.
+- **security**: a call that handles credentials or protective settings: intake keys and email addresses, API client and endpoint keys, calendar feed secrets and SSO settings, and library edits to executor bindings, second-person approval for runs by people or output redaction rules.
 - **destructive**: a call that cannot be undone in Oncall: erasure, a restore that replaces state, and an irreversible library or remediation action; measured in items.
 - **gated**: destination verification, whose code arrives on the responder's own phone or inbox and is entered by that person.
 - Oncall uses no money, accounts or sensitive class: it moves no money, provider numbers and sender registration are installation work, and it holds no health, ID, bank, card or payroll numbers.
@@ -1011,9 +1011,9 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.calendar.subscribe` | Issue or revoke a private calendar feed | OC-020, OC-025 | external · security | none |
 | `oncall.policies.update` | Publish escalation, urgency, response, timeout and user-assignment rules | OC-027, OC-056, OC-057, OC-058, OC-068 | live | none |
 | `oncall.routing.publish` | Publish routing rule sets, catch-alls and orchestration rules, and re-admit unrouted events | OC-043, OC-072, OC-083 | live | none |
-| `oncall.intake.keys` | Create, rotate, activate or revoke intake keys, allowances, email addresses, modes and adapters | OC-030, OC-031, OC-033, OC-042, OC-055, OC-070, OC-072, OC-084 | security | API (integrations) |
-| `oncall.services.update` | Maintain services, teams, ownership, dependencies and business services | OC-023, OC-061 | standard (+ access) | API (services) |
-| `oncall.members.update` | Add members, change roles and deactivate | OC-003, OC-039 | access | none |
+| `oncall.intake.keys` | Create, rotate, activate or revoke intake keys, allowances, email addresses, modes and adapters | OC-030, OC-031, OC-033, OC-042, OC-055, OC-070, OC-072, OC-084 | security (+ live) | API (integrations) |
+| `oncall.services.update` | Maintain services, teams, ownership, dependencies and business services | OC-023, OC-061 | standard (+ access) (+ live) | API (services) |
+| `oncall.members.update` | Add members, change roles and deactivate | OC-003, OC-039 | access (+ live) | none |
 | `oncall.contacts.update` | Enroll and verify a responder's destinations and notification rules | OC-026, OC-066 | standard (+ gated) (+ live) | none |
 | `oncall.handoffs.prepare` | Prepare or withdraw hand-off copy | OC-017 | standard | none |
 | `oncall.handoffs.review` | Review exact hand-off copy | OC-017 | commitment | none |
@@ -1022,19 +1022,19 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.reports.read` | Read response analytics, load, usage and readiness | OC-037, OC-044, OC-054 | standard | API (analytics) |
 | `oncall.changes.list` | List recent changes for a service, alert or incident | OC-065 | standard | none |
 | `oncall.archive.export` | Export the archive, a checkpoint or the permanent audit | OC-007, OC-015, OC-016, OC-041, OC-052 | standard | none |
-| `oncall.archive.restore` | Restore an archive or checkpoint, replacing state | OC-007, OC-013, OC-015, OC-016, OC-052 | destructive | none |
+| `oncall.archive.restore` | Restore an archive or checkpoint, replacing state | OC-007, OC-013, OC-015, OC-016, OC-052 | destructive · live · access | none |
 | `oncall.paging.history` | Acknowledge or cancel held historical paging jobs | OC-013 | standard | none |
-| `oncall.erasure.run` | Erase a person, incident, integration or change record | OC-040 | destructive | none |
+| `oncall.erasure.run` | Erase a person, incident, integration or change record | OC-040 | destructive (+ live) (+ access) | none |
 | `oncall.automation.clients` | Create, rotate or revoke API clients | OC-053 | access · security | none |
 | `oncall.automation.endpoints` | Register, rotate or revoke outbound event endpoints | OC-053 | external · security | none |
 | `oncall.automation.replay` | Replay a held or uncertain outbound event | OC-053 | external | none |
-| `oncall.actions.update` | Create, edit or retire library actions, including their executors, bounds and allowed teams and roles | OC-063 | standard (+ access) | none |
+| `oncall.actions.update` | Create, edit or retire library actions, including their executors, bounds and allowed teams and roles | OC-063 | standard (+ access) (+ security) | none |
 | `oncall.actions.run` | Run a library action through its named executor | OC-063 | live (+ destructive) | none |
 | `oncall.remediation.run` | Run a bounded remediation plan | OC-048 | live (+ destructive) | none |
 | `oncall.investigations.start` | Start or stop an investigation of an incident | OC-045 | standard | none |
 | `oncall.ownership.propose` | Prepare and apply ownership, dependency and runbook changes | OC-046 | standard (+ access) (+ live) | none |
 | `oncall.readiness.drill` | Schedule or run a readiness drill | OC-047, OC-054 | live | none |
-| `oncall.sso.configure` | Configure SSO connections, just-in-time accounts and required SSO | OC-039, OC-069 | security | none |
+| `oncall.sso.configure` | Configure SSO connections, just-in-time accounts and required SSO | OC-039, OC-069 | security (+ access) | none |
 
 **Resources.** `oncall://incidents/{id}`, `oncall://alerts/{id}`, `oncall://services/{id}`, `oncall://schedules/{id}`, `oncall://handoffs/{id}`, `oncall://changes/{id}` and `oncall://reports/{period}`. **Events.** `incident.declared`, `incident.acknowledged`, `incident.reassigned`, `incident.resolved`, `alert.triggered`, `alert.recovered`, `schedule.changed`, `handoff.reviewed` and `update.published`, with Base's approval, review and policy events. **Prompts.** "Work an incident" (OC-004, OC-050, OC-079), "Cover a shift" (OC-011, OC-024, OC-025), "Route a new monitor" (OC-033, OC-055, OC-072), "Prepare the hand-off and update" (OC-017, OC-051) and "Close the follow-ups" (OC-005, OC-036, OC-049).
 **Not tools, and why.** Device-only: the native apps and their lock-screen and offline behaviour (OC-029), and the SMS replies, voice keys and phone calls a responder makes from a handset (OC-035, OC-071, OC-082). A person's screen: the accessible web app (OC-009) and owner entry and sign-in (OC-018). Connectors: the Slack and Teams apps with their buttons and commands (OC-034, OC-067, OC-081), the sibling error and uptime sources (OC-032), the Terraform and OpenTofu provider, which is itself an OC-053 client (OC-062), and live incumbent APIs (OC-074). The import door: file move-in, resume and undo (OC-021, OC-022, OC-038). Installation facts: the release-1 outbound and paging boundaries (OC-006, OC-012), input bounds and retention (OC-008), health and commands (OC-010), upgrades (OC-019), standby (OC-028), timing bars and reference load (OC-064), memory capacity (OC-073), and Oncall's own delivery and timers, which run inside paging obligations rather than as a person's job (OC-075, OC-078, OC-080).
@@ -1078,6 +1078,21 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 1. Under the all-autonomous policy, the week completes with no person involved: no call waits for a person or is refused by policy, and the review feed is empty.
 2. Under the held policy (standard calls reviewed, every other class Oncall declares waiting for approval, which the test person grants), each live and commitment call waits with no effect and runs once approved, and the review feed holds the week's standard calls.
 3. An OC-053 service-account act in the same week reads as that service account, never as an agent's or a person's act.
+
+#### SURFACE-004 — Configuration, restore and erasure carry every affected class
+
+*Tier:* Agent surface · *From:* new · *Cites:* BASE-AGENT-006
+
+**Requirement.** Configuration, restore and erasure calls carry every class their effects meet under Oncall's class rules.
+
+**Acceptance.** Through MCP on Oncall's fixtures:
+1. `oncall.intake.keys` carries security and adds live when a mode, trigger or resolve rule, activation, revocation, allowance or adapter binding changes which events admit or page.
+2. `oncall.services.update` adds live when an edit changes whom an active service pages; a runbook-only edit remains standard.
+3. `oncall.members.update` carries access and adds live when a role or activation change affects current or future coverage; changing an unscheduled member carries access alone.
+4. `oncall.erasure.run` carries destructive, adds live when the erased subject changes coverage, intake or pending delivery, and adds access when it removes a member or standing grant; an incident-history-only erasure carries destructive alone.
+5. `oncall.archive.restore` carries destructive, live and access when it replaces state, pauses sends and schedules and revokes prior authority.
+6. `oncall.sso.configure` carries security and adds access when it enables or changes just-in-time accounts, their default role or group mapping; a signing-certificate-only rotation carries security alone.
+7. `oncall.actions.update` adds security when it changes an executor binding, second-person approval for runs by people or output redaction rules; a description-only edit remains standard.
 
 ## Push further
 
@@ -1189,8 +1204,8 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 7 | 15 | 0 | 22 |
-| Target and push further | 3 | 35 | 27 | 65 |
-| All | 10 | 50 | 27 | 87 |
+| Target and push further | 3 | 35 | 28 | 66 |
+| All | 10 | 50 | 28 | 88 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1276,6 +1291,7 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 | `SURFACE-001` | The registry equals this table, and the Base harness passes | target | missing |  | No implementing flow. No MCP door, tool registry or conformance harness exists; machine clients use only the OC-053 service-account API. |
 | `SURFACE-002` | Oncall computes each class from the call and its records | target | missing |  | No implementing flow. No tool or server-side class computation exists. |
 | `SURFACE-003` | A stranger agent runs a seeded on-call week under two company policies | target | missing |  | No implementing flow. No MCP door, company policy or specialist journey exists. |
+| `SURFACE-004` | Configuration, restore and erasure carry every affected class | target | missing |  | No implementing flow. No MCP door or server-side class computation exists for configuration, restore or erasure. |
 | `OC-045` | Investigate before the responder opens the alert | push-further | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Incident/alert/runbook context exists as in the audit; no investigator, telemetry or deploy connector is implemented. OC-041 audit and durable crash/lease outcomes for investigation agent grants and actions remain this clause's pre-shipping acceptance. |
 | `OC-046` | Keep ownership and runbooks current from changes | push-further | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Services, copied runbooks and human follow-ups exist; change watching/proposals are missing. OC-041 audit and durable crash/lease outcomes for ownership/runbook agent grants and actions remain this clause's pre-shipping acceptance. |
 | `OC-047` | Continuously rehearse coverage and standby readiness | push-further | partial | `src/schedule-api.ts`; `src/delivery.ts`; `tests/activation.mjs` | Now/next reveals static gaps and production sends refuse; continuous readiness and scheduled live drills are missing. OC-041 audit and durable crash/lease outcomes for readiness agent grants, actions and drills remain this clause's pre-shipping acceptance. |

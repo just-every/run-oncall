@@ -9,9 +9,9 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Core | 10 | 50 | 24 | 84 |
-| Agent surface | 0 | 0 | 3 | 3 |
+| Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 10 | 50 | 27 | 87 |
+| Full target | 10 | 50 | 28 | 88 |
 
 Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -1292,6 +1292,24 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-004, BASE
 
 **Evidence.** None.
 **Gap.** No implementing flow. No MCP door, company policy or specialist journey exists.
+
+#### SURFACE-004 — Configuration, restore and erasure carry every affected class
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
+
+**Requirement.** Configuration, restore and erasure calls carry every class their effects meet under Oncall's class rules.
+
+**Acceptance.** Through MCP on Oncall's fixtures:
+1. `oncall.intake.keys` carries security and adds live when a mode, trigger or resolve rule, activation, revocation, allowance or adapter binding changes which events admit or page.
+2. `oncall.services.update` adds live when an edit changes whom an active service pages; a runbook-only edit remains standard.
+3. `oncall.members.update` carries access and adds live when a role or activation change affects current or future coverage; changing an unscheduled member carries access alone.
+4. `oncall.erasure.run` carries destructive, adds live when the erased subject changes coverage, intake or pending delivery, and adds access when it removes a member or standing grant; an incident-history-only erasure carries destructive alone.
+5. `oncall.archive.restore` carries destructive, live and access when it replaces state, pauses sends and schedules and revokes prior authority.
+6. `oncall.sso.configure` carries security and adds access when it enables or changes just-in-time accounts, their default role or group mapping; a signing-certificate-only rotation carries security alone.
+7. `oncall.actions.update` adds security when it changes an executor binding, second-person approval for runs by people or output redaction rules; a description-only edit remains standard.
+
+**Evidence.** None.
+**Gap.** No implementing flow. No MCP door or server-side class computation exists for configuration, restore or erasure.
 
 ## Later
 
