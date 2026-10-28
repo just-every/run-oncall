@@ -1,6 +1,8 @@
 // Named 28 October 2026 dependencies of the selected combined Base head.
 // These markers never skip a call or change its expected outcome.
 export const pendingBase={
+ compound_narrowing:{date:'2026-10-28',source:'agent-door/conformance/narrowing.mjs',assertion:'A non-widening erasure with native kind and workspace-revision fences must not require a fabricated widening operation or dropping those native fences'},
+ credential_fixture_lifecycle:{date:'2026-10-28',source:'agent-door/conformance/index.mjs',assertion:'Provide a native person fixture hook for each policy phase so credential erasure can be exercised without reusing a destroyed credential or creating credentials through a test backdoor'},
  empty_restore_preflight:{date:'2026-10-28',source:'rer 0.2.85 cli/portability-empty.mjs',assertion:'A reset empty database reaches migrations before required archive-table checks; the selected source CLI contains the fix'},
  native_scheduler_hook:{date:'2026-10-28',source:'cli/hosted-output.mjs',assertion:'The production verifier exposes a supported native scheduled-trigger hook without a production test endpoint'},
  embedded_worker_audit:{date:'2026-10-28',source:'agent-door/conformance/audit.mjs',assertion:'Conformance accounts for legitimate final-admission worker invoke rows alongside MCP calls'},

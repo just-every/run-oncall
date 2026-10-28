@@ -10,7 +10,10 @@
     ],
     "clauses": [
       "OC-003",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -49,7 +52,10 @@
     ],
     "clauses": [
       "OC-003",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -96,7 +102,10 @@
     ],
     "clauses": [
       "OC-003",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -135,7 +144,10 @@
     ],
     "clauses": [
       "OC-003",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -182,7 +194,10 @@
     ],
     "clauses": [
       "OC-065",
-      "OC-003"
+      "OC-003",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -239,7 +254,10 @@
     ],
     "clauses": [
       "OC-036",
-      "OC-003"
+      "OC-003",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -286,7 +304,10 @@
     ],
     "clauses": [
       "OC-037",
-      "OC-003"
+      "OC-003",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -342,7 +363,10 @@
     "clauses": [
       "OC-003",
       "OC-004",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -419,12 +443,16 @@
     "scope": "incidents:write",
     "readOnly": false,
     "classes": [
-      "standard"
+      "standard",
+      "commitment"
     ],
     "clauses": [
       "OC-003",
       "OC-004",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -507,7 +535,10 @@
     "clauses": [
       "OC-003",
       "OC-004",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -569,12 +600,15 @@
     "scope": "incidents:write",
     "readOnly": false,
     "classes": [
-      "standard"
+      "commitment"
     ],
     "clauses": [
       "OC-003",
       "OC-004",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -632,7 +666,10 @@
     "clauses": [
       "OC-004",
       "OC-008",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -690,7 +727,10 @@
     "clauses": [
       "OC-005",
       "OC-036",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -743,7 +783,10 @@
     "clauses": [
       "OC-005",
       "OC-036",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -834,7 +877,10 @@
     "clauses": [
       "OC-005",
       "OC-036",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -903,7 +949,10 @@
     "clauses": [
       "OC-036",
       "OC-049",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -967,7 +1016,11 @@
     ],
     "clauses": [
       "OC-023",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003",
+      "SURFACE-004"
     ],
     "inputSchema": {
       "type": "object",
@@ -1062,7 +1115,10 @@
     "clauses": [
       "OC-011",
       "OC-014",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1110,7 +1166,10 @@
     "clauses": [
       "OC-014",
       "OC-020",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1162,7 +1221,10 @@
     ],
     "clauses": [
       "OC-014",
-      "OC-025"
+      "OC-025",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1224,7 +1286,10 @@
     "clauses": [
       "OC-011",
       "OC-025",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1297,7 +1362,10 @@
     "clauses": [
       "OC-011",
       "OC-025",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1390,7 +1458,11 @@
     ],
     "clauses": [
       "OC-023",
-      "OC-003"
+      "OC-003",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003",
+      "SURFACE-004"
     ],
     "inputSchema": {
       "type": "object",
@@ -1483,7 +1555,10 @@
     ],
     "clauses": [
       "OC-053",
-      "OC-042"
+      "OC-042",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1527,7 +1602,10 @@
     "clauses": [
       "OC-053",
       "OC-006",
-      "OC-042"
+      "OC-042",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1580,7 +1658,10 @@
     "clauses": [
       "OC-053",
       "OC-006",
-      "OC-042"
+      "OC-042",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1628,11 +1709,14 @@
     "scope": "access:read",
     "readOnly": true,
     "classes": [
-      "sensitive"
+      "standard"
     ],
     "clauses": [
       "OC-003",
-      "OC-042"
+      "OC-042",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1667,11 +1751,16 @@
     "scope": "access:write",
     "readOnly": false,
     "classes": [
-      "access"
+      "access",
+      "live"
     ],
     "clauses": [
       "OC-003",
-      "OC-042"
+      "OC-042",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003",
+      "SURFACE-004"
     ],
     "inputSchema": {
       "type": "object",
@@ -1737,7 +1826,10 @@
     ],
     "clauses": [
       "OC-003",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1786,7 +1878,11 @@
     "clauses": [
       "OC-003",
       "OC-042",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003",
+      "SURFACE-004"
     ],
     "inputSchema": {
       "type": "object",
@@ -1838,7 +1934,10 @@
     ],
     "clauses": [
       "OC-003",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1887,7 +1986,11 @@
     "clauses": [
       "OC-003",
       "OC-042",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003",
+      "SURFACE-004"
     ],
     "inputSchema": {
       "type": "object",
@@ -1939,7 +2042,10 @@
     ],
     "clauses": [
       "OC-021",
-      "OC-022"
+      "OC-022",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -1974,11 +2080,18 @@
     "scope": "privacy:write",
     "readOnly": false,
     "classes": [
-      "destructive"
+      "destructive",
+      "access",
+      "security",
+      "live"
     ],
     "clauses": [
       "OC-040",
-      "OC-042"
+      "OC-042",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003",
+      "SURFACE-004"
     ],
     "inputSchema": {
       "type": "object",
@@ -2046,7 +2159,10 @@
       "OC-003",
       "OC-012",
       "OC-041",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2085,7 +2201,10 @@
     ],
     "clauses": [
       "OC-003",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2124,7 +2243,10 @@
     ],
     "clauses": [
       "OC-003",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2163,7 +2285,10 @@
     ],
     "clauses": [
       "OC-053",
-      "OC-042"
+      "OC-042",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2203,7 +2328,10 @@
     "clauses": [
       "OC-011",
       "OC-025",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2254,7 +2382,10 @@
     "clauses": [
       "OC-003",
       "OC-004",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2334,7 +2465,10 @@
     "clauses": [
       "OC-003",
       "OC-004",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2393,7 +2527,10 @@
     "clauses": [
       "OC-003",
       "OC-004",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2452,7 +2589,10 @@
     "clauses": [
       "OC-003",
       "OC-004",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2519,7 +2659,10 @@
     "clauses": [
       "OC-003",
       "OC-004",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2594,7 +2737,10 @@
     "clauses": [
       "OC-004",
       "OC-008",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003"
     ],
     "inputSchema": {
       "type": "object",
@@ -2643,7 +2789,11 @@
     ],
     "clauses": [
       "OC-023",
-      "OC-053"
+      "OC-053",
+      "SURFACE-001",
+      "SURFACE-002",
+      "SURFACE-003",
+      "SURFACE-004"
     ],
     "inputSchema": {
       "type": "object",

@@ -13,15 +13,10 @@ export function oncallAgentDoor(original:Bindings) {
   if(!fields.every(Boolean))throw Error('Incomplete installation agent trust')
   trust={issuer:fields[0]!,installationId:fields[1]!,appOrigin:env.AUTH_ORIGIN,publicKeys:JSON.parse(fields[2]!)}
  }
- return createAgentDoor({seed:'oncall',name:'Oncall',specialist:'on-call responder',db:env.DB,origin:env.AUTH_ORIGIN,trust,
+ return createAgentDoor({seed:'oncall',name:'Oncall',specialist:'on-call coordinator',db:env.DB,origin:env.AUTH_ORIGIN,trust,
   people:oncallPeople(env),localCredentials:request=>localCredentials(env,request),currentScopes:p=>clientScopes(env,p),
   tools:oncallTools(env),resources:oncallResources(env),
-  notTools:[
-   {clauses:['OC-018','OC-042','OC-049'],reason:'screen'},
-   {clauses:['OC-021','OC-022','OC-038','OC-074'],reason:'import-door'},
-   {clauses:['OC-018','OC-052'],reason:'installation'},
-   {clauses:['OC-026','OC-029','OC-045','OC-063'],reason:'connector'},
-  ],
+  notTools:[{"clauses":["OC-009","OC-018","OC-042"],"reason":"screen"},{"clauses":["OC-029","OC-035","OC-071","OC-082"],"reason":"device"},{"clauses":["OC-034","OC-067","OC-081","OC-032","OC-062","OC-074"],"reason":"connector"},{"clauses":["OC-021","OC-022","OC-038"],"reason":"import-door"},{"clauses":["OC-006","OC-012","OC-008","OC-010","OC-019","OC-028","OC-064","OC-073","OC-075","OC-078","OC-080","OC-052"],"reason":"installation"}],
   prompts:[{name:'oncall.response.shift',title:'Coordinate an incident',description:'Read the service, source evidence, changes and real coverage. Coordinate under company policy, submit follow-up evidence and inspect minimal signed-event outcomes. Paging stays OFF; human acceptance and observed recovery remain separate.',clauses:['OC-004','OC-036','OC-053'],
    messages:()=>[{role:'user',content:{type:'text',text:'Read current service/runbook/change evidence and coverage. Declare and acknowledge naming an active responder, record notes and follow-up evidence. Leave human-review work open. Review exact coverage before applying. Dispatch only an already authorized minimal event and report an authenticated receipt or uncertainty. Never page, fabricate recovery or accept a human review.'}}]}],
  })

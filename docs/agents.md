@@ -56,6 +56,13 @@ recovery evidence and human acceptance remain distinct. Agent recovery evidence
 does not produce a human recovery-attestation measurement. Response reports
 count machine acknowledgments separately from person workload.
 
+Closing a declared incident with its summary and evidence is a `commitment`.
+It measures one nonmonetary sign-off, using `XXX` (no currency), not a payment.
+Changing a member's eligibility for current or future coverage adds `live` to
+the access change. Local erasure is `destructive` and also carries `live`,
+`access` or `security` when it removes pending delivery, standing authority or
+credentials. The server derives those classes from current native records.
+
 Preview a complete coverage change, then apply the same native review digest.
 Intervening schedule or membership changes require another review. Overrides
 retain owned-coverage permissions and native history. Active coordination
@@ -82,7 +89,9 @@ A replacement token cannot take it over after consent revocation.
 - No money-moving tool exists. Shared provider spend caps are **not enforced**;
   a cap document supplies no spend guarantee.
 
-This candidate awaits the matching Base verifier/reviewer continuation and
-contract alignment. Required assertions remain enforced; upstream pending
-assertions are named and dated in `tests/agent-pending.mjs`. This page makes no
-full conformance or release-acceptance claim.
+Discovery describes the implemented release-1 coordination registry. The
+contract's target Agent surface also names future jobs and a different tool
+table; that target is not an availability claim. The matching Base verifier
+and reviewer continuation remain dependencies. Required assertions remain
+enforced, with named, dated dependencies in `tests/agent-pending.mjs`; full
+conformance and release acceptance remain unestablished.

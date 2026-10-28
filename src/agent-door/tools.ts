@@ -7,6 +7,19 @@ import {eraseNativeSubject} from '../subject-erasure'
 import type {ToolDefinition,ToolContext,ClassAndFacts} from '../modules/agent-door/index.ts'
 import type {Bindings} from '../auth.server'
 import {canonical} from '../modules/agent-door/policy/document.ts'
+async function erasureClasses(env:Bindings,n:Awaited<ReturnType<typeof nativeContext>>,args:Record<string,any>):Promise<ClassAndFacts[]> {
+ const client=args.kind==='client'?n.state.apiClients?.find(c=>c.id===args.id):undefined
+ const endpoints=(n.state.apiEndpoints??[]).filter(e=>args.kind==='endpoint'?e.id===args.id:args.kind==='client'&&e.client===args.id).map(e=>e.id)
+ const exists=args.kind==='incident'?n.state.incidents.some(i=>i.id===args.id):args.kind==='client'?!!client:endpoints.length>0
+ if(!exists)return refuse('not_found')
+ const pending=(n.state.apiOutbox??[]).filter(o=>(args.kind==='incident'?o.incident===args.id:endpoints.includes(o.endpoint)||args.kind==='client'&&o.client===args.id)&&['queued','failed','sending','uncertain'].includes(o.status))
+ const keys=await env.DB.prepare('SELECT (SELECT COUNT(*) FROM oc_api_credentials WHERE client=?) + (SELECT COUNT(*) FROM oc_endpoint_credentials WHERE endpoint IN (SELECT value FROM json_each(?))) AS n').bind(client?.id??'',JSON.stringify(endpoints)).first<{n:number}>()
+ const classes:ClassAndFacts[]=[{class:'destructive',facts:{measure:1}}]
+ if(client?.active&&client.permissions.length)classes.push({class:'access',facts:{measure:1,direction:'narrows'}})
+ if(keys?.n)classes.push({class:'security',facts:{measure:1,setting:'credential-erasure'}})
+ if(pending.length){const services=[...new Set(pending.map(o=>o.service))].sort();classes.push({class:'live',facts:{measure:services.length,service:services.join(', ')}})}
+ return classes
+}
 async function nativeWitness(env:Bindings,ctx:ToolContext,scope:string) {
  const n=await nativeContext(env,ctx,scope,true),p=await pagingSnapshot(env.DB)
  if(!env.SESSION_SECRET)return refuse('storage_unavailable')
@@ -23,9 +36,17 @@ export function oncallTools(env:Bindings):ToolDefinition[] {
  return catalogue.map(definition=>{
   const [,area,verb]=definition.name.split('.')
   const base=definition as unknown as ToolDefinition
+  const adminOnly=['access','clients','endpoints','teams','automation','privacy','witness','imports'].includes(area)||area==='services'&&!base.readOnly
   return {...base,untrusted:true,
    async classify(args,ctx) {
-    const n=await nativeContext(env,ctx,base.scope,['access','clients','endpoints','teams','automation','privacy','witness','imports'].includes(area))
+    const n=await nativeContext(env,ctx,base.scope,adminOnly)
+    if(!base.readOnly&&!['admin','responder'].includes(n.member.role))return refuse('insufficient_role')
+    if(area==='privacy')return erasureClasses(env,n,args)
+    if(area==='incidents'&&(verb==='resolve'||verb==='update'&&args.field==='state'&&args.value==='resolved')) {
+     incident(n,args.id)
+     return [{class:'commitment',facts:{measure:1,currency:'XXX',counterparty:'internal'}}]
+    }
+    if(area==='incidents'&&verb==='update'){incident(n,args.id);return [{class:'standard',facts:{measure:1}}]}
     if(area==='incidents'&&verb!=='list') {if(verb==='declare'||verb==='page')service(n,args.service);else incident(n,args.id)}
     if(area==='notes'||area==='actions'&&verb!=='list')incident(n,args.incident,area==='actions')
     if(area==='deadlines') {
@@ -51,7 +72,13 @@ export function oncallTools(env:Bindings):ToolDefinition[] {
     if(area==='access'&&verb==='update') {
      const old=n.state.members.find(m=>m.id===args.id)
      if(!old)return refuse('not_found')
-     return [{class:'access',facts:{measure:1,direction:widensMember(old,args)?'widens':'narrows'}}]
+     const classes:ClassAndFacts[]=[{class:'access',facts:{measure:1,direction:widensMember(old,args)?'widens':'narrows'}}]
+     const eligible=(m:{active:boolean;role:string})=>m.active&&['admin','responder'].includes(m.role)
+     if(eligible(old)!==eligible({...old,role:typeof args.role==='string'?args.role:old.role,active:typeof args.active==='boolean'?args.active:old.active})) {
+      const at=ctx.now(),schedules=(await pagingSnapshot(env.DB)).archive.schedules.filter(s=>(!s.validUntil||Date.parse(s.validUntil)>at)&&(s.primary.members.includes(old.id)||s.backup.members.includes(old.id)||s.overrides.some(o=>o.member===old.id&&Date.parse(o.end)>at)||s.layers?.some(l=>(!l.end||Date.parse(l.end)>at)&&l.rotation.members.includes(old.id))))
+      if(schedules.length){const services=[...new Set(schedules.map(s=>s.service))].sort();classes.push({class:'live',facts:{measure:services.length,service:services.join(', ')}})}
+     }
+     return classes
     }
     if(area==='teams')return [{class:'access',facts:{measure:1,direction:teamWidens(n.state.teams?.find(t=>t.id===args.id),args)?'widens':'narrows'}}]
     if(area==='services'&&verb==='ownership')return [{class:'access',facts:{measure:1,direction:ownership(n,args,ctx.person.id).widens?'widens':'narrows'}}]
@@ -60,7 +87,12 @@ export function oncallTools(env:Bindings):ToolDefinition[] {
    ...(!base.readOnly?{
     revision:(args:Record<string,unknown>,ctx:ToolContext)=>nativeRevision(env,ctx,area,args,base.scope),
     async summary(args:Record<string,any>,ctx:ToolContext) {
-     const n=await nativeContext(env,ctx,base.scope)
+     const n=await nativeContext(env,ctx,base.scope,adminOnly)
+     if(area==='privacy') {
+      const classes=await erasureClasses(env,n,args)
+      const target=args.kind==='incident'?n.state.incidents.find(i=>i.id===args.id):args.kind==='client'?n.state.apiClients?.find(c=>c.id===args.id):n.state.apiEndpoints?.find(e=>e.id===args.id)
+      return {target:{id:String(args.id),name:(target as any)?.name??(target as any)?.title??String(args.kind)+' erasure'},items:['Erase the native subject and its dependent local custody',JSON.stringify(classes),'Native workspace revision '+n.state.revision,'Prepared by '+ctx.actor.label]}
+     }
      if(area==='automation') {
       const item=n.state.apiOutbox?.find(o=>o.id===args.id&&n.services.includes(o.service)),endpoint=n.state.apiEndpoints?.find(e=>e.id===item?.endpoint)
       if(!item||!endpoint)return refuse('not_found')
@@ -80,7 +112,8 @@ export function oncallTools(env:Bindings):ToolDefinition[] {
    }:{}),
    ...(base.classes.some(c=>c==='access'||c==='security')?{
     async authority(args:Record<string,any>,ctx:ToolContext) {
-     const n=await nativeContext(env,ctx,base.scope)
+     const n=await nativeContext(env,ctx,base.scope,adminOnly)
+     if(area==='privacy'){await erasureClasses(env,n,args);return {subject:String(args.id),widens:false}}
      if(area==='access') {
       // Both ID and an OA-backed current address resolve to the same native subject.
       const old=n.state.members.find(m=>m.id===args.id)

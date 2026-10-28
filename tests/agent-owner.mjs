@@ -27,6 +27,8 @@ export default async function initialize({request,origin,email,displayName,token
  await call('/api/automation/clients',{name:'Retiring client',key:randomBytes(32).toString('hex'),services:['agent-service'],permissions:['incidents:read']})
  await call('/api/automation/endpoints',{name:'Approved minimal response receiver',key:receiverKey,client:receiver.id,services:['agent-service'],url:'https://8.8.8.8/events',approve:true})
  await call('/api/automation/endpoints',{name:'Retiring recipient',key:receiverKey,client:receiver.id,services:['agent-service'],url:'https://8.8.8.8/retiring',approve:true})
+ const erasureClient=await call('/api/automation/clients',{name:'Disposable credential-erasure receiver',key:randomBytes(32).toString('hex'),services:['agent-service'],permissions:['incidents:read']})
+ await call('/api/automation/endpoints',{name:'Disposable credential-erasure recipient',key:randomBytes(32).toString('hex'),client:erasureClient.id,services:['agent-service'],url:'https://8.8.8.8/erasure',approve:true})
  await fixtures?.set('https://8.8.8.8',{key:receiverKey})
  return response
 }

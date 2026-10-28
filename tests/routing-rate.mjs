@@ -72,7 +72,7 @@ export async function rateJourney(w,cookie,actor) {
  ok(await w.request('/api/intake/allowances',{id:'intake:rate-main',requests:2,events:2,revision:state.revision}),401);
  ok(await req('/api/intake/allowances',{id:'intake:rate-main',requests:2,events:2,revision:state.revision}),409);
  await w.time(Date.now());
- console.log('PASS OC-072 per-record rolling allowances: default 121st event, other-key isolation, duplicate request boundary, rotation, exact-window recovery, owner notices, pre-grouping and incomplete refusal, checkpoint policy custody');
+ console.log('PASS OC-084 per-record rolling allowances: default 121st event, other-key isolation, duplicate request boundary, rotation, exact-window recovery, owner notices, pre-grouping and incomplete refusal, checkpoint policy custody');
 }
 
 export async function providerRateDoors(w,cookie,actor) {

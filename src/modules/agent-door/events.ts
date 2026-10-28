@@ -53,6 +53,6 @@ export const eventsTool = (rt: Runtime): ToolDefinition => ({
   name: `${rt.options.seed}.events.list`, title: 'List events', description: 'Read retained changes visible to the sponsoring person.', scope: 'events:read', readOnly: true,
   inputSchema: { type: 'object', properties: { after: { type: 'string' }, limit: { type: 'integer', minimum: 1, maximum: 200 } }, additionalProperties: false },
   outputSchema: { type: 'object', properties: { events: { type: 'array', items: { type: 'object' } }, cursor: { type: ['string', 'null'] } }, required: ['events', 'cursor'], additionalProperties: false },
-  classes: ['standard'], clauses: ['OC-053'], classify: () => [{ class: 'standard', facts: { measure: 1 } }],
+  classes: ['standard'], clauses: ['OC-053','SURFACE-001','SURFACE-002','SURFACE-003'], classify: () => [{ class: 'standard', facts: { measure: 1 } }],
   async run(args, ctx) { return { result: await listEvents(rt, { person: ctx.person, agent: ctx.agent, scopes: ctx.scopes, clientId: ctx.clientId }, args.after as string | undefined, Number(args.limit ?? 100)) } },
 })

@@ -1,18 +1,21 @@
 {
   "schema": "rer-agent-surface/1",
   "seed": "oncall",
-  "specialist": "on-call responder",
+  "specialist": "on-call coordinator",
   "tools": [
     {
       "name": "oncall.access.read",
       "scope": "access:read",
       "readOnly": true,
       "classes": [
-        "sensitive"
+        "standard"
       ],
       "clauses": [
         "OC-003",
-        "OC-042"
+        "OC-042",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -20,11 +23,16 @@
       "scope": "access:write",
       "readOnly": false,
       "classes": [
-        "access"
+        "access",
+        "live"
       ],
       "clauses": [
         "OC-003",
-        "OC-042"
+        "OC-042",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003",
+        "SURFACE-004"
       ]
     },
     {
@@ -37,7 +45,10 @@
       "clauses": [
         "OC-005",
         "OC-036",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -49,7 +60,10 @@
       ],
       "clauses": [
         "OC-003",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -62,7 +76,10 @@
       "clauses": [
         "OC-005",
         "OC-036",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -75,7 +92,10 @@
       "clauses": [
         "OC-036",
         "OC-049",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -88,7 +108,10 @@
       "clauses": [
         "OC-005",
         "OC-036",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -100,7 +123,10 @@
       ],
       "clauses": [
         "OC-037",
-        "OC-003"
+        "OC-003",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -113,7 +139,10 @@
       "clauses": [
         "OC-053",
         "OC-006",
-        "OC-042"
+        "OC-042",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -125,7 +154,10 @@
       ],
       "clauses": [
         "OC-053",
-        "OC-042"
+        "OC-042",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -138,7 +170,10 @@
       "clauses": [
         "OC-053",
         "OC-006",
-        "OC-042"
+        "OC-042",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -150,7 +185,10 @@
       ],
       "clauses": [
         "OC-065",
-        "OC-003"
+        "OC-003",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -162,7 +200,10 @@
       ],
       "clauses": [
         "OC-003",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -176,7 +217,11 @@
       "clauses": [
         "OC-003",
         "OC-042",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003",
+        "SURFACE-004"
       ],
       "widens": false,
       "narrowing": {
@@ -208,7 +253,10 @@
       "clauses": [
         "OC-004",
         "OC-008",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -220,7 +268,10 @@
       ],
       "clauses": [
         "OC-003",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -234,7 +285,11 @@
       "clauses": [
         "OC-003",
         "OC-042",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003",
+        "SURFACE-004"
       ],
       "widens": false,
       "narrowing": {
@@ -264,7 +319,10 @@
         "standard"
       ],
       "clauses": [
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -276,7 +334,10 @@
       ],
       "clauses": [
         "OC-021",
-        "OC-022"
+        "OC-022",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -289,7 +350,10 @@
       "clauses": [
         "OC-003",
         "OC-004",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -302,7 +366,10 @@
       "clauses": [
         "OC-003",
         "OC-004",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -315,7 +382,10 @@
       "clauses": [
         "OC-003",
         "OC-004",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -327,7 +397,10 @@
       ],
       "clauses": [
         "OC-003",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -340,7 +413,10 @@
       "clauses": [
         "OC-003",
         "OC-004",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -352,7 +428,10 @@
       ],
       "clauses": [
         "OC-003",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -365,7 +444,10 @@
       "clauses": [
         "OC-003",
         "OC-004",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -373,12 +455,15 @@
       "scope": "incidents:write",
       "readOnly": false,
       "classes": [
-        "standard"
+        "commitment"
       ],
       "clauses": [
         "OC-003",
         "OC-004",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -391,7 +476,10 @@
       "clauses": [
         "OC-003",
         "OC-004",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -404,7 +492,10 @@
       "clauses": [
         "OC-003",
         "OC-004",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -412,12 +503,16 @@
       "scope": "incidents:write",
       "readOnly": false,
       "classes": [
-        "standard"
+        "standard",
+        "commitment"
       ],
       "clauses": [
         "OC-003",
         "OC-004",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -429,7 +524,10 @@
       ],
       "clauses": [
         "OC-053",
-        "OC-042"
+        "OC-042",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -442,7 +540,10 @@
       "clauses": [
         "OC-004",
         "OC-008",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -450,11 +551,18 @@
       "scope": "privacy:write",
       "readOnly": false,
       "classes": [
-        "destructive"
+        "destructive",
+        "access",
+        "security",
+        "live"
       ],
       "clauses": [
         "OC-040",
-        "OC-042"
+        "OC-042",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003",
+        "SURFACE-004"
       ]
     },
     {
@@ -466,7 +574,10 @@
       ],
       "clauses": [
         "OC-036",
-        "OC-003"
+        "OC-003",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -479,7 +590,10 @@
       "clauses": [
         "OC-014",
         "OC-020",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -492,7 +606,10 @@
       "clauses": [
         "OC-011",
         "OC-025",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -504,7 +621,10 @@
       ],
       "clauses": [
         "OC-003",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -517,7 +637,10 @@
       "clauses": [
         "OC-011",
         "OC-025",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -530,7 +653,10 @@
       "clauses": [
         "OC-011",
         "OC-014",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -542,7 +668,10 @@
       ],
       "clauses": [
         "OC-014",
-        "OC-025"
+        "OC-025",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -555,7 +684,10 @@
       "clauses": [
         "OC-011",
         "OC-025",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -567,7 +699,10 @@
       ],
       "clauses": [
         "OC-003",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -579,7 +714,11 @@
       ],
       "clauses": [
         "OC-023",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003",
+        "SURFACE-004"
       ]
     },
     {
@@ -591,7 +730,10 @@
       ],
       "clauses": [
         "OC-003",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     },
     {
@@ -603,7 +745,11 @@
       ],
       "clauses": [
         "OC-023",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003",
+        "SURFACE-004"
       ]
     },
     {
@@ -615,7 +761,11 @@
       ],
       "clauses": [
         "OC-023",
-        "OC-003"
+        "OC-003",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003",
+        "SURFACE-004"
       ]
     },
     {
@@ -629,7 +779,10 @@
         "OC-003",
         "OC-012",
         "OC-041",
-        "OC-053"
+        "OC-053",
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003"
       ]
     }
   ],
@@ -645,36 +798,56 @@
   "notTools": [
     {
       "clauses": [
+        "OC-009",
         "OC-018",
-        "OC-042",
-        "OC-049"
+        "OC-042"
       ],
       "reason": "screen"
     },
     {
       "clauses": [
+        "OC-029",
+        "OC-035",
+        "OC-071",
+        "OC-082"
+      ],
+      "reason": "device"
+    },
+    {
+      "clauses": [
+        "OC-034",
+        "OC-067",
+        "OC-081",
+        "OC-032",
+        "OC-062",
+        "OC-074"
+      ],
+      "reason": "connector"
+    },
+    {
+      "clauses": [
         "OC-021",
         "OC-022",
-        "OC-038",
-        "OC-074"
+        "OC-038"
       ],
       "reason": "import-door"
     },
     {
       "clauses": [
-        "OC-018",
+        "OC-006",
+        "OC-012",
+        "OC-008",
+        "OC-010",
+        "OC-019",
+        "OC-028",
+        "OC-064",
+        "OC-073",
+        "OC-075",
+        "OC-078",
+        "OC-080",
         "OC-052"
       ],
       "reason": "installation"
-    },
-    {
-      "clauses": [
-        "OC-026",
-        "OC-029",
-        "OC-045",
-        "OC-063"
-      ],
-      "reason": "connector"
     }
   ],
   "witness": {
@@ -732,7 +905,7 @@
       "args": {},
       "expect": [
         {
-          "class": "sensitive"
+          "class": "standard"
         }
       ]
     },
@@ -1057,7 +1230,7 @@
       },
       "expect": [
         {
-          "class": "standard"
+          "class": "commitment"
         }
       ]
     },
@@ -1346,6 +1519,46 @@
       ]
     },
     {
+      "id": "coverage_member_deactivate",
+      "tool": "oncall.access.update",
+      "args": {
+        "id": {
+          "$from": "access",
+          "pointer": "/data/members/1/id"
+        },
+        "role": "responder",
+        "active": false
+      },
+      "expect": [
+        {
+          "class": "access"
+        },
+        {
+          "class": "live"
+        }
+      ]
+    },
+    {
+      "id": "coverage_member_reactivate",
+      "tool": "oncall.access.update",
+      "args": {
+        "id": {
+          "$from": "access",
+          "pointer": "/data/members/1/id"
+        },
+        "role": "responder",
+        "active": true
+      },
+      "expect": [
+        {
+          "class": "access"
+        },
+        {
+          "class": "live"
+        }
+      ]
+    },
+    {
       "id": "team",
       "tool": "oncall.teams.update",
       "args": {
@@ -1562,7 +1775,7 @@
       "id": "disposable",
       "tool": "oncall.incidents.declare",
       "args": {
-        "service": "agent-service",
+        "service": "agent-foreign",
         "title": "Disposable coordination record",
         "summary": "Retained data removal exercise, no customer delivery claim.",
         "severity": "info"
@@ -1600,6 +1813,105 @@
       "expect": [
         {
           "class": "destructive"
+        }
+      ]
+    },
+    {
+      "id": "pending_disposable",
+      "tool": "oncall.incidents.declare",
+      "args": {
+        "service": "agent-service",
+        "title": "Disposable pending delivery",
+        "summary": "Local erasure stops this queued minimal event; no receiver claim.",
+        "severity": "info"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "pending_erase_witness",
+      "tool": "oncall.witness.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "pending_erase",
+      "tool": "oncall.privacy.erase",
+      "args": {
+        "id": {
+          "$from": "pending_disposable",
+          "pointer": "/data/id"
+        },
+        "kind": "incident",
+        "workspaceRevision": {
+          "$from": "pending_erase_witness",
+          "pointer": "/data/state/revision"
+        }
+      },
+      "expect": [
+        {
+          "class": "destructive"
+        },
+        {
+          "class": "live"
+        }
+      ]
+    },
+    {
+      "id": "alternate_resolution",
+      "tool": "oncall.incidents.declare",
+      "args": {
+        "service": "agent-foreign",
+        "title": "Alternate native resolution path",
+        "summary": "Current evidence remains an agent claim.",
+        "severity": "info"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "alternate_recovered",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "id": {
+          "$from": "alternate_resolution",
+          "pointer": "/data/id"
+        },
+        "field": "state",
+        "value": "recovered",
+        "evidence": "https://evidence.example.test/alternate-resolution"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "alternate_resolved",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "id": {
+          "$from": "alternate_resolution",
+          "pointer": "/data/id"
+        },
+        "field": "state",
+        "value": "resolved",
+        "summary": "Coordination closure with an agent claim, not human attestation."
+      },
+      "expect": [
+        {
+          "class": "commitment"
         }
       ]
     },
