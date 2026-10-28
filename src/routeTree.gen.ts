@@ -39,9 +39,9 @@ import { Route as SettingsServicesRouteImport } from './routes/settings.services
 import { Route as SettingsTeamRouteImport } from './routes/settings.team'
 import { Route as SigninLocalRouteImport } from './routes/signin.local'
 import { Route as OnCallRotaEditRouteImport } from './routes/on-call.$rota.edit'
-import { Route as SettingsServicesServiceIdRouteImport } from './routes/settings.services.$serviceId'
 import { Route as SettingsIntegrationsIdRouteImport } from './routes/settings.integrations.$id'
 import { Route as SettingsIntegrationsNewRouteImport } from './routes/settings.integrations.new'
+import { Route as SettingsServicesServiceIdRouteImport } from './routes/settings.services.$serviceId'
 import { Route as SettingsIntegrationsNewKindRouteImport } from './routes/settings.integrations.new.$kind'
 
 const IndexRoute = IndexRouteImport.update({
@@ -194,12 +194,6 @@ const OnCallRotaEditRoute = OnCallRotaEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => OnCallRotaRoute,
 } as any)
-const SettingsServicesServiceIdRoute =
-  SettingsServicesServiceIdRouteImport.update({
-    id: '/$serviceId',
-    path: '/$serviceId',
-    getParentRoute: () => SettingsServicesRoute,
-  } as any)
 const SettingsIntegrationsIdRoute = SettingsIntegrationsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -210,6 +204,12 @@ const SettingsIntegrationsNewRoute = SettingsIntegrationsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => SettingsIntegrationsRoute,
 } as any)
+const SettingsServicesServiceIdRoute =
+  SettingsServicesServiceIdRouteImport.update({
+    id: '/$serviceId',
+    path: '/$serviceId',
+    getParentRoute: () => SettingsServicesRoute,
+  } as any)
 const SettingsIntegrationsNewKindRoute =
   SettingsIntegrationsNewKindRouteImport.update({
     id: '/$kind',
@@ -248,9 +248,9 @@ export interface FileRoutesByFullPath {
   '/on-call/': typeof OnCallIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/on-call/$rota/edit': typeof OnCallRotaEditRoute
-  '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
   '/settings/integrations/$id': typeof SettingsIntegrationsIdRoute
   '/settings/integrations/new': typeof SettingsIntegrationsNewRouteWithChildren
+  '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
   '/settings/integrations/new/$kind': typeof SettingsIntegrationsNewKindRoute
 }
 export interface FileRoutesByTo {
@@ -283,9 +283,9 @@ export interface FileRoutesByTo {
   '/on-call': typeof OnCallIndexRoute
   '/settings': typeof SettingsIndexRoute
   '/on-call/$rota/edit': typeof OnCallRotaEditRoute
-  '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
   '/settings/integrations/$id': typeof SettingsIntegrationsIdRoute
   '/settings/integrations/new': typeof SettingsIntegrationsNewRouteWithChildren
+  '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
   '/settings/integrations/new/$kind': typeof SettingsIntegrationsNewKindRoute
 }
 export interface FileRoutesById {
@@ -320,9 +320,9 @@ export interface FileRoutesById {
   '/on-call/': typeof OnCallIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/on-call/$rota/edit': typeof OnCallRotaEditRoute
-  '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
   '/settings/integrations/$id': typeof SettingsIntegrationsIdRoute
   '/settings/integrations/new': typeof SettingsIntegrationsNewRouteWithChildren
+  '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
   '/settings/integrations/new/$kind': typeof SettingsIntegrationsNewKindRoute
 }
 export interface FileRouteTypes {
@@ -358,9 +358,9 @@ export interface FileRouteTypes {
     | '/on-call/'
     | '/settings/'
     | '/on-call/$rota/edit'
-    | '/settings/services/$serviceId'
     | '/settings/integrations/$id'
     | '/settings/integrations/new'
+    | '/settings/services/$serviceId'
     | '/settings/integrations/new/$kind'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -393,9 +393,9 @@ export interface FileRouteTypes {
     | '/on-call'
     | '/settings'
     | '/on-call/$rota/edit'
-    | '/settings/services/$serviceId'
     | '/settings/integrations/$id'
     | '/settings/integrations/new'
+    | '/settings/services/$serviceId'
     | '/settings/integrations/new/$kind'
   id:
     | '__root__'
@@ -429,9 +429,9 @@ export interface FileRouteTypes {
     | '/on-call/'
     | '/settings/'
     | '/on-call/$rota/edit'
-    | '/settings/services/$serviceId'
     | '/settings/integrations/$id'
     | '/settings/integrations/new'
+    | '/settings/services/$serviceId'
     | '/settings/integrations/new/$kind'
   fileRoutesById: FileRoutesById
 }
@@ -669,13 +669,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnCallRotaEditRouteImport
       parentRoute: typeof OnCallRotaRoute
     }
-    '/settings/services/$serviceId': {
-      id: '/settings/services/$serviceId'
-      path: '/$serviceId'
-      fullPath: '/settings/services/$serviceId'
-      preLoaderRoute: typeof SettingsServicesServiceIdRouteImport
-      parentRoute: typeof SettingsServicesRoute
-    }
     '/settings/integrations/$id': {
       id: '/settings/integrations/$id'
       path: '/$id'
@@ -689,6 +682,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/integrations/new'
       preLoaderRoute: typeof SettingsIntegrationsNewRouteImport
       parentRoute: typeof SettingsIntegrationsRoute
+    }
+    '/settings/services/$serviceId': {
+      id: '/settings/services/$serviceId'
+      path: '/$serviceId'
+      fullPath: '/settings/services/$serviceId'
+      preLoaderRoute: typeof SettingsServicesServiceIdRouteImport
+      parentRoute: typeof SettingsServicesRoute
     }
     '/settings/integrations/new/$kind': {
       id: '/settings/integrations/new/$kind'
@@ -722,17 +722,6 @@ const IncidentsRouteChildren: IncidentsRouteChildren = {
 const IncidentsRouteWithChildren = IncidentsRoute._addFileChildren(
   IncidentsRouteChildren,
 )
-
-interface SettingsServicesRouteChildren {
-  SettingsServicesServiceIdRoute: typeof SettingsServicesServiceIdRoute
-}
-
-const SettingsServicesRouteChildren: SettingsServicesRouteChildren = {
-  SettingsServicesServiceIdRoute: SettingsServicesServiceIdRoute,
-}
-
-const SettingsServicesRouteWithChildren =
-  SettingsServicesRoute._addFileChildren(SettingsServicesRouteChildren)
 
 interface ReviewsRouteChildren {
   ReviewsIncidentIdRoute: typeof ReviewsIncidentIdRoute
@@ -771,6 +760,17 @@ const SettingsIntegrationsRouteChildren: SettingsIntegrationsRouteChildren = {
 
 const SettingsIntegrationsRouteWithChildren =
   SettingsIntegrationsRoute._addFileChildren(SettingsIntegrationsRouteChildren)
+
+interface SettingsServicesRouteChildren {
+  SettingsServicesServiceIdRoute: typeof SettingsServicesServiceIdRoute
+}
+
+const SettingsServicesRouteChildren: SettingsServicesRouteChildren = {
+  SettingsServicesServiceIdRoute: SettingsServicesServiceIdRoute,
+}
+
+const SettingsServicesRouteWithChildren =
+  SettingsServicesRoute._addFileChildren(SettingsServicesRouteChildren)
 
 interface SettingsRouteChildren {
   SettingsArchiveRoute: typeof SettingsArchiveRoute
