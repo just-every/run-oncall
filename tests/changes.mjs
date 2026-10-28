@@ -106,6 +106,32 @@ try {
   rows=await preview();importBefore=await records();
   assert.deepEqual(ok(await req('/api/teams/backstage/apply',{catalog,digest:rows.digest,choices:{}})).applied,[]);
   assert.deepEqual(await records(),importBefore,'repeated import leaves workspace records unchanged');
+  // The bounded catalog fits through both HTTP doors, with one atomic provenance save.
+  const largeCatalog=Array.from({length:1000},(_,i)=>({kind:'Component',metadata:{name:'synthetic-oncall-'+(231+i),namespace:'default',title:'synthetic-oncall-'+(231+i)},spec:i<3?{owner:'group:default/synthetic-oncall-242'}:{}}));
+  const largeBefore=await records(),largeFacts=await teamFacts();
+  const largePreview=ok(await req('/api/teams/backstage/preview',{catalog:largeCatalog}));
+  assert.equal(largePreview.rows.length,largeCatalog.length);
+  assert.deepEqual(await records(),largeBefore,'large catalog preview writes no workspace records');
+  assert.deepEqual(await teamFacts(),largeFacts,'large catalog preview writes no permanent audit');
+  const largeApplied=ok(await req('/api/teams/backstage/apply',{catalog:largeCatalog,digest:largePreview.digest,choices:{'synthetic-oncall-233':'backstage'}}));
+  assert.deepEqual(largeApplied.applied,largeCatalog.slice(0,3).map(c=>c.metadata.name));
+  const largeAfter=await records(),provenance=largeApplied.applied.map(id=>largeAfter.services.find(s=>s.id===id).ownership);
+  assert.equal(largeAfter.revision,largeBefore.revision+1,'large import saves once');
+  assert.equal((await acceptedImports()).length,(largeFacts.filter(row=>row.kind==='teams.apply'&&row.outcome==='accepted'&&row.workspaceAfter>row.workspaceBefore)).length+1);
+  assert.equal(new Set(provenance.map(p=>p.importId)).size,1,'applied rows share one import');
+  assert.equal(new Set(provenance.map(p=>p.importedAt)).size,1);
+  for(const [i,id] of largeApplied.applied.entries()){
+   assert.equal(largeAfter.services.find(s=>s.id===id).team,'synthetic-oncall-242');
+   assert.equal(provenance[i].source,'backstage');
+   assert.equal(provenance[i].entity,'component:default/'+id);
+  }
+  const overCatalog=[...largeCatalog,{kind:'Component',metadata:{name:'synthetic-oncall-1231'},spec:{}}],overFacts=await teamFacts();
+  const overPreview=ok(await req('/api/teams/backstage/preview',{catalog:overCatalog}),413);
+  const overApply=ok(await req('/api/teams/backstage/apply',{catalog:overCatalog,digest:largePreview.digest,choices:{}}),413);
+  assert.ok(typeof overPreview.error==='string'&&overPreview.error.length>0,'oversize import explains its refusal');
+  assert.equal(overApply.error,overPreview.error,'both import doors share their refusal');
+  assert.deepEqual(await records(),largeAfter,'oversize import writes no workspace records');
+  assert.deepEqual(await teamFacts(),overFacts,'oversize import writes no permanent audit');
   console.log('PASS OC-023 public teams and Backstage ownership: manager coverage, zero-write preview/refusals, atomic provenance, explicit conflict choice with history, manual ownership and repeat safety');
   // OC-023 ownerless services stay visible without turning the current admin into an owner.
   const unassigned={type:'service',id:'synthetic-oncall-23',name:'synthetic-oncall-23',environment:'production',owner:null,runbook:['synthetic-oncall-23 inspect retained evidence'],pager:''};

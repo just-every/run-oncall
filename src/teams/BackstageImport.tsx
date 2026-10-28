@@ -2,7 +2,7 @@ import {useState} from 'react';
 import {HttpFailure,InterruptedTransport,request} from '../useWorkspace';
 import type {State} from '../family/response-operations/domain';
 import {applies,catalogFrom,landed,type Choices,type ImportRow} from './backstage';
-import {importChanged} from './words';
+import {importChanged,tooManyComponents} from './words';
 import {Feedback,Mark,type Note} from './feedback';
 
 type Preview={rows:ImportRow[];digest:string};
@@ -26,7 +26,7 @@ export function BackstageImport({refresh}:{refresh:()=>Promise<void>}){
   try{setPreview(await request('/api/teams/backstage/preview',{catalog:catalogFrom(text)}));setPreviewNote(undefined);}
   catch(error){
    const transport=lost(error);
-   setPreviewNote(transport?{error:transport,retry:()=>void previewImport()}:{error:(error as Error).message,discard:()=>{setText('');setPreview(null);setPreviewNote(undefined);}});
+   setPreviewNote(transport?{error:transport,retry:()=>void previewImport()}:{error:error instanceof HttpFailure&&error.status===413?tooManyComponents:(error as Error).message,discard:()=>{setText('');setPreview(null);setPreviewNote(undefined);}});
   }finally{setBusy(false);}
  }
  async function applyImport(retry=false){
@@ -39,7 +39,7 @@ export function BackstageImport({refresh}:{refresh:()=>Promise<void>}){
    if(!latest||!rows.every(row=>landed(latest,row)))await request('/api/teams/backstage/apply',sent);
    await refresh();setPreview(null);setChoices({});setApplyNote({saved:true});
   }catch(error){
-   const transport=lost(error),message=error instanceof Error?error.message:'';
+   const transport=lost(error),message=error instanceof HttpFailure&&error.status===413?tooManyComponents:error instanceof Error?error.message:'';
    setApplyNote(transport?{error:transport,retry:()=>void applyImport(true)}:error instanceof HttpFailure&&error.status===409&&message===importChanged?{error:message,again:()=>void previewImport()}:{error:message,discard:()=>{setPreview(null);setApplyNote(undefined);}});
   }finally{setBusy(false);}
  }

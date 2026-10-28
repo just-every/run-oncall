@@ -932,7 +932,7 @@
       "executable": false
     },
     "src/api.ts": {
-      "sha256": "39905bb7cb3f0b45e2e8992361748daf43c6a8caa6dc434e0c176b6832c2dd69",
+      "sha256": "d711911d8c96dcf74d499bbbce07abcacb6ebf1cee5d06d56612fb42d6e1ffe9",
       "executable": false
     },
     "src/app/AlertsPanel.tsx": {
@@ -4624,15 +4624,15 @@
       "executable": false
     },
     "src/teams/api.ts": {
-      "sha256": "b7ca3739b1db6194fa71595b15c917e78f112b159b22c4a5e07f5632fc125370",
+      "sha256": "ac4ff74dfa881aa3e7a87333ec8e16d3424cd1ec9ce260865295dcefd277a71b",
       "executable": false
     },
     "src/teams/backstage.ts": {
-      "sha256": "9501e845c28c91865855c9b447a4732935aca9f8f9a66ba5daaf7343b7bb2126",
+      "sha256": "eab9fda6543a2d1b5fee1e48a7e6841740118a5ad0888edf67b4cb2331356d4d",
       "executable": false
     },
     "src/teams/BackstageImport.tsx": {
-      "sha256": "f65fd2357fca3a24466b20f6ce7cd010bd6f4828ec9d15d209e171348cbb0698",
+      "sha256": "039ebbeb8d6ca8ed07f2358d4b42fc2d666df4b1b80c52b2920b12ee132d378f",
       "executable": false
     },
     "src/teams/edits.ts": {
@@ -4656,7 +4656,7 @@
       "executable": false
     },
     "src/teams/words.ts": {
-      "sha256": "6a2ca62f80ed7e5cf54c6238701935f868a3026ea2ba03f35432c041cbed7c4e",
+      "sha256": "cabcd6c3b88767b4b00aaa778d0a614947e5ed43a5d0439ba7dd0e3e79dc5f68",
       "executable": false
     },
     "src/triage-alerts.ts": {
@@ -4752,7 +4752,7 @@
       "executable": false
     },
     "tests/changes.mjs": {
-      "sha256": "7a7562d6d0c71c82e7a573505af1ed60d0be2f1ca45746e24725121030095074",
+      "sha256": "b6ecf9d66bda0511df62f312ab63a695da8f9e3a171137f3555427aacf67c2e3",
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {

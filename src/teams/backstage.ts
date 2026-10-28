@@ -5,6 +5,10 @@ export type Component={kind:'Component';metadata:{name:string;namespace?:string;
 export type ImportRow={entity:string;service?:{id:string;name:string};current?:{id:string;name:string}|null;team?:{id:string;name:string};action:'change'|'conflict'|'unchanged'|'unmatched';reason?:string};
 export type Choices=Record<string,'current'|'backstage'>;
 export const catalogLimit=1000;
+// Each reduced Component allows name 253, namespace 253, title 500 and owner 300 code units.
+// JSON may use six bytes per code unit. Apply also allows one 100-character service ID choice per row;
+// 256 bytes per row and 256 for the envelope cover fixed keys, punctuation, digest and choice values.
+export const catalogBodyLimit=catalogLimit*(6*(253+253+500+300+100)+256)+256;
 
 const text=(value:unknown,max:number)=>typeof value==='string'&&value.length<=max;
 const entity=(e:any)=>!!e&&typeof e==='object'&&!Array.isArray(e)&&text(e.kind,100)&&!!e.metadata&&typeof e.metadata==='object'&&text(e.metadata.name,253)&&!!e.metadata.name&&(e.metadata.namespace===undefined||text(e.metadata.namespace,253))&&(e.metadata.title===undefined||text(e.metadata.title,500))&&(e.spec?.owner===undefined||text(e.spec.owner,300));
