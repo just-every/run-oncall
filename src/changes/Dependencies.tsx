@@ -16,7 +16,7 @@ export function ServiceDependencies({service, services, revision}: {service: Ser
     },
     equal: (a, b) => Array.isArray(a) && Array.isArray(b) ? JSON.stringify([...a].sort()) === JSON.stringify([...b].sort()) : a === b,
   });
-  return <details className="service-dependencies"><summary>Edit direct dependencies</summary>
+  return <details className="service-dependencies"><summary>Depends on</summary>
     <div className="autosave-form"><fieldset><legend>Direct dependencies for {service.name} <SavedState state={save.states.dependencies} /></legend>
       {services.filter(row => row.id !== service.id).map(row => <label className="dependency-choice" key={row.id}><input type="checkbox" checked={save.values.dependencies.includes(row.id)} onChange={event => save.change('dependencies', event.target.checked ? [...save.values.dependencies, row.id] : save.values.dependencies.filter(id => id !== row.id), 'choice')} />{row.name} · {row.environment}</label>)}
       {services.length < 2 && <p>Create another service before adding a dependency.</p>}
