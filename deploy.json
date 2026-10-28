@@ -51,6 +51,11 @@
       "binding": "PAGERDUTY_OAUTH_CLIENT_SECRET",
       "environment": "PAGERDUTY_OAUTH_CLIENT_SECRET",
       "optional": true
+    },
+    {
+      "binding": "RER_BUSINESS_TRUST",
+      "environment": "RER_BUSINESS_TRUST",
+      "optional": true
     }
   ],
   "crons": [
