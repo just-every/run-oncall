@@ -40,6 +40,9 @@ import { Route as SettingsTeamRouteImport } from './routes/settings.team'
 import { Route as SigninLocalRouteImport } from './routes/signin.local'
 import { Route as OnCallRotaEditRouteImport } from './routes/on-call.$rota.edit'
 import { Route as SettingsServicesServiceIdRouteImport } from './routes/settings.services.$serviceId'
+import { Route as SettingsIntegrationsIdRouteImport } from './routes/settings.integrations.$id'
+import { Route as SettingsIntegrationsNewRouteImport } from './routes/settings.integrations.new'
+import { Route as SettingsIntegrationsNewKindRouteImport } from './routes/settings.integrations.new.$kind'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -197,6 +200,22 @@ const SettingsServicesServiceIdRoute =
     path: '/$serviceId',
     getParentRoute: () => SettingsServicesRoute,
   } as any)
+const SettingsIntegrationsIdRoute = SettingsIntegrationsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => SettingsIntegrationsRoute,
+} as any)
+const SettingsIntegrationsNewRoute = SettingsIntegrationsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => SettingsIntegrationsRoute,
+} as any)
+const SettingsIntegrationsNewKindRoute =
+  SettingsIntegrationsNewKindRouteImport.update({
+    id: '/$kind',
+    path: '/$kind',
+    getParentRoute: () => SettingsIntegrationsNewRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -219,7 +238,7 @@ export interface FileRoutesByFullPath {
   '/on-call/new': typeof OnCallNewRoute
   '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/settings/archive': typeof SettingsArchiveRoute
-  '/settings/integrations': typeof SettingsIntegrationsRoute
+  '/settings/integrations': typeof SettingsIntegrationsRouteWithChildren
   '/settings/move-in': typeof SettingsMoveInRoute
   '/settings/routing': typeof SettingsRoutingRoute
   '/settings/services': typeof SettingsServicesRouteWithChildren
@@ -230,6 +249,9 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof SettingsIndexRoute
   '/on-call/$rota/edit': typeof OnCallRotaEditRoute
   '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
+  '/settings/integrations/$id': typeof SettingsIntegrationsIdRoute
+  '/settings/integrations/new': typeof SettingsIntegrationsNewRouteWithChildren
+  '/settings/integrations/new/$kind': typeof SettingsIntegrationsNewKindRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -251,7 +273,7 @@ export interface FileRoutesByTo {
   '/on-call/new': typeof OnCallNewRoute
   '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/settings/archive': typeof SettingsArchiveRoute
-  '/settings/integrations': typeof SettingsIntegrationsRoute
+  '/settings/integrations': typeof SettingsIntegrationsRouteWithChildren
   '/settings/move-in': typeof SettingsMoveInRoute
   '/settings/routing': typeof SettingsRoutingRoute
   '/settings/services': typeof SettingsServicesRouteWithChildren
@@ -262,6 +284,9 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsIndexRoute
   '/on-call/$rota/edit': typeof OnCallRotaEditRoute
   '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
+  '/settings/integrations/$id': typeof SettingsIntegrationsIdRoute
+  '/settings/integrations/new': typeof SettingsIntegrationsNewRouteWithChildren
+  '/settings/integrations/new/$kind': typeof SettingsIntegrationsNewKindRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -285,7 +310,7 @@ export interface FileRoutesById {
   '/on-call/new': typeof OnCallNewRoute
   '/reviews/$incidentId': typeof ReviewsIncidentIdRoute
   '/settings/archive': typeof SettingsArchiveRoute
-  '/settings/integrations': typeof SettingsIntegrationsRoute
+  '/settings/integrations': typeof SettingsIntegrationsRouteWithChildren
   '/settings/move-in': typeof SettingsMoveInRoute
   '/settings/routing': typeof SettingsRoutingRoute
   '/settings/services': typeof SettingsServicesRouteWithChildren
@@ -296,6 +321,9 @@ export interface FileRoutesById {
   '/settings/': typeof SettingsIndexRoute
   '/on-call/$rota/edit': typeof OnCallRotaEditRoute
   '/settings/services/$serviceId': typeof SettingsServicesServiceIdRoute
+  '/settings/integrations/$id': typeof SettingsIntegrationsIdRoute
+  '/settings/integrations/new': typeof SettingsIntegrationsNewRouteWithChildren
+  '/settings/integrations/new/$kind': typeof SettingsIntegrationsNewKindRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -331,6 +359,9 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/on-call/$rota/edit'
     | '/settings/services/$serviceId'
+    | '/settings/integrations/$id'
+    | '/settings/integrations/new'
+    | '/settings/integrations/new/$kind'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -363,6 +394,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/on-call/$rota/edit'
     | '/settings/services/$serviceId'
+    | '/settings/integrations/$id'
+    | '/settings/integrations/new'
+    | '/settings/integrations/new/$kind'
   id:
     | '__root__'
     | '/'
@@ -396,6 +430,9 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/on-call/$rota/edit'
     | '/settings/services/$serviceId'
+    | '/settings/integrations/$id'
+    | '/settings/integrations/new'
+    | '/settings/integrations/new/$kind'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -639,6 +676,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsServicesServiceIdRouteImport
       parentRoute: typeof SettingsServicesRoute
     }
+    '/settings/integrations/$id': {
+      id: '/settings/integrations/$id'
+      path: '/$id'
+      fullPath: '/settings/integrations/$id'
+      preLoaderRoute: typeof SettingsIntegrationsIdRouteImport
+      parentRoute: typeof SettingsIntegrationsRoute
+    }
+    '/settings/integrations/new': {
+      id: '/settings/integrations/new'
+      path: '/new'
+      fullPath: '/settings/integrations/new'
+      preLoaderRoute: typeof SettingsIntegrationsNewRouteImport
+      parentRoute: typeof SettingsIntegrationsRoute
+    }
+    '/settings/integrations/new/$kind': {
+      id: '/settings/integrations/new/$kind'
+      path: '/$kind'
+      fullPath: '/settings/integrations/new/$kind'
+      preLoaderRoute: typeof SettingsIntegrationsNewKindRouteImport
+      parentRoute: typeof SettingsIntegrationsNewRoute
+    }
   }
 }
 
@@ -687,9 +745,36 @@ const ReviewsRouteChildren: ReviewsRouteChildren = {
 const ReviewsRouteWithChildren =
   ReviewsRoute._addFileChildren(ReviewsRouteChildren)
 
+interface SettingsIntegrationsNewRouteChildren {
+  SettingsIntegrationsNewKindRoute: typeof SettingsIntegrationsNewKindRoute
+}
+
+const SettingsIntegrationsNewRouteChildren: SettingsIntegrationsNewRouteChildren =
+  {
+    SettingsIntegrationsNewKindRoute: SettingsIntegrationsNewKindRoute,
+  }
+
+const SettingsIntegrationsNewRouteWithChildren =
+  SettingsIntegrationsNewRoute._addFileChildren(
+    SettingsIntegrationsNewRouteChildren,
+  )
+
+interface SettingsIntegrationsRouteChildren {
+  SettingsIntegrationsIdRoute: typeof SettingsIntegrationsIdRoute
+  SettingsIntegrationsNewRoute: typeof SettingsIntegrationsNewRouteWithChildren
+}
+
+const SettingsIntegrationsRouteChildren: SettingsIntegrationsRouteChildren = {
+  SettingsIntegrationsIdRoute: SettingsIntegrationsIdRoute,
+  SettingsIntegrationsNewRoute: SettingsIntegrationsNewRouteWithChildren,
+}
+
+const SettingsIntegrationsRouteWithChildren =
+  SettingsIntegrationsRoute._addFileChildren(SettingsIntegrationsRouteChildren)
+
 interface SettingsRouteChildren {
   SettingsArchiveRoute: typeof SettingsArchiveRoute
-  SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
+  SettingsIntegrationsRoute: typeof SettingsIntegrationsRouteWithChildren
   SettingsMoveInRoute: typeof SettingsMoveInRoute
   SettingsRoutingRoute: typeof SettingsRoutingRoute
   SettingsServicesRoute: typeof SettingsServicesRouteWithChildren
@@ -699,7 +784,7 @@ interface SettingsRouteChildren {
 
 const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsArchiveRoute: SettingsArchiveRoute,
-  SettingsIntegrationsRoute: SettingsIntegrationsRoute,
+  SettingsIntegrationsRoute: SettingsIntegrationsRouteWithChildren,
   SettingsMoveInRoute: SettingsMoveInRoute,
   SettingsRoutingRoute: SettingsRoutingRoute,
   SettingsServicesRoute: SettingsServicesRouteWithChildren,

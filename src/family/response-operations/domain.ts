@@ -532,6 +532,7 @@ function applyCommand(
     const old = state.policies.find(
       (p) => p.service === input.service && p.severity === input.severity,
     );
+    if(input.baseVersion!==undefined&&input.baseVersion!==(old?.version??0))fail('Coordination rule changed; review the newer version before publishing',409);
     const workflow=input.workflow===null?undefined:input.workflow===undefined?old?.workflow:approveWorkflow(state,actor,input.workflow,old?.workflow,at);
     if((workflow||old?.workflow)&&input.baseVersion!==(old?.version??0))fail('Workflow rule changed; reload before approval',409);
     if(workflow&&input.action!=='route')fail('Approved workflows require a routed service rule',409);

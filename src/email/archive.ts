@@ -32,8 +32,8 @@ export function validateEmailArchive(state:State) {
     if(r.sample!==null&&!sample||r.decision&&(!version||r.decision.mode!==version.mode||r.decision.rule!==null&&!version.rules.some(rule=>rule.id===r.decision!.rule)))fail('Invalid email explanation reference');
     if(sample&&r.decision&&JSON.stringify(decideEmail(version!,sample,r.id))!==JSON.stringify(r.decision))fail('Email explanation differs from retained input');
     if(['opened','deduplicated','recovered'].includes(r.outcome)) {
-      const alert=state.alerts.find(a=>a.id===r.alert&&a.source==='email:'+r.address&&a.service===address?.service&&a.environment===address?.environment&&a.key===r.decision?.key&&a.generation===r.generation);
-      const event=state.events.find(e=>e.id===r.event&&e.eventId===r.id&&alert?.events.includes(e.id));
+      const alert=state.alerts.find(a=>a.id===r.alert&&a.source==='email:'+r.address&&a.key===r.decision?.key&&a.generation===r.generation);
+      const event=state.events.find(e=>e.id===r.event&&e.eventId===r.id&&e.service===alert?.service&&e.environment===alert?.environment&&alert?.events.includes(e.id));
       if(!alert||!event||event.intent!==(r.outcome==='recovered'?'recover':'trigger')||!r.obligation||alert.obligation&&alert.obligation.id!==r.obligation||event.key!==r.decision?.key||r.outcome==='recovered'&&r.stop!=='stopped by source recovery')fail('Invalid email generation reference');
     } else if([r.alert,r.event,r.generation,r.obligation,r.stop].some(v=>v!==null))fail('No-effect mail changed a generation');
   }

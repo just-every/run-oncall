@@ -1,10 +1,9 @@
 import type { EmailRule } from './types';
 export function EmailRuleEditor({rules,onChange,custom}:{rules:EmailRule[];onChange:(rules:EmailRule[])=>void;custom:boolean}) {
   const update=(index:number,rule:EmailRule)=>onChange(rules.map((old,n)=>n===index?rule:old));
-  return <div className="email-rules"><h4>Ordered rules</h4><p>First match decides. Sender conditions use Cloudflare-authenticated From as data; they grant no account access. Patterns use RE2, at most 512 characters.</p>
+  return <div className="email-rules"><h4>Ordered rules</h4>
     {rules.map((rule,index)=><fieldset key={index}><legend>Rule {index+1}</legend>
-      <label className="field">Rule ID<input value={rule.id} maxLength={80} onChange={e=>update(index,{...rule,id:e.target.value})}/></label>
-      <label className="field">Action<select aria-label="Action" value={rule.action} onChange={e=>{const {severity,urgency,priority,...rest}=rule;update(index,{...rest,action:e.target.value as EmailRule['action']});}}>{custom&&<option value="trigger">Trigger</option>}<option value="resolve">Resolve</option></select></label>
+      {custom?<label className="field">Action<select aria-label="Action" value={rule.action} onChange={e=>{const {severity,urgency,priority,...rest}=rule;update(index,{...rest,action:e.target.value as EmailRule['action']});}}>{custom&&<option value="trigger">Trigger</option>}<option value="resolve">Resolve</option></select></label>:<p>Resolve matching mail</p>}
       <label className="field">Combine conditions<select aria-label="Combine conditions" value={rule.match} onChange={e=>update(index,{...rule,match:e.target.value as 'all'|'any'})}><option value="all">All</option><option value="any">Any</option></select></label>
       {rule.conditions.map((condition,n)=><div className="email-condition" key={n}>
         <label className="field">Field<select aria-label="Field" value={condition.field} onChange={e=>update(index,{...rule,conditions:rule.conditions.map((c,i)=>i===n?{...c,field:e.target.value as typeof c.field}:c)})}><option value="subject">Subject</option><option value="text">Extracted text</option><option value="sender">Authenticated sender</option></select></label>
@@ -19,6 +18,6 @@ export function EmailRuleEditor({rules,onChange,custom}:{rules:EmailRule[];onCha
       {rule.action==='trigger'&&(['severity','urgency','priority'] as const).map(field=><label className="field" key={field}>{field}<select aria-label={field} value={rule[field]??''} onChange={e=>{const next={...rule};if(e.target.value)(next as any)[field]=e.target.value;else delete next[field];update(index,next);}}><option value="">{field==='severity'?'Warning (default)':field==='urgency'?'Service default':'Unset'}</option>{(field==='severity'?['critical','warning','info']:field==='urgency'?['high','low']:['P1','P2','P3','P4','P5']).map(v=><option key={v}>{v}</option>)}</select></label>)}
       <div className="intake-actions"><button type="button" disabled={!index} onClick={()=>{const next=[...rules];[next[index-1],next[index]]=[next[index],next[index-1]];onChange(next);}}>Move up</button><button type="button" onClick={()=>onChange(rules.filter((_,i)=>i!==index))}>Delete rule</button></div>
     </fieldset>)}
-    <button type="button" disabled={rules.length>=20} onClick={()=>onChange([...rules,{id:'rule-'+(rules.length+1),action:custom?'trigger':'resolve',match:'all',conditions:[{field:'subject',op:'matches',value:custom?'FAILED: (\\S+)':'OK: (\\S+)'}],key:{field:'subject',kind:'regex',pattern:custom?'FAILED: (\\S+)':'OK: (\\S+)',group:1}}])}>Add email rule</button>
+    <button type="button" disabled={rules.length>=20} onClick={()=>onChange([...rules,{id:'rule-'+crypto.randomUUID().slice(0,8),action:custom?'trigger':'resolve',match:'all',conditions:[{field:'subject',op:'matches',value:custom?'FAILED: (\\S+)':'OK: (\\S+)'}],key:{field:'subject',kind:'regex',pattern:custom?'FAILED: (\\S+)':'OK: (\\S+)',group:1}}])}>Add rule</button>
   </div>;
 }

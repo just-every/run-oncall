@@ -3,7 +3,7 @@ import type { Decision } from '../family/response-operations/domain.ts';
 export type RoutingCondition = {field:string;op:'equals'|'contains'|'exists'|'matches'|'not-matches';value?:string};
 export type RoutingRule = {id:string;match:'all'|'any';conditions:RoutingCondition[];target:{service:string}|{field:string;pattern?:string;group?:number}};
 export type RoutingVersion = {version:number;rules:RoutingRule[];catchAll:string|null;publishedBy:string;publishedAt:string};
-export type RoutingDefinition = {scope:string[];owner:string;versions:RoutingVersion[]};
+export type RoutingDefinition = {team?:string;scope:string[];owner:string;versions:RoutingVersion[]};
 export type RoutingEvaluation = {rule:string;conditions:boolean[];matched:boolean};
 export type RoutingExplanation = {
   key:string;version:number;rule:string|null;kind:'rule'|'dynamic'|'catch-all'|'readmission';service:string|null;
