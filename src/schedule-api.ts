@@ -1,5 +1,5 @@
 import {parsePTO} from './schedule-coverage/pto-ics'
-import {requireTeamCoverage} from './teams/model';
+import {requireTeamCoverage,requireTeamPTO} from './teams/model';
 import { reviewSchedule } from './schedule-coverage/review'
 import { pagingSnapshot, commitPaging, putSchedule } from './paging-store'
 import { coverage, validateSchedule } from './family/response-operations/schedules'
@@ -30,15 +30,14 @@ export function installSchedules(api:any,body:(c:any)=>Promise<any>) {
   return new Response(calendar(schedule,s.workspace.members,from,to),{headers:{'Content-Type':'text/calendar; charset=utf-8','Cache-Control':'private, no-store','Content-Disposition':'inline; filename="oncall.ics"'}})
  })
  for(const action of ['pto-review','pto-apply'] as const) api.post(`/api/schedules/:id/${action}`,async(c:any)=>{
+  const input=await body(c)
   const s=await pagingSnapshot(c.env.DB),actor=s.workspace.members.find(m=>m.id===c.get('actor').id&&m.active)
   const old=s.archive.schedules.find(v=>v.id===c.req.param('id'));if(!old)fail('Unknown schedule',404)
   if(!actor)fail('Access revoked',401)
-  requireTeamCoverage(s.workspace,actor,old.service)
-  const input=await body(c)
   const allowed=['revision','member','content','entries','from','to',...(action==='pto-apply'?['digest','confirmed']:[])]
   if(!input||Object.keys(input).some(k=>!allowed.includes(k))||Object.hasOwn(input,'entries')===Object.hasOwn(input,'content'))fail('Choose PTO entries or an ICS upload')
+  requireTeamPTO(s.workspace,actor,old.service,input.member)
   if(input.revision!==old.revision)fail('Schedule changed; review again',409)
-  if(actor.role!=='admin'&&input.member!==actor.id)fail('Only an administrator can record another member’s PTO',403)
   if(!s.workspace.members.some(m=>m.id===input.member&&m.active&&['admin','responder'].includes(m.role)))fail('Choose an active responder')
   const result=Object.hasOwn(input,'content')?await parsePTO(input.content,input.member,old.timezone,old.pto??[]):{entries:input.entries,refused:[]}
   if(!Array.isArray(result.entries)||!result.entries.length)fail('No valid PTO entries to review'+(result.refused.length?': line '+result.refused[0].line+' '+result.refused[0].reason:''))

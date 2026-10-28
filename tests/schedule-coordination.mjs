@@ -170,6 +170,62 @@ export async function scheduleLayers(){
   const bad=structuredClone(archive);bad.schedules[0].pto[0].unknown=true;ok(await req('/api/paging/restore',{mode:'replace',archive:bad}),400);
   for(const [key,count] of [['layers',25],['pto',1001],['companyDates',367]]){const excessive=structuredClone(archive);excessive.schedules[0][key]=Array.from({length:count},(_,index)=>({...((archive.schedules[0][key]??[])[0]??{}),id:'synthetic-oncall-'+(1000+index)}));ok(await req('/api/paging/restore',{mode:'replace',archive:excessive}),400);}
   const workspace=ok(await req('/api/state'));ok(await req('/api/erasure/member/'+second.id,{workspaceRevision:workspace.revision,confirmation:'erase '+second.id,identitiesReviewed:true,importedPeople:[]}));const erased=ok(await req('/api/paging/state')).schedules.find(s=>s.id===saved.id);assert.equal(erased.pto.find(e=>e.id==='synthetic-oncall-249').member,null);assert.equal(erased.pto.length,4);assert.equal((await preview(erased,'2026-11-02T18:00:00Z')).primary,null);ok(await req('/api/paging/restore',{mode:'replace',archive}),409);
+  // OC-024 member-owned PTO uses current team membership, never retained rota slots.
+  const manager=ok(await req('/api/members',{name:'synthetic-oncall-243',role:'responder',password:'synthetic-oncall-243-password'}),201);
+  const memberCookie=(await w.request('/api/login',{name:third.name,password:'synthetic-oncall-242-password'})).cookie,managerCookie=(await w.request('/api/login',{name:manager.name,password:'synthetic-oncall-243-password'})).cookie;
+  let team=ok(await req('/api/teams',{id:'synthetic-oncall-240',name:'PTO team',visibility:'public',active:true,revision:0,members:[third.id,manager.id],managers:[manager.id]}));
+  const ownService=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-241',name:'PTO service',environment:'test',owner:first.id,runbook:[],pager:'',team:team.id}));
+  const foreignService=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-242',name:'Foreign PTO service',environment:'test',owner:first.id,runbook:[],pager:'',team:null}));
+  ok(await req('/api/teams/ownership',{service:ownService.id,team:team.id,workspaceRevision:ok(await req('/api/state')).revision}));
+  const ownRotation={...rotation,members:[third.id]};
+  let own=ok(await req('/api/paging/schedules',{id:'synthetic-oncall-941',name:'Member PTO rota',service:ownService.id,revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:ownRotation,backup:{...rotation,members:[]},overrides:[]}));
+  const foreign=ok(await req('/api/paging/schedules',{...own,id:'synthetic-oncall-942',service:foreignService.id,revision:0}));
+  const ownPath='/api/schedules/'+own.id,asMember=(action,input)=>w.request(ownPath+'/'+action,input,memberCookie),memberFrom=Date.UTC(2026,10,2),memberTo=memberFrom+3*86400000;
+  const selfEntry={id:'synthetic-oncall-ptoself',member:third.id,start:'2026-11-02T09:00:00.000Z',end:'2026-11-02T17:00:00.000Z',reason:'Approved PTO'};
+  const manual={revision:own.revision,member:third.id,entries:[selfEntry],from:memberFrom,to:memberTo};
+  const beforeSelf=ok(await req('/api/paging/state')),selfReview=ok(await asMember('pto-review',manual));
+  assert.deepEqual(ok(await req('/api/paging/state')),beforeSelf,'review does not write');assert.ok(selfReview.intervals.some(row=>row.newGap&&row.before===third.id));
+  for(const action of ['pto-review','pto-apply']){
+   const confirmed={...manual,digest:selfReview.digest,confirmed:true},input=action==='pto-review'?manual:confirmed;
+   ok(await asMember(action,{...input,member:manager.id,entries:[{...selfEntry,member:manager.id}]}),403);
+   ok(await asMember(action,{...input,entries:[{...selfEntry,member:manager.id}]}),400);
+   ok(await w.request('/api/schedules/'+foreign.id+'/'+action,input,memberCookie),404);
+  }
+  for(const action of ['review','apply'])ok(await asMember(action,{schedule:{...own,name:'Forbidden broad edit'},from:memberFrom,to:memberTo}),404);
+  ok(await w.request('/api/paging/schedules',{...own,name:'Forbidden replacement'},memberCookie),404);
+  ok(await asMember('overrides',{revision:own.revision,override:{id:'forbidden',role:'primary',member:third.id,start:selfEntry.start,end:selfEntry.end}}),404);
+  ok(await asMember('pto-apply',{...manual,digest:selfReview.digest,confirmed:false}),409);
+  assert.deepEqual(ok(await req('/api/paging/state')),beforeSelf,'all denied attempts leave schedules and revisions unchanged');
+  own=ok(await asMember('pto-apply',{...manual,digest:selfReview.digest,confirmed:true})).schedule;
+  assert.deepEqual(own.primary,ownRotation);assert.equal(own.pto.length,1);
+  assert.deepEqual(ok(await req('/api/paging/preview',{scheduleId:own.id,from:memberFrom,to:memberTo})),selfReview.coverage);
+  assert.equal(ok(await req(ownPath+'/now-next?at=2026-11-02T10:00:00Z')).now.primary,null);
+  const ics={revision:own.revision,member:third.id,content:'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20261103T090000Z\nDTEND:20261103T170000Z\nSTATUS:CONFIRMED\nSUMMARY:Approved PTO\nEND:VEVENT\nEND:VCALENDAR',from:memberFrom,to:memberTo};
+  const selfICS=ok(await asMember('pto-review',ics));assert.equal(selfICS.import.entries.length,1);
+  const beforeICS=ok(await req('/api/paging/state'));ok(await asMember('pto-apply',{...manual,digest:selfReview.digest,confirmed:true}),409);assert.deepEqual(ok(await req('/api/paging/state')),beforeICS,'stale first confirmation cannot write');
+  own=ok(await asMember('pto-apply',{...ics,digest:selfICS.digest,confirmed:true})).schedule;assert.equal(own.revision,manual.revision+2);assert.equal(own.pto.length,2);
+  assert.deepEqual(ok(await req('/api/paging/preview',{scheduleId:own.id,from:memberFrom,to:memberTo})),selfICS.coverage);
+  const next={...manual,revision:own.revision,entries:[{...selfEntry,id:'synthetic-oncall-ptolater',start:'2026-11-04T09:00:00.000Z',end:'2026-11-04T17:00:00.000Z'}]},pending=ok(await asMember('pto-review',next));
+  team=ok(await req('/api/teams',{...team,members:[manager.id]}));
+  const removed=ok(await req('/api/paging/state'));
+  for(const action of ['pto-review','pto-apply'])ok(await asMember(action,action==='pto-review'?next:{...next,digest:pending.digest,confirmed:true}),404);
+  assert.deepEqual(ok(await req('/api/paging/state')),removed,'removed membership refuses reviewed writes without changing schedules');
+  team=ok(await req('/api/teams',{...team,members:[third.id,manager.id]}));
+  // A review from before membership changed is stale even after membership returns.
+  const restoredMembership=ok(await req('/api/paging/state'));ok(await asMember('pto-apply',{...next,digest:pending.digest,confirmed:true}),409);assert.deepEqual(ok(await req('/api/paging/state')),restoredMembership);
+  const {heldMutation}=await import('./runtime-authority.mjs');
+  ok(await heldMutation(w.origin,ownPath+'/pto-review',next,memberCookie,async()=>{team=ok(await req('/api/teams',{...team,members:[manager.id]}));}),404);
+  team=ok(await req('/api/teams',{...team,members:[third.id,manager.id]}));
+  const managerInput={...next,member:manager.id,entries:next.entries.map(entry=>({...entry,id:entry.id+'-manager',member:manager.id}))};
+  const managerReview=ok(await w.request(ownPath+'/pto-review',managerInput,managerCookie));own=ok(await w.request(ownPath+'/pto-apply',{...managerInput,digest:managerReview.digest,confirmed:true},managerCookie)).schedule;
+  const managerProposal={schedule:{...own,name:'Manager retains rota authority'},from:memberFrom,to:memberTo},managerChange=ok(await w.request(ownPath+'/review',managerProposal,managerCookie));own=ok(await w.request(ownPath+'/apply',{...managerProposal,digest:managerChange.digest,confirmed:true},managerCookie)).schedule;
+  team=ok(await req('/api/teams',{...team,active:false}));const archived=ok(await req('/api/paging/state'));ok(await asMember('pto-review',{...next,revision:own.revision}),404);assert.deepEqual(ok(await req('/api/paging/state')),archived);
+  team=ok(await req('/api/teams',{...team,active:true}));
+  const liveInput={...next,revision:own.revision},liveReview=ok(await asMember('pto-review',liveInput));
+  ok(await w.request('/api/logout',{},memberCookie));const loggedOut=ok(await req('/api/paging/state'));
+  for(const action of ['pto-review','pto-apply'])ok(await asMember(action,action==='pto-review'?liveInput:{...liveInput,digest:liveReview.digest,confirmed:true}),401);
+  assert.deepEqual(ok(await req('/api/paging/state')),loggedOut,'revoked session refuses both PTO doors');
+  console.log('PASS OC-024 member-owned PTO: self manual and confirmed ICS, preview equality and explicit gap, two current revisions; other person, forged entry, foreign/unassigned rota, broad edits, removed/archived membership, held-body revocation, stale/restored membership and revoked session denied without writes; admin and manager retained');
   console.log('PASS OC-024 public layers: three-zone handoffs, overlap decisions, federal and company selections, PTO next and gap, rotation kinds, 366-day review, both DST transitions, stale review, atomic rollback, equality, ICS review and refusal, consecutive writes, archive strictness and non-attributing erasure');
  }finally{await w.close();}
 }

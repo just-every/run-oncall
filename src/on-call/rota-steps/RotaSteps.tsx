@@ -8,7 +8,7 @@ import {ReviewedChange} from '../../schedule-coverage/ReviewedChange';
 import type {ScheduleReview} from '../../schedule-coverage/review';
 import type {Schedule} from '../../family/response-operations/schedules';
 import type {Member, State} from '../../family/response-operations/domain';
-import {teamCoverage} from '../../teams/model';
+import {teamCoverage,teamPTO} from '../../teams/model';
 import {readLocalDraft, writeLocalDraft, removeLocalDraft, policyDrafts} from '../../app/autosave/localDraft';
 import {newDraft, editDraft, toSchedule, isRotaDraft, sameRota, RotaDraftError, type RotaDraft} from './draft';
 import {StepService} from './StepService';
@@ -22,9 +22,10 @@ const steps = ['Service and name', 'Who is on', 'Hand-over', 'Check'];
 export function RotaSteps({state, actor, schedule, service = '', refresh}: {state: State; actor: Member; schedule?: Schedule; service?: string; refresh: () => Promise<void>}) {
   const tooltips = useRotaTooltips();
   const available = state.services.filter(service => teamCoverage(state, actor, service.id));
+  const selfPTO = !!schedule && !teamCoverage(state, actor, schedule.service) && teamPTO(state, actor, schedule.service, actor.id);
   const draftId = useRef(schedule?.id ?? 'new:' + service).current, baseVersion = useRef(schedule?.revision ?? 0).current;
-  const [draft, setDraft] = useState<RotaDraft>(() => {const kept=(readLocalDraft<RotaDraft>('rota', draftId, baseVersion) ?? policyDrafts<RotaDraft>('rota', draftId)[0])?.value;return isRotaDraft(kept)?kept:schedule?editDraft(schedule):newDraft(available.some(row=>row.id===service)?service:available[0]?.id??'',state.members.filter(person=>person.active&&['admin','responder'].includes(person.role)).slice(0,2).map(person=>person.id));});
-  const [step, setStep] = useState(0), [busy, setBusy] = useState(false), [review, setReview] = useState<ScheduleReview | null>(null), [notice, setNotice] = useState('');
+  const [draft, setDraft] = useState<RotaDraft>(() => {const kept=selfPTO?undefined:(readLocalDraft<RotaDraft>('rota', draftId, baseVersion) ?? policyDrafts<RotaDraft>('rota', draftId)[0])?.value;return isRotaDraft(kept)?kept:schedule?editDraft(schedule):newDraft(available.some(row=>row.id===service)?service:available[0]?.id??'',state.members.filter(person=>person.active&&['admin','responder'].includes(person.role)).slice(0,2).map(person=>person.id));});
+  const [step, setStep] = useState(selfPTO?3:0), [busy, setBusy] = useState(false), [review, setReview] = useState<ScheduleReview | null>(null), [notice, setNotice] = useState('');
   const openedAt=useRef(Math.floor(Date.now()/60000)*60000).current;
   const [rangeFrom,setRangeFrom]=useState('');
   const [days,setDays]=useState(31),[icsInput,setICSInput]=useState<any>(null);
@@ -38,7 +39,7 @@ export function RotaSteps({state, actor, schedule, service = '', refresh}: {stat
   const proposed = validation.schedule;
   const evaluatedFrom=rangeFrom?Date.parse(rangeFrom+'Z'):Math.max(openedAt,Date.parse(proposed?.validFrom??new Date(openedAt).toISOString()));
   const update = (value: Partial<RotaDraft>) => {setDraft(current => {const next = {...current, ...value};writeLocalDraft({kind:'rota', id:draftId, baseVersion, value:next});return next;});setReview(null);setICSInput(null);setNotice('');failures.clear();};
-  const canEdit = available.some(service => service.id === draft.service);
+  const canEdit = selfPTO || available.some(service => service.id === draft.service);
   const finish = async () => {
     try {
       if (!form.current?.reportValidity() || !draft.name.trim()) return;
@@ -48,7 +49,10 @@ export function RotaSteps({state, actor, schedule, service = '', refresh}: {stat
       setBusy(true);failures.clear();setNotice('');
       if (schedule) {
         const from = evaluatedFrom, to = from + days * 86_400_000;
-        setReview(await request(`/api/schedules/${encodeURIComponent(schedule.id)}/review`, {schedule: value, from, to}));
+        if(selfPTO){
+          const input={revision:draft.revision,member:actor.id,entries:(value.pto??[]).filter(entry=>!draft.original?.pto?.some(old=>old.id===entry.id)),from,to};
+          setReview(await request(`/api/schedules/${encodeURIComponent(schedule.id)}/pto-review`, input));setICSInput(input);
+        }else setReview(await request(`/api/schedules/${encodeURIComponent(schedule.id)}/review`, {schedule: value, from, to}));
       } else {
         const held = (await request('/api/paging/state')).schedules.find((row:Schedule)=>row.id===value.id);
         const created = held && sameRota(held,value) ? held : await request('/api/paging/schedules', value);
@@ -75,17 +79,17 @@ export function RotaSteps({state, actor, schedule, service = '', refresh}: {stat
     } finally {setBusy(false);}
   };
   const content = {draft, update, state: {...state, services: available}};
-  return <div ref={tooltips} className="oc-oncall oc-rota-steps"><Link className="oc-back" to={schedule ? '/on-call/' + encodeURIComponent(schedule.id) as any : '/on-call' as any}>‹ {schedule ? schedule.name : 'On call'}</Link><header className="oc-page-head"><h1>{schedule ? 'Edit rota' : 'New rota'}</h1></header>
-    {canEdit ? <div className="oc-step-layout"><div><nav className="oc-step-nav" aria-label="Rota steps">{steps.map((label, index) => <button type="button" key={label} aria-current={step === index ? 'step' : undefined} disabled={index > step} onClick={() => {setStep(index);setReview(null);}}><span>{index + 1}</span>{label}</button>)}</nav>
+  return <div ref={tooltips} className="oc-oncall oc-rota-steps"><Link className="oc-back" to={schedule ? '/on-call/' + encodeURIComponent(schedule.id) as any : '/on-call' as any}>‹ {schedule ? schedule.name : 'On call'}</Link><header className="oc-page-head"><h1>{selfPTO ? 'Record PTO' : schedule ? 'Edit rota' : 'New rota'}</h1></header>
+    {canEdit ? <div className="oc-step-layout"><div>{!selfPTO&&<nav className="oc-step-nav" aria-label="Rota steps">{steps.map((label, index) => <button type="button" key={label} aria-current={step === index ? 'step' : undefined} disabled={index > step} onClick={() => {setStep(index);setReview(null);}}><span>{index + 1}</span>{label}</button>)}</nav>}
       <form ref={form} className="oc-card oc-step-card" onSubmit={event => {event.preventDefault();if(step < 3) setStep(step + 1);else void finish();}}>
-        {step === 0 ? <StepService {...content}/> : step === 1 ? <StepPeople {...content}/> : step === 2 ? <StepHandover {...content}/> : <StepCheck {...content} endError={validation.error?.field === 'ends' ? validation.error.message : undefined}/>}
-        {step===3&&<><label className="field">Coverage review from, UTC<input type="datetime-local" required value={Number.isFinite(evaluatedFrom)?new Date(evaluatedFrom).toISOString().slice(0,16):''} onChange={e=>{setRangeFrom(e.target.value);setReview(null);setICSInput(null);}}/></label><label className="field">Coverage review elapsed days<input type="number" min={1} max={366} value={days} onChange={e=>{setDays(Number(e.target.value));setReview(null);}}/></label><CoverageRules draft={draft} update={update} state={state} admin={actor.role==='admin'} days={days} from={evaluatedFrom} onICSReview={(value,input)=>{setReview(value);setICSInput(input);}}/></>}
+        {!selfPTO&&(step === 0 ? <StepService {...content}/> : step === 1 ? <StepPeople {...content}/> : step === 2 ? <StepHandover {...content}/> : <StepCheck {...content} endError={validation.error?.field === 'ends' ? validation.error.message : undefined}/>)}
+        {step===3&&<><label className="field">Coverage review from, UTC<input type="datetime-local" required value={Number.isFinite(evaluatedFrom)?new Date(evaluatedFrom).toISOString().slice(0,16):''} onChange={e=>{setRangeFrom(e.target.value);setReview(null);setICSInput(null);}}/></label><label className="field">Coverage review elapsed days<input type="number" min={1} max={366} value={days} onChange={e=>{setDays(Number(e.target.value));setReview(null);}}/></label><CoverageRules draft={draft} update={update} state={state} admin={actor.role==='admin'} self={selfPTO?actor.id:undefined} days={days} from={evaluatedFrom} onICSReview={(value,input)=>{setReview(value);setICSInput(input);}}/></>}
         {schedule && schedule.revision !== draft.revision && <div className="oc-draft-conflict"><p>A newer rota is available: {schedule.name}. Your draft is kept.</p><button type="button" onClick={() => update({revision:schedule.revision, original:schedule})}>Use mine</button></div>}
         {step >= 2 && validation.error?.field === 'handover' && draft.starts && draft.time && <p role="alert">{validation.error.message}</p>}
         <FailureLine failure={failures.failure}/>{notice && <p role="status">{notice}</p>}
-        <div className="oc-step-actions">{step > 0 && <button type="button" onClick={() => {setStep(step - 1);setReview(null);}}>Back</button>}<button className="primary" type="submit" disabled={busy || step === 3 && (!proposed || JSON.stringify(proposed) !== JSON.stringify(previewed))}>{step < 3 ? 'Continue' : schedule ? 'Review change' : 'Create rota'}</button></div>
+        <div className="oc-step-actions">{!selfPTO && step > 0 && <button type="button" onClick={() => {setStep(step - 1);setReview(null);}}>Back</button>}<button className="primary" type="submit" disabled={busy || step === 3 && (!proposed || JSON.stringify(proposed) !== JSON.stringify(previewed))}>{step < 3 ? 'Continue' : schedule ? 'Review change' : 'Create rota'}</button></div>
       </form>
-      {review && <ReviewedChange key={review.digest} review={review} busy={busy} focusOnOpen={!icsInput} onApply={() => void apply()}/>}
+      {review && <ReviewedChange key={review.digest} review={review} busy={busy} focusOnOpen={!icsInput||Object.hasOwn(icsInput,'entries')} onApply={() => void apply()}/>}
     </div><RotaPreview schedule={proposed} state={state} onReady={setPreviewed} days={days} from={schedule?evaluatedFrom:undefined}/></div> : <p>A workspace administrator or this service’s team manager can create and edit rotas.</p>}
   </div>;
 }
