@@ -3832,7 +3832,7 @@
       "executable": false
     },
     "src/move-in/door-client.ts": {
-      "sha256": "7d65bbee7228e66f9464d58cf8268d0b1a15d1e75f0cb0d01f13e8b3f8aed58b",
+      "sha256": "040b371123683eff6e259b3f897ad6abd943fb955e8ffb266462d2ac34a68a25",
       "executable": false
     },
     "src/move-in/door-key.ts": {
@@ -3876,7 +3876,7 @@
       "executable": false
     },
     "src/move-in/ImportJournal.tsx": {
-      "sha256": "f3e8c7fa9056c2effbe73407271f1786a6f65c7b1452c0786bc1ad4a2f36c8b6",
+      "sha256": "4cdb1398c4199e001529092a75b508cc9756c6464363a1e4de16afd97ae36cf9",
       "executable": false
     },
     "src/move-in/ImportStep.tsx": {
@@ -3896,7 +3896,7 @@
       "executable": false
     },
     "src/move-in/MoveIn.tsx": {
-      "sha256": "a28e5b665c32f776ec1b90731509dae5a189ea77e1d2a96edde11080a7cf07d1",
+      "sha256": "d43a9ba1fee62b46616595f91081c43b25d690292d04109c05aa020eb9e4be43",
       "executable": false
     },
     "src/move-in/native-erasure.ts": {
@@ -4876,7 +4876,7 @@
       "executable": false
     },
     "tests/import-door-browser.mjs": {
-      "sha256": "a3e3e37e3b687feb8e9c1ec38b0680e962848ad3d97a6893ef9ff4ba90f65543",
+      "sha256": "20bc4cc30a7c8cbe8a95197a09ac085f565e5e11054fe4929809ef6b543a2d6e",
       "executable": false
     },
     "tests/import-door-catchup.mjs": {
@@ -4936,7 +4936,7 @@
       "executable": false
     },
     "tests/product-import-browser.mjs": {
-      "sha256": "9c2be08f516b75b8e33b213970b142484eaca781f09fb4ee58a86590c4357166",
+      "sha256": "9c9b11ec6999c9b6800fa222a0f66ed7258b4a8f5b1c82d723e2047a4c1bec4d",
       "executable": false
     },
     "tests/product-schedule-browser.mjs": {
