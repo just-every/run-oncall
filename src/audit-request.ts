@@ -1,3 +1,4 @@
+import { isMoveInReadStep } from './move-in/read-audit'
 import { auditPrincipal } from './audit-principal'
 import { auditedDatabase } from './audit-database'
 import { auditKind, setAuditSubject, type AuditContext } from './audit-store'
@@ -46,7 +47,7 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
     // state write, including paging OFF, still survives as an attributed attempt.
     // The OC-050 human comparison exception excludes denials, failed authority
     // and stale revisions; Response API and bulk receipt contracts remain audited.
-    const zeroWriteReplay = response.ok && (path === '/api/replay' || path === '/api/paging/preview' || /^\/api\/schedules\/[^/]+\/review$/.test(path) || path === '/api/triage/workflows/preview' || /^\/api\/(?:email\/addresses|routing\/keys)\/[^/]+\/preview$/.test(path));
+    const zeroWriteReplay = response.ok && (isMoveInReadStep(audit.db) || path === '/api/replay' || path === '/api/paging/preview' || /^\/api\/schedules\/[^/]+\/review$/.test(path) || path === '/api/triage/workflows/preview' || /^\/api\/(?:email\/addresses|routing\/keys)\/[^/]+\/preview$/.test(path));
     const unchangedCommand = path === '/api/command' && request.method === 'POST' && status === 200 && context.commits === 0 && commandNoops.has(audit.db)
     if (!context.ownerCustodyRefusal && !(context.refusalCommitted && status === 409) && !zeroWriteReplay && !unchangedCommand && context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
       await audit.record(context.outcome ?? (status >= 500 ? 'failed' : status >= 400 ? 'refused' : 'accepted'))

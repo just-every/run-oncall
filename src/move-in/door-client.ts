@@ -7,12 +7,12 @@ const CHUNK = 65536
 /** The door answers a code; the screen says what happened and what to do. */
 function sentence(code: string, vendor: string): string {
  const known: Record<string, string> = {
-  import_door_plan_failed: 'This import failed and cannot be applied again. Undo it in Saved import journal if needed, then preview the file again.',
-  import_door_apply_failed: 'The import stopped and nothing more was written. Undo it in Saved import journal if needed, then preview the file again.',
-  import_door_apply_constraint: 'Oncall refused part of this import and nothing more was written. Undo it in Saved import journal if needed, then preview the file again.',
-  import_door_apply_transient: 'Storage was busy and nothing more was written. Preview the file again in a moment.',
-  plan_not_found: 'This preview was replaced by a newer one. Press Preview import again.',
-  snapshot_withdrawn: 'An erasure removed this file from the import journal. Choose the export again and preview it.',
+  import_door_plan_failed: 'This import failed and cannot be applied again. Undo it in Saved import journal if needed, then read the account or choose the file again.',
+  import_door_apply_failed: 'The import stopped and nothing more was written. Undo it in Saved import journal if needed, then read the account or choose the file again.',
+  import_door_apply_constraint: 'Oncall refused part of this import and nothing more was written. Undo it in Saved import journal if needed, then read the account or choose the file again.',
+  import_door_apply_transient: 'Storage was busy and nothing more was written. Read the account or choose the file again in a moment.',
+  plan_not_found: 'This review was replaced by a newer one. Read the account or choose the file again to see its review.',
+  snapshot_withdrawn: 'An erasure removed this file from the import journal. Read the account or choose the file again to see its review.',
   source_erased: 'This file names a person who was erased, so it cannot be imported again.',
   erased_during_request: 'An erasure ran at the same time; nothing was written. Try again.',
   import_door_too_large: `This ${provider(vendor)} file is too large to import at once.`,

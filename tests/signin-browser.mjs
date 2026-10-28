@@ -50,6 +50,7 @@ try {
   assert.equal(auditAfter.length,1,'one attributed owner-name synchronization commits with its audit')
   assert.equal(auditAfter[0].workspaceAfter,auditAfter[0].workspaceBefore+1)
   await page.goto(worker.origin+'/app')
+  await page.locator('.oncall-frame').waitFor()
   const phone=await page.getByRole('button',{name:'Menu',exact:true}).isVisible()
   if(phone)await page.getByRole('button',{name:'Menu',exact:true}).click()
   await page.locator(phone?'.shell-sheet .profile':'.shell-rail .profile').getByText(corrected,{exact:true}).waitFor()

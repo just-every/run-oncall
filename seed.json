@@ -73,8 +73,32 @@
     "autonomous remediation",
     "independent standby and paging delivery guarantees"
   ],
-  "externals": [],
-  "env": [],
+  "externals": [
+    {
+      "name": "Move-in provider reads",
+      "hosts": [
+        "api.pagerduty.com",
+        "api.eu.pagerduty.com",
+        "api.opsgenie.com",
+        "api.eu.opsgenie.com",
+        "identity.pagerduty.com",
+        "identity.eu.pagerduty.com"
+      ],
+      "data": "Read-only users, schedules, overrides, final timelines and escalation policies. PagerDuty consent exchanges and revokes a short-lived read-only token; API keys stay in request memory. Provider redirects are refused."
+    }
+  ],
+  "env": [
+    {
+      "name": "PAGERDUTY_OAUTH_CLIENT_ID",
+      "required": false,
+      "secret": true
+    },
+    {
+      "name": "PAGERDUTY_OAUTH_CLIENT_SECRET",
+      "required": false,
+      "secret": true
+    }
+  ],
   "deploy": {
     "healthPath": "/health",
     "publicPaths": [

@@ -7,7 +7,7 @@ import {randomBytes,createHash} from 'node:crypto'
 import http from 'node:http'
 import {workerDiagnostics} from './diagnostics.mjs'
 
-export async function localWorker(bindings = {}, {persistTo,clock=false} = {}) {
+export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource=""} = {}) {
  const dir=await mkdtemp(join(tmpdir(),'oncall-flow-')),socket=createServer()
  await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
  const persist=persistTo??dir;
@@ -15,11 +15,11 @@ export async function localWorker(bindings = {}, {persistTo,clock=false} = {}) {
  const vars={AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'owner@example.test',SESSION_SECRET:secret(),SETUP_TOKEN:secret(),MAIL_FROM:'auth@localhost.test',RER_DEV_KEY:secret(),...bindings}
  await writeFile(join(dir,'local.env'),Object.entries(vars).map(([k,v])=>`${k}=${v}`).join('\n'),{mode:0o600})
  const cli='node_modules/wrangler/bin/wrangler.js',env={...process.env,CI:'true',WRANGLER_SEND_METRICS:'false',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'true'}
- const statements=command=>JSON.parse(execFileSync(process.execPath,[cli,'d1','execute','DB','--local','--persist-to',persist,'--command',command,'--json'],{encoding:'utf8',env,stdio:['ignore','pipe','pipe'],maxBuffer:64*1024*1024})).map(r=>r.results)
+ const statements=command=>JSON.parse(execFileSync(process.execPath,[cli,'d1','execute','DB','--local','--persist-to',persist,'--command='+command,'--json'],{encoding:'utf8',env,stdio:['ignore','pipe','pipe'],maxBuffer:64*1024*1024})).map(r=>r.results)
  const sql=command=>statements(command)[0]
  execFileSync(process.execPath,[cli,'d1','migrations','apply','DB','--local','--persist-to',persist],{env,stdio:'ignore'})
  let config='dist/server/wrangler.json',clockFiles=[];
- if(clock){
+ if(clock||fetchSource){
   const name='.test-clock-'+randomBytes(8).toString('hex'),wrapper=resolve('dist/server',name+'.js');
   config=resolve('dist/server',name+'.json');clockFiles=[wrapper,config];
   const built=JSON.parse(await readFile('dist/server/wrangler.json','utf8'));
@@ -27,18 +27,19 @@ export async function localWorker(bindings = {}, {persistTo,clock=false} = {}) {
 const RealDate=Date;let at;
 // The test platform clock must agree for Date.now() and no-argument new Date().
 // Explicit source timestamps and all native Date parsing remain unchanged.
-globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
-export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__test_clock'){at=Number(await request.text());return new Response('clock injected');}return app.fetch(request,env,ctx);}};`);
+if(${clock})globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
+${fetchSource}
+export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__provider_control'&&${Boolean(fetchSource)}){const input=await request.json();providerMode=input.mode??'normal';providerCalls=[];pkceChallenge=input.challenge??pkceChallenge;return Response.json({ok:true});}if(new URL(request.url).pathname==='/__provider_calls'&&${Boolean(fetchSource)})return Response.json({calls:providerCalls,pkceValid,revoked});if(new URL(request.url).pathname==='/__provider_cron'&&${Boolean(fetchSource)}){await app.scheduled({},env,ctx);return Response.json({ok:true});}if(new URL(request.url).pathname==='/__test_clock'){at=Number(await request.text());return new Response('clock injected');}return app.fetch(request,env,ctx);}};`);
   await writeFile(config,JSON.stringify({...built,main:name+'.js'}));
  }
- let worker,diagnostics
+ let worker,diagnostics,logLines=''
  let failureHandler
  const stop=async()=>{if(worker&&worker.exitCode===null){worker.kill('SIGTERM');await new Promise(r=>worker.once('exit',r))}}
  const start=async()=>{
   diagnostics=workerDiagnostics({...env,...vars})
   worker=spawn(process.execPath,['tests/worker-server.mjs',config,persist,String(port),join(dir,'local.env')],{env,stdio:['ignore','pipe','pipe']})
   let startupError;worker.once('error',error=>{startupError=error;diagnostics.report('startup process error')})
-  diagnostics.attach(worker.stdout,'stdout');diagnostics.attach(worker.stderr,'stderr')
+  diagnostics.attach(worker.stdout,'stdout');diagnostics.attach(worker.stderr,'stderr');for(const stream of [worker.stdout,worker.stderr])stream.on('data',chunk=>{logLines+=chunk.toString()})
   for(let n=0;n<240;n++){if(startupError)throw Error('Worker process could not start');if(worker.exitCode!==null){diagnostics.report('startup exited');throw Error('Worker exited before readiness')};try{if((await fetch(origin+'/health')).ok)return}catch{}await new Promise(r=>setTimeout(r,250))}
   diagnostics.report('startup readiness failed');throw Error('Worker readiness failed')
  }
@@ -72,7 +73,7 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
  failureHandler=()=>diagnostics.report('test failure')
  process.once('uncaughtExceptionMonitor',failureHandler)
  process.once('exit',code=>{if(code!==0)failureHandler()})
- return {origin,vars,sql,statements,request,send,start,stop,time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
+ return {origin,vars,sql,statements,request,send,start,stop,logs:()=>logLines,time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
 }
 
 // The move-in screen's transport: the owner-session import door, one namespace per vendor. preview uploads the

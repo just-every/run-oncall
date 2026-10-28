@@ -54,6 +54,7 @@ import { isLoopbackHost } from './modules/operator-auth/index.mjs';
 import { installSchedules } from './schedule-api';
 import {installOnCall, workspaceOnCall} from './on-call/api';
 import { installMoveIn } from './move-in/api';
+import { pagerdutyConnect } from './move-in/pagerduty-oauth';
 import { Refusal } from './move-in/refusals';
 import { Hono } from "hono";
 import { deploymentHealth } from "./base/deployment-health";
@@ -244,7 +245,7 @@ api.get("/api/workspace", async (c) => {
   const current = await authorizedState(c, false, true);
   const currentMember = current.members.find(m => m.id === member.id)!;
   if (currentMember.role === "stakeholder") return c.json({setup:false, member:currentMember, demo:false, state:null});
-  return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", state: memberWorkspace(current, member), onCall: await workspaceOnCall(c.env.DB, current, currentMember)});
+  return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", moveIn: {pagerdutyConnect: pagerdutyConnect(runtimeBindings(c.env))}, state: memberWorkspace(current, member), onCall: await workspaceOnCall(c.env.DB, current, currentMember)});
 });
 async function session(c: any, state: State): Promise<Member | null> {
   const token = readSessionCookie(c.req.raw);
@@ -415,6 +416,8 @@ installMonitoringIntake(api, changeDeps);
 api.get("/api/identity-link/administrators",restoredAdministrators);
 api.post("/api/identity-link",async c=>linkRestoredOwner(c,await body(c)));
 api.use("/api/*", async (c, next) => {
+  // PagerDuty returns cross-site: only this callback authenticates its sealed transaction.
+  if (c.req.method === "GET" && c.req.path === "/api/move-in/pagerduty/callback") return next();
   const state = await load(c.env.DB);
   const actor = await session(c, state);
   if (!actor) {

@@ -303,6 +303,12 @@
       "name": "0145_teams.sql",
       "sha256": "aa085fd026b358ec4b4703d0ab7efc9eed16e52c60a0b630f74bcb30826b6ca5",
       "sql": "-- Public team membership and manager authority. Private authoring is refused until all doors enforce its scope.\nCREATE TABLE oc_teams(id TEXT PRIMARY KEY, ordinal INTEGER NOT NULL, data TEXT NOT NULL CHECK(json_valid(data)));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0146_move_in_consent.sql",
+      "sha256": "fc38b4efd3d493120245bc551516ab5e1f058a8dd9880e0172171753547af209",
+      "sql": "-- Short-lived encrypted OAuth custody. Never part of an archive or import.\n-- The minute sweep revokes abandoned connections before the ten-minute bound.\nCREATE TABLE oc_move_in_consent (\n id TEXT PRIMARY KEY,\n custody TEXT NOT NULL,\n revoke_at INTEGER NOT NULL,\n expires INTEGER NOT NULL\n);\nCREATE INDEX oc_move_in_consent_expiry ON oc_move_in_consent(revoke_at);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
@@ -321,7 +327,9 @@
   ],
   "optionalSecretNames": [
     "MAIL_API_KEY",
-    "INBOUND_EMAIL_DOMAIN"
+    "INBOUND_EMAIL_DOMAIN",
+    "PAGERDUTY_OAUTH_CLIENT_ID",
+    "PAGERDUTY_OAUTH_CLIENT_SECRET"
   ],
   "schedules": [
     "* * * * *"
@@ -329,7 +337,8 @@
   "healthPath": "/health",
   "providerEffects": [
     "outbound-mail",
-    "signed-response-events"
+    "signed-response-events",
+    "read-only-provider-import"
   ],
   "mail": {
     "providers": [

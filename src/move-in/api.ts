@@ -1,3 +1,4 @@
+import { installMoveInRead } from './read-api'
 import {isVendor} from './vendor-formats'
 import { resumeD1Import,undoD1Import,readD1ImportJob } from '../modules/import-kit/src/d1/index'
 import type { D1ImportContext } from '../modules/import-kit/src/d1/types'
@@ -59,6 +60,7 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
   const users=rows.filter(r=>r.targetKind==='user').map(r=>({id:r.targetId,name:(r.value as any).name,active:true,role:'responder'}))
   return c.json({paused:true,paging:'OFF',coverage:coverage((row.value as any).schedule,users,Date.parse(input.at)),users})
  })
+ installMoveInRead(api)
  installAdoption(api,body)
  // Erasing a person is destructive and final: administrator only, exact email, typed confirmation.
  api.post('/api/move-in/erase',async(c:any)=>{
