@@ -1,4 +1,4 @@
-Old reference: `845d741d310fac5a3ce278a6db3ec064ba9150be` (main, 28 October 2026). Clauses done there: OC-001, OC-002, OC-003, OC-004, OC-005, OC-006, OC-007, OC-008, OC-010, OC-011, OC-012, OC-013, OC-014, OC-015, OC-016, OC-017, OC-018, OC-019, OC-020, OC-021, OC-022, OC-033, OC-037, OC-041, OC-042, OC-052, OC-053, OC-056, OC-057, OC-059 and OC-070.
+Old reference: `48f0ec81477e3270d90bb2460fa6412bdfc693dd` (main, 28 October 2026). Clauses done there: OC-001, OC-002, OC-003, OC-004, OC-005, OC-006, OC-007, OC-008, OC-010, OC-011, OC-012, OC-013, OC-014, OC-015, OC-016, OC-017, OC-018, OC-019, OC-020, OC-021, OC-022, OC-033, OC-037, OC-041, OC-042, OC-052, OC-053, OC-056, OC-057, OC-059 and OC-070.
 
 # Carried-done audit
 
@@ -51,7 +51,7 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-005 | 1 | Completing an action without evidence is refused | none in a cited file | none |
 | OC-005 | 1 | Unfinished work is retained after resolution | none in a cited file | none |
 | OC-005 | 1 | The review is retained after resolution | `tests/runtime.mjs:884` | asserted |
-| OC-006 | 1 | No paging receipt is created | `tests/activation.mjs:116` | asserted |
+| OC-006 | 1 | No paging receipt is created | `tests/activation.mjs:117` | asserted |
 | OC-006 | 1 | No production action is created | `tests/runtime.mjs:870` | asserted |
 | OC-006 | 1 | No AI call is made | none in a cited file | none |
 | OC-006 | 1 | No external publication is made | `tests/runtime.mjs:869` | asserted |
@@ -92,7 +92,7 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-010 | 2 | Provider outcomes are recorded separately | none in a cited file | none |
 | OC-010 | 2 | Human-drill outcomes are recorded separately | none in a cited file | none |
 | OC-010 | 2 | Durable failure diagnostics for each new execution class | moved to door rule D-1 and the Requirement | moved |
-| OC-011 | 1 | Primary and backup schedules save and resolve | `tests/activation.mjs:33` | asserted |
+| OC-011 | 1 | Primary and backup schedules save and resolve | `tests/activation.mjs:33`; `tests/activation.mjs:77` | asserted |
 | OC-011 | 1 | A spring-forward hand-off keeps the wall minute | `tests/activation.mjs:34` | asserted |
 | OC-011 | 1 | A fall-back hand-off keeps the wall minute | none in a cited file | none |
 | OC-011 | 1 | An ambiguous minute takes its earlier, later or reject choice | none in a cited file | none |
@@ -104,16 +104,16 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-011 | 1 | A viewer slot is kept as a gap | none in a cited file | none |
 | OC-011 | 1 | A missing member slot is kept as a gap | none in a cited file | none |
 | OC-011 | 1 | A duplicate primary and backup responder is detected | none in a cited file | none |
-| OC-012 | 1 | Each delivery, job, tick, callback and resume door refuses | `tests/activation.mjs:110` | asserted |
+| OC-012 | 1 | Each delivery, job, tick, callback and resume door refuses | `tests/activation.mjs:111` | asserted |
 | OC-012 | 1 | The refusal gives the paging-OFF explanation | none in a cited file: the refusal body is not read | none |
-| OC-012 | 1 | No receipt is created | `tests/activation.mjs:116` | asserted |
+| OC-012 | 1 | No receipt is created | `tests/activation.mjs:117` | asserted |
 | OC-012 | 2 | A demo simulation is labelled as a simulation | none in a cited file: `tests/demo.mjs` reads the demo sends as sent | none |
 | OC-012 | old 3 | Native cutover needs OC-026 to OC-029 and OC-038 acceptance | moved to the Requirement (pointer) | moved |
 | OC-013 | 1 | Held receipts and callbacks are retained after restore | `tests/paging-history.mjs:34` | asserted |
 | OC-013 | 1 | Restored pending work is paused | `tests/paging-history.mjs:23` | asserted |
 | OC-013 | 1 | A historical acknowledgment keeps its attribution | `tests/paging-history.mjs:29` | asserted |
 | OC-013 | 1 | An explicit cancellation keeps its attribution | `tests/paging-history.mjs:29` | asserted |
-| OC-013 | 1 | Resuming restored work is refused | `tests/activation.mjs:418` | asserted |
+| OC-013 | 1 | Resuming restored work is refused | `tests/activation.mjs:449` | asserted |
 | OC-013 | 1 | Incident recovery stays unchanged | `tests/paging-history.mjs:32` | asserted |
 | OC-014 | 1 | Reading now/next leaves durable state unchanged | none in a cited file | none |
 | OC-014 | 1 | A schedule preview leaves durable state unchanged | none in a cited file | none |
@@ -129,37 +129,37 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-015 | 1 | An injected SQL failure rolls back the replacement | `tests/paging-history.mjs:46` | asserted |
 | OC-015 | 1 | Callbacks are retained | `tests/paging-history.mjs:34` | asserted |
 | OC-015 | 1 | Pending historical jobs pause | `tests/paging-history.mjs:23` | asserted |
-| OC-016 | 1 | The checkpoint door captures both revisions in one snapshot | `tests/activation.mjs:386` | asserted |
-| OC-016 | 1 | Restore through the checkpoint door replaces both datasets | `tests/activation.mjs:349` | asserted |
+| OC-016 | 1 | The checkpoint door captures both revisions in one snapshot | `tests/activation.mjs:417` | asserted |
+| OC-016 | 1 | Restore through the checkpoint door replaces both datasets | `tests/activation.mjs:380`; `tests/activation.mjs:381` | asserted |
 | OC-016 | 1 | The private CLI captures the checkpoint | `tests/checkpoint-cli.mjs:16` | asserted |
 | OC-016 | 1 | The private CLI restores the checkpoint | `tests/checkpoint-cli.mjs:128` | asserted |
-| OC-016 | 2 | Malformed input preserves the complete state | `tests/activation.mjs:394` | asserted |
-| OC-016 | 2 | A capacity failure preserves the complete state | `tests/activation.mjs:397` | asserted |
-| OC-016 | 2 | A storage failure preserves the complete state | `tests/activation.mjs:402` | asserted |
-| OC-016 | 2 | Of competing restores exactly one wins, and the loser changes nothing | `tests/activation.mjs:406` | asserted |
-| OC-016 | 2 | Identity mapping is explicit and the current password signs in as the mapped admin | `tests/activation.mjs:453` | asserted |
-| OC-016 | 2 | Orphan history is kept as evidence | `tests/activation.mjs:417` | asserted |
-| OC-016 | 2 | Orphan history never grants dispatch | `tests/activation.mjs:418` | asserted |
-| OC-016 | 2 | Earlier sessions are revoked | `tests/activation.mjs:409` | asserted |
-| OC-016 | 2 | The winning restore keeps its new session | `tests/activation.mjs:408` | asserted |
-| OC-017 | 1 | Handoff copy is prepared | `tests/activation.mjs:368` | asserted |
-| OC-017 | 1 | Handoff copy is reviewed | `tests/activation.mjs:376` | asserted |
-| OC-017 | 1 | A viewer inspects the internal record | `tests/activation.mjs:370` | asserted |
+| OC-016 | 2 | Malformed input preserves the complete state | `tests/activation.mjs:425` | asserted |
+| OC-016 | 2 | A capacity failure preserves the complete state | `tests/activation.mjs:428` | asserted |
+| OC-016 | 2 | A storage failure preserves the complete state | `tests/activation.mjs:433` | asserted |
+| OC-016 | 2 | Of competing restores exactly one wins, and the loser changes nothing | `tests/activation.mjs:437`; `tests/activation.mjs:439` | asserted |
+| OC-016 | 2 | Identity mapping is explicit and the current password signs in as the mapped admin | `tests/activation.mjs:480`; `tests/activation.mjs:484` | asserted |
+| OC-016 | 2 | Orphan history is kept as evidence | `tests/activation.mjs:448` | asserted |
+| OC-016 | 2 | Orphan history never grants dispatch | `tests/activation.mjs:449` | asserted |
+| OC-016 | 2 | Earlier sessions are revoked | `tests/activation.mjs:440` | asserted |
+| OC-016 | 2 | The winning restore keeps its new session | `tests/activation.mjs:438` | asserted |
+| OC-017 | 1 | Handoff copy is prepared | `tests/activation.mjs:399` | asserted |
+| OC-017 | 1 | Handoff copy is reviewed | `tests/activation.mjs:407` | asserted |
+| OC-017 | 1 | A viewer inspects the internal record | `tests/activation.mjs:401` | asserted |
 | OC-017 | 1 | The export carries the exact reviewed copy | none in a cited file: `tests/checkpoint-cli.mjs:99` holds it | none |
-| OC-017 | 1 | A viewer cannot prepare, review or withdraw | `tests/activation.mjs:372` | asserted |
-| OC-017 | 1 | Source drift makes the review ineligible | `tests/activation.mjs:379` | asserted |
-| OC-017 | 1 | Withdrawal is terminal | `tests/activation.mjs:381` | asserted |
-| OC-017 | 1 | Version 1 restore is supported | `tests/activation.mjs:421` | asserted |
-| OC-017 | 1 | Version 2 restore retains historical identities | `tests/activation.mjs:413` | asserted |
-| OC-017 | 1 | Racing restores publish once | `tests/activation.mjs:406` | asserted |
-| OC-017 | 2 | A recovery hold makes the review ineligible | `tests/activation.mjs:412` | asserted |
-| OC-017 | 2 | Preparation and review identities conflict on changed content | `tests/activation.mjs:369` | asserted |
-| OC-017 | 2 | Withdrawal appends to attributed history | `tests/activation.mjs:382` | asserted |
-| OC-017 | 2 | The 64-record bound refuses and keeps the archive | `tests/activation.mjs:425` | asserted |
-| OC-017 | 2 | The 128-entry history bound refuses and keeps the archive | `tests/activation.mjs:429` | asserted |
-| OC-017 | 2 | The 128 KiB record bound refuses first | `tests/activation.mjs:432` | asserted |
-| OC-017 | 2 | The 1 MiB aggregate bound refuses and keeps the state | `tests/activation.mjs:438` | asserted |
-| OC-017 | 2 | The export is unsent with no provider action | `tests/activation.mjs:377` | asserted |
+| OC-017 | 1 | A viewer cannot prepare, review or withdraw | `tests/activation.mjs:397`; `tests/activation.mjs:403`; `tests/activation.mjs:404` | asserted |
+| OC-017 | 1 | Source drift makes the review ineligible | `tests/activation.mjs:410` | asserted |
+| OC-017 | 1 | Withdrawal is terminal | `tests/activation.mjs:412` | asserted |
+| OC-017 | 1 | Version 1 restore is supported | `tests/activation.mjs:451` | asserted |
+| OC-017 | 1 | Version 2 restore retains historical identities | `tests/activation.mjs:444` | asserted |
+| OC-017 | 1 | Racing restores publish once | `tests/activation.mjs:437` | asserted |
+| OC-017 | 2 | A recovery hold makes the review ineligible | `tests/activation.mjs:442` | asserted |
+| OC-017 | 2 | Preparation and review identities conflict on changed content | `tests/activation.mjs:400`; `tests/activation.mjs:406` | asserted |
+| OC-017 | 2 | Withdrawal appends to attributed history | `tests/activation.mjs:413` | asserted |
+| OC-017 | 2 | The 64-record bound refuses and keeps the archive | `tests/activation.mjs:455`; `tests/activation.mjs:456` | asserted |
+| OC-017 | 2 | The 128-entry history bound refuses and keeps the archive | `tests/activation.mjs:459`; `tests/activation.mjs:460` | asserted |
+| OC-017 | 2 | The 128 KiB record bound refuses first | `tests/activation.mjs:463` | asserted |
+| OC-017 | 2 | The 1 MiB aggregate bound refuses and keeps the state | `tests/activation.mjs:468`; `tests/activation.mjs:469` | asserted |
+| OC-017 | 2 | The export is unsent with no provider action | `tests/activation.mjs:408` | asserted |
 | OC-018 | 1 | setup runs | `tests/activation-browser.mjs:23` | asserted |
 | OC-018 | 1 | dev runs and emits the owner-open link | `tests/activation-browser.mjs:28` | asserted |
 | OC-018 | 1 | build runs | none in a cited file | none |
@@ -191,22 +191,22 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-021 | 1 | The exporter output is accepted by the importer | `tests/provider-export-browser.mjs:66` | asserted |
 | OC-021 | 1 | Saved Opsgenie bundles preview with zero native-object writes | `tests/import-door.mjs:113` | asserted |
 | OC-021 | 1 | Saved PagerDuty list and detail bundles preview with zero native-object writes | `tests/import-door.mjs:113` | asserted |
-| OC-021 | 1 | Rejected rules are named | `tests/activation.mjs:176` | asserted |
-| OC-021 | 1 | Unmapped rules are named | `tests/activation.mjs:204` | asserted |
-| OC-021 | 1 | A changed fingerprint is refused | `tests/activation.mjs:181` | asserted |
-| OC-021 | 1 | The apply stays paused with no paging or login | `tests/activation.mjs:187` | asserted |
+| OC-021 | 1 | Rejected rules are named | `tests/activation.mjs:177` | asserted |
+| OC-021 | 1 | Unmapped rules are named | `tests/activation.mjs:205` | asserted |
+| OC-021 | 1 | A changed fingerprint is refused | `tests/activation.mjs:183` | asserted |
+| OC-021 | 1 | The apply stays paused with no paging or login | `tests/activation.mjs:188` | asserted |
 | OC-021 | 1 | Unmapped people and services publish no coverage | `tests/move-in-adoption.mjs:43` | asserted |
 | OC-021 | 1 | Explicitly mapped coverage is adopted | `tests/move-in-adoption.mjs:63` | asserted |
-| OC-022 | 1 | Both vendors apply | `tests/activation.mjs:231` | asserted |
-| OC-022 | 1 | A lost response after an accepted batch is durably interrupted | `tests/activation.mjs:146` | asserted |
-| OC-022 | 1 | Restart keeps the interrupted outcome | `tests/activation.mjs:154` | asserted |
+| OC-022 | 1 | Both vendors apply | `tests/activation.mjs:188`; `tests/activation.mjs:192` | asserted |
+| OC-022 | 1 | A lost response after an accepted batch is durably interrupted | `tests/activation.mjs:147`; `tests/activation.mjs:148` | asserted |
+| OC-022 | 1 | Restart keeps the interrupted outcome | `tests/activation.mjs:155` | asserted |
 | OC-022 | 1 | An interrupted import resumes to completion | none in a cited file: the shape journey restarts between apply calls, and the interrupted import is refused and rolled back | none |
-| OC-022 | 1 | Both vendors undo | `tests/activation.mjs:192` | asserted |
-| OC-022 | 1 | A revoked session cannot publish | `tests/activation.mjs:328` | asserted |
-| OC-022 | 1 | An injected SQL failure rolls back the batch and journal | `tests/activation.mjs:124` | asserted |
-| OC-022 | 1 | An unchanged replay returns the same job | `tests/activation.mjs:190` | asserted |
-| OC-022 | 1 | A changed identity outside reviewed catch-up conflicts and keeps committed data | `tests/activation.mjs:326` | asserted |
-| OC-022 | 1 | A native edit is kept as a named undo conflict | `tests/activation.mjs:315` | asserted |
+| OC-022 | 1 | Both vendors undo | `tests/activation.mjs:193`; `tests/activation.mjs:194` | asserted |
+| OC-022 | 1 | A revoked session cannot publish | `tests/activation.mjs:358`; `tests/activation.mjs:359` | asserted |
+| OC-022 | 1 | An injected SQL failure rolls back the batch and journal | `tests/activation.mjs:125`; `tests/activation.mjs:126` | asserted |
+| OC-022 | 1 | An unchanged replay returns the same job | `tests/activation.mjs:191` | asserted |
+| OC-022 | 1 | A changed identity outside reviewed catch-up conflicts and keeps committed data | `tests/activation.mjs:355`; `tests/activation.mjs:357` | asserted |
+| OC-022 | 1 | A native edit is kept as a named undo conflict | `tests/activation.mjs:346`; `tests/activation.mjs:348` | asserted |
 | OC-033 | 1 | Signed API events are admitted | none in a cited file: `tests/runtime.mjs:583` holds it | none |
 | OC-033 | 1 | Bearer API events are admitted | `tests/intake.mjs:63` | asserted |
 | OC-033 | 1 | An inbound email opens one generation | `tests/intake.mjs:38` | asserted |
@@ -241,23 +241,23 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-041 | 1 | Password changes commit with their audit | none in a cited file: the password change is checked by status only | none |
 | OC-041 | 1 | Source key rotation and revocation commit with their audit | `tests/runtime.mjs:771` | asserted |
 | OC-041 | 1 | Intake admission commits with its audit | `tests/runtime.mjs:520` | asserted |
-| OC-041 | 1 | Schedules commit with their audit | `tests/activation.mjs:31` | asserted |
-| OC-041 | 1 | Paging refusals keep audit with unchanged revisions | `tests/activation.mjs:115` | asserted |
+| OC-041 | 1 | Schedules commit with their audit | `tests/activation.mjs:22` | asserted |
+| OC-041 | 1 | Paging refusals keep audit with unchanged revisions | `tests/activation.mjs:116` | asserted |
 | OC-041 | 1 | Triage bulk actions roll back with their audit on an audit failure | `tests/runtime.mjs:923` | asserted |
 | OC-041 | 1 | Handoff actions commit with their audit | none in a cited file | none |
 | OC-041 | 1 | Routing publication commits with its audit | none in a cited file | none |
-| OC-041 | 1 | Move-in and the import door keep a durable interrupted audit | `tests/activation.mjs:149` | asserted |
-| OC-041 | 1 | Erasure rolls back with its audit | `tests/activation.mjs:489` | asserted |
+| OC-041 | 1 | Move-in and the import door keep a durable interrupted audit | `tests/activation.mjs:150` | asserted |
+| OC-041 | 1 | Erasure rolls back with its audit | `tests/activation.mjs:518`; `tests/activation.mjs:520` | asserted |
 | OC-041 | 1 | An audit-write failure rolls back state and audit | `tests/runtime.mjs:380` | asserted |
 | OC-041 | 2 | An administrator exports the permanent audit | `tests/runtime.mjs:135` | asserted |
 | OC-041 | 2 | Anonymous audit export is refused | `tests/runtime.mjs:373` | asserted |
 | OC-041 | 2 | Revoked audit export is refused | `tests/runtime.mjs:965` | asserted |
 | OC-041 | 2 | Viewer audit export is refused | `tests/runtime.mjs:372` | asserted |
-| OC-041 | 2 | Erased subjects keep labels and kind, time and outcome without personal content | `tests/activation.mjs:255` | asserted |
+| OC-041 | 2 | Erased subjects keep labels and kind, time and outcome without personal content | `tests/activation.mjs:283`; `tests/activation.mjs:286` | asserted |
 | OC-041 | 2 | The audit holds no names, hashes, credential labels or secrets | `tests/runtime.mjs:777` | asserted |
-| OC-041 | 3 | An interrupted import keeps a durable outcome | `tests/activation.mjs:149` | asserted |
-| OC-041 | 3 | An expired lease keeps its failure code | `tests/activation.mjs:146` | asserted |
-| OC-041 | 3 | A retry after the interruption publishes nothing more | `tests/activation.mjs:156` | asserted |
+| OC-041 | 3 | An interrupted import keeps a durable outcome | `tests/activation.mjs:150` | asserted |
+| OC-041 | 3 | An expired lease keeps its failure code | `tests/activation.mjs:147` | asserted |
+| OC-041 | 3 | A retry after the interruption publishes nothing more | `tests/activation.mjs:156`; `tests/activation.mjs:157` | asserted |
 | OC-041 | 4 | Restore keeps operational history and audit unchanged | `tests/runtime.mjs:822` | asserted |
 | OC-041 | 4 | Restored history grants no intake authority | `tests/runtime.mjs:830` | asserted |
 | OC-041 | 4 | Restored history reassigns no label | none in a cited file: the labels after restore are not compared | none |
@@ -272,17 +272,17 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-042 | 1 | Secrets never travel in an archive | `tests/runtime.mjs:228` | asserted |
 | OC-042 | 1 | Secrets never travel in a model request | none in a cited file: no model request exists to inspect | none |
 | OC-042 | old 2 | Each inheriting capability repeats this evidence | moved to door rule D-3 | moved |
-| OC-052 | 1 | A populated installation exports through the protected checkpoint door | `tests/activation.mjs:386` | asserted |
+| OC-052 | 1 | A populated installation exports through the protected checkpoint door | `tests/activation.mjs:417` | asserted |
 | OC-052 | 1 | The installation exports through rer export | `tests/transfer.mjs:224` | asserted |
 | OC-052 | 1 | Every durable category compares equal after restore | `tests/transfer.mjs:252` | asserted |
 | OC-052 | 1 | The restore is inactive on a fresh authorized installation | `tests/transfer.mjs:258` | asserted |
 | OC-052 | 1 | Local secrets are reconfigured | `tests/transfer.mjs:169` | asserted |
 | OC-052 | 1 | No send or action replays | `tests/transfer.mjs:160` | asserted |
 | OC-052 | 2 | A malformed archive leaves the target unchanged | `tests/transfer.mjs:237` | asserted |
-| OC-052 | 2 | An over-limit checkpoint leaves the state unchanged | `tests/activation.mjs:397` | asserted |
+| OC-052 | 2 | An over-limit checkpoint leaves the state unchanged | `tests/activation.mjs:427`; `tests/activation.mjs:428` | asserted |
 | OC-052 | 2 | An erased record fences an older checkpoint | `tests/checkpoint-cli.mjs:169` | asserted |
 | OC-052 | 2 | Unknown records never publish | `tests/transfer.mjs:239` | asserted |
-| OC-052 | 2 | A storage fault preserves the full prior state | `tests/activation.mjs:402` | asserted |
+| OC-052 | 2 | A storage fault preserves the full prior state | `tests/activation.mjs:432`; `tests/activation.mjs:433` | asserted |
 | OC-052 | 2 | A concurrency fault publishes one restore | `tests/checkpoint-cli.mjs:155` | asserted |
 | OC-052 | 3 | Native coordination runs with AI network access denied | none in a cited file | none |
 | OC-052 | old 3 | Native coordination runs with author network access denied | moved to Base BASE-DATA-005 | moved |

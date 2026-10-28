@@ -1,0 +1,2858 @@
+{
+  "users": [
+    {
+      "users": [
+        {
+          "id": "synthetic-oncall-u1",
+          "type": "user",
+          "name": "Ari Mercer",
+          "email": "pd.person1@example.test",
+          "time_zone": "UTC",
+          "role": "user",
+          "teams": [
+            {
+              "id": "synthetic-oncall-t1",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t1",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+            }
+          ],
+          "contact_methods": [
+            {
+              "id": "synthetic-oncall-c1email",
+              "type": "email_contact_method",
+              "label": "Work email",
+              "address": "pd.person1@example.test",
+              "send_short_email": false
+            },
+            {
+              "id": "synthetic-oncall-c1phone",
+              "type": "phone_contact_method",
+              "label": "Mobile voice",
+              "country_code": 354,
+              "address": "5550001",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c1sms",
+              "type": "sms_contact_method",
+              "label": "Mobile SMS",
+              "country_code": 354,
+              "address": "5550001",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c1push",
+              "type": "push_notification_contact_method",
+              "label": "Phone app",
+              "address": "synthetic-device-1",
+              "device_type": "android",
+              "enabled": true
+            }
+          ],
+          "notification_rules": [
+            {
+              "id": "synthetic-oncall-n1",
+              "type": "assignment_notification_rule",
+              "start_delay_in_minutes": 0,
+              "urgency": "high",
+              "contact_method": {
+                "id": "synthetic-oncall-c1phone",
+                "type": "phone_contact_method_reference"
+              }
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-u2",
+          "type": "user",
+          "name": "Bea Rowan",
+          "email": "pd.person2@example.test",
+          "time_zone": "UTC",
+          "role": "user",
+          "teams": [
+            {
+              "id": "synthetic-oncall-t1",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t1",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+            }
+          ],
+          "contact_methods": [
+            {
+              "id": "synthetic-oncall-c2email",
+              "type": "email_contact_method",
+              "label": "Work email",
+              "address": "pd.person2@example.test",
+              "send_short_email": false
+            },
+            {
+              "id": "synthetic-oncall-c2phone",
+              "type": "phone_contact_method",
+              "label": "Mobile voice",
+              "country_code": 1,
+              "address": "2025550102",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c2sms",
+              "type": "sms_contact_method",
+              "label": "Mobile SMS",
+              "country_code": 1,
+              "address": "2025550102",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c2push",
+              "type": "push_notification_contact_method",
+              "label": "Phone app",
+              "address": "synthetic-device-2",
+              "device_type": "android",
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c2ambiguous",
+              "type": "phone_contact_method",
+              "label": "Old office",
+              "address": "020 7946 0000"
+            }
+          ],
+          "notification_rules": [
+            {
+              "id": "synthetic-oncall-n2",
+              "type": "assignment_notification_rule",
+              "start_delay_in_minutes": 0,
+              "urgency": "high",
+              "contact_method": {
+                "id": "synthetic-oncall-c2phone",
+                "type": "phone_contact_method_reference"
+              }
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-u3",
+          "type": "user",
+          "name": "Cleo Finch",
+          "email": "pd.person3@example.test",
+          "time_zone": "UTC",
+          "role": "user",
+          "teams": [
+            {
+              "id": "synthetic-oncall-t1",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t1",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+            }
+          ],
+          "contact_methods": [
+            {
+              "id": "synthetic-oncall-c3email",
+              "type": "email_contact_method",
+              "label": "Work email",
+              "address": "pd.person3@example.test",
+              "send_short_email": false
+            },
+            {
+              "id": "synthetic-oncall-c3phone",
+              "type": "phone_contact_method",
+              "label": "Mobile voice",
+              "country_code": 1,
+              "address": "2025550103",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c3sms",
+              "type": "sms_contact_method",
+              "label": "Mobile SMS",
+              "country_code": 1,
+              "address": "2025550103",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c3push",
+              "type": "push_notification_contact_method",
+              "label": "Phone app",
+              "address": "synthetic-device-3",
+              "device_type": "android",
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c3invalid",
+              "type": "sms_contact_method",
+              "country_code": 44,
+              "address": "call reception"
+            }
+          ],
+          "notification_rules": [
+            {
+              "id": "synthetic-oncall-n3",
+              "type": "assignment_notification_rule",
+              "start_delay_in_minutes": 0,
+              "urgency": "high",
+              "contact_method": {
+                "id": "synthetic-oncall-c3phone",
+                "type": "phone_contact_method_reference"
+              }
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-u4",
+          "type": "user",
+          "name": "Dev Ash",
+          "email": "pd.person4@example.test",
+          "time_zone": "UTC",
+          "role": "user",
+          "teams": [
+            {
+              "id": "synthetic-oncall-t2",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t2",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+            }
+          ],
+          "contact_methods": [
+            {
+              "id": "synthetic-oncall-c4email",
+              "type": "email_contact_method",
+              "label": "Work email",
+              "address": "pd.person4@example.test",
+              "send_short_email": false
+            },
+            {
+              "id": "synthetic-oncall-c4phone",
+              "type": "phone_contact_method",
+              "label": "Mobile voice",
+              "country_code": 1,
+              "address": "2025550104",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c4sms",
+              "type": "sms_contact_method",
+              "label": "Mobile SMS",
+              "country_code": 1,
+              "address": "2025550104",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c4push",
+              "type": "push_notification_contact_method",
+              "label": "Phone app",
+              "address": "synthetic-device-4",
+              "device_type": "android",
+              "enabled": true
+            }
+          ],
+          "notification_rules": [
+            {
+              "id": "synthetic-oncall-n4",
+              "type": "assignment_notification_rule",
+              "start_delay_in_minutes": 0,
+              "urgency": "high",
+              "contact_method": {
+                "id": "synthetic-oncall-c4phone",
+                "type": "phone_contact_method_reference"
+              }
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-u5",
+          "type": "user",
+          "name": "Ellis Vale",
+          "email": "pd.person5@example.test",
+          "time_zone": "UTC",
+          "role": "user",
+          "teams": [
+            {
+              "id": "synthetic-oncall-t2",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t2",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+            }
+          ],
+          "contact_methods": [
+            {
+              "id": "synthetic-oncall-c5email",
+              "type": "email_contact_method",
+              "label": "Work email",
+              "address": "pd.person5@example.test",
+              "send_short_email": false
+            },
+            {
+              "id": "synthetic-oncall-c5phone",
+              "type": "phone_contact_method",
+              "label": "Mobile voice",
+              "country_code": 1,
+              "address": "2025550105",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c5sms",
+              "type": "sms_contact_method",
+              "label": "Mobile SMS",
+              "country_code": 1,
+              "address": "2025550105",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c5push",
+              "type": "push_notification_contact_method",
+              "label": "Phone app",
+              "address": "synthetic-device-5",
+              "device_type": "android",
+              "enabled": true
+            }
+          ],
+          "notification_rules": [
+            {
+              "id": "synthetic-oncall-n5",
+              "type": "assignment_notification_rule",
+              "start_delay_in_minutes": 0,
+              "urgency": "high",
+              "contact_method": {
+                "id": "synthetic-oncall-c5phone",
+                "type": "phone_contact_method_reference"
+              }
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-u6",
+          "type": "user",
+          "name": "Fern Reed",
+          "email": "pd.person6@example.test",
+          "time_zone": "UTC",
+          "role": "user",
+          "teams": [
+            {
+              "id": "synthetic-oncall-t2",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t2",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+            }
+          ],
+          "contact_methods": [
+            {
+              "id": "synthetic-oncall-c6email",
+              "type": "email_contact_method",
+              "label": "Work email",
+              "address": "pd.person6@example.test",
+              "send_short_email": false
+            },
+            {
+              "id": "synthetic-oncall-c6phone",
+              "type": "phone_contact_method",
+              "label": "Mobile voice",
+              "country_code": 1,
+              "address": "2025550106",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c6sms",
+              "type": "sms_contact_method",
+              "label": "Mobile SMS",
+              "country_code": 1,
+              "address": "2025550106",
+              "blacklisted": false,
+              "enabled": true
+            },
+            {
+              "id": "synthetic-oncall-c6push",
+              "type": "push_notification_contact_method",
+              "label": "Phone app",
+              "address": "synthetic-device-6",
+              "device_type": "android",
+              "enabled": true
+            }
+          ],
+          "notification_rules": [
+            {
+              "id": "synthetic-oncall-n6",
+              "type": "assignment_notification_rule",
+              "start_delay_in_minutes": 0,
+              "urgency": "high",
+              "contact_method": {
+                "id": "synthetic-oncall-c6phone",
+                "type": "phone_contact_method_reference"
+              }
+            }
+          ]
+        }
+      ],
+      "limit": 6,
+      "offset": 0,
+      "more": true,
+      "total": null
+    },
+    {
+      "user": {
+        "id": "synthetic-oncall-u7",
+        "type": "user",
+        "name": "Gray Lake",
+        "email": "pd.person7@example.test",
+        "time_zone": "UTC",
+        "role": "user",
+        "teams": [
+          {
+            "id": "synthetic-oncall-t3",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t3",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+          }
+        ],
+        "contact_methods": [
+          {
+            "id": "synthetic-oncall-c7email",
+            "type": "email_contact_method",
+            "label": "Work email",
+            "address": "pd.person7@example.test",
+            "send_short_email": false
+          },
+          {
+            "id": "synthetic-oncall-c7phone",
+            "type": "phone_contact_method",
+            "label": "Mobile voice",
+            "country_code": 1,
+            "address": "2025550107",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c7sms",
+            "type": "sms_contact_method",
+            "label": "Mobile SMS",
+            "country_code": 1,
+            "address": "2025550107",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c7push",
+            "type": "push_notification_contact_method",
+            "label": "Phone app",
+            "address": "synthetic-device-7",
+            "device_type": "android",
+            "enabled": true
+          }
+        ],
+        "notification_rules": [
+          {
+            "id": "synthetic-oncall-n7",
+            "type": "assignment_notification_rule",
+            "start_delay_in_minutes": 0,
+            "urgency": "high",
+            "contact_method": {
+              "id": "synthetic-oncall-c7phone",
+              "type": "phone_contact_method_reference"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "user": {
+        "id": "synthetic-oncall-u8",
+        "type": "user",
+        "name": "Hana Birch",
+        "email": "pd.person8@example.test",
+        "time_zone": "UTC",
+        "role": "user",
+        "teams": [
+          {
+            "id": "synthetic-oncall-t3",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t3",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+          }
+        ],
+        "contact_methods": [
+          {
+            "id": "synthetic-oncall-c8email",
+            "type": "email_contact_method",
+            "label": "Work email",
+            "address": "pd.person8@example.test",
+            "send_short_email": false
+          },
+          {
+            "id": "synthetic-oncall-c8phone",
+            "type": "phone_contact_method",
+            "label": "Mobile voice",
+            "country_code": 1,
+            "address": "2025550108",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c8sms",
+            "type": "sms_contact_method",
+            "label": "Mobile SMS",
+            "country_code": 1,
+            "address": "2025550108",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c8push",
+            "type": "push_notification_contact_method",
+            "label": "Phone app",
+            "address": "synthetic-device-8",
+            "device_type": "android",
+            "enabled": true
+          }
+        ],
+        "notification_rules": [
+          {
+            "id": "synthetic-oncall-n8",
+            "type": "assignment_notification_rule",
+            "start_delay_in_minutes": 0,
+            "urgency": "high",
+            "contact_method": {
+              "id": "synthetic-oncall-c8phone",
+              "type": "phone_contact_method_reference"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "user": {
+        "id": "synthetic-oncall-u9",
+        "type": "user",
+        "name": "Ivo Wren",
+        "email": "pd.person9@example.test",
+        "time_zone": "UTC",
+        "role": "user",
+        "teams": [
+          {
+            "id": "synthetic-oncall-t3",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t3",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+          }
+        ],
+        "contact_methods": [
+          {
+            "id": "synthetic-oncall-c9email",
+            "type": "email_contact_method",
+            "label": "Work email",
+            "address": "pd.person9@example.test",
+            "send_short_email": false
+          },
+          {
+            "id": "synthetic-oncall-c9phone",
+            "type": "phone_contact_method",
+            "label": "Mobile voice",
+            "country_code": 1,
+            "address": "2025550109",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c9sms",
+            "type": "sms_contact_method",
+            "label": "Mobile SMS",
+            "country_code": 1,
+            "address": "2025550109",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c9push",
+            "type": "push_notification_contact_method",
+            "label": "Phone app",
+            "address": "synthetic-device-9",
+            "device_type": "android",
+            "enabled": true
+          }
+        ],
+        "notification_rules": [
+          {
+            "id": "synthetic-oncall-n9",
+            "type": "assignment_notification_rule",
+            "start_delay_in_minutes": 0,
+            "urgency": "high",
+            "contact_method": {
+              "id": "synthetic-oncall-c9phone",
+              "type": "phone_contact_method_reference"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "user": {
+        "id": "synthetic-oncall-u10",
+        "type": "user",
+        "name": "Jules Elm",
+        "email": "pd.person10@example.test",
+        "time_zone": "UTC",
+        "role": "user",
+        "teams": [
+          {
+            "id": "synthetic-oncall-t4",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t4",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t4"
+          }
+        ],
+        "contact_methods": [
+          {
+            "id": "synthetic-oncall-c10email",
+            "type": "email_contact_method",
+            "label": "Work email",
+            "address": "pd.person10@example.test",
+            "send_short_email": false
+          },
+          {
+            "id": "synthetic-oncall-c10phone",
+            "type": "phone_contact_method",
+            "label": "Mobile voice",
+            "country_code": 1,
+            "address": "2025550110",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c10sms",
+            "type": "sms_contact_method",
+            "label": "Mobile SMS",
+            "country_code": 1,
+            "address": "2025550110",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c10push",
+            "type": "push_notification_contact_method",
+            "label": "Phone app",
+            "address": "synthetic-device-10",
+            "device_type": "android",
+            "enabled": true
+          }
+        ],
+        "notification_rules": [
+          {
+            "id": "synthetic-oncall-n10",
+            "type": "assignment_notification_rule",
+            "start_delay_in_minutes": 0,
+            "urgency": "high",
+            "contact_method": {
+              "id": "synthetic-oncall-c10phone",
+              "type": "phone_contact_method_reference"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "user": {
+        "id": "synthetic-oncall-u11",
+        "type": "user",
+        "name": "Kai Pine",
+        "email": "pd.person11@example.test",
+        "time_zone": "UTC",
+        "role": "user",
+        "teams": [
+          {
+            "id": "synthetic-oncall-t4",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t4",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t4"
+          }
+        ],
+        "contact_methods": [
+          {
+            "id": "synthetic-oncall-c11email",
+            "type": "email_contact_method",
+            "label": "Work email",
+            "address": "pd.person11@example.test",
+            "send_short_email": false
+          },
+          {
+            "id": "synthetic-oncall-c11phone",
+            "type": "phone_contact_method",
+            "label": "Mobile voice",
+            "country_code": 1,
+            "address": "2025550111",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c11sms",
+            "type": "sms_contact_method",
+            "label": "Mobile SMS",
+            "country_code": 1,
+            "address": "2025550111",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c11push",
+            "type": "push_notification_contact_method",
+            "label": "Phone app",
+            "address": "synthetic-device-11",
+            "device_type": "android",
+            "enabled": true
+          }
+        ],
+        "notification_rules": [
+          {
+            "id": "synthetic-oncall-n11",
+            "type": "assignment_notification_rule",
+            "start_delay_in_minutes": 0,
+            "urgency": "high",
+            "contact_method": {
+              "id": "synthetic-oncall-c11phone",
+              "type": "phone_contact_method_reference"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "user": {
+        "id": "synthetic-oncall-u12",
+        "type": "user",
+        "name": "Luz Brook",
+        "email": "pd.person12@example.test",
+        "time_zone": "UTC",
+        "role": "user",
+        "teams": [
+          {
+            "id": "synthetic-oncall-t4",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t4",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t4"
+          }
+        ],
+        "contact_methods": [
+          {
+            "id": "synthetic-oncall-c12email",
+            "type": "email_contact_method",
+            "label": "Work email",
+            "address": "pd.person12@example.test",
+            "send_short_email": false
+          },
+          {
+            "id": "synthetic-oncall-c12phone",
+            "type": "phone_contact_method",
+            "label": "Mobile voice",
+            "country_code": 1,
+            "address": "2025550112",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c12sms",
+            "type": "sms_contact_method",
+            "label": "Mobile SMS",
+            "country_code": 1,
+            "address": "2025550112",
+            "blacklisted": false,
+            "enabled": true
+          },
+          {
+            "id": "synthetic-oncall-c12push",
+            "type": "push_notification_contact_method",
+            "label": "Phone app",
+            "address": "synthetic-device-12",
+            "device_type": "android",
+            "enabled": true
+          }
+        ],
+        "notification_rules": [
+          {
+            "id": "synthetic-oncall-n12",
+            "type": "assignment_notification_rule",
+            "start_delay_in_minutes": 0,
+            "urgency": "high",
+            "contact_method": {
+              "id": "synthetic-oncall-c12phone",
+              "type": "phone_contact_method_reference"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "schedules": [
+    {
+      "schedules": [
+        {
+          "id": "synthetic-oncall-s1",
+          "type": "schedule",
+          "name": "Platform rotation 1",
+          "time_zone": "UTC",
+          "description": "Weekly primary coverage",
+          "schedule_layers": [
+            {
+              "id": "synthetic-oncall-l1",
+              "name": "Weekly primary 1",
+              "start": "2026-01-05T09:00:00Z",
+              "end": null,
+              "rotation_virtual_start": "2026-01-05T09:00:00Z",
+              "rotation_turn_length_seconds": 604800,
+              "users": [
+                {
+                  "user": {
+                    "id": "synthetic-oncall-u1",
+                    "type": "user_reference",
+                    "summary": "synthetic-oncall-u1",
+                    "self": "https://api.pagerduty.com/users/synthetic-oncall-u1"
+                  }
+                },
+                {
+                  "user": {
+                    "id": "synthetic-oncall-u2",
+                    "type": "user_reference",
+                    "summary": "synthetic-oncall-u2",
+                    "self": "https://api.pagerduty.com/users/synthetic-oncall-u2"
+                  }
+                }
+              ],
+              "restrictions": []
+            }
+          ],
+          "teams": [
+            {
+              "id": "synthetic-oncall-t1",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t1",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-s2",
+          "type": "schedule",
+          "name": "Platform rotation 2",
+          "time_zone": "UTC",
+          "description": "Weekly primary coverage",
+          "schedule_layers": [
+            {
+              "id": "synthetic-oncall-l2",
+              "name": "Weekly primary 2",
+              "start": "2026-01-05T09:00:00Z",
+              "end": null,
+              "rotation_virtual_start": "2026-01-05T09:00:00Z",
+              "rotation_turn_length_seconds": 604800,
+              "users": [
+                {
+                  "user": {
+                    "id": "synthetic-oncall-u3",
+                    "type": "user_reference",
+                    "summary": "synthetic-oncall-u3",
+                    "self": "https://api.pagerduty.com/users/synthetic-oncall-u3"
+                  }
+                },
+                {
+                  "user": {
+                    "id": "synthetic-oncall-u4",
+                    "type": "user_reference",
+                    "summary": "synthetic-oncall-u4",
+                    "self": "https://api.pagerduty.com/users/synthetic-oncall-u4"
+                  }
+                }
+              ],
+              "restrictions": []
+            }
+          ],
+          "teams": [
+            {
+              "id": "synthetic-oncall-t2",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t2",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-s3",
+          "type": "schedule",
+          "name": "Platform rotation 3",
+          "time_zone": "UTC",
+          "description": "Weekly primary coverage",
+          "schedule_layers": [
+            {
+              "id": "synthetic-oncall-l3",
+              "name": "Weekly primary 3",
+              "start": "2026-01-05T09:00:00Z",
+              "end": null,
+              "rotation_virtual_start": "2026-01-05T09:00:00Z",
+              "rotation_turn_length_seconds": 604800,
+              "users": [
+                {
+                  "user": {
+                    "id": "synthetic-oncall-u5",
+                    "type": "user_reference",
+                    "summary": "synthetic-oncall-u5",
+                    "self": "https://api.pagerduty.com/users/synthetic-oncall-u5"
+                  }
+                },
+                {
+                  "user": {
+                    "id": "synthetic-oncall-u6",
+                    "type": "user_reference",
+                    "summary": "synthetic-oncall-u6",
+                    "self": "https://api.pagerduty.com/users/synthetic-oncall-u6"
+                  }
+                }
+              ],
+              "restrictions": []
+            }
+          ],
+          "teams": [
+            {
+              "id": "synthetic-oncall-t3",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t3",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-s4",
+          "type": "schedule",
+          "name": "Platform rotation 4",
+          "time_zone": "UTC",
+          "description": "Weekly primary coverage",
+          "schedule_layers": [
+            {
+              "id": "synthetic-oncall-l4",
+              "name": "Weekly primary 4",
+              "start": "2026-01-05T09:00:00Z",
+              "end": null,
+              "rotation_virtual_start": "2026-01-05T09:00:00Z",
+              "rotation_turn_length_seconds": 604800,
+              "users": [
+                {
+                  "user": {
+                    "id": "synthetic-oncall-u7",
+                    "type": "user_reference",
+                    "summary": "synthetic-oncall-u7",
+                    "self": "https://api.pagerduty.com/users/synthetic-oncall-u7"
+                  }
+                },
+                {
+                  "user": {
+                    "id": "synthetic-oncall-u8",
+                    "type": "user_reference",
+                    "summary": "synthetic-oncall-u8",
+                    "self": "https://api.pagerduty.com/users/synthetic-oncall-u8"
+                  }
+                }
+              ],
+              "restrictions": []
+            }
+          ],
+          "teams": [
+            {
+              "id": "synthetic-oncall-t4",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t4",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t4"
+            }
+          ]
+        }
+      ],
+      "limit": 25,
+      "offset": 0,
+      "more": false,
+      "total": null
+    },
+    {
+      "schedule": {
+        "id": "synthetic-oncall-s5",
+        "type": "schedule",
+        "name": "Platform rotation 5",
+        "time_zone": "UTC",
+        "description": "Weekly primary coverage",
+        "schedule_layers": [
+          {
+            "id": "synthetic-oncall-l5",
+            "name": "Weekly primary 5",
+            "start": "2026-01-05T09:00:00Z",
+            "end": null,
+            "rotation_virtual_start": "2026-01-05T09:00:00Z",
+            "rotation_turn_length_seconds": 604800,
+            "users": [
+              {
+                "user": {
+                  "id": "synthetic-oncall-u9",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u9",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u9"
+                }
+              },
+              {
+                "user": {
+                  "id": "synthetic-oncall-u10",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u10",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u10"
+                }
+              }
+            ],
+            "restrictions": []
+          }
+        ],
+        "teams": [
+          {
+            "id": "synthetic-oncall-t1",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t1",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+          }
+        ]
+      }
+    },
+    {
+      "schedule": {
+        "id": "synthetic-oncall-s6",
+        "type": "schedule",
+        "name": "Platform rotation 6",
+        "time_zone": "UTC",
+        "description": "Weekly primary coverage",
+        "schedule_layers": [
+          {
+            "id": "synthetic-oncall-l6",
+            "name": "Weekly primary 6",
+            "start": "2026-01-05T09:00:00Z",
+            "end": null,
+            "rotation_virtual_start": "2026-01-05T09:00:00Z",
+            "rotation_turn_length_seconds": 604800,
+            "users": [
+              {
+                "user": {
+                  "id": "synthetic-oncall-u11",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u11",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u11"
+                }
+              },
+              {
+                "user": {
+                  "id": "synthetic-oncall-u12",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u12",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u12"
+                }
+              }
+            ],
+            "restrictions": []
+          }
+        ],
+        "teams": [
+          {
+            "id": "synthetic-oncall-t2",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t2",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+          }
+        ]
+      }
+    },
+    {
+      "schedule": {
+        "id": "synthetic-oncall-s7",
+        "type": "schedule",
+        "name": "Platform rotation 7",
+        "time_zone": "UTC",
+        "description": "Weekly primary coverage",
+        "schedule_layers": [
+          {
+            "id": "synthetic-oncall-l7",
+            "name": "Weekly primary 7",
+            "start": "2026-01-05T09:00:00Z",
+            "end": null,
+            "rotation_virtual_start": "2026-01-05T09:00:00Z",
+            "rotation_turn_length_seconds": 604800,
+            "users": [
+              {
+                "user": {
+                  "id": "synthetic-oncall-u1",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u1",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u1"
+                }
+              },
+              {
+                "user": {
+                  "id": "synthetic-oncall-u2",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u2",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u2"
+                }
+              }
+            ],
+            "restrictions": []
+          },
+          {
+            "id": "synthetic-oncall-l9",
+            "name": "Concurrent backup",
+            "start": "2026-01-05T09:00:00Z",
+            "end": null,
+            "rotation_virtual_start": "2026-01-05T09:00:00Z",
+            "rotation_turn_length_seconds": 604800,
+            "users": [
+              {
+                "user": {
+                  "id": "synthetic-oncall-u1",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u1",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u1"
+                }
+              },
+              {
+                "user": {
+                  "id": "synthetic-oncall-u2",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u2",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u2"
+                }
+              }
+            ],
+            "restrictions": []
+          }
+        ],
+        "teams": [
+          {
+            "id": "synthetic-oncall-t3",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t3",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+          }
+        ]
+      }
+    },
+    {
+      "schedule": {
+        "id": "synthetic-oncall-s8",
+        "type": "schedule",
+        "name": "Platform rotation 8",
+        "time_zone": "UTC",
+        "description": "Weekly primary coverage",
+        "schedule_layers": [
+          {
+            "id": "synthetic-oncall-l8",
+            "name": "Weekly primary 8",
+            "start": "2026-01-05T09:00:00Z",
+            "end": null,
+            "rotation_virtual_start": "2026-01-05T09:00:00Z",
+            "rotation_turn_length_seconds": 604800,
+            "users": [
+              {
+                "user": {
+                  "id": "synthetic-oncall-u3",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u3",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u3"
+                }
+              },
+              {
+                "user": {
+                  "id": "synthetic-oncall-u4",
+                  "type": "user_reference",
+                  "summary": "synthetic-oncall-u4",
+                  "self": "https://api.pagerduty.com/users/synthetic-oncall-u4"
+                }
+              }
+            ],
+            "restrictions": [
+              {
+                "type": "daily_restriction",
+                "start_time_of_day": "09:00:00",
+                "duration_seconds": 28800
+              }
+            ]
+          }
+        ],
+        "teams": [
+          {
+            "id": "synthetic-oncall-t4",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t4",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t4"
+          }
+        ]
+      }
+    }
+  ],
+  "overrides": {
+    "schedule_id": "synthetic-oncall-s1",
+    "overrides": [
+      {
+        "id": "synthetic-oncall-ov1",
+        "start": "2026-10-26T09:00:00Z",
+        "end": "2026-10-26T11:00:00Z",
+        "user": {
+          "id": "synthetic-oncall-u3",
+          "type": "user_reference",
+          "summary": "synthetic-oncall-u3",
+          "self": "https://api.pagerduty.com/users/synthetic-oncall-u3"
+        }
+      }
+    ],
+    "limit": 25,
+    "offset": 0,
+    "more": false,
+    "total": null
+  },
+  "escalation_policies": [
+    {
+      "escalation_policies": [
+        {
+          "id": "synthetic-oncall-p1",
+          "type": "escalation_policy",
+          "name": "Platform escalation 1",
+          "num_loops": 0,
+          "on_call_handoff_notifications": "if_has_services",
+          "escalation_rules": [
+            {
+              "id": "synthetic-oncall-r1a",
+              "escalation_delay_in_minutes": 5,
+              "targets": [
+                {
+                  "id": "synthetic-oncall-s1",
+                  "type": "schedule_reference",
+                  "summary": "synthetic-oncall-s1",
+                  "self": "https://api.pagerduty.com/schedules/synthetic-oncall-s1"
+                }
+              ]
+            }
+          ],
+          "teams": [
+            {
+              "id": "synthetic-oncall-t1",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t1",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-p2",
+          "type": "escalation_policy",
+          "name": "Platform escalation 2",
+          "num_loops": 0,
+          "on_call_handoff_notifications": "if_has_services",
+          "escalation_rules": [
+            {
+              "id": "synthetic-oncall-r2a",
+              "escalation_delay_in_minutes": 5,
+              "targets": [
+                {
+                  "id": "synthetic-oncall-s2",
+                  "type": "schedule_reference",
+                  "summary": "synthetic-oncall-s2",
+                  "self": "https://api.pagerduty.com/schedules/synthetic-oncall-s2"
+                }
+              ]
+            },
+            {
+              "id": "synthetic-oncall-r2b",
+              "escalation_delay_in_minutes": 10,
+              "targets": [
+                {
+                  "id": "synthetic-oncall-s2",
+                  "type": "schedule_reference",
+                  "summary": "synthetic-oncall-s2",
+                  "self": "https://api.pagerduty.com/schedules/synthetic-oncall-s2"
+                }
+              ]
+            }
+          ],
+          "teams": [
+            {
+              "id": "synthetic-oncall-t2",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t2",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-p3",
+          "type": "escalation_policy",
+          "name": "Platform escalation 3",
+          "num_loops": 0,
+          "on_call_handoff_notifications": "if_has_services",
+          "escalation_rules": [
+            {
+              "id": "synthetic-oncall-r3a",
+              "escalation_delay_in_minutes": 0,
+              "targets": [
+                {
+                  "id": "synthetic-oncall-s3",
+                  "type": "schedule_reference",
+                  "summary": "synthetic-oncall-s3",
+                  "self": "https://api.pagerduty.com/schedules/synthetic-oncall-s3"
+                }
+              ]
+            }
+          ],
+          "teams": [
+            {
+              "id": "synthetic-oncall-t3",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t3",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-p4",
+          "type": "escalation_policy",
+          "name": "Platform escalation 4",
+          "num_loops": 2,
+          "on_call_handoff_notifications": "if_has_services",
+          "escalation_rules": [
+            {
+              "id": "synthetic-oncall-r4a",
+              "escalation_delay_in_minutes": 5,
+              "targets": [
+                {
+                  "id": "synthetic-oncall-s4",
+                  "type": "schedule_reference",
+                  "summary": "synthetic-oncall-s4",
+                  "self": "https://api.pagerduty.com/schedules/synthetic-oncall-s4"
+                }
+              ]
+            }
+          ],
+          "teams": [
+            {
+              "id": "synthetic-oncall-t4",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t4",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t4"
+            }
+          ]
+        }
+      ],
+      "limit": 25,
+      "offset": 0,
+      "more": false,
+      "total": null
+    },
+    {
+      "escalation_policy": {
+        "id": "synthetic-oncall-p5",
+        "type": "escalation_policy",
+        "name": "Platform escalation 5",
+        "num_loops": 0,
+        "on_call_handoff_notifications": "if_has_services",
+        "escalation_rules": [
+          {
+            "id": "synthetic-oncall-r5a",
+            "escalation_delay_in_minutes": 5,
+            "targets": [
+              {
+                "id": "synthetic-oncall-s5",
+                "type": "schedule_reference",
+                "summary": "synthetic-oncall-s5",
+                "self": "https://api.pagerduty.com/schedules/synthetic-oncall-s5"
+              }
+            ]
+          },
+          {
+            "id": "synthetic-oncall-r5a",
+            "escalation_delay_in_minutes": 5,
+            "targets": [
+              {
+                "id": "synthetic-oncall-s5",
+                "type": "schedule_reference",
+                "summary": "synthetic-oncall-s5",
+                "self": "https://api.pagerduty.com/schedules/synthetic-oncall-s5"
+              }
+            ]
+          },
+          {
+            "id": "synthetic-oncall-r5a",
+            "escalation_delay_in_minutes": 5,
+            "targets": [
+              {
+                "id": "synthetic-oncall-s5",
+                "type": "schedule_reference",
+                "summary": "synthetic-oncall-s5",
+                "self": "https://api.pagerduty.com/schedules/synthetic-oncall-s5"
+              }
+            ]
+          }
+        ],
+        "teams": [
+          {
+            "id": "synthetic-oncall-t1",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t1",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+          }
+        ]
+      }
+    },
+    {
+      "escalation_policy": {
+        "id": "synthetic-oncall-p6",
+        "type": "escalation_policy",
+        "name": "Platform escalation 6",
+        "num_loops": 0,
+        "on_call_handoff_notifications": "if_has_services",
+        "escalation_rules": [
+          {
+            "id": "synthetic-oncall-r6a",
+            "escalation_delay_in_minutes": 5,
+            "targets": [
+              {
+                "id": "synthetic-oncall-u1",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u1",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u1"
+              }
+            ]
+          }
+        ],
+        "teams": [
+          {
+            "id": "synthetic-oncall-t2",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t2",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+          }
+        ]
+      }
+    },
+    {
+      "escalation_policy": {
+        "id": "synthetic-oncall-p7",
+        "type": "escalation_policy",
+        "name": "Platform escalation 7",
+        "num_loops": 0,
+        "on_call_handoff_notifications": "if_has_services",
+        "escalation_rules": [
+          {
+            "id": "synthetic-oncall-r7a",
+            "escalation_delay_in_minutes": 5,
+            "targets": [
+              {
+                "id": "synthetic-oncall-t1",
+                "type": "team_reference",
+                "summary": "synthetic-oncall-t1",
+                "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+              }
+            ]
+          }
+        ],
+        "teams": [
+          {
+            "id": "synthetic-oncall-t3",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t3",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+          }
+        ]
+      }
+    },
+    {
+      "escalation_policy": {
+        "id": "synthetic-oncall-p8",
+        "type": "escalation_policy",
+        "name": "Platform escalation 8",
+        "num_loops": 0,
+        "on_call_handoff_notifications": "if_has_services",
+        "escalation_rules": [
+          {
+            "id": "synthetic-oncall-r8a",
+            "escalation_delay_in_minutes": 5,
+            "targets": [
+              {
+                "id": "synthetic-oncall-s8",
+                "type": "schedule_reference",
+                "summary": "synthetic-oncall-s8",
+                "self": "https://api.pagerduty.com/schedules/synthetic-oncall-s8"
+              }
+            ]
+          }
+        ],
+        "teams": [
+          {
+            "id": "synthetic-oncall-t4",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t4",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t4"
+          }
+        ]
+      }
+    }
+  ],
+  "services": [
+    {
+      "services": [
+        {
+          "id": "synthetic-oncall-v1",
+          "type": "service",
+          "name": "Checkout",
+          "description": "Owner contact pd.person1@example.test",
+          "status": "active",
+          "created_at": "2026-01-01T09:00:00Z",
+          "integrations": [
+            {
+              "id": "synthetic-oncall-i1",
+              "type": "events_api_v1_inbound_integration",
+              "name": "Legacy Events",
+              "summary": "Monitor intake 1",
+              "created_at": "2026-01-01T09:00:00Z"
+            },
+            {
+              "id": "synthetic-oncall-i2",
+              "type": "events_api_v2_inbound_integration",
+              "name": "Alertmanager 1",
+              "summary": "Alertmanager 1"
+            }
+          ],
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "teams": [
+            {
+              "id": "synthetic-oncall-t1",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t1",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+            }
+          ],
+          "alert_grouping_parameters": {
+            "type": "time",
+            "config": {
+              "timeout": 300
+            }
+          },
+          "support_hours": {
+            "type": "fixed_time_per_day",
+            "time_zone": "UTC",
+            "days_of_week": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "start_time": "09:00:00",
+            "end_time": "17:00:00"
+          },
+          "incident_urgency_rule": {
+            "type": "use_support_hours",
+            "during_support_hours": {
+              "type": "constant",
+              "urgency": "high"
+            },
+            "outside_support_hours": {
+              "type": "constant",
+              "urgency": "low"
+            }
+          },
+          "auto_resolve_timeout": 14400,
+          "acknowledgement_timeout": 1800
+        },
+        {
+          "id": "synthetic-oncall-v2",
+          "type": "service",
+          "name": "Database",
+          "description": "Production service",
+          "status": "active",
+          "created_at": "2026-01-01T09:00:00Z",
+          "integrations": [
+            {
+              "id": "synthetic-oncall-i3",
+              "type": "events_api_v2_inbound_integration",
+              "name": "Events v2",
+              "summary": "Monitor intake 2",
+              "created_at": "2026-01-01T09:00:00Z"
+            },
+            {
+              "id": "synthetic-oncall-i4",
+              "type": "events_api_v2_inbound_integration",
+              "name": "Alertmanager 2",
+              "summary": "Alertmanager 2"
+            }
+          ],
+          "escalation_policy": {
+            "id": "synthetic-oncall-p2",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p2",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p2"
+          },
+          "teams": [
+            {
+              "id": "synthetic-oncall-t2",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t2",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+            }
+          ],
+          "alert_grouping_parameters": {
+            "type": "time",
+            "config": {
+              "timeout": 300
+            }
+          },
+          "support_hours": {
+            "type": "fixed_time_per_day",
+            "time_zone": "UTC",
+            "days_of_week": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "start_time": "09:00:00",
+            "end_time": "17:00:00"
+          },
+          "incident_urgency_rule": {
+            "type": "use_support_hours",
+            "during_support_hours": {
+              "type": "constant",
+              "urgency": "high"
+            },
+            "outside_support_hours": {
+              "type": "constant",
+              "urgency": "low"
+            }
+          },
+          "auto_resolve_timeout": 14400,
+          "acknowledgement_timeout": 1800
+        },
+        {
+          "id": "synthetic-oncall-v3",
+          "type": "service",
+          "name": "Search",
+          "description": "Production service",
+          "status": "active",
+          "created_at": "2026-01-01T09:00:00Z",
+          "integrations": [
+            {
+              "id": "synthetic-oncall-i5",
+              "type": "generic_events_api_inbound_integration",
+              "name": "Generic API",
+              "summary": "Monitor intake 3",
+              "created_at": "2026-01-01T09:00:00Z"
+            },
+            {
+              "id": "synthetic-oncall-i6",
+              "type": "events_api_v2_inbound_integration",
+              "name": "Alertmanager 3",
+              "summary": "Alertmanager 3"
+            }
+          ],
+          "escalation_policy": {
+            "id": "synthetic-oncall-p3",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p3",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p3"
+          },
+          "teams": [
+            {
+              "id": "synthetic-oncall-t3",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t3",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+            }
+          ],
+          "alert_grouping_parameters": {
+            "type": "time",
+            "config": {
+              "timeout": 300
+            }
+          },
+          "support_hours": {
+            "type": "fixed_time_per_day",
+            "time_zone": "UTC",
+            "days_of_week": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "start_time": "09:00:00",
+            "end_time": "17:00:00"
+          },
+          "incident_urgency_rule": {
+            "type": "use_support_hours",
+            "during_support_hours": {
+              "type": "constant",
+              "urgency": "high"
+            },
+            "outside_support_hours": {
+              "type": "constant",
+              "urgency": "low"
+            }
+          },
+          "auto_resolve_timeout": 14400,
+          "acknowledgement_timeout": 1800
+        },
+        {
+          "id": "synthetic-oncall-v4",
+          "type": "service",
+          "name": "Identity",
+          "description": "Production service",
+          "status": "active",
+          "created_at": "2026-01-01T09:00:00Z",
+          "integrations": [
+            {
+              "id": "synthetic-oncall-i7",
+              "type": "email_inbound_integration",
+              "name": "Email alerts",
+              "summary": "Monitor intake 4",
+              "created_at": "2026-01-01T09:00:00Z",
+              "integration_email": "alerts@example.test",
+              "email_filter_mode": "all-email"
+            },
+            {
+              "id": "synthetic-oncall-i8",
+              "type": "events_api_v2_inbound_integration",
+              "name": "Alertmanager 4",
+              "summary": "Alertmanager 4"
+            }
+          ],
+          "escalation_policy": {
+            "id": "synthetic-oncall-p3",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p3",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p3"
+          },
+          "teams": [
+            {
+              "id": "synthetic-oncall-t4",
+              "type": "team_reference",
+              "summary": "synthetic-oncall-t4",
+              "self": "https://api.pagerduty.com/teams/synthetic-oncall-t4"
+            }
+          ],
+          "alert_grouping_parameters": {
+            "type": "time",
+            "config": {
+              "timeout": 300
+            }
+          },
+          "support_hours": {
+            "type": "fixed_time_per_day",
+            "time_zone": "UTC",
+            "days_of_week": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "start_time": "09:00:00",
+            "end_time": "17:00:00"
+          },
+          "incident_urgency_rule": {
+            "type": "use_support_hours",
+            "during_support_hours": {
+              "type": "constant",
+              "urgency": "high"
+            },
+            "outside_support_hours": {
+              "type": "constant",
+              "urgency": "low"
+            }
+          },
+          "auto_resolve_timeout": 14400,
+          "acknowledgement_timeout": 1800
+        }
+      ],
+      "limit": 25,
+      "offset": 0,
+      "more": false,
+      "total": null
+    },
+    {
+      "service": {
+        "id": "synthetic-oncall-v5",
+        "type": "service",
+        "name": "Warehouse",
+        "description": "Production service",
+        "status": "active",
+        "created_at": "2026-01-01T09:00:00Z",
+        "integrations": [
+          {
+            "id": "synthetic-oncall-i9",
+            "type": "datadog_inbound_integration",
+            "name": "Datadog",
+            "summary": "Monitor intake 5",
+            "created_at": "2026-01-01T09:00:00Z"
+          },
+          {
+            "id": "synthetic-oncall-i10",
+            "type": "events_api_v2_inbound_integration",
+            "name": "Alertmanager 5",
+            "summary": "Alertmanager 5"
+          }
+        ],
+        "escalation_policy": {
+          "id": "synthetic-oncall-p3",
+          "type": "escalation_policy_reference",
+          "summary": "synthetic-oncall-p3",
+          "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p3"
+        },
+        "teams": [
+          {
+            "id": "synthetic-oncall-t1",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t1",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+          }
+        ],
+        "alert_grouping_parameters": {
+          "type": "time",
+          "config": {
+            "timeout": 300
+          }
+        },
+        "support_hours": {
+          "type": "fixed_time_per_day",
+          "time_zone": "UTC",
+          "days_of_week": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "start_time": "09:00:00",
+          "end_time": "17:00:00"
+        },
+        "incident_urgency_rule": {
+          "type": "use_support_hours",
+          "during_support_hours": {
+            "type": "constant",
+            "urgency": "high"
+          },
+          "outside_support_hours": {
+            "type": "constant",
+            "urgency": "low"
+          }
+        },
+        "auto_resolve_timeout": 14400,
+        "acknowledgement_timeout": 1800
+      }
+    },
+    {
+      "service": {
+        "id": "synthetic-oncall-v6",
+        "type": "service",
+        "name": "Payments",
+        "description": "Production service",
+        "status": "active",
+        "created_at": "2026-01-01T09:00:00Z",
+        "integrations": [
+          {
+            "id": "synthetic-oncall-i11",
+            "type": "amazon_cloudwatch_inbound_integration",
+            "name": "CloudWatch",
+            "summary": "Monitor intake 6",
+            "created_at": "2026-01-01T09:00:00Z"
+          },
+          {
+            "id": "synthetic-oncall-i12",
+            "type": "events_api_v2_inbound_integration",
+            "name": "Alertmanager 6",
+            "summary": "Alertmanager 6"
+          }
+        ],
+        "escalation_policy": {
+          "id": "synthetic-oncall-p3",
+          "type": "escalation_policy_reference",
+          "summary": "synthetic-oncall-p3",
+          "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p3"
+        },
+        "teams": [
+          {
+            "id": "synthetic-oncall-t2",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t2",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+          }
+        ],
+        "alert_grouping_parameters": {
+          "type": "time",
+          "config": {
+            "timeout": 300
+          }
+        },
+        "support_hours": {
+          "type": "fixed_time_per_day",
+          "time_zone": "UTC",
+          "days_of_week": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "start_time": "09:00:00",
+          "end_time": "17:00:00"
+        },
+        "incident_urgency_rule": {
+          "type": "use_support_hours",
+          "during_support_hours": {
+            "type": "constant",
+            "urgency": "high"
+          },
+          "outside_support_hours": {
+            "type": "constant",
+            "urgency": "low"
+          }
+        },
+        "auto_resolve_timeout": 14400,
+        "acknowledgement_timeout": 1800
+      }
+    },
+    {
+      "service": {
+        "id": "synthetic-oncall-v7",
+        "type": "service",
+        "name": "Edge",
+        "description": "Production service",
+        "status": "active",
+        "created_at": "2026-01-01T09:00:00Z",
+        "integrations": [
+          {
+            "id": "synthetic-oncall-i13",
+            "type": "grafana_inbound_integration",
+            "name": "Grafana",
+            "summary": "Monitor intake 7",
+            "created_at": "2026-01-01T09:00:00Z"
+          },
+          {
+            "id": "synthetic-oncall-i14",
+            "type": "events_api_v2_inbound_integration",
+            "name": "Alertmanager 7",
+            "summary": "Alertmanager 7"
+          }
+        ],
+        "escalation_policy": {
+          "id": "synthetic-oncall-p3",
+          "type": "escalation_policy_reference",
+          "summary": "synthetic-oncall-p3",
+          "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p3"
+        },
+        "teams": [
+          {
+            "id": "synthetic-oncall-t3",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t3",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+          }
+        ],
+        "alert_grouping_parameters": {
+          "type": "time",
+          "config": {
+            "timeout": 300
+          }
+        },
+        "support_hours": {
+          "type": "fixed_time_per_day",
+          "time_zone": "UTC",
+          "days_of_week": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "start_time": "09:00:00",
+          "end_time": "17:00:00"
+        },
+        "incident_urgency_rule": {
+          "type": "use_support_hours",
+          "during_support_hours": {
+            "type": "constant",
+            "urgency": "high"
+          },
+          "outside_support_hours": {
+            "type": "constant",
+            "urgency": "low"
+          }
+        },
+        "auto_resolve_timeout": 14400,
+        "acknowledgement_timeout": 1800
+      }
+    },
+    {
+      "service": {
+        "id": "synthetic-oncall-v8",
+        "type": "service",
+        "name": "Observability",
+        "description": "Production service",
+        "status": "active",
+        "created_at": "2026-01-01T09:00:00Z",
+        "integrations": [
+          {
+            "id": "synthetic-oncall-i15",
+            "type": "events_api_v2_inbound_integration",
+            "name": "Events v2",
+            "summary": "Monitor intake 8",
+            "created_at": "2026-01-01T09:00:00Z"
+          },
+          {
+            "id": "synthetic-oncall-i16",
+            "type": "events_api_v2_inbound_integration",
+            "name": "Alertmanager 8",
+            "summary": "Alertmanager 8"
+          }
+        ],
+        "escalation_policy": {
+          "id": "synthetic-oncall-p3",
+          "type": "escalation_policy_reference",
+          "summary": "synthetic-oncall-p3",
+          "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p3"
+        },
+        "teams": [
+          {
+            "id": "synthetic-oncall-t4",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t4",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t4"
+          }
+        ],
+        "alert_grouping_parameters": {
+          "type": "time",
+          "config": {
+            "timeout": 300
+          }
+        },
+        "support_hours": {
+          "type": "fixed_time_per_day",
+          "time_zone": "UTC",
+          "days_of_week": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "start_time": "09:00:00",
+          "end_time": "17:00:00"
+        },
+        "incident_urgency_rule": {
+          "type": "use_support_hours",
+          "during_support_hours": {
+            "type": "constant",
+            "urgency": "high"
+          },
+          "outside_support_hours": {
+            "type": "constant",
+            "urgency": "low"
+          }
+        },
+        "auto_resolve_timeout": 14400,
+        "acknowledgement_timeout": 1800
+      }
+    }
+  ],
+  "teams": [
+    {
+      "teams": [
+        {
+          "id": "synthetic-oncall-t1",
+          "type": "team",
+          "name": "Platform team 1",
+          "description": "Production ownership",
+          "members": [
+            {
+              "user": {
+                "id": "synthetic-oncall-u1",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u1",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u1"
+              },
+              "role": "responder"
+            },
+            {
+              "user": {
+                "id": "synthetic-oncall-u2",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u2",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u2"
+              },
+              "role": "responder"
+            },
+            {
+              "user": {
+                "id": "synthetic-oncall-u3",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u3",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u3"
+              },
+              "role": "responder"
+            }
+          ]
+        },
+        {
+          "id": "synthetic-oncall-t2",
+          "type": "team",
+          "name": "Platform team 2",
+          "description": "Production ownership",
+          "members": [
+            {
+              "user": {
+                "id": "synthetic-oncall-u4",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u4",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u4"
+              },
+              "role": "responder"
+            },
+            {
+              "user": {
+                "id": "synthetic-oncall-u5",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u5",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u5"
+              },
+              "role": "responder"
+            },
+            {
+              "user": {
+                "id": "synthetic-oncall-u6",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u6",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u6"
+              },
+              "role": "responder"
+            }
+          ]
+        }
+      ],
+      "limit": 25,
+      "offset": 0,
+      "more": false,
+      "total": null
+    },
+    {
+      "team": {
+        "id": "synthetic-oncall-t3",
+        "type": "team",
+        "name": "Platform team 3",
+        "description": "Production ownership",
+        "members": [
+          {
+            "user": {
+              "id": "synthetic-oncall-u7",
+              "type": "user_reference",
+              "summary": "synthetic-oncall-u7",
+              "self": "https://api.pagerduty.com/users/synthetic-oncall-u7"
+            },
+            "role": "responder"
+          },
+          {
+            "user": {
+              "id": "synthetic-oncall-u8",
+              "type": "user_reference",
+              "summary": "synthetic-oncall-u8",
+              "self": "https://api.pagerduty.com/users/synthetic-oncall-u8"
+            },
+            "role": "responder"
+          },
+          {
+            "user": {
+              "id": "synthetic-oncall-u9",
+              "type": "user_reference",
+              "summary": "synthetic-oncall-u9",
+              "self": "https://api.pagerduty.com/users/synthetic-oncall-u9"
+            },
+            "role": "responder"
+          }
+        ]
+      }
+    },
+    {
+      "team": {
+        "id": "synthetic-oncall-t4",
+        "type": "team",
+        "name": "Platform team 4",
+        "description": "Production ownership",
+        "members": [
+          {
+            "user": {
+              "id": "synthetic-oncall-u10",
+              "type": "user_reference",
+              "summary": "synthetic-oncall-u10",
+              "self": "https://api.pagerduty.com/users/synthetic-oncall-u10"
+            },
+            "role": "responder"
+          },
+          {
+            "user": {
+              "id": "synthetic-oncall-u11",
+              "type": "user_reference",
+              "summary": "synthetic-oncall-u11",
+              "self": "https://api.pagerduty.com/users/synthetic-oncall-u11"
+            },
+            "role": "responder"
+          },
+          {
+            "user": {
+              "id": "synthetic-oncall-u12",
+              "type": "user_reference",
+              "summary": "synthetic-oncall-u12",
+              "self": "https://api.pagerduty.com/users/synthetic-oncall-u12"
+            },
+            "role": "responder"
+          }
+        ]
+      }
+    }
+  ],
+  "incidents": [
+    {
+      "incidents": [
+        {
+          "id": "synthetic-oncall-inc1",
+          "type": "incident",
+          "incident_number": 1001,
+          "title": "Synthetic production event 1",
+          "status": "triggered",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v1",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v1",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v1"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [
+            {
+              "at": "2026-10-20T10:01:00Z",
+              "assignee": {
+                "id": "synthetic-oncall-u1",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u1",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u1"
+              }
+            }
+          ],
+          "acknowledgements": [],
+          "resolved_at": null
+        },
+        {
+          "id": "synthetic-oncall-inc2",
+          "type": "incident",
+          "incident_number": 1002,
+          "title": "Synthetic production event 2",
+          "status": "acknowledged",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v2",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v2",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v2"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [
+            {
+              "at": "2026-10-20T10:01:00Z",
+              "assignee": {
+                "id": "synthetic-oncall-u2",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u2",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u2"
+              }
+            }
+          ],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u2",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u2",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u2"
+              }
+            }
+          ],
+          "resolved_at": null
+        },
+        {
+          "id": "synthetic-oncall-inc3",
+          "type": "incident",
+          "incident_number": 1003,
+          "title": "Synthetic production event 3",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v3",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v3",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v3"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u3",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u3",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u3"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        },
+        {
+          "id": "synthetic-oncall-inc4",
+          "type": "incident",
+          "incident_number": 1004,
+          "title": "Synthetic production event 4",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v4",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v4",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v4"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u4",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u4",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u4"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        },
+        {
+          "id": "synthetic-oncall-inc5",
+          "type": "incident",
+          "incident_number": 1005,
+          "title": "Synthetic production event 5",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v5",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v5",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v5"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u5",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u5",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u5"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        },
+        {
+          "id": "synthetic-oncall-inc6",
+          "type": "incident",
+          "incident_number": 1006,
+          "title": "Synthetic production event 6",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v6",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v6",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v6"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u6",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u6",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u6"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        }
+      ],
+      "limit": 6,
+      "offset": 0,
+      "more": true,
+      "total": null
+    },
+    {
+      "incidents": [
+        {
+          "id": "synthetic-oncall-inc7",
+          "type": "incident",
+          "incident_number": 1007,
+          "title": "Synthetic production event 7",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v7",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v7",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v7"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u7",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u7",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u7"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        },
+        {
+          "id": "synthetic-oncall-inc8",
+          "type": "incident",
+          "incident_number": 1008,
+          "title": "Synthetic production event 8",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v8",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v8",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v8"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u8",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u8",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u8"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        },
+        {
+          "id": "synthetic-oncall-inc9",
+          "type": "incident",
+          "incident_number": 1009,
+          "title": "Synthetic production event 9",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v1",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v1",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v1"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u9",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u9",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u9"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        },
+        {
+          "id": "synthetic-oncall-inc10",
+          "type": "incident",
+          "incident_number": 1010,
+          "title": "Synthetic production event 10",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v2",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v2",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v2"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u10",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u10",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u10"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        },
+        {
+          "id": "synthetic-oncall-inc11",
+          "type": "incident",
+          "incident_number": 1011,
+          "title": "Synthetic production event 11",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v3",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v3",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v3"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u11",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u11",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u11"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        },
+        {
+          "id": "synthetic-oncall-inc12",
+          "type": "incident",
+          "incident_number": 1012,
+          "title": "Synthetic production event 12",
+          "status": "resolved",
+          "created_at": "2026-10-20T10:00:00Z",
+          "last_status_change_at": "2026-10-20T10:20:00Z",
+          "service": {
+            "id": "synthetic-oncall-v4",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v4",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v4"
+          },
+          "escalation_policy": {
+            "id": "synthetic-oncall-p1",
+            "type": "escalation_policy_reference",
+            "summary": "synthetic-oncall-p1",
+            "self": "https://api.pagerduty.com/escalation_policies/synthetic-oncall-p1"
+          },
+          "urgency": "high",
+          "assignments": [],
+          "acknowledgements": [
+            {
+              "at": "2026-10-20T10:02:00Z",
+              "acknowledger": {
+                "id": "synthetic-oncall-u12",
+                "type": "user_reference",
+                "summary": "synthetic-oncall-u12",
+                "self": "https://api.pagerduty.com/users/synthetic-oncall-u12"
+              }
+            }
+          ],
+          "resolved_at": "2026-10-20T10:20:00Z"
+        }
+      ],
+      "limit": 6,
+      "offset": 6,
+      "more": false,
+      "total": null
+    }
+  ],
+  "maintenance_windows": [
+    {
+      "maintenance_windows": [
+        {
+          "id": "synthetic-oncall-mw1",
+          "type": "maintenance_window",
+          "description": "Future database work",
+          "start_time": "2030-10-29T02:00:00Z",
+          "end_time": "2030-10-29T03:00:00Z",
+          "services": [
+            {
+              "id": "synthetic-oncall-v2",
+              "type": "service_reference",
+              "summary": "synthetic-oncall-v2",
+              "self": "https://api.pagerduty.com/services/synthetic-oncall-v2"
+            }
+          ],
+          "created_by": {
+            "id": "synthetic-oncall-u1",
+            "type": "user_reference",
+            "summary": "synthetic-oncall-u1",
+            "self": "https://api.pagerduty.com/users/synthetic-oncall-u1"
+          }
+        }
+      ],
+      "limit": 25,
+      "offset": 0,
+      "more": false,
+      "total": null
+    },
+    {
+      "maintenance_window": {
+        "id": "synthetic-oncall-mw2",
+        "type": "maintenance_window",
+        "description": "Ended database work",
+        "start_time": "2026-10-01T02:00:00Z",
+        "end_time": "2026-10-01T03:00:00Z",
+        "services": [
+          {
+            "id": "synthetic-oncall-v2",
+            "type": "service_reference",
+            "summary": "synthetic-oncall-v2",
+            "self": "https://api.pagerduty.com/services/synthetic-oncall-v2"
+          }
+        ],
+        "created_by": {
+          "id": "synthetic-oncall-u1",
+          "type": "user_reference",
+          "summary": "synthetic-oncall-u1",
+          "self": "https://api.pagerduty.com/users/synthetic-oncall-u1"
+        }
+      }
+    }
+  ],
+  "business_services": [
+    {
+      "business_services": [
+        {
+          "id": "synthetic-oncall-b1",
+          "type": "business_service",
+          "name": "Online purchasing",
+          "description": "Synthetic customer journey",
+          "point_of_contact": "pd.person1@example.test",
+          "team": {
+            "id": "synthetic-oncall-t1",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t1",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t1"
+          }
+        },
+        {
+          "id": "synthetic-oncall-b2",
+          "type": "business_service",
+          "name": "Customer accounts",
+          "description": "Synthetic customer journey",
+          "point_of_contact": "pd.person1@example.test",
+          "team": {
+            "id": "synthetic-oncall-t2",
+            "type": "team_reference",
+            "summary": "synthetic-oncall-t2",
+            "self": "https://api.pagerduty.com/teams/synthetic-oncall-t2"
+          }
+        }
+      ],
+      "limit": 25,
+      "offset": 0,
+      "more": false,
+      "total": null
+    },
+    {
+      "business_service": {
+        "id": "synthetic-oncall-b3",
+        "type": "business_service",
+        "name": "Fulfilment",
+        "description": "Synthetic customer journey",
+        "point_of_contact": "pd.person1@example.test",
+        "team": {
+          "id": "synthetic-oncall-t3",
+          "type": "team_reference",
+          "summary": "synthetic-oncall-t3",
+          "self": "https://api.pagerduty.com/teams/synthetic-oncall-t3"
+        }
+      }
+    }
+  ],
+  "event_orchestrations": [
+    {
+      "orchestration_path": {
+        "type": "router",
+        "parent": {
+          "id": "synthetic-oncall-o1",
+          "type": "event_orchestration_reference"
+        },
+        "sets": [
+          {
+            "id": "start",
+            "rules": [
+              {
+                "id": "synthetic-oncall-rule1",
+                "label": "Route 1",
+                "conditions": [
+                  {
+                    "expression": "event.custom_details.team matches 'checkout'"
+                  }
+                ],
+                "actions": {
+                  "route_to": "synthetic-oncall-v1"
+                }
+              },
+              {
+                "id": "synthetic-oncall-rule2",
+                "label": "Route 2",
+                "conditions": [
+                  {
+                    "expression": "event.custom_details.team matches 'database'"
+                  }
+                ],
+                "actions": {
+                  "route_to": "synthetic-oncall-v2"
+                }
+              },
+              {
+                "id": "synthetic-oncall-rule3",
+                "label": "Route 3",
+                "conditions": [
+                  {
+                    "expression": "event.custom_details.team matches 'edge'"
+                  }
+                ],
+                "actions": {
+                  "route_to": "synthetic-oncall-v3"
+                }
+              },
+              {
+                "id": "synthetic-oncall-rule4",
+                "label": "Dynamic service name",
+                "conditions": [],
+                "actions": {
+                  "dynamic_route_to": {
+                    "source": "event.custom_details.service",
+                    "regex": "(.*)",
+                    "lookup_by": "service_name"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "catch_all": {
+          "actions": {
+            "route_to": "unrouted"
+          }
+        },
+        "created_by": {
+          "id": "synthetic-oncall-u1",
+          "type": "user_reference",
+          "summary": "synthetic-oncall-u1",
+          "self": "https://api.pagerduty.com/users/synthetic-oncall-u1"
+        },
+        "created_at": "2026-01-01T09:00:00Z"
+      }
+    }
+  ]
+}

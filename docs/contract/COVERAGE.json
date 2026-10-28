@@ -2,7 +2,7 @@
   "schema": 1,
   "seed": "oncall",
   "old": {
-    "commit": "845d741d310fac5a3ce278a6db3ec064ba9150be",
+    "commit": "48f0ec81477e3270d90bb2460fa6412bdfc693dd",
     "files": [
       "CONTRACT.md",
       "ACCEPTANCE.md"

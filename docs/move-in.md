@@ -143,7 +143,7 @@ Apart from the explicitly flagged 0-to-1-minute first-step mapping above, unsupp
 - policies with more than two steps, zero-minute later steps, repeats, other conditions, several people at once, or a person instead of a schedule
 - any rotation or rule field Oncall does not know
 
-Some things are not moved at all: notification rules (kept as notes only, never switched on), routes and event rules, maintenance windows, and incident history.
+Notification rules remain notes only, never switched on. PagerDuty account files also retain routes, event rules, maintenance windows and resolved incidents as named source evidence or refusals; they create no native routing, maintenance or history. Open incidents are individually refused as live imports. See [PagerDuty account saved responses](#pagerduty-account-saved-responses) for the receiving clauses and fields.
 
 ## Before you trust it
 
@@ -186,3 +186,91 @@ OC-021 and OC-022 use one server-owned source allow-list for the signed-in admin
 These are synthetic local test-install proofs, not authorized real exports, live-account shape verification, a hosted catch-up receipt, complete incumbent migration, live API reconciliation or cutover. OC-021 remains done within its saved-file limits; OC-022 remains partial after the carried-done audit; OC-038 and OC-040 remain partial and OC-074 remains missing. The Move-in screen's reconciliation/completion work is a separate round; a public reconcile endpoint does not itself prove browser reconciliation. Large held native sets beyond this journey are unproved. No production paging or real-phone acceptance is claimed.
 
 The five-source shared file door is implemented within documented mapping limits. Preview writes zero native objects, with custody/bookkeeping retained; complete incumbent migration and real-export acceptance remain OC-038. No real-export receipt or status promotion is claimed.
+
+## PagerDuty account saved responses
+
+The synthetic [account fixture](../tests/fixtures/pagerduty-account.json) uses
+invented people at example.test and saved REST list/detail responses, including
+pagination fields. The outer bundle and enrichment of users' contact methods,
+notification rules and team members are assembled by the owner's own tooling.
+Integration keys are removed before saving. This is documented-shape evidence;
+it has not been verified against a live account.
+
+Format references read on **28 October 2026**: PagerDuty's
+[user](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user),
+[contact methods](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user-contact-methods),
+[notification rules](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user-notification-rules),
+[service and integrations](https://docs.pagerduty.com/developer/api/reference/rest/services/get-service),
+[team](https://docs.pagerduty.com/developer/api/reference/rest/teams/get-team),
+[incidents](https://docs.pagerduty.com/developer/api/reference/rest/incidents/list-incidents),
+[maintenance windows](https://docs.pagerduty.com/developer/api/reference/rest/maintenance-windows/list-maintenance-windows),
+[business service](https://docs.pagerduty.com/developer/api/reference/rest/business-services/get-business-service),
+[orchestration lists](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/list-event-orchestrations),
+[orchestration detail](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/get-orchestration),
+[router](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/get-orch-path-router)
+and [dynamic router rule](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/update-orch-path-router)
+references. The shipped exporter and in-app read still collect only users,
+schedules, overrides and escalation policies (with schedule comparison timelines);
+they do not collect the whole account. No OAuth scope is widened here.
+
+The saved-file reader accepts list pages and single-detail wrappers for `users`,
+`schedules`, `overrides`, `escalation_policies`, `services`, `integrations`,
+`teams`, `incidents`, `maintenance_windows`, `business_services` and
+`event_orchestrations` (the `orchestrations` list, `orchestration` detail,
+or the router's `orchestration_path` detail).
+Keep every page in the bundle. An override list must carry its `schedule_id`
+when more than one schedule is present. The reader inventories each service's
+embedded integration separately, at its original pointer; the service remains
+one source record. The unchanged limits are 512 KiB and 500 records, counting
+those integrations. Nothing is truncated. Narrow an export that exceeds either
+limit. Duplicate IDs within a kind, Opsgenie `data` envelopes selected as
+PagerDuty, and account objects with missing referenced users, policies, teams,
+schedules or services refuse the file. Include the missing details or correct
+the reference and preview again. Schedule-only files from the unchanged
+four-category exporter retain user team references as notes without requiring
+a team collection. Strict schedule and policy conversion refusals remain as
+described above.
+
+Each source record has one review entry and one exclusive disposition: mapped,
+mapped with differences (including retained source evidence), or rejected. The
+owner door returns their disjoint `classification` counts, which sum to
+`summary.sourceRecords`; the screen's existing direct-mapping and field-note
+counts overlap, as its explanation says. Reconciliation accounts for both
+present objects and explained source-only records.
+
+- Phone and SMS details compose E.164 from an integer `country_code` and national
+  `address` digits. A shared phone/SMS number becomes one unverified contact.
+  Missing details, a trunk prefix, formatting or non-numeric values are named
+  individually, with no guessed number. Every imported number remains unlisted
+  for paging until country coverage and OC-026/OC-066 verification establish
+  coverage; it does not satisfy two-route coverage. Email, push, notification
+  rules and their delivery settings remain notes, with no delivery.
+- Events v1, Events v2 and generic Events API integrations become inactive,
+  keyless inventory bound to the **source** service identity. The file cannot
+  supply a key. Email integrations are named for OC-070 and OC-038's inherited
+  email import duty. Vendor-hosted integrations such as Datadog, CloudWatch and
+  Grafana are named for re-creation as the matching Oncall source or generic
+  webhook. Unsupported integrations retain their original settings.
+- Services remain source evidence. Grouping, urgency, support hours, auto-resolve
+  and acknowledgment timeouts, policy and team references are each named as
+  unconverted. No native service is created; schedule adoption still requires
+  an administrator's explicit choice of an existing service.
+- Teams (OC-023), business services (OC-061), maintenance windows (OC-043) and
+  orchestration routers (OC-072 routed keys) are named refusals with their
+  original source kept. Each router rule, dynamic rule and catch-all is listed
+  individually as not converted. No routed key is created or activated.
+- Triggered and acknowledged incidents are refused individually as live imports:
+  no timeline, delivery or state change is created. Resolved incidents remain
+  counted source evidence. Imported history never counts as live delivery.
+
+Apply requires the reviewed fingerprint and retains paused, non-paging,
+non-login data. Identical bytes reuse the applied plan; an explicit catch-up
+of those bytes proposes zero changes. A changed file
+adds new objects and replaces unchanged imported targets; it names native edits
+as conflicts and lists missing source objects without deleting them. The
+existing strict undo refuses before changing anything when an affected imported
+target has a native edit. Restart between bounded apply steps resumes from the
+committed prefix; an uncertain interrupted publication still follows the
+existing failed-import/explicit-rollback rules. Related people in retained and
+rejected PagerDuty records, including opaque user references and imported
+numbers, participate in the existing person-erasure flow.
