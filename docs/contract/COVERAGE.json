@@ -2,7 +2,7 @@
   "schema": 1,
   "seed": "oncall",
   "old": {
-    "commit": "519266e5ccbbf33fcab82c4107fa8f80c282a204",
+    "commit": "e50fb1aff97e7af09af4333b614bb70d0a780bc6",
     "files": [
       "CONTRACT.md",
       "ACCEPTANCE.md"
@@ -4024,7 +4024,7 @@
       "file": "CONTRACT.md",
       "line": 591,
       "cell": "gap",
-      "text": "Existing rotations/overrides now have a digest-bound reviewed editor: per-interval losses/gains, explicit new and closed gaps, named-zone clock transitions, retained slots, stale confirmation refusal, atomic audit rollback and apply/preview equality. Gap: coverage beyond the selected 1–31 day review window; follow-the-sun layers, selected holiday calendars, stored PTO and ICS PTO upload; Google/Outlook consent-based PTO import; verified-route counts and degraded coverage (OC-026/066); real-phone London handoff.",
+      "text": "P1: 366-day bounded coverage and digest-bound review in `src/family/response-operations/schedules.ts` and `src/schedule-coverage/review.ts`. P2: ordered named-zone layers and explicit precedence in `src/schedule-coverage/layers.ts`. P3: selected federal observed holidays and revisioned company dates. P4: stored PTO and reviewed local ICS upload in `src/schedule-api.ts` and `src/schedule-coverage/pto-ics.ts`; existing rota editor controls in `src/schedule-coverage/CoverageRules.tsx`; member-owned PTO and ICS at `/api/schedules/:id/pto-review|pto-apply` scoped by `memberPTO` in `src/teams/model.ts`; public-door proof in `tests/schedule-coordination.mjs` (PASS OC-024 member PTO) and `tests/product-schedule-browser.mjs` (ordinary-member browser 1440). Public Worker journeys in `tests/schedule-coordination.mjs`; browser journey in `tests/product-schedule-browser.mjs`; custody in `tests/transfer.mjs` and `tests/checkpoint-cli.mjs`. Gap: Google and Outlook consent-based PTO import (dated one-time owner-role evidence, not run); verified-route counts and degraded coverage (OC-026 and OC-066); real-phone London handoff; paging OFF.",
       "to": "gap",
       "ids": [
         "OC-024"
@@ -4041,7 +4041,7 @@
       "file": "CONTRACT.md",
       "line": 591,
       "cell": "gap",
-      "text": "Google/Outlook PTO import may use dated one-time owner-role evidence; it has not been run. Mixed acceptance sentence beginning “During the New York-to-London handoff” stays here because it combines live paging and coverage-preview duties. Verified route counts and degraded coverage are receiving duties in OC-026/066; no DONE claim follows the carve.",
+      "text": "Google and Outlook PTO import may use dated one-time owner-role evidence; it has not been run. Mixed acceptance sentence beginning “During the New York-to-London handoff” stays here because it combines live paging and coverage-preview duties. Verified route counts and degraded coverage are receiving duties in OC-026 and OC-066; no DONE claim follows the carve.",
       "to": "rulings",
       "ids": [
         "RL-3"
@@ -5388,7 +5388,7 @@
     {
       "file": "ACCEPTANCE.md",
       "line": 115,
-      "text": "Exercising flow: **OC-024 reviewed schedule changes** in `tests/activation.mjs` covers New York, Los Angeles and London clock transitions, explicit new gaps, retained slots, denied viewer/anonymous access, confirmation and stale-digest refusal, audit rollback, racing applies and exact apply/preview equality. `tests/product-schedule-browser.mjs` exercises the existing editor and review controls at 1440/390 with gap and DST rows, explicit confirmation, tooltips, overflow, axe and hydration checks; its focused execution also refuses revoked and expired sessions on both new doors. Implementation: `src/schedule-coverage/`; `src/schedule-api.ts`; `docs/schedules.md`. Gap: review is limited to the selected 1–31 days while applying saves the whole schedule; follow-the-sun layers, selected holiday calendars, stored PTO and ICS PTO upload; Google/Outlook consent-based PTO import; verified-route counts and degraded coverage (OC-026/066); real-phone London handoff. Default ADOPTED: PARTIAL. No new durable category; existing overrides remain explicit administrator operations.",
+      "text": "Exercising flow: **OC-024 reviewed schedule changes** in `tests/activation.mjs` retains the existing review, authority, stale confirmation, atomic rollback and equality proof. Its `tests/schedule-coordination.mjs` journey exercises the optional ordered layers, selected federal and company holidays, stored PTO, reviewed ICS upload, 366-day evaluation and archive erasure paths. `tests/product-schedule-browser.mjs` extends the existing editor journey with long review and consecutive PTO writes. `tests/transfer.mjs` and `tests/checkpoint-cli.mjs` carry the schedule additions through custody. Implementation: `src/schedule-coverage/`; `src/schedule-api.ts`; `docs/schedules.md`; member-owned PTO and ICS at `/api/schedules/:id/pto-review|pto-apply` scoped by `memberPTO` in `src/teams/model.ts`; public-door proof in `tests/schedule-coordination.mjs` (PASS OC-024 member PTO) and `tests/product-schedule-browser.mjs` (ordinary-member browser 1440). Gap: Google and Outlook consent-based PTO import remains unrun dated owner-role evidence; verified-route counts and degraded coverage remain with OC-026 and OC-066; real-phone London handoff remains unrun; paging OFF. Default ADOPTED: PARTIAL. No new durable category; existing overrides remain explicit administrator operations.",
       "to": "docs",
       "path": "docs/contract/acceptance-before-cleanup.md"
     },

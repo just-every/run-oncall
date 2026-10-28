@@ -45,6 +45,7 @@ export function assertCheckpointRestored(checkpoint,after,handoffs=checkpoint.ha
   assert.equal(event.actor,null);assert.equal(event.attempt,null);assert.ok(typeof event.reason==='string'&&event.reason.length>0)
   return {...job,revision:job.revision+1,status:'paused',nextDue:null,lastEvaluatedAt:restored.lastEvaluatedAt,history:[...job.history,event]}
  })
+ for(const schedule of checkpoint.paging.schedules){const restored=after.paging.schedules.find(row=>row.id===schedule.id);for(const key of ['layers','companyDates','pto'])assert.deepEqual(restored[key],schedule[key]);}
  assert.deepEqual(pagingArchive(after.paging),expected,'CLI recovery preserves all paging data except the appended pending-job pause')
  assert.ok(handoffs,'v1 callers supply the handoffs retained in the destination')
  const records=handoffs.records.map(record=>{

@@ -9,6 +9,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  const created=await context.request.post(origin+'/api/members',{headers:{origin},data:{name,role:'responder',password}});assert.equal(created.status(),201);const substitute=await created.json();
  const state=await api('/api/state'),tomorrow=new Date(Date.now()+86400000).toISOString().slice(0,10)+'T09:00';
  const schedule=await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:'Coordination rota '+width,service:state.services[0].id,revision:0,timezone:'UTC',validFrom:new Date(Date.now()-86400000).toISOString(),validUntil:null,primary:{anchorLocal:tomorrow,periodDays:7,members:[session.member.id],ambiguity:'earlier'},backup:{anchorLocal:tomorrow,periodDays:7,members:[],ambiguity:'earlier'},overrides:[]});
+ assert.ok(Number.isSafeInteger(schedule.revision)&&schedule.revision>0);
  await page.goto(origin+'/on-call/'+schedule.id);await focusWorkspace(page);
  const coordination=page.getByRole('region',{name:'Shift coordination',exact:true});await coordination.getByRole('heading',{name:'Shift coordination',exact:true}).waitFor();
  await page.getByRole('button',{name:'Request a swap',exact:true}).click();const swapSheet=page.getByRole('dialog',{name:'Request a swap',exact:true});await swapSheet.getByLabel('Shift to swap',{exact:true}).waitFor();
