@@ -7,10 +7,10 @@ import {coverage, type Coverage, type Schedule} from './family/response-operatio
 import type { State } from './family/response-operations/domain'
 
 // Keep the schedule's named clock and the offset at this hand-over visible.
-function handoffLabel(instant:string|null|undefined,timezone:string) {
+function handoffLabel(instant:string|null|undefined,timezone:string,changesHolder=true) {
  if(!instant)return 'No next hand-off'
  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:timezone,weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23',timeZoneName:'shortOffset'}).formatToParts(Date.parse(instant)).map(p=>[p.type,p.value]))
- return `Hand-over: ${parts.weekday} ${parts.day} ${parts.month}, ${parts.hour}:${parts.minute} ${timezone} (${parts.timeZoneName})`
+ return `${changesHolder?'Hand-over':'Next coverage window'}: ${parts.weekday} ${parts.day} ${parts.month}, ${parts.hour}:${parts.minute} ${timezone} (${parts.timeZoneName})`
 }
 
 type ReadProps = {schedule:Schedule;state:State;request:(path:string,data?:unknown)=>Promise<any>}
@@ -26,7 +26,7 @@ export function ScheduleNowNext({schedule,state,request}:ReadProps) {
   return ()=>{current=false}
  },[schedule,request])
  const name=(id:string|null|undefined)=>state.members.find(m=>m.id===id)?.name??'Nobody on call'
- return <section className="scheduling-panel scheduling-now-next"><h2>On call now and next</h2><FailureLine failure={failures.failure}/>{value&&<div className="scheduling-form-grid two">{(['primary','backup'] as const).map(role=><div key={role} className="scheduling-now-role"><h3>{role}</h3><p className={value.now[role]?"now":"oc-now-gap"}>Now: {name(value.now[role])}</p><p className="next">Next: {name(value.next[role]?.[role])}</p><p className="handoff">{handoffLabel(value.now.windows.find(w=>w.role===role)?.end,schedule.timezone)}</p></div>)}</div>}</section>
+ return <section className="scheduling-panel scheduling-now-next"><h2>On call now and next</h2><FailureLine failure={failures.failure}/>{value&&<div className="scheduling-form-grid two">{(['primary','backup'] as const).map(role=><div key={role} className="scheduling-now-role"><h3>{role}</h3><p className={value.now[role]?"now":"oc-now-gap"}>Now: {name(value.now[role])}</p><p className="scheduling-rule">{value.now.windows.find(w=>w.role===role)?.explanation??value.now.warnings.filter(w=>w.startsWith(role+':')).join('; ')}</p><p className="next">Next: {name(value.next[role]?.[role])}</p><p className="scheduling-rule">{value.next[role]?.windows.find(w=>w.role===role)?.explanation??value.next[role]?.warnings.filter(w=>w.startsWith(role+':')).join('; ')}</p><p className="handoff">{handoffLabel(value.now.windows.find(w=>w.role===role)?.end,schedule.timezone,!(schedule.layers?.length||schedule.pto?.length)||value.next[role]?.[role]!==value.now[role])}</p></div>)}</div>}</section>
 }
 
 const escalationFields = ['primaryWaitSeconds','backupWaitSeconds','retrySeconds','maxAttempts'] as const;

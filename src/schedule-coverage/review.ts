@@ -28,6 +28,9 @@ export async function reviewSchedule(old:Schedule,input:unknown,state:State,from
  const supplied=validateSchedule(input,state);
  if(supplied.id!==old.id||supplied.service!==old.service)fail('Schedule and service identities cannot change');
  if(supplied.revision!==old.revision)fail('Schedule changed; reload and review again',409);
+ for(const entry of old.pto??[])if(!supplied.pto?.some(next=>canonical(next)===canonical(entry)))fail('Retained PTO entries cannot be removed or rewritten');
+ for(const entry of supplied.pto??[])if(!old.pto?.some(prior=>prior.id===entry.id)&&!state.members.some(member=>member.id===entry.member&&member.active&&['admin','responder'].includes(member.role)))fail('New PTO requires an active responder');
+ for(const date of supplied.companyDates??[]){const prior=old.companyDates?.find(item=>item.id===date.id);if(prior&&canonical(prior)!==canonical(date)&&date.revision<=prior.revision)fail('Changed company dates require a newer revision');}
  const schedule=validateSchedule({...supplied,revision:old.revision+1},state);
  const previous=preview(old,state.members,from,to),coverage=preview(schedule,state.members,from,to);
  const boundaries=[...new Set([from,to,...previous.map(w=>w.at),...coverage.map(w=>w.at)])].sort((a,b)=>a-b);
@@ -41,10 +44,11 @@ export async function reviewSchedule(old:Schedule,input:unknown,state:State,from
    const before=previous[priorIndex][role],after=coverage[nextIndex][role];
    const window=coverage[nextIndex].windows.find(w=>w.role===role)!;
    const warning=coverage[nextIndex].warnings.filter(w=>w.startsWith(role+':')).join('; ');
-   intervals.push({start,end,role,before,after,rule:window.origin+(warning?': '+warning:''),newGap:before!==null&&after===null,closedGap:before===null&&after!==null});
+   intervals.push({start,end,role,before,after,rule:window.explanation??window.origin+(warning?': '+warning:''),newGap:before!==null&&after===null,closedGap:before===null&&after!==null});
   }
  }
- const clocks=clockChanges([old.timezone,schedule.timezone],from,to);
+ const clocks=clockChanges([old.timezone,schedule.timezone,...(old.layers??[]).map(l=>l.timezone),...(schedule.layers??[]).map(l=>l.timezone)],from,to);
+ if(new TextEncoder().encode(JSON.stringify({intervals,clocks,coverage,schedule})).length>16*1024*1024)fail('Review exceeds maximum 16 MiB; shorten the range or simplify layers');
  const bytes=new TextEncoder().encode(canonical({old,schedule,members:state.members,workspaceRevision:state.revision,from,to,intervals,clocks,coverage}));
  const digest=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
  return {digest,revision:old.revision,from,to,intervals,clocks,coverage,schedule,members:state.members.map(({id,name})=>({id,name}))};
