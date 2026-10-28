@@ -35,7 +35,7 @@ export async function runNativeOperation<T>(env:Bindings,tool:string,args:Record
   return withNativeOperation(env,operation,run)
 }
 
-export type NativePrincipal = Pick<Principal, 'person' | 'agent' | 'scopes' | 'clientId'>
+export type NativePrincipal = Pick<Principal, 'person' | 'agent' | 'clientId'> & { scopes: readonly string[] }
 export type NativeAccess = { state: State; member: Member; client?: Client; services: string[]; principal: NativePrincipal & {consent?: string}; guard: { sql: string; values: (string | number | null)[] } }
 const denied = (code = 'not_found'): never => { throw new ToolRefusal(code) }
 
@@ -63,11 +63,16 @@ export async function nativeAccess(env: Bindings, ctx: NativePrincipal, permissi
     guard.sql += " AND EXISTS(SELECT 1 FROM oc_api_clients WHERE id=? AND json_extract(data,'$.active')=1 AND json_extract(data,'$.revision')=? AND json_extract(data,'$.owner')=?) AND EXISTS(SELECT 1 FROM oc_api_credentials WHERE client=?)"
     guard.values.push(client.id, client.revision, member.id, client.id)
   }
+  if (!await env.DB.prepare(`SELECT 1 WHERE ${guard.sql}`).bind(...guard.values).first()) return denied('unauthenticated')
   const policy = await env.DB.prepare('SELECT envelope,local_document,local_revision,local_paused FROM agent_door_state WHERE id=1').first<{envelope:string|null;local_document:string|null;local_revision:number;local_paused:number}>()
-  if (!policy || policy.local_paused) return denied(policy?.local_paused ? 'agents_paused' : 'policy_unset')
+  // Classification and target resolution are read-only, including unset/Pause
+  // refusals. The shared door decides policy; native writes retain its CAS fence.
+  if (!policy) {
+    guard.sql += ' AND 0'
+    return { state, member, client, services, guard, principal: ctx }
+  }
   guard.sql += ' AND EXISTS(SELECT 1 FROM agent_door_state WHERE id=1 AND envelope IS ? AND local_document IS ? AND local_revision=? AND local_paused=0) AND NOT EXISTS(SELECT 1 FROM agent_door_agents WHERE id=? AND revoked=1)'
   guard.values.push(policy.envelope,policy.local_document,policy.local_revision,ctx.agent.id)
-  if (!await env.DB.prepare(`SELECT 1 WHERE ${guard.sql}`).bind(...guard.values).first()) return denied('unauthenticated')
   return { state, member, client, services, guard, principal: ctx }
 }
 
@@ -121,7 +126,7 @@ export async function localCredentials(env: Bindings, request: Request) {
 }
 
 export async function currentScopes(env: Bindings, principal: NativePrincipal) {
-  if (!principal.agent.id.startsWith('oncall-client:')) return principal.scopes
+  if (!principal.agent.id.startsWith('oncall-client:')) return [...principal.scopes]
   const state = await loadWorkspace(env.DB), client = state.apiClients?.find(value => value.id === principal.clientId && value.active && value.owner === principal.person.id && principal.agent.id === `oncall-client:${value.id}` && principal.scopes.includes(`oncall-client-revision:${value.revision}`))
   if (!client || !state.members.some(value => value.id === client.owner && value.active && value.role === 'admin') || !await env.DB.prepare('SELECT 1 FROM oc_api_credentials WHERE client=?').bind(client.id).first()) return []
   return [...client.permissions,...(client.permissions.some(value=>['incidents:write','actions:write'].includes(value))?['automation:write']:[]),`oncall-client-revision:${client.revision}`]

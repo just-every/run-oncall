@@ -27,7 +27,8 @@
         "OC-003",
         "OC-041",
         "OC-053"
-      ]
+      ],
+      "sponsorEscalation": false
     },
     {
       "name": "oncall.actions.create",
@@ -556,7 +557,8 @@
       "clauses": [
         "OC-023",
         "OC-041"
-      ]
+      ],
+      "sponsorEscalation": false
     }
   ],
   "notTools": [
@@ -677,6 +679,10 @@
         "classes": [
           "external"
         ]
+      },
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
       }
     },
     {
@@ -703,7 +709,11 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
     },
     {
       "id": "declare-state",
@@ -733,7 +743,11 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
     },
     {
       "id": "acknowledge",
@@ -756,7 +770,14 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "note",
@@ -776,7 +797,14 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "follow-up",
@@ -802,7 +830,14 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "submit",
@@ -829,7 +864,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "action",
+        "id": {
+          "$from": "follow-up",
+          "pointer": "/actions/0/id"
+        }
+      }
     },
     {
       "id": "recover",
@@ -855,7 +897,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "resolve",
@@ -878,7 +927,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "sensitive-note",
@@ -960,7 +1016,11 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
     },
     {
       "id": "second-action",
@@ -1070,7 +1130,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "review-material",
@@ -1088,7 +1155,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "action-read",
@@ -1233,7 +1307,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "schedule",
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      }
     },
     {
       "id": "coverage",
@@ -1253,7 +1334,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "schedule",
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      }
     },
     {
       "id": "schedule-review",
@@ -1305,7 +1393,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "schedule",
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      }
     },
     {
       "id": "schedule-update",
@@ -1364,7 +1459,14 @@
         {
           "class": "live"
         }
-      ]
+      ],
+      "target": {
+        "kind": "schedule",
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      }
     },
     {
       "id": "schedule-override",
@@ -1398,7 +1500,14 @@
         {
           "class": "live"
         }
-      ]
+      ],
+      "target": {
+        "kind": "schedule",
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      }
     },
     {
       "id": "access-read",
@@ -1797,6 +1906,12 @@
         "https://8.8.8.8"
       ]
     },
-    "journey": "tests/oncall-agent-native.mjs"
+    "journey": "tests/oncall-agent-native.mjs",
+    "replayAdmission": {
+      "prepare": [
+        "declare-state",
+        "declare"
+      ]
+    }
   }
 }

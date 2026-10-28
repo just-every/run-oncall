@@ -22,7 +22,9 @@ export default {async fetch(request,env){
  if(new URL(request.url).pathname!=='/declaration')return new Response(null,{status:404});
  const {oncallTools,oncallNotTools}=await import('./src/agent-door/index.server.ts');
  const {oncallResources}=await import('./src/agent-door/resources.ts');
- const tools=oncallTools(env).map(({name,scope,readOnly,classes,clauses,widens,narrowing,inputSchema})=>({name,scope,readOnly,classes,clauses,...(widens===false?{widens,narrowing,inputSchema}:{})}));
+ // Both edits require a current native administrator, whose existing authority
+ // cannot widen. Teammate widening and the revocation subset witnesses remain.
+ const tools=oncallTools(env).map(({name,scope,readOnly,classes,clauses,widens,narrowing,inputSchema})=>({name,scope,readOnly,classes,clauses,...(['oncall.access.update','oncall.teams.update'].includes(name)?{sponsorEscalation:false}:{}),...(widens===false?{widens,narrowing,inputSchema}:{})}));
  tools.push({name:'oncall.events.list',scope:'events:read',readOnly:true,classes:['standard'],clauses:['BASE-AGENT-010']});
  return Response.json({tools:tools.sort((a,b)=>a.name.localeCompare(b.name)),resources:oncallResources(env).map(resource=>resource.uriTemplate).sort(),notTools:oncallNotTools});
 }};` } });

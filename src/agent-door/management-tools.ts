@@ -44,6 +44,7 @@ function accessTool(env: Bindings): ToolDefinition {
     scope: 'access:write', readOnly: false, classes: ['access'], clauses: ['OC-003', 'OC-041', 'OC-053'], untrusted: true,
     inputSchema: { type: 'object', additionalProperties: false, properties: { id: string(), revision, role: { enum: ['admin', 'responder', 'viewer', 'stakeholder'] }, active: { type: 'boolean' } }, required: ['id', 'revision', 'role', 'active'] },
     outputSchema: memberOutput,
+    target: (args, ctx) => nativeCall(async () => ({ kind: 'member', id: (await current(args, ctx)).target.id })),
     classify: (args, ctx) => nativeCall(async () => { const { target } = await current(args, ctx); return [{ class: 'access', facts: { measure: 1, direction: widens(target, args) ? 'widens' : 'narrows' } }] }),
     authority: (args, ctx) => nativeCall(async () => { const { target } = await current(args, ctx); return { subject: target.id, widens: widens(target, args) } }),
     revision: (args, ctx) => nativeCall(async () => (await current(args, ctx)).access.state.revision),
@@ -85,6 +86,7 @@ function teamsTool(env: Bindings): ToolDefinition {
     scope: 'teams:write', readOnly: false, classes: ['standard', 'access'], clauses: ['OC-023', 'OC-041'], untrusted: true,
     inputSchema: { type: 'object', additionalProperties: false, properties: { id: string(), revision, name: string(200), visibility: { enum: ['public'] }, active: { type: 'boolean' }, members: ids, managers: ids }, required: ['revision', 'name', 'visibility', 'active', 'members', 'managers'] },
     outputSchema: teamOutput,
+    target: (args, ctx) => nativeCall(async () => { const { target } = await current(args, ctx); return target ? { kind: 'team', id: target.id } : null }),
     classify: (args, ctx) => nativeCall(async () => {
       const { gains } = await current(args, ctx)
       return gains.length ? [{ class: 'access', facts: { measure: gains.length, direction: 'widens' } }] : [{ class: 'standard', facts: { measure: 1 } }]
@@ -124,6 +126,7 @@ function revokeTool(env: Bindings, kind: 'client' | 'endpoint'): ToolDefinition 
     description: `Revoke an existing native ${kind} and delete its local credential in the same transaction. This only narrows authority. Creating, rotating or revealing secrets remains on person-only native screens. Revocation cannot recall bytes already sent.`,
     scope: `${plural}:write`, readOnly: false, classes: ['access'], clauses: ['OC-041', 'OC-053'], untrusted: true,
     widens: false, narrowing: { effect: 'revoke', target: 'id' },
+    target: (args, ctx) => nativeCall(async () => ({ kind, id: (await current(args, ctx)).target.id })),
     inputSchema: { type: 'object', additionalProperties: false, properties: { id: string() }, required: ['id'] }, outputSchema: revokedOutput,
     classify: (args, ctx) => nativeCall(async () => { await current(args, ctx); return [{ class: 'access', facts: { measure: 1, direction: 'narrows' } }] }),
     authority: (args, ctx) => nativeCall(async () => ({ subject: (await current(args, ctx)).target.id, widens: false })),
@@ -174,6 +177,7 @@ function privacyTool(env: Bindings): ToolDefinition {
     scope: 'privacy:write', readOnly: false, classes: ['destructive'], clauses: ['OC-040', 'OC-041', 'OC-052'], untrusted: true,
     inputSchema: { type: 'object', additionalProperties: false, properties: { kind: { enum: erasureKinds }, id: string(), workspaceRevision: revision, confirmation: string(110), identitiesReviewed: { type: 'boolean' }, importedPeople: { type: 'array', items: string(254), maxItems: 1000, uniqueItems: true } }, required: ['kind', 'id', 'workspaceRevision', 'confirmation'] },
     outputSchema: erasureOutput,
+    target: (args, ctx) => nativeCall(async () => { const { kind, target } = await current(args, ctx); return { kind, id: target.id } }),
     classify: (args, ctx) => nativeCall(async () => { await current(args, ctx); return [{ class: 'destructive', facts: { measure: 1 } }] }),
     authority: (args, ctx) => nativeCall(async () => ({ subject: (await current(args, ctx)).id, widens: false })),
     revision: (args, ctx) => nativeCall(async () => (await current(args, ctx)).access.state.revision),

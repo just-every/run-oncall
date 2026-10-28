@@ -66,6 +66,13 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
       scope: operation.scope, readOnly: false, classes: operation.name==='incidents.declare'?['standard']:['standard','sensitive'], clauses: operation.clauses, untrusted: true,
       inputSchema: { type: 'object', additionalProperties: false, properties: operation.properties, required: operation.required },
       outputSchema: { type: 'object', properties: { id: string(100), revision: { type: 'integer', minimum: 1 } }, required: ['id', 'revision'] },
+      target: (args, ctx) => nativeCall(async () => {
+        const { current, incident } = await access(args, ctx)
+        const action = incident?.actions.find(row => row.id === args.action)
+        if (action) return { kind: 'action', id: action.id }
+        if (incident) return { kind: 'incident', id: incident.id }
+        return { kind: 'service', id: current.state.services.find(row => row.id === args.service)!.id }
+      }),
       classify: (args,ctx) => nativeCall(async()=>{ const {incident}=await access(args,ctx); const count=protectedRecords(incident)+Number(typeof args.evidence==='string'&&!!args.evidence); return [{class:'standard',facts:{measure:1}},...(count?[{class:'sensitive' as const,facts:{measure:count,kind:'personal_or_incident_evidence'}}]:[])] }),
       revision: (args, ctx) => nativeCall(async () => { const { current, incident } = await access(args, ctx); return incident?.revision ?? current.state.revision }),
       summary: (args, ctx) => nativeCall(async () => {
