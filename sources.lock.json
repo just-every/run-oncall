@@ -144,7 +144,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "8fe1aebb4049c8e87e40ee80e1b057099db34d9b4d500a5f635bf4c44d1b4b29",
+      "sha256": "7f178e76f3307b2bdb88bd95ddaf33d2e1316cc82afbd0aa008344ae06712e16",
       "executable": false
     },
     "base-copies.json": {
@@ -164,7 +164,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c176a0f402075f578739dc0ecd55e63327e2afc940982a9683922e2b20cdf5e1",
+      "sha256": "e98fdc0e887a8fc8410ef8b43d7d452c616a4efa0c05c01ddf3f918be17b5f43",
       "executable": false
     },
     "DEMO.md": {
@@ -224,7 +224,7 @@
       "executable": false
     },
     "docs/move-in.md": {
-      "sha256": "9f93fb57bba1916a73850fe4d83c52feb1ef4d1a10b59797666540ffb1036d5a",
+      "sha256": "c3251a697c4d660a10af3bde163fec41a828a6187c07dfba03023695950c68cd",
       "executable": false
     },
     "docs/overview.md": {
@@ -596,7 +596,7 @@
       "executable": false
     },
     "MOVE-IN.md": {
-      "sha256": "99efc6078b0d10207ff9f2a7f35e8d407940fc64822961ff4c49ab5d35f822b8",
+      "sha256": "27a2b516b43b02396e8ead3706ee116261e708144230a41bc991f03fcbb33be7",
       "executable": false
     },
     "NOTICE.md": {
@@ -3840,7 +3840,7 @@
       "executable": false
     },
     "src/move-in/door-settings.ts": {
-      "sha256": "70ffdffe38a4d5602334b87735497ef050de24048bc003435ca05b0ebf53557c",
+      "sha256": "54fae1a9b4783f46ee763ea89ef50fa00ecb754147270a403498bcd37a686c2e",
       "executable": false
     },
     "src/move-in/door.ts": {
@@ -4883,8 +4883,12 @@
       "sha256": "a3e3e37e3b687feb8e9c1ec38b0680e962848ad3d97a6893ef9ff4ba90f65543",
       "executable": false
     },
+    "tests/import-door-catchup.mjs": {
+      "sha256": "f3b0a8eb3ee15608fbd47b55157c5cb8aa88dbf0ede293ad4a4fc948409dae67",
+      "executable": false
+    },
     "tests/import-door.mjs": {
-      "sha256": "10d5b44467d3b8772d4d2d49e55c9456ff60c6ea2addf857a1d684241b7b209f",
+      "sha256": "52557327c2435ec61f8dca0c08230155a01954bd1227c2cad7110c4fd73be2ea",
       "executable": false
     },
     "tests/intake.mjs": {
