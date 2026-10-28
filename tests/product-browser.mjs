@@ -458,6 +458,38 @@ async function changeAndSigningBrowser(page,context){
  console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440/390; overflow, axe and hydration');
 }
 
+// OC-054 uses the real read door. Assertions run at 1440; 390 is visual proof only.
+async function readinessBrowser(page,context) {
+ const origin=new URL(page.url()).origin;
+ const request=async(path,data)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});
+  assert.ok(response.ok(),`readiness fixture ${path}: ${response.status()}`);return response.json();
+ };
+ const {member}=await request('/api/session'),source='synthetic-oncall-540-browser',key=randomBytes(32).toString('hex');
+ await request('/api/command',{type:'service',id:source,name:'Checkout readiness',environment:'production',owner:member.id,runbook:['Confirm the existing pager remains authoritative.'],pager:''});
+ await request('/api/sources',{id:source,key,scopes:[source]});
+ const intake=await context.request.post('/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:{source,eventId:source,service:source,environment:'production',key:source,generation:source,intent:'trigger',severity:'warning',title:'Checkout response latency',observedAt:new Date().toISOString(),evidence:''}});assert.equal(intake.status(),201);
+ await page.setViewportSize({width:1440,height:1000});
+ await openWorkspaceSection(page,'services');
+ await page.getByRole('navigation',{name:'Settings',exact:true}).getByRole('link',{name:'Readiness',exact:true}).click();
+ await page.locator('.readiness [data-readiness-row]').first().waitFor();
+ const report=await request('/api/readiness');
+ assert.equal(new URL(page.url()).pathname,'/settings/readiness');
+ assert.equal(await page.locator('.readiness [data-coverage]').getAttribute('data-coverage'),report.pagerCoverage.state);
+ assert.equal(await page.locator('[data-readiness-row]').count(),report.matrix.length);
+ for(const row of report.matrix)assert.equal(await page.locator(`[data-readiness-row="${row.id}"] [data-state]`).getAttribute('data-state'),row.state);
+ for(const signal of report.signals)assert.equal(await page.locator(`[data-readiness-signal="${signal.id}"] [data-state]`).getAttribute('data-state'),signal.state);
+ const refreshed=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/readiness'&&response.request().method()==='GET');
+ await page.getByRole('button',{name:'Refresh readiness',exact:true}).click();assert.equal((await refreshed).status(),200);await page.locator('.readiness [data-readiness-row]').first().waitFor();
+ assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0,'readiness has no hydration mismatch');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'readiness fits the desktop viewport');
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+ assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[],'readiness has no serious or critical accessibility violation');
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc054-readiness-${width}.png`,fullPage:true});}
+ console.log('PASS OC-054 Readiness Settings navigation, real matrix/signal rendering, pager refusal, refresh, axe/overflow/hydration at 1440; Readiness visual proof once at 1440/390');
+}
+
 // Production Worker + real local D1, without starting a managed rer dev server.
 const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'})
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
@@ -482,6 +514,8 @@ try {
   assert.equal(login.status(),200,'the second browser context signs in through the real login door')
   await secondPage.goto(worker.origin)
  }
+ if(process.env.ONCALL_PRODUCT_JOURNEY&&process.env.ONCALL_PRODUCT_JOURNEY!=='readiness')throw Error('Unknown focused product journey');
+ if(process.env.ONCALL_PRODUCT_JOURNEY!=='readiness'){
  await productBrowserJourney(page,context,{openSession})
  await incompleteIntakeBrowser(page,context)
  console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440/390; overflow, axe and hydration checked')
@@ -489,6 +523,8 @@ try {
  await incidentWorkflowBrowser(page,context)
  await changeAndSigningBrowser(page,context)
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440/390; overflow, axe and hydration checked')
+ }
+ await readinessBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
  console.log('Emitted Worker product browser journey passed at 1440/390')
 } catch(error) {

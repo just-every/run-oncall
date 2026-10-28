@@ -98,6 +98,12 @@
       "title": "Your data",
       "pages": [
         {
+          "slug": "readiness",
+          "title": "Readiness and recovery",
+          "source": "docs/readiness.md",
+          "summary": "Read the release matrix and independent observations while keeping your existing pager authoritative."
+        },
+        {
           "slug": "data",
           "title": "Export and restore",
           "source": "docs/data.md",

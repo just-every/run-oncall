@@ -1,0 +1,25 @@
+.readiness {display:grid;gap:24px;min-width:0;font-size:15px;line-height:1.5;}
+.readiness h2 {font-size:20px;margin:0 0 12px;}
+.readiness h3 {font-size:16px;margin:0;}
+.readiness p {margin:0 0 12px;}
+.readiness-intro {display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.readiness-intro p {margin:0;max-width:65ch;}
+.readiness button {flex:none;font-size:15px;}
+.readiness .readiness-coverage {margin:0;}
+.readiness-release {display:grid;gap:8px;margin:16px 0;}
+.readiness dl div {display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,2fr);gap:12px;}
+.readiness dt {color:var(--oc-muted);}
+.readiness dd {margin:0;overflow-wrap:anywhere;}
+.readiness-release dd {font-size:13px;}
+.readiness .readiness-matrix {padding:0;overflow:hidden;}
+.readiness-matrix article {display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2fr) minmax(0,1.2fr);gap:20px;padding:16px 20px;}
+.readiness-matrix article+article {border-top:1px solid var(--oc-line);}
+.readiness-matrix p:last-child {margin-bottom:0;}
+.readiness-state {display:inline-block;font-size:13px;margin-top:4px;font-weight:650;}
+.readiness-evidence {display:flex;flex-direction:column;gap:4px;font-size:13px;overflow-wrap:anywhere;}
+.readiness-signals {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.readiness-signal-title {display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:12px;}
+.readiness-signals dl {font-size:13px;display:grid;gap:8px;}
+.readiness .readiness-observed {font-size:13px;margin:16px 0 0;overflow-wrap:anywhere;}
+@media(max-width:1000px){.readiness-signals {grid-template-columns:1fr;}.readiness-matrix article {grid-template-columns:minmax(120px,1fr) minmax(0,2fr);}.readiness-evidence {grid-column:1/-1;}}
+@media(max-width:600px){.readiness-intro {align-items:flex-start;flex-direction:column;}.readiness-matrix article {grid-template-columns:1fr;gap:10px;padding:16px;}.readiness dl div {grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);}.readiness-evidence {grid-column:auto;}.readiness-signal-title {align-items:flex-start;flex-direction:column;gap:4px;}}
