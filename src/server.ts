@@ -22,13 +22,18 @@ import {receivedRequest} from './request-body'
 import { workspaceDocument } from './workspace-document'
 import {readSessionCookie} from './session-cookie'
 import {importDoorResponse} from './move-in/door'
+import { oncallAgentDoor } from './agent-door/index.server'
+import { businessSettings } from './agent-door/business'
+import { businessPeopleResponse } from './agent-door/people-link'
+import { oncallPeople } from './agent-door/people'
 type Env=Bindings
 export default withDemo({
   async scheduled(_event,env) {
     const moveIn=auditedDatabase(env.DB,{feature:'move-in',kind:'move-in.consent.cleanup',actor:{kind:'service',id:'move-in-consent'},source:{kind:'provider',id:'pagerduty'},commits:0,storageFailed:false});
     if((await sweepMoveInConsent({...env,DB:moveIn.db})).failed)await moveIn.record('failed');
     const deadlines=auditedDatabase(env.DB,{feature:'incident-deadlines',kind:'deadline.sweep',actor:{kind:'service',id:'incident-deadlines'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
-    await sweepDeadlines(deadlines.db);
+    const deadlineEnv={...env,DB:deadlines.db};
+    await sweepDeadlines(deadlines.db,(args,who)=>oncallAgentDoor(deadlineEnv).invoke('oncall.incidents.update',{...args,change:'expire-deadline',idempotency_key:`deadline-${args.deadline}`},who));
     for(let n=0;n<10;n++) {
       const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
       if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;
@@ -47,6 +52,19 @@ export default withDemo({
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
     const bindings=runtimeBindings(env);
+    if (['/api/rer/business-settings', '/rer-business-logo', '/rer-business.css'].includes(new URL(received.url).pathname)) {
+      const settings=await businessSettings(bindings).handle(received);if(settings)return settings;
+    }
+    const linking=await businessPeopleResponse(bindings,received);if(linking)return linking;
+    const agents=await oncallAgentDoor(bindings).handle(received);
+    if(agents){
+      if(new URL(request.url).pathname==='/agents'&&agents.headers.get('content-type')?.startsWith('text/html')&&await oncallPeople(bindings).session(request)){
+        const brand=await businessSettings(bindings).publicBrand();
+        const business=brand.displayName?.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]!));
+        return new HTMLRewriter().on('main',{element(main){main.prepend(`${business?`<p><a href="/app" data-business-name>${business}</a></p>`:''}<p><a href="/agents/people">Link existing Business people</a> · <a href="/docs/agents">Oncall agent guide</a></p>`,{html:true})}}).transform(agents)
+      }
+      return agents;
+    }
     const subscription=await subscriptionResponse(request,bindings);if(subscription)return subscription;
     let workspace: any;
     const address=new URL(request.url), appDocument=isWorkspacePath(address.pathname);

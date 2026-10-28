@@ -91,6 +91,12 @@
           "title": "Response API and outbound events",
           "source": "docs/response-api.md",
           "summary": "Scope machine clients, approve signed recipients, inspect durable failures and restore inactive."
+        },
+        {
+          "slug": "agents",
+          "title": "Agents for coordination",
+          "source": "docs/agents.md",
+          "summary": "Use the responder under company policy, link existing people and inspect approval and delivery outcomes."
         }
       ]
     },
@@ -334,6 +340,30 @@
     {
       "source": "tests/fixtures/change-sources.md",
       "reason": "Provenance and license details for network-edge change intake fixtures used by maintainers."
+    },
+    {
+      "source": "src/modules/agent-door/README.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/agent-door/ADOPTING.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/agent-door/CLAUSES.md",
+      "reason": "Base-delivered shared requirements for contract synchronization; developer reference, not an owner-facing guide."
+    },
+    {
+      "source": "src/modules/agent-door/policy/PROVENANCE.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/business-settings/README.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/business-settings/ADOPTING.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
     },
     {
       "source": "RULINGS.md",
