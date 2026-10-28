@@ -52,7 +52,7 @@ export function readManifest(root: string): Manifest {
         if (!pageTitle) problems.push(`${where}: no title`);
         if (!summary) problems.push(`${where}: no summary`);
         useSource(source, where);
-        return { slug, title: pageTitle, source, summary, section: title };
+        return { slug, title: pageTitle, source, summary, section: title, ...(page.legacy === true ? { legacy: true } : {}) };
       }),
     };
   });

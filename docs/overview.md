@@ -20,7 +20,7 @@ If your rota lives in Opsgenie or PagerDuty today, you can bring it across from 
 
 ## Where to go next
 
-1. [Install and run](install.md) Oncall on your own computer, or [host coordination for your team](install.md#host-for-your-team) in your own Cloudflare account.
+1. [Getting started](getting-started.md) Oncall on your own computer, or [host coordination for your team](getting-started.md#host-for-your-team) in your own Cloudflare account.
 2. [Sign in](team.md) and finish setup as the owner.
 3. Add a service, then [set the rotation](schedules.md#set-the-rotation).
 4. Add your team and decide who can change what.

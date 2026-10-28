@@ -31,7 +31,7 @@
 
 # Run it locally
 
-Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.5.1`, includes hosted coordination. See [Install and run](docs/install.md#host-for-your-team) for complete credentials and deployment instructions.
+Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.5.1`, includes hosted coordination. See [Getting started](docs/getting-started.md#host-for-your-team) for complete credentials and deployment instructions.
 
 You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2 (without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall` brings its own). One line installs the `rer` command, clones Oncall and starts it; `rer` provides the checkout's pinned Node and pnpm tooling:
 
@@ -39,7 +39,7 @@ You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2 (without
 npx -y @runeditrun/rer dev just-every/run-oncall
 ```
 
-To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/install.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
+To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
 
 Open the printed link on this computer. `rer dev --as signed-out` selects the signed-out persona. The compatibility flag `rer dev --login` still opens automatic owner entry. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with `rer dev --stop` (Ctrl-C also stops a foreground run); stop preview with `rer preview --stop` before building or verifying.
 
@@ -64,7 +64,7 @@ rer verify
 
 This command uses Node directly; no global pnpm is needed. On Linux, add `--with-deps` to the browser install command if system libraries are missing. `rer doctor` reports a missing verification browser and prints this command. `rer check` is silent on success (exit 0); `rer check --json` prints the result.
 
-Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. If it refuses with `target_not_empty`, export any data you need to keep, stop dev and preview, then run `rer reset --yes` before importing into the now-empty installation. Configure a new owner, sign in, then explicitly map an archived administrator identity from the signed-out workspace; credentials never travel. Reset deletes local data and owner settings and keeps your exports; see [Export and restore](docs/data.md) for the in-place restore sequence. A deploy dry run builds and validates locally, then reads target secret bindings with Cloudflare credentials; it makes no provider writes. Release 1 supports hosted incident coordination alongside your existing pager. Paging stays OFF; an independent standby is not required for coordination. Release 2 paging and its independent standby are not built. See [hosting instructions](docs/install.md#host-for-your-team) for deployment, sign-in and removal. Use `describe` for flags and `doctor` for missing local prerequisites.
+Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. If it refuses with `target_not_empty`, export any data you need to keep, stop dev and preview, then run `rer reset --yes` before importing into the now-empty installation. Configure a new owner, sign in, then explicitly map an archived administrator identity from the signed-out workspace; credentials never travel. Reset deletes local data and owner settings and keeps your exports; see [Export and restore](docs/data.md) for the in-place restore sequence. A deploy dry run builds and validates locally, then reads target secret bindings with Cloudflare credentials; it makes no provider writes. Release 1 supports hosted incident coordination alongside your existing pager. Paging stays OFF; an independent standby is not required for coordination. Release 2 paging and its independent standby are not built. See [hosting instructions](docs/getting-started.md#host-for-your-team) for deployment, sign-in and removal. Use `describe` for flags and `doctor` for missing local prerequisites.
 
 Oncall keeps rotas, schedules, overrides, incident coordination and recorded alert intake beside your existing pager. The existing pager stays authoritative. No SMS, voice, push or paging email is sent. The delivery adapter refuses plainly. To connect monitoring, see the [alert intake JSON and curl example](docs/incidents.md#send-an-alert-event).
 
@@ -113,7 +113,7 @@ This restarts the updated local app, applies migrations and keeps your owner, sc
 
 ### Host for your team
 
-Hosting is in `v0.3.0` and later. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow [Install and run](docs/install.md#host-for-your-team) to prepare a real owner mailbox, obtain Cloudflare and SendGrid credentials with the required permissions, and save them in an owner-only `0600` file outside Git. The Install page includes each provider's menu path, verification steps and expected results.
+Hosting is in `v0.3.0` and later. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow [Getting started](docs/getting-started.md#host-for-your-team) to prepare a real owner mailbox, obtain Cloudflare and SendGrid credentials with the required permissions, and save them in an owner-only `0600` file outside Git. The Install page includes each provider's menu path, verification steps and expected results.
 
 From the hosting checkout, with the private file prepared as described there:
 
@@ -139,7 +139,7 @@ git pull --ff-only
 rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
-Updates keep the hosted owner and data. Existing hosted secrets are retained; [Install and run](docs/install.md#update-a-hosted-installation) explains explicit mail-key and sender changes.
+Updates keep the hosted owner and data. Existing hosted secrets are retained; [Getting started](docs/getting-started.md#update-a-hosted-installation) explains explicit mail-key and sender changes.
 
 To remove the hosted installation and its database, keep its deployment records and use the same Cloudflare credentials and environment:
 
