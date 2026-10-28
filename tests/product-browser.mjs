@@ -7,7 +7,7 @@ import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor} from './worker.mjs'
 import {productBrowserJourney} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
-import {keyboardUser,focusWorkspace} from './keyboard.mjs'
+import {keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
 
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -164,22 +164,24 @@ async function responsePolicyBrowser(page,context) {
   const criticalCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:critical.title,exact:true,level:3})})
   await criticalCard.getByRole('link',{name:'Open incident: '+critical.title,exact:true}).click()
   const detail=page.locator('.detail')
-  await detail.getByText('Automatic declaration · service response policy',{exact:true}).waitFor()
-  await detail.getByLabel('Reason and observed outcome',{exact:true}).fill('Commander acknowledges the customer checkout outage.')
-  await detail.getByRole('button',{name:'Record transition',exact:true}).click()
-  await detail.locator('.status-mark').filter({hasText:/^acknowledged$/}).waitFor()
+  let incidentContext=await openIncidentAction(page,'Service context')
+  await incidentContext.getByText('Automatic declaration · service response policy',{exact:true}).waitFor()
+  await incidentContext.getByRole('button',{name:'Close',exact:true}).click()
+  await detail.getByRole('button',{name:'Acknowledge',exact:true}).click()
+  await detail.locator('.incident-state').filter({hasText:/^acknowledged$/}).waitFor()
   // A different assignee must not hide the commander's recovery reminder.
-  await detail.getByText('Change response ownership or priority',{exact:true}).click()
-  await detail.getByLabel('Response change',{exact:true}).selectOption('reassign')
-  await detail.getByLabel('Assigned responder',{exact:true}).selectOption('')
-  await detail.getByLabel('Reason for response change',{exact:true}).fill('Commander retains coordination while reassignment is pending.')
-  await detail.getByRole('button',{name:'Save response change',exact:true}).click()
-  await page.getByRole('status').filter({hasText:'Saved'}).waitFor()
+  await detail.getByRole('button',{name:/^Assignee:/}).click()
+  await page.getByRole('listbox',{name:'Assignee',exact:true}).getByRole('option',{name:'Unassigned',exact:true}).click()
+  await detail.getByRole('status').filter({hasText:'Saved'}).waitFor()
   await send({...critical,eventId:'checkout-recovery',intent:'recover',severity:'info'})
   await focusWorkspace(page)
-  const recovery=detail.getByRole('region',{name:'Source recovery',exact:true})
+  incidentContext=await openIncidentAction(page,'Service context')
+  const recovery=incidentContext.getByRole('region',{name:'Source recovery',exact:true})
   await recovery.getByText('all alerts recovered — awaiting resolution',{exact:true}).waitFor()
-  await recovery.locator('p').filter({hasText:'Commander reminder: '+member.name+' · recorded · no timer until OC-027'}).waitFor()
+  await recovery.locator('p').filter({hasText:'Commander reminder: '+member.name}).waitFor()
+  await incidentContext.getByRole('button',{name:'Close',exact:true}).click()
+  // The phone incident is its own page; list controls are reached through Back.
+  if(width===390)await page.locator('.incident-back').click()
   const reminderView=page.getByRole('region',{name:'My commander reminders',exact:true})
   await reminderView.getByRole('button',{name:critical.title,exact:true}).waitFor()
   const open=(await request('/api/state')).incidents.find(item=>item.id===incident.id)
@@ -189,22 +191,26 @@ async function responsePolicyBrowser(page,context) {
   const deleteView=page.getByRole('button',{name:'Delete view '+viewName,exact:true})
   await keyboardUser(page).reach(deleteView)
   assert.equal(await page.getByRole('tooltip',{name:'Delete view '+viewName,exact:true}).isVisible(),true,'saved-view delete tooltip is visible immediately on keyboard focus')
-  await checkScreen('incident-recovery',width,recovery)
+  if(width===390)await reminderView.getByRole('button',{name:critical.title,exact:true}).click()
+  incidentContext=await openIncidentAction(page,'Service context')
+  await checkScreen('incident-recovery',width,incidentContext.getByRole('region',{name:'Source recovery',exact:true}))
+  await incidentContext.getByRole('button',{name:'Close',exact:true}).click()
+  if(width===390)await page.locator('.incident-back').click()
   await reminderView.getByRole('button',{name:critical.title,exact:true}).click()
-  await detail.getByLabel('Next state',{exact:true}).selectOption('recovered')
-  await detail.getByLabel('Reason and observed outcome',{exact:true}).fill('Successful checkout verified independently of source recovery.')
-  await detail.getByLabel('Recovery evidence URL (required for recovered)',{exact:true}).fill('https://monitoring.example.test/checkout/recovery')
-  await detail.getByRole('button',{name:'Record transition',exact:true}).click()
-  await detail.locator('.status-mark').filter({hasText:/^recovered$/}).waitFor()
-  await detail.getByLabel('Next state',{exact:true}).selectOption('resolved')
-  const summary=detail.getByLabel('Reason and observed outcome',{exact:true})
+  await detail.getByRole('button',{name:'Other steps ▾',exact:true}).click()
+  await detail.getByRole('button',{name:'Mark recovered',exact:true}).click()
+  await detail.getByLabel('Recovery evidence URL',{exact:true}).fill('https://monitoring.example.test/checkout/recovery')
+  await detail.getByRole('button',{name:'Mark recovered',exact:true}).last().click()
+  await detail.locator('.incident-state').filter({hasText:/^recovered$/}).waitFor()
+  await detail.getByRole('button',{name:'Resolve',exact:true}).last().click()
+  const summary=detail.getByLabel('Resolution summary',{exact:true})
   await summary.fill('')
-  await detail.getByRole('button',{name:'Record transition',exact:true}).click()
+  await detail.getByRole('button',{name:'Resolve',exact:true}).last().click()
   assert.equal(await summary.evaluate(input=>input.validity.valueMissing),true,'browser resolution requires a summary')
   // Submit the same real form without client validation to prove the server refusal is announced.
   await summary.evaluate(input=>input.required=false)
   const refused=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST')
-  await detail.getByRole('button',{name:'Record transition',exact:true}).click()
+  await detail.getByRole('button',{name:'Resolve',exact:true}).last().click()
   assert.equal((await refused).status(),400,'server refuses resolution without a summary')
   await page.locator('.failure-line[role="alert"]').waitFor()
   assert.match(await page.locator('.failure-line[role="alert"]').innerText(),/summary/i)
@@ -237,20 +243,20 @@ async function incidentWorkflowBrowser(page,context) {
   await submit(settings.getByRole('button',{name:/^Publish version/}));await expect.poll(async()=>(await req('/api/state')).services.find(item=>item.id===serviceId).incidentTemplates?.length??0).toBe(1);await capture('template',width,settings);
   await openWorkspaceSection(page,'incidents');await page.getByRole('button',{name:'Declare incident',exact:true}).click();
   const form=page.locator('form').filter({has:page.getByRole('button',{name:'Declare',exact:true})});const targetTitle='Checkout customer impact '+width;
-  await form.getByLabel('Incident title',{exact:true}).fill(targetTitle);await form.getByLabel('Service',{exact:true}).selectOption(serviceId);await form.getByLabel('Incident type (service template)',{exact:true}).selectOption('Database failure');await form.getByLabel('Severity',{exact:true}).selectOption('warning');await form.getByLabel('Customer impact and current evidence',{exact:true}).fill('Customers observe slower checkout; response team is investigating.');await submit(form.getByRole('button',{name:'Declare',exact:true}));
+  await form.getByLabel('Incident title',{exact:true}).fill(targetTitle);await form.getByLabel('Service',{exact:true}).selectOption(serviceId);await form.getByText('More options',{exact:true}).click();await form.getByLabel('Incident type (service template)',{exact:true}).selectOption('Database failure');await form.getByLabel('Severity',{exact:true}).selectOption('warning');await form.getByLabel('Customer impact and current evidence',{exact:true}).fill('Customers observe slower checkout; response team is investigating.');await submit(form.getByRole('button',{name:'Declare',exact:true}));
   await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();let state=await req('/api/state'),target=state.incidents.find(i=>i.title===targetTitle);assert.equal(target.template.incidentType,'Database failure');
   await req('/api/command',{type:'transition',incident:target.id,revision:target.revision,state:'acknowledged',summary:'Commander coordinates checkout response'});
   const sourceId='synthetic-oncall-workflow-'+width,key=randomBytes(32).toString('hex');await req('/api/sources',{id:sourceId,key,mode:'bearer',scopes:[serviceId]});
   const alerts=[];for(const keyName of ['checkout-replica','unrelated-batch']){const r=await context.request.post('/api/ingress/'+sourceId,{headers:{origin,authorization:'Bearer '+key},data:{source:sourceId,eventId:keyName+'-'+width,service:serviceId,environment:'production',key:keyName,generation:'cycle-'+width,intent:'trigger',severity:'warning',title:keyName+' investigation',observedAt:new Date().toISOString(),evidence:''}});assert.equal(r.status(),201);const receipt=await r.json();alerts.push((await req('/api/state')).alerts.find(a=>a.events.includes(receipt.id)).id)}
   const sourceTitle='Replica and batch investigation '+width;let source=await req('/api/command',{type:'declare',service:serviceId,severity:'warning',title:sourceTitle,summary:'Investigate related source alerts before separating the batch group.',alerts});source=await req('/api/command',{type:'note',incident:source.id,revision:source.revision,text:'Replica lag was observed before customer impact.'});source=await req('/api/command',{type:'action',incident:source.id,revision:source.revision,title:'Replica capacity follow-up',owner:member.id,escalationRecipient:member.id,due:'2026-12-01',completionPolicy:'human-review',priority:'P2'});
   await focusWorkspace(page);const workflow=page.getByRole('region',{name:'Incident workflows',exact:true});
-  const checklist=workflow.getByRole('checkbox',{name:'Confirm customer checkout recovery',exact:false});const [tick]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST'),checklist.check()]);assert.equal(tick.status(),200);await workflow.getByText(/Last changed by/).waitFor();await capture('checklist',width,workflow);
-  await workflow.getByText('Merge related incidents into this incident',{exact:true}).click();await workflow.locator('label').filter({hasText:sourceTitle}).getByRole('checkbox').check();await workflow.getByLabel('Reason for merging',{exact:true}).fill('The replica investigation explains the same checkout impact.');await submit(workflow.getByRole('button',{name:'Merge selected incidents',exact:true}));
+  const checklist=page.getByRole('region',{name:'Runbook',exact:true}).getByRole('checkbox',{name:'Confirm customer checkout recovery',exact:false});const [tick]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST'),checklist.check()]);assert.equal(tick.status(),200);await page.getByRole('region',{name:'Runbook',exact:true}).getByText(/Last changed by/).waitFor();await capture('checklist',width,page.getByRole('region',{name:'Runbook',exact:true}));
+  await openIncidentAction(page,'Merge related incidents');await workflow.locator('label').filter({hasText:sourceTitle}).getByRole('checkbox').check();await workflow.getByLabel('Reason for merging',{exact:true}).fill('The replica investigation explains the same checkout impact.');await workflow.getByRole('button',{name:'Review merge',exact:true}).click();await submit(workflow.getByRole('button',{name:'Merge selected incidents',exact:true}));await page.getByRole('button',{name:'Close',exact:true}).click();await openIncidentAction(page,'Service context');
   await workflow.getByText('Retained source incidents',{exact:true}).waitFor();await workflow.locator('summary').filter({hasText:sourceTitle}).click();await workflow.getByText('Replica lag was observed before customer impact.',{exact:true}).waitFor();await workflow.getByLabel('Completion evidence for Replica capacity follow-up',{exact:true}).fill('https://example.test/replica-capacity');await submit(workflow.getByRole('button',{name:'Submit evidence for Replica capacity follow-up',exact:true}));await workflow.getByLabel('Acceptance reason for Replica capacity follow-up',{exact:true}).fill('The commander reviewed the retained dependency evidence.');await submit(workflow.getByRole('button',{name:'Accept completion of Replica capacity follow-up',exact:true}));assert.equal((await req('/api/state')).incidents.find(i=>i.id===source.id).actions[0].done,true);await capture('merge',width,workflow);
   await page.goto(origin+'/incidents/'+encodeURIComponent(source.id));await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();await page.waitForURL(url=>url.pathname==='/incidents/'+encodeURIComponent(target.id));await capture('alias',width,page.locator('.detail'));
-  await workflow.getByText('Split unrelated alerts into a new incident',{exact:true}).click();await workflow.locator('label').filter({hasText:'unrelated-batch'}).getByRole('checkbox').check();await workflow.getByLabel('New incident title',{exact:true}).fill('Independent batch delay '+width);await workflow.getByLabel('New incident impact summary',{exact:true}).fill('Batch processing is separate from checkout customer impact.');await workflow.getByLabel('Reason for splitting',{exact:true}).fill('The batch alert is unrelated to the replica incident.');await submit(workflow.getByRole('button',{name:'Split selected alerts',exact:true}));
+  await openIncidentAction(page,'Split alerts into a new incident');await workflow.locator('label').filter({hasText:'unrelated-batch'}).getByRole('checkbox').check();await workflow.getByLabel('New incident title',{exact:true}).fill('Independent batch delay '+width);await workflow.getByLabel('New incident impact summary',{exact:true}).fill('Batch processing is separate from checkout customer impact.');await workflow.getByLabel('Reason for splitting',{exact:true}).fill('The batch alert is unrelated to the replica incident.');await workflow.getByRole('button',{name:'Review split',exact:true}).click();await submit(workflow.getByRole('button',{name:'Split selected alerts',exact:true}));await page.getByRole('button',{name:'Close',exact:true}).click();
   state=await req('/api/state');const child=state.incidents.find(i=>i.title==='Independent batch delay '+width);assert.equal(child.state,'acknowledged');assert.equal(state.incidents.find(i=>i.id===target.id).state,'acknowledged');assert.equal(child.splitFrom.incident,target.id);assert.equal(child.template.version,1);assert.equal((await req('/api/handoffs/context/'+child.id)).source.incident.declaration.kind,'split','a split origin remains usable by the existing reviewed handoff door');
-  await page.goto(origin+'/incidents/'+encodeURIComponent(child.id));await page.locator('.detail').getByRole('heading',{name:child.title,exact:true}).waitFor();await capture('split',width,workflow);
+  await page.goto(origin+'/incidents/'+encodeURIComponent(child.id));await page.locator('.detail').getByRole('heading',{name:child.title,exact:true}).waitFor();await openIncidentAction(page,'Service context');await capture('split',width,workflow);await page.getByRole('button',{name:'Close',exact:true}).click();
  }
  console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440/390; overflow, axe and hydration checked');
 }
@@ -445,7 +451,7 @@ try {
  await mkdir('.rer/local',{recursive:true,mode:0o700})
  const owner=await worker.request('/api/setup',credentials)
  assert.equal(owner.status,200,'the public setup door creates the local browser owner')
- browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.CHROMIUM_EXECUTABLE_PATH}:{}),args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
+ browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
  const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000}})
  await context.addCookies(owner.headers.getSetCookie().map(line=>{
   const pair=line.split(';')[0],at=pair.indexOf('=')
