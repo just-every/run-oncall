@@ -26,12 +26,20 @@ async function persist(env:any,state:State,guard:Guard) {
  if(result[0].meta.changes!==1)fail('Outbox state or authority changed; retry',409);
 }
 /** A bounded dispatch step. Only queued or explicitly retryable work runs; uncertainty never retries itself. */
-export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]}) {
+export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},selection?:{id:string;agentAdmitted:boolean}) {
  const state=await loadWorkspace(env.DB);
  auditKind(env.DB,'automation.dispatch');
  const expired=expireLeases(state);
- const item=state.apiOutbox?.find(o=>['queued','failed'].includes(o.status)&&o.authorized&&Date.parse(o.due)<=Date.now());
+ const item=state.apiOutbox?.find(o=>(!selection||o.id===selection.id)&&['queued','failed'].includes(o.status)&&o.authorized&&Date.parse(o.due)<=Date.now());
  if(!item){if(expired){auditOutcome(env.DB,'uncertain');await persist(env,state,guard);}return {processed:0,expired};}
+ const custody=await env.DB.prepare('SELECT principal,operation_key FROM oc_agent_outbox WHERE id=?').bind(item.id).first()
+ if(custody&&!selection?.agentAdmitted) {
+  const saved=JSON.parse(custody.principal),{oncallAgentDoor}=await import('../agent-door/index')
+  const admission=await oncallAgentDoor(env).invoke('oncall.automation.dispatch',{id:item.id,idempotency_key:custody.operation_key,expected_revision:item.revision},{
+   person:{id:saved.sponsorId},agent:saved.agent,consent:saved.consent,clientId:saved.clientId,scopes:saved.scopes,
+  })
+  return {processed:admission.outcome==='done'?1:0,id:item.id,admission:admission.outcome,code:admission.code}
+ }
  auditIdentity(env.DB,{subject:{kind:'outbox',id:item.id},source:{kind:'endpoint',id:item.endpoint}});
  const access=authorized(state,item),credential=await env.DB.prepare('SELECT custody FROM oc_endpoint_credentials WHERE endpoint=?').bind(item.endpoint).first();
  const live=access?await env.DB.prepare('SELECT COUNT(*) AS n FROM oc_api_credentials WHERE client IN (?,?)').bind(access.origin.id,access.receiver.id).first():null;
@@ -46,11 +54,17 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]}) {
  // No network effect precedes the durable lease/audit commit. Re-read all authority after custody work.
  const beforeSend=await loadWorkspace(env.DB),held=beforeSend.apiOutbox?.find(o=>o.id===item.id&&o.lease===lease&&o.status==='sending'),current=held&&authorized(beforeSend,held);
  const keys=await env.DB.prepare('SELECT custody FROM oc_endpoint_credentials WHERE endpoint=? AND custody=? AND EXISTS(SELECT 1 FROM oc_api_credentials WHERE client=?) AND EXISTS(SELECT 1 FROM oc_api_credentials WHERE client=?)').bind(item.endpoint,credential.custody,access.origin.id,access.receiver.id).first();
- if(!held||!current||current.endpoint.revision!==access.endpoint.revision||current.origin.revision!==access.origin.revision||current.receiver.revision!==access.receiver.revision||!keys) {
-  if(held){updateOutcome(held,'terminal','authority-revoked');await persist(env,beforeSend,guard);}
+ const admitted=await env.DB.prepare('SELECT 1 WHERE '+guard.sql).bind(...guard.values).first()
+ if(!held||!current||current.endpoint.revision!==access.endpoint.revision||current.origin.revision!==access.origin.revision||current.receiver.revision!==access.receiver.revision||!keys||!admitted) {
+  if(held){updateOutcome(held,'terminal','authority-revoked');await persist(env,beforeSend,{sql:'1',values:[]});}
   return {processed:1,id:item.id,status:'terminal'};
  }
  const body=JSON.stringify(held.payload),timestamp=String(Math.floor(Date.now()/1000)),signature=await changeHmac(key,timestamp+'.'+body);
+ if(!await env.DB.prepare('SELECT 1 WHERE '+guard.sql).bind(...guard.values).first()) {
+  const stopped=await loadWorkspace(env.DB),lease=stopped.apiOutbox?.find(o=>o.id===item.id&&o.lease===held.lease)
+  if(lease){updateOutcome(lease,'interrupted','authority-revoked');await persist(env,stopped,{sql:'1',values:[]})}
+  return {processed:1,id:item.id,status:'interrupted'}
+ }
  let status:OutboxState='uncertain',reason='network-ambiguous';
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
  try {

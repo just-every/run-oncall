@@ -23,7 +23,9 @@ function requireNoFlight(state:State,predicate:(o:NonNullable<State['apiOutbox']
  if(state.apiOutbox?.some(o=>predicate(o)&&(['sending','uncertain'].includes(o.status)||o.history.findLastIndex(h=>h.reason==='lease-expired')>o.history.findLastIndex(h=>h.reason==='expired-lease-cleared'))))fail('Delivery is sending or uncertain; no erasure receipt can be issued. Reconcile the external outcome first.',409)
 }
 export function installSubjectErasure(api:any,deps:Dependencies) {
- api.post('/api/erasure/:kind/:id',async(c:any)=>{
+ api.post('/api/erasure/:kind/:id',(c:any)=>eraseNativeSubject(c,deps))
+}
+export async function eraseNativeSubject(c:any,deps:Dependencies) {
   const state=await deps.state(c,true),input=await deps.body(c),kind=c.req.param('kind'),id=c.req.param('id'),db=c.env.DB as D1Database
   if(input.confirmation!==`erase ${id}`)fail('Type erase followed by the exact subject ID',409)
   if(kind==='member'&&state.members.some(m=>m.id===id&&m.erased))return c.json({state:'complete',stores:{},standby:'not-reconciled',repeated:true,outstanding:[{destination:'External recipients and providers',state:'not-requested',reason:'Deletion requires the owner’s per-destination consent; local revocation is not remote deletion'}]})
@@ -281,5 +283,4 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   auditKind(db,kind+'.erase');auditIdentity(db,{subject:{kind,id}})
   const receipt=await commitSubjectErasure(db,state,deps.guard(c),{tables,identities,statements,updated,inserted,execute:imported?.execute})
   return c.json({...receipt,...(kind==='member'?{outstanding}:{} ),...(imported?{importCustody:imported.counts()}:{})})
- })
 }

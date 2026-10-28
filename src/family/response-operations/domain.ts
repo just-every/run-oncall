@@ -35,7 +35,8 @@ import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from '.
 import { admitAlertUrgency, declarationUrgency, serviceUrgency } from '../../urgency/model.ts';
 import { validateUrgencyArchive } from '../../urgency/archive.ts';
 export type Role = "admin" | "responder" | "viewer" | "stakeholder";
-export type Member = { id: string; name: string; role: Role; active: boolean; erased?:true; machine?: true };
+export type AgentAttribution = {agent:{id:string;name:string};sponsor:{id:string;name:string};label:string;approvers:{id:string;name:string}[]};
+export type Member = { id: string; name: string; role: Role; active: boolean; erased?:true; machine?: true; agent?:AgentAttribution };
 export type Service = {
   team?: string | null; ownership?: { source: "backstage"; entity: string; importId: string; importedAt: string };
   id: string;
@@ -120,6 +121,7 @@ export type Alert = {
   priority?: "P1" | "P2" | "P3" | "P4" | "P5";
 };
 export type Entry = {
+  preparedBy?:AgentAttribution;
   id: string;
   at: string;
   actor: string;
@@ -140,7 +142,7 @@ export type Action = {
   priority?: "P1" | "P2" | "P3";
   completionPolicy?: "evidence" | "human-review";
   escalationRecipient?: string;
-  submission?: {by:string;at:string;evidence:string};
+  submission?: {by:string;at:string;evidence:string;preparedBy?:AgentAttribution};
   accepted?: {by:string;at:string};
 };
 export type Incident = IncidentRelations & {
@@ -416,13 +418,13 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
   return { event, alert: alert?.id ?? null, duplicate: false };
 }
 export function command(state:State,actor:Member,input:any,at=new Date().toISOString(),context:PolicyContext={policies:[],eligible:{}}) {
+  if(actor.agent) {
+    if(input.type==='accept-action'||input.type==='review'&&input.accept===true)fail('A machine cannot provide human acceptance',403);
+    if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&["admin","responder"].includes(m.role)))fail('Name an active responsible responder');
+  }
   if(actor.machine) {
     machineAuthority(state,actor);
-    if(!['service','declare','manual-page','snooze','cancel-deadline','transition','reassign','assign-role','action','complete'].includes(input.type))fail('Machine action is not authorized',403);
-    if(input.type==='complete') {
-      const action=state.incidents.find(i=>i.id===input.incident)?.actions.find(a=>a.id===input.action);
-      if(action?.completionPolicy!=='evidence')fail('Human review requires a current human session',403);
-    }
+    if(!['service','declare','manual-page','snooze','cancel-deadline','transition','reassign','assign-role','action','action-update','complete','note','set-priority','set-severity','set-urgency'].includes(input.type))fail('Machine action is not authorized',403);
     if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&["admin", "responder"].includes(m.role)))fail('An explicit active responsible member is required; the client is not a human responder');
   }
   const responseRevision = isResponseChange(input.type) ? state.incidents.find(i=>i.id===input.incident)?.revision : undefined;
@@ -672,14 +674,14 @@ function applyCommand(
     if (!next[incident.state].includes(input.state))
       fail("Invalid lifecycle transition");
     description = `${incident.state} → ${input.state}: ${text(input.summary, "transition summary", 3000)}`;
-    if (input.state === "acknowledged") { incident.commander = actor.machine ? input.member : actor.id; incident.assignee = incident.commander; }
+    if (input.state === "acknowledged") { incident.commander = actor.machine || actor.agent ? input.member : actor.id; incident.assignee = incident.commander; }
     if (input.state === "recovered") {
       incident.recovery = link(input.evidence);
       if (!incident.recovery) fail("Recovery evidence URL is required");
     }
     if (input.state === "resolved" && !incident.recovery)
       fail("Recovery must be evidenced before resolution");
-    lifecycle={from:incident.state,to:input.state,...(input.state==='recovered'?{evidence:incident.recovery}:{}),...(actor.machine&&input.state==='acknowledged'?{member:input.member}:{})};
+    lifecycle={from:incident.state,to:input.state,...(input.state==='recovered'?{evidence:incident.recovery}:{}),...((actor.machine||actor.agent)&&input.state==='acknowledged'?{member:input.member}:{})};
     incident.state = input.state;
   } else if (input.type === "runbook") {
     if (!Number.isInteger(input.index) || !incident.runbook[input.index])
@@ -717,7 +719,7 @@ export function validateArchive(value: any): State {
       fail("Invalid archive timestamp");
   };
   const entry = (e: any) => {
-    object(e, ["id", "at", "actor", "kind", "text"], ["operationId", "lifecycle", "review", "metadata"]);
+    object(e, ["id", "at", "actor", "kind", "text"], ["operationId", "lifecycle", "review", "metadata", "preparedBy"]);
     validateLifecycleEntry(e);
     if (e.operationId !== undefined) text(e.operationId, "operation ID", 100);
     text(e.id, "entry ID", 100);

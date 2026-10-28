@@ -1,0 +1,2690 @@
+[
+  {
+    "name": "oncall.services.list",
+    "title": "Services list",
+    "description": "oncall.services.list using current native member and service authority. Paging stays OFF.",
+    "scope": "services:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.services.read",
+    "title": "Services read",
+    "description": "oncall.services.read using current native member and service authority. Paging stays OFF.",
+    "scope": "services:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.list",
+    "title": "Incidents list",
+    "description": "oncall.incidents.list using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.read",
+    "title": "Incidents read",
+    "description": "oncall.incidents.read using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.changes.read",
+    "title": "Changes read",
+    "description": "oncall.changes.read using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-065",
+      "OC-003"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "hours": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 168
+        }
+      },
+      "required": [
+        "service"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.reviews.read",
+    "title": "Reviews read",
+    "description": "oncall.reviews.read using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-036",
+      "OC-003"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.analytics.read",
+    "title": "Analytics read",
+    "description": "oncall.analytics.read using current native member and service authority. Paging stays OFF.",
+    "scope": "analytics:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-037",
+      "OC-003"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "service": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.declare",
+    "title": "Incidents declare",
+    "description": "oncall.incidents.declare using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-004",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ]
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "maxItems": 1000
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "service",
+        "title",
+        "summary",
+        "severity"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.update",
+    "title": "Incidents update",
+    "description": "oncall.incidents.update using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-004",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "priority",
+            "severity",
+            "urgency",
+            "assignee",
+            "state"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 3000
+        }
+      },
+      "required": [
+        "id",
+        "field",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.acknowledge",
+    "title": "Incidents acknowledge",
+    "description": "oncall.incidents.acknowledge using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-004",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "member": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 3000
+        }
+      },
+      "required": [
+        "id",
+        "member"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.resolve",
+    "title": "Incidents resolve",
+    "description": "oncall.incidents.resolve using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-004",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id",
+        "summary"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.notes.add",
+    "title": "Notes add",
+    "description": "oncall.notes.add using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-004",
+      "OC-008",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incident": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "incident",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.actions.read",
+    "title": "Actions read",
+    "description": "oncall.actions.read using current native member and service authority. Paging stays OFF.",
+    "scope": "actions:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-005",
+      "OC-036",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incident": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "incident"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.actions.create",
+    "title": "Actions create",
+    "description": "oncall.actions.create using current native member and service authority. Paging stays OFF.",
+    "scope": "actions:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-005",
+      "OC-036",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incident": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "due": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "P1",
+            "P2",
+            "P3"
+          ]
+        },
+        "completionPolicy": {
+          "type": "string",
+          "enum": [
+            "human-review",
+            "evidence"
+          ]
+        },
+        "escalationRecipient": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "incident",
+        "title",
+        "owner",
+        "due"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.actions.update",
+    "title": "Actions update",
+    "description": "oncall.actions.update using current native member and service authority. Paging stays OFF.",
+    "scope": "actions:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-005",
+      "OC-036",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incident": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "incident",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.actions.submit",
+    "title": "Actions submit",
+    "description": "Submit cited follow-up evidence. Human-review work remains open until a real eligible person accepts; no machine acceptance tool exists.",
+    "scope": "actions:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-036",
+      "OC-049",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incident": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "incident",
+        "id",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.services.update",
+    "title": "Services update",
+    "description": "oncall.services.update using current native member and service authority. Paging stays OFF.",
+    "scope": "services:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-023",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "runbook": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "maxItems": 1000
+        },
+        "pager": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "maxItems": 1000
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "environment",
+        "owner",
+        "runbook",
+        "pager"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.schedules.read",
+    "title": "Schedules read",
+    "description": "oncall.schedules.read using current native member and service authority. Paging stays OFF.",
+    "scope": "schedules:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-011",
+      "OC-014",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.schedules.coverage",
+    "title": "Schedules coverage",
+    "description": "oncall.schedules.coverage using current native member and service authority. Paging stays OFF.",
+    "scope": "schedules:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-014",
+      "OC-020",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "at": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.schedules.review",
+    "title": "Schedules review",
+    "description": "oncall.schedules.review using current native member and service authority. Paging stays OFF.",
+    "scope": "schedules:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-014",
+      "OC-025"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "schedule": {
+          "type": "object"
+        },
+        "from": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "id",
+        "schedule",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.schedules.update",
+    "title": "Schedules update",
+    "description": "Apply the exact native coverage review and digest under current owned-coverage authority. This changes coordination coverage; it never enables paging.",
+    "scope": "schedules:write",
+    "readOnly": false,
+    "classes": [
+      "live"
+    ],
+    "clauses": [
+      "OC-011",
+      "OC-025",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "schedule": {
+          "type": "object"
+        },
+        "from": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "digest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id",
+        "schedule",
+        "from",
+        "to",
+        "digest"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.schedules.override",
+    "title": "Schedules override",
+    "description": "oncall.schedules.override using current native member and service authority. Paging stays OFF.",
+    "scope": "schedules:write",
+    "readOnly": false,
+    "classes": [
+      "live"
+    ],
+    "clauses": [
+      "OC-011",
+      "OC-025",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "override": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "role": {
+              "type": "string",
+              "enum": [
+                "primary",
+                "backup"
+              ]
+            },
+            "member": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "start": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "end": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            }
+          },
+          "required": [
+            "id",
+            "role",
+            "member",
+            "start",
+            "end"
+          ],
+          "additionalProperties": false
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id",
+        "override"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.teams.update",
+    "title": "Teams update",
+    "description": "oncall.teams.update using current native member and service authority. Paging stays OFF.",
+    "scope": "teams:write",
+    "readOnly": false,
+    "classes": [
+      "access"
+    ],
+    "clauses": [
+      "OC-023",
+      "OC-003"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "public"
+          ]
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "maxItems": 1000
+        },
+        "managers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "maxItems": 1000
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "name",
+        "visibility",
+        "active",
+        "revision",
+        "members",
+        "managers"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.automation.read",
+    "title": "Automation read",
+    "description": "oncall.automation.read using current native member and service authority. Paging stays OFF.",
+    "scope": "automation:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-053",
+      "OC-042"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "incident": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.automation.dispatch",
+    "title": "Automation dispatch",
+    "description": "Admit one existing minimal signed event for its already approved native endpoint. Recheck creator/client/endpoint revisions. An uncertain send cannot be automatically replayed; an authenticated receiver receipt is separate from human response.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "external"
+    ],
+    "clauses": [
+      "OC-053",
+      "OC-006",
+      "OC-042"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.automation.replay",
+    "title": "Automation replay",
+    "description": "Admit one existing minimal signed event for its already approved native endpoint. Recheck creator/client/endpoint revisions. An uncertain send cannot be automatically replayed; an authenticated receiver receipt is separate from human response.",
+    "scope": "automation:write",
+    "readOnly": false,
+    "classes": [
+      "external"
+    ],
+    "clauses": [
+      "OC-053",
+      "OC-006",
+      "OC-042"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.access.read",
+    "title": "Access read",
+    "description": "oncall.access.read using current native member and service authority. Paging stays OFF.",
+    "scope": "access:read",
+    "readOnly": true,
+    "classes": [
+      "sensitive"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-042"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.access.update",
+    "title": "Access update",
+    "description": "oncall.access.update using current native member and service authority. Paging stays OFF.",
+    "scope": "access:write",
+    "readOnly": false,
+    "classes": [
+      "access"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-042"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "admin",
+            "responder",
+            "viewer",
+            "stakeholder"
+          ]
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "active"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.clients.read",
+    "title": "Clients read",
+    "description": "oncall.clients.read using current native member and service authority. Paging stays OFF.",
+    "scope": "access:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.clients.update",
+    "title": "Clients update",
+    "description": "Revoke an existing client. No secret reveal, rotation, provisioning or authority expansion; those remain native person screens.",
+    "scope": "clients:write",
+    "readOnly": false,
+    "classes": [
+      "access",
+      "security"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-042",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    },
+    "widens": false,
+    "narrowing": {
+      "effect": "revoke",
+      "target": "id"
+    }
+  },
+  {
+    "name": "oncall.endpoints.read",
+    "title": "Endpoints read",
+    "description": "oncall.endpoints.read using current native member and service authority. Paging stays OFF.",
+    "scope": "access:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.endpoints.update",
+    "title": "Endpoints update",
+    "description": "Revoke an existing endpoint. No secret reveal, rotation, provisioning or authority expansion; those remain native person screens.",
+    "scope": "endpoints:write",
+    "readOnly": false,
+    "classes": [
+      "access",
+      "security"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-042",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    },
+    "widens": false,
+    "narrowing": {
+      "effect": "revoke",
+      "target": "id"
+    }
+  },
+  {
+    "name": "oncall.imports.read",
+    "title": "Imports read",
+    "description": "oncall.imports.read using current native member and service authority. Paging stays OFF.",
+    "scope": "imports:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-021",
+      "OC-022"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.privacy.erase",
+    "title": "Privacy erase",
+    "description": "oncall.privacy.erase using current native member and service authority. Paging stays OFF.",
+    "scope": "privacy:write",
+    "readOnly": false,
+    "classes": [
+      "destructive"
+    ],
+    "clauses": [
+      "OC-040",
+      "OC-042"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "incident",
+            "client",
+            "endpoint"
+          ]
+        },
+        "workspaceRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "workspaceRevision"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.witness.read",
+    "title": "Witness read",
+    "description": "Read-only native conformance witness: incidents/timelines/actions, coverage/history, people/client/endpoint grants and outbox, with credentials excluded and paging OFF.",
+    "scope": "witness:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-012",
+      "OC-041",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.schedules.list",
+    "title": "oncall.schedules.list",
+    "description": "oncall.services.list using current native member and service authority. Paging stays OFF.",
+    "scope": "schedules:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.actions.list",
+    "title": "oncall.actions.list",
+    "description": "oncall.services.list using current native member and service authority. Paging stays OFF.",
+    "scope": "actions:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.integrations.read",
+    "title": "oncall.integrations.read",
+    "description": "oncall.automation.read using current native member and service authority. Paging stays OFF.",
+    "scope": "integrations:read",
+    "readOnly": true,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-053",
+      "OC-042"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.schedules.create",
+    "title": "oncall.schedules.create",
+    "description": "Apply the exact native coverage review and digest under current owned-coverage authority. This changes coordination coverage; it never enables paging.",
+    "scope": "schedules:write",
+    "readOnly": false,
+    "classes": [
+      "live"
+    ],
+    "clauses": [
+      "OC-011",
+      "OC-025",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schedule": {
+          "type": "object"
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "schedule"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.page",
+    "title": "oncall.incidents.page",
+    "description": "oncall.incidents.update using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-004",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "warning",
+            "info"
+          ]
+        },
+        "urgency": {
+          "enum": [
+            "high",
+            "low"
+          ]
+        },
+        "policy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "service",
+        "title",
+        "severity",
+        "urgency",
+        "policy"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.snooze",
+    "title": "oncall.incidents.snooze",
+    "description": "oncall.incidents.update using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-004",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1440
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id",
+        "minutes"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.cancel",
+    "title": "oncall.incidents.cancel",
+    "description": "oncall.incidents.update using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-004",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "deadline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "id",
+        "deadline"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.reassign",
+    "title": "oncall.incidents.reassign",
+    "description": "oncall.incidents.update using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-004",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "member": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 3000
+        }
+      },
+      "required": [
+        "id",
+        "member"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.incidents.role",
+    "title": "oncall.incidents.role",
+    "description": "oncall.incidents.update using current native member and service authority. Paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-003",
+      "OC-004",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "member": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "role": {
+          "enum": [
+            "commander",
+            "communications",
+            "operations"
+          ]
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 3000
+        }
+      },
+      "required": [
+        "id",
+        "member",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.deadlines.fire",
+    "title": "Admit a retained deadline",
+    "description": "Final native admission of a due coordination deadline under its saved sponsor, agent, consent and original scopes. A non-due deadline has no effect; paging stays OFF.",
+    "scope": "incidents:write",
+    "readOnly": false,
+    "classes": [
+      "standard"
+    ],
+    "clauses": [
+      "OC-004",
+      "OC-008",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "incident": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "incident"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "oncall.services.ownership",
+    "title": "Change owning team",
+    "description": "Change the existing public service owning team with native coverage authority computed from current responder management. This grants no private-team enforcement.",
+    "scope": "services:write",
+    "readOnly": false,
+    "classes": [
+      "access"
+    ],
+    "clauses": [
+      "OC-023",
+      "OC-053"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "team": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "operation_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "team"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "object",
+            "array"
+          ]
+        },
+        "paging": {
+          "const": "OFF"
+        }
+      },
+      "required": [
+        "data",
+        "paging"
+      ],
+      "additionalProperties": false
+    }
+  }
+]

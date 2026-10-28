@@ -1,3 +1,4 @@
+import {compatibilityMutation,compatibilityRead} from '../agent-door/compatibility';
 import {scheduleChanges} from '../schedule-coordination/model';
 import { resolveIncidentAlias } from '../incident-workflows/relations.ts';
 import { incidentWithinServices } from '../incident-workflows/scope.ts';
@@ -131,8 +132,6 @@ export function installVersionedApi(api:any,deps:Deps) {
    const guard=clientGuard(client,digest),now=Date.now(),window=Math.floor(now/60000);
    const result=await c.env.DB.batch([
     c.env.DB.prepare(`UPDATE oc_api_credentials SET requests=CASE WHEN window=? THEN requests+1 ELSE 1 END,window=? WHERE client=? AND digest=? AND ${guard.sql} RETURNING requests`).bind(window,window,client.id,digest,...guard.values),
-    c.env.DB.prepare(`UPDATE oc_api_clients SET data=json_set(data,'$.lastUsed',?) WHERE id=? AND ${guard.sql}`).bind(new Date(now).toISOString(),client.id,...guard.values),
-    c.env.DB.prepare(`UPDATE workspace_control SET revision=revision+1 WHERE id=1 AND ${guard.sql}`).bind(...guard.values),
    ]);
    if(!result[0].results.length)fail('Invalid or revoked token',401);
    if(result[0].results[0].requests>60){c.header('Retry-After',String(60-Math.floor(now/1000)%60));fail('60 requests per minute per client; retry after the window',429);}
@@ -171,7 +170,7 @@ export function installVersionedApi(api:any,deps:Deps) {
  }
  for(const family of ['services','schedules','incidents','actions','analytics','integrations']) {
   api.get('/api/v1/'+family,async(c:any)=>{
-   const {state,client}=await context(c,family+':read');let rows=(await records(c,family,state,client)).sort((a:any,b:any)=>a.id.localeCompare(b.id));
+   const {state,client}=await context(c,family+':read');const decision=await compatibilityRead(c,family);if(decision)return decision;let rows=(await records(c,family,state,client)).sort((a:any,b:any)=>a.id.localeCompare(b.id));
    const service=c.req.query('service');if(service){allowed(client,service);rows=rows.filter((r:any)=>(family==='services'?r.id:r.service??(r.services?.includes(service)&&service))===service);}
    const limit=Number(c.req.query('limit')??25);if(!Number.isSafeInteger(limit)||limit<1||limit>100)fail('Page limit must be 1–100');
    const version=await changeHash(JSON.stringify(rows)),scope=await changeHash(JSON.stringify([client.id,client.revision,family,service??null]));let offset=0;
@@ -183,6 +182,7 @@ export function installVersionedApi(api:any,deps:Deps) {
   });
   api.get('/api/v1/'+family+'/:id',async(c:any)=>{
    const {state,client}=await context(c,family+':read');
+   const decision=await compatibilityRead(c,family,state.incidents.find(i=>i.actions.some(a=>a.id===c.req.param('id')))?.id);if(decision)return decision;
    const requested=family==='incidents'?state.incidents.find(i=>i.id===c.req.param('id')):undefined;
    if(requested&&!incidentWithinServices(state,requested,client.services))fail('Record not found in this client scope',404);
    const canonical=requested?resolveIncidentAlias(state,requested.id):undefined;
@@ -192,38 +192,11 @@ export function installVersionedApi(api:any,deps:Deps) {
   });
  }
  for(const family of ['services','schedules','incidents','actions'])api.post('/api/v1/'+family,async(c:any)=>{
-  const {state,client}=await context(c,family+':write'),input=await deps.body(c),key=text(c.req.header('idempotency-key'),'Idempotency-Key',100);
+  await context(c,family+':write');
+  const input=await deps.body(c),key=text(c.req.header('idempotency-key'),'Idempotency-Key',100);
   if(!/^[A-Za-z0-9_-]+$/.test(key))fail('Use an opaque idempotency key');
   refuseKeyEcho([JSON.stringify(input),key],c.get('apiKey'));
-  const request=await changeHash(JSON.stringify([family,input])),keyHash=await changeHash(key),prior=state.apiOperations?.find(o=>o.client===client.id&&o.key===keyHash);
-  if(prior){allowed(client,prior.service);if(prior.request!==request)fail('Idempotency key already names different input',409);await readFence(c);return c.json(prior);}
-  const incident=state.incidents.find(i=>i.id===input.incident),service=family==='services'?input.id:family==='incidents'&&['declare','manual-page'].includes(input.type)?input.service:family==='schedules'?input.service:incident?.service;
-  allowed(client,service);if(!state.services.some(s=>s.id===service))fail('Record not found in this client scope',404);
-  if(Array.isArray(input.dependencies)&&input.dependencies.some((s:string)=>!client.services.includes(s)))fail('Cross-service reference refused',404);
-  const actor:Member={id:client.id,name:client.name,role:'responder',active:true,machine:true};
-  let result:any,extra:(token:string)=>D1PreparedStatement[]=()=>[];
-  if(family==='schedules') {
-   const snapshot=await pagingSnapshot(c.env.DB),old=snapshot.archive.schedules.find(s=>s.id===input.id);if(old&&old.service!==service)fail('Record not found in this client scope',404);
-   requireRevision(old?.revision??0,input.revision);result=validateSchedule({...input,revision:input.revision+1},state);
-   bound({...snapshot.archive,schedules:[...snapshot.archive.schedules.filter(s=>s.id!==result.id),result]});
-   scheduleChanges(state,old?[old]:[],[result],client.id);
-   extra=token=>[c.env.DB.prepare(`UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1 AND revision=? AND ${gate}`).bind(token,snapshot.revision,token),putSchedule(c.env.DB,result,token)];
-   const guard=c.get('apiGuard') as Guard;c.set('apiGuard',{sql:guard.sql+' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',values:[...guard.values,snapshot.revision]});
-  } else {
-   if(family==='services') {const current=state.services.find(s=>s.id===service)!;if(input.etag!==await changeHash(JSON.stringify(projectService(current,client))))fail('Service changed; supply its current etag',409);}
-   const permitted=family==='services'?['service']:family==='actions'?['action','complete']:['declare','manual-page','snooze','cancel-deadline','transition','reassign','assign-role'];
-   if(!permitted.includes(input.type))fail('Action is not available in this API family',403);
-   if(['manual-page','snooze'].includes(input.type)){
-    const snapshot=await pagingSnapshot(c.env.DB);if(input.policy)allowed(client,input.policy);
-    const guard=c.get('apiGuard') as Guard;c.set('apiGuard',{sql:guard.sql+' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',values:[...guard.values,snapshot.revision]});
-    result=command(state,actor,input.type==='manual-page'?{...input,operationId:keyHash}:input,new Date(Date.now()).toISOString(),responseContext(snapshot,Date.now()));
-   }else result=command(state,actor,input,new Date(Date.now()).toISOString());
-  }
-  const operation:Operation={id:crypto.randomUUID(),client:client.id,key:keyHash,request,service,resource:family,entity:result.id,revision:result.revision??1,at:new Date().toISOString()};
-  (state.apiOperations??=[]).push(operation);if(state.apiOperations.length>1000)fail('API operation history capacity reached',429);
-  auditKind(c.env.DB,'automation.'+family);setAuditSubject(c.env.DB,'entity',result.id);
-  if(family==='incidents'&&input.type==='transition'&&input.state==='acknowledged')auditIdentity(c.env.DB,{namedMember:{kind:'member',id:input.member}});
-  await commitAutomation(c,state,c.get('apiGuard'),extra);return c.json(operation,201);
+  return compatibilityMutation(c,family,input,key);
  });
  api.all('/api/v1/*',(c:any)=>c.json({error:{code:'not_found',message:'Unknown versioned API route'}},404));
 }
