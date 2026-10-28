@@ -58,7 +58,7 @@ try {
  const autosaveCard=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'Checkout',exact:true})});
  await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();
  const timeoutField=autosaveCard.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true});
- await timeoutField.fill('2');await owner.page.getByRole('link',{name:'Team',exact:true}).click();await owner.page.waitForURL(worker.origin+'/team');
+ await timeoutField.fill('2');await owner.page.getByRole('link',{name:'Team',exact:true}).click();await owner.page.waitForURL(worker.origin+'/settings/team');
  await owner.page.getByRole('link',{name:'Services',exact:true}).click();await owner.page.reload();
  await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();await expect(timeoutField).toHaveValue('2');
  const beforeRetry=ok(await call(owner.page,'/api/state')).audit.length;
@@ -212,11 +212,11 @@ try {
  const managedRotation={anchorLocal:'2026-01-01T00:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'};
  ok(await call(owner.page,'/api/paging/schedules',{id:'synthetic-oncall-145',name:'synthetic-oncall-145',service:'checkout',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:managedRotation,backup:{...managedRotation,members:[]},overrides:[]}));
  for(const width of [1440,390]){
-  await rosa.page.setViewportSize({width,height:1000});await rosa.page.goto(worker.origin+'/on-call');await rosa.page.reload();
-  await rosa.page.getByLabel('Schedule',{exact:true}).selectOption('synthetic-oncall-145');
-  await expect(rosa.page.getByLabel('Schedule name',{exact:true})).toBeEnabled();
-  await rosa.page.getByRole('button',{name:'New schedule',exact:true}).click();
-  assert.deepEqual(await rosa.page.getByLabel('Service',{exact:true}).locator('option').evaluateAll(options=>options.map(option=>option.value)),['checkout']);
+  await rosa.page.setViewportSize({width,height:1000});await rosa.page.goto(worker.origin+'/on-call/synthetic-oncall-145/edit');
+  await expect(rosa.page.getByLabel('Rota name',{exact:true})).toBeEnabled();
+  const draft=rosa.page.waitForRequest(request=>new URL(request.url()).pathname==='/api/paging/preview'&&!!request.postDataJSON()?.schedule);
+  await rosa.page.goto(worker.origin+'/on-call/new');
+  assert.equal((await draft).postDataJSON().schedule.service,'checkout','the manager’s new rota uses its one authorized service');
   assert.ok(await rosa.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`manager coverage fits ${width}`);
   assert.equal(await rosa.page.evaluate(()=>window.__rerHydration?.count??0),0);
   assert.deepEqual((await new AxeBuilder({page:rosa.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
@@ -316,10 +316,13 @@ try {
   if(screen==='services'){await owner.page.getByRole('heading',{name:'Service ownership',exact:true}).waitFor();await excludesStakeholder(owner.page.getByLabel('Service owner',{exact:true}))}
   if(screen==='routing'){await owner.page.getByText('Create a routed integration key',{exact:true}).click();await excludesStakeholder(owner.page.getByLabel('Integration owner',{exact:true}))}
   if(screen==='schedules'){
-   await owner.page.getByLabel('Schedule',{exact:true}).selectOption('synthetic-oncall-62')
-   await excludesStakeholder(owner.page.getByLabel('Primary responder 1',{exact:true}))
-   await owner.page.getByRole('button',{name:'Remove primary responder 1',exact:true}).focus()
-   await owner.page.getByRole('tooltip').filter({hasText:'Remove primary responder 1'}).waitFor({state:'visible'})
+   await owner.page.goto(worker.origin+'/on-call/synthetic-oncall-62/edit')
+   await owner.page.getByLabel('Rota name',{exact:true}).waitFor()
+   await owner.page.getByRole('button',{name:'Continue',exact:true}).click()
+   await owner.page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor()
+   await excludesStakeholder(owner.page.getByLabel('Primary person 1',{exact:true}))
+   await owner.page.getByRole('button',{name:'Remove person',exact:true}).first().focus()
+   await owner.page.getByRole('tooltip',{name:'Remove person',exact:true}).first().waitFor({state:'visible'})
   }
   if(screen==='incidents'){
    await owner.page.getByRole('button',{name:'Select this page',exact:true}).click()

@@ -26,6 +26,8 @@ import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as IncidentsIdRouteImport } from './routes/incidents.$id'
 import { Route as OnCallIndexRouteImport } from './routes/on-call.index'
+import { Route as OnCallRotaRouteImport } from './routes/on-call.$rota'
+import { Route as OnCallNewRouteImport } from './routes/on-call.new'
 import { Route as SettingsIndexRouteImport } from './routes/settings.index'
 import { Route as SettingsArchiveRouteImport } from './routes/settings.archive'
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings.integrations'
@@ -34,6 +36,7 @@ import { Route as SettingsRoutingRouteImport } from './routes/settings.routing'
 import { Route as SettingsServicesRouteImport } from './routes/settings.services'
 import { Route as SettingsTeamRouteImport } from './routes/settings.team'
 import { Route as SigninLocalRouteImport } from './routes/signin.local'
+import { Route as OnCallRotaEditRouteImport } from './routes/on-call.$rota.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -120,6 +123,16 @@ const OnCallIndexRoute = OnCallIndexRouteImport.update({
   path: '/on-call/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnCallRotaRoute = OnCallRotaRouteImport.update({
+  id: '/on-call/$rota',
+  path: '/on-call/$rota',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnCallNewRoute = OnCallNewRouteImport.update({
+  id: '/on-call/new',
+  path: '/on-call/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsIndexRoute = SettingsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -160,6 +173,11 @@ const SigninLocalRoute = SigninLocalRouteImport.update({
   path: '/signin/local',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnCallRotaEditRoute = OnCallRotaEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => OnCallRotaRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -177,6 +195,8 @@ export interface FileRoutesByFullPath {
   '/team': typeof TeamRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
+  '/on-call/$rota': typeof OnCallRotaRouteWithChildren
+  '/on-call/new': typeof OnCallNewRoute
   '/settings/archive': typeof SettingsArchiveRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/move-in': typeof SettingsMoveInRoute
@@ -187,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/docs/': typeof DocsIndexRoute
   '/on-call/': typeof OnCallIndexRoute
   '/settings/': typeof SettingsIndexRoute
+  '/on-call/$rota/edit': typeof OnCallRotaEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -203,6 +224,8 @@ export interface FileRoutesByTo {
   '/team': typeof TeamRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
+  '/on-call/$rota': typeof OnCallRotaRouteWithChildren
+  '/on-call/new': typeof OnCallNewRoute
   '/settings/archive': typeof SettingsArchiveRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/move-in': typeof SettingsMoveInRoute
@@ -213,6 +236,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsIndexRoute
   '/on-call': typeof OnCallIndexRoute
   '/settings': typeof SettingsIndexRoute
+  '/on-call/$rota/edit': typeof OnCallRotaEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -231,6 +255,8 @@ export interface FileRoutesById {
   '/team': typeof TeamRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/incidents/$id': typeof IncidentsIdRoute
+  '/on-call/$rota': typeof OnCallRotaRouteWithChildren
+  '/on-call/new': typeof OnCallNewRoute
   '/settings/archive': typeof SettingsArchiveRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/move-in': typeof SettingsMoveInRoute
@@ -241,6 +267,7 @@ export interface FileRoutesById {
   '/docs/': typeof DocsIndexRoute
   '/on-call/': typeof OnCallIndexRoute
   '/settings/': typeof SettingsIndexRoute
+  '/on-call/$rota/edit': typeof OnCallRotaEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -260,6 +287,8 @@ export interface FileRouteTypes {
     | '/team'
     | '/docs/$slug'
     | '/incidents/$id'
+    | '/on-call/$rota'
+    | '/on-call/new'
     | '/settings/archive'
     | '/settings/integrations'
     | '/settings/move-in'
@@ -270,6 +299,7 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/on-call/'
     | '/settings/'
+    | '/on-call/$rota/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -286,6 +316,8 @@ export interface FileRouteTypes {
     | '/team'
     | '/docs/$slug'
     | '/incidents/$id'
+    | '/on-call/$rota'
+    | '/on-call/new'
     | '/settings/archive'
     | '/settings/integrations'
     | '/settings/move-in'
@@ -296,6 +328,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/on-call'
     | '/settings'
+    | '/on-call/$rota/edit'
   id:
     | '__root__'
     | '/'
@@ -313,6 +346,8 @@ export interface FileRouteTypes {
     | '/team'
     | '/docs/$slug'
     | '/incidents/$id'
+    | '/on-call/$rota'
+    | '/on-call/new'
     | '/settings/archive'
     | '/settings/integrations'
     | '/settings/move-in'
@@ -323,6 +358,7 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/on-call/'
     | '/settings/'
+    | '/on-call/$rota/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -340,6 +376,8 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TeamRoute: typeof TeamRoute
   DocsSlugRoute: typeof DocsSlugRoute
+  OnCallRotaRoute: typeof OnCallRotaRouteWithChildren
+  OnCallNewRoute: typeof OnCallNewRoute
   SigninLocalRoute: typeof SigninLocalRoute
   DocsIndexRoute: typeof DocsIndexRoute
   OnCallIndexRoute: typeof OnCallIndexRoute
@@ -466,6 +504,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnCallIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/on-call/$rota': {
+      id: '/on-call/$rota'
+      path: '/on-call/$rota'
+      fullPath: '/on-call/$rota'
+      preLoaderRoute: typeof OnCallRotaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/on-call/new': {
+      id: '/on-call/new'
+      path: '/on-call/new'
+      fullPath: '/on-call/new'
+      preLoaderRoute: typeof OnCallNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings/': {
       id: '/settings/'
       path: '/'
@@ -522,6 +574,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SigninLocalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/on-call/$rota/edit': {
+      id: '/on-call/$rota/edit'
+      path: '/edit'
+      fullPath: '/on-call/$rota/edit'
+      preLoaderRoute: typeof OnCallRotaEditRouteImport
+      parentRoute: typeof OnCallRotaRoute
+    }
   }
 }
 
@@ -561,6 +620,18 @@ const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
   SettingsRouteChildren,
 )
 
+interface OnCallRotaRouteChildren {
+  OnCallRotaEditRoute: typeof OnCallRotaEditRoute
+}
+
+const OnCallRotaRouteChildren: OnCallRotaRouteChildren = {
+  OnCallRotaEditRoute: OnCallRotaEditRoute,
+}
+
+const OnCallRotaRouteWithChildren = OnCallRotaRoute._addFileChildren(
+  OnCallRotaRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
@@ -576,6 +647,8 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TeamRoute: TeamRoute,
   DocsSlugRoute: DocsSlugRoute,
+  OnCallRotaRoute: OnCallRotaRouteWithChildren,
+  OnCallNewRoute: OnCallNewRoute,
   SigninLocalRoute: SigninLocalRoute,
   DocsIndexRoute: DocsIndexRoute,
   OnCallIndexRoute: OnCallIndexRoute,

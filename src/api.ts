@@ -52,6 +52,7 @@ import { runtimeBindings, type Bindings } from './auth.server';
 import { admitted } from './base/setup-state';
 import { isLoopbackHost } from './modules/operator-auth/index.mjs';
 import { installSchedules } from './schedule-api';
+import {installOnCall, workspaceOnCall} from './on-call/api';
 import { installMoveIn } from './move-in/api';
 import { Refusal } from './move-in/refusals';
 import { Hono } from "hono";
@@ -243,7 +244,7 @@ api.get("/api/workspace", async (c) => {
   const current = await authorizedState(c, false, true);
   const currentMember = current.members.find(m => m.id === member.id)!;
   if (currentMember.role === "stakeholder") return c.json({setup:false, member:currentMember, demo:false, state:null});
-  return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", state: memberWorkspace(current, member)});
+  return c.json({setup: false, member: current.members.find(m => m.id === member.id), demo: c.env.RER_DEMO === "1", state: memberWorkspace(current, member), onCall: await workspaceOnCall(c.env.DB, current, currentMember)});
 });
 async function session(c: any, state: State): Promise<Member | null> {
   const token = readSessionCookie(c.req.raw);
@@ -715,6 +716,7 @@ api.get("/api/handoff/:id", async (c) => {
 installTeams(api,{body,state:authorizedState,save:(c,state,revision)=>save(c.env.DB,state,revision,sessionGuard(c))});
 installPaging(api, body);
 installSchedules(api,body);
+installOnCall(api);
 installScheduleCoordination(api,body);
 installMoveIn(api,body);
 installHandoffs(api, body);

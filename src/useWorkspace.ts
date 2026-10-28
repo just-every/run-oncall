@@ -33,6 +33,7 @@ export async function compareRequest(path:'/api/replay'|`/api/routing/keys/${str
   }
 }
 export function useWorkspace() {
+  const [onCall, setOnCall] = useState<import('./on-call/read').OnCall | null>(null);
   const [state, setState] = useState<State | null>(null);
   const [member, setMember] = useState<Member | null>(null);
   const [demo, setDemo] = useState(false);
@@ -54,13 +55,14 @@ export function useWorkspace() {
     reading.current = pending;
     return pending;
   }
-  function apply(session: {member: Member | null; demo?: boolean; setup: boolean; state: State | null}) {
+  function apply(session: {member: Member | null; demo?: boolean; setup: boolean; state: State | null; onCall?: import('./on-call/read').OnCall}) {
     preserveView();
     setMember(session.member);
     setDemo(session.demo === true);
     setSetup(session.setup);
     currentState.current = session.state;
     setState(session.state);
+    setOnCall(session.onCall ?? null);
     setReady(true);
   }
   function setError(message: string) {
@@ -186,5 +188,5 @@ export function useWorkspace() {
     void execute();
     return completion;
   }
-  return {state, demo, member, setup, ready, error, busy, notice, run, refresh, setError, setNotice, failure: failures.failure};
+  return {state, onCall, demo, member, setup, ready, error, busy, notice, run, refresh, setError, setNotice, failure: failures.failure};
 }

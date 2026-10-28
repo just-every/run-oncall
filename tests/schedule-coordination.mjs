@@ -14,6 +14,38 @@ export async function scheduleCoordination(){
   const start=new Date(Math.ceil((Date.now()+2*3600000)/3600000)*3600000).toISOString(),end=new Date(Date.parse(start)+3600000).toISOString();
   let schedule=ok(await req('/api/paging/schedules',{id:'synthetic-oncall-250',name:'Synthetic coordination rota',service:service.id,revision:0,timezone:'UTC',validFrom:start,validUntil:null,primary:{anchorLocal:start.slice(0,16),periodDays:1,members:[owner.value.member.id,outsider.id],ambiguity:'earlier'},backup:{anchorLocal:start.slice(0,16),periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}));
   const overlap=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-255',revision:0,backup:{...schedule.backup,members:[substitute.id]}}));
+  // OC-020 / OC-014: one aggregate read agrees with each rota's existing resolver and never commits.
+  {
+   const at=Date.parse(start),schedules=ok(await req('/api/paging/state')).schedules;
+   const counts=()=>{const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").map(row=>row.name);return w.statements(names.map(name=>'SELECT COUNT(*) AS count FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>({table:names[index],count:rows[0].count}));};
+   const before=counts(),workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state'));
+   for(let n=0;n<20;n++){
+    const all=ok(await req('/api/on-call?at='+encodeURIComponent(start)));
+    assert.equal(all.rotas.length,schedules.length,'all rotas appear together');
+    for(const schedule of schedules){
+     const rota=all.rotas.find(row=>row.id===schedule.id),single=ok(await req('/api/schedules/'+encodeURIComponent(schedule.id)+'/now-next?at='+encodeURIComponent(start)));
+     assert.ok(rota);assert.equal(rota.now.primary?.id??null,single.now.primary);assert.equal(rota.now.backup?.id??null,single.now.backup);
+     const nextAt=Math.min(...single.now.windows.flatMap(window=>window.end?[Date.parse(window.end)]:[]));
+     if(Number.isFinite(nextAt)){
+      assert.equal(Date.parse(rota.next.at),nextAt);
+      const next=ok(await req('/api/schedules/'+encodeURIComponent(schedule.id)+'/now-next?at='+encodeURIComponent(rota.next.at)));
+      assert.equal(rota.next.primary?.id??null,next.now.primary);assert.equal(rota.next.backup?.id??null,next.now.backup);
+     }
+    }
+    assert.ok(all.rotas.find(row=>row.id===schedule.id).gaps.some(gap=>gap.role==='backup'&&Date.parse(gap.from)<=at&&Date.parse(gap.to)>at),'empty backup slots are gaps');
+   }
+   console.log(JSON.stringify({onCallReads:20,countsBefore:before,countsAfter:counts(),workspaceRevision:workspace.revision,pagingRevision:paging.revision}));
+   assert.deepEqual(counts(),before,'twenty reads leave every table count unchanged');
+   assert.deepEqual(ok(await req('/api/state')),workspace,'twenty reads preserve workspace and revision');
+   assert.deepEqual(ok(await req('/api/paging/state')),paging,'twenty reads preserve scheduling revisions');
+   const combined=ok(await req('/api/workspace'));assert.deepEqual(combined.onCall.rotas.map(row=>row.id),schedules.map(row=>row.id));
+   ok(await w.request('/api/on-call'),401);ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,viewerCookie));ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,substituteCookie));
+   const stakeholder=ok(await req('/api/members',{name:'synthetic-oncall-254',role:'stakeholder',password:'synthetic-oncall-254-password'}),201);
+   ok(await w.request('/api/on-call',undefined,await login(stakeholder,254)),403);
+   const ended=await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-253-password'});ok(ended);ok(await w.request('/api/logout',{},ended.cookie));ok(await w.request('/api/on-call',undefined,ended.cookie),401);
+   const expiredRead=await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-253-password'});ok(expiredRead);w.sql("UPDATE sessions SET expires=0 WHERE token=(SELECT token FROM sessions WHERE member='"+viewer.id+"' ORDER BY expires DESC LIMIT 1)");ok(await w.request('/api/on-call',undefined,expiredRead.cookie),401);
+   console.log('PASS OC-020 / OC-014 aggregate on-call: all rotas match now/next, empty slot is a gap, 20 reads preserve every table and both revisions, workspace snapshot carries coverage, viewer/responder reads and anonymous/stakeholder/revoked refusals');
+  }
   ok(await coord({action:'request',schedule:overlap.id,scheduleRevision:overlap.revision,substitute:substitute.id,role:'primary',start,end}),409);
   const formerService=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-256',name:'Synthetic former service',environment:'test',owner:outsider.id,runbook:[],pager:''}));
   const moved=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-256',service:formerService.id,revision:0,primary:{...schedule.primary,members:[owner.value.member.id]}}));

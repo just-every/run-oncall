@@ -12,6 +12,7 @@ export function workspaceAddress(path: string) {
   if (setting) return {page: setting[1], incident: ''};
   const section = workspaceSections.find(section => path === `/${section}` || path === `/${section}/`);
   if (section) return {page: section, incident: ''};
+  if (/^\/on-call(?:\/[^/]+(?:\/edit)?)?\/?$/.test(path)) return {page: 'on-call', incident: ''};
   const incident = /^\/incidents\/([^/]+)\/?$/.exec(path);
   if (incident) {
     try {return {page: 'incidents', incident: decodeURIComponent(incident[1])};} catch {return {page: 'not-found', incident: ''};}
