@@ -1,0 +1,28 @@
+/* The public site carries the app's document defaults for its approved home.
+   Keep those global pre/code rules out of Base's Run and hosting code cards. */
+.oncall-shared-page .code pre {
+  max-height: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+.oncall-shared-page .code pre code {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.oncall-shared-page .other-ways pre {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+.oncall-shared-page .other-ways code {
+  padding: 0;
+  background: transparent;
+}
+.oncall-shared-page .chooser .self .other-ways pre code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
