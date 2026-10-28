@@ -1,3 +1,5 @@
+<!-- Historical record: the hand-written ACCEPTANCE.md as it stood at 519266e5ccbbf33fcab82c4107fa8f80c282a204, before the 28 October 2026 contract cleanup. Its statuses are not current; CONTRACT.md and the generated ACCEPTANCE.md are. -->
+
 # What you can do
 
 The target is a complete US-first on-call and incident-response product: real independent phone/SMS/push paging, durable escalation, correct coverage, native mobile response, monitoring/chat/phone integrations, recovery and post-incident follow-through, plus scoped agents. CONTRACT.md defines the destination, not a claim that it ships today.
