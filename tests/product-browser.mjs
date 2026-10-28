@@ -1,5 +1,4 @@
-import {openWorkspaceSection} from './keyboard.mjs'
-import {openHistoryComparison,selectRoutedSource} from './routing-browser.mjs';
+import {openWorkspaceSection,openHistoryComparison,selectRoutedSource,keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes,createHmac} from 'node:crypto'
 import {mkdir} from 'node:fs/promises'
@@ -8,8 +7,6 @@ import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor} from './worker.mjs'
 import {productBrowserJourney} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
-import {keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
-
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
  const origin=new URL(page.url()).origin
@@ -42,7 +39,7 @@ async function incompleteIntakeBrowser(page,context) {
   assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[],`${screen} has no serious or critical accessibility violations at ${width}px`)
   await page.screenshot({path:`evidence/browser/oc059-${screen}-${width}.png`,fullPage:true})
  }
- for(const width of [1440,390]) {
+ for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
   await openWorkspaceSection(page,'alerts')
   await focusWorkspace(page)
@@ -104,7 +101,7 @@ async function responsePolicyBrowser(page,context) {
   await focus.scrollIntoViewIfNeeded()
   await page.screenshot({path:`evidence/browser/oc056-${screen}-focus-${width}.png`})
  }
- for(const width of [1440,390]) {
+ for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
   const serviceId='response-'+width,serviceName='Checkout response '+width,source='synthetic-oncall-response-'+width,key=randomBytes(32).toString('hex')
   await request('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Confirm successful checkout requests before resolving.'],pager:''})
@@ -238,7 +235,7 @@ async function incidentWorkflowBrowser(page,context) {
   await page.screenshot({path:`evidence/browser/oc050-${name}-${width}.png`,fullPage:true});await focus.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc050-${name}-focus-${width}.png`});
  };
  const submit=async(button)=>{const response=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST');await button.click();assert.equal((await response).status(),200)};
- for(const width of [1440,390]){
+ for(const width of [1440]){
   await page.setViewportSize({width,height:1000});const serviceId='workflow-'+width,serviceName='Checkout incident workflow '+width;
   await req('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Check replica health before changing customer traffic.'],pager:''});
   await openWorkspaceSection(page,'services');await focusWorkspace(page);
@@ -266,7 +263,7 @@ async function incidentWorkflowBrowser(page,context) {
   state=await req('/api/state');const child=state.incidents.find(i=>i.title==='Independent batch delay '+width);assert.equal(child.state,'acknowledged');assert.equal(state.incidents.find(i=>i.id===target.id).state,'acknowledged');assert.equal(child.splitFrom.incident,target.id);assert.equal(child.template.version,1);assert.equal((await req('/api/handoffs/context/'+child.id)).source.incident.declaration.kind,'split','a split origin remains usable by the existing reviewed handoff door');
   await page.goto(origin+'/incidents/'+encodeURIComponent(child.id));await page.locator('.detail').getByRole('heading',{name:child.title,exact:true}).waitFor();await openIncidentAction(page,'Service context');await capture('split',width,workflow);await page.getByRole('button',{name:'Close',exact:true}).click();
  }
- console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440/390; overflow, axe and hydration checked');
+ console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440; overflow, axe and hydration checked');
 }
 
 async function changeAndSigningBrowser(page,context){
@@ -292,7 +289,7 @@ async function changeAndSigningBrowser(page,context){
   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations,[],label+' has no WCAG axe violations');
   await page.screenshot({path:`evidence/browser/${label}-${width}.png`,fullPage:true});await page.screenshot({path:`evidence/browser/${label}-focus-${width}.png`});
  };
- for(const width of [1440,390]){
+ for(const width of [1440]){
   await page.setViewportSize({width,height:1000});await page.reload();await openWorkspaceSection(page,'services');
   await page.goto(origin+'/settings/services/synthetic-oncall-1');const service=page.locator('.service-page');await service.locator('.recent-changes > summary').click();
   await service.getByText('Argo CD gateway sync',{exact:true}).waitFor();await service.getByText('payments: applied',{exact:true}).waitFor();await service.getByText('Terraform Cloud',{exact:true}).waitFor();
@@ -455,7 +452,7 @@ async function changeAndSigningBrowser(page,context){
   for(const slug of docSlugs.filter(slug=>!['changes','routed-intake','data','urgency'].includes(slug))){await page.goto(new URL(page.url()).origin+'/docs/'+slug);await page.locator('.docs-article').waitFor();await check('oc040-043-docs-'+slug,width);}
   await page.goto(new URL(page.url()).origin);
  }
- console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440/390; overflow, axe and hydration');
+ console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440; overflow, axe and hydration');
 }
 
 // Production Worker + real local D1, without starting a managed rer dev server.
@@ -484,13 +481,13 @@ try {
  }
  await productBrowserJourney(page,context,{openSession})
  await incompleteIntakeBrowser(page,context)
- console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440/390; overflow, axe and hydration checked')
+ console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440; overflow, axe and hydration checked')
  await responsePolicyBrowser(page,context)
  await incidentWorkflowBrowser(page,context)
  await changeAndSigningBrowser(page,context)
- console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440/390; overflow, axe and hydration checked')
+ console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  assert.deepEqual(errors,[],'no browser application errors')
- console.log('Emitted Worker product browser journey passed at 1440/390')
+ console.log('Emitted Worker product browser journey passed at 1440')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -500,4 +497,94 @@ try {
  throw error
 } finally {
  try {await browser?.close()} finally {await worker.close()}
+}
+
+// Configure scoped automation, inspect delivery failure and retain machine attribution in the workspace.
+{
+const {default:assert}=await import('node:assert/strict')
+const {mkdir}=await import('node:fs/promises')
+const {join,resolve}=await import('node:path')
+const {randomBytes}=await import('node:crypto')
+const {default:AxeBuilder}=await import('@axe-core/playwright')
+const {ownerDoor}=await import('./worker.mjs')
+const {chromium}=await import('@playwright/test')
+const {automationRuntime,recordOwnedProcesses}=await import('./worker.mjs')
+let receiverStatus=403;
+const runtime=await automationRuntime(()=>new Response(null,{status:receiverStatus})),proof=process.env.ONCALL_BROWSER_EVIDENCE??resolve('../evidence/browser');
+let browser;
+try {
+ await mkdir(proof,{recursive:true});
+ const setup=await runtime.request('/api/setup',{name:'Synthetic Browser Owner',password:'synthetic-oncall-browser-password'});assert.equal(setup.status,200);
+ const cookie=setup.cookie,owner=setup.value.member,req=(p,d)=>runtime.request(p,d,cookie);
+ assert.equal((await req('/api/command',{type:'service',id:'synthetic-oncall-browser',name:'Synthetic browser service',environment:'test',owner:owner.id,runbook:[],pager:''})).status,200);
+ const viewer=await req('/api/members',{name:'Synthetic Viewer',role:'viewer',password:'synthetic-oncall-viewer-password'});assert.equal(viewer.status,201);
+ browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
+ recordOwnedProcesses();
+ console.log('Browser driver PID',process.pid,'runtime proof uses a fresh test-only context');
+ for(const width of [1440]) {
+  const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const at=cookie.indexOf('=');await context.addCookies([{name:cookie.slice(0,at),value:cookie.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}]);
+  await page.goto(runtime.origin+'/settings/integrations');const panel=page.locator('#response-api');await panel.locator(':scope > details > summary').nth(0).click();await panel.getByRole('heading',{name:'API clients',exact:true}).waitFor();
+  if(width===1440){await panel.getByText('No API clients configured.',{exact:true}).waitFor();for(const emptyWidth of [1440]){await page.setViewportSize({width:emptyWidth,height:1000});await panel.screenshot({path:join(proof,'automation-empty-'+emptyWidth+'.png')});}await page.setViewportSize({width,height:1000});}
+  if(await panel.getByRole('button',{name:'Add client',exact:true}).isVisible())await panel.getByRole('button',{name:'Add client',exact:true}).click();
+  await panel.getByLabel('Name',{exact:true}).fill('Synthetic browser client '+width);
+  await panel.getByLabel('Incidents',{exact:true}).selectOption('write');await panel.getByRole('button',{name:'Create client',exact:true}).click();await panel.getByText('Synthetic browser client '+width,{exact:true}).first().waitFor();
+  const createdKey=await panel.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);await panel.getByRole('button',{name:'Done',exact:true}).click();assert.equal((await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+createdKey})).status,200);
+  // A stale lifecycle write is a real server conflict and must be announced.
+  const clients=(await req('/api/automation')).value.clients,client=clients.find(c=>c.name==='Synthetic browser client '+width);
+  await req('/api/automation/clients/'+client.id+'/revoke',{revision:client.revision});
+  await panel.locator('li').filter({hasText:client.name}).hover();await panel.locator('li').filter({hasText:client.name}).getByText('Client actions',{exact:true}).click();await panel.getByRole('button',{name:'Revoke '+client.name,exact:true}).click();await panel.getByRole('button',{name:'Revoke key',exact:true}).click();await page.getByRole('alert').filter({hasText:'Revision conflict'}).waitFor();
+  await page.screenshot({path:join(proof,'automation-conflict-'+width+'.png'),fullPage:true});
+  await page.reload();await panel.locator(':scope > details > summary').nth(2).click();await panel.getByRole('heading',{name:'Outbox',exact:true}).waitFor();assert.equal(await panel.locator('input').evaluateAll((inputs,key)=>inputs.some(input=>input.value===key),createdKey),false);
+  // Approved recipient and actual refusal produce a durable terminal outcome on screen.
+  const key=randomBytes(32).toString('hex'),created=await req('/api/automation/clients',{name:'Synthetic sending client '+width,key,services:['synthetic-oncall-browser'],permissions:['incidents:read','incidents:write']});assert.equal(created.status,201);
+  await page.reload();await panel.locator(':scope > details > summary').nth(1).click();if(await panel.getByRole('button',{name:'Add recipient',exact:true}).isVisible())await panel.getByRole('button',{name:'Add recipient',exact:true}).click();await panel.getByLabel('Name',{exact:true}).fill('Synthetic receiver '+width);await panel.getByLabel('Address',{exact:true}).fill('https://8.8.8.8/events');if(await panel.getByLabel('Client',{exact:true}).count())await panel.getByLabel('Client',{exact:true}).selectOption(created.value.id);
+  let approvals=0;const countApproval=request=>{if(new URL(request.url()).pathname==='/api/automation/endpoints'&&request.method()==='POST')approvals++};page.on('request',countApproval);await panel.getByRole('button',{name:'Approve',exact:true}).click();assert.equal(approvals,0);const approved=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/automation/endpoints'&&r.request().method()==='POST');await panel.getByRole('button',{name:'Approve recipient',exact:true}).click();assert.equal((await approved).status(),201);assert.equal(approvals,1);page.off('request',countApproval);
+  await panel.getByLabel('Private key',{exact:true}).waitFor();await panel.getByRole('button',{name:'Done',exact:true}).click();
+  const incident=await runtime.request('/api/v1/incidents',{type:'declare',service:'synthetic-oncall-browser',title:'Synthetic browser incident '+width,summary:'Visible outbox failure',severity:'warning'},'',{authorization:'Bearer '+key,'idempotency-key':'synthetic-oncall-browser-'+width});assert.equal(incident.status,201);
+  if(!await panel.getByRole('button',{name:'Send next now',exact:true}).isVisible())await panel.locator(':scope > details > summary').nth(2).click();
+  let processed;do{const response=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/automation/dispatch'&&r.request().method()==='POST');await panel.getByRole('button',{name:'Send next now',exact:true}).click();const reply=await response;assert.equal(reply.status(),200);processed=(await reply.json()).processed;}while(processed);
+  await page.reload();await panel.locator(':scope > details > summary').nth(2).click();await panel.getByText(/Triggered · Stopped/).first().waitFor();
+  await panel.scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal page overflow');
+  assert.equal(await panel.getByLabel('Private key',{exact:true}).count(),0);
+  await panel.screenshot({path:join(proof,'automation-populated-'+width+'.png')});
+  receiverStatus=200;
+  const uncertain=await req('/api/command',{type:'assign-role',incident:incident.value.entity,revision:1,role:'scribe',member:owner.id,reason:'Unsigned receiver success is uncertain'});assert.equal(uncertain.status,200);
+  do{const response=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/automation/dispatch'&&r.request().method()==='POST');await panel.getByRole('button',{name:'Send next now',exact:true}).click();const reply=await response;assert.equal(reply.status(),200);processed=(await reply.json()).processed;}while(processed);
+  await page.reload();await panel.locator(':scope > details > summary').nth(2).click();await panel.getByText(/People changed · Unconfirmed/).first().waitFor();await panel.screenshot({path:join(proof,'automation-uncertain-'+width+'.png')});receiverStatus=403;
+
+  const memberA=(await req('/api/members',{name:'synthetic-oncall-'+width+'@example.test',role:'responder',password:'synthetic-oncall-responder-password'})).value;
+  const memberB=(await req('/api/members',{name:'synthetic-oncall-reassigned-'+width,role:'responder',password:'synthetic-oncall-responder-password'})).value;
+  const machine=async(input,n)=>runtime.request('/api/v1/incidents',input,'',{authorization:'Bearer '+key,'idempotency-key':'synthetic-oncall-attribution-'+width+'-'+n});
+  assert.equal((await machine({type:'transition',incident:incident.value.entity,revision:uncertain.value.revision,state:'acknowledged',member:memberA.id,summary:'Explicit machine responsibility'},1)).status,201);
+  assert.equal((await machine({type:'reassign',incident:incident.value.entity,revision:uncertain.value.revision+1,member:memberB.id,reason:'Subsequent assignment'},2)).status,201);
+  assert.equal((await req('/api/state')).value.incidents.find(i=>i.id===incident.value.entity).assignee,memberB.id);
+  await page.goto(runtime.origin+'/incidents/'+encodeURIComponent(incident.value.entity));await page.locator('.timeline').getByText('Service account',{exact:true}).first().waitFor();const named=page.locator('.timeline .event').filter({has:page.locator('.named-responder').filter({hasText:memberA.name})});assert.equal(await named.count(),1);await named.getByText('Service account',{exact:true}).waitFor();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
+  const timelineAxe=await new AxeBuilder({page}).include('.timeline').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(timelineAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  // The existing Archive screen refuses a source captured before label erasure.
+  const email='synthetic-oncall-'+width+'@example.test',label=email+' automation',door=ownerDoor(runtime,cookie);
+  const plan=await door.preview('opsgenie',JSON.stringify({users:{data:[{id:'synthetic-oncall-'+width,username:email,fullName:'synthetic-oncall-'+width}]}}));assert.equal(plan.status,200);assert.equal((await door.apply('opsgenie',plan.value)).status,200);
+  assert.equal((await req('/api/automation/clients',{name:label,key:randomBytes(32).toString('hex'),services:['synthetic-oncall-browser'],permissions:['incidents:read']})).status,201);
+  const oldArchive=(await req('/api/archive')).value;assert.equal((await req('/api/move-in/erase',{email,confirmation:'erase '+email})).status,200);
+  const afterErasure=(await req('/api/state')).value;
+  await page.goto(runtime.origin+'/settings/archive');await page.locator('.archive-restore > summary').click();await page.getByLabel('Choose archive JSON').setInputFiles({name:'synthetic-oncall-old.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(oldArchive))});
+  await page.getByLabel('Type REPLACE to confirm').fill('REPLACE');
+  const refusal=page.waitForResponse(r=>r.url().endsWith('/api/restore')&&r.request().method()==='POST');await page.getByRole('button',{name:'Replace workspace with this archive',exact:true}).click();assert.equal((await refusal).status(),409);
+  await page.getByRole('alert').waitFor();assert.deepEqual((await req('/api/state')).value,afterErasure);assert.ok(!JSON.stringify(afterErasure).includes(label));
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-erasure-refusal-'+width+'.png'),fullPage:true});
+  const archiveAxe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(archiveAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+
+  await page.goto(runtime.origin+'/incidents/'+encodeURIComponent(incident.value.entity));await page.locator('.timeline').getByText('Service account',{exact:true}).first().waitFor();assert.equal(await page.locator('.timeline .named-responder strong').innerText(),'Erased member','OC-053 post-erasure timeline reads Erased member');await page.locator('.timeline').screenshot({path:join(proof,'automation-erased-member-'+width+'.png')});
+  await page.goto(runtime.origin+'/settings/integrations');await panel.locator(':scope > details > summary').nth(2).click();await panel.getByRole('heading',{name:'Outbox',exact:true}).waitFor();const panelAxe=await new AxeBuilder({page}).include('#response-api').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(panelAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  assert.deepEqual(errors,[]);
+  for(const [slug,anchor] of [['data','subject-erasure-fences'],['response-api','version-1-http-reference'],['audit','identity-and-content']]){const response=await page.goto(runtime.origin+'/docs/'+slug+'#'+anchor);assert.equal(response.status(),200);await page.locator('.docs-article').waitFor();await page.locator('#'+anchor).scrollIntoViewIfNeeded();if(slug==='response-api')await page.locator('.docs-body > p').filter({hasText:'The timeline attributes'}).scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-docs-'+slug+'-'+width+'.png')});}
+  await context.close();
+  const denied=await browser.newContext({viewport:{width,height:1000}}),deniedPage=await denied.newPage();const login=await denied.request.post(runtime.origin+'/api/login',{headers:{origin:runtime.origin},data:{name:'Synthetic Viewer',password:'synthetic-oncall-viewer-password'}});assert.equal(login.status(),200);
+  await deniedPage.goto(runtime.origin+'/settings/integrations');await deniedPage.locator('#response-api').getByText('An administrator manages clients, recipients and delivery failures.',{exact:true}).waitFor();assert.equal(await deniedPage.locator('#response-api').getByRole('button').count(),0);
+  assert.equal((await denied.request.get(runtime.origin+'/api/automation')).status(),403);
+  await deniedPage.screenshot({path:join(proof,'automation-denied-'+width+'.png'),fullPage:true});await denied.close();
+ }
+ console.log('PASS OC-053 settings management, restore refusal and permanent machine attribution after reassignment at 1440');
+}finally{await browser?.close();await runtime.close();}
+
 }

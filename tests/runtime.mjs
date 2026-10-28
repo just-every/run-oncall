@@ -1,13 +1,108 @@
-import assert from "node:assert/strict";
-import { awaitingCoordinationAuthority } from "./runtime-authority.mjs";
-import { coordinationHealth } from "./coordination-health.mjs";
-import { heldWorkspace } from "./runtime-held-workspace.mjs";
-import { spawn, spawnSync, execFileSync } from "node:child_process";
-import { mkdtemp, rm, mkdir, readdir, copyFile, writeFile, readFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { createHmac, pbkdf2Sync, createHash, randomBytes } from "node:crypto";
-import { createServer } from "node:net";
+import {fileURLToPath} from 'node:url'
+import http from 'node:http'
+import {fixtureDatabase} from './fixture-database.mjs'
+import assert from 'node:assert/strict'
+import {heldWorkspace} from './worker.mjs'
+import {spawn,spawnSync,execFileSync} from 'node:child_process'
+import {mkdtemp,rm,mkdir,readdir,copyFile,writeFile,readFile} from 'node:fs/promises'
+import {tmpdir} from 'node:os'
+import {join,resolve} from 'node:path'
+import {createHmac,pbkdf2Sync,createHash,randomBytes} from 'node:crypto'
+import {createServer} from 'node:net'
+// coordination-health: part of this public journey.
+// Read the public commands and recover from an actual storage outage without
+// changing held records or claiming pager coverage.
+export async function coordinationHealth({request,sql,deployment,cookie}) {
+ const ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
+ const cli=fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs'))
+ const command=args=>execFileSync(process.execPath,[cli,...args,'--json'],{encoding:'utf8',env:{...process.env,CI:'true'},stdio:['ignore','pipe','pipe']}).trim().split('\n').map(line=>JSON.parse(line)).at(-1)
+ const commands=()=>{
+  const described=command(['describe']),checked=command(['check','--profile','first-party'])
+  assert.equal(checked.ok,true);assert.ok(checked.clauses.every(c=>c.ok))
+  return described
+ }
+ const healthy=ok(await request('/health'))
+ assert.deepEqual(healthy.deployment,deployment,'the emitted build identifies its actual source and artifact')
+ assert.equal(healthy.ok,true);assert.equal(healthy.storage,'available');assert.equal(healthy.target,'coordination');assert.equal(healthy.paging,'not-provided')
+ const before=ok(await request('/api/archive',undefined,cookie)),description=commands()
+ assert.deepEqual(ok(await request('/api/archive',undefined,cookie)),before,'check and describe leave durable coordination unchanged')
+ sql('ALTER TABLE workspace_control RENAME TO workspace_fault')
+ try {
+  const failed=await request('/health');assert.equal(failed.status,503)
+  assert.equal(failed.value.ok,false);assert.equal(failed.value.storage,'unavailable')
+  assert.equal(failed.value.target,'coordination');assert.equal(failed.value.paging,'not-provided')
+  assert.deepEqual(failed.value.deployment,deployment,'failure still identifies the deployed build')
+  assert.equal(typeof failed.value.error,'string')
+  assert.equal((await request('/api/state',undefined,cookie)).status,503)
+  assert.deepEqual(commands(),description,'read-only command effects remain available during storage failure')
+ }finally{sql('ALTER TABLE workspace_fault RENAME TO workspace_control')}
+ assert.deepEqual(ok(await request('/health')),healthy,'storage recovery restores the same healthy deployment')
+ assert.deepEqual(ok(await request('/api/archive',undefined,cookie)),before,'failure and recovery lose no records')
+ console.log('OC-010 coordination health, deployment identity and honest command effects survive storage failure: local 503/recovery and read-only check/describe; paging not provided; capacity unmeasured')
+}
+
+
+// runtime-authority: part of this public journey.
+// Hold the last request byte on a real HTTP connection while another request
+// removes authority. No Worker hooks or substitute storage are involved.
+export async function heldMutation(origin, path, input, cookie, whileHeld) {
+  const bytes = Buffer.from(JSON.stringify(input));
+  let sent;
+  const response = new Promise((resolve, reject) => {
+    sent = http.request(origin + path, { method: 'POST', agent: false, headers: {
+      origin, cookie, 'content-type': 'application/json', 'content-length': bytes.length,
+    } }, res => {
+      const chunks = [];
+      res.on('data', chunk => chunks.push(chunk));
+      res.on('error', reject);
+      res.on('end', () => {
+        let value;
+        try { value = JSON.parse(Buffer.concat(chunks).toString()); }
+        catch { return reject(new Error('Held mutation returned a non-JSON response')); }
+        resolve({ status: res.statusCode, value });
+      });
+    });
+    sent.setTimeout(30000, () => sent.destroy(new Error('Held mutation timed out')));
+    sent.on('error', reject);
+  });
+  // Attach a rejection handler immediately, including when the intervening
+  // request fails and the held socket is destroyed during cleanup.
+  response.catch(() => {});
+  try {
+    await new Promise((resolve, reject) => sent.write(bytes.subarray(0, -1), error => error ? reject(error) : resolve()));
+    await whileHeld();
+    sent.end(bytes.subarray(-1));
+    return await response;
+  } finally {
+    sent.destroy();
+  }
+}
+
+export async function awaitingCoordinationAuthority({ origin, request, cookie, incident }) {
+  const ok = (r, status = 200) => { assert.equal(r.status, status, JSON.stringify(r.value)); return r.value; };
+  const password = 'synthetic-held-request-fixture-password';
+  const member = ok(await request('/api/members', { name: 'Held responder', role: 'responder', password }, cookie), 201);
+  const login = async () => { const r = await request('/api/login', { name: member.name, password }); ok(r); return r.cookie; };
+  const current = async () => ok(await request('/api/state', undefined, cookie));
+  for (const change of ['downgrade', 'revoke']) {
+    const actorCookie = await login();
+    const before = await current();
+    const item = before.incidents.find(row => row.id === incident);
+    let afterAuthority;
+    const result = await heldMutation(origin, '/api/command', {
+      type: 'note', incident, revision: item.revision, text: `Must not publish after ${change}`,
+    }, actorCookie, async () => {
+      ok(await request('/api/state', undefined, actorCookie));
+      if (change === 'downgrade') ok(await request('/api/command', { type: 'member', id: member.id, role: 'viewer', active: true }, cookie));
+      else ok(await request('/api/logout', {}, actorCookie));
+      afterAuthority = await current();
+    });
+    assert.ok([401, 403, 409].includes(result.status), `held ${change} mutation must be denied, got ${result.status}`);
+    assert.deepEqual(await current(), afterAuthority, `held ${change} cannot publish any coordination state`);
+    if (change === 'downgrade') ok(await request('/api/command', { type: 'member', id: member.id, role: 'responder', active: true }, cookie));
+  }
+}
+
 // Each request closes its connection: a pooled one the local Worker closed while the test read D1 through wrangler would fail the next request before it is sent.
 const fetch = (url, init = {}) => globalThis.fetch(url, { ...init, headers: { ...init.headers, connection: "close" } });
 let persist = await mkdtemp(join(tmpdir(), "oncall-test-"));
@@ -37,29 +132,8 @@ const migration = () => {
   );
   assert.equal(r.status, 0, r.stderr + r.stdout);
 };
-function sql(command) {
-  const r = spawnSync(
-    process.execPath,
-    [
-      ...cli,
-      "d1",
-      "execute",
-      "DB",
-      "--local",
-      "--persist-to",
-      persist,
-      "--command",
-      command,
-    ],
-    { encoding: "utf8" },
-  );
-  assert.equal(r.status, 0, r.stderr + r.stdout);
-}
-const rows = (command) => {
-  const r = spawnSync(process.execPath, [...cli, "d1", "execute", "DB", "--local", "--persist-to", persist, "--command", command, "--json"], { encoding: "utf8" });
-  assert.equal(r.status, 0, "query failed");
-  return JSON.parse(r.stdout)[0].results;
-};
+function sql(command) { fixtureDatabase(persist,command); }
+const rows=command=>fixtureDatabase(persist,command)[0];
 const sessionSecret = randomBytes(32).toString("hex");
 async function start() {
   worker = spawn(
@@ -152,8 +226,7 @@ async function auditedMutation(cookie, perform) {
   return { response, committed, before, after };
 }
 function auditSqlRefused(command) {
-  const result = spawnSync(process.execPath, [...cli, "d1", "execute", "DB", "--local", "--persist-to", persist, "--command", command], { encoding: "utf8" });
-  assert.notEqual(result.status, 0, "audit history refuses SQL mutation");
+  assert.throws(()=>fixtureDatabase(persist,command),'audit history refuses SQL mutation');
 }
 // OC-042 held signed-source custody survives upgrade, rotation, revocation and archive exclusion without secret echoes.
 async function heldSourceCustody(cookie, heldSignedKey, heldBearerKey, digest) {
@@ -943,7 +1016,6 @@ try {
   console.log('PASS OC-043 durable coordination workflow: frozen ordered plan, two committed steps, restart mid-workflow, explicit authorized resume, atomic audit-failure rollback with interrupted outcome, exact-once completion/replay and member-erasure/export custody');
 
 
-
   ok(
     await request(
       "/api/command",
@@ -1034,7 +1106,7 @@ await import("./automation.mjs");
 
 // OC-043 extends the same oc_triage workflow custody with declaration and recorded notification steps.
 {
- const {automationRuntime}=await import('./automation-runtime.mjs');const calls=[];
+ const {automationRuntime}=await import('./worker.mjs');const calls=[];
  const workflowRuntime=await automationRuntime(request=>{calls.push(request.url);return new Response('unexpected effect',{status:403});});
  try{
   const setup=await workflowRuntime.request('/api/setup',{name:'synthetic-oncall-443-owner',password:'synthetic-oncall-443-password'});assert.equal(setup.status,200);let currentCookie=setup.cookie;
@@ -1078,7 +1150,7 @@ await import("./automation.mjs");
 
 // OC-043 approved rule launch shares admission and existing oc_triage step custody.
 {
- const {automationRuntime}=await import('./automation-runtime.mjs'),effects=[];
+ const {automationRuntime}=await import('./worker.mjs'),effects=[];
  const runtime=await automationRuntime(request=>{effects.push(request.url);return new Response('refused',{status:403});});
  try{
   const setup=await runtime.request('/api/setup',{name:'synthetic-oncall-450',password:'synthetic-oncall-450-password'});assert.equal(setup.status,200);let session=setup.cookie;
@@ -1141,4 +1213,36 @@ await import("./automation.mjs");
   }
   console.log('PASS OC-043 approved rule workflows: atomic admission/first-step rollback, one run per generation, ordered zero-write replay, explicit version approval, frozen launch checklist, leased interruption and explicit clearance, concurrent resume 409, restart between steps, atomic step/audit, held restore and subject-erasure-safe export; recorded obligations only, paging OFF');
  }finally{await runtime.close();}
+}
+
+// The same emitted build must serve every public linked page in hosted mode.
+{
+const {default:assert}=await import('node:assert/strict')
+const {readdir,readFile}=await import('node:fs/promises')
+const {join}=await import('node:path')
+const {serveHosted}=await import('@runeditrun/rer/internal/cli/hosted-output.mjs')
+
+// Every page or file the app links, and every built HTML file, must answer when the build is served
+// the way rer deploy hosts it (the Worker runs before the static assets). A link that redirects and
+// then falls through to the app's 404 fails here, whichever file it names.
+const walk=async dir=>(await Promise.all((await readdir(dir,{withFileTypes:true})).map(e=>e.isDirectory()?walk(join(dir,e.name)):[join(dir,e.name)]))).flat()
+const links=new Set;for(const file of (await walk('src')).filter(f=>/\.tsx$/.test(f)))for(const m of (await readFile(file,'utf8')).matchAll(/href="(\/[^"#?]+)"/g))links.add(m[1])
+for(const file of (await walk('dist/client')).filter(f=>f.endsWith('.html')))links.add(file.slice('dist/client'.length))
+assert.ok(links.size>0,'the app links at least one built file')
+const hosted=await serveHosted(process.cwd())
+try{
+ const health=await hosted.fetch('health');assert.equal(health.status,200)
+ const body=await health.json();assert.equal(body.ok,true);assert.equal(body.storage,'available');assert.equal(body.target,'coordination');assert.equal(body.paging,'not-provided')
+ assert.deepEqual(body.deployment,hosted.identity,'the built hosted Worker reports the exact supplied source, fingerprint and version identity')
+ console.log('OC-010 hosted-mode production output: deployment identity matches; no provider deployment, delivery, drill or capacity result inferred')
+ for(const link of links) {
+  let path=link.slice(1),status
+  for(let hop=0;hop<3;hop++){const r=await hosted.fetch(path);await r.arrayBuffer();status=r.status;const next=r.headers.get('location');if(status<300||status>=400||!next)break;path=next.replace(/^\//,'')}
+  assert.equal(status,200,`${link} must answer 200 when hosted (ended at ${status})`)
+ }
+ const old=await hosted.fetch('move-in-guide');await old.arrayBuffer();assert.equal(old.headers.get('location'),'/docs/move-in','the old guide link leads to the docs page')
+ const guide=await (await hosted.fetch('docs/move-in')).text();assert.match(guide,/Move in from Opsgenie or PagerDuty/)
+ console.log(`Hosted links passed: ${links.size} linked page or file(s) answer 200 through the hosted Worker`)
+}finally{await hosted.close()}
+
 }

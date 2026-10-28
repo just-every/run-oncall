@@ -54,7 +54,7 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-A
 1. Anonymous, expired, revoked, viewer, responder and admin sessions each get their role's outcome on reads, commands, sources and archives, and a real HTTP mutation held open while its author is revoked or downgraded publishes nothing.
 2. Minimal intake receipts disclose no private routing data.
 
-**Evidence.** `src/api.ts`; `src/auth.server.ts`; `tests/runtime.mjs`; `tests/runtime-authority.mjs`
+**Evidence.** `src/api.ts`; `src/auth.server.ts`; `tests/runtime.mjs`; `tests/runtime.mjs`
 **Gap.** A responder session's permitted coordination and its refusal of administrator actions are not asserted in the cited tests (`tests/member-coordination-browser.mjs` shows a responder acknowledging and noting); anonymous, expired, revoked, viewer and admin outcomes, held downgrade and revoke mutations and minimal receipts are asserted. Workspace-wide roles are implemented; team isolation and federation are separate targets in OC-023/039.
 
 #### OC-004 — Incident state transitions
@@ -118,7 +118,7 @@ Core · published · **done** · Cites BASE-DATA-001, BASE-DATA-002, BASE-INPUT-
 2. Hostile structured text and runbook links display literally, with no script execution and no fetch.
 3. Authored history is preserved after restart and export.
 
-**Evidence.** `src/api.ts`; `src/native-incomplete.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/keyboard-coordination.mjs`; `tests/product-browser.mjs`
+**Evidence.** `src/api.ts`; `src/native-incomplete.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/product-browser-journey.mjs`; `tests/product-browser.mjs`
 **Gap.** None.
 
 #### OC-009 — Accessible interface
@@ -131,7 +131,7 @@ Core · published · **partial** · Cites BASE-ACCESSIBILITY-001, BASE-PUBLIC-00
 1. Run declaration, acknowledgment, notes, schedules, overrides and preview against BASE-ACCESSIBILITY-001.
 2. A real stale-write failure is announced with no saved claim.
 
-**Evidence.** `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/keyboard-coordination.mjs`; `tests/activation-browser.mjs`
+**Evidence.** `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/product-browser-journey.mjs`; `tests/product-browser-journey.mjs`
 **Gap.** Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. BASE-ACCESSIBILITY-001 is not established across every Oncall journey and the OC-029 apps; the human passes and the VPAT are register rows R-3 and R-4.
 
 #### OC-010 — Health and honest commands
@@ -144,7 +144,7 @@ Core · published · **partial** · Cites BASE-OPS-001 · Rules D-1
 1. check and describe run with storage available and unavailable, health reports both states, and the deployed identity matches the actual build.
 2. Local, hosted, provider and human-drill outcomes are recorded separately.
 
-**Evidence.** `src/api.ts`; `src/base/deployment-health.ts`; `OPERATIONS.json`; `tests/runtime.mjs`; `tests/coordination-health.mjs`; `tests/hosted.mjs`; `tests/transfer.mjs`
+**Evidence.** `src/api.ts`; `src/base/deployment-health.ts`; `OPERATIONS.json`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/transfer.mjs`
 **Gap.** No cited test records provider or human-drill outcomes separately from local and hosted ones; check, describe, storage-unavailable health with the deployed identity and the hosted build's identity are asserted. Coordination storage loss reports 503 with deployment identity and recovers without changed records. Paging health and capacity are unclaimed and inherited by OC-026–029/064.
 
 ### Scheduling and held history
@@ -171,7 +171,7 @@ Core · published · **partial**
 1. On a normal installation, each delivery, job, tick, callback and resume door returns the paging-OFF refusal and creates no receipt.
 2. Demo simulations are treated as simulations.
 
-**Evidence.** `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/demo.mjs`
+**Evidence.** `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation.mjs`
 **Gap.** The refusal's paging-OFF explanation and the demo's simulation label are not read back by the cited tests; each door's refusal and the absence of receipts are asserted. No production paging authorization is created by this contract.
 
 #### OC-013 — Held history stays historical
@@ -183,7 +183,7 @@ Core · published · **done**
 **Acceptance.**
 1. Restore held synthetic jobs, receipts and callbacks: pending work is paused, acknowledgment and cancellation keep their attribution, resume is refused, and incident recovery remains unchanged.
 
-**Evidence.** `src/family/response-operations/escalation.ts`; `src/paging-api.ts`; `tests/paging-history.mjs`; `tests/activation.mjs`
+**Evidence.** `src/family/response-operations/escalation.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs`
 **Gap.** None.
 
 #### OC-014 — Side-effect-free previews
@@ -207,7 +207,7 @@ Core · published · **partial** · Cites BASE-DATA-001
 **Acceptance.**
 1. Round-trip the strict module archive through protected HTTP; unknown fields, broken references and an injected SQL failure are rejected atomically, callbacks are retained and pending historical jobs pause.
 
-**Evidence.** `src/family/response-operations/paging-archive.ts`; `src/paging-api.ts`; `tests/paging-history.mjs`; `tests/activation.mjs`
+**Evidence.** `src/family/response-operations/paging-archive.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs`
 **Gap.** No cited test shows the module archive door refusing an unauthenticated or non-admin caller; the round trip, strict refusals, SQL rollback, retained callbacks and paused jobs are asserted.
 
 ### Consistent recovery checkpoint
@@ -251,7 +251,7 @@ Core · published · **partial** · Cites BASE-INSTALL-001, BASE-ACCESS-001, BAS
 **Acceptance.**
 1. The documented setup, dev, build, preview, reset, archive and deploy dry-run commands run, owner entry opens the workspace, and an admin-created member signs in by password.
 
-**Evidence.** `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/signin-browser.mjs`; `tests/member-coordination-browser.mjs`; `tests/activation-browser.mjs`
+**Evidence.** `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/member-coordination-browser.mjs`; `tests/member-coordination-browser.mjs`; `tests/product-browser-journey.mjs`
 **Gap.** No cited test asserts `rer build` or the deploy dry-run; setup, dev, preview, reset, archive, owner entry and member password sign-in are asserted. The real-account hosted journey is register row R-1; no maintained test repeats the account steps.
 
 #### OC-019 — Additive upgrade
@@ -263,7 +263,7 @@ Core · published · **done** · Cites BASE-OPS-002
 **Acceptance.**
 1. Seed the held one-row SQL data and migrate: the held password signs in, and every entity, nested history and original ordering compares equal through HTTP; a repeated migration and restart silently reassign nothing to Base identity.
 
-**Evidence.** `src/workspace-store.ts`; `migrations/core/0106_relational_workspace.sql`; `tests/runtime.mjs`; `tests/runtime-held-workspace.mjs`
+**Evidence.** `src/workspace-store.ts`; `migrations/core/0106_relational_workspace.sql`; `tests/runtime.mjs`; `tests/runtime.mjs`
 **Gap.** None.
 
 #### OC-020 — Now/next and calendar feed
@@ -275,7 +275,7 @@ Core · published · **partial**
 **Acceptance.**
 1. Read now/next and the authenticated ICS feed for the seven-day default and bounded explicit windows: primary and backup UTC boundaries, overrides and gaps are correct, unauthenticated access is denied, and admission starts no paging.
 
-**Evidence.** `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation-browser.mjs`
+**Evidence.** `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/product-browser-journey.mjs`
 **Gap.** The seven-day default, the 31-day bound on explicit windows, the separate backup feed, gaps in the feed and paging-free admission are not asserted in the cited tests; now/next, an authenticated explicit-window feed with override boundaries and unauthenticated refusal are asserted. Private ICS downloads support Google Calendar/Outlook import; persistent subscription credentials are OC-025.
 
 #### OC-021 — Move-in preview
@@ -287,7 +287,7 @@ Core · published · **done**
 **Acceptance.**
 1. Following the provider export instructions, saved Opsgenie and PagerDuty list and detail bundles preview with zero native-object writes, exact rejected and unmapped rules and fingerprints are shown, and the apply stays paused, with people and services explicitly mapped before native coverage is adopted.
 
-**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`; `tests/provider-export-browser.mjs`; `tests/import-door.mjs`
+**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/product-browser-journey.mjs`; `tests/import-door.mjs`
 **Gap.** None.
 
 #### OC-022 — Resume and undo
@@ -299,7 +299,7 @@ Core · published · **partial**
 **Acceptance.**
 1. Apply, interrupt and restart, resume and undo both vendor imports over HTTP; revoke authority at publication, inject an SQL failure, replay unchanged and changed identities, and preserve native edits as named undo conflicts.
 
-**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`; `tests/import-door.mjs`; `tests/import-door-catchup.mjs`
+**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`
 **Gap.** Synthetic signed standing replacement/addition, restart/reconcile and newest-first undo are exercised; gone/over-allowance/native-edit refusals preserve records and paging stays OFF. No cited test resumes an interrupted import to completion: the restart in the shape journey falls between apply calls without asserting the job was unfinished, and the lease-expired import is refused and rolled back. Apply, interruption, restart, undo, revoked authority, SQL rollback, idempotent and conflicting replays and named undo conflicts are asserted.
 
 ### Complete category job
@@ -328,8 +328,8 @@ Core · target · **partial** · Register R-14
 1. Build New York/Los Angeles/London handoffs, add a US holiday and approved PTO in Google and Outlook, inspect a DST weekend and uncovered interval, then apply a reviewed layer change and compare actual paging targets to the preview.
 2. During the New York-to-London handoff, page the London responder through their verified UK voice and SMS routes under OC-066, and see a shift held by a responder with only one verified route flagged as degraded in the preview.
 
-**Evidence.** `src/schedule-coverage/review.ts`; `src/schedule-coverage/ReviewedChange.tsx`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/product-schedule-browser.mjs`; `docs/schedules.md`
-**Gap.** P1: 366-day bounded coverage and digest-bound review in `src/family/response-operations/schedules.ts` and `src/schedule-coverage/review.ts`. P2: ordered named-zone layers and explicit precedence in `src/schedule-coverage/layers.ts`. P3: selected federal observed holidays and revisioned company dates. P4: stored PTO and reviewed local ICS upload in `src/schedule-api.ts` and `src/schedule-coverage/pto-ics.ts`; existing rota editor controls in `src/schedule-coverage/CoverageRules.tsx`; member-owned PTO and ICS at `/api/schedules/:id/pto-review` and `/api/schedules/:id/pto-apply` scoped by `memberPTO` in `src/teams/model.ts`; public-door proof in `tests/schedule-coordination.mjs` (PASS OC-024 member PTO) and `tests/product-schedule-browser.mjs` (ordinary-member browser 1440). Public Worker journeys in `tests/schedule-coordination.mjs`; browser journey in `tests/product-schedule-browser.mjs`; custody in `tests/transfer.mjs` and `tests/checkpoint-cli.mjs`. Gap: Google and Outlook consent-based PTO import (R-14: dated one-time owner-role evidence, not run); verified-route counts and degraded coverage (OC-076 and OC-066); real-phone London handoff; paging OFF.
+**Evidence.** `src/schedule-coverage/review.ts`; `src/schedule-coverage/ReviewedChange.tsx`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/product-browser-journey.mjs`; `docs/schedules.md`
+**Gap.** P1: 366-day bounded coverage and digest-bound review in `src/family/response-operations/schedules.ts` and `src/schedule-coverage/review.ts`. P2: ordered named-zone layers and explicit precedence in `src/schedule-coverage/layers.ts`. P3: selected federal observed holidays and revisioned company dates. P4: stored PTO and reviewed local ICS upload in `src/schedule-api.ts` and `src/schedule-coverage/pto-ics.ts`; existing rota editor controls in `src/schedule-coverage/CoverageRules.tsx`; member-owned PTO and ICS at `/api/schedules/:id/pto-review` and `/api/schedules/:id/pto-apply` scoped by `memberPTO` in `src/teams/model.ts`; public-door proof in `tests/activation.mjs` (PASS OC-024 member PTO) and `tests/product-browser-journey.mjs` (ordinary-member browser 1440). Public Worker journeys in `tests/activation.mjs`; browser journey in `tests/product-browser-journey.mjs`; custody in `tests/transfer.mjs` and `tests/checkpoint-cli.mjs`. Gap: Google and Outlook consent-based PTO import (R-14: dated one-time owner-role evidence, not run); verified-route counts and degraded coverage (OC-076 and OC-066); real-phone London handoff; paging OFF.
 
 #### OC-025 — Swaps, reminders and calendar subscriptions
 
@@ -340,7 +340,7 @@ Core · target · **partial** · Register R-14
 **Acceptance.**
 1. Request, accept and race two swaps, reject an unauthorized substitute, revoke a calendar subscription, view the effective rotation in Google/Outlook, and observe automatic change/reminder delivery plus a visible failed-notification outcome.
 
-**Evidence.** `src/schedule-coordination/`; `src/calendar.ts`; `src/schedule-api.ts`; `src/paging-store.ts`; `tests/activation.mjs`; `tests/schedule-coordination.mjs`; `tests/automation.mjs`; `tests/move-in-adoption.mjs`; `tests/product-schedule-browser.mjs`; `tests/schedule-coordination-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`
+**Evidence.** `src/schedule-coordination/`; `src/calendar.ts`; `src/schedule-api.ts`; `src/paging-store.ts`; `tests/activation.mjs`; `tests/activation.mjs`; `tests/automation.mjs`; `tests/import-door.mjs`; `tests/product-browser-journey.mjs`; `tests/member-coordination-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`
 **Gap.** Current holders name one substitute and a bounded interval. Only that substitute accepts or declines; the versioned none/admin setting starts at workspace admin approval. Acceptance revision-checks one override, keeps the other role's effective holder at every boundary, and commits its recorded notices with the permanent audit; racing decisions commit once. Requesters cancel, and overdue requests remain undecided. Each affected configured responder and service owner gets one schedule-change recorded obligation, visibly not deliverable without a verified channel. Per-member reminder lead/channel settings show a due time and not sent (no timer). Schedule/service/own-shift bearer feeds expose schedule windows only, show the raw URL once, store its hash and support at most 20 subscription records per member; owner/admin revocation refuses immediately without changing assignments. The new category is validated and audited, transfers and restores inactive with cleared hashes, and participates in subject erasure. Gap: mobile (OC-029), team managers/privacy (OC-023), dated Google/Outlook viewing not run (R-14). Automatic notice delivery is OC-077 and reminder delivery OC-027 (RL-3). PARTIAL; paging OFF.
 
 #### OC-026 — Native US phone, SMS, push and email paging
@@ -473,8 +473,8 @@ Core · target · **partial** · Rules D-3 · Register R-12
 1. Use each provider's supported test/send door then fire and recover a real rule; repeat/reorder a grouped webhook, reject forged auth and malformed payloads, and inspect one correct incident generation and public-door rejection diagnostics.
 2. Install one Alertmanager adapter on an OC-072 routed key and observe alerts with different `team` labels on their own services.
 
-**Evidence.** `src/monitoring/api.ts`; `src/monitoring/providers.ts`; `src/integrations/SourcePage.tsx`; `tests/monitoring.mjs`; `docs/monitoring-providers.md`
-**Gap.** Bearer-authenticated Alertmanager/Grafana groups and explicit Datadog templates retain provider identities, precise generations, bounded context and source links. Retry/reordering, recovery tombstones, old-cycle recovery, routed labels/tags, named local checks and rejection diagnostics are maintained tests; a local check is not provider acceptance. The real-provider journey (each provider's own test/send door, then fire and recover a real rule, and an Alertmanager on a routed key) has not been run (R-12, RL-7). Datadog's journey needs an owner Datadog account and a provider-reachable deployment. Grafana optionally requires a sealed per-integration HMAC-SHA256 secret with bearer authentication, raw-body or timestamp:body verification, timestamp checks, named rejection diagnostics, rotation fences and audit rollback. `tests/monitoring.mjs` — **OC-030 optional Grafana HMAC**; `tests/product-browser.mjs` — **OC-065/030 templates and signing settings** at 1440/390. Header/signing assumptions remain unverified against a live sender. Intake capacity is the explicit local receipt guard (429); team privacy is OC-023's, mobile OC-029's, paging OC-026's and measured load OC-064's.
+**Evidence.** `src/monitoring/api.ts`; `src/monitoring/providers.ts`; `src/integrations/SourcePage.tsx`; `tests/intake.mjs`; `docs/monitoring-providers.md`
+**Gap.** Bearer-authenticated Alertmanager/Grafana groups and explicit Datadog templates retain provider identities, precise generations, bounded context and source links. Retry/reordering, recovery tombstones, old-cycle recovery, routed labels/tags, named local checks and rejection diagnostics are maintained tests; a local check is not provider acceptance. The real-provider journey (each provider's own test/send door, then fire and recover a real rule, and an Alertmanager on a routed key) has not been run (R-12, RL-7). Datadog's journey needs an owner Datadog account and a provider-reachable deployment. Grafana optionally requires a sealed per-integration HMAC-SHA256 secret with bearer authentication, raw-body or timestamp:body verification, timestamp checks, named rejection diagnostics, rotation fences and audit rollback. `tests/intake.mjs` — **OC-030 optional Grafana HMAC**; `tests/product-browser.mjs` — **OC-065/030 templates and signing settings** at 1440/390. Header/signing assumptions remain unverified against a live sender. Intake capacity is the explicit local receipt guard (429); team privacy is OC-023's, mobile OC-029's, paging OC-026's and measured load OC-064's.
 
 #### OC-031 — AWS CloudWatch and SNS intake
 
@@ -513,7 +513,7 @@ Core · target · **partial** · Rules D-3 · Register R-2
 3. Send a repeated failure subject and then a resolve-rule mail to an address in OC-070 custom-rule mode, and observe one generation whose paging stops by source recovery.
 
 **Evidence.** `src/server.ts`; `src/email/`; `tests/intake.mjs`; `tests/routing.mjs`; `tests/transfer.mjs`; `docs/compatible-intake.md`; `docs/incidents.md`
-**Gap.** Signed Events API admission is not asserted in the cited tests (`tests/runtime.mjs` and `tests/routing-native.mjs` hold it), and no cited test repeats a failure subject under custom rules before the resolve; bearer events, email receipts, deduplication, revocation, limits, spoofing, malformed MIME, quarantine diagnostics, refusal of unauthorized reads and writes and source-recovery stops are asserted. A real inbound provider email is register row R-2.
+**Gap.** Signed Events API admission is not asserted in the cited tests (`tests/runtime.mjs` and `tests/routing.mjs` hold it), and no cited test repeats a failure subject under custom rules before the resolve; bearer events, email receipts, deduplication, revocation, limits, spoofing, malformed MIME, quarantine diagnostics, refusal of unauthorized reads and writes and source-recovery stops are asserted. A real inbound provider email is register row R-2.
 
 #### OC-034 — Slack and Microsoft Teams response
 
@@ -552,7 +552,7 @@ Core · target · **partial** · Rules D-3, D-4 · Register R-12
 1. Resolve with open critical work, generate review material, accept a correction and create a Jira, Linear, GitHub and GitLab follow-up.
 2. Advance due time with the browser shut, reopen a remote issue and revoke its connector; verify reminders, escalation, synchronization/conflicts and evidence-required completion without erasing history.
 
-**Evidence.** `src/reviews/material.ts`; `src/reviews/review-controls.ts`; `src/reviews/ReviewsHome.tsx`; `src/reviews/ReviewSheet.tsx`; `tests/reviews.mjs`; `docs/reviews.md`
+**Evidence.** `src/reviews/material.ts`; `src/reviews/review-controls.ts`; `src/reviews/ReviewsHome.tsx`; `src/reviews/ReviewSheet.tsx`; `tests/runtime.mjs`; `docs/reviews.md`
 **Gap.** Generated source-attributed observations, literal human assertions, response source entries, changes and follow-ups remain separate from revision-bound human acceptance of root cause, impact and review. Accepted assessments retain immutable timeline snapshots. Priority, UTC due dates, manual escalation contacts and evidence/human-review completion policies ship; P1 evidence submission stays open until explicit acceptance. Automatic reminders/escalation, recurring review, hypotheses/chat context and remote ticket synchronization remain missing.
 
 #### OC-037 — Response analytics and fair on-call load
@@ -564,7 +564,7 @@ Core · target · **partial**
 **Acceptance.**
 1. Run a known sequence of resolved, open, never-acknowledged, late, repeated and imported incidents across DST and after-hours shifts; compare dashboard/CSV/API figures with source timelines and coverage hours, inspect an interruption-fairness imbalance and refuse foreign-team exports.
 
-**Evidence.** `src/reviews/report.ts`; `src/reviews/load.ts`; `src/reviews/noise.ts`; `src/reviews/csv.ts`; `src/reviews/api.ts`; `src/reviews/ResponseReport.tsx`; `src/family/response-operations/schedules.ts`; `tests/reviews.mjs`; `docs/reviews.md`
+**Evidence.** `src/reviews/report.ts`; `src/reviews/load.ts`; `src/reviews/noise.ts`; `src/reviews/csv.ts`; `src/reviews/api.ts`; `src/reviews/ResponseReport.tsx`; `src/family/response-operations/schedules.ts`; `tests/runtime.mjs`; `docs/reviews.md`
 **Gap.** Imported incidents, late acknowledgment, after-hours shifts, the dashboard's figures and foreign-team export refusal are not asserted in the cited test; resolved, open and never-acknowledged cohorts, DST hours, repeat and noisy alerts, CSV and API figures against coverage hours and the fairness ratio are asserted. Page volume/delivery (OC-026/064), escalation/reassignment latency (OC-027), after-hours interruptions (OC-024/026), team load and export scope (OC-023), import provenance (OC-038), erasure-proof denominators (OC-040) and verified recovery (OC-048) are inherited.
 
 #### OC-038 — Complete incumbent migration and controlled cutover
@@ -581,7 +581,7 @@ Core · target · **partial** · Rules D-2, D-3 · Register R-11
 5. Opsgenie migration has a dated readiness checklist for its announced 5 April 2027 shutdown; current provider/export availability must be checked at execution.
 6. Import the complete OC-070 PagerDuty email settings and Opsgenie email filters, and read a mapping report that names each unconvertible rule with its original kept for review.
 
-**Evidence.** `src/move-in/vendor-formats.ts`; `src/move-in/source.ts`; `src/move-in/mapping.ts`; `src/move-in/SavedExportHelp.tsx`; `tests/move-in-adoption.mjs`; `tests/import-door.mjs`; `tests/product-import-browser.mjs`; `tests/transfer.mjs`; `docs/move-in.md`
+**Evidence.** `src/move-in/vendor-formats.ts`; `src/move-in/source.ts`; `src/move-in/mapping.ts`; `src/move-in/SavedExportHelp.tsx`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/product-browser-journey.mjs`; `tests/transfer.mjs`; `docs/move-in.md`
 **Gap.** Splunk On-Call, JSM Ops and Better Stack saved responses use the reviewed apply/restart/reconcile/undo path. JSM single rotations use the strict converter; imported integration inventory stays inactive and keyless, contacts unverified, unsupported objects individually retained with erasable source provenance. Gap: unverified live-account export shapes; Splunk/Better Stack recurring schedule conversion; complete contact/team/service/history conversion; live-API pull and account reconciliation; real-phone cutover and parallel routing (OC-026–029); Terraform (OC-062), automation actions (OC-063), routed-key import (OC-083), chat (OC-067), email modes (OC-070), business services (OC-061). No delivery or login grants. Live cutover and parallel routing are receiving duties in OC-026–029, and live-API pull and account reconciliation are co-held with OC-074 (RL-3, RL-5).
 
 #### OC-074 — Live incumbent API pull and account reconciliation
@@ -606,7 +606,7 @@ Core · target · **partial** · Cites BASE-SIGNIN-001, BASE-SIGNIN-002, BASE-RO
 1. Invite a responder, sign in through Google Workspace, Okta, Entra and a generic SAML provider under OC-069, require step-up to edit paging credentials, deprovision via SCIM while a write is in flight, and exercise documented emergency access during IdP loss.
 2. Verify standby revocation reconciliation and a visible coverage gap.
 
-**Evidence.** `src/auth.server.ts`; `src/api.ts`; `tests/runtime-authority.mjs`; `tests/signin-browser.mjs`
+**Evidence.** `src/auth.server.ts`; `src/api.ts`; `tests/runtime.mjs`; `tests/member-coordination-browser.mjs`
 **Gap.** Native owner email links and admin-created local member passwords exist; invitations, federated identity, MFA and SCIM are not adopted product flows. SSO/SCIM stakeholder assignment (OC-061) remains unbuilt.
 
 #### OC-040 — Retention, erasure and custody
@@ -619,7 +619,7 @@ Core · target · **partial** · Cites BASE-DATA-002, BASE-DATA-003, BASE-DATA-0
 1. Erase an imported person including filenames, plans and indirect schedule references, then erase native contact/incident/connector data and inspect all local/standby/export copies and receipts.
 2. Restore with a later erasure journal, inject a failure and race a send; prove rollback or a visible incomplete state, explicit schedule gaps and no success before all owned custody is handled.
 
-**Evidence.** `src/subject-erasure.ts`; `src/changes/erasure.ts`; `src/move-in/erasure.ts`; `src/move-in/native-erasure.ts`; `src/subject-erasure-identity.ts`; `tests/activation.mjs`; `tests/automation.mjs`; `tests/checkpoint-cli.mjs`; `tests/transfer.mjs`; `tests/product-browser.mjs`; `docs/data.md`; `docs/changes.md`; `tests/reviews.mjs`; `tests/migration-upgrade.mjs`; `migrations/core/0144_erased_report_cases.sql`
+**Evidence.** `src/subject-erasure.ts`; `src/changes/erasure.ts`; `src/move-in/erasure.ts`; `src/move-in/native-erasure.ts`; `src/subject-erasure-identity.ts`; `tests/activation.mjs`; `tests/automation.mjs`; `tests/checkpoint-cli.mjs`; `tests/transfer.mjs`; `tests/product-browser.mjs`; `docs/data.md`; `docs/changes.md`; `tests/runtime.mjs`; `tests/activation.mjs`; `migrations/core/0144_erased_report_cases.sql`
 **Gap.** Exact imported-person custody/fence proof and local change-event erasure exist. `src/subject-erasure.ts`; `tests/activation.mjs` (activation, **OC-040 incident erasure**, **integration erasure**); `tests/automation.mjs` via runtime (**OC-040 integration erasure**) exercise native incident/credential custody, failure rollback, queued/in-flight delivery races and stale/forged-journal restore refusal; `tests/product-browser.mjs` asserts the existing erasure form at 1440/390. Change erasure commits per-table local counts, last-receipt cleanup, transfer-copy invalidation, retry/restore fences and identity unlinking; audit failure rolls back and completion explicitly excludes standby reconciliation. OC-028 standby reconciliation remains incomplete. Cross-site erasure must reconcile standby before success is claimed. Email integration erasure uses the shared receipt, source unlinking, credential deletion, transfer invalidation, permanent-audit identity unlinking and restore/reuse fences; `tests/intake.mjs` (intake — **OC-040 email integration erasure**) proves authority, stale refusal, audit/table rollback, committed counts and restart; `tests/product-browser.mjs` (product-browser) proves its review and receipt at 1440/390. Linked imported integration originals/plans and both incumbent/native credentials retire atomically through `src/move-in/native-erasure.ts`; `tests/activation.mjs` (**OC-040 imported integration erasure**) proves rollback and committed per-store counts, with the receipt at 1440/390 in product-browser. Conflicting imported bindings refuse without erasure. Native incident and native/routed/change/API integration erasure use the shared committed receipt, transfer-copy invalidation, restore fences and permanent-audit identity unlinking. Sending and uncleared uncertain/expired-lease response work refuses erasure with 409; queued work is removed atomically. Already-sent external messages cannot be recalled. Receiving Gap from OC-065: change-event local object erasure is exercised; cross-site custody still needs OC-028 standby reconciliation. Mixed source sentences remain in OC-065.
 
 #### OC-041 — Durable operational audit
@@ -661,8 +661,8 @@ Core · target · **partial** · Rules D-1, D-2, D-4
 3. Send events through an OC-072 routed key into a service with orchestration rules, and observe routing before the service rules, with both rule versions in the explanation.
 4. Orchestration automation proves door rule D-1: atomic rollback, subject-erasure-safe export and interruption at the execution boundary.
 
-**Evidence.** `src/orchestration/correlation.ts`; `src/orchestration/Settings.tsx`; `src/family/response-operations/domain.ts`; `src/routing/preview.ts`; `tests/routing.mjs`; `tests/urgency.mjs`; `tests/runtime.mjs`; `tests/product-browser.mjs`; `tests/transfer.mjs`; `docs/routed-intake.md`; `src/triage-orchestration.ts`; `tests/triage-bulk-browser.mjs`; `src/orchestration/transformation.ts`; `src/orchestration/workflows.ts`; `src/orchestration/workflow-api.ts`
-**Gap.** Routed-key selection precedes versioned service grouping and OC-057 urgency. Declared keys/titles/provider labels group inside original-event timestamp windows; missing fields, exact-end and other-environment signals stay visible. Direct-dependency association, both original/current service-rule versions and the preceding routing version are retained. Independent source/service/generation identity, severity and immutable originals remain; completed/retriggered flapping generations are held as one visible source signal with a reason. Private ordered replay compares grouping and both urgency decisions with zero durable/permanent-audit writes; initial urgency lowering requires the explicit OC-057 rule and never silently lowers an open high alert. Audit rollback, restart/duplicate admission, original-integration erasure references and inactive archive/checkpoint/portable custody are exercised. Finite maintenance remains admission-time and timer-free. `tests/runtime.mjs` (runtime — **OC-043 durable coordination workflow**) proves a frozen ordered selected-alert reassignment plan in existing triage custody, restart after two committed steps, explicit authorized resume, atomic audit rollback with interrupted outcome, completed-step idempotency and recipient-erasure/export custody. `tests/triage-bulk-browser.mjs` via product-browser proves authoring, saved pending progress after reload and completion at 1440/390. No timer or sender runs. Rule-launched recorded workflows retain pending declaration/notification steps until explicit authorized resume; unattended continuation and live responder delivery remain unproved under OC-027/OC-026/OC-042, with paging OFF. Retained scope: "severity/urgency transformations"; "no noise rule deletes evidence or silently lowers severity"; "Durable idempotent workflows can declare an incident, notify responders and launch approved coordination steps; dry-run/replay produces an ordered comparison without effects." OC-041 inheritance remains binding: "Orchestration automation must commit accepted state with its permanent audit entry and retain a durable failed, interrupted or uncertain outcome on crash or lease expiry before shipping. Its own acceptance proves atomic rollback, subject-erasure-safe export and interruption at the execution boundary."
+**Evidence.** `src/orchestration/correlation.ts`; `src/orchestration/Settings.tsx`; `src/family/response-operations/domain.ts`; `src/routing/preview.ts`; `tests/routing.mjs`; `tests/routing.mjs`; `tests/runtime.mjs`; `tests/product-browser.mjs`; `tests/transfer.mjs`; `docs/routed-intake.md`; `src/triage-orchestration.ts`; `tests/product-browser-journey.mjs`; `src/orchestration/transformation.ts`; `src/orchestration/workflows.ts`; `src/orchestration/workflow-api.ts`
+**Gap.** Routed-key selection precedes versioned service grouping and OC-057 urgency. Declared keys/titles/provider labels group inside original-event timestamp windows; missing fields, exact-end and other-environment signals stay visible. Direct-dependency association, both original/current service-rule versions and the preceding routing version are retained. Independent source/service/generation identity, severity and immutable originals remain; completed/retriggered flapping generations are held as one visible source signal with a reason. Private ordered replay compares grouping and both urgency decisions with zero durable/permanent-audit writes; initial urgency lowering requires the explicit OC-057 rule and never silently lowers an open high alert. Audit rollback, restart/duplicate admission, original-integration erasure references and inactive archive/checkpoint/portable custody are exercised. Finite maintenance remains admission-time and timer-free. `tests/runtime.mjs` (runtime — **OC-043 durable coordination workflow**) proves a frozen ordered selected-alert reassignment plan in existing triage custody, restart after two committed steps, explicit authorized resume, atomic audit rollback with interrupted outcome, completed-step idempotency and recipient-erasure/export custody. `tests/product-browser-journey.mjs` via product-browser proves authoring, saved pending progress after reload and completion at 1440/390. No timer or sender runs. Rule-launched recorded workflows retain pending declaration/notification steps until explicit authorized resume; unattended continuation and live responder delivery remain unproved under OC-027/OC-026/OC-042, with paging OFF. Retained scope: "severity/urgency transformations"; "no noise rule deletes evidence or silently lowers severity"; "Durable idempotent workflows can declare an incident, notify responders and launch approved coordination steps; dry-run/replay produces an ordered comparison without effects." OC-041 inheritance remains binding: "Orchestration automation must commit accepted state with its permanent audit entry and retain a durable failed, interrupted or uncertain outcome on crash or lease expiry before shipping. Its own acceptance proves atomic rollback, subject-erasure-safe export and interruption at the execution boundary."
 
 #### OC-044 — US operating boundaries and transparent cost
 
@@ -717,7 +717,7 @@ Core · target · **partial** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT
 2. Supply malformed/over-limit/erased/unknown records and inject storage/concurrency faults; preserve the full prior state.
 3. Deny optional AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.
 
-**Evidence.** `scripts/installer/archive-policy.mjs`; `src/portability-policy.mjs`; `tests/transfer.mjs`; `tests/transfer-door.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`
+**Evidence.** `scripts/installer/archive-policy.mjs`; `src/portability-policy.mjs`; `tests/transfer.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`
 **Gap.** No cited test denies optional AI network access while native coordination runs, verifies literal input, or checks for the absence of an undeclared public embed or upload door; populated HTTP and CLI export, inactive restore with local reauthorization, refusal of malformed, over-limit, erased and unknown records and rollback under storage and concurrency faults are asserted. All current durable categories restore inactive without authority or replay.
 
 #### OC-053 — Public API, outbound events and reliable automation
@@ -732,7 +732,7 @@ Core · target · **done** · Rules D-1, D-2, D-3
 3. API automation and outbound outbox delivery prove door rule D-1: an audit failure rolls back state and outbox together, export stays safe after subject erasure, and a send interrupted at dispatch keeps an uncertain outcome.
 4. Under door rule D-2, a restored installation keeps client and recipient definitions and delivery history, holds outbox work inactive and carries no token or signing custody.
 
-**Evidence.** `tests/automation.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/automation-browser.mjs`
+**Evidence.** `tests/automation.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/product-browser-journey.mjs`
 **Gap.** None.
 
 #### OC-054 — Operational readiness and switching acceptance
@@ -764,7 +764,7 @@ Core · target · **partial** · Rules D-3
 5. Verify incumbent-shaped responses, no cross-service effect and protected-state receipts.
 6. Repeat the Alertmanager journey through one OC-072 routed key and observe each team's alert on its own service with its own generation.
 
-**Evidence.** `src/intake/api.ts`; `src/intake/providers.ts`; `src/intake/incumbent.ts`; `src/intake/IncumbentActivation.tsx`; `tests/intake.mjs`; `tests/move-in-adoption.mjs`; `tests/product-import-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/routing.mjs`; `docs/compatible-intake.md`
+**Evidence.** `src/intake/api.ts`; `src/intake/providers.ts`; `src/intake/incumbent.ts`; `src/intake/IncumbentActivation.tsx`; `tests/intake.mjs`; `tests/import-door.mjs`; `tests/product-browser-journey.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/routing.mjs`; `docs/compatible-intake.md`
 **Gap.** Service-bound and routed compatible intake retains derived generations, attributed acknowledgment and no-effect receipts. Reviewed keyless integration inventory has separate administrator key supply, inactive hash-only custody, explicit activation accepting incumbent and native keys, rotation/revocation, atomic audit rollback and keyless inactive restore. PD v1/v2 identity bounds are 255, Opsgenie 512; identities are refused rather than truncated. Gap: live unmodified sender acceptance (PagerDuty, Opsgenie, Splunk, Datadog and Alertmanager), routed-key import, complete provider character rules and confirmed Splunk/key limits remain unobserved; Splunk 200 and printable-key rules are conservative local assumptions. Proxy URL-log redaction is an operator duty, not proved by these local application tests. Incomplete intake remains OC-059; paging stays OFF.
 
 #### OC-056 — Alert-only pages, and source recovery that stops paging
@@ -776,7 +776,7 @@ Core · target · **done** · Rules D-2
 **Acceptance.**
 1. Recover an email-triggered page with an OC-070 resolve-rule mail and observe the same stopped-by-recovery outcome.
 
-**Evidence.** `src/response-policy/`; `src/alert-obligation.ts`; `tests/triage.mjs`; `tests/runtime.mjs`; `tests/intake.mjs`; `tests/monitoring.mjs`; `tests/product-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `docs/incidents.md`
+**Evidence.** `src/response-policy/`; `src/alert-obligation.ts`; `tests/triage.mjs`; `tests/runtime.mjs`; `tests/intake.mjs`; `tests/intake.mjs`; `tests/product-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `docs/incidents.md`
 **Gap.** None.
 
 #### OC-057 — Urgency, support hours and per-urgency notification
@@ -795,7 +795,7 @@ Core · target · **partial**
 7. Replay the policy across a DST change.
 8. Until timers ship, observe the open low alert's not-automatic support-start label and its next support start.
 
-**Evidence.** `src/urgency/rules.ts`; `src/urgency/support-hours.ts`; `src/urgency/model.ts`; `src/urgency/api.ts`; `src/urgency/UrgencyPolicy.tsx`; `src/urgency/AlertUrgency.tsx`; `tests/urgency.mjs`
+**Evidence.** `src/urgency/rules.ts`; `src/urgency/support-hours.ts`; `src/urgency/model.ts`; `src/urgency/api.ts`; `src/urgency/UrgencyPolicy.tsx`; `src/urgency/AlertUrgency.tsx`; `tests/routing.mjs`
 **Gap.** Low-urgency-only notification, the absence of voice, SMS and escalation past level one, the 09:00 raise and escalation start, escalation of a high alert and the not-automatic support-start label are not asserted in the cited test, because paging is OFF, Oncall has no timer and the label is not read; the urgency decisions, severity mapping, no silent lowering, the attributed human change and DST previews are asserted. Applying the raise is carried by OC-027 and OC-078, per-urgency notification rules by OC-026, low-urgency escalation behavior by OC-027 and the alert triage list by OC-060; paging stays OFF.
 
 #### OC-058 — Snooze and acknowledgment-timeout re-trigger
@@ -812,7 +812,7 @@ Core · target · **partial** · Rules D-4
 5. Restart workers at the deadline and observe exactly one re-trigger.
 6. Recover the source mid-snooze and observe no re-page.
 
-**Evidence.** `src/incident-deadlines/`; `src/server.ts`; `tests/triage.mjs`; `tests/urgency.mjs`; `tests/automation.mjs`; `tests/member-coordination-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`
+**Evidence.** `src/incident-deadlines/`; `src/server.ts`; `tests/triage.mjs`; `tests/routing.mjs`; `tests/automation.mjs`; `tests/member-coordination-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`
 **Gap.** Absolute incident snooze and acknowledgment-timeout deadlines persist with actor, duration, due time and outcome. A scheduled workspace/schedule revision guard records one deterministic non-automatic re-trigger obligation, resolves current coverage at firing, and retains an operator-visible failure when the recorded level has no eligible on-call. Default timeout is off; admin publication is versioned. Resolution, source recovery and cancellation stop pending work. Archive, checkpoint and portable recovery retain deadlines held without resuming execution; erasure severs destinations. Gap: actual deadline delivery (OC-026), the unmeasured OC-064 lateness bar, standby takeover (OC-028), Slack/Teams (OC-067), mobile (OC-029) and actual alert-only deadline execution remain unbuilt. Alert-only bulk acknowledgment and no-timer snooze records are exercised under OC-079. The existing model has primary/backup coverage, not a running escalation level; a snooze with no identifiable level records an operator failure rather than inventing one. Recorded obligations only; paging OFF.
 
 #### OC-059 — Large and partly readable payloads still page
@@ -829,7 +829,7 @@ Core · target · **done** · Rules D-2
 5. Send a 3 MiB Alertmanager group to an OC-072 routed key with a record-unrouted catch-all, and observe the readable alerts paging their routed services and the incomplete-intake alert paging the integration owner.
 6. Until paging ships, observe the high-urgency alert under a constant-low service rule, its owner notice with paging OFF and the owner audit notice.
 
-**Evidence.** `tests/monitoring.mjs`; `tests/runtime.mjs`; `tests/routing-native.mjs`; `tests/routing.mjs`; `tests/product-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`
+**Evidence.** `tests/intake.mjs`; `tests/runtime.mjs`; `tests/routing.mjs`; `tests/routing.mjs`; `tests/product-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`
 **Gap.** None.
 
 #### OC-060 — Incident triage list: search, filters and "mine"
@@ -843,7 +843,7 @@ Core · target · **partial**
 2. Confirm that a foreign team's incidents are neither listed nor selectable.
 3. Leave a low-urgency alert open and observe it listed until it is acknowledged or resolved.
 
-**Evidence.** `src/triage-api.ts`; `src/triage-store.ts`; `src/triage-alerts.ts`; `src/app/IncidentTriage.tsx`; `tests/triage.mjs`; `tests/triage-bulk.mjs`; `tests/product-browser-journey.mjs`; `tests/triage-bulk-browser.mjs`
+**Evidence.** `src/triage-api.ts`; `src/triage-store.ts`; `src/triage-alerts.ts`; `src/app/IncidentTriage.tsx`; `tests/triage.mjs`; `tests/triage.mjs`; `tests/product-browser-journey.mjs`; `tests/product-browser-journey.mjs`
 **Gap.** Incident search/context, filters, mine, URL and personal saved views and cursor pagination are retained. Gap: teams/privacy (OC-023) and native mobile (OC-029); existing workspace capacity bounds apply. Bulk actions are OC-079. PARTIAL; paging OFF.
 
 #### OC-079 — Bulk triage actions with per-item results
@@ -861,7 +861,7 @@ Core · target · **partial** · From OC-060
 6. Bulk-resolve declared incidents without a summary and observe refusal.
 7. Acknowledge a bundled SMS's items by its acknowledge-all code and observe the same per-item results and shared operation ID.
 
-**Evidence.** `src/triage-api.ts`; `src/triage-store.ts`; `tests/triage.mjs`; `tests/triage-bulk.mjs`; `tests/triage-bulk-browser.mjs`
+**Evidence.** `src/triage-api.ts`; `src/triage-store.ts`; `tests/triage.mjs`; `tests/triage.mjs`; `tests/product-browser-journey.mjs`
 **Gap.** The replay-safe per-item bulk path is retained: bulk snooze records the existing incident deadline; bulk merge commits each source and target, retained explanations and shared operation ID atomically; alert-only items support acknowledgment, assignment, priority/urgency, recorded no-timer snooze and explicit human closure without a declared-incident summary or fabricated source recovery. Each item keeps current authority, a revision, a result and shared bulk ID; matching selection requires the current confirmed count. The public journey exercises 500 selected and 1,000 all matching, stale-source isolation, exact replay, viewer refusal, audit rollback/retry and archive/restart custody. Gap: bundled-phone acknowledge-all and resolve-all (OC-071, OC-082); every per-item authority/revision and summary/evidence obligation remains owed; paging OFF.
 
 #### OC-061 — Business services, stakeholder subscriptions and internal status
@@ -878,7 +878,7 @@ Core · target · **partial** · Rules D-2, D-3
 5. A private team's business service is invisible to stakeholders outside its scope.
 6. A manual status override is attributed.
 
-**Evidence.** `src/business-status/`; `src/alert-obligation.ts`; `tests/triage.mjs`; `tests/member-coordination-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/migration-upgrade.mjs`
+**Evidence.** `src/business-status/`; `src/alert-obligation.ts`; `tests/triage.mjs`; `tests/member-coordination-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`
 **Gap.** Explicit member audiences deny stakeholder access by default. Only an active communications owner or admin may override. Impact notices are recorded non-automatic obligations with paging OFF and no sender; email, push and chat delivery (OC-042 custody/OC-029) are not built. Team and channel subscribers, SSO/SCIM assignment (OC-039), the private-team acceptance sentence (OC-023), OC-051 approved updates beyond the absent current source, and mobile remain gaps. Records only; email-list subscriber records are exercised here, and delivery remains under OC-042 with the held SendGrid sender.
 
 #### OC-062 — Configuration as code with Terraform and OpenTofu
@@ -1035,8 +1035,8 @@ Core · target · **partial** · Rules D-2, D-4
 5. Request a second responder from Slack, observe a separate page and acknowledgment, and decline a third request and see the requester notified.
 6. See a stakeholder's and a viewer's attempts refused with nothing created.
 
-**Evidence.** `src/manual-pages/model.ts`; `src/manual-pages/Controls.tsx`; `src/api.ts`; `tests/activation.mjs`; `tests/automation.mjs`; `tests/keyboard-coordination.mjs`; `tests/triage.mjs`; `tests/member-coordination-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`
-**Gap.** Recorded manual pages retain creator, urgency, optional description/priority, real user/policy targets, versioned user-assignment settings and replay/conflict-safe operation keys. Each responder request has its own accept/decline, timeline response and recorded requester notice; acceptance adds a responder without acknowledging the primary, acknowledgment preserves pending requests, and resolution/requester cancellation ends them. Viewer and stakeholder attempts create nothing. `tests/activation.mjs` proves these public doors and permanent-audit rollback; `tests/automation.mjs` proves scoped policy-targeted API pages and repeated keys; `tests/keyboard-coordination.mjs`, `tests/triage.mjs` and `tests/member-coordination-browser.mjs` exercise web controls and refusals; `tests/transfer.mjs` and `tests/checkpoint-cli.mjs` retain records inactive on archive/checkpoint/portable restore and sever erased destinations. Gap: phone delivery/timing and creator-naming notifications (OC-026/064), mobile (OC-029), Slack/Teams (OC-067, OC-081), per-team and Support-team workspace permissions (OC-023), automatic assignment repeat/escalation (OC-027), and standby continuity (OC-028) remain unbuilt. Role-gated recorded obligations only; paging OFF.
+**Evidence.** `src/manual-pages/model.ts`; `src/manual-pages/Controls.tsx`; `src/api.ts`; `tests/activation.mjs`; `tests/automation.mjs`; `tests/product-browser-journey.mjs`; `tests/triage.mjs`; `tests/member-coordination-browser.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`
+**Gap.** Recorded manual pages retain creator, urgency, optional description/priority, real user/policy targets, versioned user-assignment settings and replay/conflict-safe operation keys. Each responder request has its own accept/decline, timeline response and recorded requester notice; acceptance adds a responder without acknowledging the primary, acknowledgment preserves pending requests, and resolution/requester cancellation ends them. Viewer and stakeholder attempts create nothing. `tests/activation.mjs` proves these public doors and permanent-audit rollback; `tests/automation.mjs` proves scoped policy-targeted API pages and repeated keys; `tests/product-browser-journey.mjs`, `tests/triage.mjs` and `tests/member-coordination-browser.mjs` exercise web controls and refusals; `tests/transfer.mjs` and `tests/checkpoint-cli.mjs` retain records inactive on archive/checkpoint/portable restore and sever erased destinations. Gap: phone delivery/timing and creator-naming notifications (OC-026/064), mobile (OC-029), Slack/Teams (OC-067, OC-081), per-team and Support-team workspace permissions (OC-023), automatic assignment repeat/escalation (OC-027), and standby continuity (OC-028) remain unbuilt. Role-gated recorded obligations only; paging OFF.
 
 #### OC-069 — Google Workspace, generic SAML and OIDC sign-in, and just-in-time accounts
 
@@ -1120,8 +1120,8 @@ Core · target · **partial** · Rules D-3
 5. Dynamic-route to a service outside the key's scope and observe the event at the catch-all with the out-of-scope diagnostic.
 6. Replay a changed rule set and observe ordered decisions, the open-generation warning and zero writes; then publish from a stale base version and observe refusal.
 
-**Evidence.** `src/routing/management.ts`; `src/routing/engine.ts`; `src/monitoring/admission.ts`; `src/routing/RoutingWorkspace.tsx`; `tests/routing.mjs`; `tests/monitoring.mjs`
-**Gap.** Workspace-admin compatible and Alertmanager/Grafana/Datadog routed keys choose fixed or dynamic in-scope services with ordered versioned RE2 rules, catch-all/unrouted custody, idempotent attributed re-admission and both routing stages. Read-only replay retains open-generation warnings. Native bearer/HMAC routed credentials reuse native authentication and retain original retry decisions, scoped recovery and secret-free inactive archives (`tests/routing.mjs` / `tests/routing-native.mjs`). Team authority, SNS routed credentials, incumbent account/router import and move reports, OC-053 routing-management API, Terraform and dated unmodified Alertmanager acceptance remain gaps. Per-key allowances are OC-084. Native authenticated oversized/unparseable input retains bounded incomplete custody and returns 202 (`tests/runtime.mjs`, `tests/routing-native.mjs`). Record-unrouted retains incomplete-intake alerts with recorded high-urgency integration-owner obligations, while ordinary unrouted events remain receipts; re-admission requires workspace admin; general `/api/replay` lacks routed-key metadata (the routed-key preview retains it). Incomplete intake follows OC-059 (catch-all or unrouted custody with a recorded owner notice; paging inherited by OC-026/OC-068). Paging stays OFF.
+**Evidence.** `src/routing/management.ts`; `src/routing/engine.ts`; `src/monitoring/admission.ts`; `src/routing/RoutingWorkspace.tsx`; `tests/routing.mjs`; `tests/intake.mjs`
+**Gap.** Workspace-admin compatible and Alertmanager/Grafana/Datadog routed keys choose fixed or dynamic in-scope services with ordered versioned RE2 rules, catch-all/unrouted custody, idempotent attributed re-admission and both routing stages. Read-only replay retains open-generation warnings. Native bearer/HMAC routed credentials reuse native authentication and retain original retry decisions, scoped recovery and secret-free inactive archives (`tests/routing.mjs` / `tests/routing.mjs`). Team authority, SNS routed credentials, incumbent account/router import and move reports, OC-053 routing-management API, Terraform and dated unmodified Alertmanager acceptance remain gaps. Per-key allowances are OC-084. Native authenticated oversized/unparseable input retains bounded incomplete custody and returns 202 (`tests/runtime.mjs`, `tests/routing.mjs`). Record-unrouted retains incomplete-intake alerts with recorded high-urgency integration-owner obligations, while ordinary unrouted events remain receipts; re-admission requires workspace admin; general `/api/replay` lacks routed-key metadata (the routed-key preview retains it). Incomplete intake follows OC-059 (catch-all or unrouted custody with a recorded owner notice; paging inherited by OC-026/OC-068). Paging stays OFF.
 
 #### OC-083 — Routed keys keep per-service generations, bounds and imports
 
@@ -1135,7 +1135,7 @@ Core · target · **partial** · From OC-072 · Rules D-3
 3. Send a 3 MiB Alertmanager group to the routed key with a record-unrouted catch-all: routed alerts page their services, and the incomplete-intake alert pages the integration owner.
 4. Repeat with an imported Opsgenie API integration routing by `responders`, and with a Splunk On-Call REST endpoint routing by routing key, and read each move report.
 
-**Evidence.** `src/routing/engine.ts`; `src/monitoring/admission.ts`; `tests/routing.mjs`; `tests/monitoring.mjs`
+**Evidence.** `src/routing/engine.ts`; `src/monitoring/admission.ts`; `tests/routing.mjs`; `tests/intake.mjs`
 **Gap.** Per-service generations, scoped recovery and routed incomplete-intake custody are exercised; incumbent account and router import with move reports and SNS routed credentials remain gaps.
 
 #### OC-084 — Per-key rolling intake allowances
@@ -1154,8 +1154,8 @@ Core · target · **partial** · From OC-072 · Rules D-3
 7. Submit an atomic batch larger than the configured new-event allowance and observe whole-batch 429, its code, count, allowance and split-or-raise instruction, no Retry-After, unchanged grouped custody and one owner notice per window.
 8. Reach receipt capacity with rate allowance remaining and observe the separate storage refusal, without treating the local capacity as a hosted claim.
 
-**Evidence.** `src/intake-rate/`; `tests/routing.mjs`; `tests/monitoring.mjs`; `tests/routing-rate.mjs`
-**Gap.** Per-key rolling request/event accounting, rotation continuity, isolation, grouped refusal, owner notices and actual-window recovery are exercised through native and currently built compatible/monitoring HTTP doors (`tests/routing-rate.mjs`). Inherently over-allowance atomic batches are refused whole with a machine-readable count/allowance and split/raise instruction, without a fabricated Retry-After (RL-6). Team authority and SNS routed credentials remain unbuilt, so these outcomes are not established through those doors. Email keeps its separate per-address new-receipt allowance; receipt capacity remains a separate local storage bound until OC-073. Paging stays OFF.
+**Evidence.** `src/intake-rate/`; `tests/routing.mjs`; `tests/intake.mjs`; `tests/routing.mjs`
+**Gap.** Per-key rolling request/event accounting, rotation continuity, isolation, grouped refusal, owner notices and actual-window recovery are exercised through native and currently built compatible/monitoring HTTP doors (`tests/routing.mjs`). Inherently over-allowance atomic batches are refused whole with a machine-readable count/allowance and split/raise instruction, without a fabricated Retry-After (RL-6). Team authority and SNS routed credentials remain unbuilt, so these outcomes are not established through those doors. Email keeps its separate per-address new-receipt allowance; receipt capacity remains a separate local storage bound until OC-073. Paging stays OFF.
 
 #### OC-073 — Intake stays inside the Workers memory limit at stated receipt capacity
 
