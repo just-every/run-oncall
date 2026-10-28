@@ -33,11 +33,15 @@
 
 Public source: [just-every/run-oncall](https://github.com/just-every/run-oncall). The latest tag, `v0.5.1`, includes hosted coordination. See [Getting started](docs/getting-started.md#host-for-your-team) for complete credentials and deployment instructions.
 
-You need Git and Node 22 or later, on macOS, Linux or Windows with WSL2 (without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall` brings its own). One line installs the `rer` command, clones Oncall and starts it; `rer` provides the checkout's pinned Node and pnpm tooling:
+One line installs the `rer` command, clones Oncall and starts it:
 
 ```sh
-npx -y @runeditrun/rer dev just-every/run-oncall
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
 ```
+
+Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-oncall` does the same.
+
+macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.
 
 To start it again later, run `cd run-oncall && rer dev`. `rer dev` installs the application dependencies, creates a local development owner and prints a private `RER_OPEN` link that opens Oncall signed in. On first launch, confirm the read-only owner details at `/setup` (**Finish setup**); later launches open the app directly. To choose your own owner mailbox before the first launch, use [explicit setup](docs/getting-started.md#explicit-and-unattended-setup); unattended setup accepts a private answers file.
 
