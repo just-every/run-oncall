@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "60532aec53c5fb9acb6faecba0e3bad0debabc7faeb6a66224074c820fce8c90"
+    "sha256": "c52b4ddbfad26af8c28cdcad563e101f44d5a455a4f8133ca7235408c752a844"
   },
   "components": [
     {
@@ -244,7 +244,7 @@
       "executable": false
     },
     "docs/schedules.md": {
-      "sha256": "f46fc20a3f421401bb38e744d218b616d8878f9535c029e50bae8837de43047f",
+      "sha256": "493d6a4a58665063edace498ebcbe6540687999aee4b7db5e3a7421747462a6a",
       "executable": false
     },
     "docs/site.json": {
@@ -4016,7 +4016,7 @@
       "executable": false
     },
     "src/on-call/rota-steps/RotaSteps.tsx": {
-      "sha256": "444045657ed49451581152be28af32ffd9c62aaa956fac623aa96100b6cb0878",
+      "sha256": "48ba39439335d1f0e2abc2ef08f3cd6e114107fd59f7bb2633910c7d1f630496",
       "executable": false
     },
     "src/on-call/rota-steps/StepCheck.tsx": {
@@ -4036,7 +4036,7 @@
       "executable": false
     },
     "src/on-call/RotaPage.tsx": {
-      "sha256": "81c0434274cab8a402cfdb33525ec479a428e126b406d59a3153ba6b8ef043ed",
+      "sha256": "3613b17d6f551f6964a18160500a996c8e23f35b3096b42af75e6a805ea78b6e",
       "executable": false
     },
     "src/on-call/RotaRow.tsx": {
@@ -4440,7 +4440,7 @@
       "executable": false
     },
     "src/schedule-api.ts": {
-      "sha256": "9b6bc4bf806418034ba9324e3bf55247c8ec94dd527e5ada9df7ebfd9d76896e",
+      "sha256": "b46827f50b1996d48e779da591e6e68c048ec3f9e16b4e58c62e7c102267276b",
       "executable": false
     },
     "src/schedule-coordination/api.ts": {
@@ -4460,7 +4460,7 @@
       "executable": false
     },
     "src/schedule-coverage/CoverageRules.tsx": {
-      "sha256": "55041929dad0e798c44a5c748114d44280138dd2bcfd945f24acd68c0173dde7",
+      "sha256": "6c0b2ce5dcf2745aa829b7b3a0f82a682be1e585989e0f7b6020b81a6a760979",
       "executable": false
     },
     "src/schedule-coverage/layers.ts": {
@@ -4632,7 +4632,7 @@
       "executable": false
     },
     "src/teams/model.ts": {
-      "sha256": "d5a32bb5a5a10d57e4bde7e19f7313538e6ab4dc31bf5efc13a31cc8713f1113",
+      "sha256": "0ac6cba072bbc0d39524aee367802ad6cb4628ca756673a0a5959f05cb73d300",
       "executable": false
     },
     "src/teams/teams.css": {
@@ -4920,7 +4920,7 @@
       "executable": false
     },
     "tests/product-schedule-browser.mjs": {
-      "sha256": "1a965e48d7cb6a022d7a776f8fd8348105690f165cc8192f5927d33754d1dad6",
+      "sha256": "66912d1d87710d6219848d6f73b0be9f032b738fe472a7b1e05d6355e2e23a12",
       "executable": false
     },
     "tests/provider-export-browser.mjs": {
@@ -4964,7 +4964,7 @@
       "executable": false
     },
     "tests/schedule-coordination.mjs": {
-      "sha256": "ef83b84f36dd21ceee06dd8634c81747425bd8173b4da029849e828e058b5cc5",
+      "sha256": "8a69d783e5f2ab5ef7c538b32971e4945dd82302298aed5beabada4d5b5eb4ce",
       "executable": false
     },
     "tests/signin-browser.mjs": {

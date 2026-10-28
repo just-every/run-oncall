@@ -115,7 +115,7 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  await page.getByText('Calendar feed',{exact:true}).click();const feed=page.getByRole('link',{name:'Open private ICS feed',exact:true});const calendar=await context.request.get(await feed.getAttribute('href'));assert.equal(calendar.status(),200);
  const times=(await calendar.text()).split('\r\n').filter(line=>/^DT(STAMP|START|END):/.test(line));assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'calendar uses whole-second UTC times');
  await page.screenshot({path:`${directory}/rota-page-${width}.png`,fullPage:true});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
- await coverageRulesBrowser(page,context,width,session);
+ await coverageRulesBrowser(page,context,width,session,{ownerLink});
  await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});
 }
 
@@ -163,7 +163,7 @@ export function scheduleReviewWindow(now) {
  throw Error('No nearby clock changes found for schedule review')
 }
 
-export async function coverageRulesBrowser(page,context,width,session){
+export async function coverageRulesBrowser(page,context,width,session,{ownerLink}={}){
  const origin=new URL(page.url()).origin,api=async(path,input)=>{const r=await(input===undefined?context.request.get(origin+path):context.request.post(origin+path,{headers:{origin},data:input}));assert.equal(r.status(),200);return r.json();};
  const state=await api('/api/state'),now=Date.now(),date=new Date(now-86400000).toISOString().slice(0,10),id='synthetic-oncall-'+(3000+width);
  const rotation={anchorLocal:date+'T00:00',periodDays:1,members:[session.member.id],ambiguity:'earlier'},layer={id:id+'-layer',name:'synthetic-oncall-'+(4000+width),role:'primary',timezone:'UTC',kind:'daily',rotation,start:date+'T00:00:00.000Z',end:null,weekdays:[1,2,3,4,5],startHour:9,endHour:17,holidayCalendars:[],holidayAction:'next',ptoAction:'next'};
@@ -190,5 +190,41 @@ export async function coverageRulesBrowser(page,context,width,session){
  await edit();await page.getByLabel('Layer name',{exact:true}).fill(layer.name+' changed');await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();await review.waitFor();
  await api('/api/schedules/'+id+'/overrides',{revision:saved.revision,override:{id:id+'-cover',role:'primary',member:null,start:new Date(now+21600000).toISOString(),end:new Date(now+25200000).toISOString()}});
  await review.getByRole('checkbox').check();const stale=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/apply'));await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();assert.equal((await stale).status(),409);await inView(page.locator('.oc-rota-steps .failure-line'));assert.equal((await api('/api/paging/state')).schedules.find(s=>s.id===id).layers[0].name,layer.name);
+ // The same PTO page works under an ordinary member's own password session.
+ const memberName='Synthetic PTO member '+width,password='synthetic-pto-member-password';
+ const created=await context.request.post(origin+'/api/members',{headers:{origin},data:{name:memberName,role:'responder',password}});assert.equal(created.status(),201);const member=await created.json();
+ const team=await api('/api/teams',{id:id+'-team',name:'Synthetic PTO team '+width,visibility:'public',active:true,revision:0,members:[member.id],managers:[]});
+ const service=await api('/api/command',{type:'service',id:id+'-service',name:'Synthetic PTO service '+width,environment:'test',owner:session.member.id,team:team.id,runbook:[],pager:''});
+ await api('/api/teams/ownership',{service:service.id,team:team.id,workspaceRevision:(await api('/api/state')).revision});
+ const selfRota=await api('/api/paging/schedules',{id:id+'-self',name:'Synthetic self PTO '+width,service:service.id,revision:0,timezone:'UTC',validFrom:date+'T00:00:00.000Z',validUntil:null,primary:{...rotation,members:[member.id]},backup:{...rotation,members:[]},overrides:[]});
+ const memberContext=await context.browser().newContext({baseURL:origin,viewport:{width:1440,height:1000}});
+ try{
+  if(ownerLink){const key=new URLSearchParams(new URL(ownerLink).hash.slice(1)).get('rer-dev');assert.ok(key);assert.equal((await memberContext.request.post(origin+'/__dev/key',{headers:{origin},data:{key}})).status(),204);}
+  const memberPage=await memberContext.newPage();await memberPage.goto(origin+'/signin/local');await memberPage.getByLabel('Name',{exact:true}).fill(memberName);await memberPage.getByLabel('Password',{exact:true}).fill(password);await memberPage.getByRole('button',{name:'Sign in',exact:true}).click();await memberPage.waitForURL(url=>url.pathname==='/on-call');
+  const current=await memberContext.request.get(origin+'/api/session');assert.equal((await current.json()).member.id,member.id);
+  const open=async()=>{await memberPage.goto(origin+'/on-call/'+selfRota.id);await memberPage.getByRole('link',{name:'Your PTO',exact:true}).click();await memberPage.getByRole('heading',{name:'Your PTO',exact:true}).waitFor();};
+  await open();
+  const ownProposal=memberPage.getByRole('region',{name:'Layers, holidays and PTO',exact:true}),ownReview=memberPage.getByRole('region',{name:'Review schedule changes',exact:true});
+  assert.deepEqual(await ownProposal.getByLabel('PTO member',{exact:true}).locator('option').evaluateAll(options=>options.map(o=>o.value)),[member.id]);
+  assert.equal(await memberPage.getByRole('button',{name:'Add layer',exact:true}).count(),0);
+  await ownProposal.getByLabel('PTO start, UTC',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await ownProposal.getByLabel('PTO end, UTC',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
+  await ownProposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();
+  await memberPage.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);
+  const reviewed=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));await memberPage.getByRole('button',{name:'Review change',exact:true}).click();assert.equal((await reviewed).status(),200);
+  await ownReview.getByRole('checkbox').check();const applied=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-apply'));await ownReview.getByRole('button',{name:'Apply reviewed change',exact:true}).click();assert.equal((await applied).status(),200);await memberPage.waitForURL(url=>url.pathname==='/on-call/'+selfRota.id);
+  let stored=(await api('/api/paging/state')).schedules.find(s=>s.id===selfRota.id);assert.equal(stored.revision,selfRota.revision+1);assert.equal(stored.pto.length,1);assert.equal(stored.pto[0].member,member.id);
+  const affected=await api('/api/schedules/'+selfRota.id+'/now-next?at='+encodeURIComponent(stored.pto[0].start));assert.equal(affected.now.primary,null);assert.deepEqual(stored.primary.members,[member.id]);
+  await open();const ownImport=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));await ownProposal.getByLabel('Review ICS PTO upload',{exact:true}).setInputFiles('tests/fixtures/pto-calendar.ics');const importResponse=await ownImport;assert.equal(importResponse.status(),200);const imported=await importResponse.json();
+  await ownReview.getByRole('checkbox').check();
+  const Axe=(await import('@axe-core/playwright')).default;assert.deepEqual((await new Axe({page:memberPage}).include('.oc-rota-steps').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
+  if(directory)for(const size of [1440,390]){await memberPage.setViewportSize({width:size,height:1000});await memberPage.screenshot({path:directory+'/member-pto-review-'+size+'.png',fullPage:true});}
+  await memberPage.setViewportSize({width:1440,height:1000});
+  await ownReview.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await memberPage.waitForURL(url=>url.pathname==='/on-call/'+selfRota.id);
+  stored=(await api('/api/paging/state')).schedules.find(s=>s.id===selfRota.id);assert.equal(stored.revision,selfRota.revision+2);assert.equal(stored.pto.length,1+imported.import.entries.length);
+  await open();await ownProposal.getByLabel('PTO start, UTC',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await ownProposal.getByLabel('PTO end, UTC',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await ownProposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await memberPage.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await memberPage.getByRole('button',{name:'Review change',exact:true}).click();await ownReview.waitFor();
+  await api('/api/schedules/'+selfRota.id+'/overrides',{revision:stored.revision,override:{id:id+'-self-cover',role:'primary',member:null,start:new Date(now+21600000).toISOString(),end:new Date(now+25200000).toISOString()}});
+  await ownReview.getByRole('checkbox').check();const staleSelf=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-apply'));await ownReview.getByRole('button',{name:'Apply reviewed change',exact:true}).click();assert.equal((await staleSelf).status(),409);await memberPage.locator('.failure-line').waitFor();assert.equal((await api('/api/paging/state')).schedules.find(s=>s.id===selfRota.id).pto.length,stored.pto.length);
+  console.log('PASS OC-024 ordinary-member browser 1440: password sign-in, own-only picker, self-PTO and self-ICS review/apply, current consecutive revisions, effective gap, retained slots, visible stale refusal, axe; PTO screen captured at 1440/390');
+ }finally{await memberContext.close();}
  console.log('PASS OC-024 browser coverage rules '+width+': long review, focused PTO and ICS outcomes, consecutive reviewed writes, visible stale refusal and no visible internal identifiers');
 }

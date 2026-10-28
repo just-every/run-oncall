@@ -12,7 +12,7 @@ import type {ScheduleReview} from '../schedule-coverage/review';
 import type {Member, State} from '../family/response-operations/domain';
 import {coverage, resolveLocal, type Coverage, type Schedule} from '../family/response-operations/schedules';
 import type {PagingArchive} from '../family/response-operations/paging-archive';
-import {teamCoverage} from '../teams/model';
+import {teamCoverage,memberPTO} from '../teams/model';
 import {Tooltip} from '../app/Tooltip';
 import {readLocalDraft, writeLocalDraft, removeLocalDraft, policyDrafts} from '../app/autosave/localDraft';
 import type {OnCall, OnCallBand} from './read';
@@ -95,7 +95,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
     catch (error) {failures.show(error, {target:null});} finally {setBusy(false);}
   };
   if (edit && schedule && renderEdit) return <>{renderEdit(schedule)}</>;
-  return <div ref={tooltips} className="oc-oncall oc-rota-page"><aside className="oc-rota-neighbours oc-card" aria-label="Rotas"><h2>Rotas</h2>{value?.rotas.map(row=><Link key={row.id} to={'/on-call/'+encodeURIComponent(row.id) as any} aria-current={row.id===id?'page':undefined}><strong>{row.service.name}</strong><span>{row.name}</span><span>{row.now.primary?.name??'Nobody on call'}</span></Link>)}</aside><section className="oc-rota-record"><Link className="oc-back" to={'/on-call' as any}>‹ On call</Link><header className="oc-page-head"><div><h1>{schedule?.name ?? rota?.name ?? 'Rota'}</h1><p className="oc-quiet">{rota?.service.name ?? state.services.find(service => service.id === schedule?.service)?.name}</p></div>{canEdit && <Link className="oc-button" to={'/on-call/' + encodeURIComponent(id) + '/edit' as any}>Edit rota</Link>}</header>
+  return <div ref={tooltips} className="oc-oncall oc-rota-page"><aside className="oc-rota-neighbours oc-card" aria-label="Rotas"><h2>Rotas</h2>{value?.rotas.map(row=><Link key={row.id} to={'/on-call/'+encodeURIComponent(row.id) as any} aria-current={row.id===id?'page':undefined}><strong>{row.service.name}</strong><span>{row.name}</span><span>{row.now.primary?.name??'Nobody on call'}</span></Link>)}</aside><section className="oc-rota-record"><Link className="oc-back" to={'/on-call' as any}>‹ On call</Link><header className="oc-page-head"><div><h1>{schedule?.name ?? rota?.name ?? 'Rota'}</h1><p className="oc-quiet">{rota?.service.name ?? state.services.find(service => service.id === schedule?.service)?.name}</p></div>{(canEdit||!!schedule&&memberPTO(state,actor,schedule.service,actor.id)) && <Link className="oc-button" to={'/on-call/' + encodeURIComponent(id) + '/edit' as any}>{canEdit?'Edit rota':'Your PTO'}</Link>}</header>
     {savedNotice&&<p ref={savedLine} role="status" tabIndex={-1}>{savedNotice}</p>}
     <FailureLine failure={sheet ? null : failures.failure}/>
     {data && !schedule && <p>Rota not found. <Link to={'/on-call' as any}>Return to On call</Link></p>}

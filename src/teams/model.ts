@@ -13,6 +13,19 @@ export function requireTeamCoverage(state:State,actor:Member,service:string) {
  if(!['admin','responder'].includes(actor.role))fail('Only responders and workspace administrators can change coverage.',403);
  if(!teamCoverage(state,actor,service))fail((state.services.find(s=>s.id===service)?.name??'This service')+' is not covered by a team you manage. A workspace administrator can change its owning team.',404);
 }
+// PTO authority is narrower than coverage management: ordinary responders may
+// append only their own PTO on a service owned by their current active team.
+export function memberPTO(state:State,actor:Member,service:string,member:string):boolean {
+ const current=state.members.find(m=>m.id===actor.id&&m.active);
+ if(!current)return false;
+ if(current.role==='admin')return true;
+ if(current.role!=='responder'||member!==current.id)return false;
+ const owner=state.services.find(s=>s.id===service)?.team;
+ return !!state.teams?.some(t=>t.id===owner&&t.active&&t.members.includes(current.id));
+}
+export function requireMemberPTO(state:State,actor:Member,service:string,member:string) {
+ if(!memberPTO(state,actor,service,member))fail('Only an administrator or a current member of this service’s team recording their own PTO can record PTO.',403);
+}
 export function validateTeams(state:State) {
  if(state.teams===undefined){if(state.services.some(s=>s.team!==undefined&&s.team!==null))fail('Choose an available owning team or Unassigned.');return;}
  if(!Array.isArray(state.teams)||state.teams.length>1000||new Set(state.teams.map(t=>t?.id)).size!==state.teams.length)fail('Choose up to 1,000 teams, each with its own name.');
