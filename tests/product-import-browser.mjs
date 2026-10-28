@@ -1,4 +1,4 @@
-import {fileSource,confirmImport,confirmUndo,fileJourney} from './import-door-browser.mjs'
+import {fileSource,confirmImport,confirmUndo,fileJourney,reconciliationJourney} from './import-door-browser.mjs'
 import {openWorkspaceSection} from './keyboard.mjs'
 import AxeBuilder from '@axe-core/playwright'
 import assert from 'node:assert/strict'
@@ -71,6 +71,7 @@ export async function productImport(page,context,width,session) {
   await person.getByRole('button',{name:'Erase permanently',exact:true}).click()
   await page.getByText(/^Erased\. Receipt /).waitFor();assert.equal(await person.count(),0,'the erased person leaves the paused data list')
   await incumbentActivation(page,context,width)
+  if(width===390)await reconciliationJourney(page,context,session)
 }
 
 async function incumbentActivation(page,context,width) {

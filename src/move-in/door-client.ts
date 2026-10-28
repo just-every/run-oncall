@@ -40,6 +40,17 @@ export function doorClient(vendor: string) {
 }
 type Door = ReturnType<typeof doorClient>
 
+export type Reconciliation = {
+ ok: boolean
+ counts: { sourceRecords: number; present: number; explained: number; nativeTargets: number }
+ sourceIds: { kind: string; sourceId: string; status: string; conflicts?: string[]; reason?: string }[]
+}
+
+/** Compare the applied snapshot with the current native objects, never the apply receipt. */
+export async function reconcilePlan(door: Door, planId: string): Promise<Reconciliation> {
+ return door('reconcile', { planId })
+}
+
 const hex = async (bytes: Uint8Array) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes as Uint8Array<ArrayBuffer>))].map(b => b.toString(16).padStart(2, '0')).join('')
 function base64(bytes: Uint8Array) {
  let binary = ''
