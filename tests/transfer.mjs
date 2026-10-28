@@ -78,7 +78,7 @@ export async function isolatedEntrypoint(url){
   child=spawn(process.execPath,[...process.execArgv,script],{cwd:checkout,env,stdio:'inherit'})
   return await new Promise(resolve=>{child.once('exit',code=>resolve(code??1));child.once('error',()=>resolve(1))})
  }finally{
-  if(child&&child.exitCode===null){child.kill('SIGTERM');await new Promise(r=>child.once('exit',r))}
+  if(child&&child.exitCode===null&&child.signalCode===null){const exited=new Promise(r=>child.once('exit',r));child.kill('SIGTERM');await exited}
   const evidence=process.env.ONCALL_BROWSER_EVIDENCE??join(dirname(root),'evidence/browser')
   await mkdir(evidence,{recursive:true})
   await cp(join(checkout,'evidence/browser'),evidence,{recursive:true}).catch(error=>{if(error.code!=='ENOENT')throw error})
@@ -96,11 +96,11 @@ export async function managedSeed(bindings={}){
  async function command(args,status=0){const run=spawnCommand(args),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));return run.output()}
  let openLink
  async function start(){
-  const run=spawnCommand(['dev','--foreground','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null)throw Error(safe(run.output()).slice(-1400));const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1];if(link){openLink=link;return;}await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
+  const run=spawnCommand(['dev','--foreground','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400));const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1];if(link){openLink=link;return;}await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
  async function preview(){
   const run=spawnCommand(['preview','--foreground','--port',String(port),'--idle-timeout','120','--non-interactive'])
   for(let n=0;n<600;n++){
-   if(run.child.exitCode!==null)throw Error(safe(run.output()).slice(-1400))
+   if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400))
    if(run.output().includes('RER_READY')){
     assert.equal((await fetch(origin+'/api/state')).status,401,'production preview carries no managed-dev owner identity')
     await command(['preview','--stop']);return
@@ -116,7 +116,7 @@ export async function managedSeed(bindings={}){
   const key=await readDevKey(process.cwd()),child=spawn(process.execPath,['node_modules/vite/bin/vite.js','dev','--host','127.0.0.1','--port',String(port),'--strictPort'],{env:{...env,RER_DEV_ORIGIN:origin,RER_DEV_KEY:key,RER_DEV_IDENTITY:'on'},stdio:['ignore','pipe','pipe']});children.push(child);console.log('Owned transfer HTTP runtime PID',child.pid)
   let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c)
   for(let n=0;n<240;n++){
-   if(child.exitCode!==null)throw Error(safe(output).split(key).join('[redacted]').slice(-1400))
+   if(child.exitCode!==null||child.signalCode!==null)throw Error(safe(output).split(key).join('[redacted]').slice(-1400))
    try{if((await fetch(origin+'/health')).ok)return}catch{}
    await new Promise(r=>setTimeout(r,250))
   }
@@ -124,7 +124,13 @@ export async function managedSeed(bindings={}){
  }
  const owner=async()=>{const {header}=await signInAs({origin,key:await readDevKey(process.cwd())});return header}
  async function request(path,input,cookie,extraHeaders={}){const response=await fetch(origin+path,{method:input===undefined?'GET':'POST',redirect:'manual',headers:{origin,connection:'close','content-type':'application/json',...(cookie?{cookie}:{}),...extraHeaders},body:input===undefined?undefined:JSON.stringify(input)});const text=await response.text();let value;try{value=JSON.parse(text)}catch{value=text}return {status:response.status,value,cookie:response.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ')}}
- async function close(){for(const child of children)if(child.exitCode===null){child.kill('SIGTERM');await new Promise(r=>child.once('exit',r))}}
+ async function close(){
+  for(const child of children){
+   if(child.exitCode!==null||child.signalCode!==null)continue
+   const exited=new Promise(resolve=>child.once('exit',resolve))
+   child.kill('SIGTERM');await exited
+  }
+ }
  return {port,origin,command,start,preview,startHttp,owner,request,close,get openLink(){return openLink}}
 }
 
