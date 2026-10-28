@@ -33,7 +33,9 @@ export function pagerdutyRecords(input:ParsedRecord[]):ParsedRecord[] {
  const has=(kind:string,id:unknown)=>identities.has(JSON.stringify([kind,String(id)]))
  // Keep the established strict converter's schedule/policy refusals unchanged.
  // Account evidence may not claim a relationship to an object the file omitted.
- for(const row of records.filter(row=>accountKinds.has(row.kind)||row.kind==='users')) {
+ const account=input.some(row=>accountKinds.has(row.kind))
+ // The shipped four-category exporter retains user team metadata without reading team details.
+ for(const row of records.filter(row=>accountKinds.has(row.kind)||account&&row.kind==='users')) {
   const visit=(value:any,pointer:string):void=>{
    if(Array.isArray(value)){value.forEach((item,index)=>visit(item,`${pointer}/${index}`));return}
    if(!value||typeof value!=='object')return

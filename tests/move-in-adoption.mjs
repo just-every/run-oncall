@@ -114,6 +114,13 @@ try {
    return [kind,[pages].flat().flatMap(page=>page[kind]??[page[detail]??page])]
   }))
   const expected={...Object.fromEntries(Object.entries(records).map(([kind,rows])=>[kind,rows.length])),integrations:records.services.reduce((sum,service)=>sum+service.integrations.length,0)}
+  // The unchanged four-category exporter can retain user team references without collecting teams.
+  const scheduleOnly=Object.fromEntries(['users','schedules','overrides','escalation_policies'].map(kind=>[kind,bundle[kind]]))
+  const beforeScheduleOnly=await imported(),scheduleReview=ok(await door.preview('pagerduty',JSON.stringify(scheduleOnly)))
+  assert.equal(scheduleReview.items.filter(item=>item.kind==='users'&&item.effects.some(effect=>effect.targetKind==='user')).length,records.users.length)
+  assert.ok(scheduleReview.items.filter(item=>item.kind==='users').every(item=>item.unmapped.some(note=>note.field==='teams.0')),'team metadata remains named evidence in a schedule-only file')
+  assert.deepEqual(await imported(),beforeScheduleOnly)
+  assert.equal(ok(await door.call('pagerduty','undo',{planId:scheduleReview.planId})).state,'cancelled')
   // List orchestration envelopes and ordinary single-detail envelopes are also public saved-file inputs.
   const detailVariant=structuredClone(bundle)
   detailVariant.incidents=records.incidents.map(incident=>({incident}))
