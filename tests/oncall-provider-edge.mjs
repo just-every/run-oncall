@@ -4,13 +4,15 @@ async function sign(key, value) {
   return Array.from(new Uint8Array(await crypto.subtle.sign('HMAC', imported, encoder.encode(value))), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 const refuse = () => new Response('Invalid synthetic receiver request', { status: 403 });
+const attempted = new Set();
 
 // The isolated paid edge has no native database, permissions or network access.
 export default {
   async fetch(request, { fixture } = {}) {
     const url = new URL(request.url);
-    if (url.origin !== 'https://8.8.8.8' || url.pathname !== '/oncall-agent' || url.search || url.hash || request.method !== 'POST' ||
-      request.headers.get('content-type') !== 'application/json' || typeof fixture?.key !== 'string' || fixture.key.length < 32) return refuse();
+    const key = fixture?.keys?.[url.pathname] ?? (url.pathname === '/oncall-agent' ? fixture?.key : undefined);
+    if (url.origin !== 'https://8.8.8.8' || !['/oncall-revoke', '/oncall-agent', '/oncall-retry'].includes(url.pathname) || url.search || url.hash || request.method !== 'POST' ||
+      request.headers.get('content-type') !== 'application/json' || typeof key !== 'string' || key.length < 32) return refuse();
     const raw = await request.text();
     if (encoder.encode(raw).length > 16384) return refuse();
     let body;
@@ -23,8 +25,13 @@ export default {
     const timestamp = request.headers.get('x-oncall-timestamp');
     if (!timestamp || !/^\d+$/.test(timestamp) || Math.abs(Date.now() / 1000 - Number(timestamp)) > 300 ||
       request.headers.get('x-oncall-operation') !== body.operationId ||
-      request.headers.get('x-oncall-signature') !== await sign(fixture.key, `${timestamp}.${raw}`)) return refuse();
-    return new Response(null, { status: 200, headers: { 'x-oncall-result': 'accepted',
-      'x-oncall-receipt': await sign(fixture.key, `${body.operationId}.${timestamp}.accepted`) } });
+      request.headers.get('x-oncall-signature') !== await sign(key, `${timestamp}.${raw}`)) return refuse();
+    // A deterministic transient at the paid edge exercises the real explicit
+    // native replay operation. The adapter never initiates a retry itself.
+    const retry = url.pathname === '/oncall-retry' && !attempted.has(body.operationId);
+    attempted.add(body.operationId);
+    const disposition = retry ? 'retry' : 'accepted';
+    return new Response(null, { status: retry ? 503 : 200, headers: { 'x-oncall-result': disposition,
+      'x-oncall-receipt': await sign(key, `${body.operationId}.${timestamp}.${disposition}`) } });
   },
 };

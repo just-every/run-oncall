@@ -505,3 +505,5 @@ try {
   console.log('PASS OC-040 integration erasure: queued send prevented, in-flight public erasure 409, completion only after outcome, audit rollback, per-table credentials/outbox counts, concurrent 200/409, client unlink and native restore fence');
  }finally{hold?.();await erased.close()}
 }
+
+await import('./oncall-agent-flow.mjs');

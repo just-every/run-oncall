@@ -1,4 +1,4 @@
-import { createAgentDoor } from '../modules/agent-door/index.ts'
+import { createAgentDoor, type ToolDefinition, type ToolContext } from '../modules/agent-door/index.ts'
 import { ownerClaimConfig, type Bindings } from '../auth.server'
 import { oncallPeople } from './people'
 import { localCredentials, currentScopes, runNativeOperation } from './native'
@@ -11,7 +11,12 @@ import { oncallResources } from './resources'
 import { serviceTools } from './service-tools'
 
 export function oncallTools(env: Bindings) {
-  return [...readTools(env), ...serviceTools(env), ...coordinationTools(env), ...scheduleTools(env), ...managementTools(env), ...automationTools(env)].map(tool=>tool.readOnly||tool.widens===false?tool:{...tool,inputSchema:{...tool.inputSchema,properties:{...tool.inputSchema.properties,native_operation:{type:'string',minLength:1,maxLength:100,description:'Opaque retained native API operation, when prepared by the native REST door.'}}},run:(args,ctx)=>runNativeOperation(env,tool.name,args,ctx,()=>tool.run(args,ctx))})
+  return [...readTools(env), ...serviceTools(env), ...coordinationTools(env), ...scheduleTools(env), ...managementTools(env), ...automationTools(env)].map((tool):ToolDefinition=>{
+    if(tool.readOnly||tool.widens===false)return tool
+    return {...tool,inputSchema:{...tool.inputSchema,properties:{...tool.inputSchema.properties,
+      native_operation:{type:'string',minLength:1,maxLength:100,description:'Opaque retained native API operation, when prepared by the native REST door.'},
+    }},run:(args:Record<string,unknown>,ctx:ToolContext)=>runNativeOperation(env,tool.name,args,ctx,()=>tool.run(args,ctx))}
+  })
 }
 export const oncallNotTools = [
   { clauses: ['OC-029'], reason: 'device' as const },

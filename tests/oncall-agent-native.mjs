@@ -75,7 +75,8 @@ export default async function journey({ request, origin, cookie, fixtures, tool 
   assert.ok(submitted.submission && !submitted.accepted, 'Machine submission must await native human acceptance');
   const beforeAccept = await state();
   const forbidden = await tool('oncall.actions.accept', { incident: incident.id, action: action.id, revision: incident.revision, idempotency_key: randomUUID() });
-  assert.equal(errorCode(forbidden), 'tool_not_found');
+  assert.equal(forbidden.status, 400);
+  assert.equal(forbidden.body?.error?.code, -32602, 'Machine acceptance is absent from the tool registry');
   const afterAccept = await state();
   assert.equal(afterAccept.revision, beforeAccept.revision);
   assert.deepEqual(afterAccept.incidents.find(row => row.id === incident.id), beforeAccept.incidents.find(row => row.id === incident.id));
