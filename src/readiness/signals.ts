@@ -12,7 +12,7 @@ export async function readinessSignals(db:D1Database,now:number):Promise<Signal[
   {id:'intake',name:'Intake',read:async()=>{
    const result=await db.batch<{at:string|null;n:number;requests:number;events:number;limited:number}>([
     db.prepare(`SELECT MAX(at) AS at FROM (
-     SELECT json_extract(data,'$.acceptedAt') AS at FROM oc_events UNION ALL SELECT json_extract(data,'$.acceptedAt') FROM oc_intake_receipts
+     SELECT json_extract(data,'$.acceptedAt') AS at FROM oc_changes UNION ALL SELECT json_extract(data,'$.acceptedAt') FROM oc_events UNION ALL SELECT json_extract(data,'$.acceptedAt') FROM oc_intake_receipts
      UNION ALL SELECT json_extract(data,'$.at') FROM oc_email_receipts WHERE json_extract(data,'$.outcome') NOT IN ('refused','quarantined'))`),
     db.prepare("SELECT COUNT(*) AS n,MAX(at) AS at FROM oc_admin_audit WHERE outcome IN ('refused','failed') AND feature IN ('ingest','intake','monitoring','email','changes') AND at>=?").bind(new Date(now-3600000).toISOString()),
     db.prepare(`SELECT COALESCE(SUM(requests),0) AS requests,COALESCE(SUM(events),0) AS events,COALESCE(SUM(requests>=request_limit OR events>=event_limit),0) AS limited FROM (
@@ -39,9 +39,13 @@ export async function readinessSignals(db:D1Database,now:number):Promise<Signal[
   }},
   {id:'configuration',name:'Configuration freshness',read:async()=>{
    const results=await db.batch<{at:string|null;n:number}>([
-    db.prepare("SELECT MAX(at) AS at FROM oc_admin_audit WHERE outcome='accepted' AND paging_after>paging_before AND (kind='paging.schedules' OR feature='schedules')"),
-    db.prepare("SELECT MAX(at) AS at FROM oc_admin_audit WHERE outcome='accepted' AND workspace_after>workspace_before AND kind='command.policy'"),
-    db.prepare("SELECT MAX(at) AS at FROM oc_admin_audit WHERE outcome='accepted' AND workspace_after>workspace_before AND kind='command.service'"),
+    db.prepare("SELECT MAX(at) AS at FROM oc_admin_audit WHERE outcome='accepted' AND paging_after>paging_before AND (kind='paging.schedules' OR feature='schedules' OR kind LIKE 'schedule.%')"),
+    db.prepare(`SELECT MAX(at) AS at FROM (
+     SELECT at FROM oc_admin_audit WHERE outcome='accepted' AND (workspace_after>workspace_before OR paging_after>paging_before) AND kind IN ('command.policy','paging.policies','schedule.policy')
+     UNION ALL SELECT json_extract(data,'$.at') FROM oc_audit WHERE json_extract(data,'$.kind') IN ('policy','urgency-rule','response-policy','user-assignment','acknowledgment-timeout'))`),
+    db.prepare(`SELECT MAX(at) AS at FROM (
+     SELECT at FROM oc_admin_audit WHERE outcome='accepted' AND workspace_after>workspace_before AND kind IN ('command.service','command.service-dependencies','command.service-template')
+     UNION ALL SELECT json_extract(data,'$.at') FROM oc_audit WHERE json_extract(data,'$.kind') IN ('service','service-dependencies','service-template','urgency-rule','response-policy','user-assignment','acknowledgment-timeout'))`),
     db.prepare('SELECT COUNT(*) AS n FROM paging_schedules'),db.prepare('SELECT COUNT(*) AS n FROM oc_policies'),db.prepare('SELECT COUNT(*) AS n FROM oc_services')]);
    const [schedule,policy,service]=results.slice(0,3).map(r=>r.results[0].at);
    return {state:schedule&&policy&&service?'ok':'degraded',at:newest([schedule,policy,service]),values:{schedules:results[3].results[0].n,policies:results[4].results[0].n,services:results[5].results[0].n,scheduleChangedAt:schedule,scheduleAgeSeconds:age(schedule,now),policyChangedAt:policy,policyAgeSeconds:age(policy,now),serviceChangedAt:service,serviceAgeSeconds:age(service,now)},reason:'Last retained accepted change per category, not a synchronization guarantee. A missing timestamp is unknown; no maximum configuration age is defined.'};
@@ -55,7 +59,7 @@ export async function readinessSignals(db:D1Database,now:number):Promise<Signal[
   }},
   {id:'obligations',name:'Failed and unanswered obligations',read:async()=>{
    const values=await obligationMeasurements(db,now);
-   return {state:values.unanswered||values.overdue||values.deadlineFailures||values.uncertain?'failing':values.interrupted?'degraded':'ok',at:values.oldestKnownAt,values,reason:'Recorded no-sender obligations, overdue unfired deadlines and interrupted or uncertain response work. These are custody records, never delivery receipts; unknown obligation times have no invented age.'};
+   return {state:values.unanswered||values.overdue||values.deadlineFailures||values.failedWorkflowSteps||values.uncertain?'failing':values.interrupted?'degraded':'ok',at:values.oldestKnownAt,values,reason:'Recorded no-sender obligations, overdue unfired deadlines and interrupted or uncertain response work. These are custody records, never delivery receipts; unknown obligation times have no invented age.'};
   }},
  ];
  return Promise.all(definitions.map(async({id,name,read})=>{

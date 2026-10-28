@@ -1,5 +1,5 @@
 /** Narrow read sets keep an unrelated broken collection out of a signal. */
-export type ReadinessTable = 'oc_incidents' | 'oc_alerts' | 'oc_api_outbox' | 'oc_triage' | 'oc_business_services' | 'oc_schedule_records';
+export type ReadinessTable = 'oc_incidents' | 'oc_alerts' | 'oc_api_outbox' | 'oc_triage' | 'oc_business_services' | 'oc_schedule_records' | 'oc_events' | 'oc_intake_receipts' | 'oc_email_receipts';
 export async function records<T>(db: D1Database, table: ReadinessTable): Promise<T[]> {
  const result = await db.prepare(`SELECT data FROM ${table} ORDER BY ordinal`).all<{data:string}>();
  return result.results.map(row => JSON.parse(row.data) as T);

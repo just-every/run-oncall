@@ -22,5 +22,6 @@ export const matrixDefinitions: Definition[] = [
  {id:'drills',area:'Human-confirmed drills',state:'unproven-live',evidence:none,limitation:'No dated human-confirmed drill evidence (OC-047).'},
  {id:'reference-load',area:'OC-064 reference load',state:'unproven-live',evidence:none,limitation:'Sustained/burst intake, escalation, failover, recovery and archive p50/p95/p99/max are unmeasured.'},
  {id:'cutover',area:'Buyer cutover',state:'unproven-live',evidence:none,limitation:'Actual services and responders have no real-device acceptance checklist evidence.'},
+ {id:'backup',area:'Backup and restore',state:'unproven-live',evidence:journey('tests/transfer.mjs / tests/checkpoint-cli.mjs'),limitation:'Local installation archives and private checkpoints exist. Hosted recovery, recovery time and reference-load capacity remain unproven.'},
  {id:'support',area:'Support and escalation',state:'unproven-live',evidence:none,limitation:'No product support channel, hours, response commitment or escalation contact is defined.'},
 ];
