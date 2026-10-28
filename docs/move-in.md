@@ -191,3 +191,61 @@ and [dynamic router rule](https://docs.pagerduty.com/developer/api/reference/res
 references. The shipped exporter and in-app read still collect only users,
 schedules, overrides and escalation policies (with schedule comparison timelines);
 they do not collect the whole account. No OAuth scope is widened here.
+
+The saved-file reader accepts list pages and single-detail wrappers for `users`,
+`schedules`, `overrides`, `escalation_policies`, `services`, `integrations`,
+`teams`, `incidents`, `maintenance_windows`, `business_services` and
+`event_orchestrations` (including the router's `orchestration_path` detail).
+Keep every page in the bundle. An override list must carry its `schedule_id`
+when more than one schedule is present. The reader inventories each service's
+embedded integration separately, at its original pointer; the service remains
+one source record. The unchanged limits are 512 KiB and 500 records, counting
+those integrations. Nothing is truncated. Narrow an export that exceeds either
+limit. Duplicate IDs within a kind, Opsgenie `data` envelopes selected as
+PagerDuty, and account objects with missing referenced users, policies, teams,
+schedules or services refuse the file. Include the missing details or correct
+the reference and preview again. Strict schedule and policy conversion refusals
+remain as described above.
+
+Each source record has one review entry and one exclusive disposition: mapped,
+mapped with differences (including retained source evidence), or rejected. The
+owner door returns their disjoint `classification` counts, which sum to
+`summary.sourceRecords`; the screen's existing direct-mapping and field-note
+counts overlap, as its explanation says. Reconciliation accounts for both
+present objects and explained source-only records.
+
+- Phone and SMS details compose E.164 from an integer `country_code` and national
+  `address` digits. A shared phone/SMS number becomes one unverified contact.
+  Missing details, a trunk prefix, formatting or non-numeric values are named
+  individually, with no guessed number. Every imported number remains unlisted
+  for paging until country coverage and OC-026/OC-066 verification establish
+  coverage; it does not satisfy two-route coverage. Email, push, notification
+  rules and their delivery settings remain notes, with no delivery.
+- Events v1, Events v2 and generic Events API integrations become inactive,
+  keyless inventory bound to the **source** service identity. The file cannot
+  supply a key. Email integrations are named for OC-070 and OC-038's inherited
+  email import duty. Vendor-hosted integrations such as Datadog, CloudWatch and
+  Grafana are named for re-creation as the matching Oncall source or generic
+  webhook. Unsupported integrations retain their original settings.
+- Services remain source evidence. Grouping, urgency, support hours, auto-resolve
+  and acknowledgment timeouts, policy and team references are each named as
+  unconverted. No native service is created; schedule adoption still requires
+  an administrator's explicit choice of an existing service.
+- Teams (OC-023), business services (OC-061), maintenance windows (OC-043) and
+  orchestration routers (OC-072 routed keys) are named refusals with their
+  original source kept. Each router rule, dynamic rule and catch-all is listed
+  individually as not converted. No routed key is created or activated.
+- Triggered and acknowledged incidents are refused individually as live imports:
+  no timeline, delivery or state change is created. Resolved incidents remain
+  counted source evidence. Imported history never counts as live delivery.
+
+Apply requires the reviewed fingerprint and retains paused, non-paging,
+non-login data. Identical bytes produce a zero-change catch-up. A changed file
+adds new objects and replaces unchanged imported targets; it names native edits
+as conflicts and lists missing source objects without deleting them. The
+existing strict undo refuses before changing anything when an affected imported
+target has a native edit. Restart between bounded apply steps resumes from the
+committed prefix; an uncertain interrupted publication still follows the
+existing failed-import/explicit-rollback rules. Related people in retained and
+rejected PagerDuty records, including opaque user references and imported
+numbers, participate in the existing person-erasure flow.

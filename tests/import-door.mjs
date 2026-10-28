@@ -351,17 +351,19 @@ try {
  for(const namespace of ['servicenow','PagerDuty','__proto__','constructor','opsgenie,pagerduty'])
   assert.equal(ok(await call('uploads',namespace,{}),403).error,'unknown_import_source',namespace)
  assert.deepEqual(rows(),held,'refused namespaces write nothing')
- // A listed namespace is parsed by its own vendor's parser, as the owner's preview of the same bytes is.
+ // OC-038 a file saved with Opsgenie's data envelopes must not masquerade as PagerDuty.
  const opsgenieBytes=await readFile('tests/fixtures/opsgenie-saved.json')
- const crossed=ok(await call('plan','pagerduty',{uploadId:await upload('pagerduty',opsgenieBytes,'opsgenie-bytes.json')}))
- for(const [vendor,plan] of [['pagerduty',crossed],['opsgenie',planned.opsgenie]]) {
-  const preview=ok(await door.preview(vendor,opsgenieBytes))
-  assert.equal(plan.summary.sourceRecords,preview.items.length,vendor)
-  // The owner cancels the unapplied plan through the same door (for pagerduty, Business's plan of the same bytes).
-  assert.equal(ok(await door.call(vendor,'undo',{planId:preview.planId})).state,'cancelled')
- }
- assert.notEqual(crossed.summary.sourceRecords,planned.opsgenie.summary.sourceRecords,'each namespace has its own parser')
- console.log('Business import door: unlisted namespaces refused with no writes; each listed vendor parsed by its own parser')
+ const beforeCross=w.sql('SELECT * FROM move_in_objects ORDER BY kind,id')
+ const crossed=await call('plan','pagerduty',{uploadId:await upload('pagerduty',opsgenieBytes,'opsgenie-bytes.json')})
+ ok(crossed,422)
+ assert.equal(crossed.value.error,'source_parser_failed')
+ const wrongOwner=ok(await door.preview('pagerduty',opsgenieBytes),400)
+ assert.match(wrongOwner.error,/Opsgenie-shaped.*choose Opsgenie/)
+ assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),beforeCross)
+ const sameVendor=ok(await door.preview('opsgenie',opsgenieBytes))
+ assert.equal(planned.opsgenie.summary.sourceRecords,sameVendor.items.length)
+ assert.equal(ok(await door.call('opsgenie','undo',{planId:sameVendor.planId})).state,'cancelled')
+ console.log('Business import door: unlisted namespaces and cross-vendor envelopes refused with no product writes; Opsgenie retains its own parser')
  const response=r=>({status:r.status,json:async()=>r.value})
  await checkDoor({request:async(action,body,review)=>response(await call(action,'opsgenie',body,review)),bytes:await readFile('tests/fixtures/opsgenie.json'),name:'opsgenie.json',
   nativeSnapshot:async()=>ok(await req('/api/move-in/objects')),
@@ -373,7 +375,7 @@ try {
   assertUndone:async(before,after)=>assert.deepEqual(after,before)})
  console.log('Business import door: ADOPTING.md public HTTP conformance passed')
  // OC-038 the three additional namespaces obey the same signed-grant public door contract.
- for(const vendor of ['splunk','jsm','betterstack'])await checkDoor({request:async(action,body,review)=>response(await call(action,vendor,body,review)),bytes:await readFile(`tests/fixtures/synthetic-oncall-${vendor}.json`),name:`synthetic-oncall-${vendor}.json`,
+ for(const vendor of ['pagerduty','splunk','jsm','betterstack'])await checkDoor({request:async(action,body,review)=>response(await call(action,vendor,body,review)),bytes:await readFile(vendor==='pagerduty'?'tests/fixtures/pagerduty-account.json':`tests/fixtures/synthetic-oncall-${vendor}.json`),name:`synthetic-oncall-${vendor}.json`,
   nativeSnapshot:async()=>ok(await req('/api/move-in/objects')),
   assertApplied:async(before,after,report)=>{
    assert.ok(after.length>before.length);assert.ok(report.counts.explained>0)
@@ -382,6 +384,85 @@ try {
   },assertUndone:async(before,after)=>assert.deepEqual(after,before)})
  console.log('OC-038 signed import door: Splunk/JSM/Better Stack reviewed grants, source reconciliation, inactive integration inventory and undo passed')
 
+ // OC-038 whole-account catch-up uses the real signed door and the owner's existing journal.
+ {
+  const raw=await readFile('tests/fixtures/pagerduty-account.json'),saved=JSON.parse(raw),objects=()=>okSnapshot('/api/move-in/objects')
+  async function okSnapshot(path){return ok(await req(path))}
+  const baseline=await objects(),native=await okSnapshot('/api/state'),paging=await okSnapshot('/api/paging/state')
+  const savedUpload=await upload('pagerduty',raw,'pagerduty-account.json'),plan=ok(await call('plan','pagerduty',{uploadId:savedUpload}))
+  const approval={fingerprint:plan.fingerprint,approvalRecordId:'synthetic-oncall-account-approval',approvedAt:new Date().toISOString()}
+  // An authority change at SQL publication is rechecked inside the committing batch.
+  w.sql('CREATE TRIGGER synthetic_pd_revocation AFTER INSERT ON ik_jobs BEGIN UPDATE ik_door_settings SET enabled=0; END')
+  const denied=await call('apply','pagerduty',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},approval)
+  assert.equal(denied.status,409)
+  assert.deepEqual(await objects(),baseline,'publication-time authority revocation rolls back every imported row')
+  assert.equal(ok(await req('/auth/settings/imports')).enabled,true,'the injected authority revocation itself rolls back with the rejected transaction')
+  w.sql('DROP TRIGGER synthetic_pd_revocation')
+  // A failed publication cannot alter a prior committed baseline.
+  const afterDenied=ok(await call('plan','pagerduty',{uploadId:savedUpload}))
+  const afterApproval={fingerprint:afterDenied.fingerprint,approvalRecordId:'synthetic-oncall-account-replanned',approvedAt:new Date().toISOString()}
+  w.sql("CREATE TRIGGER synthetic_pd_failure BEFORE INSERT ON move_in_objects BEGIN SELECT RAISE(ABORT,'SYNTHETIC_PD_PUBLICATION_FAILURE'); END")
+  ok(await call('apply','pagerduty',{planId:afterDenied.planId,reviewedFingerprint:afterDenied.fingerprint},afterApproval),409)
+  w.sql('DROP TRIGGER synthetic_pd_failure')
+  assert.deepEqual(await objects(),baseline);assert.deepEqual(await okSnapshot('/api/state'),native);assert.deepEqual(await okSnapshot('/api/paging/state'),paging)
+  const reviewed=ok(await call('plan','pagerduty',{uploadId:savedUpload})),accepted={fingerprint:reviewed.fingerprint,approvalRecordId:'synthetic-oncall-account-final',approvedAt:new Date().toISOString()}
+  const input={planId:reviewed.planId,reviewedFingerprint:reviewed.fingerprint}
+  let job=ok(await call('apply','pagerduty',input,accepted)).job
+  assert.ok(['queued','applying'].includes(job.state),'the account pauses between bounded HTTP apply steps')
+  const partial=await objects();assert.ok(partial.length>baseline.length)
+  await w.stop();await w.start();assert.deepEqual(await objects(),partial)
+  for(let batch=0;job.state!=='completed'&&batch<30;batch++)job=ok(await call('apply','pagerduty',input,accepted)).job
+  assert.equal(job.state,'completed')
+  const initial=await objects()
+  assert.deepEqual(await okSnapshot('/api/state'),native);assert.deepEqual(await okSnapshot('/api/paging/state'),paging)
+  const report=ok(await call('reconcile','pagerduty',{planId:reviewed.planId}))
+  assert.equal(report.ok,true);assert.equal(report.counts.present+report.counts.explained,report.counts.sourceRecords)
+  // The exact same bytes through the owner are a zero-change catch-up.
+  const repeated=ok(await door.preview('pagerduty',raw))
+  assert.deepEqual([repeated.summary.created,repeated.summary.updated,repeated.summary.gone],[0,0,0])
+  assert.equal(repeated.summary.unchanged,reviewed.summary.sourceRecords)
+  ok(await door.apply('pagerduty',repeated));assert.deepEqual(await objects(),initial)
+  ok(await door.undo('pagerduty',repeated.planId))
+  // One new person, one changed person, a changed locally edited person and one absent person.
+  const changed=structuredClone(saved),first=changed.users[0].users[0],edited=changed.users[0].users[1],gone=changed.users.at(-1).user
+  first.name='Ari updated in PagerDuty';edited.name='Bea updated in PagerDuty'
+  changed.users.pop()
+  changed.users.push({user:{id:'synthetic-oncall-catchup-user',type:'user',email:'pd.catchup@example.test',name:'New PagerDuty person',contact_methods:[],notification_rules:[]}})
+  // Remove the missing person's source references so this remains a self-contained saved account.
+  const replaceRefs=value=>{
+   if(Array.isArray(value))return value.map(replaceRefs)
+   if(value&&typeof value==='object')return value.id===gone.id?{...value,id:first.id}:Object.fromEntries(Object.entries(value).map(([key,child])=>[key,replaceRefs(child)]))
+   return value
+  }
+  const changedRaw=JSON.stringify(replaceRefs(changed)),editedRow=initial.find(row=>row.targetKind==='user'&&row.targetId===edited.email)
+  w.sql(`UPDATE move_in_objects SET data=json_set(data,'$.name','Bea edited in Oncall'),revision='synthetic-oncall-native-edit' WHERE kind='user' AND id='${edited.email}'`)
+  const catchup=ok(await door.preview('pagerduty',changedRaw))
+  assert.ok(catchup.summary.created>0);assert.ok(catchup.summary.updated>0);assert.equal(catchup.summary.gone,1)
+  assert.ok(catchup.differences.gone.some(row=>row.sourceId===gone.id||JSON.stringify(row).includes(gone.id)))
+  const conflict=catchup.items.find(item=>item.kind==='users'&&item.id===edited.id)
+  assert.match(conflict.rejection,/Native edit conflict/);assert.equal(conflict.name,edited.name);assert.equal(conflict.effects.length,0)
+  ok(await door.apply('pagerduty',catchup))
+  const after=await objects()
+  assert.equal(after.find(row=>row.targetId===first.email).value.name,first.name)
+  assert.equal(after.find(row=>row.targetId===edited.email).value.name,'Bea edited in Oncall')
+  assert.ok(after.some(row=>row.targetId==='pd.catchup@example.test'))
+  assert.ok(after.some(row=>row.targetId===gone.email),'absent source objects are listed and never deleted')
+  // Undo reverses only unchanged imported effects; a native edit is a named strict conflict and is preserved.
+  const added=after.find(row=>row.targetId==='pd.catchup@example.test')
+  w.sql("UPDATE move_in_objects SET data=json_set(data,'$.name','Native catch-up edit'),revision='synthetic-oncall-undo-edit' WHERE kind='user' AND id='pd.catchup@example.test'")
+  const beforeUndo=await objects(),blocked=ok(await door.call('pagerduty','undo',{planId:catchup.planId}),409)
+  assert.equal(blocked.code,'NATIVE_EDIT_CONFLICT');assert.ok(blocked.error.includes('pd.catchup@example.test'))
+  assert.deepEqual(await objects(),beforeUndo,'undo never overwrites a native edit or partially reverses a strict import')
+  w.sql(`UPDATE move_in_objects SET data='${JSON.stringify(added.value).replaceAll("'","''")}',revision='${added.revision}' WHERE kind='user' AND id='pd.catchup@example.test'`)
+  assert.equal(ok(await door.undo('pagerduty',catchup.planId)).job.state,'undone')
+  assert.ok(!(await objects()).some(row=>row.targetId==='pd.catchup@example.test'))
+  assert.equal((await objects()).find(row=>row.targetId===first.email).value.name,initial.find(row=>row.targetId===first.email).value.name)
+  assert.equal((await objects()).find(row=>row.targetId===edited.email).value.name,'Bea edited in Oncall','the conflicted person was never owned by the catch-up')
+  // Restore the deliberate native edit before undoing the original baseline.
+  w.sql(`UPDATE move_in_objects SET data='${JSON.stringify(editedRow.value).replaceAll("'","''")}',revision='${editedRow.revision}' WHERE kind='user' AND id='${edited.email}'`)
+  ok(await door.undo('pagerduty',reviewed.planId));assert.deepEqual(await objects(),baseline)
+  console.log('OC-038 PagerDuty account HTTP: upload/plan, publication revocation and failure rollback, bounded apply/restart/reconcile, identical-byte idempotence, catch-up addition/replacement/gone/native conflict and guarded undo passed')
+ }
  // The move-in screen's own path: the same door through the owner's session, the same allow-list and one history.
  const viewer=ok(await req('/api/members',{name:'Door viewer',password:'synthetic-import-door-password',role:'viewer'}),201)
  const viewing=await w.request('/api/login',{name:viewer.name,password:'synthetic-import-door-password'});ok(viewing)

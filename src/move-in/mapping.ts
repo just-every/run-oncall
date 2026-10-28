@@ -1,3 +1,4 @@
+import {pagerdutyContacts,pagerdutyEvidence} from './pagerduty-mapping'
 import {mappingPayload,importedContacts,opsFamily} from './vendor-formats'
 import { compare, crossesOffsetChange } from './equivalence';
 import type { ImportMapping, SourceRecord, MappingResult } from '../modules/import-kit/src/types'
@@ -71,9 +72,10 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
   try {
    if(record.kind==='users') {
     const email=mailbox(value.email??value.username)
-    const result=effect('user',email,{id:email,name:value.fullName??value.name??email,email,sourceId:record.sourceId,...(['splunk','jsm','betterstack'].includes(vendor)?{contacts:importedContacts(value)}:{})})
+    const result=effect('user',email,{id:email,name:value.fullName??value.name??email,email,sourceId:record.sourceId,...(vendor==='pagerduty'?{contacts:pagerdutyContacts(value).contacts}:['splunk','jsm','betterstack'].includes(vendor)?{contacts:importedContacts(value)}:{})})
     result.unmapped=Object.keys(value).filter(k=>!['id','email','username','name','fullName'].includes(k)).flatMap(field=>Array.isArray(value[field])?value[field].map((rule:any,i:number)=>({field:field+'.'+i,reason:`User ${label} rule ${rule.name??rule.id??i}: retained only; no delivery or access is activated`})): [{field,reason:`User ${label}: profile/contact/notification rule is retained only; no delivery or access is activated`}])
     if(['splunk','jsm','betterstack'].includes(vendor))for(const contact of importedContacts(value))result.unmapped!.push({field:'phone_numbers',reason:`Contact ${contact.number}: E.164 retained, unverified; number is unlisted for paging until a maintained country list and verification establish coverage; does not meet two-route coverage. No paging route is created.`})
+    if(vendor==='pagerduty')result.unmapped!.push(...pagerdutyContacts(value).unmapped)
     return result
    }
    if(record.kind==='integrations') {
@@ -81,7 +83,10 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
     const id=record.sourceId,kind=value.type??value.kind??'unknown'
     if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id)||typeof kind!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(kind))throw Error('integration identifier or kind cannot be represented safely; original retained for resolution')
     const provider=vendor==='splunk'&&kind==='REST'?'splunk':(vendor==='jsm'||vendor==='opsgenie')&&kind==='API'?'opsgenie':vendor==='pagerduty'&&['generic_events_api_inbound_integration','events_api_v1_inbound_integration','events_api_v2_inbound_integration'].includes(kind)?'pagerduty':null
-    return {...effect('integration',`${vendor}:${id}`,{sourceId:id,vendor,kind,provider,active:false,incumbentKey:'not supplied'}),unmapped:[{field:'integration',reason:`Inactive ${kind} integration ${id}; incumbent key: not supplied. No endpoint or send authority is activated. Original settings and labels remain in the journal.`}]}
+    if(vendor==='pagerduty'&&!provider)return {effects:[],rejection:kind==='email_inbound_integration'
+     ?`Integration ${label} (${id}, ${kind}): email modes and rules need OC-070 and the inherited OC-038 import; recreate and review the email receiving mode. Original retained; no delivery is activated.`
+     :`Integration ${label} (${id}, ${kind}): vendor-hosted or unsupported integration; recreate it as the matching Oncall source or use the generic webhook and change its URL. Original retained; no endpoint is activated.`}
+    return {...effect('integration',`${vendor}:${id}`,{sourceId:id,vendor,kind,provider,active:false,incumbentKey:'not supplied',...(vendor==='pagerduty'&&value._service?{serviceSource:{namespace:vendor,kind:'services',sourceId:String(value._service.id)}}:{})}),unmapped:[{field:'integration',reason:`Inactive ${kind} integration ${id}; incumbent key: not supplied. No endpoint or send authority is activated. Original settings and labels remain in the journal.`}]}
    }
    if(record.kind==='schedules') {
     if(errors.has(record.sourceId))throw Error(errors.get(record.sourceId))
@@ -120,13 +125,14 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
     result.unmapped=[...differences,...Object.keys(value).filter(k=>!['id','name','rules','escalation_rules','num_loops','repeat','repeatEnabled'].includes(k)).map(field=>({field,reason:`Policy ${label}: metadata is retained only, not an active rule`}))]
     return result
    }
+   if(vendor==='pagerduty'){const evidence=pagerdutyEvidence(record.kind,record.sourceId,value);if(evidence)return evidence}
    return {effects:[],rejection:`${record.kind} ${label}: unsupported object; original retained in the provenance journal for resolution (teams, services, finite calendar events, historical incidents/timelines, repeat settings, routes and rules are not activated)`}
   }catch(error){return {effects:[],rejection:`${record.kind} ${label}: ${(error as Error).message}`}}
  }}
  // Related foreign user references remain erasable even when the object itself cannot be converted.
  return {version:adapter.version,map(record){
   const result=adapter.map(record)
-  if(['splunk','jsm','betterstack'].includes(vendor)) {
+  if(['pagerduty','splunk','jsm','betterstack'].includes(vendor)) {
    const related=new Set<string>()
    const visit=(value:unknown):void=>{if(typeof value==='string'&&emails.has(value))related.add(emails.get(value)!);else if(Array.isArray(value))value.forEach(visit);else if(value&&typeof value==='object')Object.values(value).forEach(visit)}
    visit(record.payload)

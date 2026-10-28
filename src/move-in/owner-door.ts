@@ -55,7 +55,8 @@ async function body(request: Request): Promise<Record<string, unknown> | undefin
 const review = (plan: ImportPlan) => plan.entries.map(entry => {
  const value = entry.source.payload as any
  return { kind: entry.source.kind, id: entry.source.sourceId, location: entry.source.location,
-  name: value?.fullName ?? value?.name ?? value?.summary ?? value?.username ?? value?.email ?? entry.source.sourceId,
+  disposition: entry.rejection ? 'rejected' : entry.unmapped.length ? 'mapped-with-differences' : 'mapped',
+  name: value?.fullName ?? value?.name ?? value?.title ?? value?.summary ?? value?.username ?? value?.email ?? entry.source.sourceId,
   rejection: entry.rejection, unmapped: entry.unmapped, effects: entry.effects }
 })
 
@@ -112,6 +113,8 @@ export async function ownerImport(c: any): Promise<Response> {
  await expireInterruptedImports(base)
  const action = new URL(request.url).pathname.slice(PREFIX.length), input = await body(request)
  if(typeof input?.planId==='string')auditIdentity(base,{subject:{kind:'import-plan',id:input.planId}})
+ if(action==='uploads'&&typeof input?.totalBytes==='number'&&input.totalBytes>DOOR_LIMITS.maxBytes)
+  return refusal(new Refusal(413,`The saved export is ${input.totalBytes} bytes, above the ${DOOR_LIMITS.maxBytes}-byte (512 KiB) limit; narrow the export and preview again. Nothing was imported or truncated.`,'SOURCE_BYTE_LIMIT'))
  const attempt = action === 'apply' && typeof input?.planId === 'string' ? importAttempt(base, { planId: input.planId }) : undefined
  const db = (attempt?.database ?? base) as D1Database
  const session = adminSession(c.get('sessionDigest'), actor.id)
@@ -170,7 +173,10 @@ export async function ownerImport(c: any): Promise<Response> {
   if (plan.planId !== before) await db.prepare(`INSERT OR IGNORE INTO move_in_previews(plan_id) SELECT id FROM ik_door_plans WHERE id=? AND job_id IS NULL
    AND NOT EXISTS(SELECT 1 FROM ik_jobs WHERE operation_key='door:'||?)`).bind(plan.planId, plan.planId).run()
   const snapshot = await loadSnapshot(read, await planRow(read, plan.planId))
-  return answer({ ...plan, items: review(snapshot.plan) })
+  const items=review(snapshot.plan)
+  const classification={mapped:0,mappedWithDifferences:0,rejected:0}
+  for(const item of items)classification[item.disposition==='mapped-with-differences'?'mappedWithDifferences':item.disposition==='rejected'?'rejected':'mapped']++
+  return answer({ ...plan, items, classification })
  }
  if (action === 'apply' && typeof input?.planId === 'string') {
   // Name people or schedules another import already holds before the door starts a job that could only fail.

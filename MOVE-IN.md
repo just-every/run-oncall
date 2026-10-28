@@ -109,3 +109,39 @@ The same reviewed file door now inventories [Splunk](docs/move-in.md#splunk-save
 `POST /api/move-in/read {source, region, key?, cursor?}` requires a current administrator and returns `{part,next}`. Each app step makes at most 30 provider requests (29 plus revocation for a PagerDuty consent read), leaving room for session and audit queries below the Worker subrequest limit, with a ten-second timeout and manual redirect refusal. The fixed recipients are `api.pagerduty.com`, `api.eu.pagerduty.com`, `api.opsgenie.com`, `api.eu.opsgenie.com`, `identity.pagerduty.com` and `identity.eu.pagerduty.com`; no input chooses a host. The categories are users, schedules, overrides, final coverage and escalation policies. Credential fields are removed; a credential echoed into data refuses the read. Limits are the unchanged import limits, 500 objects and 512 KiB. A finished read audits only provider, region and counts.
 
 The callback uses PKCE and the installation’s two optional settings, seals a token with AES-GCM under `SESSION_SECRET` with label `oncall-move-in-token-v1`, and lands on `/settings/move-in?connected=pagerduty`. The HttpOnly, SameSite=Lax cookie is scoped to `/api/move-in/` for at most ten minutes. Encrypted, archive-excluded consent leases let the existing minute task revoke abandoned connections starting at eight minutes. A completed read revokes and clears custody. Provider outages cannot establish successful revocation: the app names the failure and the minute task discards expired custody, with manual app revocation at PagerDuty as the recovery.
+
+## PagerDuty account files from the owner's tooling
+
+The saved-file door additionally reads PagerDuty `services` with embedded
+`integrations`, `teams`, `incidents`, `maintenance_windows`, `business_services`
+and `event_orchestrations`, using REST list pages and single-detail wrappers.
+These account objects come from a saved file **the owner's own tooling
+produced**. The shipped downloadable exporter and in-app read still collect only
+users, schedules, overrides and escalation policies, with schedule comparison
+timelines. Their code and OAuth scopes are unchanged.
+
+Every source object, including each embedded integration, has one review
+decision and retained provenance. Phone/SMS country code plus national digits
+become unverified E.164 contacts; malformed or ambiguous methods are named, and
+email, push and notification rules remain notes. No imported contact satisfies
+paging or two-route coverage before OC-026/OC-066 verification and country
+coverage checks. Supported Events v1/v2/generic API inventory stays inactive,
+keyless and bound to the source service; no native service is created.
+Email integrations name OC-070 and OC-038's inherited duty; vendor integrations
+name re-creation as the matching Oncall source or generic webhook.
+
+Service grouping, urgency, support hours and both timeouts are individually
+unconverted. Teams (OC-023), business services (OC-061), maintenance (OC-043)
+and each orchestration rule/dynamic route/catch-all (OC-072) retain their
+originals without native authority. Open incidents are named refusals with no
+live timeline or state change; resolved history stays source evidence, never
+delivery. The strict schedule/policy converter is unchanged.
+
+Keys or credential fields refuse the whole file with their field and pointer.
+Wrong-vendor envelopes, duplicate kind/ID pairs and dangling account references
+also refuse; bounds name the count or size and ask to narrow the export, with
+no truncation. Reviewed apply, restart, catch-up, strict guarded undo and
+person-erasure use the existing doors. See [the field-by-field behavior and
+dated format references](docs/move-in.md#pagerduty-account-saved-responses).
+The 75-record synthetic account is documented-shape proof, **unverified against
+a live account**. OC-038 remains PARTIAL; paging stays OFF.
