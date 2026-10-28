@@ -1,3 +1,4 @@
+import {installReadiness} from './readiness/api';
 import {installTeams} from './teams/api';
 import {auditRefusalCommitted} from './audit-store';
 import {holdRuleWorkflows} from './orchestration/workflows';
@@ -215,6 +216,8 @@ api.use("*", async (c, next) => {
   await next();
   if (c.res.status >= 400) await discardDeniedBody(c);
 });
+// Readiness authenticates without the ordinary read path’s key/owner maintenance.
+installReadiness(api);
 // Upgraded installations seal any held plaintext signing key before a request can read it.
 api.use("/api/*", async (c, next) => {
   await sealHeldSourceKeys(c.env.DB, runtimeBindings(c.env).SESSION_SECRET);

@@ -78,7 +78,7 @@ export async function triageBulkCompletion(){
   const checkpoint=ok(await req('/api/recovery/checkpoint'));
   const restored=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(restored);cookie=restored.cookie;assert.deepEqual((await state()).alerts,archive.alerts,'native restore retains every closed state, assignee, snooze record, revision and shared operation history');
   await w.stop();await w.start();const login=await w.request('/api/login',{name:'synthetic-oncall-600',password:'synthetic-oncall-600-password'});ok(login);cookie=login.cookie;assert.deepEqual((await state()).alerts,archive.alerts);
-  console.log('PASS OC-060 public bulk completion: revisioned incident snooze and multi-source merge, independent stale refusal and exact replay, attributed atomic merge history, 500 selected and 1,000 confirmed matching alert-only closes, unchanged source recovery/incident semantics, viewer denial, source-revision fencing, no-timer alert snooze, per-item audit rollback/retry and full archive/restart custody. Paging OFF.');
+  console.log('PASS OC-079 public bulk completion: revisioned incident snooze and multi-source merge, independent stale refusal and exact replay, attributed atomic merge history, 500 selected and 1,000 confirmed matching alert-only closes, unchanged source recovery/incident semantics, viewer denial, source-revision fencing, no-timer alert snooze, per-item audit rollback/retry and full archive/restart custody. Paging OFF.');
  }finally{await w.close();}
 }
 if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1])await triageBulkCompletion();

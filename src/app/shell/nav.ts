@@ -17,6 +17,7 @@ export const settingsNavigation: NavItem[] = [
   {id: 'routing', label: 'Routing', path: '/settings/routing'},
   {id: 'team', label: 'Team', path: '/settings/team'},
   {id: 'move-in', label: 'Move in', path: '/settings/move-in'},
+  {id: 'readiness', label: 'Readiness', path: '/settings/readiness'},
   {id: 'archive', label: 'Archive', path: '/settings/archive'},
 ];
 export const settingsItem: NavItem = {id: 'settings', label: 'Settings', path: '/settings/services', icon: 'settings'};
