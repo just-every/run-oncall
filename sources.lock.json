@@ -4784,7 +4784,7 @@
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
-      "sha256": "755fabb7fad10b412c1f59b4f0218c0ed75c975d4d87aaa348b8de76e8b354cf",
+      "sha256": "2b41910beec3b161bad5780b43d2875f1e3a583a7cefd9af8615019de9e02c7c",
       "executable": false
     },
     "tests/diagnostics.mjs": {
@@ -4932,7 +4932,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "af8f046462eaaf40143d6df3f2aa2798583e98541ffacd31559130892039c83a",
+      "sha256": "575a9b455a04c92ddf667547e9509ed9adc103b554a6c128d5de2f98b8703559",
       "executable": false
     },
     "tests/triage.mjs": {
