@@ -1,6 +1,6 @@
 import {openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
-import {mkdir} from 'node:fs/promises'
+import {mkdir,readFile} from 'node:fs/promises'
 
 const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
 async function screenshot(page,name) {
@@ -24,9 +24,51 @@ export async function journal(page,origin,vendor,jobId,state) {
   await page.goto(origin)
   await openWorkspaceSection(page,'move-in')
   await page.getByLabel('Source',{exact:true}).selectOption(vendor)
-  await page.getByLabel('Saved import journal',{exact:true}).selectOption(jobId)
+  await page.getByLabel('Saved import journal',{exact:true}).or(page.getByRole('button',{name:'Open saved import',exact:true})).waitFor();if(await page.getByLabel('Saved import journal',{exact:true}).count())await page.getByLabel('Saved import journal',{exact:true}).selectOption(jobId);else await page.getByRole('button',{name:'Open saved import',exact:true}).click()
+  await page.getByText('Approval details',{exact:true}).click()
   await page.getByText(/^approved via Business by /).waitFor()
   await page.getByRole('status').filter({hasText:'Import journal'}).getByText(new RegExp(state)).first().waitFor()
   await screenshot(page,`journal-${vendor}-${state}-${width}`)
+  console.log(`O11 import journal ${vendor} ${width}: Business approval, ${state} state and responsive journal passed`)
  }
+}
+
+// The file choice itself starts preview; there is no separate preview action.
+export async function fileSource(page,vendor) {
+ await page.goto(new URL('/move-in',page.url()).href)
+ await page.getByLabel('Source',{exact:true}).selectOption('file')
+ await page.getByLabel('File source',{exact:true}).selectOption(vendor)
+}
+export async function confirmImport(page) {
+ await page.getByRole('button',{name:'Import paused',exact:true}).click()
+ await page.getByRole('button',{name:'Confirm paused import',exact:true}).click()
+ await page.getByRole('heading',{name:'Import journal',exact:true}).waitFor()
+}
+export async function confirmUndo(page) {
+ await page.getByRole('button',{name:'Undo this import',exact:true}).click()
+ await page.getByRole('button',{name:'Confirm undo',exact:true}).click()
+}
+
+// O11: one file choice, one review, one paused-import confirmation, one undo confirmation.
+export async function fileJourney(page,context,origin,{readProvider=false}={}) {
+ // Keep the caller's viewport: this journey runs in both product layouts.
+ const width=page.viewportSize().width
+ const objects=async()=>{const response=await context.request.get(origin+'/api/move-in/objects');assert.equal(response.status(),200);return response.json()}
+ const before=await objects()
+ await page.goto(origin+'/move-in')
+ if(readProvider){const key='synthetic-provider-read-private';await page.getByRole('button',{name:'Use a read-only key instead',exact:true}).click();await page.getByLabel('Read-only key',{exact:true}).fill(key);const [read,plan]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/move-in/read'),page.waitForResponse(response=>new URL(response.url()).pathname==='/api/operator/import/plan'),page.getByRole('button',{name:'Read schedules',exact:true}).click()]);assert.equal(read.status(),200);assert.ok(!(await read.text()).includes(key));await page.getByRole('heading',{name:'2 · Review',exact:true}).waitFor();assert.deepEqual(await objects(),before);assert.ok(!(await page.content()).includes(key));for(const endpoint of ['/api/archive','/api/audit/export'])assert.ok(!(await (await context.request.get(origin+endpoint)).text()).includes(key));const planned=await plan.json();const cancelled=await context.request.post(origin+'/api/operator/import/undo',{headers:{origin,'X-Import-Source':'pagerduty'},data:{planId:planned.planId}});assert.equal(cancelled.status(),200);console.log(`O11 key read ${width}: read schedules reached Review, imported objects unchanged, key absent from document, read response, archive and audit`)}
+ await fileSource(page,'opsgenie')
+ await page.getByLabel('Export JSON',{exact:true}).setInputFiles({name:'opsgenie-file-journey.json',mimeType:'application/json',buffer:await readFile('tests/fixtures/opsgenie.json')})
+ await page.getByRole('heading',{name:'2 · Review',exact:true}).waitFor()
+ assert.deepEqual(await objects(),before,'file choice reaches the plan before any imported object exists')
+ await page.getByRole('button',{name:'Import paused',exact:true}).click()
+ await page.getByRole('heading',{name:'3 · Import paused',exact:true}).waitFor()
+ assert.deepEqual(await objects(),before,'the confirmation still writes no imported object')
+ await page.getByRole('button',{name:'Confirm paused import',exact:true}).click()
+ await page.getByRole('heading',{name:'Import complete',exact:true}).waitFor()
+ const applied=await objects();assert.ok(applied.length>before.length);assert.ok(applied.every(row=>row.value.paused===true))
+ await confirmUndo(page)
+ await page.getByRole('status').filter({hasText:'Import journal'}).getByText(/undone/).first().waitFor()
+ assert.deepEqual(await objects(),before,'undo removes the unchanged paused import')
+ console.log(`O11 file journey ${width}: imported objects before=${before.length}, review=${before.length}, confirmation=${before.length}, applied=${applied.length}, undo=${before.length}`)
 }

@@ -1,3 +1,4 @@
+import ts from 'typescript'
 import assert from 'node:assert/strict'
 import {generateKeyPairSync,sign,createHash,randomUUID} from 'node:crypto'
 import {readFile} from 'node:fs/promises'
@@ -6,7 +7,54 @@ import {localWorker,ownerDoor} from './worker.mjs'
 // One public-door journey, with real D1 and only synthetic saved vendor exports.
 const {privateKey,publicKey}=generateKeyPairSync('ec',{namedCurve:'prime256v1'})
 const kid='synthetic-business-key',issuer='https://business.example.test',installationId=randomUUID()
-const w=await localWorker({RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:publicKey.export({format:'jwk'})}),RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId})
+const providerFixtures=Object.fromEntries(await Promise.all(['pagerduty','opsgenie'].map(async vendor=>[vendor,JSON.parse(await readFile(`tests/fixtures/${vendor}.json`,'utf8'))])))
+const providerFetch=`const providerFixtures = __FIXTURES__;
+let providerMode='normal',providerCalls=[],pkceChallenge='',pkceValid=false,revoked=0;
+const actualFetch=globalThis.fetch;
+globalThis.fetch=async(input,options={})=>{
+ const url=new URL(String(input)),host=url.hostname;
+ const allowed=['api.pagerduty.com','api.eu.pagerduty.com','api.opsgenie.com','api.eu.opsgenie.com','identity.pagerduty.com','identity.eu.pagerduty.com'];
+ if(!allowed.includes(host))throw Error('Test provider saw an undeclared recipient');
+ providerCalls.push({host,path:url.pathname,method:options.method,redirect:options.redirect,signal:!!options.signal});
+ if(host.startsWith('identity.')){
+  const fields=new URLSearchParams(options.body);
+  if(url.pathname==='/oauth/token'){
+   const verifier=fields.get('code_verifier'),digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier));
+   const challenge=btoa(String.fromCharCode(...new Uint8Array(digest))).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+   pkceValid=challenge===pkceChallenge;
+   if(!pkceValid)return Response.json({error:'invalid_grant'},{status:400});
+   return Response.json({access_token:'synthetic-provider-consent-private',token_type:'bearer',scope:'users.read schedules.read escalation_policies.read',expires_in:86400});
+  }
+  if(url.pathname==='/oauth/revoke'){if(providerMode==='revoke-failure')return Response.json({error:'refused '+fields.get('token')},{status:503});if(fields.get('token')!=='synthetic-provider-consent-private'||!options.headers.Authorization?.startsWith('Basic '))throw Error('Revocation did not authenticate');revoked++;return new Response(null,{status:200})}
+  throw Error('Unexpected identity path');
+ }
+ const key=options.headers.Authorization?.split(' ').at(-1)??'';
+ if(providerMode==='wrong-key')return Response.json({error:'refused '+key},{status:401});
+ if(providerMode==='timeout')return new Promise((_resolve,reject)=>options.signal.addEventListener('abort',()=>reject(Error('Provider network failure '+key))));
+ if(providerMode==='redirect')return new Response(null,{status:302,headers:{Location:'https://refused.example.test/steal'}});
+ const vendor=host.includes('opsgenie')?'opsgenie':'pagerduty',ops=vendor==='opsgenie',fixture=providerFixtures[vendor];
+ const users=ops?fixture.users.data:fixture.users,schedules=ops?fixture.schedules.data:fixture.schedules;
+ const path=url.pathname,offset=Number(url.searchParams.get('offset')??0);
+ const list=(kind,items)=>ops?{data:items,...(kind==='users'&&offset===0?{paging:{next:\`\${url.origin}\${path}?limit=1&offset=1\`}}:{})}:{[kind]:items,limit:1,offset,more:kind==='users'&&offset===0};
+ let body;
+ if(path.endsWith('/users')){
+  if(providerMode==='many-pages')body=ops?{data:[{id:'many-'+offset,email:'many-'+offset+'@example.test'}],...(offset<44?{paging:{next:\`\${url.origin}\${path}?limit=1&offset=\${offset+1}\`}}:{})}:{users:[{id:'many-'+offset,email:'many-'+offset+'@example.test'}],limit:1,offset,more:offset<44};
+  else if(providerMode==='too-many')body=ops?{data:Array.from({length:501},(_,i)=>({id:'large-'+i}))}:{users:Array.from({length:501},(_,i)=>({id:'large-'+i})),more:false};
+  else if(providerMode==='too-big')body=ops?{data:[{id:'large',name:'x'.repeat(530000)}]}:{users:[{id:'large',name:'x'.repeat(530000)}],more:false};
+  else if(providerMode==='echo'||providerMode==='encoded-echo')body=list('users',[{...users[0],name:providerMode==='echo'?key:encodeURIComponent(key)}]);
+  else {body=list('users',[{...users[offset],apiKey:key}]);if(providerMode==='unsafe-page')body=ops?{...body,paging:{next:'https://refused.example.test/users'}}:{...body,more:true,limit:1,offset:0};}
+ }else if(path.endsWith('/schedules'))body=list('schedules',schedules.map(({id})=>({id})));
+ else if(path.endsWith('/overrides'))body=list('overrides',ops?fixture.overrides.data.filter(value=>path.includes(value.scheduleId)):[]);
+ else if(path.endsWith('/timeline')){const id=decodeURIComponent(path.split('/').at(-2)),original=fixture.timelines.data;body={data:{...original,_parent:{id},...(id===original._parent.id?{}:{finalTimeline:{rotations:[]}})}};}
+ else if(path.includes('/schedules/')){const schedule=schedules.find(value=>value.id===decodeURIComponent(path.split('/').at(-1)));body=ops?{data:schedule}:{schedule};}
+ else if(path.endsWith('/escalations'))body=list('escalations',fixture.escalations.data);
+ else if(path.endsWith('/escalation_policies'))body=list('escalation_policies',fixture.escalation_policies);
+ else throw Error('Unexpected provider API path');
+ if(providerMode==='header-key'){delete body.paging;return Response.json(body,{headers:{'x-paging-next':url.origin+url.pathname+'?offset=1&apiKey='+encodeURIComponent(key)}})}
+ return Response.json(body);
+};
+`.replace('__FIXTURES__',JSON.stringify(providerFixtures))
+const w=await localWorker({RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:publicKey.export({format:'jwk'})}),RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,PAGERDUTY_OAUTH_CLIENT_ID:'synthetic-pagerduty-client',PAGERDUTY_OAUTH_CLIENT_SECRET:'synthetic-pagerduty-client-secret'},{fetchSource:providerFetch})
 const ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value}
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex')
 const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url')
@@ -90,17 +138,145 @@ try {
  const req=(path,input)=>w.request(path,input,owner.cookie),door=ownerDoor(w,owner.cookie)
  const session=ok(await req('/api/workspace'))
  assert.equal(session.member.role,'admin')
+ // O2: the emitted read door and standalone exporter share the same provider fetch edge.
+ {
+  const responses=[],key='synthetic-provider+read-private',hosts=new Set(),counts=[];
+  const control=async(mode='normal',extra={})=>ok(await w.request('/__provider_control',{mode,...extra}));
+  const observed=async()=>ok(await w.request('/__provider_calls'));
+  const moduleSource=(await Promise.all(['pagerduty','opsgenie','bundle'].map(name=>readFile(`src/move-in/collect/${name}.ts`,'utf8')))).map(s=>s.replace(/^import .* from ['"].*['"]\s*$/gm,'')).join('\n');
+  const javascript=ts.transpileModule(moduleSource,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2023}}).outputText;
+  const collect=await import('data:text/javascript;base64,'+Buffer.from(javascript).toString('base64'));
+  const exporter=await import('data:text/javascript;base64,'+Buffer.from(await readFile('public/move-in/oncall-export.mjs.txt','utf8')).toString('base64'));
+  const fetchFake=new Function('fixtures','mode',`return (async()=>{${providerFetch.replace('const providerFixtures = __FIXTURES__;','const providerFixtures = fixtures;').replace("let providerMode='normal'","let providerMode=mode")};return globalThis.fetch})()`);
+  const nativeFetch=globalThis.fetch;
+  try {
+   for(const vendor of ['pagerduty','opsgenie']) {
+    const options={vendor,region:'us',key,window:collect.exportWindow('2026-03-07','2026-03-10')};
+    const first=await fetchFake(providerFixtures,'normal'),moduleResult=await collect.collectExport({...options,request:first});
+    const second=await fetchFake(providerFixtures,'normal'),exportResult=await exporter.collectExport({...options,request:second});
+    assert.equal(moduleResult.json,exportResult.json,'the app module and rebuilt standalone tool preserve the same bundle bytes');
+    assert.ok(moduleResult.count>0);
+    console.log(`O2 same bundle ${vendor}: module=${digest(moduleResult.json)} exporter=${digest(exportResult.json)}, records=${moduleResult.count}`);
+   }
+  } finally { globalThis.fetch=nativeFetch }
+  const heldState=ok(await req('/api/state'));
+  w.sql('DROP TABLE oc_move_in_consent');
+  w.statements(await readFile('migrations/core/0146_move_in_consent.sql','utf8'));
+  assert.deepEqual(ok(await req('/api/state')),heldState,'the additive custody migration preserves held workspace records');
+  const nativeBefore=ok(await req('/api/move-in/objects'));
+  const viewer=ok(await req('/api/members',{name:'Read-only pull viewer',password:'synthetic-provider-viewer-password',role:'viewer'}),201);
+  const viewing=await w.request('/api/login',{name:viewer.name,password:'synthetic-provider-viewer-password'});ok(viewing);
+  ok(await w.request('/api/move-in/read',{source:'pagerduty',region:'us',key}),401);
+  ok(await w.request('/api/move-in/read',{source:'pagerduty',region:'us',key},viewing.cookie),403);
+  ok(await w.request('/api/move-in/read',{source:'pagerduty',region:'us',key},owner.cookie,{origin:'https://other.example.test'}),403);
+  ok(await w.request('/api/logout',{},viewing.cookie));
+  ok(await w.request('/api/move-in/read',{source:'pagerduty',region:'us',key},viewing.cookie),401);
+  const expired=await w.request('/api/login',{name:viewer.name,password:'synthetic-provider-viewer-password'});ok(expired);
+  w.sql(`UPDATE sessions SET expires=0 WHERE member='${viewer.id}'`);
+  ok(await w.request('/api/move-in/read',{source:'pagerduty',region:'us',key},expired.cookie),401);
+  for(const sessionCookie of [undefined,viewing.cookie,expired.cookie])ok(await w.request('/api/move-in/pagerduty/start',undefined,sessionCookie),401);
+  assert.equal(ok(await req('/api/workspace')).moveIn.pagerdutyConnect,true);console.log('O2 workspace moveIn.pagerdutyConnect=true');
+  for(const vendor of ['pagerduty','opsgenie'])for(const region of ['us','eu']) {
+   await control('many-pages');let cursor,bundle=collect.emptyBundle(vendor);
+   const auditBefore=w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE kind LIKE 'move-in.read.%'")[0].n;
+   do {
+    const before=(await observed()).calls.length;
+    const response=await req('/api/move-in/read',{source:vendor,region,key,...(cursor?{cursor}:{})});responses.push(JSON.stringify(response.value));
+    const result=ok(response);cursor=result.next;
+    for(const kind of Object.keys(bundle))bundle[kind].push(...result.part[kind]);
+    const calls=(await observed()).calls,step=calls.length-before;counts.push(step);
+    assert.ok(step>0&&step<=40,'each public read continuation is bounded');
+    for(const call of calls){hosts.add(call.host);assert.equal(call.method,'GET');assert.equal(call.redirect,'manual');assert.equal(call.signal,true)}
+    if(cursor){const altered=cursor.slice(0,-1)+(cursor.endsWith('0')?'1':'0');ok(await req('/api/move-in/read',{source:vendor,region,key,cursor:altered}),400)}
+   }while(cursor);
+   assert.ok(bundle.users.length>40,'the complete read survived its continuation');
+   const finished=w.sql("SELECT kind FROM oc_admin_audit WHERE kind LIKE 'move-in.read.%'");
+   assert.equal(finished.length,auditBefore+1,'one permanent audit fact per finished read');
+   const fact=JSON.parse(finished.at(-1).kind.slice('move-in.read.'.length));assert.equal(fact.provider,vendor);assert.equal(fact.region,region);assert.equal(fact.counts.users,bundle.users.length);
+  }
+  for(const mode of ['wrong-key','redirect','too-many','too-big','echo','encoded-echo','unsafe-page','header-key','timeout']) {
+   await control(mode);
+   const started=performance.now();const result=await req('/api/move-in/read',{source:'opsgenie',region:'us',key});responses.push(JSON.stringify(result.value));if(mode==='timeout')console.log('O2 aborted provider request after '+Math.round(performance.now()-started)+' ms');
+   ok(result,400);assert.equal(typeof result.value.error,'string');assert.ok(!result.value.error.includes(key));
+   const calls=(await observed()).calls;assert.equal(calls.length,1,'refusal stops at the provider edge without following another host');
+  }
+  assert.deepEqual(ok(await req('/api/move-in/objects')),nativeBefore,'reading and refusing never import objects');
+  console.log('O2 read door: steps='+counts.join(',')+'; non-admin 403, anonymous 401, cross-origin 403, wrong key, redirect, 501 objects, 512 KiB and echo refusals passed; hosts='+[...hosts].sort().join(','));
+  // A local admin's cross-site top-level callback carries only the Lax transaction,
+  // while the app session remains Strict. Do not attach that session by hand.
+  const consentAdmin=ok(await req('/api/members',{name:'Consent local admin',password:'synthetic-consent-admin-password',role:'admin'}),201);
+  const consentSession=await w.request('/api/login',{name:consentAdmin.name,password:'synthetic-consent-admin-password'});ok(consentSession);
+  const consentReq=(path,input)=>w.request(path,input,consentSession.cookie);
+  // PKCE, region binding, installation custody and both successful and abandoned-read revocation.
+  for(const region of ['us','eu']) {
+   await control();
+   const start=await consentReq('/api/move-in/pagerduty/start?region='+region);ok(start,302);
+   const address=new URL(start.headers.get('location'));assert.equal(address.hostname,region==='eu'?'identity.eu.pagerduty.com':'identity.pagerduty.com');assert.equal(address.searchParams.get('code_challenge_method'),'S256');assert.ok(address.searchParams.get('scope').split(' ').every(scope=>scope.endsWith('.read')));
+   await control('normal',{challenge:address.searchParams.get('code_challenge')});
+   const transaction=start.headers.getSetCookie().map(value=>value.split(';')[0]).join('; ');
+   const callback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-consent-code&state='+address.searchParams.get('state'),undefined,transaction);ok(callback,302);
+   assert.equal(callback.headers.get('location'),'/settings/move-in?connected=pagerduty');ok(await req(callback.headers.get('location')));
+   const tokenCookie=callback.headers.getSetCookie().find(line=>line.startsWith('oncall_move_in_token='));
+   assert.ok(/HttpOnly/i.test(tokenCookie)&&/SameSite=Lax/i.test(tokenCookie)&&/Path=\/api\/move-in\//i.test(tokenCookie));assert.ok(Number(tokenCookie.match(/Max-Age=(\d+)/)[1])<=600);assert.ok(!tokenCookie.includes('synthetic-provider-consent-private'));
+   assert.equal((await observed()).pkceValid,true);
+   const read=await w.request('/api/move-in/read',{source:'pagerduty',region},consentSession.cookie+'; '+tokenCookie.split(';')[0]);ok(read);responses.push(JSON.stringify(read.value));
+   assert.equal(read.value.next,null);assert.ok(read.headers.getSetCookie().some(line=>line.startsWith('oncall_move_in_token=')&&/Max-Age=0/.test(line)));assert.ok((await observed()).revoked>0);
+   assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
+  }
+  // Demotion between start and the session-free callback is refused before any exchange.
+  await control();const demotedStart=await consentReq('/api/move-in/pagerduty/start');ok(demotedStart,302);
+  const demotedAddress=new URL(demotedStart.headers.get('location'));
+  ok(await req('/api/command',{type:'member',id:consentAdmin.id,field:'role',from:'admin',to:'responder'}));
+  const demotedReturn=await w.request('/api/move-in/pagerduty/callback?code=synthetic-demoted-code&state='+demotedAddress.searchParams.get('state'),undefined,demotedStart.cookie);ok(demotedReturn,302);
+  assert.equal(demotedReturn.headers.get('location'),'/settings/move-in?connection=failed');
+  assert.ok(!demotedReturn.headers.getSetCookie().some(line=>line.startsWith('oncall_move_in_token=')&&!/Max-Age=0/.test(line)));
+  assert.equal((await observed()).calls.length,0,'a member no longer admin cannot exchange a code');
+  assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
+  console.log('O2 local-admin consent: transaction-only cross-site callback succeeds; demotion redirects to connection=failed with zero exchanges and tokens');
+  // Failed revocation is a durable failure, clears the browser cookie, and keeps only sealed custody for retry.
+  await control();const failedStart=await req('/api/move-in/pagerduty/start');const failedAddress=new URL(failedStart.headers.get('location'));await control('normal',{challenge:failedAddress.searchParams.get('code_challenge')});
+  const failedCallback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-revocation-code&state='+failedAddress.searchParams.get('state'),undefined,failedStart.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(failedCallback,302);
+  const failedCookie=failedCallback.headers.getSetCookie().find(line=>line.startsWith('oncall_move_in_token='));await control('revoke-failure');
+  const refusedClose=await w.request('/api/move-in/read',{source:'pagerduty',region:'us'},owner.cookie+'; '+failedCookie.split(';')[0]);ok(refusedClose,400);responses.push(JSON.stringify(refusedClose.value));
+  assert.ok(refusedClose.headers.getSetCookie().some(line=>/Max-Age=0/.test(line)));assert.equal(w.sql("SELECT outcome FROM oc_admin_audit WHERE kind LIKE 'move-in.read.%' ORDER BY ordinal DESC LIMIT 1")[0].outcome,'failed');
+  const retryLease=w.sql('SELECT revoke_at FROM oc_move_in_consent')[0];assert.ok(retryLease);await control();w.sql('UPDATE oc_move_in_consent SET revoke_at=0');ok(await w.request('/__provider_cron'));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
+  console.log('O2 failed revocation: plain refusal, cleared cookie, permanent failed audit, sealed retry and scheduled cleanup passed');
+  // A return that fails after the exchange (the lease cap is full) while PagerDuty refuses the revocation
+  // sets no token, and keeps one sealed revocation duty that no cookie can read and the sweep retries.
+  await control();const cappedStart=await req('/api/move-in/pagerduty/start');const cappedAddress=new URL(cappedStart.headers.get('location'));await control('revoke-failure',{challenge:cappedAddress.searchParams.get('code_challenge')});
+  w.sql(`INSERT INTO oc_move_in_consent(id,custody,revoke_at,expires) VALUES ${Array.from({length:10},(_,n)=>`('synthetic-lease-${n}','synthetic-lease',${Date.now()+600000},${Date.now()+600000})`).join(',')}`);
+  const cappedReturn=await w.request('/api/move-in/pagerduty/callback?code=synthetic-capped-code&state='+cappedAddress.searchParams.get('state'),undefined,cappedStart.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(cappedReturn,302);
+  assert.equal(cappedReturn.headers.get('location'),'/settings/move-in?connection=revoke-failed');
+  assert.ok(!cappedReturn.headers.getSetCookie().some(line=>/^oncall_move_in_token=[^;]/.test(line)));
+  w.sql("DELETE FROM oc_move_in_consent WHERE id LIKE 'synthetic-lease-%'");
+  const duty=w.sql('SELECT custody FROM oc_move_in_consent');assert.equal(duty.length,1);assert.ok(!duty[0].custody.includes('synthetic-provider-consent-private'));
+  const dutyRead=await w.request('/api/move-in/read',{source:'pagerduty',region:'us'},owner.cookie+'; oncall_move_in_token='+encodeURIComponent(duty[0].custody));ok(dutyRead,401);responses.push(JSON.stringify(dutyRead.value));
+  const revokedBefore=(await observed()).revoked;await control();w.sql('UPDATE oc_move_in_consent SET revoke_at=0');ok(await w.request('/__provider_cron'));
+  assert.equal((await observed()).revoked,revokedBefore+1);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
+  console.log('O2 failed return, refused revocation: revoke-failed landing, no token cookie, one sealed duty no cookie can read, revoked by the sweep');
+  // An abandoned consent is revoked by the existing scheduled handler, without a browser request.
+  await control();const start=await req('/api/move-in/pagerduty/start');const address=new URL(start.headers.get('location'));await control('normal',{challenge:address.searchParams.get('code_challenge')});
+  const callback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-abandoned-code&state='+address.searchParams.get('state'),undefined,start.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(callback,302);
+  const pending=w.sql('SELECT custody,revoke_at,expires FROM oc_move_in_consent');assert.equal(pending.length,1);assert.ok(!pending[0].custody.includes('synthetic-provider-consent-private'));assert.ok(pending[0].expires-pending[0].revoke_at>0);
+  const activeArchive=JSON.stringify(ok(await req('/api/archive')));assert.ok(!activeArchive.includes(pending[0].custody)&&!activeArchive.includes('synthetic-provider-consent-private'),'an active sealed connection is absent from the archive');
+  w.sql('UPDATE oc_move_in_consent SET revoke_at=0');ok(await w.request('/__provider_cron'));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
+  const audit=JSON.stringify(ok(await req('/api/audit/export'))),archive=JSON.stringify(ok(await req('/api/archive'))),logs=w.logs(),responseText=responses.join('\n');
+  const secrets=[key,'synthetic-provider-consent-private',w.vars.PAGERDUTY_OAUTH_CLIENT_SECRET];const hits=text=>secrets.reduce((n,secret)=>n+text.split(secret).length-1,0);
+  const exclusion={responses:hits(responseText),audit:hits(audit),archive:hits(archive),logs:hits(logs)};assert.deepEqual(exclusion,{responses:0,audit:0,archive:0,logs:0});
+  console.log('O2 OC-042: PKCE US/EU, read-only scopes, sealed HttpOnly Lax /api/move-in cookie <=600s, clear and revoke, abandoned lease cleanup passed; secret hits='+JSON.stringify(exclusion));
+ }
+
  ok(await w.request('/auth/settings/imports',{enabled:true}),401)
  assert.equal(ok(await req('/auth/settings/imports')).enabled,false)
  if(process.env.ONCALL_IMPORT_DOOR_BROWSER) {
   const {chromium}=await import('@playwright/test')
-  browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']})
+  browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
  }
  const capture=browser?await import('./import-door-browser.mjs'):null
  const context=browser?await browser.newContext({baseURL:w.origin,viewport:{width:1440,height:1000}}):null
  if(context)await context.addCookies(owner.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:w.origin,httpOnly:true,sameSite:'Lax'}}))
  const page=context?await context.newPage():null
- if(page)await capture.settings(page,w.origin,'off')
+ if(page){await capture.fileJourney(page,context,w.origin,{readProvider:true});await capture.settings(page,w.origin,'off')}
  // Enable through the same owner setting used by its HTML form.
  if(page) {
   await page.getByRole('checkbox',{name:'Allow Business imports',exact:true}).check()
@@ -150,7 +326,7 @@ try {
    undone=ok(await call('undo',vendor,{planId:plan.planId})).job
    for(let batch=0;undone.state!=='undone'&&batch<30;batch++)undone=ok(await call('undo',vendor,{planId:plan.planId})).job
   }else if(page) {
-   await page.getByRole('button',{name:'Undo this import',exact:true}).click()
+   await capture.confirmUndo(page)
    await page.getByRole('status').filter({hasText:'Import journal'}).getByText(/undone/).first().waitFor()
    undone=ok(await call('status',vendor,{planId:plan.planId})).job
   }else {
@@ -242,9 +418,10 @@ try {
  assert.equal(ok(await req(`/api/move-in/${failedJob.id}/resume`,{vendor:'pagerduty'}),409).code,'IMPORT_DOOR_JOB')
  assert.equal(ok(await call('status','pagerduty',{planId:failed.planId})).job.state,'failed','the old journal route cannot complete a failed door job')
  if(page) {
-  await page.goto(w.origin);await page.getByRole('link',{name:'Move-in kit',exact:true}).click()
+  await page.goto(w.origin+'/move-in')
   await page.getByLabel('Source',{exact:true}).selectOption('pagerduty')
   await page.getByLabel('Saved import journal',{exact:true}).selectOption(failedJob.id)
+  await page.getByText('Approval details',{exact:true}).click()
   await page.getByText(/^approved, then failed /).waitFor()
   assert.equal(await page.getByRole('button',{name:'Resume import',exact:true}).count(),0,'the journal offers no resume for a failed Business import')
  }

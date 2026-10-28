@@ -13,6 +13,10 @@
     {
       "id": "mail",
       "label": "Sign-in email"
+    },
+    {
+      "id": "move-in",
+      "label": "Move in (optional)"
     }
   ],
   "dependencies": [
@@ -208,6 +212,26 @@
         "equals": "cloudflare"
       },
       "group": "mail"
+    },
+    {
+      "name": "PAGERDUTY_OAUTH_CLIENT_ID",
+      "label": "PagerDuty app client ID",
+      "help": "Optional: connect PagerDuty with this installation\u2019s own read-only OAuth app. Register <app address>/api/move-in/pagerduty/callback as the redirect address. Without both settings, use a read-only key for one read.",
+      "kind": "secret",
+      "input": "entered",
+      "required": false,
+      "ownerVisible": true,
+      "group": "move-in"
+    },
+    {
+      "name": "PAGERDUTY_OAUTH_CLIENT_SECRET",
+      "label": "PagerDuty app client secret",
+      "help": "Optional: connect PagerDuty with this installation\u2019s own read-only OAuth app. Register <app address>/api/move-in/pagerduty/callback as the redirect address. Without both settings, use a read-only key for one read.",
+      "kind": "secret",
+      "input": "entered",
+      "required": false,
+      "ownerVisible": true,
+      "group": "move-in"
     }
   ],
   "steps": [

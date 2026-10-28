@@ -24,5 +24,10 @@ export async function readMoveInJournal(id:string,context:D1ImportContext) {
   const comparison=(effect.value as any).equivalence
   return comparison?.from&&comparison?.to?[`${comparison.from} → ${comparison.to}`]:[]
  }))]
- return {...job,schedules,files,exportedAt,comparisons}
+ const labels=Object.fromEntries(plan.entries.filter(entry=>!entry.erased).flatMap(entry=>{
+  const value=entry.source.payload as any
+  const name=value?.name??value?.fullName??value?.summary
+  return typeof name==='string'?entry.effects.map(effect=>[effect.targetKind+':'+effect.targetId,name]):[]
+ }))
+ return {...job,schedules,files,exportedAt,comparisons,labels}
 }

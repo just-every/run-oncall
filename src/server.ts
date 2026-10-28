@@ -1,3 +1,4 @@
+import { sweepMoveInConsent } from './move-in/pagerduty-oauth';
 import {lobbyPaths} from './app/lobbyPaths';
 import {isWorkspacePath, workspaceAddress} from './app/paths';
 import {subscriptionResponse} from './schedule-coordination/feed';
@@ -24,6 +25,8 @@ import {importDoorResponse} from './move-in/door'
 type Env=Bindings
 export default withDemo({
   async scheduled(_event,env) {
+    const moveIn=auditedDatabase(env.DB,{feature:'move-in',kind:'move-in.consent.cleanup',actor:{kind:'service',id:'move-in-consent'},source:{kind:'provider',id:'pagerduty'},commits:0,storageFailed:false});
+    if((await sweepMoveInConsent({...env,DB:moveIn.db})).failed)await moveIn.record('failed');
     const deadlines=auditedDatabase(env.DB,{feature:'incident-deadlines',kind:'deadline.sweep',actor:{kind:'service',id:'incident-deadlines'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
     await sweepDeadlines(deadlines.db);
     for(let n=0;n<10;n++) {

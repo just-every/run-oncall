@@ -41,6 +41,16 @@
       "binding": "INBOUND_EMAIL_DOMAIN",
       "environment": "INBOUND_EMAIL_DOMAIN",
       "optional": true
+    },
+    {
+      "binding": "PAGERDUTY_OAUTH_CLIENT_ID",
+      "environment": "PAGERDUTY_OAUTH_CLIENT_ID",
+      "optional": true
+    },
+    {
+      "binding": "PAGERDUTY_OAUTH_CLIENT_SECRET",
+      "environment": "PAGERDUTY_OAUTH_CLIENT_SECRET",
+      "optional": true
     }
   ],
   "crons": [
