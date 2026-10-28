@@ -18,17 +18,19 @@ try {
   await build({ bundle: true, format: 'esm', platform: 'neutral', target: 'es2023', outfile: worker,
     external: ['cloudflare:*', 'node:*'], conditions: ['workerd', 'worker', 'browser'], logLevel: 'silent',
     stdin: { resolveDir: root, sourcefile: 'agent-declaration.worker.ts', contents: `
-import {oncallTools,oncallNotTools} from './src/agent-door/index.server.ts';
-import {oncallResources} from './src/agent-door/resources.ts';
-export default {fetch(request,env){
+export default {async fetch(request,env){
  if(new URL(request.url).pathname!=='/declaration')return new Response(null,{status:404});
+ const {oncallTools,oncallNotTools}=await import('./src/agent-door/index.server.ts');
+ const {oncallResources}=await import('./src/agent-door/resources.ts');
  const tools=oncallTools(env).map(({name,scope,readOnly,classes,clauses,widens,narrowing,inputSchema})=>({name,scope,readOnly,classes,clauses,...(widens===false?{widens,narrowing,inputSchema}:{})}));
  tools.push({name:'oncall.events.list',scope:'events:read',readOnly:true,classes:['standard'],clauses:['BASE-AGENT-010']});
  return Response.json({tools:tools.sort((a,b)=>a.name.localeCompare(b.name)),resources:oncallResources(env).map(resource=>resource.uriTemplate).sort(),notTools:oncallNotTools});
 }};` } });
   runtime = new Miniflare(convertV4MiniflareOptions({ host: '127.0.0.1', port: 0, cf: false,
-    modules: true, scriptPath: worker, compatibilityDate: '2026-09-01', compatibilityFlags: ['nodejs_compat'],
-    d1Databases: { DB: 'agent-declaration' }, outboundService: () => new Response(null, { status: 502 }) }));
+    workers:[{name:'declaration',modules:[{type:'ESModule',path:worker}],modulesRoot:directory,
+      compatibilityDate:'2026-09-01',compatibilityFlags:['nodejs_compat'],bindings:{AUTH_ORIGIN:'https://agent-declaration.invalid'},
+      d1Databases:{DB:'agent-declaration'},outboundService:()=>new Response(null,{status:502})}],
+  }));
   const response = await runtime.dispatchFetch('https://agent-declaration.invalid/declaration');
   if (!response.ok) throw new Error('Native agent declarations did not load');
   const declarations = await response.json();

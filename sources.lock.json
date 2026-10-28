@@ -940,7 +940,7 @@
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
-      "sha256": "45590f3015bf5ae10527f085acf635c5315e82690c9d650245320d258b1f2112",
+      "sha256": "908ad140f849f71b89da4e2e46b8301c965543cda6eb7c1c962887745083b663",
       "executable": false
     },
     "SEED-COMMAND-CONTRACT.md": {
