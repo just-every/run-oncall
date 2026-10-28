@@ -1,0 +1,26 @@
+.routing-settings { display: grid; gap: 20px; min-width: 0; }
+.routing-settings :is(input, select, textarea) { min-width: 0; max-width: 100%; align-self: start; font-size: 15px; }
+.routing-settings :is(p, label, small, summary) { font-size: 14px; }
+.routing-settings :is(button, summary) { min-height: 44px; }
+.routing-settings .routing-overview { border: 0; }
+.routing-settings .routing-overview>div+div { border: 0; padding-left: 0; }
+.routing-settings .routing-scope { border: 0; padding: 0; }
+.routing-settings .routing-scope label { min-height: 44px; }
+.routing-settings :is(.routing-fields, .routing-condition) { align-items: start; }
+.routing-settings .routing-rule summary { min-height: 44px; }
+.routing-settings .routing-rule-copy small { font-size: 13px; }
+.routing-settings .routing-rule :is(input,select) { min-height: 44px; }
+.routing-settings .coordination-row { padding: 16px 0; }
+.routing-settings .coordination-row p { margin: 4px 0; }
+.integration-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.history-sheet { position: fixed; inset: 40px max(24px, calc((100vw - 1000px)/2)); padding: 24px; overflow: auto; z-index: 45; background: var(--oc-surface); border: 1px solid var(--oc-line); border-radius: 14px; box-shadow: 0 0 0 100vmax rgb(29 42 53 / 28%); }
+.history-sheet:focus { outline: 2px solid var(--oc-ink); outline-offset: 2px; }
+@media (max-width: 600px) {
+  .routing-settings :is(input, select, button, summary) { min-height: 44px; }
+  .routing-settings .routing-scope label { display: flex; align-items: center; min-height: 44px; width: 100%; }
+  .history-sheet { inset: 64px 0 0; padding: 20px 16px; border-radius: 14px 14px 0 0; }
+}
+
+.routing-settings .field :is(input,select,textarea):focus-visible { outline:none; border:2px solid var(--oc-ink); box-shadow:none; }
+.routing-settings .routing-condition>details { min-width:0; }
+.routing-settings .routing-condition>details>summary { display:flex; align-items:center; justify-content:space-between; gap:12px; }

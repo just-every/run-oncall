@@ -1,40 +1,48 @@
 import { useState } from 'react';
-import type { State } from '../family/response-operations/domain';
-import { Form, Field } from '../forms';
-import type { IntakeRun } from '../intake/CompatibleTest';
-import { permissions } from './model';
+import { InlineConfirm } from '../app/autosave/InlineConfirm';
+import { Form } from '../forms';
+import { ClientCreate,permissionAreas } from './ClientCreate';
+import { OneTimeSecret } from '../integrations/OneTimeSecret';
+import { privateKey, shortTime, type IntegrationProps } from '../integrations/catalog';
+import '../integrations/integrations.css';
 
-// Extend the existing integration list/form pattern, using its controls and styles.
-export function AutomationSettings({state,admin,busy,run}:{state:State;admin:boolean;busy:boolean;run:IntakeRun}) {
- const [key,setKey]=useState(''),[notice,setNotice]=useState(''),[grants,setGrants]=useState<string[]>(['incidents:read']),[selected,setSelected]=useState('');
- const clients=state.apiClients??[],endpoints=state.apiEndpoints??[],outbox=state.apiOutbox??[];
- const generate=()=>{setKey(Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join(''));setNotice('Private key generated. Copy it before saving; it cannot be read back.');};
- const save=async(path:string,data:unknown,message:string)=>{const result=await run(path,data,message);if(result)setKey('');return result;};
- return <section className="panel padded" id="response-api"><h2>Response API and outbound events</h2><p>Scoped clients coordinate incidents. Signed event delivery is not a human acknowledgment. Paging is OFF; keep your existing pager.</p>
- {!admin?<p>An administrator manages clients, recipients and delivery failures.</p>:<>
- <label className="field">Private client or endpoint key<input aria-label="Private client or endpoint key" type="password" autoComplete="new-password" minLength={32} maxLength={200} value={key} onChange={e=>setKey(e.target.value)}/></label>
- <div className="intake-actions"><button type="button" onClick={generate}>Generate private key</button><button type="button" disabled={!key} onClick={async()=>{try{await navigator.clipboard.writeText(key);setNotice('Private key copied.');}catch{setNotice('Copy failed. Select the private key field and copy it manually.');}}} >Copy private key</button></div>
- <p role="status">{notice}</p>
- <h3>Service-account clients</h3>
- {!clients.length&&<p>No API clients configured.</p>}
- <ul>{clients.map(c=><li key={c.id}><p><strong>{c.name}</strong> · {c.active?'active':'revoked or restored inactive'} · revision {c.revision}<br/>Services: {c.services.map(id=>state.services.find(s=>s.id===id)?.name??id).join(', ')}<br/>Last use: {c.lastUsed??'Never'}<br/>{c.permissions.join(', ')}</p><div className="intake-actions"><button disabled={busy||key.length<32} onClick={()=>save(`/api/automation/clients/${c.id}/rotate`,{revision:c.revision,key},'Client key rotated; previous key revoked')}>Rotate {c.name}</button><button disabled={busy||!c.active} onClick={()=>run(`/api/automation/clients/${c.id}/revoke`,{revision:c.revision},'Client revoked; queued work will be refused')}>Revoke {c.name}</button></div></li>)}</ul>
- <Form busy={busy} disabled={!state.services.length||key.length<32} label="Create scoped client" onSubmit={async data=>!!await save('/api/automation/clients',{name:data.name,services:[data.service],permissions:grants,key},'Scoped client created')}>
- <Field name="name" label="Client name"/><Field name="service" label="Client service">{state.services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</Field>
- <fieldset><legend>Client permissions</legend>{permissions.map(p=><label key={p}><input type="checkbox" checked={grants.includes(p)} onChange={e=>setGrants(e.target.checked?[...grants,p]:grants.filter(v=>v!==p))}/>{p}<br/></label>)}</fieldset>
- </Form>
- <h3>Approved recipients</h3><p>Recipients receive only event type, operation and incident IDs, service, revision, state and time. The endpoint uses HTTPS on a public IPv4 address. Install the shared key at the receiver and approve this exact destination.</p>
- {!endpoints.length&&<p>No outbound endpoints approved. Incident changes send nothing.</p>}
- <ul>{endpoints.map(e=><li key={e.id}><p><strong>{e.name}</strong> · {e.active?'approved':'revoked or restored inactive'} · revision {e.revision}<br/>{e.url}</p><div className="intake-actions"><button disabled={busy||key.length<32} onClick={()=>save(`/api/automation/endpoints/${e.id}/rotate`,{revision:e.revision,key,approve:true},'Endpoint key rotated and recipient authorization renewed')}>Renew {e.name}</button><button disabled={busy||!e.active} onClick={()=>run(`/api/automation/endpoints/${e.id}/revoke`,{revision:e.revision},'Endpoint revoked; queued work will be refused')}>Revoke {e.name}</button></div></li>)}</ul>
- <Form busy={busy} disabled={!clients.some(c=>c.active)||key.length<32} label="Approve endpoint" onSubmit={async data=>{const client=clients.find(c=>c.id===(selected||clients.find(c=>c.active)?.id));return !!await save('/api/automation/endpoints',{name:data.name,url:data.url,client:client?.id,services:client?.services,key,approve:data.approve==='on'},'Endpoint approved for minimal signed incident events');}}>
- <Field name="name" label="Endpoint name"/><Field name="url" label="Public HTTPS IPv4 endpoint" type="url"/>
- <label className="field">Receiving client<select aria-label="Receiving client" value={selected||clients.find(c=>c.active)?.id||''} onChange={e=>setSelected(e.target.value)}>{clients.filter(c=>c.active).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
- <label><input type="checkbox" name="approve" required/> I authorize this recipient to receive the selected services’ minimal event data.</label>
- </Form>
- <h3>Durable outbox</h3><p>Hosted dispatch checks due work each minute, up to ten deliveries. An uncertain result may already have reached the receiver. Replay uses its original operation ID and never repeats the incident action. Five total attempts per operation.</p>
- <button disabled={busy} onClick={()=>run('/api/automation/dispatch',{},'Dispatch check complete; inspect the durable outcome below')}>Dispatch next due event</button>
- {!outbox.length&&<p>No outbound operations yet.</p>}
- <ul>{outbox.slice().reverse().map(o=><li key={o.id}><p><strong>{o.event} · {o.status}</strong> · attempts {o.attempts}/5<br/>Owner: {state.members.find(m=>m.id===o.owner)?.name??'Unavailable'}<br/>Due: {o.due}<br/>Operation: <span style={{overflowWrap:'anywhere'}}>{o.id}</span><br/>Latest outcome: {o.history.at(-1)?.reason}{!o.authorized?' · held after restore':''}</p>{['failed','uncertain','interrupted','terminal'].includes(o.status)&&<button disabled={busy||o.attempts>=5} onClick={()=>run(`/api/automation/outbox/${o.id}/replay`,{revision:o.revision,approve:true},'Replay authorized with the original operation ID')}>Authorize replay {o.event}</button>}</li>)}</ul>
- <p><a href="/docs/response-api">API, signatures, receiver receipts and recovery</a></p>
- </>}
+export function AutomationSettings({state,admin,busy,run}:IntegrationProps) {
+ const [clientForm,setClientForm]=useState(!(state.apiClients??[]).length),[recipientForm,setRecipientForm]=useState(false);
+ const [recipient,setRecipient]=useState<{name:string;url:string;client:string}>(),[selected,setSelected]=useState('');
+ const [action,setAction]=useState<{kind:'clients'|'endpoints'|'outbox';id:string;verb:'rotate'|'revoke'|'replay'}>(),[revealed,setRevealed]=useState('');
+ const eventNames:Record<string,string>={trigger:'Triggered',acknowledgment:'Acknowledged',reassignment:'Reassigned',resolution:'Resolved',role:'People changed','follow-up':'Follow-up changed'},outcomes:Record<string,string>={queued:'Waiting',sending:'Sending',sent:'Sent',failed:'Failed',interrupted:'Interrupted',uncertain:'Unconfirmed',terminal:'Stopped'};
+ const clients=state.apiClients??[],endpoints=state.apiEndpoints??[],outbox=state.apiOutbox??[],activeClients=clients.filter(c=>c.active);
+ const confirmation=action&&action.kind!=='outbox'?(action.kind==='clients'?clients:endpoints).find(r=>r.id===action.id):undefined;
+ return <section className="panel padded integrations" id="response-api" aria-label="API clients, recipients and outbox">
+  {!admin&&<p>An administrator manages clients, recipients and delivery failures.</p>}
+  <details><summary>API clients ({clients.length})</summary><h2>API clients</h2>
+   {!clients.length&&<p>No API clients configured.</p>}
+   <ul className="integration-rows">{clients.map(c=><li key={c.id}><strong>{c.name}</strong><p>{c.services.map(id=>state.services.find(s=>s.id===id)?.name??'Service unavailable').join(', ')}{!c.active?' · Inactive':''}</p><details><summary>Permissions</summary><ul>{permissionAreas.filter(([area])=>c.permissions.includes(area+':read')).map(([area,label])=><li key={area}>{label} · {c.permissions.includes(area+':write')?'Read and change':'Read'}</li>)}</ul></details>{admin&&<details className="integration-entry-actions"><summary>Client actions</summary><button disabled={busy} onClick={()=>setAction({kind:'clients',id:c.id,verb:'rotate'})}>Rotate {c.name}</button><button disabled={busy||!c.active} onClick={()=>setAction({kind:'clients',id:c.id,verb:'revoke'})}>Revoke {c.name}</button></details>}</li>)}</ul>
+   {admin&&<>{clientForm||!clients.length?<ClientCreate state={state} busy={busy} run={run} onDone={()=>setClientForm(false)}/>:<button type="button" onClick={()=>setClientForm(true)}>Add client</button>}</>}
+   <a className="integration-link" href="/docs/response-api">API reference</a>
+  </details>
+  <details><summary>Recipients ({endpoints.length})</summary><h2>Recipients</h2>
+   {!endpoints.length&&<p>No recipients approved. Incident changes send nothing.</p>}
+   <ul>{endpoints.map(e=><li key={e.id}><strong>{e.name}</strong><p>{e.url}{!e.active?' · Inactive':''}</p>{admin&&<details className="integration-entry-actions"><summary>Recipient actions</summary><button disabled={busy} onClick={()=>setAction({kind:'endpoints',id:e.id,verb:'rotate'})}>Renew {e.name}</button><button disabled={busy||!e.active} onClick={()=>setAction({kind:'endpoints',id:e.id,verb:'revoke'})}>Revoke {e.name}</button></details>}</li>)}</ul>
+   {admin&&(!activeClients.length?<p>Create a client to approve a recipient.</p>:recipientForm||!endpoints.length?<Form busy={busy} label="Approve" onSubmit={async data=>{setRecipient({name:data.name,url:data.url,client:selected||activeClients[0].id});return false;}}>
+    <label className="field">Name<input name="name" required maxLength={100}/></label><label className="field">Address<input name="url" type="url" required maxLength={1000}/></label>
+    {activeClients.length>1?<label className="field">Client<select aria-label="Client" value={selected||activeClients[0].id} onChange={e=>setSelected(e.target.value)}>{activeClients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>:<p>Client · {activeClients[0].name}</p>}
+   </Form>:<button onClick={()=>setRecipientForm(true)}>Add recipient</button>)}
+   {recipient&&<InlineConfirm action="Approve recipient" keep="Keep editing" busy={busy} onCancel={()=>setRecipient(undefined)} onConfirm={async()=>{
+    const client=clients.find(c=>c.id===recipient.client),key=privateKey();
+    if(await run('/api/automation/endpoints',{...recipient,services:client?.services,key,approve:true},'Recipient approved')){setRecipient(undefined);setRecipientForm(false);setRevealed(key);}
+   }}>{recipient.name} at {recipient.url} will receive signed incident events for {clients.find(c=>c.id===recipient.client)?.services.map(id=>state.services.find(s=>s.id===id)?.name).join(', ')}: event type, operation and incident identifiers, service, revision, state and time. Approve this recipient?</InlineConfirm>}
+  </details>
+  <details><summary>Outbox ({outbox.length})</summary><h2>Outbox</h2>{admin&&<button disabled={busy} onClick={()=>run('/api/automation/dispatch',{},'Outbox checked')}>Send next now</button>}
+   {!outbox.length&&<p>No outbound events yet.</p>}
+   <ul>{outbox.slice().reverse().map(o=><li key={o.id}><strong>{state.incidents.find(i=>i.id===o.incident)?.title??eventNames[o.event]}</strong><p>{eventNames[o.event]} · {outcomes[o.status]} · {shortTime(o.due)} · {o.attempts} attempts</p><p>{({ 'receiver-refused':'The recipient refused this event.', 'network-ambiguous':'Delivery could not be confirmed.', 'receiver-failed':'The recipient could not accept this event.', 'budget-exhausted':'Delivery attempts are exhausted.', 'accepted':'The recipient accepted this event.' } as Record<string,string>)[o.history.at(-1)?.reason??'']}</p>{admin&&['failed','uncertain','interrupted','terminal'].includes(o.status)&&<button disabled={busy||o.attempts>=5} onClick={()=>setAction({kind:'outbox',id:o.id,verb:'replay'})}>Authorize replay {o.event}</button>}</li>)}</ul>
+  </details>
+  {action&&<InlineConfirm action={action.verb==='rotate'?'Rotate key':action.verb==='revoke'?'Revoke key':'Authorize replay'} keep="Cancel" busy={busy} onCancel={()=>setAction(undefined)} onConfirm={async()=>{
+   const record=action.kind==='outbox'?outbox.find(o=>o.id===action.id):confirmation;if(!record)return;
+   const key=action.verb==='rotate'?privateKey():undefined;
+   const result=await run('/api/automation/'+action.kind+'/'+encodeURIComponent(action.id)+'/'+action.verb,{revision:record.revision,...(key?{key}:{}),...(action.kind==='endpoints'&&action.verb==='rotate'||action.verb==='replay'?{approve:true}:{})},action.verb==='revoke'?'Access revoked':action.verb==='rotate'?'Key rotated':'Replay authorized');
+   if(result){setAction(undefined);if(key)setRevealed(key);}
+  }}>{action.verb==='rotate'?`Replace the key for ${confirmation?.name}? The old key will stop working.`:action.verb==='revoke'?`Revoke ${confirmation?.name}? Queued work will be refused.`:'Try delivery again with the original operation? This never repeats the incident action.'}</InlineConfirm>}
+  {revealed&&<OneTimeSecret value={revealed} onDone={()=>setRevealed('')}/>}
  </section>;
 }

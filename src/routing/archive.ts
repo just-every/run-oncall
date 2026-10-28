@@ -7,7 +7,8 @@ import { validateRoutingInput } from './input.ts';
 export function validateRoutingSource(state:State,source:IntakeSource) {
   if(source.routing===undefined)return;
   if(!source.routing)fail('Invalid routed key definition');
-  const routing=source.routing;exact(routing,['scope','owner','versions']);routingScope(state,routing.scope);
+  const routing=source.routing;exact(routing,['scope','owner','versions'],['team']);routingScope(state,routing.scope);
+  if(routing.team!==undefined&&!state.teams?.some(t=>t.id===routing.team))fail('Routed key names an unavailable team');
   if(source.service!==routing.scope[0]||!state.members.some(m=>m.id===routing.owner)||!Array.isArray(routing.versions)||!routing.versions.length||routing.versions.length>10000)fail('Invalid routed key definition');
   routing.versions.forEach((version,index)=>{
     exact(version,['version','rules','catchAll','publishedBy','publishedAt']);

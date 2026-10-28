@@ -5,6 +5,11 @@ import {nativeRouting,nativeCapacity} from './routing-native.mjs';
 import {localWorker} from './worker.mjs';
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs';
 
+// D1 inspection blocks the client event loop long enough for the local Worker's idle
+// socket to close. Match worker.request's fresh-connection transport for email and ingress.
+const platformFetch=globalThis.fetch;
+globalThis.fetch=(input,init={})=>{const headers=new Headers(init.headers??(input instanceof Request?input.headers:undefined));headers.set('connection','close');return platformFetch(input,{...init,headers});};
+
 // One public Worker journey: real admission, replay, authority and archive doors.
 const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const secret=()=>randomBytes(32).toString('hex'),keys={pd:secret(),og:secret(),sp:secret()};
@@ -22,9 +27,28 @@ try {
  const actor=ok(await req('/api/session')).member;
  for(const id of ['payments','search','foreign'])ok(await req('/api/command',{type:'service',id,name:id,environment:'production',owner:actor.id,runbook:[],pager:''}));
  for(const service of ['payments','search'])ok(await req('/api/command',{type:'policy',service,severity:'*',action:service==='search'?'suppress':'route',owner:actor.id,reason:service==='search'?'Search maintenance coordination':'Payments owner'}));
+
+ // Plain coordination rules use the same compare-and-publish guard as richer rules.
+ const plainBefore=ok(await req('/api/state')),plainBase=plainBefore.policies.find(p=>p.service==='payments'&&p.severity==='info');
+ const plainAttempt={type:'policy',service:'payments',severity:'info',action:'route',owner:actor.id,reason:'Reviewed payments coordination',baseVersion:plainBase?.version??0};
+ const plainAuditBefore=w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE kind='command.policy' AND outcome='accepted'")[0].n;
+ const plainAccepted=ok(await req('/api/command',plainAttempt));
+ ok(await req('/api/command',{...plainAttempt,action:'suppress',reason:'Stale replacement'}),409);
+ const plainAfter=ok(await req('/api/state')),plainStored=plainAfter.policies.find(p=>p.service===plainAttempt.service&&p.severity===plainAttempt.severity);
+ assert.equal(plainStored.version,plainAccepted.version);assert.equal(plainStored.owner,plainAttempt.owner);assert.equal(plainStored.reason,plainAttempt.reason);assert.equal(plainStored.action,plainAttempt.action);
+ assert.equal(plainAfter.revision,plainBefore.revision+1);assert.equal(w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE kind='command.policy' AND outcome='accepted'")[0].n,plainAuditBefore+1);
+ console.log('PASS plain coordination CAS: 200 then 409, first owner/reason/version retained; accepted audit entries +1, workspace revisions +1');
  const local=localPart(),second=localPart();
  const emailCreate=(id,localPart,service,mode='custom',rules=recoveryRules())=>req('/api/email/addresses',{id,name:id+' integration',localPart,service,owner:actor.id,mode,fallback:'subject',rules});
  ok(await emailCreate('nightly',local,'payments'),201);ok(await emailCreate('second',second,'search'),201);
+ // ct O6: an accepted same-value attempt keeps one value-free ledger fact, with no workspace commit.
+ const noopBefore=ok(await req('/api/state')),noopAddress=noopBefore.emailAddresses.find(a=>a.id==='nightly'),noopBytes=JSON.stringify(noopAddress);
+ const noopAuditBefore=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+ ok(await req('/api/email/addresses/nightly/field',{revision:noopAddress.revision,field:'name',from:noopAddress.name,to:noopAddress.name}));
+ const noopAfter=ok(await req('/api/state')),noopRows=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').slice(noopAuditBefore.length);
+ assert.equal(JSON.stringify(noopAfter.emailAddresses.find(a=>a.id==='nightly')),noopBytes);assert.equal(noopAfter.revision,noopBefore.revision);assert.deepEqual(noopAfter,noopBefore);
+ assert.equal(noopRows.length,1);assert.equal(noopRows[0].kind,'email.name.no-change');assert.equal(noopRows[0].outcome,'accepted');assert.ok(noopRows[0].actor);assert.ok(noopRows[0].at);assert.equal(noopRows[0].workspace_before,noopBefore.revision);assert.equal(noopRows[0].workspace_after,noopBefore.revision);assert.ok(!JSON.stringify(noopRows).includes(noopAddress.name));
+ console.log('PASS ct email field no-op: address bytes/version equal, workspace revision unchanged, all state equal, one accepted email.name.no-change ledger row; field door has no request-id contract');
  for(const subject of ['FAILED: nightly-db','FAILED: nightly-web','OK: nightly-db','OK: missing'])await mail(w,local,subject);
  let email=ok(await req('/api/email'));const db=email.receipts.find(r=>r.decision?.key==='nightly-db'),web=email.receipts.find(r=>r.decision?.key==='nightly-web');
  assert.notEqual(db.generation,web.generation);assert.equal(email.receipts.at(-2).stop,'stopped by source recovery');assert.equal(email.receipts.at(-1).outcome,'no-effect');
@@ -198,10 +222,25 @@ try {
  assert.equal(routedReplay.decisions[0].proposed.version,1);assert.equal(routedReplay.decisions[0].proposed.serviceDecision.version,transformPolicy.version);assert.equal(routedReplay.decisions[0].proposed.serviceDecision.transformation.severity,'warning');assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),routedAudit);assert.deepEqual(routedCounts(),beforeRoutedCounts);assert.deepEqual(ok(await req('/api/archive')),routedBefore);
  console.log('PASS OC-043 routed severity/priority transformation: OC-072 routing version then selected service version, original event, label action and zero-write replay table counts');
 
- const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey,groupKey,amKey,errorKey,depKey,stageKey,flapKey,transformationKey])assert.ok(!JSON.stringify(archive).includes(key));
+ // Team-owned keys refuse outside services without committing and preserve ownership through restore.
+ const team=ok(await req('/api/teams',{name:'Payments routing team',visibility:'public',active:true,revision:0,members:[actor.id],managers:[actor.id]}));
+ ok(await req('/api/teams/ownership',{service:'payments',team:team.id,workspaceRevision:ok(await req('/api/state')).revision}));
+ const teamKey=secret(),teamDefinition={id:'team-monitor',name:'Payments team monitor',provider:'pagerduty',team:team.id,scope:['payments'],owner:actor.id,key:teamKey,revision:0,rules:[],catchAll:'payments'};
+ const teamBefore=ok(await req('/api/state'));
+ ok(await req('/api/routing/keys',{...teamDefinition,team:'unavailable-routing-team'}),400);assert.equal(ok(await req('/api/state')).revision,teamBefore.revision);
+ const refusedTeam=await req('/api/routing/keys',{...teamDefinition,scope:['payments','search']});ok(refusedTeam,400);assert.ok(refusedTeam.value.error.includes(teamBefore.services.find(s=>s.id==='search').name));assert.equal(ok(await req('/api/state')).revision,teamBefore.revision);
+ const createdTeam=ok(await req('/api/routing/keys',teamDefinition),201);assert.equal(createdTeam.routing.team,team.id);assert.equal(ok(await req('/api/state')).intakeSources.find(s=>s.id===createdTeam.id).routing.team,team.id);
+ const rotatedTeamKey=secret(),rotatedTeam=ok(await req('/api/routing/keys',{...teamDefinition,key:rotatedTeamKey,revision:createdTeam.revision}));assert.equal(rotatedTeam.routing.team,team.id);assert.equal(ok(await req('/api/state')).intakeSources.find(s=>s.id===createdTeam.id).routing.team,team.id);
+ ok(await external('/v2/enqueue',{routing_key:rotatedTeamKey,event_action:'trigger',dedup_key:'team-owned-event',payload:{summary:'Payments team signal',source:'team-monitor',severity:'warning'}}),202);
+ const teamAdmitted=ok(await req('/api/state'));assert.equal(teamAdmitted.intakeReceipts.find(r=>r.source===createdTeam.id).service,'payments');
+ ok(await req('/api/routing/keys',{...teamDefinition,revision:rotatedTeam.revision,team:undefined}),400);assert.equal(ok(await req('/api/state')).revision,teamAdmitted.revision);
+ console.log('PASS team routed key: outside scope 400/revision unchanged; own scope 201; rotate 200/read team retained; event 202 to payments; later team change 400/revision unchanged');
+
+ const archive=ok(await req('/api/archive'));for(const key of [...Object.values(keys),...Object.values(native),originalKey,groupKey,amKey,errorKey,depKey,stageKey,flapKey,transformationKey,teamKey,rotatedTeamKey])assert.ok(!JSON.stringify(archive).includes(key));
+ const unavailableTeamArchive=structuredClone(archive);unavailableTeamArchive.intakeSources.find(s=>s.id==='team-monitor').routing.team='unavailable-routing-team';ok(await req('/api/restore',{mode:'replace',archive:unavailableTeamArchive}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const malformed=structuredClone(archive);malformed.intakeSources.find(s=>s.id==='pd').routing.versions[0].catchAll='foreign';ok(await req('/api/restore',{mode:'replace',archive:malformed}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
  const restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
- state=ok(await req('/api/state'));assert.deepEqual(ok(await req('/api/archive')).intakeReceipts,archive.intakeReceipts);assert.deepEqual(state.keyAllowances,archive.keyAllowances);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
+ state=ok(await req('/api/state'));assert.equal(state.intakeSources.find(s=>s.id==='team-monitor').routing.team,team.id);console.log('PASS team routed key export/restore retains team ownership');assert.deepEqual(ok(await req('/api/archive')).intakeReceipts,archive.intakeReceipts);assert.deepEqual(state.keyAllowances,archive.keyAllowances);assert.ok(state.intakeSources.every(s=>!s.active));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_intake_credentials')[0].n,0);
  await w.stop();await w.start();assert.deepEqual(ok(await req('/api/archive')).intakeReceipts,archive.intakeReceipts);
  console.log('OC-070 modes and rules map email onto derived generations. Routed intake: scoped fixed/dynamic rules, per-service generations, suppression ordering, replay/no writes, stale publish, readmission, authority, rollback, rotation and inactive archive/restart');
 } finally {await w.close();}

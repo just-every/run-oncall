@@ -2,7 +2,7 @@ import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import { syncErasureFences } from '../erasure-fence'
 import { authority, fail, text, type State } from '../family/response-operations/domain.ts';
 import { workspaceWrite } from '../workspace-store.ts';
-import { auditIdentity, auditKind } from '../audit-store.ts';
+import { auditIdentity, auditKind, auditOutcome } from '../audit-store.ts';
 import { changeHash } from '../changes/credentials.ts';
 import { refuseKeyEcho } from '../native-sources.ts';
 import { createPortability } from '../modules/portability/index.mjs';
@@ -10,6 +10,7 @@ import { portabilityPolicy } from '../portability-policy.mjs';
 import { emailDraft, decideEmail } from './rules.ts';
 import { inboundDomain } from './receive.ts';
 import type { EmailAddress, EmailVersion } from './types.ts';
+import { editEmailField } from './edit';
 type Deps={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}};
 export function installEmailManagement(api:any,deps:Deps) {
   const current=async(c:any)=>{const state=await deps.state(c,true);authority(state,c.get('actor'),true);return state;};
@@ -43,6 +44,13 @@ export function installEmailManagement(api:any,deps:Deps) {
     if(!address)fail('Unknown email address',404);
     auditIdentity(c.env.DB,{source:{kind:'email-address',id:address.id},subject:{kind:'email-address',id:address.id}});
     if(input.revision!==address.revision)fail('Address changed; reload',409);
+    if(action==='field') {
+      if(!editEmailField(state,address,input)) {
+        auditKind(c.env.DB,'email.'+input.field+'.no-change');auditOutcome(c.env.DB,'accepted');
+        return c.json({...address,changed:false,message:'Nothing to change'});
+      }
+      auditKind(c.env.DB,'email.'+input.field);await commit(c,state);return c.json(address);
+    }
     if(action==='preview') {
       const draft=emailDraft(input),last=state.emailRules?.filter(v=>v.address===address.id).at(-1)!;
       if(!Array.isArray(input.samples)||input.samples.length>100||input.samples.some((id:unknown)=>!state.emailSamples?.some(s=>s.id===id&&s.address===address.id)))fail('Choose up to 100 saved mails on this address');
@@ -52,6 +60,8 @@ export function installEmailManagement(api:any,deps:Deps) {
     auditKind(c.env.DB,'email.'+({publish:'publish',rotate:'rotate',revoke:'revoke',erase:'erase'}[action as string]??'request'));
     if(action==='publish') {
       const draft=emailDraft(input),previous=state.emailRules?.filter(v=>v.address===address.id).at(-1)!;
+      if(input.baseVersion!==undefined&&input.baseVersion!==previous.version)fail('Email rules changed; review the newer version before publishing',409);
+      if(JSON.stringify(draft)===JSON.stringify({mode:previous.mode,fallback:previous.fallback,rules:previous.rules}))return c.json({...address,changed:false,message:'Nothing to change'});
       (state.emailRules??=[]).push({...draft,id:crypto.randomUUID(),address:address.id,version:previous.version+1,by:c.get('actor').id,at:new Date().toISOString()});
       address.revision++;await commit(c,state);return c.json(address);
     }
