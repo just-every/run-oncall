@@ -49,17 +49,9 @@ jobs:
         include:
           - lane: runtime
             browser: false
-          - lane: activation
-            browser: false
-          - lane: machines
-            browser: false
           - lane: intake
             browser: false
-          - lane: adoption
-            browser: false
-          - lane: signin
-            browser: true
-          - lane: product-browser
+          - lane: browser
             browser: true
     env:
       ONCALL_VERIFY_LANE: ${{ matrix.lane }}

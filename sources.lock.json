@@ -124,7 +124,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "37672d8f429c8873e42c8e8e7fb55b5f2d7ca5733e2b5d9f80536a939dffbbe5",
+      "sha256": "362853594def3d8e284c4ff4bc7710e9a0ac34819c2b95009a5a802523892a13",
       "executable": false
     },
     ".gitignore": {
@@ -644,7 +644,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "c414f50fd886209cdb8ebdc857e774bcfa9792fd3b233f5a75b17869671051c5",
+      "sha256": "83e32944fc004c33d8d21189e67aa6dec0523830dfe7d23f05502defadce4275",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -4940,7 +4940,7 @@
       "executable": false
     },
     "tests/verify.mjs": {
-      "sha256": "14ced16c56c726f08f269402d4879f65d4d3597607c52452d0034b2e9377ab79",
+      "sha256": "2592481d938c2920709c82e1d3c6830f023bbab04e4117f228377fb06c6f02e4",
       "executable": false
     },
     "tests/worker-server.mjs": {
