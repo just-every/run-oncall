@@ -6,6 +6,7 @@ import {Field,Form} from '../forms';
 import {request} from '../useWorkspace';
 import type {Incident,Member,Service,State} from '../family/response-operations/domain';
 import {assignmentRule} from './model';
+import {memberName} from '../incident/types';
 function usePolicies(){
  const [policies,setPolicies]=useState<{service:string;revision:number}[]|null>(null), failures=useActionFailure();
  const load=async()=>{try{setPolicies((await request('/api/paging/state')).policies);failures.clear();}catch(error){failures.show(error,{read:true,target:null,retry:load});}};
@@ -43,7 +44,7 @@ export function UserAssignment({service,state}:{service:Service;state:State;busy
  </div></details>;
 }
 export function ResponderRequests({incident,state,actor,busy,submit,expanded=false}:{incident:Incident;state:State;actor:Member;busy:boolean;submit:(data:any)=>Promise<any>;expanded?:boolean}){
- const {policies,failure}=usePolicies(),editable=['admin','responder'].includes(actor.role),name=(id:string)=>state.members.find(m=>m.id===id)?.name??state.services.find(s=>s.id===id)?.name??'Erased member';
+ const {policies,failure}=usePolicies(),editable=['admin','responder'].includes(actor.role),name=(id:string)=>state.services.find(s=>s.id===id)?.name??memberName(state,id);
  const send=(data:any)=>submit({...data,incident:incident.id,revision:incident.revision});
  return <section className="response-controls" aria-label="Manual obligations and responder requests">{!expanded&&<h3>Manual obligations and responder requests</h3>}
  {incident.manualPage&&<><p>Created by {incident.manualPage.erasedCreator?'Erased member':name(incident.manualPage.creator)} · {incident.urgency} urgency · {incident.manualPage.assignment.mode} after {incident.manualPage.assignment.minutes} minutes (version {incident.manualPage.assignment.version}) · automatic action unavailable.</p><p>Primary acknowledgment: {incident.manualPage.acknowledgment&&incident.state!=='declared'?(incident.manualPage.erasedAcknowledgment?'Erased member':name(incident.manualPage.acknowledgment.by)):'Unacknowledged'}</p>{incident.state==='declared'&&incident.manualPage.acknowledgment&&<p>Earlier manual-page acknowledgment: {incident.manualPage.erasedAcknowledgment?'Erased member':name(incident.manualPage.acknowledgment.by)} · {expanded?new Date(incident.manualPage.acknowledgment.at).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):incident.manualPage.acknowledgment.at}</p>}{incident.manualPage.obligations.map(o=><p key={o.id}>Recorded obligation · {o.target.kind}: {name(o.target.id)} · {o.state} · {o.outcome} · no sender · paging OFF</p>)}</>}
