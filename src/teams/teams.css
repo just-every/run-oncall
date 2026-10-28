@@ -1,4 +1,4 @@
-.teams-panel .teams-editor,.teams-panel .teams-ownership{display:grid;gap:12px;margin-top:12px}
+.teams-panel .teams-editor{display:grid;gap:12px;margin-top:12px}
 .teams-panel .teams-choices{display:grid;gap:6px}
 .teams-panel .teams-person{display:flex;flex-wrap:wrap;align-items:center;border-radius:8px}
 .teams-panel .teams-chosen{background:var(--oc-paper-deep)}
@@ -18,5 +18,5 @@
 .teams-panel .teams-import-rows{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .teams-panel .teams-import-rows li{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;min-height:44px;overflow-wrap:anywhere}
 .teams-panel .teams-import-name{font-weight:600}
-.teams-panel .teams-import-meta,.teams-panel .teams-provenance{font-size:13px;color:var(--oc-muted);overflow-wrap:anywhere}
+.teams-panel .teams-import-meta{font-size:13px;color:var(--oc-muted);overflow-wrap:anywhere}
 .teams-panel .teams-import-apply{display:flex;flex-wrap:wrap;align-items:center}

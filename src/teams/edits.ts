@@ -32,4 +32,4 @@ export function teamEditProblem(state:State,id:string,edit:TeamEdit):string|null
  const inactive=[...next.members,...next.managers].find(member=>!person(member)?.active);
  return inactive?noLongerActive(person(inactive)?.name??'This person'):null;
 }
-export const teamEditHeld=(team:Team,edit:TeamEdit)=>JSON.stringify(applyTeamEdit(team,edit))===JSON.stringify(team);
+export const teamEditHeld=(team:Team,edit:TeamEdit)=>edit.kind==='name'?team.name===edit.value.trim():JSON.stringify(applyTeamEdit(team,edit))===JSON.stringify(team);

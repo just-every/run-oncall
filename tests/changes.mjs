@@ -66,7 +66,9 @@ try {
   ok(await managerReq('/api/teams/backstage/preview',{catalog}),403);
   ok(await managerReq('/api/teams/backstage/apply',{catalog,digest:'',choices:{}}),403);
   ok(await req('/api/teams/backstage/preview',{catalog:[{kind:'Component'}]}),400);
+  const teamFacts=async()=>ok(await req('/api/audit/export')).rows.filter(row=>row.feature==='teams'),previewFacts=await teamFacts();
   let rows=await preview();
+  assert.deepEqual(await teamFacts(),previewFacts,'preview writes no permanent audit');
   assert.deepEqual(await records(),importBefore,'refusals and preview leave workspace records unchanged');
   const acceptedImports=async()=>ok(await req('/api/audit/export')).rows.filter(row=>row.kind==='teams.apply'&&row.outcome==='accepted'&&row.workspaceAfter>row.workspaceBefore);
   const auditBefore=await acceptedImports();
@@ -104,7 +106,7 @@ try {
   rows=await preview();importBefore=await records();
   assert.deepEqual(ok(await req('/api/teams/backstage/apply',{catalog,digest:rows.digest,choices:{}})).applied,[]);
   assert.deepEqual(await records(),importBefore,'repeated import leaves workspace records unchanged');
-  console.log('PASS OC-023 public teams and Backstage ownership: Retry custody, manager coverage, zero-write preview/refusals, atomic provenance, explicit conflict choice with history, manual ownership and repeat safety');
+  console.log('PASS OC-023 public teams and Backstage ownership: manager coverage, zero-write preview/refusals, atomic provenance, explicit conflict choice with history, manual ownership and repeat safety');
   // OC-023 ownerless services stay visible without turning the current admin into an owner.
   const unassigned={type:'service',id:'synthetic-oncall-23',name:'synthetic-oncall-23',environment:'production',owner:null,runbook:['synthetic-oncall-23 inspect retained evidence'],pager:''};
   assert.equal(ok(await req('/api/command',unassigned)).owner,'');

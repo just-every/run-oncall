@@ -4636,7 +4636,7 @@
       "executable": false
     },
     "src/teams/edits.ts": {
-      "sha256": "d261855340f2e3036120569e85088a87eaaa202c9cb16b971043ab6e724a5300",
+      "sha256": "2ad6d1fa9c3c9034becffe2d684e25b9cd83b2c5e959113b70d6971b48981b8b",
       "executable": false
     },
     "src/teams/feedback.tsx": {
@@ -4648,7 +4648,7 @@
       "executable": false
     },
     "src/teams/teams.css": {
-      "sha256": "0e0ffd02954f1b5a8f97bbf6f4abab0ead14955990a149e0efb3d324114498fe",
+      "sha256": "7c4e651017add0c3ecf736e77e6197056e15ca6cecd5f35e978852ac40c4f63c",
       "executable": false
     },
     "src/teams/TeamsPanel.tsx": {
@@ -4752,7 +4752,7 @@
       "executable": false
     },
     "tests/changes.mjs": {
-      "sha256": "4c6ab778c1ff29dd0e5a7e6c3af48654024b08b4e80f1280405be6d77e03444a",
+      "sha256": "7a7562d6d0c71c82e7a573505af1ed60d0be2f1ca45746e24725121030095074",
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
