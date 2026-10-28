@@ -1,4 +1,4 @@
-Old reference: `e50fb1aff97e7af09af4333b614bb70d0a780bc6` (main, 28 October 2026). Clauses done there: OC-001, OC-002, OC-003, OC-004, OC-005, OC-006, OC-007, OC-008, OC-010, OC-011, OC-012, OC-013, OC-014, OC-015, OC-016, OC-017, OC-018, OC-019, OC-020, OC-021, OC-022, OC-033, OC-037, OC-041, OC-042, OC-052, OC-053, OC-056, OC-057, OC-059 and OC-070.
+Old reference: `b595e1d6ce484b63d55886ed8fce0405c696b51d` (main, 28 October 2026). Clauses done there: OC-001, OC-002, OC-003, OC-004, OC-005, OC-006, OC-007, OC-008, OC-010, OC-011, OC-012, OC-013, OC-014, OC-015, OC-016, OC-017, OC-018, OC-019, OC-020, OC-021, OC-022, OC-033, OC-037, OC-041, OC-042, OC-052, OC-053, OC-056, OC-057, OC-059 and OC-070.
 
 # Carried-done audit
 
@@ -189,8 +189,8 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-020 | 1 | Admission starts no paging | none in a cited file | none |
 | OC-021 | 1 | The provider export instructions give a runnable command | `tests/provider-export-browser.mjs:30` | asserted |
 | OC-021 | 1 | The exporter output is accepted by the importer | `tests/provider-export-browser.mjs:66` | asserted |
-| OC-021 | 1 | Saved Opsgenie bundles preview with zero writes | `tests/activation.mjs:177` | asserted |
-| OC-021 | 1 | Saved PagerDuty list and detail bundles preview with zero writes | `tests/activation.mjs:177` | asserted |
+| OC-021 | 1 | Saved Opsgenie bundles preview with zero native-object writes | `tests/import-door.mjs:113` | asserted |
+| OC-021 | 1 | Saved PagerDuty list and detail bundles preview with zero native-object writes | `tests/import-door.mjs:113` | asserted |
 | OC-021 | 1 | Rejected rules are named | `tests/activation.mjs:176` | asserted |
 | OC-021 | 1 | Unmapped rules are named | `tests/activation.mjs:204` | asserted |
 | OC-021 | 1 | A changed fingerprint is refused | `tests/activation.mjs:181` | asserted |
@@ -205,7 +205,7 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-022 | 1 | A revoked session cannot publish | `tests/activation.mjs:328` | asserted |
 | OC-022 | 1 | An injected SQL failure rolls back the batch and journal | `tests/activation.mjs:124` | asserted |
 | OC-022 | 1 | An unchanged replay returns the same job | `tests/activation.mjs:190` | asserted |
-| OC-022 | 1 | A changed identity conflicts and keeps committed data | `tests/activation.mjs:326` | asserted |
+| OC-022 | 1 | A changed identity outside reviewed catch-up conflicts and keeps committed data | `tests/activation.mjs:326` | asserted |
 | OC-022 | 1 | A native edit is kept as a named undo conflict | `tests/activation.mjs:315` | asserted |
 | OC-033 | 1 | Signed API events are admitted | none in a cited file: `tests/runtime.mjs:583` holds it | none |
 | OC-033 | 1 | Bearer API events are admitted | `tests/intake.mjs:63` | asserted |

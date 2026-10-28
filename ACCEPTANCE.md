@@ -282,25 +282,25 @@ Core · published · **partial**
 
 Core · published · **done**
 
-**Requirement.** Opsgenie then PagerDuty file move-in uses Base import-kit D1. Preview writes zero rows. A current administrator must review the exact source fingerprint before applying. Users are matched by normalized email and grant no login rights; schedules and policy data stay paused. Original bytes, unmapped fields, rejected objects, the journal and provenance are retained. Every unmappable rotation or rule is named; no partial rotation approximation is allowed. Missing detail exports reject. No account or API calls or routing credentials are activated. Full incumbent cutover and other vendors are OC-038.
+**Requirement.** The shared Base import-kit D1 file door accepts PagerDuty, Opsgenie, Splunk On-Call, Jira Service Management Ops and Better Stack saved exports. Preview writes zero native objects; retained upload custody, plan snapshots and grant/bookkeeping rows exist. A current administrator must review the exact source fingerprint before applying. Users are matched by normalized email and grant no login rights; schedules and policy data stay paused. Original bytes, unmapped fields, rejected objects, the journal and provenance are retained. Every unmappable rotation or rule is named; no partial rotation approximation is allowed. Missing detail exports reject. No account or API calls or routing credentials are activated. Complete incumbent migration and real-export acceptance remain OC-038. The shared file door and its proof limits are documented in [Move-in](docs/move-in.md#shared-file-door-implementation-and-proof-limits).
 
 **Acceptance.**
-1. Following the provider export instructions, saved Opsgenie and PagerDuty list and detail bundles preview with zero writes, exact rejected and unmapped rules and fingerprints are shown, and the apply stays paused, with people and services explicitly mapped before native coverage is adopted.
+1. Following the provider export instructions, saved Opsgenie and PagerDuty list and detail bundles preview with zero native-object writes, exact rejected and unmapped rules and fingerprints are shown, and the apply stays paused, with people and services explicitly mapped before native coverage is adopted.
 
-**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`; `tests/provider-export-browser.mjs`
+**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`; `tests/provider-export-browser.mjs`; `tests/import-door.mjs`
 **Gap.** None.
 
 #### OC-022 — Resume and undo
 
 Core · published · **partial**
 
-**Requirement.** Journaled imports support bounded resume after restart and explicit undo. SQL checks current actor, session and admin authority inside publication and reversal. Changed source identities conflict; duplicate unchanged sources are idempotent. Undo removes only unchanged attributed native objects; edits are preserved with an explicit conflict. Invalid input or failed publication leaves prior committed state unchanged; partial progress remains visible and resumable.
+**Requirement.** Journaled imports support bounded resume after restart and explicit undo. SQL checks current actor, session and admin authority inside publication and reversal. Changed source identities require a reviewed catch-up through the shared door; outside that lifecycle they conflict. Duplicate unchanged sources are idempotent. Undo removes only unchanged attributed native objects; edits are preserved with an explicit conflict. Invalid input or failed publication leaves prior committed state unchanged; partial progress remains visible and resumable.
 
 **Acceptance.**
 1. Apply, interrupt and restart, resume and undo both vendor imports over HTTP; revoke authority at publication, inject an SQL failure, replay unchanged and changed identities, and preserve native edits as named undo conflicts.
 
-**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`
-**Gap.** No cited test resumes an interrupted import to completion: the restart in the shape journey falls between apply calls without asserting the job was unfinished, and the lease-expired import is refused and rolled back. Apply, interruption, restart, undo, revoked authority, SQL rollback, idempotent and conflicting replays and named undo conflicts are asserted.
+**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/move-in-adoption.mjs`; `tests/import-door.mjs`; `tests/import-door-catchup.mjs`
+**Gap.** Synthetic signed standing replacement/addition, restart/reconcile and newest-first undo are exercised; gone/over-allowance/native-edit refusals preserve records and paging stays OFF. No cited test resumes an interrupted import to completion: the restart in the shape journey falls between apply calls without asserting the job was unfinished, and the lease-expired import is refused and rolled back. Apply, interruption, restart, undo, revoked authority, SQL rollback, idempotent and conflicting replays and named undo conflicts are asserted.
 
 ### Complete category job
 

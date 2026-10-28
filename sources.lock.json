@@ -140,11 +140,11 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "7d79b2a922acf6ca2e83823ad2f6ba5d8f724c59ba2530e80c03fe50cc35a40f",
+      "sha256": "c53510a53721c848f9b4339709b442209a6af5d4572d56a6d08016d4468c571d",
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "2df072498cde344357840f78a449f19c68c49400f8ec2ddae985319977188c10",
+      "sha256": "5b9e4381e57cdb4c5b69145747b0ec4b60a13606b15d40073f117d9f73253fa6",
       "executable": false
     },
     "base-copies.json": {
@@ -164,7 +164,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "31462520b299652d43745f8a4951374dd678d71becd18f53875ae86caab69ad8",
+      "sha256": "40a71b16d3de843fd54e8fba7b3dcb3288020608349896b274f859aa479e91b3",
       "executable": false
     },
     "DEMO.md": {
@@ -204,15 +204,15 @@
       "executable": false
     },
     "docs/contract/acceptance-before-cleanup.md": {
-      "sha256": "301f26a5b76c971f0f8bea5a7fc6a28b6a2dae21835d9d01fe17bc3e1516d703",
+      "sha256": "a9c1e8a578376939df36c292bbcb84083a4f6690c8d3d9b4f3f94e7fbe3834ff",
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "698ff84436f9c0995d48a08f429f8f7b1a348cd2026189f0e11144540b743226",
+      "sha256": "3f06c4e862c2abdcc7f8ea70a4fad2dd0ca2422e2d9dd4c4eb621a373579f1c7",
       "executable": false
     },
     "docs/contract/DONE-AUDIT.md": {
-      "sha256": "a9dd07e4e17a232c78389e972ba7dbcf43dd775a2a81ff3bba4c717383e556f8",
+      "sha256": "221b809d29c389f5de9e3e26d9f35b1106c80a806e1af6d47120aa3d24d1e1cc",
       "executable": false
     },
     "docs/contract/doors.md": {
@@ -220,7 +220,7 @@
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
-      "sha256": "9a90eea5f0c01790669a3b6837eac1bc5a2c1fd06a2d5a91867c95badb6d1862",
+      "sha256": "ab0b613ffea37926e0080a128b729d8e5c6243c228ae8433ecb641ffc98c5ba2",
       "executable": false
     },
     "docs/contract/references.md": {
@@ -252,7 +252,7 @@
       "executable": false
     },
     "docs/move-in.md": {
-      "sha256": "9f93fb57bba1916a73850fe4d83c52feb1ef4d1a10b59797666540ffb1036d5a",
+      "sha256": "8eb7d3244bb3d2cb07271ecd9e1c2284b0815e1c0fbe65321e7854e1b27d55d8",
       "executable": false
     },
     "docs/overview.md": {
@@ -624,7 +624,7 @@
       "executable": false
     },
     "MOVE-IN.md": {
-      "sha256": "99efc6078b0d10207ff9f2a7f35e8d407940fc64822961ff4c49ab5d35f822b8",
+      "sha256": "27a2b516b43b02396e8ead3706ee116261e708144230a41bc991f03fcbb33be7",
       "executable": false
     },
     "NOTICE.md": {
@@ -3876,7 +3876,7 @@
       "executable": false
     },
     "src/move-in/door-settings.ts": {
-      "sha256": "70ffdffe38a4d5602334b87735497ef050de24048bc003435ca05b0ebf53557c",
+      "sha256": "54fae1a9b4783f46ee763ea89ef50fa00ecb754147270a403498bcd37a686c2e",
       "executable": false
     },
     "src/move-in/door.ts": {
@@ -4899,8 +4899,12 @@
       "sha256": "a3e3e37e3b687feb8e9c1ec38b0680e962848ad3d97a6893ef9ff4ba90f65543",
       "executable": false
     },
+    "tests/import-door-catchup.mjs": {
+      "sha256": "f3b0a8eb3ee15608fbd47b55157c5cb8aa88dbf0ede293ad4a4fc948409dae67",
+      "executable": false
+    },
     "tests/import-door.mjs": {
-      "sha256": "10d5b44467d3b8772d4d2d49e55c9456ff60c6ea2addf857a1d684241b7b209f",
+      "sha256": "52557327c2435ec61f8dca0c08230155a01954bd1227c2cad7110c4fd73be2ea",
       "executable": false
     },
     "tests/intake.mjs": {

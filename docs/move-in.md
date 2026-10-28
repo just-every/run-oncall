@@ -1,8 +1,17 @@
-# Move in from Opsgenie or PagerDuty
+# Move in from a saved on-call export
 
 Open **Settings → Move in** to read schedules from PagerDuty or Opsgenie, then review the result before anything is imported. PagerDuty uses its own sign-in when this installation has a PagerDuty app; either provider can use a read-only key for this one read. The key stays in page and request memory and is never kept in an archive, audit entry or log. No provider schedules or routing are changed, and everything imported arrives paused. Paging stays off.
 
 Choose **Other: from a file** for a saved export. The private terminal fallback is folded under **No key? Use the exporter on your computer**. Both paths lead to Review, then Import paused. Adoption, Undo and integration activation each ask once on the same page.
+
+The shared file door accepts **PagerDuty, Opsgenie, Splunk On-Call, Jira Service
+Management Ops and Better Stack** exports. Choose **Other: from a file** for the
+additional sources. Preview retains the uploaded file and import bookkeeping;
+it writes zero native objects and grants no login or paging authority. These
+adapters have synthetic saved-response proof within their documented mapping
+limits; no real customer export, complete account migration or live cutover is
+certified. [Business imports and bounded catch-up](../MOVE-IN.md#optional-business-imports)
+use the same door and source allow-list.
 
 ### Connect this installation’s PagerDuty app
 
@@ -167,3 +176,13 @@ No live API pull, account completeness reconciliation, phone cutover or parallel
 ### Separate administrator key activation
 
 After a reviewed import, a supported PagerDuty Events v1/v2, Opsgenie/JSM API, or Splunk REST integration has an **Activate imported integration** panel. Bind its Oncall ID and service, then supply its incumbent key in the password field. The field clears immediately; the key is never shown again or accepted from a saved file. Supplying or replacing a key leaves intake inactive. Confirm **Activate compatible intake · paging OFF** separately; a new native Oncall key is shown once alongside the now-active definition. Both credentials address the same integration. Revoke removes both verification hashes. A restore keeps the definition inactive and requires keys again. Supplying a key marks the imported object as locally edited, so undo cannot overwrite that custody decision. Unsupported kinds stay inactive. See [credential and identity assumptions](compatible-intake.md).
+
+## Shared file door: implementation and proof limits
+
+OC-021 and OC-022 use one server-owned source allow-list for the signed-in administrator mount (`/api/operator/import/*`) and the opted-in Business grant mount (`/api/rer/import/*`): `pagerduty`, `opsgenie`, `splunk`, `jsm` and `betterstack`. The installation owner enables or disables Business imports and permanently revokes trusted signing keys in Sign-in settings; administrators retain their own file import/history/undo access. Upload → plan → fingerprint approval → bounded apply/resume → native reconcile → newest-first undo is the common lifecycle. Preview creates custody and bookkeeping, never native objects or login/send authority. Erasure withdraws retained bundle content while keeping explicit history metadata as described in MOVE-IN.md; archive restore leaves Business imports disabled.
+
+`tests/import-door.mjs`, extended by `tests/import-door-catchup.mjs`, exercises signed standing approval on a synthetic saved PagerDuty rota with users, schedule layers and escalation policies: replacement plus addition, native reconciliation after restart, layered newest-first undo, and preservation of a manually edited native schedule. A bounded standing plan/apply binds the same approval identity/time and admits fewer than five percent changed source records against a nonempty baseline, with no gone, rejected, unmapped or conflicting changed records. Outside-allowance, gone-source and adopted/hand-edited-target cases require a new proposal; erasure withdraws the baseline so standing approval cannot resurrect a gone native record; strict undo refuses the native edit and reconciliation reports it. Paging remains OFF, with no new paging jobs, receipts or callbacks. This extends the existing registration without adding an acceptance point or changing clause status.
+
+These are synthetic local test-install proofs, not authorized real exports, live-account shape verification, a hosted catch-up receipt, complete incumbent migration, live API reconciliation or cutover. OC-021 remains done within its saved-file limits; OC-022 remains partial after the carried-done audit; OC-038 and OC-040 remain partial and OC-074 remains missing. The Move-in screen's reconciliation/completion work is a separate round; a public reconcile endpoint does not itself prove browser reconciliation. Large held native sets beyond this journey are unproved. No production paging or real-phone acceptance is claimed.
+
+The five-source shared file door is implemented within documented mapping limits. Preview writes zero native objects, with custody/bookkeeping retained; complete incumbent migration and real-export acceptance remain OC-038. No real-export receipt or status promotion is claimed.
