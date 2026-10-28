@@ -54,26 +54,22 @@ try {
  ok(await call(owner.page,'/api/members',{...viewer,role:'viewer'}),201)
  ok(await call(owner.page,'/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:rosaRecord.id,runbook:['Check payment provider status'],pager:''}))
  // OC4: per-value save survives immediate menu departure; offline Retry commits once.
- await owner.page.goto(worker.origin+'/services');
- const autosaveCard=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'Checkout',exact:true})});
- await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();
- const timeoutField=autosaveCard.getByLabel('Acknowledgment timeout (minutes, 0 is off)',{exact:true});
- await timeoutField.fill('2');await owner.page.getByRole('link',{name:'Team',exact:true}).click();await owner.page.waitForURL(worker.origin+'/settings/team');
- await owner.page.getByRole('link',{name:'Services',exact:true}).click();await owner.page.reload();
- await autosaveCard.getByText('Acknowledgment timeout',{exact:true}).click();await expect(timeoutField).toHaveValue('2');
+ await owner.page.goto(worker.origin+'/settings/services/checkout');
+ const autosaveCard=owner.page.locator('.service-page'),ownerField=autosaveCard.getByLabel('Owner',{exact:true});
+ await ownerField.selectOption(ownerMember.id);await openWorkspaceSection(owner.page,'team');
+ await openWorkspaceSection(owner.page,'services');await owner.page.locator('a[href="/settings/services/checkout"]').click();await owner.page.reload();
+ await expect(ownerField).toHaveValue(ownerMember.id);
  const beforeRetry=ok(await call(owner.page,'/api/state')).audit.length;
- const blockWrite=route=>route.request().postDataJSON()?.type==='acknowledgment-timeout'?route.abort():route.continue();
- await owner.page.route('**/api/command',blockWrite);await timeoutField.fill('3');await timeoutField.blur();
- await expect(autosaveCard.getByRole('button',{name:'Retry',exact:true})).toBeVisible();await expect(timeoutField).toHaveValue('3');
+ const blockWrite=route=>route.request().postDataJSON()?.type==='service'&&route.request().postDataJSON()?.field==='owner'?route.abort():route.continue();
+ await owner.page.route('**/api/command',blockWrite);await ownerField.selectOption(rosaRecord.id);
+ await expect(autosaveCard.getByRole('button',{name:'Retry',exact:true})).toBeVisible();await expect(ownerField).toHaveValue(rosaRecord.id);
  assert.equal(await autosaveCard.getByText('Saved',{exact:true}).count(),0,'failed save never announces success');
  await owner.page.unroute('**/api/command',blockWrite);
- const retryWrite=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='acknowledgment-timeout');
+ const retryWrite=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='service'&&r.request().postDataJSON()?.field==='owner');
  await autosaveCard.getByRole('button',{name:'Retry',exact:true}).click();assert.equal((await retryWrite).status(),200);
  await expect(autosaveCard.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
- const afterRetry=ok(await call(owner.page,'/api/state'));assert.equal(afterRetry.audit.length,beforeRetry+1,'Retry adds exactly one audit row');assert.equal(afterRetry.services.find(s=>s.id==='checkout').ackTimeouts.at(-1).minutes,3);
- const resetTimeout=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='acknowledgment-timeout');
- await timeoutField.fill('0');await timeoutField.blur();assert.equal((await resetTimeout).status(),200);
- console.log('OC4 autosave: menu departure retains value after reload; offline retains input; Retry audit +1');
+ const afterRetry=ok(await call(owner.page,'/api/state'));assert.equal(afterRetry.audit.length,beforeRetry+1,'Retry adds exactly one audit row');assert.equal(afterRetry.services.find(s=>s.id==='checkout').owner,rosaRecord.id);
+ console.log('OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1');
  // OC-023 public-team forms use the existing Team section at both widths.
  for(const width of [1440,390]){
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/team');await owner.page.reload();
@@ -131,10 +127,9 @@ try {
   assert.equal(ok(await call(owner.page,'/api/state')).teams.find(t=>t.id===owning.id).active,false);
   const restored=teamWrite();await saved.getByLabel('Team state',{exact:true}).selectOption('true');assert.equal((await restored).status(),200);
   assert.equal(ok(await call(owner.page,'/api/state')).teams.find(t=>t.id===owning.id).active,true);
-  const ownershipSaved=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/teams/ownership'&&response.request().method()==='POST');
-  await panel.getByLabel('Owning team for Checkout',{exact:true}).selectOption(owning.id);assert.equal((await ownershipSaved).status(),200);
-  await owner.page.reload();await panel.getByRole('heading',{name:'Teams',exact:true}).waitFor();
-  assert.equal(await panel.getByLabel('Owning team for Checkout',{exact:true}).inputValue(),owning.id);
+  const ownershipSaved=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().postDataJSON()?.field==='team'&&response.request().method()==='POST');
+  await owner.page.goto(worker.origin+'/settings/services/checkout');await owner.page.getByLabel('Team',{exact:true}).selectOption(owning.id);await owner.page.getByRole('button',{name:'Change team',exact:true}).click();assert.equal((await ownershipSaved).status(),200);
+  await owner.page.reload();assert.equal(await owner.page.getByLabel('Team',{exact:true}).inputValue(),owning.id);await owner.page.goto(worker.origin+'/settings/team');await panel.getByRole('heading',{name:'Teams',exact:true}).waitFor();
   assert.ok(await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`teams fit ${width}`);
   assert.equal(await owner.page.evaluate(()=>window.__rerHydration?.count??0),0);
   assert.deepEqual((await new AxeBuilder({page:owner.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
@@ -143,18 +138,20 @@ try {
  // OC-023: both service forms preserve explicit unassigned ownership.
  for(const width of [1440,390]) {
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/services');await owner.page.reload();
-  const add=owner.page.locator('section').filter({has:owner.page.getByRole('heading',{name:'Add service',exact:true})});
+  await owner.page.getByRole('button',{name:'Add service',exact:true}).click();
+  const add=owner.page.locator('.service-create');
   await add.getByLabel('Service name',{exact:true}).fill('synthetic-oncall-23-'+width);
   await add.getByLabel('Service owner',{exact:true}).selectOption('');
   await add.getByRole('button',{name:'Create service',exact:true}).click();
-  const card=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'synthetic-oncall-23-'+width,exact:true})});
-  await card.getByText('production · Unassigned',{exact:true}).waitFor();
-  await card.getByText('Edit service',{exact:true}).click();
+  const card=owner.page.locator('.service-page');
+  await card.getByRole('heading',{name:'synthetic-oncall-23-'+width,exact:true}).waitFor();
   assert.equal(await card.getByLabel('Owner',{exact:true}).inputValue(),'');
-  await card.getByLabel('Name',{exact:true}).fill('synthetic-oncall-23-'+width+' edited');
-  await card.getByRole('button',{name:'Save service',exact:true}).click();
-  const edited=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'synthetic-oncall-23-'+width+' edited',exact:true})});
-  await edited.getByText('production · Unassigned',{exact:true}).waitFor();
+  const renamed=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().postDataJSON()?.field==='name');
+  await card.getByLabel('Name',{exact:true}).fill('synthetic-oncall-23-'+width+' edited');await card.getByLabel('Name',{exact:true}).press('Tab');
+  assert.equal((await renamed).status(),200);
+  await owner.page.reload();const edited=owner.page.locator('.service-page');
+  await edited.getByRole('heading',{name:'synthetic-oncall-23-'+width+' edited',exact:true}).waitFor();
+  assert.equal(await edited.getByLabel('Owner',{exact:true}).inputValue(),'');
   assert.ok(await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`ownerless services fit ${width}`);
   assert.equal(await owner.page.evaluate(()=>window.__rerHydration?.count??0),0);
   const axe=await new AxeBuilder({page:owner.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
@@ -257,6 +254,7 @@ try {
   assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0,'no hydration mismatch')
   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
   assert.deepEqual(axe.violations.filter(row=>['serious','critical'].includes(row.impact)),[],screen+' has no serious accessibility finding')
+  console.log(`Member coordination ${screen} at ${width}: overflow, hydration and accessibility passed`);
   await page.screenshot({path:`${captureDirectory}/${(/^(oc068|oc058)-/.test(screen))?screen:'oc061-'+screen}-${width}.png`,fullPage:true})
  }
  for(const width of [1440,390])await statusCapture(owner.page,'derived-status',width)
@@ -312,8 +310,8 @@ try {
  const excludesStakeholder=async locator=>assert.ok(!(await locator.locator('option').evaluateAll(options=>options.map(option=>option.value))).includes(sam.id),'stakeholders are never offered as responders')
  for(const screen of ['team','services','routing','schedules','incidents']){
   await owner.page.goto(worker.origin+({team:'/settings/team',services:'/settings/services',routing:'/settings/routing',schedules:'/on-call'}[screen]??'/'+screen));await owner.page.reload()
-  if(screen==='team')await owner.page.getByRole('heading',{name:'Team and access',exact:true}).waitFor()
-  if(screen==='services'){await owner.page.getByRole('heading',{name:'Service ownership',exact:true}).waitFor();await excludesStakeholder(owner.page.getByLabel('Service owner',{exact:true}))}
+  if(screen==='team')await owner.page.getByRole('heading',{name:'Team',exact:true,level:2}).waitFor()
+  if(screen==='services'){await owner.page.getByRole('button',{name:'Add service',exact:true}).click();await excludesStakeholder(owner.page.getByLabel('Service owner',{exact:true}))}
   if(screen==='routing'){await owner.page.getByText('Create a routed integration key',{exact:true}).click();await excludesStakeholder(owner.page.getByLabel('Integration owner',{exact:true}))}
   if(screen==='schedules'){
    await owner.page.goto(worker.origin+'/on-call/synthetic-oncall-62/edit')
@@ -372,9 +370,9 @@ try {
  await vic.page.getByText('Only responders and admins may create manual pages or request responders.',{exact:true}).waitFor()
  ok(await call(vic.page,'/api/command',{type:'manual-page',operationId:'synthetic-oncall-68-viewer',service:'checkout',title:'Refused',severity:'critical'}),403)
  for(const width of [1440,390])await statusCapture(vic.page,'oc068-viewer-refusal',width)
- await owner.page.goto(worker.origin+'/settings/services');await owner.page.reload()
- const assignment68=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:'Checkout',exact:true})})
- await assignment68.getByText('User-assignment rule',{exact:true}).click()
+ await owner.page.goto(worker.origin+'/settings/services/checkout');await owner.page.reload()
+ const assignment68=owner.page.locator('.service-page')
+ await assignment68.getByText('Assign new incidents',{exact:true}).click()
  const assignmentChoice=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().postDataJSON()?.type==='user-assignment');
  await assignment68.getByLabel('User-assignment outcome',{exact:true}).selectOption('repeat');assert.equal((await assignmentChoice).status(),200)
  await assignment68.getByLabel('Assignment delay (minutes)',{exact:true}).fill('7')
@@ -418,17 +416,17 @@ try {
  const anonymous=await open(390);await denied(anonymous.page,'anonymous visitor',declared.id)
  const again=await open(390);await passwordSignIn(again.page,responder);await openIncident(again.page,declared.id)
  await owner.page.goto(worker.origin+'/settings/team');await owner.page.reload()
- const card=owner.page.locator('article.service-card').filter({has:owner.page.getByRole('heading',{name:responder.name,exact:true})})
- await card.getByLabel('Access',{exact:true}).selectOption('false')
- await card.getByRole('button',{name:'Update access'}).click()
- await card.locator('p').filter({hasText:/· Revoked/}).waitFor()
+ const card=owner.page.getByRole('article',{name:responder.name,exact:true});
+ await card.getByRole('button',{name:'Member actions',exact:true}).click();await card.getByRole('button',{name:'Revoke access',exact:true}).click();
+ await card.locator('.autosave-confirm').getByRole('button',{name:'Revoke access',exact:true}).click();
+ await expect.poll(async()=>ok(await call(owner.page,'/api/state')).members.find(m=>m.id===rosaRecord.id).active).toBe(false);
  await denied(again.page,'revoked member session',declared.id)
  assert.equal((await again.context.request.post(worker.origin+'/api/login',{data:responder,headers:{origin:worker.origin}})).status(),401,'a revoked member cannot sign in again')
  await again.page.screenshot({path:`${captureDirectory}/member-coordination-revoked-390.png`,fullPage:true})
  const after=ok(await call(owner.page,'/api/workspace')).state.incidents.find(i=>i.id===declared.id)
  assert.ok(after.timeline.some(e=>e.text===noteText&&e.actor===rosaMember.id),'revocation keeps the attributed history')
  assert.deepEqual(errors,[])
- console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and 390 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
+ console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440/390 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
 } finally {
  await browser?.close()
  await worker.close()

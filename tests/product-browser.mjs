@@ -2,7 +2,7 @@ import {openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes,createHmac} from 'node:crypto'
 import {mkdir} from 'node:fs/promises'
-import {chromium} from '@playwright/test'
+import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor} from './worker.mjs'
 import {productBrowserJourney} from './product-browser-journey.mjs'
@@ -109,28 +109,28 @@ async function responsePolicyBrowser(page,context) {
   await request('/api/triage/views',{name:viewName,query:{}})
   await openWorkspaceSection(page,'services')
   await focusWorkspace(page)
-  const service=page.getByRole('article').filter({has:page.getByRole('heading',{name:serviceName,exact:true,level:3})})
-  const responsePolicy=service.locator('details.urgency-policy').filter({has:page.locator('summary').filter({hasText:/^Response policy ·/})})
+  await page.goto(origin+'/settings/services/'+encodeURIComponent(serviceId));
+  const service=page.locator('.service-page')
+  const responsePolicy=service.locator('details.urgency-policy').filter({has:page.locator('summary').filter({hasText:/^Response ·/})})
   await responsePolicy.locator(':scope > summary').click()
   await responsePolicy.getByLabel('Default response',{exact:true}).selectOption('alert-only')
   await responsePolicy.getByLabel('On source recovery',{exact:true}).selectOption('notified')
   await responsePolicy.getByRole('button',{name:'Add response rule',exact:true}).click()
-  await responsePolicy.getByLabel('Rule ID',{exact:true}).fill('checkout-critical')
   await responsePolicy.getByLabel('Rule urgency',{exact:true}).selectOption('high')
   await responsePolicy.getByLabel('Rule severity',{exact:true}).selectOption('critical')
   await responsePolicy.getByLabel('Rule orchestration policy',{exact:true}).selectOption(orchestration.id)
   await responsePolicy.getByLabel('Rule response',{exact:true}).selectOption('incident')
-  await responsePolicy.getByLabel('Response policy reason',{exact:true}).fill('Coordinate critical checkout failures; keep warnings alert-only.')
+  await responsePolicy.getByRole('button',{name:/^Publish version/}).click();await responsePolicy.getByLabel('Reason',{exact:true}).fill('Coordinate critical checkout failures; keep warnings alert-only.')
   const published=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/response/services/'+serviceId&&response.request().method()==='POST')
-  await responsePolicy.getByRole('button',{name:'Publish response policy',exact:true}).click()
+  await responsePolicy.getByRole('button',{name:/^Publish version/}).click()
   assert.equal((await published).status(),201,'response policy is published through the service form')
-  await service.getByText('Published reason: Coordinate critical checkout failures; keep warnings alert-only.',{exact:true}).waitFor()
+  await expect.poll(async()=>(await request('/api/state')).services.find(item=>item.id===serviceId).responsePolicies?.length??0).toBe(1)
   const storedPolicy=(await request('/api/state')).services.find(item=>item.id===serviceId).responsePolicies.at(-1)
   assert.equal(storedPolicy.defaultMode,'alert-only');assert.equal(storedPolicy.recoveredNotice,'notified')
   assert.deepEqual(storedPolicy.rules.map(rule=>[rule.urgency,rule.severity,rule.policy,rule.mode]),[['high','critical',orchestration.id,'incident']])
-  await responsePolicy.getByText('Response policy history (1)',{exact:true}).click()
-  await responsePolicy.getByRole('heading',{name:'v1 · Alert-only',exact:true}).waitFor()
-  await checkScreen('policy',width,responsePolicy.getByRole('button',{name:'Publish response policy',exact:true}))
+  await responsePolicy.getByText('Response history (1)',{exact:true}).click()
+  await responsePolicy.getByRole('heading',{name:'Version 1 · Alert-only',exact:true}).waitFor()
+  await checkScreen('policy',width,responsePolicy.locator(':scope > summary'))
   const event=(id,intent='trigger',severity='warning')=>({source:'intake:'+source,eventId:id+'-'+intent,service:serviceId,environment:'production',key:id,generation:'checkout-cycle',intent,severity,title:`Checkout ${id} ${width}`,observedAt:new Date().toISOString(),evidence:'https://monitoring.example.test/checkout'})
   const send=async(input)=>{
    const response=await context.request.post('/api/ingress/intake:'+source,{headers:{authorization:'Bearer '+key},data:input})
@@ -228,12 +228,13 @@ async function incidentWorkflowBrowser(page,context) {
   await page.setViewportSize({width,height:1000});const serviceId='workflow-'+width,serviceName='Checkout incident workflow '+width;
   await req('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Check replica health before changing customer traffic.'],pager:''});
   await openWorkspaceSection(page,'services');await focusWorkspace(page);
-  const service=page.getByRole('article').filter({has:page.getByRole('heading',{name:serviceName,exact:true,level:3})}),settings=service.getByRole('region',{name:'Response template for '+serviceName});
-  await settings.getByRole('button',{name:'Create response template',exact:true}).click();
+  await page.goto(origin+'/settings/services/'+encodeURIComponent(serviceId));
+  const service=page.locator('.service-page'),settings=service.getByRole('region',{name:'Incident template for '+serviceName});
+  await service.getByText('Incident template',{exact:true}).click();
   await settings.getByLabel('Critical severity wording',{exact:true}).fill('Checkout unavailable');await settings.getByLabel('Warning severity wording',{exact:true}).fill('Checkout degraded');await settings.getByLabel('Info severity wording',{exact:true}).fill('Customer impact under investigation');
   await settings.getByLabel('Impact prompt',{exact:true}).fill('Which checkout paths and customers are affected?');await settings.getByLabel('Incident types (one per line)',{exact:true}).fill('Database failure\nTraffic saturation');
-  await settings.getByRole('button',{name:'Add checklist item',exact:true}).click();await settings.getByLabel('Checklist item 1',{exact:true}).fill('Confirm customer checkout recovery');await settings.getByLabel('Reason for template change',{exact:true}).fill('Keep checkout response consistent across shifts.');
-  await submit(settings.getByRole('button',{name:'Publish response template',exact:true}));await settings.getByText(/^Version 1 · published by/).waitFor();await capture('template',width,settings);
+  await settings.getByRole('button',{name:'Add checklist item',exact:true}).click();await settings.getByLabel('Checklist item 1',{exact:true}).fill('Confirm customer checkout recovery');await settings.getByRole('button',{name:/^Publish version/}).click();await settings.getByLabel('Reason',{exact:true}).fill('Keep checkout response consistent across shifts.');
+  await submit(settings.getByRole('button',{name:/^Publish version/}));await expect.poll(async()=>(await req('/api/state')).services.find(item=>item.id===serviceId).incidentTemplates?.length??0).toBe(1);await capture('template',width,settings);
   await openWorkspaceSection(page,'incidents');await page.getByRole('button',{name:'Declare incident',exact:true}).click();
   const form=page.locator('form').filter({has:page.getByRole('button',{name:'Declare',exact:true})});const targetTitle='Checkout customer impact '+width;
   await form.getByLabel('Incident title',{exact:true}).fill(targetTitle);await form.getByLabel('Service',{exact:true}).selectOption(serviceId);await form.getByLabel('Incident type (service template)',{exact:true}).selectOption('Database failure');await form.getByLabel('Severity',{exact:true}).selectOption('warning');await form.getByLabel('Customer impact and current evidence',{exact:true}).fill('Customers observe slower checkout; response team is investigating.');await submit(form.getByRole('button',{name:'Declare',exact:true}));
@@ -279,10 +280,10 @@ async function changeAndSigningBrowser(page,context){
  };
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:1000});await page.reload();await openWorkspaceSection(page,'services');
-  const service=page.locator('.service-card').filter({has:page.getByRole('heading',{name:'Template payments',exact:true})});await service.locator('.recent-changes > summary').click();
+  await page.goto(origin+'/settings/services/synthetic-oncall-1');const service=page.locator('.service-page');await service.locator('.recent-changes > summary').click();
   await service.getByText('Argo CD gateway sync',{exact:true}).waitFor();await service.getByText('payments: applied',{exact:true}).waitFor();await service.getByText('Terraform Cloud',{exact:true}).waitFor();
   assert.ok(await service.getByText('Dependency · Template gateway',{exact:true}).count());await service.scrollIntoViewIfNeeded();await check('oc065-changes',width);
-  await page.getByText(/of 1,000 retained changes/).scrollIntoViewIfNeeded();await check('oc065-retention',width);
+  await page.goto(origin+'/services');await page.getByText(/of 1,000 retained changes/).scrollIntoViewIfNeeded();await check('oc065-retention',width);
   const erasureKey=token(),erasureSource='synthetic-oncall-40-'+width;
   await request('/api/changes/sources',{id:erasureSource,name:'Synthetic erasure '+width,provider:'native',service:'synthetic-oncall-1',repository:'',mode:'bearer',revision:0,key:erasureKey});
   const changeResponse=await context.request.post('/api/changes/ingress/'+erasureSource,{headers:{authorization:'Bearer '+erasureKey},data:{eventId:erasureSource,summary:'Synthetic erasable change '+width,author:'synthetic-oncall-40',timestamp:new Date().toISOString()}});assert.equal(changeResponse.status(),201);
@@ -382,9 +383,9 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByLabel('Erasure category',{exact:true}).selectOption('change-event');
   // Publish grouping through the existing service settings, then inspect its public admissions.
   await page.reload();await openWorkspaceSection(page,'services');
-  const groupSettings=page.locator('.service-card').filter({has:page.getByRole('heading',{name:'Template payments',exact:true})}).locator('details').filter({has:page.getByText(/^Signal grouping settings/)});
-  await groupSettings.locator('summary').click();await groupSettings.getByLabel('Enable correlation',{exact:true}).check();await groupSettings.getByLabel('Match field',{exact:true}).fill('key');await groupSettings.getByLabel('Grouping window in seconds',{exact:true}).fill('60');await groupSettings.getByLabel('Flapping trigger generations',{exact:true}).fill('0');await groupSettings.getByLabel('Grouping coordination owner',{exact:true}).selectOption(member.id);await groupSettings.getByLabel('Grouping reason',{exact:true}).fill('Synthetic shared failure grouping');
-  const groupPublished=page.waitForResponse(r=>r.url().endsWith('/api/command')&&r.request().postDataJSON()?.correlation?.field==='key');await groupSettings.getByRole('button',{name:'Publish grouping rule',exact:true}).click();const groupingReply=await groupPublished;assert.equal(groupingReply.status(),200);const publishedGrouping=await groupingReply.json();await groupSettings.getByText('Signal grouping settings · service rule v'+publishedGrouping.version,{exact:true}).waitFor();await groupSettings.scrollIntoViewIfNeeded();await check('oc043-grouping-settings',width);
+  await page.goto(origin+'/settings/services/synthetic-oncall-1');const groupSettings=page.locator('.service-grouping');
+  await groupSettings.locator(':scope > summary').click();await groupSettings.getByLabel('Enable grouping',{exact:true}).check();await groupSettings.getByLabel('Match field',{exact:true}).fill('key');await groupSettings.getByLabel('Grouping window in seconds',{exact:true}).fill('60');await groupSettings.getByLabel('Flapping trigger generations',{exact:true}).fill('0');await groupSettings.getByLabel('Grouping coordination owner',{exact:true}).selectOption(member.id);await groupSettings.getByRole('button',{name:/^Publish version/}).click();await groupSettings.getByLabel('Reason',{exact:true}).fill('Synthetic shared failure grouping');
+  const groupPublished=page.waitForResponse(r=>r.url().endsWith('/api/command')&&r.request().postDataJSON()?.correlation?.field==='key');await groupSettings.getByRole('button',{name:/^Publish version/}).click();const groupingReply=await groupPublished;assert.equal(groupingReply.status(),200);const publishedGrouping=await groupingReply.json();await expect.poll(async()=>(await request('/api/state')).policies.find(p=>p.id===publishedGrouping.id).version).toBe(publishedGrouping.version);await groupSettings.scrollIntoViewIfNeeded();await check('oc043-grouping-settings',width);
   const groupSources=['synthetic-oncall-438-a-'+width,'synthetic-oncall-438-b-'+width],groupKeys=[token(),token()],groupStart=Date.now();
   for(let n=0;n<2;n++)await request('/api/routing/keys',{id:groupSources[n],name:'Synthetic correlation '+n+' '+width,provider:'native',scope:['synthetic-oncall-1'],owner:member.id,key:groupKeys[n],revision:0,rules:[],catchAll:'synthetic-oncall-1'});
   const groupSignal=(n,eventId,generation,intent,key,offset,title)=>context.request.post('/api/ingress/intake:'+groupSources[n],{headers:{authorization:'Bearer '+groupKeys[n]},data:{source:'intake:'+groupSources[n],eventId,service:'synthetic-oncall-1',environment:'production',key,generation,intent,severity:'critical',title,observedAt:new Date(groupStart+offset).toISOString(),evidence:''}});
@@ -392,7 +393,7 @@ async function changeAndSigningBrowser(page,context){
   const joinedResponse=await groupSignal(1,'synthetic-oncall-438-b','synthetic-oncall-438-b','trigger','synthetic-oncall-438-'+width,1000,'Synthetic correlation joined '+width);assert.equal(joinedResponse.status(),201);const joinedReply=await joinedResponse.json();
   const groupingState=await request('/api/state'),rootEvent=groupingState.events.find(e=>e.id===rootReply.id),joinedEvent=groupingState.events.find(e=>e.id===joinedReply.id);assert.equal(joinedEvent.decision.correlation.originalEvent,rootEvent.id);
   await page.reload();await openWorkspaceSection(page,'alerts');const joinedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Synthetic correlation joined '+width,exact:true})});await joinedCard.getByText(/Joined original event/).waitFor();await joinedCard.scrollIntoViewIfNeeded();await check('oc043-correlated-signal',width);
-  await openWorkspaceSection(page,'services');await groupSettings.locator('summary').click();await groupSettings.getByLabel('Flapping trigger generations',{exact:true}).fill('2');const flapPublished=page.waitForResponse(r=>r.url().endsWith('/api/command')&&r.request().postDataJSON()?.correlation?.flappingCount===2);await groupSettings.getByRole('button',{name:'Publish grouping rule',exact:true}).click();assert.equal((await flapPublished).status(),200);
+  await page.goto(origin+'/settings/services/synthetic-oncall-1');await groupSettings.locator(':scope > summary').click();await groupSettings.getByLabel('Flapping trigger generations',{exact:true}).fill('2');await groupSettings.getByRole('button',{name:/^Publish version/}).click();await groupSettings.getByLabel('Reason',{exact:true}).fill('Hold repeating generations for review');const flapPublished=page.waitForResponse(r=>r.url().endsWith('/api/command')&&r.request().postDataJSON()?.correlation?.flappingCount===2);await groupSettings.getByRole('button',{name:/^Publish version/}).click();assert.equal((await flapPublished).status(),200);
   const flapTitle='Synthetic flapping browser '+width,flapIdentity='synthetic-oncall-439-'+width;
   for(const [eventId,generation,intent,offset] of [['synthetic-oncall-439-a','synthetic-oncall-439-a','trigger',2000],['synthetic-oncall-439-r','synthetic-oncall-439-a','recover',3000],['synthetic-oncall-439-b','synthetic-oncall-439-b','trigger',4000]]){const response=await groupSignal(1,eventId,generation,intent,flapIdentity,offset,flapTitle);assert.equal(response.status(),201);}
   await page.reload();await openWorkspaceSection(page,'alerts');const heldCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true})});await heldCard.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true}).waitFor();assert.equal(await heldCard.count(),1);await heldCard.getByText(/1 held active generation/).waitFor();await heldCard.getByText('Retained generations and evidence',{exact:true}).click();await heldCard.scrollIntoViewIfNeeded();await check('oc043-flapping-held',width);
@@ -467,7 +468,7 @@ try {
  await changeAndSigningBrowser(page,context)
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440/390; overflow, axe and hydration checked')
  assert.deepEqual(errors,[],'no browser application errors')
- console.log('Emitted Worker product browser journey passed at desktop and mobile widths')
+ console.log('Emitted Worker product browser journey passed at 1440/390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]')]})

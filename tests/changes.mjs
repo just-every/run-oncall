@@ -62,9 +62,9 @@ try {
   const unassignedBefore=ok(await req('/api/archive'));
   assert.equal(unassignedBefore.services.find(s=>s.id===unassigned.id).owner,'');
   w.sql("CREATE TRIGGER synthetic_oncall_owner_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-23'); END");
-  try {ok(await req('/api/command',{...unassigned,owner:actor.id}),503);} finally {w.sql('DROP TRIGGER synthetic_oncall_owner_audit');}
+  try {ok(await req('/api/command',{type:'service',id:unassigned.id,field:'owner',from:'',to:actor.id}),503);} finally {w.sql('DROP TRIGGER synthetic_oncall_owner_audit');}
   assert.deepEqual(ok(await req('/api/archive')),unassignedBefore,'failed ownership audit leaves the ownerless service unchanged');
-  ok(await req('/api/command',{...unassigned,owner:'synthetic-oncall-missing'}),400);
+  ok(await req('/api/command',{type:'service',id:unassigned.id,field:'owner',from:'',to:'synthetic-oncall-missing'}),400);
   const unassignedEvent={source:'synthetic-oncall-23',eventId:'synthetic-oncall-23',service:unassigned.id,environment:'production',key:'synthetic-oncall-23',generation:'synthetic-oncall-23',intent:'trigger',severity:'warning',title:'synthetic-oncall-23',observedAt:new Date().toISOString(),evidence:''};
   const unassignedKey=randomBytes(32).toString('hex');
   ok(await req('/api/sources',{id:'synthetic-oncall-23',key:unassignedKey,scopes:[unassigned.id]}));

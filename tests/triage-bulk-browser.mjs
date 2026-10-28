@@ -98,12 +98,13 @@ export async function triageBulkBrowser(page,context,width){
  console.log(`OC-043 declaration browser ${width}: zero-write ordered comparison, saved pending declaration/notification progress after reload, explicit completion, frozen checklist and recorded no-sender obligations; axe, overflow and hydration passed`);
  console.log(`OC-060 browser ${width}: selected snooze, merge target and per-item receipts, confirmed alert-only close, retained human-resolution history, no fabricated incident, axe and overflow passed`);
  // Rule approval uses the service's existing Settings controls and saved progress.
- await openWorkspaceSection(page,'services');
- const ruleCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Synthetic coordination '+width,exact:true})});
- await ruleCard.getByText('Settings · approved workflows',{exact:true}).click();
- const ruleForm=ruleCard.getByRole('form',{name:'Approved workflow settings',exact:true});
- await ruleForm.getByLabel('Workflow responder',{exact:true}).selectOption(coordinator.id);await ruleForm.getByLabel('Workflow reason',{exact:true}).fill('Synthetic approved coordination '+width);await ruleForm.getByLabel('Approve this workflow version',{exact:true}).check();
- await ruleForm.getByRole('button',{name:'Approve workflow rule',exact:true}).click();await ruleCard.getByText(/^Workflow v1 · service rule/).waitFor();await workflowCheck('rule-authoring');
+ await page.goto(origin+'/settings/services/'+encodeURIComponent(newServiceId));
+ const ruleCard=page.locator('.service-page'),ruleForm=ruleCard.locator('.service-workflow');
+ await ruleForm.locator(':scope > summary').click();
+ await ruleForm.getByLabel('Workflow responder',{exact:true}).selectOption(coordinator.id);await ruleForm.getByLabel('Workflow purpose',{exact:true}).fill('Synthetic approved coordination '+width);
+ await ruleForm.getByRole('button',{name:/^Approve version/}).click();await ruleForm.getByLabel('Reason',{exact:true}).fill('Synthetic approved coordination '+width);
+ const approved=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().postDataJSON()?.workflow?.approved===true);
+ await ruleForm.getByRole('button',{name:/^Approve version/}).click();assert.equal((await approved).status(),200);await workflowCheck('rule-authoring');
  const approvedState=await call('/api/state'),approvedPolicy=approvedState.policies.find(p=>p.service===newServiceId&&p.severity==='*'),ruleIdentity='synthetic-oncall-446-'+width;
  const ruleSignal={source:newSource,eventId:ruleIdentity,service:newServiceId,environment:'test',key:ruleIdentity,generation:ruleIdentity,intent:'trigger',severity:'warning',title:'Synthetic approved launch '+width,observedAt:new Date().toISOString(),evidence:''};
  await openWorkspaceSection(page,'routing');await page.getByLabel('Event JSON array',{exact:true}).fill(JSON.stringify([ruleSignal]));await page.getByRole('button',{name:'Compare decisions',exact:true}).click();const ruleReplay=page.getByRole('region',{name:'Replay comparison',exact:true});await ruleReplay.getByText('Proposed workflow v1: reassign → declare → notify. Recorded obligation only; no effects.',{exact:true}).waitFor();await ruleReplay.scrollIntoViewIfNeeded();await workflowCheck('rule-replay');
