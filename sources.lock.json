@@ -912,7 +912,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "477bb108e9d9fcb8abc96ed2e3e6491c51aa34f654943edc6dd657dd9f56ac2b",
+      "sha256": "d229e80f567f08f73880367c8230cb8248149bf9069057ca50f7ef46ce4b91e9",
       "executable": false
     },
     "scripts/installer/native-prefix-archive.mjs": {
@@ -4784,7 +4784,7 @@
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
-      "sha256": "0c550e14029433750df5c3944096a4c49975affb9b5dc8b4dc8d21a2d222d173",
+      "sha256": "755fabb7fad10b412c1f59b4f0218c0ed75c975d4d87aaa348b8de76e8b354cf",
       "executable": false
     },
     "tests/diagnostics.mjs": {
@@ -4932,7 +4932,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "158ba925e971e968eac89f81502234f7d6a0fa1a3822a6153431943f2a7538c9",
+      "sha256": "af8f046462eaaf40143d6df3f2aa2798583e98541ffacd31559130892039c83a",
       "executable": false
     },
     "tests/triage.mjs": {

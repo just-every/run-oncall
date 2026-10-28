@@ -246,3 +246,25 @@ if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1]) {
   console.log('OC-055 real CLI checkpoint: both keys and hashes excluded; all held history restored; integration inactive and supply required again')
  }finally{await w.close()}
 }
+
+// Transfer carries all populated categories through one valid private-CLI round
+// trip. Activation owns the common refusal, file-custody and v1 matrices.
+export async function checkpointRoundTrip(w,cookie) {
+ await checkpointFixtures(w,cookie)
+ const directory=await mkdtemp(join(tmpdir(),'oncall-checkpoint-roundtrip-')),session=join(directory,'session'),file=join(directory,'checkpoint.json')
+ const cli=args=>new Promise((resolve,reject)=>{
+  const child=spawn(process.execPath,['scripts/checkpoint.mjs','--origin',w.origin,'--session-file',session,...args],{stdio:['ignore','pipe','pipe']})
+  child.on('error',reject);child.stdout.resume();child.stderr.resume();child.on('exit',resolve)
+ })
+ try {
+  await writeFile(session,cookie,{mode:0o600})
+  const before=await checkpointReadback(w,cookie)
+  assert.equal(await cli(['export',file]),0,'populated CLI export succeeds')
+  const checkpoint=JSON.parse(await readFile(file,'utf8'));exported(checkpoint,before)
+  assert.equal(await cli(['restore',file,'--replace']),0,'populated CLI replacement succeeds')
+  const next=(await readFile(session,'utf8')).trim()
+  assert.equal((await w.request('/api/state',undefined,cookie)).status,401,'CLI replacement revokes prior authority')
+  assertCheckpointRestored(checkpoint,await checkpointReadback(w,next))
+  return next
+ }finally{await rm(directory,{recursive:true,force:true})}
+}
