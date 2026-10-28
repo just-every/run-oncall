@@ -19,7 +19,7 @@ export function DocsArticle({ slug, variant }: { slug: string; variant?: SiteVar
         </nav>
       )}
     >
-      <HydrationUnit><article className="docs-article">
+      <HydrationUnit><article className="docs-article" data-doc={slug}>
         <p className="docs-eyebrow">{page.section}</p>
         <h1>{page.title}</h1>
         <div className="docs-body" dangerouslySetInnerHTML={{ __html: page.html }} />

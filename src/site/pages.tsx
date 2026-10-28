@@ -14,9 +14,11 @@ import { run } from './run'
 import '../brand/tokens.css'
 // The approved homepage inherits these document defaults from the workspace route.
 import '../app/shell.css'
+import './shared-pages.css'
 
 export function sitePages({ styles, contract, hosting }: SiteContext): SiteBuild {
   const homepageHeader = { html: renderToStaticMarkup(<div className="oc-landing"><LandingHeader signIn={false} /></div>), styles }
+  const sharedPage = (html: string) => html.replace('<body>', '<body class="oncall-shared-page">')
   const document = (title: string, description: string | undefined, body: ReactElement) => '<!doctype html>' + renderToStaticMarkup(
     <html lang="en"><head><meta charSet="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>{title}</title>
       {description && <meta name="description" content={description} />}
@@ -32,8 +34,8 @@ export function sitePages({ styles, contract, hosting }: SiteContext): SiteBuild
   return {
     pages: [
       { path: '/', html: document("Oncall — who's on call, now and next", identity.tagline, <Home variant="site" />) },
-      { path: '/run', html: runPageHtml(identity, run, contract, homepageHeader) },
-      { path: '/docs/hosting', html: hostingPageHtml(identity, run, hosting ?? null, contract, homepageHeader) },
+      { path: '/run', html: sharedPage(runPageHtml(identity, run, contract, homepageHeader)) },
+      { path: '/docs/hosting', html: sharedPage(hostingPageHtml(identity, run, hosting ?? null, contract, homepageHeader)) },
       ...(contract ? [{ path: '/contract', html: contractPageHtml(identity, run, contract) }] : []),
       { path: '/docs', html: document(...head(), <DocsIndex variant="site" />) },
       ...docsPages.map(page => ({ path: `/docs/${page.slug}`, html: document(...head(page.slug), <DocsArticle slug={page.slug} variant="site" />) })),
