@@ -501,3 +501,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
+await import('./agent-door-browser.mjs');
