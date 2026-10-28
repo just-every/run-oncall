@@ -115,6 +115,7 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  await page.getByText('Calendar feed',{exact:true}).click();const feed=page.getByRole('link',{name:'Open private ICS feed',exact:true});const calendar=await context.request.get(await feed.getAttribute('href'));assert.equal(calendar.status(),200);
  const times=(await calendar.text()).split('\r\n').filter(line=>/^DT(STAMP|START|END):/.test(line));assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'calendar uses whole-second UTC times');
  await page.screenshot({path:`${directory}/rota-page-${width}.png`,fullPage:true});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await coverageRulesBrowser(page,context,width,session);
  await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});
 }
 
@@ -132,7 +133,7 @@ if(process.argv[1]&&new URL(import.meta.url).pathname===process.argv[1]){
   }
   const ended=await worker.request('/api/login',{name:'synthetic-oncall-1',password:'synthetic-oncall-browser-password'});assert.equal(ended.status,200);assert.equal((await worker.request('/api/logout',{},ended.cookie)).status,200);
   const expired=await worker.request('/api/login',{name:'synthetic-oncall-1',password:'synthetic-oncall-browser-password'});assert.equal(expired.status,200);worker.sql('UPDATE sessions SET expires=0');
-  for(const action of ['review','apply'])for(const cookie of [ended.cookie,expired.cookie])assert.equal((await worker.request('/api/schedules/unavailable/'+action,{},cookie)).status,401);
+  for(const action of ['review','apply','pto-review','pto-apply'])for(const cookie of [ended.cookie,expired.cookie])assert.equal((await worker.request('/api/schedules/unavailable/'+action,{},cookie)).status,401);
   console.log('PASS OC-024 revoked/expired review and apply doors');
  }finally{await browser?.close();await worker.close();}
 }
@@ -160,4 +161,34 @@ export function scheduleReviewWindow(now) {
   return {overrideStart:utc(gap),overrideEnd:utc(gap+3*hour),previewFrom:utc(from),previewTo:utc(to)}
  }
  throw Error('No nearby clock changes found for schedule review')
+}
+
+export async function coverageRulesBrowser(page,context,width,session){
+ const origin=new URL(page.url()).origin,api=async(path,input)=>{const r=await(input===undefined?context.request.get(origin+path):context.request.post(origin+path,{headers:{origin},data:input}));assert.equal(r.status(),200);return r.json();};
+ const state=await api('/api/state'),now=Date.now(),date=new Date(now-86400000).toISOString().slice(0,10),id='synthetic-oncall-'+(3000+width);
+ const rotation={anchorLocal:date+'T00:00',periodDays:1,members:[session.member.id],ambiguity:'earlier'},layer={id:id+'-layer',name:'synthetic-oncall-'+(4000+width),role:'primary',timezone:'UTC',kind:'daily',rotation,start:date+'T00:00:00.000Z',end:null,weekdays:[1,2,3,4,5],startHour:9,endHour:17,holidayCalendars:[],holidayAction:'next',ptoAction:'next'};
+ await api('/api/paging/schedules',{id,name:'synthetic-oncall-'+(5000+width),service:state.services[0].id,revision:0,timezone:'UTC',validFrom:date+'T00:00:00.000Z',validUntil:null,primary:rotation,backup:{...rotation,members:[]},overrides:[],layers:[layer]});
+ await page.goto(origin+'/on-call/'+id);const current=await api('/api/schedules/'+id+'/now-next');assert.ok((await page.locator('.scheduling-now-role').first().innerText()).includes(current.now.windows[0].explanation));
+ const inView=async locator=>{await locator.waitFor();await page.waitForFunction(el=>el===document.activeElement,await locator.elementHandle());assert.equal(await locator.evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight&&r.left>=0&&r.right<=innerWidth;}),true);assert.equal(await locator.evaluate(el=>el===document.activeElement),true);};
+ const edit=async()=>{await page.getByRole('link',{name:'Edit rota',exact:true}).click();for(let i=0;i<3;i++)await page.getByRole('button',{name:'Continue',exact:true}).click();await page.getByLabel('Coverage review elapsed days',{exact:true}).fill('366');await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);};
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE;await edit();
+ const proposal=page.getByRole('region',{name:'Layers, holidays and PTO',exact:true});
+ await proposal.getByLabel('PTO start, UTC',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await proposal.getByLabel('PTO end, UTC',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
+ await proposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await inView(proposal.getByRole('status'));
+ await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();
+ const review=page.getByRole('region',{name:'Review schedule changes',exact:true});await inView(review.locator('h2'));assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ if(directory)await page.screenshot({path:directory+'/coverage-rules-'+width+'.png',fullPage:true});
+ for(const internal of [id,layer.id,session.member.id])assert.equal((await page.locator('body').innerText()).includes(internal),false);
+ await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);await inView(page.getByRole('status').filter({hasText:/./}).first());
+ let saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,1);
+ await edit();await proposal.getByLabel('PTO start, UTC',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await proposal.getByLabel('PTO end, UTC',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await proposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await inView(proposal.getByRole('status'));await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();await review.waitFor();await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,2);
+ await edit();
+ const refused=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));
+ await proposal.getByLabel('Review ICS PTO upload',{exact:true}).setInputFiles({name:'synthetic-oncall.ics',mimeType:'text/calendar',buffer:Buffer.from('BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:bad\nEND:VEVENT\nEND:VCALENDAR')});assert.equal((await refused).status(),400);await inView(proposal.getByRole('status'));
+ const imported=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));
+ await proposal.getByLabel('Review ICS PTO upload',{exact:true}).setInputFiles('tests/fixtures/pto-calendar.ics');const result=await imported;assert.equal(result.status(),200);const uploadReview=await result.json();assert.ok(uploadReview.import.entries.length>0);assert.ok(uploadReview.import.refused.length>0);await inView(proposal.getByRole('status'));await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,2+uploadReview.import.entries.length);
+ await edit();await page.getByLabel('Layer name',{exact:true}).fill(layer.name+' changed');await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();await review.waitFor();
+ await api('/api/schedules/'+id+'/overrides',{revision:saved.revision,override:{id:id+'-cover',role:'primary',member:null,start:new Date(now+21600000).toISOString(),end:new Date(now+25200000).toISOString()}});
+ await review.getByRole('checkbox').check();const stale=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/apply'));await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();assert.equal((await stale).status(),409);await inView(page.locator('.oc-rota-steps .failure-line'));assert.equal((await api('/api/paging/state')).schedules.find(s=>s.id===id).layers[0].name,layer.name);
+ console.log('PASS OC-024 browser coverage rules '+width+': long review, focused PTO and ICS outcomes, consecutive reviewed writes, visible stale refusal and no visible internal identifiers');
 }

@@ -26,6 +26,10 @@ import '../scheduling.css';
 type ModuleState = PagingArchive & {revision: number};
 export function RotaPage({id, state, actor, value, refresh, edit = false, renderEdit}: {id: string; state: State; actor: Member; value: OnCall | null; refresh: () => Promise<void>; edit?: boolean; renderEdit?: (schedule: Schedule) => React.ReactNode}) {
   const tooltips = useRotaTooltips();
+  const [savedNotice,setSavedNotice]=useState('');
+  const savedLine=useRef<HTMLParagraphElement>(null);
+  useEffect(()=>{if(!edit){const key='rota-saved:'+id,value=sessionStorage.getItem(key);if(value){sessionStorage.removeItem(key);setSavedNotice(value);}}},[edit,id]);
+  useEffect(()=>{if(savedNotice&&!edit){savedLine.current?.focus();savedLine.current?.scrollIntoView({block:'nearest'});}},[savedNotice,edit]);
   const [data, setData] = useState<ModuleState | null>(null), [windows, setWindows] = useState<Coverage[]>([]), [from] = useState(() => Date.now());
   const [sheet, setSheet] = useState<'cover' | 'swap' | null>(null), [selected, setSelected] = useState<OnCallBand | null>(null);
   const [review, setReview] = useState<ScheduleReview | null>(null), [proposal, setProposal] = useState<Schedule | null>(null), [busy, setBusy] = useState(false);
@@ -92,6 +96,7 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
   };
   if (edit && schedule && renderEdit) return <>{renderEdit(schedule)}</>;
   return <div ref={tooltips} className="oc-oncall oc-rota-page"><aside className="oc-rota-neighbours oc-card" aria-label="Rotas"><h2>Rotas</h2>{value?.rotas.map(row=><Link key={row.id} to={'/on-call/'+encodeURIComponent(row.id) as any} aria-current={row.id===id?'page':undefined}><strong>{row.service.name}</strong><span>{row.name}</span><span>{row.now.primary?.name??'Nobody on call'}</span></Link>)}</aside><section className="oc-rota-record"><Link className="oc-back" to={'/on-call' as any}>‹ On call</Link><header className="oc-page-head"><div><h1>{schedule?.name ?? rota?.name ?? 'Rota'}</h1><p className="oc-quiet">{rota?.service.name ?? state.services.find(service => service.id === schedule?.service)?.name}</p></div>{canEdit && <Link className="oc-button" to={'/on-call/' + encodeURIComponent(id) + '/edit' as any}>Edit rota</Link>}</header>
+    {savedNotice&&<p ref={savedLine} role="status" tabIndex={-1}>{savedNotice}</p>}
     <FailureLine failure={sheet ? null : failures.failure}/>
     {data && !schedule && <p>Rota not found. <Link to={'/on-call' as any}>Return to On call</Link></p>}
     {schedule && <><ScheduleNowNext schedule={schedule} state={state} request={request}/>

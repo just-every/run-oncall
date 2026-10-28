@@ -26,7 +26,7 @@ try {
  let link
  for(let n=0;n<600;n++){if(dev.exitCode!==null)throw Error(safe(output).slice(-2000));link=output.match(/RER_OPEN (http[^\s]+)/)?.[1];if(link)break;await new Promise(r=>setTimeout(r,250))}
  assert.ok(link,'managed dev emitted a private owner-open link')
- browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']})
+ browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_EXECUTABLE,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
  const context=await browser.newContext({baseURL:origin,viewport:{width:1440,height:1000}}),page=await context.newPage(),errors=[]
  page.on('pageerror',error=>errors.push(error.message))
  await context.addCookies([{name:`oncall_session_${new URL(origin).port}`,value:'retired-installation-session',url:origin}])
