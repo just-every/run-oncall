@@ -985,9 +985,9 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 **How Oncall computes each class.**
 - **standard**: a call that stays inside the workspace and can be undone or superseded in Oncall: reads, notes, acknowledgment, reassignment, snooze, merges, drafts, triage views and follow-up edits; measured in items.
 - **live**: a call that changes who is paged or when, or how a production service behaves: rotations, overrides and swaps, escalation, urgency, response and user-assignment rules, routing rule sets, pages and responder requests, readiness drills, and library actions and remediation plans; measured by service.
-- **external**: a call that sends or exposes something to someone outside the business: a published internal or customer update, a registered outbound endpoint and its replay, and a calendar feed an outside calendar service fetches; the counterparty is known for a recipient on record, new otherwise, and public for a public status page.
+- **external**: a call that sends or exposes something to someone outside the business: a published internal or customer update, a Zoom or Teams incident bridge sent to its provider, a registered outbound endpoint and its replay, and a calendar feed an outside calendar service fetches; the counterparty is known for a recipient on record, new otherwise, and public for a public status page.
 - **commitment**: a sign-off others rely on: resolving a declared incident with its summary and evidence, reviewing hand-off copy, publishing an update, and accepting a root cause, impact, review or completion.
-- **access**: a call that changes standing authority: member roles and deactivation, team membership and private scope, and API client grants; its direction is widens or narrows.
+- **access**: a call that changes standing authority: member roles and deactivation, team membership and private scope, a library action's allowed teams and roles, and API client grants; its direction is widens or narrows.
 - **security**: a call that handles credentials or protective settings: intake keys and email addresses, API client and endpoint keys, calendar feed secrets and SSO settings.
 - **destructive**: a call that cannot be undone in Oncall: erasure, a restore that replaces state, and an irreversible library or remediation action; measured in items.
 - **gated**: destination verification, whose code arrives on the responder's own phone or inbox and is entered by that person.
@@ -999,6 +999,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.alerts.replay` | Replay events against the current or a draft policy with zero writes | OC-002, OC-014, OC-043, OC-070 | standard | none |
 | `oncall.incidents.declare` | Declare an incident from alerts | OC-004, OC-050, OC-056 | standard | API (incidents) |
 | `oncall.incidents.update` | Acknowledge, note, reassign, snooze or escalate an incident and assign its roles | OC-004, OC-027, OC-050, OC-058 | standard | API (incidents) |
+| `oncall.bridges.create` | Create or join a Zoom or Teams incident bridge and record its participants and link | OC-035 | external | none |
 | `oncall.incidents.resolve` | Resolve a declared incident with its summary and evidence | OC-004, OC-056 | commitment | API (incidents) |
 | `oncall.incidents.merge` | Merge related incidents or split an unrelated alert group | OC-050 | standard | none |
 | `oncall.triage.list` | Search, filter and save triage views | OC-060 | standard | none |
@@ -1027,6 +1028,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.automation.clients` | Create, rotate or revoke API clients | OC-053 | access · security | none |
 | `oncall.automation.endpoints` | Register, rotate or revoke outbound event endpoints | OC-053 | external · security | none |
 | `oncall.automation.replay` | Replay a held or uncertain outbound event | OC-053 | external | none |
+| `oncall.actions.update` | Create, edit or retire library actions, including their executors, bounds and allowed teams and roles | OC-063 | standard (+ access) | none |
 | `oncall.actions.run` | Run a library action through its named executor | OC-063 | live (+ destructive) | none |
 | `oncall.remediation.run` | Run a bounded remediation plan | OC-048 | live (+ destructive) | none |
 | `oncall.investigations.start` | Start or stop an investigation of an incident | OC-045 | standard | none |
@@ -1057,7 +1059,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 **Requirement.** Each tool carries the classes computed by Oncall's class rules in this area.
 
 **Acceptance.** Through MCP on Oncall's fixtures:
-1. `oncall.services.update` is standard for a runbook edit and adds access when it changes a team's members or a private team's scope.
+1. `oncall.services.update` is standard for a runbook edit and adds access when it changes a team's members or a private team's scope. `oncall.actions.update` is standard for a library definition edit and adds access when it changes the action's allowed teams or roles.
 2. `oncall.contacts.update` is standard for a notification-rule edit and adds gated when it verifies a destination.
 3. `oncall.triage.bulk` adds commitment when it resolves a declared incident, carrying the summary and evidence as its facts.
 4. `oncall.followups.update` adds commitment when it accepts a root cause, impact, review or completion.
