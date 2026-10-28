@@ -41,3 +41,7 @@ Owner direction dated 16 October 2026 lifts the hosted Hold for release 1 coordi
 ## Upstream module documentation
 
 Documentation under `src/base/` and `src/modules/` is carried with copied upstream source. Its test paths and commands describe the upstream module trees; those test directories are not shipped in this edition. For local verification, use this checkout's `package.json` scripts and files under the root `tests/` directory.
+
+## Shared file import door
+
+PagerDuty, Opsgenie, Splunk On-Call, Jira Service Management Ops and Better Stack saved exports share the owner-session and opted-in signed Business door (`src/move-in/door.ts`, `owner-door.ts`). Upload/plan retain custody and bookkeeping but write zero native objects; fingerprint-reviewed apply/resume, native reconcile and newest-first undo use the same lineage. Business settings/key revocation belong to the installation owner; owner imports remain available with Business off. Extend `tests/import-door.mjs` (including `import-door-catchup.mjs`) rather than registering another journey. It proves synthetic bounded standing approval, replacement/reconcile/layered undo and refusal with paging OFF; it supplies no real-export, live-account, hosted receipt or browser-reconciliation claim. Preserve OC-038/OC-040 partial and OC-074 missing. See [MOVE-IN.md](MOVE-IN.md#optional-business-imports) for the five namespaces, custody/erasure and proof limits.
