@@ -125,6 +125,21 @@ export default async function journey({ request, origin, cookie, fixtures, tool 
   const authorization = { Authorization: `Bearer ${localKey}` };
   assert.equal((await http('/api/v1/services/agent-service', undefined, 200, '', authorization)).body.id, 'agent-service');
   await http('/api/v1/services/agent-foreign-service', undefined, 404, '', authorization);
+  async function resource(uri) {
+    const response = await request(new URL('/mcp', origin).href, { method: 'POST',
+      headers: { Origin: origin, ...authorization, 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream',
+        'MCP-Protocol-Version': '2026-07-28', 'Mcp-Method': 'resources/read', 'Mcp-Name': uri },
+      body: JSON.stringify({ jsonrpc: '2.0', id: randomUUID(), method: 'resources/read', params: { uri, _meta: { 'io.modelcontextprotocol/protocolVersion': '2026-07-28' } } }),
+    });
+    return response.json();
+  }
+  assert.ok((await resource('oncall://services/agent-service')).result?.contents?.length);
+  const hidden = await resource('oncall://services/agent-foreign-service');
+  const absent = await resource('oncall://services/not-present');
+  assert.equal(hidden.error.data.code, 'resource_unavailable');
+  assert.equal(absent.error.data.code, hidden.error.data.code);
+  assert.equal(hidden.result, undefined); assert.equal(absent.result, undefined);
+
   await http('/api/command', { type: 'member', id: sponsor.id, role: 'viewer', active: true });
   await http('/api/v1/services/agent-service', undefined, 401, '', authorization);
   assert.ok((await state()).apiClients.some(row => row.id === local.id), 'Revocation refusal must retain the native client history');

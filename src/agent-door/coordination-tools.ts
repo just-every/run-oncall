@@ -67,6 +67,12 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
       inputSchema: { type: 'object', additionalProperties: false, properties: operation.properties, required: operation.required },
       outputSchema: { type: 'object', properties: { id: string(100), revision: { type: 'integer', minimum: 1 } }, required: ['id', 'revision'] },
       classify: (args,ctx) => nativeCall(async()=>{ const {incident}=await access(args,ctx); const count=protectedRecords(incident)+Number(typeof args.evidence==='string'&&!!args.evidence); return [{class:'standard',facts:{measure:1}},...(count?[{class:'sensitive' as const,facts:{measure:count,kind:'personal_or_incident_evidence'}}]:[])] }),
+      target: (args, ctx) => nativeCall(async () => {
+        const { current, incident } = await access(args, ctx)
+        if (incident) return { kind: 'incident', id: incident.id }
+        const service = current.state.services.find(row => row.id === args.service)!
+        return { kind: 'service', id: service.id }
+      }),
       revision: (args, ctx) => nativeCall(async () => { const { current, incident } = await access(args, ctx); return incident?.revision ?? current.state.revision }),
       summary: (args, ctx) => nativeCall(async () => {
         const { current, incident } = await access(args, ctx)

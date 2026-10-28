@@ -354,6 +354,10 @@
     {
       "source": "src/modules/business-settings/ADOPTING.md",
       "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/agent-door/CLAUSES.md",
+      "reason": "Canonical upstream door duties for maintainers; seed judgments remain in CONTRACT.md."
     }
   ]
 }

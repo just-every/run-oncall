@@ -144,7 +144,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "575d48a5b42d646f672f2baca3e040caaa3509fc6c79194f0b14acfc072e369b",
+      "sha256": "007e91714be343da8a5b457218f7b80d332903b39b7b265a59bb7224af9761b2",
       "executable": false
     },
     "AGENTS.md": {
@@ -256,7 +256,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "27ba0d58831c932206a94ee6650bab56075fd0822bc3c12738c7dafb00a03bd0",
+      "sha256": "5df8ade69ae4f9724451739576939e5b0a1cb734098ba4fe634f2895f112bbb2",
       "executable": false
     },
     "docs/team.md": {
@@ -944,7 +944,7 @@
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
-      "sha256": "908ad140f849f71b89da4e2e46b8301c965543cda6eb7c1c962887745083b663",
+      "sha256": "90e7b9519ffb5e3579a062b2aeb5131a5b1152c03a115c53ae85a04bd15c2390",
       "executable": false
     },
     "SEED-COMMAND-CONTRACT.md": {
@@ -956,7 +956,7 @@
       "executable": false
     },
     "src/agent-door/automation-tools.ts": {
-      "sha256": "6349f973e12f106be4383cfc80202248ec76340cbfebf02fc5960d27fadbda9f",
+      "sha256": "20ec104be3e377c09e020d4d498c9d6d441d104dea432953c823342e23059e28",
       "executable": false
     },
     "src/agent-door/business.ts": {
@@ -964,7 +964,7 @@
       "executable": false
     },
     "src/agent-door/coordination-tools.ts": {
-      "sha256": "898ad022a951db9475f1abd8b1d7fb54731b05beae9c238cccff2fb88d6342e1",
+      "sha256": "626c2fd74fcd28f1ef21133139265cebb76346797f3ab6e1bf83f96007ac3c13",
       "executable": false
     },
     "src/agent-door/deadlines.ts": {
@@ -976,11 +976,11 @@
       "executable": false
     },
     "src/agent-door/management-tools.ts": {
-      "sha256": "2f4dfe97e027fede1d4ec9639c369b478329cc7a70d655e032668781fd2a5734",
+      "sha256": "5109f96a73340fb8039df0bcdfcf05b71928d185d68d2691699e6f677b641cd7",
       "executable": false
     },
     "src/agent-door/native.ts": {
-      "sha256": "afcb2fa85bd424289226595a537c0d34770a3385064ef795a77022bdb672152c",
+      "sha256": "5434e6a956e1d3f15a1ca02b47eac19ba21c706ed2201a0096733e46aff5d53c",
       "executable": false
     },
     "src/agent-door/people-link.ts": {
@@ -992,7 +992,7 @@
       "executable": false
     },
     "src/agent-door/read-tools.ts": {
-      "sha256": "5f80be85f184de4c4db859ef4f0a7dab71b6aab21a8cc9bb234caede20c6514a",
+      "sha256": "88b6e44ff0dead6432bce83d8bf7bface56747c76d4b4ab3f5bb01f953e76453",
       "executable": false
     },
     "src/agent-door/resources.ts": {
@@ -1004,11 +1004,11 @@
       "executable": false
     },
     "src/agent-door/schedule-tools.ts": {
-      "sha256": "dcbd0ffb7f5bae03c51c2fbe027218bb3a74dae394b48680f6a4c93418c18756",
+      "sha256": "eb8274acf822881416d03e1a521e48e6f32d848f5de0cf72aef9930979ef8a03",
       "executable": false
     },
     "src/agent-door/service-tools.ts": {
-      "sha256": "4dab911f83b5937c36cacc13a764f441556b9c69285f76e40d6c8720b02a9ee1",
+      "sha256": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
       "executable": false
     },
     "src/alert-obligation.ts": {
@@ -5180,7 +5180,7 @@
       "executable": false
     },
     "tests/agent-door.mjs": {
-      "sha256": "836dd2d46f99bee48271617d166d70452ea9852ede2d9848e103906b622de8eb",
+      "sha256": "20b94669f2f0104f63812e92c1a92f9c70d70c0b5e6eefd43892e614bdc5e6a2",
       "executable": false
     },
     "tests/agent-policy-fixture.mjs": {
@@ -5388,11 +5388,11 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "da21132d4ec02882fe16670257331ada7b6c5ee41d17252811c9a1af502722a6",
+      "sha256": "232e7fbdefd906c1322052d1f6b3d221b4ca7b3e3bffa3b4ae469249212998f9",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {
-      "sha256": "0e164c17622af2d19d562b004132abba926047450a44cd07ee938098764873ff",
+      "sha256": "7e4b6e677e88d79f6064a00368e1dcf627b39156bea1ab4e77de0abb6a73a546",
       "executable": false
     },
     "tests/oncall-provider-edge.mjs": {

@@ -35,7 +35,7 @@ export async function runNativeOperation<T>(env:Bindings,tool:string,args:Record
   return withNativeOperation(env,operation,run)
 }
 
-export type NativePrincipal = Pick<Principal, 'person' | 'agent' | 'scopes' | 'clientId'>
+export type NativePrincipal = Pick<ToolContext, 'person' | 'agent' | 'scopes' | 'clientId'>
 export type NativeAccess = { state: State; member: Member; client?: Client; services: string[]; principal: NativePrincipal & {consent?: string}; guard: { sql: string; values: (string | number | null)[] } }
 const denied = (code = 'not_found'): never => { throw new ToolRefusal(code) }
 
@@ -121,7 +121,7 @@ export async function localCredentials(env: Bindings, request: Request) {
 }
 
 export async function currentScopes(env: Bindings, principal: NativePrincipal) {
-  if (!principal.agent.id.startsWith('oncall-client:')) return principal.scopes
+  if (!principal.agent.id.startsWith('oncall-client:')) return [...principal.scopes]
   const state = await loadWorkspace(env.DB), client = state.apiClients?.find(value => value.id === principal.clientId && value.active && value.owner === principal.person.id && principal.agent.id === `oncall-client:${value.id}` && principal.scopes.includes(`oncall-client-revision:${value.revision}`))
   if (!client || !state.members.some(value => value.id === client.owner && value.active && value.role === 'admin') || !await env.DB.prepare('SELECT 1 FROM oc_api_credentials WHERE client=?').bind(client.id).first()) return []
   return [...client.permissions,...(client.permissions.some(value=>['incidents:write','actions:write'].includes(value))?['automation:write']:[]),`oncall-client-revision:${client.revision}`]

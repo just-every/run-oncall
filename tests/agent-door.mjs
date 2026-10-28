@@ -23,16 +23,18 @@ try {
   base = resolve(base);
   assert.equal(await git(['-C', base, 'rev-parse', 'HEAD']), BASE, 'Conformance must use the selected immutable Base source');
   const { checkAgentDoor } = await import(pathToFileURL(join(base, 'cli/agent-door.mjs')));
-  // PENDING-CT-2026-10-28.agent-clause: exact built-in BASE-AGENT-010 remains
-  // asserted by Base against CONTRACT.md; ct owns that missing contract text.
-  // PENDING-BASE-2026-10-28.native-access-escalation: Base currently requires a
-  // sponsor fixture even when this native administrator cannot widen itself.
+  // PENDING-CT-2026-10-28.agent-clause: the built-in BASE-AGENT-010 remains
+  // asserted against CONTRACT.md; ct's seed contract rewrite is not on main.
   // PENDING-BASE-2026-10-28.native-client-receipts: all four real client receipt
-  // tools remain declared; Base needs a native-credential journey hook.
-  // PENDING-BASE-2026-10-28.native-target-audit (audit.ts:15), resource-error-code
-  // (transport.ts:50), mutation-replay-native-authority (pipeline.ts:62), and
-  // reviewer-lifecycle remain assertions on the selected combined Base head.
-  // These markers do not change, suppress or turn a failed Base point green.
+  // tools remain declared; Base still needs a native-credential journey hook.
+  // PENDING-BASE-2026-10-28.reviewer-lifecycle: the generic reviewer initializer
+  // requires a final native 303; Oncall's workspace-password login returns 200.
+  // Its real distinct-person acceptance is asserted in oncall-agent-flow.mjs.
+  // V2 closes native-target-audit, resource-error-code and replay admission;
+  // oncall-agent-flow.mjs asserts these through production HTTP and native D1.
+  // sponsorEscalation:false declares the two admin-only surfaces accurately;
+  // the full native widening/narrowing journey and runtime guards stay intact.
+  // No marker suppresses, replaces or turns a failed conformance point green.
   await checkAgentDoor(root);
 
 } finally {

@@ -18,6 +18,7 @@ export function serviceTools(env: Bindings): ToolDefinition[] {
     inputSchema: { type: 'object', properties: { id: {type:'string',minLength:1,maxLength:100}, etag:{type:'string',pattern:'^[a-f0-9]{64}$'},name:{type:'string',minLength:1,maxLength:200},environment:{type:'string',minLength:1,maxLength:100},owner:{type:['string','null'],maxLength:100},runbook:{type:'array',items:{type:'string',minLength:1,maxLength:500},maxItems:30},pager:{type:'string',maxLength:2000},dependencies:{type:'array',items:{type:'string'},maxItems:100} },required:['id','etag','name','environment','owner','runbook','pager'],additionalProperties:false },
     outputSchema:{type:'object',properties:{id:{type:'string'},etag:{type:'string'}},required:['id','etag']},revisionType:'string',revision: (args,ctx)=>nativeCall(async()=>(await get(args,ctx)).etag),
     classify:(args,ctx)=>nativeCall(async()=>{await get(args,ctx);return [{class:'standard',facts:{measure:1}}]}),
+    target: (args,ctx)=>nativeCall(async()=>({kind:'service',id:(await get(args,ctx)).old.id})),
     summary:(args,ctx)=>nativeCall(async()=>{const {old}=await get(args,ctx);return {target:{id:old.id,name:old.name},items:[`ETag ${args.etag}`,JSON.stringify(args)]}}),
     run:(args,ctx)=>nativeCall(async()=>{
       const {current,etag}=await get(args,ctx)

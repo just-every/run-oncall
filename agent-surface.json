@@ -27,7 +27,8 @@
         "OC-003",
         "OC-041",
         "OC-053"
-      ]
+      ],
+      "sponsorEscalation": false
     },
     {
       "name": "oncall.actions.create",
@@ -556,7 +557,8 @@
       "clauses": [
         "OC-023",
         "OC-041"
-      ]
+      ],
+      "sponsorEscalation": false
     }
   ],
   "notTools": [
@@ -677,6 +679,10 @@
         "classes": [
           "external"
         ]
+      },
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
       }
     },
     {
@@ -703,7 +709,11 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
     },
     {
       "id": "declare-state",
@@ -733,7 +743,11 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
     },
     {
       "id": "acknowledge",
@@ -756,7 +770,14 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "note",
@@ -776,7 +797,14 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "follow-up",
@@ -802,7 +830,14 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "submit",
@@ -829,7 +864,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "recover",
@@ -855,7 +897,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "resolve",
@@ -878,7 +927,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "sensitive-note",
@@ -901,7 +957,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "sensitive-action",
@@ -930,7 +993,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "second-declare-state",
@@ -986,7 +1056,14 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "second-declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "second-submit",
@@ -1013,7 +1090,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "second-declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "sensitive-acknowledge",
@@ -1039,7 +1123,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "second-declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "incidents-list",
@@ -1070,7 +1161,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "review-material",
@@ -1088,7 +1186,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "action-read",
@@ -1106,7 +1211,14 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "actions-list",
@@ -1139,7 +1251,11 @@
         {
           "class": "sensitive"
         }
-      ]
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
     },
     {
       "id": "integrations",
@@ -1364,7 +1480,14 @@
         {
           "class": "live"
         }
-      ]
+      ],
+      "target": {
+        "kind": "schedule",
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      }
     },
     {
       "id": "schedule-override",
@@ -1398,7 +1521,14 @@
         {
           "class": "live"
         }
-      ]
+      ],
+      "target": {
+        "kind": "schedule",
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      }
     },
     {
       "id": "access-read",
@@ -1476,7 +1606,14 @@
             "direction": "widens"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "team",
+        "id": {
+          "$from": "team-create",
+          "pointer": "/id"
+        }
+      }
     },
     {
       "id": "access-state",
@@ -1510,7 +1647,14 @@
             "direction": "widens"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "member",
+        "id": {
+          "$from": "access-read",
+          "pointer": "/data/members/2/id"
+        }
+      }
     },
     {
       "id": "access-narrow-state",
@@ -1544,7 +1688,14 @@
             "direction": "narrows"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "member",
+        "id": {
+          "$from": "access-read",
+          "pointer": "/data/members/2/id"
+        }
+      }
     },
     {
       "id": "automation-list",
@@ -1595,7 +1746,14 @@
             "counterparty": "known"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "outbox",
+        "id": {
+          "$from": "outbox",
+          "pointer": "/data/outbox/0/id"
+        }
+      }
     },
     {
       "id": "replay",
@@ -1617,7 +1775,14 @@
             "counterparty": "known"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "outbox",
+        "id": {
+          "$from": "dispatch-retry",
+          "pointer": "/operation/id"
+        }
+      }
     },
     {
       "id": "dispatch-accepted",
@@ -1639,7 +1804,14 @@
             "counterparty": "known"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "outbox",
+        "id": {
+          "$from": "replay",
+          "pointer": "/operation/id"
+        }
+      }
     },
     {
       "id": "revoke-endpoint",
@@ -1657,7 +1829,14 @@
             "direction": "narrows"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "endpoint",
+        "id": {
+          "$from": "automation-list",
+          "pointer": "/data/endpoints/0/id"
+        }
+      }
     },
     {
       "id": "revoke-client",
@@ -1675,7 +1854,14 @@
             "direction": "narrows"
           }
         }
-      ]
+      ],
+      "target": {
+        "kind": "client",
+        "id": {
+          "$from": "automation-list",
+          "pointer": "/data/clients/0/id"
+        }
+      }
     },
     {
       "id": "erase-read",
@@ -1797,6 +1983,12 @@
         "https://8.8.8.8"
       ]
     },
-    "journey": "tests/oncall-agent-native.mjs"
+    "journey": "tests/oncall-agent-native.mjs",
+    "replayAdmission": {
+      "prepare": [
+        "declare-state",
+        "declare"
+      ]
+    }
   }
 }

@@ -213,6 +213,7 @@ export function scheduleTools(env: Bindings): ToolDefinition[] {
       description: operation === 'update' ? 'Update an existing schedule using the exact digest returned by oncall.schedules.review for the complete proposal, current workspace and range. A digest is change-review evidence, never person approval. Paging stays OFF.' : 'Append a native primary or backup override to an existing schedule at its exact native revision. Explicit empty coverage uses member:null. This changes coordination only; paging stays OFF.',
       scope: 'schedules:write', readOnly: false, untrusted: true, classes: ['standard', 'sensitive', 'live'], clauses: ['OC-003', 'OC-011', 'OC-012', 'OC-024', 'OC-053'],
       inputSchema: operation === 'update' ? object({ ...reviewFields, digest: { type: 'string', pattern: '^[a-f0-9]{64}$' } }) : object({ id, revision, override }), outputSchema: { type: 'object' }, revisionType: 'integer',
+      target: (args, ctx) => nativeCall(async () => ({ kind: 'schedule', id: (await savedSchedule(env, ctx, args, true)).schedule.id })),
       revision: (args, ctx) => nativeCall(async () => (await savedSchedule(env, ctx, args, true)).schedule.revision),
       classify: (args, ctx) => nativeCall(async () => changeFacts(await prepare(args, ctx), ctx)),
       summary: (args, ctx) => nativeCall(async () => changeSummary(await prepare(args, ctx))),

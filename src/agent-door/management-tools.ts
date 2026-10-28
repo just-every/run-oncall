@@ -46,6 +46,7 @@ function accessTool(env: Bindings): ToolDefinition {
     outputSchema: memberOutput,
     classify: (args, ctx) => nativeCall(async () => { const { target } = await current(args, ctx); return [{ class: 'access', facts: { measure: 1, direction: widens(target, args) ? 'widens' : 'narrows' } }] }),
     authority: (args, ctx) => nativeCall(async () => { const { target } = await current(args, ctx); return { subject: target.id, widens: widens(target, args) } }),
+    target: (args, ctx) => nativeCall(async () => ({ kind: 'member', id: (await current(args, ctx)).target.id })),
     revision: (args, ctx) => nativeCall(async () => (await current(args, ctx)).access.state.revision),
     summary: (args, ctx) => nativeCall(async () => {
       const { access, target } = await current(args, ctx)
@@ -93,6 +94,7 @@ function teamsTool(env: Bindings): ToolDefinition {
       const { target, gains } = await current(args, ctx)
       return { subject: gains.includes(ctx.person.id) ? ctx.person.id : gains.includes(ctx.agent.id) ? ctx.agent.id : gains[0] ?? target?.id ?? 'new-public-team', widens: gains.length > 0 }
     }),
+    target: (args, ctx) => nativeCall(async () => { const { target } = await current(args, ctx); return target ? { kind: 'team', id: target.id } : null }),
     revision: (args, ctx) => nativeCall(async () => (await current(args, ctx)).target?.revision ?? 0),
     summary: (args, ctx) => nativeCall(async () => {
       const { target, team, gains } = await current(args, ctx)
@@ -127,6 +129,7 @@ function revokeTool(env: Bindings, kind: 'client' | 'endpoint'): ToolDefinition 
     inputSchema: { type: 'object', additionalProperties: false, properties: { id: string() }, required: ['id'] }, outputSchema: revokedOutput,
     classify: (args, ctx) => nativeCall(async () => { await current(args, ctx); return [{ class: 'access', facts: { measure: 1, direction: 'narrows' } }] }),
     authority: (args, ctx) => nativeCall(async () => ({ subject: (await current(args, ctx)).target.id, widens: false })),
+    target: (args, ctx) => nativeCall(async () => ({ kind, id: (await current(args, ctx)).target.id })),
     revision: (args, ctx) => nativeCall(async () => (await current(args, ctx)).target.revision),
     summary: (args, ctx) => nativeCall(async () => {
       const { target } = await current(args, ctx)
@@ -176,6 +179,7 @@ function privacyTool(env: Bindings): ToolDefinition {
     outputSchema: erasureOutput,
     classify: (args, ctx) => nativeCall(async () => { await current(args, ctx); return [{ class: 'destructive', facts: { measure: 1 } }] }),
     authority: (args, ctx) => nativeCall(async () => ({ subject: (await current(args, ctx)).id, widens: false })),
+    target: (args, ctx) => nativeCall(async () => { const { kind, id } = await current(args, ctx); return { kind: 'erasure', id: await subjectErasureIdentity(kind, id) } }),
     revision: (args, ctx) => nativeCall(async () => (await current(args, ctx)).access.state.revision),
     summary: (args, ctx) => nativeCall(async () => {
       const { access, target, kind, id } = await current(args, ctx)

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {randomUUID} from 'node:crypto';
+import {randomBytes,randomUUID} from 'node:crypto';
 import {agentRuntime} from './agent-door-runtime.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
@@ -10,6 +10,67 @@ try{
  const {tool,mcp,http,adopt}=runtime;
  assert.equal(code(await tool('oncall.services.read',{id:'agent-service'})),'policy_unset');
  assert.equal((await adopt()).status,200);
+ // Resolve native targets before any policy disposition; cached outcomes
+ // still require current policy, scopes and live native record authority.
+ const owner=(await (await http('/api/workspace')).json()).member;
+ const key=randomUUID();
+ const args={service:'agent-service',title:'Replay admission proof',summary:'Internal coordination beside the existing pager',severity:'warning',idempotency_key:key};
+ const created=await tool('oncall.incidents.declare',args);
+ assert.equal(created.result.isError,false);
+ const replay=await tool('oncall.incidents.declare',args);
+ assert.deepEqual(replay.result.structuredContent,created.result.structuredContent);
+ const snapshot=async()=>JSON.stringify((await (await http('/api/state')).json()).incidents);
+ const once=await snapshot();
+ const audit=async()=> (await (await http('/agents/api/audit?agent='+encodeURIComponent(runtime.context.agentId))).json());
+ const original=(await audit()).rows.find(row=>row.id===created.decision.id);
+ assert.deepEqual(original.resource,{kind:'service',id:'agent-service'});
+ assert.equal(original.sponsor.id,owner.id);
+ for(const [document,options,expected] of [
+  [autonomousPolicy(),{paused:true},'agents_paused'],
+  [{...autonomousPolicy(),rules:[{id:'stop',class:'*',do:'blocked'}]}, {},'policy_blocked'],
+  [{...autonomousPolicy(),rules:[{id:'hold',class:'*',do:'approval',approver:['sponsor'],wait:'PT1H'}]}, {},'approval_required'],
+ ]){
+  assert.equal((await adopt(document,options)).status,200);
+  const refused=await tool('oncall.incidents.declare',args);
+  assert.equal(code(refused),expected);
+  assert.equal(refused.result.structuredContent,undefined,'Refused replay cannot disclose its cached result');
+  assert.equal(await snapshot(),once,'Refused replay cannot repeat the native mutation');
+  const row=(await audit()).rows.find(row=>row.id===refused.decision.id);
+  assert.deepEqual(row.resource,{kind:'service',id:'agent-service'});
+  assert.equal(row.code,expected);
+  assert.equal(row.sponsor.id,owner.id);
+
+ }
+ const missingScope=await tool('oncall.incidents.declare',args,{scope:'events:read'});
+ assert.equal(code(missingScope),'insufficient_scope');
+ assert.equal(missingScope.result?.structuredContent,undefined);
+ assert.equal(await snapshot(),once);
+ const freshHeld=await tool('oncall.incidents.declare',{...args,idempotency_key:randomUUID()});
+ const pending=freshHeld.result._meta['com.runeditrun/approval'];
+ assert.ok(pending,'A new held effect must have a real approval');
+ const view=await (await http('/agents/api/approvals/'+pending.id)).json();
+ assert.deepEqual(view.approval.summary.nativeTarget,{kind:'service',id:'agent-service'});
+ const decision={revision:view.approval.revision,summary_sha256:view.approval.summary_sha256};
+ assert.equal((await http('/agents/api/approvals/'+pending.id+'/approve',{...decision,summary_sha256:'stale-summary'})).status,409);
+ assert.equal(await snapshot(),once,'A mismatched summary cannot execute the held action');
+ const approved=await http('/agents/api/approvals/'+pending.id+'/approve',decision);
+ assert.equal(approved.status,200);
+ assert.equal((await approved.json()).approval.state,'executed');
+ const execution=(await audit()).rows.find(row=>row.decision_id===freshHeld.decision.id);
+ assert.deepEqual(execution.resource,{kind:'service',id:'agent-service'});
+ assert.equal(execution.outcome,'done');assert.ok(execution.approval.by.includes(owner.id));
+ assert.equal((await adopt()).status,200);
+ console.log('PASS native-target-audit and mutation-replay-native-authority: once-only outcome; Pause, changed policy, new approval and scope checked before cached content');
+ const missing=await mcp('resources/read',{uri:'oncall://incidents/not-present'});
+ assert.equal(missing.body.error.data.code,'resource_unavailable');
+ const noReadScope=await mcp('resources/read',{uri:'oncall://services/agent-service'},{scope:'events:read'});
+ assert.equal(noReadScope.body.error.data.code,'insufficient_scope');
+ const blockedReads={...autonomousPolicy(),rules:[{id:'private-read-stop',class:'*',do:'blocked'}]};
+ assert.equal((await adopt(blockedReads)).status,200);
+ const blockedResource=await mcp('resources/read',{uri:'oncall://services/agent-service'});
+ assert.equal(blockedResource.body.error.data.code,'policy_blocked');
+ assert.equal((await adopt()).status,200);
+ console.log('PASS resource-error-code: resource_unavailable, insufficient_scope and policy_blocked remain JSON-RPC data.code');
  const before=await (await http('/agents/api/state')).json();
  assert.equal((await http('/api/rer/agent-policy',{policy:'invalid.signature.document'})).status,400);
  assert.deepEqual(await (await http('/agents/api/state')).json(),before,'Invalid adoption retains the exact prior policy');
@@ -28,6 +89,25 @@ try{
  assert.ok(agentEntries.length>0&&agentEntries.every(row=>row.metadata.agent.for.id===native.members.find(row=>row.name==='Alex Chen').id));
  assert.ok(incident.timeline.some(row=>row.kind==='source-recovery'&&!row.metadata?.agent),'Source observation retains its separate native actor');
  assert.equal(incident.actions[0].done,false);
+ // Oncall's actual workspace-password door returns HTTP 200. A distinct
+ // signed-in responder accepts the machine submission with a native reason.
+ const reviewerPassword=randomBytes(32).toString('hex');
+ const reviewer=await (await http('/api/members',{name:'Sam Ortega',role:'responder',password:reviewerPassword})).json();
+ const login=await runtime.request(runtime.origin+'/api/login',{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json'},body:JSON.stringify({name:reviewer.name,password:reviewerPassword})});
+ assert.equal(login.status,200);
+ const reviewerCookie=login.headers.getSetCookie().map(value=>value.split(';',1)[0]).join('; ');
+ assert.ok(reviewerCookie&&reviewerCookie!==runtime.cookie);
+ await login.body?.cancel();
+ const accepted=await runtime.request(runtime.origin+'/api/command',{method:'POST',headers:{Origin:runtime.origin,Cookie:reviewerCookie,'Content-Type':'application/json'},body:JSON.stringify({type:'accept-action',incident:incident.id,revision:incident.revision,action:incident.actions[0].id,reason:'Sam independently reviewed the retained deployment evidence'})});
+ assert.equal(accepted.status,200);
+ const reviewed=await accepted.json();
+ assert.equal(reviewed.actions[0].done,true);
+ assert.equal(reviewed.actions[0].accepted.by,reviewer.id);
+ assert.notEqual(reviewed.actions[0].submission.by,reviewer.id);
+ assert.ok(reviewed.timeline.some(row=>row.actor===reviewer.id&&row.text.includes('Human accepted follow-up')&&!row.metadata?.agent));
+ console.log('PASS native reviewer lifecycle: distinct workspace-password responder; machine submission retained; actual named human acceptance');
+
+ incident.revision=reviewed.revision;
  const pause=await adopt(autonomousPolicy(),{paused:true});assert.equal(pause.status,200);
  const witness=JSON.stringify((await (await http('/api/state')).json()).incidents);
  assert.equal(code(await tool('oncall.notes.add',{incident:incident.id,revision:incident.revision,text:'Held by company Pause',idempotency_key:randomUUID()})),'agents_paused');
@@ -36,5 +116,6 @@ try{
  assert.equal((await adopt()).status,200);
  const personEvents=(await tool('oncall.events.list',{limit:200})).result.structuredContent.events;
  assert.ok(personEvents.some(row=>row.type==='incidents.updated'&&row.actor.kind==='person'),'Native person changes share retained typed events');
+ assert.equal((await audit()).differs_from_policy,0,'Native agent decisions must agree with the policy in force');
  console.log('PASS Oncall agent native flow: signed owner/team mapping, MCP coordination, open human review, reviewed coverage, signed receiver receipt, client scope/demotion, Pause and native events; paging OFF');
 }finally{await runtime.close()}

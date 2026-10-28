@@ -25,6 +25,7 @@ export function automationTools(env: Bindings): ToolDefinition[] {
     outputSchema: { type: 'object', properties: { operation: { type: 'object' }, paging: { const: 'OFF' } }, required: ['operation', 'paging'] },
     classify: (args, ctx) => nativeCall(async () => { await access(args, ctx); return [{ class: 'external', facts: { measure: 1, counterparty: 'known' } }] }),
     revision: (args, ctx) => nativeCall(async () => (await access(args, ctx)).item.revision),
+    target: (args,ctx)=>nativeCall(async()=>({kind:'outbox',id:(await access(args,ctx)).item.id})),
     summary: (args, ctx) => nativeCall(async () => { const { item, endpoint } = await access(args, ctx); return { target: { id: item.id, name: `Response event ${item.event}` }, recipients: [endpoint.url], items: [JSON.stringify(item.payload), `Endpoint revision ${endpoint.revision}`, `Operation revision ${item.revision}`] } }),
     run: (args, ctx) => nativeCall(async () => {
       const { current, item, bound } = await access(args, ctx)
