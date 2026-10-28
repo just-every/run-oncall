@@ -11,7 +11,7 @@ import {OwnerMenu} from './OwnerMenu';
 import {useWorkspaceValue, WorkspaceContext} from './WorkspaceContext';
 import {StatusSection} from '../../sections/status';
 import {MoveInSection} from '../../sections/move-in';
-import {SchedulesSection} from '../../sections/schedules';
+import {OnCallSection} from '../../routes/on-call.index';
 import {IncidentsSection} from '../../sections/incidents';
 import {ServicesSection} from '../../sections/services';
 import {RoutingSection} from '../../sections/routing';
@@ -89,7 +89,7 @@ export function AppShell() {
       <FailureLine failure={w.failure} />
       {stakeholder ? <StatusPanel actor={actor} /> : <>
         {page === 'not-found' && <WorkspaceNotFound />}
-        <StatusSection /><MoveInSection /><SchedulesSection /><IncidentsSection /><ServicesSection /><RoutingSection /><AlertsSection /><IntegrationsSection /><ReviewsSection /><TeamSection /><ArchiveSection />
+        <StatusSection /><MoveInSection /><OnCallSection /><IncidentsSection /><ServicesSection /><RoutingSection /><AlertsSection /><IntegrationsSection /><ReviewsSection /><TeamSection /><ArchiveSection />
       </>}
     </main>
   </div></WorkspaceContext.Provider>;

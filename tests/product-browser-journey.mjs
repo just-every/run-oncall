@@ -19,7 +19,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession}
   await keyboardCoordination(page,context,width,ownerLink,openSession)
   if(width===1440)await sharedIncidentLinks(page,context)
   await alertSeverity(page,context,width)
-  await productSchedule(page,context,width,session,{ownerLink})
+  if(width===1440)await productSchedule(page,context,width,session,{ownerLink})
   await triageBulkBrowser(page,context,width)
   await productImport(page,context,width,session)
   await routingBrowser(page,context,width)
