@@ -6,6 +6,7 @@ import type {Team} from './model';
 import {applyTeamEdit,editTarget,teamEditHeld,teamEditProblem,type TeamEdit} from './edits';
 import {staleTeam} from './words';
 import {Feedback,Mark,type Note} from './feedback';
+import {BackstageImport} from './BackstageImport';
 import './teams.css';
 
 // How a write failed: lost on the way, refused as stale, or refused for its value. `blocked` records that the
@@ -124,6 +125,6 @@ export function TeamsPanel({state,actor,refresh}:{state:State;actor:Member;refre
  {teams.map(team=><article className="service-card" key={team.id}><h3>{team.name}</h3><p>Public · {team.active?'Active':'Archived'} · {team.members.length} {team.members.length===1?'member':'members'}</p><p>Managers: {team.managers.map(id=>state.members.find(m=>m.id===id)?.name??'Unavailable member').join(', ')||'None'}</p>
  {admin&&<details><summary>Edit team</summary><TeamEditor state={state} team={shown(team)} write={write} notes={notes}/></details>}</article>)}
  {admin&&<><details ref={createRoot} onChange={()=>{if(notes.create?.saved)note('create',{});}}><summary>Create team</summary><Form busy={creating} label="Create team" onSubmit={create}><Field name="name" label="Team name"/><Choices state={state} members={members} managers={managers} onChange={(m,g)=>{setMembers(m);setManagers(g);}}/></Form><Mark note={notes.create}/><Feedback note={notes.create}/></details>
- </>}
+ <BackstageImport refresh={refresh}/></>}
  </section>;
 }
