@@ -148,5 +148,20 @@ try{
  const personEvents=(await tool('oncall.events.list',{limit:200})).result.structuredContent.events;
  assert.ok(personEvents.some(row=>row.type==='incidents.updated'&&row.actor.kind==='person'),'Native person changes share retained typed events');
  assert.equal((await audit()).differs_from_policy,0,'Native agent decisions must agree with the policy in force');
+ // Erasure uses the native person door and leaves retained event IDs stable,
+ // with the former sponsor's name removed and their next Business call refused.
+ const beforeErasure=await (await http('/api/state')).json(),currentIncident=beforeErasure.incidents.find(row=>row.id===incident.id);
+ const mira={sub:teammate,email:'mira@example.invalid',act:{sub:'mira-agent',name:'Mira assistant'}};
+ const miraNote=await tool('oncall.notes.add',{incident:incident.id,revision:currentIncident.revision,text:'Independent coordination observation',idempotency_key:randomUUID()},mira);
+ assert.equal(miraNote.result.isError,false);
+ const beforeActorEvents=(await tool('oncall.events.list',{limit:200})).result.structuredContent.events.filter(row=>row.actor.kind==='agent'&&row.actor.for.id===responder.id);
+ assert.ok(beforeActorEvents.length>0);
+ const eraseState=await (await http('/api/state')).json();
+ const erased=await http('/api/erasure/member/'+responder.id,{workspaceRevision:eraseState.revision,confirmation:'erase '+responder.id,identitiesReviewed:true,importedPeople:[]});
+ assert.equal(erased.status,200);
+ const afterActorEvents=(await tool('oncall.events.list',{limit:200})).result.structuredContent.events;
+ for(const before of beforeActorEvents){const after=afterActorEvents.find(row=>row.id===before.id);assert.ok(after);assert.equal(after.actor.for.name,'Erased member');assert.equal(after.actor.label,'Mira assistant for Erased member');}
+ assert.equal((await tool('oncall.services.read',{id:'agent-service'},{...mira,email:runtime.context.person.email})).status,401);
+ console.log('PASS native sponsor erasure: retained agent event IDs, redacted sponsor name/label and immediate Business admission refusal');
  console.log('PASS Oncall agent native flow: signed owner/team mapping, MCP coordination, open human review, reviewed coverage, signed receiver receipt, client scope/demotion, Pause and native events; paging OFF');
 }finally{await runtime.close()}

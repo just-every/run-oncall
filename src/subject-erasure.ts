@@ -180,6 +180,13 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
    outbox(row=>agentJobs.includes(row.id))
    const agentDeadlines=(await db.prepare("SELECT deadline FROM oc_agent_deadlines WHERE json_extract(principal,'$.person.id')=?").bind(id).all<{deadline:string}>()).results.map(row=>row.deadline)
    for(const incident of state.incidents)for(const deadline of incident.deadlines??[])if(agentDeadlines.includes(deadline.id)&&deadline.state==='pending'){deadline.state='cancelled';deadline.endedAt=new Date().toISOString();deadline.outcome='Creator erased; no re-trigger obligation';incident.revision++}
+   // Native UI events retain the same stable identities and cursor positions,
+   // while the member's display identity is removed in the erasure transaction.
+   remember('agent_door_events')
+   const personEvents=await db.prepare("SELECT COUNT(*) AS n FROM agent_door_events WHERE json_extract(event,'$.actor.person.id')=? OR json_extract(event,'$.actor.for.id')=?").bind(id,id).first<{n:number}>()
+   updated.agent_door_events=personEvents!.n
+   statements.push(db.prepare("UPDATE agent_door_events SET event=json_set(event,'$.actor.person.name','Erased member') WHERE json_extract(event,'$.actor.person.id')=?").bind(id),
+     db.prepare("UPDATE agent_door_events SET event=json_set(event,'$.actor.for.name','Erased member','$.actor.label',json_extract(event,'$.actor.agent.name')||' for Erased member') WHERE json_extract(event,'$.actor.for.id')=?").bind(id))
    remember('oc_agent_deadlines');remember('agent_door_agents');remember('agent_door_audit');remember('agent_door_approvals');remember('agent_door_reviews')
    statements.push(db.prepare("DELETE FROM oc_agent_deadlines WHERE json_extract(principal,'$.person.id')=?").bind(id),
      db.prepare("UPDATE agent_door_agents SET sponsor_name='Erased member',revoked=1 WHERE sponsor=?").bind(id),

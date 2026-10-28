@@ -956,7 +956,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "477bb108e9d9fcb8abc96ed2e3e6491c51aa34f654943edc6dd657dd9f56ac2b",
+      "sha256": "d229e80f567f08f73880367c8230cb8248149bf9069057ca50f7ef46ce4b91e9",
       "executable": false
     },
     "scripts/installer/native-prefix-archive.mjs": {
@@ -5132,7 +5132,7 @@
       "executable": false
     },
     "src/subject-erasure.ts": {
-      "sha256": "05c0a7dcda149be53ad7f25408850b10c718cd45e61e1e44f992b393b7277434",
+      "sha256": "f9b6e93e68e19a18b322260ba7a57bb25ac86e78fabe95fb2add52c802bd7746",
       "executable": false
     },
     "src/team/MemberRow.tsx": {
@@ -5256,7 +5256,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "39901077e3666de767a6347266b9507054cfcb36f7908a0882259fe8295e5328",
+      "sha256": "7440689c2abf172b0972a977720866c0a64f7173f79890a5bd743d5daa915079",
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
@@ -5280,7 +5280,7 @@
       "executable": false
     },
     "tests/automation-browser.mjs": {
-      "sha256": "abf2c26fdb4e652e713a9b1ac2abf7a65f7b3cdaeba9355cf7f000e95c547a32",
+      "sha256": "afdc1ba531881b75a4dcf08fa6d15c2d4f5138a26c35052a440e634618c81640",
       "executable": false
     },
     "tests/automation-runtime.mjs": {
@@ -5476,7 +5476,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "24f07d6287122db66e7d0aea09d12d0cd2da453456b4fd7f167cef2aca984dec",
+      "sha256": "f057d3b0afb3c0cee8d7804646ba4b2bee2a06004e0851890a8f82a76f5ee087",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {
@@ -5516,7 +5516,7 @@
       "executable": false
     },
     "tests/routing-browser.mjs": {
-      "sha256": "1c03c0ae3fe1fe81f7d4eefea02fbab2195f4d549c2028fd790223d7561671f8",
+      "sha256": "6a5cc54e215762f77a4288511ab7aa7a4f0d17f1d04680f9f1d3e638de95fa54",
       "executable": false
     },
     "tests/routing-native.mjs": {
@@ -5540,7 +5540,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "c26e6518d22819852293769108ebda9c8de3e8372ed5e7fb9e2af4712dd2836a",
+      "sha256": "b4e20a3c497c07d14d51e07ed0144b15217c2dc1e34201d2aefe3e7215dd2db9",
       "executable": false
     },
     "tests/schedule-coordination-browser.mjs": {
@@ -5572,7 +5572,7 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "c49a8acf3d73ae9770b21e2af74f904d71b34fb89ced8889ad08141eeeb22645",
+      "sha256": "c3f40c16594fd3450b4a6858724c7d30d55b929b3eb516528b3a2afb3a60d702",
       "executable": false
     },
     "tests/urgency.mjs": {
