@@ -10,6 +10,11 @@ export function auditedDatabase(database: D1Database, context: AuditContext) {
   async function batch<T>(statements: D1PreparedStatement[], finalOutcome?: AuditOutcome): Promise<D1Result<T>[]> {
     const entries = statements.map(statement => originals.get(statement) ?? { statement, sql: '' })
     if (!finalOutcome && !entries.some(entry => writes(entry.sql))) return database.batch<T>(entries.map(entry => entry.statement))
+    // Module locks and audit updates are bookkeeping, not additional native
+    // incident actions. Any batch containing a native write keeps its full
+    // native atomic audit boundary.
+    if(!finalOutcome&&entries.every(entry=>!writes(entry.sql)||/^\s*(?:INSERT(?:\s+OR\s+\w+)?\s+INTO|REPLACE\s+INTO|UPDATE|DELETE\s+FROM)\s+(?:agent_door_|bs_)/i.test(entry.sql)))
+      return database.batch<T>(entries.map(entry=>entry.statement))
     const transaction = auditTransaction(database, context, entries.map(entry => entry.statement), finalOutcome)
     try {
       const result = await database.batch<T>(transaction.statements)

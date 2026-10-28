@@ -10,7 +10,7 @@ export function CoverageLoad({load,showBasis=true,zone=browserZone()}: {load: Lo
     <h3 id="coverage-load-heading">Load by scheduled coverage</h3>
     <p>Scheduled hours from <time>{shortTime(load.from,zone)}</time> to <time>{shortTime(load.through,zone)}</time>.</p>
     <p>{load.schedules.length ? <>Current schedules: {load.schedules.map(s => `${s.name} (${s.timezone})`).join('; ')}.</> : 'No schedule covers this cohort, so load cannot be normalised by coverage.'}</p>
-    <p className="muted">Scheduled hours, not worked hours. Attributed acknowledgements: {load.acknowledged} · unacknowledged incidents, left unattributed: {load.unacknowledged} · erased cases with unknown acknowledgement: {load.unknownAcknowledgements}.</p>
+    <p className="muted">Scheduled hours, not worked hours. Person-attributed acknowledgements: {load.acknowledged} · agent or service-account coordination: {load.coordinatedAcknowledgements} · unacknowledged incidents, left unattributed: {load.unacknowledged} · unknown acknowledgement attribution: {load.unknownAcknowledgements}.</p>
     <h4>Responders</h4>
     {!load.responders.length && <p>No responder holds a schedule slot or acknowledged an incident in this cohort.</p>}
     <div className="coverage-load-grid">{load.responders.map(r => <article className="response-metric" key={r.member}>

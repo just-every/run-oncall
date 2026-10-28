@@ -19,6 +19,9 @@ export default {
  ...portabilityPolicy,
  async validateStaged({db,tables,read}) {
   const auditRestore=await interruptStagedImports(db,tables,read)
+  // Retained agent history never carries an active identity, policy or pending authorization.
+  if(tables.agent_door_agents)await db.prepare('UPDATE "'+tables.agent_door_agents.replaceAll('"','""')+'" SET revoked=1'+(tables.oc_api_clients?' WHERE id NOT IN (SELECT id FROM "'+tables.oc_api_clients.replaceAll('"','""')+'")':'')).run()
+  if(tables.agent_door_reviews)await db.prepare('UPDATE "'+tables.agent_door_reviews.replaceAll('"','""')+'" SET state=?').bind('closed').run()
   // Receiving opt-in is local authority; keep plans, approvals and replay journals as history.
   if(tables.ik_door_settings)await db.prepare('UPDATE "'+tables.ik_door_settings.replaceAll('"','""')+'" SET enabled=0').run()
   const control=(await read('workspace_control'))[0],paging=(await read('paging_control'))[0]

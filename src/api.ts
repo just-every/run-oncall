@@ -1,4 +1,5 @@
 import {installTeams} from './teams/api';
+import {holdAgentReceiving} from './agent-door/receiving';
 import {auditRefusalCommitted} from './audit-store';
 import {holdRuleWorkflows} from './orchestration/workflows';
 import {replayService} from './orchestration/replay.ts';
@@ -661,6 +662,7 @@ async function replaceWorkspace(c: any, input: any, value: State, old: State,
     ).bind(restoreToken),
     ...pagingRestore.statements(restoreToken),
     ...handoffRestore.statements(restoreToken),
+    ...holdAgentReceiving(c.env.DB,restoreToken),
     c.env.DB.prepare(
       "INSERT INTO sessions(token,member,expires,operator_session) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND write_token=?) AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND write_token=?) AND EXISTS(SELECT 1 FROM handoff_state WHERE id=1 AND write_token=?)",
     ).bind(sessionDigest, target, Date.now() + 43200000,parent.operator_session, restoreToken, restoreToken, restoreToken),

@@ -36,7 +36,7 @@ export function ScheduleCoordination({schedule,state,actor,onChanged,rotaPage=fa
  {url&&<div role="status"><p>Copy this private subscription URL now. It is shown once.</p><label className="field"><span>New private calendar URL</span><input aria-label="New private calendar URL" readOnly value={url}/></label><button onClick={()=>setUrl('')}>Hide calendar URL</button></div>}
  {rows.filter(r=>r.kind==='subscription').map(row=><p key={row.id}>{{schedule:'This rota',service:'This service',own:'My shifts'}[row.data.scope as string]??'Calendar'} · {row.active?'active':'revoked or restored inactive'} {row.active&&<button disabled={busy} onClick={()=>send({action:'revoke',id:row.id,revision:row.revision})}>Revoke subscription</button>}</p>)}</>}
  </details>
- <details><summary>{rotaPage?'History':'Recorded schedule changes'}</summary>{rows.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id).map(row=><p key={row.id}>{rotaPage?<>{name(row.member)} · Coverage changed · {shortTime(row.at,schedule.timezone)}</>:<>Recorded obligation · {name(row.member)} · {row.data.obligation.reason} · {row.data.obligation.outcome} · non-automatic</>}</p>)}</details>
+ <details><summary>{rotaPage?'History':'Recorded schedule changes'}</summary>{rows.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id).map(row=><p key={row.id}>{rotaPage?<>{name(row.member)} · Coverage changed · {shortTime(row.at,schedule.timezone)}{row.preparedBy&&<> · {row.preparedBy.label}</>}</>:<>Recorded obligation · {name(row.member)} · {row.data.obligation.reason} · {row.data.obligation.outcome} · non-automatic{row.preparedBy&&<> · {row.preparedBy.label}</>}</>}</p>)}</details>
  </section>;
 }
 

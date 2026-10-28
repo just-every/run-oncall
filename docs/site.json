@@ -91,6 +91,12 @@
           "title": "Response API and outbound events",
           "source": "docs/response-api.md",
           "summary": "Scope machine clients, approve signed recipients, inspect durable failures and restore inactive."
+        },
+        {
+          "slug": "agents",
+          "title": "Agents",
+          "source": "docs/agents.md",
+          "summary": "Coordinate through MCP with current native authority and company policy; paging stays OFF."
         }
       ]
     },
@@ -328,6 +334,34 @@
     {
       "source": "tests/fixtures/change-sources.md",
       "reason": "Provenance and license details for network-edge change intake fixtures used by maintainers."
+    },
+    {
+      "source": "src/foundation/runtime/CONTRACT-DOCS.md",
+      "reason": "Copied upstream integration reference; Oncall agent operation is documented in docs/agents.md."
+    },
+    {
+      "source": "src/foundation/runtime/hydration/README.md",
+      "reason": "Copied upstream integration reference; Oncall agent operation is documented in docs/agents.md."
+    },
+    {
+      "source": "src/modules/agent-door/ADOPTING.md",
+      "reason": "Copied upstream integration reference; Oncall agent operation is documented in docs/agents.md."
+    },
+    {
+      "source": "src/modules/agent-door/README.md",
+      "reason": "Copied upstream integration reference; Oncall agent operation is documented in docs/agents.md."
+    },
+    {
+      "source": "src/modules/agent-door/policy/PROVENANCE.md",
+      "reason": "Copied upstream integration reference; Oncall agent operation is documented in docs/agents.md."
+    },
+    {
+      "source": "src/modules/business-settings/ADOPTING.md",
+      "reason": "Copied upstream integration reference; Oncall agent operation is documented in docs/agents.md."
+    },
+    {
+      "source": "src/modules/business-settings/README.md",
+      "reason": "Copied upstream integration reference; Oncall agent operation is documented in docs/agents.md."
     }
   ]
 }

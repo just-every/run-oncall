@@ -4,7 +4,7 @@ import {spawnSync} from 'node:child_process'
 // hydration checks; CI runs that public command on the hosted lane.
 const suites={
  hosted:['tests/hosted.mjs'],
- runtime:['tests/runtime.mjs'],
+ runtime:['tests/runtime.mjs','tests/agent-door.mjs'],
  triage:['tests/triage.mjs'],
  changes:['tests/changes.mjs'],
  intake:['tests/intake.mjs','tests/routing.mjs','tests/monitoring.mjs','tests/urgency.mjs'],

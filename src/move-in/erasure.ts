@@ -1,3 +1,4 @@
+import {doorErasure} from '../agent-door/erasure';
 import {subjectErasureIdentity} from '../subject-erasure-identity';
 import {eraseDeadlineMember} from '../incident-deadlines/archive';
 import {eraseManualMember} from '../manual-pages/archive';
@@ -146,11 +147,13 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
   // Automation definitions may contain a person's display name. Sever those labels,
   // revoke their local capabilities and advance the workspace fence atomically.
   let automationChanged=false
+  const erasedAgentIds:string[]=[]
   const workspace=await db.prepare('SELECT revision FROM workspace_control WHERE id=1').first<{revision:number}>()
   for(const [table,credential,field] of [['oc_api_clients','oc_api_credentials','client'],['oc_api_endpoints','oc_endpoint_credentials','endpoint']]) {
     for(const row of (await db.prepare(`SELECT id,data FROM ${table}`).all<{id:string;data:string}>()).results) {
       const value=JSON.parse(row.data)
       if(!names(value.name,email))continue
+      if(table==='oc_api_clients')erasedAgentIds.push(row.id)
       value.name=without(value.name,email);value.active=false;value.revision++
       rewrite.push({sql:`INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM ${table} WHERE id=? AND data=?) THEN 1 ELSE 0 END`,params:[row.id,row.data]},
         {sql:`UPDATE ${table} SET data=? WHERE id=?`,params:[JSON.stringify(value),row.id]},
@@ -196,11 +199,21 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
       {sql:'UPDATE oc_alerts SET data=? WHERE id=?',params:[JSON.stringify(alert),row.id]});automationChanged=true;}
   }
   for(const row of (await db.prepare('SELECT id,data FROM oc_incidents').all<{id:string;data:string}>()).results){
-    const incident=JSON.parse(row.data);const wasManual=!!incident.manualPage;for(const key of ['manualPage','responderRequests'])if(incident[key])incident[key]=scrub(incident[key],email);for(const entry of incident.timeline)if(['manual-page','request-responders','respond-request','cancel-request'].includes(entry.kind)||wasManual&&entry.kind==='declared')entry.text=scrub(entry.text,email);for(const id of memberIds){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);}let changed=false
+    const incident=JSON.parse(row.data);for(const entry of incident.timeline)if(entry.preparedBy)entry.preparedBy=scrub(entry.preparedBy,email);for(const action of incident.actions??[])if(action.submission?.preparedBy)action.submission.preparedBy=scrub(action.submission.preparedBy,email);const wasManual=!!incident.manualPage;for(const key of ['manualPage','responderRequests'])if(incident[key])incident[key]=scrub(incident[key],email);for(const entry of incident.timeline)if(['manual-page','request-responders','respond-request','cancel-request'].includes(entry.kind)||wasManual&&entry.kind==='declared')entry.text=scrub(entry.text,email);for(const id of memberIds){eraseManualMember(incident,id);eraseDeadlineMember(incident,id);}let changed=false
     for(const entry of incident.timeline)if(entry.lifecycle?.member&&memberIds.has(entry.lifecycle.member)){entry.lifecycle.member=null;changed=true}
     if(changed||JSON.stringify(incident)!==row.data){incident.revision++;rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_incidents WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
       {sql:'UPDATE oc_incidents SET data=? WHERE id=?',params:[JSON.stringify(incident),row.id]});automationChanged=true}
   }
+  for(const row of (await db.prepare('SELECT id,data FROM oc_api_outbox').all<{id:string;data:string}>()).results){
+    const value=JSON.parse(row.data)
+    for(const entry of value.history)if(entry.preparedBy)entry.preparedBy=scrub(entry.preparedBy,email)
+    if(JSON.stringify(value)!==row.data){rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM oc_api_outbox WHERE id=? AND data=?) THEN 1 ELSE 0 END',params:[row.id,row.data]},
+      {sql:'UPDATE oc_api_outbox SET data=? WHERE id=?',params:[JSON.stringify(value),row.id]});automationChanged=true}
+  }
+  // Imported provenance never supplies a native sponsor binding. Redact address
+  // copies while keeping native IDs and their separate authority lifecycle.
+  const door=await doorErasure(db as unknown as D1Database,erasedAgentIds,[email])
+  rewrite.push(...door.statements.map(toD1Sql))
   if(automationChanged)rewrite.push({sql:'INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND revision=?) THEN 1 ELSE 0 END',params:[workspace!.revision]},
     {sql:'UPDATE workspace_control SET revision=revision+1 WHERE id=1',params:[]})
   // A record names the person by any path (a typed field, any string in its own source, or its planned result such as a schedule's override, layer member or incumbent comparison): it is tombstoned too, so undo skips it as it skips a participant's.

@@ -151,7 +151,7 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
         {source.actions.length ? <ul className="workflow-history">{source.actions.map(action => <li key={action.id}>{action.done ? 'Done' : 'Open'} · {action.title}
           <small>{name(action.owner)} · due {time(action.due)}</small>
           {action.evidence && <p>{action.evidence}</p>}
-          {action.submission && <small>Submitted by {name(action.submission.by)} · {time(action.submission.at)} · {action.submission.evidence}</small>}
+          {action.submission && <small>Submitted by {action.submission.preparedBy?.label ?? name(action.submission.by)} · {time(action.submission.at)} · {action.submission.evidence}</small>}
           {action.accepted && <small>Accepted by {name(action.accepted.by)} · {time(action.accepted.at)}</small>}
           {!action.done && member.active && member.role!=='viewer' && <>
             <Form busy={busy} label={`Submit evidence for ${action.title}`} onSubmit={data=>save({...data,type:'complete',incident:source.id,revision:source.revision,action:action.id})}><Field name="evidence" label={`Completion evidence for ${action.title}`} type="url" /></Form>
@@ -163,7 +163,7 @@ export function IncidentWorkflows({ state, incident, member, send, view }: Props
         <ol className="events">{source.timeline.map(entry => <li className="event" key={entry.id}>
           <span className="event-symbol" aria-hidden />
           <div><div className="event-line"><strong>{entry.kind}</strong><time dateTime={entry.at}>{time(entry.at)}</time></div>
-            <p>{timelineText(entry, state)}</p><small>{name(entry.actor)}</small>
+            <p>{timelineText(entry, state)}</p><small>{entry.preparedBy?.label ?? name(entry.actor)}</small>
             {entry.lifecycle?.member !== undefined && <small>Named responder: <strong>{entry.lifecycle.member === null ? 'Erased member' : name(entry.lifecycle.member)}</strong></small>}
           </div>
         </li>)}</ol>

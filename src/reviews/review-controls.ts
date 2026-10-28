@@ -2,6 +2,13 @@ import {fail,link,text,type State,type Member,type Incident,type Action} from '.
 const priorities=['P1','P2','P3'] as const;
 const responder=(state:State,id:string)=>state.members.some(m=>m.id===id&&m.active&&["admin", "responder"].includes(m.role));
 export function reviewCommand(state:State,actor:Member,incident:Incident,input:any,at:string):string|null {
+ if(input.type==='action-update'){
+  const action=incident.actions.find(a=>a.id===input.action)
+  if(!action||action.done)fail('An open follow-up is required',409)
+  if(input.owner!==undefined){if(!responder(state,input.owner))fail('Choose an active responder');action.owner=input.owner}
+  if(input.title!==undefined)action.title=text(input.title,'action',500)
+  return 'Follow-up updated: '+action.title
+ }
  if(input.type==='action'){
   if(!responder(state,input.owner)||!responder(state,input.escalationRecipient??input.owner))fail('Follow-up owner and escalation recipient must be active responders');
   if(typeof input.due!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(input.due)||!Number.isFinite(Date.parse(input.due+'T00:00:00Z'))||new Date(input.due+'T00:00:00Z').toISOString().slice(0,10)!==input.due)fail('Valid calendar due date required');
@@ -14,7 +21,7 @@ export function reviewCommand(state:State,actor:Member,incident:Incident,input:a
   const action=incident.actions.find(a=>a.id===input.action);if(!action)fail('Unknown follow-up');if(action.done)fail('Follow-up already accepted',409);
   if(input.type==='complete'){
    const evidence=link(input.evidence);if(!evidence)fail('Completion evidence URL required');
-   action.evidence=evidence;action.submission={by:actor.id,at,evidence};
+   action.evidence=evidence;action.submission={by:actor.id,at,evidence,...(actor.agent?{preparedBy:actor.agent}:{})};
    if(action.completionPolicy==='human-review'){return `Completion evidence submitted; awaiting human acceptance: ${action.title} — ${evidence}`;}
    action.done=true;action.accepted={by:actor.id,at};return `Completed under evidence policy: ${action.title} — ${evidence}`;
   }
@@ -53,7 +60,7 @@ export function validateReviewFields(state:State){
    if(action.completionPolicy!==undefined&&!['evidence','human-review'].includes(action.completionPolicy))fail('Invalid completion policy');
    if(action.priority==='P1'&&action.completionPolicy!=='human-review')fail('P1 requires human review');
    if(action.escalationRecipient!==undefined&&!member(action.escalationRecipient))fail('Invalid escalation recipient');
-   for(const key of ['submission','accepted'] as const){const record=action[key];if(record!==undefined&&(!exact(record,key==='submission'?['by','at','evidence']:['by','at'])||!(member(record.by)||key==='submission'&&state.apiClients?.some(c=>c.id===record.by)||key==='accepted'&&action.completionPolicy==='evidence'&&state.apiClients?.some(c=>c.id===record.by))||!date(record.at)))fail('Invalid follow-up acceptance attribution');}
+   for(const key of ['submission','accepted'] as const){const record=action[key];if(record!==undefined&&(!exact(record,key==='submission'?['by','at','evidence',...('preparedBy' in record?['preparedBy']:[])]:['by','at'])||!(member(record.by)||key==='submission'&&state.apiClients?.some(c=>c.id===record.by)||key==='accepted'&&action.completionPolicy==='evidence'&&state.apiClients?.some(c=>c.id===record.by))||!date(record.at)))fail('Invalid follow-up acceptance attribution');if(record&&'preparedBy' in record)validateAgentAttribution(record.preparedBy);}
    if(action.submission&&(!action.submission.evidence||link(action.submission.evidence)!==action.submission.evidence||action.evidence!==action.submission.evidence))fail('Invalid submitted evidence');
    if(action.accepted&&!action.done||action.completionPolicy==='human-review'&&action.done&&(!action.submission||!action.accepted))fail('Human-review completion requires evidence and acceptance');
   }
@@ -61,6 +68,7 @@ export function validateReviewFields(state:State){
 }
 
 export function validateLifecycleEntry(entry:any){
+ if(entry.preparedBy!==undefined)validateAgentAttribution(entry.preparedBy);
  const lifecycle=entry.lifecycle,review=entry.review;
  if(lifecycle!==undefined){
   const states=['declared','acknowledged','mitigating','recovered','resolved'];
@@ -75,4 +83,9 @@ export function validateLifecycleEntry(entry:any){
   if(entry.kind!=='review'||!review||typeof review!=='object'||Array.isArray(review)||Object.keys(review).length!==5||!['rootCause','impact','review','materialRevision','workspaceRevision'].every(k=>Object.hasOwn(review,k))||!Number.isSafeInteger(review.workspaceRevision)||review.workspaceRevision<0||!Number.isSafeInteger(review.materialRevision)||review.materialRevision<1)fail('Invalid immutable accepted review');
   text(review.rootCause,'Accepted root cause',3000);text(review.impact,'Accepted impact',3000);text(review.review,'Accepted review',10000);
  }
+}
+
+export function validateAgentAttribution(value:any){
+ const text=(v:any)=>typeof v==='string'&&v.length>0&&v.length<=300
+ if(!value||Object.keys(value).sort().join(',')!=='agent,approvers,label,sponsor'||!text(value.agent?.id)||!text(value.agent?.name)||!text(value.sponsor?.id)||!text(value.sponsor?.name)||value.label!==value.agent.name+' for '+value.sponsor.name||!Array.isArray(value.approvers)||value.approvers.some((p:any)=>!text(p.id)||!text(p.name)))fail('Invalid agent attribution')
 }

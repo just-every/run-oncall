@@ -22,13 +22,14 @@ import {receivedRequest} from './request-body'
 import { workspaceDocument } from './workspace-document'
 import {readSessionCookie} from './session-cookie'
 import {importDoorResponse} from './move-in/door'
+import {agentDoorResponse,personChange} from './agent-door'
 type Env=Bindings
 export default withDemo({
   async scheduled(_event,env) {
     const moveIn=auditedDatabase(env.DB,{feature:'move-in',kind:'move-in.consent.cleanup',actor:{kind:'service',id:'move-in-consent'},source:{kind:'provider',id:'pagerduty'},commits:0,storageFailed:false});
     if((await sweepMoveInConsent({...env,DB:moveIn.db})).failed)await moveIn.record('failed');
     const deadlines=auditedDatabase(env.DB,{feature:'incident-deadlines',kind:'deadline.sweep',actor:{kind:'service',id:'incident-deadlines'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
-    await sweepDeadlines(deadlines.db);
+    await sweepDeadlines(deadlines.db,{...env,DB:deadlines.db});
     for(let n=0;n<10;n++) {
       const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
       if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;
@@ -47,6 +48,7 @@ export default withDemo({
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
     const bindings=runtimeBindings(env);
+    const agents=await agentDoorResponse(received,bindings);if(agents)return agents;
     const subscription=await subscriptionResponse(request,bindings);if(subscription)return subscription;
     let workspace: any;
     const address=new URL(request.url), appDocument=isWorkspacePath(address.pathname);
@@ -88,7 +90,10 @@ export default withDemo({
     const guide=guideResponse(request);if(guide)return guide;
     const imports=await importDoorResponse(received,bindings);if(imports)return imports;
     const auth=await authResponse(received,env as Bindings); if(auth) return auth;
+    let eventInput:any;
+    if(received.method==='POST'&&!received.headers.has('authorization')&&(address.pathname==='/api/command'||address.pathname==='/api/teams'||address.pathname==='/api/teams/ownership'||address.pathname==='/api/schedule-coordination'||address.pathname.startsWith('/api/schedules/')||address.pathname==='/api/paging/schedules'||address.pathname.startsWith('/api/automation/')))try{eventInput=await received.clone().json()}catch{}
     const response=await dispatch(received,()=>api.fetch(received,env,execution),()=>start.fetch(received));
+    await personChange(request,response,bindings,eventInput);
     if(response.headers.get('content-type')?.startsWith('text/html')) {
       const headers=new Headers(response.headers);
       headers.set('cache-control','no-store, no-transform');

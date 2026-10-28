@@ -27,7 +27,7 @@ export function Followups({incident, members, busy, canEdit, mutate, incidentMod
       {!incidentMode && <p className="review-meta">{action.completionPolicy === undefined ? 'Evidence submission completes this earlier follow-up.' : action.completionPolicy === 'human-review' ? 'Submit evidence, then accept completion as a separate step.' : 'Evidence submission completes this follow-up.'}<br />
         Manual escalation contact: {action.escalationRecipient ? name(action.escalationRecipient) : 'Not recorded (legacy)'}</p>}
       {action.evidence && <p><EvidenceLink url={action.evidence}>Completion evidence</EvidenceLink></p>}
-      {action.submission && <p className="review-meta">Evidence submitted by {name(action.submission.by)} at <time dateTime={action.submission.at}>{shownTime(action.submission.at)}</time>.</p>}
+      {action.submission && <p className="review-meta">Evidence submitted by {action.submission.preparedBy?.label ?? name(action.submission.by)} at <time dateTime={action.submission.at}>{shownTime(action.submission.at)}</time>.</p>}
       {action.accepted ? <p className="review-meta">{action.completionPolicy === 'human-review' ? 'Completion accepted' : 'Completed with evidence'} by {name(action.accepted.by)} at <time dateTime={action.accepted.at}>{shownTime(action.accepted.at)}</time>.</p>
         : action.done && <p className="review-meta">Earlier completion; the reviewer and time were not recorded.</p>}
       {!action.done && canEdit && <>
@@ -76,6 +76,7 @@ function CompactFollowup({action,members,busy,canEdit,mutate,zone}:{action:Actio
  const [accept,setAccept]=useState(false),[evidence,setEvidence]=useState(false);
  const evidenceRoot=useRef<HTMLDetailsElement>(null);
  return <article className="followup-item" aria-label={action.title}><strong>{action.title}</strong><p className="review-meta">{members.find(m=>m.id===action.owner)?.name??'Former member'} · due {shortDate(action.due,zone)}{action.submission?' · awaiting acceptance':''}</p>
+  {action.submission?.preparedBy&&<p className="review-meta">Evidence submitted by {action.submission.preparedBy.label}. Awaiting human acceptance.</p>}
   <div className="followup-row-actions">{action.evidence&&<EvidenceLink url={action.evidence}>Completion evidence</EvidenceLink>}
   {canEdit&&<><details ref={evidenceRoot} open={evidence} onToggle={e=>setEvidence(e.currentTarget.open)}><summary>{action.submission?'Replace evidence':'Add evidence'}</summary><Form busy={busy} label={action.submission?'Replace evidence':'Add evidence'} onSubmit={async data=>{const result=await mutate({...data,type:'complete',action:action.id});if(result){setEvidence(false);evidenceRoot.current?.querySelector('summary')?.focus();}return result;}}><Field name="evidence" label="Completion evidence" type="url" value={action.submission?.evidence??''}/></Form></details>
    {action.completionPolicy==='human-review'&&action.submission&&<button disabled={busy} onClick={()=>setAccept(true)}>Accept completion</button>}

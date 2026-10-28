@@ -1,7 +1,8 @@
-import {fail,type State,type Member} from '../family/response-operations/domain.ts';
+import {fail,type State,type Member,type AgentAttribution} from '../family/response-operations/domain.ts';
+import {validateAgentAttribution} from '../reviews/review-controls.ts';
 import {coverage,preview,validateSchedule,type Schedule} from '../family/response-operations/schedules.ts';
 import type {RecordedResponseObligation} from '../alert-obligation';
-export type ScheduleRecord={id:string;kind:'swap'|'policy'|'reminder'|'subscription'|'notice';member:string;active:boolean;revision:number;at:string;data:Record<string,any>};
+export type ScheduleRecord={id:string;kind:'swap'|'policy'|'reminder'|'subscription'|'notice';member:string;active:boolean;revision:number;at:string;data:Record<string,any>;preparedBy?:AgentAttribution};
 export const records=(state:State)=>state.scheduleRecords??=[];
 export const responsive=(state:State,id:string)=>state.members.some(m=>m.id===id&&m.active&&['admin','responder'].includes(m.role));
 export function record(state:State,kind:ScheduleRecord['kind'],member:string,data:Record<string,any>):ScheduleRecord {
@@ -21,7 +22,7 @@ export function swapSchedule(state:State,schedule:Schedule,requester:string,subs
  for(const at of new Set([...before,...after].map(window=>window.at))){const prior=coverage(schedule,state.members,at),next=coverage(changed,state.members,at);if(next[role]!==substitute||next[other]!==prior[other])fail('Swap would create ambiguous or overlapping coverage or a new gap',409);}
  return changed;
 }
-export function scheduleChanges(state:State,before:Schedule[],after:Schedule[],actor?:string) {
+export function scheduleChanges(state:State,before:Schedule[],after:Schedule[],actor?:string,preparedBy?:AgentAttribution) {
  for(const next of after){
   const old=before.find(s=>s.id===next.id);if(old&&JSON.stringify(old)===JSON.stringify(next))continue;
   const ids=new Set([state.services.find(s=>s.id===next.service)?.owner,...[old,next].flatMap(s=>s?[...s.primary.members,...s.backup.members,...s.overrides.map(o=>o.member)]:[])]);
@@ -29,7 +30,8 @@ export function scheduleChanges(state:State,before:Schedule[],after:Schedule[],a
    const key=next.id+':'+next.revision+':'+member;
    if(records(state).some(r=>r.kind==='notice'&&r.data.key===key))continue;
    const obligation:RecordedResponseObligation={id:crypto.randomUUID(),reason:'schedule-change',state:'recorded',paging:'off',automatic:false,label:'no sender',target:{kind:'user',id:member},urgency:'low',creator:actor??member,at:new Date().toISOString(),outcome:'not deliverable: no verified channel; no sender'};
-   record(state,'notice',member,{key,schedule:next.id,service:next.service,obligation});
+   const row=record(state,'notice',member,{key,schedule:next.id,service:next.service,obligation});
+   if(preparedBy)row.preparedBy=preparedBy;
   }
  }
 }
@@ -48,7 +50,8 @@ export function validateScheduleRecords(state:State){
  const unique=new Set<string>(),subscriptionCounts=new Map<string,number>();
  for(const row of rows)if(row?.kind==='subscription')subscriptionCounts.set(row.member,(subscriptionCounts.get(row.member)??0)+1);
  for(const r of rows){
-  if(!r||Object.keys(r).sort().join()!==['id','kind','member','active','revision','at','data'].sort().join()||typeof r.id!=='string'||!r.id.length||r.id.length>100||!state.members.some(m=>m.id===r.member)||typeof r.active!=='boolean'||!Number.isSafeInteger(r.revision)||r.revision<1||!Number.isFinite(Date.parse(r.at))||!r.data||typeof r.data!=='object'||Array.isArray(r.data))fail('Invalid schedule record identity');
+  if(!r||Object.keys(r).filter(k=>k!=='preparedBy').sort().join()!==['id','kind','member','active','revision','at','data'].sort().join()||typeof r.id!=='string'||!r.id.length||r.id.length>100||!state.members.some(m=>m.id===r.member)||typeof r.active!=='boolean'||!Number.isSafeInteger(r.revision)||r.revision<1||!Number.isFinite(Date.parse(r.at))||!r.data||typeof r.data!=='object'||Array.isArray(r.data))fail('Invalid schedule record identity');
+  if(r.preparedBy)validateAgentAttribution(r.preparedBy);
   const identity=r.kind==='policy'?'policy:'+r.data.schedule:r.kind==='reminder'?'reminder:'+r.member:r.kind==='notice'?'notice:'+r.data.key:r.kind==='subscription'&&r.data.hash?'hash:'+r.data.hash:null;
   if(identity){if(unique.has(identity))fail('Duplicate schedule coordination setting or capability');unique.add(identity);}
   if(r.kind==='subscription'&&(subscriptionCounts.get(r.member)??0)>20)fail('Too many calendar subscriptions');
