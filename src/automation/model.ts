@@ -12,6 +12,14 @@ export const deliveryCapacity = 1000;
 export const unfinishedDeliveries = (state:State) => (state.apiOutbox??[]).filter(o=>['queued','sending','failed'].includes(o.status)).length;
 export const activeOwner = (state:State,id:string) => state.members.some(m=>m.id===id&&m.active&&m.role==='admin');
 export function machineAuthority(state:State,actor:Member) {
+ if(actor.agent){
+  const agent=actor.agent,sponsor=state.members.find(m=>m.id===agent.sponsor&&m.active&&['admin','responder'].includes(m.role));
+  if(!actor.machine||!sponsor||agent.for.id!==sponsor.id||![sponsor.id,agent.agent.id,agent.client].includes(actor.id))fail('Agent sponsor authority revoked',401);
+  if(!agent.client){if(agent.agent.id.startsWith('oncall-client:')||actor.id.startsWith('api-'))fail('Invalid agent identity',401);return;}
+  const client=state.apiClients?.find(c=>c.id===agent.client&&c.active&&c.owner===sponsor.id);
+  if(!client||sponsor.role!=='admin'||agent.agent.id!==`oncall-client:${client.id}:${client.revision}`)fail('Client authority revoked',401);
+  return client;
+ }
  const client=state.apiClients?.find(c=>c.id===actor.id&&c.active);
  if(!client||!activeOwner(state,client.owner))fail('Client authority revoked',401);
  return client;
@@ -34,7 +42,7 @@ export function enqueueEvents(state:State,incident:Incident,input:any,actor:Memb
   const client=state.apiClients?.find(c=>c.id===endpoint.client&&c.active);
   if(!endpoint.active||!client||!client.permissions.includes('incidents:read')||!activeOwner(state,client.owner)||!activeOwner(state,endpoint.owner)||!endpoint.services.includes(incident.service)||!client.services.includes(incident.service))continue;
   // Machine-originated work is also fenced by its own originating client at dispatch.
-  const origin=actor.machine?actor.id:client.id;
+  const origin=actor.machine?(actor.agent?actor.agent.client??client.id:actor.id):client.id;
   const id=crypto.randomUUID(),at=entry.at;
   const status:OutboxState=pending<deliveryCapacity?'queued':'terminal';
   const reason=status==='queued'?'domain-commit':'capacity-not-scheduled';

@@ -8,7 +8,7 @@ export function reviewMaterial(state:State,id:string,at=new Date().toISOString()
  return {incident:id,incidentRevision:incident.revision,workspaceRevision:state.revision,generatedAt:at,title:incident.title,
   notice:'Generated from retained records. It does not establish cause, impact or recovery. Human acceptance is separate.',
   response:report.incidents.find(i=>i.id===id),
-  observations,assertions:incident.timeline.map(entry=>({...entry,actorName:state.members.find(m=>m.id===entry.actor)?.name??entry.actor,classification:'human assertion'})),
+  observations,assertions:incident.timeline.map(entry=>({...entry,actorName:entry.metadata?.agent?.label??state.members.find(m=>m.id===entry.actor)?.name??entry.actor,classification:entry.metadata?.agent?'agent coordination record':'human assertion'})),
   changes:recentChanges(state,incident.service,incident.createdAt,24).items,
   followups:[...incident.actions].sort((a,b)=>Number(a.done)-Number(b.done)||(a.priority??'P2').localeCompare(b.priority??'P2')||a.due.localeCompare(b.due)),
   accepted:incident.reviewAcceptance??null,review:incident.review,

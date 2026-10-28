@@ -26,11 +26,19 @@ async function persist(env:any,state:State,guard:Guard) {
  if(result[0].meta.changes!==1)fail('Outbox state or authority changed; retry',409);
 }
 /** A bounded dispatch step. Only queued or explicitly retryable work runs; uncertainty never retries itself. */
-export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]}) {
+export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},admission:{id?:string;agent?:{id:string;label:string}}={}) {
  const state=await loadWorkspace(env.DB);
  auditKind(env.DB,'automation.dispatch');
  const expired=expireLeases(state);
- const item=state.apiOutbox?.find(o=>['queued','failed'].includes(o.status)&&o.authorized&&Date.parse(o.due)<=Date.now());
+ const candidates=(state.apiOutbox??[]).filter(o=>(!admission.id||o.id===admission.id)&&['queued','failed'].includes(o.status)&&o.authorized&&Date.parse(o.due)<=Date.now());
+ let item:typeof candidates[number]|undefined;
+ for(const candidate of candidates){
+  const custody=await env.DB.prepare('SELECT principal FROM oc_agent_outbox WHERE outbox=?').bind(candidate.id).first();
+  // Agent work can leave only through typed invocation with its retained actor.
+  if(custody&&!admission.agent)continue;
+  if(custody&&JSON.parse(custody.principal).agent.id!==admission.agent?.id)continue;
+  item=candidate;break;
+ }
  if(!item){if(expired){auditOutcome(env.DB,'uncertain');await persist(env,state,guard);}return {processed:0,expired};}
  auditIdentity(env.DB,{subject:{kind:'outbox',id:item.id},source:{kind:'endpoint',id:item.endpoint}});
  const access=authorized(state,item),credential=await env.DB.prepare('SELECT custody FROM oc_endpoint_credentials WHERE endpoint=?').bind(item.endpoint).first();
@@ -46,7 +54,8 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]}) {
  // No network effect precedes the durable lease/audit commit. Re-read all authority after custody work.
  const beforeSend=await loadWorkspace(env.DB),held=beforeSend.apiOutbox?.find(o=>o.id===item.id&&o.lease===lease&&o.status==='sending'),current=held&&authorized(beforeSend,held);
  const keys=await env.DB.prepare('SELECT custody FROM oc_endpoint_credentials WHERE endpoint=? AND custody=? AND EXISTS(SELECT 1 FROM oc_api_credentials WHERE client=?) AND EXISTS(SELECT 1 FROM oc_api_credentials WHERE client=?)').bind(item.endpoint,credential.custody,access.origin.id,access.receiver.id).first();
- if(!held||!current||current.endpoint.revision!==access.endpoint.revision||current.origin.revision!==access.origin.revision||current.receiver.revision!==access.receiver.revision||!keys) {
+ const finalAuthority=await env.DB.prepare(`SELECT 1 WHERE ${guard.sql}`).bind(...guard.values).first();
+ if(!held||!current||!finalAuthority||current.endpoint.revision!==access.endpoint.revision||current.origin.revision!==access.origin.revision||current.receiver.revision!==access.receiver.revision||!keys) {
   if(held){updateOutcome(held,'terminal','authority-revoked');await persist(env,beforeSend,guard);}
   return {processed:1,id:item.id,status:'terminal'};
  }
@@ -54,7 +63,8 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]}) {
  let status:OutboxState='uncertain',reason='network-ambiguous';
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
  try {
-  const response=await fetch(url,{method:'POST',redirect:'manual',signal:controller.signal,headers:{'content-type':'application/json','x-oncall-operation':item.id,'x-oncall-timestamp':timestamp,'x-oncall-signature':signature},body});
+  const actor=admission.agent?.label;
+  const response=await fetch(url,{method:'POST',redirect:'manual',signal:controller.signal,headers:{'content-type':'application/json','x-oncall-operation':item.id,'x-oncall-timestamp':timestamp,'x-oncall-signature':signature,...(actor?{'x-oncall-prepared-by':encodeURIComponent(actor),'x-oncall-actor-signature':await changeHmac(key,timestamp+'.'+body+'.'+actor)}:{})},body});
   const disposition=response.headers.get('x-oncall-result')??'',receipt=response.headers.get('x-oncall-receipt')??'';
   const verified=equalSignature(receipt,await changeHmac(key,item.id+'.'+timestamp+'.'+disposition));
   if(verified&&disposition==='accepted'&&response.status>=200&&response.status<300){status='sent';reason='accepted';}

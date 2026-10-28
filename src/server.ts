@@ -22,6 +22,8 @@ import {receivedRequest} from './request-body'
 import { workspaceDocument } from './workspace-document'
 import {readSessionCookie} from './session-cookie'
 import {importDoorResponse} from './move-in/door'
+import { oncallAgentDoor, dispatchAgentOutbox } from './agent-door/index.server'
+import { businessSettings } from './agent-door/business'
 type Env=Bindings
 export default withDemo({
   async scheduled(_event,env) {
@@ -29,6 +31,7 @@ export default withDemo({
     if((await sweepMoveInConsent({...env,DB:moveIn.db})).failed)await moveIn.record('failed');
     const deadlines=auditedDatabase(env.DB,{feature:'incident-deadlines',kind:'deadline.sweep',actor:{kind:'service',id:'incident-deadlines'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
     await sweepDeadlines(deadlines.db);
+    await dispatchAgentOutbox(env);
     for(let n=0;n<10;n++) {
       const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
       if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;
@@ -47,6 +50,8 @@ export default withDemo({
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
     const bindings=runtimeBindings(env);
+    const settings=await businessSettings(bindings).handle(received);if(settings)return settings;
+    const agents=await oncallAgentDoor(bindings).handle(received);if(agents)return agents;
     const subscription=await subscriptionResponse(request,bindings);if(subscription)return subscription;
     let workspace: any;
     const address=new URL(request.url), appDocument=isWorkspacePath(address.pathname);
