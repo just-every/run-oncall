@@ -45,7 +45,18 @@ export async function agentAuthority(app) {
   if(!audit.rows.length||!audit.cursor||audit.cursor===cursor)break
   cursor=audit.cursor
  }
- check('ONCALL.pending-base.native-audit-target',rows.some(row=>row.tool==='oncall.incidents.declare'&&row.resource==='oncall://incidents/'+id),'Base audit has no native tool target attribution')
+ check('ONCALL.pending-base.native-audit-target',rows.some(row=>row.tool==='oncall.incidents.declare'&&(row.target?.uri??row.target??row.resource)==='oncall://incidents/'+id),'Base audit has no native tool target attribution')
+ // Removing a Business mapping stops an already held native effect too.
+ await app.adopt({...autonomousPolicy(),rules:[{id:'held-mapping',class:'*',do:'approval',approver:['role:owner'],wait:'PT1H'}]})
+ const queuedText='Removed Business mapping must not execute this note'
+ const queued=await app.tool('oncall.notes.add',{incident:id,text:queuedText,idempotency_key:randomUUID()},{sub:businessMara,scope:'incidents:write'})
+ assert.ok(queued.result?._meta?.['com.runeditrun/approval']?.id,'real company policy must hold the native note')
+ const pending=(await app.personJson('/agents/api/approvals')).approvals.find(a=>a.id===queued.result._meta['com.runeditrun/approval'].id)
+ await app.settings(3,[])
+ const decided=await app.personJson('/agents/api/approvals/'+pending.id+'/approve',{revision:pending.revision,summary_sha256:pending.summary_sha256})
+ const unchanged=(await app.personJson('/api/state')).incidents.find(i=>i.id===id)
+ check('ONCALL.people.queued-mapping-removal',decided.approval.state==='refused'&&decided.approval.code==='insufficient_scope'&&!unchanged.timeline.some(e=>e.text===queuedText),'A removed Business mapping must stop held execution without removing the native person')
+ await app.adopt(autonomousPolicy())
  // Native merges retain follow-up custody, without widening a selected service.
  const make=service=>app.personJson('/api/command',{type:'declare',service,title:'Scoped merge evidence',summary:'Actual native relation fixture',severity:'info'})
  let source=await make('agent-service'),target=await make('agent-service'),foreign=await make('agent-foreign')

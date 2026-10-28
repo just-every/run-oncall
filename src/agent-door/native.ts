@@ -53,6 +53,13 @@ export async function nativeContext(env:Bindings,ctx:Context,scope:string,admin=
   sql+=" AND EXISTS(SELECT 1 FROM oc_api_clients c JOIN oc_api_credentials k ON k.client=c.id WHERE c.id=? AND c.data=?)"
   values.push(client.id,JSON.stringify(client))
  }
+ if(!isNativeClient(ctx.clientId)&&env.RER_OWNER_CLAIM_ISSUER) {
+  const {oncallPeople}=await import('./people')
+  const binding=await oncallPeople(env).businessMember!({...ctx.person,role:member.role,active:member.active})
+  if(!binding)return refuse('unauthenticated')
+  sql+=" AND EXISTS(SELECT 1 FROM bs_settings WHERE singleton=1 AND stopped=0 AND ((owner_id=? AND EXISTS(SELECT 1 FROM oa_bootstrap b JOIN oa_operators o ON o.id=b.claim_id JOIN operator_members l ON l.operator_id=o.id WHERE o.role='owner' AND o.status='active' AND l.member_id=?)) OR EXISTS(SELECT 1 FROM bs_team WHERE business_id=? AND operator_id=? AND state='active' AND (business_role<>'admin' OR ?='admin'))))"
+  values.push(binding.id,member.id,binding.id,member.id,member.role)
+ }
  const policy=await env.DB.prepare('SELECT envelope,local_document,local_revision FROM agent_door_state WHERE id=1').first<{envelope:string|null;local_document:string|null;local_revision:number}>()
  if(policy) {
   sql+=" AND EXISTS(SELECT 1 FROM agent_door_state WHERE id=1 AND envelope IS ? AND local_document IS ? AND local_revision=? AND local_paused=0 AND (envelope IS NULL OR (json_extract(envelope,'$.paused')=0 AND json_extract(envelope,'$.exp')*1000>round((julianday('now')-2440587.5)*86400000) AND NOT EXISTS(SELECT 1 FROM json_each(envelope,'$.revoked.agents') WHERE value=?) AND NOT EXISTS(SELECT 1 FROM json_each(envelope,'$.revoked.consents') WHERE value=?)))) AND NOT EXISTS(SELECT 1 FROM agent_door_agents WHERE id=? AND revoked=1)"
