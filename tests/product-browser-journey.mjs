@@ -873,7 +873,7 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
 }
 
 
-// The same product assertions run against emitted Worker and managed dev doors.
+// One desktop journey through the emitted production Worker and its browser UI.
 export async function productBrowserJourney(page,context,{ownerLink,openSession}={}) {
  const key=keyboardUser(page)
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json())

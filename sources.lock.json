@@ -124,7 +124,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "8c50a3bef56d53b17b3b523ac7cc334dc8f919cc90d497ec08f4d7796ccd33c0",
+      "sha256": "37672d8f429c8873e42c8e8e7fb55b5f2d7ca5733e2b5d9f80536a939dffbbe5",
       "executable": false
     },
     ".gitignore": {
@@ -140,11 +140,11 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "23f74249db6de23e770fcbc92a5059f2623b4983008fccb1777df4e0c4ee2744",
+      "sha256": "cf17502b9cc442fd2ebd2edfa6be5c422a67aea20be3bff7cc676d0bdb0167dd",
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "5b9e4381e57cdb4c5b69145747b0ec4b60a13606b15d40073f117d9f73253fa6",
+      "sha256": "522e86905a8182d63fcca98ed5ecdc2303702d63c75ff4df3fbbc4981de8d05e",
       "executable": false
     },
     "base-copies.json": {
@@ -164,7 +164,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "61fa52e326e8405ab17efdad7ced9fe30b39856f89374c1247ee40cb7d49eca8",
+      "sha256": "a2132879f852a86ebdaae574c0d86813162730737552e606b89a666ae15f6aa5",
       "executable": false
     },
     "DEMO.md": {
@@ -764,7 +764,7 @@
       "executable": false
     },
     "SCHEDULE-SEMANTICS.md": {
-      "sha256": "25d3579418b019cab3d8cd61a997892c0ab9a7f93dbfbcdc15b697c7b2d4e442",
+      "sha256": "ca1aff3635c802d95807fb75cec0017efa71481d85c7d3527a88647244752b60",
       "executable": false
     },
     "scripts/browser-prerequisite.mjs": {
@@ -4776,11 +4776,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "3b4d7b8a1db784702b17f388f81cb35ca41064c1f1f9fec3eb2ac12a7b703c28",
-      "executable": false
-    },
-    "tests/automation.mjs": {
-      "sha256": "94266baeb2864d2978bf716e4b63303a58a801de11acb2555f7f16755fb41152",
+      "sha256": "15b62dae42a1f59549e462f2a7f5f11f8a83d32d6b7f56952a48de8196a7ad1a",
       "executable": false
     },
     "tests/changes.mjs": {
@@ -4904,7 +4900,7 @@
       "executable": false
     },
     "tests/import-door.mjs": {
-      "sha256": "26aa1f76feadbb65e3b24185ef30119af77167842913e2921de0b671e29b8506",
+      "sha256": "b1189693f99c0ae59894ec33b8526683692b4748b7282f50e3ba5078f10323df",
       "executable": false
     },
     "tests/intake.mjs": {
@@ -4916,15 +4912,15 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "7d0f6ed226519fdbe58768f4f8bbc7e18cc7b4764a278cde13a7d4fdba3413d4",
+      "sha256": "c7d237e9742fc94f8bebc1e9baf46c66a0d604bc910c5090adae05f325bdb4c2",
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "5d35893f9043a656b5fb686b99ce10874688c9255d527b1e74063238e0436307",
+      "sha256": "c8c4ccf474d44834cc8612284a6f1c67077c2d815b6e1862ee5c816865500878",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "f12ea2a0fb8274bc28c80e91b26ab8389f97f59a84079a2c38f27b269d772fba",
+      "sha256": "1c924ca5e3bee480bce0139d0936532dbc54a56a161646cdcca309e9fe77d4a3",
       "executable": false
     },
     "tests/routing.mjs": {
@@ -4932,19 +4928,19 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "9d95ea5d3537037cf680a38ad9f8d6c6ff0b3e47f73516db150e06c1c9ae12ee",
+      "sha256": "a9fc0c460c9e664f1e2a1217440a1afb74ea2937d7c42dce7522317a73fb4643",
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "0bb056eb5818e886013c47a146ef11c8e53a80107e9f6890069f19194534a972",
+      "sha256": "bd107324de23ff78b922755cf476046bd52d19e23714b87bca7d38857d118ba3",
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "74bbe033d0d176499e89630ed6c829f55125b5f75d3cb02e86a3a5f707cdf998",
+      "sha256": "a8e0f9b31bc5c0a25b90899e0cb54cdbf2fd8741a84a60750dba771caba16733",
       "executable": false
     },
     "tests/verify.mjs": {
-      "sha256": "8cddd9a472667f5fac80ec85eb67c4e2d4f274f6070b9919c45748cf2d44af66",
+      "sha256": "14ced16c56c726f08f269402d4879f65d4d3597607c52452d0034b2e9377ab79",
       "executable": false
     },
     "tests/worker-server.mjs": {

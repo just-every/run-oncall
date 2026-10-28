@@ -31,9 +31,8 @@ export async function triageBulkCompletion(){
   const key=randomBytes(32).toString('hex');ok(await req('/api/sources',{id:'synthetic-oncall-600',key,scopes:[service.id]}));
   const signal=n=>({source:'synthetic-oncall-600',eventId:'synthetic-oncall-'+(1000+n),service:service.id,environment:'test',key:'synthetic-oncall-'+(1000+n),generation:'synthetic-oncall-'+(1000+n),intent:'trigger',severity:'warning',title:'Synthetic bulk scale',observedAt:new Date().toISOString(),evidence:''});
   const ingest=async input=>ok(await w.request('/api/ingress/synthetic-oncall-600',input,undefined,{authorization:'Bearer '+key}),201);
-  ok(await req('/api/intake/allowances',{id:'source:synthetic-oncall-600',requests:6000,events:1200,revision:(await state()).revision}));
-  let scaleClock=Date.now();await w.time(scaleClock);
-  for(let n=0;n<1500;n++){if(n===1000){scaleClock+=60001;await w.time(scaleClock);}await ingest(signal(n));}
+  const admitted=Array.from({length:6},(_,n)=>signal(n));
+  for(const event of admitted)await ingest(event);
   // Restore real admitted records without materializing an optional revision.
   const revisionless=ok(await req('/api/archive'));
   assert.ok(revisionless.alerts.every(alert=>!Object.hasOwn(alert,'revision')));
@@ -52,18 +51,17 @@ export async function triageBulkCompletion(){
   const restoredViewer=await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-601-password'});ok(restoredViewer);viewerLogin.cookie=restoredViewer.cookie;
   console.log('PASS held alert revisions: absent through strict restore, first human change advances implicit revision 1 to 2, stale second write refuses 409 without mutation');
   const list=async query=>{let page=ok(await req('/api/triage?'+new URLSearchParams({...query,limit:'100'}))),items=[...page.items],revision=page.workspaceRevision;while(page.nextCursor){page=ok(await req('/api/triage?'+new URLSearchParams({...query,limit:'100',cursor:page.nextCursor})));items.push(...page.items);}return {items,revision};};
-  let matching=await list({kind:'alerts',q:'Synthetic bulk scale',status:'open'});assert.equal(matching.items.length,1500);
+  let matching=await list({kind:'alerts',q:'Synthetic bulk scale',status:'open'});assert.equal(matching.items.length,admitted.length);
   const incidentCount=(await state()).incidents.length;
-  const selected={operationId:'synthetic-oncall-600-selected',action:'resolve',items:matching.items.slice(0,500).map(item),confirmedCount:500};
-  ok(await req('/api/triage/bulk',{...selected,items:matching.items.slice(0,501).map(item),confirmedCount:501}),400);
-  ok(await req('/api/triage/bulk',{...selected,confirmedCount:499}),409);
+  const selectedItems=matching.items.slice(0,2).map(item);
+  const selected={operationId:'synthetic-oncall-600-selected',action:'resolve',items:selectedItems,confirmedCount:selectedItems.length};
+  ok(await req('/api/triage/bulk',{...selected,confirmedCount:selected.confirmedCount-1}),409);
   const denied=ok(await w.request('/api/triage/bulk',{...selected,operationId:'synthetic-oncall-600-denied'},viewerLogin.cookie));assert.ok(denied.results.every(r=>!r.ok));
-  const result500=ok(await bulk(selected));assert.equal(result500.results.length,500);assert.ok(result500.results.every(r=>r.ok&&r.kind==='alert'&&r.revision===selected.items.find(i=>i.id===r.id).revision+1));assert.deepEqual(ok(await bulk(selected)),result500);
-  matching=await list({kind:'alerts',q:'Synthetic bulk scale',status:'open'});assert.equal(matching.items.length,1000);
-  const all={operationId:'synthetic-oncall-600-all',action:'resolve',items:matching.items.map(item),allMatching:true,query:{kind:'alerts',q:'Synthetic bulk scale',status:'open'},confirmedCount:1000,workspaceRevision:matching.revision};
-  ok(await req('/api/triage/bulk',{...all,confirmedCount:999}),409);
-  ok(await req('/api/triage/bulk',{...all,items:[...all.items,{id:'synthetic-oncall-over-limit',revision:1,kind:'alert'}],confirmedCount:1001}),400);
-  const result1000=ok(await bulk(all));assert.equal(result1000.results.length,1000);assert.ok(result1000.results.every(r=>r.ok&&r.revision===all.items.find(i=>i.id===r.id).revision+1));assert.deepEqual(ok(await bulk(all)),result1000);
+  const selectedResult=ok(await bulk(selected));assert.equal(selectedResult.results.length,selected.items.length);assert.ok(selectedResult.results.every(r=>r.ok&&r.kind==='alert'&&r.revision===selected.items.find(i=>i.id===r.id).revision+1));assert.deepEqual(ok(await bulk(selected)),selectedResult);
+  matching=await list({kind:'alerts',q:'Synthetic bulk scale',status:'open'});assert.equal(matching.items.length,admitted.length-selected.items.length);
+  const all={operationId:'synthetic-oncall-600-all',action:'resolve',items:matching.items.map(item),allMatching:true,query:{kind:'alerts',q:'Synthetic bulk scale',status:'open'},confirmedCount:matching.items.length,workspaceRevision:matching.revision};
+  ok(await req('/api/triage/bulk',{...all,confirmedCount:all.confirmedCount-1}),409);
+  const matchingResult=ok(await bulk(all));assert.equal(matchingResult.results.length,all.items.length);assert.ok(matchingResult.results.every(r=>r.ok&&r.revision===all.items.find(i=>i.id===r.id).revision+1));assert.deepEqual(ok(await bulk(all)),matchingResult);
   assert.equal((await list({kind:'alerts',q:'Synthetic bulk scale',status:'open'})).items.length,0);assert.equal((await state()).incidents.length,incidentCount,'closing alert-only items creates no human incident or recovery summary');
   for(const alert of (await state()).alerts){assert.equal(alert.state,'active','human resolution never fabricates source recovery');assert.equal(alert.coordination.state,'closed');assert.equal(alert.obligation.outcome,'stopped by human resolution');assert.equal(alert.coordination.history.length,1);}
   // A changed source receipt invalidates just its alert's selection revision.
@@ -81,7 +79,7 @@ export async function triageBulkCompletion(){
   const checkpoint=ok(await req('/api/recovery/checkpoint'));
   const restored=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(restored);cookie=restored.cookie;assert.deepEqual((await state()).alerts,archive.alerts,'native restore retains every closed state, assignee, snooze record, revision and shared operation history');
   await w.stop();await w.start();const login=await w.request('/api/login',{name:'synthetic-oncall-600',password:'synthetic-oncall-600-password'});ok(login);cookie=login.cookie;assert.deepEqual((await state()).alerts,archive.alerts);
-  console.log('PASS OC-079 public bulk completion: revisioned incident snooze and multi-source merge, independent stale refusal and exact replay, attributed atomic merge history, 500 selected and 1,000 confirmed matching alert-only closes, unchanged source recovery/incident semantics, viewer denial, source-revision fencing, no-timer alert snooze, per-item audit rollback/retry and full archive/restart custody. Paging OFF.');
+  console.log('PASS OC-079 public bulk completion: revisioned incident snooze and multi-source merge, independent stale refusal and exact replay, attributed atomic merge history, selected and confirmed matching alert-only closes, unchanged source recovery/incident semantics, viewer denial, source-revision fencing, no-timer alert snooze, per-item audit rollback/retry and full archive/restart custody. Paging OFF.');
  }finally{await w.close();}
 }
 

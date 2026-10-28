@@ -51,7 +51,7 @@ jobs:
             browser: false
           - lane: activation
             browser: false
-          - lane: triage
+          - lane: machines
             browser: false
           - lane: intake
             browser: false

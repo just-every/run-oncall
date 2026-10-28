@@ -309,12 +309,13 @@ try {
   for(const sessionCookie of [undefined,viewing.cookie,expired.cookie])ok(await w.request('/api/move-in/pagerduty/start',undefined,sessionCookie),401);
   assert.equal(ok(await req('/api/workspace')).moveIn.pagerdutyConnect,true);console.log('O2 workspace moveIn.pagerdutyConnect=true');
   for(const vendor of ['pagerduty','opsgenie'])for(const region of ['us','eu']) {
-   await control('many-pages');let cursor,bundle=collect.emptyBundle(vendor);
+   await control('many-pages');let cursor,bundle;
    const auditBefore=w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE kind LIKE 'move-in.read.%'")[0].n;
    do {
     const before=(await observed()).calls.length;
     const response=await req('/api/move-in/read',{source:vendor,region,key,...(cursor?{cursor}:{})});responses.push(JSON.stringify(response.value));
     const result=ok(response);cursor=result.next;
+    bundle??=Object.fromEntries(Object.keys(result.part).map(kind=>[kind,[]]));
     for(const kind of Object.keys(bundle))bundle[kind].push(...result.part[kind]);
     const calls=(await observed()).calls,step=calls.length-before;counts.push(step);
     assert.ok(step>0&&step<=40,'each public read continuation is bounded');
@@ -400,12 +401,12 @@ try {
 
  ok(await w.request('/auth/settings/imports',{enabled:true}),401)
  assert.equal(ok(await req('/auth/settings/imports')).enabled,false)
- 
- 
+
+
  // Enable through the same owner setting used by its HTML form.
  ok(await req('/auth/settings/imports',{enabled:true}))
  assert.equal(ok(await req('/auth/settings/imports')).enabled,true)
- 
+
  const member=ok(await req('/api/members',{name:'Workspace admin',password:'synthetic-import-door-password',role:'admin'}),201)
  const teammate=await w.request('/api/login',{name:member.name,password:'synthetic-import-door-password'});ok(teammate)
  ok(await w.request('/auth/settings/imports',{enabled:false},teammate.cookie),401)
@@ -439,7 +440,7 @@ try {
   assert.ok(job.approval.startsWith('approved via Business by '+w.vars.OWNER_EMAIL))
   assert.ok(job.approval.includes(approval.fingerprint))
   assert.equal(job.door.business,true)
-  
+
   await w.stop();await w.start()
   let undone
   // Both the bearer route and the existing owner journal can undo a door job.
@@ -454,7 +455,7 @@ try {
   assert.equal(undone.state,'undone')
   console.log(vendor+': undo completed')
   assert.deepEqual(ok(await req('/api/move-in/objects')),before)
-  
+
  }
  // A credential field reaches the same refusal as the ordinary saved-file door.
  const bad=await upload('pagerduty',Buffer.from(JSON.stringify({users:{users:[{id:'refused',email:'refused@example.test',api_key:'synthetic-example-refused'}]}})))
@@ -627,7 +628,7 @@ try {
  assert.equal(failedJob.state,'failed');assert.equal(failedJob.door.business,true);assert.match(failedJob.approval,/^approved, then failed \(import_door_apply_constraint\) via Business by /)
  assert.equal(ok(await req(`/api/move-in/${failedJob.id}/resume`,{vendor:'pagerduty'}),409).code,'IMPORT_DOOR_JOB')
  assert.equal(ok(await call('status','pagerduty',{planId:failed.planId})).job.state,'failed','the old journal route cannot complete a failed door job')
- 
+
  const retried=ok(await call('plan','pagerduty',{uploadId:failingUpload}))
  assert.notEqual(retried.planId,failed.planId)
  const retriedReview={fingerprint:retried.fingerprint,approvalRecordId:'synthetic-owner-approval-retry',approvedAt:new Date().toISOString()}
@@ -686,7 +687,7 @@ try {
  await standingCatchup({w,req,call,upload,ok,ownerId:session.member.id})
  ok(await req('/auth/settings/imports',{enabled:true,revokeKid:kid}))
  assert.equal(ok(await req('/auth/settings/imports')).keys[0].revoked,true)
- 
+
  ok(await call('uploads','opsgenie',{uploadId:randomUUID()}),403)
  // Toggle off/on cannot resurrect a revoked signing key.
  ok(await req('/auth/settings/imports',{enabled:false}))
