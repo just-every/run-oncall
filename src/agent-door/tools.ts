@@ -14,7 +14,7 @@ export function oncallTools(env:Bindings):ToolDefinition[] {
    async classify(args,ctx) {
     const n=await nativeContext(env,ctx,base.scope,['access','clients','endpoints','teams','automation','privacy','witness','imports'].includes(area))
     if(area==='incidents'&&verb!=='list') {if(verb==='declare'||verb==='page')service(n,args.service);else incident(n,args.id)}
-    if(area==='notes'||area==='actions'&&verb!=='list')incident(n,args.incident)
+    if(area==='notes'||area==='actions'&&verb!=='list')incident(n,args.incident,area==='actions')
     if(area==='deadlines') {
      const i=incident(n,args.incident),d=i.deadlines?.find(d=>d.id===args.id)
      if(!d)return refuse('not_found')

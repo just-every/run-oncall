@@ -12,7 +12,7 @@ export function oncallPeople(env:Bindings):PeopleAdapter {
    .bind(id).first<{data:string;email:string|null;status:string|null}>()
   if(!row)return null
   const m:Member=JSON.parse(row.data)
-  return {id:m.id,name:m.name,email:row.email??'',role:m.role,active:m.active&&!m.erased&&(!row.status||row.status==='active')}
+  return {id:m.id,name:m.name,email:row.email??'',role:m.role,active:m.active&&!m.erased&&m.role!=='stakeholder'&&(!row.status||row.status==='active')}
  }
  const owner=()=>db.prepare("SELECT l.member_id AS id FROM oa_bootstrap b JOIN oa_operators o ON o.id=b.claim_id JOIN operator_members l ON l.operator_id=o.id WHERE o.role='owner' AND o.status='active'").first<{id:string}>()
  return {
@@ -22,8 +22,9 @@ export function oncallPeople(env:Bindings):PeopleAdapter {
    const settings=await db.prepare('SELECT owner_id FROM bs_settings WHERE singleton=1 AND stopped=0').first<{owner_id:string|null}>()
    if(!settings)return null
    if(settings.owner_id===sub){const native=await owner();return native?person(native.id):null}
-   const row=await db.prepare("SELECT operator_id FROM bs_team WHERE business_id=? AND state='active' AND EXISTS(SELECT 1 FROM bs_settings WHERE singleton=1 AND stopped=0)").bind(sub).first<{operator_id:string|null}>()
-   return row?.operator_id?person(row.operator_id):null
+   const row=await db.prepare("SELECT operator_id,business_role FROM bs_team WHERE business_id=? AND state='active' AND EXISTS(SELECT 1 FROM bs_settings WHERE singleton=1 AND stopped=0)").bind(sub).first<{operator_id:string|null;business_role:string}>()
+   const native=row?.operator_id?await person(row.operator_id):null
+   return native&&row&&(row.business_role!=='admin'||native.role==='admin')?native:null
   },
   businessRole:p=>p.role==='admin'?'owner':null,
   async businessMember(p) {
@@ -31,7 +32,7 @@ export function oncallPeople(env:Bindings):PeopleAdapter {
    if(!settings)return null
    if(settings.owner_id&&(await owner())?.id===p.id)return {id:settings.owner_id,role:'owner'}
    const row=await db.prepare("SELECT business_id,business_role FROM bs_team WHERE operator_id=? AND state='active' AND business_id IS NOT NULL").bind(p.id).first<{business_id:string;business_role:string}>()
-   return row?{id:row.business_id,role:row.business_role==='admin'?'editor':null}:null
+   return row&&p.active&&(row.business_role!=='admin'||p.role==='admin')?{id:row.business_id,role:row.business_role==='admin'?'editor':null}:null
   },
  }
 }

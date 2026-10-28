@@ -52,6 +52,15 @@ export default async function specialist({request,origin,cookie,tool}) {
  // Probe 3 uses the existing approved minimal event and its genuine signature/receipt boundary.
  const events=await call('oncall.automation.read',{incident:incident.id}),item=events.outbox.find(o=>o.status==='queued')
  assert.ok(item,'native event must be created by the incident transaction')
+ await person('/agents/api/pause',{paused:true})
+ const paused=await tool('oncall.automation.dispatch',{id:item.id,idempotency_key:randomUUID()})
+ assert.equal(paused.result?._meta?.['com.runeditrun/error']?.code,'agents_paused')
+ const scheduled=await request(origin+'/cdn-cgi/local/scheduled');assert.equal(scheduled.status,200);await scheduled.text()
+ const held=(await person('/api/automation')).outbox.find(o=>o.id===item.id)
+ assert.equal(held.attempts,0);assert.deepEqual(held.history,item.history)
+ const current=(await person('/api/state')).incidents.find(i=>i.id===incident.id)
+ await person('/api/command',{type:'note',incident:current.id,revision:current.revision,text:'A real person can coordinate while agents are paused.'})
+ await person('/agents/api/pause',{paused:false})
  const first=await call('oncall.automation.dispatch',{id:item.id})
  assert.equal(first.status,'failed','authenticated retry receipt is a native failed attempt')
  await call('oncall.automation.replay',{id:item.id})
@@ -59,5 +68,5 @@ export default async function specialist({request,origin,cookie,tool}) {
  assert.equal(sent.status,'sent','only a valid signed receiver acceptance yields sent')
  const outbox=(await call('oncall.automation.read',{incident:incident.id})).outbox.find(o=>o.id===item.id)
  assert.equal(outbox.attempts,2);assert.deepEqual(Object.keys(outbox.payload).sort(),['at','incident','operationId','revision','service','state','type'])
- console.log('PASS ONCALL probe 3: exact minimal signed event, authenticated retry then acceptance, protected replay and two retained attempts; no paging')
+ console.log('PASS ONCALL probe 3: Pause holds queued agent execution while a person coordinates; exact minimal signed event, authenticated retry then acceptance, protected replay and two retained attempts; no paging')
 }

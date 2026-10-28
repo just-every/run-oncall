@@ -44,12 +44,13 @@ export async function agentRuntime() {
    return response.json()
   }
   let rpcId=0
-  async function mcp(method,params={},claims={}) {
-   const bearer=await accessToken(context,claims)
-   const response=await request(origin+'/mcp',{method:'POST',headers:{'content-type':'application/json',accept:'application/json, text/event-stream',authorization:'Bearer '+bearer,'mcp-protocol-version':'2026-07-28'},body:JSON.stringify({jsonrpc:'2.0',id:++rpcId,method,params})})
+  async function mcp(method,params={},claims={},localBearer) {
+   const teammate=claims.sub&&claims.sub!==person.sub?{act:{sub:context.agentId+'-'+claims.sub,name:'Oncall teammate responder',specialist:surface.specialist}}:{}
+   const bearer=localBearer??await accessToken(context,{...teammate,...claims})
+   const response=await request(origin+'/mcp',{method:'POST',headers:{'content-type':'application/json',accept:'application/json, text/event-stream',authorization:'Bearer '+bearer,'mcp-protocol-version':'2026-07-28','mcp-method':method,...(['tools/call','resources/read','prompts/get'].includes(method)?{'mcp-name':params.name??params.uri}:{})},body:JSON.stringify({jsonrpc:'2.0',id:++rpcId,method,params:{...params,_meta:{'io.modelcontextprotocol/protocolVersion':'2026-07-28'}}})})
    return {status:response.status,...await response.json()}
   }
   return {runtime,origin,request,person,signer,surface,fixtures,settings,personRequest,personJson,adopt,mcp,
-   tool:(name,args,claims)=>mcp('tools/call',{name,arguments:args},claims),close:()=>runtime.close()}
+   tool:(name,args,claims)=>mcp('tools/call',{name,arguments:args},claims),localTool:(name,args,bearer)=>mcp('tools/call',{name,arguments:args},{},bearer),close:()=>runtime.close()}
  }catch(error){await runtime.close();throw error}
 }

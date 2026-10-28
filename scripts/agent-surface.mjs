@@ -81,7 +81,7 @@ const surface={schema:'rer-agent-surface/1',seed:'oncall',specialist:'on-call re
   {tool:'oncall.clients.update',step:'client_revoke',witness:{tool:'oncall.clients.read',args:{id:ref('automation','/data/clients/1/id')},pointer:'/data/grants'}},
   {tool:'oncall.endpoints.update',step:'endpoint_revoke',witness:{tool:'oncall.endpoints.read',args:{id:ref('automation','/data/endpoints/1/id')},pointer:'/data/grants'}},
  ],
- verification:{owner:{initializer:'tests/agent-owner.mjs'},network:{module:'tests/agent-network.mjs',origins:['https://8.8.8.8']},journey:{module:'tests/agent-specialist.mjs'}}}
+ verification:{owner:{initializer:'tests/agent-owner.mjs'},network:{module:'tests/agent-network.mjs',origins:['https://8.8.8.8']},journey:'tests/agent-specialist.mjs'}}
 const rendered=JSON.stringify(surface,null,2)+'\n'
 if(process.argv.includes('--check')){if(fs.readFileSync('agent-surface.json','utf8')!==rendered)throw Error('Run node scripts/agent-surface.mjs')}
 else fs.writeFileSync('agent-surface.json',rendered)

@@ -285,6 +285,7 @@ export async function eraseNativeSubject(c:any,deps:Dependencies) {
   eraseAttribution(state,attributionSubjects)
   const door=await doorErasure(db,identities,erasedNames)
   statements.push(...door.statements);for(const table of door.tables)remember(table)
+  for(const [table,count] of Object.entries(door.updated))updated[table]=(updated[table]??0)+count
   validateArchive(state)
   // The digest holds no subject content. It also rejects old rows maliciously
   // paired with a newer native journal on either restore door.

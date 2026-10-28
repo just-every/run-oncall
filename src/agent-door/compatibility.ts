@@ -4,11 +4,11 @@ import {changeHash} from '../changes/credentials'
 import {fail} from '../family/response-operations/domain'
 import type {Client} from '../automation/model'
 import type {Bindings} from '../auth.server'
-export async function compatibilityRead(c:any,family:string,incidentId?:string) {
+export async function compatibilityRead(c:any,family:string,incidentId?:string,recordId?:string) {
  const client=c.get('apiClient') as Client
  const credential=await localCredentials(c.env,c.req.raw),person=credential?await oncallPeople(c.env).person(credential.sponsor.id):null
  if(!credential||!person?.active)fail('Invalid or revoked token',401)
- const id=c.req.param('id')
+ const id=recordId??c.req.param('id')
  const args=family==='actions'&&id?{id,incident:incidentId}:['services','incidents','schedules'].includes(family)&&id?{id}:{}
  const verb=family==='integrations'||family==='analytics'?'read':id?'read':'list'
  const answer=await oncallAgentDoor(c.env).invoke('oncall.'+family+'.'+verb,args,{...credential,person})

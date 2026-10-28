@@ -2,6 +2,8 @@
 
 An administrator configures service-account clients and approved recipients under **Alerts & events → Response API and outbound events**. Paging remains OFF. These APIs coordinate response beside your existing pager; they do not execute runbooks, production actions, AI requests or Terraform plans.
 
+Service-account reads and mutations now pass through the shared [agent door](agents.md). The owner or Business must choose a policy; unset, expired, blocked or paused policy refuses agent work. Restoring an archive holds agent execution until the owner explicitly resumes it. Native person coordination remains available.
+
 ## Client lifecycle and authority
 
 Generate a random key with at least 32 characters, copy it into your client's private secret store, then save the client with selected services and permissions. Creation and rotation accept the key once; no read, archive, audit or log returns it. Storage holds only its SHA-256 digest. Last use is visible. Rotation refuses the currently configured key; supply a different random key. Revocation takes effect on subsequent requests and dispatch checks; rotation invalidates the old key and holds queued work under its former credential revision. The creating administrator must remain an active administrator. Demotion or removal suspends the key and endpoint on the next request and at dispatch; custody never transfers to another administrator. No token creates a human session or gives member-management, archive, review-acceptance or paging authority.
@@ -21,7 +23,7 @@ Each permission is explicit: `services:read`, `services:write`, `schedules:read`
 | services | `type: "service"`, existing `id`, current `etag` without quote characters, `name`, immutable `environment`, responder `owner`, `runbook` array, `pager` URL or empty string, optional in-scope `dependencies`. |
 | schedules | Existing schedule schema: `id`, `name`, granted `service`, `revision` (0 creates), `timezone`, `validFrom`, nullable `validUntil`, `primary`, `backup`, `overrides`. Calendar-day and explicit ambiguity rules remain those in [Schedules](schedules.md). |
 | incidents | `type: "declare"`, `service`, `title`, `summary`, `severity` and optional same-service `alerts`; or `type: "transition"`, `incident`, current `revision`, `state`, `summary`, and recovery `evidence` URL where required. A machine acknowledgment also requires an explicit active responder `member`. `reassign` takes `member` and `reason`; `assign-role` also takes `role`. |
-| actions | `type: "action"`, `incident`, current incident `revision`, `title`, active responder `owner`, UTC calendar `due`, optional `priority`, `completionPolicy` and `escalationRecipient`. `complete` accepts an `action` and evidence URL only under the evidence policy. Human-review acceptance remains session-only. |
+| actions | `type: "action"`, `incident`, current incident `revision`, `title`, active responder `owner`, UTC calendar `due`, optional `priority`, `completionPolicy` and `escalationRecipient`. `complete` accepts an `action` and evidence URL. Under `human-review`, it submits evidence and leaves the action open until an eligible person accepts it. Human-review acceptance remains session-only. |
 
 For example, send this body to `POST /api/v1/incidents` with the authorization and idempotency headers:
 
@@ -29,9 +31,9 @@ For example, send this body to `POST /api/v1/incidents` with the authorization a
 {"type":"declare","service":"your-service-id","title":"Checkout unavailable","severity":"warning","summary":"Investigating the checkout failure"}
 ```
 
-Use the returned `entity` to read the incident. To acknowledge, send its current revision, `type: "transition"`, `state: "acknowledged"`, a summary and the explicitly selected responsible member. The timeline attributes the action to the service-account ID and records the named responder separately. Later reassignment, a new commander or resolution leaves that acknowledgment entry intact. The permanent audit keeps the service-account actor and a random pseudonymous reference to the named member, never the member’s display name. Subject erasure severs the member association and scrubs the timeline reference without rewriting the permanent audit fact. This is a machine coordination action, never proof that the person responded. Recovery still requires an evidence URL and resolution a summary; service-account attribution does not turn evidence into independent verification.
+Use the returned `entity` to read the incident. To acknowledge, send its current revision, `type: "transition"`, `state: "acknowledged"`, a summary and the explicitly selected responsible member. The timeline retains the service-account ID, displays `<client> for <sponsor>`, and records the named responder separately. Later reassignment, a new commander or resolution leaves that acknowledgment entry intact. The permanent audit keeps the service-account actor and a random pseudonymous reference to the named member, never the member’s display name. Subject erasure severs the member association and scrubs the timeline reference without rewriting the permanent audit fact. This is a machine coordination action, never proof that the person responded. Recovery still requires an evidence URL and resolution a summary; service-account attribution does not turn evidence into independent verification.
 
-Errors use `{error: {code, message}}`: 400 `invalid_request`, 401 `invalid_token`, 403 `insufficient_scope`, 404 `not_found`, 409 `conflict`, 413 `request_too_large`, 429 `rate_or_capacity_limit`, 503 `storage_unavailable`. Each client has 60 requests per minute, with `Retry-After` on exhaustion. JSON bodies are bounded to 64 KiB. State, idempotency receipt, enqueue and permanent audit commit in one storage transaction; a storage failure confirms no success. After a lost response, retry the same key.
+Shared policy refusals use `{code, decision}` and may include a pending approval URL. Native API validation errors use `{error: {code, message}}`: 400 `invalid_request`, 401 `invalid_token`, 403 `insufficient_scope`, 404 `not_found`, 409 `conflict`, 413 `request_too_large`, 429 `rate_or_capacity_limit`, 503 `storage_unavailable`. Each client has 60 requests per minute, with `Retry-After` on exhaustion. JSON bodies are bounded to 64 KiB. State, idempotency receipt, enqueue and permanent audit commit in one storage transaction; a storage failure confirms no success. After a lost response, retry the same key.
 
 ## Recipient approval and signing
 
@@ -39,9 +41,11 @@ An administrator chooses the exact HTTPS recipient, its receiving client and ser
 
 A separate random shared signing key is sealed with installation-local AES-GCM custody. The receiving client must retain `incidents:read` and access to that service. The originating client, receiver, endpoint and named administrators are checked again at dispatch, including credential revisions. Rotate/revoke can stop queued work. Bytes already sent cannot be recalled; a revocation during the send leaves an uncertain result. All credential material is omitted from exports.
 
-Trigger, acknowledgment, reassignment, resolution, role and follow-up events carry only `operationId`, `type`, `service`, `incident`, `revision`, `state`, and `at`. Payload bytes are frozen with the original domain commit; no names, summaries, notes, evidence URLs, telephone numbers or human identity are sent.
+Trigger, acknowledgment, reassignment, resolution, role and follow-up events carry only `operationId`, `type`, `service`, `incident`, `revision`, `state`, and `at`. Payload bytes are frozen with the original domain commit; the body contains no names, summaries, notes, evidence URLs or telephone numbers. Agent dispatch adds a separately signed attribution header naming the agent or client for its sponsor.
 
 Request headers are `X-Oncall-Operation`, `X-Oncall-Timestamp` (Unix seconds) and `X-Oncall-Signature` (lowercase HMAC-SHA256 hex of `timestamp + "." + exactBody`). Verify the signature and a five-minute timestamp window before acting. Persist the operation ID and receiver action atomically, and deduplicate that ID permanently within your event retention policy.
+
+For agent dispatch, `X-Oncall-Prepared-By` carries that attribution (ASCII or an RFC 2047 UTF-8 base64 value). `X-Oncall-Prepared-Signature` is HMAC-SHA256 hex of `timestamp + "." + attributionHeader + "." + exactBody`, using the same endpoint key. These headers add no application authority.
 
 The receiver returns a receipt to prove authenticated acceptance:
 

@@ -1,4 +1,3 @@
-import {allowAgentCoordination} from './agent-policy-fixture.mjs';
 import {isolatedEntrypoint} from './isolated.mjs'
 const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
 import assert from 'node:assert/strict'
@@ -136,7 +135,7 @@ try{
  await m.close();await m.startHttp()
  // OC-053 extends this populated transfer journey with machine history and pending egress.
  const erasedNativeIncident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Synthetic erasable incident',summary:'Synthetic erasable context',severity:'warning'}));
- await allowAgentCoordination(m,cookie)
+ await business.allowAgents(cookie)
  const apiKey=randomBytes(32).toString('hex'),endpointKey=randomBytes(32).toString('hex')
  const createdClient=await req('/api/automation/clients',{name:'alice@example.test automation',key:apiKey,services:['transfer'],permissions:['incidents:read','incidents:write']});assert.equal(createdClient.status,201);const apiClient=createdClient.value
  const createdEndpoint=await req('/api/automation/endpoints',{name:'Portable receiver',client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true});assert.equal(createdEndpoint.status,201)

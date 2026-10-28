@@ -43,7 +43,7 @@ export async function agentDoorResponse(request:Request,original:Bindings) {
 export async function personChange(request:Request,response:Response,env:Bindings,input:any) {
  if(!response.ok||request.method!=='POST'||request.headers.has('authorization')||!input)return
  const path=new URL(request.url).pathname
- if(!['/api/command','/api/teams','/api/paging/schedules'].includes(path)&&!/^\/api\/schedules\/[^/]+\/(?:apply|overrides)$/.test(path)&&!path.startsWith('/api/automation/'))return
+ if(!['/api/command','/api/teams','/api/teams/ownership','/api/schedule-coordination','/api/paging/schedules'].includes(path)&&!/^\/api\/schedules\/[^/]+\/(?:apply|overrides)$/.test(path)&&!path.startsWith('/api/automation/'))return
  const session=await nativeSession(env,request)
  if(!session)return
  let output:any;try{output=await response.clone().json()}catch{return}
@@ -59,7 +59,9 @@ export async function personChange(request:Request,response:Response,env:Binding
     if(action)uris.add('oncall://actions/'+action)
    }
   }
- } else if(path==='/api/paging/schedules'||path.startsWith('/api/schedules/'))uris.add('oncall://schedules/'+(path==='/api/paging/schedules'?output.id:path.split('/')[3])+'/coverage')
+ } else if(path==='/api/teams/ownership')uris.add('oncall://services/'+output.id)
+ else if(path==='/api/schedule-coordination') {if(output.record?.data.schedule)uris.add('oncall://schedules/'+output.record.data.schedule+'/coverage')}
+ else if(path==='/api/paging/schedules'||path.startsWith('/api/schedules/'))uris.add('oncall://schedules/'+(path==='/api/paging/schedules'?output.id:path.split('/')[3])+'/coverage')
  else {
   for(const id of output.services??[])uris.add('oncall://services/'+id)
   if(path==='/api/teams') {

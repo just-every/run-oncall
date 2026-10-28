@@ -3,3 +3,8 @@
 .workspace-not-found a { display: inline-flex; min-height: 44px; align-items: center; }
 .detail > h2 { scroll-margin-top: 16px; }
 .read-failure { position: fixed; z-index: 30; right: 16px; bottom: 16px; display: grid; grid-template-columns: minmax(0, 1fr) auto; max-width: min(520px, calc(100vw - 32px)); margin: 0; padding: 12px 16px; border: 1px solid var(--app-line); border-radius: 12px; background: var(--oc-surface); box-shadow: 0 6px 24px rgb(29 42 53 / 12%); }
+
+/* Coordination and attributed history remain usable with a full 44px target. */
+:is(.incidents,.detail,.scheduling-panel,.followups,.review-sheet) :is(button,select,summary,input:not([type=checkbox],[type=radio],[type=hidden])) { min-height:44px; }
+.incidents :is(.triage-mine,.triage-check) { min-height:44px; display:flex; align-items:center; }
+.incidents .triage-check { min-width:44px; justify-content:center; }

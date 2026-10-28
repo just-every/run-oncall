@@ -76,6 +76,7 @@ function CompactFollowup({action,members,busy,canEdit,mutate,zone}:{action:Actio
  const [accept,setAccept]=useState(false),[evidence,setEvidence]=useState(false);
  const evidenceRoot=useRef<HTMLDetailsElement>(null);
  return <article className="followup-item" aria-label={action.title}><strong>{action.title}</strong><p className="review-meta">{members.find(m=>m.id===action.owner)?.name??'Former member'} · due {shortDate(action.due,zone)}{action.submission?' · awaiting acceptance':''}</p>
+  {action.submission?.preparedBy&&<p className="review-meta">Evidence submitted by {action.submission.preparedBy.label}. Awaiting human acceptance.</p>}
   <div className="followup-row-actions">{action.evidence&&<EvidenceLink url={action.evidence}>Completion evidence</EvidenceLink>}
   {canEdit&&<><details ref={evidenceRoot} open={evidence} onToggle={e=>setEvidence(e.currentTarget.open)}><summary>{action.submission?'Replace evidence':'Add evidence'}</summary><Form busy={busy} label={action.submission?'Replace evidence':'Add evidence'} onSubmit={async data=>{const result=await mutate({...data,type:'complete',action:action.id});if(result){setEvidence(false);evidenceRoot.current?.querySelector('summary')?.focus();}return result;}}><Field name="evidence" label="Completion evidence" type="url" value={action.submission?.evidence??''}/></Form></details>
    {action.completionPolicy==='human-review'&&action.submission&&<button disabled={busy} onClick={()=>setAccept(true)}>Accept completion</button>}

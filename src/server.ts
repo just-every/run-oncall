@@ -91,7 +91,7 @@ export default withDemo({
     const imports=await importDoorResponse(received,bindings);if(imports)return imports;
     const auth=await authResponse(received,env as Bindings); if(auth) return auth;
     let eventInput:any;
-    if(received.method==='POST'&&!received.headers.has('authorization')&&(address.pathname==='/api/command'||address.pathname==='/api/teams'||address.pathname.startsWith('/api/schedules/')||address.pathname==='/api/paging/schedules'||address.pathname.startsWith('/api/automation/')))try{eventInput=await received.clone().json()}catch{}
+    if(received.method==='POST'&&!received.headers.has('authorization')&&(address.pathname==='/api/command'||address.pathname==='/api/teams'||address.pathname==='/api/teams/ownership'||address.pathname==='/api/schedule-coordination'||address.pathname.startsWith('/api/schedules/')||address.pathname==='/api/paging/schedules'||address.pathname.startsWith('/api/automation/')))try{eventInput=await received.clone().json()}catch{}
     const response=await dispatch(received,()=>api.fetch(received,env,execution),()=>start.fetch(received));
     await personChange(request,response,bindings,eventInput);
     if(response.headers.get('content-type')?.startsWith('text/html')) {

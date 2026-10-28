@@ -16,6 +16,7 @@ import {clientIdentity,clientScopes,isNativeClient} from './people'
 import {responseContext} from '../manual-pages/context'
 import {fireDeadline} from '../incident-deadlines/model'
 import catalogue from './catalogue.json'
+import {incidentWithinServices} from '../incident-workflows/scope'
 import {canonical} from '../modules/agent-door/policy/document.ts'
 import type {Bindings} from '../auth.server'
 type Context=ToolContext|ResourceContext
@@ -64,15 +65,15 @@ export function service(n:NativeContext,id:unknown) {
  if(!record)return refuse('not_found')
  return record
 }
-export function incident(n:NativeContext,id:unknown):Incident {
+export function incident(n:NativeContext,id:unknown,retainedAction=false):Incident {
  const record=n.state.incidents.find(i=>i.id===id&&n.services.includes(i.service))
- if(!record||record.mergedInto)return refuse('not_found')
+ if(!record||record.mergedInto&&!retainedAction)return refuse('not_found')
  // Merged/multi-service relationships cannot disclose an ungranted service.
- if(record.alerts.some(id=>{const a=n.state.alerts.find(a=>a.id===id);return a?.service&&!n.services.includes(a.service)}))return refuse('not_found')
+ if(!retainedAction&&!incidentWithinServices(n.state,record,n.services))return refuse('not_found')
  return record
 }
 export function projected(n:NativeContext):State {
- return {...n.state,services:n.state.services.filter(s=>n.services.includes(s.id)),incidents:n.state.incidents.filter(i=>n.services.includes(i.service)),
+ return {...n.state,services:n.state.services.filter(s=>n.services.includes(s.id)),incidents:n.state.incidents.filter(i=>!i.mergedInto&&incidentWithinServices(n.state,i,n.services)),
   changes:n.state.changes?.filter(c=>n.services.includes(c.service)),events:n.state.events.filter(e=>n.services.includes(e.service)),
   alerts:n.state.alerts.filter(a=>a.service!==null&&n.services.includes(a.service))}
 }
@@ -86,10 +87,11 @@ export async function readNative(env:Bindings,ctx:Context,area:string,verb:strin
  if(area==='incidents')return verb==='list'?projected(n).incidents:incident(n,args.id)
  if(area==='changes'){service(n,args.service);return recentChanges(projected(n),args.service,args.at??new Date().toISOString(),args.hours??24)}
  if(area==='reviews'){const i=incident(n,args.id);return reviewMaterial(projected(n),i.id)}
- if(area==='analytics')return isNativeClient(ctx.clientId)?n.state.services.filter(s=>n.services.includes(s.id)).map(s=>({id:s.id,service:s.id,incidents:n.state.incidents.filter(i=>i.service===s.id).length,open:n.state.incidents.filter(i=>i.service===s.id&&i.state!=='resolved').length,followups:n.state.incidents.filter(i=>i.service===s.id).flatMap(i=>i.actions).filter(a=>!a.done).length})):responseReport(projected(n),args)
+ if(area==='analytics')return isNativeClient(ctx.clientId)?n.state.services.filter(s=>n.services.includes(s.id)).map(s=>({id:s.id,service:s.id,incidents:projected(n).incidents.filter(i=>i.service===s.id).length,open:projected(n).incidents.filter(i=>i.service===s.id&&i.state!=='resolved').length,followups:n.state.incidents.filter(i=>i.service===s.id).flatMap(i=>i.actions).filter(a=>!a.done).length})):responseReport(projected(n),args)
  if(area==='actions') {
-  if(verb==='list')return projected(n).incidents.flatMap(i=>i.actions.map(a=>({...a,incident:i.id,service:i.service,revision:i.revision})))
-  const i=incident(n,args.incident)
+  if(verb==='list')return n.state.incidents.filter(i=>n.services.includes(i.service)).flatMap(i=>i.actions.map(a=>({...a,incident:i.id,service:i.service,revision:i.revision})))
+  // Follow-ups retain the original service custody after an incident merge.
+  const i=incident(n,args.incident,true)
   return args.id?{...i.actions.find(a=>a.id===args.id)??refuse('not_found'),incident:i.id,service:i.service,revision:i.revision}:{incident:i.id,revision:i.revision,actions:i.actions}
  }
  if(area==='schedules') {
@@ -184,7 +186,7 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
    if(args.policy)service(n,args.policy)
    result=command(n.state,actor,{...args,type:verb==='page'?'manual-page':'declare',operationId:args.operation_id??crypto.randomUUID()},new Date().toISOString(),responseContext(snapshot,Date.now()))
   } else {
-   const i=incident(n,args.incident??args.id)
+   const i=incident(n,args.incident??args.id,area==='actions')
    const input=area==='notes'?{type:'note',text:args.text}:area==='actions'?
     {...args,type:verb==='create'?'action':verb==='submit'?'complete':'action-update',action:args.id}:
     verb==='acknowledge'?{type:'transition',state:'acknowledged',member:args.member}:
@@ -249,7 +251,7 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
   const item=n.state.apiOutbox?.find(o=>o.id===args.id&&n.services.includes(o.service))
   if(!item)return refuse('not_found')
   if(isNativeClient(ctx.clientId)&&item.client!==clientIdentity(ctx.clientId).id)return refuse('not_found')
-  if(verb==='dispatch')return dispatchOutbox(env,n.guard,{id:item.id,agentAdmitted:true,preparedBy:who})
+  if(verb==='dispatch'){const outcome=await dispatchOutbox(env,n.guard,{id:item.id,agentAdmitted:true,preparedBy:who});if(outcome.processed)ctx.emit('automation.updated','oncall://automation/outbox/'+item.id,{operationId:item.id,status:outcome.status});return outcome}
   if(!['failed','terminal','interrupted'].includes(item.status)||item.history.some(h=>h.reason==='network-ambiguous'||h.reason==='lease-expired'))return refuse('outcome_uncertain')
   if(item.attempts>=5||unfinishedDeliveries(n.state)>=deliveryCapacity)return refuse('capacity_exhausted')
   const endpoint=n.state.apiEndpoints?.find(e=>e.id===item.endpoint&&e.active),client=n.state.apiClients?.find(c=>c.id===item.client&&c.active)
@@ -276,6 +278,8 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
   ...n.state.incidents.flatMap(i=>(i.deadlines??[]).filter(d=>!oldDeadlines.has(d.id)).map(d=>env.DB.prepare("INSERT INTO oc_agent_deadlines(id,incident,principal,operation_key) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind(d.id,i.id,JSON.stringify(custody),'agent-deadline-'+d.id,token))),
   ...(area==='automation'?[env.DB.prepare("UPDATE oc_agent_outbox SET operation_key=? WHERE id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)").bind('agent-replay-'+result.id+'-'+result.revision,result.id,token)]:[]),
  ])
+ for(const item of n.state.apiOutbox??[])if(!oldOutbox.has(item.id))ctx.emit('automation.queued','oncall://automation/outbox/'+item.id,{operationId:item.id,incident:item.incident,revision:item.revision})
+ if(area==='automation')ctx.emit('automation.updated','oncall://automation/outbox/'+String(result.id),{operationId:result.id,status:result.status})
  if(area==='actions')ctx.emit('action.updated','oncall://actions/'+result.id,{incident:result.incident,revision:result.revision})
  if(area==='services'||area==='teams'||area==='access')ctx.emit(area+'.updated','oncall://services/'+(area==='services'?result.id:n.services[0]),{id:target})
  return result
@@ -284,7 +288,7 @@ export async function nativeRevision(env:Bindings,ctx:ToolContext,area:string,ar
  const n=await nativeContext(env,ctx,scope??(area==='notes'?'incidents:write':area+':write'))
  if(area==='incidents'&&args.service)return n.state.revision
  if(area==='schedules'&&args.schedule&&!args.id)return (await pagingSnapshot(env.DB)).archive.schedules.find(s=>s.id===args.schedule.id)?.revision??0
- if(['incidents','actions','notes','deadlines'].includes(area))return incident(n,args.incident??args.id).revision
+ if(['incidents','actions','notes','deadlines'].includes(area))return incident(n,args.incident??args.id,area==='actions').revision
  if(area==='schedules')return (await pagingSnapshot(env.DB)).archive.schedules.find(s=>s.id===args.id&&n.services.includes(s.service))?.revision??refuse('not_found')
  if(area==='clients'||area==='endpoints')return (area==='clients'?n.state.apiClients:n.state.apiEndpoints)?.find(c=>c.id===args.id)?.revision??refuse('not_found')
  if(area==='automation')return n.state.apiOutbox?.find(o=>o.id===args.id&&n.services.includes(o.service))?.revision??refuse('not_found')

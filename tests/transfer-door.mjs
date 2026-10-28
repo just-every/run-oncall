@@ -1,3 +1,4 @@
+import {canonical} from '../src/modules/agent-door/conformance/crypto.mjs'
 import assert from 'node:assert/strict'
 import {generateKeyPairSync,sign,createHash,randomUUID} from 'node:crypto'
 import {appendFile,mkdir} from 'node:fs/promises'
@@ -15,11 +16,21 @@ export function transferDoor(m) {
  }
  const call=(action,input,token=grant(action))=>m.request('/api/rer/import/'+action,input,undefined,{Authorization:'Bearer '+token})
  const ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
- let plan,approval,pendingJob,oldGrant
+ let plan,approval,pendingJob,oldGrant,agentRevision=0
+ const jwt=(typ,payload)=>{const body=encode({alg:'ES256',typ,kid})+'.'+encode(payload);return body+'.'+sign('sha256',Buffer.from(body),{key:privateKey,dsaEncoding:'ieee-p1363'}).toString('base64url')}
  return {
   async configure() {
-   const vars={RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:publicKey.export({format:'jwk'})}),RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId}
+   const vars={RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:publicKey.export({format:'jwk'})}),RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,RER_BUSINESS_TRUST:JSON.stringify({v:1,issuer,audience:m.origin,subject:installationId,email:'transfer-owner@example.test',keys:{[kid]:publicKey.export({format:'jwk'})}})}
    await appendFile('.dev.vars','\n'+Object.entries(vars).map(([k,v])=>k+'='+v).join('\n')+'\n',{mode:0o600})
+  },
+  async allowAgents(cookie) {
+   const at=Math.floor(Date.now()/1000),revision=++agentRevision,business='rer-agent-conformance',email='transfer-owner@example.test'
+   const common={v:1,iss:issuer,aud:m.origin,sub:installationId,business,email,iat:at,exp:at+300}
+   ok(await m.request('/api/rer/business-settings',{settings:jwt('rer-business-settings+jwt',{...common,jti:randomUUID(),rev:revision,owner_id:'transfer-owner-'+installationId,values:{},logo:null,team:null})}))
+   const document={schema:'rer-agent-policy/1',catalogue:'rer-agent-classes/1',rules:[{id:'business-coordination-choice',class:'*',do:'autonomous'}],spend:{none:true}}
+   const revision_signature=jwt('rer-agent-policy-revision+jwt',{business,revision,document_sha256:hash(canonical(document))})
+   ok(await m.request('/api/rer/agent-policy',{policy:jwt('rer-agent-policy+jwt',{...common,seq:revision,revision,paused:false,catalogue:document.catalogue,document,revision_signature})}))
+   ok(await m.request('/agents/api/pause',{paused:false},cookie))
   },
   async prepare(cookie) {
    ok(await m.request('/auth/settings/imports',{enabled:true},cookie))

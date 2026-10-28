@@ -182,10 +182,10 @@ export function installVersionedApi(api:any,deps:Deps) {
   });
   api.get('/api/v1/'+family+'/:id',async(c:any)=>{
    const {state,client}=await context(c,family+':read');
-   const decision=await compatibilityRead(c,family,state.incidents.find(i=>i.actions.some(a=>a.id===c.req.param('id')))?.id);if(decision)return decision;
    const requested=family==='incidents'?state.incidents.find(i=>i.id===c.req.param('id')):undefined;
    if(requested&&!incidentWithinServices(state,requested,client.services))fail('Record not found in this client scope',404);
    const canonical=requested?resolveIncidentAlias(state,requested.id):undefined;
+   const decision=await compatibilityRead(c,family,state.incidents.find(i=>i.actions.some(a=>a.id===c.req.param('id')))?.id,canonical?.id);if(decision)return decision;
    const row=(await records(c,family,state,client)).find((r:any)=>r.id===(canonical?.id??c.req.param('id')));
    if(requested?.mergedInto&&row)c.header('Content-Location','/api/v1/incidents/'+row.id);
    if(!row)fail('Record not found in this client scope',404);c.header('ETag','"'+await changeHash(JSON.stringify(row))+'"');await readFence(c);return c.json(row);
