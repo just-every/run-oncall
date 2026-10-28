@@ -143,6 +143,9 @@ async function operationResult(env:Bindings,n:NativeContext,ctx:ToolContext,args
 export function prepared(ctx:ToolContext) {
  return {agent:{id:ctx.agent.id,name:ctx.agent.name},sponsor:{id:ctx.person.id,name:ctx.person.name},label:ctx.actor.label,approvers:ctx.approvers}
 }
+function sameOperationPrincipal(saved:any,ctx:ToolContext) {
+ return saved.sponsorId===ctx.person.id&&saved.agent.id===ctx.agent.id&&saved.consent===ctx.consent&&saved.clientId===ctx.clientId
+}
 export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb:string,args:Record<string,any>):Promise<any> {
  const scope=['notes','deadlines'].includes(area)||area==='automation'&&verb==='dispatch'?'incidents:write':area==='automation'?'automation:write':area+':write'
  const n=await nativeContext(env,ctx,scope,['services','access','clients','endpoints','automation','teams'].includes(area))
@@ -172,7 +175,7 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
   const i=incident(n,args.incident),deadline=i.deadlines?.find(d=>d.id===args.id)
   const record=await env.DB.prepare('SELECT principal FROM oc_agent_deadlines WHERE id=? AND incident=?').bind(args.id,i.id).first<{principal:string}>()
   const saved=record?JSON.parse(record.principal):null
-  if(!deadline||!saved||saved.sponsorId!==ctx.person.id||saved.agent.id!==ctx.agent.id)return refuse('not_found')
+  if(!deadline||!saved||!sameOperationPrincipal(saved,ctx))return refuse('not_found')
   const snapshot=await pagingSnapshot(env.DB)
   const fired=fireDeadline(n.state,i,deadline,new Date().toISOString(),responseContext(snapshot,Date.now()))
   if(!fired)return {id:deadline.id,incident:i.id,revision:i.revision,processed:0}
@@ -258,6 +261,12 @@ export async function mutateNative(env:Bindings,ctx:ToolContext,area:string,verb
   const item=n.state.apiOutbox?.find(o=>o.id===args.id&&n.services.includes(o.service))
   if(!item)return refuse('not_found')
   if(isNativeClient(ctx.clientId)&&item.client!==clientIdentity(ctx.clientId).id)return refuse('not_found')
+  const custody=await env.DB.prepare('SELECT principal FROM oc_agent_outbox WHERE id=?').bind(item.id).first<{principal:string}>()
+  if(custody) {
+   if(!sameOperationPrincipal(JSON.parse(custody.principal),ctx))return refuse('operation_principal_changed')
+   n.guard.sql+=' AND EXISTS(SELECT 1 FROM oc_agent_outbox WHERE id=? AND principal=?)'
+   n.guard.values.push(item.id,custody.principal)
+  }
   if(verb==='dispatch'){const outcome=await dispatchOutbox(env,n.guard,{id:item.id,agentAdmitted:true,preparedBy:who});if(outcome.processed)ctx.emit('automation.updated','oncall://automation/outbox/'+item.id,{operationId:item.id,status:outcome.status});return outcome}
   if(!['failed','terminal','interrupted'].includes(item.status)||item.history.some(h=>h.reason==='network-ambiguous'||h.reason==='lease-expired'))return refuse('outcome_uncertain')
   if(item.attempts>=5||unfinishedDeliveries(n.state)>=deliveryCapacity)return refuse('capacity_exhausted')

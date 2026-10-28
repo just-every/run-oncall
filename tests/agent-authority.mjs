@@ -46,6 +46,17 @@ export async function agentAuthority(app) {
   cursor=audit.cursor
  }
  check('ONCALL.pending-base.native-audit-target',rows.some(row=>row.tool==='oncall.incidents.declare'&&(row.target?.uri??row.target??row.resource)==='oncall://incidents/'+id),'Base audit has no native tool target attribution')
+ // A new consent or agent cannot take over a queued operation after revocation.
+ const consent=randomUUID(),queuedIncident=await app.tool('oncall.incidents.declare',{...declaration,title:'Durable consent custody',idempotency_key:randomUUID()},{consent})
+ const queue=(await app.personJson('/api/automation')).outbox.find(o=>o.incident===queuedIncident.result.structuredContent.data.id&&o.status==='queued')
+ assert.ok(queue,'the native declaration transaction must create a queued minimal event')
+ await app.adopt(autonomousPolicy(),{revoked:{agents:[],consents:[consent]}})
+ const revoked=await app.tool('oncall.automation.dispatch',{id:queue.id,idempotency_key:randomUUID()},{consent})
+ const replacement=await app.tool('oncall.automation.dispatch',{id:queue.id,idempotency_key:randomUUID()},{consent:randomUUID()})
+ const otherAgent=await app.tool('oncall.automation.dispatch',{id:queue.id,idempotency_key:randomUUID()},{consent:randomUUID(),act:{sub:'replacement-'+randomUUID(),name:'Replacement responder'}})
+ const heldQueue=(await app.personJson('/api/automation')).outbox.find(o=>o.id===queue.id)
+ check('ONCALL.custody.original-consent',revoked.status===401&&replacement.result?._meta?.['com.runeditrun/error']?.code==='operation_principal_changed'&&otherAgent.result?._meta?.['com.runeditrun/error']?.code==='operation_principal_changed'&&heldQueue.attempts===0&&JSON.stringify(heldQueue.history)===JSON.stringify(queue.history),'Queued work retains its original agent, sponsor and consent; replacement credentials cannot bypass revocation')
+ await app.adopt(autonomousPolicy())
  // Removing a Business mapping stops an already held native effect too.
  await app.adopt({...autonomousPolicy(),rules:[{id:'held-mapping',class:'*',do:'approval',approver:['role:owner'],wait:'PT1H'}]})
  const queuedText='Removed Business mapping must not execute this note'

@@ -67,6 +67,8 @@ and time. Public IPv4 HTTPS restrictions, signing custody, creator/client/
 receiver revisions and the durable lease remain in force. Only an authenticated
 receiver receipt establishes acceptance. Timeout or a missing receipt remains
 uncertain; replay never blindly resends uncertain work.
+Queued work retains its original agent, sponsor, consent and client revision.
+A replacement token cannot take it over after consent revocation.
 
 ## Boundaries
 

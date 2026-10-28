@@ -188,7 +188,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "e297073e3b151d9863cda3d59edd3453883652af6943fd7fc7fd71ee0092984e",
+      "sha256": "81024be32ff77980f1b848d981621a1f5486be51ff3a9780c5a4d136087814d6",
       "executable": false
     },
     "docs/audit.md": {
@@ -964,7 +964,7 @@
       "executable": false
     },
     "src/agent-door/native.ts": {
-      "sha256": "297189d85c4f04d021a9b576d2d7b088c60265d9b3fa2e392372b0a011adea83",
+      "sha256": "423ff97518ae4a31bca20eeea80f669f2feeeba7625ff8705164aec0e5c7dfb1",
       "executable": false
     },
     "src/agent-door/people.ts": {
@@ -5244,7 +5244,7 @@
       "executable": false
     },
     "tests/agent-authority.mjs": {
-      "sha256": "ba0a487c64d3c816b1ce1182fdddd3d794a5eceb2aa8471a72a32207b323e2df",
+      "sha256": "b90a6ac0a76e11374c976839dc306a0ae2c7c583c1ee0eb6b52a9efd9d7e4183",
       "executable": false
     },
     "tests/agent-door.mjs": {
@@ -5260,7 +5260,7 @@
       "executable": false
     },
     "tests/agent-pending.mjs": {
-      "sha256": "5a89fa706fd81ef05d6583c8aec71033ca97d8858706c67411e2014c957a0ce1",
+      "sha256": "20ec31195f5b0ce38c86493b4f83c71f413b6a899ed437d2dd4c26b060730bac",
       "executable": false
     },
     "tests/agent-policy-fixture.mjs": {
