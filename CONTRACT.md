@@ -985,7 +985,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 **How Oncall computes each class.**
 - **standard**: a call that stays inside the workspace and can be undone or superseded in Oncall: reads, notes, acknowledgment, reassignment, snooze, merges, drafts, triage views and follow-up edits; measured in items.
 - **live**: a call that changes who is paged or when, or how a production service behaves: rotations, overrides and swaps, escalation, urgency, response and user-assignment rules, notification channels and delays, routing rule sets, pages and responder requests, readiness drills, and library actions and remediation plans. It also covers intake modes, trigger and resolve rules, key activation or revocation, allowances and adapter bindings when they change which events admit or page; service edits that alter whom an active service pages; member changes affecting current or future coverage; erasure that changes coverage, intake or pending delivery; and state-replacing restore; measured by service.
-- **external**: a call that sends or exposes something to someone outside the business: a published internal or customer update, a Zoom or Teams incident bridge sent to its provider, a registered outbound endpoint and its replay, and a calendar feed an outside calendar service fetches; the counterparty is known for a recipient on record, new otherwise, and public for a public status page.
+- **external**: a call that sends or exposes something to someone outside the business: a published internal or customer update, a Zoom or Teams incident bridge sent to its provider, a registered outbound endpoint and its replay, a calendar feed an outside calendar service fetches, and creating or synchronizing a Jira, Linear, GitHub or GitLab issue or pull request; the counterparty is known for a recipient on record or the company's own tracker project, new otherwise, and public for a public status page or public repository.
 - **commitment**: a sign-off others rely on: resolving a declared incident with its summary and evidence, reviewing hand-off copy, publishing an update, and accepting a root cause, impact, review or completion.
 - **access**: a call that changes standing authority: member roles and deactivation, team membership and private scope, a library action's allowed teams and roles, and API client grants. It also covers erasure of a member or of an API client's authority, state-replacing restore, and SSO configuration that enables or changes just-in-time accounts, their default role or group-to-team or group-to-role mapping; its direction is widens or narrows.
 - **security**: a call that handles credentials or protective settings: intake keys and email addresses, API client and endpoint keys, calendar feed secrets and SSO settings, and library edits to executor bindings, second-person approval for runs by people or output redaction rules.
@@ -1018,7 +1018,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.handoffs.prepare` | Prepare or withdraw hand-off copy | OC-017 | standard | none |
 | `oncall.handoffs.review` | Review exact hand-off copy | OC-017 | commitment | none |
 | `oncall.updates.publish` | Publish a reviewed internal or customer update | OC-051, OC-061 | external · commitment | none |
-| `oncall.followups.update` | Create, complete or accept follow-ups, root causes and reviews | OC-005, OC-036, OC-049 | standard (+ commitment) | API (actions) |
+| `oncall.followups.update` | Create, complete or accept follow-ups, root causes and reviews | OC-005, OC-036, OC-049 | standard (+ commitment) (+ external) | API (actions) |
 | `oncall.reports.read` | Read response analytics, load, usage and readiness | OC-037, OC-044, OC-054 | standard | API (analytics) |
 | `oncall.changes.list` | List recent changes for a service, alert or incident | OC-065 | standard | none |
 | `oncall.archive.export` | Export the archive, a checkpoint or the permanent audit | OC-007, OC-015, OC-016, OC-041, OC-052 | standard | none |
@@ -1093,6 +1093,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 5. `oncall.archive.restore` carries destructive, live and access when it replaces state, pauses sends and schedules and revokes prior authority.
 6. `oncall.sso.configure` carries security and adds access when it enables or changes just-in-time accounts, their default role or group mapping; a signing-certificate-only rotation carries security alone.
 7. `oncall.actions.update` adds security when it changes an executor binding, second-person approval for runs by people or output redaction rules; a description-only edit remains standard.
+8. `oncall.followups.update` adds external when it creates or synchronizes a Jira, Linear, GitHub or GitLab issue or pull request, with the counterparty public for a public repository; an Oncall-only follow-up edit remains standard.
 
 ## Push further
 

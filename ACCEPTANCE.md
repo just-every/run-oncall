@@ -1307,6 +1307,7 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
 5. `oncall.archive.restore` carries destructive, live and access when it replaces state, pauses sends and schedules and revokes prior authority.
 6. `oncall.sso.configure` carries security and adds access when it enables or changes just-in-time accounts, their default role or group mapping; a signing-certificate-only rotation carries security alone.
 7. `oncall.actions.update` adds security when it changes an executor binding, second-person approval for runs by people or output redaction rules; a description-only edit remains standard.
+8. `oncall.followups.update` adds external when it creates or synchronizes a Jira, Linear, GitHub or GitLab issue or pull request, with the counterparty public for a public repository; an Oncall-only follow-up edit remains standard.
 
 **Evidence.** None.
 **Gap.** No implementing flow. No MCP door or server-side class computation exists for configuration, restore or erasure.
