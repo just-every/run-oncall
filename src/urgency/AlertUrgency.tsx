@@ -3,6 +3,7 @@ import {request} from '../useWorkspace';
 import {useAutosave,autosaveRequest} from '../app/autosave/useAutosave';
 import {SavedState,SaveFeedback} from '../app/autosave/SavedState';
 import {InlineConfirm} from '../app/autosave/InlineConfirm';
+import {urgencyLabel} from '../reviews/display';
 import {shortTime} from '../reviews/time';
 import type { Alert, State } from '../family/response-operations/domain';
 import type { IntakeRun } from '../intake/CompatibleTest';
@@ -41,10 +42,10 @@ export function AlertUrgency({alert,state,canEdit,busy,run,onSaved,storageKey}:{
   const rule=state.services.find(s=>s.id===alert.service)?.urgencyRules?.at(-1);
   const raise=current.state==='active'&&current.urgency==='low'&&rule?.mode==='support-hours'&&rule.inside==='high'&&rule.outside==='low';
   return <div className="alert-urgency">
-    <label className="field"><span>Urgency <SavedState state={save.states.urgency}/></span>{canEdit&&alert.state==='active'?<UrgencySelect selectRef={selectRef} value={lowering?'low':selectedValue} onChoose={onChoose}/>:<span>{current.urgency??'Unknown'}</span>}</label>
-    <SaveFeedback format={value=>(value as {value?:string})?.value??'Unknown'} state={save.states.urgency} retry={async()=>{await save.retry('urgency');return finishSave();}} useMine={async()=>{await save.useMine('urgency');return finishSave();}}/>
+    <label className="field"><span>Urgency <SavedState state={save.states.urgency}/></span>{canEdit&&alert.state==='active'?<UrgencySelect selectRef={selectRef} value={lowering?'low':selectedValue} onChoose={onChoose}/>:<span>{current.urgency ? urgencyLabel(current.urgency) : 'Unknown'}</span>}</label>
+    <SaveFeedback format={value=>(value as {value?:string})?.value ? urgencyLabel((value as {value:string}).value) : 'Unknown'} state={save.states.urgency} retry={async()=>{await save.retry('urgency');return finishSave();}} useMine={async()=>{await save.useMine('urgency');return finishSave();}}/>
     {lowering&&<fieldset disabled={busy||save.states.urgency?.status==='pending'}><InlineConfirm action="Lower urgency" reasonRequired busy={busy||save.states.urgency?.status==='pending'} onConfirm={reason=>{save.change('urgency',{value:'low',reason:reason??''},'choice');return finishSave();}} onCancel={()=>{setLowering(false);save.change('urgency',{value:current.urgency??'high',reason:''},'choice');selectRef.current?.focus({preventScroll:true});}}>Lower this alert’s urgency? The reason is recorded with your name.</InlineConfirm></fieldset>}
     {raise&&<SupportStart rule={rule}/>}
-    <details><summary>History</summary>{current.urgencyHistory?.map(entry=><article key={entry.id}><p><strong>{entry.from??'New'} → {entry.to}</strong> · {shortTime(entry.at)}</p>{entry.reason&&<p>{entry.reason}</p>}<span>{state.members.find(m=>m.id===entry.by)?.name??'Admission rule'} · {entry.ruleVersion===null?(state.members.some(m=>m.id===entry.by)?'Human decision':'Admission decision'):'Rule version '+entry.ruleVersion}</span></article>)??<p>No retained urgency history.</p>}</details>
+    <details><summary>History</summary>{current.urgencyHistory?.map(entry=><article key={entry.id}><p><strong>{entry.from ? urgencyLabel(entry.from) : 'New'} → {urgencyLabel(entry.to)}</strong> · {shortTime(entry.at)}</p>{entry.reason&&<p>{entry.reason}</p>}<span>{state.members.find(m=>m.id===entry.by)?.name??'Admission rule'} · {entry.ruleVersion===null?(state.members.some(m=>m.id===entry.by)?'Human decision':'Admission decision'):entry.ruleVersion === 0 ? 'Service default' : 'Policy version '+entry.ruleVersion}</span></article>)??<p>No retained urgency history.</p>}</details>
   </div>;
 }
