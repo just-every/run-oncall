@@ -695,7 +695,10 @@
           "pointer": "/data/0/etag"
         },
         "name": "Agent coordination service",
-        "environment": "verification",
+        "environment": {
+          "$from": "service-read",
+          "pointer": "/data/0/environment"
+        },
         "owner": {
           "$sponsor": "id"
         },

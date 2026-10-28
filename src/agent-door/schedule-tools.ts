@@ -109,13 +109,13 @@ async function overridden(env: Bindings, ctx: ToolContext, args: Record<string, 
   return { ...saved, next }
 }
 
-async function created(env: Bindings, ctx: ToolContext, args: Record<string, unknown>): Promise<NewSchedule> {
+async function created(env: Bindings, ctx: ToolContext, args: Record<string, unknown>, requireUnused = true): Promise<NewSchedule> {
   const supplied = validateSchedule(args.schedule)
   const { access, snapshot } = await snapshotAccess(env, ctx, 'schedules:write', supplied.service)
   if (!access.client) requireTeamCoverage(access.state, access.member, supplied.service)
   const old = snapshot.archive.schedules.find(row => row.id === supplied.id)
   if (old && old.service !== supplied.service) throw new ToolRefusal('not_found')
-  if (old || supplied.revision !== 0) throw new ToolRefusal('revision_conflict', 'A new schedule requires an unused identity and native revision 0')
+  if (supplied.revision !== 0 || requireUnused && old) throw new ToolRefusal('revision_conflict', 'A new schedule requires an unused identity and native revision 0')
   if (access.member.role !== 'admin') {
     if (supplied.companyDates?.length) fail('Only an administrator can author company dates', 403)
     if (supplied.pto?.some(row => row.member !== access.member.id)) fail('Only an administrator can record another member’s PTO', 403)
@@ -226,7 +226,10 @@ export function scheduleTools(env: Bindings): ToolDefinition[] {
       scope: 'schedules:write', readOnly: false, untrusted: true, classes: ['standard', 'sensitive', 'live'], clauses: ['OC-003', 'OC-011', 'OC-012', 'OC-024', 'OC-053'],
       inputSchema: object({ schedule: { ...scheduleSchema, properties: { ...scheduleSchema.properties, revision: { type: 'integer', const: 0 } } } }), outputSchema: { type: 'object' }, revisionType: 'integer',
       revision: (args, ctx) => nativeCall(async () => { await created(env, ctx, args); return 0 }),
-      classify: (args, ctx) => nativeCall(async () => changeFacts(await created(env, ctx, args), ctx)),
+      // Replays still classify the proposed coverage under current native authority.
+      // Unused-identity admission stays in revision, summary and execution;
+      // a successful cached call has already created its schedule.
+      classify: (args, ctx) => nativeCall(async () => changeFacts(await created(env, ctx, args, false), ctx)),
       summary: (args, ctx) => nativeCall(async () => createSummary(await created(env, ctx, args), ctx)),
       run: (args, ctx) => nativeCall(async () => save(env, ctx, await created(env, ctx, args), 'create')),
     },
