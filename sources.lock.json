@@ -140,7 +140,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a4139d39b4fa2b09dc5b749e4d0b04e1f3811e086bcae06af6b94cb1f9362aa5",
+      "sha256": "fcd000ced445ab1d82150df61c2f9278268a544eb7ed95efbf6d21a6f113d08a",
       "executable": false
     },
     "AGENTS.md": {
@@ -164,7 +164,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b2bca40d9157ca5e9ac8513a807d59ad0f32a751dd38b5130a5d3107072b8eb4",
+      "sha256": "c360badc300fe6d62ec3fecbc2e2cb7d765aeeb8884af2859c619d0fcecb6688",
       "executable": false
     },
     "DEMO.md": {
@@ -184,7 +184,7 @@
       "executable": false
     },
     "docs/audit.md": {
-      "sha256": "462fdf1061bf928037672877c57802fe1c6565c7115138de54b4b8923eb9ff69",
+      "sha256": "5635fa1cef77f71a5b10f2b9382592c02848efdd05abd42d49dd0012ea045423",
       "executable": false
     },
     "docs/changes.md": {
@@ -208,19 +208,19 @@
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
-      "sha256": "f32ef183ffca07db3f3c0b14a31615c1e0a2f02364732376f4f9713bb87f9809",
+      "sha256": "7ba7986bde33d55aedee121954e5316933882b09114d41e257a7340a7d81cded",
       "executable": false
     },
     "docs/contract/DONE-AUDIT.md": {
-      "sha256": "fb22b6b1c184cb0f823d01a86e5ab82e561838b503b675bdaf296f377b2fda60",
+      "sha256": "257ae4976840057ca167e9418dc362bfa7c17209378c7b440d754d9127407ddc",
       "executable": false
     },
     "docs/contract/doors.md": {
-      "sha256": "2f5853bbbc8ee541db3ea20b32d6d785da88944470934c4a948b1ab24987f945",
+      "sha256": "2742d611219a1f596de1c5ad85be37b1a73158489c47229a310407cd907bc6bd",
       "executable": false
     },
     "docs/contract/ID-MAP.json": {
-      "sha256": "6dfdab4012f89d102425c60d15914949159cdb655d2bec2c2af1e3b0e5be6574",
+      "sha256": "bca7223ccce498707b74b14f4c7e8b2cd3932e7b52c8bc654ad0c28da8029776",
       "executable": false
     },
     "docs/contract/references.md": {
@@ -756,7 +756,7 @@
       "executable": false
     },
     "RULINGS.md": {
-      "sha256": "fe83451882060d33728002c80b1690866e06e1c38792347c34c4f0a9c190eae7",
+      "sha256": "366c559641ec2f43dddd1c90bd5a46434a4a969e044f943c09c1869639feb8d1",
       "executable": false
     },
     "RUN-LOCALLY.md": {
@@ -4960,7 +4960,7 @@
       "executable": false
     },
     "tests/routing-rate.mjs": {
-      "sha256": "c914769e21994415c9e596f36ba61a098543ec2b6678aa269993ec5f65f1b8f3",
+      "sha256": "ac9b8b1cb6115f02c20632ebe6fb83fe420144a31c7e156135a971bcda4413b9",
       "executable": false
     },
     "tests/routing.mjs": {
@@ -5000,7 +5000,7 @@
       "executable": false
     },
     "tests/triage-bulk-browser.mjs": {
-      "sha256": "88256429cfee4eee7453d235188bf2a3645fc607ca9146e7b95a24fa7df72cf1",
+      "sha256": "aa44008b9366583487eb63c2ac128afa355909a8cf2ee5ac4ffe599cdc2e2bba",
       "executable": false
     },
     "tests/triage-bulk.mjs": {
