@@ -1,9 +1,7 @@
-import {localWorker} from './worker.mjs';
-import assert from 'node:assert/strict';
-import {randomBytes,createHmac,createHash} from 'node:crypto';
-import {automationRuntime} from './automation-runtime.mjs';
-import {readFile} from 'node:fs/promises';
-import {ownerDoor} from './worker.mjs';
+import {localWorker,automationRuntime,ownerDoor} from './worker.mjs'
+import assert from 'node:assert/strict'
+import {randomBytes,createHmac,createHash} from 'node:crypto'
+import {readFile} from 'node:fs/promises'
 // Older sources must never restore an erased automation label through either HTTP door.
 const erasureCalls=[];
 const erasureRuntime=await automationRuntime(request=>{erasureCalls.push(request.url);return new Response('unexpected outbound request',{status:403});});

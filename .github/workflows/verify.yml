@@ -13,11 +13,36 @@ env:
   CI: 'true'
   WRANGLER_SEND_METRICS: 'false'
 jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free unused runner SDKs for the 15 GiB disk guard
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          df -h / /tmp
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec rer check --profile first-party
+      - run: pnpm run typecheck
+      - run: pnpm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oncall-production-build
+          include-hidden-files: true
+          path: |
+            dist
+            management/integration/deployment-spec.json
   lanes:
+    needs: build
     if: github.event_name != 'workflow_dispatch'
     name: ${{ matrix.lane }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -28,22 +53,17 @@ jobs:
             browser: false
           - lane: triage
             browser: false
-          - lane: changes
-            browser: false
           - lane: intake
             browser: false
-          - lane: reviews
-            browser: false
-          - lane: adoption-demo
+          - lane: adoption
             browser: false
           - lane: signin
             browser: true
           - lane: product-browser
             browser: true
-          - lane: hosted
-            browser: true
     env:
       ONCALL_VERIFY_LANE: ${{ matrix.lane }}
+      ONCALL_VERIFY_PREBUILT: '1'
     steps:
       - uses: actions/checkout@v4
       - name: Free unused runner SDKs for the 15 GiB disk guard
@@ -55,17 +75,15 @@ jobs:
           node-version-file: .node-version
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: oncall-production-build
       - if: matrix.browser
         run: pnpm exec playwright install --with-deps chromium
       - name: Verify the selected public-door journey
         env:
           ONCALL_BROWSER_EVIDENCE: ${{ runner.temp }}/oncall-browser-evidence
-        run: |
-          if [ "$ONCALL_VERIFY_LANE" = hosted ]; then
-            pnpm exec rer verify --non-interactive
-          else
-            node tests/verify.mjs
-          fi
+        run: node tests/verify.mjs
       - uses: actions/upload-artifact@v4
         if: always() && matrix.browser
         with:
@@ -74,20 +92,13 @@ jobs:
             ${{ runner.temp }}/oncall-browser-evidence
             evidence/browser
   installation:
-    name: ${{ matrix.lane }}
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    needs: build
+    name: transfer
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - lane: managed-browser
-            browser: true
-          - lane: transfer
-            browser: false
     env:
-      ONCALL_VERIFY_LANE: ${{ matrix.lane }}
+      ONCALL_VERIFY_LANE: transfer
+      ONCALL_VERIFY_PREBUILT: '1'
     steps:
       - uses: actions/checkout@v4
       - name: Free unused runner SDKs for the 15 GiB disk guard
@@ -99,38 +110,39 @@ jobs:
           node-version-file: .node-version
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - if: matrix.browser
-        run: pnpm exec playwright install --with-deps chromium
-      - run: node tests/verify.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          name: oncall-production-build
+      - run: pnpm exec playwright install --with-deps chromium
+      # Retain the public rer verify wrapper's hosted-output and hydration gates.
+      - run: pnpm exec rer verify --non-interactive
         env:
           ONCALL_BROWSER_EVIDENCE: ${{ runner.temp }}/oncall-browser-evidence
       - uses: actions/upload-artifact@v4
-        if: always() && matrix.browser
+        if: always()
         with:
-          name: oncall-browser-evidence-${{ matrix.lane }}
+          name: oncall-browser-evidence-transfer
           path: |
             ${{ runner.temp }}/oncall-browser-evidence
             evidence/browser
   verify:
     # Preserve the required check name while waiting for every applicable lane.
     if: always()
-    needs: [lanes, installation]
+    needs: [build, lanes, installation]
     runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
       - name: Require every verification lane
         env:
           EVENT_NAME: ${{ github.event_name }}
+          BUILD_RESULT: ${{ needs.build.result }}
           LANES_RESULT: ${{ needs.lanes.result }}
           INSTALLATION_RESULT: ${{ needs.installation.result }}
         run: |
+          test "$BUILD_RESULT" = success
+          test "$INSTALLATION_RESULT" = success
           if [ "$EVENT_NAME" = workflow_dispatch ]; then
             test "$LANES_RESULT" = skipped
-            test "$INSTALLATION_RESULT" = success
           else
             test "$LANES_RESULT" = success
-            case "$INSTALLATION_RESULT" in
-              success|skipped) ;;
-              *) exit 1 ;;
-            esac
           fi

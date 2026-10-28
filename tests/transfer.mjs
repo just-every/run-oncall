@@ -1,20 +1,128 @@
-import {isolatedEntrypoint} from './isolated.mjs'
-const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
+import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
+import {appendFile,mkdtemp,symlink,cp,lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
+import {tmpdir} from 'node:os'
+import {dirname,join,relative} from 'node:path'
+import {fileURLToPath} from 'node:url'
+import {spawn,execFileSync} from 'node:child_process'
+import {createServer} from 'node:net'
+import {readDevKey,signInAs} from '../src/modules/operator-auth/dev/sign-in-as.mjs'
+import {fixtureDatabase} from './fixture-database.mjs'
 import assert from 'node:assert/strict'
-import {randomBytes,createHmac} from 'node:crypto'
-import {execFileSync} from 'node:child_process'
-import {lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
-import {managedSeed} from './managed.mjs'
 import {ownerDoor,localWorker} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 import {checkpointCli,checkpointErasureCli} from './checkpoint-cli.mjs'
-import {transferDoor} from './transfer-door.mjs'
+const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
+
+
+// transfer-door: part of this public journey.
+// Real Business HTTP grants; no production authority or credentials in fixtures.
+export function transferDoor(m) {
+ const {privateKey,publicKey}=generateKeyPairSync('ec',{namedCurve:'prime256v1'})
+ const kid='transfer-business',issuer='https://business.example.test',installationId=randomUUID()
+ const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url')
+ const hash=bytes=>createHash('sha256').update(bytes).digest('hex')
+ const grant=(action,extra={})=>{
+  const now=Math.floor(Date.now()/1000),payload={v:1,iss:issuer,aud:m.origin,installationId,email:'transfer-owner@example.test',jti:randomUUID(),iat:now,exp:now+300,action,namespace:'pagerduty',maxBytes:512*1024,maxChunks:8,maxRecords:500,...extra}
+  const signed=encode({alg:'ES256',typ:'rer-import-grant+jwt',kid})+'.'+encode(payload)
+  return signed+'.'+sign('sha256',Buffer.from(signed),{key:privateKey,dsaEncoding:'ieee-p1363'}).toString('base64url')
+ }
+ const call=(action,input,token=grant(action))=>m.request('/api/rer/import/'+action,input,undefined,{Authorization:'Bearer '+token})
+ const ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
+ let plan,approval,pendingJob,oldGrant
+ return {
+  async configure() {
+   const vars={RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:publicKey.export({format:'jwk'})}),RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId}
+   await appendFile('.dev.vars','\n'+Object.entries(vars).map(([k,v])=>k+'='+v).join('\n')+'\n',{mode:0o600})
+  },
+  async prepare(cookie) {
+   ok(await m.request('/auth/settings/imports',{enabled:true},cookie))
+   const bytes=Buffer.from(JSON.stringify({users:{users:Array.from({length:45},(_,i)=>({id:'portable-pd-'+i,email:'pending-'+i+'@example.test',name:'Pending responder '+i}))}}))
+   const uploaded=ok(await call('uploads',{name:'pending-pagerduty.json',bundleSha256:hash(bytes),totalBytes:bytes.length,totalChunks:1,index:0,chunkSha256:hash(bytes),base64:bytes.toString('base64')}))
+   plan=ok(await call('plan',{uploadId:uploaded.uploadId}))
+   approval={fingerprint:plan.fingerprint,approvalRecordId:randomUUID(),approvedAt:new Date().toISOString()}
+   pendingJob=ok(await call('apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},grant('apply',approval))).job
+   assert.ok(['queued','applying'].includes(pendingJob.state),'a bounded HTTP apply leaves real pending work and its approval')
+   oldGrant=grant('apply',approval)
+   return pendingJob
+  },
+  async assertInactive(cookie,oldCookie,sql) {
+   assert.equal(ok(await m.request('/auth/settings/imports',undefined,cookie)).enabled,false,'portable restore disables Business intake')
+   const before=sql('SELECT * FROM ik_jobs ORDER BY id')
+   assert.equal(before.find(j=>j.id===pendingJob.id).state,'failed','restored active work retains a durable interrupted outcome')
+   assert.equal(sql("SELECT state FROM oc_import_lifecycle WHERE job_id='"+pendingJob.id+"'")[0].state,'interrupted')
+   assert.equal((await call('apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},oldGrant)).status,404,'the unconsumed old Business grant cannot execute restored work')
+   assert.equal((await m.request('/api/operator/import/apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},oldCookie,{'X-Import-Source':'pagerduty'})).status,401,'restored sessions grant no authority')
+   const fresh=await m.request('/api/operator/import/apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},cookie,{'X-Import-Source':'pagerduty'})
+   assert.ok([403,409].includes(fresh.status),'a new owner cannot reuse the old owner approval')
+   assert.deepEqual(sql('SELECT * FROM ik_jobs ORDER BY id'),before,'refused restored pending work advances no checkpoint or effects')
+  },
+ }
+}
+
+
+// isolated: part of this public journey.
+/** Managed setup/reset journeys always use committed source in a fresh clone.
+ * Neither an owner's installation nor the outer verify lock is test data. */
+export async function isolatedEntrypoint(url){
+ const root=dirname(dirname(fileURLToPath(url))),script=relative(root,fileURLToPath(url))
+ if(process.env.ONCALL_NATIVE_CLONE===script)return null
+ const temp=await mkdtemp(join(tmpdir(),'oncall-native-')),checkout=join(temp,'checkout')
+ let child
+ try{
+  execFileSync('git',['clone','--quiet','--local',root,checkout],{stdio:'ignore'})
+  execFileSync('git',['config','user.name','Run Edit Run fleet'],{cwd:checkout})
+  execFileSync('git',['config','user.email','fleet@runeditrun.com'],{cwd:checkout})
+  await symlink(join(root,'node_modules'),join(checkout,'node_modules'),'dir')
+  await cp(join(root,'dist'),join(checkout,'dist'),{recursive:true})
+  const sha=execFileSync('git',['rev-parse','HEAD'],{cwd:checkout,encoding:'utf8'}).trim()
+  console.log(`Fresh-clone ${script}: ${sha}`)
+  const env={...process.env,ONCALL_NATIVE_CLONE:script};delete env.RER_LOCAL_OPERATION
+  child=spawn(process.execPath,[...process.execArgv,script],{cwd:checkout,env,stdio:'inherit'})
+  return await new Promise(resolve=>{child.once('exit',code=>resolve(code??1));child.once('error',()=>resolve(1))})
+ }finally{
+  if(child&&child.exitCode===null){child.kill('SIGTERM');await new Promise(r=>child.once('exit',r))}
+  const evidence=process.env.ONCALL_BROWSER_EVIDENCE??join(dirname(root),'evidence/browser')
+  await mkdir(evidence,{recursive:true})
+  await cp(join(checkout,'evidence/browser'),evidence,{recursive:true}).catch(error=>{if(error.code!=='ENOENT')throw error})
+  await rm(temp,{recursive:true,force:true})
+ }
+}
+
+
+// managed: part of this public journey.
+export async function managedSeed(bindings={}){
+ const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
+ const origin=`http://127.0.0.1:${port}`,children=[],env={...process.env,CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false',...bindings}
+ const safe=s=>s.replace(/#rer-dev=[^\s"']+/g,'#rer-dev=[redacted]').replace(/\?token=[^\s"']+/g,'?token=[redacted]')
+ function spawnCommand(args){const child=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),...args],{env,stdio:['ignore','pipe','pipe']});children.push(child);let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c);return {child,output:()=>output}}
+ async function command(args,status=0){const run=spawnCommand(args),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));return run.output()}
+ async function start(){
+  const run=spawnCommand(['dev','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null)throw Error(safe(run.output()).slice(-1400));if(run.output().includes('RER_OPEN'))return;await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
+ // Serve the real Vite/Worker HTTP entry without a second process injecting cron
+ // requests. Transfer tests control trigger delivery explicitly while comparing
+ // exact snapshots; production scheduling is exercised by the automation journey.
+ async function startHttp(){
+  const key=await readDevKey(process.cwd()),child=spawn(process.execPath,['node_modules/vite/bin/vite.js','dev','--host','127.0.0.1','--port',String(port),'--strictPort'],{env:{...env,RER_DEV_ORIGIN:origin,RER_DEV_KEY:key,RER_DEV_IDENTITY:'on'},stdio:['ignore','pipe','pipe']});children.push(child);console.log('Owned transfer HTTP runtime PID',child.pid)
+  let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c)
+  for(let n=0;n<240;n++){
+   if(child.exitCode!==null)throw Error(safe(output).split(key).join('[redacted]').slice(-1400))
+   try{if((await fetch(origin+'/health')).ok)return}catch{}
+   await new Promise(r=>setTimeout(r,250))
+  }
+  throw Error('Transfer HTTP runtime readiness timeout')
+ }
+ const owner=async()=>{const {header}=await signInAs({origin,key:await readDevKey(process.cwd())});return header}
+ async function request(path,input,cookie,extraHeaders={}){const response=await fetch(origin+path,{method:input===undefined?'GET':'POST',redirect:'manual',headers:{origin,connection:'close','content-type':'application/json',...(cookie?{cookie}:{}),...extraHeaders},body:input===undefined?undefined:JSON.stringify(input)});const text=await response.text();let value;try{value=JSON.parse(text)}catch{value=text}return {status:response.status,value,cookie:response.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ')}}
+ async function close(){for(const child of children)if(child.exitCode===null){child.kill('SIGTERM');await new Promise(r=>child.once('exit',r))}}
+ return {port,origin,command,start,startHttp,owner,request,close}
+}
+
 
 const fetch=(url,input={})=>globalThis.fetch(url,{...input,headers:{...input.headers,connection:'close'}})
 
 const m=await managedSeed({INBOUND_EMAIL_DOMAIN:'inbound.example.test'}),ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
 const business=transferDoor(m)
-const statements=command=>JSON.parse(execFileSync(process.execPath,['node_modules/wrangler/bin/wrangler.js','d1','execute','DB','--local','--persist-to','.wrangler/state','--command',command,'--json'],{encoding:'utf8',env:{...process.env,CI:'true',WRANGLER_SEND_METRICS:'false'},stdio:['ignore','pipe','pipe']})).map(r=>r.results)
+const statements=command=>fixtureDatabase('.wrangler/state',command)
 const sql=command=>statements(command)[0]
 await mkdir('.rer/local',{recursive:true,mode:0o700});await mkdir('exports',{recursive:true,mode:0o700})
 const answers='.rer/local/transfer-answers.json',archive='exports/transfer-proof.rer',corrupt='exports/transfer-corrupt.rer',invalidRecords='exports/transfer-invalid-records.rer',later='exports/transfer-later.rer'
@@ -59,7 +167,31 @@ try{
  const bulk=ok(await req('/api/triage/bulk',{operationId:'portable-priority',action:'set-priority',items:[{id:incident.id,revision:responseIncident.revision}],priority:'P1',reason:'Preserve incident priority'}));assert.equal(bulk.results[0].ok,true)
  ok(await req('/api/triage/views',{name:'Open transfer work',query:{q:'authored',status:'open'}}))
  const emailPart=localPart();assert.equal((await req('/api/email/addresses',{id:'portable-email',name:'Nightly archive monitor',localPart:emailPart,service:'transfer',owner:member.id,mode:'custom',fallback:'quarantine',rules:recoveryRules()})).status,201)
- await m.close();execFileSync('pnpm',['exec','vite','build'],{stdio:'pipe',maxBuffer:32*1024*1024})
+ // The only phone journey: enter as the managed owner, read retained work,
+ // navigate by keyboard and reload without losing the installation's identity.
+ {
+  const {chromium}=await import('@playwright/test')
+  const browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH,args:['--no-sandbox']})
+  try {
+   const context=await browser.newContext({viewport:{width:390,height:1000}})
+   await context.addCookies(cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:m.origin}}))
+   const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message))
+   await page.goto(m.origin+'/incidents/'+encodeURIComponent(incident.id));await page.locator('.detail h1').waitFor()
+   await page.reload();await page.locator('.detail h1').waitFor()
+   assert.ok((await page.locator('.detail').innerText()).includes(incident.title))
+   await page.getByRole('button',{name:'Menu',exact:true}).press('Enter')
+   const menu=page.getByRole('dialog',{name:'Menu',exact:true})
+   await menu.locator('nav a[href="/on-call"]').press('Enter');await page.waitForURL(m.origin+'/on-call')
+   await page.locator('.oncall-frame').waitFor()
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'phone navigation and held data fit the viewport')
+   assert.deepEqual(errors,[])
+   const proof=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(proof,{recursive:true})
+   await page.screenshot({path:proof+'/managed-phone-390.png',fullPage:true})
+   await context.close()
+  }finally{await browser.close()}
+ }
+ await m.close()
+
  const emailWorker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{persistTo:'.wrangler/state'});try{await mail(emailWorker,emailPart,'FAILED: archive-db');await mail(emailWorker,emailPart,'Unknown archive mail');await mail(emailWorker,emailPart,'OK: archive-db')}finally{await emailWorker.close()}
  await m.start()
  assert.equal(ok(await req('/api/email')).samples.length,3)
@@ -292,7 +424,6 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  }
  await business.assertInactive(cookie,oldCookie,sql)
  console.log('OC-052 portable restore: complete import history preserved and restored pending Business execution refused')
- await business.screens(cookie)
  assert.equal((await req('/api/delivery',{})).status,409)
  // Erasing an imported person: a signed-out request and an unknown email are refused, the person leaves every table, and the archive made before the erasure is refused whole under the later journal.
  const emailAddress=ok(await req('/api/email')).addresses[0];ok(await req('/api/email/addresses/portable-email/erase',{revision:emailAddress.revision}));assert.equal(ok(await req('/api/email')).samples.length,0)

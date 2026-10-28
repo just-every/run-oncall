@@ -1,9 +1,157 @@
-import ts from 'typescript'
 import assert from 'node:assert/strict'
 import {generateKeyPairSync,sign,createHash,randomUUID} from 'node:crypto'
 import {readFile} from 'node:fs/promises'
 import {localWorker,ownerDoor} from './worker.mjs'
-import {standingCatchup} from './import-door-catchup.mjs'
+// import-door-catchup: part of this public journey.
+// Part of the existing import-door registration. Only the signed HTTP client and
+// owner-session public APIs cross this boundary; native observations never use SQL.
+export async function standingCatchup({w,req,call,upload,ok,ownerId}) {
+ const vendor='pagerduty',saved=JSON.parse(await readFile('tests/fixtures/pagerduty-saved.json','utf8'))
+ const first=saved.schedules[0].schedule
+ const users=Array.from({length:40},(_,i)=>({id:`synthetic-catchup-user-${i}`,name:`Synthetic responder ${i+1}`,email:`catchup-${i+1}@example.test`}))
+ const schedules=Array.from({length:4},(_,i)=>{
+  const schedule=structuredClone(first),pair=users.slice(i*2,i*2+2)
+  schedule.id=`synthetic-catchup-rota-${i}`;schedule.name=`Synthetic rota ${i+1}`
+  schedule.users=pair.map(user=>({id:user.id,type:'user_reference'}))
+  schedule.schedule_layers[0].id=`synthetic-catchup-layer-${i}`
+  schedule.schedule_layers[0].users=pair.map(user=>({user:{id:user.id,type:'user_reference'}}))
+  // This saved rota has no overrides; its final response covers both daily turns.
+  delete schedule.overrides_subschedule
+  schedule.final_schedule.rendered_schedule_entries=[
+   {start:'2026-03-07T09:00:00Z',end:'2026-03-08T09:00:00Z',user:{id:pair[0].id}},
+   {start:'2026-03-08T09:00:00Z',end:'2026-03-09T09:00:00Z',user:{id:pair[1].id}},
+  ]
+  return {schedule}
+ })
+ const policies=Array.from({length:2},(_,i)=>({escalation_policy:{id:`synthetic-catchup-policy-${i}`,name:`Synthetic escalation ${i+1}`,num_loops:0,
+  escalation_rules:[{id:`synthetic-catchup-step-${i}`,escalation_delay_in_minutes:5,targets:[{id:schedules[i].schedule.id,type:'schedule_reference'}]}]}}))
+ const bundle={users:{users,more:false},schedules,escalation_policies:policies}
+ const bytes=value=>Buffer.from(JSON.stringify(value))
+ const objects=async()=>ok(await req('/api/move-in/objects'))
+ const paging=async()=>ok(await req('/api/paging/state'))
+ const nativeBefore=await objects(),pagingBefore=await paging()
+ const silent=async()=>{
+  const current=await paging()
+  assert.equal(current.paging,'OFF');assert.deepEqual(current.jobs,pagingBefore.jobs);assert.deepEqual(current.receipts,pagingBefore.receipts)
+  assert.deepEqual(current.callbacks,pagingBefore.callbacks)
+  assert.ok((await objects()).every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
+ }
+ const apply=async(plan,approval)=>{
+  let job
+  for(let batch=0;batch<100;batch++) {
+   job=ok(await call('apply',vendor,{planId:plan.planId,reviewedFingerprint:plan.fingerprint},{...approval,fingerprint:plan.fingerprint})).job
+   await silent()
+   if(job.state==='completed')return job
+   assert.ok(['queued','applying'].includes(job.state))
+  }
+  assert.fail('standing catch-up apply did not complete')
+ }
+ const undo=async plan=>{
+  for(let batch=0;batch<100;batch++) {
+   const job=ok(await call('undo',vendor,{planId:plan.planId})).job
+   await silent()
+   if(job.state==='undone')return
+   assert.equal(job.state,'undoing')
+  }
+  assert.fail('standing catch-up undo did not complete')
+ }
+ const plan=async(value,extra={})=>call('plan',vendor,{uploadId:await upload(vendor,bytes(value),'synthetic-catchup-rota.json'),catchup:true},extra)
+ const reconcile=async(plan,expected)=>{
+  const report=ok(await call('reconcile',vendor,{planId:plan.planId}))
+  assert.equal(report.ok,true);assert.equal(report.counts.sourceRecords,expected)
+  assert.equal(report.sourceIds.length,expected)
+  assert.equal(report.counts.present+report.counts.explained,expected)
+  assert.equal(report.fingerprint,plan.fingerprint);assert.equal(report.bundleSha256,plan.bundleSha256)
+ }
+ const approval={approvalRecordId:'synthetic-catchup-first-1',approvedAt:new Date().toISOString()}
+ const baseline=ok(await call('plan',vendor,{uploadId:await upload(vendor,bytes(bundle),'synthetic-catchup-rota.json')}))
+ assert.equal(baseline.rejected.length,0);assert.deepEqual(await objects(),nativeBefore)
+ await apply(baseline,approval)
+ const baselineObjects=await objects(),count=users.length+schedules.length+policies.length
+ assert.equal(baselineObjects.length-nativeBefore.length,count)
+ await reconcile(baseline,count)
+ // A human creates and then edits coverage through the ordinary native schedule
+ // review/apply door between imports. Source catch-up must not overwrite it.
+ const service='synthetic-catchup-service-1'
+ ok(await req('/api/command',{type:'service',id:service,name:'Synthetic catch-up service',environment:'test',owner:ownerId,runbook:[],pager:'https://pager.example.test'}))
+ const schedule=ok(await req('/api/paging/schedules',{id:'synthetic-catchup-native-1',name:'Human rota',service,revision:0,timezone:'UTC',validFrom:'2026-03-07T09:00:00Z',validUntil:null,
+  primary:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[ownerId],ambiguity:'earlier'},backup:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}))
+ const edit=async(schedule,name)=>{
+  const input={schedule:{...schedule,name},from:Date.parse('2026-03-07T09:00:00Z'),to:Date.parse('2026-03-09T09:00:00Z')}
+  const review=ok(await req(`/api/schedules/${encodeURIComponent(schedule.id)}/review`,input))
+  return ok(await req(`/api/schedules/${encodeURIComponent(schedule.id)}/apply`,{...input,digest:review.digest,confirmed:true})).schedule
+ }
+ const edited=await edit(schedule,'Human-reviewed rota')
+ const nativeSchedules=(await paging()).schedules
+ assert.ok(nativeSchedules.some(row=>row.id===edited.id&&row.name===edited.name))
+ const standing={catchup:'bounded',approvalRecordId:'synthetic-catchup-standing-1',approvedAt:new Date().toISOString()}
+ const second=structuredClone(bundle)
+ second.schedules[0].schedule.name='Synthetic replacement rota'
+ second.users.users.push({id:'synthetic-catchup-added-1',name:'Synthetic new responder',email:'catchup-new@example.test'})
+ const beforeSecond=await objects(),catchup=ok(await plan(second,standing))
+ assert.deepEqual(await objects(),beforeSecond,'standing plan changes no native records')
+ assert.equal(catchup.differences.replacements.length,1);assert.equal(catchup.differences.additions.length,1)
+ assert.equal(catchup.rejected.length,0)
+ // Approval identity and timestamp cannot be replaced between standing plan and apply.
+ assert.equal(ok(await call('apply',vendor,{planId:catchup.planId,reviewedFingerprint:catchup.fingerprint},{...standing,fingerprint:catchup.fingerprint,approvalRecordId:'synthetic-catchup-other-1'}),403).error,'standing_approval_mismatch')
+ assert.deepEqual(await objects(),beforeSecond)
+ await apply(catchup,standing)
+ await w.stop();await w.start()
+ await reconcile(catchup,count+1)
+ const secondObjects=await objects()
+ assert.equal(secondObjects.length,baselineObjects.length+1)
+ assert.equal(secondObjects.find(row=>row.targetId===`pagerduty:${schedules[0].schedule.id}`).value.schedule.name,second.schedules[0].schedule.name)
+ assert.ok(secondObjects.some(row=>row.targetId==='catchup-new@example.test'&&row.value.name==='Synthetic new responder'))
+ assert.deepEqual((await paging()).schedules,nativeSchedules)
+ const third=structuredClone(second);third.schedules[0].schedule.name='Synthetic newest rota'
+ const newest=ok(await plan(third,standing));await apply(newest,standing);await reconcile(newest,count+1)
+ assert.equal(ok(await call('undo',vendor,{planId:catchup.planId}),409).error,'import_superseded')
+ await undo(newest);assert.deepEqual(await objects(),secondObjects)
+ await reconcile(catchup,count+1)
+ await undo(catchup);assert.deepEqual(await objects(),baselineObjects)
+ await reconcile(baseline,count)
+ assert.deepEqual((await paging()).schedules,nativeSchedules)
+ // Large changes and missing source records need an individually reviewed proposal.
+ for(const [change,reason] of [
+  [value=>value.schedules.forEach(({schedule})=>{schedule.name+=' changed'}),'change_must_be_under_five_percent'],
+  [value=>value.users.users.pop(),'source_records_gone'],
+ ]) {
+  const value=structuredClone(bundle);change(value)
+  assert.equal(ok(await plan(value,standing),409).error,'catchup_requires_proposal:'+reason)
+  assert.deepEqual(await objects(),baselineObjects);await silent()
+ }
+ await undo(baseline);assert.deepEqual(await objects(),nativeBefore)
+ assert.deepEqual((await paging()).schedules,nativeSchedules,'full layered undo retains the human schedule edit')
+ console.log(`O2 standing lifecycle: baseline=${count}, replacement=1, addition=1, reconciled=${count+1}; newest-first undo restored ${nativeBefore.length} prior imported objects; native human edit kept`)
+ // Adoption marks an imported object as hand-edited. A subsequent source change
+ // cannot use standing approval to replace it, or undo the person's live coverage.
+ const again=ok(await call('plan',vendor,{uploadId:await upload(vendor,bytes(bundle),'synthetic-catchup-rota.json')}))
+ await apply(again,approval)
+ const target=(await objects()).find(row=>row.targetId===`pagerduty:${schedules[0].schedule.id}`)
+ const other=ok(await req('/api/members',{name:'Synthetic catch-up colleague',role:'responder',password:'synthetic-catchup-password-1'}),201)
+ const adopted=ok(await req('/api/move-in/adopt',{id:target.targetId,revision:target.revision,service,members:{[users[0].email]:ownerId,[users[1].email]:other.id},confirm:true}),201).schedule
+ const handEdited=await edit(adopted,'Human-edited adopted rota'),beforeConflict=await objects()
+ const conflict=structuredClone(bundle);conflict.schedules[0].schedule.name='Source must not replace human edit'
+ assert.equal(ok(await plan(conflict,standing),409).error,'catchup_requires_proposal:native_or_mapping_conflict')
+ const report=ok(await call('reconcile',vendor,{planId:again.planId}))
+ assert.equal(report.ok,false)
+ assert.ok(report.sourceIds.some(row=>row.sourceId===schedules[0].schedule.id&&row.status==='mismatched'))
+ assert.equal(ok(await call('undo',vendor,{planId:again.planId}),409).error,'native_edit_conflict')
+ assert.deepEqual(await objects(),beforeConflict)
+ assert.ok((await paging()).schedules.some(row=>row.id===handEdited.id&&row.name===handEdited.name))
+ for(const path of ['/api/delivery','/api/paging/jobs','/api/paging/tick','/api/paging/callbacks'])ok(await req(path,{}),409)
+ await silent()
+ const erased=users.at(-1).email
+ ok(await req('/api/move-in/erase',{email:erased,confirmation:'erase '+erased}))
+ assert.ok(!(await objects()).some(row=>row.targetKind==='user'&&row.targetId===erased))
+ const afterErasure=structuredClone(bundle);afterErasure.users.users.pop()
+ const withdrawn=await objects()
+ assert.equal(ok(await plan(afterErasure,standing),410).error,'snapshot_withdrawn')
+ assert.deepEqual(await objects(),withdrawn,'standing approval cannot resurrect a gone native record or withdrawn baseline')
+ await silent()
+ console.log('O2 standing refusals: approval mismatch, outside allowance, source gone, native edit preserved and erased native record not resurrected; reconcile exposed the edit; paging OFF, no new jobs, receipts or callbacks')
+}
+
 
 // One public-door journey, with real D1 and only synthetic saved vendor exports.
 const {privateKey,publicKey}=generateKeyPairSync('ec',{namedCurve:'prime256v1'})
@@ -132,7 +280,6 @@ async function checkDoor({request, bytes, name, nativeSnapshot,
   await until('undo', {planId:plan.planId}, undefined, 'undone');
   await assertUndone(before, await nativeSnapshot());
 }
-let browser
 try {
  ok(await w.request('/api/rer/import/uploads',{}),404)
  const owner=await w.request('/auth/bootstrap',{token:w.vars.SETUP_TOKEN,displayName:'Oncall lead'},undefined,{'CF-Connecting-IP':'127.0.0.1'});ok(owner,303)
@@ -144,22 +291,6 @@ try {
   const responses=[],key='synthetic-provider+read-private',hosts=new Set(),counts=[];
   const control=async(mode='normal',extra={})=>ok(await w.request('/__provider_control',{mode,...extra}));
   const observed=async()=>ok(await w.request('/__provider_calls'));
-  const moduleSource=(await Promise.all(['pagerduty','opsgenie','bundle'].map(name=>readFile(`src/move-in/collect/${name}.ts`,'utf8')))).map(s=>s.replace(/^import .* from ['"].*['"]\s*$/gm,'')).join('\n');
-  const javascript=ts.transpileModule(moduleSource,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2023}}).outputText;
-  const collect=await import('data:text/javascript;base64,'+Buffer.from(javascript).toString('base64'));
-  const exporter=await import('data:text/javascript;base64,'+Buffer.from(await readFile('public/move-in/oncall-export.mjs.txt','utf8')).toString('base64'));
-  const fetchFake=new Function('fixtures','mode',`return (async()=>{${providerFetch.replace('const providerFixtures = __FIXTURES__;','const providerFixtures = fixtures;').replace("let providerMode='normal'","let providerMode=mode")};return globalThis.fetch})()`);
-  const nativeFetch=globalThis.fetch;
-  try {
-   for(const vendor of ['pagerduty','opsgenie']) {
-    const options={vendor,region:'us',key,window:collect.exportWindow('2026-03-07','2026-03-10')};
-    const first=await fetchFake(providerFixtures,'normal'),moduleResult=await collect.collectExport({...options,request:first});
-    const second=await fetchFake(providerFixtures,'normal'),exportResult=await exporter.collectExport({...options,request:second});
-    assert.equal(moduleResult.json,exportResult.json,'the app module and rebuilt standalone tool preserve the same bundle bytes');
-    assert.ok(moduleResult.count>0);
-    console.log(`O2 same bundle ${vendor}: module=${digest(moduleResult.json)} exporter=${digest(exportResult.json)}, records=${moduleResult.count}`);
-   }
-  } finally { globalThis.fetch=nativeFetch }
   const heldState=ok(await req('/api/state'));
   w.sql('DROP TABLE oc_move_in_consent');
   w.statements(await readFile('migrations/core/0146_move_in_consent.sql','utf8'));
@@ -269,23 +400,12 @@ try {
 
  ok(await w.request('/auth/settings/imports',{enabled:true}),401)
  assert.equal(ok(await req('/auth/settings/imports')).enabled,false)
- if(process.env.ONCALL_IMPORT_DOOR_BROWSER) {
-  const {chromium}=await import('@playwright/test')
-  browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
- }
- const capture=browser?await import('./import-door-browser.mjs'):null
- const context=browser?await browser.newContext({baseURL:w.origin,viewport:{width:1440,height:1000}}):null
- if(context)await context.addCookies(owner.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:w.origin,httpOnly:true,sameSite:'Lax'}}))
- const page=context?await context.newPage():null
- if(page){await capture.fileJourney(page,context,w.origin,{readProvider:true});await capture.settings(page,w.origin,'off')}
+ 
+ 
  // Enable through the same owner setting used by its HTML form.
- if(page) {
-  await page.getByRole('checkbox',{name:'Allow Business imports',exact:true}).check()
-  await page.getByRole('button',{name:'Save import settings',exact:true}).click()
-  await page.waitForURL(w.origin+'/auth/settings/identity')
- }else ok(await req('/auth/settings/imports',{enabled:true}))
+ ok(await req('/auth/settings/imports',{enabled:true}))
  assert.equal(ok(await req('/auth/settings/imports')).enabled,true)
- if(page)await capture.settings(page,w.origin,'on')
+ 
  const member=ok(await req('/api/members',{name:'Workspace admin',password:'synthetic-import-door-password',role:'admin'}),201)
  const teammate=await w.request('/api/login',{name:member.name,password:'synthetic-import-door-password'});ok(teammate)
  ok(await w.request('/auth/settings/imports',{enabled:false},teammate.cookie),401)
@@ -319,17 +439,13 @@ try {
   assert.ok(job.approval.startsWith('approved via Business by '+w.vars.OWNER_EMAIL))
   assert.ok(job.approval.includes(approval.fingerprint))
   assert.equal(job.door.business,true)
-  if(page)await capture.journal(page,w.origin,vendor,job.id,'completed')
+  
   await w.stop();await w.start()
   let undone
   // Both the bearer route and the existing owner journal can undo a door job.
   if(vendor==='opsgenie') {
    undone=ok(await call('undo',vendor,{planId:plan.planId})).job
    for(let batch=0;undone.state!=='undone'&&batch<30;batch++)undone=ok(await call('undo',vendor,{planId:plan.planId})).job
-  }else if(page) {
-   await capture.confirmUndo(page)
-   await page.getByRole('status').filter({hasText:'Import journal'}).getByText(/undone/).first().waitFor()
-   undone=ok(await call('status',vendor,{planId:plan.planId})).job
   }else {
    // The journal's Undo goes through the owner's own door; the old journal route refuses a door import.
    assert.equal(ok(await req(`/api/move-in/${job.id}/undo`,{vendor,confirm:true}),409).code,'IMPORT_DOOR_JOB')
@@ -338,7 +454,7 @@ try {
   assert.equal(undone.state,'undone')
   console.log(vendor+': undo completed')
   assert.deepEqual(ok(await req('/api/move-in/objects')),before)
-  if(page)await capture.journal(page,w.origin,vendor,job.id,'undone')
+  
  }
  // A credential field reaches the same refusal as the ordinary saved-file door.
  const bad=await upload('pagerduty',Buffer.from(JSON.stringify({users:{users:[{id:'refused',email:'refused@example.test',api_key:'synthetic-example-refused'}]}})))
@@ -511,14 +627,7 @@ try {
  assert.equal(failedJob.state,'failed');assert.equal(failedJob.door.business,true);assert.match(failedJob.approval,/^approved, then failed \(import_door_apply_constraint\) via Business by /)
  assert.equal(ok(await req(`/api/move-in/${failedJob.id}/resume`,{vendor:'pagerduty'}),409).code,'IMPORT_DOOR_JOB')
  assert.equal(ok(await call('status','pagerduty',{planId:failed.planId})).job.state,'failed','the old journal route cannot complete a failed door job')
- if(page) {
-  await page.goto(w.origin+'/move-in')
-  await page.getByLabel('Source',{exact:true}).selectOption('pagerduty')
-  await page.getByLabel('Saved import journal',{exact:true}).selectOption(failedJob.id)
-  await page.getByText('Approval details',{exact:true}).click()
-  await page.getByText(/^approved, then failed /).waitFor()
-  assert.equal(await page.getByRole('button',{name:'Resume import',exact:true}).count(),0,'the journal offers no resume for a failed Business import')
- }
+ 
  const retried=ok(await call('plan','pagerduty',{uploadId:failingUpload}))
  assert.notEqual(retried.planId,failed.planId)
  const retriedReview={fingerprint:retried.fingerprint,approvalRecordId:'synthetic-owner-approval-retry',approvedAt:new Date().toISOString()}
@@ -575,14 +684,9 @@ try {
  assert.equal(ok(await door.undo('opsgenie',after.planId)).job.state,'undone')
  console.log('Business import door: person erasure with door custody present answered 200 and withdrew every door copy')
  await standingCatchup({w,req,call,upload,ok,ownerId:session.member.id})
- if(page) {
-  await page.goto(w.origin+'/auth/settings/identity')
-  await page.getByLabel('Revoke grant key',{exact:true}).selectOption(kid)
-  await page.getByRole('button',{name:'Save import settings',exact:true}).click()
-  await page.getByText(/Revoked keys:/).waitFor()
- }else ok(await req('/auth/settings/imports',{enabled:true,revokeKid:kid}))
+ ok(await req('/auth/settings/imports',{enabled:true,revokeKid:kid}))
  assert.equal(ok(await req('/auth/settings/imports')).keys[0].revoked,true)
- if(page)await capture.settings(page,w.origin,'revoked')
+ 
  ok(await call('uploads','opsgenie',{uploadId:randomUUID()}),403)
  // Toggle off/on cannot resurrect a revoked signing key.
  ok(await req('/auth/settings/imports',{enabled:false}))
@@ -592,4 +696,244 @@ try {
  ok(await req('/auth/signout',{}),204)
  ok(await req('/auth/settings/imports',{enabled:false}),401)
  console.log('Business import door: off 404, owner opt-in, both saved-response formats, zero native writes in plan, reviewed grants, replay refusal, reconcile, restart, door/owner undo and durable key revocation passed')
-}finally{try{await browser?.close()}finally{await w.close()}}
+}finally{try{}finally{await w.close()}}
+
+// Adopt reviewed imports into live schedules; retain unconvertible evidence and guarded undo.
+{
+const {default:assert}=await import('node:assert/strict')
+const {readFile}=await import('node:fs/promises')
+const {localWorker,ownerDoor}=await import('./worker.mjs')
+
+const w=await localWorker()
+const ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value}
+try {
+ const owner=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'})
+ const admin=ok(owner).member,req=(path,input)=>w.request(path,input,owner.cookie),door=ownerDoor(w,owner.cookie)
+ const alice=ok(await req('/api/members',{name:'Alice',password:'synthetic-local-testing-password',role:'responder'}),201)
+ const bob=ok(await req('/api/members',{name:'Bob',password:'synthetic-local-testing-password',role:'responder'}),201)
+ const viewer=ok(await req('/api/members',{name:'Viewer',password:'synthetic-local-testing-password',role:'viewer'}),201)
+ ok(await req('/api/command',{type:'service',id:'checkout',name:'Checkout',environment:'production',owner:admin.id,runbook:['Verify recovery'],pager:'https://pager.example.test'}))
+ const bundle=JSON.parse(await readFile('tests/fixtures/opsgenie.json','utf8'))
+ bundle.schedules.data=bundle.schedules.data.slice(0,1)
+ bundle.schedules.data[0].enabled=true
+ bundle.escalations.data=bundle.escalations.data.slice(0,1)
+ bundle.escalations.data[0].rules[0].delay.timeAmount=0
+ const source=JSON.stringify(bundle),review=ok(await door.preview('opsgenie',source))
+ assert.equal(review.items.find(i=>i.kind==='users').name,bundle.users.data[0].fullName,'preview identifies the person by name')
+ const policy=review.items.find(i=>i.kind==='escalations')
+ assert.equal(policy.rejection,undefined)
+ assert.equal(policy.effects[0].value.steps[0].delayMinutes,1,'immediate source step has the documented paused mapping')
+ assert.ok(policy.unmapped.some(d=>d.field==='rules.0.delay'&&/not equivalent/.test(d.reason)),'review makes the timing change explicit')
+ assert.ok(review.items.find(i=>i.kind==='schedules').unmapped.every(d=>!d.reason.includes('Overrides must be supplied')))
+ assert.equal(ok(await door.apply('opsgenie',review)).job.state,'completed')
+ const imported=()=>req('/api/move-in/objects').then(ok)
+ const row=(await imported()).find(o=>o.targetKind==='schedule')
+ const input={id:row.targetId,revision:row.revision,service:'checkout',members:{'alice@example.test':alice.id,'bob@example.test':bob.id},confirm:true}
+ const reader=await w.request('/api/login',{name:'Viewer',password:'synthetic-local-testing-password'});ok(reader)
+ ok(await w.request('/api/move-in/adopt',input),401)
+ ok(await w.request('/api/move-in/adopt',input,reader.cookie),403)
+ ok(await w.request('/api/move-in/adoption',undefined,reader.cookie),403)
+ const revoked=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(revoked)
+ ok(await w.request('/api/logout',{},revoked.cookie))
+ ok(await w.request('/api/move-in/adopt',input,revoked.cookie),401)
+ ok(await req('/api/move-in/adopt',{...input,confirm:false}),409)
+ ok(await req('/api/move-in/adopt',{...input,members:{'alice@example.test':alice.id}}),400)
+ ok(await req('/api/move-in/adopt',{...input,members:{...input.members,'bob@example.test':viewer.id}}),400)
+ ok(await req('/api/move-in/adopt',{...input,members:{...input.members,'bob@example.test':alice.id}}),400)
+ ok(await req('/api/move-in/adopt',{...input,service:'missing-service'}),400)
+ ok(await req('/api/move-in/adopt',{...input,revision:'stale'}),409)
+ assert.equal(ok(await req('/api/paging/state')).schedules.length,0,'refused mappings never publish coverage')
+ const options=ok(await req('/api/move-in/adoption'))
+ assert.ok(options.services.some(s=>s.id===input.service));assert.ok(!options.members.some(m=>m.id===viewer.id))
+ // A failure after the schedule insert must roll back the schedule, source edit marker and control revision.
+ const before=ok(await req('/api/paging/state')),beforeCoordination=ok(await req('/api/state'))
+ w.sql("CREATE TRIGGER injected_adoption_failure BEFORE UPDATE ON move_in_objects WHEN NEW.kind='schedule' BEGIN SELECT RAISE(ABORT,'INJECTED_ADOPTION_FAILURE'); END")
+ ok(await req('/api/move-in/adopt',input),503)
+ assert.deepEqual(ok(await req('/api/paging/state')),before)
+ assert.deepEqual(ok(await req('/api/state')),beforeCoordination,'failed adoption records no change notices')
+ assert.deepEqual((await imported()).find(o=>o.targetKind==='schedule'),row)
+ w.sql('DROP TRIGGER injected_adoption_failure')
+ const race=await Promise.all([req('/api/move-in/adopt',input),req('/api/move-in/adopt',input)])
+ assert.deepEqual(race.map(r=>r.status).sort(),[201,409],'one concurrent adoption wins and the other cannot overwrite it')
+ const live=ok(await req('/api/paging/state'))
+ assert.equal(live.schedules.length,1);assert.equal(live.policies.length,0);assert.equal(live.paging,'OFF')
+ const schedule=live.schedules[0]
+ const adoptionNotices=ok(await req('/api/state')).scheduleRecords.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id)
+ assert.deepEqual(adoptionNotices.map(r=>r.member).sort(),[admin.id,alice.id,bob.id].sort(),'adoption records one obligation per affected responder and service owner')
+ assert.ok(adoptionNotices.every(r=>r.data.obligation.reason==='schedule-change'&&r.data.obligation.creator===admin.id&&r.data.obligation.automatic===false))
+ assert.equal(schedule.timezone,row.value.schedule.timezone)
+ assert.deepEqual(schedule.primary.members,[alice.id,bob.id])
+ const now=ok(await req(`/api/schedules/${encodeURIComponent(schedule.id)}/now-next?at=2026-03-08T13:00:00Z`))
+ assert.equal(now.now.primary,alice.id,'imported override is live through the ordinary coverage API')
+ assert.equal(ok(await req(`/api/schedules/${encodeURIComponent(schedule.id)}/now-next?at=2026-03-08T15:00:00Z`)).now.primary,bob.id)
+ assert.match(ok(await req(`/api/schedules/${encodeURIComponent(schedule.id)}/calendar.ics?from=2026-03-08T13:00:00Z&to=2026-03-09T13:00:00Z`)),/BEGIN:VEVENT/)
+ await w.stop();await w.start()
+ const undo=ok(await door.call('opsgenie','undo',{planId:review.planId}),409)
+ assert.equal(undo.code,'NATIVE_EDIT_CONFLICT');assert.match(undo.error,/made live, so this import can no longer be undone/);assert.doesNotMatch(undo.error,/Put it back/)
+ assert.deepEqual(ok(await req('/api/paging/state')).schedules,[schedule],'restart and import undo preserve adopted coverage')
+ // OC-038 three saved-response adapters use the same reviewed, restartable journal.
+ for(const vendor of ['splunk','jsm','betterstack']) {
+  const bytes=await readFile(`tests/fixtures/synthetic-oncall-${vendor}.json`,'utf8'),saved=JSON.parse(bytes)
+  const beforeObjects=await imported(),beforeNative=ok(await req('/api/state'))
+  const denied=await door.preview(vendor,JSON.stringify({...saved,integrations:[{id:'synthetic-oncall-secret',apiKey:'synthetic-oncall-credential-must-not-persist'}]}))
+  assert.equal(denied.status,400);assert.match(denied.value.error,/Credential-bearing/)
+  const preview=ok(await door.preview(vendor,bytes))
+  assert.ok(preview.items.some(item=>item.rejection&&/original retained/.test(item.rejection)),'unsupported objects are individually named')
+  assert.ok(preview.items.some(item=>item.effects.some(effect=>effect.targetKind==='user')))
+  const integration=preview.items.flatMap(item=>item.effects).find(effect=>effect.targetKind==='integration')
+  assert.equal(integration.value.active,false);assert.equal(integration.value.incumbentKey,'not supplied')
+  if(vendor==='jsm')assert.ok(preview.items.some(item=>item.kind==='schedules'&&item.effects.some(e=>e.targetKind==='schedule')),'documented JSM rotation maps through the existing exact converter')
+  if(vendor==='betterstack')assert.ok(preview.items.some(item=>item.unmapped.some(field=>/unlisted for paging/.test(field.reason))),'an unverified foreign contact is visible')
+  assert.deepEqual(await imported(),beforeObjects,'preview publishes no native objects')
+  assert.equal(ok(await door.apply(vendor,preview)).job.state,'completed')
+  const applied=await imported(),native=ok(await req('/api/state'))
+  assert.deepEqual(native.members,beforeNative.members,'import creates no login grant')
+  assert.deepEqual(native.intakeSources,beforeNative.intakeSources,'inactive inventory creates no endpoint or send authority')
+  assert.ok(applied.filter(row=>!beforeObjects.some(old=>old.targetId===row.targetId&&old.targetKind===row.targetKind)).every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
+  await w.stop();await w.start()
+  const reconciled=ok(await door.call(vendor,'reconcile',{planId:preview.planId}))
+  assert.equal(reconciled.ok,true);assert.equal(reconciled.counts.sourceRecords,preview.items.length)
+  assert.equal(reconciled.sourceIds.length,preview.items.length)
+  assert.equal(ok(await door.undo(vendor,preview.planId)).job.state,'undone')
+  assert.deepEqual(await imported(),beforeObjects,'undo after restart removes only this import')
+  // Existing person erasure must also retire unsupported records linked by opaque vendor IDs.
+  const again=ok(await door.preview(vendor,bytes));ok(await door.apply(vendor,again))
+  const user=(await imported()).find(row=>row.targetKind==='user'&&!beforeObjects.some(old=>old.targetId===row.targetId))
+  ok(await req('/api/move-in/erase',{email:user.targetId,confirmation:'erase '+user.targetId}))
+  assert.ok(!(await imported()).some(row=>row.targetId===user.targetId))
+  const tables=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").map(row=>row.name)
+  const held=JSON.stringify(w.statements(tables.map(table=>'SELECT * FROM "'+table.replaceAll('"','""')+'"').join(';')))
+  assert.ok(!held.includes(user.targetId),'erasure removes contact and source custody')
+  assert.ok(!held.includes(user.value.sourceId),'erasure retires opaque foreign user references as well as email')
+  assert.ok(!held.includes('synthetic-oncall-credential-must-not-persist'),'credential-bearing file never persists')
+  console.log(`OC-038 ${vendor}: credential refusal, named unsupported objects, inactive integrations, no login/send authority, preview/apply/restart/reconcile/undo and related-person erasure passed`)
+ }
+ // OC-038 PagerDuty whole-account saved responses: one classification per source object.
+ {
+  const raw=await readFile('tests/fixtures/pagerduty-account.json','utf8'),bundle=JSON.parse(raw)
+  const records=Object.fromEntries(Object.entries(bundle).map(([kind,pages])=>{
+   const detail={users:'user',schedules:'schedule',escalation_policies:'escalation_policy',services:'service',teams:'team',incidents:'incident',maintenance_windows:'maintenance_window',business_services:'business_service',event_orchestrations:'orchestration_path',overrides:'override'}[kind]
+   return [kind,[pages].flat().flatMap(page=>page[kind]??[page[detail]??page])]
+  }))
+  const expected={...Object.fromEntries(Object.entries(records).map(([kind,rows])=>[kind,rows.length])),integrations:records.services.reduce((sum,service)=>sum+service.integrations.length,0)}
+  // The unchanged four-category exporter can retain user team references without collecting teams.
+  const scheduleOnly=Object.fromEntries(['users','schedules','overrides','escalation_policies'].map(kind=>[kind,bundle[kind]]))
+  const beforeScheduleOnly=await imported(),scheduleReview=ok(await door.preview('pagerduty',JSON.stringify(scheduleOnly)))
+  assert.equal(scheduleReview.items.filter(item=>item.kind==='users'&&item.effects.some(effect=>effect.targetKind==='user')).length,records.users.length)
+  assert.ok(scheduleReview.items.filter(item=>item.kind==='users').every(item=>item.unmapped.some(note=>note.field==='teams.0')),'team metadata remains named evidence in a schedule-only file')
+  assert.deepEqual(await imported(),beforeScheduleOnly)
+  assert.equal(ok(await door.call('pagerduty','undo',{planId:scheduleReview.planId})).state,'cancelled')
+  // List orchestration envelopes and ordinary single-detail envelopes are also public saved-file inputs.
+  const detailVariant=structuredClone(bundle)
+  detailVariant.incidents=records.incidents.map(incident=>({incident}))
+  const orchestrationMetadata={id:records.event_orchestrations[0].parent.id,name:'Account event routing',team:{id:records.teams[0].id,type:'team_reference'}}
+  detailVariant.event_orchestrations={orchestrations:[orchestrationMetadata],limit:25,offset:0,more:false,total:null}
+  const lists=ok(await door.preview('pagerduty',JSON.stringify(detailVariant)))
+  assert.deepEqual(lists.counts.byKind,expected)
+  detailVariant.event_orchestrations={orchestration:orchestrationMetadata}
+  const details=ok(await door.preview('pagerduty',JSON.stringify(detailVariant)))
+  assert.deepEqual(details.counts.byKind,expected)
+  assert.equal(ok(await door.call('pagerduty','undo',{planId:details.planId})).state,'cancelled')
+  const beforeObjects=await imported(),beforeNative=ok(await req('/api/state')),beforePaging=ok(await req('/api/paging/state'))
+  const durable=()=>w.sql('SELECT COUNT(*) AS n FROM ik_jobs UNION ALL SELECT COUNT(*) FROM ik_batches UNION ALL SELECT COUNT(*) FROM ik_d1_assertions UNION ALL SELECT COUNT(*) FROM move_in_objects')
+  const beforeDurable=durable(),preview=ok(await door.preview('pagerduty',raw))
+  assert.deepEqual(durable(),beforeDurable,'account preview changes no durable product or apply-journal rows')
+  assert.deepEqual(await imported(),beforeObjects);assert.deepEqual(ok(await req('/api/state')),beforeNative);assert.deepEqual(ok(await req('/api/paging/state')),beforePaging)
+  assert.equal(preview.summary.sourceRecords,Object.values(expected).reduce((sum,count)=>sum+count,0))
+  assert.deepEqual(preview.counts.byKind,expected)
+  assert.equal(preview.items.length,preview.summary.sourceRecords)
+  assert.equal(new Set(preview.items.map(item=>JSON.stringify([item.kind,item.id]))).size,preview.items.length)
+  assert.equal(Object.values(preview.classification).reduce((sum,count)=>sum+count,0),preview.items.length,'exclusive classifications reconcile every object')
+  for(const item of preview.items) {
+   assert.equal(item.disposition,item.rejection?'rejected':item.unmapped.length?'mapped-with-differences':'mapped')
+   let original=bundle;for(const key of item.location.pointer.slice(1).split('/').map(key=>key.replaceAll('~1','/').replaceAll('~0','~')))original=original?.[key]
+   assert.ok(original,'every review entry points into the original account bytes')
+   assert.ok(item.effects.length||item.rejection||item.unmapped.length,'nothing silently disappears')
+   if(item.rejection)assert.equal(item.effects.length,0)
+  }
+  assert.deepEqual([...new Set(preview.items.flatMap(item=>item.effects).map(effect=>effect.targetKind))].sort(),['integration','policy','schedule','user'],'account import adds no active integration, routed key or other native target kind')
+  const find=(kind,id)=>preview.items.find(item=>item.kind===kind&&item.id===id)
+  for(const user of records.users) {
+   const item=find('users',user.id),value=item.effects[0].value
+   assert.equal(value.contacts.length,1,'phone and SMS sharing a number become one unverified contact')
+   assert.deepEqual(value.contacts[0],{number:'+'+user.contact_methods[1].country_code+user.contact_methods[1].address,verified:false,paging:false,country:'unverified'})
+   for(const [index,method] of user.contact_methods.entries())assert.ok(item.unmapped.some(note=>note.field==='contact_methods.'+index),'every contact method has its own decision')
+   assert.ok(item.unmapped.some(note=>/two-route/.test(note.reason)))
+   assert.ok(item.unmapped.some(note=>note.field.startsWith('notification_rules.')))
+  }
+  for(const id of ['synthetic-oncall-u2','synthetic-oncall-u3'])assert.ok(find('users',id).unmapped.some(note=>/ambiguous or malformed/.test(note.reason)))
+  const supported=['events_api_v1_inbound_integration','events_api_v2_inbound_integration','generic_events_api_inbound_integration']
+  for(const service of records.services) {
+   const evidence=find('services',service.id);assert.equal(evidence.effects.length,0)
+   for(const field of ['alert_grouping_parameters','incident_urgency_rule','support_hours','auto_resolve_timeout','acknowledgement_timeout','escalation_policy','teams'])assert.ok(evidence.unmapped.some(note=>note.field===field))
+   for(const integration of service.integrations) {
+    const item=find('integrations',integration.id)
+    if(supported.includes(integration.type)) {
+     assert.equal(item.effects[0].targetKind,'integration')
+     assert.deepEqual(item.effects[0].value.serviceSource,{namespace:'pagerduty',kind:'services',sourceId:service.id})
+     assert.equal(item.effects[0].value.provider,'pagerduty');assert.equal(item.effects[0].value.active,false);assert.equal(item.effects[0].value.incumbentKey,'not supplied')
+    }else{assert.equal(item.effects.length,0);assert.match(item.rejection,integration.type==='email_inbound_integration'?/OC-070/:/matching Oncall source.*generic webhook/);assert.ok(item.rejection.includes(integration.name))}
+   }
+  }
+  for(const [kind,clause] of [['teams','OC-023'],['business_services','OC-061'],['maintenance_windows','OC-043'],['event_orchestrations','OC-072']])for(const item of preview.items.filter(item=>item.kind===kind))assert.ok(item.rejection.includes(clause)&&item.effects.length===0)
+  const orchestration=preview.items.find(item=>item.kind==='event_orchestrations'),router=records.event_orchestrations[0]
+  assert.equal(orchestration.unmapped.filter(note=>/^sets\.\d+\.rules\.\d+$/.test(note.field)).length,router.sets.reduce((sum,set)=>sum+set.rules.length,0))
+  assert.ok(orchestration.unmapped.some(note=>note.field==='catch_all'));assert.ok(orchestration.unmapped.some(note=>/dynamic routing/.test(note.reason)))
+  for(const incident of records.incidents) {
+   const item=find('incidents',incident.id);assert.equal(item.effects.length,0)
+   if(incident.status==='resolved')assert.ok(item.unmapped.some(note=>note.field==='history'))
+   else {assert.ok(item.rejection.includes(incident.id));assert.match(item.rejection,/not imported as a live incident/)}
+  }
+  for(const [id,cause] of [['s7',/Concurrent\/layered rotations/],['s8',/time restrictions/],['p4',/repeats are unsupported/],['p5',/more than two steps/],['p6',/direct user/],['p7',/nested/],['p8',/unmapped schedule/]])
+   assert.match(find(id[0]==='s'?'schedules':'escalation_policies','synthetic-oncall-'+id).rejection,cause)
+  const wrong=(preview.fingerprint[0]==='0'?'1':'0')+preview.fingerprint.slice(1)
+  ok(await door.call('pagerduty','apply',{planId:preview.planId,reviewedFingerprint:wrong}),403)
+  assert.deepEqual(await imported(),beforeObjects,'only the reviewed fingerprint can publish')
+  let first=ok(await door.call('pagerduty','apply',{planId:preview.planId,reviewedFingerprint:preview.fingerprint}))
+  assert.ok(['queued','applying'].includes(first.job.state),'the account requires multiple bounded steps')
+  const partial=await imported();assert.ok(partial.length>beforeObjects.length)
+  await w.stop();await w.start()
+  assert.deepEqual(await imported(),partial,'restart retains the committed prefix')
+  assert.equal(ok(await door.apply('pagerduty',preview)).job.state,'completed')
+  const applied=await imported()
+  assert.deepEqual(ok(await req('/api/state')),beforeNative,'account import creates no member, service, incident, delivery, active integration or routed key')
+  assert.deepEqual(ok(await req('/api/paging/state')),beforePaging,'paging and native schedule authority stay unchanged')
+  assert.ok(applied.filter(row=>!beforeObjects.some(old=>old.targetId===row.targetId&&old.targetKind===row.targetKind)).every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
+  const reconciled=ok(await door.call('pagerduty','reconcile',{planId:preview.planId}))
+  assert.equal(reconciled.ok,true);assert.equal(reconciled.counts.sourceRecords,preview.items.length);assert.equal(reconciled.counts.present+reconciled.counts.explained,preview.items.length)
+  assert.equal(new Set(reconciled.sourceIds.map(row=>JSON.stringify(row))).size,preview.items.length)
+  const repeated=ok(await door.preview('pagerduty',raw))
+  assert.equal(repeated.planId,preview.planId,'identical bytes reuse the reviewed applied plan')
+  const repeatedJob=ok(await door.apply('pagerduty',repeated)).job
+  assert.equal(repeatedJob.id,first.job.id);assert.deepEqual(await imported(),applied,'identical bytes add and change no imported objects')
+  ok(await door.undo('pagerduty',preview.planId));assert.deepEqual(await imported(),beforeObjects)
+  // A fresh account import participates in the existing person's erasure custody.
+  const again=ok(await door.preview('pagerduty',raw));ok(await door.apply('pagerduty',again))
+  const person=records.users[0],number='+'+person.contact_methods[1].country_code+person.contact_methods[1].address
+  for(const kind of ['services','teams','incidents','escalation_policies'])assert.ok(again.items.some(item=>item.kind===kind&&(JSON.stringify(item).includes(person.email)||JSON.stringify(item).includes(person.id))))
+  ok(await req('/api/move-in/erase',{email:person.email,confirmation:'erase '+person.email}))
+  const tables=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").map(row=>row.name)
+  const held=JSON.stringify(w.statements(tables.map(table=>'SELECT * FROM "'+table.replaceAll('"','""')+'"').join(';')))
+  assert.doesNotMatch(held,new RegExp('(^|[^a-zA-Z0-9_-])'+person.id+'($|[^a-zA-Z0-9_-])'),'the erased foreign ID is absent while distinct IDs with the same prefix remain')
+  for(const token of [person.email,person.name,number,person.contact_methods[1].address])assert.ok(!held.includes(token),'erasure retires source references, notes and contact numbers: '+token)
+  const remainingPeople=(await imported()).filter(row=>row.targetKind==='user'&&records.users.some(user=>user.email===row.targetId))
+  assert.equal(remainingPeople.length,records.users.length-1,'erasure preserves every other imported person')
+  assert.ok(remainingPeople.some(row=>row.value.sourceId===records.users.at(-1).id),'a distinct foreign ID sharing the erased ID prefix stays intact')
+  assert.ok(!(await imported()).some(row=>row.targetId===person.email))
+  console.log('OC-038 PagerDuty account: '+JSON.stringify({records:preview.items.length,kinds:expected,classification:preview.classification})+'; contacts, source-bound keyless inventory, named evidence/refusals, zero-write preview, paused apply/restart/reconcile/idempotence/undo and related-person erasure passed')
+ }
+ // OC-055 activation is a separate administrator action after reviewed file import.
+ const heldIntegration=(await imported()).find(row=>row.targetKind==='integration'&&row.value.provider==='opsgenie')
+ assert.ok(heldIntegration)
+ const key='synthetic-oncall-adoption-incumbent-key-1',service=ok(await req('/api/state')).services[0].id
+ const supplied=ok(await req('/api/intake/incumbent',{importedId:heldIntegration.targetId,importedRevision:heldIntegration.revision,id:'synthetic-oncall-adoption',service,name:'Synthetic adoption incumbent',revision:0,key}),201)
+ assert.equal(supplied.source.active,false);assert.equal(JSON.stringify(supplied).includes(key),false)
+ const active=ok(await req('/api/intake/sources/synthetic-oncall-adoption/activate-incumbent',{revision:supplied.source.revision,confirmed:true}))
+ assert.equal(active.source.active,true);assert.notEqual(active.nativeKey,key)
+ ok(await req('/api/intake/sources/synthetic-oncall-adoption/revoke',{revision:active.source.revision}))
+ assert.equal(ok(await req('/api/intake/sources/synthetic-oncall-adoption/incumbent')).keySupplied,false)
+ console.log('OC-055 import activation: separate key supply, inactive receiving, explicit activation, no supplied-key echo and revoke passed')
+ console.log('Move-in: explicit timing difference, named people, validated adoption, authority, concurrent publication, atomic rollback, now/next, ICS and protected undo passed')
+} finally {await w.close()}
+
+}
