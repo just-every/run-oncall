@@ -52,7 +52,9 @@ export default withDemo({
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
     const bindings=runtimeBindings(env);
-    const settings=await businessSettings(bindings).handle(received);if(settings)return settings;
+    if (['/api/rer/business-settings', '/rer-business-logo', '/rer-business.css'].includes(new URL(received.url).pathname)) {
+      const settings=await businessSettings(bindings).handle(received);if(settings)return settings;
+    }
     const linking=await businessPeopleResponse(bindings,received);if(linking)return linking;
     const agents=await oncallAgentDoor(bindings).handle(received);
     if(agents){
