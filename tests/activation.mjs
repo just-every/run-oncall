@@ -44,6 +44,7 @@ try {
  assert.equal(ok(await req('/api/schedules/daily/now-next?at=2026-03-08T15:00:00Z')).now.primary,null,'inactive member keeps its slot as a gap')
  ok(await req('/api/command',{type:'member',id:b.id,active:true,role:'responder'}))
  ok(await req('/api/paging/policies',{service:'checkout',scheduleId:'daily',revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}))
+ // OC-024 layer, holiday, PTO and long-range doors run in scheduleCoordination above.
  // OC-024 reviewed schedule changes bind the full proposal and coverage to the revision.
  const reviewFrom=Date.parse('2026-10-24T00:00:00Z'),reviewTo=Date.parse('2026-11-09T00:00:00Z')
  const reviewBase=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-1',name:'Reviewed multi-zone rota',primary:{...schedule.primary,members:[a.id]},backup:{...schedule.backup,members:[b.id]}}))

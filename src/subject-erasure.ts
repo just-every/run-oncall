@@ -180,6 +180,16 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    for(const change of personalChanges){const digest=await changeErasureIdentity(change.source,change.eventId);(state.erasureFences??=[]).push({id:digest,epoch:0});identities.push(change.id);for(const source of state.changeSources??[])if(source.lastAccepted?.id===change.id)delete source.lastAccepted}
    remove('changes','oc_changes',change=>personalChanges.some(row=>row.id===change.id));remember('oc_change_sources')
    await fence('login',oldName.toLowerCase())
+   const pagingControl=await db.prepare('SELECT revision FROM paging_control WHERE id=1').first<{revision:number}>()
+   let ptoChanged=false
+   for(const row of (await db.prepare('SELECT id,data FROM paging_schedules').all<{id:string;data:string}>()).results){
+    const schedule=validateSchedule(JSON.parse(row.data))
+    if(schedule.pto?.some(entry=>entry.member===id)){
+     schedule.pto=schedule.pto.map(entry=>entry.member===id?{...entry,member:null}:entry);schedule.revision++;updated.paging_schedules=(updated.paging_schedules??0)+1
+     statements.push(guardStatement(db,'EXISTS(SELECT 1 FROM paging_schedules WHERE id=? AND data=?)',row.id,row.data),db.prepare('UPDATE paging_schedules SET data=?,revision=? WHERE id=?').bind(JSON.stringify(schedule),schedule.revision,row.id));ptoChanged=true
+    }
+   }
+   if(ptoChanged){remember('paging_schedules');remember('paging_control');statements.push(guardStatement(db,'EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',pagingControl!.revision),db.prepare('UPDATE paging_control SET revision=revision+1 WHERE id=1'))}
    member.name='Erased member';member.active=false;member.erased=true;remember('oc_members')
    for(const entry of state.audit)if(entry.kind==='member')entry.text=redact(entry.text)
    remember('oc_audit')

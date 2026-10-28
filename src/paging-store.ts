@@ -41,8 +41,18 @@ const gate='EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND write_token=?)'
 export type Mutation = (token:string)=>D1PreparedStatement[]
 export type PagingAuthority = {digest:string;member:string}
 export async function commitPaging(db:D1Database,s:PagingSnapshot,archive:PagingArchive,mutation:Mutation,authority?:PagingAuthority,options:{saveWorkspace?:boolean;scheduleChange?:boolean}={}) {
+  const author=s.workspace.members.find(member=>member.id===authority?.member&&member.active)
+  for(const schedule of archive.schedules){
+    const prior=s.archive.schedules.find(old=>old.id===schedule.id)
+    if(canonical(schedule.companyDates??[])!==canonical(prior?.companyDates??[])&&author?.role!=='admin')fail('Only an administrator can author company dates',403)
+    if(author?.role!=='admin'&&schedule.pto?.some(entry=>!prior?.pto?.some(old=>old.id===entry.id)&&entry.member!==author?.id))fail('Only an administrator can record another member’s PTO',403)
+  }
   bound(archive)
-  if(options.scheduleChange)scheduleChanges(s.workspace,s.archive.schedules,archive.schedules,authority?.member)
+  if(options.scheduleChange){
+    // This recipient projection never replaces persisted rotation slots.
+    const recipients=(schedule:Schedule):Schedule=>({...schedule,primary:{...schedule.primary,members:[...schedule.primary.members,...(schedule.layers??[]).flatMap(layer=>layer.rotation.members),...(schedule.pto??[]).flatMap(entry=>entry.member===null?[]:[entry.member])]}})
+    scheduleChanges(s.workspace,s.archive.schedules.map(recipients),archive.schedules.map(recipients),authority?.member)
+  }
   if(options.saveWorkspace||options.scheduleChange)checkWorkspaceSize(s.workspace)
   const token=crypto.randomUUID()
   const result=await db.batch([

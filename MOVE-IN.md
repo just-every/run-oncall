@@ -80,8 +80,8 @@ password session cannot change the installation owner's setting.
 
 Business uses the same import door as the move-in screen, under the same server-owned installation,
 issuer, owner email and ES256 key ring configured for owner-claim. Oncall keeps
-one server-owned allow-list of import namespaces, one per vendor: `opsgenie`
-and `pagerduty` (`importSource` in `src/move-in/door.ts`), shared with the owner's mount in `src/move-in/owner-door.ts`. Each grant's namespace
+one server-owned allow-list of import namespaces, one per vendor: `pagerduty`, `opsgenie`, `splunk`, `jsm`
+and `betterstack` (`importSource` in `src/move-in/door.ts`), shared with the owner's mount in `src/move-in/owner-door.ts`. Each grant's namespace
 is resolved through it after the grant is verified and before anything is
 written: a listed namespace is parsed by that vendor's own parser, and any other
 is refused with 403 `unknown_import_source`. Settings, lineage and history are
@@ -90,7 +90,7 @@ or changes the owner-claim installation id. Upload the exact saved-response JSON
 export described above, using the door's checksummed chunks. Planning runs the
 same credential rejection, response parsing and whole-bundle compatibility
 mapping as the manual importer, with the same 512 KiB / 500 record limits, and
-writes no native objects. It never activates paging, sign-in or delivery.
+writes no native objects. Upload custody, plan snapshots and grant/bookkeeping rows are retained; zero native-object writes does not mean zero storage writes. It never activates paging, sign-in or delivery.
 
 The sequence is upload → plan → owner approval of the fingerprint → apply →
 reconcile → undo. Each request needs a fresh, short-lived action grant. Apply
@@ -101,6 +101,27 @@ the relevant source and import to see “approved via Business by … at …,
 fingerprint …” (an administrator's own import reads “approved by …”) and use the existing **Undo this import** control. A Business import the door declared failed offers no resume; Business plans it again. Undo preserves
 native edits. Key revocation stops Business access; the owner's journal and Undo
 remain available. [Base door protocol](src/modules/import-kit/src/door/README.md).
+
+A later complete bundle is a catch-up against the applied head. A signed bounded
+standing approval may authorize replacements and additions only while fewer than
+five percent of the baseline's source records change, the baseline is nonempty,
+and no source is gone or changed record is rejected, unmapped or in conflict.
+Plan and apply bind the same standing approval identity/time; each apply still
+binds its planned fingerprint. Larger changes, a missing source record, or a
+changed imported target need a new proposal. The door preserves human edits;
+native reconciliation names mismatches. Undo the newest import first, then its
+predecessor: replacements restore the preceding imported values, additions go,
+and unrelated native schedule edits survive. An adopted schedule is a native
+edit, so strict import undo refuses it rather than removing live coverage.
+
+The existing signed-door journey includes synthetic saved PagerDuty users,
+schedule layers and escalation policies, a two-record catch-up, restart,
+reconcile, layered undo and refusal cases with paging jobs/receipts/callbacks
+unchanged. It is not a real-export or hosted acceptance receipt. Five source
+names mean five supported saved-file adapters within their documented limits,
+not complete account migration or verified live-account shape. OC-038 remains
+partial and OC-074's live API reconciliation remains missing. Browser
+reconciliation is separately scoped; endpoint proof alone does not establish it.
 
 Erasing an imported person (above) with Business imports on or off also
 withdraws every retained door upload, chunk, plan snapshot and Business archive
