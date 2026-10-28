@@ -4,6 +4,7 @@ import {nativeSession} from '../native-session'
 import {changeHash} from '../changes/credentials'
 import type {Bindings} from '../auth.server'
 import type {Member} from '../family/response-operations/domain'
+import {auditIdentity} from '../audit-store'
 
 export function oncallPeople(env:Bindings):PeopleAdapter {
  const db=env.DB
@@ -58,7 +59,9 @@ export function oncallSettings(env:Bindings) {
 
 export const isNativeClient=(id:string|undefined):id is string=>!!id&&id.startsWith('oncall-api:')
 export const clientIdentity=(value:string)=>{const id=value.slice('oncall-api:'.length),split=id.lastIndexOf('@');return {id:id.slice(0,split),revision:Number(id.slice(split+1))}}
-export async function clientScopes(env:Bindings,p:Pick<Principal,'clientId'|'person'|'scopes'>):Promise<string[]> {
+export async function clientScopes(env:Bindings,p:Pick<Principal,'clientId'|'person'|'scopes'|'agent'>):Promise<string[]> {
+ const native=isNativeClient(p.clientId)
+ auditIdentity(env.DB,{actor:{kind:native?'api-client':'agent',id:p.agent.id},source:{kind:native?'api-client':'member',id:native?p.agent.id:p.person.id}})
  if(!isNativeClient(p.clientId))return env.RER_OWNER_CLAIM_ISSUER&&!await oncallPeople(env).businessMember!(p.person)?[]:p.scopes
  const key=clientIdentity(p.clientId)
  const row=await env.DB.prepare("SELECT c.data FROM oc_api_clients c JOIN oc_members m ON m.id=json_extract(c.data,'$.owner') JOIN oc_api_credentials k ON k.client=c.id WHERE c.id=? AND json_extract(c.data,'$.revision')=? AND json_extract(c.data,'$.active')=1 AND m.id=? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin'")

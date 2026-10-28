@@ -4,6 +4,7 @@ import {oncallTools} from './tools'
 import {oncallResources} from './resources'
 import {runtimeBindings,type Bindings} from '../auth.server'
 import {nativeSession} from '../native-session'
+import {admitted} from '../base/setup-state'
 export function oncallAgentDoor(original:Bindings) {
  const env=runtimeBindings(original)
  const fields=[env.RER_OWNER_CLAIM_ISSUER,env.RER_OWNER_CLAIM_INSTALLATION_ID,env.RER_OWNER_CLAIM_PUBLIC_KEYS]
@@ -71,5 +72,12 @@ export async function personChange(request:Request,response:Response,env:Binding
   if(path==='/api/automation/dispatch'&&output.id)uris.add('oncall://automation/outbox/'+output.id)
  }
  const person=await oncallPeople(env).person(session.member.id)
- if(person?.active)for(const uri of uris)if(!uri.includes('undefined'))await oncallAgentDoor(env).emit({type:'native.updated',uri,person,data:{revision:output.revision??output.schedule?.revision}})
+ // Use the origin admitted by the native HTTP door, including legacy native
+ // password installations. Agent admission still uses its configured origin.
+ const address=new URL(request.url)
+ if(person?.active&&uris.size) {
+  if(!admitted(request,env.AUTH_ORIGIN))throw Error('Native event origin is unavailable')
+  const door=oncallAgentDoor({...env,AUTH_ORIGIN:address.origin})
+  for(const uri of uris)if(!uri.includes('undefined'))await door.emit({type:'native.updated',uri,person,data:{revision:output.revision??output.schedule?.revision}})
+ }
 }

@@ -57,6 +57,19 @@ export async function agentAuthority(app) {
  const heldQueue=(await app.personJson('/api/automation')).outbox.find(o=>o.id===queue.id)
  check('ONCALL.custody.original-consent',revoked.status===401&&replacement.result?._meta?.['com.runeditrun/error']?.code==='operation_principal_changed'&&otherAgent.result?._meta?.['com.runeditrun/error']?.code==='operation_principal_changed'&&heldQueue.attempts===0&&JSON.stringify(heldQueue.history)===JSON.stringify(queue.history),'Queued work retains its original agent, sponsor and consent; replacement credentials cannot bypass revocation')
  await app.adopt(autonomousPolicy())
+ await app.adopt({...autonomousPolicy(),rules:[{id:'all',class:'*',do:'autonomous'},{id:'protected',class:'sensitive',do:'blocked'}]})
+ const protectedRead=await app.tool('oncall.access.read',{})
+ const witnessBefore=await app.tool('oncall.witness.read',{})
+ const privateTitle='Disposable privacy audit witness'
+ const privacyIncident=await app.tool('oncall.incidents.declare',{...declaration,title:privateTitle,idempotency_key:randomUUID()})
+ const witnessAfter=await app.tool('oncall.witness.read',{}),projection=witnessAfter.result?.structuredContent?.data
+ check('ONCALL.witness.protected-content',protectedRead.result?._meta?.['com.runeditrun/error']?.code==='policy_blocked'&&projection?.state?.records&&[owner.name,mara.name,privateTitle].every(text=>!JSON.stringify(projection).includes(text))&&JSON.stringify(witnessBefore.result?.structuredContent?.data?.state?.records?.incidents)!==JSON.stringify(projection.state.records.incidents),'The witness fingerprints actual changed objects while sensitive reads are blocked, without exposing protected native content')
+ const beforeErasure=await app.personJson('/api/state')
+ const erased=await app.tool('oncall.privacy.erase',{kind:'incident',id:privacyIncident.result.structuredContent.data.id,workspaceRevision:beforeErasure.revision,idempotency_key:randomUUID()})
+ assert.equal(erased.result?.structuredContent?.data?.state,'complete','the policy-authorized native erasure must complete')
+ const nativeAudit=(await app.personJson('/api/audit/export')).rows.findLast(row=>row.kind==='incident.erase'&&row.outcome==='accepted'&&row.workspaceBefore===beforeErasure.revision&&row.workspaceAfter===beforeErasure.revision+1)
+ check('ONCALL.audit.privacy-preparer',typeof nativeAudit?.actor==='string'&&typeof nativeAudit?.source==='string'&&nativeAudit.actor!==nativeAudit.source,'Native erasure audit must retain distinct agent-preparer and sponsor identities')
+ await app.adopt(autonomousPolicy())
  // Removing a Business mapping stops an already held native effect too.
  await app.adopt({...autonomousPolicy(),rules:[{id:'held-mapping',class:'*',do:'approval',approver:['role:owner'],wait:'PT1H'}]})
  const queuedText='Removed Business mapping must not execute this note'

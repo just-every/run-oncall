@@ -6,6 +6,19 @@ import {reviewSchedule} from '../schedule-coverage/review'
 import {eraseNativeSubject} from '../subject-erasure'
 import type {ToolDefinition,ToolContext,ClassAndFacts} from '../modules/agent-door/index.ts'
 import type {Bindings} from '../auth.server'
+import {canonical} from '../modules/agent-door/policy/document.ts'
+async function nativeWitness(env:Bindings,ctx:ToolContext,scope:string) {
+ const n=await nativeContext(env,ctx,scope,true),p=await pagingSnapshot(env.DB)
+ if(!env.SESSION_SECRET)return refuse('storage_unavailable')
+ const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(env.SESSION_SECRET),{name:'HMAC',hash:'SHA-256'},false,['sign'])
+ const fingerprint=async(value:unknown)=>Array.from(new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode('oncall-native-witness/v1\0'+canonical(value))))).map(b=>b.toString(16).padStart(2,'0')).join('')
+ const records=async(input:Record<string,unknown>)=>Object.fromEntries(await Promise.all(Object.entries(input).map(async([kind,value])=>[kind,Array.isArray(value)?await Promise.all(value.map(record=>fingerprint({kind,record}))):await fingerprint({kind,value})])))
+ const tables=['oc_agent_outbox','oc_agent_deadlines','oc_agent_transport','oc_api_credentials','oc_endpoint_credentials']
+ const custody=Object.fromEntries(await Promise.all(tables.map(async table=>[table,await Promise.all((await env.DB.prepare('SELECT * FROM '+table+' ORDER BY 1').all()).results.map(record=>fingerprint({table,record})))])))
+ // Keyed fingerprints cover every field without disclosing protected content
+ // or enabling dictionary guesses about people, intake or credential records.
+ return {state:{revision:n.state.revision,records:await records(n.state as unknown as Record<string,unknown>)},paging_records:await records(p.archive as unknown as Record<string,unknown>),custody,paging:'OFF'}
+}
 export function oncallTools(env:Bindings):ToolDefinition[] {
  return catalogue.map(definition=>{
   const [,area,verb]=definition.name.split('.')
@@ -89,8 +102,7 @@ export function oncallTools(env:Bindings):ToolDefinition[] {
     return nativeFailure(async()=>{
      let data:any
      if(area==='witness') {
-      const n=await nativeContext(env,ctx,base.scope,true),p=await pagingSnapshot(env.DB)
-      data={state:{...n.state,scheduleRecords:n.state.scheduleRecords?.map(r=>r.kind==='subscription'?{...r,data:{scope:r.data.scope,target:r.data.target}}:r)},schedules:p.archive.schedules,paging:'OFF'}
+      data=await nativeWitness(env,ctx,base.scope)
      } else if((area==='clients'||area==='endpoints')&&verb==='read') {
       const n=await nativeContext(env,ctx,base.scope,true)
       const record=(area==='clients'?n.state.apiClients:n.state.apiEndpoints)?.find(c=>c.id===args.id)

@@ -2036,7 +2036,7 @@
   {
     "name": "oncall.witness.read",
     "title": "Witness read",
-    "description": "Read-only native conformance witness: incidents/timelines/actions, coverage/history, people/client/endpoint grants and outbox, with credentials excluded and paging OFF.",
+    "description": "Read-only keyed fingerprints of native records, coverage/history, people/client/endpoint grants and outbox custody. Protected content and credentials are never returned; paging stays OFF.",
     "scope": "witness:read",
     "readOnly": true,
     "classes": [
