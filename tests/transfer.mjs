@@ -94,8 +94,9 @@ export async function managedSeed(bindings={}){
  const safe=s=>s.replace(/#rer-dev=[^\s"']+/g,'#rer-dev=[redacted]').replace(/\?token=[^\s"']+/g,'?token=[redacted]')
  function spawnCommand(args){const child=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),...args],{env,stdio:['ignore','pipe','pipe']});children.push(child);let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c);return {child,output:()=>output}}
  async function command(args,status=0){const run=spawnCommand(args),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));return run.output()}
+ let openLink
  async function start(){
-  const run=spawnCommand(['dev','--foreground','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null)throw Error(safe(run.output()).slice(-1400));if(run.output().includes('RER_OPEN'))return;await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
+  const run=spawnCommand(['dev','--foreground','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null)throw Error(safe(run.output()).slice(-1400));const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1];if(link){openLink=link;return;}await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
  async function preview(){
   const run=spawnCommand(['preview','--foreground','--port',String(port),'--idle-timeout','120','--non-interactive'])
   for(let n=0;n<600;n++){
@@ -124,7 +125,7 @@ export async function managedSeed(bindings={}){
  const owner=async()=>{const {header}=await signInAs({origin,key:await readDevKey(process.cwd())});return header}
  async function request(path,input,cookie,extraHeaders={}){const response=await fetch(origin+path,{method:input===undefined?'GET':'POST',redirect:'manual',headers:{origin,connection:'close','content-type':'application/json',...(cookie?{cookie}:{}),...extraHeaders},body:input===undefined?undefined:JSON.stringify(input)});const text=await response.text();let value;try{value=JSON.parse(text)}catch{value=text}return {status:response.status,value,cookie:response.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ')}}
  async function close(){for(const child of children)if(child.exitCode===null){child.kill('SIGTERM');await new Promise(r=>child.once('exit',r))}}
- return {port,origin,command,start,preview,startHttp,owner,request,close}
+ return {port,origin,command,start,preview,startHttp,owner,request,close,get openLink(){return openLink}}
 }
 
 
@@ -184,8 +185,18 @@ try{
   const browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH,args:['--no-sandbox']})
   try {
    const context=await browser.newContext({viewport:{width:390,height:1000}})
-   await context.addCookies(cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:m.origin}}))
+   const retiredName='oncall_session_'+new URL(m.origin).port
+   await context.addCookies([{name:retiredName,value:'retired-installation-session',url:m.origin}])
    const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message))
+   await page.goto(m.openLink)
+   await page.waitForURL(url=>url.pathname==='/setup'||url.pathname==='/on-call'&&!url.hash)
+   if(new URL(page.url()).pathname==='/setup'){
+    const confirm=page.getByRole('checkbox');if(await confirm.count()){await confirm.check();await page.getByRole('button',{name:'Finish setup'}).click()}
+   }
+   await page.locator('.oncall-frame').waitFor()
+   assert.equal((await context.cookies()).some(item=>item.name===retiredName),false,'managed owner entry clears the retired installation cookie')
+   const identity=await context.request.get(m.origin+'/api/session');assert.equal(identity.status(),200)
+   assert.equal((await identity.json()).member.id,member.id,'the CLI owner link reaches the same retained installation identity')
    await page.goto(m.origin+'/incidents/'+encodeURIComponent(incident.id));await page.locator('.detail h1').waitFor()
    await page.reload();await page.locator('.detail h1').waitFor()
    assert.ok((await page.locator('.detail').innerText()).includes(incident.title))
