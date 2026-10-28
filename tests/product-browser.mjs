@@ -45,11 +45,14 @@ async function incompleteIntakeBrowser(page,context) {
   await page.setViewportSize({width,height:1000})
   await openWorkspaceSection(page,'alerts')
   await focusWorkspace(page)
-  const routedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:title,exact:true,level:3})}),ownerCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:incompleteTitle,exact:true,level:3})})
-  await routedCard.getByText('Payments · production · active',{exact:true}).waitFor()
-  await ownerCard.getByText(/^Integration unrouted queue.*active$/).waitFor()
+  await page.locator('.alert-row').filter({hasText:title}).click();
+  const routedCard=page.getByRole('article',{name:'Alert details',exact:true});
+  await routedCard.getByText(/Payments · production · active/).waitFor();
+  await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:incompleteTitle}).click();
+  const ownerCard=page.getByRole('article',{name:'Alert details',exact:true});
+  await ownerCard.getByText(/Integration unrouted queue.*active$/).waitFor();await ownerCard.getByText('Event context',{exact:true}).click()
   await ownerCard.getByText(`Paging obligation: recorded · Integration owner: ${member.name} · high urgency · paging OFF; non-automatic.`,{exact:true}).waitFor()
-  assert.ok(await routedCard.isVisible());assert.ok(await ownerCard.isVisible())
+  assert.ok(await ownerCard.isVisible())
   const incidentService=ownerCard.getByLabel('Incident service',{exact:true}),declare=ownerCard.getByRole('button',{name:'Declare incident from alert',exact:true})
   assert.equal(await incidentService.inputValue(),'','owner queue declaration requires an explicit service choice')
   assert.equal(await declare.isEnabled(),false)
@@ -71,7 +74,8 @@ async function incompleteIntakeBrowser(page,context) {
   await diagnostics.getByRole('heading',{name:incompleteTitle,exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc059-routing-focus-${width}.png`})
  }
  await openWorkspaceSection(page,'alerts')
- const ownerCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:incompleteTitle,exact:true,level:3})})
+ await page.locator('.alert-row').filter({hasText:incompleteTitle}).click();
+ const ownerCard=page.getByRole('article',{name:'Alert details',exact:true})
  await ownerCard.getByLabel('Incident service',{exact:true}).selectOption('payments')
  await ownerCard.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
  await page.locator('.detail').getByRole('heading',{name:incompleteTitle,exact:true}).waitFor()
@@ -145,13 +149,14 @@ async function responsePolicyBrowser(page,context) {
   await send({...warning,eventId:'slow-payments-recovery',intent:'recover',severity:'info'})
   await openWorkspaceSection(page,'alerts')
   await focusWorkspace(page)
-  const alertCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:warning.title,exact:true,level:3})})
+  await page.locator('.alert-row').filter({hasText:warning.title}).click();
+  const alertCard=page.getByRole('article',{name:'Alert details',exact:true});await alertCard.getByText('Event context',{exact:true}).click();
   await alertCard.getByText('stopped by source recovery',{exact:true}).waitFor()
-  await alertCard.getByText(/Recovered notice: Everyone already notified · recorded · no sender until OC-026/).waitFor()
+  await alertCard.getByText(/Recovered notice: Everyone already notified · recorded/).waitFor()
   await alertCard.getByText(/Attempt cancellation:/).waitFor()
   const recoveredState=await request('/api/state'),stopped=recoveredState.alerts.find(alert=>alert.id===warningAlert.id)
   assert.equal(stopped.state,'recovered');assert.equal(stopped.obligation.state,'stopped')
-  assert.ok(stopped.obligation.receipt);await alertCard.locator('p').filter({hasText:'Recovery receipt: '+stopped.obligation.receipt}).waitFor()
+  assert.ok(stopped.obligation.receipt);await alertCard.getByText(/Recovery recorded/).waitFor()
   await checkScreen('alert-recovery',width,alertCard)
   await alertCard.getByRole('button',{name:'Declare incident from alert',exact:true}).click()
   await page.locator('.detail').getByRole('heading',{name:warning.title,exact:true}).waitFor()
@@ -161,8 +166,9 @@ async function responsePolicyBrowser(page,context) {
   assert.ok(incident?.automaticDeclaration,'critical rule automatically declares an incident')
   await focusWorkspace(page)
   await openWorkspaceSection(page,'alerts')
-  const criticalCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:critical.title,exact:true,level:3})})
-  await criticalCard.getByRole('link',{name:'Open incident: '+critical.title,exact:true}).click()
+  await page.locator('.alert-row').filter({hasText:critical.title}).click();
+  const criticalCard=page.getByRole('article',{name:'Alert details',exact:true});
+  await criticalCard.getByRole('link',{name:'In incident '+critical.title,exact:true}).click()
   const detail=page.locator('.detail')
   let incidentContext=await openIncidentAction(page,'Service context')
   await incidentContext.getByText('Automatic declaration · service response policy',{exact:true}).waitFor()
@@ -379,10 +385,11 @@ async function changeAndSigningBrowser(page,context){
   await page.goto(new URL('/on-call/'+encodeURIComponent(memberScheduleId),page.url()).href);
   await page.locator('.scheduling-now-next').getByText('Now: Nobody on call',{exact:true}).first().waitFor();await page.locator('.scheduling-now-next').scrollIntoViewIfNeeded();await check('oc040-member-schedule-gap',width);
   await openWorkspaceSection(page,'reviews');
+  await page.getByText('Response numbers',{exact:true}).click();
   const responseReport=page.locator('.response-report');
-  await responseReport.getByText(/Incident durations and source entries/).click();
+  await responseReport.getByText(/Incidents in this period/).click();
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().waitFor();
-  await responseReport.getByText(/incident revision unknown/).first().waitFor();
+  await responseReport.getByText(/Retained erased case; durations unknown/).first().waitFor();
   assert.equal(await responseReport.getByRole('link',{name:'Erased incident',exact:true}).count(),0,'erased cases have no personal incident drilldown');
   await responseReport.getByRole('heading',{name:'Erased incident erased',exact:true}).first().scrollIntoViewIfNeeded();await check('oc040-erased-response-report',width);
   await openWorkspaceSection(page,'services');if(!await settings.getByLabel('Erasure category',{exact:true}).isVisible())await settings.getByText('Data erasure settings',{exact:true}).click();
@@ -398,11 +405,11 @@ async function changeAndSigningBrowser(page,context){
   const rootResponse=await groupSignal(0,'synthetic-oncall-438-a','synthetic-oncall-438-a','trigger','synthetic-oncall-438-'+width,0,'Synthetic correlation original '+width);assert.equal(rootResponse.status(),201);const rootReply=await rootResponse.json();
   const joinedResponse=await groupSignal(1,'synthetic-oncall-438-b','synthetic-oncall-438-b','trigger','synthetic-oncall-438-'+width,1000,'Synthetic correlation joined '+width);assert.equal(joinedResponse.status(),201);const joinedReply=await joinedResponse.json();
   const groupingState=await request('/api/state'),rootEvent=groupingState.events.find(e=>e.id===rootReply.id),joinedEvent=groupingState.events.find(e=>e.id===joinedReply.id);assert.equal(joinedEvent.decision.correlation.originalEvent,rootEvent.id);
-  await page.reload();await openWorkspaceSection(page,'alerts');const joinedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Synthetic correlation joined '+width,exact:true})});await joinedCard.getByText(/Joined original event/).waitFor();await joinedCard.scrollIntoViewIfNeeded();await check('oc043-correlated-signal',width);
+  await page.reload();await openWorkspaceSection(page,'alerts');await page.locator('.alert-row').filter({hasText:'Synthetic correlation joined '+width}).click();const joinedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Synthetic correlation joined '+width,exact:true})});await joinedCard.getByText('Event context',{exact:true}).click();await joinedCard.getByText(/Joined original event/).waitFor();await joinedCard.scrollIntoViewIfNeeded();await check('oc043-correlated-signal',width);
   await page.goto(origin+'/settings/services/synthetic-oncall-1');await groupSettings.locator(':scope > summary').click();await groupSettings.getByLabel('Flapping trigger generations',{exact:true}).fill('2');await groupSettings.getByRole('button',{name:/^Publish version/}).click();await groupSettings.getByLabel('Reason',{exact:true}).fill('Hold repeating generations for review');const flapPublished=page.waitForResponse(r=>r.url().endsWith('/api/command')&&r.request().postDataJSON()?.correlation?.flappingCount===2);await groupSettings.getByRole('button',{name:/^Publish version/}).click();assert.equal((await flapPublished).status(),200);
   const flapTitle='Synthetic flapping browser '+width,flapIdentity='synthetic-oncall-439-'+width;
   for(const [eventId,generation,intent,offset] of [['synthetic-oncall-439-a','synthetic-oncall-439-a','trigger',2000],['synthetic-oncall-439-r','synthetic-oncall-439-a','recover',3000],['synthetic-oncall-439-b','synthetic-oncall-439-b','trigger',4000]]){const response=await groupSignal(1,eventId,generation,intent,flapIdentity,offset,flapTitle);assert.equal(response.status(),201);}
-  await page.reload();await openWorkspaceSection(page,'alerts');const heldCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true})});await heldCard.getByRole('heading',{name:'Flapping signal: '+flapTitle,exact:true}).waitFor();assert.equal(await heldCard.count(),1);await heldCard.getByText(/1 held active generation/).waitFor();await heldCard.getByText('Retained generations and evidence',{exact:true}).click();await heldCard.scrollIntoViewIfNeeded();await check('oc043-flapping-held',width);
+  await page.reload();await openWorkspaceSection(page,'alerts');const activeFlap=(await request('/api/state')).alerts.find(a=>a.state==='active'&&a.key===flapIdentity);await page.locator('.alert-row[href="/alerts/'+activeFlap.id+'"]').click();const heldCard=page.getByRole('article',{name:'Alert details',exact:true});await heldCard.getByRole('heading',{name:flapTitle,exact:true}).waitFor();await heldCard.getByText('Event context',{exact:true}).click();assert.equal(await heldCard.count(),1);await heldCard.getByText(/1 held active generation/).waitFor();await heldCard.getByText('Retained generations and evidence',{exact:true}).click();await heldCard.scrollIntoViewIfNeeded();await check('oc043-flapping-held',width);
   await openWorkspaceSection(page,'services');
   await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(groupSources[1]);await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const groupedPreview=page.getByRole('region',{name:'Routing preview',exact:true});await groupedPreview.getByText('4 retained events compared. No records changed.',{exact:true}).waitFor();await groupedPreview.getByText(/Joined original event/).first().waitFor();await groupedPreview.getByText(/Historical urgency: high/).first().waitFor();await groupedPreview.getByText(/Proposed urgency: high/).first().waitFor();await groupedPreview.scrollIntoViewIfNeeded();await check('oc043-grouping-routing-preview',width);
@@ -416,7 +423,8 @@ async function changeAndSigningBrowser(page,context){
   const observation={source:'intake:'+orchestrationId,eventId:orchestrationId,service:'synthetic-oncall-1',environment:'production',key:orchestrationId,generation:orchestrationId,intent:'trigger',severity:'warning',title:'Synthetic maintenance signal '+width,observedAt:new Date().toISOString(),evidence:''};
   const orchestrated=await context.request.post('/api/ingress/intake:'+orchestrationId,{headers:{authorization:'Bearer '+orchestrationKey},data:observation});assert.equal(orchestrated.status(),201);
   await page.reload();await openWorkspaceSection(page,'alerts');
-  const suppressedCard=page.getByRole('article').filter({has:page.getByRole('heading',{name:observation.title,exact:true,level:3})});await suppressedCard.getByText('Suppressed · Owner: '+member.name,{exact:false}).waitFor();await suppressedCard.scrollIntoViewIfNeeded();await check('oc043-owned-suppressed-alert',width);
+  await page.locator('.alert-row').filter({hasText:observation.title}).click();
+  const suppressedCard=page.getByRole('article',{name:'Alert details',exact:true});await suppressedCard.getByText('Event context',{exact:true}).click();await suppressedCard.getByText('Suppressed · Owner: '+member.name,{exact:false}).waitFor();await suppressedCard.scrollIntoViewIfNeeded();await check('oc043-owned-suppressed-alert',width);
   await openWorkspaceSection(page,'routing');await page.getByLabel('Routed integration',{exact:true}).selectOption(orchestrationId);
   await page.getByRole('button',{name:'Preview routing changes',exact:true}).click();
   const comparison=page.getByRole('region',{name:'Routing preview',exact:true});await comparison.getByText('1 retained events compared. No records changed.',{exact:true}).waitFor();
