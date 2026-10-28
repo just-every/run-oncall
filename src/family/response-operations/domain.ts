@@ -35,7 +35,8 @@ import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from '.
 import { admitAlertUrgency, declarationUrgency, serviceUrgency } from '../../urgency/model.ts';
 import { validateUrgencyArchive } from '../../urgency/archive.ts';
 export type Role = "admin" | "responder" | "viewer" | "stakeholder";
-export type Member = { id: string; name: string; role: Role; active: boolean; erased?:true; machine?: true };
+export type AgentAttribution = {agent:{id:string;name:string};for:{id:string;name:string};label:string;sponsor:string;client?:string;clientRevision?:number;approvers?:{id:string;name:string}[]};
+export type Member = { id: string; name: string; role: Role; active: boolean; erased?:true; machine?: true; agent?:AgentAttribution };
 export type Service = {
   team?: string | null; ownership?: { source: "backstage"; entity: string; importId: string; importedAt: string };
   id: string;
@@ -126,7 +127,7 @@ export type Entry = {
   kind: string;
   text: string;
   operationId?: string;
-  metadata?: {event?:string;policyVersion?:number;rule?:string|null;receipt?:string|null};
+  metadata?: {event?:string;policyVersion?:number;rule?:string|null;receipt?:string|null;agent?:AgentAttribution};
   lifecycle?: {from: Incident["state"] | null; to: Incident["state"]; evidence?: string; member?: string | null};
   review?: {rootCause:string;impact:string;review:string;materialRevision:number;workspaceRevision:number};
 };
@@ -251,7 +252,11 @@ const stamp = (
   at: string,
 ): Entry => ({ id: crypto.randomUUID(), at, actor, kind, text: value });
 export function authority(state: State, actor: Member, admin = false) {
-  if(actor.machine) { machineAuthority(state,actor); return; }
+  if(actor.machine) {
+    machineAuthority(state,actor);
+    if(admin&&actor.agent&&!actor.agent.client&&!state.members.some(m=>m.id===actor.agent!.sponsor&&m.active&&m.role==='admin'))fail('Current admin required',403);
+    return;
+  }
   const member = state.members.find((m) => m.id === actor.id && m.active);
   if (!member) fail("Access revoked", 401);
   if (!["admin", "responder"].includes(member.role) || (admin && member.role !== "admin"))
@@ -416,12 +421,24 @@ export function admit(state: State, input: any, at = new Date().toISOString(), e
   return { event, alert: alert?.id ?? null, duplicate: false };
 }
 export function command(state:State,actor:Member,input:any,at=new Date().toISOString(),context:PolicyContext={policies:[],eligible:{}}) {
+  if(actor.agent&&!actor.machine)fail('Invalid agent actor',403);
+  const priorEntries=actor.agent?new Set(state.incidents.flatMap(i=>i.timeline.map(e=>e.id))):null,priorAudit=state.audit.length;
   if(actor.machine) {
     machineAuthority(state,actor);
-    if(!['service','declare','manual-page','snooze','cancel-deadline','transition','reassign','assign-role','action','complete'].includes(input.type))fail('Machine action is not authorized',403);
+    if(actor.agent){
+      const service=['declare','manual-page','service'].includes(input.type)?input.service??input.id:state.incidents.find(i=>i.id===input.incident)?.service;
+      const client=actor.agent.client?state.apiClients?.find(c=>c.id===actor.agent!.client):undefined;
+      if(client){
+        if(!client.services.includes(service))fail('Record not found in this client scope',404);
+        const permission=input.type==='service'?'services:write':['action','complete'].includes(input.type)?'actions:write':'incidents:write';
+        if(!client.permissions.includes(permission))fail('Token lacks the required permission',403);
+      }
+      actor={...actor,id:actor.agent.client??actor.agent.agent.id};
+    }
+    if(!['service','declare','manual-page','snooze','cancel-deadline','transition','reassign','assign-role','action','complete',...(actor.agent?['note',...(!actor.agent.client&&state.members.some(m=>m.id===actor.agent!.sponsor&&m.active&&m.role==='admin')?['member']:[])]:[])].includes(input.type))fail('Machine action is not authorized',403);
     if(input.type==='complete') {
       const action=state.incidents.find(i=>i.id===input.incident)?.actions.find(a=>a.id===input.action);
-      if(action?.completionPolicy!=='evidence')fail('Human review requires a current human session',403);
+      if(!actor.agent&&action?.completionPolicy!=='evidence')fail('Human review requires a current human session',403);
     }
     if(input.type==='transition'&&input.state==='acknowledged'&&!state.members.some(m=>m.id===input.member&&m.active&&["admin", "responder"].includes(m.role)))fail('An explicit active responsible member is required; the client is not a human responder');
   }
@@ -435,6 +452,11 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
     refreshIncidentRecovery(state,changed,at,undefined,actor);
   }
   if(result&&'timeline' in result&&(!isResponseChange(input.type)||result.revision!==responseRevision)) {afterDeadlineCommand(state,result as Incident,actor,input,at,context);finishManualRecords(result as Incident,actor,at);enqueueEvents(state,result as Incident,input,actor);refreshIncidentRecovery(state,result as Incident,at,undefined,actor);}
+  if(actor.agent){
+    const attribution=JSON.parse(JSON.stringify(actor.agent)) as AgentAttribution;
+    for(const incident of state.incidents)for(const entry of incident.timeline)if(!priorEntries!.has(entry.id))entry.metadata={...entry.metadata,agent:attribution};
+    for(const entry of state.audit.slice(priorAudit))entry.metadata={...entry.metadata,agent:attribution};
+  }
   return result;
 }
 function applyCommand(
@@ -719,6 +741,22 @@ export function validateArchive(value: any): State {
   const entry = (e: any) => {
     object(e, ["id", "at", "actor", "kind", "text"], ["operationId", "lifecycle", "review", "metadata"]);
     validateLifecycleEntry(e);
+    if(e.metadata!==undefined){
+      object(e.metadata,[],['event','policyVersion','rule','receipt','agent']);
+      for(const key of ['event','rule','receipt'])if(e.metadata[key]!==undefined&&e.metadata[key]!==null)text(e.metadata[key],'metadata '+key,200);
+      if(e.metadata.policyVersion!==undefined&&(!Number.isSafeInteger(e.metadata.policyVersion)||e.metadata.policyVersion<1))fail('Invalid timeline policy version');
+      const agent=e.metadata.agent;
+      if(agent!==undefined){
+        object(agent,['agent','for','label','sponsor'],['client','clientRevision','approvers']);
+        for(const person of [agent.agent,agent.for]){object(person,['id','name']);text(person.id,'agent attribution identity',200);text(person.name,'agent attribution name',200);}
+        text(agent.label,'agent attribution label',500);text(agent.sponsor,'agent sponsor',100);
+        if(agent.for.id!==agent.sponsor||!value.members.some((m:any)=>m.id===agent.sponsor))fail('Invalid agent sponsor');
+        if(agent.client!==undefined&&(!value.apiClients?.some((c:any)=>c.id===agent.client&&c.owner===agent.sponsor)||e.actor!==agent.client))fail('Invalid agent client attribution');
+        if(agent.clientRevision!==undefined&&(!Number.isSafeInteger(agent.clientRevision)||agent.clientRevision<1))fail('Invalid agent client revision');
+        if(agent.client===undefined&&e.actor!==agent.agent.id)fail('Invalid agent actor attribution');
+        if(agent.approvers!==undefined){array(agent.approvers);if(agent.approvers.length>100||new Set(agent.approvers.map((p:any)=>p.id)).size!==agent.approvers.length)fail('Invalid agent approvers');for(const person of agent.approvers){object(person,['id','name']);text(person.name,'approver name',200);if(!value.members.some((m:any)=>m.id===person.id))fail('Invalid agent approver');}}
+      }
+    }
     if (e.operationId !== undefined) text(e.operationId, "operation ID", 100);
     text(e.id, "entry ID", 100);
     date(e.at);
@@ -976,7 +1014,7 @@ export function validateArchive(value: any): State {
     array(i.timeline);
     i.timeline.forEach(entry);
     if(i.timeline.some((e:any)=>e.lifecycle?.member!=null&&!hasMember(e.lifecycle.member)))fail("Invalid named responder reference");
-    if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor) && !validResponseSourceEntry(value,i,e) && !validDeadlineEntry(i,e)))
+    if (i.timeline.some((e: any) => !hasMember(e.actor) && !value.apiClients?.some((c:any)=>c.id===e.actor) && !e.metadata?.agent && !validResponseSourceEntry(value,i,e) && !validDeadlineEntry(i,e)))
       fail("Invalid incident attribution");
     array(i.runbook);
     for (const r of i.runbook) {

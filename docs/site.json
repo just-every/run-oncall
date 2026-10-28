@@ -128,6 +128,106 @@
           "summary": "Local and hosted commands, their flags and what they change."
         }
       ]
+    },
+    {
+      "title": "Use it",
+      "pages": [
+        {
+          "slug": "schedules",
+          "title": "Schedules and hand-overs",
+          "source": "docs/schedules.md",
+          "summary": "Set primary and backup rotations, hand-overs across clock changes, swaps and your calendar feed."
+        },
+        {
+          "slug": "incidents",
+          "title": "Incidents and alerts",
+          "source": "docs/incidents.md",
+          "summary": "Declare and work an incident, keep its timeline and follow-ups, and route alerts."
+        },
+        {
+          "slug": "changes",
+          "title": "Changes and dependencies",
+          "source": "docs/changes.md",
+          "summary": "Connect authenticated change senders and inspect recent changes beside services, alerts and incidents."
+        },
+        {
+          "slug": "reviews",
+          "title": "Reports and reviews",
+          "source": "docs/reviews.md",
+          "summary": "Understand response timings, inspect retained review material and accept evidenced improvements."
+        },
+        {
+          "slug": "move-in",
+          "title": "Move in from Opsgenie or PagerDuty",
+          "source": "docs/move-in.md",
+          "summary": "Bring your rota across from saved export files, review it, then apply or undo it."
+        },
+        {
+          "slug": "compatible-intake",
+          "title": "Compatible alert intake",
+          "source": "docs/compatible-intake.md",
+          "summary": "Connect existing PagerDuty, Opsgenie and Splunk-shaped senders with explicit lifecycle receipts and paging OFF."
+        },
+        {
+          "slug": "routed-intake",
+          "title": "Routed intake keys",
+          "source": "docs/routed-intake.md",
+          "summary": "Route compatible monitoring events to allowed services with versioned rules, replay and an unrouted queue."
+        },
+        {
+          "slug": "monitoring-providers",
+          "title": "Monitoring providers",
+          "source": "docs/monitoring-providers.md",
+          "summary": "Configure Alertmanager, Grafana and Datadog receivers, inspect grouped lifecycles and retain incomplete-input evidence."
+        },
+        {
+          "slug": "urgency",
+          "title": "Urgency and support hours",
+          "source": "docs/urgency.md",
+          "summary": "Publish service urgency rules, preview support hours and keep attributed decisions on alerts."
+        },
+        {
+          "slug": "response-api",
+          "title": "Response API and outbound events",
+          "source": "docs/response-api.md",
+          "summary": "Scope machine clients, approve signed recipients, inspect durable failures and restore inactive."
+        },
+        {
+          "slug": "agents",
+          "title": "Agents for coordination",
+          "source": "docs/agents.md",
+          "summary": "Use the responder under company policy, link existing people and inspect approval and delivery outcomes."
+        }
+      ]
+    },
+    {
+      "title": "Your data",
+      "pages": [
+        {
+          "slug": "data",
+          "title": "Export and restore",
+          "source": "docs/data.md",
+          "summary": "Take everything with you, restore it into a new installation, or start over."
+        },
+        {
+          "slug": "audit",
+          "title": "Permanent operational audit",
+          "source": "docs/audit.md",
+          "summary": "Export safe attributed operations and retain their outcomes after erasure and interrupted imports."
+        },
+        {
+          "slug": "limits",
+          "title": "What Oncall does not do",
+          "source": "docs/limits.md",
+          "summary": "Paging, decisions and outside accounts Oncall leaves alone, stated plainly."
+        },
+        {
+          "slug": "commands",
+          "title": "Command reference",
+          "source": "RUN-LOCALLY.md",
+          "summary": "Local and hosted commands, their flags and what they change."
+        }
+      ]
     }
   ],
   "githubOnly": [
@@ -358,6 +458,30 @@
     {
       "source": "docs/contract/acceptance-before-cleanup.md",
       "reason": "Historical hand-written ACCEPTANCE.md before the 28 October 2026 contract cleanup"
+    },
+    {
+      "source": "src/modules/agent-door/README.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/agent-door/ADOPTING.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/agent-door/policy/PROVENANCE.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/business-settings/README.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/business-settings/ADOPTING.md",
+      "reason": "Vendored shared module adoption and developer reference; the owner-facing guide is docs/agents.md."
+    },
+    {
+      "source": "src/modules/agent-door/CLAUSES.md",
+      "reason": "Canonical upstream door duties for maintainers; seed judgments remain in CONTRACT.md."
     }
   ]
 }

@@ -7,15 +7,18 @@ import { eraseBusinessMember } from './business-status/model'
 import { refers,mentions,scrub,indirect } from './move-in/erasure'
 import { relatedSelection } from './modules/import-kit/src/d1/erasure-related'
 import { targetIdentity } from './modules/import-kit/src/d1/erasure-index'
-import { prepareImportCustodyErasure,importErasureContext } from './move-in/native-erasure'
+import { prepareNativeImportCustodyErasure,importErasureContext } from './move-in/native-erasure'
+import type { D1ImportContext } from './modules/import-kit/src/d1/types'
 import { changeErasureIdentity } from './changes/identity'
 import { auditIdentity, auditKind, ownerCustodyRefusal } from './audit-store'
 import { commitSubjectErasure } from './changes/erasure'
 import { subjectErasureIdentity } from './subject-erasure-identity.ts'
-import { fail, validateArchive, type State } from './family/response-operations/domain'
+import { authority, fail, validateArchive, type Member, type State } from './family/response-operations/domain'
 import { handoffSnapshot } from './handoff-store'
 
 type Dependencies={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}}
+export type SubjectErasureInput={confirmation:string;workspaceRevision:number;identitiesReviewed?:boolean;importedPeople?:string[]}
+export type SubjectErasureOptions={db:D1Database;state:State;actor:Member;guard:ReturnType<Dependencies['guard']>;input:SubjectErasureInput;kind:string;id:string;importContext:D1ImportContext}
 const guardStatement=(db:D1Database,sql:string,...values:(string|number|null)[])=>db.prepare(`INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN ${sql} THEN 1 ELSE 0 END`).bind(...values)
 // A sending lease is a durable exclusion boundary, not a promise to recall an
 // external call. Erasure refuses until that call has a recorded outcome.
@@ -24,14 +27,25 @@ function requireNoFlight(state:State,predicate:(o:NonNullable<State['apiOutbox']
 }
 export function installSubjectErasure(api:any,deps:Dependencies) {
  api.post('/api/erasure/:kind/:id',async(c:any)=>{
-  const state=await deps.state(c,true),input=await deps.body(c),kind=c.req.param('kind'),id=c.req.param('id'),db=c.env.DB as D1Database
+  const state=await deps.state(c,true),input=await deps.body(c)
+  return c.json(await eraseSubject({db:c.env.DB,state,actor:c.get('actor'),guard:deps.guard(c),input,kind:c.req.param('kind'),id:c.req.param('id'),importContext:importErasureContext(c)}))
+ })
+}
+
+/** Native erasure and imported custody commit together for either public door. */
+export async function eraseSubject({db,state,actor,guard,input,kind,id,importContext}:SubjectErasureOptions) {
+  if(actor.agent&&!actor.machine)fail('Invalid agent actor',403)
+  authority(state,actor,true)
+  if(actor.machine&&(!actor.agent||actor.agent.client))fail('A current administrator sponsor is required for erasure',403)
+  const sponsor=actor.agent?.sponsor??actor.id
+  if(importContext.storage.database!==db||importContext.destination!=='oncall'||importContext.authorization.principalId!==sponsor)fail('Erasure custody must use the native subject database and current administrator',409)
   if(input.confirmation!==`erase ${id}`)fail('Type erase followed by the exact subject ID',409)
-  if(kind==='member'&&state.members.some(m=>m.id===id&&m.erased))return c.json({state:'complete',stores:{},standby:'not-reconciled',repeated:true,outstanding:[{destination:'External recipients and providers',state:'not-requested',reason:'Deletion requires the owner’s per-destination consent; local revocation is not remote deletion'}]})
+  if(kind==='member'&&state.members.some(m=>m.id===id&&m.erased))return {state:'complete',stores:{},standby:'not-reconciled',repeated:true,outstanding:[{destination:'External recipients and providers',state:'not-requested',reason:'Deletion requires the owner’s per-destination consent; local revocation is not remote deletion'}]}
   if(input.workspaceRevision!==state.revision)fail('Workspace changed; reload before erasing',409)
   const statements:D1PreparedStatement[]=[],tables:string[]=[],identities=[id],updated:Record<string,number>={},inserted:Record<string,number>={}
   const outstanding:{destination:string;state:string;reason:string}[]=[]
   const changedIncidents=new Set<string>()
-  let imported:Awaited<ReturnType<typeof prepareImportCustodyErasure>>|undefined
+  let imported:Awaited<ReturnType<typeof prepareNativeImportCustodyErasure>>|undefined
   const remember=(table:string)=>{if(!tables.includes(table))tables.push(table)}
   const remove=(key:keyof State,table:string,predicate:(row:any)=>boolean)=>{
    const rows=state[key] as any[]|undefined
@@ -99,6 +113,16 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
     const label=await anonymous('client',targetId)
     // Preserve historical machine attribution as an inactive, credential-free
     // erased identity. Never transfer a machine's claims to the erasing admin.
+    for(const entry of [...state.audit,...state.incidents.flatMap(row=>row.timeline)])if(entry.metadata?.agent?.client===targetId){
+      const by=entry.metadata.agent;by.agent={id:label,name:'Erased integration'};delete by.client;delete by.clientRevision;by.label=`Erased integration for ${by.for.name}`
+    }
+    eraseCredential('oc_agent_operations','client',[targetId])
+    const agent='oncall-client:'+targetId
+    remember('agent_door_agents');remember('agent_door_audit');remember('agent_door_calls');remember('agent_door_approvals')
+    statements.push(db.prepare("UPDATE agent_door_agents SET name='Erased integration',revoked=1 WHERE id=?").bind(agent),
+      db.prepare("UPDATE agent_door_audit SET row=json_set(row,'$.agent.name','Erased integration','$.label','Erased integration for '||json_extract(row,'$.sponsor.name')) WHERE agent=?").bind(agent),
+      db.prepare('DELETE FROM agent_door_calls WHERE agent=?').bind(agent),
+      db.prepare("UPDATE agent_door_approvals SET state=CASE WHEN state='pending' THEN 'expired' ELSE state END,saved=json_set(saved,'$.principal.agent.name','Erased integration') WHERE json_extract(saved,'$.principal.agent.id')=?").bind(agent))
     for(const key of ['incidents','audit','services'] as const){
      const prior=state[key].map(row=>JSON.stringify(row));(state as any)[key]=replaceIdentity(state[key],targetId,label)
      const changed=state[key].filter((row,index)=>JSON.stringify(row)!==prior[index]).length
@@ -151,7 +175,17 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    }
    // Recheck custody in the same batch as deletion, including a concurrent role change.
    statements.push(guardStatement(db,'NOT '+ownerLink,id))
-   if(id===c.get('actor').id)fail('Use another administrator to erase this member',409)
+   if(id===sponsor)fail('Use another administrator to erase this member',409)
+   const agentJobs=(await db.prepare("SELECT outbox FROM oc_agent_outbox WHERE json_extract(principal,'$.person.id')=?").bind(id).all<{outbox:string}>()).results.map(row=>row.outbox)
+   outbox(row=>agentJobs.includes(row.id))
+   const agentDeadlines=(await db.prepare("SELECT deadline FROM oc_agent_deadlines WHERE json_extract(principal,'$.person.id')=?").bind(id).all<{deadline:string}>()).results.map(row=>row.deadline)
+   for(const incident of state.incidents)for(const deadline of incident.deadlines??[])if(agentDeadlines.includes(deadline.id)&&deadline.state==='pending'){deadline.state='cancelled';deadline.endedAt=new Date().toISOString();deadline.outcome='Creator erased; no re-trigger obligation';incident.revision++}
+   remember('oc_agent_deadlines');remember('agent_door_agents');remember('agent_door_audit');remember('agent_door_approvals');remember('agent_door_reviews')
+   statements.push(db.prepare("DELETE FROM oc_agent_deadlines WHERE json_extract(principal,'$.person.id')=?").bind(id),
+     db.prepare("UPDATE agent_door_agents SET sponsor_name='Erased member',revoked=1 WHERE sponsor=?").bind(id),
+     db.prepare("UPDATE agent_door_audit SET row=json_set(row,'$.sponsor.name','Erased member','$.label',json_extract(row,'$.agent.name')||' for Erased member') WHERE json_extract(row,'$.sponsor.id')=?").bind(id),
+     db.prepare("UPDATE agent_door_approvals SET state=CASE WHEN state='pending' THEN 'expired' ELSE state END,saved=json_set(saved,'$.principal.person.name','Erased member','$.principal.person.email','') WHERE json_extract(saved,'$.principal.person.id')=?").bind(id),
+     db.prepare("UPDATE agent_door_reviews SET saved=json_set(saved,'$.principal.person.name','Erased member','$.principal.person.email','') WHERE json_extract(saved,'$.principal.person.id')=?").bind(id))
    if(member.role==='admin'&&member.active&&state.members.filter(m=>m.active&&m.role==='admin').length===1)fail('The last administrator cannot be erased',409)
    if(input.identitiesReviewed!==true||!Array.isArray(input.importedPeople)||input.importedPeople.some((v:unknown)=>typeof v!=='string')||new Set(input.importedPeople).size!==input.importedPeople.length)fail('Review and select this member’s retained imported identities',409)
    const people=(await db.prepare("SELECT id,data FROM move_in_objects WHERE kind='user'").all<{id:string;data:string}>()).results
@@ -191,6 +225,11 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    }
    if(ptoChanged){remember('paging_schedules');remember('paging_control');statements.push(guardStatement(db,'EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',pagingControl!.revision),db.prepare('UPDATE paging_control SET revision=revision+1 WHERE id=1'))}
    member.name='Erased member';member.active=false;member.erased=true;remember('oc_members')
+   for(const entry of [...state.audit,...state.incidents.flatMap(row=>row.timeline)]){
+    const by=entry.metadata?.agent;if(!by)continue
+    if(by.sponsor===id){by.for.name='Erased member';by.label=`${by.agent.name} for Erased member`}
+    for(const approver of by.approvers??[])if(approver.id===id)approver.name='Erased member'
+   }
    for(const entry of state.audit)if(entry.kind==='member')entry.text=redact(entry.text)
    remember('oc_audit')
    remove('scheduleRecords','oc_schedule_records',r=>r.member===id||r.data.substitute===id||r.data.obligation?.creator===id)
@@ -210,13 +249,13 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    remember('oc_events');updated.oc_events=copied!.n
    statements.push(db.prepare("UPDATE oc_events SET data=json_set(data,'$.routingSnapshot.members',json((SELECT json_group_array(json(CASE WHEN json_extract(m.value,'$.id')=? THEN json_set(m.value,'$.name','Erased member') ELSE m.value END)) FROM json_each(oc_events.data,'$.routingSnapshot.members') m))) WHERE EXISTS(SELECT 1 FROM json_each(oc_events.data,'$.routingSnapshot.members') m WHERE json_extract(m.value,'$.id')=? AND json_extract(m.value,'$.name')<>'Erased member')").bind(id,id))
    if(aliases.size){
-    const context=importErasureContext(c);while(!(await upgradeD1ImportErasureIndex(context)).complete);
+    const context=importContext;while(!(await upgradeD1ImportErasureIndex(context)).complete);
     const idsByNamespace=new Map<string,Set<string>>(),indirectKeys=new Set<string>(),filenames=new Set<string>(),rewritten=new Set<string>()
     await relatedSelection(context,{source(record){const payload=record.payload as any;if(record.kind==='users'&&aliases.has(String(payload.email??payload.username??'').trim().toLowerCase())){const ids=idsByNamespace.get(record.namespace)??new Set<string>();ids.add(String(payload.id??record.sourceId));idsByNamespace.set(record.namespace,ids)}return false}})
     for(const row of (await db.prepare("SELECT id,revision,data FROM move_in_objects WHERE kind='schedule'").all<{id:string;revision:string;data:string}>()).results){let next=JSON.parse(row.data);for(const mail of aliases)next=scrub(next,mail);if(JSON.stringify(next)!==row.data){next.schedule=validateSchedule(next.schedule);rewritten.add(row.id);remember('move_in_objects');updated.move_in_objects=(updated.move_in_objects??0)+1;statements.push(guardStatement(db,"EXISTS(SELECT 1 FROM move_in_objects WHERE kind='schedule' AND id=? AND revision=? AND data=?)",row.id,row.revision,row.data),db.prepare("UPDATE move_in_objects SET data=?,revision=? WHERE kind='schedule' AND id=?").bind(JSON.stringify(next),'erased-'+crypto.randomUUID(),row.id))}}
     for(const mail of aliases){const found=await indirect(context,mail,new Set(),rewritten,idsByNamespace);for(const key of found.found)indirectKeys.add(key);for(const name of found.filenames)filenames.add(name);identities.push(mail);statements.push(db.prepare("INSERT OR IGNORE INTO ik_d1_erased_targets(destination,identity) VALUES('oncall',?)").bind(targetIdentity('oncall','user',mail)))}
     remember('move_in_objects');statements.push(db.prepare("DELETE FROM move_in_objects WHERE kind='user' AND id IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...aliases])))
-    imported=await prepareImportCustodyErasure(c,{kind:'user',id:[...aliases][0]},{context,values:[...aliases,...filenames],related:{source(record){const ids=idsByNamespace.get(record.namespace)??new Set<string>();return indirectKeys.has(JSON.stringify([record.namespace,record.kind,record.sourceId]))||[...aliases].some(mail=>refers(record.payload,mail,ids)||mentions(record.payload,mail))},original(bytes){const raw=new TextDecoder().decode(bytes),ids=new Set([...idsByNamespace.values()].flatMap(ids=>[...ids]));try{const value=JSON.parse(raw);return [...aliases].some(mail=>refers(value,mail,ids)||mentions(value,mail))}catch{return [...aliases].some(mail=>mentions(raw,mail))}}}})
+    imported=await prepareNativeImportCustodyErasure(db,context,{kind:'user',id:[...aliases][0]},{values:[...aliases,...filenames],related:{source(record){const ids=idsByNamespace.get(record.namespace)??new Set<string>();return indirectKeys.has(JSON.stringify([record.namespace,record.kind,record.sourceId]))||[...aliases].some(mail=>refers(record.payload,mail,ids)||mentions(record.payload,mail))},original(bytes){const raw=new TextDecoder().decode(bytes),ids=new Set([...idsByNamespace.values()].flatMap(ids=>[...ids]));try{const value=JSON.parse(raw);return [...aliases].some(mail=>refers(value,mail,ids)||mentions(value,mail))}catch{return [...aliases].some(mail=>mentions(raw,mail))}}}})
    }
   } else if(kind==='email-list') {
    const service=state.businessServices?.find(row=>row.emailLists?.some(list=>list.id===id));if(!service)fail('Unknown email-list subscriber',404)
@@ -256,7 +295,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
    if(kind==='intake'){
     const roots=(await db.prepare("SELECT id,revision,data FROM move_in_objects WHERE kind='integration' AND json_extract(data,'$.intakeSource')=?").bind(id).all<{id:string;revision:string;data:string}>()).results
     if(roots.length>1)fail('Conflicting imported integration bindings; nothing was erased. Resolve the retained import custody first.',409)
-    if(roots.length){const root=roots[0];imported=await prepareImportCustodyErasure(c,{kind:'integration',id:root.id});remember('move_in_objects');identities.push(root.id)
+    if(roots.length){const root=roots[0];imported=await prepareNativeImportCustodyErasure(db,importContext,{kind:'integration',id:root.id});remember('move_in_objects');identities.push(root.id)
      statements.push(guardStatement(db,"EXISTS(SELECT 1 FROM move_in_objects WHERE kind='integration' AND id=? AND revision=? AND data=?)",root.id,root.revision,root.data),db.prepare("DELETE FROM move_in_objects WHERE kind='integration' AND id=?").bind(root.id))}
    }
    if(kind==='change'){
@@ -274,12 +313,20 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
   } else {
    fail('Choose an incident, native integration, API client or endpoint',400)
   }
+  if(actor.agent){
+   const agent=JSON.parse(JSON.stringify(actor.agent)) as NonNullable<Member['agent']>
+   state.audit.push({id:crypto.randomUUID(),at:new Date().toISOString(),actor:agent.agent.id,kind:kind+'.erase',text:'Erased native '+kind,metadata:{agent}})
+   auditIdentity(db,{actor:{kind:'agent',id:agent.agent.id},source:{kind:'member',id:sponsor}})
+  }
   validateArchive(state)
+  remember('oc_agent_outbox');remember('oc_agent_operations');remember('oc_agent_deadlines')
+  statements.push(db.prepare('DELETE FROM oc_agent_outbox WHERE outbox NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify((state.apiOutbox??[]).map(row=>row.id))),
+    db.prepare("DELETE FROM oc_agent_operations WHERE json_extract(operation,'$.entity') NOT IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...state.services.map(row=>row.id),...state.incidents.map(row=>row.id)])),
+    db.prepare('DELETE FROM oc_agent_deadlines WHERE deadline NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify(state.incidents.flatMap(row=>(row.deadlines??[]).map(deadline=>deadline.id)))))
   // The digest holds no subject content. It also rejects old rows maliciously
   // paired with a newer native journal on either restore door.
   await fence(kind,id)
   auditKind(db,kind+'.erase');auditIdentity(db,{subject:{kind,id}})
-  const receipt=await commitSubjectErasure(db,state,deps.guard(c),{tables,identities,statements,updated,inserted,execute:imported?.execute})
-  return c.json({...receipt,...(kind==='member'?{outstanding}:{} ),...(imported?{importCustody:imported.counts()}:{})})
- })
+  const receipt=await commitSubjectErasure(db,state,guard,{tables,identities,statements,updated,inserted,execute:imported?.execute})
+  return {...receipt,...(kind==='member'?{outstanding}:{} ),...(imported?{importCustody:imported.counts()}:{})}
 }
