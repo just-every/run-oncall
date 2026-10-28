@@ -363,7 +363,7 @@ async function changeAndSigningBrowser(page,context){
   await settings.getByText('Imported records cleared locally.',{exact:true}).waitFor();await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-imported-integration-receipt',width);
   const memberName='synthetic-oncall-413-'+width+'@example.test';
   const erasedMember=await request('/api/members',{name:memberName,password:'synthetic-oncall-413-password',role:'admin'},201);
-  const personalContext=await context.browser().newContext({baseURL:origin});
+  const personalContext=await context.browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}});
   try {
    const login=await personalContext.request.post('/api/login',{headers:{origin},data:{name:memberName,password:'synthetic-oncall-413-password'}});assert.equal(login.status(),200);
    const clientResponse=await personalContext.request.post('/api/automation/clients',{headers:{origin},data:{name:'Synthetic personal response access',key:token(),services:['synthetic-oncall-1'],permissions:['incidents:read']}});assert.equal(clientResponse.status(),201);const client=await clientResponse.json();
@@ -500,7 +500,9 @@ try {
  const owner=await worker.request('/api/setup',credentials)
  assert.equal(owner.status,200,'the public setup door creates the local browser owner')
  browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
- const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000}})
+ // The journey pauses for D1 reads and held responses. Match localWorker's
+ // one-request connections so Playwright cannot reuse a Worker-idle socket.
+ const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000},extraHTTPHeaders:{connection:'close'}})
  await context.addCookies(owner.headers.getSetCookie().map(line=>{
   const pair=line.split(';')[0],at=pair.indexOf('=')
   return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}
