@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const BASE = '7ce44fa5b70b68b21d270ba54760dae28b4a37a7';
+const BASE = 'e1b4265eb0d839a67dae3c36a04f83fa48c9d480';
 const execute = promisify(execFile), root = process.cwd();
 const git = async args => (await execute('git', args, { timeout: 120000, maxBuffer: 1024 * 1024 })).stdout.trim();
 let temporary;
