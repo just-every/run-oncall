@@ -10,7 +10,7 @@ export function serviceTools(env: Bindings): ToolDefinition[] {
     const current = await nativeAccess(env, ctx, 'services:write', args.id)
     if (!current.client && current.member.role !== 'admin') throw new ToolRefusal('native_authority_required')
     const old = current.state.services.find(row => row.id === args.id)!
-    const projected = { ...old, dependencies: old.dependencies?.filter(id => current.services.includes(id)) }
+    const projected = { ...old, dependencies: (old.dependencies??[]).filter(id => current.services.includes(id)) }
     return { current, old, etag: await changeHash(JSON.stringify(projected)) }
   }
   return [{
@@ -25,8 +25,8 @@ export function serviceTools(env: Bindings): ToolDefinition[] {
       if(Array.isArray(args.dependencies)&&args.dependencies.some(id=>!current.services.includes(String(id))))throw new ToolRefusal('not_found')
       const result=command(current.state,nativeActor(current,ctx),{...args,type:'service'}) as {id:string;dependencies?:string[]}
       nativeAudit(env,ctx,'service.update',result.id);await persistNative(env,current)
-      const uri=`oncall://services/${result.id}`;ctx.emit('service.changed',uri)
-      return {result:{...result,etag:await changeHash(JSON.stringify({...result,dependencies:result.dependencies?.filter(id=>current.services.includes(id))}))},resources:[{uri,name:String(args.name)}]}
+      const uri=`oncall://services/${encodeURIComponent(result.id)}`;ctx.emit('service.changed',uri)
+      return {result:{...result,etag:await changeHash(JSON.stringify({...result,dependencies:(result.dependencies??[]).filter(id=>current.services.includes(id))}))},resources:[{uri,name:String(args.name)}]}
     }),
   }]
 }

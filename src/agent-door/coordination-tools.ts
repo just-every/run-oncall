@@ -3,6 +3,9 @@ import { command, fail, type Incident } from '../family/response-operations/doma
 import { defineTool, type JsonSchema, type ToolContext, type ToolDefinition } from '../modules/agent-door/index.ts'
 import { nativeAccess, nativeActor, nativeAudit, nativeCall, persistNative } from './native'
 import { protectedRecords } from './resources'
+import { pagingSnapshot } from '../paging-store'
+import { responseContext } from '../manual-pages/context'
+import { auditIdentity } from '../audit-store'
 
 const string = (maxLength = 3000): JsonSchema => ({ type: 'string', minLength: 1, maxLength })
 const revision: JsonSchema = { type: 'integer', minimum: 0 }
@@ -15,11 +18,11 @@ type Operation = {
 }
 const operations: Operation[] = [
   { name: 'incidents.declare', title: 'Declare an incident', description: 'Declare native coordination with a copied runbook. Paging remains off. Revision is the current workspace revision.', scope: 'incidents:write', clauses: ['OC-004', 'OC-005'],
-    properties: { service: string(100), revision, title: string(300), summary: string(), severity: { enum: ['critical', 'warning', 'info'] }, alerts: { type: 'array', items: string(100), maxItems: 200, uniqueItems: true } }, required: ['service', 'revision', 'title', 'summary', 'severity'],
+    properties: { service: string(100), revision, title: string(300), summary: string(), severity: { enum: ['critical', 'warning', 'info'] }, alerts: { type: 'array', items: string(100), maxItems: 200, uniqueItems: true } }, required: ['service', 'title', 'summary', 'severity'],
     input: a => ({ type: 'declare', service: a.service, title: a.title, summary: a.summary, severity: a.severity, alerts: a.alerts ?? [] }) },
   { name: 'incidents.update', title: 'Update an incident', description: 'Reassign responsibility, change a coordination role, or record mitigation/recovery with native lifecycle rules and current revision.', scope: 'incidents:write', clauses: ['OC-004', 'OC-053'],
-    properties: { incident: string(100), revision, change: { enum: ['reassign', 'assign-role', 'transition'] }, state: { enum: ['mitigating', 'recovered'] }, summary: string(), evidence: string(2000), member, role: { enum: ['commander', 'scribe', 'communications', 'assignee'] }, reason: string() }, required: ['incident', 'revision', 'change'],
-    input: a => ({ type: a.change, incident: a.incident, revision: a.revision, member: a.member, role: a.role, reason: a.reason, state: a.state, summary: a.summary, evidence: a.evidence }) },
+    properties: { incident: string(100), revision, change: { enum: ['reassign', 'assign-role', 'transition', 'manual-page', 'snooze', 'cancel-deadline'] }, service: string(100),title:string(300),severity:{enum:['critical','warning','info']},urgency:{enum:['high','low']},priority:{enum:['P1','P2','P3','P4','P5']},target:{type:'object'},targets:{type:'array',items:{type:'object'}},policy:string(100),users:{type:'array',items:string(100),maxItems:100},description:string(3000),incidentType:string(100),operationId:string(100),deadline:string(100),until:string(100),minutes:{type:'integer',minimum:1},state: { enum: ['mitigating', 'recovered'] }, summary: string(), evidence: string(2000), member, role: { enum: ['commander', 'scribe', 'communications', 'assignee'] }, reason: string() }, required: ['change'],
+    input: a => ({ ...a, type: a.change }) },
   { name: 'incidents.acknowledge', title: 'Acknowledge for a named responder', description: 'Record the agent acknowledgment naming an active human responder. This is attributed to the agent, not a human attestation.', scope: 'incidents:write', clauses: ['OC-004', 'OC-053'],
     properties: { incident: string(100), revision, member: string(100), summary: string() }, required: ['incident', 'revision', 'member', 'summary'],
     input: a => ({ type: 'transition', state: 'acknowledged', incident: a.incident, revision: a.revision, member: a.member, summary: a.summary }) },
@@ -42,7 +45,7 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
     const access = async (args: Args, ctx: ToolContext) => {
       const current = await nativeAccess(env, ctx, operation.scope)
       const incident = args.incident === undefined ? undefined : current.state.incidents.find(row => row.id === args.incident)
-      const service = operation.name === 'incidents.declare' ? args.service : incident?.service
+      const service = operation.name === 'incidents.declare'||args.change==='manual-page' ? args.service : incident?.service
       if (typeof service !== 'string' || !current.services.includes(service) || !current.state.services.some(row => row.id === service)) fail('Record not found in this client scope', 404)
       return { current, incident }
     }
@@ -61,14 +64,24 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
       }),
       run: (args, ctx) => nativeCall(async () => {
         const { current, incident } = await access(args, ctx)
-        if (args.revision !== (incident?.revision ?? current.state.revision)) fail('Native revision changed; reload before applying', 409)
+        if ((incident||args.revision!==undefined)&&args.revision !== (incident?.revision ?? current.state.revision)) fail('Native revision changed; reload before applying', 409)
         const actor = nativeActor(current, ctx)
         actor.agent = { ...actor.agent!, approvers: ctx.approvers.map(({ id, name }) => ({ id, name })) }
-        const result = command(current.state, actor, operation.input(args), new Date(ctx.now()).toISOString()) as Incident
+        const nativeInput=operation.input(args)
+        let context
+        if(['manual-page','snooze','cancel-deadline'].includes(String(nativeInput.type))){
+          const snapshot=await pagingSnapshot(env.DB)
+          if(snapshot.workspace.revision!==current.state.revision)fail('Native revision changed; reload before applying',409)
+          current.guard.sql+=' AND EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)';current.guard.values.push(snapshot.revision)
+          context=responseContext(snapshot,ctx.now())
+        }
+        const result = command(current.state, actor, nativeInput, new Date(ctx.now()).toISOString(),context) as Incident
         nativeAudit(env, ctx, operation.name, result.id)
+        if(operation.name==='incidents.acknowledge')auditIdentity(env.DB,{namedMember:{kind:'member',id:String(args.member)}})
         await persistNative(env, current)
         const uri = `oncall://incidents/${result.id}`
         ctx.emit(operation.name, uri, { incident: result.id, revision: result.revision })
+        if(['action','complete'].includes(String(nativeInput.type))){const action=result.actions.find(row=>row.id===args.action)??result.actions.at(-1);if(action)ctx.emit('action.updated',`oncall://actions/${action.id}`,{incident:result.id,action:action.id,revision:result.revision})}
         return { result, resources: [{ uri, name: result.title }] }
       }),
     })

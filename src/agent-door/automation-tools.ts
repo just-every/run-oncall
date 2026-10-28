@@ -6,10 +6,11 @@ import { nativeAccess, nativeAudit, nativeCall, persistNative } from './native'
 
 export function automationTools(env: Bindings): ToolDefinition[] {
   const access = async (args: Record<string, unknown>, ctx: ToolContext) => {
-    const current = await nativeAccess(env, ctx, 'automation:write', undefined, true)
+    const current = await nativeAccess(env, ctx, 'automation:write')
+    if(!current.client&&current.member.role!=='admin')throw new ToolRefusal('native_authority_required')
     const item = current.state.apiOutbox?.find(row => row.id === args.id)
     const endpoint = item && current.state.apiEndpoints?.find(row => row.id === item.endpoint)
-    if (!item || !endpoint || !current.services.includes(item.service)) throw new ToolRefusal('not_found')
+    if (!item || !endpoint || !current.services.includes(item.service)||current.client&&item.client!==current.client.id) throw new ToolRefusal('not_found')
     const binding = await env.DB.prepare('SELECT principal FROM oc_agent_outbox WHERE outbox=?').bind(item.id).first<{principal:string}>()
     if (binding) {
       const who = JSON.parse(binding.principal)
@@ -29,6 +30,7 @@ export function automationTools(env: Bindings): ToolDefinition[] {
       if (item.revision !== args.revision) throw new ToolRefusal('revision_conflict')
       nativeAudit(env, ctx, `automation.${action}`, item.id)
       if (action === 'replay') {
+        if(current.client)throw new ToolRefusal('native_authority_required')
         if (!['failed', 'uncertain', 'interrupted', 'terminal'].includes(item.status) || item.attempts >= 5) throw new ToolRefusal('native_request_invalid')
         // Uncertain bytes require a person's native reconciliation, never an agent resend.
         if (item.status === 'uncertain' || item.history.at(-1)?.reason === 'lease-expired') throw new ToolRefusal('outcome_uncertain')
@@ -41,7 +43,7 @@ export function automationTools(env: Bindings): ToolDefinition[] {
         await env.DB.prepare('INSERT OR IGNORE INTO oc_agent_outbox(outbox,principal) VALUES(?,?)').bind(item.id,JSON.stringify({person:{id:ctx.person.id},agent:ctx.agent,scopes:ctx.scopes,clientId:ctx.clientId,consent:ctx.consent})).run()
         await dispatchOutbox(env,current.guard,{id:item.id,agent:{id:ctx.agent.id,label:ctx.actor.label}})
       }
-      const latest=await nativeAccess(env,ctx,'automation:write',item.service,true),operation=latest.state.apiOutbox?.find(row=>row.id===item.id)
+      const latest=await nativeAccess(env,ctx,'automation:write',item.service),operation=latest.state.apiOutbox?.find(row=>row.id===item.id)
       if (!operation) throw new ToolRefusal('not_found')
       const uri=`oncall://automation/outbox/${item.id}`
       ctx.emit(`automation.${action}`,uri,{status:operation.status})

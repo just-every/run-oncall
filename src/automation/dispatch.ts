@@ -35,7 +35,12 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},adm
  for(const candidate of candidates){
   const custody=await env.DB.prepare('SELECT principal FROM oc_agent_outbox WHERE outbox=?').bind(candidate.id).first();
   // Agent work can leave only through typed invocation with its retained actor.
-  if(custody&&!admission.agent)continue;
+  if(custody&&!admission.agent){
+    const who=JSON.parse(custody.principal)
+    const result=await (await import('../agent-door/index.server')).oncallAgentDoor(runtimeBindings(env)).invoke('oncall.automation.dispatch',{id:candidate.id,revision:candidate.revision,idempotency_key:`outbox-${candidate.id}-${candidate.revision}`},who)
+    const operation=(result.result as {operation?:{status:string}}|undefined)?.operation
+    return {processed:operation?1:0,id:candidate.id,...(operation?{status:operation.status}:{held:result.code??result.outcome,approval:result.approval})}
+  }
   if(custody&&JSON.parse(custody.principal).agent.id!==admission.agent?.id)continue;
   item=candidate;break;
  }

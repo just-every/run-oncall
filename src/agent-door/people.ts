@@ -33,9 +33,10 @@ function asPerson(id: string, data: string, email: string): Person | null {
 
 /** Agent identity is always an oc_members ID, including the installation owner. */
 export function oncallPeople(env: Bindings): PeopleAdapter {
+  const rolesById=new Map<string,'owner'|'editor'|null>()
   async function person(id: string): Promise<Person | null> {
     const owner = await claimedOncallOwner(env)
-    if (owner?.id === id) return asPerson(id, owner.data, owner.email)
+    if (owner?.id === id){rolesById.set(id,'owner');return asPerson(id, owner.data, owner.email)}
     const row = await env.DB.prepare(`SELECT m.data,
       COALESCE((SELECT t.email FROM bs_team t JOIN bs_settings s ON s.singleton=1 AND s.stopped=0
         WHERE t.operator_id=m.id AND t.state='active' AND t.business_id IS NOT NULL
@@ -44,7 +45,16 @@ export function oncallPeople(env: Bindings): PeopleAdapter {
       AND EXISTS(SELECT 1 FROM credentials c WHERE c.member=m.id)
       AND NOT EXISTS(SELECT 1 FROM operator_members l WHERE l.member_id=m.id)`)
       .bind(id).first<{ data: string; email: string }>()
-    return row ? asPerson(id, row.data, row.email) : null
+    const current=row?asPerson(id,row.data,row.email):null
+    let role:'owner'|'editor'|null=null
+    if(current?.role==='admin'){
+      // Standalone native administrators already manage the installation's
+      // clients and settings. Pairing switches policy roles to applied IDs.
+      if(!env.RER_BUSINESS_TRUST&&!env.RER_OWNER_CLAIM_PUBLIC_KEYS)role='owner'
+      else if(await env.DB.prepare("SELECT 1 FROM bs_team t JOIN bs_settings s ON s.singleton=1 AND s.stopped=0 WHERE t.operator_id=? AND t.state='active' AND t.business_id IS NOT NULL AND t.business_role='admin'").bind(id).first())role='editor'
+    }
+    rolesById.set(id,role)
+    return current
   }
 
   async function businessMember(candidate: Person): Promise<{ id: string; role: 'owner' | 'editor' | null } | null> {
@@ -65,7 +75,7 @@ export function oncallPeople(env: Bindings): PeopleAdapter {
   return {
     person,
     // A native administrator is not implicitly a Business policy editor.
-    businessRole: () => null,
+    businessRole: current => rolesById.get(current.id)??null,
     businessMember,
     async sponsor({ sub }) {
       const settings = await env.DB.prepare('SELECT owner_id FROM bs_settings WHERE singleton=1 AND stopped=0')

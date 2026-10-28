@@ -17,7 +17,7 @@ export function machineAuthority(state:State,actor:Member) {
   if(!actor.machine||!sponsor||agent.for.id!==sponsor.id||![sponsor.id,agent.agent.id,agent.client].includes(actor.id))fail('Agent sponsor authority revoked',401);
   if(!agent.client){if(agent.agent.id.startsWith('oncall-client:')||actor.id.startsWith('api-'))fail('Invalid agent identity',401);return;}
   const client=state.apiClients?.find(c=>c.id===agent.client&&c.active&&c.owner===sponsor.id);
-  if(!client||sponsor.role!=='admin'||agent.agent.id!==`oncall-client:${client.id}:${client.revision}`)fail('Client authority revoked',401);
+  if(!client||sponsor.role!=='admin'||agent.agent.id!==`oncall-client:${client.id}`||agent.clientRevision!==client.revision)fail('Client authority revoked',401);
   return client;
  }
  const client=state.apiClients?.find(c=>c.id===actor.id&&c.active);

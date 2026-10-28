@@ -1,7 +1,7 @@
 import { createAgentDoor } from '../modules/agent-door/index.ts'
 import { ownerClaimConfig, type Bindings } from '../auth.server'
 import { oncallPeople } from './people'
-import { localCredentials, currentScopes } from './native'
+import { localCredentials, currentScopes, runNativeOperation } from './native'
 import { readTools } from './read-tools'
 import { coordinationTools } from './coordination-tools'
 import { scheduleTools } from './schedule-tools'
@@ -11,7 +11,7 @@ import { oncallResources } from './resources'
 import { serviceTools } from './service-tools'
 
 export function oncallTools(env: Bindings) {
-  return [...readTools(env), ...serviceTools(env), ...coordinationTools(env), ...scheduleTools(env), ...managementTools(env), ...automationTools(env)]
+  return [...readTools(env), ...serviceTools(env), ...coordinationTools(env), ...scheduleTools(env), ...managementTools(env), ...automationTools(env)].map(tool=>tool.readOnly||tool.widens===false?tool:{...tool,inputSchema:{...tool.inputSchema,properties:{...tool.inputSchema.properties,native_operation:{type:'string',minLength:1,maxLength:100,description:'Opaque retained native API operation, when prepared by the native REST door.'}}},run:(args,ctx)=>runNativeOperation(env,tool.name,args,ctx,()=>tool.run(args,ctx))})
 }
 export const oncallNotTools = [
   { clauses: ['OC-029'], reason: 'device' as const },
@@ -33,13 +33,3 @@ export function oncallAgentDoor(env: Bindings) {
   })
 }
 
-export async function dispatchAgentOutbox(env: Bindings) {
-  const rows = (await env.DB.prepare(`SELECT o.data,c.principal FROM oc_api_outbox o JOIN oc_agent_outbox c ON c.outbox=o.id
-    WHERE json_extract(o.data,'$.status') IN ('queued','failed') AND json_extract(o.data,'$.authorized')=1
-    ORDER BY o.rowid LIMIT 10`).all<{ data: string; principal: string }>()).results
-  const door = oncallAgentDoor(env)
-  for (const row of rows) {
-    const item = JSON.parse(row.data), who = JSON.parse(row.principal)
-    await door.invoke('oncall.automation.dispatch', { id: item.id, revision: item.revision, idempotency_key: `outbox-${item.id}-${item.revision}` }, who)
-  }
-}

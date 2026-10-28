@@ -4,6 +4,7 @@ import {randomBytes,createHmac,createHash} from 'node:crypto';
 import {automationRuntime} from './automation-runtime.mjs';
 import {readFile} from 'node:fs/promises';
 import {ownerDoor} from './worker.mjs';
+import {autonomousCoordination} from './agent-policy-fixture.mjs';
 // Older sources must never restore an erased automation label through either HTTP door.
 const erasureCalls=[];
 const erasureRuntime=await automationRuntime(request=>{erasureCalls.push(request.url);return new Response('unexpected outbound request',{status:403});});
@@ -117,6 +118,8 @@ try {
  for(const url of ['http://8.8.8.8/a','https://127.0.0.1/a','https://10.0.0.1/a','https://169.254.169.254/a','https://localhost/a','https://8.8.8.8/a?token=bad','https://user@8.8.8.8/a'])ok(await owner('/api/automation/endpoints',{name:'Unsafe',key:receiverKey,client:client.id,services:[service.id],url,approve:true}),400);
  const receiverApiKey=randomBytes(32).toString('hex'),receiverClient=ok(await owner('/api/automation/clients',{name:'Receiving access',key:receiverApiKey,services:[service.id],permissions:['incidents:read']}),201);
  let endpoint=ok(await owner('/api/automation/endpoints',{name:'Synthetic receiver',key:receiverKey,client:receiverClient.id,services:[service.id],url:'https://8.8.8.8/events',approve:true}),201);
+ const unset=await api('incidents');ok(unset,403);assert.equal(unset.value.error.code,'policy_unset');
+ await autonomousCoordination(runtime,cookie);
  ok(await owner('/api/automation/clients/'+client.id+'/rotate',{revision:client.revision,key:apiKey}),409);ok(await owner('/api/automation/endpoints/'+endpoint.id+'/rotate',{revision:endpoint.revision,key:receiverKey,approve:true}),409);assert.equal((await state()).apiClients.find(c=>c.id===client.id).revision,1);assert.equal((await state()).apiEndpoints.find(e=>e.id===endpoint.id).revision,1);
  ok(await runtime.request('/api/v1/incidents'),401);ok(await runtime.request('/api/v1/incidents',undefined,cookie),401);
  const input={type:'declare',service:service.id,title:'Synthetic incident',summary:'Synthetic impact',severity:'warning'};
@@ -157,7 +160,8 @@ try {
  assert.deepEqual(ok(await owner('/api/audit/export')).rows.find(r=>r.id===acknowledgmentFact.id),acknowledgmentFact);
  ok(await api('actions',{type:'action',incident:incident.id,revision:incident.revision,title:'Follow up',owner:admin.id,due:'2026-12-01',completionPolicy:'human-review'}),201);incident=ok(await api('incidents/'+incident.id));
  ok(await api('actions',{type:'accept-action',incident:incident.id,revision:incident.revision,action:incident.actions[0].id,reason:'Not a human'}),403);
- ok(await api('actions',{type:'complete',incident:incident.id,revision:incident.revision,action:incident.actions[0].id,evidence:'https://example.test/machine-review'}),403);
+ ok(await api('actions',{type:'complete',incident:incident.id,revision:incident.revision,action:incident.actions[0].id,evidence:'https://example.test/machine-review'}),201);incident=ok(await api('incidents/'+incident.id));
+ assert.equal(incident.actions[0].done,false);assert.equal(incident.actions[0].submission.by,client.id);assert.equal(incident.actions[0].accepted,undefined,'Machine evidence submission is not human acceptance');
  ok(await api('actions',{type:'action',incident:incident.id,revision:incident.revision,title:'Automation evidence claim',owner:admin.id,due:'2026-12-01',completionPolicy:'evidence'}),201);incident=ok(await api('incidents/'+incident.id));
  ok(await api('actions',{type:'complete',incident:incident.id,revision:incident.revision,action:incident.actions[1].id,evidence:'https://example.test/automation-claim'}),201);incident=ok(await api('incidents/'+incident.id));
  assert.equal(incident.actions[1].submission.by,client.id);assert.equal(incident.actions[1].accepted.by,client.id);assert.equal(incident.timeline.at(-1).actor,client.id);assert.equal(incident.actions[0].done,false);
@@ -179,7 +183,7 @@ try {
  const scheduleOperation=ok(await api('schedules',schedule,apiKey,'synthetic-oncall-schedule-notice'),201);assert.deepEqual(ok(await api('schedules',schedule,apiKey,'synthetic-oncall-schedule-notice')),scheduleOperation);
  const machineNotices=(await state()).scheduleRecords.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id);assert.ok(machineNotices.length>0);assert.ok(machineNotices.every(r=>r.data.obligation.creator===client.id&&r.data.obligation.reason==='schedule-change'&&r.data.obligation.automatic===false));
  ok(await api('schedules',schedule),409);assert.equal(ok(await api('schedules/'+schedule.id)).revision,1);
- const snapshot=await state();assert.ok(snapshot.apiOutbox.every(o=>o.owner===admin.id&&Number.isFinite(Date.parse(o.due))),'every durable delivery has its named owner and due time');assert.equal(snapshot.apiOutbox.length,11);assert.deepEqual(new Set(snapshot.apiOutbox.map(o=>o.event)),new Set(['trigger','acknowledgment','reassignment','role','follow-up','resolution']));
+ const snapshot=await state();assert.ok(snapshot.apiOutbox.every(o=>o.owner===admin.id&&Number.isFinite(Date.parse(o.due))),'every durable delivery has its named owner and due time');assert.equal(snapshot.apiOutbox.length,12);assert.deepEqual(new Set(snapshot.apiOutbox.map(o=>o.event)),new Set(['trigger','acknowledgment','reassignment','role','follow-up','resolution']));
  await runtime.restart();const committedLogin=await runtime.request('/api/login',{name:'Synthetic Owner',password:'synthetic-oncall-owner-password'});ok(committedLogin);cookie=committedLogin.cookie;assert.deepEqual((await state()).apiOutbox,snapshot.apiOutbox,'restart after domain commit retains queued operations exactly');
  const scheduled=await fetch(runtime.origin+'/cdn-cgi/local/scheduled');assert.equal(scheduled.status,200);await scheduled.text();assert.equal((await state()).apiOutbox.filter(o=>o.status==='sent').length,10,'one scheduled step is bounded to ten deliveries');const nextScheduled=await fetch(runtime.origin+'/cdn-cgi/local/scheduled');assert.equal(nextScheduled.status,200);await nextScheduled.text();assert.ok((await state()).apiOutbox.every(o=>o.status==='sent'),'scheduled handler dispatches the durable batch without a browser');
  assert.equal(applied.size,11);assert.equal((await state()).incidents.length,4);
@@ -291,6 +295,7 @@ try {
  const malformed=structuredClone(archive);malformed.apiOutbox[0].payload.secret='not-authorized';const retainedBefore=await state();ok(await owner('/api/restore',{mode:'replace',archive:malformed,adminMapping:admin.id}),400);assert.deepEqual((await state()).incidents,retainedBefore.incidents);assert.deepEqual((await state()).apiOutbox,retainedBefore.apiOutbox);
  const limitArchive=structuredClone(archive);while(limitArchive.apiOperations.length<1000){const n=limitArchive.apiOperations.length;limitArchive.apiOperations.push({...op,id:'synthetic-oncall-receipt-'+n,key:createHash('sha256').update('synthetic-oncall-receipt-'+n).digest('hex')});}
  const fresh=await automationRuntime();try{const setup2=await fresh.request('/api/setup',{name:'Fresh Owner',password:'synthetic-oncall-fresh-password'});const ck=setup2.cookie;ok(setup2);const restored=await fresh.request('/api/restore',{mode:'replace',archive:limitArchive,adminMapping:admin.id},ck);ok(restored);const held=ok(await fresh.request('/api/state',undefined,restored.cookie));assert.deepEqual(held.apiOperations,limitArchive.apiOperations);assert.deepEqual(held.erasureFences,limitArchive.erasureFences,'fresh native receiving preserves digest custody without an existing journal');assert.deepEqual(held.apiOutbox.map(o=>o.id),archive.apiOutbox.map(o=>o.id));assert.ok(held.apiClients.every(c=>!c.active));assert.ok(held.apiEndpoints.every(e=>!e.active));assert.ok(held.apiOutbox.every(o=>!o.authorized));for(const original of archive.apiOutbox){const received=held.apiOutbox.find(o=>o.id===original.id);assert.deepEqual(received.payload,original.payload);assert.deepEqual(received.history.slice(0,original.history.length),original.history);if(original.status==='queued'){assert.equal(received.status,'interrupted');assert.equal(received.history.at(-1).reason,'restore-requires-authorization');}else assert.equal(received.status,original.status);}assert.equal((await fresh.db.prepare('SELECT COUNT(*) AS n FROM oc_api_credentials').first()).n,0);assert.equal((await fresh.db.prepare('SELECT COUNT(*) AS n FROM oc_endpoint_credentials').first()).n,0);ok(await fresh.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+rotatedKey}),401);assert.equal(ok(await fresh.request('/api/automation/dispatch',{},restored.cookie)).processed,0);const limitKey=randomBytes(32).toString('hex');ok(await fresh.request('/api/automation/clients/'+client.id+'/rotate',{revision:held.apiClients.find(c=>c.id===client.id).revision,key:limitKey},restored.cookie));
+ await autonomousCoordination(fresh,restored.cookie);
  const bounded=(p,d,key)=>fresh.request('/api/v1/'+p,d,'',{authorization:'Bearer '+limitKey,'idempotency-key':key});
  const atLimit=ok(await fresh.request('/api/state',undefined,restored.cookie));assert.deepEqual(ok(await bounded('incidents',input,'synthetic-oncall-repeat')),op);ok(await bounded('incidents',{...input,title:'synthetic-oncall-over-receipt-capacity'},'synthetic-oncall-new-receipt'),429);const afterLimit=ok(await fresh.request('/api/state',undefined,restored.cookie));assert.deepEqual(afterLimit.incidents,atLimit.incidents);assert.deepEqual(afterLimit.apiOperations,atLimit.apiOperations);assert.deepEqual(afterLimit.apiOutbox,atLimit.apiOutbox);
  ok(await fresh.request('/api/command',{...input,title:'synthetic-oncall-human-at-receipt-capacity'},restored.cookie));console.log('PASS OC-053 lifetime API receipts: full history refuses new machine mutation, identical authorized retry retains receipt, human coordination continues');}finally{await fresh.close();}
@@ -405,6 +410,7 @@ try {
  const schedule=ok(await owner('/api/paging/schedules',{id:service.id,name:'Payments primary',service:service.id,revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[admin.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}));
  const policy=ok(await owner('/api/paging/policies',{service:service.id,scheduleId:schedule.id,revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}));
  const key=randomBytes(32).toString('hex');ok(await owner('/api/automation/clients',{name:'Manual incident writer',key,services:[service.id],permissions:['incidents:write','incidents:read']}),201);
+ await autonomousCoordination(manualApi,cookie);
  const submit=(input,credential=key,replay='synthetic-oncall-68-api-page')=>manualApi.request('/api/v1/incidents',input,'',{authorization:'Bearer '+credential,'idempotency-key':replay}),input={type:'manual-page',service:service.id,title:'Payments policy-targeted incident',severity:'warning',urgency:'high',policy:service.id};
  const first=ok(await submit(input),201),replayed=ok(await submit(input));assert.equal(replayed.id,first.id);ok(await submit({...input,title:'Conflicting policy-targeted page'}),409);
  const state=ok(await owner('/api/state'));assert.equal(state.incidents.length,1);const incident=state.incidents.find(i=>i.id===first.entity);assert.equal(incident.manualPage.creator,first.client);assert.deepEqual(incident.manualPage.obligations[0].target,{kind:'policy',id:service.id,policyRevision:policy.revision});assert.equal(incident.manualPage.obligations[0].automatic,false);assert.equal(incident.manualPage.obligations[0].paging,'off');
@@ -417,7 +423,7 @@ try {
 const deadlines58=await localWorker({}, {clock:true});
 try {
  const w=deadlines58,ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value;};
- const setup=await w.request('/api/setup',{name:'synthetic-oncall-58',password:'synthetic-oncall-58-password'});ok(setup);let cookie=setup.cookie;
+ const setup=await w.request('/api/setup',{name:'synthetic-oncall-58',password:'synthetic-oncall-58-password'});ok(setup);let cookie=setup.cookie;await autonomousCoordination(w,cookie);
  const req=(path,input)=>w.request(path,input,cookie),read=async()=>ok(await req('/api/state')),admin=setup.value.member;
  const reviewedSchedule58=async schedule=>{const from=Date.now(),input={schedule,from,to:from+86400000};const reviewed=ok(await req('/api/schedules/'+schedule.id+'/review',input));return ok(await req('/api/schedules/'+schedule.id+'/apply',{...input,digest:reviewed.digest,confirmed:true})).schedule;};
  const backup=ok(await req('/api/members',{name:'synthetic-oncall-58-backup',role:'responder',password:'synthetic-oncall-58-backup-password'}),201);
@@ -467,7 +473,7 @@ try {
   return new Response(null,{status:200,headers:{'x-oncall-result':'accepted','x-oncall-receipt':sign(key,body.operationId+'.'+timestamp+'.accepted')}})
  });
  try{
-  const setup=await erased.request('/api/setup',{name:'synthetic-oncall-403',password:'synthetic-oncall-403-password'});ok(setup);let cookie=setup.cookie;
+  const setup=await erased.request('/api/setup',{name:'synthetic-oncall-403',password:'synthetic-oncall-403-password'});ok(setup);let cookie=setup.cookie;await autonomousCoordination(erased,cookie);
   const req=(path,data)=>erased.request(path,data,cookie),read=async()=>ok(await req('/api/state'));
   const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-403',name:'Synthetic erasure delivery',environment:'test',owner:setup.value.member.id,runbook:[],pager:''}));
   const clientKey=randomBytes(32).toString('hex');

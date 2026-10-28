@@ -113,6 +113,8 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
     const label=await anonymous('client',targetId)
     // Preserve historical machine attribution as an inactive, credential-free
     // erased identity. Never transfer a machine's claims to the erasing admin.
+    for(const entry of [...state.audit,...state.incidents.flatMap(row=>row.timeline)])if(entry.metadata?.agent?.client===targetId)delete entry.metadata.agent
+    eraseCredential('oc_agent_operations','client',[targetId])
     for(const key of ['incidents','audit','services'] as const){
      const prior=state[key].map(row=>JSON.stringify(row));(state as any)[key]=replaceIdentity(state[key],targetId,label)
      const changed=state[key].filter((row,index)=>JSON.stringify(row)!==prior[index]).length
@@ -166,6 +168,8 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
    // Recheck custody in the same batch as deletion, including a concurrent role change.
    statements.push(guardStatement(db,'NOT '+ownerLink,id))
    if(id===sponsor)fail('Use another administrator to erase this member',409)
+   const agentJobs=(await db.prepare("SELECT outbox FROM oc_agent_outbox WHERE json_extract(principal,'$.person.id')=?").bind(id).all<{outbox:string}>()).results.map(row=>row.outbox)
+   outbox(row=>agentJobs.includes(row.id))
    if(member.role==='admin'&&member.active&&state.members.filter(m=>m.active&&m.role==='admin').length===1)fail('The last administrator cannot be erased',409)
    if(input.identitiesReviewed!==true||!Array.isArray(input.importedPeople)||input.importedPeople.some((v:unknown)=>typeof v!=='string')||new Set(input.importedPeople).size!==input.importedPeople.length)fail('Review and select this member’s retained imported identities',409)
    const people=(await db.prepare("SELECT id,data FROM move_in_objects WHERE kind='user'").all<{id:string;data:string}>()).results
@@ -205,6 +209,11 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
    }
    if(ptoChanged){remember('paging_schedules');remember('paging_control');statements.push(guardStatement(db,'EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)',pagingControl!.revision),db.prepare('UPDATE paging_control SET revision=revision+1 WHERE id=1'))}
    member.name='Erased member';member.active=false;member.erased=true;remember('oc_members')
+   for(const entry of [...state.audit,...state.incidents.flatMap(row=>row.timeline)]){
+    const by=entry.metadata?.agent;if(!by)continue
+    if(by.sponsor===id){by.for.name='Erased member';by.label=`${by.agent.name} for Erased member`}
+    for(const approver of by.approvers??[])if(approver.id===id)approver.name='Erased member'
+   }
    for(const entry of state.audit)if(entry.kind==='member')entry.text=redact(entry.text)
    remember('oc_audit')
    remove('scheduleRecords','oc_schedule_records',r=>r.member===id||r.data.substitute===id||r.data.obligation?.creator===id)
@@ -294,6 +303,9 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
    auditIdentity(db,{actor:{kind:'agent',id:agent.agent.id},source:{kind:'member',id:sponsor}})
   }
   validateArchive(state)
+  remember('oc_agent_outbox');remember('oc_agent_operations')
+  statements.push(db.prepare('DELETE FROM oc_agent_outbox WHERE outbox NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify((state.apiOutbox??[]).map(row=>row.id))),
+    db.prepare("DELETE FROM oc_agent_operations WHERE json_extract(operation,'$.entity') NOT IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...state.services.map(row=>row.id),...state.incidents.map(row=>row.id)])))
   // The digest holds no subject content. It also rejects old rows maliciously
   // paired with a newer native journal on either restore door.
   await fence(kind,id)

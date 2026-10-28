@@ -4,6 +4,7 @@ import { command, fail, type Member } from '../family/response-operations/domain
 import { editTeam, type Team } from '../teams/model'
 import { eraseSubject, type SubjectErasureInput } from '../subject-erasure'
 import { nativeImportErasureContext } from '../move-in/native-erasure'
+import { subjectErasureIdentity } from '../subject-erasure-identity'
 import { defineTool, type JsonSchema, type ToolContext, type ToolDefinition } from '../modules/agent-door/index.ts'
 import { nativeAccess, nativeActor, nativeAudit, nativeCall, persistNative, type NativeAccess } from './native'
 
@@ -188,8 +189,7 @@ function privacyTool(env: Bindings): ToolDefinition {
       const importContext = nativeImportErasureContext(env.DB, access.member.id, () => ({ sql: access.guard.sql, params: access.guard.values }))
       const input: SubjectErasureInput = { confirmation: args.confirmation as string, workspaceRevision: args.workspaceRevision as number, identitiesReviewed: args.identitiesReviewed as boolean | undefined, importedPeople: args.importedPeople as string[] | undefined }
       const result = await eraseSubject({ db: env.DB, state: access.state, actor, guard: access.guard, input, kind, id, importContext })
-      const paths: Record<string, string> = { incident: 'incidents', member: 'members', client: 'automation/clients', endpoint: 'automation/endpoints', email: 'integrations/email', 'email-list': 'status/email-lists', native: 'integrations/native', intake: 'integrations/intake', change: 'integrations/changes' }
-      const resource = uri(paths[kind], id)
+      const resource = uri('erasures', await subjectErasureIdentity(kind,id))
       ctx.emit('privacy.erased', resource, { kind, id, state: result.state })
       return { result, resources: [{ uri: resource, name: `Erased ${kind}` }] }
     }),

@@ -10,7 +10,7 @@ import { pagingSnapshot } from '../paging-store'
 import { ToolRefusal, type ClassAndFacts, type ResourceContext, type ResourceDefinition } from '../modules/agent-door/index.ts'
 import { nativeAccess, type NativeAccess } from './native'
 
-type RecordBody = { json: unknown; service: string }
+type RecordBody = { json: unknown; service?: string }
 type Reader = (access: NativeAccess, id: string) => Promise<RecordBody | null> | RecordBody | null
 
 /** Identifiers alone are not a disclosure of a person's native profile. */
@@ -70,11 +70,11 @@ function resource(env: Bindings, path: string, name: string, permission: string,
       const segment = uri.slice(prefix.length, suffix ? -suffix.length : undefined)
       let id: string
       try { id = decodeURIComponent(segment) } catch { return null }
-      if (!id || segment.includes('/') || /[/?#]/.test(id)) return null
+      if (!id || segment.includes('/')) return null
       try {
         const access = await nativeAccess(env, ctx, permission, undefined, admin)
         const record = await read(access, id)
-        if (!record || !access.services.includes(record.service)) return null
+        if (!record || record.service!==undefined&&!access.services.includes(record.service)) return null
         // Generation may await scheduling storage. Re-read native membership,
         // client revision and service grants immediately before disclosing it.
         const current = await nativeAccess(env, ctx, permission, record.service, admin)
@@ -91,6 +91,11 @@ function resource(env: Bindings, path: string, name: string, permission: string,
 
 export function oncallResources(env: Bindings): ResourceDefinition[] {
   return [
+    resource(env,'members/{id}','Native member','access:read',(access,id)=>{const member=access.state.members.find(row=>row.id===id);return member?{json:{people:[member]}}:null},true),
+    resource(env,'teams/{id}','Public native team','access:read',(access,id)=>{const team=access.state.teams?.find(row=>row.id===id);return team?{json:team}:null},true),
+    resource(env,'automation/clients/{id}','Native client authority','integrations:read',(access,id)=>{const client=access.state.apiClients?.find(row=>row.id===id);return client?{json:client}:null},true),
+    resource(env,'automation/endpoints/{id}','Approved endpoint authority','integrations:read',(access,id)=>{const endpoint=access.state.apiEndpoints?.find(row=>row.id===id);return endpoint?{json:endpoint}:null},true),
+    resource(env,'erasures/{id}','Native erasure fence','privacy:write',(access,id)=>{const fence=access.state.erasureFences?.find(row=>row.id===id);return fence?{json:{state:'complete',fence:fence.id,externalDeletion:'not-requested'}}:null},true),
     resource(env, 'services/{id}', 'Service', 'services:read', (access, id) => {
       const service = access.state.services.find(row => row.id === id && access.services.includes(row.id))
       return service ? { service: id, json: { ...service, dependencies: service.dependencies?.filter(value => access.services.includes(value)) } } : null

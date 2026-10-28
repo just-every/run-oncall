@@ -35,7 +35,7 @@ import type { AlertUrgencyEntry, Urgency, UrgencyDecision, UrgencyRule } from '.
 import { admitAlertUrgency, declarationUrgency, serviceUrgency } from '../../urgency/model.ts';
 import { validateUrgencyArchive } from '../../urgency/archive.ts';
 export type Role = "admin" | "responder" | "viewer" | "stakeholder";
-export type AgentAttribution = {agent:{id:string;name:string};for:{id:string;name:string};label:string;sponsor:string;client?:string;approvers?:{id:string;name:string}[]};
+export type AgentAttribution = {agent:{id:string;name:string};for:{id:string;name:string};label:string;sponsor:string;client?:string;clientRevision?:number;approvers?:{id:string;name:string}[]};
 export type Member = { id: string; name: string; role: Role; active: boolean; erased?:true; machine?: true; agent?:AgentAttribution };
 export type Service = {
   team?: string | null; ownership?: { source: "backstage"; entity: string; importId: string; importedAt: string };
@@ -747,7 +747,7 @@ export function validateArchive(value: any): State {
       if(e.metadata.policyVersion!==undefined&&(!Number.isSafeInteger(e.metadata.policyVersion)||e.metadata.policyVersion<1))fail('Invalid timeline policy version');
       const agent=e.metadata.agent;
       if(agent!==undefined){
-        object(agent,['agent','for','label','sponsor'],['client','approvers']);
+        object(agent,['agent','for','label','sponsor'],['client','clientRevision','approvers']);
         for(const person of [agent.agent,agent.for]){object(person,['id','name']);text(person.id,'agent attribution identity',200);text(person.name,'agent attribution name',200);}
         text(agent.label,'agent attribution label',500);text(agent.sponsor,'agent sponsor',100);
         if(agent.for.id!==agent.sponsor||!value.members.some((m:any)=>m.id===agent.sponsor))fail('Invalid agent sponsor');
