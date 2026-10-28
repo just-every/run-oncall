@@ -206,6 +206,14 @@
       "reason": "Font licence and fallback notes kept beside the font files"
     },
     {
+      "source": "scripts/edition-authoring/vendor/babel-parser/README.md",
+      "reason": "Vendored third-party parser notice for the Base authoring helper"
+    },
+    {
+      "source": "scripts/edition-authoring/vendor/yaml/README.md",
+      "reason": "Vendored third-party parser notice for the Base authoring helper"
+    },
+    {
       "source": "src/base/hydration/README.md",
       "reason": "Base runtime integration guidance for source maintainers."
     },
