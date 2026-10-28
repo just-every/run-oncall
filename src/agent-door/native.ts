@@ -13,6 +13,7 @@ const operations = new WeakMap<object, Operation>()
 export async function withNativeOperation<T>(env: Bindings, operation: Operation, run: () => Promise<T>, native?: {agent:string;tool:string;args:Record<string,unknown>}): Promise<T> {
   if(native){
     const digest=await changeHash(canonical(native.args))
+    auditKind(env.DB,'automation.operation-prepare')
     await env.DB.prepare(`INSERT OR IGNORE INTO oc_agent_operations(id,client,key,agent,tool,args_sha256,operation) VALUES(?,?,?,?,?,?,?)`).bind(operation.id,operation.client,operation.key,native.agent,native.tool,digest,JSON.stringify(operation)).run()
     const row=await env.DB.prepare('SELECT id,agent,tool,args_sha256 FROM oc_agent_operations WHERE client=? AND key=?').bind(operation.client,operation.key).first<{id:string;agent:string;tool:string;args_sha256:string}>()
     if(!row||row.agent!==native.agent||row.tool!==native.tool||row.args_sha256!==digest)throw new ToolRefusal('idempotency_conflict')
@@ -102,7 +103,7 @@ export function nativeAudit(env: Bindings, ctx: ToolContext, kind: string, id: s
 
 export async function nativeCall<T>(run: () => Promise<T> | T): Promise<T> {
   try { return await run() } catch (error) {
-    if (error instanceof Fault) throw new ToolRefusal(error.status === 409 ? 'revision_conflict' : error.status === 404 ? 'not_found' : error.status === 403 ? 'native_authority_required' : error.status===401?'unauthenticated':error.status===429?'rate_or_capacity_limit':error.status===413?'request_too_large':'native_request_invalid', error.message)
+    if (error instanceof Fault) throw new ToolRefusal(error.status === 409 ? 'revision_conflict' : error.status === 404 ? 'not_found' : error.status === 403 ? 'native_authority_required' : error.status===401?'unauthenticated':error.status===429?'rate_or_capacity_limit':error.status===413?'request_too_large':error.status===503?'storage_unavailable':'native_request_invalid', error.message)
     throw error
   }
 }

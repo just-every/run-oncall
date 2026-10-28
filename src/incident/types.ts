@@ -14,6 +14,8 @@ export type IncidentProps = {
   mutate: (data: any) => Promise<any>;
 };
 export const memberName = (state: State, id: string | null | undefined) => {
+  if(id?.startsWith('source:'))return `Source: ${id.slice('source:'.length)}`;
+  if(id==='system:incident-deadlines')return 'Deadline scheduler';
   const member=state.members.find(member=>member.id===id);
   if(member)return member.name;
   const client=state.apiClients?.find(client=>client.id===id);

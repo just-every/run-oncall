@@ -82,10 +82,10 @@ function recoveryEvent(state: State, incident: Incident, marker:RetainedRecovery
 function validRecoveryEntry(state:State,incident:Incident,entry:Entry) {
  const marker=recoveryMarkers(incident).find(s=>s.reminder.id===entry.id),event=marker&&recoveryEvent(state,incident,marker);
  if(!marker||!event)return false;
- const metadata=responseFields(entry.metadata,['receipt']);
+ const metadata=responseFields(entry.metadata,['receipt'],['agent']);
  return entry.kind==='source-recovery'&&entry.at===marker.at&&metadata.receipt===marker.receipt&&entry.text===sourceRecoveryText&&
   entry.lifecycle===undefined&&entry.operationId===undefined&&entry.review===undefined&&
-  (entry.actor===`source:${event.source}`||state.members.some(m=>m.id===entry.actor)||state.apiClients?.some(c=>c.id===entry.actor)===true);
+  (entry.actor===`source:${event.source}`||state.members.some(m=>m.id===entry.actor)||state.apiClients?.some(c=>c.id===entry.actor)===true||entry.metadata?.agent?.agent.id===entry.actor);
 }
 
 /** The sole exception for source-attributed incident entries: validate the complete provenance first. */
@@ -132,7 +132,8 @@ export function validateResponseArchive(state: State) {
     }
   }
   for (const alert of state.alerts) validateObligation(state, alert);
-  for (const entry of state.audit) if (Object.hasOwn(entry, 'metadata')) fail('Response metadata is only valid on attributed incident entries');
+  for (const entry of state.audit) if (Object.hasOwn(entry, 'metadata') &&
+    (!entry.metadata?.agent || Object.keys(entry.metadata).some(key=>key!=='agent'))) fail('Response metadata is only valid on attributed incident entries');
   const automaticAlerts = new Set<string>();
   for (const incident of state.incidents) {
     if (incident.automaticDeclaration !== undefined) {
@@ -141,7 +142,8 @@ export function validateResponseArchive(state: State) {
     }
     validateIncidentRecovery(state, incident);
     for (const entry of incident.timeline) {
-      if (Object.hasOwn(entry, 'metadata') && !(entry.kind === 'declared' && validDeclaredEntry(state, incident, entry)) &&
+      const agentOnly=entry.metadata?.agent&&Object.keys(entry.metadata).every(key=>key==='agent');
+      if (Object.hasOwn(entry, 'metadata') && !agentOnly && !(entry.kind === 'declared' && validDeclaredEntry(state, incident, entry)) &&
         !(entry.kind === 'source-recovery' && validRecoveryEntry(state, incident, entry))) fail('Invalid response timeline metadata');
       if (entry.actor.startsWith('source:') && !validResponseSourceEntry(state, incident, entry)) fail('Invalid source-attributed incident timeline');
     }

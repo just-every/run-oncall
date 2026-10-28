@@ -14,7 +14,13 @@ type Settings = { rev: number; token: string; document: string | null; owner_id:
 type TeamRow = { email: string; business_id: string; business_role: 'admin' | 'member'; operator_id: string | null; state: string; invite: number }
 type NativeRow = { id: string; data: string }
 type Proof = { sql: string; args: unknown[] }
-const headers = { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff', 'x-robots-tag': 'noindex, nofollow' }
+// Native POST navigation needs its same-origin Origin header for the CSRF fence.
+const headers = { 'cache-control': 'no-store', 'referrer-policy': 'same-origin', 'x-content-type-options': 'nosniff', 'x-robots-tag': 'noindex, nofollow' }
+function failurePage(code:string,status:number){
+  const nonce=crypto.randomUUID().replaceAll('-','')
+  const messages:Record<string,string>={revision_conflict:'Business settings changed. Reload the current people list before linking.',mapping_conflict:'This person or account already has a mapping. Reload before choosing an account.',native_member_unavailable:'Choose a current account with the required native role.',unauthenticated:'Sign in as the installation owner to link people.',owner_required:'Only the claimed installation owner can link Business people.',business_stopped:'Business linking is stopped for this installation.'}
+  return new Response(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Link not saved · Oncall</title><style nonce="${nonce}">${pageStyle}</style><link rel="stylesheet" href="/rer-theme.css"></head><body><header><a href="/app">Oncall</a></header><main><h1>Link not saved</h1><p role="alert" data-refusal-code="${escape(code)}">${escape(messages[code]??'The mapping could not be saved. Reload the people list and check the current accounts before trying again.')}</p><a href="/agents/people">Return to Business people</a></main></body></html>`,{status,headers:{...headers,'content-type':'text/html; charset=utf-8','content-security-policy':`default-src 'none'; style-src 'self' 'nonce-${nonce}'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'`}})
+}
 const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!)
 class LinkRefusal extends Error {
   constructor(readonly code: string, readonly status = 403) { super(code) }
@@ -154,6 +160,7 @@ export async function businessPeopleResponse(original: Bindings, request: Reques
     const known = error instanceof LinkRefusal || error instanceof AuthError
     const code = known ? error.code : 'people_link_unavailable', status = known ? error.status : 503
     const response = await rejectedResponse(request, Response.json({ code }, { status, headers }))
+    if(!api)return failurePage(response.status===413?'input_too_large':code,response.status)
     // The shared discard helper uses text for oversized/stalled transports.
     // This door keeps every refusal in its documented {code} envelope.
     return response.headers.get('content-type')?.startsWith('application/json') ? response

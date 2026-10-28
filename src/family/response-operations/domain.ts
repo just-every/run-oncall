@@ -426,7 +426,7 @@ export function command(state:State,actor:Member,input:any,at=new Date().toISOSt
   if(actor.machine) {
     machineAuthority(state,actor);
     if(actor.agent){
-      const service=input.type==='declare'||input.type==='service'?input.service??input.id:state.incidents.find(i=>i.id===input.incident)?.service;
+      const service=['declare','manual-page','service'].includes(input.type)?input.service??input.id:state.incidents.find(i=>i.id===input.incident)?.service;
       const client=actor.agent.client?state.apiClients?.find(c=>c.id===actor.agent!.client):undefined;
       if(client){
         if(!client.services.includes(service))fail('Record not found in this client scope',404);

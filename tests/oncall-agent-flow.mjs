@@ -24,7 +24,9 @@ try{
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const events=await tool('oncall.events.list',{limit:200});assert.ok(events.result.structuredContent.events.some(row=>row.actor.kind==='agent'));
  const native=await (await http('/api/state')).json(),incident=native.incidents.find(row=>row.title==='Payment authorization failures after deployment');
- assert.ok(incident.timeline.every(row=>row.metadata?.agent?.for.id===native.members.find(row=>row.name==='Alex Chen').id));
+ const agentEntries=incident.timeline.filter(row=>row.metadata?.agent);
+ assert.ok(agentEntries.length>0&&agentEntries.every(row=>row.metadata.agent.for.id===native.members.find(row=>row.name==='Alex Chen').id));
+ assert.ok(incident.timeline.some(row=>row.kind==='source-recovery'&&!row.metadata?.agent),'Source observation retains its separate native actor');
  assert.equal(incident.actions[0].done,false);
  const pause=await adopt(autonomousPolicy(),{paused:true});assert.equal(pause.status,200);
  const witness=JSON.stringify((await (await http('/api/state')).json()).incidents);

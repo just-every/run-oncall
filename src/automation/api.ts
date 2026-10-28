@@ -203,6 +203,11 @@ export function installVersionedApi(api:any,deps:Deps) {
   const incident=state.incidents.find(i=>i.id===input.incident),schedule=input.schedule??input;
   const service=family==='services'?input.id:family==='incidents'&&['declare','manual-page'].includes(input.type)?input.service:family==='schedules'?schedule.service:incident?.service;
   allowed(client,service);if(!state.services.some(s=>s.id===service))fail('Record not found in this client scope',404);
+  if(family==='schedules'){
+   const current=(await pagingSnapshot(c.env.DB)).archive.schedules.find(row=>row.id===schedule.id);
+   if(current)allowed(client,current.service);
+   else if(schedule.revision!==0)fail('Record not found in this client scope',404);
+  }
   if(Array.isArray(input.dependencies)&&input.dependencies.some((s:string)=>!client.services.includes(s)))fail('Cross-service reference refused',404);
   if((state.apiOperations?.length??0)>=1000)fail('API operation history capacity reached',429);
   const operation:Operation={id:crypto.randomUUID(),client:client.id,key:keyHash,request,service,resource:family,entity:'',revision:family==='schedules'?Number(schedule.revision)+1:1,at:new Date().toISOString()};

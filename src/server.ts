@@ -58,7 +58,8 @@ export default withDemo({
     if(agents){
       if(new URL(request.url).pathname==='/agents'&&agents.headers.get('content-type')?.startsWith('text/html')&&await oncallPeople(bindings).session(request)){
         const brand=await businessSettings(bindings).publicBrand();
-        return new HTMLRewriter().on('main',{element(main){main.prepend(`<p><a href="/agents/people">Link existing Business people</a> · <a href="/docs/agents">Oncall agent guide</a></p>`,{html:true});if(brand.displayName)main.prepend(brand.displayName,{html:false})}}).transform(agents)
+        const business=brand.displayName?.replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]!));
+        return new HTMLRewriter().on('main',{element(main){main.prepend(`${business?`<p><a href="/app" data-business-name>${business}</a></p>`:''}<p><a href="/agents/people">Link existing Business people</a> · <a href="/docs/agents">Oncall agent guide</a></p>`,{html:true})}}).transform(agents)
       }
       return agents;
     }

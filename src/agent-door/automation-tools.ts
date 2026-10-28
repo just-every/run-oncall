@@ -17,7 +17,7 @@ export function automationTools(env: Bindings): ToolDefinition[] {
       const who = JSON.parse(binding.principal)
       if (who.person.id !== ctx.person.id || who.agent.id !== ctx.agent.id || who.consent !== ctx.consent) throw new ToolRefusal('native_authority_required')
     }
-    return { current, item, endpoint }
+    return { current, item, endpoint, bound:!!binding }
   }
   return ['dispatch', 'replay'].map(action => ({
     name: `oncall.automation.${action}`, title: `${action} a minimal response event`, description: 'Use an existing approved receiver and its frozen minimal event. Authenticated receiver acceptance is distinct from an uncertain network outcome. No paging.', scope: 'automation:write', readOnly: false, classes: ['external'], clauses: ['OC-006', 'OC-053'],
@@ -27,7 +27,7 @@ export function automationTools(env: Bindings): ToolDefinition[] {
     revision: (args, ctx) => nativeCall(async () => (await access(args, ctx)).item.revision),
     summary: (args, ctx) => nativeCall(async () => { const { item, endpoint } = await access(args, ctx); return { target: { id: item.id, name: `Response event ${item.event}` }, recipients: [endpoint.url], items: [JSON.stringify(item.payload), `Endpoint revision ${endpoint.revision}`, `Operation revision ${item.revision}`] } }),
     run: (args, ctx) => nativeCall(async () => {
-      const { current, item } = await access(args, ctx)
+      const { current, item, bound } = await access(args, ctx)
       if (item.revision !== args.revision) throw new ToolRefusal('revision_conflict')
       nativeAudit(env, ctx, `automation.${action}`, item.id)
       if (action === 'replay') {
@@ -41,7 +41,14 @@ export function automationTools(env: Bindings): ToolDefinition[] {
         item.clientRevision=origin.revision;item.receiverRevision=receiver.revision;item.endpointRevision=endpoint.revision;item.authorized=true;item.due=new Date(ctx.now()).toISOString();updateOutcome(item,'queued','protected-replay')
         await persistNative(env,current)
       } else {
-        await env.DB.prepare('INSERT OR IGNORE INTO oc_agent_outbox(outbox,principal) VALUES(?,?)').bind(item.id,JSON.stringify({person:{id:ctx.person.id},agent:ctx.agent,scopes:ctx.scopes,clientId:ctx.clientId,consent:ctx.consent})).run()
+        if(!bound){
+          try{await env.DB.prepare(`INSERT OR IGNORE INTO oc_agent_outbox(outbox,principal) SELECT ?,? WHERE ${current.guard.sql}`).bind(item.id,JSON.stringify({person:{id:ctx.person.id},agent:ctx.agent,scopes:ctx.scopes,clientId:ctx.clientId,consent:ctx.consent}),...current.guard.values).run()}
+          catch{throw new ToolRefusal('storage_unavailable')}
+          const saved=await env.DB.prepare('SELECT principal FROM oc_agent_outbox WHERE outbox=?').bind(item.id).first<{principal:string}>()
+          if(!saved)throw new ToolRefusal('native_authority_required')
+          const who=JSON.parse(saved.principal)
+          if(who.person.id!==ctx.person.id||who.agent.id!==ctx.agent.id||who.consent!==ctx.consent)throw new ToolRefusal('native_authority_required')
+        }
         await dispatchOutbox(env,current.guard,{id:item.id,agent:{id:ctx.agent.id,label:ctx.actor.label}})
       }
       // Report the committed transport outcome even if Pause/revocation arrives

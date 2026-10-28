@@ -24,7 +24,7 @@ export function ReviewMaterial({material,state}: {material: Material;state:State
     <div className="review-snapshot"><h4>Missing material</h4><ul>{material.missing.map(item => <li key={item}>{item}</li>)}</ul></div>
     </details>
     <details><summary>From the timeline ({material.assertions.length})</summary>
-      <p>Attributed person and agent records, kept separate from source observations. No assertion is automatically accepted as root cause or impact.</p>
+      <p>Attributed timeline records distinguish people, agents and source observations. No assertion is automatically accepted as root cause or impact.</p>
       <ol className="review-records">{material.assertions.map(assertion => <li key={assertion.id}>
         <p className="review-literal">{timelineText(assertion,state)}</p>
         {assertion.review&&<dl><dt>Accepted root cause</dt><dd className="review-literal">{assertion.review.rootCause}</dd><dt>Accepted impact</dt><dd className="review-literal">{assertion.review.impact}</dd><dt>Accepted review</dt><dd className="review-literal">{assertion.review.review}</dd></dl>}

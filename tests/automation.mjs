@@ -144,7 +144,7 @@ try {
  console.log('PASS OC-053 management denial: anonymous/token-only 401, viewer/responder 403 across read, create, rotate, revoke, dispatch and replay; token has no session/export/audit door');
  const memberA=ok(await owner('/api/members',{name:'synthetic-oncall-responder-a@example.test',role:'responder',password:'synthetic-oncall-responder-password'}),201);
  const memberB=ok(await owner('/api/members',{name:'synthetic-oncall-responder-b',role:'responder',password:'synthetic-oncall-responder-password'}),201);
- const transition=async(type,extra)=>{const response=ok(await api('incidents',{type,incident:incident.id,revision:incident.revision,...extra}),201);incident=ok(await api('incidents/'+response.entity));return response;};
+ const transition=async(type,extra)=>{const response=ok(await api('incidents',{type,incident:incident.id,revision:incident.revision,...extra}),201);incident=(await state()).incidents.find(row=>row.id===response.entity);return response;};
  ok(await api('incidents',{type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Machine acknowledgment'}),400);
  await transition('transition',{state:'acknowledged',member:memberA.id,summary:'Client assigns explicit responsibility; no human response claim'});
  assert.equal(incident.assignee,memberA.id);assert.equal(incident.commander,memberA.id);assert.equal(incident.timeline.at(-1).actor,client.id);
@@ -186,7 +186,7 @@ try {
  const snapshot=await state();assert.ok(snapshot.apiOutbox.every(o=>o.owner===admin.id&&Number.isFinite(Date.parse(o.due))),'every durable delivery has its named owner and due time');assert.equal(snapshot.apiOutbox.length,12);assert.deepEqual(new Set(snapshot.apiOutbox.map(o=>o.event)),new Set(['trigger','acknowledgment','reassignment','role','follow-up','resolution']));
  await runtime.restart();const committedLogin=await runtime.request('/api/login',{name:'Synthetic Owner',password:'synthetic-oncall-owner-password'});ok(committedLogin);cookie=committedLogin.cookie;assert.deepEqual((await state()).apiOutbox,snapshot.apiOutbox,'restart after domain commit retains queued operations exactly');
  const scheduled=await fetch(runtime.origin+'/cdn-cgi/local/scheduled');assert.equal(scheduled.status,200);await scheduled.text();assert.equal((await state()).apiOutbox.filter(o=>o.status==='sent').length,10,'one scheduled step is bounded to ten deliveries');const nextScheduled=await fetch(runtime.origin+'/cdn-cgi/local/scheduled');assert.equal(nextScheduled.status,200);await nextScheduled.text();assert.ok((await state()).apiOutbox.every(o=>o.status==='sent'),'scheduled handler dispatches the durable batch without a browser');
- assert.equal(applied.size,11);assert.equal((await state()).incidents.length,4);
+ assert.equal(applied.size,12);assert.equal((await state()).incidents.length,4);
  receiverKey=randomBytes(32).toString('hex');endpoint=ok(await owner('/api/automation/endpoints/'+endpoint.id+'/rotate',{revision:endpoint.revision,key:receiverKey,approve:true}));
  // Real foreign records never appear through direct IDs, pagination or linked mutations.
  let hidden=ok(await owner('/api/command',{...input,service:foreign.id,title:'Hidden incident'}));hidden=ok(await owner('/api/command',{type:'action',incident:hidden.id,revision:hidden.revision,title:'Hidden action',owner:admin.id,due:'2026-12-01'}));

@@ -22,7 +22,9 @@ function authorized(state:State,item:Outbox) {
  return item.authorized&&endpoint&&origin&&receiver&&endpoint.revision===item.endpointRevision&&origin.revision===item.clientRevision&&receiver.revision===item.receiverRevision&&activeOwner(state,item.owner)&&activeOwner(state,endpoint.owner)&&activeOwner(state,origin.owner)&&activeOwner(state,receiver.owner)&&origin.services.includes(item.service)&&receiver.services.includes(item.service)&&receiver.permissions.includes('incidents:read')&&endpoint.services.includes(item.service)&&state.incidents.some(i=>i.id===item.incident&&i.service===item.service)?{endpoint,origin,receiver}:null;
 }
 async function persist(env:any,state:State,guard:Guard) {
- const result=await env.DB.batch(workspaceWrite(env.DB,state,state.revision,guard));
+ let result;
+ try{result=await env.DB.batch(workspaceWrite(env.DB,state,state.revision,guard));}
+ catch{fail('Outbox transaction rolled back; no state saved',503);}
  if(result[0].meta.changes!==1)fail('Outbox state or authority changed; retry',409);
 }
 /** A bounded dispatch step. Only queued or explicitly retryable work runs; uncertainty never retries itself. */
@@ -37,7 +39,17 @@ export async function dispatchOutbox(env:any,guard:Guard={sql:'1',values:[]},adm
   // Agent work can leave only through typed invocation with its retained actor.
   if(custody&&!admission.agent){
     const who=JSON.parse(custody.principal)
+    const native=authorized(state,candidate)
+    const live=native?await env.DB.prepare('SELECT COUNT(*) AS n FROM oc_api_credentials WHERE client IN (?,?)').bind(native.origin.id,native.receiver.id).first():null
+    // Revocation cleanup is the current person's/system's restrictive action;
+    // it never executes the former agent or sends anything on its behalf.
+    if(!native||!activeOwner(state,who.person.id)||live?.n!==(native.origin.id===native.receiver.id?1:2)){
+      auditKind(env.DB,'automation.cancel-revoked');auditIdentity(env.DB,{subject:{kind:'outbox',id:candidate.id}})
+      updateOutcome(candidate,'terminal','authority-revoked');await persist(env,state,guard)
+      return {processed:1,id:candidate.id,status:candidate.status}
+    }
     const result=await (await import('../agent-door/index.server')).oncallAgentDoor(runtimeBindings(env)).invoke('oncall.automation.dispatch',{id:candidate.id,revision:candidate.revision,idempotency_key:`outbox-${candidate.id}-${candidate.revision}`},who)
+    if(['execution_failed','output_invalid','policy_unavailable','storage_unavailable'].includes(result.code??''))fail('Agent dispatch failed; no send confirmed',503)
     const operation=(result.result as {operation?:{status:string}}|undefined)?.operation
     return {processed:operation?1:0,id:candidate.id,...(operation?{status:operation.status}:{held:result.code??result.outcome,approval:result.approval})}
   }
