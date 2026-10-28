@@ -55,6 +55,8 @@ jobs:
           node-version-file: .node-version
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
+      - name: Check the generated contract documents
+        run: node src/base/contract-docs.mjs check
       - if: matrix.browser
         run: pnpm exec playwright install --with-deps chromium
       - name: Verify the selected public-door journey
