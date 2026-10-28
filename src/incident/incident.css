@@ -1,0 +1,105 @@
+/* The incident keeps Oncall's ink, paper, type and fields. */
+.incident-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+.incident-board.has-incident { grid-template-columns: minmax(290px, .7fr) minmax(0, 1.3fr); }
+.incident-board > * { min-width: 0; }
+.incident-page { display: grid; gap: 20px; padding: 24px; overflow-wrap: anywhere; }
+.incident-page h1 { margin: 0; }
+.incident-page h3 { margin: 0 0 12px; font-size: 17px; }
+.incident-title-row { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.incident-title-row h1 { font-size: 26px; line-height: 1.2; }
+.incident-icon { width: 44px; height: 44px; min-width: 44px; padding: 0; font-size: 24px; line-height: 1; }
+.incident-meta { margin: 10px 0 0; color: var(--oc-muted); font-size: 14px; }
+.incident-state { padding: 2px 6px; border-radius: 5px; }
+.incident-people { display: flex; flex-wrap: wrap; align-items: start; gap: 12px 24px; }
+.incident-person { position: relative; min-width: 0; }
+.incident-person > button { padding: 8px 10px; background: transparent; border-color: transparent; text-align: left; min-height: 44px; }
+.incident-person-label { color: var(--oc-muted); margin-right: 6px; }
+.incident-step-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.incident-other-steps { margin-top: 8px; }
+.incident-step-confirm { margin-top: 12px; }
+.incident-runbook { background: var(--oc-paper); border: 1px solid var(--oc-line); border-radius: 12px; padding: 16px; }
+.incident-runbook ul { list-style: none; margin: 0; padding: 0; }
+.incident-runbook label { display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer; }
+.incident-runbook input { width: 18px; height: 18px; flex: none; accent-color: var(--oc-ink); }
+.incident-timeline { padding: 16px; }
+.incident-timeline .event-line { flex-wrap: wrap; }
+.incident-timeline .event p { font-size: 14px; }
+.incident-back { display: none; }
+.incident-sheet { color: var(--oc-ink); background: var(--oc-surface); border: 1px solid var(--oc-line); border-radius: var(--oc-radius-card); padding: 0; width: min(620px, calc(100vw - 48px)); max-height: calc(100dvh - 48px); box-shadow: var(--oc-shadow-card); }
+.incident-sheet::backdrop { background: rgb(29 42 53 / .25); }
+.incident-sheet-head { position: sticky; z-index: 2; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 24px; background: var(--oc-surface); }
+.incident-sheet-head h2 { margin: 0; font-size: 22px; line-height: 1.25; }
+.incident-sheet-body { padding: 0 24px 24px; }
+.incident-sheet-body > :first-child { margin-top: 0; }
+.incident-sheet :is(p, small, label, input, select, textarea, button, summary) { font-size: max(13px, 1em); }
+.incident-sheet :is(input, select, textarea) { width: 100%; min-width: 0; }
+.incident-sheet input:is([type=checkbox], [type=radio]) { width: 18px; min-width: 18px; height: 18px; }
+.incident-sheet .workflow-choice { min-height: 44px; align-items: center; }
+.incident-sheet .response-controls { padding: 0; margin: 0; border: 0; }
+.incident-menu-sheet { width: min(380px, calc(100vw - 48px)); }
+.incident-action-list { display: grid; gap: 2px; }
+.incident-action-list button { min-height: 44px; border-color: transparent; border-radius: 8px; text-align: left; }
+.incident-action-list button:hover { background: var(--oc-paper-deep); }
+.incident-response-fields { display: grid; gap: 20px; }
+.incident-response-fields .field { margin: 0; }
+.incident-response-fields .field > span { display: flex; gap: 8px; align-items: baseline; }
+.incident-response-fields .field input { margin-top: 6px; }
+@media (max-width: 899px) {
+  .incident-board.has-incident { display: block; }
+  .incident-board.has-incident > .incidents { display: none; }
+  .incident-back { display: flex; align-items: center; min-height: 44px; margin-bottom: 12px; }
+  .incident-page { padding: 20px 16px; gap: 16px; }
+  .incident-title-row h1 { font-size: 22px; }
+  .incident-page :is(button, select, input:not([type=checkbox])) { min-height: 44px; }
+  .incident-sheet { position: fixed; inset: 0; margin: 0; width: 100%; height: 100dvh; max-width: none; max-height: none; border-radius: 0; }
+  .incident-menu-sheet { inset: auto 0 0; height: auto; max-height: 90dvh; border-radius: 16px 16px 0 0; }
+  .incident-sheet-head { padding: 16px; }
+  .incident-sheet-body { padding: 0 16px 20px; }
+  .incident-sheet :is(button, select, input:not([type=checkbox]), summary) { min-height: 44px; }
+  .incident-sheet summary { display: flex; align-items: center; }
+  .incident-sheet a { display: inline-flex; min-height: 44px; align-items: center; }
+}
+.incident-response-fields select { min-height: 44px; padding: 10px 12px; border: 1px solid var(--app-field-line); border-radius: 10px; background: var(--app-field); font: inherit; }
+.incident-response-fields .incident-optional-reason { margin-top: 8px; }
+.incident-sheet .oncall-tooltip-content, .incident-people-dialog .oncall-tooltip-content, .incident-page .oncall-tooltip-content { font-size: 13px; }
+.incident-people-dialog { position: fixed; margin: 0; padding: 8px; width: 320px; max-width: calc(100vw - 32px); max-height: min(420px, 80dvh); background: var(--oc-surface); color: var(--oc-ink); border: 1px solid var(--oc-line); border-radius: 12px; box-shadow: var(--oc-shadow-card); }
+.incident-people-dialog::backdrop { background: transparent; }
+.incident-people-dialog .incident-sheet-head { padding: 0 4px 8px; }
+.incident-people-dialog h2 { margin: 0; font-size: 18px; }
+.incident-people-dialog [role=option] { display: block; min-height: 44px; width: 100%; text-align: left; border-color: transparent; border-radius: 8px; }
+.incident-people-dialog [aria-selected=true] { background: var(--oc-paper-deep); }
+body:has(.incident-sheet[open], .incident-people-dialog[open]) { overflow: hidden; }
+@media (max-width: 899px) {
+  .incident-people-dialog { inset: auto 0 0 !important; width: 100%; max-width: none; max-height: 75dvh; border-radius: 16px 16px 0 0; padding: 16px; }
+  .incident-people-dialog::backdrop { background: rgb(29 42 53 / .25); }
+  .incident-board :is(button, select, input:not([type=checkbox]), summary) { min-height: 44px; }
+  .incident-board .triage-check { min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; }
+}
+.incident-sheet .incident-workflows > details > summary { display: none; }
+.incident-sheet-head .oncall-tooltip-content, .incident-people-dialog .incident-sheet-head .oncall-tooltip-content { top: calc(100% + 6px); bottom: auto; }
+.incident-sheet .workflow-options { border: 0; padding: 0; }
+.incident-sheet .workflow-choice { padding: 8px; }
+.incident-head h1:focus { outline: none; }
+.incident-body { display: grid; gap: 20px; min-width: 0; align-items: start; }
+.incident-body > * { min-width: 0; }
+@media (min-width: 1200px) { .incident-body { grid-template-columns: minmax(180px, .8fr) minmax(0, 1.2fr); } }
+.incident-sheet section[aria-label="Manual obligations and responder requests"] > details > summary { display: none; }
+.incident-sheet .workflow-choice input, .incident-board .inline-form .workflow-choice input { width: 18px; height: 18px; min-height: 18px; flex: none; }
+.incident-board .inline-form .workflow-choice { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.incident-runbook small { display: block; font-size: 13px; color: var(--oc-muted); }
+/* A record supplies its own page title; the list keeps the section title. */
+.workspace:has(.incident-board.has-incident) > .header { display: none; }
+.workspace:has(.incident-board.has-incident) > .notice:empty { display: none; }
+.workspace:has(.incident-board.has-incident) > .notice { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 899px) { .oncall-frame .incident-back { margin-top: 10px; } }
+@media (max-width: 899px) {
+  .incident-page { padding-bottom: 16px; gap: 12px; }
+  .incident-body { gap: 12px; }
+  .incident-runbook, .incident-timeline { padding: 14px; }
+  .incident-timeline .event { padding-bottom: 12px; }
+  .incident-timeline .composer form { margin-top: 12px; }
+  .incident-timeline .composer .field { margin-bottom: 12px; }
+  .incident-timeline .composer textarea { min-height: 64px; }
+}
+
+.incident-sheet .recent-changes > summary { display: none; }

@@ -1,5 +1,4 @@
-import {openWorkspaceSection} from './keyboard.mjs'
-import {focusWorkspace} from './keyboard.mjs'
+import {focusWorkspace,openIncidentAction,openWorkspaceSection} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {mkdir} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
@@ -15,7 +14,7 @@ const worker=await localWorker({}, {clock:true})
 const captureDirectory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
 await mkdir(captureDirectory,{recursive:true})
 const responder={name:'Rosa Responder',password:'synthetic-responder-testing-password'},viewer={name:'Vic Viewer',password:'synthetic-viewer-testing-password'}
-const ackText='Rosa acknowledged: checking the card provider.',noteText='Rosa note: provider status shows degraded card auth.'
+const noteText='Rosa note: provider status shows degraded card auth.'
 const errors=[]
 let browser
 const call=(page,path,body)=>page.evaluate(async([p,b])=>{const r=await fetch(p,b===undefined?{}:{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)});let value;try{value=await r.json()}catch{value=null}return {status:r.status,value}},[path,body])
@@ -29,7 +28,7 @@ async function passwordSignIn(page,who){
  await page.waitForURL(url=>url.pathname==='/on-call'||url.pathname==='/status')
  return (await call(page,'/api/session')).value.member
 }
-async function openIncident(page,id){await page.goto(`${worker.origin}/incidents/${encodeURIComponent(id)}`);await page.reload();await page.locator('.detail h2').waitFor()}
+async function openIncident(page,id){await page.goto(`${worker.origin}/incidents/${encodeURIComponent(id)}`);await page.reload();await page.locator('.detail h1').waitFor()}
 const entry=(page,text)=>page.locator('.timeline .event').filter({hasText:text})
 async function denied(page,label,id){
  const state=await page.context().request.get(worker.origin+'/api/state'),workspace=await (await page.context().request.get(worker.origin+'/api/workspace')).json()
@@ -42,7 +41,7 @@ async function denied(page,label,id){
 try {
  const claimed=await worker.request('/auth/bootstrap',{token:worker.vars.SETUP_TOKEN,displayName:'Oncall lead'},undefined,{'CF-Connecting-IP':'127.0.0.1'})
  assert.equal(claimed.status,303,JSON.stringify(claimed.value))
- browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.CHROMIUM_EXECUTABLE_PATH}:{}),args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
+ browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
  const owner=await open(1440)
  await owner.context.addCookies(claimed.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}}))
  await owner.page.goto(worker.origin+'/setup')
@@ -166,19 +165,18 @@ try {
  assert.equal(rosaMember.id,rosaRecord.id);assert.equal(rosaMember.role,'responder')
  assert.notEqual(rosaMember.id,ownerMember.id,'member and owner identities stay separate')
  await openIncident(rosa.page,declared.id)
- await rosa.page.getByLabel('Next state').selectOption('acknowledged')
- await rosa.page.getByLabel('Reason and observed outcome').fill(ackText)
- await rosa.page.getByRole('button',{name:'Record transition'}).click()
- await rosa.page.locator('.detail .tag.state-acknowledged').waitFor()
+ await rosa.page.getByRole('button',{name:'Acknowledge',exact:true}).click()
+ await rosa.page.locator('.incident-state.state-acknowledged').waitFor()
+ const ackText=ok(await call(rosa.page,'/api/state')).incidents.find(i=>i.id===declared.id).timeline.find(e=>e.lifecycle?.to==='acknowledged').text
  await rosa.page.getByLabel('Observation, decision or evidence').fill(noteText)
- await rosa.page.getByRole('button',{name:'Add timeline note'}).click()
+ await rosa.page.getByRole('button',{name:'Add note'}).click()
  await entry(rosa.page,noteText).waitFor()
  assert.equal(await rosa.page.getByRole('button',{name:/Send test page/}).count(),0,'no paging control is offered')
  for(const page of [rosa.page,owner.page])assert.equal((await call(page,'/api/paging/jobs',{incident:declared.id})).status,409,'paging stays OFF and refuses')
  for(const width of [1440,390]) {
-  await rosa.page.setViewportSize({width,height:1000});await rosa.page.reload();await rosa.page.locator('.detail h2').waitFor()
+  await rosa.page.setViewportSize({width,height:1000});await rosa.page.reload();await rosa.page.locator('.detail h1').waitFor()
   for(const text of [ackText,noteText])assert.match(await entry(rosa.page,text).innerText(),new RegExp(responder.name),`"${text}" stays attributed to the member after reload`)
-  assert.equal(await rosa.page.locator('.detail .tag.state-acknowledged').count(),1,'acknowledgement persists after reload')
+  assert.equal(await rosa.page.locator('.incident-state.state-acknowledged').count(),1,'acknowledgement persists after reload')
   assert.ok(await rosa.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`no horizontal scroll at ${width}`)
   await rosa.page.locator('.timeline').scrollIntoViewIfNeeded();await rosa.page.screenshot({path:`${captureDirectory}/member-coordination-reloaded-${width}.png`,fullPage:true})
  }
@@ -188,22 +186,22 @@ try {
  assert.ok(kept.timeline.some(e=>e.kind==='declared'&&e.actor===ownerMember.id),'the declaration stays the owner’s')
 
  // The independently signed-in responder sees a second session's note on return.
- const responseSettings=rosa.page.getByText('Change response ownership or priority',{exact:true}).locator('..')
- await responseSettings.locator('summary').click()
  const draft='Rosa draft: checking the next provider update.'
  await rosa.page.getByLabel('Observation, decision or evidence',{exact:true}).fill(draft)
+ const responseSettings=await openIncidentAction(rosa.page,'People and priority')
  await openIncident(owner.page,declared.id)
  const secondNote='Owner update: provider recovery is being verified.'
  await owner.page.getByLabel('Observation, decision or evidence',{exact:true}).fill(secondNote)
  const written=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST')
- await owner.page.getByRole('button',{name:'Add timeline note',exact:true}).click()
+ await owner.page.getByRole('button',{name:'Add note',exact:true}).click()
  assert.equal((await written).status(),200)
  await entry(owner.page,secondNote).waitFor()
  await focusWorkspace(rosa.page)
  await entry(rosa.page,secondNote).waitFor()
  assert.match(await entry(rosa.page,secondNote).innerText(),new RegExp(ownerMember.name),'the second session note stays attributed to its author')
  assert.equal(await rosa.page.getByLabel('Observation, decision or evidence',{exact:true}).inputValue(),draft,'background refresh preserves the typed note')
- assert.equal(await responseSettings.evaluate(element=>element.open),true,'background refresh preserves the open response disclosure')
+ assert.equal(await responseSettings.evaluate(element=>element.open),true,'background refresh preserves the open response sheet')
+ await responseSettings.getByRole('button',{name:'Close',exact:true}).click()
 
  // A public-team manager can edit own coverage without workspace configuration authority.
  const managedRotation={anchorLocal:'2026-01-01T00:00',periodDays:1,members:[rosaRecord.id],ambiguity:'earlier'};
@@ -326,8 +324,10 @@ try {
    await owner.page.getByRole('button',{name:'Select this page',exact:true}).click()
    await owner.page.getByLabel('Bulk action',{exact:true}).selectOption('reassign')
    await excludesStakeholder(owner.page.getByLabel('Bulk assignee',{exact:true}))
-   await owner.page.getByText('Change response ownership or priority',{exact:true}).click()
-   await excludesStakeholder(owner.page.getByLabel('Assigned responder',{exact:true}))
+   await owner.page.locator('.incident').filter({hasText:'Checkout payments failing'}).click()
+   const people=await openIncidentAction(owner.page,'People and priority')
+   await excludesStakeholder(people.getByLabel('Scribe',{exact:true}))
+   await people.getByRole('button',{name:'Close',exact:true}).click()
   }
   for(const width of [1440,390])await statusCapture(owner.page,'role-'+screen,width)
  }
@@ -339,6 +339,7 @@ try {
  await owner.page.getByRole('button',{name:'Declare incident',exact:true}).click()
  await owner.page.getByLabel('Incident title',{exact:true}).fill('Manual checkout responder request')
  await owner.page.getByLabel('Service',{exact:true}).selectOption('checkout')
+ await owner.page.locator('form').filter({has:owner.page.getByRole('button',{name:'Declare',exact:true})}).getByText('More options',{exact:true}).click()
  await owner.page.getByLabel('Page urgency',{exact:true}).selectOption('high')
  await owner.page.getByLabel('Page priority',{exact:true}).selectOption('P2')
  await owner.page.getByLabel('Customer impact and current evidence',{exact:true}).fill('Customer payments need investigation')
@@ -347,11 +348,11 @@ try {
  await owner.page.getByRole('button',{name:'Declare',exact:true}).waitFor()
  for(const width of [1440,390])await statusCapture(owner.page,'oc068-manual-page-form',width)
  await owner.page.getByRole('button',{name:'Declare',exact:true}).click()
- await owner.page.locator('.detail h2').filter({hasText:'Manual checkout responder request'}).waitFor()
+ await owner.page.locator('.detail h1').filter({hasText:'Manual checkout responder request'}).waitFor()
  const manual68=ok(await call(owner.page,'/api/state')).incidents.find(i=>i.title==='Manual checkout responder request')
  assert.equal(manual68.manualPage.creator,ownerMember.id);assert.equal(manual68.manualPage.obligations[0].target.id,rosaRecord.id)
+ await openIncidentAction(owner.page,'Request responders')
  const requests68=owner.page.getByRole('region',{name:'Manual obligations and responder requests'})
- await requests68.getByText('Request responders',{exact:true}).click()
  for(const message of ['Inspect payment provider','Inspect payment network']){
   await requests68.getByLabel('Named responders',{exact:true}).selectOption(rosaRecord.id)
   await requests68.getByLabel('Responder request message',{exact:true}).fill(message)
@@ -359,6 +360,7 @@ try {
   await requests68.getByText(message,{exact:true}).waitFor()
  }
  await openIncident(rosa.page,manual68.id);await rosa.page.reload()
+ await openIncidentAction(rosa.page,'Request responders')
  const responseRegion=rosa.page.getByRole('region',{name:'Manual obligations and responder requests'})
  await responseRegion.getByRole('article').filter({hasText:'Inspect payment provider'}).getByRole('button',{name:'Accept request',exact:true}).click()
  await responseRegion.getByRole('article').filter({hasText:'Inspect payment provider'}).getByText(/^accepted · requested/).waitFor()
@@ -367,6 +369,7 @@ try {
  await responseRegion.getByText('Primary acknowledgment: Unacknowledged',{exact:true}).waitFor()
  for(const width of [1440,390])await statusCapture(rosa.page,'oc068-requests-and-obligations',width)
  await openIncident(vic.page,manual68.id);await vic.page.reload()
+ await openIncidentAction(vic.page,'Request responders')
  await vic.page.getByText('Only responders and admins may create manual pages or request responders.',{exact:true}).waitFor()
  ok(await call(vic.page,'/api/command',{type:'manual-page',operationId:'synthetic-oncall-68-viewer',service:'checkout',title:'Refused',severity:'critical'}),403)
  for(const width of [1440,390])await statusCapture(vic.page,'oc068-viewer-refusal',width)
@@ -391,6 +394,7 @@ try {
  let incident58=ok(await call(owner.page,'/api/command',{type:'manual-page',operationId:'synthetic-oncall-58-browser',service:'checkout',title:'Snoozed checkout investigation',severity:'warning',summary:'Investigating a customer checkout delay'}))
  incident58=ok(await call(owner.page,'/api/command',{type:'transition',incident:incident58.id,revision:incident58.revision,state:'acknowledged',summary:'Owner investigating'}))
  await openIncident(owner.page,incident58.id)
+ await openIncidentAction(owner.page,'Snooze')
  await owner.page.getByLabel('Snooze duration (minutes)',{exact:true}).fill('1')
  for(const width of [1440,390])await statusCapture(owner.page,'oc058-snooze-form',width)
  await owner.page.getByRole('button',{name:'Snooze incident',exact:true}).click()
@@ -400,10 +404,14 @@ try {
  await worker.time(Date.parse(incident58.deadlines.at(-1).dueAt))
  const expired58=await worker.send('/cdn-cgi/local/scheduled',undefined,{},'GET');assert.equal(expired58.status,200)
  await openIncident(owner.page,incident58.id)
+ await openIncidentAction(owner.page,'Snooze')
  await owner.page.getByRole('region',{name:'Incident deadlines'}).getByText(/snooze · fired/).waitFor()
+ await owner.page.getByRole('button',{name:'Close',exact:true}).click()
+ await openIncidentAction(owner.page,'Request responders')
  assert.equal(ok(await call(owner.page,'/api/state')).incidents.find(i=>i.id===incident58.id).state,'declared')
  await owner.page.getByRole('region',{name:'Manual obligations and responder requests'}).getByText('Primary acknowledgment: Unacknowledged',{exact:true}).waitFor()
  await owner.page.getByText(/^Earlier manual-page acknowledgment:/).waitFor()
+ await owner.page.getByRole('button',{name:'Close',exact:true}).click()
  await owner.page.getByText('Deadline scheduler',{exact:true}).waitFor()
  for(const width of [1440,390])await statusCapture(owner.page,'oc058-expired-triggered',width)
  console.log('OC-058 browser: timeout setting, snooze duration, persisted snoozed state and scheduled expiry back to triggered at 1440/390; paging OFF')

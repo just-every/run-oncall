@@ -15,7 +15,7 @@ try {
  const cookie=setup.cookie,owner=setup.value.member,req=(p,d)=>runtime.request(p,d,cookie);
  assert.equal((await req('/api/command',{type:'service',id:'synthetic-oncall-browser',name:'Synthetic browser service',environment:'test',owner:owner.id,runbook:[],pager:''})).status,200);
  const viewer=await req('/api/members',{name:'Synthetic Viewer',role:'viewer',password:'synthetic-oncall-viewer-password'});assert.equal(viewer.status,201);
- browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']});
+ browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
  recordOwnedProcesses();
  console.log('Browser driver PID',process.pid,'runtime proof uses a fresh test-only context');
  for(const width of [1440,390]) {
