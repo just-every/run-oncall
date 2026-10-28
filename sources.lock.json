@@ -140,7 +140,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1ff411460e26b94c652faf31359a481ef990bc94bf34a7eaf46a3e077b2bd7e3",
+      "sha256": "a5dde49ea724235e31a5c94360976df921fbdc73fc0d127225d96b371f94e40f",
       "executable": false
     },
     "agent-surface.json": {
@@ -148,11 +148,11 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "5b9e4381e57cdb4c5b69145747b0ec4b60a13606b15d40073f117d9f73253fa6",
+      "sha256": "1a175c2328586846a5ecf8d4aa04b212294dd31c0ae0d238b43e8d4d0014b746",
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "130464d00c3036400a7136d244954ba2398513c0e215b3ea6bc7087bf65591d6",
+      "sha256": "1a199af84279e5482afb80a6bded335863c8c2bc300a60cf868b4da2c625a1ca",
       "executable": false
     },
     "BRAND.md": {
@@ -168,7 +168,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ee68f38a0c6b074e3983df2a7782415e7bcd4249c99ea02c8e8e672312f859cb",
+      "sha256": "2432738b8a8aa08f15ea9f43daa3a1e86de094063d3fe8c15cd935c7b3a9beb3",
       "executable": false
     },
     "DEMO.md": {
@@ -684,11 +684,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "8962095311b548dd3ac44cc6dff1472d3cdc83ccc266438bfe072134a90b107d",
+      "sha256": "aada3fa39fc7d811e430d3f96ba8da20d2497e1738904f3ccca1610645ea58b8",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "f8ac2b53094a58c12c999ee6a3356fbb76fed698daf4bf5fc9132ec612a5bf4c",
+      "sha256": "6f22216ad2469e6f6dad3a27a9bca2eb8692dacadb6bdf7fc5e792d66a630ff3",
       "executable": false
     },
     "public/brand/badge-rail-1x.webp": {
@@ -2084,7 +2084,7 @@
       "executable": false
     },
     "src/modules/agent-door/ADOPTING.md": {
-      "sha256": "32226371c21871a96294e5fb7b4b0669e0ee48c576b56db0d91ca649db1d0d12",
+      "sha256": "4c2308559c5d989c2547805aeb4a42b1cb06939942e79a44b6a36c0b9a71c0be",
       "executable": false
     },
     "src/modules/agent-door/approval-execution.ts": {
@@ -5268,7 +5268,7 @@
       "executable": false
     },
     "tests/agent-door.mjs": {
-      "sha256": "9be419f6ed0e75ed9184c7cea7b3d6a5e1802b2ba1dc2ae1e8a6dab5162609a3",
+      "sha256": "3c38a60f32690522bf31d1af255367741c57819f7743d9662f0d06c38aa08133",
       "executable": false
     },
     "tests/agent-policy-fixture.mjs": {

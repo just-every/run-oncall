@@ -44,7 +44,7 @@ CONTRACT.md is the only acceptance text and status source, written to the RER co
 
 Lander-Regenerate: node src/base/contract-docs.mjs write
 
-This checkout carries no edition-authoring copy, so the source lock is regenerated with Base's edition-authoring tool at the version `sources.lock.json` records (1.1.0), run from this checkout root: `node <Base checkout>/edition-authoring/cli.mjs lock`, then the same tool's `check`.
+This checkout uses the published rer package's edition-authoring tool (1.1.0). From this checkout root, regenerate the source lock last with `node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock`, then the same tool's `check`. Run door conformance through the installed `rer verify`; no separate Base checkout is needed.
 
 ## Upstream module documentation
 

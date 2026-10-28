@@ -400,20 +400,6 @@
       }
     },
     {
-      "path": "scripts/delivery/base/schema/SETUP.schema.json",
-      "originPath": "schema/SETUP.schema.json",
-      "revision": "e1b4265eb0d839a67dae3c36a04f83fa48c9d480",
-      "files": {
-        "scripts/delivery/base/schema/SETUP.schema.json": "ac52bac39e7e7e4dace1c22dce370f76df52e7f5bb167730ecfd96b0b7961c86"
-      },
-      "modes": {
-        "scripts/delivery/base/schema/SETUP.schema.json": "100644"
-      },
-      "originFiles": [
-        "schema/SETUP.schema.json"
-      ]
-    },
-    {
       "path": "scripts/delivery/base/schema/business-field-inputs.mjs",
       "originPath": "schema/business-field-inputs.mjs",
       "revision": "e1b4265eb0d839a67dae3c36a04f83fa48c9d480",
@@ -467,6 +453,20 @@
       },
       "originFiles": [
         "schema/setup-validation.mjs"
+      ]
+    },
+    {
+      "path": "scripts/delivery/base/schema/SETUP.schema.json",
+      "originPath": "schema/SETUP.schema.json",
+      "revision": "e1b4265eb0d839a67dae3c36a04f83fa48c9d480",
+      "files": {
+        "scripts/delivery/base/schema/SETUP.schema.json": "ac52bac39e7e7e4dace1c22dce370f76df52e7f5bb167730ecfd96b0b7961c86"
+      },
+      "modes": {
+        "scripts/delivery/base/schema/SETUP.schema.json": "100644"
+      },
+      "originFiles": [
+        "schema/SETUP.schema.json"
       ]
     },
     {
@@ -635,17 +635,6 @@
       }
     },
     {
-      "path": "src/base/hydration/README.md",
-      "originPath": "foundation/runtime/hydration/README.md",
-      "revision": "052e5ea88c1e7b73cca10c4813524a5f72580af8",
-      "files": {
-        "src/base/hydration/README.md": "a25e8a1a787e141590c9b46efb313b8ba6d9b135fad880d3aacfd5289c205244"
-      },
-      "modes": {
-        "src/base/hydration/README.md": "100644"
-      }
-    },
-    {
       "path": "src/base/hydration/intro-guard.ts",
       "originPath": "foundation/runtime/hydration/intro-guard.ts",
       "revision": "052e5ea88c1e7b73cca10c4813524a5f72580af8",
@@ -654,6 +643,17 @@
       },
       "modes": {
         "src/base/hydration/intro-guard.ts": "100644"
+      }
+    },
+    {
+      "path": "src/base/hydration/README.md",
+      "originPath": "foundation/runtime/hydration/README.md",
+      "revision": "052e5ea88c1e7b73cca10c4813524a5f72580af8",
+      "files": {
+        "src/base/hydration/README.md": "a25e8a1a787e141590c9b46efb313b8ba6d9b135fad880d3aacfd5289c205244"
+      },
+      "modes": {
+        "src/base/hydration/README.md": "100644"
       }
     },
     {
@@ -874,10 +874,10 @@
     {
       "path": "src/modules/agent-door",
       "originPath": "modules/agent-door",
-      "revision": "e1b4265eb0d839a67dae3c36a04f83fa48c9d480",
+      "revision": "f96363bf919ea3e7ed1837daba6894810a50e4a6",
       "files": {
         "src/modules/agent-door/admission.ts": "c67ee28a1ae61b963619ffc64807baaa37b618aec41d6a2d90f1852f5beebf9e",
-        "src/modules/agent-door/ADOPTING.md": "32226371c21871a96294e5fb7b4b0669e0ee48c576b56db0d91ca649db1d0d12",
+        "src/modules/agent-door/ADOPTING.md": "4c2308559c5d989c2547805aeb4a42b1cb06939942e79a44b6a36c0b9a71c0be",
         "src/modules/agent-door/approval-execution.ts": "184b7fd7f016fb58121746873f4bf8fab621c4d09a1a00e61cf53eedad2fc3b3",
         "src/modules/agent-door/approvals.ts": "45757936fac519de054ca754fd45ea3e6def75f18f1e71cb6a651e6451bf767c",
         "src/modules/agent-door/audit.ts": "dba2eec2f97a5580af7b2b0a997617ef0aed8bcd4a36467914aeeb7b439b94ed",
@@ -1089,7 +1089,7 @@
     {
       "path": "src/modules/business-settings",
       "originPath": "modules/business-settings",
-      "revision": "e1b4265eb0d839a67dae3c36a04f83fa48c9d480",
+      "revision": "f96363bf919ea3e7ed1837daba6894810a50e4a6",
       "files": {
         "src/modules/business-settings/ADOPTING.md": "5d7383182eb0ca92ce53b51d93f0199412366873ba7281cc0610857f76e77884",
         "src/modules/business-settings/apply.ts": "037784c7d783c36577d351c9a6bddab5780393e192883ec08616a4d480e9df48",
