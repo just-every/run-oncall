@@ -125,14 +125,14 @@ Core · published · **done** · Cites BASE-DATA-001, BASE-DATA-002, BASE-INPUT-
 
 Core · published · **partial** · Cites BASE-ACCESSIBILITY-001, BASE-PUBLIC-003 · Register R-3, R-4
 
-**Requirement.** The conformance bar is WCAG 2.2 Level AA, the level seed.json sets, for every web surface and, for the OC-029 apps, the same success criteria as they apply to native iOS and Android, plus Dynamic Type and Android font scaling to 200%. A failed write is visible and never shown as saved. An unavailable UI is never described as a pager coverage failure, because release 1 supplies no pager. Each release publishes a conformance report (VPAT 2.5 Accessibility Conformance Report, WCAG 2.2 edition) stating the result per success criterion and per surface; an unsupported criterion is named, never omitted (R-4). Named assistive-technology passes cover VoiceOver with Safari on macOS and NVDA with Chrome on Windows for web, and VoiceOver on iOS and TalkBack on Android for the apps; each completes sign-in, finding an incident in the filtered list (OC-060), acknowledge, snooze, reassign, schedule view and override (R-3).
+**Requirement.** Apply BASE-ACCESSIBILITY-001 to Oncall's web journeys and the native apps in OC-029. A failed write is visible and never shown as saved. An unavailable UI is never described as a pager coverage failure, because release 1 supplies no pager. Each release publishes a conformance report (VPAT 2.5 Accessibility Conformance Report, WCAG 2.2 edition) stating the result per success criterion and per surface; an unsupported criterion is named, never omitted (R-4). Named assistive-technology passes cover VoiceOver with Safari on macOS and NVDA with Chrome on Windows for web, and VoiceOver on iOS and TalkBack on Android for the apps; each completes sign-in, finding an incident in the filtered list (OC-060), acknowledge, snooze, reassign, schedule view and override (R-3).
 
 **Acceptance.**
-1. At 1440 and 390, keyboard-only declaration, acknowledgment, notes, schedules, overrides and preview complete with visible focus, labels and status announcements; hostile HTML stays literal; and a real stale-write failure is announced with no saved claim.
-2. axe-core with the WCAG 2.2 A and AA rule sets records zero violations on every surface at 1440 and 390, in light and dark themes.
+1. Run declaration, acknowledgment, notes, schedules, overrides and preview against BASE-ACCESSIBILITY-001.
+2. A real stale-write failure is announced with no saved claim.
 
 **Evidence.** `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/keyboard-coordination.mjs`; `tests/activation-browser.mjs`
-**Gap.** Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. Dark-theme axe runs on every surface and the app criteria are not established; the human passes and the VPAT are register rows R-3 and R-4.
+**Gap.** Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. BASE-ACCESSIBILITY-001 is not established across every Oncall journey and the OC-029 apps; the human passes and the VPAT are register rows R-3 and R-4.
 
 #### OC-010 — Health and honest commands
 
@@ -598,13 +598,13 @@ Core · target · **missing** · Rules D-3 · Register R-11
 
 #### OC-039 — Enterprise access and responder lifecycle
 
-Core · target · **partial** · Cites BASE-SIGNIN-001, BASE-SIGNIN-002 · Register R-9
+Core · target · **partial** · Cites BASE-SIGNIN-001, BASE-SIGNIN-002, BASE-ROLE-001 · Register R-9
 
-**Requirement.** Add verified invitations and the team membership lifecycle, SSO through Google Workspace, Okta, Microsoft Entra ID, JumpCloud, OneLogin and any compliant SAML 2.0 or OIDC provider, with just-in-time accounts and required-SSO enforcement as OC-069 specifies, MFA and step-up for privileged changes, SCIM provisioning and deprovisioning and scoped service accounts. Keep documented emergency administrator access independent of the main identity provider and reconcile revocation at standby. Imported contacts, chat accounts and caller IDs never create membership automatically. Revocation blocks the next read, mutation or acknowledgment and retires device, session and provider access; deprovisioning shows the resulting schedule gap and invokes approved alternate coverage rather than reassigning silently. Assigning the OC-061 stakeholder role to SSO and SCIM users is received under RL-5.
+**Requirement.** Add verified invitations and the team membership lifecycle, SSO through Google Workspace, Okta, Microsoft Entra ID, JumpCloud and OneLogin, with just-in-time accounts and required-SSO enforcement as OC-069 specifies, step-up for privileged changes and scoped service accounts. Keep documented emergency administrator access independent of the main identity provider and reconcile revocation at standby. Imported contacts, chat accounts and caller IDs never create membership automatically. Revocation retires device and provider access; deprovisioning shows the resulting schedule gap and invokes approved alternate coverage rather than reassigning silently. Assigning the OC-061 stakeholder role to SSO and SCIM users is received under RL-5.
 
 **Acceptance.**
 1. Invite a responder, sign in through Google Workspace, Okta, Entra and a generic SAML provider under OC-069, require step-up to edit paging credentials, deprovision via SCIM while a write is in flight, and exercise documented emergency access during IdP loss.
-2. Verify immediate denial across web/mobile/chat/standby and a visible coverage gap.
+2. Verify standby revocation reconciliation and a visible coverage gap.
 
 **Evidence.** `src/auth.server.ts`; `src/api.ts`; `tests/runtime-authority.mjs`; `tests/signin-browser.mjs`
 **Gap.** Native owner email links and admin-created local member passwords exist; invitations, federated identity, MFA and SCIM are not adopted product flows. SSO/SCIM stakeholder assignment (OC-061) remains unbuilt.
@@ -613,7 +613,7 @@ Core · target · **partial** · Cites BASE-SIGNIN-001, BASE-SIGNIN-002 · Regis
 
 Core · target · **partial** · Cites BASE-DATA-002, BASE-DATA-003, BASE-DATA-006 · Rules D-2
 
-**Requirement.** Keep authored incident, review, runbook and follow-up history until explicit owner erasure or a separately chosen retention policy. Publish data categories, custody, configured retention and effects before enabling automatic expiry for telemetry snapshots, recordings or provider content. Admins can erase an incident, contact or member or integration and its local copies, pending deliveries, credentials and imported custody; receipts contain per-table counts and completion state and are not issued before commit. Preserve anonymized audit and erasure fences without personal content; an erased responder leaves an explicit gap. Imports and restores carrying the later source erasure journal cannot resurrect erased data. Older offline copies, already sent provider messages and in-flight external calls cannot be recalled; document recipient and provider deletion requests. Cross-site erasure must reconcile standby before success is claimed.
+**Requirement.** Keep authored incident, review, runbook and follow-up history until explicit owner erasure or a separately chosen retention policy. Publish data categories, custody, configured retention and effects before enabling automatic expiry for telemetry snapshots, recordings or provider content. Admins can erase an incident, contact or member or integration and its local copies, pending deliveries, credentials and imported custody; receipts contain per-table counts and completion state and are not issued before commit. Preserve erasure fences without personal content; an erased responder leaves an explicit gap. Imports and restores carrying the later source erasure journal cannot resurrect erased data. Older offline copies, already sent provider messages and in-flight external calls cannot be recalled; document recipient and provider deletion requests. Cross-site erasure must reconcile standby before success is claimed.
 
 **Acceptance.**
 1. Erase an imported person including filenames, plans and indirect schedule references, then erase native contact/incident/connector data and inspect all local/standby/export copies and receipts.
@@ -710,15 +710,15 @@ Core · target · **partial** · Rules D-1, D-3, D-4 · Register R-12
 
 Core · target · **partial** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT-003, BASE-PUBLIC-002, BASE-DATA-005 · Rules D-2
 
-**Requirement.** Extend the OC-007, OC-015 and OC-016 archives to every new durable product record: teams and services, complete coverage, policies, responder destination definitions and verification history, alert and incident identities, delivery, escalation and call histories, reviews and actions, connector definitions, investigations, plans and grants as inactive history, audit, import provenance and erasure journals. Exclude sessions, passwords, provider keys, device and acknowledgment capabilities and execution credentials as installation-local authority; declare these exclusions as the product's explicit BASE-DATA-001 replacement rather than claiming credential portability. Restore atomically into the documented receiving state with all sends, schedules needing reauthorization, agent actions and publication paused; preserved history cannot satisfy live readiness or replay effects. BASE-INPUT-002 uses literal structured text and no arbitrary supplied HTML; BASE-INPUT-003 treats current JSON imports as bounded structured data with no arbitrary attachment upload (any future recording or upload must add validated scoped custody); BASE-PUBLIC-002 has no public incident embed; BASE-DATA-005 requires native operation without author, marketplace or AI dependency, and any optional management connector is explicit and revocable. These replacements preserve security, erasure and operating obligations; they do not claim untested baseline equivalence. Every new durable category keeps door rule D-2.
+**Requirement.** Extend the OC-007, OC-015 and OC-016 archives to every new durable product record: teams and services, complete coverage, policies, responder destination definitions and verification history, alert and incident identities, delivery, escalation and call histories, reviews and actions, connector definitions, investigations, plans and grants as inactive history, audit, import provenance and erasure journals. Exclude sessions, passwords, provider keys, device and acknowledgment capabilities and execution credentials as installation-local authority; declare these exclusions as the product's explicit BASE-DATA-001 replacement rather than claiming credential portability. Restore atomically into the documented receiving state with all sends, schedules needing reauthorization, agent actions and publication paused; preserved history cannot satisfy live readiness or replay effects. BASE-INPUT-002 uses literal structured text and no arbitrary supplied HTML; BASE-INPUT-003 treats current JSON imports as bounded structured data with no arbitrary attachment upload (any future recording or upload must add validated scoped custody); BASE-PUBLIC-002 has no public incident embed. Native coordination has no AI dependency, and any optional management connector is explicit and revocable. These replacements preserve security, erasure and operating obligations; they do not claim untested baseline equivalence. Every new durable category keeps door rule D-2.
 
 **Acceptance.**
 1. Export a populated target installation via protected HTTP and rer CLI, compare every durable category, restore inactive on a fresh authorized installation, reconfigure local secrets and prove no send/action replay.
 2. Supply malformed/over-limit/erased/unknown records and inject storage/concurrency faults; preserve the full prior state.
-3. Deny optional author/AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.
+3. Deny optional AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.
 
 **Evidence.** `scripts/installer/archive-policy.mjs`; `src/portability-policy.mjs`; `tests/transfer.mjs`; `tests/transfer-door.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`
-**Gap.** No cited test denies optional author or AI network access while native coordination runs, verifies literal input, or checks for the absence of an undeclared public embed or upload door; populated HTTP and CLI export, inactive restore with local reauthorization, refusal of malformed, over-limit, erased and unknown records and rollback under storage and concurrency faults are asserted. All current durable categories restore inactive without authority or replay.
+**Gap.** No cited test denies optional AI network access while native coordination runs, verifies literal input, or checks for the absence of an undeclared public embed or upload door; populated HTTP and CLI export, inactive restore with local reauthorization, refusal of malformed, over-limit, erased and unknown records and rollback under storage and concurrency faults are asserted. All current durable categories restore inactive without authority or replay.
 
 #### OC-053 — Public API, outbound events and reliable automation
 
@@ -1231,10 +1231,10 @@ Core · push-further · **partial** · Rules D-1, D-4
 
 Agent surface · target · **missing** · From new · Cites BASE-AGENT-001, BASE-AGENT-002, BASE-AGENT-003, BASE-AGENT-010, BASE-AGENT-012, BASE-AGENT-013
 
-**Requirement.** Oncall serves the Base MCP door with exactly the tools, resources, events and prompts this area lists. Each tool calls the same server action as its web or API door, and the not-a-tool reasons are served with the manifest.
+**Requirement.** Oncall serves the Base MCP door with exactly the tools, resources, events and prompts this area lists.
 
 **Acceptance.**
-1. `tools/list` names exactly the tools in this area's table, each with its Core clauses and classes in `_meta`, and `server/discover` serves the not-a-tool reasons, none of which is risk.
+1. `tools/list` names exactly the tools in this area's table, each with its Core clauses and classes in `_meta`.
 2. `resources/templates/list` names the record types listed above, and each listed event type arrives with its record URI.
 3. The Base conformance journey (BASE-AGENT-013) passes on Oncall's own fixtures under the all-autonomous and held company policies.
 
@@ -1245,7 +1245,7 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-001, BASE
 
 Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
 
-**Requirement.** Each tool's classes are computed on the server from its arguments and current records as this area's class rules state, never from an agent's flag or from record text.
+**Requirement.** Each tool carries the classes computed by Oncall's class rules in this area.
 
 **Acceptance.** Through MCP on Oncall's fixtures:
 1. `oncall.services.update` is standard for a runbook edit and adds access when it changes a team's members or a private team's scope.
@@ -1269,8 +1269,7 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-004, BASE
 **Acceptance.**
 1. Under the all-autonomous policy, the week completes with no person involved: no call waits for a person or is refused by policy, and the review feed is empty.
 2. Under the held policy (standard calls reviewed, every other class Oncall declares waiting for approval, which the test person grants), each live and commitment call waits with no effect and runs once approved, and the review feed holds the week's standard calls.
-3. Before setup is answered, the agent's first call returns `policy_unset` with the setup link, and setup asks every class Oncall declares with no answer pre-selected.
-4. Each act of the week reads "<agent> for <person>" in the incident timeline, the activity view and the audit export, while an OC-053 service-account act in the same week still reads as that service account.
+3. An OC-053 service-account act in the same week reads as that service account, never as an agent's or a person's act.
 
 **Evidence.** None.
 **Gap.** No implementing flow. No MCP door, company policy or specialist journey exists.

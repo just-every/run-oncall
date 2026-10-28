@@ -284,7 +284,8 @@ Still done: OC-001, OC-007, OC-008, OC-013, OC-016, OC-019, OC-021, OC-053, OC-0
 | OC-052 | 2 | Unknown records never publish | `tests/transfer.mjs:239` | asserted |
 | OC-052 | 2 | A storage fault preserves the full prior state | `tests/activation.mjs:402` | asserted |
 | OC-052 | 2 | A concurrency fault publishes one restore | `tests/checkpoint-cli.mjs:155` | asserted |
-| OC-052 | 3 | Native coordination runs with author and AI network access denied | none in a cited file | none |
+| OC-052 | 3 | Native coordination runs with AI network access denied | none in a cited file | none |
+| OC-052 | old 3 | Native coordination runs with author network access denied | moved to Base BASE-DATA-005 | moved |
 | OC-052 | 3 | Input stays literal | none in a cited file | none |
 | OC-052 | 3 | No undeclared public embed or upload door exists | none in a cited file | none |
 | OC-053 | 1 | A scoped API client creates an incident attributed to the client | `tests/automation.mjs:128` | asserted |

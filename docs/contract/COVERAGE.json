@@ -349,10 +349,28 @@
     {
       "file": "CONTRACT.md",
       "line": 55,
-      "text": "The conformance bar is WCAG 2.2 Level AA for every web surface and, for the OC-029 apps, the same success criteria as they apply to native iOS/Android plus Dynamic Type and Android font scaling to 200%.",
+      "text": "The conformance bar is WCAG 2.2 Level AA",
+      "to": "base",
+      "ids": [
+        "BASE-PUBLIC-003"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 55,
+      "text": " for every web surface and, for the OC-029 apps, ",
       "to": "clause",
       "ids": [
         "OC-009"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 55,
+      "text": "the same success criteria as they apply to native iOS/Android plus Dynamic Type and Android font scaling to 200%.",
+      "to": "base",
+      "ids": [
+        "BASE-ACCESSIBILITY-001"
       ]
     },
     {
@@ -401,10 +419,64 @@
     {
       "file": "CONTRACT.md",
       "line": 57,
-      "text": "**Acceptance evidence:** At 1440 and 390, use keyboard-only declaration, acknowledgment, notes, schedules, overrides and preview; inspect focus/labels, status announcements, literal hostile HTML and a real stale-write failure with no saved claim. Run axe-core with the WCAG 2.2 A and AA rule sets on every surface at 1440 and 390 in light and dark themes and record zero violations;",
+      "text": "**Acceptance evidence:** ",
       "to": "clause",
       "ids": [
         "OC-009"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 57,
+      "text": "At 1440 and 390, use keyboard-only ",
+      "to": "base",
+      "ids": [
+        "BASE-ACCESSIBILITY-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 57,
+      "text": "declaration, acknowledgment, notes, schedules, overrides and preview; ",
+      "to": "clause",
+      "ids": [
+        "OC-009"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 57,
+      "text": "inspect focus/labels, status announcements, ",
+      "to": "base",
+      "ids": [
+        "BASE-ACCESSIBILITY-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 57,
+      "text": "literal hostile HTML and ",
+      "to": "base",
+      "ids": [
+        "BASE-INPUT-002"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 57,
+      "text": "a real stale-write failure with no saved claim. ",
+      "to": "clause",
+      "ids": [
+        "OC-009"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 57,
+      "text": "Run axe-core with the WCAG 2.2 A and AA rule sets on every surface at 1440 and 390 in light and dark themes and record zero violations;",
+      "to": "base",
+      "ids": [
+        "BASE-ACCESSIBILITY-001"
       ]
     },
     {
@@ -1733,7 +1805,98 @@
     {
       "file": "CONTRACT.md",
       "line": 271,
-      "text": "**OC-039 — Enterprise access and responder lifecycle.** Add verified invitations and team membership lifecycle, SSO through Google Workspace, Okta, Microsoft Entra ID, JumpCloud, OneLogin and any compliant SAML 2.0 or OIDC provider, with just-in-time accounts and required-SSO enforcement as OC-069 specifies, MFA/step-up for privileged changes, SCIM provisioning/deprovisioning and scoped service accounts. Keep documented emergency administrator access independent of the main identity provider and reconcile revocation at standby. Imported contacts, chat accounts and caller IDs never create membership automatically. Revocation blocks the next read/mutation/acknowledgment and retires device/session/provider access; deprovisioning shows the resulting schedule gap and invokes approved alternate coverage rather than reassigning silently.",
+      "text": "**OC-039 — Enterprise access and responder lifecycle.** Add verified invitations and team membership lifecycle, SSO through Google Workspace, Okta, Microsoft Entra ID, JumpCloud, OneLogin ",
+      "to": "clause",
+      "ids": [
+        "OC-039"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": "and any compliant SAML 2.0 or OIDC provider",
+      "to": "base",
+      "ids": [
+        "BASE-SIGNIN-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": ", with just-in-time accounts and required-SSO enforcement as OC-069 specifies, ",
+      "to": "clause",
+      "ids": [
+        "OC-039"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": "MFA/",
+      "to": "base",
+      "ids": [
+        "BASE-SIGNIN-002"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": "step-up for privileged changes, ",
+      "to": "clause",
+      "ids": [
+        "OC-039"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": "SCIM provisioning/deprovisioning and ",
+      "to": "base",
+      "ids": [
+        "BASE-SIGNIN-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": "scoped service accounts. Keep documented emergency administrator access independent of the main identity provider and reconcile revocation at standby. Imported contacts, chat accounts and caller IDs never create membership automatically. Revocation ",
+      "to": "clause",
+      "ids": [
+        "OC-039"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": "blocks the next read/mutation/acknowledgment and ",
+      "to": "base",
+      "ids": [
+        "BASE-SIGNIN-001",
+        "BASE-ROLE-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": "retires device/",
+      "to": "clause",
+      "ids": [
+        "OC-039"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": "session/",
+      "to": "base",
+      "ids": [
+        "BASE-SIGNIN-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 271,
+      "text": "provider access; deprovisioning shows the resulting schedule gap and invokes approved alternate coverage rather than reassigning silently.",
       "to": "clause",
       "ids": [
         "OC-039"
@@ -1742,7 +1905,26 @@
     {
       "file": "CONTRACT.md",
       "line": 273,
-      "text": "**Acceptance evidence:** Invite a responder, sign in through Google Workspace, Okta, Entra and a generic SAML provider under OC-069, require step-up to edit paging credentials, deprovision via SCIM while a write is in flight, and exercise documented emergency access during IdP loss. Verify immediate denial across web/mobile/chat/standby and a visible coverage gap.",
+      "text": "**Acceptance evidence:** Invite a responder, sign in through Google Workspace, Okta, Entra and a generic SAML provider under OC-069, require step-up to edit paging credentials, deprovision via SCIM while a write is in flight, and exercise documented emergency access during IdP loss. Verify ",
+      "to": "clause",
+      "ids": [
+        "OC-039"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 273,
+      "text": "immediate denial across web/mobile/chat/",
+      "to": "base",
+      "ids": [
+        "BASE-SIGNIN-001",
+        "BASE-ROLE-001"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 273,
+      "text": "standby and a visible coverage gap.",
       "to": "clause",
       "ids": [
         "OC-039"
@@ -1768,7 +1950,25 @@
     {
       "file": "CONTRACT.md",
       "line": 277,
-      "text": "**OC-040 — Retention, erasure and custody.** Keep authored incident/review/runbook/follow-up history until explicit owner erasure or a separately chosen retention policy. Publish data categories, custody, configured retention and effects before enabling automatic expiry for telemetry snapshots, recordings or provider content. Admins can erase an incident, contact/member or integration and its local copies, pending deliveries, credentials and imported custody; receipts contain per-table counts and completion state and are not issued before commit. Preserve anonymized audit and erasure fences without personal content; an erased responder leaves an explicit gap. Imports/restores carrying the later source erasure journal cannot resurrect erased data. Older offline copies, already sent provider messages and in-flight external calls cannot be recalled; document recipient/provider deletion requests. Cross-site erasure must reconcile standby before success is claimed.",
+      "text": "**OC-040 — Retention, erasure and custody.** Keep authored incident/review/runbook/follow-up history until explicit owner erasure or a separately chosen retention policy. Publish data categories, custody, configured retention and effects before enabling automatic expiry for telemetry snapshots, recordings or provider content. Admins can erase an incident, contact/member or integration and its local copies, pending deliveries, credentials and imported custody; receipts contain per-table counts and completion state and are not issued before commit. Preserve ",
+      "to": "clause",
+      "ids": [
+        "OC-040"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 277,
+      "text": "anonymized audit and ",
+      "to": "base",
+      "ids": [
+        "BASE-DATA-003"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 277,
+      "text": "erasure fences without personal content; an erased responder leaves an explicit gap. Imports/restores carrying the later source erasure journal cannot resurrect erased data. Older offline copies, already sent provider messages and in-flight external calls cannot be recalled; document recipient/provider deletion requests. Cross-site erasure must reconcile standby before success is claimed.",
       "to": "clause",
       "ids": [
         "OC-040"
@@ -2082,7 +2282,25 @@
     {
       "file": "CONTRACT.md",
       "line": 334,
-      "text": "**OC-052 — Complete portable target archive and Base replacements.** Extend OC-007/015/016 archives to every new durable product record: teams/services, complete coverage, policies, responder destination definitions/verification history, alert/incident identities, delivery/escalation/call histories, reviews/actions, connector definitions, investigations/plans/grants as inactive history, audit, import provenance and erasure journals. Exclude sessions, passwords, provider keys, device/acknowledgment capabilities and execution credentials as installation-local authority; declare these exclusions as the product’s explicit BASE-DATA-001 replacement rather than claiming credential portability. Restore atomically into the documented receiving state with all sends, schedules needing reauthorization, agent actions and publication paused; preserved history cannot satisfy live readiness or replay effects. BASE-INPUT-002 uses literal structured text and no arbitrary supplied HTML; BASE-INPUT-003 treats current JSON imports as bounded structured data with no arbitrary attachment upload (any future recording/upload must add validated scoped custody); BASE-PUBLIC-002 has no public incident embed; BASE-DATA-005 requires native operation without author/marketplace/AI dependency, and any optional management connector is explicit and revocable. These replacements preserve security, erasure and operating obligations; they do not claim untested baseline equivalence.",
+      "text": "**OC-052 — Complete portable target archive and Base replacements.** Extend OC-007/015/016 archives to every new durable product record: teams/services, complete coverage, policies, responder destination definitions/verification history, alert/incident identities, delivery/escalation/call histories, reviews/actions, connector definitions, investigations/plans/grants as inactive history, audit, import provenance and erasure journals. Exclude sessions, passwords, provider keys, device/acknowledgment capabilities and execution credentials as installation-local authority; declare these exclusions as the product’s explicit BASE-DATA-001 replacement rather than claiming credential portability. Restore atomically into the documented receiving state with all sends, schedules needing reauthorization, agent actions and publication paused; preserved history cannot satisfy live readiness or replay effects. BASE-INPUT-002 uses literal structured text and no arbitrary supplied HTML; BASE-INPUT-003 treats current JSON imports as bounded structured data with no arbitrary attachment upload (any future recording/upload must add validated scoped custody); BASE-PUBLIC-002 has no public incident embed; ",
+      "to": "clause",
+      "ids": [
+        "OC-052"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 334,
+      "text": "BASE-DATA-005 requires native operation without author/marketplace/",
+      "to": "base",
+      "ids": [
+        "BASE-DATA-005"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 334,
+      "text": "AI dependency, and any optional management connector is explicit and revocable. These replacements preserve security, erasure and operating obligations; they do not claim untested baseline equivalence.",
       "to": "clause",
       "ids": [
         "OC-052"
@@ -2091,7 +2309,25 @@
     {
       "file": "CONTRACT.md",
       "line": 336,
-      "text": "**Acceptance evidence:** Export a populated target installation via protected HTTP and rer CLI, compare every durable category, restore inactive on a fresh authorized installation, reconfigure local secrets and prove no send/action replay. Supply malformed/over-limit/erased/unknown records and inject storage/concurrency faults; preserve the full prior state. Deny optional author/AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.",
+      "text": "**Acceptance evidence:** Export a populated target installation via protected HTTP and rer CLI, compare every durable category, restore inactive on a fresh authorized installation, reconfigure local secrets and prove no send/action replay. Supply malformed/over-limit/erased/unknown records and inject storage/concurrency faults; preserve the full prior state. Deny optional ",
+      "to": "clause",
+      "ids": [
+        "OC-052"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 336,
+      "text": "author/",
+      "to": "base",
+      "ids": [
+        "BASE-DATA-005"
+      ]
+    },
+    {
+      "file": "CONTRACT.md",
+      "line": 336,
+      "text": "AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.",
       "to": "clause",
       "ids": [
         "OC-052"
