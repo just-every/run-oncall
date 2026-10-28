@@ -79,7 +79,7 @@ Core · published · **partial**
 1. Declare an incident and edit its service runbook, and the copied incident steps remain unchanged; an owned, due-dated action requires completion evidence; unfinished work and the review are retained after resolution.
 
 **Evidence.** `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
-**Gap.** The copied steps after a service runbook edit, the refusal to complete an action without evidence and unfinished work kept after resolution are not asserted in the cited test; a review written after resolution is asserted to persist. Alert-level runbook access and follow-up policies are targets in OC-023/036.
+**Gap.** The copied steps after a service runbook edit, creation of an owned, due-dated action, the refusal to complete an action without evidence and unfinished work kept after resolution are not asserted in the cited test; a review written after resolution is asserted to persist. Alert-level runbook access and follow-up policies are targets in OC-023/036.
 
 #### OC-006 — Bounded outbound incident effects
 
@@ -635,7 +635,7 @@ Core · target · **partial** · Cites BASE-AUDIT-001, BASE-OPS-005, BASE-OPS-00
 4. Restore held data without rewriting operational history, compare portable permanent audit, and prove restored history never grants authority or reassigns labels.
 
 **Evidence.** `src/audit-store.ts`; `src/audit-database.ts`; `src/audit-request.ts`; `migrations/core/0129_admin_audit.sql`; `migrations/core/0130_import_audit_lifecycle.sql`; `tests/runtime.mjs`; `tests/transfer.mjs`; `tests/activation.mjs`; `tests/triage.mjs`; `docs/audit.md`
-**Gap.** Audit commits for password changes, handoff actions and routing publication are not asserted in the cited tests; workspace commands, member and access changes, source keys and admission, schedules, paging refusals, triage bulk actions, move-in, the import door and erasure commit with their audit, audit-write failures roll back, and export authority, erasure-safe labels, lease interruption and restore are asserted.
+**Gap.** Audit commits for password changes, handoff actions and routing publication, and no label reassignment after restore, are not asserted in the cited tests; workspace commands, member and access changes, source keys and admission, schedules, paging refusals, triage bulk actions, move-in, the import door and erasure commit with their audit, audit-write failures roll back, and export authority, erasure-safe labels and lease interruption are asserted. Restore is asserted to keep history and audit unchanged and grant no intake authority.
 
 #### OC-042 — Credential custody and declared external flows
 
