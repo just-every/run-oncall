@@ -600,12 +600,17 @@
   ],
   "resources": [
     "oncall://actions/{id}",
+    "oncall://automation/clients/{id}",
+    "oncall://automation/endpoints/{id}",
     "oncall://automation/outbox/{id}",
+    "oncall://erasures/{id}",
     "oncall://incidents/{id}",
     "oncall://incidents/{id}/review-material",
+    "oncall://members/{id}",
     "oncall://schedules/{id}/coverage",
     "oncall://services/{id}",
-    "oncall://services/{id}/changes"
+    "oncall://services/{id}/changes",
+    "oncall://teams/{id}"
   ],
   "witness": {
     "tool": "oncall.coordination.read",

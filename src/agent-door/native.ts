@@ -81,7 +81,12 @@ export async function persistNative(env: Bindings, access: NativeAccess, extra: 
     if(access.state.apiOperations.length>1000)throw new ToolRefusal('capacity_exceeded')
   }
   const durable = (access.state.apiOutbox ?? []).filter(item => access.state.incidents.some(incident => incident.timeline.some(entry => entry.id === item.entry && entry.metadata?.agent?.agent.id === access.principal.agent.id)))
-  const result = await env.DB.batch([...workspaceWrite(env.DB, access.state, access.state.revision, access.guard, token), ...extra(token), ...(operation?[env.DB.prepare('UPDATE oc_agent_operations SET operation=? WHERE id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(JSON.stringify(operation),operation.id,token)]:[]), ...durable.map(item => env.DB.prepare(`INSERT OR IGNORE INTO oc_agent_outbox(outbox,principal) SELECT ?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)`).bind(item.id,JSON.stringify({person:{id:access.member.id},agent:access.principal.agent,scopes:access.principal.scopes,clientId:access.principal.clientId,consent:access.principal.consent}),token))])
+  const who=JSON.stringify({person:{id:access.member.id},agent:access.principal.agent,scopes:access.principal.scopes,clientId:access.principal.clientId,consent:access.principal.consent})
+  const deadlines=access.state.incidents.flatMap(incident=>(incident.deadlines??[]).filter(deadline=>incident.timeline.some(entry=>entry.id==='deadline:'+deadline.id&&entry.metadata?.agent?.agent.id===access.principal.agent.id)))
+  const result = await env.DB.batch([...workspaceWrite(env.DB, access.state, access.state.revision, access.guard, token), ...extra(token), ...(operation?[env.DB.prepare('UPDATE oc_agent_operations SET operation=? WHERE id=? AND EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(JSON.stringify(operation),operation.id,token)]:[]),
+    ...durable.map(item => env.DB.prepare(`INSERT OR IGNORE INTO oc_agent_outbox(outbox,principal) SELECT ?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)`).bind(item.id,who,token)),
+    ...deadlines.map(deadline=>env.DB.prepare('INSERT OR IGNORE INTO oc_agent_deadlines(deadline,principal) SELECT ?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(deadline.id,who,token)),
+  ])
   if (result[0].meta.changes !== 1) return denied('revision_conflict')
 }
 

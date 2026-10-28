@@ -32,7 +32,8 @@ export default withDemo({
     const moveIn=auditedDatabase(env.DB,{feature:'move-in',kind:'move-in.consent.cleanup',actor:{kind:'service',id:'move-in-consent'},source:{kind:'provider',id:'pagerduty'},commits:0,storageFailed:false});
     if((await sweepMoveInConsent({...env,DB:moveIn.db})).failed)await moveIn.record('failed');
     const deadlines=auditedDatabase(env.DB,{feature:'incident-deadlines',kind:'deadline.sweep',actor:{kind:'service',id:'incident-deadlines'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
-    await sweepDeadlines(deadlines.db);
+    const deadlineEnv={...env,DB:deadlines.db};
+    await sweepDeadlines(deadlines.db,(args,who)=>oncallAgentDoor(deadlineEnv).invoke('oncall.incidents.update',{...args,change:'expire-deadline',idempotency_key:`deadline-${args.deadline}`},who));
     for(let n=0;n<10;n++) {
       const audit=auditedDatabase(env.DB,{feature:'automation',kind:'automation.dispatch',actor:{kind:'service',id:'outbox-dispatcher'},source:{kind:'door',id:'outbox-dispatcher'},commits:0,storageFailed:false});
       if(!(await dispatchOutbox({...env,DB:audit.db})).processed)break;

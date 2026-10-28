@@ -113,8 +113,16 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
     const label=await anonymous('client',targetId)
     // Preserve historical machine attribution as an inactive, credential-free
     // erased identity. Never transfer a machine's claims to the erasing admin.
-    for(const entry of [...state.audit,...state.incidents.flatMap(row=>row.timeline)])if(entry.metadata?.agent?.client===targetId)delete entry.metadata.agent
+    for(const entry of [...state.audit,...state.incidents.flatMap(row=>row.timeline)])if(entry.metadata?.agent?.client===targetId){
+      const by=entry.metadata.agent;by.agent={id:label,name:'Erased integration'};delete by.client;delete by.clientRevision;by.label=`Erased integration for ${by.for.name}`
+    }
     eraseCredential('oc_agent_operations','client',[targetId])
+    const agent='oncall-client:'+targetId
+    remember('agent_door_agents');remember('agent_door_audit');remember('agent_door_calls');remember('agent_door_approvals')
+    statements.push(db.prepare("UPDATE agent_door_agents SET name='Erased integration',revoked=1 WHERE id=?").bind(agent),
+      db.prepare("UPDATE agent_door_audit SET row=json_set(row,'$.agent.name','Erased integration','$.label','Erased integration for '||json_extract(row,'$.sponsor.name')) WHERE agent=?").bind(agent),
+      db.prepare('DELETE FROM agent_door_calls WHERE agent=?').bind(agent),
+      db.prepare("UPDATE agent_door_approvals SET state=CASE WHEN state='pending' THEN 'expired' ELSE state END,saved=json_set(saved,'$.principal.agent.name','Erased integration') WHERE json_extract(saved,'$.principal.agent.id')=?").bind(agent))
     for(const key of ['incidents','audit','services'] as const){
      const prior=state[key].map(row=>JSON.stringify(row));(state as any)[key]=replaceIdentity(state[key],targetId,label)
      const changed=state[key].filter((row,index)=>JSON.stringify(row)!==prior[index]).length
@@ -170,6 +178,14 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
    if(id===sponsor)fail('Use another administrator to erase this member',409)
    const agentJobs=(await db.prepare("SELECT outbox FROM oc_agent_outbox WHERE json_extract(principal,'$.person.id')=?").bind(id).all<{outbox:string}>()).results.map(row=>row.outbox)
    outbox(row=>agentJobs.includes(row.id))
+   const agentDeadlines=(await db.prepare("SELECT deadline FROM oc_agent_deadlines WHERE json_extract(principal,'$.person.id')=?").bind(id).all<{deadline:string}>()).results.map(row=>row.deadline)
+   for(const incident of state.incidents)for(const deadline of incident.deadlines??[])if(agentDeadlines.includes(deadline.id)&&deadline.state==='pending'){deadline.state='cancelled';deadline.endedAt=new Date().toISOString();deadline.outcome='Creator erased; no re-trigger obligation';incident.revision++}
+   remember('oc_agent_deadlines');remember('agent_door_agents');remember('agent_door_audit');remember('agent_door_approvals');remember('agent_door_reviews')
+   statements.push(db.prepare("DELETE FROM oc_agent_deadlines WHERE json_extract(principal,'$.person.id')=?").bind(id),
+     db.prepare("UPDATE agent_door_agents SET sponsor_name='Erased member',revoked=1 WHERE sponsor=?").bind(id),
+     db.prepare("UPDATE agent_door_audit SET row=json_set(row,'$.sponsor.name','Erased member','$.label',json_extract(row,'$.agent.name')||' for Erased member') WHERE json_extract(row,'$.sponsor.id')=?").bind(id),
+     db.prepare("UPDATE agent_door_approvals SET state=CASE WHEN state='pending' THEN 'expired' ELSE state END,saved=json_set(saved,'$.principal.person.name','Erased member','$.principal.person.email','') WHERE json_extract(saved,'$.principal.person.id')=?").bind(id),
+     db.prepare("UPDATE agent_door_reviews SET saved=json_set(saved,'$.principal.person.name','Erased member','$.principal.person.email','') WHERE json_extract(saved,'$.principal.person.id')=?").bind(id))
    if(member.role==='admin'&&member.active&&state.members.filter(m=>m.active&&m.role==='admin').length===1)fail('The last administrator cannot be erased',409)
    if(input.identitiesReviewed!==true||!Array.isArray(input.importedPeople)||input.importedPeople.some((v:unknown)=>typeof v!=='string')||new Set(input.importedPeople).size!==input.importedPeople.length)fail('Review and select this member’s retained imported identities',409)
    const people=(await db.prepare("SELECT id,data FROM move_in_objects WHERE kind='user'").all<{id:string;data:string}>()).results
@@ -303,9 +319,10 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
    auditIdentity(db,{actor:{kind:'agent',id:agent.agent.id},source:{kind:'member',id:sponsor}})
   }
   validateArchive(state)
-  remember('oc_agent_outbox');remember('oc_agent_operations')
+  remember('oc_agent_outbox');remember('oc_agent_operations');remember('oc_agent_deadlines')
   statements.push(db.prepare('DELETE FROM oc_agent_outbox WHERE outbox NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify((state.apiOutbox??[]).map(row=>row.id))),
-    db.prepare("DELETE FROM oc_agent_operations WHERE json_extract(operation,'$.entity') NOT IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...state.services.map(row=>row.id),...state.incidents.map(row=>row.id)])))
+    db.prepare("DELETE FROM oc_agent_operations WHERE json_extract(operation,'$.entity') NOT IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...state.services.map(row=>row.id),...state.incidents.map(row=>row.id)])),
+    db.prepare('DELETE FROM oc_agent_deadlines WHERE deadline NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify(state.incidents.flatMap(row=>(row.deadlines??[]).map(deadline=>deadline.id)))))
   // The digest holds no subject content. It also rejects old rows maliciously
   // paired with a newer native journal on either restore door.
   await fence(kind,id)

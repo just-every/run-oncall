@@ -14,7 +14,7 @@ try{
  assert.equal((await http('/api/rer/agent-policy',{policy:'invalid.signature.document'})).status,400);
  assert.deepEqual(await (await http('/agents/api/state')).json(),before,'Invalid adoption retains the exact prior policy');
  for(const overrides of [{sub:'unmapped-person'},{aud:'https://foreign.invalid/mcp'}])assert.equal((await tool('oncall.services.read',{id:'agent-service'},overrides)).status,401);
- const state=await (await http('/api/state')).json(),responder=state.members.find(row=>row.name==='Agent responder');
+ const state=await (await http('/api/state')).json(),responder=state.members.find(row=>row.role==='responder');
  const teammate=randomUUID();
  await runtime.settings([{id:teammate,email:'mira@example.invalid',name:'Mira Patel',role:'member',invite:1}],2);
  assert.equal((await tool('oncall.services.read',{id:'agent-service'},{sub:teammate,email:runtime.context.person.email})).status,401,'Matching token email cannot establish native authority');
@@ -23,7 +23,7 @@ try{
  assert.equal(linked.status,200);assert.equal(linked.result.isError,false);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const events=await tool('oncall.events.list',{limit:200});assert.ok(events.result.structuredContent.events.some(row=>row.actor.kind==='agent'));
- const native=await (await http('/api/state')).json(),incident=native.incidents.find(row=>row.title==='Agent specialist coordination');
+ const native=await (await http('/api/state')).json(),incident=native.incidents.find(row=>row.title==='Payment authorization failures after deployment');
  assert.ok(incident.timeline.every(row=>row.metadata?.agent?.for.id===native.members.find(row=>row.name==='Alex Chen').id));
  assert.equal(incident.actions[0].done,false);
  const pause=await adopt(autonomousPolicy(),{paused:true});assert.equal(pause.status,200);

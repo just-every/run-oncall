@@ -37,7 +37,7 @@ function accessTool(env: Bindings): ToolDefinition {
     if (!target) fail('Unknown member', 404)
     return { access, target }
   }
-  const widens = (target: Member, args: Args) => rank[args.role as Member['role']] > rank[target.role] || !target.active && args.active === true
+  const widens = (target: Member, args: Args) => args.active===true&&(!target.active||rank[args.role as Member['role']] > rank[target.role])
   return defineTool({
     name: 'oncall.access.update', title: 'Change member access',
     description: 'Change an existing native member’s role and active access using a current administrator sponsor. Local service-account clients cannot manage members. Revision is the current workspace revision; no invitation is sent.',
@@ -76,7 +76,7 @@ function teamsTool(env: Bindings): ToolDefinition {
     const candidate = { ...access.state, teams: access.state.teams?.map(team => ({ ...team, members: [...team.members], managers: [...team.managers] })) }
     const team = editTeam(candidate, access.member, args)
     const prior = new Set(target?.active ? target.managers : [])
-    const gains = team.active ? team.managers.filter(id => !prior.has(id)) : []
+    const gains = team.active ? team.managers.filter(id => !prior.has(id)&&access.state.members.some(member=>member.id===id&&member.active&&member.role==='responder')) : []
     return { access, target, team, gains }
   }
   return defineTool({

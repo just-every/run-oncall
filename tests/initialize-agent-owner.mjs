@@ -29,13 +29,18 @@ export default async function initialize({ request, origin, token, displayName, 
   assert.equal(workspace.member?.role, 'admin', 'Native owner must link to an active Oncall administrator');
   const owner = workspace.member.id;
   const members = {};
+  const names={responder:'Mira Patel',viewer:'Leah Moreno',admin:'Jordan Davis'};
   for (const role of ['responder', 'viewer', 'admin']) {
-    members[role] = await json('/api/members', { name: `Agent ${role}`, role, password: randomBytes(32).toString('hex') }, 201);
+    members[role] = await json('/api/members', { name: names[role], role, password: randomBytes(32).toString('hex') }, 201);
   }
-  for (const [id, name] of [['agent-service', 'Agent coordination service'], ['agent-foreign-service', 'Foreign coordination service']]) {
-    await json('/api/command', { type: 'service', id, name, environment: 'verification', owner,
+  for (const [id, name] of [['agent-service', 'Payments API'], ['agent-foreign-service', 'Inventory worker']]) {
+    await json('/api/command', { type: 'service', id, name, environment: 'production', owner,
       runbook: ['Inspect the retained deployment evidence', 'Record recovery evidence for human review'], pager: '' });
   }
+  const monitorKey=randomBytes(32).toString('hex');
+  await json('/api/sources',{id:'agent-monitor',key:monitorKey,scopes:['agent-service']});
+  const admitted=await request(new URL('/api/ingress/agent-monitor',origin).href,{method:'POST',headers:{Origin:origin,Authorization:'Bearer '+monitorKey,'Content-Type':'application/json'},body:JSON.stringify({source:'agent-monitor',eventId:'payment-errors-started',service:'agent-service',environment:'production',key:'payment-authorizations',generation:'agent-monitor-generation',intent:'trigger',severity:'warning',title:'Payment authorization error rate elevated',observedAt:new Date().toISOString(),evidence:'https://monitoring.example.invalid/payment-authorizations'})});
+  assert.equal(admitted.status,201);await admitted.body?.cancel();
   const changeKey = randomBytes(32).toString('hex');
   await json('/api/changes/sources', { id: 'agent-change-source', name: 'Agent retained deployment evidence', provider: 'native',
     service: 'agent-service', repository: '', mode: 'bearer', revision: 0, key: changeKey }, 201);

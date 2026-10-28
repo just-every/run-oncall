@@ -3,6 +3,7 @@ import { ToolRefusal, type ToolDefinition, type ToolContext } from '../modules/a
 import { dispatchOutbox, updateOutcome } from '../automation/dispatch'
 import { activeOwner, deliveryCapacity, unfinishedDeliveries } from '../automation/model'
 import { nativeAccess, nativeAudit, nativeCall, persistNative } from './native'
+import { loadWorkspace } from '../workspace-store'
 
 export function automationTools(env: Bindings): ToolDefinition[] {
   const access = async (args: Record<string, unknown>, ctx: ToolContext) => {
@@ -43,7 +44,9 @@ export function automationTools(env: Bindings): ToolDefinition[] {
         await env.DB.prepare('INSERT OR IGNORE INTO oc_agent_outbox(outbox,principal) VALUES(?,?)').bind(item.id,JSON.stringify({person:{id:ctx.person.id},agent:ctx.agent,scopes:ctx.scopes,clientId:ctx.clientId,consent:ctx.consent})).run()
         await dispatchOutbox(env,current.guard,{id:item.id,agent:{id:ctx.agent.id,label:ctx.actor.label}})
       }
-      const latest=await nativeAccess(env,ctx,'automation:write',item.service),operation=latest.state.apiOutbox?.find(row=>row.id===item.id)
+      // Report the committed transport outcome even if Pause/revocation arrives
+      // during flight. It cannot retract bytes or turn a receiver receipt into refusal.
+      const operation=(await loadWorkspace(env.DB)).apiOutbox?.find(row=>row.id===item.id)
       if (!operation) throw new ToolRefusal('not_found')
       const uri=`oncall://automation/outbox/${item.id}`
       ctx.emit(`automation.${action}`,uri,{status:operation.status})

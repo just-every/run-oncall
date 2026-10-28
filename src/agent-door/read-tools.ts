@@ -26,7 +26,7 @@ export function readTools(env: Bindings): ToolDefinition[] {
   const list = input()
   const serviceRead = async (args: Record<string, unknown>, ctx: ToolContext) => {
     const access = await nativeAccess(env, ctx, 'services:read', args.id)
-    return Promise.all(access.state.services.filter(row => access.services.includes(row.id) && (!args.id || row.id === args.id)).map(async row => {const projected={ ...row, dependencies: (row.dependencies??[]).filter(value => access.services.includes(value)) };return {...projected,etag:await changeHash(JSON.stringify(projected))}}))
+    return Promise.all(access.state.services.filter(row => access.services.includes(row.id) && (!args.id || row.id === args.id)).map(async row => {const projected={ ...row, dependencies: (row.dependencies??[]).filter(value => access.services.includes(value)) };return {...projected,etag:await changeHash(JSON.stringify(projected)),alertGenerations:access.state.alerts.filter(alert=>alert.service===row.id).map(alert=>({id:alert.id,source:alert.source,key:alert.key,generation:alert.generation,environment:alert.environment,state:alert.state,events:[...alert.events]}))}}))
   }
   const incidents = async (args: Record<string, unknown>, ctx: ToolContext) => {
     const access = await nativeAccess(env, ctx, 'incidents:read')

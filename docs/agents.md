@@ -2,7 +2,7 @@
 
 The Oncall responder works beside your existing pager. Paging stays OFF. The agent door is a preview pending shared policy conformance; keep your existing incident and paging process authoritative.
 
-Open [Agents](/agents) to inspect decisions, pending approvals, reviews and Pause. An agent acts for its current sponsoring person. Company policy chooses autonomous work, review, approval or refusal for each applicable risk class. There is no preset permission to act. Missing or expired policy, unanswered classes, Pause, revoked consent and native access restrictions stop the next agent effect.
+Open Agents (`/agents`) to inspect decisions, pending approvals, reviews and Pause. An agent acts for its current sponsoring person. Company policy chooses autonomous work, review, approval or refusal for each applicable risk class. There is no preset permission to act. Missing or expired policy, unanswered classes, Pause, revoked consent and native access restrictions stop the next agent effect.
 
 ## Supported work
 
@@ -19,7 +19,7 @@ The MCP endpoint is `/mcp`. Discovery and protected-resource metadata describe t
 
 ## People and credentials
 
-Business supplies signed owner and teammate person IDs. The installation owner uses [Business people](/agents/people) to link an applied teammate ID to an existing local workspace account. Matching an email address is insufficient. Oncall creates no invitation or password from a Business roster. A local role promotion does not make someone a Business policy editor.
+Business supplies signed owner and teammate person IDs. The installation owner uses Business people (`/agents/people`) to link an applied teammate ID to an existing local workspace account. Matching an email address is insufficient. Oncall creates no invitation or password from a Business roster. A local role promotion does not make someone a Business policy editor.
 
 Service-account clients remain bound to the active administrator who created them, by native ID. Demoting or removing that administrator suspends the client. Rotating credentials invalidates saved client authority. A client cannot manage members, sessions, archives or exports.
 

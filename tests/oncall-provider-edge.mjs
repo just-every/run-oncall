@@ -26,6 +26,8 @@ export default {
     if (!timestamp || !/^\d+$/.test(timestamp) || Math.abs(Date.now() / 1000 - Number(timestamp)) > 300 ||
       request.headers.get('x-oncall-operation') !== body.operationId ||
       request.headers.get('x-oncall-signature') !== await sign(key, `${timestamp}.${raw}`)) return refuse();
+    let actor;try{actor=decodeURIComponent(request.headers.get('x-oncall-prepared-by')??'')}catch{return refuse()}
+    if(!actor.includes(' for ')||request.headers.get('x-oncall-actor-signature')!==await sign(key,`${timestamp}.${raw}.${actor}`))return refuse();
     // A deterministic transient at the paid edge exercises the real explicit
     // native replay operation. The adapter never initiates a retry itself.
     const retry = url.pathname === '/oncall-retry' && !attempted.has(body.operationId);

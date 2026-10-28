@@ -127,11 +127,13 @@ export function oncallResources(env: Bindings): ResourceDefinition[] {
       if (!incident || !visibleIncident(access.state, incident.id, access.services)) return null
       return { service: incident.service, json: { ...incident.actions.find(action => action.id === id)!, incident: incident.id, service: incident.service, revision: incident.revision } }
     }),
-    resource(env, 'automation/outbox/{id}', 'Response event delivery record', 'integrations:read', (access, id) => {
+    resource(env, 'automation/outbox/{id}', 'Response event delivery record', 'automation:write', (access, id) => {
       const row = access.state.apiOutbox?.find(item => item.id === id)
-      if (!row || !access.services.includes(row.service) || !visibleIncident(access.state, row.incident, access.services)) return null
+      if (!row) return null
+      if (access.client ? row.client!==access.client.id : access.member.role!=='admin') return null
+      if (!access.services.includes(row.service) || !visibleIncident(access.state, row.incident, access.services)) return null
       const { lease: _lease, leaseUntil: _leaseUntil, ...record } = row
       return { service: row.service, json: record }
-    }, true),
+    }),
   ]
 }

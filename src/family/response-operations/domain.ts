@@ -752,6 +752,7 @@ export function validateArchive(value: any): State {
         text(agent.label,'agent attribution label',500);text(agent.sponsor,'agent sponsor',100);
         if(agent.for.id!==agent.sponsor||!value.members.some((m:any)=>m.id===agent.sponsor))fail('Invalid agent sponsor');
         if(agent.client!==undefined&&(!value.apiClients?.some((c:any)=>c.id===agent.client&&c.owner===agent.sponsor)||e.actor!==agent.client))fail('Invalid agent client attribution');
+        if(agent.clientRevision!==undefined&&(!Number.isSafeInteger(agent.clientRevision)||agent.clientRevision<1))fail('Invalid agent client revision');
         if(agent.client===undefined&&e.actor!==agent.agent.id)fail('Invalid agent actor attribution');
         if(agent.approvers!==undefined){array(agent.approvers);if(agent.approvers.length>100||new Set(agent.approvers.map((p:any)=>p.id)).size!==agent.approvers.length)fail('Invalid agent approvers');for(const person of agent.approvers){object(person,['id','name']);text(person.name,'approver name',200);if(!value.members.some((m:any)=>m.id===person.id))fail('Invalid agent approver');}}
       }

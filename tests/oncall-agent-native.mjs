@@ -25,10 +25,12 @@ export default async function journey({ request, origin, cookie, fixtures, tool 
   }
   let current = await state();
   const owner = (await http('/api/workspace')).body.member;
-  const responder = current.members.find(member => member.name === 'Agent responder' && member.active);
+  const responder = current.members.find(member => member.role === 'responder' && member.active);
   assert.ok(owner?.role === 'admin' && responder, 'Native owner and active responder fixtures must exist');
   const services = await call('services.read', { id: 'agent-service' });
   assert.equal(services.data[0]?.id, 'agent-service');
+  const generation=services.data[0].alertGenerations.find(row=>row.generation==='agent-monitor-generation');
+  assert.ok(generation,'Read the actual monitoring generation before declaring');
   const changes = await call('changes.read', { service: 'agent-service', at: new Date().toISOString(), hours: 24 });
   assert.equal(changes.data.service, 'agent-service');
   const schedules = await call('schedules.read', { id: 'agent-schedule' });
@@ -39,8 +41,8 @@ export default async function journey({ request, origin, cookie, fixtures, tool 
   assert.equal(covered.paging, 'OFF');
   assert.ok(covered.coverage.length, 'Native coverage must contain a resolved interval');
 
-  // Only this final specialist phase approves the synthetic receiver. Earlier
-  // conformance phases have no endpoint and cannot schedule external effects.
+  // This specialist phase provisions its own receiver. Earlier generic effects
+  // remain behind the same typed dispatch policy.
   const receiver = (await http('/api/automation/clients', { name: 'Agent fixture receiver', key: randomBytes(32).toString('hex'),
     services: ['agent-service'], permissions: ['incidents:read'] }, 201)).body;
   const receiverKey = randomBytes(32).toString('hex');
@@ -50,7 +52,7 @@ export default async function journey({ request, origin, cookie, fixtures, tool 
 
   current = await state();
   let incident = await call('incidents.declare', { service: 'agent-service', revision: current.revision,
-    title: 'Agent specialist coordination', summary: 'Investigate retained service evidence; paging remains off', severity: 'warning', alerts: [] }, true);
+    title: 'Payment authorization failures after deployment', summary: 'Investigate retained service evidence; paging remains off', severity: 'warning', alerts: [generation.id] }, true);
   incident = await call('incidents.acknowledge', { incident: incident.id, revision: incident.revision,
     member: responder.id, summary: 'Agent records responsibility for the named active responder' }, true);
   assert.equal(incident.commander, responder.id);
@@ -83,6 +85,12 @@ export default async function journey({ request, origin, cookie, fixtures, tool 
   const review = await call('reviews.read', { id: incident.id });
   assert.equal(review.data.incident, incident.id);
   assert.equal(review.data.followups.find(row => row.id === action.id).done, false);
+  const monitorKey=randomBytes(32).toString('hex');
+  await http('/api/sources',{id:'agent-monitor',key:monitorKey,scopes:['agent-service']});
+  await http('/api/ingress/agent-monitor',{source:'agent-monitor',eventId:'payment-errors-recovered-'+randomUUID(),service:'agent-service',environment:'production',key:'payment-authorizations',generation:'agent-monitor-generation',intent:'recover',severity:'warning',title:'Payment authorization error rate recovered',observedAt:new Date().toISOString(),evidence:'https://monitoring.example.invalid/payment-authorizations/recovery'},201,'',{Authorization:'Bearer '+monitorKey});
+  const recovered=await call('reviews.read',{id:incident.id});
+  assert.ok(recovered.data.observations.some(row=>row.intent==='recover'&&row.classification==='reported source observation'));
+  assert.equal((await state()).incidents.find(row=>row.id===incident.id).state,'acknowledged','Source recovery is not incident resolution or human acceptance');
 
   const proposal = { ...schedule, name: 'Agent reviewed coordination rota' };
   const reviewed = await call('schedules.review', { id: schedule.id, revision: schedule.revision, schedule: proposal, from, to });
