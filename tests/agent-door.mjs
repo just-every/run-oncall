@@ -12,4 +12,9 @@ import { checkAgentDoor } from '@runeditrun/rer/internal/cli/agent-door.mjs';
 // reruns target/classify before the completed result. Schedule creation's real
 // unused-ID fence consequently refuses a retry after its approved execution.
 // Keep these gaps visible: this call preserves every failing Base assertion.
-await checkAgentDoor(process.cwd());
+try {
+  await checkAgentDoor(process.cwd());
+} catch (error) {
+  console.error(error instanceof Error ? error.message : 'Agent door conformance failed.');
+  process.exitCode = 1;
+}
