@@ -1,3 +1,4 @@
+import {autonomousCoordination} from './agent-policy-fixture.mjs';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
@@ -26,7 +27,8 @@ try {
   if(await panel.getByRole('button',{name:'Add client',exact:true}).isVisible())await panel.getByRole('button',{name:'Add client',exact:true}).click();
   await panel.getByLabel('Name',{exact:true}).fill('Synthetic browser client '+width);
   await panel.getByLabel('Incidents',{exact:true}).selectOption('write');await panel.getByRole('button',{name:'Create client',exact:true}).click();await panel.getByText('Synthetic browser client '+width,{exact:true}).first().waitFor();
-  const createdKey=await panel.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);await panel.getByRole('button',{name:'Done',exact:true}).click();assert.equal((await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+createdKey})).status,200);
+  const createdKey=await panel.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);await panel.getByRole('button',{name:'Done',exact:true}).click();if(width===1440){const unset=await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+createdKey});assert.equal(unset.status,403);assert.equal(unset.value.error.code,'policy_unset');await autonomousCoordination(runtime,cookie);}
+  assert.equal((await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+createdKey})).status,200);
   // A stale lifecycle write is a real server conflict and must be announced.
   const clients=(await req('/api/automation')).value.clients,client=clients.find(c=>c.name==='Synthetic browser client '+width);
   await req('/api/automation/clients/'+client.id+'/revoke',{revision:client.revision});
@@ -56,7 +58,7 @@ try {
   assert.equal((await machine({type:'transition',incident:incident.value.entity,revision:uncertain.value.revision,state:'acknowledged',member:memberA.id,summary:'Explicit machine responsibility'},1)).status,201);
   assert.equal((await machine({type:'reassign',incident:incident.value.entity,revision:uncertain.value.revision+1,member:memberB.id,reason:'Subsequent assignment'},2)).status,201);
   assert.equal((await req('/api/state')).value.incidents.find(i=>i.id===incident.value.entity).assignee,memberB.id);
-  await page.goto(runtime.origin+'/incidents/'+encodeURIComponent(incident.value.entity));await page.locator('.timeline').getByText('Service account',{exact:true}).first().waitFor();const named=page.locator('.timeline .event').filter({has:page.locator('.named-responder').filter({hasText:memberA.name})});assert.equal(await named.count(),1);await named.getByText('Service account',{exact:true}).waitFor();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
+  await page.goto(runtime.origin+'/incidents/'+encodeURIComponent(incident.value.entity));await page.locator('.timeline').getByText('Synthetic sending client '+width+' for Synthetic Browser Owner',{exact:true}).first().waitFor();const named=page.locator('.timeline .event').filter({has:page.locator('.named-responder').filter({hasText:memberA.name})});assert.equal(await named.count(),1);await named.getByText('Synthetic sending client '+width+' for Synthetic Browser Owner',{exact:true}).waitFor();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.locator('.timeline').screenshot({path:join(proof,'automation-machine-attribution-'+width+'.png')});
   const timelineAxe=await new AxeBuilder({page}).include('.timeline').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(timelineAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
   // The existing Archive screen refuses a source captured before label erasure.
   const email='synthetic-oncall-'+width+'@example.test',label=email+' automation',door=ownerDoor(runtime,cookie);
@@ -71,7 +73,7 @@ try {
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-erasure-refusal-'+width+'.png'),fullPage:true});
   const archiveAxe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(archiveAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
 
-  await page.goto(runtime.origin+'/incidents/'+encodeURIComponent(incident.value.entity));await page.locator('.timeline').getByText('Service account',{exact:true}).first().waitFor();assert.equal(await page.locator('.timeline .named-responder strong').innerText(),'Erased member','OC-053 post-erasure timeline reads Erased member');await page.locator('.timeline').screenshot({path:join(proof,'automation-erased-member-'+width+'.png')});
+  await page.goto(runtime.origin+'/incidents/'+encodeURIComponent(incident.value.entity));await page.locator('.timeline').getByText('Synthetic sending client '+width+' for Synthetic Browser Owner',{exact:true}).first().waitFor();assert.equal(await page.locator('.timeline .named-responder strong').innerText(),'Erased member','OC-053 post-erasure timeline reads Erased member');await page.locator('.timeline').screenshot({path:join(proof,'automation-erased-member-'+width+'.png')});
   await page.goto(runtime.origin+'/settings/integrations');await panel.locator(':scope > details > summary').nth(2).click();await panel.getByRole('heading',{name:'Outbox',exact:true}).waitFor();const panelAxe=await new AxeBuilder({page}).include('#response-api').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(panelAxe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
   assert.deepEqual(errors,[]);
   for(const [slug,anchor] of [['data','subject-erasure-fences'],['response-api','version-1-http-reference'],['audit','identity-and-content']]){const response=await page.goto(runtime.origin+'/docs/'+slug+'#'+anchor);assert.equal(response.status(),200);await page.locator('.docs-article').waitFor();await page.locator('#'+anchor).scrollIntoViewIfNeeded();if(slug==='response-api')await page.locator('.docs-body > p').filter({hasText:'The timeline attributes'}).scrollIntoViewIfNeeded();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:join(proof,'automation-docs-'+slug+'-'+width+'.png')});}

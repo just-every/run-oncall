@@ -10,6 +10,7 @@ export function reviewCommand(state:State,actor:Member,incident:Incident,input:a
   const action:Action={id:crypto.randomUUID(),title:text(input.title,'action',500),owner:input.owner,due:input.due,done:false,evidence:'',priority,completionPolicy,escalationRecipient:input.escalationRecipient??input.owner};
   incident.actions.push(action);return `Follow-up ${priority}: ${action.title} due ${action.due} (UTC calendar date); completion ${completionPolicy}`;
  }
+ if(actor.machine&&['accept-action','review'].includes(input.type))fail('Human review requires a current human session',403);
  if(input.type==='complete'||input.type==='accept-action'){
   const action=incident.actions.find(a=>a.id===input.action);if(!action)fail('Unknown follow-up');if(action.done)fail('Follow-up already accepted',409);
   if(input.type==='complete'){
@@ -53,7 +54,7 @@ export function validateReviewFields(state:State){
    if(action.completionPolicy!==undefined&&!['evidence','human-review'].includes(action.completionPolicy))fail('Invalid completion policy');
    if(action.priority==='P1'&&action.completionPolicy!=='human-review')fail('P1 requires human review');
    if(action.escalationRecipient!==undefined&&!member(action.escalationRecipient))fail('Invalid escalation recipient');
-   for(const key of ['submission','accepted'] as const){const record=action[key];if(record!==undefined&&(!exact(record,key==='submission'?['by','at','evidence']:['by','at'])||!(member(record.by)||key==='submission'&&state.apiClients?.some(c=>c.id===record.by)||key==='accepted'&&action.completionPolicy==='evidence'&&state.apiClients?.some(c=>c.id===record.by))||!date(record.at)))fail('Invalid follow-up acceptance attribution');}
+   for(const key of ['submission','accepted'] as const){const record=action[key];if(record!==undefined&&(!exact(record,key==='submission'?['by','at','evidence']:['by','at'])||!(member(record.by)||key==='submission'&&(state.apiClients?.some(c=>c.id===record.by)||incident.timeline.some(e=>e.actor===record.by&&e.metadata?.agent))||key==='accepted'&&action.completionPolicy==='evidence'&&(state.apiClients?.some(c=>c.id===record.by)||incident.timeline.some(e=>e.actor===record.by&&e.metadata?.agent)))||!date(record.at)))fail('Invalid follow-up acceptance attribution');}
    if(action.submission&&(!action.submission.evidence||link(action.submission.evidence)!==action.submission.evidence||action.evidence!==action.submission.evidence))fail('Invalid submitted evidence');
    if(action.accepted&&!action.done||action.completionPolicy==='human-review'&&action.done&&(!action.submission||!action.accepted))fail('Human-review completion requires evidence and acceptance');
   }
