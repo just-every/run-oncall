@@ -80,14 +80,15 @@ export async function importDoorResponse(request: Request, env: Bindings): Promi
  if(action==='plan'&&response&&!response.ok&&typeof uploadId==='string') {
   const failure=await response.clone().json().catch(()=>({})) as {error?:string}
   if([413,422].includes(response.status)&&failure.error?.startsWith('source_')) {
-   try {
-    const {grant,kid}=await verifyImportGrant(request.headers.get('Authorization')!.slice(7),claim)
+   const verified=await verifyImportGrant(request.headers.get('Authorization')?.slice(7)??'',claim).catch(()=>null)
+   if(verified) {
+    const {grant,kid}=verified
     const listed=grant.action==='plan'?importSource(grant.namespace):null
     if(listed) {
      const authority={sql:`EXISTS(SELECT 1 FROM ik_door_settings WHERE installation_id=? AND enabled=1)
       AND NOT EXISTS(SELECT 1 FROM ik_door_revoked_keys WHERE installation_id=? AND kid=?)
-      AND EXISTS(SELECT 1 FROM ik_door_grants WHERE installation_id=? AND jti=? AND action='plan' AND namespace=? AND kid=? AND expires>? )`,
-      params:[IMPORT_DOOR_KEY,IMPORT_DOOR_KEY,kid,IMPORT_DOOR_KEY,grant.jti,grant.namespace,kid,Math.floor(Date.now()/1000)]}
+      AND EXISTS(SELECT 1 FROM ik_door_grants WHERE installation_id=? AND jti=? AND action='plan' AND namespace=? AND kid=? AND expires>unixepoch())`,
+      params:[IMPORT_DOOR_KEY,IMPORT_DOOR_KEY,kid,IMPORT_DOOR_KEY,grant.jti,grant.namespace,kid]}
      const read:DoorRequest={options:{database:env.DB,targets,destination:'oncall',format:'json',limits:DOOR_LIMITS,ownerPrincipalId:owner.id,...listed},access:{...grant,installationId:IMPORT_DOOR_KEY},via:'grant',authority,epoch:0}
      const named=await sourceRefusal(read,uploadId,grant.namespace as Vendor)
      if(named) {
@@ -95,7 +96,7 @@ export async function importDoorResponse(request: Request, env: Bindings): Promi
       return Response.json({error:named.message,code:named instanceof Refusal?named.code:'SOURCE_REFUSED'},{status:named.status,headers})
      }
     }
-   }catch{ /* Authority changed or custody was withdrawn: retain the original refusal. */ }
+   }
   }
  }
  return response

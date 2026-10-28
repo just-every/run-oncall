@@ -224,7 +224,7 @@
       "executable": false
     },
     "docs/move-in.md": {
-      "sha256": "813590fc7626dc7dadebc4303d37d81f77f7eb2c789610609c4122e5dd510c6d",
+      "sha256": "6f6421664884c74a21a04e75317f602841f1372f573c8f9f732146b9c18fb6c4",
       "executable": false
     },
     "docs/overview.md": {
@@ -596,7 +596,7 @@
       "executable": false
     },
     "MOVE-IN.md": {
-      "sha256": "99b8e8e9a0481834ec12357bca0d136fe0cc3c0a6dc7d6c2f34553c58f828b57",
+      "sha256": "1e51f55278385fbf0bcdd19b21e61615b06c2a519633325d4d8e8499fff99992",
       "executable": false
     },
     "NOTICE.md": {
@@ -3844,7 +3844,7 @@
       "executable": false
     },
     "src/move-in/door.ts": {
-      "sha256": "005b23a016e66ca55b8440b8c2dd20ab136220f88216535b7a0fade8cbd3dcfb",
+      "sha256": "04a31cdaad037b4aad331ac22c805fb720f038e719b02633112372487dbc42ed",
       "executable": false
     },
     "src/move-in/equivalence.ts": {
@@ -4864,7 +4864,7 @@
       "executable": false
     },
     "tests/import-door.mjs": {
-      "sha256": "7de424d2a80cd34734ec0de81b2eab985726fd2eb62fa45ffd1784bbe62d41b5",
+      "sha256": "7b2eb52b0841fdce088d607700182b37535dc1f12a778a808c96066032918b64",
       "executable": false
     },
     "tests/intake.mjs": {
@@ -4900,7 +4900,7 @@
       "executable": false
     },
     "tests/move-in-adoption.mjs": {
-      "sha256": "d4e35c13405bf32a19bb23c2bd769b8e71409e9cdd402e93b5e0aadc9927d0f1",
+      "sha256": "614ed760426f79975a28eed94a746f6fbc1c4be0222e80830467f42fa6e1fcaf",
       "executable": false
     },
     "tests/paging-history.mjs": {

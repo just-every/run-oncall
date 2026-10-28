@@ -134,7 +134,7 @@ Apart from the explicitly flagged 0-to-1-minute first-step mapping above, unsupp
 - policies with more than two steps, zero-minute later steps, repeats, other conditions, several people at once, or a person instead of a schedule
 - any rotation or rule field Oncall does not know
 
-Some things are not moved at all: notification rules (kept as notes only, never switched on), routes and event rules, maintenance windows, and incident history.
+Notification rules remain notes only, never switched on. PagerDuty account files also retain routes, event rules, maintenance windows and resolved incidents as named source evidence or refusals; they create no native routing, maintenance or history. Open incidents are individually refused as live imports. See [PagerDuty account saved responses](#pagerduty-account-saved-responses) for the receiving clauses and fields.
 
 ## Before you trust it
 

@@ -142,6 +142,7 @@ try {
    assert.ok(item.effects.length||item.rejection||item.unmapped.length,'nothing silently disappears')
    if(item.rejection)assert.equal(item.effects.length,0)
   }
+  assert.deepEqual([...new Set(preview.items.flatMap(item=>item.effects).map(effect=>effect.targetKind))].sort(),['integration','policy','schedule','user'],'account import adds no active integration, routed key or other native target kind')
   const find=(kind,id)=>preview.items.find(item=>item.kind===kind&&item.id===id)
   for(const user of records.users) {
    const item=find('users',user.id),value=item.effects[0].value
@@ -206,6 +207,9 @@ try {
   const held=JSON.stringify(w.statements(tables.map(table=>'SELECT * FROM "'+table.replaceAll('"','""')+'"').join(';')))
   assert.doesNotMatch(held,new RegExp('(^|[^a-zA-Z0-9_-])'+person.id+'($|[^a-zA-Z0-9_-])'),'the erased foreign ID is absent while distinct IDs with the same prefix remain')
   for(const token of [person.email,person.name,number,person.contact_methods[1].address])assert.ok(!held.includes(token),'erasure retires source references, notes and contact numbers: '+token)
+  const remainingPeople=(await imported()).filter(row=>row.targetKind==='user'&&records.users.some(user=>user.email===row.targetId))
+  assert.equal(remainingPeople.length,records.users.length-1,'erasure preserves every other imported person')
+  assert.ok(remainingPeople.some(row=>row.value.sourceId===records.users.at(-1).id),'a distinct foreign ID sharing the erased ID prefix stays intact')
   assert.ok(!(await imported()).some(row=>row.targetId===person.email))
   console.log('OC-038 PagerDuty account: '+JSON.stringify({records:preview.items.length,kinds:expected,classification:preview.classification})+'; contacts, source-bound keyless inventory, named evidence/refusals, zero-write preview, paused apply/restart/reconcile/idempotence/undo and related-person erasure passed')
  }

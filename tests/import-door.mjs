@@ -384,7 +384,7 @@ try {
    assert.ok(after.filter(row=>row.targetKind==='integration').every(row=>row.value.active===false&&row.value.incumbentKey==='not supplied'))
    assert.ok(after.every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
   },assertUndone:async(before,after)=>assert.deepEqual(after,before)})
- console.log('OC-038 signed import door: Splunk/JSM/Better Stack reviewed grants, source reconciliation, inactive integration inventory and undo passed')
+ console.log('OC-038 signed import door: PagerDuty account/Splunk/JSM/Better Stack reviewed grants, source reconciliation, inactive integration inventory and undo passed')
 
  // OC-038 whole-account catch-up uses the real signed door and the owner's existing journal.
  {
@@ -409,12 +409,13 @@ try {
   w.sql('DROP TRIGGER synthetic_pd_revocation')
   // A failed publication cannot alter a prior committed baseline.
   const afterDenied=ok(await call('plan','pagerduty',{uploadId:savedUpload}))
-  const afterApproval={fingerprint:afterDenied.fingerprint,approvalRecordId:'synthetic-oncall-account-replanned',approvedAt:new Date().toISOString()}
+  const afterApproval=afterDenied.planId===plan.planId?approval:{fingerprint:afterDenied.fingerprint,approvalRecordId:'synthetic-oncall-account-replanned',approvedAt:new Date().toISOString()}
   w.sql("CREATE TRIGGER synthetic_pd_failure BEFORE INSERT ON move_in_objects BEGIN SELECT RAISE(ABORT,'SYNTHETIC_PD_PUBLICATION_FAILURE'); END")
-  ok(await call('apply','pagerduty',{planId:afterDenied.planId,reviewedFingerprint:afterDenied.fingerprint},afterApproval),409)
+  assert.equal(ok(await call('apply','pagerduty',{planId:afterDenied.planId,reviewedFingerprint:afterDenied.fingerprint},afterApproval),409).error,'import_door_apply_constraint','the injected native publication failure, rather than a changed approval, refuses the batch')
   w.sql('DROP TRIGGER synthetic_pd_failure')
   assert.deepEqual(await objects(),baseline);assert.deepEqual(await okSnapshot('/api/state'),native);assert.deepEqual(await okSnapshot('/api/paging/state'),paging)
-  const reviewed=ok(await call('plan','pagerduty',{uploadId:savedUpload})),accepted={fingerprint:reviewed.fingerprint,approvalRecordId:'synthetic-oncall-account-final',approvedAt:new Date().toISOString()}
+  const reviewed=ok(await call('plan','pagerduty',{uploadId:savedUpload}));assert.notEqual(reviewed.planId,afterDenied.planId,'a failed publication needs a new reviewed plan')
+  const accepted={fingerprint:reviewed.fingerprint,approvalRecordId:'synthetic-oncall-account-final',approvedAt:new Date().toISOString()}
   const input={planId:reviewed.planId,reviewedFingerprint:reviewed.fingerprint}
   let job=ok(await call('apply','pagerduty',input,accepted)).job
   assert.ok(['queued','applying'].includes(job.state),'the account pauses between bounded HTTP apply steps')
