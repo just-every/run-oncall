@@ -1,4 +1,4 @@
-<!-- Historical record: the hand-written ACCEPTANCE.md as it stood at b595e1d6ce484b63d55886ed8fce0405c696b51d, before the 28 October 2026 contract cleanup. Its statuses are not current; CONTRACT.md and the generated ACCEPTANCE.md are. -->
+<!-- Historical record: the hand-written ACCEPTANCE.md as it stood at 6d59042a07b118dd9b9f2e235b6d243ace74443d, before the 28 October 2026 contract cleanup. Its statuses are not current; CONTRACT.md and the generated ACCEPTANCE.md are. -->
 
 # What you can do
 

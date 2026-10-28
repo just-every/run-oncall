@@ -24,9 +24,7 @@ export function ArchiveWorkspace({ state, actor, busy, run, setError, setNotice,
   return <section className="panel padded">
     <h2>Portable workspace archive</h2>
     {actor.role !== 'admin' ? <p>Archive authority is reserved to administrators.</p> : <>
-      <p>Exports preserve original identities, incidents, events, decisions, runbooks, reviews, actions, compatible integration definitions and intake receipts.
-        Authentication secrets and sessions are excluded. This JSON archive covers coordination records;
-        schedules and overrides stay as they are when you replace it.
+      <p>Download coordination records and their history. Secrets and sessions are excluded. Schedules and overrides are not included.
         Use <code>rer export --output exports/installation.rer</code> with Oncall stopped for a complete local installation archive, including schedules.</p>
       <button className="primary" onClick={download}>Export original archive</button>
       <details className="archive-restore"><summary>Restore from an archive</summary>
