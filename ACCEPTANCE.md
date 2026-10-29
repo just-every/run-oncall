@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 10 | 50 | 24 | 84 |
+| Core | 11 | 49 | 24 | 84 |
 | Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 10 | 50 | 28 | 88 |
+| Full target | 11 | 49 | 28 | 88 |
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `2cfcbca2ba17ce558d672f1d7cbb9be6433a68b3` (29 October 2026). OC-033 evidence is reviewed in this candidate; other clause judgments remain as recorded at `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -503,7 +503,7 @@ Core · target · **missing** · Register R-12
 
 #### OC-033 — Generic email and Events API
 
-Core · target · **partial** · Rules D-3 · Register R-2
+Core · target · **done** · Rules D-3 · Register R-2
 
 **Requirement.** Offer scoped, revocable webhook and Events API credentials and integration email addresses for tools without adapters. Email intake uses authenticated Cloudflare Email Routing delivery, integration addresses with an unguessable installation-generated local part on the configured inbound email domain (email is off until one is set), bounded MIME and attachment handling, safe text extraction and explicit sender and routing rules; an arbitrary From address does not grant authority. Show parse failures, quarantine and unmapped service or environment to the integration owner. Document curl examples, stable receipt IDs, idempotency, rate and size limits, signatures, key rotation and trigger and recovery generation mapping. Each integration email address has an OC-070 email mode, with trigger and resolve rules and a stated unmatched-mail fallback, that turns each email into a trigger, deduplication or recovery of a derived alert generation; no email opens or resolves anything outside those rules. No rejected event is shown as accepted or silently discarded. Sources that already send PagerDuty, Opsgenie or Splunk On-Call shaped payloads use the OC-055 compatible endpoints instead of this schema. A real-provider email run is field proof R-2.
 
@@ -512,8 +512,8 @@ Core · target · **partial** · Rules D-3 · Register R-2
 2. Inspect accepted receipts, bounded quarantine/rejection diagnostics and no unauthorized read or incident mutation.
 3. Send a repeated failure subject and then a resolve-rule mail to an address in OC-070 custom-rule mode, and observe one generation whose paging stops by source recovery.
 
-**Evidence.** `src/server.ts`; `src/email/`; `tests/intake.mjs`; `tests/routing.mjs`; `tests/transfer.mjs`; `docs/compatible-intake.md`; `docs/incidents.md`
-**Gap.** Signed Events API admission is not asserted in the cited tests (`tests/runtime.mjs` and `tests/routing.mjs` hold it), and no cited test repeats a failure subject under custom rules before the resolve; bearer events, email receipts, deduplication, revocation, limits, spoofing, malformed MIME, quarantine diagnostics, refusal of unauthorized reads and writes and source-recovery stops are asserted. A real inbound provider email is register row R-2.
+**Evidence.** `tests/runtime.mjs` — coordinationJourney: signed and bearer Events API admission, scoped credentials, revocation, limits and minimal receipts; `tests/intake.mjs` — emitted-Worker intake journey: authenticated email, duplicate message IDs, spoof and MIME quarantine, bounded diagnostics, unauthorized reads and incident mutations, and custom failure deduplication with canonical source-recovery stop; `tests/routing.mjs` — public Worker journey: email modes and versioned trigger and resolve rules; `tests/triage.mjs` — source-recovery journey: canonical obligations and declared-incident independence. Real-provider field proof remains the dated R-2 record; paging remains OFF.
+**Gap.** None.
 
 #### OC-034 — Slack and Microsoft Teams response
 
