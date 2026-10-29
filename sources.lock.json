@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "a44bae4aae36d7a2e3d5e2da4e080d3c92eb11f226f6e7322b23680f43e6f982"
+    "sha256": "599b29dce5887f3741295c7a31fee0a339de7cf7c36fc14f4b75be04fbf073ac"
   },
   "components": [
     {
@@ -684,11 +684,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "aada3fa39fc7d811e430d3f96ba8da20d2497e1738904f3ccca1610645ea58b8",
+      "sha256": "608e45bec199be0a4527751f5254ee9be581f06b36acf99a3151d6deb57e29b1",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "6f22216ad2469e6f6dad3a27a9bca2eb8692dacadb6bdf7fc5e792d66a630ff3",
+      "sha256": "cb22a5ce94ce37ee01dbcd7f395dc45669d5d004d1fe8a33b4127a3e652678f9",
       "executable": false
     },
     "public/brand/badge-rail-1x.webp": {
