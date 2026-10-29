@@ -25,7 +25,9 @@ export async function supportStartBrowser(page,context,{origin,setTime}) {
  assert.ok(alert,'the observation uses a populated alert')
  assert.equal(alert.state,'active');assert.equal(alert.urgency,'low')
  assert.ok(alert.urgencyHistory.length>0,'the admission history exists before observation')
- assert.equal(before.events.find(event=>alert.events.includes(event.id)).urgency.version,rule.version)
+ const admission=before.events.find(event=>alert.events.includes(event.id)).urgency
+ assert.equal(admission.version,rule.version)
+ assert.equal(admission.evaluatedAt,beforeOpen,'the platform evaluates admission at the controlled pre-opening time')
  const pagingBefore=await request('/api/paging/state')
  const observe=async()=>{
   const card=page.getByRole('article',{name:'Alert details',exact:true})
@@ -47,7 +49,7 @@ export async function supportStartBrowser(page,context,{origin,setTime}) {
  assert.deepEqual(retained.urgencyHistory,alert.urgencyHistory,'reload retains the original urgency history')
  assert.deepEqual(after,before,'observing and reloading the alert change no workspace records or revisions')
  assert.deepEqual(await request('/api/paging/state'),pagingBefore,'observation creates no paging jobs, deadlines, receipts or callbacks')
- const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true})
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser';await mkdir(directory,{recursive:true})
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:1000});await card.scrollIntoViewIfNeeded()
   await page.screenshot({path:`${directory}/oc057-support-start-${width}.png`,fullPage:true})
