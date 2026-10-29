@@ -18,7 +18,7 @@ import { handoffSnapshot } from './handoff-store'
 
 type Dependencies={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}}
 export type SubjectErasureInput={confirmation:string;workspaceRevision:number;identitiesReviewed?:boolean;importedPeople?:string[]}
-export type SubjectErasureOptions={db:D1Database;state:State;actor:Member;guard:ReturnType<Dependencies['guard']>;input:SubjectErasureInput;kind:string;id:string;importContext:D1ImportContext}
+export type SubjectErasureOptions={db:D1Database;state:State;actor:Member;guard:ReturnType<Dependencies['guard']>;input:SubjectErasureInput;kind:string;id:string;importContext:D1ImportContext;custody?:D1PreparedStatement[]}
 const guardStatement=(db:D1Database,sql:string,...values:(string|number|null)[])=>db.prepare(`INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN ${sql} THEN 1 ELSE 0 END`).bind(...values)
 // A sending lease is a durable exclusion boundary, not a promise to recall an
 // external call. Erasure refuses until that call has a recorded outcome.
@@ -33,7 +33,7 @@ export function installSubjectErasure(api:any,deps:Dependencies) {
 }
 
 /** Native erasure and imported custody commit together for either public door. */
-export async function eraseSubject({db,state,actor,guard,input,kind,id,importContext}:SubjectErasureOptions) {
+export async function eraseSubject({db,state,actor,guard,input,kind,id,importContext,custody=[]}:SubjectErasureOptions) {
   if(actor.agent&&!actor.machine)fail('Invalid agent actor',403)
   authority(state,actor,true)
   if(actor.machine&&(!actor.agent||actor.agent.client))fail('A current administrator sponsor is required for erasure',403)
@@ -326,8 +326,8 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
    auditIdentity(db,{actor:{kind:'agent',id:agent.agent.id},source:{kind:'member',id:sponsor}})
   }
   validateArchive(state)
-  remember('oc_agent_schedule_receipts');remember('oc_agent_outbox');remember('oc_agent_operations');remember('oc_agent_deadlines')
-  statements.push(db.prepare('DELETE FROM oc_agent_schedule_receipts'),
+  remember('oc_agent_erasure_receipts');remember('oc_agent_schedule_receipts');remember('oc_agent_outbox');remember('oc_agent_operations');remember('oc_agent_deadlines')
+  statements.push(db.prepare('DELETE FROM oc_agent_erasure_receipts'),...custody,db.prepare('DELETE FROM oc_agent_schedule_receipts'),
     db.prepare('DELETE FROM oc_agent_outbox WHERE outbox NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify((state.apiOutbox??[]).map(row=>row.id))),
     db.prepare("DELETE FROM oc_agent_operations WHERE json_extract(operation,'$.entity') NOT IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...state.services.map(row=>row.id),...state.incidents.map(row=>row.id)])),
     db.prepare('DELETE FROM oc_agent_deadlines WHERE deadline NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify(state.incidents.flatMap(row=>(row.deadlines??[]).map(deadline=>deadline.id)))))
