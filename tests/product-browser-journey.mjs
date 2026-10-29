@@ -78,9 +78,9 @@ async function sharedIncidentLinks(page,context) {
   }
  }finally{await shell.dispose()}
  await page.goto(origin+'/incidents/'+encodeURIComponent('missing-'+incident.id))
- const back=page.locator('main a[href="/incidents"]')
+ const back=page.locator('.workspace-not-found a[href="/on-call"]')
  await back.waitFor()
  assert.equal(await page.locator('.detail').count(),0,'a missing shared incident never opens a different incident')
  await back.click()
- await page.waitForURL(url=>url.pathname==='/incidents')
+ await page.waitForURL(url=>url.pathname==='/on-call')
 }
