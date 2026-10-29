@@ -10,6 +10,7 @@
   "vars": {
     "AUTH_LOCAL": "false",
     "MAIL_PROVIDER": "sendgrid",
+    "MAIL_FROM": "",
     "MAIL_RELAY_URL": ""
   },
   "d1_databases": [
