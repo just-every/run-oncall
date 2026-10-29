@@ -885,6 +885,45 @@ try {
       cookie,
     ),
   );
+  const readIncident = async () => {
+    const current = ok(await request("/api/state", undefined, cookie)).incidents.find(row => row.id === incident.id);
+    assert.ok(current, "the declared incident reads back through protected HTTP");
+    return current;
+  };
+  incident = await readIncident();
+  assert.deepEqual(incident.alerts, [admittedAlert], "declaration links the exact admitted alert, without the other source or generation");
+  assert.equal(incident.state, "declared");
+  assert.equal(incident.commander, null);
+  assert.equal(incident.timeline.length, 1);
+  const declarationEntry = incident.timeline[0];
+  assert.deepEqual(declarationEntry.lifecycle, {from: null, to: "declared"});
+  assert.equal(declarationEntry.actor, admin.id);
+  assert.equal(declarationEntry.text, "Old accounts affected after release");
+  assert.ok(Number.isFinite(Date.parse(declarationEntry.at)));
+  const lifecycleEntries = [declarationEntry];
+  const assertTransition = async (before, state, summary, evidence) => {
+    const current = await readIncident();
+    assert.equal(current.state, state);
+    assert.equal(current.revision, before.revision + 1);
+    assert.deepEqual(current.alerts, [admittedAlert]);
+    assert.deepEqual(current.timeline.slice(0, -1), before.timeline, "accepted transitions preserve all earlier timeline entries");
+    const entry = current.timeline.at(-1);
+    assert.equal(entry.kind, "transition");
+    assert.equal(entry.actor, admin.id, "the session's human actor is retained on each lifecycle entry");
+    assert.equal(entry.text, `${before.state} → ${state}: ${summary}`);
+    assert.deepEqual(entry.lifecycle, {from: before.state, to: state, ...(evidence ? {evidence} : {})});
+    assert.ok(Number.isFinite(Date.parse(entry.at)));
+    assert.ok(Date.parse(entry.at) >= Date.parse(before.timeline.at(-1).at));
+    assert.ok(!before.timeline.some(prior => prior.id === entry.id));
+    lifecycleEntries.push(entry);
+    incident = current;
+  };
+  const refusedTransition = async data => {
+    const before = ok(await request("/api/state", undefined, cookie));
+    ok(await request("/api/command", {type: "transition", incident: incident.id, revision: incident.revision, ...data}, cookie), 400);
+    assert.deepEqual(ok(await request("/api/state", undefined, cookie)), before,
+      "a refused transition preserves all records, incident state, revisions and timeline");
+  };
   await awaitingCoordinationAuthority({ origin, request, cookie, incident: incident.id });
   const mutate = async (data) => {
     incident = ok(
@@ -901,6 +940,9 @@ try {
   }, cookie));
   incident = ok(acknowledgement.response);
   assert.equal(acknowledgement.after.incidents.find(item => item.id === incident.id).state, "acknowledged");
+  await assertTransition(acknowledgement.before.incidents.find(item => item.id === incident.id), "acknowledged", "Taking responsibility");
+  assert.equal(incident.commander, admin.id, "acknowledgment assigns the actual human commander");
+  assert.equal(incident.assignee, admin.id);
   ok(
     await request(
       "/api/command",
@@ -934,11 +976,13 @@ try {
   assert.deepEqual(concurrently.map((v) => v.status).sort(), [200, 409]);
   incident = concurrently.find((v) => v.status === 200).value;
   await mutate({ type: "runbook", index: 0, done: true });
+  const beforeMitigation = incident;
   await mutate({
     type: "transition",
     state: "mitigating",
     summary: "Mitigation is being reviewed",
   });
+  await assertTransition(beforeMitigation, "mitigating", "Mitigation is being reviewed");
   const beforeSourceRecovery = ok(await request("/api/archive", undefined, cookie));
   ok(
     await request(
@@ -966,17 +1010,30 @@ try {
   assert.deepEqual(afterSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
     beforeSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
     "OC-001: delayed recovery of the older generation leaves the newer generation, other source and staging alert unchanged");
+  await refusedTransition({state: "recovered", summary: "Recovery without evidence must not publish"});
+  await refusedTransition({state: "resolved", summary: "Source recovery alone must not resolve the incident"});
+  const beforeRecovery = incident;
   await mutate({
     type: "transition",
     state: "recovered",
     summary: "Affected journey verified",
     evidence: "https://example.test/recovery",
   });
+  await assertTransition(beforeRecovery, "recovered", "Affected journey verified", "https://example.test/recovery");
+  assert.equal(incident.recovery, "https://example.test/recovery");
+  await refusedTransition({state: "resolved", summary: "   "});
+  const beforeResolution = incident;
   await mutate({
     type: "transition",
     state: "resolved",
     summary: "Sufficient exposure observed",
   });
+  await assertTransition(beforeResolution, "resolved", "Sufficient exposure observed");
+  assert.equal(incident.commander, admin.id);
+  assert.equal(incident.recovery, "https://example.test/recovery");
+  assert.deepEqual(incident.timeline.filter(entry => entry.lifecycle), lifecycleEntries,
+    "resolved HTTP readback retains every immutable human lifecycle entry and its recovery evidence");
+  console.log("PASS OC-004 native incident lifecycle: admitted alert links, human commander, unchanged refused transitions, evidenced recovery, summarized resolution and immutable attributed HTTP timeline; source recovery remains independent");
   await mutate({
     type: "review",
     text: "Cause: missing migration. Repair verified against preserved customer behavior.",
