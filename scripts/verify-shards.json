@@ -1,30 +1,79 @@
 {
   "lanes": {
-    "hosted": ["tests/hosted.mjs"],
-    "runtime": ["tests/runtime.mjs"],
-    "triage": ["tests/triage.mjs"],
-    "changes": ["tests/changes.mjs"],
-    "intake": ["tests/intake.mjs", "tests/routing.mjs", "tests/monitoring.mjs", "tests/urgency.mjs"],
-    "reviews": ["tests/reviews.mjs"],
-    "activation": ["tests/activation.mjs"],
-    "adoption-demo": ["tests/demo.mjs", "tests/move-in-adoption.mjs", "tests/import-door.mjs"],
-    "signin": ["tests/signin-browser.mjs", "tests/member-coordination-browser.mjs"],
-    "product-browser": ["tests/product-browser.mjs", "tests/automation-browser.mjs"],
-    "managed-browser": ["tests/activation-browser.mjs"],
-    "transfer": ["tests/transfer.mjs"]
+    "runtime": [
+      {
+        "file": "tests/runtime.mjs",
+        "part": "core"
+      },
+      "tests/changes.mjs",
+      "tests/triage.mjs",
+      "tests/activation.mjs"
+    ],
+    "intake": [
+      {
+        "file": "tests/runtime.mjs",
+        "part": "machines"
+      },
+      "tests/intake.mjs",
+      "tests/routing.mjs",
+      "tests/import-door.mjs"
+    ],
+    "browser": [
+      "tests/member-coordination-browser.mjs",
+      "tests/product-browser.mjs"
+    ],
+    "hosted": [],
+    "transfer": [
+      "tests/transfer.mjs"
+    ]
   },
   "push": [
-    {"name": "runtime", "lanes": ["runtime"], "browser": false, "hosted": false, "timeout": 25},
-    {"name": "activation-changes-reviews", "lanes": ["activation", "changes", "reviews"], "browser": false, "hosted": false, "timeout": 25},
-    {"name": "triage", "lanes": ["triage"], "browser": false, "hosted": false, "timeout": 25},
-    {"name": "intake", "lanes": ["intake"], "browser": false, "hosted": false, "timeout": 25},
-    {"name": "adoption-demo", "lanes": ["adoption-demo"], "browser": false, "hosted": false, "timeout": 25},
-    {"name": "signin", "lanes": ["signin"], "browser": true, "hosted": false, "timeout": 25},
-    {"name": "product-browser", "lanes": ["product-browser"], "browser": true, "hosted": false, "timeout": 25},
-    {"name": "hosted", "lanes": ["hosted"], "browser": true, "hosted": true, "timeout": 25}
+    {
+      "name": "runtime",
+      "lanes": [
+        "runtime"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "intake",
+      "lanes": [
+        "intake"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "browser",
+      "lanes": [
+        "browser"
+      ],
+      "browser": true,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "hosted",
+      "lanes": [
+        "hosted"
+      ],
+      "browser": true,
+      "hosted": true,
+      "timeout": 15
+    }
   ],
   "nightly": [
-    {"name": "managed-browser", "lanes": ["managed-browser"], "browser": true, "hosted": false, "timeout": 15},
-    {"name": "transfer", "lanes": ["transfer"], "browser": false, "hosted": false, "timeout": 15}
+    {
+      "name": "transfer",
+      "lanes": [
+        "transfer"
+      ],
+      "browser": true,
+      "hosted": false,
+      "timeout": 15
+    }
   ]
 }

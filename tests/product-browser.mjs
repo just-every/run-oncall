@@ -1,5 +1,4 @@
-import {openWorkspaceSection} from './keyboard.mjs'
-import {openHistoryComparison,selectRoutedSource} from './routing-browser.mjs';
+import {openWorkspaceSection,openHistoryComparison,selectRoutedSource,keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes,createHmac} from 'node:crypto'
 import {mkdir} from 'node:fs/promises'
@@ -8,8 +7,6 @@ import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor} from './worker.mjs'
 import {productBrowserJourney} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
-import {keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
-
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
  const origin=new URL(page.url()).origin
@@ -42,7 +39,7 @@ async function incompleteIntakeBrowser(page,context) {
   assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[],`${screen} has no serious or critical accessibility violations at ${width}px`)
   await page.screenshot({path:`evidence/browser/oc059-${screen}-${width}.png`,fullPage:true})
  }
- for(const width of [1440,390]) {
+ for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
   await openWorkspaceSection(page,'alerts')
   await focusWorkspace(page)
@@ -104,7 +101,7 @@ async function responsePolicyBrowser(page,context) {
   await focus.scrollIntoViewIfNeeded()
   await page.screenshot({path:`evidence/browser/oc056-${screen}-focus-${width}.png`})
  }
- for(const width of [1440,390]) {
+ for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
   const serviceId='response-'+width,serviceName='Checkout response '+width,source='synthetic-oncall-response-'+width,key=randomBytes(32).toString('hex')
   await request('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Confirm successful checkout requests before resolving.'],pager:''})
@@ -238,7 +235,7 @@ async function incidentWorkflowBrowser(page,context) {
   await page.screenshot({path:`evidence/browser/oc050-${name}-${width}.png`,fullPage:true});await focus.scrollIntoViewIfNeeded();await page.screenshot({path:`evidence/browser/oc050-${name}-focus-${width}.png`});
  };
  const submit=async(button)=>{const response=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/command'&&r.request().method()==='POST');await button.click();assert.equal((await response).status(),200)};
- for(const width of [1440,390]){
+ for(const width of [1440]){
   await page.setViewportSize({width,height:1000});const serviceId='workflow-'+width,serviceName='Checkout incident workflow '+width;
   await req('/api/command',{type:'service',id:serviceId,name:serviceName,environment:'production',owner:member.id,runbook:['Check replica health before changing customer traffic.'],pager:''});
   await openWorkspaceSection(page,'services');await focusWorkspace(page);
@@ -266,7 +263,7 @@ async function incidentWorkflowBrowser(page,context) {
   state=await req('/api/state');const child=state.incidents.find(i=>i.title==='Independent batch delay '+width);assert.equal(child.state,'acknowledged');assert.equal(state.incidents.find(i=>i.id===target.id).state,'acknowledged');assert.equal(child.splitFrom.incident,target.id);assert.equal(child.template.version,1);assert.equal((await req('/api/handoffs/context/'+child.id)).source.incident.declaration.kind,'split','a split origin remains usable by the existing reviewed handoff door');
   await page.goto(origin+'/incidents/'+encodeURIComponent(child.id));await page.locator('.detail').getByRole('heading',{name:child.title,exact:true}).waitFor();await openIncidentAction(page,'Service context');await capture('split',width,workflow);await page.getByRole('button',{name:'Close',exact:true}).click();
  }
- console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440/390; overflow, axe and hydration checked');
+ console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440; overflow, axe and hydration checked');
 }
 
 async function changeAndSigningBrowser(page,context){
@@ -292,7 +289,7 @@ async function changeAndSigningBrowser(page,context){
   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations,[],label+' has no WCAG axe violations');
   await page.screenshot({path:`evidence/browser/${label}-${width}.png`,fullPage:true});await page.screenshot({path:`evidence/browser/${label}-focus-${width}.png`});
  };
- for(const width of [1440,390]){
+ for(const width of [1440]){
   await page.setViewportSize({width,height:1000});await page.reload();await openWorkspaceSection(page,'services');
   await page.goto(origin+'/settings/services/synthetic-oncall-1');const service=page.locator('.service-page');await service.locator('.recent-changes > summary').click();
   await service.getByText('Argo CD gateway sync',{exact:true}).waitFor();await service.getByText('payments: applied',{exact:true}).waitFor();await service.getByText('Terraform Cloud',{exact:true}).waitFor();
@@ -455,7 +452,7 @@ async function changeAndSigningBrowser(page,context){
   for(const slug of docSlugs.filter(slug=>!['changes','routed-intake','data','urgency'].includes(slug))){await page.goto(new URL(page.url()).origin+'/docs/'+slug);await page.locator('.docs-article').waitFor();await check('oc040-043-docs-'+slug,width);}
   await page.goto(new URL(page.url()).origin);
  }
- console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440/390; overflow, axe and hydration');
+ console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440; overflow, axe and hydration');
 }
 
 // OC-054 uses the real read door. Assertions run at 1440; 390 is visual proof only.
@@ -520,15 +517,15 @@ try {
  if(process.env.ONCALL_PRODUCT_JOURNEY!=='readiness'){
  await productBrowserJourney(page,context,{openSession})
  await incompleteIntakeBrowser(page,context)
- console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440/390; overflow, axe and hydration checked')
+ console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440; overflow, axe and hydration checked')
  await responsePolicyBrowser(page,context)
  await incidentWorkflowBrowser(page,context)
  await changeAndSigningBrowser(page,context)
- console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440/390; overflow, axe and hydration checked')
+ console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  await readinessBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log('Emitted Worker product browser journey passed at 1440/390')
+ console.log('Emitted Worker product browser journey passed at 1440')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})

@@ -191,7 +191,7 @@ jobs:
           ONCALL_BROWSER_EVIDENCE: ${{ runner.temp }}/oncall-browser-evidence
         run: node scripts/verify-oncall.mjs "$SHARD"
       - uses: actions/upload-artifact@v4
-        if: always() && matrix.browser
+        if: always()
         with:
           name: oncall-browser-evidence-${{ matrix.name }}
           path: |
