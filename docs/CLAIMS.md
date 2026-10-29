@@ -14,7 +14,7 @@ A claim is done when every clause behind it is done, missing when every one is m
 | 6 | Swaps: cover a few hours without touching the rotation. | `OC-011` partial; `OC-025` partial | partial |
 | 7 | Shifts in your calendar: a private feed of the next seven days. | `OC-020` partial | partial |
 | 8 | Incidents, start to finish: declare, coordinate and resolve, with every decision kept. | `OC-004` partial; `OC-005` partial | partial |
-| 9 | Try it beside your pager: keep your current tool running while you try Oncall. | `OC-012` partial | partial |
+| 9 | Try it beside your pager: keep your current tool running while you try Oncall. | `OC-012` done | done |
 | 10 | Bring your schedules from Opsgenie or PagerDuty, and see every schedule in a preview before you import. | `OC-021` done; `OC-022` partial | partial |
 
-Claims: 10; 0 done, 10 partial, 0 missing.
+Claims: 10; 1 done, 9 partial, 0 missing.
