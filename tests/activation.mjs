@@ -4,7 +4,7 @@ import {join,resolve} from 'node:path'
 import {execFileSync,spawnSync} from 'node:child_process'
 import assert from 'node:assert/strict'
 import {createHash,createHmac} from 'node:crypto'
-import {localWorker,ownerDoor} from './worker.mjs'
+import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
 import {checkpointCli,checkpointErasureCli} from './checkpoint-cli.mjs'
 // paging-history: part of this public journey.
 // Retained synthetic records enter through the strict module restore door;
@@ -28,6 +28,34 @@ export async function pagingHistory(w,cookie) {
  const prior=ok(await req('/api/paging/archive')),archive={...prior,jobs,receipts,callbacks}
  const restored=ok(await req('/api/paging/restore',{mode:'replace',archive}))
  for(const job of restored.jobs){assert.equal(job.status,'paused');assert.deepEqual(job.history.slice(0,-1),jobs.find(j=>j.id===job.id).history)}
+ // OC-014: populated delivery history remains historical through every schedule preview.
+ const pagingBefore=ok(await req('/api/paging/state')),recordsBefore=durableSnapshot(w)
+ assert.equal(pagingBefore.mode,'synthetic-only');assert.equal(pagingBefore.paging,'OFF')
+ assert.deepEqual(pagingBefore.receipts,receipts);assert.deepEqual(pagingBefore.callbacks,callbacks)
+ assert.ok(pagingBefore.jobs.every(job=>job.steps[0].deadline===at+180000&&job.nextDue===null))
+ assert.deepEqual(await w.outboundRequests(),[],'restoring synthetic history never contacts a provider')
+ const draft={...schedule,primary:{...schedule.primary,members:[]}},range={from:at,to:at+3600000}
+ const now=ok(await req('/api/schedules/history/now-next?at='+new Date(at).toISOString()))
+ assert.equal(now.now.primary,actor.id);assert.equal(now.paging,'OFF')
+ assert.deepEqual(durableSnapshot(w),recordsBefore,'now and next preserve every durable record, deadline and outbound work item')
+ for(const [input,primary] of [[{scheduleId:schedule.id},actor.id],[{schedule:draft},null]]){
+  const preview=ok(await req('/api/paging/preview',{...input,...range}))
+  assert.equal(preview[0].primary,primary)
+  assert.deepEqual(durableSnapshot(w),recordsBefore,'saved and draft previews preserve every durable record, audit, receipt, job and deadline')
+  assert.deepEqual(await w.outboundRequests(),[],'schedule previews issue zero outbound network requests')
+ }
+ const review=ok(await req('/api/schedules/history/review',{schedule:draft,...range}))
+ assert.equal(review.coverage[0].primary,null);assert.ok(review.intervals.some(row=>row.role==='primary'&&row.newGap))
+ assert.deepEqual(durableSnapshot(w),recordsBefore,'reviewing a draft never saves it or creates outbound work')
+ for(const job of restored.jobs){
+  const replay=ok(await req('/api/paging/jobs/'+job.id+'/replay'))
+  assert.equal(replay.length,1);assert.deepEqual(replay[0].recorded,job.history[1].attempt)
+  assert.deepEqual(replay[0].recomputed,coverage,'historical replay uses the frozen assignment and member snapshot')
+  assert.deepEqual(durableSnapshot(w),recordsBefore,'historical replay changes no durable row or timer')
+ }
+ assert.deepEqual(ok(await req('/api/paging/state')),pagingBefore,'all previews retain the synthetic label and complete delivery history')
+ assert.deepEqual(await w.outboundRequests(),[],'now and next, draft review and historical replay issue zero outbound requests')
+ console.log('PASS OC-014 preview isolation: populated synthetic-only history, saved and draft schedules, draft review, now and next, historical replay, every durable row and deadline unchanged, zero outbound network requests')
  const beforeIncident=ok(await req('/api/state')).incidents.find(i=>i.id===incident.id)
  for(const [id,action] of [['historical-ack','ack'],['historical-cancel','cancel']]){
   const old=restored.jobs.find(j=>j.id===id),at=Math.max(Date.now(),old.lastEvaluatedAt)
@@ -59,7 +87,7 @@ export async function pagingHistory(w,cookie) {
 // schedule-coordination: part of this public journey.
 export async function scheduleCoordination(){
  await scheduleLayers();
- const w=await localWorker({}, {clock:true});
+ const w=await localWorker({}, {clock:true,outboundLedger:true});
  try{
   const owner=await w.request('/api/setup',{name:'synthetic-oncall-250',password:'synthetic-oncall-250-password'});ok(owner);let cookie=owner.cookie;
   const req=(path,input)=>w.request(path,input,cookie),coord=input=>req('/api/schedule-coordination',input),rows=async()=>ok(await coord()).records;
@@ -75,7 +103,7 @@ export async function scheduleCoordination(){
   {
    const at=Date.parse(start),schedules=ok(await req('/api/paging/state')).schedules;
    const counts=()=>{const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").map(row=>row.name);return w.statements(names.map(name=>'SELECT COUNT(*) AS count FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>({table:names[index],count:rows[0].count}));};
-   const before=counts(),workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state'));
+   const before=counts(),workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state')),recordsBefore=durableSnapshot(w);
    for(let n=0;n<20;n++){
     const all=ok(await req('/api/on-call?at='+encodeURIComponent(start)));
     assert.equal(all.rotas.length,schedules.length,'all rotas appear together');
@@ -95,6 +123,8 @@ export async function scheduleCoordination(){
    assert.deepEqual(counts(),before,'twenty reads leave every table count unchanged');
    assert.deepEqual(ok(await req('/api/state')),workspace,'twenty reads preserve workspace and revision');
    assert.deepEqual(ok(await req('/api/paging/state')),paging,'twenty reads preserve scheduling revisions');
+   assert.deepEqual(durableSnapshot(w),recordsBefore,'aggregate now and next preserve every durable row including audit and outbound work');
+   assert.deepEqual(await w.outboundRequests(),[],'aggregate now and next issue zero outbound network requests');
    const combined=ok(await req('/api/workspace'));assert.deepEqual(combined.onCall.rotas.map(row=>row.id),schedules.map(row=>row.id));
    ok(await w.request('/api/on-call'),401);ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,viewerCookie));ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,substituteCookie));
    const stakeholder=ok(await req('/api/members',{name:'synthetic-oncall-254',role:'stakeholder',password:'synthetic-oncall-254-password'}),201);
@@ -311,7 +341,7 @@ export async function migrationUpgrade(){await upgradeFrom(143);}
 const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'?r.value:JSON.stringify(r.value));return r.value}
 await migrationUpgrade()
 await scheduleCoordination()
-const w=await localWorker(),checks=[]
+const w=await localWorker({}, {outboundLedger:true}),checks=[]
 try {
  const initial=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'}),admin=ok(initial).member,cookie=initial.cookie
  const req=(path,input)=>w.request(path,input,cookie),record=s=>{checks.push(s);console.log(s)}

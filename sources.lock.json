@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "a44bae4aae36d7a2e3d5e2da4e080d3c92eb11f226f6e7322b23680f43e6f982"
+    "sha256": "3f7b56f3ae1e70588fb35c49e75b639c2360ceed550182b9caf8adc33021abb8"
   },
   "components": [
     {
@@ -4828,7 +4828,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "8a8167127e336caa64d99dbfbd329aba8297eacb130a0cc49dad370c011ecd1a",
+      "sha256": "35740f35455c6096931d2dfd8d62d7db7a539666be741a4b00865d5ff8616ab9",
       "executable": false
     },
     "tests/changes.mjs": {
@@ -4980,7 +4980,7 @@
       "executable": false
     },
     "tests/routing.mjs": {
-      "sha256": "535291db329c76d7e77b938c695fda22686ecf8aa3363679146b7f0af96e0b6d",
+      "sha256": "2f7ad1f86eff7a9b9413105881c9fd34a190ba83c7096b70cf1c5e2cb7686a2a",
       "executable": false
     },
     "tests/runtime.mjs": {
@@ -5000,11 +5000,11 @@
       "executable": false
     },
     "tests/worker-server.mjs": {
-      "sha256": "88f70adfa7a4aa643fdeea3a869dcf36dbea86050b92c1c36168354cfe4601a7",
+      "sha256": "9f0e31fb2060544caa2fd7a5133b8ed9200224fd16072feeda8dbcca9136a604",
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "9e06f5895315462a9174229d3843cc1ab3a46fe1807c71683578d8820be3f4fc",
+      "sha256": "81fed54753df34899d366eaa9eedaee3c308d87afc853ebd4c1f27d5267c4f6a",
       "executable": false
     },
     "tsconfig.json": {
