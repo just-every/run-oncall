@@ -5524,7 +5524,7 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "bba1a4962ab5a4feb704f9769dc52deda9bd5f0ebe05e7e19495fb2717724990",
+      "sha256": "1d4c0d5addabd8f29715b957bea1732aeb35f7c89b916c89ae5aaa5b06590a53",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {

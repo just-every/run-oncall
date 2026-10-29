@@ -133,6 +133,7 @@ try{
  assert.ok(!(await native()).incidents.some(row=>row.id===target));
  await capture('erase-executed',erasePath);
  await capture('guide','/docs/agents',async()=>{await page.locator('.docs-article').waitFor()});
+ await capture('erasure-data','/docs/data',async()=>{await page.locator('.docs-article').waitFor()});
  console.log('PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements');
 }catch(error){
  if(page){await page.screenshot({path:`${directory}/agent-door-failure.png`,fullPage:true});console.error('Agent browser failed at',new URL(page.url()).pathname)}
