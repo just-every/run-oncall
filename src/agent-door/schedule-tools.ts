@@ -8,6 +8,7 @@ import { scheduleChanges } from '../schedule-coordination/model'
 import { requireTeamCoverage } from '../teams/model'
 import { ToolRefusal, type ClassAndFacts, type JsonSchema, type JsonSchemaObject, type ToolContext, type ToolDefinition } from '../modules/agent-door/index.ts'
 import { nativeAccess, nativeActor, nativeAudit, nativeCall, persistNative, type NativeAccess } from './native'
+import { completedScheduleChange, scheduleReceipt } from './schedule-receipts'
 
 const id: JsonSchema = { type: 'string', minLength: 1, maxLength: 100 }
 const instant: JsonSchema = { type: 'string', format: 'date-time', description: 'Exact UTC ISO timestamp, in 2000–2100.' }
@@ -180,8 +181,9 @@ function createSummary(proposal: NewSchedule, ctx: ToolContext) {
   }
 }
 
-async function save(env: Bindings, ctx: ToolContext, proposal: ScheduleChange, operation: 'create' | 'update' | 'override') {
+async function save(env: Bindings, ctx: ToolContext, proposal: ScheduleChange, operation: 'create' | 'update' | 'override', args: Record<string, unknown>) {
   const { access, snapshot, schedule, next, review } = proposal
+  const receipt = schedule ? await scheduleReceipt(env, ctx, `oncall.schedules.${operation}`, args, schedule, next, access.state.revision) : null
   bound({ ...snapshot.archive, schedules: schedule ? snapshot.archive.schedules.map(row => row.id === schedule.id ? next : row) : [...snapshot.archive.schedules, next] })
   // Match native reviewed-apply recipients, including layer slots and PTO, without changing saved slots.
   const recipients = (row: Schedule): Schedule => ({ ...row, primary: { ...row.primary, members: [...row.primary.members, ...(row.layers ?? []).flatMap(layer => layer.rotation.members), ...(row.pto ?? []).flatMap(entry => entry.member === null ? [] : [entry.member])] } })
@@ -198,6 +200,7 @@ async function save(env: Bindings, ctx: ToolContext, proposal: ScheduleChange, o
   await persistNative(env, access, token => [
     env.DB.prepare('UPDATE paging_control SET revision=revision+1,write_token=? WHERE id=1 AND revision=? AND EXISTS(SELECT 1 FROM workspace_control WHERE id=1 AND write_token=?)').bind(token, snapshot.revision, token),
     putSchedule(env.DB, next, token),
+    ...(receipt ? [receipt(token)] : []),
   ])
   const uri = coverageUri(next)
   ctx.emit('schedule.changed', uri, { schedule: next.id, service: next.service, revision: next.revision, paging: 'OFF', ...(review ? { reviewDigest: review.digest, from: review.from, to: review.to } : {}) })
@@ -215,9 +218,13 @@ export function scheduleTools(env: Bindings): ToolDefinition[] {
       inputSchema: operation === 'update' ? object({ ...reviewFields, digest: { type: 'string', pattern: '^[a-f0-9]{64}$' } }) : object({ id, revision, override }), outputSchema: { type: 'object' }, revisionType: 'integer',
       target: (args, ctx) => nativeCall(async () => ({ kind: 'schedule', id: (await savedSchedule(env, ctx, args, true)).schedule.id })),
       revision: (args, ctx) => nativeCall(async () => (await savedSchedule(env, ctx, args, true)).schedule.revision),
-      classify: (args, ctx) => nativeCall(async () => changeFacts(await prepare(args, ctx), ctx)),
+      classify: (args, ctx) => nativeCall(async () => {
+        const current = await savedSchedule(env, ctx, args, true)
+        const completed = await completedScheduleChange(env, ctx, `oncall.schedules.${operation}`, args, current.schedule, current.access.state.revision)
+        return changeFacts(completed ? { ...current, ...completed } : await prepare(args, ctx), ctx)
+      }),
       summary: (args, ctx) => nativeCall(async () => changeSummary(await prepare(args, ctx))),
-      run: (args, ctx) => nativeCall(async () => save(env, ctx, await prepare(args, ctx), operation)),
+      run: (args, ctx) => nativeCall(async () => save(env, ctx, await prepare(args, ctx), operation, args)),
     } satisfies ToolDefinition
   })
   return [
@@ -231,7 +238,7 @@ export function scheduleTools(env: Bindings): ToolDefinition[] {
       // a successful cached call has already created its schedule.
       classify: (args, ctx) => nativeCall(async () => changeFacts(await created(env, ctx, args, false), ctx)),
       summary: (args, ctx) => nativeCall(async () => createSummary(await created(env, ctx, args), ctx)),
-      run: (args, ctx) => nativeCall(async () => save(env, ctx, await created(env, ctx, args), 'create')),
+      run: (args, ctx) => nativeCall(async () => save(env, ctx, await created(env, ctx, args), 'create', args)),
     },
     {
       name: 'oncall.schedules.read', title: 'Read coordination schedules', description: 'Read existing native schedules within the granted service scope, with only their referenced participant names. Paging stays OFF.',

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {agentRuntime} from './agent-door-runtime.mjs';
 import specialist from './oncall-agent-native.mjs';
+import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 const runtime=await agentRuntime();
@@ -116,8 +117,10 @@ try{
  assert.equal(code(await tool('oncall.schedules.create',{...createRota,schedule:{...createRota.schedule,name:'Changed key content'}})),'idempotency_conflict');
  assert.equal((await adopt()).status,200);
  console.log('PASS native service immutable environment and approved schedule creation replay: allowed edit, no-effect environment refusal, one schedule, fresh-key conflict and changed-argument conflict');
+ await scheduleReplay(runtime);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
- const events=await tool('oncall.events.list',{limit:200});assert.ok(events.result.structuredContent.events.some(row=>row.actor.kind==='agent'));
+ const events=await tool('oncall.events.list',{limit:200});assert.equal(code(events),'capability_not_declared');assert.equal(events.result.structuredContent,undefined);
+ assert.ok((await audit()).rows.some(row=>row.agent.id===runtime.context.agentId&&row.outcome==='done'));
  const native=await (await http('/api/state')).json(),incident=native.incidents.find(row=>row.title==='Payment authorization failures after deployment');
  const agentEntries=incident.timeline.filter(row=>row.metadata?.agent);
  assert.ok(agentEntries.length>0&&agentEntries.every(row=>row.metadata.agent.for.id===native.members.find(row=>row.name==='Alex Chen').id));
@@ -148,23 +151,24 @@ try{
  assert.equal(JSON.stringify((await (await http('/api/state')).json()).incidents),witness);
  assert.equal((await http('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:'The current person can still coordinate during agent Pause'})).status,200);
  assert.equal((await adopt()).status,200);
- const personEvents=(await tool('oncall.events.list',{limit:200})).result.structuredContent.events;
- assert.ok(personEvents.some(row=>row.type==='incidents.updated'&&row.actor.kind==='person'),'Native person changes share retained typed events');
+ const personTimeline=(await (await http('/api/state')).json()).incidents.find(row=>row.id===incident.id).timeline;
+ assert.ok(personTimeline.some(row=>row.actor===owner.id&&!row.metadata?.agent&&row.text.includes('The current person can still coordinate')),'Native person changes retain their separate timeline attribution');
  assert.equal((await audit()).differs_from_policy,0,'Native agent decisions must agree with the policy in force');
- // Erasure uses the native person door and leaves retained event IDs stable,
+ // Erasure uses the native person door and leaves retained audit IDs stable,
  // with the former sponsor's name removed and their next Business call refused.
  const beforeErasure=await (await http('/api/state')).json(),currentIncident=beforeErasure.incidents.find(row=>row.id===incident.id);
  const mira={sub:teammate,email:'mira@example.invalid',act:{sub:'mira-agent',name:'Mira assistant'}};
  const miraNote=await tool('oncall.notes.add',{incident:incident.id,revision:currentIncident.revision,text:'Independent coordination observation',idempotency_key:randomUUID()},mira);
  assert.equal(miraNote.result.isError,false);
- const beforeActorEvents=(await tool('oncall.events.list',{limit:200})).result.structuredContent.events.filter(row=>row.actor.kind==='agent'&&row.actor.for.id===responder.id);
+ const miraAudit=async()=>(await (await http('/agents/api/audit?agent=mira-agent')).json()).rows;
+ const beforeActorEvents=(await miraAudit()).filter(row=>row.sponsor.id===responder.id);
  assert.ok(beforeActorEvents.length>0);
  const eraseState=await (await http('/api/state')).json();
  const erased=await http('/api/erasure/member/'+responder.id,{workspaceRevision:eraseState.revision,confirmation:'erase '+responder.id,identitiesReviewed:true,importedPeople:[]});
  assert.equal(erased.status,200);
- const afterActorEvents=(await tool('oncall.events.list',{limit:200})).result.structuredContent.events;
- for(const before of beforeActorEvents){const after=afterActorEvents.find(row=>row.id===before.id);assert.ok(after);assert.equal(after.actor.for.name,'Erased member');assert.equal(after.actor.label,'Mira assistant for Erased member');}
+ const afterActorEvents=await miraAudit();
+ for(const before of beforeActorEvents){const after=afterActorEvents.find(row=>row.id===before.id);assert.ok(after);assert.equal(after.sponsor.name,'Erased member');assert.equal(after.label,'Mira assistant for Erased member');}
  assert.equal((await tool('oncall.services.read',{id:'agent-service'},{...mira,email:runtime.context.person.email})).status,401);
- console.log('PASS native sponsor erasure: retained agent event IDs, redacted sponsor name/label and immediate Business admission refusal');
- console.log('PASS Oncall agent native flow: signed owner/team mapping, MCP coordination, open human review, reviewed coverage, signed receiver receipt, client scope/demotion, Pause and native events; paging OFF');
+ console.log('PASS native sponsor erasure: retained agent audit IDs, redacted sponsor name/label and immediate Business admission refusal');
+ console.log('PASS Oncall agent native flow: signed owner/team mapping, MCP coordination, open human review, reviewed coverage, signed receiver receipt, client scope/demotion, Pause, native audit and undeclared event refusal; paging OFF');
 }finally{await runtime.close()}

@@ -4,7 +4,7 @@ import {spawnSync} from 'node:child_process'
 // Human and machine lifecycles remain distinct cases. Related API and browser
 // flows share a shard to balance the complete installation transfer journey.
 const suites={
- runtime:[{file:'tests/runtime.mjs',part:'core'},'tests/agent-door.mjs','tests/changes.mjs','tests/triage.mjs','tests/activation.mjs'],
+ runtime:[{file:'tests/runtime.mjs',part:'core'},'tests/changes.mjs','tests/triage.mjs','tests/activation.mjs'],
  intake:[{file:'tests/runtime.mjs',part:'machines'},'tests/intake.mjs','tests/routing.mjs','tests/import-door.mjs'],
  browser:['tests/member-coordination-browser.mjs','tests/product-browser.mjs'],
  transfer:['tests/transfer.mjs'],

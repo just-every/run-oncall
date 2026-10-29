@@ -326,8 +326,9 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
    auditIdentity(db,{actor:{kind:'agent',id:agent.agent.id},source:{kind:'member',id:sponsor}})
   }
   validateArchive(state)
-  remember('oc_agent_outbox');remember('oc_agent_operations');remember('oc_agent_deadlines')
-  statements.push(db.prepare('DELETE FROM oc_agent_outbox WHERE outbox NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify((state.apiOutbox??[]).map(row=>row.id))),
+  remember('oc_agent_schedule_receipts');remember('oc_agent_outbox');remember('oc_agent_operations');remember('oc_agent_deadlines')
+  statements.push(db.prepare('DELETE FROM oc_agent_schedule_receipts'),
+    db.prepare('DELETE FROM oc_agent_outbox WHERE outbox NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify((state.apiOutbox??[]).map(row=>row.id))),
     db.prepare("DELETE FROM oc_agent_operations WHERE json_extract(operation,'$.entity') NOT IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...state.services.map(row=>row.id),...state.incidents.map(row=>row.id)])),
     db.prepare('DELETE FROM oc_agent_deadlines WHERE deadline NOT IN (SELECT value FROM json_each(?))').bind(JSON.stringify(state.incidents.flatMap(row=>(row.deadlines??[]).map(deadline=>deadline.id)))))
   // The digest holds no subject content. It also rejects old rows maliciously
