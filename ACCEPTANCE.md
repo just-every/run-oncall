@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 10 | 50 | 24 | 84 |
+| Core | 11 | 49 | 24 | 84 |
 | Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 10 | 50 | 28 | 88 |
+| Full target | 11 | 49 | 28 | 88 |
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). OC-022 is judged from the code and tests at candidate `cloud/sd-oncall-c-f9` (29 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -292,15 +292,15 @@ Core · published · **done**
 
 #### OC-022 — Resume and undo
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Journaled imports support bounded resume after restart and explicit undo. SQL checks current actor, session and admin authority inside publication and reversal. Changed source identities require a reviewed catch-up through the shared door; outside that lifecycle they conflict. Duplicate unchanged sources are idempotent. Undo removes only unchanged attributed native objects; edits are preserved with an explicit conflict. Invalid input or failed publication leaves prior committed state unchanged; partial progress remains visible and resumable.
 
 **Acceptance.**
 1. Apply, interrupt and restart, resume and undo both vendor imports over HTTP; revoke authority at publication, inject an SQL failure, replay unchanged and changed identities, and preserve native edits as named undo conflicts.
 
-**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`
-**Gap.** Synthetic signed standing replacement/addition, restart/reconcile and newest-first undo are exercised; gone/over-allowance/native-edit refusals preserve records and paging stays OFF. No cited test resumes an interrupted import to completion: the restart in the shape journey falls between apply calls without asserting the job was unfinished, and the lease-expired import is refused and rolled back. Apply, interruption, restart, undo, revoked authority, SQL rollback, idempotent and conflicting replays and named undo conflicts are asserted.
+**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs` — **OC-022 pagerduty** and **OC-022 opsgenie** unfinished checkpoint restart, same reviewed job completion, unchanged retry and exact undo; **OC-022** SQL rollback, terminal failure and expired-lease refusal, changed identities and named native-edit undo conflicts; `tests/import-door.mjs` — **OC-038 PagerDuty account HTTP**, **O2 standing lifecycle** and **O2 standing refusals**, including publication-time revocation, catch-up and newest-first undo
+**Gap.** None.
 
 ### Complete category job
 

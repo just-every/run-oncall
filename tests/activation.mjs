@@ -460,6 +460,57 @@ try {
  assert.equal(ok(await door.undo('opsgenie',interruptedPreview.planId)).job.state,'rolled_back')
  assert.deepEqual(ok(await req('/api/move-in/objects')),[],'explicit rollback removes the accepted partial effects')
  record('OC-022/041: a lost response after an accepted import batch became durably interrupted with its audit, refused retry after restart, and retained its partial effects until explicit rollback')
+ // Stop between bounded requests while the reviewed import still has work to do.
+ for(const vendor of ['pagerduty','opsgenie']) {
+  const bundle=JSON.parse(await readFile(`tests/fixtures/${vendor}.json`,'utf8'))
+  const people=Array.from({length:25},(_,index)=>{
+   const id='synthetic-oncall-'+vendor+'-'+index,email=[id,'example.test'].join('@')
+   return vendor==='opsgenie'?{id,username:email,fullName:id}:{id,email,name:id}
+  })
+  ;(vendor==='opsgenie'?bundle.users.data:bundle.users).push(...people)
+  const beforeObjects=ok(await req('/api/move-in/objects')),beforeNative=ok(await req('/api/state')),beforePaging=ok(await req('/api/paging/state'))
+  const preview=ok(await door.preview(vendor,JSON.stringify(bundle)))
+  assert.ok(preview.counts.mapped>20,'the reviewed source exceeds one door batch')
+  assert.deepEqual(ok(await req('/api/move-in/objects')),beforeObjects,'preview publishes no imported objects')
+  const reviewed={planId:preview.planId,reviewedFingerprint:preview.fingerprint}
+  const first=ok(await door.call(vendor,'apply',reviewed)).job
+  assert.equal(first.state,'applying');assert.equal(first.fingerprint,preview.fingerprint)
+  assert.ok(first.checkpoint>0&&first.checkpoint<first.total,'exactly one apply commits an unfinished prefix')
+  const partial=ok(await req('/api/move-in/objects'))
+  assert.ok(partial.length>beforeObjects.length&&partial.length<preview.items.flatMap(item=>item.effects).length,'native effects exist for only part of the reviewed plan')
+  const status=()=>door.call(vendor,'status',{planId:preview.planId})
+  assert.deepEqual(ok(await status()).job,first)
+  await w.stop();await w.start()
+  const retained=ok(await status())
+  assert.equal(retained.planId,preview.planId);assert.equal(retained.fingerprint,preview.fingerprint)
+  assert.deepEqual(retained.job,first,'restart retains the same unfinished job and committed checkpoint')
+  const journal=ok(await req('/api/move-in/jobs?vendor='+vendor)).find(job=>job.id===first.id)
+  assert.ok(journal);assert.equal(journal.state,'applying');assert.equal(journal.checkpoint,first.checkpoint)
+  assert.deepEqual(journal.door,{planId:preview.planId,fingerprint:preview.fingerprint,business:false})
+  assert.deepEqual(ok(await req('/api/move-in/objects')),partial,'restart preserves every committed object and its revision')
+  const completed=ok(await door.apply(vendor,preview)).job
+  assert.equal(completed.id,first.id);assert.equal(completed.fingerprint,first.fingerprint)
+  assert.equal(completed.state,'completed');assert.equal(completed.checkpoint,first.total)
+  const applied=ok(await req('/api/move-in/objects'))
+  assert.equal(applied.length,preview.items.flatMap(item=>item.effects).length)
+  assert.equal(new Set(applied.map(row=>row.targetKind+':'+row.targetId)).size,applied.length)
+  for(const person of people)assert.equal(applied.filter(row=>row.targetKind==='user'&&row.targetId===(person.email??person.username)).length,1,'every remaining person is created exactly once')
+  for(const row of partial)assert.deepEqual(applied.find(item=>item.targetKind===row.targetKind&&item.targetId===row.targetId),row,'resume does not replace the committed prefix')
+  assert.ok(applied.every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
+  const batches=()=>w.sql(`SELECT position,end_position FROM ik_batches WHERE job_id='${first.id}' AND action='apply' ORDER BY position`)
+  const committed=batches();let checkpoint=0
+  for(const batch of committed){assert.equal(batch.position,checkpoint);assert.ok(batch.end_position>checkpoint);checkpoint=batch.end_position}
+  assert.equal(checkpoint,completed.total,'committed batches cover the reviewed plan once without gaps or overlap')
+  assert.deepEqual(ok(await door.call(vendor,'apply',reviewed)).job,completed,'completed retry keeps job identity and progress')
+  assert.deepEqual(batches(),committed,'completed retry commits no new batch')
+  assert.deepEqual(ok(await req('/api/move-in/objects')),applied,'completed retry changes no object or revision')
+  const undone=ok(await door.undo(vendor,preview.planId)).job
+  assert.equal(undone.id,first.id);assert.equal(undone.state,'undone')
+  assert.deepEqual(ok(await req('/api/move-in/objects')),beforeObjects,'undo removes exactly this import')
+  assert.deepEqual(ok(await req('/api/state')),beforeNative,'resume and undo grant no native membership or coordination authority')
+  assert.deepEqual(ok(await req('/api/paging/state')),beforePaging,'resume and undo leave paging OFF with unchanged jobs and receipts')
+  record(`OC-022 ${vendor}: unfinished checkpoint ${first.checkpoint} of ${first.total} survived Worker restart; the same reviewed job completed once, retried without changes and undid exactly`)
+ }
  // Each documented response shape runs the whole guarantee: bare fixtures, saved responses (lists and single details) and PagerDuty layer history.
  const shapes=[
   {file:'opsgenie',vendor:'opsgenie',id:'opsgenie:ops-daily',at:'2026-03-08T13:00:00Z',primary:'alice@example.test'},
