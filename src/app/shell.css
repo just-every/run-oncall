@@ -5,6 +5,7 @@
 :root {
   color-scheme: light;
   --app-panel: var(--oc-surface);
+  --app-column: #ffffff; /* the main content column is pure white whatever the paper tone */
   --app-line: #eadfce;
   --app-field: #fffdf8;
   --app-field-line: #d9cab4;
@@ -81,7 +82,7 @@ h1, h2, h3 { letter-spacing: -0.015em; }
 .profile button { grid-column: 1 / -1; justify-self: start; margin-top: 12px; }
 .avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--app-sage-wash); color: var(--app-sage-ink); font-size: 13px; font-weight: 650; }
 
-.workspace { min-width: 0; padding: 0 32px 56px; }
+.workspace { min-width: 0; padding: 0 32px 56px; background: var(--app-column); }
 .header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 26px 0 18px; }
 .title-line { display: flex; align-items: baseline; gap: 10px 24px; flex-wrap: wrap; }
 .header h1 { margin: 0; font-size: 30px; line-height: 1.15; font-weight: 740; letter-spacing: -0.03em; }

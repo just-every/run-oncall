@@ -1,0 +1,210 @@
+[
+ {
+  "w": 1440,
+  "path": "/on-call",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/incidents",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/alerts",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/reviews",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/status",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/services",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/integrations",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/routing",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/team",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/move-in",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/readiness",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/archive",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/incidents/2512c0b3-1a6d-4e0e-8cb0-1f01791f199b",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/on-call",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(253,252,252)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/incidents",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/alerts",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/reviews",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/status",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/services",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/integrations",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/routing",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/team",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/move-in",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/readiness",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/archive",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/incidents/2512c0b3-1a6d-4e0e-8cb0-1f01791f199b",
+  "effective": "rgb(255, 255, 255) @main.workspace",
+  "pixel": "rgb(255,255,255)",
+  "wsBg": "rgb(255, 255, 255)",
+  "body": "rgb(248, 240, 227)"
+ }
+]

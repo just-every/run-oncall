@@ -1220,7 +1220,7 @@
       "executable": false
     },
     "src/app/shell.css": {
-      "sha256": "1b618b5a71913144d725c84ba1aee938fecba6064a283b0453b42ae0d79069f1",
+      "sha256": "467ae364f8c52c7b8c821d32acf3026e48a1abac36a58956e1cd9d4200d7e2da",
       "executable": false
     },
     "src/app/shell/AppShell.tsx": {

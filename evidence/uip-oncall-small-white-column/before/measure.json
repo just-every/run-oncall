@@ -1,0 +1,210 @@
+[
+ {
+  "w": 1440,
+  "path": "/on-call",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/incidents",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/alerts",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/reviews",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/status",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/services",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/integrations",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/routing",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/team",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/move-in",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/readiness",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/settings/archive",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 1440,
+  "path": "/incidents/102c7a58-cab4-4cd9-b606-ee5ba6ba8599",
+  "effective": "rgba(0, 0, 0, 0) +linear-gradient(to right, rgb(244, 234,  @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/on-call",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(246,237,224)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/incidents",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/alerts",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/reviews",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/status",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/services",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/integrations",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/routing",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/team",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/move-in",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/readiness",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/settings/archive",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ },
+ {
+  "w": 390,
+  "path": "/incidents/102c7a58-cab4-4cd9-b606-ee5ba6ba8599",
+  "effective": "rgb(248, 240, 227) @div.app",
+  "pixel": "rgb(248,240,227)",
+  "wsBg": "rgba(0, 0, 0, 0)",
+  "body": "rgb(248, 240, 227)"
+ }
+]
