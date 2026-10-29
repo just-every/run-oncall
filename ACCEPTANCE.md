@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 10 | 50 | 24 | 84 |
+| Core | 11 | 49 | 24 | 84 |
 | Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 10 | 50 | 28 | 88 |
+| Full target | 11 | 49 | 28 | 88 |
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `17b93663e9bc8cf1643a83d28abbdad06aa8bb7b` (29 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -59,15 +59,15 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-A
 
 #### OC-004 — Incident state transitions
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Incident state transitions are explicit. Acknowledgment assigns responsibility. Resolution requires recovery evidence and a summary, independently of alert recovery. Optimistic revision checks reject stale edits. All accepted changes append an attributed timeline transactionally with state. Any active responder or admin can attest recovery and follow-up evidence; attestation is a human claim, not automatic measurement verification. This resolution rule governs declared incidents; an alert-only page that its source recovers closes without a human summary under OC-056.
 
 **Acceptance.**
 1. Declare from admitted alerts and acknowledge; stale and concurrent changes are rejected; the source alert clears; resolution without evidence and a summary is refused; the incident then resolves, and its attributed timeline reads back over HTTP.
 
-**Evidence.** `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
-**Gap.** The declared incident's linked alerts, the refusal of resolution without evidence and a summary, the resolved state and the timeline's attribution are not asserted in the cited test; acknowledgment, stale and concurrent edit refusal and source-alert recovery are asserted. Recovery attestation is a human claim, not independently measured customer recovery.
+**Evidence.** `tests/runtime.mjs` — coordinationJourney (native incident lifecycle); `tests/triage.mjs` — storm journey (bulk-resolution refusal and source recovery independence)
+**Gap.** None.
 
 #### OC-005 — Copied runbooks
 

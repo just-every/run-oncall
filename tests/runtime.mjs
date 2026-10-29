@@ -904,7 +904,10 @@ try {
   const assertTransition = async (before, state, summary, evidence) => {
     const current = await readIncident();
     assert.equal(current.state, state);
-    assert.equal(current.revision, before.revision + 1);
+    const completesReminder = state === "resolved" && before.sourceRecovery?.reminder.state === "recorded";
+    assert.equal(current.revision, before.revision + 1 + (completesReminder ? 1 : 0),
+      "resolution also commits the existing source recovery reminder's completion");
+    if (completesReminder) assert.equal(current.sourceRecovery.reminder.state, "completed");
     assert.deepEqual(current.alerts, [admittedAlert]);
     assert.deepEqual(current.timeline.slice(0, -1), before.timeline, "accepted transitions preserve all earlier timeline entries");
     const entry = current.timeline.at(-1);
