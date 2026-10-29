@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 14 | 46 | 24 | 84 |
+| Core | 16 | 44 | 24 | 84 |
 | Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 14 | 46 | 28 | 88 |
+| Full target | 16 | 44 | 28 | 88 |
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). OC-017 is judged from the accepted candidate `f07ebbff8be7b676b28535ef4cb144cc55db4c33` and OC-022 from the accepted candidate `92ba483d00483e136571fc6d340ef48ead94c450` (29 October 2026); their exact accepted changes are retained by this integration. Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -229,7 +229,7 @@ Core · published · **done** · Cites BASE-DATA-001
 
 #### OC-017 — Reviewed handoffs
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Persist explicitly authored, unsent handoff copy with an explicit intended audience, immutable incident and service snapshots and canonical content hashes. Preparation and review actions have stable identities that conflict on changed content. Only current active responders and admins prepare, review or withdraw; viewers inspect permitted internal records and admins restore. A review binds exact copy and source versions, becomes ineligible on source drift or a recovery hold, and never grants sending, publication, recovery verification or independent-review authority. Withdrawal is terminal and preserves attributed append-only history. OC-006 and historical unreviewed envelopes stay unchanged. Separate additive handoff storage and archive are bounded to 64 records, 128 history entries per record, 128 KiB per record and 1 MiB aggregate. Explicit checkpoint version 2 includes handoffs; version 1 remains supported. Restore retains historical identities and holds active approvals atomically alongside existing recovery and credential and session safeguards. Invalid input, capacity or storage failure or losing concurrent writes preserve the complete prior state. HANDOFF-STAGE.md defines retained snapshots, eligibility and permissions. No provider send, remote fetch or Lamp publication is authorized.
 
@@ -237,8 +237,8 @@ Core · published · **partial**
 1. Prepare, review, inspect and export exact handoff copy over protected HTTP; change the source or revision, withdraw, restore versions 1 and 2 and race writes.
 2. Eligibility and holds, stable action identities, append-only attribution and every storage bound hold, with no send authority.
 
-**Evidence.** `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs`
-**Gap.** The exported packet's copy is not compared with the reviewed copy in the cited test (`tests/checkpoint-cli.mjs` holds that comparison); preparation, review, inspection, eligibility, holds, identities, attribution, every bound and the unsent export are asserted. Connected communication is a separate target in OC-034/051.
+**Evidence.** `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs` protected HTTP handoff and checkpoint journey (exact reviewed export, identities, attribution, eligibility, withdrawal, restore, races and bounds); `tests/checkpoint-cli.mjs` checkpointCli (exact export, retained history and recovery holds)
+**Gap.** None.
 
 ### Activated installation and move-in
 
@@ -292,15 +292,15 @@ Core · published · **done**
 
 #### OC-022 — Resume and undo
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Journaled imports support bounded resume after restart and explicit undo. SQL checks current actor, session and admin authority inside publication and reversal. Changed source identities require a reviewed catch-up through the shared door; outside that lifecycle they conflict. Duplicate unchanged sources are idempotent. Undo removes only unchanged attributed native objects; edits are preserved with an explicit conflict. Invalid input or failed publication leaves prior committed state unchanged; partial progress remains visible and resumable.
 
 **Acceptance.**
 1. Apply, interrupt and restart, resume and undo both vendor imports over HTTP; revoke authority at publication, inject an SQL failure, replay unchanged and changed identities, and preserve native edits as named undo conflicts.
 
-**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`
-**Gap.** Synthetic signed standing replacement/addition, restart/reconcile and newest-first undo are exercised; gone/over-allowance/native-edit refusals preserve records and paging stays OFF. No cited test resumes an interrupted import to completion: the restart in the shape journey falls between apply calls without asserting the job was unfinished, and the lease-expired import is refused and rolled back. Apply, interruption, restart, undo, revoked authority, SQL rollback, idempotent and conflicting replays and named undo conflicts are asserted.
+**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs` — **OC-022 pagerduty** and **OC-022 opsgenie** unfinished checkpoint restart, same reviewed job completion, unchanged retry and exact undo; **OC-022** SQL rollback, terminal failure and expired-lease refusal, changed identities and named native-edit undo conflicts; `tests/import-door.mjs` — **OC-038 PagerDuty account HTTP**, **O2 standing lifecycle** and **O2 standing refusals**, including publication-time revocation, catch-up and newest-first undo
+**Gap.** None.
 
 ### Complete category job
 

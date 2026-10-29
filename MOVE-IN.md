@@ -22,7 +22,7 @@ Answer the region and UTC comparison-date prompts, then paste only the read-only
 
 A successful run prints **Saved** and the full path to a new `opsgenie-export-DATE-TIME.json` or `pagerduty-export-DATE-TIME.json` in the current folder. Keep it private. If Opsgenie returns **HTTP 422**, the key may be malformed: copy the full key again without `GenieKey` or header text; if it persists, ask your administrator to check the key, region and configuration access. Failed collection saves no file; do not upload an export left from an earlier run. See the linked guide for other errors and size limits.
 
-Return to Move-in kit, select the matching source and choose the saved JSON under **Export JSON**. Preview, confirm paused import, and explicitly map service and people for adoption remain separate actions. Paging stays OFF. The response-shape reference below is for operators maintaining their own export tooling; the downloadable tool builds the bundle for you.
+Return to **Settings → Move in**, select the matching source and choose the saved JSON under **Export JSON**. Preview, confirm paused import, and explicitly map service and people for adoption remain separate actions. Paging stays OFF. The response-shape reference below is for operators maintaining their own export tooling; the downloadable tool builds the bundle for you.
 
 ## Accepted response shapes
 
@@ -96,7 +96,7 @@ The sequence is upload → plan → owner approval of the fingerprint → apply 
 reconcile → undo. Each request needs a fresh, short-lived action grant. Apply
 must bind the reviewed fingerprint and owner's approval record. Counts,
 source-id dispositions and native values are reconciled in the installation;
-original bytes remain here. In **Move-in kit → Saved import journal**, select
+original bytes remain here. In **Settings → Move in → Saved import journal**, select
 the relevant source and import to see “approved via Business by … at …,
 fingerprint …” (an administrator's own import reads “approved by …”) and use the existing **Undo this import** control. A Business import the door declared failed offers no resume; Business plans it again. Undo preserves
 native edits. Key revocation stops Business access; the owner's journal and Undo
