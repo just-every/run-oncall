@@ -93,6 +93,15 @@ try {
   const pagingAfterEmail=ok(await request('/api/paging/state'));
   assert.equal(pagingAfterEmail.paging,'OFF');assert.deepEqual(pagingAfterEmail.receipts,[]);
   for(const field of ['jobs','receipts','callbacks'])assert.deepEqual(pagingAfterEmail[field],pagingBeforeEmail[field],'source recovery creates no production delivery history');
+  // A delayed retry of the second failure cannot reopen its recovered generation.
+  const delayedFailure=await mail(w,customLocal,'FAILED: '+customKey,{id:'synthetic-oncall-333'});
+  assert.equal(delayedFailure.status,400);assert.match(delayedFailure.text,/duplicate_message_id; original receipt retained/);
+  const customReplay=ok(await request('/api/email')).receipts.filter(r=>r.address===customAddress);
+  assert.deepEqual(customReplay.map(r=>r.id),customRecovered.map(r=>r.id));
+  assert.equal(customReplay[1].deliveries,2);assert.equal(customReplay[1].lastDiagnostic,'duplicate_message_id');
+  const afterCustomReplay=ok(await request('/api/state'));
+  assert.deepEqual(afterCustomReplay.alerts,customState.alerts,'message retry cannot reopen or replace the stopped obligation');
+  assert.deepEqual(afterCustomReplay.incidents,customState.incidents,'message retry changes no human incident');
   console.log('PASS OC-033 custom email: distinct failure messages open and deduplicate one generation and canonical recorded obligation; resolve stops it by source recovery, keeps the declared incident open and creates no production delivery receipt. Paging remains OFF.');
   const original=ok(await request('/api/state'));
   const nativeKey=randomBytes(32).toString('hex');ok(await request('/api/sources',{id:'native',key:nativeKey,scopes:['payments']}));
