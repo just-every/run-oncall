@@ -88,6 +88,8 @@ function durations(state: State, incident: Incident, now: number) {
       'No recovery attestation after the last mitigation; earlier recovery cannot establish final recovery');
   } else if (recoveryMark.kind === 'legacy-derived') {
     recovery = value('unknown', null, recoveryMark, 'Legacy recovery has no immutable evidence at this entry; current incident recovery URL cannot establish historical evidence');
+  } else if(recoveryMark.entry.metadata?.agent||state.apiClients?.some(client=>client.id===recoveryMark.entry.actor)){
+    recovery=value('unknown',null,recoveryMark,'Agent recovery claim recorded; no human recovery attestation or independent verification is established');
   } else if (!evidence(recoveryMark.evidence)) {
     recovery = value('unknown', null, recoveryMark, 'Recovery entry has no valid immutable HTTP(S) human attestation');
   } else if (lastMitigation >= 0 && (!Number.isFinite(clock(lifecycle[lastMitigation].entry.at)) ||
