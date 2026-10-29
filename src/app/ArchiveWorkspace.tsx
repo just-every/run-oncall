@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Field, Form } from '../forms';
 import { request } from '../useWorkspace';
 import type { Member, State } from '../family/response-operations/domain';
 
 export function ArchiveWorkspace({ state, actor, busy, run, setError, setNotice, onRestored }: {
   state: State; actor: Member; busy: boolean;
-  run: (path: string, data: unknown) => Promise<any>;
+  run: (path: string, data: unknown, success?: string) => Promise<any>;
   setError: (message: string) => void; setNotice: (message: string) => void; onRestored: () => void;
 }) {
   const [archive, setArchive] = useState<State | null>(null);
   const [mapping, setMapping] = useState('');
+  const [restored, setRestored] = useState(false);
+  const outcome = useRef<HTMLParagraphElement>(null);
+  // The outcome takes the form's place where Replace was pressed; keep it in view wherever the page was scrolled.
+  useLayoutEffect(() => { if (restored) outcome.current?.scrollIntoView({ block: 'nearest' }); }, [restored]);
   const empty = !state.services.length && !state.incidents.length && !state.events.length && state.members.length === 1;
   const needsMapping = archive && !archive.members.some(member => member.id === actor.id && member.active && member.role === 'admin');
   const blocked = !!needsMapping && !empty;
@@ -45,6 +49,7 @@ export function ArchiveWorkspace({ state, actor, busy, run, setError, setNotice,
         <p>Deployment does not upload local records. The <code>.rer</code> installation archive and <code>rer import</code> restore local installations only; this screen takes the app's JSON coordination archive. Your existing hosted environment stays available.</p>
       </details>
       <label className="field">Choose archive JSON<input type="file" accept="application/json,.json" onChange={async event => {
+        setRestored(false);
         try {
           const file = event.target.files?.[0]; if (!file) return;
           if (file.size > 2000000) throw Error('Archive exceeds 2 MB request limit');
@@ -62,12 +67,13 @@ export function ArchiveWorkspace({ state, actor, busy, run, setError, setNotice,
           </select></label>}
           <Form busy={busy} disabled={!!needsMapping && !mapping} label="Replace workspace with this archive" onSubmit={async data => {
             if (data.confirm !== 'REPLACE') { setError('Type REPLACE to confirm replacement'); return null; }
-            const result = await run('/api/restore', { mode: 'replace', archive, adminMapping: mapping });
-            if (result) { setArchive(null); onRestored(); setNotice('Restored. Reset other passwords and recreate source keys.'); }
+            const result = await run('/api/restore', { mode: 'replace', archive, adminMapping: mapping }, '');
+            if (result) { setArchive(null); onRestored(); setRestored(true); }
             return result;
           }}><Field name="confirm" label="Type REPLACE to confirm" /></Form>
         </>}
       </div>}
+      {restored && <p role="status" ref={outcome}>Restored. Reset other passwords and recreate source keys.</p>}
       </details>
     </>}
   </section>;
