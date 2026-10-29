@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 14 | 46 | 24 | 84 |
+| Core | 15 | 45 | 24 | 84 |
 | Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 14 | 46 | 28 | 88 |
+| Full target | 15 | 45 | 28 | 88 |
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). OC-014 preview isolation additionally retains the candidate judgment from `efe3d7dbf6c6fac59469c605994d3d5c520cbd9e` (29 October 2026), replayed with current archive-authority assertions. Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -188,15 +188,15 @@ Core · published · **done**
 
 #### OC-014 — Side-effect-free previews
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Schedule preview, now/next and replay are side-effect-free; actual historical delivery claims remain labeled synthetic. Nothing in this release certifies production delivery.
 
 **Acceptance.**
 1. Read now/next and the schedule and routing previews: durable state and receipt counts are unchanged, no timers or provider actions are created, and historical synthetic data stays labeled.
 
-**Evidence.** `src/schedule-api.ts`; `src/paging-api.ts`; `tests/activation.mjs`
-**Gap.** No cited test compares durable state, receipt counts, timers or provider actions before and after a now/next, schedule or routing preview, or reads the synthetic label on historical delivery data.
+**Evidence.** `src/schedule-api.ts`; `src/paging-api.ts`; `src/family/response-operations/paging-archive.ts`; `tests/activation.mjs` — **scheduleCoordination** (aggregate on-call) and **pagingHistory** (OC-014 preview isolation); `tests/routing.mjs` — **OC-014 service routing preview isolation**
+**Gap.** None.
 
 #### OC-015 — Strict module archives
 
