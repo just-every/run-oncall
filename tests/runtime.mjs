@@ -885,6 +885,9 @@ try {
       cookie,
     ),
   );
+  assert.deepEqual(incident.alerts, [admittedAlert], 'declaration links exactly the admitted alert identity');
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id).alerts,
+    [admittedAlert], 'the declared alert link reads back through protected HTTP');
   await awaitingCoordinationAuthority({ origin, request, cookie, incident: incident.id });
   const responder = ok(await request('/api/members', {
     name: 'synthetic-oncall-303', role: 'responder', password: 'synthetic-oncall-303-password',
@@ -1015,17 +1018,48 @@ try {
   assert.deepEqual(afterSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
     beforeSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
     "OC-001: delayed recovery of the older generation leaves the newer generation, other source and staging alert unchanged");
+  const beforeUnevidencedRecovery = ok(await request('/api/state', undefined, cookie));
+  ok(await request('/api/command', {
+    type: 'transition', incident: incident.id, revision: incident.revision,
+    state: 'recovered', summary: 'Synthetic recovery without evidence',
+  }, cookie), 400);
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)), beforeUnevidencedRecovery,
+    'recovery without evidence preserves incident state, revision and timeline');
   await mutate({
     type: "transition",
     state: "recovered",
     summary: "Affected journey verified",
     evidence: "https://example.test/recovery",
   });
+  const beforeUnsummarizedResolution = ok(await request('/api/state', undefined, cookie));
+  ok(await request('/api/command', {
+    type: 'transition', incident: incident.id, revision: incident.revision, state: 'resolved',
+  }, cookie), 400);
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)), beforeUnsummarizedResolution,
+    'resolution without a summary preserves incident state, revision and timeline');
   await mutate({
     type: "transition",
     state: "resolved",
     summary: "Sufficient exposure observed",
   });
+  const resolvedIncident = ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id);
+  assert.equal(resolvedIncident.state, 'resolved');
+  assert.equal(resolvedIncident.recovery, 'https://example.test/recovery');
+  assert.equal(resolvedIncident.timeline.find(e => e.kind === 'declared').actor, admin.id);
+  for (const [state, actor, summary] of [
+    ['acknowledged', responder.id, 'Taking responsibility'],
+    ['mitigating', admin.id, 'Mitigation is being reviewed'],
+    ['recovered', admin.id, 'Affected journey verified'],
+    ['resolved', admin.id, 'Sufficient exposure observed'],
+  ]) {
+    const entry = resolvedIncident.timeline.find(e => e.lifecycle?.to === state);
+    assert.equal(entry.actor, actor, state + ': the lifecycle entry retains its authorized human actor');
+    assert.ok(entry.text.includes(summary), state + ': the saved transition summary reads back');
+    assert.ok(Number.isFinite(Date.parse(entry.at)), state + ': the lifecycle entry retains its action time');
+    if (state === 'recovered') assert.equal(entry.lifecycle.evidence, 'https://example.test/recovery');
+  }
+  assert.deepEqual(resolvedIncident, incident, 'the resolved state and complete timeline read back over HTTP');
+  console.log('PASS OC-004 native lifecycle: exact admitted alerts, responder commander, atomic evidence and summary refusals, evidenced recovery and resolved human-attributed timeline');
   await mutate({
     type: "review",
     text: "Cause: missing migration. Repair verified against preserved customer behavior.",

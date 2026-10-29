@@ -140,7 +140,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "dd923e735b4d10f7385ce3026dad005cb836a4b22ceed5eb938161590eb8b24e",
+      "sha256": "66e846e7cdadf937d90c85d15b17aab37cdb4dbac3b7f2e4a7b5ec4ea1535068",
       "executable": false
     },
     "AGENTS.md": {
@@ -164,7 +164,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "4f9eb8724eaa7cc059808f07b8f5442d04800ba238b45b0916d143737152e1dd",
+      "sha256": "be1118657cba6c73ad5a1883ab8eb655d33d3747df7fe2d79f3f093ccd344a62",
       "executable": false
     },
     "DEMO.md": {
@@ -196,7 +196,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "8755084b53df268a49a32b36a634acc040f765d037be24071de09f79a3173ea0",
+      "sha256": "00cf5ed0c2acedca4c6a394cd0e038812ed403b36ac75aa72986a83fce5eff42",
       "executable": false
     },
     "docs/compatible-intake.md": {
@@ -4984,7 +4984,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "5f0b6fa53263820cf5b93ecef7f5eaed8ccae9f7cb14a0f6f372093528d1b331",
+      "sha256": "3aef844a2ef1f4f0fe6255e1c0ceea887c0d3ce34803011bba4b8c5541865fb3",
       "executable": false
     },
     "tests/transfer.mjs": {

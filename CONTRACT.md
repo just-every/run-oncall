@@ -1204,16 +1204,16 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 8 | 14 | 0 | 22 |
+| Published | 9 | 13 | 0 | 22 |
 | Target and push further | 3 | 35 | 28 | 66 |
-| All | 11 | 49 | 28 | 88 |
+| All | 12 | 48 | 28 | 88 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
 | `OC-001` | Event identity and alerts | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `src/intake/lifecycle.ts`; `tests/runtime.mjs`; `tests/intake.mjs` |  |
 | `OC-002` | Routing replay | published | partial | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Replay after a policy change, returning the immutable admission explanation of a severity-routed event beside the proposed decision, is not asserted in the cited test (`tests/routing.mjs` holds such a comparison); zero writes and submitted order are asserted. |
 | `OC-003` | Roles and authority | published | done | `tests/runtime.mjs` — coordinationJourney: session roles, responder workspace reads, attributed acknowledgment and note, administrator refusals, held downgrade and revoke mutations, minimal bearer and signed intake receipts; `tests/member-coordination-browser.mjs` — responder coordinates and reloads attributed history. |  |
-| `OC-004` | Incident state transitions | published | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | The declared incident's linked alerts, the refusal of resolution without evidence and a summary, the resolved state and the timeline's attribution are not asserted in the cited test; acknowledgment, stale and concurrent edit refusal and source-alert recovery are asserted. Recovery attestation is a human claim, not independently measured customer recovery. |
+| `OC-004` | Incident state transitions | published | done | `tests/runtime.mjs` — coordinationJourney: exact admitted alert links, responder commander, stale and concurrent refusal, source recovery independence, unchanged state after recovery without evidence and resolution without a summary, evidenced recovery, resolved state and human-attributed lifecycle history; `tests/triage.mjs` — bulk resolution refuses missing recovery evidence. |  |
 | `OC-005` | Copied runbooks | published | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | The copied steps after a service runbook edit, creation of an owned, due-dated action, the refusal to complete an action without evidence and unfinished work kept after resolution are not asserted in the cited test; a review written after resolution is asserted to persist. Alert-level runbook access and follow-up policies are targets in OC-023/036. |
 | `OC-006` | Bounded outbound incident effects | published | partial | `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs` | No cited test asserts the absence of an AI call, that an exported draft stays marked unreviewed, or that a source link grants no access; no paging receipt, no production action and no Lamp publication are asserted. This is the current-release safety boundary, not the final product boundary. |
 | `OC-007` | Native archive | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` |  |
