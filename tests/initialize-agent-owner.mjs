@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 
 // Trusted verifier tooling. Every native fixture enters through ordinary HTTP.
-export default async function initialize({ request, origin, token, displayName, returnTo, fixtures }) {
+export default async function initialize({ request, origin, token, displayName, returnTo, fixtures, reviewers, email }) {
   const bootstrap = await request(new URL('/auth/bootstrap', origin).href, {
     method: 'POST', redirect: 'manual', headers: { Origin: origin, 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, displayName, returnTo }),
@@ -62,5 +62,6 @@ export default async function initialize({ request, origin, token, displayName, 
     await json('/api/automation/endpoints', { name, client: client.id, services: ['agent-service'],
       url: `https://8.8.8.8${path}`, key: keys[path], approve: true }, 201);
   }
+  if (reviewers) await reviewers.initialize('responder', {email, cookie});
   return bootstrap;
 }

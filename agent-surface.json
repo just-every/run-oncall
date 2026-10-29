@@ -1921,42 +1921,66 @@
     {
       "id": "services-receipt",
       "tool": "oncall.services.receipt",
-      "args": {},
+      "args": {
+        "key": {
+          "$fixture": "receipts",
+          "pointer": "/services"
+        }
+      },
       "expect": [
         {
           "class": "standard"
         }
-      ]
+      ],
+      "client": "receipts"
     },
     {
       "id": "schedules-receipt",
       "tool": "oncall.schedules.receipt",
-      "args": {},
+      "args": {
+        "key": {
+          "$fixture": "receipts",
+          "pointer": "/schedules"
+        }
+      },
       "expect": [
         {
           "class": "standard"
         }
-      ]
+      ],
+      "client": "receipts"
     },
     {
       "id": "incidents-receipt",
       "tool": "oncall.incidents.receipt",
-      "args": {},
+      "args": {
+        "key": {
+          "$fixture": "receipts",
+          "pointer": "/incidents"
+        }
+      },
       "expect": [
         {
           "class": "standard"
         }
-      ]
+      ],
+      "client": "receipts"
     },
     {
       "id": "actions-receipt",
       "tool": "oncall.actions.receipt",
-      "args": {},
+      "args": {
+        "key": {
+          "$fixture": "receipts",
+          "pointer": "/actions"
+        }
+      },
       "expect": [
         {
           "class": "standard"
         }
-      ]
+      ],
+      "client": "receipts"
     },
     {
       "id": "events",
@@ -1992,6 +2016,16 @@
         "declare-state",
         "declare"
       ]
-    }
+    },
+    "fixtures": {
+      "module": "tests/agent-phase-fixtures.mjs"
+    },
+    "reviewers": [
+      {
+        "label": "responder",
+        "email": "independent-reviewer@example.invalid",
+        "initializer": "tests/initialize-agent-reviewer.mjs"
+      }
+    ]
   }
 }
