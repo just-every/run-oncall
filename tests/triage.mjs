@@ -1,9 +1,90 @@
 import {autonomousCoordination} from './agent-policy-fixture.mjs';
-import {triageBulkCompletion} from './triage-bulk.mjs';
-import assert from 'node:assert/strict';
-import {randomBytes} from 'node:crypto';
-import {localWorker,ownerDoor} from './worker.mjs';
-import {localPart, mail, recoveryRules} from './email-fixtures.mjs';
+import assert from 'node:assert/strict'
+import {randomBytes} from 'node:crypto'
+import {localWorker,ownerDoor} from './worker.mjs'
+import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
+// triage-bulk: part of this public journey.
+export async function triageBulkCompletion(){
+ const ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value;};
+
+ const w=await localWorker({}, {clock:true});
+ try{
+  const setup=await w.request('/api/setup',{name:'synthetic-oncall-600',password:'synthetic-oncall-600-password'});ok(setup);let cookie=setup.cookie;
+  const req=(path,input)=>w.request(path,input,cookie),state=async()=>ok(await req('/api/state'));
+  const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-600',name:'Synthetic bulk service',environment:'test',owner:setup.value.member.id,runbook:[],pager:''}));
+  const declare=async n=>ok(await req('/api/command',{type:'declare',service:service.id,title:'Synthetic bulk incident '+n,severity:'warning',summary:'Human response evidence'}));
+  const bulk=async input=>{let result;do{result=await req('/api/triage/bulk',input);}while(result.status===200&&result.value.remaining>0&&!result.value.interrupted);return result;};
+  const item=i=>({id:i.id,revision:i.revision,...(i.kind?{kind:i.kind}:{})});
+  let a=await declare(1),b=await declare(2),target=await declare(3),c=await declare(4);
+  const acknowledgedIncidents=ok(await bulk({operationId:'synthetic-oncall-600-ack',action:'acknowledge',reason:'Take responsibility for the selected incidents',items:[a,b].map(item)}));assert.ok(acknowledgedIncidents.results.every(r=>r.ok),JSON.stringify(acknowledgedIncidents));
+  [a,b]=(await state()).incidents.filter(i=>[a.id,b.id].includes(i.id));
+  const snooze={operationId:'synthetic-oncall-600-snooze',action:'snooze',minutes:15,reason:'Hold investigation while the dependency recovers',items:[a,b].map(item),confirmedCount:2};
+  const snoozed=ok(await bulk(snooze));assert.ok(snoozed.results.every(r=>r.ok),JSON.stringify(snoozed));assert.deepEqual(ok(await bulk(snooze)),snoozed);
+  for(const i of (await state()).incidents.filter(i=>[a.id,b.id].includes(i.id))){assert.equal(i.deadlines.filter(d=>d.state==='pending'&&d.kind==='snooze').length,1);assert.equal(i.timeline.filter(e=>e.operationId===snooze.operationId).length,1);}
+  [a,b]=(await state()).incidents.filter(i=>[a.id,b.id].includes(i.id));
+  const merge={operationId:'synthetic-oncall-600-merge',action:'merge',target:target.id,targetRevision:target.revision,reason:'One response owns the common dependency failure',items:[a,c,b].map(item),confirmedCount:3};
+  ok(await req('/api/command',{type:'note',incident:c.id,revision:c.revision,text:'Make just this selected source stale'}));
+  const merged=ok(await bulk(merge));assert.equal(merged.results.filter(r=>r.ok).length,2);assert.equal(merged.results.filter(r=>!r.ok).length,1);assert.match(merged.results.find(r=>r.id===c.id).error,/changed/i);
+  assert.deepEqual(ok(await bulk(merge)),merged,'merge replay preserves original per-item outcomes and target history');
+  const afterMerge=await state();for(const id of [a.id,b.id]){assert.equal(afterMerge.incidents.find(i=>i.id===id).mergedInto.target,target.id);assert.ok(afterMerge.incidents.find(i=>i.id===id).timeline.some(e=>e.operationId===merge.operationId));}
+  assert.equal(afterMerge.incidents.find(i=>i.id===target.id).timeline.filter(e=>e.operationId===merge.operationId).length,2);ok(await req('/api/archive'));
+  const viewer=ok(await req('/api/members',{name:'synthetic-oncall-601',role:'viewer',password:'synthetic-oncall-601-password'}),201),viewerLogin=await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-601-password'});ok(viewerLogin);
+  const key=randomBytes(32).toString('hex');ok(await req('/api/sources',{id:'synthetic-oncall-600',key,scopes:[service.id]}));
+  const signal=n=>({source:'synthetic-oncall-600',eventId:'synthetic-oncall-'+(1000+n),service:service.id,environment:'test',key:'synthetic-oncall-'+(1000+n),generation:'synthetic-oncall-'+(1000+n),intent:'trigger',severity:'warning',title:'Synthetic bulk scale',observedAt:new Date().toISOString(),evidence:''});
+  const ingest=async input=>ok(await w.request('/api/ingress/synthetic-oncall-600',input,undefined,{authorization:'Bearer '+key}),201);
+  const admitted=Array.from({length:6},(_,n)=>signal(n));
+  for(const event of admitted)await ingest(event);
+  // Restore real admitted records without materializing an optional revision.
+  const revisionless=ok(await req('/api/archive'));
+  assert.ok(revisionless.alerts.every(alert=>!Object.hasOwn(alert,'revision')));
+  const heldCheckpoint=ok(await req('/api/recovery/checkpoint'));
+  const heldRestore=await req('/api/recovery/restore',{mode:'replace',checkpoint:heldCheckpoint});ok(heldRestore);cookie=heldRestore.cookie;
+  assert.deepEqual((await state()).alerts,revisionless.alerts,'strict restore preserves revision-less alerts byte for byte');
+  const firstHeld=revisionless.alerts[0],editPath='/api/urgency/alerts/'+firstHeld.id;
+  const firstEdit={revision:firstHeld.urgencyRevision,urgency:'high',reason:'Synthetic bulk responder confirms impact'};
+  const changed=ok(await req(editPath,firstEdit));assert.equal(changed.revision,2,'first change advances the implicit initial revision 1');
+  assert.equal(changed.urgencyRevision,firstEdit.revision+1);
+  const beforeStale=ok(await req('/api/archive'));ok(await req(editPath,{...firstEdit,urgency:'low'}),409);
+  assert.deepEqual(ok(await req('/api/archive')),beforeStale,'stale second write preserves every record');
+  ok(await req('/api/sources',{id:'synthetic-oncall-600',key,scopes:[service.id]}));
+  ok(await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-601-password'}),401);
+  ok(await req('/api/password',{member:viewer.id,password:'synthetic-oncall-601-password'}));
+  const restoredViewer=await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-601-password'});ok(restoredViewer);viewerLogin.cookie=restoredViewer.cookie;
+  console.log('PASS held alert revisions: absent through strict restore, first human change advances implicit revision 1 to 2, stale second write refuses 409 without mutation');
+  const list=async query=>{let page=ok(await req('/api/triage?'+new URLSearchParams({...query,limit:'100'}))),items=[...page.items],revision=page.workspaceRevision;while(page.nextCursor){page=ok(await req('/api/triage?'+new URLSearchParams({...query,limit:'100',cursor:page.nextCursor})));items.push(...page.items);}return {items,revision};};
+  let matching=await list({kind:'alerts',q:'Synthetic bulk scale',status:'open'});assert.equal(matching.items.length,admitted.length);
+  const incidentCount=(await state()).incidents.length;
+  const selectedItems=matching.items.slice(0,2).map(item);
+  const selected={operationId:'synthetic-oncall-600-selected',action:'resolve',items:selectedItems,confirmedCount:selectedItems.length};
+  ok(await req('/api/triage/bulk',{...selected,confirmedCount:selected.confirmedCount-1}),409);
+  const denied=ok(await w.request('/api/triage/bulk',{...selected,operationId:'synthetic-oncall-600-denied'},viewerLogin.cookie));assert.ok(denied.results.every(r=>!r.ok));
+  const selectedResult=ok(await bulk(selected));assert.equal(selectedResult.results.length,selected.items.length);assert.ok(selectedResult.results.every(r=>r.ok&&r.kind==='alert'&&r.revision===selected.items.find(i=>i.id===r.id).revision+1));assert.deepEqual(ok(await bulk(selected)),selectedResult);
+  matching=await list({kind:'alerts',q:'Synthetic bulk scale',status:'open'});assert.equal(matching.items.length,admitted.length-selected.items.length);
+  const all={operationId:'synthetic-oncall-600-all',action:'resolve',items:matching.items.map(item),allMatching:true,query:{kind:'alerts',q:'Synthetic bulk scale',status:'open'},confirmedCount:matching.items.length,workspaceRevision:matching.revision};
+  ok(await req('/api/triage/bulk',{...all,confirmedCount:all.confirmedCount-1}),409);
+  const matchingResult=ok(await bulk(all));assert.equal(matchingResult.results.length,all.items.length);assert.ok(matchingResult.results.every(r=>r.ok&&r.revision===all.items.find(i=>i.id===r.id).revision+1));assert.deepEqual(ok(await bulk(all)),matchingResult);
+  assert.equal((await list({kind:'alerts',q:'Synthetic bulk scale',status:'open'})).items.length,0);assert.equal((await state()).incidents.length,incidentCount,'closing alert-only items creates no human incident or recovery summary');
+  for(const alert of (await state()).alerts){assert.equal(alert.state,'active','human resolution never fabricates source recovery');assert.equal(alert.coordination.state,'closed');assert.equal(alert.obligation.outcome,'stopped by human resolution');assert.equal(alert.coordination.history.length,1);}
+  // A changed source receipt invalidates just its alert's selection revision.
+  await ingest(signal(1500));await ingest(signal(1501));let fresh=await list({kind:'alerts',status:'open'}),stale=fresh.items[0];
+  const original=(await state()).alerts.find(a=>a.id===stale.id),latest=signal(2000);latest.key=original.key;latest.generation=original.generation;await ingest(latest);
+  const mixed=ok(await bulk({operationId:'synthetic-oncall-600-mixed',action:'acknowledge',items:fresh.items.map(item),confirmedCount:2,reason:'Take responsibility for current alerts'}));assert.equal(mixed.results.filter(r=>r.ok).length,1);assert.equal(mixed.results.filter(r=>!r.ok).length,1);
+  const acknowledged=(await list({kind:'alerts',status:'acknowledged'})).items[0];
+  ok(await bulk({operationId:'synthetic-oncall-600-alert-snooze',action:'snooze',items:[item(acknowledged)],confirmedCount:1,minutes:15,reason:'Wait for the dependency owner'}));
+  const snoozedAlert=(await state()).alerts.find(a=>a.id===acknowledged.id);assert.ok(Number.isFinite(Date.parse(snoozedAlert.coordination.snoozeDue)));assert.match(snoozedAlert.coordination.history.at(-1).text,/not sent \(no timer\)/);
+  const unresolved=(await list({kind:'alerts',status:'declared'})).items[0],heldAlert=(await state()).alerts.find(a=>a.id===unresolved.id),rollback={operationId:'synthetic-oncall-600-rollback',action:'resolve',items:[item(unresolved)],confirmedCount:1};
+  w.sql("CREATE TRIGGER synthetic_bulk_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='triage.resolve' AND EXISTS(SELECT 1 FROM oc_alerts WHERE id='"+unresolved.id+"' AND json_extract(data,'$.coordination.state')='closed') BEGIN SELECT RAISE(ABORT,'synthetic-oncall-600-audit'); END");
+  try{const failed=ok(await bulk(rollback));assert.equal(failed.interrupted,true);assert.deepEqual((await state()).alerts.find(a=>a.id===unresolved.id),heldAlert);assert.deepEqual((await state()).triage.find(r=>r.id===rollback.operationId).results,[]);}finally{w.sql('DROP TRIGGER synthetic_bulk_audit');}
+  assert.equal(ok(await bulk(rollback)).results[0].ok,true);
+  const archive=ok(await req('/api/archive'));assert.ok(archive.triage.some(r=>r.id===merge.operationId));
+  const checkpoint=ok(await req('/api/recovery/checkpoint'));
+  const restored=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(restored);cookie=restored.cookie;assert.deepEqual((await state()).alerts,archive.alerts,'native restore retains every closed state, assignee, snooze record, revision and shared operation history');
+  await w.stop();await w.start();const login=await w.request('/api/login',{name:'synthetic-oncall-600',password:'synthetic-oncall-600-password'});ok(login);cookie=login.cookie;assert.deepEqual((await state()).alerts,archive.alerts);
+  console.log('PASS OC-079 public bulk completion: revisioned incident snooze and multi-source merge, independent stale refusal and exact replay, attributed atomic merge history, selected and confirmed matching alert-only closes, unchanged source recovery/incident semantics, viewer denial, source-revision fencing, no-timer alert snooze, per-item audit rollback/retry and full archive/restart custody. Paging OFF.');
+ }finally{await w.close();}
+}
+
+
 
 await triageBulkCompletion();
 
@@ -503,7 +584,7 @@ try {
 
 // OC-061 email-list records exercise the same public status and shared erasure doors.
 {
- const {automationRuntime}=await import('./automation-runtime.mjs'),external=[];
+ const {automationRuntime}=await import('./worker.mjs'),external=[];
  const runtime=await automationRuntime(request=>{external.push(request.url);return new Response('unexpected provider call',{status:403});});
  try{
   const setup=await runtime.request('/api/setup',{name:'synthetic-oncall-610-owner',password:'synthetic-oncall-610-password'});assert.equal(setup.status,200);let cookie=setup.cookie;
@@ -546,4 +627,151 @@ try {
   const restored=await request('/api/restore',{mode:'replace',archive:legacy});assert.equal(restored.status,200,JSON.stringify(restored.value));cookie=restored.cookie;await runtime.restart();const held=await value('/api/state');assert.ok(held.businessServices.every(row=>!row.active&&(row.emailLists??[]).every(list=>!list.active)&&row.notices.every(notice=>notice.state==='stopped')));assert.equal(held.businessServices.find(row=>row.id===full.id).emailLists.length,50);
   assert.deepEqual(external,[],'email-list records never call any provider');console.log('PASS OC-061 email-list records: bounded validated category/address/channel, admin/communications-owner authority and restricted reads, atomic list/obligation audit rollback, start/end recorded obligations without raw alerts, unsubscribe, shared list/native/imported erasure and restore fences, legacy archive compatibility and inactive restart; no sender');
  }finally{await runtime.close();}
+}
+
+// Coordinated incidents feed fair response reports, matching CSV and erasure-safe denominators.
+{
+const {default:assert}=await import('node:assert/strict')
+const {randomBytes}=await import('node:crypto')
+const {localWorker}=await import('./worker.mjs')
+const w=await localWorker(),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+try{
+ let cookie=(await w.request('/api/setup',{name:'Response lead',password:'synthetic-review-testing-password'})).cookie;
+ const req=(path,data)=>w.request(path,data,cookie),actor=ok(await req('/api/session')).member;
+ const reviewer=ok(await req('/api/members',{name:'Service reviewer',role:'responder',password:'synthetic-reviewer-testing-password'}),201);
+ const reviewerCookie=(await w.request('/api/login',{name:reviewer.name,password:'synthetic-reviewer-testing-password'})).cookie;
+ ok(await req('/api/command',{type:'service',id:'payments',name:'Payments',environment:'production',owner:actor.id,runbook:['Inspect pool saturation'],pager:''}));
+ const key=randomBytes(32).toString('hex');ok(await req('/api/sources',{id:'monitor',key,scopes:['payments']}));
+ const event={source:'monitor',eventId:'checkout-pressure',service:'payments',environment:'production',key:'pool',generation:'deploy-2048',intent:'trigger',severity:'critical',title:'Checkout pool pressure',observedAt:new Date().toISOString(),evidence:'https://monitor.example.test/checkout'};
+ ok(await w.request('/api/ingress/monitor',event,undefined,{authorization:'Bearer '+key}),201);
+ const ciKey=randomBytes(32).toString('hex');ok(await req('/api/changes/sources',{id:'checkout-ci',name:'Checkout CI changes',provider:'native',service:'payments',repository:'',mode:'bearer',revision:0,key:ciKey}),201);
+ ok(await w.request('/api/changes/ingress/checkout-ci',{eventId:'checkout-release',summary:'Checkout connection pool expanded',author:'checkout-ci',timestamp:new Date().toISOString(),links:[{href:'https://ci.example.test/checkout/2048'}]},undefined,{authorization:'Bearer '+ciKey}),201);
+ const alert=ok(await req('/api/state')).alerts[0];
+ let incident=ok(await req('/api/command',{type:'declare',service:'payments',severity:'critical',title:'=Checkout response report',summary:'Checkout latency requires human impact assessment',alerts:[alert.id]}));
+ const mutate=async data=>incident=ok(await req('/api/command',{...data,incident:incident.id,revision:incident.revision}));
+ await mutate({type:'transition',state:'acknowledged',summary:'Response lead investigating'});
+ await mutate({type:'transition',state:'mitigating',summary:'Adjust connection limit'});
+ await mutate({type:'transition',state:'recovered',summary:'Initial checkout checks recovered',evidence:'https://monitor.example.test/first-recovery'});
+ const firstRecovery=incident.timeline.at(-1).id;
+ await mutate({type:'transition',state:'mitigating',summary:'Pressure returned; first recovery did not hold'});
+ await mutate({type:'transition',state:'recovered',summary:'Sustained checkout checks observed by responder',evidence:'https://monitor.example.test/final-recovery'});
+ const finalRecovery=incident.timeline.at(-1);
+ await mutate({type:'transition',state:'resolved',summary:'Human accepts sustained recovery evidence'});
+ let other=ok(await req('/api/command',{type:'declare',service:'payments',severity:'warning',title:'Cache pressure',summary:'Human attestation without an acknowledgement'}));
+ ok(await req('/api/triage/bulk',{operationId:'report-direct-resolution',action:'resolve',items:[{id:other.id,revision:other.revision}],reason:'Responder verified cache repair',evidence:'https://monitor.example.test/cache'}));
+ const open=ok(await req('/api/command',{type:'declare',service:'payments',severity:'warning',title:'Queue investigation remains open',summary:'No acknowledgement yet'}));
+ const query=new URLSearchParams({from:new Date(Date.now()-86400000).toISOString(),to:new Date(Date.now()+3600000).toISOString(),service:'payments'});
+ const report=ok(await req('/api/reports/response?'+query));assert.equal(report.cohort.count,3);
+ assert.deepEqual([report.aggregates.mtta.measured,report.aggregates.mtta.censored,report.aggregates.mtta.unknown],[1,1,1]);
+ assert.deepEqual([report.aggregates.mttr.measured,report.aggregates.mttr.censored,report.aggregates.mttr.unknown],[2,1,0]);
+ const row=report.incidents.find(i=>i.id===incident.id),openRow=report.incidents.find(i=>i.id===open.id);
+ assert.equal(row.recovery.sourceEntryId,finalRecovery.id);assert.notEqual(row.recovery.sourceEntryId,firstRecovery);assert.equal(row.recovery.evidence,finalRecovery.lifecycle.evidence);
+ assert.equal(row.recovery.seconds,(Date.parse(finalRecovery.at)-Date.parse(incident.createdAt))/1000);
+ assert.equal(openRow.mtta.status,'censored');assert.ok(openRow.mtta.seconds>=0);assert.equal(report.incidents.find(i=>i.id===other.id).mtta.status,'unknown');
+ assert.equal(report.aggregates.mtta.mean,row.mtta.seconds);assert.equal(row.mtta.sourceKind,'structured');
+ const frozen=new URLSearchParams(query);frozen.set('at',report.generatedAt);frozen.set('revision',String(report.revision));
+ const csv=ok(await req('/api/reports/response.csv?'+frozen));assert.equal(typeof csv,'string');assert.ok(csv.includes('"\'=Checkout response report"'));assert.ok(csv.includes(row.recovery.sourceEntryId));assert.ok(csv.includes(report.generatedAt));assert.ok(csv.includes('"censored"'));assert.ok(csv.includes('"unknown"'));
+ ok(await req('/api/reports/response?from=2026-02-30T00:00:00Z&to=2026-03-02T00:00:00Z'),400);ok(await req('/api/reports/response?service=missing'),400);ok(await req('/api/reports/response?secret=anything'),400);
+ ok(await w.request('/api/reports/response.csv?'+frozen),401);
+ await mutate({type:'action',title:'Bound checkout pool per region',owner:actor.id,escalationRecipient:reviewer.id,due:new Date().toISOString().slice(0,10),priority:'P1',completionPolicy:'human-review'});
+ const action=incident.actions[0];
+ await mutate({type:'complete',action:action.id,evidence:'https://code.example.test/pool-guard'});assert.equal(incident.actions[0].done,false,'evidence submission cannot silently complete a required mitigation');
+ const submittedRevision=incident.revision;
+ const accepted=ok(await w.request('/api/command',{type:'accept-action',incident:incident.id,revision:incident.revision,action:action.id,reason:'Reviewed regional guard and sustained monitor evidence'},reviewerCookie));incident=accepted;assert.equal(incident.actions[0].done,true);assert.equal(incident.actions[0].accepted.by,reviewer.id);
+ ok(await req('/api/command',{type:'accept-action',incident:incident.id,revision:submittedRevision,action:action.id,reason:'stale'}),409);
+ let material=ok(await req('/api/reviews/'+incident.id+'/material'));assert.equal(material.incidentRevision,incident.revision);assert.ok(material.observations.some(o=>o.eventId===event.eventId));assert.ok(material.assertions.some(a=>a.id===finalRecovery.id));assert.ok(material.changes.some(c=>c.eventId==='checkout-release'),'generated material includes the same retained changes responders see');assert.equal(material.accepted,null);assert.ok(material.missing.length>0);
+ ok(await req('/api/command',{type:'review',incident:incident.id,revision:incident.revision,materialRevision:incident.revision-1,materialWorkspaceRevision:material.workspaceRevision,accept:true,rootCause:'Pool limits exceeded',impact:'Checkout requests delayed',text:'Human review'}),409);
+ ok(await w.request('/api/ingress/monitor',{...event,eventId:'later-observation',observedAt:new Date().toISOString()},undefined,{authorization:'Bearer '+key}),201);
+ ok(await req('/api/command',{type:'review',incident:incident.id,revision:incident.revision,materialRevision:incident.revision,materialWorkspaceRevision:material.workspaceRevision,accept:true,rootCause:'stale context',impact:'stale context',text:'stale context'}),409);
+ material=ok(await req('/api/reviews/'+incident.id+'/material'));
+ await mutate({type:'review',materialRevision:incident.revision,materialWorkspaceRevision:material.workspaceRevision,accept:true,rootCause:'Region pool admission exceeded the upstream connection budget',impact:'Checkout requests delayed while pools saturated',text:'Reviewed observations and recovery evidence. Keep upstream admission within the measured budget.'});
+ assert.equal(incident.reviewAcceptance.by,actor.id);assert.ok(incident.reviewAcceptance.materialRevision<incident.revision);
+ const viewer=ok(await req('/api/members',{name:'Report viewer',role:'viewer',password:'synthetic-report-viewer-password'}),201),viewerCookie=(await w.request('/api/login',{name:viewer.name,password:'synthetic-report-viewer-password'})).cookie;
+ ok(await w.request('/api/command',{type:'review',incident:incident.id,revision:incident.revision,text:'viewer cannot accept'},viewerCookie),403);
+ ok(await req('/api/reports/response.csv?'+frozen),409);frozen.delete('revision');const currentReport=ok(await req('/api/reports/response?'+frozen));frozen.set('revision',String(currentReport.revision));
+ assert.equal(ok(await w.request('/api/reports/response.csv?'+frozen,undefined,viewerCookie)),ok(await req('/api/reports/response.csv?'+frozen)),'same permissions and frozen snapshot produce the same CSV');
+ ok(await req('/api/command',{type:'member',id:viewer.id,role:'viewer',active:false}));ok(await w.request('/api/reports/response.csv?'+frozen,undefined,viewerCookie),401);
+ const archive=ok(await req('/api/archive')),bad=structuredClone(archive);bad.incidents.find(i=>i.id===incident.id).actions[0].accepted.by='unknown-person';ok(await req('/api/restore',{mode:'replace',archive:bad}),400);assert.deepEqual(ok(await req('/api/archive')),archive);
+ const legacy=structuredClone(archive);for(const i of legacy.incidents)for(const e of i.timeline)delete e.lifecycle;
+ let restored=await req('/api/restore',{mode:'replace',archive:legacy});ok(restored);cookie=restored.cookie;
+ const legacyReport=ok(await req('/api/reports/response?'+query)),legacyRow=legacyReport.incidents.find(i=>i.id===incident.id);assert.equal(legacyRow.mtta.sourceKind,'legacy-derived');assert.equal(legacyRow.mtta.status,'measured');assert.equal(legacyRow.recovery.status,'unknown','a current URL does not invent immutable legacy recovery evidence');
+ restored=await req('/api/restore',{mode:'replace',archive});ok(restored);cookie=restored.cookie;
+ assert.deepEqual(ok(await req('/api/state')).incidents,archive.incidents,'structured lifecycle, human review and follow-up attribution survive archive replacement');
+ await w.stop();await w.start();assert.equal(ok(await req('/api/reviews/'+incident.id+'/material')).accepted.rootCause,incident.reviewAcceptance.rootCause);
+ // OC-037 response report keeps unknown cases visible and normalises load by scheduled coverage.
+ const responder=async name=>({...ok(await req('/api/members',{name,role:'responder',password:'synthetic-load-testing-password'}),201),cookie:(await w.request('/api/login',{name,password:'synthetic-load-testing-password'})).cookie});
+ const shift=await responder('Shift responder'),floater=await responder('On-call floater');
+ const hour=3600000,start=Math.floor(Date.now()/hour)*hour-6*hour,iso=at=>new Date(at).toISOString();
+ const rota={id:'payments-rota',name:'Payments rota',service:'payments',revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,
+  primary:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[shift.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[actor.id],ambiguity:'earlier'},
+  overrides:[{id:'lead-covers',role:'primary',start:iso(start),end:iso(start+2*hour),member:actor.id}]};
+ ok(await req('/api/paging/schedules',rota));
+ const queueKey=randomBytes(32).toString('hex');ok(await req('/api/sources',{id:'queue-monitor',key:queueKey,scopes:['payments']}));
+ const observe=(eventId,generation,intent='trigger')=>w.request('/api/ingress/queue-monitor',{source:'queue-monitor',eventId,service:'payments',environment:'production',key:'queue',generation,intent,severity:'warning',title:'Queue backlog',observedAt:new Date().toISOString(),evidence:'https://monitor.example.test/queue'},undefined,{authorization:'Bearer '+queueKey});
+ ok(await observe('queue-1','backlog-1'),201);ok(await observe('queue-2','backlog-1'),201);
+ const queueAlert=ok(await req('/api/state')).alerts.find(a=>a.source==='queue-monitor');
+ const declaredIds=[];
+ for(const [person,title,alerts] of [[shift,'Shift responder acknowledges during their primary shift',[queueAlert.id]],[floater,'Floater acknowledges without a schedule slot',[]]]){
+  const declared=ok(await req('/api/command',{type:'declare',service:'payments',severity:'warning',title,summary:'Load attribution',alerts}));declaredIds.push(declared.id);
+  ok(await w.request('/api/command',{type:'transition',incident:declared.id,revision:declared.revision,state:'acknowledged',summary:'Taking it'},person.cookie));
+ }
+ const recovered=ok(await observe('queue-3','backlog-1','recover'),201);ok(await observe('queue-4','backlog-2'),201);
+ const observed=new Date().toISOString(),window=new URLSearchParams({from:iso(start),to:iso(Date.now()+hour),service:'payments',at:observed});
+ const fair=ok(await req('/api/reports/response?'+window)),rangeMs=Date.parse(observed)-start,range=rangeMs/1000,rest=(rangeMs-2*hour)/1000,byId=id=>fair.load.responders.find(r=>r.member===id);
+ assert.equal(fair.cohort.count,5);assert.deepEqual([fair.load.acknowledged,fair.load.unacknowledged],[3,2],'unacknowledged incidents stay unattributed');
+ assert.equal(fair.load.through,observed);assert.deepEqual(fair.load.schedules.map(s=>[s.id,s.revision]),[['payments-rota',1]]);
+ assert.deepEqual([byId(actor.id).primarySeconds,byId(actor.id).backupSeconds],[7200,rest],'an override moves primary hours and the same member is never their own backup');
+ assert.deepEqual([byId(shift.id).primarySeconds,byId(shift.id).backupSeconds],[rest,0]);
+ assert.equal(byId(actor.id).per24PrimaryHours,12);assert.equal(byId(actor.id).loadToCoverage,(1/3)/(7200/(7200+rest)),'shares use the same summed scheduled seconds');assert.equal(byId(shift.id).acknowledgements,1);
+ assert.deepEqual([byId(floater.id).acknowledgements,byId(floater.id).outsideCoverage,byId(floater.id).per24PrimaryHours,byId(floater.id).loadToCoverage],[1,1,null,null],'load without scheduled hours is visible, never a rate');
+ assert.ok([actor.id,shift.id].every(id=>byId(id).outsideCoverage===0));
+ assert.deepEqual(fair.load.services.map(s=>[s.service,s.primarySeconds,s.uncoveredPrimarySeconds,s.incidents]),[['payments',range,0,5]]);
+ const sourceRow=fair.incidents.find(i=>i.id===declaredIds[0]);assert.equal(sourceRow.sourceRecovery.status,'measured');assert.equal(sourceRow.sourceRecovery.sourceEntryId,recovered.id);assert.equal(sourceRow.sourceRecovery.sourceKind,'source-event');
+ assert.equal(fair.incidents.find(i=>i.id===incident.id).sourceRecovery.status,'censored','an active linked alert is a lower bound, never a recovery');
+ assert.equal(fair.incidents.find(i=>i.id===declaredIds[1]).sourceRecovery.status,'unknown','no linked alert means no source observation');
+ assert.deepEqual([fair.aggregates.sourceRecovery.measured,fair.aggregates.sourceRecovery.censored,fair.aggregates.sourceRecovery.unknown],[1,1,3]);
+ assert.deepEqual([fair.noise.alerts,fair.noise.triggers,fair.noise.repeatedAlerts,fair.noise.noisyKeys],[3,5,2,2]);
+ assert.deepEqual(fair.noise.noisy.map(k=>[k.key,k.alerts,k.triggers,k.active]),[['queue',2,3,1],['pool',1,2,1]],'repeat triggers and recurring generations rank the noisiest key first');
+ const csvQuery=new URLSearchParams(window);csvQuery.set('revision',String(fair.revision));csvQuery.set('schedulingRevision',String(fair.load.schedulingRevision));
+ const loadCsv=ok(await req('/api/reports/response.csv?'+csvQuery)),table=loadCsv.trim().split('\r\n').map(line=>[...line.matchAll(/"((?:[^"]|"")*)"/g)].map(m=>m[1].replaceAll('""','"')));
+ const column=name=>table[0].indexOf(name),loadRow=id=>table.find(r=>r[0]==='responder-load'&&r[column('loadSubjectId')]===id);
+ for(const r of fair.load.responders)assert.deepEqual(['scheduledPrimarySeconds','scheduledBackupSeconds','loadAcknowledgements','acknowledgementsOutsideCoverage','loadToCoverage'].map(c=>loadRow(r.member)[column(c)]),
+  [r.primarySeconds,r.backupSeconds,r.acknowledgements,r.outsideCoverage,r.loadToCoverage].map(v=>v===null?'':String(v)),'CSV load rows match the screen');
+ assert.equal(table.find(r=>r[column('incidentId')]===declaredIds[0])[column('sourceRecovery.sourceEntryId')],recovered.id);
+ assert.deepEqual(table.filter(r=>r[0]==='noisy-key').map(r=>[r[column('noiseKey')],r[column('noiseTriggers')]]),[['queue','3'],['pool','2']]);
+ ok(await req('/api/schedules/payments-rota/overrides',{revision:1,override:{id:'floater-covers',role:'primary',start:iso(start+2*hour),end:iso(start+3*hour),member:floater.id}}));
+ ok(await req('/api/reports/response.csv?'+csvQuery),409);
+ const changed=ok(await req('/api/reports/response?'+window));assert.equal(changed.load.schedules[0].revision,2);assert.equal(changed.load.responders.find(r=>r.member===floater.id).primarySeconds,3600,'a schedule change is visible as a new revision, never a silent rewrite');
+ ok(await req('/api/command',{type:'service',id:'search',name:'Search',environment:'production',owner:actor.id,runbook:[],pager:''}));
+ ok(await req('/api/paging/schedules',{...rota,id:'search-rota',name:'Search New York rota',service:'search',timezone:'America/New_York',primary:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[shift.id,floater.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-03-07T09:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}));
+ const dst=ok(await req('/api/reports/response?from=2026-03-07T14:00:00.000Z&to=2026-03-09T13:00:00.000Z&service=search'));
+ assert.deepEqual(dst.load.responders.map(r=>[r.member,r.primarySeconds]),[[floater.id,24*3600],[shift.id,23*3600]],'the spring-forward shift holds 23 scheduled hours');
+ console.log('PASS OC-037 response report keeps unknown cases visible and normalises load by scheduled coverage');
+ // OC-040 receiving OC-037: member and incident erasure cannot silently shrink cohort denominators.
+ const cohortBefore=ok(await req('/api/reports/response?'+window)),oldCsv=new URLSearchParams(window);oldCsv.set('revision',String(cohortBefore.revision));oldCsv.set('schedulingRevision',String(cohortBefore.load.schedulingRevision));
+ ok(await req('/api/erasure/member/'+floater.id,{workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase '+floater.id,identitiesReviewed:true,importedPeople:[]}));
+ const memberErased=ok(await req('/api/reports/response?'+window));assert.equal(memberErased.cohort.count,cohortBefore.cohort.count);assert.equal(memberErased.load.acknowledged,cohortBefore.load.acknowledged);
+ const anonymousResponder=memberErased.load.responders.find(row=>row.member===floater.id);assert.equal(anonymousResponder.name,'Erased member');assert.equal(anonymousResponder.current,false);assert.equal(anonymousResponder.acknowledgements,1);assert.ok(!JSON.stringify(memberErased).includes(floater.name));
+ const selected=declaredIds[0],erasePath='/api/erasure/incident/'+selected,input={workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase '+selected};
+ const archiveBefore=ok(await req('/api/archive'));
+ w.sql("CREATE TRIGGER synthetic_oncall_report_erasure BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='incident.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-421'); END");
+ try{ok(await req(erasePath,input),503);}finally{w.sql('DROP TRIGGER synthetic_oncall_report_erasure');}
+ assert.deepEqual(ok(await req('/api/archive')),archiveBefore,'failed erasure cannot create a denominator case or remove the original');
+ const receipt=ok(await req(erasePath,input));assert.equal(receipt.state,'complete');assert.equal(receipt.stores.oc_erased_report_cases.inserted,1);
+ const erased=ok(await req('/api/reports/response?'+window)),caseRow=erased.incidents.find(row=>row.state==='erased');
+ assert.equal(erased.cohort.count,cohortBefore.cohort.count);assert.equal(erased.cohort.erased,1);assert.equal(erased.load.unknownAcknowledgements,1);assert.equal(erased.load.unacknowledged,cohortBefore.load.unacknowledged);assert.ok(caseRow);assert.equal(caseRow.title,'Erased incident');assert.equal(caseRow.incidentRevision,null);assert.equal(caseRow.href,'');assert.ok(!JSON.stringify(erased).includes(selected));
+ for(const metric of ['mtta','mttr','recovery','sourceRecovery']){assert.equal(caseRow[metric].status,'unknown');assert.equal(caseRow[metric].seconds,null);assert.equal(caseRow[metric].sourceEntryId,null);assert.equal(erased.aggregates[metric].total,cohortBefore.aggregates[metric].total);}
+ const exact=new URLSearchParams(window);exact.set('revision',String(erased.revision));exact.set('schedulingRevision',String(erased.load.schedulingRevision));
+ const erasedCsv=ok(await req('/api/reports/response.csv?'+exact)),rows=erasedCsv.trim().split('\r\n').map(line=>[...line.matchAll(/"((?:[^"]|"")*)"/g)].map(m=>m[1].replaceAll('""','"'))),col=name=>rows[0].indexOf(name);
+ const erasedCsvRow=rows.find(row=>row[col('incidentId')]===caseRow.id);assert.ok(erasedCsvRow);assert.equal(erasedCsvRow[col('cohortCount')],String(erased.cohort.count));assert.equal(erasedCsvRow[col('erasedDeclarations')],'1');assert.equal(erasedCsvRow[col('title')],'Erased incident');assert.equal(erasedCsvRow[col('drilldown')],'');assert.equal(erasedCsvRow[col('incidentRevision')],'');
+ for(const metric of ['mtta','mttr','recovery','sourceRecovery'])assert.equal(erasedCsvRow[col(metric+'.status')],'unknown');
+ assert.ok(!erasedCsv.includes(floater.name));assert.ok(!erasedCsv.includes(selected));ok(await req('/api/reports/response.csv?'+oldCsv),409);
+ const current=ok(await req('/api/archive')),withoutCases={...current,erasedReportCases:[]};ok(await req('/api/restore',{mode:'replace',archive:withoutCases}),409);assert.deepEqual(ok(await req('/api/archive')),current);
+ const restoredCase=await req('/api/restore',{mode:'replace',archive:current});ok(restoredCase);cookie=restoredCase.cookie;
+ await w.stop();await w.start();const durable=ok(await req('/api/reports/response?'+window));assert.equal(durable.cohort.count,erased.cohort.count);assert.equal(durable.incidents.find(row=>row.id===caseRow.id).mtta.status,'unknown');
+ console.log('PASS OC-040 erasure-proof response denominators: erased member load remains explicit; incident becomes anonymous unknown case; audit rollback, matching CSV, changed-workspace refusal, current restore and restart preserve the cohort');
+
+ console.log('Response learning: measured/censored/unknown reports and CSV, relapse drilldown, generated material, human review, prioritized evidence acceptance, authority and archive/restart passed');
+}finally{await w.close();}
+
 }

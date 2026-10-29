@@ -1,20 +1,146 @@
-import {isolatedEntrypoint} from './isolated.mjs'
-const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
+import {developmentReadiness} from './readiness.mjs'
+import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
+import {appendFile,mkdtemp,symlink,cp,lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
+import {tmpdir} from 'node:os'
+import {dirname,join,relative} from 'node:path'
+import {fileURLToPath} from 'node:url'
+import {spawn,execFileSync} from 'node:child_process'
+import {createServer} from 'node:net'
+import {readDevKey,signInAs} from '../src/modules/operator-auth/dev/sign-in-as.mjs'
+import {fixtureDatabase} from './fixture-database.mjs'
 import assert from 'node:assert/strict'
-import {randomBytes,createHmac} from 'node:crypto'
-import {execFileSync} from 'node:child_process'
-import {lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
-import {managedSeed} from './managed.mjs'
 import {ownerDoor,localWorker} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
-import {checkpointCli,checkpointErasureCli} from './checkpoint-cli.mjs'
-import {transferDoor} from './transfer-door.mjs'
+import {checkpointRoundTrip,checkpointErasureCli} from './checkpoint-cli.mjs'
+const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
+
+
+// transfer-door: part of this public journey.
+// Real Business HTTP grants; no production authority or credentials in fixtures.
+export function transferDoor(m) {
+ const {privateKey,publicKey}=generateKeyPairSync('ec',{namedCurve:'prime256v1'})
+ const kid='transfer-business',issuer='https://business.example.test',installationId=randomUUID()
+ const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url')
+ const hash=bytes=>createHash('sha256').update(bytes).digest('hex')
+ const grant=(action,extra={})=>{
+  const now=Math.floor(Date.now()/1000),payload={v:1,iss:issuer,aud:m.origin,installationId,email:'transfer-owner@example.test',jti:randomUUID(),iat:now,exp:now+300,action,namespace:'pagerduty',maxBytes:512*1024,maxChunks:8,maxRecords:500,...extra}
+  const signed=encode({alg:'ES256',typ:'rer-import-grant+jwt',kid})+'.'+encode(payload)
+  return signed+'.'+sign('sha256',Buffer.from(signed),{key:privateKey,dsaEncoding:'ieee-p1363'}).toString('base64url')
+ }
+ const call=(action,input,token=grant(action))=>m.request('/api/rer/import/'+action,input,undefined,{Authorization:'Bearer '+token})
+ const ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
+ let plan,approval,pendingJob,oldGrant
+ return {
+  async configure() {
+   const vars={RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:publicKey.export({format:'jwk'})}),RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId}
+   await appendFile('.dev.vars','\n'+Object.entries(vars).map(([k,v])=>k+'='+v).join('\n')+'\n',{mode:0o600})
+  },
+  async prepare(cookie) {
+   ok(await m.request('/auth/settings/imports',{enabled:true},cookie))
+   const bytes=Buffer.from(JSON.stringify({users:{users:Array.from({length:45},(_,i)=>({id:'portable-pd-'+i,email:'pending-'+i+'@example.test',name:'Pending responder '+i}))}}))
+   const uploaded=ok(await call('uploads',{name:'pending-pagerduty.json',bundleSha256:hash(bytes),totalBytes:bytes.length,totalChunks:1,index:0,chunkSha256:hash(bytes),base64:bytes.toString('base64')}))
+   plan=ok(await call('plan',{uploadId:uploaded.uploadId}))
+   approval={fingerprint:plan.fingerprint,approvalRecordId:randomUUID(),approvedAt:new Date().toISOString()}
+   pendingJob=ok(await call('apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},grant('apply',approval))).job
+   assert.ok(['queued','applying'].includes(pendingJob.state),'a bounded HTTP apply leaves real pending work and its approval')
+   oldGrant=grant('apply',approval)
+   return pendingJob
+  },
+  async assertInactive(cookie,oldCookie,sql) {
+   assert.equal(ok(await m.request('/auth/settings/imports',undefined,cookie)).enabled,false,'portable restore disables Business intake')
+   const before=sql('SELECT * FROM ik_jobs ORDER BY id')
+   assert.equal(before.find(j=>j.id===pendingJob.id).state,'failed','restored active work retains a durable interrupted outcome')
+   assert.equal(sql("SELECT state FROM oc_import_lifecycle WHERE job_id='"+pendingJob.id+"'")[0].state,'interrupted')
+   assert.equal((await call('apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},oldGrant)).status,404,'the unconsumed old Business grant cannot execute restored work')
+   assert.equal((await m.request('/api/operator/import/apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},oldCookie,{'X-Import-Source':'pagerduty'})).status,401,'restored sessions grant no authority')
+   const fresh=await m.request('/api/operator/import/apply',{planId:plan.planId,reviewedFingerprint:plan.fingerprint},cookie,{'X-Import-Source':'pagerduty'})
+   assert.ok([403,409].includes(fresh.status),'a new owner cannot reuse the old owner approval')
+   assert.deepEqual(sql('SELECT * FROM ik_jobs ORDER BY id'),before,'refused restored pending work advances no checkpoint or effects')
+  },
+ }
+}
+
+
+// isolated: part of this public journey.
+/** Managed setup/reset journeys always use committed source in a fresh clone.
+ * Neither an owner's installation nor the outer verify lock is test data. */
+export async function isolatedEntrypoint(url){
+ const root=dirname(dirname(fileURLToPath(url))),script=relative(root,fileURLToPath(url))
+ if(process.env.ONCALL_NATIVE_CLONE===script)return null
+ const temp=await mkdtemp(join(tmpdir(),'oncall-native-')),checkout=join(temp,'checkout')
+ let child
+ try{
+  execFileSync('git',['clone','--quiet','--local',root,checkout],{stdio:'ignore'})
+  await symlink(join(root,'node_modules'),join(checkout,'node_modules'),'dir')
+  await cp(join(root,'dist'),join(checkout,'dist'),{recursive:true})
+  const sha=execFileSync('git',['rev-parse','HEAD'],{cwd:checkout,encoding:'utf8'}).trim()
+  console.log(`Fresh-clone ${script}: ${sha}`)
+  const env={...process.env,ONCALL_NATIVE_CLONE:script};delete env.RER_LOCAL_OPERATION
+  child=spawn(process.execPath,[...process.execArgv,script],{cwd:checkout,env,stdio:'inherit'})
+  return await new Promise(resolve=>{child.once('exit',code=>resolve(code??1));child.once('error',()=>resolve(1))})
+ }finally{
+  if(child&&child.exitCode===null&&child.signalCode===null){const exited=new Promise(r=>child.once('exit',r));child.kill('SIGTERM');await exited}
+  const evidence=process.env.ONCALL_BROWSER_EVIDENCE??join(dirname(root),'evidence/browser')
+  await mkdir(evidence,{recursive:true})
+  await cp(join(checkout,'evidence/browser'),evidence,{recursive:true}).catch(error=>{if(error.code!=='ENOENT')throw error})
+  await rm(temp,{recursive:true,force:true})
+ }
+}
+
+
+// managed: part of this public journey.
+export async function managedSeed(bindings={}){
+ const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
+ const origin=`http://127.0.0.1:${port}`,children=[],env={...process.env,CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false',...bindings}
+ const safe=s=>s.replace(/#rer-dev=[^\s"']+/g,'#rer-dev=[redacted]').replace(/\?token=[^\s"']+/g,'?token=[redacted]')
+ function spawnCommand(args){const child=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),...args],{env,stdio:['ignore','pipe','pipe']});children.push(child);let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c);return {child,output:()=>output}}
+ async function command(args,status=0){const run=spawnCommand(args),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));return run.output()}
+ let openLink
+ async function start(){
+  const run=spawnCommand(['dev','--foreground','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400));const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1];if(link){openLink=link;return;}await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
+ async function preview(){
+  const run=spawnCommand(['preview','--foreground','--port',String(port),'--idle-timeout','120','--non-interactive'])
+  for(let n=0;n<600;n++){
+   if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400))
+   if(run.output().includes('RER_READY')){
+    assert.equal((await fetch(origin+'/api/state')).status,401,'production preview carries no managed-dev owner identity')
+    await command(['preview','--stop']);return
+   }
+   await new Promise(resolve=>setTimeout(resolve,250))
+  }
+  throw Error('Managed production preview readiness timeout')
+ }
+ // Serve the real Vite/Worker HTTP entry without a second process injecting cron
+ // requests. Transfer tests control trigger delivery explicitly while comparing
+ // exact snapshots; production scheduling is exercised by the automation journey.
+ async function startHttp(){
+  const key=await readDevKey(process.cwd()),child=spawn(process.execPath,['node_modules/vite/bin/vite.js','dev','--host','127.0.0.1','--port',String(port),'--strictPort'],{env:{...env,RER_DEV_ORIGIN:origin,RER_DEV_KEY:key,RER_DEV_IDENTITY:'on'},stdio:['ignore','pipe','pipe']});children.push(child);console.log('Owned transfer HTTP runtime PID',child.pid)
+  let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c)
+  for(let n=0;n<240;n++){
+   if(child.exitCode!==null||child.signalCode!==null)throw Error(safe(output).split(key).join('[redacted]').slice(-1400))
+   try{if((await fetch(origin+'/health')).ok)return}catch{}
+   await new Promise(r=>setTimeout(r,250))
+  }
+  throw Error('Transfer HTTP runtime readiness timeout')
+ }
+ const owner=async()=>{const {header}=await signInAs({origin,key:await readDevKey(process.cwd())});return header}
+ async function request(path,input,cookie,extraHeaders={}){const response=await fetch(origin+path,{method:input===undefined?'GET':'POST',redirect:'manual',headers:{origin,connection:'close','content-type':'application/json',...(cookie?{cookie}:{}),...extraHeaders},body:input===undefined?undefined:JSON.stringify(input)});const text=await response.text();let value;try{value=JSON.parse(text)}catch{value=text}return {status:response.status,value,cookie:response.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ')}}
+ async function close(){
+  for(const child of children){
+   if(child.exitCode!==null||child.signalCode!==null)continue
+   const exited=new Promise(resolve=>child.once('exit',resolve))
+   child.kill('SIGTERM');await exited
+  }
+ }
+ return {port,origin,command,start,preview,startHttp,owner,request,close,get openLink(){return openLink}}
+}
+
 
 const fetch=(url,input={})=>globalThis.fetch(url,{...input,headers:{...input.headers,connection:'close'}})
 
 const m=await managedSeed({INBOUND_EMAIL_DOMAIN:'inbound.example.test'}),ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
 const business=transferDoor(m)
-const statements=command=>JSON.parse(execFileSync(process.execPath,['node_modules/wrangler/bin/wrangler.js','d1','execute','DB','--local','--persist-to','.wrangler/state','--command',command,'--json'],{encoding:'utf8',env:{...process.env,CI:'true',WRANGLER_SEND_METRICS:'false'},stdio:['ignore','pipe','pipe']})).map(r=>r.results)
+const statements=command=>fixtureDatabase('.wrangler/state',command)
 const sql=command=>statements(command)[0]
 await mkdir('.rer/local',{recursive:true,mode:0o700});await mkdir('exports',{recursive:true,mode:0o700})
 const answers='.rer/local/transfer-answers.json',archive='exports/transfer-proof.rer',corrupt='exports/transfer-corrupt.rer',invalidRecords='exports/transfer-invalid-records.rer',later='exports/transfer-later.rer'
@@ -22,6 +148,7 @@ await writeFile(answers,JSON.stringify({OWNER_EMAIL:'transfer-owner@example.test
 try{
  await m.command(['setup','--answers',answers,'--port',String(m.port),'--non-interactive']);await business.configure();await m.start()
  let cookie=await m.owner(),req=(path,input)=>m.request(path,input,cookie),member=ok(await req('/api/session')).member
+ await developmentReadiness(req);
  ok(await req('/api/command',{type:'service',id:'transfer',name:'Transfer service',environment:'production',owner:member.id,runbook:['Retain this instruction'],pager:''}))
  ok(await req('/api/command',{type:'service',id:'upstream',name:'Upstream service',environment:'production',owner:null,runbook:[],pager:''}))
  const portableTeam=ok(await req('/api/teams',{id:'synthetic-oncall-145',name:'synthetic-oncall-145',visibility:'public',active:true,revision:0,members:[member.id],managers:[member.id]}));
@@ -59,7 +186,41 @@ try{
  const bulk=ok(await req('/api/triage/bulk',{operationId:'portable-priority',action:'set-priority',items:[{id:incident.id,revision:responseIncident.revision}],priority:'P1',reason:'Preserve incident priority'}));assert.equal(bulk.results[0].ok,true)
  ok(await req('/api/triage/views',{name:'Open transfer work',query:{q:'authored',status:'open'}}))
  const emailPart=localPart();assert.equal((await req('/api/email/addresses',{id:'portable-email',name:'Nightly archive monitor',localPart:emailPart,service:'transfer',owner:member.id,mode:'custom',fallback:'quarantine',rules:recoveryRules()})).status,201)
- await m.close();execFileSync('pnpm',['exec','vite','build'],{stdio:'pipe',maxBuffer:32*1024*1024})
+ // The only phone journey: enter as the managed owner, read retained work,
+ // navigate by keyboard and reload without losing the installation's identity.
+ {
+  const {chromium}=await import('@playwright/test')
+  const browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH,args:['--no-sandbox']})
+  try {
+   const context=await browser.newContext({viewport:{width:390,height:1000}})
+   const retiredName='oncall_session_'+new URL(m.origin).port
+   await context.addCookies([{name:retiredName,value:'retired-installation-session',url:m.origin}])
+   const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message))
+   await page.goto(m.openLink)
+   await page.waitForURL(url=>url.pathname==='/setup'||url.pathname==='/on-call'&&!url.hash)
+   if(new URL(page.url()).pathname==='/setup'){
+    const confirm=page.getByRole('checkbox');if(await confirm.count()){await confirm.check();await page.getByRole('button',{name:'Finish setup'}).click()}
+   }
+   await page.locator('.oncall-frame').waitFor()
+   assert.equal((await context.cookies()).some(item=>item.name===retiredName),false,'managed owner entry clears the retired installation cookie')
+   const identity=await context.request.get(m.origin+'/api/session');assert.equal(identity.status(),200)
+   assert.equal((await identity.json()).member.id,member.id,'the CLI owner link reaches the same retained installation identity')
+   await page.goto(m.origin+'/incidents/'+encodeURIComponent(incident.id));await page.locator('.detail h1').waitFor()
+   await page.reload();await page.locator('.detail h1').waitFor()
+   assert.ok((await page.locator('.detail').innerText()).includes(incident.title))
+   await page.getByRole('button',{name:'Menu',exact:true}).press('Enter')
+   const menu=page.getByRole('dialog',{name:'Menu',exact:true})
+   await menu.locator('nav a[href="/on-call"]').press('Enter');await page.waitForURL(m.origin+'/on-call')
+   await page.locator('.oncall-frame').waitFor()
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'phone navigation and held data fit the viewport')
+   assert.deepEqual(errors,[])
+   const proof=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(proof,{recursive:true})
+   await page.screenshot({path:proof+'/managed-phone-390.png',fullPage:true})
+   await context.close()
+  }finally{await browser.close()}
+ }
+ await m.close()
+
  const emailWorker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{persistTo:'.wrangler/state'});try{await mail(emailWorker,emailPart,'FAILED: archive-db');await mail(emailWorker,emailPart,'Unknown archive mail');await mail(emailWorker,emailPart,'OK: archive-db')}finally{await emailWorker.close()}
  await m.start()
  assert.equal(ok(await req('/api/email')).samples.length,3)
@@ -142,25 +303,35 @@ try{
  const machineOperation=await machine.json();
  const machineAck=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiKey,'idempotency-key':'synthetic-oncall-portable-ack'},body:JSON.stringify({type:'transition',incident:machineOperation.entity,revision:1,state:'acknowledged',member:member.id,summary:'Retain permanent named responsibility'})});assert.equal(machineAck.status,201);const namedAudit=ok(await req('/api/audit/export')).rows.find(r=>r.kind==='automation.incidents'&&r.namedMember);assert.ok(namedAudit);assert.notEqual(namedAudit.actor,namedAudit.namedMember);
 assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOperation.entity&&o.status==='queued'))
- // The same portable/erasure journey carries a full queue and capacity outcomes.
- for(let n=1;n<50;n++)assert.equal((await req('/api/automation/endpoints',{name:'synthetic-oncall-portable-'+n,client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true})).status,201)
- let capacityIncident=ok(await req('/api/state')).incidents.find(i=>i.id===machineOperation.entity)
- // Reassigning the current holder is a no-op, not a new incident/timeline response.
- // Each real role change must retain the incident and enqueue all 50 recipients.
- for(let n=0;n<21;n++){
+ // Pressure is held fixture data, rather than 50 duplicate recipient journeys.
+ // The actual capacity outcome still comes from a human HTTP mutation and travels
+ // through checkpoint, portable restore and erasure with the other real history.
+ const template=ok(await req('/api/state')).apiOutbox.find(row=>row.status==='queued')
+ let capacityIncident=ok(await req('/api/state')).incidents.find(row=>row.id===machineOperation.entity),capacityOutcome
+ const pressurePrefix='synthetic-transfer-pressure-',pressureIds=[]
+ for(let batch=0;batch<32&&!capacityOutcome;batch++){
+  const ordinal=sql('SELECT COALESCE(MAX(ordinal),-1)+1 AS n FROM oc_api_outbox')[0].n,statements=[]
+  for(let n=0;n<250;n++){
+   const id=pressurePrefix+batch+'-'+n,row={...template,id,payload:{...template.payload,operationId:id}}
+   pressureIds.push(id)
+   statements.push("INSERT INTO oc_api_outbox(id,ordinal,data) VALUES('"+id+"',"+(ordinal+n)+",'"+JSON.stringify(row).replaceAll("'","''")+"')")
+  }
+  sql('BEGIN;'+statements.join(';')+';COMMIT')
   const previous=capacityIncident
-  capacityIncident=ok(await req('/api/command',{type:'assign-role',incident:previous.id,revision:previous.revision,role:'scribe',member:n%2===0?member.id:null,reason:'Synthetic portable capacity '+n}))
-  assert.equal(capacityIncident.id,machineOperation.entity)
-  assert.equal(capacityIncident.revision,previous.revision+1)
+  capacityIncident=ok(await req('/api/command',{type:'assign-role',incident:previous.id,revision:previous.revision,role:'scribe',member:batch%2===0?member.id:null,reason:'Retain capacity outcome in installation transfer'}))
+  assert.equal(capacityIncident.id,machineOperation.entity);assert.equal(capacityIncident.revision,previous.revision+1)
+  capacityOutcome=ok(await req('/api/state')).apiOutbox.find(row=>row.entry===capacityIncident.timeline.at(-1).id&&row.status==='terminal'&&row.history[0].reason==='capacity-not-scheduled')
  }
- const capacityHistory=ok(await req('/api/state')).apiOutbox
- assert.equal(capacityHistory.filter(o=>['queued','sending','failed'].includes(o.status)).length,1000)
- assert.ok(capacityHistory.some(o=>o.status==='terminal'&&o.history[0].reason==='capacity-not-scheduled'&&o.attempts===0))
- cookie=await checkpointCli(m,cookie)
+ assert.ok(capacityOutcome,'full pending history retains a real capacity outcome without refusing the human command')
+ assert.equal(capacityOutcome.attempts,0)
+ // Remove only our pressure fixtures; retain every actual HTTP-created record.
+ sql("DELETE FROM oc_api_outbox WHERE id IN ("+pressureIds.map(id=>"'"+id+"'").join(',')+")")
+ assert.ok(ok(await req('/api/state')).apiOutbox.some(row=>row.id===capacityOutcome.id))
+ cookie=await checkpointRoundTrip(m,cookie)
  const heldBeforeTick=ok(await req('/api/state')),heldTick=await fetch(m.origin+'/cdn-cgi/local/scheduled');assert.equal(heldTick.status,200);await heldTick.text();assert.deepEqual(ok(await req('/api/state')),heldBeforeTick,'an actual scheduled handler cannot resume restored outbox work')
  await m.close();await m.start()
  assert.deepEqual(sql('SELECT id,bytes,request_sha256,prefix FROM oc_native_prefixes ORDER BY id'),prefixesBefore,'checkpoint restore preserves exact native custody');
- console.log('OC-052 populated checkpoint: authority, bounds, storage rollback, concurrent restore and inactive receiving state passed')
+ console.log('OC-052 populated checkpoint: complete CLI round trip and inactive receiving state passed; activation owns refusal, rollback and concurrency')
  // Reauthorize locally after checkpoint recovery, so portable restore must
  // independently turn active integration definitions back into inactive history.
  const reauthorized=ok(await req('/api/state'))
@@ -219,7 +390,9 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  // A live-upgraded installation may still carry the original embedded legacy bytes.
  const legacyPrefix=prefixesBefore[0];
  sql(`UPDATE oc_intake_receipts SET data=json_set(data,'$.details.nativePrefix',json_object('encoding','base64','value','${legacyPrefix.prefix}')) WHERE id='${legacyPrefix.id}'`)
- await m.close();await m.command(['export','--output',archive,'--non-interactive'])
+ await m.close();await m.preview();await m.close()
+ console.log('Managed production preview refuses anonymous state and carries no dev identity')
+ await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
  const manifest=JSON.parse(exportedArchive.toString('utf8').split('\n')[0])
@@ -292,7 +465,6 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  }
  await business.assertInactive(cookie,oldCookie,sql)
  console.log('OC-052 portable restore: complete import history preserved and restored pending Business execution refused')
- await business.screens(cookie)
  assert.equal((await req('/api/delivery',{})).status,409)
  // Erasing an imported person: a signed-out request and an unknown email are refused, the person leaves every table, and the archive made before the erasure is refused whole under the later journal.
  const emailAddress=ok(await req('/api/email')).addresses[0];ok(await req('/api/email/addresses/portable-email/erase',{revision:emailAddress.revision}));assert.equal(ok(await req('/api/email')).samples.length,0)

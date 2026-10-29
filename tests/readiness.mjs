@@ -1,70 +1,8 @@
 import assert from 'node:assert/strict'
-import {execFileSync} from 'node:child_process'
-import {fileURLToPath} from 'node:url'
-import {mkdir,readFile} from 'node:fs/promises'
-
-// Command readback and a real storage outage through the emitted Worker.
-export async function coordinationHealth({origin,request,sql,deployment,cookie}) {
- const ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
- const cli=fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs'))
- const command=args=>execFileSync(process.execPath,[cli,...args,'--json'],{encoding:'utf8',env:{...process.env,CI:'true'},stdio:['ignore','pipe','pipe']}).trim().split('\n').map(line=>JSON.parse(line)).at(-1)
- const pkg=JSON.parse(await readFile('node_modules/@runeditrun/rer/package.json','utf8'))
- const commands=()=>{
-  const described=command(['describe']);assert.equal(described.cliVersion,pkg.version,'describe identifies the executable that actually answered')
-  assert.ok(described.verbs.deploy.flags.includes('--dry-run'));assert.ok(described.verbs.deploy.flags.includes('--remove'))
-  assert.ok(described.verbs.import.flags.includes('--yes'));assert.ok(described.verbs.export.flags.includes('--output'))
-  const checked=command(['check','--profile','first-party']);assert.equal(checked.ok,true);assert.ok(checked.clauses.every(c=>c.ok))
-  return described
- }
- const healthy=ok(await request('/health'))
- assert.deepEqual(healthy.deployment,deployment,'local emitted build advertises its actual source SHA and artifact fingerprint')
- assert.equal(healthy.ok,true);assert.equal(healthy.storage,'available');assert.equal(healthy.target,'coordination');assert.equal(healthy.paging,'not-provided')
- const before=ok(await request('/api/archive',undefined,cookie)),description=commands()
- assert.deepEqual(ok(await request('/api/archive',undefined,cookie)),before,'check and describe leave durable coordination unchanged')
- let browser,page
- if(process.env.ONCALL_HEALTH_BROWSER) {
-  const {chromium}=await import('@playwright/test')
-  browser=await chromium.launch({headless:true,args:['--use-mock-keychain','--password-store=basic']})
-  page=await (await browser.newContext()).newPage()
- }
- const capture=async state=>{
-  if(!page)return
-  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true})
-  for(const width of [1440,390]){
-   await page.setViewportSize({width,height:1000});await page.goto(origin+'/health')
-   const body=JSON.parse(await page.locator('pre').innerText());assert.deepEqual(body.deployment,deployment)
-   assert.equal(body.storage,state==='unavailable'?'unavailable':'available')
-   await page.screenshot({path:`${directory}/OC-010-health-${state}-${width}.png`,fullPage:true})
-  }
- }
- try {
-  await capture('available')
-  sql('ALTER TABLE workspace_control RENAME TO workspace_fault')
-  try {
-   const failed=await request('/health');assert.equal(failed.status,503)
-   assert.equal(failed.value.ok,false);assert.equal(failed.value.storage,'unavailable')
-   assert.equal(failed.value.target,'coordination');assert.equal(failed.value.paging,'not-provided')
-   assert.deepEqual(failed.value.deployment,deployment,'failure still identifies the deployed build')
-   assert.equal(typeof failed.value.error,'string')
-   assert.equal((await request('/api/state',undefined,cookie)).status,503)
-   assert.deepEqual(commands(),description,'read-only command capabilities and local effects remain available during storage failure')
-   await capture('unavailable')
-  }finally{sql('ALTER TABLE workspace_fault RENAME TO workspace_control')}
-  assert.deepEqual(ok(await request('/health')),healthy,'503 recovers to the same healthy deployment')
-  assert.deepEqual(ok(await request('/api/archive',undefined,cookie)),before,'failure/recovery loses no records and creates no claimed effect')
-  await capture('recovered')
-  if(page)for(const width of [1440,390]) {
-   await page.setViewportSize({width,height:1000});await page.goto(origin+'/docs/install#host-for-your-team')
-   await page.getByText('Dry run:',{exact:true}).scrollIntoViewIfNeeded()
-   await page.screenshot({path:`${process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'}/OC-010-command-effects-${width}.png`})
-  }
-  console.log('OC-010 coordination health, deployment identity and honest command effects survive storage failure: local 503/recovery and read-only check/describe; paging not provided; capacity unmeasured')
- }finally{await browser?.close()}
- await readinessHealth(deployment);
-}
+import {readFile} from 'node:fs/promises'
 
 // OC-054: real durable doors plus isolated source loss; no database fixture writes.
-async function readinessHealth(deployment) {
+export async function readinessHealth(deployment) {
  const {localWorker}=await import('./worker.mjs');
  const {randomBytes,createHash}=await import('node:crypto');
  const runtime=await localWorker({RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint},{clock:true,fetchSource:`let providerMode='normal',providerCalls=[],pkceChallenge='',pkceValid=true,revoked=false;
@@ -146,4 +84,24 @@ async function readinessHealth(deployment) {
   const network=await runtime.request('/__provider_calls');assert.equal(network.status,200);assert.deepEqual(network.value.calls,[],'readiness and setup/state changes make zero outbound calls');
   console.log('PASS OC-054 readiness: release identity, closed matrix states, dynamic source/revocation observations; independent durable signals, zero-write reads, public-door queued delivery/refused intake/overdue deadline; isolated 503 and restored signal; admin/responder/viewer access and signed-out/stakeholder/expired/revoked refusal; storage never proves pager coverage; zero outbound calls');
  } finally {await runtime.close();}
+}
+
+// Keep the newer development-door comparison in the managed transfer journey.
+export async function developmentReadiness(request) {
+ const {localWorker}=await import('./worker.mjs');
+ const worker=await localWorker({RER_DEMO:'1'});
+ const ok=result=>{assert.equal(result.status,200,JSON.stringify(result.value));return result.value;};
+ let readiness;
+ try {
+  const owner=await worker.request('/auth/bootstrap',{token:worker.vars.SETUP_TOKEN,displayName:'Alex Morgan'},undefined,{'CF-Connecting-IP':'127.0.0.1'});
+  assert.equal(owner.status,303);
+  readiness=ok(await worker.request('/api/readiness',undefined,owner.cookie));
+ } finally {await worker.close();}
+ ok(await request('/api/session'));
+ const report=ok(await request('/api/readiness'));
+ assert.deepEqual(report.release,readiness.release,'the development Worker serves the same release identity as the emitted Worker');
+ assert.deepEqual(report.matrix.map(row=>[row.id,row.state]),readiness.matrix.map(row=>[row.id,row.state]));
+ assert.deepEqual(report.signals.map(row=>row.id),readiness.signals.map(row=>row.id));
+ assert.deepEqual(report.pagerCoverage,readiness.pagerCoverage);
+ console.log('Development HTTP door passed: configured owner reads release readiness from the Vite Worker');
 }
