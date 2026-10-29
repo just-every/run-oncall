@@ -8,6 +8,8 @@
 .service-list-rows {display:grid; gap:8px; margin-top:16px;}
 .service-list-row {display:grid; gap:4px; border:1px solid transparent; border-radius:10px; padding:12px; color:var(--oc-ink); text-decoration:none; overflow-wrap:anywhere;}
 .service-list-row:hover, .service-list-row:focus-visible, .service-list-row.selected {background:var(--oc-paper-deep); border-color:var(--oc-line);}
+.service-list .service-list-row {font-weight:400; text-decoration:none;}
+.service-list .service-list-row:is(:hover,:focus-visible) strong {text-decoration:underline; text-decoration-thickness:1.5px; text-underline-offset:4px;}
 .service-list-row span, .service-meta {color:var(--oc-muted); font-size:14px;}
 .service-create {margin-top:20px;}
 .service-page {min-width:0; display:grid; gap:16px;}
