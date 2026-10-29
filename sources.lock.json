@@ -128,7 +128,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "8d09b1229f1350dcc41caada1ecfc7e2f521d941fa43cae1595ef280298cadfb",
+      "sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
       "executable": false
     },
     ".gitignore": {
@@ -152,7 +152,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "d1eba3d4cc2a61efe3d04bed6f92a579b0f2f9ef16743af7a6c655a47db485b5",
+      "sha256": "31eb4b7fe36de9943bcba3ce2401ce3023f19a1db11cad13b9ffc7126758e51b",
       "executable": false
     },
     "BRAND.md": {
