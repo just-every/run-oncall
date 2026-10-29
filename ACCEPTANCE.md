@@ -8,10 +8,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 10 | 50 | 24 | 84 |
+| Core | 11 | 49 | 24 | 84 |
 | Agent surface | 0 | 0 | 17 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 10 | 50 | 41 | 101 |
+| Full target | 11 | 49 | 41 | 101 |
 
 Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -200,15 +200,15 @@ Core · published · **partial**
 
 #### OC-015 — Strict module archives
 
-Core · published · **partial** · Cites BASE-DATA-001
+Core · published · **done** · Cites BASE-DATA-001
 
 **Requirement.** Strict module archive validation and atomic replacement remain supported. Imported pending historical jobs pause. Scope and local capacity limits remain explicit.
 
 **Acceptance.**
 1. Round-trip the strict module archive through protected HTTP; unknown fields, broken references and an injected SQL failure are rejected atomically, callbacks are retained and pending historical jobs pause.
 
-**Evidence.** `src/family/response-operations/paging-archive.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs`
-**Gap.** No cited test shows the module archive door refusing an unauthenticated or non-admin caller; the round trip, strict refusals, SQL rollback, retained callbacks and paused jobs are asserted.
+**Evidence.** `tests/activation.mjs` pagingHistory: current-admin populated archive round trip; anonymous 401 and active viewer and responder 403 at both archive and restore doors, no disclosure, unchanged module records and both revisions with refusal audit; unknown fields, broken references, retained callbacks, paused pending jobs and injected SQL rollback.
+**Gap.** None.
 
 ### Consistent recovery checkpoint
 
