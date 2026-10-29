@@ -1,12 +1,13 @@
 import {createRequire} from 'node:module'
 import {pathToFileURL} from 'node:url'
 import {readdir} from 'node:fs/promises'
+import {appendFileSync} from 'node:fs'
 import {DatabaseSync} from 'node:sqlite'
 import {dirname,extname,join,resolve} from 'node:path'
 const require=createRequire(import.meta.url),wrangler=require.resolve('wrangler/package.json')
 const {unstable_readConfig,unstable_getMiniflareWorkerOptions}=require('wrangler')
 const {Miniflare,convertV4MiniflareOptions}=await import(pathToFileURL(createRequire(wrangler).resolve('miniflare')))
-const [configFile,persist,port,envFile]=process.argv.slice(2)
+const [configFile,persist,port,envFile,outboundLedger]=process.argv.slice(2)
 const config=unstable_readConfig({config:configFile})
 const {workerOptions,main,externalWorkers}=unstable_getMiniflareWorkerOptions(config,undefined,{envFiles:[envFile]})
 const {modulesRules,...options}=workerOptions
@@ -35,7 +36,11 @@ const held=(await readdir(d1)).filter(name=>name.endsWith('.sqlite')).map(name=>
 // and the scheduled and email trigger doors wrangler dev serves under /cdn-cgi/local/.
 const runtime=new Miniflare(convertV4MiniflareOptions({
  host:'127.0.0.1',port:Number(port),resourcePersistencePath:resolve(persist,'v3'),unsafeTriggerHandlers:true,
- workers:[{...options,name:config.name,modules,modulesRoot:root},...externalWorkers],
+ workers:[{...options,name:config.name,modules,modulesRoot:root,...(outboundLedger?{outboundService:request=>{
+  const url=new URL(request.url)
+  appendFileSync(outboundLedger,JSON.stringify({method:request.method,origin:url.origin,path:url.pathname})+'\n')
+  return new Response('Unexpected outbound request',{status:502})
+ }}:{})},...externalWorkers],
 }))
 const stop=async()=>{await runtime.dispose();for(const db of held)db.close();process.exit(0)}
 process.once('SIGTERM',stop)
