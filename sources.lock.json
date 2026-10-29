@@ -5332,7 +5332,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "9e06f5895315462a9174229d3843cc1ab3a46fe1807c71683578d8820be3f4fc",
+      "sha256": "c1b82996f3ca7dbfc859b0dbcc212063283b1bdf2deebd2e85da7dae429d3fc0",
       "executable": false
     },
     "tsconfig.json": {
