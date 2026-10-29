@@ -1,6 +1,7 @@
 import {createHmac,createHash,randomBytes} from 'node:crypto'
 import assert from 'node:assert/strict'
-import {localWorker} from './worker.mjs'
+import {localWorker,durableSnapshot} from './worker.mjs'
+import {checkpointFixtures} from './checkpoint-cli.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 // routing-native: part of this public journey.
 // Continuation of routing.mjs's real emitted-Worker lifecycle, using its services.
@@ -552,7 +553,7 @@ const {localWorker}=await import('./worker.mjs')
 const {heldWorkspace}=await import('./worker.mjs')
 
 // Real public Worker doors; all monitoring inputs and held records are test data.
-const w=await localWorker();
+const w=await localWorker({}, {outboundLedger:true});
 const ok=(response,status=200)=>{assert.equal(response.status,status,JSON.stringify(response.value));return response.value;};
 let cookie;
 const req=(path,input)=>w.request(path,input,cookie);
@@ -601,13 +602,24 @@ try {
   assert.deepEqual(await archive(),beforeDuplicate,'native duplicate detection excludes internal urgency metadata');
   ok(await send({...firstSignal,severity:'warning'}),409);assert.deepEqual(await archive(),beforeDuplicate);
 
-  const beforeReplay=await archive(),replayAuditBefore=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),replay=ok(await req('/api/replay',{events:[firstSignal]}));
+  // Retain real historical receipts and a held pending deadline while service rules replay.
+  const heldPaging=await checkpointFixtures(w,cookie),pagingBeforeReplay=ok(await req('/api/paging/state'));
+  assert.equal(pagingBeforeReplay.mode,'synthetic-only');assert.ok(pagingBeforeReplay.receipts.length>0);
+  const pending=pagingBeforeReplay.jobs.find(job=>job.id===heldPaging.pending);
+  assert.equal(pending.status,'pending');assert.equal(pending.nextDue,pending.steps[0].deadline);
+  const beforeReplay=await archive(),replayAuditBefore=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),recordsBeforeReplay=durableSnapshot(w),replay=ok(await req('/api/replay',{events:[firstSignal]}));
   assert.deepEqual(replay.decisions[0].historicalUrgency,initial.urgency);
   assert.equal(replay.decisions[0].proposedUrgency.version,severity.version);
   assert.equal(replay.decisions[0].proposedUrgency.urgency,'high');
   assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),replayAuditBefore,'OC-043 service replay writes no permanent audit');
+  assert.deepEqual(durableSnapshot(w),recordsBeforeReplay,'service routing replay preserves every durable record, receipt, pending job, deadline and outbound work item');
+  assert.deepEqual(await w.outboundRequests(),[],'service routing replay issues zero outbound network requests');
   const unordered=ok(await req('/api/replay',{events:[signal('synthetic-oncall-43-z','warning',{observedAt:'2026-10-24T00:00:00Z'}),signal('synthetic-oncall-43-b','warning',{observedAt:'2026-10-23T00:00:00Z'}),signal('synthetic-oncall-43-a','warning',{observedAt:'2026-10-23T00:00:00Z'})]}));
+  assert.deepEqual(durableSnapshot(w),recordsBeforeReplay,'replaying proposed events creates no durable state or timer');
+  assert.deepEqual(ok(await req('/api/paging/state')),pagingBeforeReplay,'service replay retains the synthetic label and populated delivery history');
+  assert.deepEqual(await w.outboundRequests(),[],'ordered proposed routing decisions issue zero outbound requests');
   assert.deepEqual(unordered.decisions.map(row=>row.eventId),['synthetic-oncall-43-a','synthetic-oncall-43-b','synthetic-oncall-43-z']);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),replayAuditBefore);assert.deepEqual(await archive(),beforeReplay);
+  console.log('PASS OC-014 service routing preview isolation: retained and proposed decisions preserve all durable rows, synthetic receipts, jobs, deadlines and outbound work; zero outbound network requests');
   const edited=ok(await req('/api/command',{type:'service',id:'checkout',name:'Checkout renamed',environment:'production',owner:actor.id,runbook:['Inspect the updated dashboard'],pager:''}));
   assert.deepEqual(edited.urgencyRules,[constant,severity],'ordinary service edits preserve published policy history');
   assert.deepEqual((await state()).events.find(e=>e.id===firstReceipt.id),initial);

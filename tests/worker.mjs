@@ -82,10 +82,18 @@ export function heldWorkspace() {
 }
 
 
-export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource=""} = {}) {
+// Compare retained rows directly: exporting some categories itself appends audit.
+export function durableSnapshot(w) {
+ const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").map(row=>row.name)
+ return Object.fromEntries(w.statements(names.map(name=>'SELECT * FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>[names[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
+}
+
+export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource="",outboundLedger=false} = {}) {
  const dir=await mkdtemp(join(tmpdir(),'oncall-flow-')),socket=createServer()
  await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
  const persist=persistTo??dir;
+ const ledger=outboundLedger?join(dir,'outbound.jsonl'):'';
+ if(ledger)await writeFile(ledger,'',{mode:0o600});
  const origin=`http://127.0.0.1:${port}`,secret=()=>randomBytes(32).toString('hex')
  const vars={AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'owner@example.test',SESSION_SECRET:secret(),SETUP_TOKEN:secret(),MAIL_FROM:'auth@localhost.test',RER_DEV_KEY:secret(),...bindings}
  await writeFile(join(dir,'local.env'),Object.entries(vars).map(([k,v])=>`${k}=${v}`).join('\n'),{mode:0o600})
@@ -112,7 +120,7 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
  const stop=async()=>{if(worker&&worker.exitCode===null){worker.kill('SIGTERM');await new Promise(r=>worker.once('exit',r))}}
  const start=async()=>{
   diagnostics=workerDiagnostics({...env,...vars})
-  worker=spawn(process.execPath,['tests/worker-server.mjs',config,persist,String(port),join(dir,'local.env')],{env,stdio:['ignore','pipe','pipe']})
+  worker=spawn(process.execPath,['tests/worker-server.mjs',config,persist,String(port),join(dir,'local.env'),ledger],{env,stdio:['ignore','pipe','pipe']})
   let startupError;worker.once('error',error=>{startupError=error;diagnostics.report('startup process error')})
   diagnostics.attach(worker.stdout,'stdout');diagnostics.attach(worker.stderr,'stderr');for(const stream of [worker.stdout,worker.stderr])stream.on('data',chunk=>{logLines+=chunk.toString()})
   for(let n=0;n<240;n++){if(startupError)throw Error('Worker process could not start');if(worker.exitCode!==null){diagnostics.report('startup exited');throw Error('Worker exited before readiness')};try{if((await fetch(origin+'/health')).ok)return}catch{}await new Promise(r=>setTimeout(r,250))}
@@ -148,7 +156,7 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
  failureHandler=()=>diagnostics.report('test failure')
  process.once('uncaughtExceptionMonitor',failureHandler)
  process.once('exit',code=>{if(code!==0)failureHandler()})
- return {origin,vars,sql,statements,request,send,start,stop,logs:()=>logLines,time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
+ return {origin,vars,sql,statements,request,send,start,stop,logs:()=>logLines,outboundRequests:async()=>{if(!ledger)throw Error('Outbound ledger not enabled');return (await readFile(ledger,'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line));},time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
 }
 
 // The move-in screen's transport: the owner-session import door, one namespace per vendor. preview uploads the
