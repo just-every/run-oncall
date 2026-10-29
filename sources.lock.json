@@ -188,7 +188,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "8ce68f13148c322fb0ce38d8eba64f178c4ac8b010856c5d66c228f9517160b7",
+      "sha256": "9dabc4ef1511d30e157158c474a2be235da5d69cc95f027b90fce0febe38e2af",
       "executable": false
     },
     "docs/audit.md": {
@@ -5520,7 +5520,7 @@
       "executable": false
     },
     "tests/agent-door.mjs": {
-      "sha256": "bb5500c9b9822983153b1abeac95023d871350d7a761cdbf676199066cb2dd40",
+      "sha256": "5038593f1625f2410a46ed0deb83d05603b59f601bc556e3fae9273f4ef8f60a",
       "executable": false
     },
     "tests/agent-policy-fixture.mjs": {
@@ -5684,7 +5684,7 @@
       "executable": false
     },
     "tests/oncall-agent-schedule-replay.mjs": {
-      "sha256": "195f48249383d0c57620f622b603edc43b9692bb7885ddeacc6c30c1df8092de",
+      "sha256": "3edaf7e1d6f5b7d23ea4117862d36b3df6d8e173f8f5a5e96ff252f91f336960",
       "executable": false
     },
     "tests/oncall-provider-edge.mjs": {

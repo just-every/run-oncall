@@ -33,6 +33,8 @@ Minimal response events contain operation, type, service, incident, revision, st
 
 Provider-spend caps are not enforced by this preview. Standalone cap settings refuse; a signed Business document containing caps reports `not_enforced`. This installation has no money-moving tool. Action editing, invitations, private-team enforcement, remediation executors, SMS, voice, push paging and independent standby are not built. Password creation, secret rotation/reveal, human review acceptance, imports and installation operations retain their native person or dedicated doors.
 
+Completed team-manager edits can still return `revision_conflict` on retry, and a completed access widening can be reported with its current narrowed direction. An approved erasure can return `not_found` on retry after it deleted the target. Inspect the saved approval and native outcome before preparing another operation. These shared replay limitations retain their failing conformance assertions; they do not mean the approved effect did not run.
+
 ## Declaration and proof limits
 
 The CORE declaration does not prove optional multi-sponsor, mail-edge, resource-refresh, timed, queued, dual-host or owner-native administration families. Built-in `oncall.events.list` remains described for a future events declaration and is withheld from this installation’s tool list. Native tools and their complete security assertions still run.

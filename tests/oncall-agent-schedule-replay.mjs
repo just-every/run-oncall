@@ -46,6 +46,8 @@ export async function scheduleReplay(runtime) {
  // A cached approval never supplies native role authority after demotion.
  const owner=(await (await http('/api/workspace')).json()).member,password=randomBytes(32).toString('hex');
  const other=await (await http('/api/members',{name:'Receipt authority administrator',role:'admin',password})).json();
+ const changedWorkspace=await tool(last.name,last.args);
+ assert.equal(code(changedWorkspace),'revision_conflict');assert.equal(changedWorkspace.result.structuredContent,undefined);
  const login=await http('/api/login',{name:other.name,password});
  assert.equal(login.status,200);
  const cookie=login.headers.getSetCookie().map(value=>value.split(';',1)[0]).join('; ');await login.body?.cancel();
