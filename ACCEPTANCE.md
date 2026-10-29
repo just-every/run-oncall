@@ -8,10 +8,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 10 | 50 | 24 | 84 |
+| Core | 11 | 49 | 24 | 84 |
 | Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 10 | 50 | 28 | 88 |
+| Full target | 11 | 49 | 28 | 88 |
 
 Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -46,7 +46,7 @@ Core · published · **partial**
 
 #### OC-003 — Roles and authority
 
-Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-004
+Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-004
 
 **Requirement.** Incident changes require an active authorized human session or an explicitly scoped OC-053 service-account capability (RL-2). A machine is attributed as a service account and never gains human-session, member-management or human-review authority. Viewer reads; responder coordinates; admin manages services, policies, members and import. All active members see all workspace incident data, and admin, responder and viewer permissions are separate from incident-commander attribution. Ingest credentials grant no read or human authority. Bearer and signed intake return only `duplicate`, the stored event `id`, the source `eventId`, `service`, `observedAt` and `acceptedAt` (201 accepted; 200 deduplicated). Routing decisions, snapshots and alert identities stay behind authorized read and export doors; scoped OC-053 reads disclose only granted service records, and archive and export authority remains session-protected. The status-only stakeholder role, with no incident, alert, runbook or archive access, is specified and tracked in OC-061.
 
@@ -54,8 +54,8 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-A
 1. Anonymous, expired, revoked, viewer, responder and admin sessions each get their role's outcome on reads, commands, sources and archives, and a real HTTP mutation held open while its author is revoked or downgraded publishes nothing.
 2. Minimal intake receipts disclose no private routing data.
 
-**Evidence.** `src/api.ts`; `src/auth.server.ts`; `tests/runtime.mjs`; `tests/runtime.mjs`
-**Gap.** A responder session's permitted coordination and its refusal of administrator actions are not asserted in the cited tests (`tests/member-coordination-browser.mjs` shows a responder acknowledging and noting); anonymous, expired, revoked, viewer and admin outcomes, held downgrade and revoke mutations and minimal receipts are asserted. Workspace-wide roles are implemented; team isolation and federation are separate targets in OC-023/039.
+**Evidence.** `tests/runtime.mjs` — coordinationJourney: session roles, responder workspace reads, attributed acknowledgment and note, administrator refusals, held downgrade and revoke mutations, minimal bearer and signed intake receipts; `tests/member-coordination-browser.mjs` — responder coordinates and reloads attributed history.
+**Gap.** None.
 
 #### OC-004 — Incident state transitions
 

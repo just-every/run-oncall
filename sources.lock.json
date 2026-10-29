@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "a44bae4aae36d7a2e3d5e2da4e080d3c92eb11f226f6e7322b23680f43e6f982"
+    "sha256": "3f7b56f3ae1e70588fb35c49e75b639c2360ceed550182b9caf8adc33021abb8"
   },
   "components": [
     {
@@ -140,7 +140,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cf17502b9cc442fd2ebd2edfa6be5c422a67aea20be3bff7cc676d0bdb0167dd",
+      "sha256": "dd923e735b4d10f7385ce3026dad005cb836a4b22ceed5eb938161590eb8b24e",
       "executable": false
     },
     "AGENTS.md": {
@@ -164,7 +164,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a2132879f852a86ebdaae574c0d86813162730737552e606b89a666ae15f6aa5",
+      "sha256": "4f9eb8724eaa7cc059808f07b8f5442d04800ba238b45b0916d143737152e1dd",
       "executable": false
     },
     "DEMO.md": {
@@ -4984,7 +4984,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "5e11fc77a5d175b3d859017f54eab22ac3b2e4cba8261e1c68ed1e1f6f863e3e",
+      "sha256": "5f0b6fa53263820cf5b93ecef7f5eaed8ccae9f7cb14a0f6f372093528d1b331",
       "executable": false
     },
     "tests/transfer.mjs": {
