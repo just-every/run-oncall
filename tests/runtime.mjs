@@ -79,6 +79,8 @@ async function start() {
       "--var",
       "SESSION_SECRET:"+sessionSecret,
       "--var",
+      "AUTH_ORIGIN:"+origin,
+      "--var",
       "RER_DEPLOY_SOURCE:"+deployment.sourceSha,
       "--var",
       "RER_DEPLOY_FINGERPRINT:"+deployment.fingerprint,

@@ -13,8 +13,16 @@ export type IncidentProps = {
   command: (data: any) => Promise<any>;
   mutate: (data: any) => Promise<any>;
 };
-export const memberName = (state: State, id: string | null | undefined) =>
-  state.members.find(member => member.id === id)?.name ?? (id ? id.startsWith('api-') ? 'Service account' : 'Erased member' : 'Unassigned');
+export const memberName = (state: State, id: string | null | undefined) => {
+  if(id?.startsWith('source:'))return `Source: ${id.slice('source:'.length)}`;
+  if(id==='system:incident-deadlines')return 'Deadline scheduler';
+  const member=state.members.find(member=>member.id===id);
+  if(member)return member.name;
+  const client=state.apiClients?.find(client=>client.id===id);
+  if(client)return `${client.name} for ${state.members.find(member=>member.id===client.owner)?.name??'Erased member'}`;
+  const attributed=state.incidents.flatMap(incident=>incident.timeline).find(entry=>entry.actor===id&&entry.metadata?.agent)?.metadata?.agent;
+  return attributed?.label??(id?id.startsWith('api-')?'Service account':'Erased member':'Unassigned');
+};
 
 export function timelineText(entry: Entry, state: State) {
   // Only format generated workflow prefixes. Authored notes and reasons remain

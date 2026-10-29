@@ -3,7 +3,7 @@ import {spawnSync} from 'node:child_process'
 // Every lane builds the exact checkout. rer verify keeps its outer hosted and
 // hydration checks; CI runs that public command on the hosted lane.
 const suites={
- hosted:['tests/hosted.mjs'],
+ hosted:['tests/hosted.mjs','tests/agent-door.mjs'],
  runtime:['tests/runtime.mjs'],
  triage:['tests/triage.mjs'],
  changes:['tests/changes.mjs'],
