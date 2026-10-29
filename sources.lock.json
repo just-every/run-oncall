@@ -5532,7 +5532,7 @@
       "executable": false
     },
     "tests/agent-door.mjs": {
-      "sha256": "42325fef266e21a4fa5d9f4aa826b9dd1376249db10182435b9d974758534a20",
+      "sha256": "230595b41061c7d1251ed2be59978733230113153a408c1aca8066c32247001b",
       "executable": false
     },
     "tests/agent-policy-fixture.mjs": {

@@ -9,8 +9,9 @@ import { checkAgentDoor } from '../node_modules/@runeditrun/rer/cli/agent-door.m
 // BASE-AGENT-006.2.held.approved.team-manager,
 // BASE-AGENT-007.5.receipt.team-manager, BASE-AGENT-013.4.held.team-manager.
 // Base pipeline.ts:121 still calls the classifier on completed replay. The
-// seed management-tools.ts current() invokes teams/model.ts:50 with the
-// consumed native revision. This is core-by-us, not an unshipped replay-4 fix.
+// seed management-tools.ts:90-91 calls current(); its editTeam call at :78
+// reaches teams/model.ts:50 with the consumed native revision. This is
+// core-by-us and needs scope beyond the erase-only brief; replay-4 is shipped.
 // All conformance points remain real assertions; pending notes skip nothing.
 const report = line => {
   // Keep the complete assertion count even when the parent command bounds logs.
