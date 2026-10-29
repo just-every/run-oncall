@@ -218,6 +218,10 @@
       "reason": "Font licence and fallback notes kept beside the font files"
     },
     {
+      "source": "scripts/edition-authoring/README.md",
+      "reason": "Vendored edition-authoring tool documentation for maintainers"
+    },
+    {
       "source": "src/base/hydration/README.md",
       "reason": "Base runtime integration guidance for source maintainers."
     },
