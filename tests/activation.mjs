@@ -409,15 +409,22 @@ try {
  record('OC-068 permissions: viewer and stakeholder create/request attempts explain refusal and create nothing; paging remains OFF')
 
  const refusedPagingBefore=ok(await req('/api/paging/state')),refusedWorkspaceBefore=ok(await req('/api/state')),beforeRefusedPaging=await auditExport(),priorPagingAuditIds=new Set(beforeRefusedPaging.map(row=>row.id))
+ assert.equal(ok(await req('/api/workspace')).demo,false,'normal installation is not a demo')
  const pagingDoors=['/api/delivery','/api/paging/jobs','/api/paging/tick','/api/paging/callbacks','/api/paging/jobs/old/resume']
- for(const path of pagingDoors)ok(await req(path,{}),409)
+ for(const path of pagingDoors){
+  const refusal=ok(await req(path,{}),409)
+  assert.match(refusal.error,/paging is off/i,`${path} explains the paging hold`)
+  assert.match(refusal.error,/keep your existing pager/i,`${path} keeps the existing pager authoritative`)
+  assert.match(refusal.error,/requires an independent standby/i,`${path} explains the standby prerequisite`)
+  assert.match(refusal.error,/passed drill with real phones/i,`${path} explains the real-phone prerequisite`)
+ }
  assert.deepEqual(ok(await req('/api/paging/state')),refusedPagingBefore,'delivery refusals leave complete paging state unchanged')
  assert.deepEqual(ok(await req('/api/state')),refusedWorkspaceBefore,'delivery refusals leave complete workspace state unchanged')
  const pagingRefusals=(await auditExport()).filter(row=>!priorPagingAuditIds.has(row.id)&&row.outcome==='refused')
  assert.ok(pagingRefusals.length>=pagingDoors.length,'every refused paging door leaves an attributable refusal entry')
  for(const row of pagingRefusals)assert.deepEqual([row.beforeRevision,row.workspaceBefore,row.pagingBefore,row.handoffBefore],[row.afterRevision,row.workspaceAfter,row.pagingAfter,row.handoffAfter],'a paging refusal advances no state or mutation revision')
  assert.equal(w.sql('SELECT COUNT(*) AS n FROM paging_receipts')[0].n,0)
- record('OC-012/013/041: every delivery/timer door refused, its audit retained unchanged revisions and no receipt was created')
+ record('OC-012/013/041: every paging door explained paging OFF, the existing pager, standby and real-phone prerequisites; its audit retained unchanged revisions and no receipt was created')
  const reader=await w.request('/api/login',{name:'Viewer',password:'synthetic-local-testing-password'});ok(reader)
  ok(await w.request('/api/audit/export',undefined,reader.cookie),403)
  const sources={}
@@ -1028,6 +1035,10 @@ try {
   const owner = await worker.request('/auth/bootstrap', { token: worker.vars.SETUP_TOKEN, displayName: 'Alex Morgan' }, undefined, { 'CF-Connecting-IP': '127.0.0.1' })
   ok(owner, 303)
   const req = (path, input) => worker.request(path, input, owner.cookie, { 'CF-Connecting-IP': '127.0.0.1' })
+  assert.equal(ok(await req('/api/workspace')).demo, true, 'simulated outcomes belong to an explicitly identified demo workspace')
+  const document = ok(await req('/incidents'))
+  assert.match(document, /<title\b[^>]*>[^<]*\bDemo<\/title>/i, 'the emitted page title identifies the demo')
+  assert.match(document, /<style\b[^>]*data-rer-label="Demo"[^>]*>[^<]*content:\s*" Demo"/, 'the emitted name decoration visibly identifies the demo')
   const state = ok(await req('/api/state'))
   const incident = state.incidents.find(item => item.state !== 'resolved')
   ok(await req('/api/command', { type: 'transition', incident: incident.id, revision: incident.revision,
