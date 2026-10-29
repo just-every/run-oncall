@@ -43,8 +43,10 @@ Owner direction dated 16 October 2026 lifts the hosted Hold for release 1 coordi
 CONTRACT.md is the only acceptance text and status source, written to the RER contract standard. ACCEPTANCE.md, docs/CLAIMS.md and the Status summary rows are generated from it; never edit them by hand. After any CONTRACT.md change, run the generator, then `node src/base/contract-docs.mjs check`, and regenerate the source lock last. Landers regenerate after a rebase:
 
 Lander-Regenerate: node src/base/contract-docs.mjs write
+Lander-Regenerate: node src/base/contract-docs.mjs check
+Lander-Regenerate: node scripts/edition-authoring/cli.mjs lock
 
-Regenerate the source lock from this checkout root with the installed package: `node node_modules/@runeditrun/rer/edition-authoring/cli.mjs lock`, then `node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check`. Run `lock` again after every rebase or merge; never hand-merge sources.lock.json.
+This checkout vendors edition-authoring 1.1.0 in `scripts/edition-authoring/`; regenerate the source lock from the checkout root with `node scripts/edition-authoring/cli.mjs lock`, then run the same tool's `check`.
 
 ## Upstream module documentation
 

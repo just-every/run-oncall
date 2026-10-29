@@ -84,8 +84,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Check the generated contract documents
         run: node src/base/contract-docs.mjs check
-      - name: Check edition source lock with the installed package
-        run: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
+      - name: Check edition source lock with the vendored authoring tool
+        run: node scripts/edition-authoring/cli.mjs check
       - run: pnpm run deps
       - name: Check, build and typecheck the exact checkout once
         run: node scripts/verify-oncall-build.mjs
@@ -154,8 +154,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Check the generated contract documents
         run: node src/base/contract-docs.mjs check
-      - name: Check edition source lock with the installed package
-        run: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
+      - name: Check edition source lock with the vendored authoring tool
+        run: node scripts/edition-authoring/cli.mjs check
       - run: pnpm run deps
       - name: Install and probe Chromium before system dependencies
         if: matrix.browser
@@ -222,8 +222,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Check the generated contract documents
         run: node src/base/contract-docs.mjs check
-      - name: Check edition source lock with the installed package
-        run: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
+      - name: Check edition source lock with the vendored authoring tool
+        run: node scripts/edition-authoring/cli.mjs check
       - run: pnpm run deps
       - name: Run the changed files' reviewed readers and build the run site
         env:

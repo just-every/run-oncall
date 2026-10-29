@@ -213,6 +213,10 @@
       "reason": "Font licence and fallback notes kept beside the font files"
     },
     {
+      "source": "scripts/edition-authoring/README.md",
+      "reason": "Vendored edition-authoring tool documentation for maintainers"
+    },
+    {
       "source": "src/base/hydration/README.md",
       "reason": "Base runtime integration guidance for source maintainers."
     },
@@ -359,14 +363,6 @@
     {
       "source": "docs/contract/acceptance-before-cleanup.md",
       "reason": "Historical hand-written ACCEPTANCE.md before the 28 October 2026 contract cleanup"
-    },
-    {
-      "source": "scripts/edition-authoring/vendor/babel-parser/README.md",
-      "reason": "Upstream parser documentation shipped with the Base authoring tool, for maintainers."
-    },
-    {
-      "source": "scripts/edition-authoring/vendor/yaml/README.md",
-      "reason": "Upstream YAML documentation shipped with the Base authoring tool, for maintainers."
     }
   ]
 }

@@ -28,6 +28,32 @@ export async function pagingHistory(w,cookie) {
  const prior=ok(await req('/api/paging/archive')),archive={...prior,jobs,receipts,callbacks}
  const restored=ok(await req('/api/paging/restore',{mode:'replace',archive}))
  for(const job of restored.jobs){assert.equal(job.status,'paused');assert.deepEqual(job.history.slice(0,-1),jobs.find(j=>j.id===job.id).history)}
+ // Checkpoint recovery removes other passwords; reauthorize the existing fixtures through the admin door.
+ const callers=[{role:'anonymous',cookie:undefined,status:401}]
+ for(const [name,role] of [['Vic','viewer'],['Rhea','responder']]){
+  const member=state.members.find(member=>member.name===name);assert.ok(member)
+  ok(await req('/api/password',{member:member.id,password:'synthetic-local-testing-password'}))
+  const login=await w.request('/api/login',{name,password:'synthetic-local-testing-password'});ok(login)
+  const current=ok(await w.request('/api/session',undefined,login.cookie)).member
+  assert.equal(current.role,role);assert.equal(current.active,true)
+  callers.push({role,cookie:login.cookie,status:403})
+ }
+ const retainedWorkspace=ok(await req('/api/state')),retainedPaging=ok(await req('/api/paging/state'))
+ const moduleRows=()=>w.statements(['paging_control','paging_schedules','paging_policies','paging_jobs','paging_receipts','paging_callbacks'].map(table=>`SELECT * FROM ${table} ORDER BY rowid`).join(';'))
+ const retainedRows=moduleRows()
+ for(const caller of callers)for(const [path,input] of [['/api/paging/archive',undefined],['/api/paging/restore',{mode:'replace',archive}]]){
+  const ordinal=w.sql('SELECT COALESCE(MAX(ordinal),0) AS ordinal FROM oc_admin_audit')[0].ordinal
+  const refused=ok(await w.request(path,input,caller.cookie),caller.status)
+  assert.deepEqual(Object.keys(refused),['error'],`${caller.role} refusal discloses no archive or restored records`)
+  assert.equal(typeof refused.error,'string')
+  assert.deepEqual(moduleRows(),retainedRows,`${caller.role} ${path} preserves every module record and revision`)
+  assert.deepEqual(ok(await req('/api/state')),retainedWorkspace,'refused module access preserves coordination records and revision')
+  assert.deepEqual(ok(await req('/api/paging/state')),retainedPaging,'refused module access preserves the complete paging snapshot')
+  if(caller.cookie){
+   const audit=w.sql(`SELECT kind,outcome,workspace_before,workspace_after,paging_before,paging_after FROM oc_admin_audit WHERE ordinal>${ordinal}`)
+   assert.deepEqual(audit,[{kind:path.endsWith('/archive')?'paging.archive':'paging.restore',outcome:'refused',workspace_before:retainedWorkspace.revision,workspace_after:retainedWorkspace.revision,paging_before:retainedPaging.revision,paging_after:retainedPaging.revision}],'authenticated refusals retain their audit without a product write')
+  }
+ }
  const beforeIncident=ok(await req('/api/state')).incidents.find(i=>i.id===incident.id)
  for(const [id,action] of [['historical-ack','ack'],['historical-cancel','cancel']]){
   const old=restored.jobs.find(j=>j.id===id),at=Math.max(Date.now(),old.lastEvaluatedAt)
@@ -789,7 +815,7 @@ try {
  }
  const last=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(last)
  await pagingHistory(w,last.cookie)
- record('OC-013/015: restored historical acknowledgement/cancellation append attribution without recovery; strict module references, retained callbacks and SQL rollback passed')
+ record('OC-013 and OC-015: restored historical acknowledgement and cancellation append attribution without recovery; populated module archive refuses anonymous, viewer and responder access without disclosure or product writes; strict references, retained callbacks and SQL rollback passed')
  { // OC-040 change-event erasure: public admin door, atomic counts and restore fences.
  let erasureCookie=last.cookie;
  const erasureReq=(path,input)=>w.request(path,input,erasureCookie);
