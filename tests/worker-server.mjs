@@ -3,7 +3,6 @@ import {pathToFileURL} from 'node:url'
 import {readdir} from 'node:fs/promises'
 import {DatabaseSync} from 'node:sqlite'
 import {dirname,extname,join,resolve} from 'node:path'
-
 const require=createRequire(import.meta.url),wrangler=require.resolve('wrangler/package.json')
 const {unstable_readConfig,unstable_getMiniflareWorkerOptions}=require('wrangler')
 const {Miniflare,convertV4MiniflareOptions}=await import(pathToFileURL(createRequire(wrangler).resolve('miniflare')))

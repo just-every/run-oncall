@@ -69,6 +69,8 @@ Focused verification: build the emitted Worker with `rer build`, then run
 persistence, preview, now/next and the authenticated calendar feed. The broader
 DST, unavailable-slot and retained-history requirements above remain acceptance
 requirements; a test command or successful build alone does not prove them.
-`node tests/activation-browser.mjs` checks schedule authoring, overrides and
-coverage previews through native keyboard controls at desktop and phone widths.
-Its fresh clone uses committed HEAD, so commit changes before running it.
+`node tests/product-browser.mjs` checks schedule authoring, overrides and
+coverage previews through native keyboard controls at 1440.
+`node tests/transfer.mjs` keeps the 390-wide managed-owner smoke and the
+installation export/restore flow. Its fresh clone uses committed HEAD, so commit
+changes before running it.
