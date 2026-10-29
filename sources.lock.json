@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cf17502b9cc442fd2ebd2edfa6be5c422a67aea20be3bff7cc676d0bdb0167dd",
+      "sha256": "e5c23da2d2c4f810a4757afda09e305a2319004338e4de772072bdce124e80b7",
       "executable": false
     },
     "AGENTS.md": {
@@ -152,7 +152,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "4a5462c4920fb716e6b7cdbb877f723dc2abf0a5dba3d0a3ec0d5adb690e19db",
+      "sha256": "d1eba3d4cc2a61efe3d04bed6f92a579b0f2f9ef16743af7a6c655a47db485b5",
       "executable": false
     },
     "BRAND.md": {
@@ -168,7 +168,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a2132879f852a86ebdaae574c0d86813162730737552e606b89a666ae15f6aa5",
+      "sha256": "b306b1ff28683e2836c5a0b8e67f3241a7e6a75795cde5ca49708852e02bb1a3",
       "executable": false
     },
     "DEMO.md": {
@@ -200,7 +200,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "8755084b53df268a49a32b36a634acc040f765d037be24071de09f79a3173ea0",
+      "sha256": "9559c66515694f8cb94cfaba6139caa7962b4501fc01d7a42d88d1d9805d0be6",
       "executable": false
     },
     "docs/compatible-intake.md": {
@@ -808,7 +808,7 @@
       "executable": false
     },
     "scripts/delivery/base/cli.mjs": {
-      "sha256": "5d60954f6b03216613d17ec0d19464c339ce3a8a441c7972bf3f80ceea4f7ad5",
+      "sha256": "85cd5d5fb7f9a002f5dd44ace279702834823794cbd4a24ed9f1bdb5d1ad0f23",
       "executable": false
     },
     "scripts/delivery/base/declarations.mjs": {
@@ -836,7 +836,7 @@
       "executable": false
     },
     "scripts/delivery/base/mail.mjs": {
-      "sha256": "2323205c7cbc1aea81ec85509d597df2e486abfc9443981ceaee04950db913a4",
+      "sha256": "fbe18b3678e88db8f98d760d72d39f4a94552c4685e3b8ce27e15d761ed6a981",
       "executable": false
     },
     "scripts/delivery/base/migrations.mjs": {
@@ -892,7 +892,7 @@
       "executable": false
     },
     "scripts/delivery/base/spec.mjs": {
-      "sha256": "65179ca5222485513260e8d58aaae6740ae6fe1b27065e96f0d95d197fc6d3f0",
+      "sha256": "8096a77005cfbed5c620ab52a5eb6fe77f579927c5e2a867387e9063553fbcd2",
       "executable": false
     },
     "scripts/delivery/base/sql-statements.mjs": {
@@ -912,15 +912,15 @@
       "executable": false
     },
     "scripts/edition-authoring/archive-source.mjs": {
-      "sha256": "073b0b6515e5df412065cba7ba82717a9fc35f794cfcaf4bcfd796d70320f8b5",
+      "sha256": "c59a6a97abfdf80b2874a461ba7800e8604a3141db4594a584d6a0cfedac5f46",
       "executable": false
     },
     "scripts/edition-authoring/base-acknowledgements.mjs": {
-      "sha256": "fd486d607c019f2ff162830149ef717063bcae9ba995ec7f18f14fd3f2cb4b32",
+      "sha256": "ff1fa5d6ba32b519387581eab82842c1bfff71cf053050293cf133e3be3d3f79",
       "executable": false
     },
     "scripts/edition-authoring/base-copies.mjs": {
-      "sha256": "97348449bd9a4d39d70d898963f677c184e3afdbb0a42f7ad140bb8ead96be99",
+      "sha256": "d1b005d4dd096488e7d4ddf94ada571957b29e7d2cb2859ed4e77ba4ec2882fa",
       "executable": false
     },
     "scripts/edition-authoring/cli.mjs": {
@@ -936,7 +936,7 @@
       "executable": false
     },
     "scripts/edition-authoring/files.mjs": {
-      "sha256": "0381ef09ba959116c86f64ce9bd7137a5aeff84defd3cf56315d719f6a512b40",
+      "sha256": "cd8ca780ed1f49977b183f025433227c12f844ff845b89a3a4a1d2d66f14e3e7",
       "executable": false
     },
     "scripts/edition-authoring/lock.mjs": {
@@ -948,11 +948,11 @@
       "executable": false
     },
     "scripts/edition-authoring/module-closure.mjs": {
-      "sha256": "95889883ce093f5c017cd1478107e5744fdef06ad80e36a4f8e6476d9449aff5",
+      "sha256": "fb9cf1caa9760948e256464054647671c6800937cb20e43ef5ca180ad90c4e38",
       "executable": false
     },
     "scripts/edition-authoring/module-edges.mjs": {
-      "sha256": "f89ad266463fd93ceff85749bddf5d0b3d9ef4ae830d48470e2200a23559becc",
+      "sha256": "78961972b44c158e75416629ae1149c419b0cafe2b2cb1336130bbeba2f6620a",
       "executable": false
     },
     "scripts/edition-authoring/module-resolution.mjs": {
@@ -1784,7 +1784,7 @@
       "executable": false
     },
     "src/base/contract-docs.mjs": {
-      "sha256": "59ff5f3635018233bc8caafb2718f95f5420931f370596b998e3c6d3bd94e593",
+      "sha256": "e43dc064aaedaff9309c5c52a42814784e761b82a618cf397cd91251177551e5",
       "executable": false
     },
     "src/base/contract-filter.ts": {
@@ -3384,7 +3384,7 @@
       "executable": false
     },
     "src/modules/import-kit/src/door/ADOPTING.md": {
-      "sha256": "ba357021f40b70af8635eb3a18c4244b28d5480f5522946b2b44911c5c2ca10a",
+      "sha256": "4e817164806b382efb1dbd950aee33b8810a892d37243bc8e464ab241f436525",
       "executable": false
     },
     "src/modules/import-kit/src/door/archive.ts": {
@@ -4444,7 +4444,7 @@
       "executable": false
     },
     "src/modules/portability/catalogue.mjs": {
-      "sha256": "8f0c4e9797ed45eb4da7549aa57c021d57d019c28025510092340011564fbd0c",
+      "sha256": "2a4c9fa42d8793d8c2a24b1f2f5759738a7143b05514cebc5f7a041b13d737ce",
       "executable": false
     },
     "src/modules/portability/cli-options.mjs": {
@@ -4576,7 +4576,7 @@
       "executable": false
     },
     "src/modules/portability/README.md": {
-      "sha256": "d1dbd56b964cdfd1b1c7ea3245f895de166c8a3313d4f86d603002ac679a2fe3",
+      "sha256": "0aa2a155afc47714e2b81c8106ceacdc9a0aad19dbaa15f4cdee8d2f4dbb7f81",
       "executable": false
     },
     "src/modules/portability/rebuilds.mjs": {
