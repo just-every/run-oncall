@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 
 // Trusted verifier tooling. Every native fixture enters through ordinary HTTP.
-export default async function initialize({ request, origin, token, displayName, returnTo, fixtures }) {
+export default async function initialize({ request, origin, token, displayName, returnTo, fixtures, reviewers }) {
   const bootstrap = await request(new URL('/auth/bootstrap', origin).href, {
     method: 'POST', redirect: 'manual', headers: { Origin: origin, 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, displayName, returnTo }),
@@ -33,6 +33,7 @@ export default async function initialize({ request, origin, token, displayName, 
   for (const role of ['responder', 'viewer', 'admin']) {
     members[role] = await json('/api/members', { name: names[role], role, password: randomBytes(32).toString('hex') }, 201);
   }
+  if (reviewers) await reviewers.initialize('responder', { cookie });
   for (const [id, name] of [['agent-service', 'Payments API'], ['agent-foreign-service', 'Inventory worker']]) {
     await json('/api/command', { type: 'service', id, name, environment: 'production', owner,
       runbook: ['Inspect the retained deployment evidence', 'Record recovery evidence for human review'], pager: '' });
