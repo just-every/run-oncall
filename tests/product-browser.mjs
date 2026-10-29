@@ -5,7 +5,7 @@ import {mkdir} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor} from './worker.mjs'
-import {productBrowserJourney} from './product-browser-journey.mjs'
+import {productBrowserJourney,supportStartBrowser} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -488,7 +488,7 @@ async function readinessBrowser(page,context) {
 }
 
 // Production Worker + real local D1, without starting a managed rer dev server.
-const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'})
+const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true})
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
 let browser,page
 try {
@@ -520,6 +520,14 @@ try {
  await incidentWorkflowBrowser(page,context)
  await changeAndSigningBrowser(page,context)
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
+ const supportContext=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000}})
+ try {
+  await worker.time(Date.parse('2026-11-02T08:00:00.000Z'))
+  const login=await supportContext.request.post('/api/login',{headers:{origin:worker.origin},data:credentials})
+  assert.equal(login.status(),200,'the support-hours observer signs in at the controlled platform time')
+  page=await supportContext.newPage();page.on('pageerror',error=>errors.push(error.message))
+  await supportStartBrowser(page,supportContext,{origin:worker.origin,setTime:worker.time})
+ } finally {await supportContext.close();await worker.time(Date.now());page=context.pages()[0]}
  }
  await readinessBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')

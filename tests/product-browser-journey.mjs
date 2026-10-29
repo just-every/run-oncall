@@ -5,6 +5,55 @@ import {selectRoutedSource,openIncidentAction,focusWorkspace,openWorkspaceSectio
 import {randomBytes,randomUUID} from 'node:crypto'
 import AxeBuilder from '@axe-core/playwright'
 import assert from 'node:assert/strict'
+
+// Read a real low alert before New York support opens; observing it starts no timer.
+export async function supportStartBrowser(page,context,{origin,setTime}) {
+ const beforeOpen='2026-11-02T08:00:00.000Z',nextStart='2026-11-02T14:00:00.000Z'
+ await page.clock.setFixedTime(new Date(beforeOpen))
+ const request=async(path,data,status=200)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data})
+  assert.equal(response.status(),status,`Support-start journey: ${path}`)
+  return response.json()
+ }
+ const {member}=await request('/api/session'),service='synthetic-oncall-57',source='synthetic-oncall-57',key=randomBytes(32).toString('hex')
+ await request('/api/command',{type:'service',id:service,name:'Checkout support hours',environment:'production',owner:member.id,runbook:['Review checkout health before raising urgency.'],pager:''})
+ const rule=await request('/api/urgency/services/'+service,{baseVersion:0,mode:'support-hours',timezone:'America/New_York',weekly:[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})),holidays:[],inside:'high',outside:'low',reason:'Staffed weekday support'},201)
+ await request('/api/sources',{id:source,key,scopes:[service]})
+ const admitted=await context.request.post('/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:{source,eventId:'synthetic-oncall-57',service,environment:'production',key:'synthetic-oncall-57',generation:'synthetic-oncall-57',intent:'trigger',severity:'warning',title:'Checkout before support opens',observedAt:beforeOpen,evidence:''}})
+ assert.equal(admitted.status(),201,'the emitted intake admits a real warning before support opens')
+ const before=await request('/api/state'),alert=before.alerts.find(item=>item.source===source)
+ assert.ok(alert,'the observation uses a populated alert')
+ assert.equal(alert.state,'active');assert.equal(alert.urgency,'low')
+ assert.ok(alert.urgencyHistory.length>0,'the admission history exists before observation')
+ assert.equal(before.events.find(event=>alert.events.includes(event.id)).urgency.version,rule.version)
+ const pagingBefore=await request('/api/paging/state')
+ const observe=async()=>{
+  const card=page.getByRole('article',{name:'Alert details',exact:true})
+  await card.getByRole('heading',{name:'Checkout before support opens',exact:true}).waitFor()
+  const note=card.getByRole('note').filter({hasText:'Support-start raises are not automatic'})
+  await note.waitFor()
+  assert.match(await note.innerText(),/Support-start raises are not automatic\./)
+  assert.equal(await note.locator('time').getAttribute('datetime'),nextStart,'the next support start is exactly Monday 09:00 in New York after DST ends')
+  assert.match(await note.locator('time').innerText(),/Mon, Nov 2.*09:00 AM EST/,'the visible time names the support timezone and local opening')
+  assert.equal(await card.getByLabel('Urgency',{exact:true}).inputValue(),'low','reading the support-start notice never claims an applied raise')
+  return card
+ }
+ await page.goto(origin+'/alerts/'+encodeURIComponent(alert.id))
+ await observe()
+ const later=Date.parse('2026-11-02T13:59:00.000Z')
+ await setTime(later);await page.clock.setFixedTime(new Date(later));await page.reload()
+ const card=await observe()
+ const after=await request('/api/state'),retained=after.alerts.find(item=>item.id===alert.id)
+ assert.deepEqual(retained.urgencyHistory,alert.urgencyHistory,'reload retains the original urgency history')
+ assert.deepEqual(after,before,'observing and reloading the alert change no workspace records or revisions')
+ assert.deepEqual(await request('/api/paging/state'),pagingBefore,'observation creates no paging jobs, deadlines, receipts or callbacks')
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true})
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:1000});await card.scrollIntoViewIfNeeded()
+  await page.screenshot({path:`${directory}/oc057-support-start-${width}.png`,fullPage:true})
+ }
+ console.log('PASS OC-057 support-start notice: active low warning, exact New York next opening, controlled clock and reload, unchanged history and paging state at 1440; visual proof at 1440 and 390')
+}
 // product-import-browser: part of this public journey.
 export async function productImport(page,context,width,session) {
   const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
