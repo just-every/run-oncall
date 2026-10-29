@@ -309,6 +309,12 @@
       "name": "0146_move_in_consent.sql",
       "sha256": "fc38b4efd3d493120245bc551516ab5e1f058a8dd9880e0172171753547af209",
       "sql": "-- Short-lived encrypted OAuth custody. Never part of an archive or import.\n-- The minute sweep revokes abandoned connections before the ten-minute bound.\nCREATE TABLE oc_move_in_consent (\n id TEXT PRIMARY KEY,\n custody TEXT NOT NULL,\n revoke_at INTEGER NOT NULL,\n expires INTEGER NOT NULL\n);\nCREATE INDEX oc_move_in_consent_expiry ON oc_move_in_consent(revoke_at);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0147_audit_detail.sql",
+      "sha256": "375ffbbc7c74d2027d91a35346bb6707d0081a80d337ea3c9cd171193bc2e31a",
+      "sql": "-- One audit kind per operation; the facts that vary (provider, region, counts) travel in detail.\nALTER TABLE oc_admin_audit ADD COLUMN detail TEXT;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
