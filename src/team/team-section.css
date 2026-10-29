@@ -23,8 +23,7 @@
 .team-section .team-row-menu .field {margin:0 0 12px;}
 .team-section .team-row-menu :is(input,textarea,select) {max-width:100%;}
 .team-section .team-row-menu :is(p,button,small,label) {font-size: max(13px, 1em);}
-.team-section .team-title {display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px;}
-.team-section .team-title h2 {margin:0;}
+.team-section .team-title {display:flex; justify-content:flex-end;}
 .team-section .team-add {margin-top:20px;}
 .team-section .teams-panel {grid-column:1 / -1;}
 @media(max-width:760px) {

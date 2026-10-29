@@ -323,7 +323,7 @@ try {
  const excludesStakeholder=async locator=>assert.ok(!(await locator.locator('option').evaluateAll(options=>options.map(option=>option.value))).includes(sam.id),'stakeholders are never offered as responders')
  for(const screen of ['team','services','routing','schedules','incidents']){
   await owner.page.goto(worker.origin+({team:'/settings/team',services:'/settings/services',routing:'/settings/routing',schedules:'/on-call'}[screen]??'/'+screen));await owner.page.reload()
-  if(screen==='team')await owner.page.getByRole('heading',{name:'Team',exact:true,level:2}).waitFor()
+  if(screen==='team')await owner.page.getByRole('heading',{name:'Team',exact:true,level:1}).waitFor()
   if(screen==='services'){await owner.page.getByRole('button',{name:'Add service',exact:true}).click();await excludesStakeholder(owner.page.getByLabel('Service owner',{exact:true}))}
   if(screen==='routing'){if(!await owner.page.getByLabel('Owner',{exact:true}).isVisible())await owner.page.getByText('Add routed key',{exact:true}).click();await excludesStakeholder(owner.page.getByLabel('Owner',{exact:true}))}
   if(screen==='schedules'){

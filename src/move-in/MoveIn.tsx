@@ -26,9 +26,9 @@ function transportError(error:unknown) {
  return error instanceof TypeError?new InterruptedTransport():error
 }
 
-export function MoveIn({admin,request}:{admin:boolean;request:(path:string,data?:unknown)=>Promise<any>}) {
+export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;request:(path:string,data?:unknown)=>Promise<any>}) {
  const [vendor,setVendor]=useState('pagerduty'),[source,setSource]=useState<Uint8Array|null>(null),[filename,setFilename]=useState(''),[preview,setPreview]=useState<any>(null),[job,setJob]=useState<any>(null),[jobs,setJobs]=useState<any[]>([]),[rows,setRows]=useState<any[]>([]),[choices,setChoices]=useState<any>({services:[],members:[]}),[busy,setBusy]=useState(false),[erasing,setErasing]=useState(''),[typed,setTyped]=useState(''),[erased,setErased]=useState<any>(null)
- const [step,setStep]=useState(1),[sourceChoice,setSourceChoice]=useState('pagerduty'),[connect,setConnect]=useState(false),[confirmUndo,setConfirmUndo]=useState(false),[labels,setLabels]=useState<Record<string,string>>({})
+ const [step,setStep]=useState(1),[sourceChoice,setSourceChoice]=useState('pagerduty'),[confirmUndo,setConfirmUndo]=useState(false),[labels,setLabels]=useState<Record<string,string>>({})
  const [reconciliation,setReconciliation]=useState<Reconciliation|null>(null)
  const pending=useRef(0),loadVersion=useRef(0),activeVendor=useRef(vendor)
  activeVendor.current=vendor
@@ -94,7 +94,6 @@ export function MoveIn({admin,request}:{admin:boolean;request:(path:string,data?
  }
  useEffect(()=>{
   if(!admin)return
-  void request('/api/workspace').then(value=>setConnect(value.moveIn?.pagerdutyConnect===true)).catch(error=>failures.show(transportError(error),{read:true,target:null}))
   const connection=new URLSearchParams(location.search).get('connection')
   if(connection==='failed'||connection==='revoke-failed'){
    history.replaceState(history.state,'',location.pathname)
