@@ -12,6 +12,7 @@ import assert from 'node:assert/strict'
 import {ownerDoor,localWorker} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 import {checkpointRoundTrip,checkpointErasureCli} from './checkpoint-cli.mjs'
+import {autonomousPolicy,canonical} from '../src/modules/agent-door/conformance/crypto.mjs'
 const isolated=await isolatedEntrypoint(import.meta.url);if(isolated!==null)process.exit(isolated)
 
 
@@ -22,10 +23,13 @@ export function transferDoor(m) {
  const kid='transfer-business',issuer='https://business.example.test',installationId=randomUUID()
  const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url')
  const hash=bytes=>createHash('sha256').update(bytes).digest('hex')
+ const jwt=(typ,payload)=>{
+  const signed=encode({alg:'ES256',typ,kid})+'.'+encode(payload)
+  return signed+'.'+sign('sha256',Buffer.from(signed),{key:privateKey,dsaEncoding:'ieee-p1363'}).toString('base64url')
+ }
  const grant=(action,extra={})=>{
   const now=Math.floor(Date.now()/1000),payload={v:1,iss:issuer,aud:m.origin,installationId,email:'transfer-owner@example.test',jti:randomUUID(),iat:now,exp:now+300,action,namespace:'pagerduty',maxBytes:512*1024,maxChunks:8,maxRecords:500,...extra}
-  const signed=encode({alg:'ES256',typ:'rer-import-grant+jwt',kid})+'.'+encode(payload)
-  return signed+'.'+sign('sha256',Buffer.from(signed),{key:privateKey,dsaEncoding:'ieee-p1363'}).toString('base64url')
+  return jwt('rer-import-grant+jwt',payload)
  }
  const call=(action,input,token=grant(action))=>m.request('/api/rer/import/'+action,input,undefined,{Authorization:'Bearer '+token})
  const ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
@@ -34,6 +38,12 @@ export function transferDoor(m) {
   async configure() {
    const vars={RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:publicKey.export({format:'jwk'})}),RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId}
    await appendFile('.dev.vars','\n'+Object.entries(vars).map(([k,v])=>k+'='+v).join('\n')+'\n',{mode:0o600})
+  },
+  async choosePolicy(cookie) {
+   const now=Math.floor(Date.now()/1000),document=autonomousPolicy(),business='transfer-coordination',revision=1
+   const revision_signature=jwt('rer-agent-policy-revision+jwt',{business,revision,document_sha256:hash(canonical(document))})
+   const policy=jwt('rer-agent-policy+jwt',{v:1,iss:issuer,aud:m.origin,sub:installationId,business,seq:1,revision,paused:false,catalogue:document.catalogue,document,revision_signature,iat:now,exp:now+300})
+   ok(await m.request('/api/rer/agent-policy',{policy},cookie))
   },
   async prepare(cookie) {
    ok(await m.request('/auth/settings/imports',{enabled:true},cookie))
@@ -299,6 +309,7 @@ try{
  const apiKey=randomBytes(32).toString('hex'),endpointKey=randomBytes(32).toString('hex')
  const createdClient=await req('/api/automation/clients',{name:'alice@example.test automation',key:apiKey,services:['transfer'],permissions:['incidents:read','incidents:write']});assert.equal(createdClient.status,201);const apiClient=createdClient.value
  const createdEndpoint=await req('/api/automation/endpoints',{name:'Portable receiver',client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true});assert.equal(createdEndpoint.status,201)
+ await business.choosePolicy(cookie)
  const machine=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiKey,'idempotency-key':'synthetic-oncall-portable'},body:JSON.stringify({type:'declare',service:'transfer',title:'Portable machine incident',summary:'Retain operation and outbox identities',severity:'warning'})});assert.equal(machine.status,201)
  const machineOperation=await machine.json();
  const machineAck=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiKey,'idempotency-key':'synthetic-oncall-portable-ack'},body:JSON.stringify({type:'transition',incident:machineOperation.entity,revision:1,state:'acknowledged',member:member.id,summary:'Retain permanent named responsibility'})});assert.equal(machineAck.status,201);const namedAudit=ok(await req('/api/audit/export')).rows.find(r=>r.kind==='automation.incidents'&&r.namedMember);assert.ok(namedAudit);assert.notEqual(namedAudit.actor,namedAudit.namedMember);

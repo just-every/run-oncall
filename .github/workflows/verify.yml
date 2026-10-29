@@ -58,6 +58,9 @@ jobs:
       ONCALL_VERIFY_PREBUILT: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Contract provenance checks read the original clauses from Git history.
+          fetch-depth: 0
       - name: Free unused runner SDKs for the 15 GiB disk guard
         run: |
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
@@ -95,6 +98,8 @@ jobs:
       ONCALL_VERIFY_PREBUILT: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Free unused runner SDKs for the 15 GiB disk guard
         run: |
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup

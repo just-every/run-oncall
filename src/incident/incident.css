@@ -2,6 +2,9 @@
 .incident-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
 .incident-board.has-incident { grid-template-columns: minmax(290px, .7fr) minmax(0, 1.3fr); }
 .incident-board > * { min-width: 0; }
+.incident-board.has-incident :is(button,select,input:not([type=checkbox]),summary), .incident-sheet :is(button,select,input:not([type=checkbox]),summary) { min-height: 44px; }
+.incident-board.has-incident .triage-check { min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; }
+.incident-board.has-incident .triage-mine { min-height: 44px; align-items: center; }
 .incident-page { display: grid; gap: 20px; padding: 24px; overflow-wrap: anywhere; }
 .incident-page h1 { margin: 0; }
 .incident-page h3 { margin: 0 0 12px; font-size: 17px; }
