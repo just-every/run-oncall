@@ -1,5 +1,6 @@
+import {autonomousPolicy,policyEnvelope} from '../src/modules/agent-door/conformance/crypto.mjs'
 import {developmentReadiness} from './readiness.mjs'
-import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
+import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac,webcrypto} from 'node:crypto'
 import {appendFile,mkdtemp,symlink,cp,lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {dirname,join,relative} from 'node:path'
@@ -34,6 +35,14 @@ export function transferDoor(m) {
   async configure() {
    const vars={RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:publicKey.export({format:'jwk'})}),RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId}
    await appendFile('.dev.vars','\n'+Object.entries(vars).map(([k,v])=>k+'='+v).join('\n')+'\n',{mode:0o600})
+  },
+  async chooseAgentPolicy() {
+   // This installation is paired for the real Business import journey. Its
+   // existing trusted signer also chooses the machine coordination policy.
+   const key=await webcrypto.subtle.importKey('pkcs8',privateKey.export({type:'pkcs8',format:'der'}),{name:'ECDSA',namedCurve:'P-256'},false,['sign'])
+   const context={origin:m.origin,business:'transfer-business',seq:0,revision:0,signer:{issuer,installationId,kid,privateKey:key}}
+   const {policy}=await policyEnvelope(context,autonomousPolicy())
+   ok(await m.request('/api/rer/agent-policy',{policy}))
   },
   async prepare(cookie) {
    ok(await m.request('/auth/settings/imports',{enabled:true},cookie))
@@ -299,6 +308,7 @@ try{
  const apiKey=randomBytes(32).toString('hex'),endpointKey=randomBytes(32).toString('hex')
  const createdClient=await req('/api/automation/clients',{name:'alice@example.test automation',key:apiKey,services:['transfer'],permissions:['incidents:read','incidents:write']});assert.equal(createdClient.status,201);const apiClient=createdClient.value
  const createdEndpoint=await req('/api/automation/endpoints',{name:'Portable receiver',client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true});assert.equal(createdEndpoint.status,201)
+ await business.chooseAgentPolicy()
  const machine=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiKey,'idempotency-key':'synthetic-oncall-portable'},body:JSON.stringify({type:'declare',service:'transfer',title:'Portable machine incident',summary:'Retain operation and outbox identities',severity:'warning'})});assert.equal(machine.status,201)
  const machineOperation=await machine.json();
  const machineAck=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiKey,'idempotency-key':'synthetic-oncall-portable-ack'},body:JSON.stringify({type:'transition',incident:machineOperation.entity,revision:1,state:'acknowledged',member:member.id,summary:'Retain permanent named responsibility'})});assert.equal(machineAck.status,201);const namedAudit=ok(await req('/api/audit/export')).rows.find(r=>r.kind==='automation.incidents'&&r.namedMember);assert.ok(namedAudit);assert.notEqual(namedAudit.actor,namedAudit.namedMember);

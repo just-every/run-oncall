@@ -24,11 +24,11 @@ export function ReviewMaterial({material,state}: {material: Material;state:State
     <div className="review-snapshot"><h4>Missing material</h4><ul>{material.missing.map(item => <li key={item}>{item}</li>)}</ul></div>
     </details>
     <details><summary>From the timeline ({material.assertions.length})</summary>
-      <p>Human-authored records, kept separate from automated observations. No assertion is automatically accepted as root cause or impact.</p>
+      <p>Attributed timeline records distinguish people, agents and source observations. No assertion is automatically accepted as root cause or impact.</p>
       <ol className="review-records">{material.assertions.map(assertion => <li key={assertion.id}>
         <p className="review-literal">{timelineText(assertion,state)}</p>
         {assertion.review&&<dl><dt>Accepted root cause</dt><dd className="review-literal">{assertion.review.rootCause}</dd><dt>Accepted impact</dt><dd className="review-literal">{assertion.review.impact}</dd><dt>Accepted review</dt><dd className="review-literal">{assertion.review.review}</dd></dl>}
-        <p className="review-meta">{name(assertion.actor)}<br /><time dateTime={assertion.at}>{utc(assertion.at)}</time></p>
+        <p className="review-meta">{assertion.metadata?.agent?.label ?? name(assertion.actor)} · {assertion.classification}<br /><time dateTime={assertion.at}>{utc(assertion.at)}</time></p>
       </li>)}</ol>
     </details>
     <details><summary>Changes ({material.changes.length})</summary>

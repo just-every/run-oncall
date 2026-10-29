@@ -1,0 +1,2038 @@
+{
+  "schema": "rer-agent-surface/1",
+  "seed": "oncall",
+  "specialist": "oncall-responder",
+  "tools": [
+    {
+      "name": "oncall.access.read",
+      "scope": "access:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-023"
+      ]
+    },
+    {
+      "name": "oncall.access.update",
+      "scope": "access:write",
+      "readOnly": false,
+      "classes": [
+        "access"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-041",
+        "OC-053"
+      ],
+      "sponsorEscalation": false
+    },
+    {
+      "name": "oncall.actions.create",
+      "scope": "actions:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-005",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.actions.list",
+      "scope": "actions:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-005",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.actions.read",
+      "scope": "actions:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-005",
+        "OC-036"
+      ]
+    },
+    {
+      "name": "oncall.actions.receipt",
+      "scope": "actions:write",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.actions.submit",
+      "scope": "actions:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-005",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.analytics.read",
+      "scope": "analytics:read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-030",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.automation.dispatch",
+      "scope": "automation:write",
+      "readOnly": false,
+      "classes": [
+        "external"
+      ],
+      "clauses": [
+        "OC-006",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.automation.read",
+      "scope": "integrations:read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.automation.replay",
+      "scope": "automation:write",
+      "readOnly": false,
+      "classes": [
+        "external"
+      ],
+      "clauses": [
+        "OC-006",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.changes.read",
+      "scope": "services:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-065"
+      ]
+    },
+    {
+      "name": "oncall.clients.update",
+      "scope": "clients:write",
+      "readOnly": false,
+      "classes": [
+        "access"
+      ],
+      "clauses": [
+        "OC-041",
+        "OC-053"
+      ],
+      "widens": false,
+      "narrowing": {
+        "effect": "revoke",
+        "target": "id"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "oncall.coordination.read",
+      "scope": "workspace:read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-004",
+        "OC-036",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.endpoints.update",
+      "scope": "endpoints:write",
+      "readOnly": false,
+      "classes": [
+        "access"
+      ],
+      "clauses": [
+        "OC-041",
+        "OC-053"
+      ],
+      "widens": false,
+      "narrowing": {
+        "effect": "revoke",
+        "target": "id"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    {
+      "name": "oncall.events.list",
+      "scope": "events:read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "BASE-AGENT-010"
+      ]
+    },
+    {
+      "name": "oncall.imports.read",
+      "scope": "imports:read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-038",
+        "OC-040"
+      ]
+    },
+    {
+      "name": "oncall.incidents.acknowledge",
+      "scope": "incidents:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-004",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.incidents.declare",
+      "scope": "incidents:write",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-004",
+        "OC-005"
+      ]
+    },
+    {
+      "name": "oncall.incidents.list",
+      "scope": "incidents:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.incidents.read",
+      "scope": "incidents:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-004",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.incidents.receipt",
+      "scope": "incidents:write",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.incidents.resolve",
+      "scope": "incidents:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-004"
+      ]
+    },
+    {
+      "name": "oncall.incidents.update",
+      "scope": "incidents:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-004",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.integrations.read",
+      "scope": "integrations:read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.notes.add",
+      "scope": "incidents:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-004",
+        "OC-008"
+      ]
+    },
+    {
+      "name": "oncall.privacy.erase",
+      "scope": "privacy:write",
+      "readOnly": false,
+      "classes": [
+        "destructive"
+      ],
+      "clauses": [
+        "OC-040",
+        "OC-041",
+        "OC-052"
+      ]
+    },
+    {
+      "name": "oncall.reviews.read",
+      "scope": "incidents:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-036",
+        "OC-049"
+      ]
+    },
+    {
+      "name": "oncall.schedules.coverage",
+      "scope": "schedules:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-011",
+        "OC-012",
+        "OC-014",
+        "OC-024"
+      ]
+    },
+    {
+      "name": "oncall.schedules.create",
+      "scope": "schedules:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "sensitive",
+        "live"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-011",
+        "OC-012",
+        "OC-024",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.schedules.override",
+      "scope": "schedules:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "sensitive",
+        "live"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-011",
+        "OC-012",
+        "OC-024",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.schedules.read",
+      "scope": "schedules:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-011",
+        "OC-014",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.schedules.receipt",
+      "scope": "schedules:write",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.schedules.review",
+      "scope": "schedules:write",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-011",
+        "OC-014",
+        "OC-024"
+      ]
+    },
+    {
+      "name": "oncall.schedules.update",
+      "scope": "schedules:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "sensitive",
+        "live"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-011",
+        "OC-012",
+        "OC-024",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.services.list",
+      "scope": "services:read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.services.read",
+      "scope": "services:read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-005",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.services.receipt",
+      "scope": "services:write",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.services.update",
+      "scope": "services:write",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OC-003",
+        "OC-005",
+        "OC-053"
+      ]
+    },
+    {
+      "name": "oncall.teams.update",
+      "scope": "teams:write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "access"
+      ],
+      "clauses": [
+        "OC-023",
+        "OC-041"
+      ],
+      "sponsorEscalation": false
+    }
+  ],
+  "notTools": [
+    {
+      "clauses": [
+        "OC-029"
+      ],
+      "reason": "device"
+    },
+    {
+      "clauses": [
+        "OC-003",
+        "OC-036",
+        "OC-049"
+      ],
+      "reason": "screen"
+    },
+    {
+      "clauses": [
+        "OC-001",
+        "OC-065",
+        "OC-070"
+      ],
+      "reason": "connector"
+    },
+    {
+      "clauses": [
+        "OC-007",
+        "OC-038",
+        "OC-052"
+      ],
+      "reason": "import-door"
+    },
+    {
+      "clauses": [
+        "OC-010",
+        "OC-016"
+      ],
+      "reason": "installation"
+    }
+  ],
+  "resources": [
+    "oncall://actions/{id}",
+    "oncall://automation/clients/{id}",
+    "oncall://automation/endpoints/{id}",
+    "oncall://automation/outbox/{id}",
+    "oncall://erasures/{id}",
+    "oncall://incidents/{id}",
+    "oncall://incidents/{id}/review-material",
+    "oncall://members/{id}",
+    "oncall://schedules/{id}/coverage",
+    "oncall://services/{id}",
+    "oncall://services/{id}/changes",
+    "oncall://teams/{id}"
+  ],
+  "witness": {
+    "tool": "oncall.coordination.read",
+    "args": {}
+  },
+  "escalations": [],
+  "narrowings": [
+    {
+      "tool": "oncall.endpoints.update",
+      "step": "revoke-endpoint",
+      "witness": {
+        "tool": "oncall.automation.read",
+        "args": {
+          "id": {
+            "$from": "automation-list",
+            "pointer": "/data/endpoints/0/id"
+          },
+          "kind": "endpoint"
+        },
+        "pointer": "/data/effectiveGrants"
+      }
+    },
+    {
+      "tool": "oncall.clients.update",
+      "step": "revoke-client",
+      "witness": {
+        "tool": "oncall.automation.read",
+        "args": {
+          "id": {
+            "$from": "automation-list",
+            "pointer": "/data/clients/0/id"
+          },
+          "kind": "client"
+        },
+        "pointer": "/data/effectiveGrants"
+      }
+    }
+  ],
+  "journey": [
+    {
+      "id": "service-list",
+      "tool": "oncall.services.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "service-read",
+      "tool": "oncall.services.read",
+      "args": {
+        "id": "agent-service"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "inject": {
+        "confirmExternal": true,
+        "internal": false,
+        "classes": [
+          "external"
+        ]
+      },
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
+    },
+    {
+      "id": "service-update",
+      "tool": "oncall.services.update",
+      "args": {
+        "id": "agent-service",
+        "etag": {
+          "$from": "service-read",
+          "pointer": "/data/0/etag"
+        },
+        "name": "Agent coordination service",
+        "environment": {
+          "$from": "service-read",
+          "pointer": "/data/0/environment"
+        },
+        "owner": {
+          "$sponsor": "id"
+        },
+        "runbook": [
+          "Inspect retained evidence before recording a recovery assertion"
+        ],
+        "pager": "",
+        "dependencies": []
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
+    },
+    {
+      "id": "declare-state",
+      "tool": "oncall.coordination.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "declare",
+      "tool": "oncall.incidents.declare",
+      "args": {
+        "service": "agent-service",
+        "revision": {
+          "$from": "declare-state",
+          "pointer": "/data/revision"
+        },
+        "title": "Agent policy coordination",
+        "summary": "Coordinate retained evidence beside the existing pager",
+        "severity": "warning",
+        "alerts": []
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
+    },
+    {
+      "id": "acknowledge",
+      "tool": "oncall.incidents.acknowledge",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "declare",
+          "pointer": "/revision"
+        },
+        "member": {
+          "$sponsor": "id"
+        },
+        "summary": "Record responsibility for the named active installation owner"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "note",
+      "tool": "oncall.notes.add",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "acknowledge",
+          "pointer": "/revision"
+        },
+        "text": "Source observations do not establish recovery or grant approval"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "follow-up",
+      "tool": "oncall.actions.create",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "note",
+          "pointer": "/revision"
+        },
+        "title": "Human review of retained deployment evidence",
+        "owner": {
+          "$sponsor": "id"
+        },
+        "due": "2026-12-01",
+        "priority": "P1",
+        "completionPolicy": "human-review"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "submit",
+      "tool": "oncall.actions.submit",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "follow-up",
+          "pointer": "/revision"
+        },
+        "action": {
+          "$from": "follow-up",
+          "pointer": "/actions/0/id"
+        },
+        "evidence": "https://evidence.example.invalid/agent-review"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "recover",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "submit",
+          "pointer": "/revision"
+        },
+        "change": "transition",
+        "state": "recovered",
+        "summary": "Record the retained source evidence as an attributed assertion",
+        "evidence": "https://evidence.example.invalid/agent-recovery"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "resolve",
+      "tool": "oncall.incidents.resolve",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "recover",
+          "pointer": "/revision"
+        },
+        "summary": "Coordination resolved with recorded recovery evidence; follow-up remains open"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "sensitive-note",
+      "tool": "oncall.notes.add",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "resolve",
+          "pointer": "/revision"
+        },
+        "text": "Retained evidence remains protected after coordination resolution"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "sensitive-action",
+      "tool": "oncall.actions.create",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "sensitive-note",
+          "pointer": "/revision"
+        },
+        "title": "Keep the protected evidence review open",
+        "owner": {
+          "$sponsor": "id"
+        },
+        "due": "2026-12-01",
+        "priority": "P1",
+        "completionPolicy": "human-review"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "second-declare-state",
+      "tool": "oncall.coordination.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "second-declare",
+      "tool": "oncall.incidents.declare",
+      "args": {
+        "service": "agent-service",
+        "revision": {
+          "$from": "second-declare-state",
+          "pointer": "/data/revision"
+        },
+        "title": "Agent evidence before acknowledgment",
+        "summary": "Retain human-review work before assigning responsibility",
+        "severity": "info",
+        "alerts": []
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "second-action",
+      "tool": "oncall.actions.create",
+      "args": {
+        "incident": {
+          "$from": "second-declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "second-declare",
+          "pointer": "/revision"
+        },
+        "title": "Inspect deployment observation before accepting recovery",
+        "owner": {
+          "$sponsor": "id"
+        },
+        "due": "2026-12-01",
+        "priority": "P1",
+        "completionPolicy": "human-review"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "second-declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "second-submit",
+      "tool": "oncall.actions.submit",
+      "args": {
+        "incident": {
+          "$from": "second-declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "second-action",
+          "pointer": "/revision"
+        },
+        "action": {
+          "$from": "second-action",
+          "pointer": "/actions/0/id"
+        },
+        "evidence": "https://evidence.example.invalid/agent-ack-review"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "second-declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "sensitive-acknowledge",
+      "tool": "oncall.incidents.acknowledge",
+      "args": {
+        "incident": {
+          "$from": "second-declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "second-submit",
+          "pointer": "/revision"
+        },
+        "member": {
+          "$sponsor": "id"
+        },
+        "summary": "Name the responsible person after evidence submission; no human acceptance inferred"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "second-declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "incidents-list",
+      "tool": "oncall.incidents.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "incident-read",
+      "tool": "oncall.incidents.read",
+      "args": {
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "review-material",
+      "tool": "oncall.reviews.read",
+      "args": {
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "action-read",
+      "tool": "oncall.actions.read",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "actions-list",
+      "tool": "oncall.actions.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "changes",
+      "tool": "oncall.changes.read",
+      "args": {
+        "service": "agent-service",
+        "at": {
+          "$from": "declare",
+          "pointer": "/createdAt"
+        },
+        "hours": 24
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      }
+    },
+    {
+      "id": "integrations",
+      "tool": "oncall.integrations.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "analytics",
+      "tool": "oncall.analytics.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "imports",
+      "tool": "oncall.imports.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "schedule-create",
+      "tool": "oncall.schedules.create",
+      "args": {
+        "schedule": {
+          "id": {
+            "$from": "declare",
+            "pointer": "/id"
+          },
+          "name": "Agent policy rota",
+          "service": "agent-service",
+          "revision": 0,
+          "timezone": "UTC",
+          "validFrom": "2026-01-01T00:00:00.000Z",
+          "validUntil": null,
+          "primary": {
+            "anchorLocal": "2026-01-01T00:00",
+            "periodDays": 1,
+            "members": [
+              {
+                "$sponsor": "id"
+              }
+            ],
+            "ambiguity": "earlier"
+          },
+          "backup": {
+            "anchorLocal": "2026-01-01T00:00",
+            "periodDays": 1,
+            "members": [],
+            "ambiguity": "earlier"
+          },
+          "overrides": []
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        },
+        {
+          "class": "live"
+        }
+      ]
+    },
+    {
+      "id": "schedule-read",
+      "tool": "oncall.schedules.read",
+      "args": {
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "coverage",
+      "tool": "oncall.schedules.coverage",
+      "args": {
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        },
+        "from": 1793145600000,
+        "to": 1793318400000
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "schedule-review",
+      "tool": "oncall.schedules.review",
+      "args": {
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        },
+        "revision": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/revision"
+        },
+        "schedule": {
+          "id": {
+            "$from": "schedule-create",
+            "pointer": "/schedule/id"
+          },
+          "name": "Agent policy rota",
+          "service": "agent-service",
+          "revision": {
+            "$from": "schedule-create",
+            "pointer": "/schedule/revision"
+          },
+          "timezone": "UTC",
+          "validFrom": "2026-01-01T00:00:00.000Z",
+          "validUntil": null,
+          "primary": {
+            "anchorLocal": "2026-01-01T00:00",
+            "periodDays": 1,
+            "members": [],
+            "ambiguity": "earlier"
+          },
+          "backup": {
+            "anchorLocal": "2026-01-01T00:00",
+            "periodDays": 1,
+            "members": [],
+            "ambiguity": "earlier"
+          },
+          "overrides": []
+        },
+        "from": 1793145600000,
+        "to": 1793318400000
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "schedule-update",
+      "tool": "oncall.schedules.update",
+      "args": {
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        },
+        "revision": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/revision"
+        },
+        "schedule": {
+          "id": {
+            "$from": "schedule-create",
+            "pointer": "/schedule/id"
+          },
+          "name": "Agent policy rota",
+          "service": "agent-service",
+          "revision": {
+            "$from": "schedule-create",
+            "pointer": "/schedule/revision"
+          },
+          "timezone": "UTC",
+          "validFrom": "2026-01-01T00:00:00.000Z",
+          "validUntil": null,
+          "primary": {
+            "anchorLocal": "2026-01-01T00:00",
+            "periodDays": 1,
+            "members": [],
+            "ambiguity": "earlier"
+          },
+          "backup": {
+            "anchorLocal": "2026-01-01T00:00",
+            "periodDays": 1,
+            "members": [],
+            "ambiguity": "earlier"
+          },
+          "overrides": []
+        },
+        "from": 1793145600000,
+        "to": 1793318400000,
+        "digest": {
+          "$from": "schedule-review",
+          "pointer": "/digest"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        },
+        {
+          "class": "live"
+        }
+      ],
+      "target": {
+        "kind": "schedule",
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      }
+    },
+    {
+      "id": "schedule-override",
+      "tool": "oncall.schedules.override",
+      "args": {
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        },
+        "revision": {
+          "$from": "schedule-update",
+          "pointer": "/schedule/revision"
+        },
+        "override": {
+          "id": "agent-current-coverage",
+          "role": "primary",
+          "start": "2026-01-01T00:00:00.000Z",
+          "end": "2027-01-01T00:00:00.000Z",
+          "member": {
+            "$sponsor": "id"
+          }
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        },
+        {
+          "class": "live"
+        }
+      ],
+      "target": {
+        "kind": "schedule",
+        "id": {
+          "$from": "schedule-create",
+          "pointer": "/schedule/id"
+        }
+      }
+    },
+    {
+      "id": "access-read",
+      "tool": "oncall.access.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "team-create",
+      "tool": "oncall.teams.update",
+      "args": {
+        "revision": 0,
+        "name": "Agent public coordination team",
+        "visibility": "public",
+        "active": true,
+        "members": [
+          {
+            "$sponsor": "id"
+          },
+          {
+            "$from": "access-read",
+            "pointer": "/data/members/1/id"
+          }
+        ],
+        "managers": []
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "team-manager",
+      "tool": "oncall.teams.update",
+      "args": {
+        "id": {
+          "$from": "team-create",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "team-create",
+          "pointer": "/revision"
+        },
+        "name": "Agent public coordination team",
+        "visibility": "public",
+        "active": true,
+        "members": [
+          {
+            "$sponsor": "id"
+          },
+          {
+            "$from": "access-read",
+            "pointer": "/data/members/1/id"
+          }
+        ],
+        "managers": [
+          {
+            "$from": "access-read",
+            "pointer": "/data/members/1/id"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "class": "access",
+          "facts": {
+            "direction": "widens"
+          }
+        }
+      ],
+      "target": {
+        "kind": "team",
+        "id": {
+          "$from": "team-create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "access-state",
+      "tool": "oncall.coordination.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "access-widen",
+      "tool": "oncall.access.update",
+      "args": {
+        "id": {
+          "$from": "access-read",
+          "pointer": "/data/members/2/id"
+        },
+        "revision": {
+          "$from": "access-state",
+          "pointer": "/data/revision"
+        },
+        "role": "responder",
+        "active": true
+      },
+      "expect": [
+        {
+          "class": "access",
+          "facts": {
+            "direction": "widens"
+          }
+        }
+      ],
+      "target": {
+        "kind": "member",
+        "id": {
+          "$from": "access-read",
+          "pointer": "/data/members/2/id"
+        }
+      }
+    },
+    {
+      "id": "access-narrow-state",
+      "tool": "oncall.coordination.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "access-narrow",
+      "tool": "oncall.access.update",
+      "args": {
+        "id": {
+          "$from": "access-read",
+          "pointer": "/data/members/2/id"
+        },
+        "revision": {
+          "$from": "access-narrow-state",
+          "pointer": "/data/revision"
+        },
+        "role": "viewer",
+        "active": true
+      },
+      "expect": [
+        {
+          "class": "access",
+          "facts": {
+            "direction": "narrows"
+          }
+        }
+      ],
+      "target": {
+        "kind": "member",
+        "id": {
+          "$from": "access-read",
+          "pointer": "/data/members/2/id"
+        }
+      }
+    },
+    {
+      "id": "automation-list",
+      "tool": "oncall.automation.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "outbox",
+      "tool": "oncall.automation.read",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "endpoint": {
+          "$from": "automation-list",
+          "pointer": "/data/endpoints/2/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "dispatch-retry",
+      "tool": "oncall.automation.dispatch",
+      "args": {
+        "id": {
+          "$from": "outbox",
+          "pointer": "/data/outbox/0/id"
+        },
+        "revision": {
+          "$from": "outbox",
+          "pointer": "/data/outbox/0/revision"
+        }
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "counterparty": "known"
+          }
+        }
+      ],
+      "target": {
+        "kind": "outbox",
+        "id": {
+          "$from": "outbox",
+          "pointer": "/data/outbox/0/id"
+        }
+      }
+    },
+    {
+      "id": "replay",
+      "tool": "oncall.automation.replay",
+      "args": {
+        "id": {
+          "$from": "dispatch-retry",
+          "pointer": "/operation/id"
+        },
+        "revision": {
+          "$from": "dispatch-retry",
+          "pointer": "/operation/revision"
+        }
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "counterparty": "known"
+          }
+        }
+      ],
+      "target": {
+        "kind": "outbox",
+        "id": {
+          "$from": "dispatch-retry",
+          "pointer": "/operation/id"
+        }
+      }
+    },
+    {
+      "id": "dispatch-accepted",
+      "tool": "oncall.automation.dispatch",
+      "args": {
+        "id": {
+          "$from": "replay",
+          "pointer": "/operation/id"
+        },
+        "revision": {
+          "$from": "replay",
+          "pointer": "/operation/revision"
+        }
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "counterparty": "known"
+          }
+        }
+      ],
+      "target": {
+        "kind": "outbox",
+        "id": {
+          "$from": "replay",
+          "pointer": "/operation/id"
+        }
+      }
+    },
+    {
+      "id": "revoke-endpoint",
+      "tool": "oncall.endpoints.update",
+      "args": {
+        "id": {
+          "$from": "automation-list",
+          "pointer": "/data/endpoints/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "access",
+          "facts": {
+            "direction": "narrows"
+          }
+        }
+      ],
+      "target": {
+        "kind": "endpoint",
+        "id": {
+          "$from": "automation-list",
+          "pointer": "/data/endpoints/0/id"
+        }
+      }
+    },
+    {
+      "id": "revoke-client",
+      "tool": "oncall.clients.update",
+      "args": {
+        "id": {
+          "$from": "automation-list",
+          "pointer": "/data/clients/0/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "access",
+          "facts": {
+            "direction": "narrows"
+          }
+        }
+      ],
+      "target": {
+        "kind": "client",
+        "id": {
+          "$from": "automation-list",
+          "pointer": "/data/clients/0/id"
+        }
+      }
+    },
+    {
+      "id": "erase-read",
+      "tool": "oncall.incidents.read",
+      "args": {
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "erase-state",
+      "tool": "oncall.coordination.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "erase",
+      "tool": "oncall.privacy.erase",
+      "args": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "workspaceRevision": {
+          "$from": "erase-state",
+          "pointer": "/data/revision"
+        },
+        "confirmation": {
+          "$from": "erase-read",
+          "pointer": "/data/0/erasureConfirmation"
+        }
+      },
+      "expect": [
+        {
+          "class": "destructive"
+        }
+      ]
+    },
+    {
+      "id": "services-receipt",
+      "tool": "oncall.services.receipt",
+      "args": {
+        "key": {
+          "$fixture": "services",
+          "pointer": "/key"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "client": "receipts"
+    },
+    {
+      "id": "schedules-receipt",
+      "tool": "oncall.schedules.receipt",
+      "args": {
+        "key": {
+          "$fixture": "schedules",
+          "pointer": "/key"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "client": "receipts"
+    },
+    {
+      "id": "incidents-receipt",
+      "tool": "oncall.incidents.receipt",
+      "args": {
+        "key": {
+          "$fixture": "incidents",
+          "pointer": "/key"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "client": "receipts"
+    },
+    {
+      "id": "actions-receipt",
+      "tool": "oncall.actions.receipt",
+      "args": {
+        "key": {
+          "$fixture": "actions",
+          "pointer": "/key"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ],
+      "client": "receipts"
+    },
+    {
+      "id": "events",
+      "tool": "oncall.events.list",
+      "args": {
+        "limit": 200
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "owner": {
+      "emailField": "OWNER_EMAIL",
+      "tokenField": "SETUP_TOKEN",
+      "bindings": {
+        "SESSION_SECRET": "sessionSecret"
+      },
+      "initializer": "tests/initialize-agent-owner.mjs"
+    },
+    "network": {
+      "module": "tests/oncall-provider-edge.mjs",
+      "origins": [
+        "https://8.8.8.8"
+      ]
+    },
+    "journey": "tests/oncall-agent-native.mjs",
+    "replayAdmission": {
+      "prepare": [
+        "declare-state",
+        "declare"
+      ]
+    },
+    "fixtures": {
+      "module": "tests/oncall-agent-fixtures.mjs"
+    },
+    "reviewers": [
+      {
+        "label": "responder",
+        "email": "synthetic-responder@example.invalid",
+        "initializer": "tests/initialize-agent-reviewer.mjs"
+      }
+    ]
+  },
+  "capabilities": [
+    "tools",
+    "policy",
+    "pause",
+    "audit",
+    "idempotency"
+  ]
+}
