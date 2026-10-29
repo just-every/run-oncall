@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {localWorker,ownerDoor} from './worker.mjs'
 import {readFile} from 'node:fs/promises'
-import {localPart,mail} from './email-fixtures.mjs'
+import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 // One real emitted-Worker journey. Provider request bodies are synthetic test
 // inputs built to their documented protocols; no live-sender claim is made.
 const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
@@ -56,6 +56,53 @@ try {
   assert.ok(!JSON.stringify(ok(await request('/api/archive'))).includes(local));
   ok(await external('/api/email',undefined,{authorization:'Bearer '+rotated}),401);
   ok(await external('/api/command',{type:'declare',service:'payments',title:'Forged mail',severity:'critical',alerts:[]},{authorization:'Bearer '+rotated,origin:w.origin}),401);
+  // Custom-rule failure retries and recovery share one recorded obligation.
+  const customLocal=localPart(),customAddress='synthetic-oncall-330',customKey='synthetic-oncall-331';
+  ok(await request('/api/email/addresses',{id:customAddress,name:'Synthetic database monitor',service:'payments',owner:actor.id,localPart:customLocal,mode:'custom',fallback:'quarantine',rules:recoveryRules()}),201);
+  const pagingBeforeEmail=ok(await request('/api/paging/state'));
+  for(const id of ['synthetic-oncall-332','synthetic-oncall-333']) {
+    assert.equal((await mail(w,customLocal,'FAILED: '+customKey,{id})).status,200);
+  }
+  const customOpened=ok(await request('/api/email')).receipts.filter(r=>r.address===customAddress);
+  assert.deepEqual(customOpened.map(r=>r.outcome),['opened','deduplicated']);
+  assert.equal(new Set(customOpened.map(r=>r.messageDigest)).size,2,'distinct message identities exercise subject deduplication');
+  assert.ok(customOpened.every(r=>r.deliveries===1));
+  const customBeforeRecovery=ok(await request('/api/state')),customAlert=customBeforeRecovery.alerts.find(a=>a.id===customOpened[0].alert);
+  assert.ok(customAlert);assert.equal(customAlert.state,'active');
+  assert.equal(customAlert.obligation.id,customOpened[0].obligation);
+  assert.equal(customAlert.obligation.state,'recorded');assert.equal(customAlert.obligation.paging,'off');assert.equal(customAlert.obligation.automatic,false);
+  const customIncident=ok(await request('/api/command',{type:'declare',service:'payments',severity:'critical',title:'Synthetic database customer impact',summary:'Human verification remains required after source recovery',alerts:[customAlert.id]}));
+  assert.equal((await mail(w,customLocal,'OK: '+customKey,{id:'synthetic-oncall-334'})).status,200);
+  const customRecovered=ok(await request('/api/email')).receipts.filter(r=>r.address===customAddress);
+  assert.deepEqual(customRecovered.map(r=>r.outcome),['opened','deduplicated','recovered']);
+  for(const row of customRecovered) {
+    assert.equal(row.generation,customAlert.generation);assert.equal(row.alert,customAlert.id);assert.equal(row.obligation,customAlert.obligation.id);
+    assert.equal(row.decision.mode,'custom');assert.equal(row.decision.key,customKey);assert.equal(row.decision.version,1);
+  }
+  assert.deepEqual(customRecovered.map(r=>r.decision.rule),['failed','failed','ok']);
+  const customState=ok(await request('/api/state')),stopped=customState.alerts.find(a=>a.id===customAlert.id);
+  assert.equal(customState.alerts.filter(a=>a.source==='email:'+customAddress).length,1);
+  assert.equal(stopped.state,'recovered');assert.deepEqual(stopped.events,customRecovered.map(r=>r.event));
+  assert.equal(stopped.obligation.id,customAlert.obligation.id);assert.equal(stopped.obligation.state,'stopped');
+  assert.equal(stopped.obligation.outcome,'stopped by source recovery');assert.equal(stopped.obligation.receipt,customRecovered[2].id);
+  assert.equal(customRecovered[2].stop,'stopped by source recovery');
+  assert.ok(Number.isFinite(Date.parse(stopped.obligation.stoppedAt)));
+  assert.equal(stopped.obligation.paging,'off');assert.equal(stopped.obligation.automatic,false);
+  assert.match(stopped.obligation.cancellation,/no attempt handed to a provider/i);
+  assert.equal(customState.incidents.find(i=>i.id===customIncident.id).state,'declared','email recovery cannot resolve the declared human incident');
+  const pagingAfterEmail=ok(await request('/api/paging/state'));
+  assert.equal(pagingAfterEmail.paging,'OFF');assert.deepEqual(pagingAfterEmail.receipts,[]);
+  for(const field of ['jobs','receipts','callbacks'])assert.deepEqual(pagingAfterEmail[field],pagingBeforeEmail[field],'source recovery creates no production delivery history');
+  // A delayed retry of the second failure cannot reopen its recovered generation.
+  const delayedFailure=await mail(w,customLocal,'FAILED: '+customKey,{id:'synthetic-oncall-333'});
+  assert.equal(delayedFailure.status,400);assert.match(delayedFailure.text,/duplicate_message_id; original receipt retained/);
+  const customReplay=ok(await request('/api/email')).receipts.filter(r=>r.address===customAddress);
+  assert.deepEqual(customReplay.map(r=>r.id),customRecovered.map(r=>r.id));
+  assert.equal(customReplay[1].deliveries,2);assert.equal(customReplay[1].lastDiagnostic,'duplicate_message_id');
+  const afterCustomReplay=ok(await request('/api/state'));
+  assert.deepEqual(afterCustomReplay.alerts,customState.alerts,'message retry cannot reopen or replace the stopped obligation');
+  assert.deepEqual(afterCustomReplay.incidents,customState.incidents,'message retry changes no human incident');
+  console.log('PASS OC-033 custom email: distinct failure messages open and deduplicate one generation and canonical recorded obligation; resolve stops it by source recovery, keeps the declared incident open and creates no production delivery receipt. Paging remains OFF.');
   const original=ok(await request('/api/state'));
   const nativeKey=randomBytes(32).toString('hex');ok(await request('/api/sources',{id:'native',key:nativeKey,scopes:['payments']}));
   const native={source:'native',eventId:'held-trigger',service:'payments',environment:'production',key:'held',generation:'held-cycle',intent:'trigger',severity:'warning',title:'Held native observation',observedAt:'2026-10-01T00:00:00Z',evidence:''};

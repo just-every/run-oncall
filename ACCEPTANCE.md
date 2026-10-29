@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 11 | 49 | 24 | 84 |
+| Core | 15 | 45 | 24 | 84 |
 | Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 11 | 49 | 28 | 88 |
+| Full target | 15 | 45 | 28 | 88 |
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). OC-017 is judged from the current candidate `HEAD` (29 October 2026), identified by its exact-SHA Verify and landing receipt. Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -46,7 +46,7 @@ Core · published · **partial**
 
 #### OC-003 — Roles and authority
 
-Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-004
+Core · published · **done** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-ACCESS-004
 
 **Requirement.** Incident changes require an active authorized human session or an explicitly scoped OC-053 service-account capability (RL-2). A machine is attributed as a service account and never gains human-session, member-management or human-review authority. Viewer reads; responder coordinates; admin manages services, policies, members and import. All active members see all workspace incident data, and admin, responder and viewer permissions are separate from incident-commander attribution. Ingest credentials grant no read or human authority. Bearer and signed intake return only `duplicate`, the stored event `id`, the source `eventId`, `service`, `observedAt` and `acceptedAt` (201 accepted; 200 deduplicated). Routing decisions, snapshots and alert identities stay behind authorized read and export doors; scoped OC-053 reads disclose only granted service records, and archive and export authority remains session-protected. The status-only stakeholder role, with no incident, alert, runbook or archive access, is specified and tracked in OC-061.
 
@@ -54,20 +54,20 @@ Core · published · **partial** · Cites BASE-ROLE-001, BASE-ACCESS-002, BASE-A
 1. Anonymous, expired, revoked, viewer, responder and admin sessions each get their role's outcome on reads, commands, sources and archives, and a real HTTP mutation held open while its author is revoked or downgraded publishes nothing.
 2. Minimal intake receipts disclose no private routing data.
 
-**Evidence.** `src/api.ts`; `src/auth.server.ts`; `tests/runtime.mjs`; `tests/runtime.mjs`
-**Gap.** A responder session's permitted coordination and its refusal of administrator actions are not asserted in the cited tests (`tests/member-coordination-browser.mjs` shows a responder acknowledging and noting); anonymous, expired, revoked, viewer and admin outcomes, held downgrade and revoke mutations and minimal receipts are asserted. Workspace-wide roles are implemented; team isolation and federation are separate targets in OC-023/039.
+**Evidence.** `tests/runtime.mjs` — coordinationJourney: session roles, responder workspace reads, attributed acknowledgment and note, administrator refusals, held downgrade and revoke mutations, minimal bearer and signed intake receipts; `tests/member-coordination-browser.mjs` — responder coordinates and reloads attributed history.
+**Gap.** None.
 
 #### OC-004 — Incident state transitions
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Incident state transitions are explicit. Acknowledgment assigns responsibility. Resolution requires recovery evidence and a summary, independently of alert recovery. Optimistic revision checks reject stale edits. All accepted changes append an attributed timeline transactionally with state. Any active responder or admin can attest recovery and follow-up evidence; attestation is a human claim, not automatic measurement verification. This resolution rule governs declared incidents; an alert-only page that its source recovers closes without a human summary under OC-056.
 
 **Acceptance.**
 1. Declare from admitted alerts and acknowledge; stale and concurrent changes are rejected; the source alert clears; resolution without evidence and a summary is refused; the incident then resolves, and its attributed timeline reads back over HTTP.
 
-**Evidence.** `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
-**Gap.** The declared incident's linked alerts, the refusal of resolution without evidence and a summary, the resolved state and the timeline's attribution are not asserted in the cited test; acknowledgment, stale and concurrent edit refusal and source-alert recovery are asserted. Recovery attestation is a human claim, not independently measured customer recovery.
+**Evidence.** `tests/runtime.mjs` — coordinationJourney: exact admitted alert links, responder commander, stale and concurrent refusal, source recovery independence, unchanged state after recovery without evidence and resolution without a summary, evidenced recovery, resolved state and human-attributed lifecycle history; `tests/triage.mjs` — bulk resolution refuses missing recovery evidence.
+**Gap.** None.
 
 #### OC-005 — Copied runbooks
 
@@ -200,15 +200,15 @@ Core · published · **partial**
 
 #### OC-015 — Strict module archives
 
-Core · published · **partial** · Cites BASE-DATA-001
+Core · published · **done** · Cites BASE-DATA-001
 
 **Requirement.** Strict module archive validation and atomic replacement remain supported. Imported pending historical jobs pause. Scope and local capacity limits remain explicit.
 
 **Acceptance.**
 1. Round-trip the strict module archive through protected HTTP; unknown fields, broken references and an injected SQL failure are rejected atomically, callbacks are retained and pending historical jobs pause.
 
-**Evidence.** `src/family/response-operations/paging-archive.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs`
-**Gap.** No cited test shows the module archive door refusing an unauthenticated or non-admin caller; the round trip, strict refusals, SQL rollback, retained callbacks and paused jobs are asserted.
+**Evidence.** `tests/activation.mjs` pagingHistory: current-admin populated archive round trip; anonymous 401 and active viewer and responder 403 at both archive and restore doors, no disclosure, unchanged module records and both revisions with refusal audit; unknown fields, broken references, retained callbacks, paused pending jobs and injected SQL rollback.
+**Gap.** None.
 
 ### Consistent recovery checkpoint
 
@@ -503,7 +503,7 @@ Core · target · **missing** · Register R-12
 
 #### OC-033 — Generic email and Events API
 
-Core · target · **partial** · Rules D-3 · Register R-2
+Core · target · **done** · Rules D-3 · Register R-2
 
 **Requirement.** Offer scoped, revocable webhook and Events API credentials and integration email addresses for tools without adapters. Email intake uses authenticated Cloudflare Email Routing delivery, integration addresses with an unguessable installation-generated local part on the configured inbound email domain (email is off until one is set), bounded MIME and attachment handling, safe text extraction and explicit sender and routing rules; an arbitrary From address does not grant authority. Show parse failures, quarantine and unmapped service or environment to the integration owner. Document curl examples, stable receipt IDs, idempotency, rate and size limits, signatures, key rotation and trigger and recovery generation mapping. Each integration email address has an OC-070 email mode, with trigger and resolve rules and a stated unmatched-mail fallback, that turns each email into a trigger, deduplication or recovery of a derived alert generation; no email opens or resolves anything outside those rules. No rejected event is shown as accepted or silently discarded. Sources that already send PagerDuty, Opsgenie or Splunk On-Call shaped payloads use the OC-055 compatible endpoints instead of this schema. A real-provider email run is field proof R-2.
 
@@ -512,8 +512,8 @@ Core · target · **partial** · Rules D-3 · Register R-2
 2. Inspect accepted receipts, bounded quarantine/rejection diagnostics and no unauthorized read or incident mutation.
 3. Send a repeated failure subject and then a resolve-rule mail to an address in OC-070 custom-rule mode, and observe one generation whose paging stops by source recovery.
 
-**Evidence.** `src/server.ts`; `src/email/`; `tests/intake.mjs`; `tests/routing.mjs`; `tests/transfer.mjs`; `docs/compatible-intake.md`; `docs/incidents.md`
-**Gap.** Signed Events API admission is not asserted in the cited tests (`tests/runtime.mjs` and `tests/routing.mjs` hold it), and no cited test repeats a failure subject under custom rules before the resolve; bearer events, email receipts, deduplication, revocation, limits, spoofing, malformed MIME, quarantine diagnostics, refusal of unauthorized reads and writes and source-recovery stops are asserted. A real inbound provider email is register row R-2.
+**Evidence.** `tests/runtime.mjs` — coordinationJourney: signed and bearer Events API admission, scoped credentials, revocation, limits and minimal receipts; `tests/intake.mjs` — emitted-Worker intake journey: authenticated email, duplicate message IDs, spoof and MIME quarantine, bounded diagnostics, unauthorized reads and incident mutations, and custom failure deduplication with canonical source-recovery stop; `tests/routing.mjs` — public Worker journey: email modes and versioned trigger and resolve rules; `tests/triage.mjs` — source-recovery journey: canonical obligations and declared-incident independence. Real-provider field proof remains the dated R-2 record; paging remains OFF.
+**Gap.** None.
 
 #### OC-034 — Slack and Microsoft Teams response
 

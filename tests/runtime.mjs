@@ -885,7 +885,48 @@ try {
       cookie,
     ),
   );
+  assert.deepEqual(incident.alerts, [admittedAlert], 'declaration links exactly the admitted alert identity');
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id).alerts,
+    [admittedAlert], 'the declared alert link reads back through protected HTTP');
   await awaitingCoordinationAuthority({ origin, request, cookie, incident: incident.id });
+  const responder = ok(await request('/api/members', {
+    name: 'synthetic-oncall-303', role: 'responder', password: 'synthetic-oncall-303-password',
+  }, cookie), 201);
+  const responderLogin = await request('/api/login', {
+    name: responder.name, password: 'synthetic-oncall-303-password',
+  });
+  ok(responderLogin);
+  const responderCookie = responderLogin.cookie;
+  const responderState = ok(await request('/api/state', undefined, responderCookie));
+  assert.deepEqual(responderState, ok(await request('/api/state', undefined, cookie)),
+    'the active responder reads the populated workspace, including other members and services');
+  assert.deepEqual(ok(await request('/api/workspace', undefined, responderCookie)).state, responderState);
+  const responderArchive = ok(await request('/api/archive', undefined, cookie));
+  assert.ok(responderArchive.events.length && responderArchive.incidents.length,
+    'authority refusals use a valid populated archive');
+  const credentialsBefore = () => ['sources', 'credentials', 'operator_members']
+    .map(table => rows('SELECT * FROM ' + table + ' ORDER BY 1'));
+  const beforeResponderRefusals = credentialsBefore();
+  for (const [label, path, input] of [
+    ['service update', '/api/command', { type: 'service', ...responderState.services.find(s => s.id === service.id), name: 'Synthetic forbidden service change' }],
+    ['policy publication', '/api/command', { type: 'policy', service: service.id, severity: '*', action: 'suppress', owner: responder.id, reason: 'Synthetic forbidden policy change' }],
+    ['member promotion', '/api/command', { type: 'member', id: viewer.id, role: 'admin', active: true }],
+    ['member creation', '/api/members', { name: 'synthetic-oncall-304', role: 'admin', password: 'synthetic-oncall-304-password' }],
+    ['source listing', '/api/sources', undefined],
+    ['source creation', '/api/sources', { id: 'synthetic-oncall-303', key: 'synthetic-oncall-303-source-credential', scopes: [service.id] }],
+    ['source rotation', '/api/sources', { id: 'monitor', key: 'synthetic-oncall-304-source-credential', scopes: [service.id] }],
+    ['source revocation', '/api/sources/monitor/revoke', {}],
+    ['archive export', '/api/archive', undefined],
+    ['archive restore', '/api/restore', { mode: 'replace', archive: responderArchive }],
+  ]) {
+    const denied = await request(path, input, responderCookie);
+    assert.equal(denied.status, 403, label + ': valid native request reaches the authority refusal');
+    assert.deepEqual(Object.keys(denied.value), ['error'], label + ': the refusal discloses no protected records');
+    assert.deepEqual(ok(await request('/api/state', undefined, cookie)), responderState,
+      label + ': application records and workspace revision stay unchanged; refusal audit may append');
+    assert.deepEqual(credentialsBefore(), beforeResponderRefusals,
+      label + ': source custody, password credentials and member authority stay unchanged');
+  }
   const mutate = async (data) => {
     incident = ok(
       await request(
@@ -898,9 +939,20 @@ try {
   };
   const acknowledgement = await auditedMutation(cookie, () => request("/api/command", {
     incident: incident.id, revision: incident.revision, type: "transition", state: "acknowledged", summary: "Taking responsibility",
-  }, cookie));
+  }, responderCookie));
   incident = ok(acknowledgement.response);
   assert.equal(acknowledgement.after.incidents.find(item => item.id === incident.id).state, "acknowledged");
+  const responderNote = 'Synthetic responder observed customer impact';
+  incident = ok(await request('/api/command', {
+    type: 'note', incident: incident.id, revision: incident.revision, text: responderNote,
+  }, responderCookie));
+  const coordinated = ok(await request('/api/state', undefined, responderCookie)).incidents.find(i => i.id === incident.id);
+  assert.equal(coordinated.commander, responder.id);
+  assert.equal(coordinated.state, 'acknowledged');
+  assert.equal(coordinated.timeline.find(e => e.lifecycle?.to === 'acknowledged').actor, responder.id);
+  assert.equal(coordinated.timeline.find(e => e.text === responderNote).actor, responder.id);
+  assert.deepEqual(coordinated, incident, 'permitted coordination reads back with the real responder attribution');
+  console.log('PASS OC-003 responder authority: populated workspace reads, attributed acknowledgment and note, ten administrator refusals with unchanged application and credential records');
   ok(
     await request(
       "/api/command",
@@ -966,17 +1018,48 @@ try {
   assert.deepEqual(afterSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
     beforeSourceRecovery.alerts.filter(alert => alert.id !== admittedAlert),
     "OC-001: delayed recovery of the older generation leaves the newer generation, other source and staging alert unchanged");
+  const beforeUnevidencedRecovery = ok(await request('/api/state', undefined, cookie));
+  ok(await request('/api/command', {
+    type: 'transition', incident: incident.id, revision: incident.revision,
+    state: 'recovered', summary: 'Synthetic recovery without evidence',
+  }, cookie), 400);
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)), beforeUnevidencedRecovery,
+    'recovery without evidence preserves incident state, revision and timeline');
   await mutate({
     type: "transition",
     state: "recovered",
     summary: "Affected journey verified",
     evidence: "https://example.test/recovery",
   });
+  const beforeUnsummarizedResolution = ok(await request('/api/state', undefined, cookie));
+  ok(await request('/api/command', {
+    type: 'transition', incident: incident.id, revision: incident.revision, state: 'resolved',
+  }, cookie), 400);
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)), beforeUnsummarizedResolution,
+    'resolution without a summary preserves incident state, revision and timeline');
   await mutate({
     type: "transition",
     state: "resolved",
     summary: "Sufficient exposure observed",
   });
+  const resolvedIncident = ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id);
+  assert.equal(resolvedIncident.state, 'resolved');
+  assert.equal(resolvedIncident.recovery, 'https://example.test/recovery');
+  assert.equal(resolvedIncident.timeline.find(e => e.kind === 'declared').actor, admin.id);
+  for (const [state, actor, summary] of [
+    ['acknowledged', responder.id, 'Taking responsibility'],
+    ['mitigating', admin.id, 'Mitigation is being reviewed'],
+    ['recovered', admin.id, 'Affected journey verified'],
+    ['resolved', admin.id, 'Sufficient exposure observed'],
+  ]) {
+    const entry = resolvedIncident.timeline.find(e => e.lifecycle?.to === state);
+    assert.equal(entry.actor, actor, state + ': the lifecycle entry retains its authorized human actor');
+    assert.ok(entry.text.includes(summary), state + ': the saved transition summary reads back');
+    assert.ok(Number.isFinite(Date.parse(entry.at)), state + ': the lifecycle entry retains its action time');
+    if (state === 'recovered') assert.equal(entry.lifecycle.evidence, 'https://example.test/recovery');
+  }
+  assert.deepEqual(resolvedIncident, incident, 'the resolved state and complete timeline read back over HTTP');
+  console.log('PASS OC-004 native lifecycle: exact admitted alerts, responder commander, atomic evidence and summary refusals, evidenced recovery and resolved human-attributed timeline');
   await mutate({
     type: "review",
     text: "Cause: missing migration. Repair verified against preserved customer behavior.",
