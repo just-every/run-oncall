@@ -363,6 +363,12 @@
       "name": "0155_agent_erasure_receipts.sql",
       "sha256": "20828509eeeb24cd0e5185efc85ba3d52732bbdb6a6cd6686c054715b0f655e6",
       "sql": "-- Installation-bound evidence of an erasure, never its content or cached result.\nCREATE TABLE oc_agent_erasure_receipts (\n  agent TEXT NOT NULL,\n  key_sha256 TEXT NOT NULL,\n  person TEXT NOT NULL,\n  client TEXT,\n  consent TEXT,\n  approval TEXT,\n  operation TEXT NOT NULL,\n  args_sha256 TEXT NOT NULL,\n  target_sha256 TEXT NOT NULL,\n  requested_revision INTEGER NOT NULL,\n  workspace TEXT NOT NULL,\n  workspace_revision INTEGER NOT NULL,\n  workspace_token TEXT NOT NULL,\n  PRIMARY KEY(agent,key_sha256)\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0156_agent_team_receipts.sql",
+      "sha256": "753bd673792455f4cf1474288bfd913b96ca11bab6a0b5f41d6561e82c95e812",
+      "sql": "-- Installation-bound team effect evidence, without names, arguments or results.\nCREATE TABLE oc_agent_team_receipts (\n  agent TEXT NOT NULL,\n  key_sha256 TEXT NOT NULL,\n  person TEXT NOT NULL,\n  client TEXT,\n  consent TEXT,\n  approval TEXT,\n  operation TEXT NOT NULL,\n  args_sha256 TEXT NOT NULL,\n  team TEXT NOT NULL,\n  team_sha256 TEXT NOT NULL,\n  requested_revision INTEGER NOT NULL,\n  team_revision INTEGER NOT NULL,\n  manager_gains TEXT NOT NULL CHECK(json_valid(manager_gains) AND json_type(manager_gains)='array'),\n  workspace TEXT NOT NULL,\n  workspace_revision INTEGER NOT NULL,\n  workspace_token TEXT NOT NULL,\n  PRIMARY KEY(agent,key_sha256)\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

@@ -1,6 +1,6 @@
 # Agents for incident coordination
 
-The Oncall responder works beside your existing pager. Paging stays OFF. The agent door is a preview pending shared policy conformance; keep your existing incident and paging process authoritative.
+The Oncall responder works beside your existing pager. Paging stays OFF. The agent door is a preview for recorded coordination; keep your existing incident and paging process authoritative.
 
 Open Agents (`/agents`) to inspect decisions, pending approvals, reviews and Pause. An agent acts for its current sponsoring person. Company policy chooses autonomous work, review, approval or refusal for each applicable risk class. There is no preset permission to act. Missing or expired policy, unanswered classes, Pause, revoked consent and native access restrictions stop the next agent effect.
 
@@ -33,7 +33,7 @@ Minimal response events contain operation, type, service, incident, revision, st
 
 Provider-spend caps are not enforced by this preview. Standalone cap settings refuse; a signed Business document containing caps reports `not_enforced`. This installation has no money-moving tool. Action editing, invitations, private-team enforcement, remediation executors, SMS, voice, push paging and independent standby are not built. Password creation, secret rotation/reveal, human review acceptance, imports and installation operations retain their native person or dedicated doors.
 
-Completed team-manager edits can still return `revision_conflict` on retry because native classification checks their consumed revision. Completed access widening now retains its original effect facts. An exact approved erasure retry uses native receipt custody to check current authority without reading the deleted target. Inspect the saved approval and native outcome before preparing another operation. The team-manager replay limitation retains its failing conformance assertions; they do not mean the approved effect did not run.
+Completed team-manager edits retain native effect custody in the same transaction as the team and its audit. An exact retry checks current scope, sponsor and agent authority, consent, Pause and client binding before Base returns its original approval receipt. Fresh writes still need the current native team revision and exact saved review. Changed arguments or a new key cannot reuse a consumed team revision; later workspace changes require fresh review. Completed access widening retains its original effect facts, and an exact approved erasure retry checks authority without reading the deleted target.
 
 ## Declaration and proof limits
 
@@ -42,3 +42,5 @@ The CORE declaration does not prove optional multi-sponsor, mail-edge, resource-
 The contract generator preserves existing judgments. BASE-AGENT-003 (resources), BASE-AGENT-010 (events and subscriptions), the optional parts of BASE-AGENT-001/013 and SURFACE-001/003 were missing before this adoption and remain unproved. No optional clause is promoted by declaring CORE.
 
 Native erasure receipts contain only installation/workspace, approval, sponsor, agent, client and consent bindings, revision and argument/target digests. They commit with the erasure and contain no erased content or cached result. Base alone returns the original approval outcome. They never export; another native subject erasure clears the previous receipts, and workspace changes invalidate their revision binding. Missing scopes, revoked consent, Pause and sponsor demotion still refuse.
+
+Team replay receipts (`oc_agent_team_receipts`) contain only binding IDs, revisions and digests, including the IDs whose manager authority increased. They hold no team names, argument bodies or cached results. They remain installation-bound, never enter portable exports, and native subject erasure inventories and clears them in its transaction.

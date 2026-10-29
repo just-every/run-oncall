@@ -8,6 +8,7 @@ import { subjectErasureIdentity } from '../subject-erasure-identity'
 import { defineTool, type JsonSchema, type ToolContext, type ToolDefinition } from '../modules/agent-door/index.ts'
 import { nativeAccess, nativeActor, nativeAudit, nativeCall, persistNative, type NativeAccess } from './native'
 import { completedErasure, erasureReceipt } from './erasure-receipts'
+import { completedTeamChange, teamFacts, teamReceipt } from './team-receipts'
 
 type Args = Record<string, unknown>
 const string = (maxLength = 100): JsonSchema => ({ type: 'string', minLength: 1, maxLength })
@@ -87,9 +88,10 @@ function teamsTool(env: Bindings): ToolDefinition {
     scope: 'teams:write', readOnly: false, classes: ['standard', 'access'], clauses: ['OC-023', 'OC-041'], untrusted: true,
     inputSchema: { type: 'object', additionalProperties: false, properties: { id: string(), revision, name: string(200), visibility: { enum: ['public'] }, active: { type: 'boolean' }, members: ids, managers: ids }, required: ['revision', 'name', 'visibility', 'active', 'members', 'managers'] },
     outputSchema: teamOutput,
-    classify: (args, ctx) => nativeCall(async () => {
+    classify: (args, ctx, completed) => nativeCall(async () => {
+      if (completed) return completedTeamChange(env, ctx, args, completed)
       const { gains } = await current(args, ctx)
-      return gains.length ? [{ class: 'access', facts: { measure: gains.length, direction: 'widens' } }] : [{ class: 'standard', facts: { measure: 1 } }]
+      return teamFacts(gains)
     }),
     authority: (args, ctx) => nativeCall(async () => {
       const { target, gains } = await current(args, ctx)
@@ -102,11 +104,11 @@ function teamsTool(env: Bindings): ToolDefinition {
       return { target: { ...(args.id !== undefined ? { id: team.id } : {}), name: team.name }, items: [`Public team: ${team.active ? 'active' : 'archived'}`, `Revision ${target?.revision ?? 0}`, `Members: ${team.members.join(', ') || 'none'}`, `Managers: ${team.managers.join(', ') || 'none'}`, ...(gains.length ? [`New manager authority: ${gains.join(', ')}`] : [])] }
     }),
     run: (args, ctx) => nativeCall(async () => {
-      const { access } = await current(args, ctx)
+      const { access, gains } = await current(args, ctx)
       const team: Team = editTeam(access.state, access.member, args)
       recordAgent(access, ctx, 'team', `Saved public team ${team.name}`)
       nativeAudit(env, ctx, 'team', team.id)
-      await persistNative(env, access)
+      await persistNative(env, access, await teamReceipt(env, ctx, args, team, gains))
       const resource = uri('teams', team.id)
       ctx.emit('teams.updated', resource, { team: team.id, revision: team.revision })
       return { result: team, resources: [{ uri: resource, name: team.name }] }
