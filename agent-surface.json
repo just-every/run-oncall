@@ -2027,5 +2027,12 @@
         "initializer": "tests/initialize-agent-reviewer.mjs"
       }
     ]
-  }
+  },
+  "capabilities": [
+    "tools",
+    "policy",
+    "pause",
+    "audit",
+    "idempotency"
+  ]
 }

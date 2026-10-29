@@ -18,6 +18,8 @@ export function oncallTools(env: Bindings) {
     }},run:(args:Record<string,unknown>,ctx:ToolContext)=>runNativeOperation(env,tool.name,args,ctx,()=>tool.run(args,ctx))}
   })
 }
+export const oncallCapabilities = ['tools', 'policy', 'pause', 'audit', 'idempotency'] as const
+
 export const oncallNotTools = [
   { clauses: ['OC-029'], reason: 'device' as const },
   { clauses: ['OC-003', 'OC-036', 'OC-049'], reason: 'screen' as const },
@@ -30,6 +32,7 @@ export const oncallNotTools = [
 export function oncallAgentDoor(env: Bindings) {
   const claim = ownerClaimConfig(env)
   return createAgentDoor({
+    capabilities: oncallCapabilities,
     seed: 'oncall', name: 'Oncall', specialist: 'oncall-responder', db: env.DB, origin: env.AUTH_ORIGIN,
     trust: claim ? { issuer: claim.issuer, installationId: claim.installationId, appOrigin: claim.appOrigin, publicKeys: claim.publicKeys } : null,
     people: oncallPeople(env), tools: oncallTools(env), resources: oncallResources(env), notTools: oncallNotTools,

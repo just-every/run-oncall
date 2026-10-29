@@ -20,14 +20,14 @@ try {
     stdin: { resolveDir: root, sourcefile: 'agent-declaration.worker.ts', contents: `
 export default {async fetch(request,env){
  if(new URL(request.url).pathname!=='/declaration')return new Response(null,{status:404});
- const {oncallTools,oncallNotTools}=await import('./src/agent-door/index.server.ts');
+ const {oncallTools,oncallNotTools,oncallCapabilities}=await import('./src/agent-door/index.server.ts');
  const {oncallResources}=await import('./src/agent-door/resources.ts');
  // Both teammate-role and public-team edits require an active native admin.
  // That sponsor already has all native role/coverage authority; these edits
  // cannot widen it. Other-person widening and narrowing remain in the journey.
  const tools=oncallTools(env).map(({name,scope,readOnly,classes,clauses,widens,narrowing,inputSchema})=>({name,scope,readOnly,classes,clauses,...(widens===false?{widens,narrowing,inputSchema}:{}),...(['oncall.access.update','oncall.teams.update'].includes(name)?{sponsorEscalation:false}:{})}));
  tools.push({name:'oncall.events.list',scope:'events:read',readOnly:true,classes:['standard'],clauses:['BASE-AGENT-010']});
- return Response.json({tools:tools.sort((a,b)=>a.name.localeCompare(b.name)),resources:oncallResources(env).map(resource=>resource.uriTemplate).sort(),notTools:oncallNotTools});
+ return Response.json({capabilities:oncallCapabilities,tools:tools.sort((a,b)=>a.name.localeCompare(b.name)),resources:oncallResources(env).map(resource=>resource.uriTemplate).sort(),notTools:oncallNotTools});
 }};` } });
   runtime = new Miniflare(convertV4MiniflareOptions({ host: '127.0.0.1', port: 0, cf: false,
     workers:[{name:'declaration',modules:[{type:'ESModule',path:worker}],modulesRoot:directory,
