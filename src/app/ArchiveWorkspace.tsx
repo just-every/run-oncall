@@ -40,7 +40,7 @@ export function ArchiveWorkspace({ state, actor, busy, run, setError, setNotice,
             <pre>rer deploy --environment move-in --env-file "$HOME/.config/oncall/production.env"</pre>
             Use a name other than <code>move-in</code> if it already exists. <a href="/docs/install#host-for-your-team">Install and run</a> explains how to prepare the owner and credentials file.</li>
           <li>Open the new app address, sign in as its configured owner and finish setup. Before creating services or team members, open Archive, choose the local JSON, select the archived administrator, type <code>REPLACE</code> and press <strong>Replace workspace with this archive</strong>.</li>
-          <li>After “Restored”, reset the other team members' passwords and recreate monitoring source keys. Recreate schedules under Schedules, or use Move-in kit for provider schedules. Check Incidents and Team before using the new address.</li>
+          <li>After “Restored”, reset the other team members' passwords and recreate monitoring source keys. Recreate schedules under <strong>On call</strong>, or bring provider schedules through <strong>Settings → Move in</strong>. Check Incidents and Team before using the new address.</li>
         </ol>
         <p>Deployment does not upload local records. The <code>.rer</code> installation archive and <code>rer import</code> restore local installations only; this screen takes the app's JSON coordination archive. Your existing hosted environment stays available.</p>
       </details>
