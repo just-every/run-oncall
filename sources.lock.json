@@ -140,7 +140,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "f33571a49a421b7a8bf074ab4dd44ec5d606df1cfd6d066bf7a527e27055ffaf",
+      "sha256": "3eec2853979cdb3ecc45f7b088ec6e3935a7a3f08dc9e90cf9e5d9cca3d38e33",
       "executable": false
     },
     "agent-surface.json": {
@@ -168,7 +168,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b6d9e788464c6c3306bb9710fc23a66841271bf54625201e14283f999253fcec",
+      "sha256": "898cec328a43555196e713b4731dec316247f9f1b2d224968537527291fec659",
       "executable": false
     },
     "DEMO.md": {
@@ -5672,7 +5672,7 @@
       "executable": false
     },
     "tests/intake.mjs": {
-      "sha256": "650983758f02d4e16de7e25acb6cdff44b83e9994644dde165fcf42b01f74be0",
+      "sha256": "6959d6d4236c6fec732b0812113c75c20f3beafccde41dca5df2530d656408f0",
       "executable": false
     },
     "tests/keyboard.mjs": {
