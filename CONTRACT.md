@@ -1200,13 +1200,13 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 ## Status
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026).
+Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). OC-014 preview isolation additionally retains the candidate judgment from `efe3d7dbf6c6fac59469c605994d3d5c520cbd9e` (29 October 2026), replayed with current archive-authority assertions.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 8 | 14 | 0 | 22 |
+| Published | 9 | 13 | 0 | 22 |
 | Target and push further | 4 | 34 | 28 | 66 |
-| All | 12 | 48 | 28 | 88 |
+| All | 13 | 47 | 28 | 88 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1223,7 +1223,7 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 | `OC-011` | Calendar-day rotations | published | partial | `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs` | Fall-DST hand-offs, ambiguous and nonexistent minutes, viewer and missing slots kept as gaps and duplicate primary/backup detection are not asserted in the cited test; spring DST, override edges, overlap refusal and an inactive member's gap are asserted. |
 | `OC-012` | Paging off | published | partial | `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation.mjs` | The refusal's paging-OFF explanation and the demo's simulation label are not read back by the cited tests; each door's refusal and the absence of receipts are asserted. No production paging authorization is created by this contract. |
 | `OC-013` | Held history stays historical | published | done | `src/family/response-operations/escalation.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs` |  |
-| `OC-014` | Side-effect-free previews | published | partial | `src/schedule-api.ts`; `src/paging-api.ts`; `tests/activation.mjs` | No cited test compares durable state, receipt counts, timers or provider actions before and after a now/next, schedule or routing preview, or reads the synthetic label on historical delivery data. |
+| `OC-014` | Side-effect-free previews | published | done | `src/schedule-api.ts`; `src/paging-api.ts`; `src/family/response-operations/paging-archive.ts`; `tests/activation.mjs` — **scheduleCoordination** (aggregate on-call) and **pagingHistory** (OC-014 preview isolation); `tests/routing.mjs` — **OC-014 service routing preview isolation** |  |
 | `OC-015` | Strict module archives | published | done | `tests/activation.mjs` pagingHistory: current-admin populated archive round trip; anonymous 401 and active viewer and responder 403 at both archive and restore doors, no disclosure, unchanged module records and both revisions with refusal audit; unknown fields, broken references, retained callbacks, paused pending jobs and injected SQL rollback. |  |
 | `OC-016` | Recovery checkpoint | published | done | `src/api.ts`; `src/family/response-operations/recovery.ts`; `scripts/checkpoint.mjs`; `tests/activation.mjs`; `tests/checkpoint-cli.mjs` |  |
 | `OC-017` | Reviewed handoffs | published | partial | `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs` | The exported packet's copy is not compared with the reviewed copy in the cited test (`tests/checkpoint-cli.mjs` holds that comparison); preparation, review, inspection, eligibility, holds, identities, attribution, every bound and the unsent export are asserted. Connected communication is a separate target in OC-034/051. |
