@@ -1,8 +1,7 @@
-import assert from 'node:assert/strict';
-import {createHmac, randomBytes} from 'node:crypto';
-import {readFile} from 'node:fs/promises';
-import {localWorker} from './worker.mjs';
-
+import assert from 'node:assert/strict'
+import {createHmac,randomBytes} from 'node:crypto'
+import {readFile} from 'node:fs/promises'
+import {localWorker} from './worker.mjs'
 // One public-door journey. Recorded provider bodies are signed at the network edge.
 const w=await localWorker(),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value;};
 const hmac=(key,body,encoding='hex')=>createHmac('sha256',key).update(body).digest(encoding);

@@ -38,6 +38,7 @@ export function useWorkspace() {
   const [member, setMember] = useState<Member | null>(null);
   const [demo, setDemo] = useState(false);
   const [setup, setSetup] = useState(false);
+  const [pagerdutyConnect, setPagerdutyConnect] = useState(false);
   const [ready, setReady] = useState(false);
   const [error, updateError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -55,11 +56,12 @@ export function useWorkspace() {
     reading.current = pending;
     return pending;
   }
-  function apply(session: {member: Member | null; demo?: boolean; setup: boolean; state: State | null; onCall?: import('./on-call/read').OnCall}) {
+  function apply(session: {member: Member | null; demo?: boolean; moveIn?: {pagerdutyConnect: boolean}; setup: boolean; state: State | null; onCall?: import('./on-call/read').OnCall}) {
     preserveView();
     setMember(session.member);
     setDemo(session.demo === true);
     setSetup(session.setup);
+    setPagerdutyConnect(session.moveIn?.pagerdutyConnect === true);
     currentState.current = session.state;
     setState(session.state);
     setOnCall(session.onCall ?? null);
@@ -188,5 +190,5 @@ export function useWorkspace() {
     void execute();
     return completion;
   }
-  return {state, onCall, demo, member, setup, ready, error, busy, notice, run, refresh, setError, setNotice, failure: failures.failure};
+  return {state, onCall, demo, member, setup, pagerdutyConnect, ready, error, busy, notice, run, refresh, setError, setNotice, failure: failures.failure};
 }
