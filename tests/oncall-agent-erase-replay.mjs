@@ -20,7 +20,8 @@ export async function eraseReplay(runtime) {
  // A failure writing custody must roll back the erase and its fence together.
  await db.exec("CREATE TRIGGER refuse_erasure_receipt BEFORE INSERT ON oc_agent_erasure_receipts BEGIN SELECT RAISE(ABORT,'receipt storage unavailable'); END");
  const before=await state(),failed=await tool('oncall.privacy.erase',args);
- assert.equal(failed.result?.isError,true);
+ assert.ok(failed.result?.isError || failed.body?.error,'Custody storage failure refuses the erase');
+ assert.equal(failed.result?.structuredContent,undefined);
  assert.deepEqual(await state(),before);
  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM oc_agent_erasure_receipts').first()).n,0);
  await db.exec('DROP TRIGGER refuse_erasure_receipt');

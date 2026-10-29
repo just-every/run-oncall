@@ -667,6 +667,10 @@
       "sha256": "0c32dc751ae6cc6fe265495609e7959df5c8ee473cfa72f165a8aea167019555",
       "executable": false
     },
+    "migrations/core/0155_agent_erasure_receipts.sql": {
+      "sha256": "20828509eeeb24cd0e5185efc85ba3d52732bbdb6a6cd6686c054715b0f655e6",
+      "executable": false
+    },
     "MOVE-IN.md": {
       "sha256": "ef1fec265497d2a169e64a8f6b131d9164705162db59ab77be63d86d318775ea",
       "executable": false
@@ -1009,6 +1013,10 @@
     },
     "src/agent-door/deadlines.ts": {
       "sha256": "8a4ced8c079f6eaa8a5b42716ce426422eb87a7b918a22edcea055c522ab3c07",
+      "executable": false
+    },
+    "src/agent-door/erasure-receipts.ts": {
+      "sha256": "54a1583be05406c3cc3ce18b6fce68c7e65115d9c97fdd50822d957de4457a98",
       "executable": false
     },
     "src/agent-door/index.server.ts": {
@@ -5673,6 +5681,10 @@
     },
     "tests/member-coordination-browser.mjs": {
       "sha256": "536c6cbfe87aafa3b030737c9ea2d1739fc9ce0fa902257e1be84743e1bf7256",
+      "executable": false
+    },
+    "tests/oncall-agent-erase-replay.mjs": {
+      "sha256": "6616c9fde3767ff8435c2ffed5a0faced787b4b0677d0eb1389432a6297556cb",
       "executable": false
     },
     "tests/oncall-agent-fixtures.mjs": {
