@@ -1,3 +1,4 @@
+import {autonomousCoordination} from './agent-policy-fixture.mjs';
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {localWorker,ownerDoor} from './worker.mjs'
@@ -262,6 +263,9 @@ try {
   assert.deepEqual(workflowSource.actions, sourceBeforeMerge.actions); assert.deepEqual(workflowSource.timeline.slice(0, sourceBeforeMerge.timeline.length), sourceBeforeMerge.timeline);
   assert.ok(workflowTarget.timeline.some(e => e.kind === 'merge')); assert.ok(workflowSource.timeline.some(e => e.kind === 'merge'));
   assert.equal(ok(await req('/api/triage?service=' + workflowService.id)).total, 1, 'merged sources remain readable records but leave the active triage queue');
+  const unsetAlias = await w.request('/api/v1/incidents/' + workflowSource.id, undefined, undefined, {authorization: 'Bearer ' + workflowApiKey});
+  assert.equal(unsetAlias.status,403);assert.equal(unsetAlias.value.error.code,'policy_unset');
+  await autonomousCoordination(w,cookie);
   const canonicalAlias = await w.request('/api/v1/incidents/' + workflowSource.id, undefined, undefined, {authorization: 'Bearer ' + workflowApiKey});
   assert.equal(ok(canonicalAlias).id, workflowTarget.id); assert.equal(canonicalAlias.headers.get('content-location'), '/api/v1/incidents/' + workflowTarget.id);
   assert.deepEqual(ok(canonicalAlias).mergedSources, workflowTarget.mergedSources);
