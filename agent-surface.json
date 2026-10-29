@@ -716,6 +716,13 @@
       "target": {
         "kind": "service",
         "id": "agent-service"
+      },
+      "inject": {
+        "confirmExternal": true,
+        "internal": false,
+        "classes": [
+          "external"
+        ]
       }
     },
     {

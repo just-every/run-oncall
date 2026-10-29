@@ -27,6 +27,8 @@ Service-account clients remain bound to the active administrator who created the
 
 Approvals show the saved target, proposed change, native revision and exact summary. A changed revision or coverage digest requires a fresh review. The actual approver is recorded separately from the agent preparer. An agent confirmation is never a person's decision. Review offers Undo only when a real native reversal exists.
 
+A completed schedule approval can save the change successfully while retrying the original agent call returns `revision_conflict` in this preview. Inspect the saved schedule and final approval before preparing another change. The old revision and review digest cannot authorize a new edit.
+
 Minimal response events contain operation, type, service, incident, revision, state and time. Endpoint credentials are never returned through tools or resources. Uncertain transport is not receiver receipt and is never automatically resent. Native quotas and outbox custody remain in force.
 
 Provider-spend caps are not enforced by this preview. Standalone cap settings refuse; a signed Business document containing caps reports `not_enforced`. This installation has no money-moving tool. Action editing, invitations, private-team enforcement, remediation executors, SMS, voice, push paging and independent standby are not built. Password creation, secret rotation/reveal, human review acceptance, imports and installation operations retain their native person or dedicated doors.
