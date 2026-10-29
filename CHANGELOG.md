@@ -1,3 +1,14 @@
+# 0.5.2 · 2026-10-29
+
+Oncall 0.5.2 adds a preview of the owner-controlled agent door and native coordination receipts introduced since 0.5.1. Exact retries of completed team-manager edits now return the original reviewed result and receipt without a second team or audit change, while checking current authority, scope, consent, Pause and client binding; changed inputs or later native revisions require fresh review. The Managed build uses the maintained trusted-build workflow, including its pending-build handling. Runtime assertions now cover responder authority and the incident recovery/resolution lifecycle recorded as done for OC-003 and OC-004 in CONTRACT.md; other partial and missing clauses keep their documented gaps, including the agent-surface targets. It also includes daily-work and Settings updates, autosave/conflict handling, layered coverage and PTO records, import-consent updates and a read-only readiness report, within their documented limits. The contract was reorganized and its carried claims audited. This update adds 11 migrations (0146-0156) and pins rer 0.2.90. Back up first, keep applied migrations unchanged, and keep the existing pager active: paging stays OFF.
+
+- The team-manager replay fix binds the native team effect, audit and replay receipt in one transaction. Exact approved retries retain the original approval and access-widening facts; a receipt failure rolls the native edit back. Native subject erasure clears that replay custody.
+- Managed artifact builds now carry the public `MAIL_FROM` input with an empty default for the installation to supply.
+- The Managed workflow now pins `runeditrun/delivery` trusted-build `ff70d729948753ffdcceeca94aad063af2dcd979`. This is a workflow update; it is not a claim of a new hosted deployment.
+- `CONTRACT.md` remains the status authority. OC-003 and OC-004 are done with their cited flows; the agent-surface targets and the other documented gaps are unchanged by this release metadata.
+
+Back up before updating from 0.5.1. Export local data with `rer export --output exports/before-0.5.2.rer`; hosted owners export D1 using the original deploying Cloudflare credentials. Stop the app, update the original checkout with `git pull --ff-only` (from a detached tag, `git fetch --tags && git checkout v0.5.2`), then run `rer dev` locally or `rer deploy --environment ENVIRONMENT` for the hosted installation. The update applies migrations 0146-0156. Keep all 60 migration files unchanged. Restore only into an empty destination. The rer pin is 0.2.90. Paging stays OFF.
+
 # Contract cleanup · 2026-10-28
 
 ## Contract rewritten to the RER contract standard
