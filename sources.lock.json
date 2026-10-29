@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "a44bae4aae36d7a2e3d5e2da4e080d3c92eb11f226f6e7322b23680f43e6f982"
+    "sha256": "56f4055ea58b6c7e7ae037f534390f168be1f2cd17bec9ed7d9c7943b5af4e0c"
   },
   "components": [
     {
@@ -4956,7 +4956,7 @@
       "executable": false
     },
     "tests/intake.mjs": {
-      "sha256": "650983758f02d4e16de7e25acb6cdff44b83e9994644dde165fcf42b01f74be0",
+      "sha256": "0e7c497bc9ed9087293b40e992f9e790fc4336a0185ddd9469fe135ca081ac7a",
       "executable": false
     },
     "tests/keyboard.mjs": {
