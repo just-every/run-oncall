@@ -1200,13 +1200,13 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 ## Status
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026).
+Judged from the code and tests at commit `7f213725d311b5af7f80d86630767f20cad49bca` (29 October 2026). The landing candidate retains these code and test bytes; its exact commit is recorded by Verify.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 8 | 14 | 0 | 22 |
+| Published | 9 | 13 | 0 | 22 |
 | Target and push further | 4 | 34 | 28 | 66 |
-| All | 12 | 48 | 28 | 88 |
+| All | 13 | 47 | 28 | 88 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1221,7 +1221,7 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 | `OC-009` | Accessible interface | published | partial | `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/product-browser-journey.mjs`; `tests/product-browser-journey.mjs` | Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. BASE-ACCESSIBILITY-001 is not established across every Oncall journey and the OC-029 apps; the human passes and the VPAT are register rows R-3 and R-4. |
 | `OC-010` | Health and honest commands | published | partial | `src/api.ts`; `src/base/deployment-health.ts`; `OPERATIONS.json`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/transfer.mjs` | No cited test records provider or human-drill outcomes separately from local and hosted ones; check, describe, storage-unavailable health with the deployed identity and the hosted build's identity are asserted. Coordination storage loss reports 503 with deployment identity and recovers without changed records. Paging health and capacity are unclaimed and inherited by OC-026–029/064. |
 | `OC-011` | Calendar-day rotations | published | partial | `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs` | Fall-DST hand-offs, ambiguous and nonexistent minutes, viewer and missing slots kept as gaps and duplicate primary/backup detection are not asserted in the cited test; spring DST, override edges, overlap refusal and an inactive member's gap are asserted. |
-| `OC-012` | Paging off | published | partial | `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation.mjs` | The refusal's paging-OFF explanation and the demo's simulation label are not read back by the cited tests; each door's refusal and the absence of receipts are asserted. No production paging authorization is created by this contract. |
+| `OC-012` | Paging off | published | done | `tests/activation.mjs` — activation, OC-012/013/041: every paging door explained paging OFF, the existing pager, standby and real-phone prerequisites; unchanged workspace and paging state, refusal audit and zero receipts. `tests/activation.mjs` — Demo HTTP flow: emitted Demo title and name decoration, workspace demo flag and simulated SMS, voice, push and email results, with real authentication and invalid-incident refusals. |  |
 | `OC-013` | Held history stays historical | published | done | `src/family/response-operations/escalation.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs` |  |
 | `OC-014` | Side-effect-free previews | published | partial | `src/schedule-api.ts`; `src/paging-api.ts`; `tests/activation.mjs` | No cited test compares durable state, receipt counts, timers or provider actions before and after a now/next, schedule or routing preview, or reads the synthetic label on historical delivery data. |
 | `OC-015` | Strict module archives | published | done | `tests/activation.mjs` pagingHistory: current-admin populated archive round trip; anonymous 401 and active viewer and responder 403 at both archive and restore doors, no disclosure, unchanged module records and both revisions with refusal audit; unknown fields, broken references, retained callbacks, paused pending jobs and injected SQL rollback. |  |

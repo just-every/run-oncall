@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 12 | 48 | 24 | 84 |
+| Core | 13 | 47 | 24 | 84 |
 | Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 12 | 48 | 28 | 88 |
+| Full target | 13 | 47 | 28 | 88 |
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `7f213725d311b5af7f80d86630767f20cad49bca` (29 October 2026). The landing candidate retains these code and test bytes; its exact commit is recorded by Verify. Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -163,7 +163,7 @@ Core · published · **partial**
 
 #### OC-012 — Paging off
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Production paging is OFF, and the existing pager is authoritative (RL-1). Every normal-installation delivery attempt refuses with an explanation that an independent standby and a real-phone drill are required. No production paging provider sends, synthetic delivery proof, cron delivery, SMS, voice or push are performed. Escalation policies are inspectable configuration data, not active timers. A labeled demo simulation is not production delivery or acceptance. Native cutover additionally requires OC-026 to OC-029 and OC-038 real-phone and provider-failure acceptance.
 
@@ -171,8 +171,8 @@ Core · published · **partial**
 1. On a normal installation, each delivery, job, tick, callback and resume door returns the paging-OFF refusal and creates no receipt.
 2. Demo simulations are treated as simulations.
 
-**Evidence.** `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation.mjs`
-**Gap.** The refusal's paging-OFF explanation and the demo's simulation label are not read back by the cited tests; each door's refusal and the absence of receipts are asserted. No production paging authorization is created by this contract.
+**Evidence.** `tests/activation.mjs` — activation, OC-012/013/041: every paging door explained paging OFF, the existing pager, standby and real-phone prerequisites; unchanged workspace and paging state, refusal audit and zero receipts. `tests/activation.mjs` — Demo HTTP flow: emitted Demo title and name decoration, workspace demo flag and simulated SMS, voice, push and email results, with real authentication and invalid-incident refusals.
+**Gap.** None.
 
 #### OC-013 — Held history stays historical
 
