@@ -5712,7 +5712,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "e4dff29a35d213f03470e355a8e9a436615c50958b695f5875bdd7d04fc869f5",
+      "sha256": "61e06c77bb3fa6fc367a3af993246bbac55431c9a90326a322d6d70081373015",
       "executable": false
     },
     "tests/triage.mjs": {
