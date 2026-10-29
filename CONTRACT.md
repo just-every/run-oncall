@@ -1200,13 +1200,13 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 ## Status
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026).
+Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). OC-017 is judged from the current candidate `HEAD` (29 October 2026), identified by its exact-SHA Verify and landing receipt.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 7 | 15 | 0 | 22 |
+| Published | 8 | 14 | 0 | 22 |
 | Target and push further | 3 | 35 | 28 | 66 |
-| All | 10 | 50 | 28 | 88 |
+| All | 11 | 49 | 28 | 88 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1226,7 +1226,7 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 | `OC-014` | Side-effect-free previews | published | partial | `src/schedule-api.ts`; `src/paging-api.ts`; `tests/activation.mjs` | No cited test compares durable state, receipt counts, timers or provider actions before and after a now/next, schedule or routing preview, or reads the synthetic label on historical delivery data. |
 | `OC-015` | Strict module archives | published | partial | `src/family/response-operations/paging-archive.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs` | No cited test shows the module archive door refusing an unauthenticated or non-admin caller; the round trip, strict refusals, SQL rollback, retained callbacks and paused jobs are asserted. |
 | `OC-016` | Recovery checkpoint | published | done | `src/api.ts`; `src/family/response-operations/recovery.ts`; `scripts/checkpoint.mjs`; `tests/activation.mjs`; `tests/checkpoint-cli.mjs` |  |
-| `OC-017` | Reviewed handoffs | published | partial | `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs` | The exported packet's copy is not compared with the reviewed copy in the cited test (`tests/checkpoint-cli.mjs` holds that comparison); preparation, review, inspection, eligibility, holds, identities, attribution, every bound and the unsent export are asserted. Connected communication is a separate target in OC-034/051. |
+| `OC-017` | Reviewed handoffs | published | done | `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs` protected HTTP handoff and checkpoint journey (exact reviewed export, identities, attribution, eligibility, withdrawal, restore, races and bounds); `tests/checkpoint-cli.mjs` checkpointCli (exact export, retained history and recovery holds) |  |
 | `OC-018` | Maintained root commands | published | partial | `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/member-coordination-browser.mjs`; `tests/member-coordination-browser.mjs`; `tests/product-browser-journey.mjs` | No cited test asserts `rer build` or the deploy dry-run; setup, dev, preview, reset, archive, owner entry and member password sign-in are asserted. The real-account hosted journey is register row R-1; no maintained test repeats the account steps. |
 | `OC-019` | Additive upgrade | published | done | `src/workspace-store.ts`; `migrations/core/0106_relational_workspace.sql`; `tests/runtime.mjs`; `tests/runtime.mjs` |  |
 | `OC-020` | Now/next and calendar feed | published | partial | `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/product-browser-journey.mjs` | The seven-day default, the 31-day bound on explicit windows, the separate backup feed, gaps in the feed and paging-free admission are not asserted in the cited tests; now/next, an authenticated explicit-window feed with override boundaries and unauthenticated refusal are asserted. Private ICS downloads support Google Calendar/Outlook import; persistent subscription credentials are OC-025. |

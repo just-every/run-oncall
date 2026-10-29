@@ -708,6 +708,7 @@ try {
  ok(await A('/api/handoffs/h1/review',act(h1,'r1','Changed reason')),409) // review identity conflicts on changed content
  assert.equal(reviewed.history.at(-1).selfReview,true,'an author review is recorded as self-review, never independent review')
  const packet=ok(await A('/api/handoffs/h1/export'));assert.ok(packet.transport==='unsent'&&packet.providerActions.length===0,'an eligible review exports unsent copy with no provider action')
+ assert.deepEqual(packet.record,reviewed,'HTTP export preserves the exact reviewed payload, source snapshots, hashes, revision and attributed history')
  incident=ok(await A('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:'Source drift'}))
  ok(await A('/api/handoffs/h1/export'),409) // source drift makes the review ineligible
  const withdrawn=ok(await A('/api/handoffs/h1/withdraw',act(reviewed,'w1','Superseded by current copy'))).record

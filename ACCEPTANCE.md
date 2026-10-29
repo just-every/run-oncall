@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 10 | 50 | 24 | 84 |
+| Core | 11 | 49 | 24 | 84 |
 | Agent surface | 0 | 0 | 4 | 4 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 10 | 50 | 28 | 88 |
+| Full target | 11 | 49 | 28 | 88 |
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). OC-017 is judged from the current candidate `HEAD` (29 October 2026), identified by its exact-SHA Verify and landing receipt. Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -229,7 +229,7 @@ Core · published · **done** · Cites BASE-DATA-001
 
 #### OC-017 — Reviewed handoffs
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Persist explicitly authored, unsent handoff copy with an explicit intended audience, immutable incident and service snapshots and canonical content hashes. Preparation and review actions have stable identities that conflict on changed content. Only current active responders and admins prepare, review or withdraw; viewers inspect permitted internal records and admins restore. A review binds exact copy and source versions, becomes ineligible on source drift or a recovery hold, and never grants sending, publication, recovery verification or independent-review authority. Withdrawal is terminal and preserves attributed append-only history. OC-006 and historical unreviewed envelopes stay unchanged. Separate additive handoff storage and archive are bounded to 64 records, 128 history entries per record, 128 KiB per record and 1 MiB aggregate. Explicit checkpoint version 2 includes handoffs; version 1 remains supported. Restore retains historical identities and holds active approvals atomically alongside existing recovery and credential and session safeguards. Invalid input, capacity or storage failure or losing concurrent writes preserve the complete prior state. HANDOFF-STAGE.md defines retained snapshots, eligibility and permissions. No provider send, remote fetch or Lamp publication is authorized.
 
@@ -237,8 +237,8 @@ Core · published · **partial**
 1. Prepare, review, inspect and export exact handoff copy over protected HTTP; change the source or revision, withdraw, restore versions 1 and 2 and race writes.
 2. Eligibility and holds, stable action identities, append-only attribution and every storage bound hold, with no send authority.
 
-**Evidence.** `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs`
-**Gap.** The exported packet's copy is not compared with the reviewed copy in the cited test (`tests/checkpoint-cli.mjs` holds that comparison); preparation, review, inspection, eligibility, holds, identities, attribution, every bound and the unsent export are asserted. Connected communication is a separate target in OC-034/051.
+**Evidence.** `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs` protected HTTP handoff and checkpoint journey (exact reviewed export, identities, attribution, eligibility, withdrawal, restore, races and bounds); `tests/checkpoint-cli.mjs` checkpointCli (exact export, retained history and recovery holds)
+**Gap.** None.
 
 ### Activated installation and move-in
 

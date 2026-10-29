@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "a44bae4aae36d7a2e3d5e2da4e080d3c92eb11f226f6e7322b23680f43e6f982"
+    "sha256": "3f7b56f3ae1e70588fb35c49e75b639c2360ceed550182b9caf8adc33021abb8"
   },
   "components": [
     {
@@ -140,7 +140,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "cf17502b9cc442fd2ebd2edfa6be5c422a67aea20be3bff7cc676d0bdb0167dd",
+      "sha256": "9fb8d05beff7ce76a1eb4cfa8d4974eaa180ab9044d58dfa6acb3915e21a3687",
       "executable": false
     },
     "AGENTS.md": {
@@ -164,7 +164,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a2132879f852a86ebdaae574c0d86813162730737552e606b89a666ae15f6aa5",
+      "sha256": "d4c76f3bcf110418f1d2d20b3e05d014e49fce445ebf1e37950c3c464a91bdf3",
       "executable": false
     },
     "DEMO.md": {
@@ -4828,7 +4828,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "8a8167127e336caa64d99dbfbd329aba8297eacb130a0cc49dad370c011ecd1a",
+      "sha256": "b154d8ce0d26e9172a827c93e426ae6fcce38ae590828ecbca9384702f0e5db7",
       "executable": false
     },
     "tests/changes.mjs": {
