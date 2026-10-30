@@ -1224,7 +1224,11 @@
       "executable": false
     },
     "src/app/IncidentBulkActions.tsx": {
-      "sha256": "e4aab54f345835cfe6dc27245207ebe5c9e5a2155a71a1cd29478b2f691d67b6",
+      "sha256": "cec33e0839faf399081fac71808a19bf7dcf5369a6ed6bd5a2b12bc2afb13540",
+      "executable": false
+    },
+    "src/app/IncidentMeta.tsx": {
+      "sha256": "37c528b82640effab783737c80391de7359957a734f0370b4733eaf95ca01d92",
       "executable": false
     },
     "src/app/IncidentResponseControls.tsx": {
@@ -1232,11 +1236,11 @@
       "executable": false
     },
     "src/app/incidents.css": {
-      "sha256": "e2c2b6499b88bded3be4869ed84777180ea2536d7e4f0f759544397635cef352",
+      "sha256": "8d46e37adbb46d4284f5e44b609d443c85d1d081c4ecb2da250138c6a90fb4a5",
       "executable": false
     },
     "src/app/IncidentTriage.tsx": {
-      "sha256": "385803065ae5d03fb3af81c7f9d096a78b6a04cee1a6f101ad4974bda0aee48e",
+      "sha256": "01f83a75b1d445abefe37dc914fb26aab892bd142d0f8452cf76aa5a167c434c",
       "executable": false
     },
     "src/app/lobbyPaths.ts": {
@@ -1296,11 +1300,11 @@
       "executable": false
     },
     "src/app/triage.css": {
-      "sha256": "d7c4059dd599390bf7a9da1bdaebd54c0e70e0fc9bf2df84389a11a07a9112c6",
+      "sha256": "17e080c7d1d6dff85c67e1a9ef90dd9bcd0f425194cb0b77dbcb6f335cd0f80f",
       "executable": false
     },
     "src/app/TriageFilters.tsx": {
-      "sha256": "f24537dbc9913443e65d87b1c5af2a7cbf81d2f9458a5df57d5c59c8d5b650c1",
+      "sha256": "6098d16a0a39f49908d661fbd03758a48ac636a9ca5ac7882312b04c8574b109",
       "executable": false
     },
     "src/app/useViewAnchor.ts": {
@@ -4856,7 +4860,7 @@
       "executable": false
     },
     "src/on-call/on-call.css": {
-      "sha256": "53b55f05131c40b03b8394df0d882727b9c8377204e2fd1403799277727c7647",
+      "sha256": "c8258fb56d546afab0d28fd6a2cd7ae7c8e335f58da77c7b549f4cf435a22028",
       "executable": false
     },
     "src/on-call/OnCallHome.tsx": {
@@ -5808,7 +5812,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "536c6cbfe87aafa3b030737c9ea2d1739fc9ce0fa902257e1be84743e1bf7256",
+      "sha256": "a8de5d3cc4e48001374cb7977f96b0f6eb74cb5cb591667f0346a1ca69903572",
       "executable": false
     },
     "tests/oncall-agent-erase-replay.mjs": {
@@ -5840,7 +5844,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "83d893c025429c28d736c88fb7c0b3eec0989cce6a1c4c6d662f2ddf66ddded8",
+      "sha256": "cb36473bc7dc42c385a373f95863d651e7246ade939dbe8444dc9868179e1432",
       "executable": false
     },
     "tests/product-browser.mjs": {
