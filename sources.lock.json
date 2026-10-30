@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5a88ba805ec22dcd1831c60e5f78ed32a6a5c5b46612a532cf97b8a1511d3ef9",
+      "sha256": "1cce0980788d5273b8f29cd57bf960f645098cc755ddc60d07ac7fec9beac719",
       "executable": false
     },
     "DEMO.md": {
@@ -5860,7 +5860,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "6630b606ed8cca60d7ed7dbf4cac4351a3bb52e8ed15a6a6f865bd19433fc9a2",
+      "sha256": "b903ebcf9e7b297057aab76cad36e2dc46d79344d410a43144616dc66d90857e",
       "executable": false
     },
     "tests/readiness.mjs": {

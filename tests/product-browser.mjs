@@ -298,7 +298,7 @@ async function limitationsBrowser(page,context){
  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'limitations fit the desktop viewport');
  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
- assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+ assert.deepEqual(axe.violations,[],'limitations have no WCAG axe violations');
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc044-limits-${width}.png`,fullPage:true});}
  await page.setViewportSize({width:1440,height:1000});
