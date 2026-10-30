@@ -1327,19 +1327,36 @@ try {
     }),
     401,
   );
-  ok(
-    await request(
-      "/api/password",
-      { member: viewer.id, password: "new-viewer-password" },
-      mapped.cookie,
-    ),
-  );
-  ok(
-    await request("/api/login", {
-      name: "Viewer",
-      password: "new-viewer-password",
-    }),
-  );
+  const changedPassword = await auditedMutation(mapped.cookie, () => request(
+    "/api/password", { member: viewer.id, password: "new-viewer-password" }, mapped.cookie));
+  ok(changedPassword.response);
+  assert.equal(changedPassword.committed.filter(row => row.kind === 'password.request').length, 1);
+  const passwordSession = await request('/api/login', {name:'Viewer',password:'new-viewer-password'});
+  ok(passwordSession);
+  const passwordState = ok(await request('/api/state', undefined, mapped.cookie));
+  const passwordCustody = () => [rows('SELECT * FROM credentials ORDER BY member'), rows('SELECT * FROM sessions ORDER BY token')];
+  const passwordBefore = passwordCustody(), passwordHistory = rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  sql("CREATE TRIGGER synthetic_oncall_password_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='password.request' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-password-audit'); END");
+  try {
+    ok(await request('/api/password', {member:viewer.id,password:'synthetic-oncall-416-password'}, mapped.cookie), 503);
+  } finally { sql('DROP TRIGGER synthetic_oncall_password_audit'); }
+  assert.deepEqual(passwordCustody(), passwordBefore, 'audit failure rolls back password custody and session revocation');
+  assert.deepEqual(rows('SELECT * FROM oc_admin_audit ORDER BY ordinal'), passwordHistory, 'password audit failure preserves prior immutable history');
+  assert.deepEqual(ok(await request('/api/state', undefined, mapped.cookie)), passwordState);
+  ok(await request('/api/state', undefined, passwordSession.cookie));
+  ok(await request('/api/login', {name:'Viewer',password:'synthetic-oncall-416-password'}), 401);
+  const passwordRetry = await auditedMutation(mapped.cookie, () => request(
+    '/api/password', {member:viewer.id,password:'synthetic-oncall-416-password'}, mapped.cookie));
+  ok(passwordRetry.response);
+  const passwordFact = passwordRetry.committed.find(row => row.kind === 'password.request');
+  assert.ok(passwordFact);
+  assert.equal(passwordFact.actor, changedPassword.committed[0].actor);
+  assert.equal(passwordFact.subject, changedPassword.committed[0].subject);
+  assert.deepEqual(passwordRetry.after, passwordRetry.before, 'changing credentials leaves application history unchanged');
+  ok(await request('/api/state', undefined, passwordSession.cookie), 401);
+  ok(await request('/api/login', {name:'Viewer',password:'new-viewer-password'}), 401);
+  ok(await request('/api/login', {name:'Viewer',password:'synthetic-oncall-416-password'}));
+  console.log('PROBE OC-041 password: protected password change and targeted audit failure -> credential and session rollback, one accepted revision-bound fact, old authority revoked');
   console.log(
     "PASS OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; emitted Worker + local D1: setup/session/roles/CSRF, scoped bearer and raw-body HMAC ingress, identities, concurrent CAS, incident/recovery/runbook/review/follow-up, replay purity, archive equality/rollback, session invalidation, restart and repeat migration, truthful handoffs.",
   );

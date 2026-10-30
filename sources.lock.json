@@ -5660,7 +5660,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "f41aa10bc49051b76cb651e6c71a6b6f035baf8b5fc819a1d095579e661b6623",
+      "sha256": "3a66d9f8600f9fae53f09d748a744278e1c123b3b301225361252b23fd5c63f3",
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
@@ -5864,15 +5864,15 @@
       "executable": false
     },
     "tests/routing.mjs": {
-      "sha256": "2f7ad1f86eff7a9b9413105881c9fd34a190ba83c7096b70cf1c5e2cb7686a2a",
+      "sha256": "1ff31c4ffe445b5346fa667254244464777d1e1eff63d8b7506d52b723e1e6f7",
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "196fa14ed77d6375e03b2c028fe645d47f92c4105221a38b3951250da0784fb1",
+      "sha256": "48f4965481440c5427c2edb8e2d24cedb1a2d39c20de2d347b1c1c3abeb4e87a",
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "2c3b1a6133b0e9dd273f6b02a40e619a8146b892a5b00560d4c1426b4bd59022",
+      "sha256": "ead9b7d00c0bc915e687e03fd726e541cd75587e9cb957b81640d8684f45d3f1",
       "executable": false
     },
     "tests/triage.mjs": {

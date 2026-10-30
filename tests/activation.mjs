@@ -801,24 +801,42 @@ try {
  const copy={audience:'internal',title:'Checkout update',summary:'Errors are being mitigated',evidenceLinks:[],impactLinks:[]}
  const prepare=(id,payload,extra={})=>({id,incident:incident.id,incidentRevision:incident.revision,serviceHash:source.serviceHash,payload,...extra})
  const act=(record,actionId,reason='Exact copy checked')=>({actionId,revision:record.revision,payloadHash:record.payloadHash,sourceHash:record.sourceHash,reason})
+ // Each native handoff mutation must survive the same audit-failure boundary.
+ const handoffMutation=async(call,path,input,status=200)=>{
+  const before=durableSnapshot(w),handoffBefore=ok(await O('/api/handoffs')),workspaceBefore=ok(await O('/api/state')),pagingBefore=ok(await O('/api/paging/state'));
+  const kind='handoffs.'+path.split('/').at(-1),ids=new Set(before.oc_admin_audit.map(row=>row.id));
+  w.sql("CREATE TRIGGER synthetic_oncall_handoff_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='"+kind+"' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-handoff-audit'); END");
+  try{ok(await call(path,input),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_handoff_audit')}
+  assert.deepEqual(durableSnapshot(w),before,path+' audit failure preserves all durable records, revisions, credentials and immutable history');
+  const response=await call(path,input);ok(response,status);
+  const after=ok(await O('/api/handoffs')),facts=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').filter(row=>!ids.has(row.id)&&row.kind===kind&&row.outcome==='accepted');
+  assert.equal(facts.length,1,path+' commits exactly one permanent audit fact');
+  const fact=facts[0];assert.equal(fact.after_revision,fact.before_revision+1);
+  assert.deepEqual([fact.workspace_before,fact.workspace_after],[workspaceBefore.revision,workspaceBefore.revision]);
+  assert.deepEqual([fact.paging_before,fact.paging_after],[pagingBefore.revision,pagingBefore.revision]);
+  assert.deepEqual([fact.handoff_before,fact.handoff_after],[handoffBefore.revision,after.revision]);assert.equal(after.revision,handoffBefore.revision+1);
+  const retained=new Map(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').map(row=>[row.id,row]));for(const row of before.oc_admin_audit)assert.deepEqual(retained.get(row.id),row);
+  console.log('PROBE OC-041 '+path+': protected HTTP and targeted audit failure -> complete rollback, then one accepted audit fact at the committed handoff revision');
+  return response;
+ }
  const {audience,...unaddressed}=copy
  ok(await A('/api/handoffs/prepare',prepare('no-audience',unaddressed)),400) // explicit intended audience
  ok(await V('/api/handoffs/prepare',prepare('viewer-copy',copy)),403) // only responders/admins prepare
- const h1=ok(await A('/api/handoffs/prepare',prepare('h1',copy)),201).record
+ const h1=ok(await handoffMutation(A,'/api/handoffs/prepare',prepare('h1',copy),201),201).record
  assert.equal(ok(await A('/api/handoffs/prepare',prepare('h1',copy))).record.revision,h1.revision,'repeated identical preparation returns the original record')
  ok(await A('/api/handoffs/prepare',prepare('h1',{...copy,title:'Changed copy'})),409) // preparation identity conflicts on changed content
  assert.equal(ok(await V('/api/handoffs/h1')).record.payloadHash,h1.payloadHash,'viewers inspect internal records')
  ok(await A('/api/handoffs/h1/review',{...act(h1,'r1'),payloadHash:'0'.repeat(64)}),409) // a review binds the exact copy
  ok(await V('/api/handoffs/h1/review',act(h1,'r1')),403) // viewers never review
  ok(await V('/api/handoffs/h1/withdraw',act(h1,'viewer-withdraw','Viewer attempt')),403) // or withdraw
- const reviewed=ok(await A('/api/handoffs/h1/review',act(h1,'r1'))).record
+ const reviewed=ok(await handoffMutation(A,'/api/handoffs/h1/review',act(h1,'r1'))).record
  ok(await A('/api/handoffs/h1/review',act(h1,'r1','Changed reason')),409) // review identity conflicts on changed content
  assert.equal(reviewed.history.at(-1).selfReview,true,'an author review is recorded as self-review, never independent review')
  const packet=ok(await A('/api/handoffs/h1/export'));assert.ok(packet.transport==='unsent'&&packet.providerActions.length===0,'an eligible review exports unsent copy with no provider action')
  assert.deepEqual(packet.record,reviewed,'HTTP export preserves the exact reviewed payload, source snapshots, hashes, revision and attributed history')
  incident=ok(await A('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:'Source drift'}))
  ok(await A('/api/handoffs/h1/export'),409) // source drift makes the review ineligible
- const withdrawn=ok(await A('/api/handoffs/h1/withdraw',act(reviewed,'w1','Superseded by current copy'))).record
+ const withdrawn=ok(await handoffMutation(A,'/api/handoffs/h1/withdraw',act(reviewed,'w1','Superseded by current copy'))).record
  ok(await A('/api/handoffs/h1/review',act(withdrawn,'r1-again')),409) // withdrawal is terminal
  assert.deepEqual(withdrawn.history.slice(0,reviewed.history.length),reviewed.history,'withdrawal appends to attributed history')
  source=ok(await A('/api/handoffs/context/'+incident.id))
@@ -864,6 +882,10 @@ try {
  ok(await L('/api/members',{name:'Rex',password:'synthetic-local-testing-password',role:'responder'}),201);ok(await w.request('/api/handoffs/restore',{mode:'replace',archive},(await w.request('/api/login',{name:'Rex',password:'synthetic-local-testing-password'})).cookie),403) // only admins restore handoff archives
  ok(await L('/api/handoffs/restore',{mode:'replace',archive:{...archive,records:Array.from({length:65},(_,i)=>({...archive.records[0],id:'cap-'+i}))}}),400) // handoff capacity refuses
  assert.deepEqual(ok(await L('/api/handoffs/archive')),archive,'handoff refusal preserves the prior archive')
+ const restoredHandoffs=ok(await handoffMutation(L,'/api/handoffs/restore',{mode:'replace',archive}));
+ assert.deepEqual(ok(await L('/api/handoffs/archive')),restoredHandoffs,'accepted handoff restore publishes the complete held archive');
+ assert.deepEqual(restoredHandoffs.records.find(row=>row.id==='h1'),archive.records.find(row=>row.id==='h1'),'restore preserves withdrawn history exactly');
+ assert.ok(restoredHandoffs.records.find(row=>row.id==='h2').held,'restored active copy retains its recovery hold');
  let h3=ok(await L('/api/handoffs/prepare',{id:'h3',incident:incident.id,incidentRevision:incident.revision,serviceHash:ok(await L('/api/handoffs/context/'+incident.id)).serviceHash,payload:copy}),201).record
  while(h3.history.length<127)h3=ok(await L('/api/handoffs/h3/review',act(h3,'bulk-'+h3.history.length))).record
  const full=ok(await L('/api/handoffs/archive'));ok(await L('/api/handoffs/h3/review',act(h3,'bulk-over')),429) // 128 history entries per record, one kept for a recovery hold
