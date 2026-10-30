@@ -1089,11 +1089,19 @@ try {
     ...admissionPolicy, type: 'policy', baseVersion: admissionPolicy.version,
     owner: responder.id, reason: 'Synthetic reviewed severity ownership change',
   }, cookie));
+  const replayInput = {events: [{...event, eventId: 'newer-generation', generation: 'release-2'}, event]};
+  const revokedReplayLogin = await request('/api/login', {
+    name: responder.name, password: 'synthetic-oncall-303-password',
+  });
+  ok(revokedReplayLogin);
+  ok(await request('/api/logout', {}, revokedReplayLogin.cookie));
+  for (const deniedCookie of ['', revokedReplayLogin.cookie]) {
+    const denied = ok(await request('/api/replay', replayInput, deniedCookie), 401);
+    assert.equal(denied.decisions, undefined, 'anonymous and revoked sessions receive no private replay comparisons');
+  }
   const before = ok(await request("/api/state", undefined, cookie));
   const replayAudit = rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
-  const replay = ok(await request("/api/replay", {
-    events: [{...event, eventId: 'newer-generation', generation: 'release-2'}, event],
-  }, cookie));
+  const replay = ok(await request('/api/replay', replayInput, cookie));
   assert.equal(replay.sideEffects, false);
   assert.equal(replay.workspaceRevision, before.revision);
   assert.deepEqual(replay.decisions.map(row => row.eventId), ['newer-generation', event.eventId]);
