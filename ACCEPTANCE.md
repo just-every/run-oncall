@@ -195,7 +195,7 @@ Core · published · **partial**
 **Acceptance.**
 1. Read now/next and the schedule and routing previews: durable state and receipt counts are unchanged, no timers or provider actions are created, and historical synthetic data stays labeled.
 
-**Evidence.** `src/schedule-api.ts`; `src/paging-api.ts`; `tests/activation.mjs`
+**Evidence.** `src/schedule-api.ts`; `src/paging-api.ts`; `src/family/response-operations/paging-archive.ts`; `tests/activation.mjs` — **scheduleCoordination** and **pagingHistory** (preview isolation); `tests/routing.mjs` — **OC-014 service routing preview isolation**
 **Gap.** No cited test compares durable state, receipt counts, timers or provider actions before and after a now/next, schedule or routing preview, or reads the synthetic label on historical delivery data.
 
 #### OC-015 — Strict module archives
