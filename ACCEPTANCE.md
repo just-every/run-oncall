@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 14 | 46 | 24 | 84 |
+| Core | 15 | 45 | 24 | 84 |
 | Agent surface | 0 | 0 | 17 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 14 | 46 | 41 | 101 |
+| Full target | 15 | 45 | 41 | 101 |
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f207859a` (30 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -136,7 +136,7 @@ Core · published · **partial** · Cites BASE-ACCESSIBILITY-001, BASE-PUBLIC-00
 
 #### OC-010 — Health and honest commands
 
-Core · published · **partial** · Cites BASE-OPS-001 · Rules D-1
+Core · published · **done** · Cites BASE-OPS-001 · Rules D-1
 
 **Requirement.** Health identifies the deployed version, operating commands describe actual local and hosted effects, and acceptance records distinguish local evidence from remote, provider and pilot outcomes. Capacity promises require measured evidence. Pager, timer, mobile and standby health are OC-026 to OC-029's, and paging measurements are OC-064's. Each new execution class proves its own durable failure diagnostics under door rule D-1 before it ships.
 
@@ -144,8 +144,8 @@ Core · published · **partial** · Cites BASE-OPS-001 · Rules D-1
 1. check and describe run with storage available and unavailable, health reports both states, and the deployed identity matches the actual build.
 2. Local, hosted, provider and human-drill outcomes are recorded separately.
 
-**Evidence.** `src/api.ts`; `src/base/deployment-health.ts`; `OPERATIONS.json`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/transfer.mjs`
-**Gap.** No cited test records provider or human-drill outcomes separately from local and hosted ones; check, describe, storage-unavailable health with the deployed identity and the hosted build's identity are asserted. Coordination storage loss reports 503 with deployment identity and recovers without changed records. Paging health and capacity are unclaimed and inherited by OC-026–029/064.
+**Evidence.** `tests/runtime.mjs` — coordinationHealth: check and describe with storage available and unavailable, exact emitted build identity, storage-loss 503 and recovery with unchanged records; hosted production output: actual source and artifact identity, supplied version binding and linked-page results. `tests/transfer.mjs` — managed installation transfer: observed CLI outcomes, populated inactive restore and erasure fences. `tests/health-outcomes.mjs` — separate local and locally executed hosted-mode records, dated prior R-1 and R-2 provider receipts with their source SHAs, and R-8 explicitly not run. Paging health and measured capacity remain with OC-026 to OC-029 and OC-064.
+**Gap.** None.
 
 ### Scheduling and held history
 
