@@ -50,7 +50,8 @@
 @media (max-width: 899px) {
   .incident-board.has-incident { display: block; }
   .incident-board.has-incident > .incidents { display: none; }
-  .incident-back { display: flex; align-items: center; min-height: 44px; margin-bottom: 12px; }
+  .incident-back, .incident-evidence-link { display: flex; align-items: center; min-height: 44px; }
+  .incident-back { margin-bottom: 12px; }
   .incident-page { padding: 20px 16px; gap: 16px; }
   .incident-title-row h1 { font-size: 22px; }
   .incident-page :is(button, select, input:not([type=checkbox])) { min-height: 44px; }
