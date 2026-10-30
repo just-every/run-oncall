@@ -1,4 +1,5 @@
 import {developmentReadiness} from './readiness.mjs'
+import {recordHealthOutcome} from './health-outcomes.mjs'
 import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
 import {appendFile,mkdtemp,symlink,cp,lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -544,5 +545,10 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  for(const id of [incident.id,portableMergeTarget.id,portableMergeSource.id,portableSplit.id])assert.deepEqual(retainedWorkflows.find(i=>i.id===id),prior.incidents.find(i=>i.id===id),'OC-050 templates, completed checklists, merge aliases and split provenance survive portable restore and erasure')
  console.log('PASS OC-050 transfer: full template snapshots with completed checklist attribution and merged/split provenance survive checkpoint, portable inactive restore, erasure and current archive import without replay or authority. Paging remains OFF.')
  await m.command(['reset','--yes','--non-interactive'])
+ await recordHealthOutcome('local','tests/transfer.mjs: managed installation transfer',{
+  commands:['setup','dev','export','import','reset'],
+  populatedRestore:'passed',inactiveAuthority:'passed',erasureFences:'passed',
+  invalidArchiveRefusals:'passed',currentArchiveRetainsErasure:true,
+ })
  console.log('OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; OC-052 all current durable categories restore inactive without authority or replay: nonempty refusal, invalid-input rollback, full relational/history/journal restore, credential exclusion, paused timer, explicit new-owner mapping and held approval')
 }finally{await m.close();await rm(answers,{force:true});await rm(archive,{force:true});await rm(corrupt,{force:true});await rm(invalidRecords,{force:true});await rm(later,{force:true})}

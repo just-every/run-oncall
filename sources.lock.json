@@ -5799,6 +5799,10 @@
       "sha256": "6a71f10eff418b3b1e957de0559853f30502ff6dc9bb6914ca5b08c32a2cb1cf",
       "executable": false
     },
+    "tests/health-outcomes.mjs": {
+      "sha256": "87b44540c09d94ff450b26c835d8adc1205635577484da111e7395d164dcf063",
+      "executable": false
+    },
     "tests/import-door.mjs": {
       "sha256": "3c76d3c16e65006ecae5fbf8f9026534311012d4c1bdd452da80c29d7be44aad",
       "executable": false
@@ -5868,11 +5872,11 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "196fa14ed77d6375e03b2c028fe645d47f92c4105221a38b3951250da0784fb1",
+      "sha256": "682bc0af419ab01a17d8e937ef9e3ec5fe099e43f1a582dde032ed223ca0d3c3",
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "2c3b1a6133b0e9dd273f6b02a40e619a8146b892a5b00560d4c1426b4bd59022",
+      "sha256": "9f0067f86e40b82c0332794f83d58f36f35d155377da9868088a7b39e2de8ba1",
       "executable": false
     },
     "tests/triage.mjs": {
