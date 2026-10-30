@@ -166,7 +166,7 @@ try{
  const old=await hosted.fetch('move-in-guide');await old.arrayBuffer();assert.equal(old.headers.get('location'),'/docs/move-in','the old guide link leads to the docs page')
  const guide=await hosted.fetch('docs/move-in');assert.equal(guide.status,200);await guide.arrayBuffer()
  await recordHealthOutcome('hosted-mode','tests/runtime.mjs: hosted production output',{
-  health:{status:health.status,...body},linkedPages:{checked:links.size,status:200},
+  health:{httpStatus:health.status,...body},linkedPages:{checked:links.size,httpStatus:200},
   deploymentIdentitySource:'actual checkout and emitted Worker; version binding supplied by the journey',
  })
  await recordHealthFieldOutcomes()
@@ -204,7 +204,7 @@ async function coordinationHealth({request,sql,deployment,cookie}) {
   assert.equal(failed.value.target,'coordination');assert.equal(failed.value.paging,'not-provided')
   assert.deepEqual(failed.value.deployment,deployment,'failure still identifies the deployed build')
   assert.equal(typeof failed.value.error,'string')
-  unavailable={status:failed.status,...failed.value}
+  unavailable={httpStatus:failed.status,...failed.value}
   unavailableStateStatus=(await request('/api/state',undefined,cookie)).status
   assert.equal(unavailableStateStatus,503)
   outageCommands=commands()
@@ -212,11 +212,13 @@ async function coordinationHealth({request,sql,deployment,cookie}) {
  }finally{sql('ALTER TABLE workspace_fault RENAME TO workspace_control')}
  assert.deepEqual(ok(await request('/health')),healthy,'storage recovery restores the same healthy deployment')
  assert.deepEqual(ok(await request('/api/archive',undefined,cookie)),before,'failure and recovery lose no records')
+ const commandOutcomes=result=>({check:{ok:result.checked.ok,exitCode:result.checked.exitCode},
+  describe:{cliVersion:result.described.cliVersion,profile:result.described.profile,
+   effects:Object.fromEntries(Object.entries(result.described.verbs).map(([verb,value])=>[verb,value.effects]))}})
  await recordHealthOutcome('local','tests/runtime.mjs: coordinationHealth',{
-  available:{status:200,...healthy},unavailable,unavailableStateStatus,
-  recovered:{status:200,...ok(await request('/health'))},recordsUnchanged:true,
-  commands:{available:{check:description.checked,describe:description.described.verbs},
-   unavailable:{check:outageCommands.checked,describe:outageCommands.described.verbs}},
+  available:{httpStatus:200,...healthy},unavailable,unavailableStateStatus,
+  recovered:{httpStatus:200,...ok(await request('/health'))},recordsUnchanged:true,
+  commands:{available:commandOutcomes(description),unavailable:commandOutcomes(outageCommands)},
  })
  console.log('OC-010 coordination health, deployment identity and honest command effects survive storage failure: local 503/recovery and read-only check/describe; paging not provided; capacity unmeasured')
 }

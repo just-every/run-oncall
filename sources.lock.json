@@ -5872,11 +5872,11 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "682bc0af419ab01a17d8e937ef9e3ec5fe099e43f1a582dde032ed223ca0d3c3",
+      "sha256": "d6f0c9b6d73525afc5ea473681d51a1993e66b38242dab5a487c2fc0f7aece33",
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "9f0067f86e40b82c0332794f83d58f36f35d155377da9868088a7b39e2de8ba1",
+      "sha256": "85af125fda00fbf548b5a177e47f1bd0fa44f0b4eca9b8e8080f9079c8b32273",
       "executable": false
     },
     "tests/triage.mjs": {
