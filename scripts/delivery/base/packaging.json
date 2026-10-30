@@ -44,11 +44,14 @@
       ],
       "optionalSecretNames": [
         "MAIL_API_KEY",
-        "INBOUND_EMAIL_DOMAIN"
+        "INBOUND_EMAIL_DOMAIN",
+        "PAGERDUTY_OAUTH_CLIENT_ID",
+        "PAGERDUTY_OAUTH_CLIENT_SECRET"
       ],
       "providerEffects": [
         "outbound-mail",
-        "signed-response-events"
+        "signed-response-events",
+        "read-only-provider-import"
       ],
       "surfaces": {
         "app": {
