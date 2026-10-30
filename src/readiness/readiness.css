@@ -22,4 +22,4 @@
 .readiness-signals dl {font-size:13px;display:grid;gap:8px;}
 .readiness .readiness-observed {font-size:13px;margin:16px 0 0;overflow-wrap:anywhere;}
 @media(max-width:1000px){.readiness-signals {grid-template-columns:1fr;}.readiness-matrix article {grid-template-columns:minmax(120px,1fr) minmax(0,2fr);}.readiness-evidence {grid-column:1/-1;}}
-@media(max-width:600px){.readiness-intro {align-items:flex-start;flex-direction:column;}.readiness-matrix article {grid-template-columns:1fr;gap:10px;padding:16px;}.readiness dl div {grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);}.readiness-evidence {grid-column:auto;}.readiness-signal-title {align-items:flex-start;flex-direction:column;gap:4px;}}
+@media(max-width:600px){.readiness-intro {align-items:flex-start;flex-direction:column;}.readiness-intro button {min-height:44px;}.readiness > p > a {display:flex;align-items:center;min-height:44px;}.readiness-matrix article {grid-template-columns:1fr;gap:10px;padding:16px;}.readiness dl div {grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);}.readiness-evidence {grid-column:auto;}.readiness-signal-title {align-items:flex-start;flex-direction:column;gap:4px;}}
