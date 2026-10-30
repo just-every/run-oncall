@@ -8,6 +8,7 @@
 .oc-oncall p, .oc-sheet p { line-height:1.55; }
 .oc-oncall :is(button,input,select,textarea,summary,a), .oc-sheet :is(button,input,select,textarea,summary,a) { font-size:15px; }
 .oc-oncall :is(input,select,textarea), .oc-sheet :is(input,select,textarea) { width:100%; min-height:44px; }
+.oc-oncall .field :is(input,select,textarea), .oc-sheet .field :is(input,select,textarea) { min-height:44px; }
 .oc-oncall :is(button,summary), .oc-sheet :is(button,summary) { min-height:44px; }
 .oc-oncall select, .oc-sheet select { text-overflow:clip; }
 .oc-page-head { display:flex; justify-content:space-between; align-items:center; gap:16px; margin:0 0 18px; }
