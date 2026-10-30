@@ -828,6 +828,7 @@ try {
  const packet=ok(await A('/api/handoffs/h1/export'));assert.ok(packet.transport==='unsent'&&packet.providerActions.length===0,'an eligible review exports unsent copy with no provider action')
  assert.deepEqual(packet.record,reviewed,'HTTP export preserves the exact reviewed payload, source snapshots, hashes, revision and attributed history')
  assert.equal(packet.publication,'not-published');assert.equal(packet.review.status,'reviewed')
+ assert.deepEqual(ok(await A('/api/handoff/'+incident.id)),draft,'reviewing separate authored copy never promotes the legacy exported draft from review required')
  const sourceReadState=ok(await O('/api/state')),sourceReadHandoffs=ok(await O('/api/handoffs/archive'))
  for(const reference of [...packet.lamp.draft.evidenceLinks,...packet.lamp.draft.impactLinks]){
   const link=new URL(reference);assert.equal(link.origin,w.origin)
