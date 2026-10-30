@@ -781,8 +781,15 @@ try{
  assert.deepEqual(nightCoverage.windows.map(row=>[row.role,row.member,row.start,row.end]),[['primary',night.night.id,'2030-10-29T02:00:00.000Z','2030-10-29T08:00:00.000Z'],['backup',night.owner.id,'2030-10-29T02:00:00.000Z','2030-10-29T10:00:00.000Z']]);
  assert.deepEqual([reliefCoverage.primary,reliefCoverage.windows[0].start,reliefCoverage.windows[0].end],[night.relief.id,'2030-10-29T08:00:00.000Z','2030-10-29T10:00:00.000Z']);
  assert.deepEqual([outsideCoverage.primary,outsideCoverage.backup],[null,null]);
+ const handoff=await coverageAt('2030-10-29T08:00:00.000Z'),ended=await coverageAt('2030-10-29T10:00:00.000Z');
+ assert.deepEqual([handoff.primary,handoff.backup],[night.relief.id,night.owner.id],'the relief owns the exact inclusive handoff instant');
+ assert.deepEqual([ended.primary,ended.backup],[null,null],'both roles end at the exact exclusive schedule bound');
  const frozenNight=new URLSearchParams(night.query);frozenNight.set('revision',String(nightReport.revision));frozenNight.set('schedulingRevision',String(nightReport.load.schedulingRevision));
- assert.deepEqual(ok(await req('/api/reports/response?'+frozenNight)),nightReport,'API preserves the exact frozen observation and both revisions');
+ await nightWorker.time(Date.parse(night.observed)+10*60*1000);
+ const laterQuery=new URLSearchParams(night.query);laterQuery.delete('at');
+ const laterReport=ok(await req('/api/reports/response?'+laterQuery));
+ assert.deepEqual([laterReport.generatedAt,laterReport.incidents.find(row=>row.id===night.open.id).mtta.seconds,laterReport.load.services[0].uncoveredPrimarySeconds],['2030-10-29T11:10:00.000Z',2400,3600]);
+ assert.deepEqual(ok(await req('/api/reports/response?'+frozenNight)),nightReport,'advancing the server clock cannot change a frozen observation or either revision');
  const nightCsv=responseCsvRows(ok(await req('/api/reports/response.csv?'+frozenNight))),nightColumn=name=>nightCsv[0].indexOf(name);
  const lateCsv=nightCsv.find(row=>row[nightColumn('incidentId')]===night.late.id);
  assert.deepEqual(['mtta.seconds','mtta.sourceAt','mtta.sourceEntryId','cohortCount','cohortFrom','cohortTo'].map(name=>lateCsv[nightColumn(name)]),['5700',night.acknowledgement.at,night.acknowledgement.id,'5','2030-10-29T02:00:00.000Z',night.observed]);

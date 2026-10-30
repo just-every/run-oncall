@@ -506,6 +506,7 @@ async function responseReportBrowser(browser) {
   const late=panel.locator('.review-record').filter({has:page.getByRole('link',{name:scenario.late.title,exact:true})})
   await expect(late.locator('section').filter({has:page.getByRole('heading',{name:'Acknowledgement',exact:true,level:4})})).toContainText('1.6 h · measured')
   const frozen=new URLSearchParams({from:snapshot.cohort.from,to:snapshot.cohort.to,service:scenario.service,at:snapshot.generatedAt,revision:String(snapshot.revision),schedulingRevision:String(snapshot.load.schedulingRevision)})
+  await w.time(Date.parse(scenario.observed)+10*60*1000)
   assert.deepEqual(await scenario.req('/api/reports/response?'+frozen),snapshot)
   const csv=await scenario.req('/api/reports/response.csv?'+frozen),table=responseCsvRows(csv),column=name=>table[0].indexOf(name)
   for(const row of snapshot.incidents) {
