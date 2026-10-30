@@ -1391,9 +1391,9 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 10 | 12 | 0 | 22 |
+| Published | 11 | 11 | 0 | 22 |
 | Target and push further | 4 | 34 | 41 | 79 |
-| All | 14 | 46 | 41 | 101 |
+| All | 15 | 45 | 41 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1402,7 +1402,7 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 | `OC-003` | Roles and authority | published | done | `tests/runtime.mjs` — coordinationJourney: session roles, responder workspace reads, attributed acknowledgment and note, administrator refusals, held downgrade and revoke mutations, minimal bearer and signed intake receipts; `tests/member-coordination-browser.mjs` — responder coordinates and reloads attributed history. |  |
 | `OC-004` | Incident state transitions | published | done | `tests/runtime.mjs` — coordinationJourney: exact admitted alert links, responder commander, stale and concurrent refusal, source recovery independence, unchanged state after recovery without evidence and resolution without a summary, evidenced recovery, resolved state and human-attributed lifecycle history; `tests/triage.mjs` — bulk resolution refuses missing recovery evidence. |  |
 | `OC-005` | Copied runbooks | published | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | The copied steps after a service runbook edit, creation of an owned, due-dated action, the refusal to complete an action without evidence and unfinished work kept after resolution are not asserted in the cited test; a review written after resolution is asserted to persist. Alert-level runbook access and follow-up policies are targets in OC-023/036. |
-| `OC-006` | Bounded outbound incident effects | published | partial | `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs` | No cited test asserts the absence of an AI call, that an exported draft stays marked unreviewed, or that a source link grants no access; no paging receipt, no production action and no Lamp publication are asserted. This is the current-release safety boundary, not the final product boundary. |
+| `OC-006` | Bounded outbound incident effects | published | done | `tests/activation.mjs` — protected handoff journey: coordination, preparation, refused unreviewed export and eligible reviewed export with an empty refused-edge request ledger, unchanged paging and outbound state, no provider actions and no Lamp publication; `tests/runtime.mjs` — coordinationJourney: stable internal review-required draft and populated actual source reads allowed to a current session but denied to anonymous and revoked sessions; `tests/activation.mjs` — protected handoff journey: prepared copy is ineligible until reviewed, exported source references grant no anonymous access and preserve coordination and handoff records. |  |
 | `OC-007` | Native archive | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` |  |
 | `OC-008` | User-authored records kept | published | done | `src/api.ts`; `src/native-incomplete.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/product-browser-journey.mjs`; `tests/product-browser.mjs` |  |
 | `OC-009` | Accessible interface | published | partial | `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/product-browser-journey.mjs`; `tests/product-browser-journey.mjs` | Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. BASE-ACCESSIBILITY-001 is not established across every Oncall journey and the OC-029 apps; the human passes and the VPAT are register rows R-3 and R-4. |

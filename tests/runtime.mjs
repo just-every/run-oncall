@@ -645,7 +645,7 @@ try {
         environment: "production",
         owner: admin.id,
         runbook: ["Check customer journey", "Record evidence"],
-        pager: "https://example.test/pager",
+        pager: origin + "/api/state",
       },
       cookie,
     ),
@@ -1031,7 +1031,7 @@ try {
     type: "transition",
     state: "recovered",
     summary: "Affected journey verified",
-    evidence: "https://example.test/recovery",
+    evidence: origin + "/api/archive",
   });
   const beforeUnsummarizedResolution = ok(await request('/api/state', undefined, cookie));
   ok(await request('/api/command', {
@@ -1046,7 +1046,7 @@ try {
   });
   const resolvedIncident = ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id);
   assert.equal(resolvedIncident.state, 'resolved');
-  assert.equal(resolvedIncident.recovery, 'https://example.test/recovery');
+  assert.equal(resolvedIncident.recovery, origin + '/api/archive');
   assert.equal(resolvedIncident.timeline.find(e => e.kind === 'declared').actor, admin.id);
   for (const [state, actor, summary] of [
     ['acknowledged', responder.id, 'Taking responsibility'],
@@ -1058,7 +1058,7 @@ try {
     assert.equal(entry.actor, actor, state + ': the lifecycle entry retains its authorized human actor');
     assert.ok(entry.text.includes(summary), state + ': the saved transition summary reads back');
     assert.ok(Number.isFinite(Date.parse(entry.at)), state + ': the lifecycle entry retains its action time');
-    if (state === 'recovered') assert.equal(entry.lifecycle.evidence, 'https://example.test/recovery');
+    if (state === 'recovered') assert.equal(entry.lifecycle.evidence, origin + '/api/archive');
   }
   assert.deepEqual(resolvedIncident, incident, 'the resolved state and complete timeline read back over HTTP');
   console.log('PASS OC-004 native lifecycle: exact admitted alerts, responder commander, atomic evidence and summary refusals, evidenced recovery and resolved human-attributed timeline');
@@ -1187,8 +1187,29 @@ try {
   const handoff = ok(
     await request("/api/handoff/" + incident.id, undefined, cookie),
   );
+  assert.equal(handoff.intent, "reviewed-handoff-required", "the exported legacy draft explicitly still requires review");
+  assert.equal(handoff.visibility, "internal");
+  assert.equal(handoff.id, `oncall:${incident.id}:${incident.revision}`);
+  assert.deepEqual(ok(await request("/api/handoff/" + incident.id, undefined, cookie)), handoff,
+    "reading a draft retains its stable identity and unreviewed status");
   assert.equal(handoff.lamp.publication, "not-published");
   assert.deepEqual(handoff.providerActions, []);
+  assert.equal(handoff.pager.submission, "not-submitted");
+  assert.equal(handoff.chat.delivery, "not-sent");
+  const beforeSourceReads = ok(await request('/api/state', undefined, cookie));
+  for (const reference of [handoff.pager.link, handoff.evidence]) {
+    const link = new URL(reference);
+    assert.equal(link.origin, origin);
+    const permitted = ok(await request(link.pathname + link.search, undefined, cookie));
+    assert.ok(permitted.incidents.some(row => row.id === incident.id), 'the actual exported source reference contains private seeded records for an authorized reader');
+    for (const as of ['', vc]) {
+      const refused = ok(await request(link.pathname + link.search, undefined, as), 401);
+      assert.deepEqual(Object.keys(refused), ['error'], 'a source reference gives anonymous and revoked sessions no private record');
+    }
+  }
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)), beforeSourceReads,
+    'following source references grants no authority and changes no coordination record');
+  console.log('PROBE OC-006 2: protected legacy draft export and its actual source references -> review required, stable internal identity; authorized populated reads succeed, anonymous and revoked reads return 401 with error only');
   const maintenanceRuntimeKey=randomBytes(32).toString('hex'),maintenanceRuntimeId='synthetic-oncall-43-runtime';
   ok(await request('/api/command',{type:'service',id:maintenanceRuntimeId,name:maintenanceRuntimeId,environment:'test',owner:admin.id,runbook:[],pager:''},cookie));
   const maintenanceRuntimeWindow={start:new Date(Date.now()-60000).toISOString(),end:new Date(Date.now()+3600000).toISOString()};
