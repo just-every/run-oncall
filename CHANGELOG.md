@@ -1,3 +1,7 @@
+# 0.5.4 · 2026-10-30
+
+The delivery declarations for surfaces, provider effects and readiness now agree so the platform accepts release preparation.
+
 # 0.5.3 · 2026-10-30
 
 Oncall 0.5.3 replaces the withdrawn 0.5.2 tag and includes the changes since the published 0.5.1 release. Exact retries of completed team-manager edits return the original reviewed result and receipt without a second team or audit change, while checking current authority, scope, consent, Pause and client binding; changed inputs or later native revisions require fresh review. Managed builds retain the maintained trusted-build workflow and the public MAIL_FROM input supplied by the installation. The rer 0.2.93 Base refresh refuses Business-signed agent tokens after the sponsor's native email changes and prevents equal-sequence policy renewals from changing authority. It also carries the shared door's continuation, audit, resource-context and resource-snapshot fixes. Runtime assertions cover responder authority and incident recovery/resolution as recorded for OC-003 and OC-004 in CONTRACT.md. This release promotes no clauses; the agent-surface targets and other partial or missing clauses keep their documented gaps. Since 0.5.1 it includes the daily-work and Settings updates, autosave/conflict handling, layered coverage and PTO records, import-consent updates and read-only readiness report within those limits, plus migrations 0146-0156. Back up first, keep applied migrations unchanged, and keep the existing pager active: paging stays OFF.
