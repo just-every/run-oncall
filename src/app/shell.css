@@ -31,7 +31,9 @@ button, a, input, select, textarea { font: inherit; }
 button, a { touch-action: manipulation; }
 button { cursor: pointer; color: inherit; }
 a { color: inherit; }
-:is(a, button, input, select, textarea, summary):focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 3px; }
+:is(a, button, summary, input:is([type=checkbox], [type=radio])):focus-visible { outline: 2px solid var(--oc-ink); outline-offset: 3px; }
+/* A field has one border; focus darkens and thickens that border instead of drawing a second line. */
+:is(input:not([type=checkbox], [type=radio]), select, textarea):focus-visible { outline: none; border: 2px solid var(--oc-ink); }
 h1, h2, h3 { letter-spacing: -0.015em; }
 
 .skip { position: absolute; left: -9999px; top: 8px; z-index: 20; padding: 12px 16px; border-radius: 10px; background: var(--oc-surface); box-shadow: var(--app-shadow); }
@@ -160,7 +162,6 @@ select:not([multiple],[size]:not([size="1"])):disabled { --rer-select-ink: color
   cursor: pointer;
 }
 :is(.field, .scheduling-field) input[type="file"]:hover::file-selector-button { border-color: var(--oc-ink-soft); }
-.field :is(input, select, textarea):focus-visible { outline-offset: 1px; border-color: var(--oc-ink); }
 
 /* Panels and the management screens */
 .panel { min-width: 0; border: 1px solid var(--app-line); border-radius: 14px; background: var(--app-panel); box-shadow: var(--app-shadow); }
@@ -209,7 +210,7 @@ summary { cursor: pointer; font-weight: 620; line-height: 1.6; }
   .nav.active { border-color: var(--oc-now); }
   .nav-icon { width: 17px; height: 17px; }
   .profile { grid-template-columns: auto auto auto 1fr; padding: 12px 0 0; gap: 4px 10px; }
-  .profile .avatar { grid-row: auto; width: 30px; height: 30px; font-size: 12px; }
+  .profile .avatar { grid-row: auto; width: 30px; height: 30px; font-size: 13px; }
   .profile button { grid-column: auto; justify-self: end; margin-top: 0; }
   .workspace { padding: 0 16px 36px; }
   .header { padding-top: 20px; }

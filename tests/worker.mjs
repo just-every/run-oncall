@@ -24,10 +24,19 @@ export function recordOwnedProcesses() {
 export async function automationRuntime(edge=()=>new Response('refused',{status:403}),native={}) {
  const directory=await mkdtemp(join(tmpdir(),'oncall-automation-')),build=resolve('dist/server'),config=JSON.parse(await readFile(join(build,'wrangler.json'),'utf8')),entry=join(build,config.main);
  const modules=[entry,...(await walk(build)).filter(p=>p!==entry&&types[extname(p)])].map(path=>({type:types[extname(path)],path}));
- const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r));
+ const freePort=async()=>{const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const selected=socket.address().port;await new Promise(r=>socket.close(r));return selected;};
+ let port=await freePort();
  const secret=randomBytes(32).toString('hex');let mf,db,origin='http://127.0.0.1:'+port;
  const options=()=>convertV4MiniflareOptions({host:'127.0.0.1',port,cf:false,unsafeTriggerHandlers:true,resourcePersistencePath:join(directory,'data'),workers:[{name:'app',modules,modulesRoot:build,compatibilityDate:config.compatibility_date,compatibilityFlags:config.compatibility_flags,bindings:{SESSION_SECRET:secret,AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'synthetic-oncall-owner@example.test',...(native.bindings?.(origin)??{})},d1Databases:{DB:'automation-db'},outboundService:edge,...(config.assets?{assets:{directory:resolve('dist/client'),binding:'ASSETS',routerConfig:{has_user_worker:true,invoke_user_worker_ahead_of_assets:true}}}:{})}]});
- async function start(){mf=new Miniflare(options());origin=(await mf.ready).origin;db=await mf.getD1Database('DB','app');recordOwnedProcesses();}
+ async function start(){
+  // A probe port can be claimed before workerd binds it. Retry only that startup
+  // collision, before any request or assertion; all other failures remain fatal.
+  for(let attempt=0;attempt<3;attempt++){
+   mf=new Miniflare(options());
+   try{origin=(await mf.ready).origin;db=await mf.getD1Database('DB','app');recordOwnedProcesses();return;}
+   catch(error){await mf.dispose().catch(()=>{});if(error.code!=='ERR_ADDRESS_IN_USE'||attempt===2)throw error;port=await freePort();origin='http://127.0.0.1:'+port;}
+  }
+ }
  await start();
  for(const name of (await readdir('migrations/core')).filter(n=>n.endsWith('.sql')).sort())await db.batch(split(await readFile('migrations/core/'+name,'utf8')).map(q=>db.prepare(q)));
  return {get db(){return db;},get origin(){return origin;},get mf(){return mf;},async restart(){await mf.dispose();await start();},async close(){await mf.dispose();await rm(directory,{recursive:true,force:true});},async request(path,data,cookie='',headers={}){const response=await fetch(origin+path,{method:data===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',cookie,...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:response.status,value:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0],headers:response.headers};}};
@@ -82,10 +91,18 @@ export function heldWorkspace() {
 }
 
 
-export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource=""} = {}) {
+// Compare retained rows directly: exporting some categories itself appends audit.
+export function durableSnapshot(w) {
+ const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").map(row=>row.name)
+ return Object.fromEntries(w.statements(names.map(name=>'SELECT * FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>[names[index],rows.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))
+}
+
+export async function localWorker(bindings = {}, {persistTo,clock=false,fetchSource="",outboundLedger=false} = {}) {
  const dir=await mkdtemp(join(tmpdir(),'oncall-flow-')),socket=createServer()
  await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
  const persist=persistTo??dir;
+ const ledger=outboundLedger?join(dir,'outbound.jsonl'):'';
+ if(ledger)await writeFile(ledger,'',{mode:0o600});
  const origin=`http://127.0.0.1:${port}`,secret=()=>randomBytes(32).toString('hex')
  const vars={AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'owner@example.test',SESSION_SECRET:secret(),SETUP_TOKEN:secret(),MAIL_FROM:'auth@localhost.test',RER_DEV_KEY:secret(),...bindings}
  await writeFile(join(dir,'local.env'),Object.entries(vars).map(([k,v])=>`${k}=${v}`).join('\n'),{mode:0o600})
@@ -112,7 +129,7 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
  const stop=async()=>{if(worker&&worker.exitCode===null){worker.kill('SIGTERM');await new Promise(r=>worker.once('exit',r))}}
  const start=async()=>{
   diagnostics=workerDiagnostics({...env,...vars})
-  worker=spawn(process.execPath,['tests/worker-server.mjs',config,persist,String(port),join(dir,'local.env')],{env,stdio:['ignore','pipe','pipe']})
+  worker=spawn(process.execPath,['tests/worker-server.mjs',config,persist,String(port),join(dir,'local.env'),ledger],{env,stdio:['ignore','pipe','pipe']})
   let startupError;worker.once('error',error=>{startupError=error;diagnostics.report('startup process error')})
   diagnostics.attach(worker.stdout,'stdout');diagnostics.attach(worker.stderr,'stderr');for(const stream of [worker.stdout,worker.stderr])stream.on('data',chunk=>{logLines+=chunk.toString()})
   for(let n=0;n<240;n++){if(startupError)throw Error('Worker process could not start');if(worker.exitCode!==null){diagnostics.report('startup exited');throw Error('Worker exited before readiness')};try{if((await fetch(origin+'/health')).ok)return}catch{}await new Promise(r=>setTimeout(r,250))}
@@ -148,7 +165,7 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
  failureHandler=()=>diagnostics.report('test failure')
  process.once('uncaughtExceptionMonitor',failureHandler)
  process.once('exit',code=>{if(code!==0)failureHandler()})
- return {origin,vars,sql,statements,request,send,start,stop,logs:()=>logLines,time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
+ return {origin,vars,sql,statements,request,send,start,stop,logs:()=>logLines,outboundRequests:async()=>{if(!ledger)throw Error('Outbound ledger not enabled');return (await readFile(ledger,'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line));},time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
 }
 
 // The move-in screen's transport: the owner-session import door, one namespace per vendor. preview uploads the

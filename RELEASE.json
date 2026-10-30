@@ -52,6 +52,10 @@
     {
       "id": "0156_agent_team_receipts.sql",
       "buyerSteps": "Apply in filename order after a verified backup. Keep every applied migration byte unchanged; do not reset a populated installation."
+    },
+    {
+      "id": "0157_audit_detail.sql",
+      "buyerSteps": "Apply after 0156_agent_team_receipts.sql in filename order after a verified backup. This additive audit detail column preserves existing audit rows. Keep every applied migration byte unchanged; do not reset a populated installation."
     }
   ],
   "breaking": false,

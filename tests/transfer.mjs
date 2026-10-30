@@ -1,4 +1,5 @@
 import {developmentReadiness} from './readiness.mjs'
+import {recordHealthOutcome} from './health-outcomes.mjs'
 import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
 import {appendFile,mkdtemp,symlink,cp,lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -80,7 +81,7 @@ export async function isolatedEntrypoint(url){
  const temp=await mkdtemp(join(tmpdir(),'oncall-native-')),checkout=join(temp,'checkout')
  let child
  try{
-  execFileSync('git',['clone','--quiet','--local',root,checkout],{stdio:'ignore'})
+  execFileSync('git',['clone','--quiet','--local','--no-hardlinks',root,checkout],{stdio:'ignore'})
   await symlink(join(root,'node_modules'),join(checkout,'node_modules'),'dir')
   await cp(join(root,'dist'),join(checkout,'dist'),{recursive:true})
   const sha=execFileSync('git',['rev-parse','HEAD'],{cwd:checkout,encoding:'utf8'}).trim()
@@ -103,8 +104,9 @@ export async function managedSeed(bindings={}){
  const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r))
  const origin=`http://127.0.0.1:${port}`,children=[],env={...process.env,CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false',...bindings}
  const safe=s=>s.replace(/#rer-dev=[^\s"']+/g,'#rer-dev=[redacted]').replace(/\?token=[^\s"']+/g,'?token=[redacted]')
+ const commandOutcomes=[]
  function spawnCommand(args){const child=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),...args],{env,stdio:['ignore','pipe','pipe']});children.push(child);let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c);return {child,output:()=>output}}
- async function command(args,status=0){const run=spawnCommand(args),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));return run.output()}
+ async function command(args,status=0){const run=spawnCommand(args),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));commandOutcomes.push({verb:args[0],exitCode:code,expectedExitCode:status});return run.output()}
  let openLink
  async function start(){
   const run=spawnCommand(['dev','--foreground','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400));const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1];if(link){openLink=link;return;}await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
@@ -142,7 +144,7 @@ export async function managedSeed(bindings={}){
    child.kill('SIGTERM');await exited
   }
  }
- return {port,origin,command,start,preview,startHttp,owner,request,close,get openLink(){return openLink}}
+ return {port,origin,command,start,preview,startHttp,owner,request,close,get commandOutcomes(){return [...commandOutcomes]},get openLink(){return openLink}}
 }
 
 
@@ -544,5 +546,10 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  for(const id of [incident.id,portableMergeTarget.id,portableMergeSource.id,portableSplit.id])assert.deepEqual(retainedWorkflows.find(i=>i.id===id),prior.incidents.find(i=>i.id===id),'OC-050 templates, completed checklists, merge aliases and split provenance survive portable restore and erasure')
  console.log('PASS OC-050 transfer: full template snapshots with completed checklist attribution and merged/split provenance survive checkpoint, portable inactive restore, erasure and current archive import without replay or authority. Paging remains OFF.')
  await m.command(['reset','--yes','--non-interactive'])
+ await recordHealthOutcome('local','tests/transfer.mjs: managed installation transfer',{
+  commands:m.commandOutcomes,
+  populatedRestore:'passed',inactiveAuthority:'passed',erasureFences:'passed',
+  invalidArchiveRefusals:'passed',currentArchiveRetainsErasure:true,
+ })
  console.log('OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; OC-052 all current durable categories restore inactive without authority or replay: nonempty refusal, invalid-input rollback, full relational/history/journal restore, credential exclusion, paused timer, explicit new-owner mapping and held approval')
 }finally{await m.close();await rm(answers,{force:true});await rm(archive,{force:true});await rm(corrupt,{force:true});await rm(invalidRecords,{force:true});await rm(later,{force:true})}

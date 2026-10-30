@@ -8,7 +8,7 @@ export function NextStep({incident, canEdit, busy, mutate}: IncidentProps) {
   const [asking, setAsking] = useState('');
   const [other, setOther] = useState(false);
   const steps = allowed[incident.state];
-  if (!canEdit || !steps.length) return incident.recovery ? <p><a href={incident.recovery} target="_blank" rel="noreferrer">Recovery evidence</a></p> : null;
+  if (!canEdit || !steps.length) return incident.recovery ? <p><a className="incident-evidence-link" href={incident.recovery} target="_blank" rel="noreferrer">Recovery evidence</a></p> : null;
   const act = async (state: string) => {
     setOther(false);
     if (state === 'recovered' || state === 'resolved') {setAsking(state); return;}

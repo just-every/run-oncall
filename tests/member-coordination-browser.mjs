@@ -336,6 +336,7 @@ try {
    await owner.page.getByRole('tooltip',{name:'Remove person',exact:true}).first().waitFor({state:'visible'})
   }
   if(screen==='incidents'){
+   await owner.page.getByRole('checkbox',{name:/^Select /}).first().check()
    await owner.page.getByRole('button',{name:'Select this page',exact:true}).click()
    await owner.page.getByLabel('Bulk action',{exact:true}).selectOption('reassign')
    await excludesStakeholder(owner.page.getByLabel('Bulk assignee',{exact:true}))

@@ -42,4 +42,3 @@
  .team-section .team-member-role > .autosave-saved {top:13px; left:calc(100% + 6px); margin:0;}
 }
 .team-section [data-tip-dismissed] .oncall-tooltip-content {visibility:hidden;opacity:0;}
-.team-section .field :is(input,select,textarea):focus-visible {outline-offset:-2px;}

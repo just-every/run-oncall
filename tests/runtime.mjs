@@ -1,4 +1,5 @@
 import {readinessHealth} from './readiness.mjs'
+import {healthBuildIdentity,recordHealthOutcome,recordHealthFieldOutcomes} from './health-outcomes.mjs'
 import {fileURLToPath} from 'node:url'
 import http from 'node:http'
 import {fixtureDatabase} from './fixture-database.mjs'
@@ -12,12 +13,12 @@ import {createHmac,pbkdf2Sync,createHash,randomBytes} from 'node:crypto'
 import {createServer} from 'node:net'
 
 const runtimePart=process.env.ONCALL_RUNTIME_PART??'all'
-if(!['all','core','machines'].includes(runtimePart))throw Error(`Unknown runtime journey: ${runtimePart}`)
-if(runtimePart!=='machines') {
+if(!['all','core','machines','delivery'].includes(runtimePart))throw Error(`Unknown runtime journey: ${runtimePart}`)
+if(['all','core'].includes(runtimePart)) {
  const started=performance.now();await coordinationJourney()
  console.log(`Runtime core completed (${((performance.now()-started)/1000).toFixed(1)}s)`)
 }
-if(runtimePart!=='core') {
+if(['all','machines'].includes(runtimePart)) {
  const started=performance.now()
 await automationJourney();
 
@@ -142,6 +143,10 @@ const {default:assert}=await import('node:assert/strict')
 const {readdir,readFile}=await import('node:fs/promises')
 const {join}=await import('node:path')
 const {serveHosted}=await import('@runeditrun/rer/internal/cli/hosted-output.mjs')
+const {deploymentSpec}=await import('../scripts/delivery/base/spec.mjs')
+const {artifact:{specInputs}}=JSON.parse(await readFile('scripts/delivery/base/packaging.json','utf8'))
+const declared=JSON.parse(await readFile('management/integration/deployment-spec.json','utf8'))
+assert.deepEqual(await deploymentSpec(process.cwd(),specInputs),declared,'The packaged delivery specification must match the declared plan, including surfaces, readiness and provider effects')
 
 // Every page or file the app links, and every built HTML file, must answer when the build is served
 // the way rer deploy hosts it (the Worker runs before the static assets). A link that redirects and
@@ -150,11 +155,12 @@ const walk=async dir=>(await Promise.all((await readdir(dir,{withFileTypes:true}
 const links=new Set;for(const file of (await walk('src')).filter(f=>/\.tsx$/.test(f)))for(const m of (await readFile(file,'utf8')).matchAll(/href="(\/[^"#?]+)"/g))links.add(m[1])
 for(const file of (await walk('dist/client')).filter(f=>f.endsWith('.html')))links.add(file.slice('dist/client'.length))
 assert.ok(links.size>0,'the app links at least one built file')
-const hosted=await serveHosted(process.cwd())
+const deployment={...await healthBuildIdentity(),versionId:crypto.randomUUID()}
+const hosted=await serveHosted(process.cwd(),{bindings:{RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint,RER_VERSION:{id:deployment.versionId}}})
 try{
  const health=await hosted.fetch('health');assert.equal(health.status,200)
  const body=await health.json();assert.equal(body.ok,true);assert.equal(body.storage,'available');assert.equal(body.target,'coordination');assert.equal(body.paging,'not-provided')
- assert.deepEqual(body.deployment,hosted.identity,'the built hosted Worker reports the exact supplied source, fingerprint and version identity')
+ assert.deepEqual(body.deployment,deployment,'the built hosted Worker reports the exact supplied source, fingerprint and version identity')
  console.log('OC-010 hosted-mode production output: deployment identity matches; no provider deployment, delivery, drill or capacity result inferred')
  for(const link of links) {
   let path=link.slice(1),status
@@ -163,6 +169,11 @@ try{
  }
  const old=await hosted.fetch('move-in-guide');await old.arrayBuffer();assert.equal(old.headers.get('location'),'/docs/move-in','the old guide link leads to the docs page')
  const guide=await hosted.fetch('docs/move-in');assert.equal(guide.status,200);await guide.arrayBuffer()
+ await recordHealthOutcome('hosted-mode','tests/runtime.mjs: hosted production output',{
+  health:{httpStatus:health.status,...body},linkedPages:{checked:links.size,httpStatus:200},
+  deploymentIdentitySource:'actual checkout and emitted Worker; version binding supplied by the journey',
+ })
+ await recordHealthFieldOutcomes()
  console.log(`Hosted links passed: ${links.size} linked page or file(s) answer 200 through the hosted Worker`)
 }finally{await hosted.close()}
 
@@ -182,12 +193,13 @@ async function coordinationHealth({request,sql,deployment,cookie}) {
  const commands=()=>{
   const described=command(['describe']),checked=command(['check','--profile','first-party'])
   assert.equal(checked.ok,true);assert.ok(checked.clauses.every(c=>c.ok))
-  return described
+  return {described,checked}
  }
  const healthy=ok(await request('/health'))
  assert.deepEqual(healthy.deployment,deployment,'the emitted build identifies its actual source and artifact')
  assert.equal(healthy.ok,true);assert.equal(healthy.storage,'available');assert.equal(healthy.target,'coordination');assert.equal(healthy.paging,'not-provided')
  const before=ok(await request('/api/archive',undefined,cookie)),description=commands()
+ let unavailable,unavailableStateStatus,outageCommands
  assert.deepEqual(ok(await request('/api/archive',undefined,cookie)),before,'check and describe leave durable coordination unchanged')
  sql('ALTER TABLE workspace_control RENAME TO workspace_fault')
  try {
@@ -196,11 +208,22 @@ async function coordinationHealth({request,sql,deployment,cookie}) {
   assert.equal(failed.value.target,'coordination');assert.equal(failed.value.paging,'not-provided')
   assert.deepEqual(failed.value.deployment,deployment,'failure still identifies the deployed build')
   assert.equal(typeof failed.value.error,'string')
-  assert.equal((await request('/api/state',undefined,cookie)).status,503)
-  assert.deepEqual(commands(),description,'read-only command effects remain available during storage failure')
+  unavailable={httpStatus:failed.status,...failed.value}
+  unavailableStateStatus=(await request('/api/state',undefined,cookie)).status
+  assert.equal(unavailableStateStatus,503)
+  outageCommands=commands()
+  assert.deepEqual(outageCommands,description,'read-only command effects remain available during storage failure')
  }finally{sql('ALTER TABLE workspace_fault RENAME TO workspace_control')}
  assert.deepEqual(ok(await request('/health')),healthy,'storage recovery restores the same healthy deployment')
  assert.deepEqual(ok(await request('/api/archive',undefined,cookie)),before,'failure and recovery lose no records')
+ const commandOutcomes=result=>({check:{ok:result.checked.ok,exitCode:result.checked.exitCode},
+  describe:{cliVersion:result.described.cliVersion,profile:result.described.profile,
+   effects:Object.fromEntries(Object.entries(result.described.verbs).map(([verb,value])=>[verb,value.effects]))}})
+ await recordHealthOutcome('local','tests/runtime.mjs: coordinationHealth',{
+  available:{httpStatus:200,...healthy},unavailable,unavailableStateStatus,
+  recovered:{httpStatus:200,...ok(await request('/health'))},recordsUnchanged:true,
+  commands:{available:commandOutcomes(description),unavailable:commandOutcomes(outageCommands)},
+ })
  console.log('OC-010 coordination health, deployment identity and honest command effects survive storage failure: local 503/recovery and read-only check/describe; paging not provided; capacity unmeasured')
 }
 

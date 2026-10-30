@@ -57,18 +57,13 @@
 .scheduling-form-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .scheduling-rotations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 4px; }
-.scheduling-rotation { padding: 18px 12px 8px; border: 1px solid var(--app-line); border-top: 3px solid var(--oc-now); border-radius: 12px; background: var(--oc-paper); }
-.scheduling-rotation + .scheduling-rotation { border-top-color: var(--oc-next); }
-.scheduling-rotation h3 { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-.scheduling-rotation h3 small { color: var(--oc-muted); font-size: 13px; font-weight: 500; }
 .scheduling-member-slots { list-style: none; margin: 4px 0 14px; padding: 0; }
 .scheduling-member-slots li { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; }
 .scheduling-member-slots .scheduling-field { flex: 1; margin: 0; }
 .scheduling-member-slots .scheduling-field > span { color: var(--oc-muted); font-size: 13px; font-weight: 550; }
-.scheduling-member-slots select, .scheduling-rotation select { padding-left: 10px; font-size: 14px; }
+.scheduling-member-slots select { padding-left: 10px; font-size: 14px; }
 .scheduling-slot-index { flex: none; width: 14px; color: var(--oc-muted); font-size: 14px; }
-.scheduling-avatar { flex: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--oc-now-wash); color: var(--oc-now-ink); font-size: 12px; font-weight: 650; }
-.scheduling-rotation + .scheduling-rotation .scheduling-avatar { background: var(--oc-next-wash); color: var(--app-next-ink); }
+.scheduling-avatar { flex: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--oc-now-wash); color: var(--oc-now-ink); font-size: 13px; font-weight: 650; }
 .scheduling-slot-actions { flex: none; display: grid; grid-template-columns: repeat(3, 30px); gap: 3px; }
 .scheduling-slot-actions button { min-width: 30px; min-height: 30px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 .scheduling-gap-note { display: flex; gap: 12px; margin-top: 14px; padding: 14px 16px; border: 1px solid var(--app-line); border-radius: 12px; color: var(--oc-ink-soft); font-size: 14px; line-height: 1.6; }

@@ -19,7 +19,8 @@
           "slug": "install",
           "title": "Install and run",
           "source": "docs/install.md",
-          "summary": "Run locally or deploy to your Cloudflare account, sign in by email, and remove your hosted installation."
+          "summary": "Run locally or deploy to your Cloudflare account, sign in by email, and remove your hosted installation.",
+          "legacy": true
         },
         {
           "slug": "team",

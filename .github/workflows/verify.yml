@@ -1,147 +1,282 @@
 name: Verify
+
 on:
   push:
     branches: ['**']
-    tags: ['v*']
   pull_request:
-  schedule:
-    - cron: '30 17 * * *'
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      tier:
+        type: string
+        default: push
+
 permissions:
   contents: read
-env:
-  CI: 'true'
-  WRANGLER_SEND_METRICS: 'false'
+
+concurrency:
+  group: seed-verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      skip: ${{ steps.plan.outputs.skip }}
+      coverage: ${{ steps.plan.outputs.coverage }}
+      tier: ${{ steps.plan.outputs.tier }}
+      readers: ${{ steps.plan.outputs.readers }}
+      has_shards: ${{ steps.plan.outputs.has_shards }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Check reusable workflow permissions
+        run: node scripts/verify-ci.mjs --check-workflows
+      - name: Look up complete nightly marker
+        id: nightly
+        if: ${{ github.event_name == 'schedule' || inputs.tier == 'nightly' }}
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: ${{ runner.temp }}/nightly-green
+          key: nightly-green-${{ github.sha }}
+          lookup-only: true
+      - id: plan
+        env:
+          TIER: ${{ inputs.tier || 'push' }}
+          GITHUB_TOKEN: ${{ github.token }}
+          NIGHTLY_CACHE_HIT: ${{ steps.nightly.outputs.cache-hit }}
+        run: node scripts/verify-oncall.mjs --plan
+
   build:
+    needs: plan
+    if: ${{ needs.plan.outputs.has_shards == 'true' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - name: Free unused runner SDKs for the 15 GiB disk guard
-        run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
-          df -h / /tmp
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-      - run: corepack enable
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec rer check --profile first-party
-      - run: pnpm run typecheck
-      - run: pnpm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: oncall-production-build
-          include-hidden-files: true
-          path: |
-            dist
-            management/integration/deployment-spec.json
-  lanes:
-    needs: build
-    if: github.event_name != 'workflow_dispatch'
-    name: ${{ matrix.lane }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - lane: runtime
-            browser: false
-          - lane: intake
-            browser: false
-          - lane: browser
-            browser: true
+    timeout-minutes: 25
     env:
-      ONCALL_VERIFY_LANE: ${{ matrix.lane }}
-      ONCALL_VERIFY_PREBUILT: '1'
+      CI: 'true'
+      WRANGLER_SEND_METRICS: 'false'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          # Contract provenance checks read the original clauses from Git history.
+          persist-credentials: false
           fetch-depth: 0
       - name: Free unused runner SDKs for the 15 GiB disk guard
         run: |
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
           df -h / /tmp
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version-file: .node-version
-      - run: corepack enable
+          package-manager-cache: false
+      - run: npm install --global pnpm@10.12.4
+      - run: pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: ${{ runner.temp }}/pnpm-store
+          key: seed-ubuntu24-temp-store-${{ runner.arch }}-build-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
       - name: Check the generated contract documents
         run: node src/base/contract-docs.mjs check
-      - uses: actions/download-artifact@v4
-        with:
-          name: oncall-production-build
-      - if: matrix.browser
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Verify the selected public-door journey
-        env:
-          ONCALL_BROWSER_EVIDENCE: ${{ runner.temp }}/oncall-browser-evidence
-        run: node tests/verify.mjs
+      - name: Check edition source lock with the vendored authoring tool
+        run: node scripts/edition-authoring/cli.mjs check
+      - run: pnpm run deps
+      - name: Check, build and typecheck the exact checkout once
+        run: node scripts/verify-oncall-build.mjs
+      - name: Package the shared build and its exact-SHA receipt
+        run: tar -czf "$RUNNER_TEMP/oncall-verification-build.tar.gz" dist management/integration/deployment-spec.json public/move-in/oncall-export.mjs.txt
       - uses: actions/upload-artifact@v4
-        if: always() && matrix.browser
         with:
-          name: oncall-browser-evidence-${{ matrix.lane }}
-          path: |
-            ${{ runner.temp }}/oncall-browser-evidence
-            evidence/browser
-  installation:
-    needs: build
-    name: transfer
+          name: oncall-verification-build
+          path: ${{ runner.temp }}/oncall-verification-build.tar.gz
+          retention-days: 1
+
+  shards:
+    name: shards (${{ matrix.name }})
+    needs: [plan, build]
+    if: ${{ needs.plan.outputs.has_shards == 'true' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: ${{ matrix.timeout }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     env:
-      ONCALL_VERIFY_LANE: transfer
-      ONCALL_VERIFY_PREBUILT: '1'
+      CI: 'true'
+      WRANGLER_SEND_METRICS: 'false'
+      PLAYWRIGHT_SKIP_BROWSER_GC: '1'
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      # Job env is evaluated before the runner context is available.
+      - name: Set runner-owned browser cache
+        run: printf 'PLAYWRIGHT_BROWSERS_PATH=%s/ms-playwright\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Free unused runner SDKs for the 15 GiB disk guard
         run: |
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
           df -h / /tmp
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version-file: .node-version
-      - run: corepack enable
+          package-manager-cache: false
+      - run: npm install --global pnpm@10.12.4
+      - name: Set runner-owned pnpm store
+        run: pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
+      - name: Prepare runner-owned browser and apt caches
+        if: matrix.browser
+        run: |
+          set -euo pipefail
+          id
+          printf 'Runner HOME=%s\n' "$HOME"
+          if [ -e "$HOME/.cache" ]; then
+            stat -c 'Home cache: %n uid=%u gid=%g mode=%a' "$HOME/.cache"
+          else
+            printf 'Home cache: absent\n'
+          fi
+          mkdir -p "$PLAYWRIGHT_BROWSERS_PATH" "$RUNNER_TEMP/rer-apt/archives"
+      # Save completed packages; apt keeps partial downloads private to _apt.
+      - name: Cache frozen dependencies and Chromium
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: |
+            ${{ runner.temp }}/pnpm-store
+            ${{ runner.temp }}/ms-playwright
+            ${{ runner.temp }}/rer-apt/archives/*.deb
+          # Old snapshots contain absolute HOME paths; do not restore them here.
+          key: seed-ubuntu24-temp-store-${{ runner.arch }}-browser-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
+      - name: Check the generated contract documents
+        run: node src/base/contract-docs.mjs check
+      - name: Check edition source lock with the vendored authoring tool
+        run: node scripts/edition-authoring/cli.mjs check
+      - run: pnpm run deps
+      - name: Install and probe Chromium before system dependencies
+        if: matrix.browser
+        run: |
+          set -euo pipefail
+          stat -c 'Before browser: %n uid=%u gid=%g mode=%a' "$PLAYWRIGHT_BROWSERS_PATH" "$RUNNER_TEMP/rer-apt/archives"
+          pnpm exec playwright install chromium
+          probe() { node --input-type=module -e "import { chromium } from '@playwright/test'; try { const browser = await chromium.launch({headless: true}); await browser.close(); } catch (error) { console.error(error); process.exit(/EACCES|permission denied/i.test(String(error)) ? 77 : 1); }"; }
+          if probe; then
+            :
+          else
+            status=$?
+            if [ "$status" -eq 77 ]; then exit "$status"; fi
+            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/install-chromium-deps.py
+            stat -c 'After apt: %n uid=%u gid=%g mode=%a' "$PLAYWRIGHT_BROWSERS_PATH" "$RUNNER_TEMP/rer-apt/archives"
+            probe
+          fi
+      - name: Reserve disk for native runtime journeys
+        if: matrix.browser
+        run: |
+          free_kib() { df -Pk "$GITHUB_WORKSPACE" | awk 'END { print $4 }'; }
+          for unused_tools in /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL; do
+            if [ "$(free_kib)" -ge "$((20 * 1024 * 1024))" ]; then break; fi
+            sudo rm -rf -- "$unused_tools"
+          done
       - uses: actions/download-artifact@v4
         with:
-          name: oncall-production-build
-      - run: pnpm exec playwright install --with-deps chromium
-      # Retain the public rer verify wrapper's hosted-output and hydration gates.
-      - run: pnpm exec rer verify --non-interactive
+          name: oncall-verification-build
+          path: ${{ runner.temp }}/oncall-verification-build
+      - name: Restore the exact checkout's shared production build
+        run: tar -xzf "$RUNNER_TEMP/oncall-verification-build/oncall-verification-build.tar.gz"
+      - name: Run this shard
         env:
+          SHARD: ${{ matrix.name }}
           ONCALL_BROWSER_EVIDENCE: ${{ runner.temp }}/oncall-browser-evidence
+        run: node scripts/verify-oncall.mjs "$SHARD"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: oncall-browser-evidence-transfer
+          name: oncall-browser-evidence-${{ matrix.name }}
           path: |
             ${{ runner.temp }}/oncall-browser-evidence
             evidence/browser
-  verify:
-    # Preserve the required check name while waiting for every applicable lane.
-    if: always()
-    needs: [build, lanes, installation]
+
+  light:
+    needs: plan
+    if: ${{ needs.plan.outputs.coverage == 'light' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      CI: 'true'
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - run: npm install --global pnpm@10.12.4
+      - run: pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
+      - run: pnpm install --frozen-lockfile
+      - name: Check the generated contract documents
+        run: node src/base/contract-docs.mjs check
+      - name: Check edition source lock with the vendored authoring tool
+        run: node scripts/edition-authoring/cli.mjs check
+      - run: pnpm run deps
+      - name: Run the changed files' reviewed readers and build the run site
+        env:
+          LIGHT_READERS: ${{ needs.plan.outputs.readers }}
+        run: node scripts/verify-oncall.mjs --light
+
+  full-push-proof:
+    needs: [plan, build, shards]
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') && needs.plan.outputs.tier == 'push' && needs.plan.outputs.coverage == 'full' && needs.shards.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 1
     steps:
-      - name: Require every verification lane
+      - run: test '${{ needs.shards.result }}' = success
+
+  nightly-proof:
+    needs: [plan, build, shards]
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.plan.outputs.tier == 'nightly' || needs.plan.outputs.tier == 'all') && needs.plan.outputs.coverage == 'full' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    steps:
+      - name: Mark successful complete nightly coverage
+        run: mkdir -p "$RUNNER_TEMP/nightly-green" && printf '%s\n' '${{ github.sha }}' > "$RUNNER_TEMP/nightly-green/sha"
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: ${{ runner.temp }}/nightly-green
+          key: nightly-green-${{ github.sha }}
+
+  verify:
+    needs: [plan, build, shards, light, full-push-proof, nightly-proof]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    steps:
+      - name: Require the selected coverage and its proof
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          BUILD_RESULT: ${{ needs.build.result }}
-          LANES_RESULT: ${{ needs.lanes.result }}
-          INSTALLATION_RESULT: ${{ needs.installation.result }}
+          PLAN: ${{ needs.plan.result }}
+          BUILD: ${{ needs.build.result }}
+          SHARDS: ${{ needs.shards.result }}
+          LIGHT: ${{ needs.light.result }}
+          PUSH_PROOF: ${{ needs.full-push-proof.result }}
+          NIGHTLY_PROOF: ${{ needs.nightly-proof.result }}
+          COVERAGE: ${{ needs.plan.outputs.coverage }}
+          HAS_SHARDS: ${{ needs.plan.outputs.has_shards }}
+          SKIP: ${{ needs.plan.outputs.skip }}
         run: |
-          test "$BUILD_RESULT" = success
-          test "$INSTALLATION_RESULT" = success
-          if [ "$EVENT_NAME" = workflow_dispatch ]; then
-            test "$LANES_RESULT" = skipped
-          else
-            test "$LANES_RESULT" = success
-          fi
+          set -euo pipefail
+          test "$PLAN" = success
+          case "$PUSH_PROOF:$NIGHTLY_PROOF" in
+            *failure*|*cancelled*) exit 1 ;;
+          esac
+          case "$COVERAGE" in
+            reuse) test "$SKIP" = true && test "$BUILD" = skipped && test "$SHARDS" = skipped && test "$LIGHT" = skipped ;;
+            light) test "$SKIP" = false && test "$LIGHT" = success && test "$BUILD" = skipped && test "$SHARDS" = skipped ;;
+            full) test "$LIGHT" = skipped && { { test "$BUILD" = success && test "$SHARDS" = success; } || { test "$HAS_SHARDS" = false && test "$BUILD" = skipped && test "$SHARDS" = skipped; }; } ;;
+            *) exit 1 ;;
+          esac
