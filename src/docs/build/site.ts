@@ -4,6 +4,7 @@ import { sourceUrl } from '../../landing/links.ts';
 import type { DocsBody, DocsSection } from '../types.ts';
 import { manifestPath, readManifest } from './manifest.ts';
 import { renderMarkdown } from './render.ts';
+import { runRecipe } from './run-recipe.ts';
 
 // The whole docs site from the tree as it is: every page in docs/site.json rendered, every link resolved and every
 // anchor into a published page checked, and nothing that names a build machine's paths. Any problem fails the build with
@@ -22,7 +23,8 @@ export function buildDocs(root: string): DocsSite {
   const files = [join(root, manifestPath)];
   const rendered = new Map(pages.map(page => {
     files.push(join(root, page.source));
-    return [page.slug, renderMarkdown(readFileSync(join(root, page.source), 'utf8'), { source: page.source, published, kind, repository: sourceUrl })] as const;
+    const markdown = readFileSync(join(root, page.source), 'utf8');
+    return [page.slug, renderMarkdown(page.slug === 'getting-started' ? runRecipe(markdown) : markdown, { source: page.source, published, kind, repository: sourceUrl })] as const;
   }));
   const problems: string[] = [];
   for (const page of pages) {

@@ -80,7 +80,7 @@ export async function isolatedEntrypoint(url){
  const temp=await mkdtemp(join(tmpdir(),'oncall-native-')),checkout=join(temp,'checkout')
  let child
  try{
-  execFileSync('git',['clone','--quiet','--local',root,checkout],{stdio:'ignore'})
+  execFileSync('git',['clone','--quiet','--local','--no-hardlinks',root,checkout],{stdio:'ignore'})
   await symlink(join(root,'node_modules'),join(checkout,'node_modules'),'dir')
   await cp(join(root,'dist'),join(checkout,'dist'),{recursive:true})
   const sha=execFileSync('git',['rev-parse','HEAD'],{cwd:checkout,encoding:'utf8'}).trim()

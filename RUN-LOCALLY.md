@@ -201,7 +201,7 @@ transfer is unsupported by the maintained references and fails visibly.
 Release 1 supports hosted incident coordination alongside the existing pager,
 with paging OFF and no independent standby prerequisite. Release 2 paging and
 independent standby are not built. `rer deploy` deploys coordination to the
-operator's Cloudflare account; see [hosting instructions](docs/install.md#host-for-your-team).
+operator's Cloudflare account; see [hosting instructions](docs/getting-started.md#host-for-your-team).
 `rer deploy --environment production --dry-run` validates and builds locally, then reads target secret bindings using Cloudflare credentials, without provider writes. The default environment is `production`; select another with
 `--environment NAME`. Local validation does not establish provider acceptance,
 hosted health or mail delivery.
@@ -236,7 +236,7 @@ impose Base pins, aliases or state layout.
 
 ## Update, host and remove
 
-Hosted coordination is in `v0.3.0` and later. For first deployment, follow [Install and run](docs/install.md#host-for-your-team):
+Hosted coordination is in `v0.3.0` and later. For first deployment, follow [Getting started](docs/getting-started.md#host-for-your-team):
 it includes real-owner setup, the Cloudflare account ID/token and SendGrid
 key/verified sender, exact provider menu paths, permissions and verification,
 and private `0600` credential-file creation. The examples below use that file.

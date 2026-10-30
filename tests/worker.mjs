@@ -24,10 +24,19 @@ export function recordOwnedProcesses() {
 export async function automationRuntime(edge=()=>new Response('refused',{status:403}),native={}) {
  const directory=await mkdtemp(join(tmpdir(),'oncall-automation-')),build=resolve('dist/server'),config=JSON.parse(await readFile(join(build,'wrangler.json'),'utf8')),entry=join(build,config.main);
  const modules=[entry,...(await walk(build)).filter(p=>p!==entry&&types[extname(p)])].map(path=>({type:types[extname(path)],path}));
- const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const port=socket.address().port;await new Promise(r=>socket.close(r));
+ const freePort=async()=>{const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const selected=socket.address().port;await new Promise(r=>socket.close(r));return selected;};
+ let port=await freePort();
  const secret=randomBytes(32).toString('hex');let mf,db,origin='http://127.0.0.1:'+port;
  const options=()=>convertV4MiniflareOptions({host:'127.0.0.1',port,cf:false,unsafeTriggerHandlers:true,resourcePersistencePath:join(directory,'data'),workers:[{name:'app',modules,modulesRoot:build,compatibilityDate:config.compatibility_date,compatibilityFlags:config.compatibility_flags,bindings:{SESSION_SECRET:secret,AUTH_LOCAL:'true',AUTH_ORIGIN:origin,OWNER_EMAIL:'synthetic-oncall-owner@example.test',...(native.bindings?.(origin)??{})},d1Databases:{DB:'automation-db'},outboundService:edge,...(config.assets?{assets:{directory:resolve('dist/client'),binding:'ASSETS',routerConfig:{has_user_worker:true,invoke_user_worker_ahead_of_assets:true}}}:{})}]});
- async function start(){mf=new Miniflare(options());origin=(await mf.ready).origin;db=await mf.getD1Database('DB','app');recordOwnedProcesses();}
+ async function start(){
+  // A probe port can be claimed before workerd binds it. Retry only that startup
+  // collision, before any request or assertion; all other failures remain fatal.
+  for(let attempt=0;attempt<3;attempt++){
+   mf=new Miniflare(options());
+   try{origin=(await mf.ready).origin;db=await mf.getD1Database('DB','app');recordOwnedProcesses();return;}
+   catch(error){await mf.dispose().catch(()=>{});if(error.code!=='ERR_ADDRESS_IN_USE'||attempt===2)throw error;port=await freePort();origin='http://127.0.0.1:'+port;}
+  }
+ }
  await start();
  for(const name of (await readdir('migrations/core')).filter(n=>n.endsWith('.sql')).sort())await db.batch(split(await readFile('migrations/core/'+name,'utf8')).map(q=>db.prepare(q)));
  return {get db(){return db;},get origin(){return origin;},get mf(){return mf;},async restart(){await mf.dispose();await start();},async close(){await mf.dispose();await rm(directory,{recursive:true,force:true});},async request(path,data,cookie='',headers={}){const response=await fetch(origin+path,{method:data===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',cookie,...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:response.status,value:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0],headers:response.headers};}};

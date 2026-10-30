@@ -22,7 +22,7 @@ Nothing you write in Oncall is sent to an AI model. Local development has no mai
 
 ## Hosted coordination keeps your existing pager
 
-Run Oncall locally or host release 1 in your own Cloudflare account with `rer deploy`. It coordinates incidents alongside your existing pager with paging OFF; no independent standby is required for coordination. Release 2 paging and independent standby are not built. Hosted email-link sign-in requires a configured remote mail provider. See [Install and run](install.md#host-for-your-team) for setup, deployment and removal. A local dry run does not establish hosted health or mail delivery.
+Run Oncall locally or host release 1 in your own Cloudflare account with `rer deploy`. It coordinates incidents alongside your existing pager with paging OFF; no independent standby is required for coordination. Release 2 paging and independent standby are not built. Hosted email-link sign-in requires a configured remote mail provider. See [Getting started](getting-started.md#host-for-your-team) for setup, deployment and removal. A local dry run does not establish hosted health or mail delivery.
 
 ## Related product boundaries
 
