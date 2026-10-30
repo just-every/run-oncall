@@ -890,6 +890,22 @@ try {
   assert.deepEqual(incident.alerts, [admittedAlert], 'declaration links exactly the admitted alert identity');
   assert.deepEqual(ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id).alerts,
     [admittedAlert], 'the declared alert link reads back through protected HTTP');
+  const copiedSteps = [
+    { text: 'Check customer journey', done: false },
+    { text: 'Record evidence', done: false },
+  ];
+  assert.deepEqual(incident.runbook, copiedSteps, 'declaration copies the applicable service instructions');
+  const editedService = ok(await request('/api/command', {
+    ...service, type: 'service', runbook: ['Synthetic revised service instructions'],
+  }, cookie));
+  assert.deepEqual(editedService.runbook, ['Synthetic revised service instructions']);
+  const afterRunbookEdit = ok(await request('/api/state', undefined, cookie));
+  assert.deepEqual(afterRunbookEdit.services.find(s => s.id === service.id).runbook,
+    ['Synthetic revised service instructions'], 'the service edit is durably accepted');
+  assert.deepEqual(afterRunbookEdit.incidents.find(i => i.id === incident.id), incident,
+    'an accepted service runbook edit preserves every copied incident field and revision');
+  assert.deepEqual(afterRunbookEdit.incidents.find(i => i.id === incident.id).runbook, copiedSteps);
+  console.log('PROBE OC-005 copied steps: protected service edit and state read -> revised service instructions, original incident copy unchanged');
   await awaitingCoordinationAuthority({ origin, request, cookie, incident: incident.id });
   const responder = ok(await request('/api/members', {
     name: 'synthetic-oncall-303', role: 'responder', password: 'synthetic-oncall-303-password',
@@ -989,6 +1005,30 @@ try {
   incident = concurrently.find((v) => v.status === 200).value;
   await mutate({ type: "runbook", index: 0, done: true });
   await mutate({
+    type: 'action', title: 'Synthetic retained unfinished work', owner: responder.id,
+    due: '2026-12-01', completionPolicy: 'human-review',
+  });
+  const unfinishedAction = structuredClone(incident.actions.at(-1));
+  const actionRead = ok(await request('/api/state', undefined, cookie)).incidents
+    .find(i => i.id === incident.id).actions.find(a => a.id === unfinishedAction.id);
+  assert.equal(actionRead.title, 'Synthetic retained unfinished work');
+  assert.equal(actionRead.owner, responder.id);
+  assert.equal(actionRead.due, '2026-12-01');
+  assert.equal(actionRead.done, false);
+  assert.equal(actionRead.evidence, '');
+  assert.equal(actionRead.completionPolicy, 'human-review');
+  assert.match(incident.timeline.at(-1).text, /due 2026-12-01 \(UTC calendar date\)/);
+  console.log('PROBE OC-005 owned due date: protected action creation and state read -> responder owner, 2026-12-01 UTC calendar date, open state');
+  const beforeUnevidencedCompletion = ok(await request('/api/state', undefined, cookie));
+  const unevidencedCompletion = await request('/api/command', {
+    type: 'complete', incident: incident.id, revision: incident.revision, action: unfinishedAction.id,
+  }, cookie);
+  ok(unevidencedCompletion, 400);
+  assert.match(unevidencedCompletion.value.error, /Completion evidence URL required/);
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)), beforeUnevidencedCompletion,
+    'missing completion evidence preserves all incident fields, actions and workspace revision; refusal audit may append');
+  console.log('PROBE OC-005 completion refusal: protected completion without evidence -> 400, incident, actions and workspace revision unchanged');
+  await mutate({
     type: "transition",
     state: "mitigating",
     summary: "Mitigation is being reviewed",
@@ -1046,6 +1086,9 @@ try {
   });
   const resolvedIncident = ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id);
   assert.equal(resolvedIncident.state, 'resolved');
+  assert.deepEqual(resolvedIncident.actions.find(a => a.id === unfinishedAction.id), unfinishedAction,
+    'evidenced incident resolution retains the previously created unfinished work, owner and due date');
+  console.log('PROBE OC-005 retained work: protected evidenced recovery, resolution and state read -> resolved incident retains the original open action');
   assert.equal(resolvedIncident.recovery, 'https://example.test/recovery');
   assert.equal(resolvedIncident.timeline.find(e => e.kind === 'declared').actor, admin.id);
   for (const [state, actor, summary] of [
@@ -1074,9 +1117,26 @@ try {
   });
   await mutate({
     type: "complete",
-    action: incident.actions[0].id,
+    action: incident.actions.at(-1).id,
     evidence: "https://example.test/regression",
   });
+  const submittedAction = ok(await request('/api/state', undefined, cookie)).incidents
+    .find(i => i.id === incident.id).actions.at(-1);
+  assert.equal(submittedAction.evidence, 'https://example.test/regression');
+  assert.equal(submittedAction.submission.by, admin.id);
+  assert.equal(submittedAction.done, false, 'evidence submission retains the human-review policy');
+  assert.equal(submittedAction.accepted, undefined);
+  await mutate({ type: 'accept-action', action: submittedAction.id, reason: 'Synthetic human verified the repair' });
+  const completedAction = ok(await request('/api/state', undefined, cookie)).incidents
+    .find(i => i.id === incident.id).actions.find(a => a.id === submittedAction.id);
+  assert.equal(completedAction.done, true);
+  assert.equal(completedAction.accepted.by, admin.id);
+  assert.equal(completedAction.evidence, 'https://example.test/regression');
+  await mutate({ type: 'review', text: 'Synthetic edited review after resolution; retained work remains open.' });
+  const reviewedIncident = ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id);
+  assert.equal(reviewedIncident.review, 'Synthetic edited review after resolution; retained work remains open.');
+  assert.deepEqual(reviewedIncident.actions.find(a => a.id === unfinishedAction.id), unfinishedAction);
+  console.log('PASS OC-005 copied runbooks and follow-ups: immutable incident copy after service edit, owned UTC due date, atomic evidence refusal, open work across resolution, human-reviewed completion and editable review');
   const before = ok(await request("/api/state", undefined, cookie));
   const replay = ok(await request("/api/replay", { events: [event] }, cookie));
   assert.equal(replay.sideEffects, false);
