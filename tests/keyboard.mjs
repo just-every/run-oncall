@@ -83,7 +83,7 @@ export function keyboardUser(page) {
   reach,
   visibleFocus,
   async activate(locator, key='Enter') { await reach(locator);await visibleFocus(locator);await page.keyboard.press(key) },
-  async text(locator, value) { await reach(locator);await visibleFocus(locator);await page.keyboard.press('ControlOrMeta+A');await page.keyboard.insertText(value);await page.keyboard.press('Tab') },
+  async text(locator, value) { await reach(locator);await visibleFocus(locator);await page.keyboard.press('ControlOrMeta+A');await page.keyboard.type(value);await page.keyboard.press('Tab') },
   async calendar(locator, value) {
    await reach(locator);await visibleFocus(locator)
    const type=await locator.getAttribute('type')

@@ -517,7 +517,7 @@ try {
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
  if(focused&&!['readiness','accessibility'].includes(focused))throw Error('Unknown focused product journey');
  if(process.env.ONCALL_PRODUCT_JOURNEY!=='readiness'){
- await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime:async at=>{await worker.time(at);await page.clock.setFixedTime(new Date(at));}})
+ await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime:async at=>{await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));}})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
  console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440; overflow, axe and hydration checked')
