@@ -113,6 +113,7 @@ export async function pagingHistory(w,cookie) {
 // schedule-coordination: part of this public journey.
 export async function scheduleCoordination(){
  await scheduleLayers();
+ await savedRotationCoverage();
  const w=await localWorker({}, {clock:true,outboundLedger:true});
  try{
   const owner=await w.request('/api/setup',{name:'synthetic-oncall-250',password:'synthetic-oncall-250-password'});ok(owner);let cookie=owner.cookie;
@@ -224,6 +225,122 @@ export async function scheduleCoordination(){
   assert.equal((await rows()).find(r=>r.id===overdue.id).status,'overdue');assert.equal(w.sql("SELECT data FROM oc_schedule_records WHERE id='"+overdue.id+"'").map(r=>JSON.parse(r.data))[0].data.status,'pending','overdue never auto-resolves');
   ok(await coord({action:'cancel',id:overdue.id,revision:overdue.revision}));
   console.log('PASS OC-025 public schedule coordination: holder/substitute authority, default admin and none approval, racing acceptance, one effective override, audit rollback, recorded not-deliverable notices, durable reminder settings/due label, three digest-only feed scopes, 20 cap, immediate revocation and unchanged history, strict inactive recovery and overdue cancellation. Paging OFF.');
+ }finally{await w.close();}
+}
+
+
+// One saved-rotation journey uses the emitted HTTP doors and retained D1 data.
+async function savedRotationCoverage(){
+ const w=await localWorker({}, {outboundLedger:true});
+ try{
+  const owner=await w.request('/api/setup',{name:'synthetic-oncall-1100',password:'synthetic-oncall-1100-password'});ok(owner);let cookie=owner.cookie;
+  const req=(path,input)=>w.request(path,input,cookie);
+  const member=async(n,role)=>ok(await req('/api/members',{name:'synthetic-oncall-'+n,password:'synthetic-oncall-'+n+'-password',role}),201);
+  const a=await member(1101,'responder'),b=await member(1102,'responder'),viewer=await member(1103,'viewer');
+  const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-1100',name:'Synthetic calendar coverage',environment:'test',owner:owner.value.member.id,runbook:[],pager:''}));
+  const rotation=(anchorLocal,members,ambiguity='earlier')=>({anchorLocal,periodDays:1,members,ambiguity});
+  const save=async(n,timezone,anchor,ambiguity='earlier',primary=[a.id,b.id],backup=[b.id,a.id])=>{
+   const schedule={id:'synthetic-oncall-'+n,name:'Synthetic saved rotation '+n,service:service.id,revision:0,timezone,validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:rotation(anchor,primary,ambiguity),backup:rotation(anchor,backup,ambiguity),overrides:[]};
+   const saved=ok(await req('/api/paging/schedules',schedule));
+   assert.deepEqual(saved,{...schedule,revision:1});
+   assert.deepEqual(ok(await req('/api/paging/state')).schedules.find(row=>row.id===saved.id),saved,'the saved configuration is read from durable storage');
+   return saved;
+  };
+  const iso=at=>new Date(at).toISOString();
+  const observe=async(schedule,from,to,expected)=>{
+   const retained=durableSnapshot(w),paging=ok(await req('/api/paging/state'));
+   const values=ok(await req('/api/paging/preview',{scheduleId:schedule.id,from:Date.parse(from),to:Date.parse(to)}));
+   assert.deepEqual(values.map(value=>[iso(value.at),value.primary,value.backup,...value.windows.map(window=>[window.role,window.member,window.start,window.end,window.origin])]),
+    expected.map(([at,primary,backup,start,end])=>[at,primary,backup,['primary',primary,start,end,primary===null?'gap':'rotation'],['backup',backup,start,end,backup===null?'gap':'rotation']]),'saved preview retains exact UTC boundaries and fixed role assignments');
+   for(let index=0;index<expected.length;index++){
+    const [at,primary,backup,start,end,warning]=expected[index];
+    const result=ok(await req('/api/schedules/'+schedule.id+'/now-next?at='+at));
+    assert.equal(result.paging,'OFF');assert.deepEqual(result.now,values[index]);
+    if(warning)assert.match(result.now.warnings.join('; '),warning,'the coverage gap has a visible explanation');
+    const next=expected[index+1];
+    if(next){
+     for(const role of ['primary','backup']){
+      assert.equal(iso(result.next[role].at),end);
+      assert.equal(result.next[role].primary,next[1]);assert.equal(result.next[role].backup,next[2]);
+     }
+     const edge=ok(await req('/api/schedules/'+schedule.id+'/now-next?at='+iso(Date.parse(end)-1))).now;
+     assert.equal(edge.primary,primary);assert.equal(edge.backup,backup,'the preceding slot lasts until the exact handoff');
+    }
+   }
+   assert.deepEqual(ok(await req('/api/paging/state')),paging,'preview and now-next never create a job, receipt, callback or changed schedule');
+   assert.deepEqual(durableSnapshot(w),retained,'preview and now-next preserve every durable row, revision, audit and outbound work item');
+   assert.deepEqual(await w.outboundRequests(),[],'coverage reads make no outbound requests');
+  };
+  const fall=await save(1110,'America/New_York','2026-10-31T09:00');
+  await observe(fall,'2026-10-31T13:00:00Z','2026-11-02T15:00:00Z',[
+   ['2026-10-31T13:00:00.000Z',a.id,b.id,'2026-10-31T13:00:00.000Z','2026-11-01T14:00:00.000Z'],
+   ['2026-11-01T14:00:00.000Z',b.id,a.id,'2026-11-01T14:00:00.000Z','2026-11-02T14:00:00.000Z'],
+   ['2026-11-02T14:00:00.000Z',a.id,b.id,'2026-11-02T14:00:00.000Z','2026-11-03T14:00:00.000Z'],
+  ]);
+  console.log('PROBE OC-011 fall handoff: saved New York 09:00 primary and backup -> 13:00Z then 14:00Z, a 25-hour civil day');
+  for(const [n,choice,boundary] of [[1111,'earlier','2026-11-01T05:30:00.000Z'],[1112,'later','2026-11-01T06:30:00.000Z'],[1113,'reject',null]]){
+   const saved=await save(n,'America/New_York','2026-10-31T01:30',choice);
+   const expected=[['2026-10-30T05:30:00.000Z',b.id,a.id,'2026-10-30T05:30:00.000Z','2026-10-31T05:30:00.000Z'],
+    ...(boundary?[
+     ['2026-10-31T05:30:00.000Z',a.id,b.id,'2026-10-31T05:30:00.000Z',boundary],
+     [boundary,b.id,a.id,boundary,'2026-11-02T06:30:00.000Z'],
+    ]:[['2026-10-31T05:30:00.000Z',null,null,'2026-10-31T05:30:00.000Z','2026-11-02T06:30:00.000Z',/primary: calendar boundary is nonexistent, rejected as ambiguous/]]),
+    ['2026-11-02T06:30:00.000Z',a.id,b.id,'2026-11-02T06:30:00.000Z','2026-11-03T06:30:00.000Z']];
+   await observe(saved,'2026-10-30T05:30:00Z','2026-11-02T07:00:00Z',expected);
+   for(const at of ['2026-11-01T05:45:00Z','2026-11-01T06:15:00Z']){
+    const value=ok(await req('/api/schedules/'+saved.id+'/now-next?at='+at)).now;
+    assert.equal(value.primary,choice==='earlier'?b.id:choice==='later'?a.id:null);
+    assert.equal(value.backup,choice==='earlier'?a.id:choice==='later'?b.id:null);
+    if(choice==='reject')assert.match(value.warnings.join('; '),/backup: calendar boundary is nonexistent, rejected as ambiguous/);
+   }
+   console.log('PROBE OC-011 repeated minute '+choice+': saved New York 01:30 -> '+(boundary??'both roles visibly unavailable until 2026-11-02T06:30:00.000Z'));
+  }
+  for(const [n,choice] of [[1114,'earlier'],[1115,'later'],[1116,'reject']]){
+   const saved=await save(n,'America/New_York','2026-03-07T02:30',choice);
+   await observe(saved,'2026-03-06T07:30:00Z','2026-03-09T07:00:00Z',[
+    ['2026-03-06T07:30:00.000Z',b.id,a.id,'2026-03-06T07:30:00.000Z','2026-03-07T07:30:00.000Z'],
+    ['2026-03-07T07:30:00.000Z',null,null,'2026-03-07T07:30:00.000Z','2026-03-09T06:30:00.000Z',/backup: calendar boundary is nonexistent, rejected as ambiguous/],
+    ['2026-03-09T06:30:00.000Z',a.id,b.id,'2026-03-09T06:30:00.000Z','2026-03-10T06:30:00.000Z'],
+   ]);
+   console.log('PROBE OC-011 nonexistent minute '+choice+': saved New York 02:30 -> both roles have an explained gap from 2026-03-07T07:30Z to 2026-03-09T06:30Z, then original slot order resumes');
+  }
+  const slotRows=(unavailable)=>[
+   ['2026-01-01T00:00:00.000Z',a.id,b.id,'2026-01-01T00:00:00.000Z','2026-01-02T00:00:00.000Z'],
+   ['2026-01-02T00:00:00.000Z',null,a.id,'2026-01-02T00:00:00.000Z','2026-01-03T00:00:00.000Z',new RegExp('primary: member .* is '+unavailable+'; slot is retained')],
+   ['2026-01-03T00:00:00.000Z',b.id,null,'2026-01-03T00:00:00.000Z','2026-01-04T00:00:00.000Z',new RegExp('backup: member .* is '+unavailable+'; slot is retained')],
+   ['2026-01-04T00:00:00.000Z',a.id,b.id,'2026-01-04T00:00:00.000Z','2026-01-05T00:00:00.000Z'],
+  ];
+  const withViewer=await save(1117,'UTC','2026-01-01T00:00','earlier',[a.id,viewer.id,b.id],[b.id,a.id,viewer.id]);
+  await observe(withViewer,'2026-01-01T00:00:00Z','2026-01-04T01:00:00Z',slotRows('not an authorized responder'));
+  console.log('PROBE OC-011 viewer slots: saved three-slot primary and backup -> viewer turns remain explained gaps and all subsequent responders keep their turns');
+  const duplicate=await save(1118,'UTC','2026-01-01T00:00','earlier',[a.id,b.id],[a.id,b.id]);
+  await observe(duplicate,'2026-01-01T00:00:00Z','2026-01-02T01:00:00Z',[
+   ['2026-01-01T00:00:00.000Z',a.id,null,'2026-01-01T00:00:00.000Z','2026-01-02T00:00:00.000Z',/backup: same member .* as primary; backup is unavailable/],
+   ['2026-01-02T00:00:00.000Z',b.id,null,'2026-01-02T00:00:00.000Z','2026-01-03T00:00:00.000Z',/backup: same member .* as primary; backup is unavailable/],
+  ]);
+  console.log('PROBE OC-011 duplicate responder: saved identical role rotations -> primary retained, backup unavailable with explanation on both turns');
+  // Restore a real older membership snapshot, then retain the saved module history.
+  const olderMembership=ok(await req('/api/archive')),departed=await member(1104,'responder');
+  const departedSession=await req('/api/login',{name:departed.name,password:'synthetic-oncall-1104-password'});ok(departedSession);
+  const history=await save(1119,'UTC','2026-01-01T00:00','earlier',[a.id,departed.id,b.id],[b.id,a.id,departed.id]);
+  const custody=ok(await req('/api/paging/archive'));
+  const restored=await req('/api/restore',{mode:'replace',archive:olderMembership});ok(restored);cookie=restored.cookie;
+  assert.equal(ok(await req('/api/state')).members.some(row=>row.id===departed.id),false);
+  ok(await w.request('/api/state',undefined,departedSession.cookie),401);
+  ok(await req('/api/login',{name:departed.name,password:'synthetic-oncall-1104-password'}),401);
+  assert.deepEqual(ok(await req('/api/paging/state')).schedules.find(row=>row.id===history.id),history,'membership recovery retains the exact historical slots');
+  const refusedBefore=ok(await req('/api/paging/state'));
+  ok(await req('/api/paging/schedules',{...history,id:'synthetic-oncall-1120',revision:0}),400);
+  assert.deepEqual(ok(await req('/api/paging/state')),refusedBefore,'new schedules cannot introduce unknown members');
+  const retained=ok(await req('/api/paging/restore',{mode:'replace',archive:custody}));
+  assert.deepEqual(retained.schedules.find(row=>row.id===history.id),history,'the strict module custody door preserves missing historical member references');
+  await observe(history,'2026-01-01T00:00:00Z','2026-01-04T01:00:00Z',slotRows('missing'));
+  assert.equal(ok(await req('/api/state')).members.some(row=>row.id===departed.id),false,'retained schedule history grants no membership');
+  console.log('PROBE OC-011 missing slots: older membership and saved module custody restored over protected HTTP -> missing turns remain explained gaps, later turns unchanged, old session refused, no membership recreated');
+  const paging=ok(await req('/api/paging/state'));
+  assert.equal(paging.paging,'OFF');assert.deepEqual(paging.jobs,[]);assert.deepEqual(paging.receipts,[]);assert.deepEqual(paging.callbacks,[]);
+  assert.deepEqual(await w.outboundRequests(),[]);
+  console.log('PROBE OC-011 preview effects: all saved previews and now-next reads -> every durable row unchanged, zero jobs, receipts, callbacks and outbound requests');
  }finally{await w.close();}
 }
 

@@ -1391,9 +1391,9 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 10 | 12 | 0 | 22 |
+| Published | 11 | 11 | 0 | 22 |
 | Target and push further | 4 | 34 | 41 | 79 |
-| All | 14 | 46 | 41 | 101 |
+| All | 15 | 45 | 41 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1407,7 +1407,7 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 | `OC-008` | User-authored records kept | published | done | `src/api.ts`; `src/native-incomplete.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/product-browser-journey.mjs`; `tests/product-browser.mjs` |  |
 | `OC-009` | Accessible interface | published | partial | `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/product-browser-journey.mjs`; `tests/product-browser-journey.mjs` | Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. BASE-ACCESSIBILITY-001 is not established across every Oncall journey and the OC-029 apps; the human passes and the VPAT are register rows R-3 and R-4. |
 | `OC-010` | Health and honest commands | published | partial | `src/api.ts`; `src/base/deployment-health.ts`; `OPERATIONS.json`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/transfer.mjs` | No cited test records provider or human-drill outcomes separately from local and hosted ones; check, describe, storage-unavailable health with the deployed identity and the hosted build's identity are asserted. Coordination storage loss reports 503 with deployment identity and recovers without changed records. Paging health and capacity are unclaimed and inherited by OC-026–029/064. |
-| `OC-011` | Calendar-day rotations | published | partial | `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs` | Fall-DST hand-offs, ambiguous and nonexistent minutes, viewer and missing slots kept as gaps and duplicate primary/backup detection are not asserted in the cited test; spring DST, override edges, overlap refusal and an inactive member's gap are asserted. |
+| `OC-011` | Calendar-day rotations | published | done | `tests/activation.mjs` — savedRotationCoverage: protected saved primary and backup previews and now-next reads, exact fall DST boundaries, explicit earlier, later and reject choices, nonexistent-minute gaps for every choice, viewer and missing slots without shifting, duplicate backup refusal, retained missing-member custody without authority, unchanged durable rows and zero delivery work; activation: spring DST, half-open overrides, overlap refusal and inactive-member gaps; scheduleLayers: retained draft-layer earlier-choice and nonexistent-minute observations. |  |
 | `OC-012` | Paging off | published | partial | `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation.mjs` | The refusal's paging-OFF explanation and the demo's simulation label are not read back by the cited tests; each door's refusal and the absence of receipts are asserted. No production paging authorization is created by this contract. |
 | `OC-013` | Held history stays historical | published | done | `src/family/response-operations/escalation.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs` |  |
 | `OC-014` | Side-effect-free previews | published | partial | `src/schedule-api.ts`; `src/paging-api.ts`; `src/family/response-operations/paging-archive.ts`; `tests/activation.mjs` — **scheduleCoordination** and **pagingHistory** (preview isolation); `tests/routing.mjs` — **OC-014 service routing preview isolation** | No cited test compares durable state, receipt counts, timers or provider actions before and after a now/next, schedule or routing preview, or reads the synthetic label on historical delivery data. |
