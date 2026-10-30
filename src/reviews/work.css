@@ -24,7 +24,6 @@
 .review-sheet summary { min-height: 44px; align-content: center; cursor: pointer; }
 
 .review-sheet-menu { padding: 12px 0; }
-.response-numbers .response-distribution li { font-size: 13px; }
 .review-sheet .review-material-body > details { border: 0; }
 @media(max-width:700px) {
  .review-sheet { width: 100%; margin: 0; border-radius: 0; border: 0; padding: 20px 16px; }
