@@ -22,6 +22,12 @@ export function recordOwnedProcesses() {
  console.log('Owned runtime processes',JSON.stringify(rows.filter(([pid])=>owned.has(pid))));
 }
 export async function automationRuntime(edge=()=>new Response('refused',{status:403}),native={}) {
+ const outbound=[],receive=edge;
+ edge=async request=>{
+  const entry={url:request.url,method:request.method};outbound.push(entry);
+  entry.body=await request.clone().text();
+  return receive(request);
+ };
  const directory=await mkdtemp(join(tmpdir(),'oncall-automation-')),build=resolve('dist/server'),config=JSON.parse(await readFile(join(build,'wrangler.json'),'utf8')),entry=join(build,config.main);
  const modules=[entry,...(await walk(build)).filter(p=>p!==entry&&types[extname(p)])].map(path=>({type:types[extname(path)],path}));
  const freePort=async()=>{const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const selected=socket.address().port;await new Promise(r=>socket.close(r));return selected;};
@@ -39,7 +45,7 @@ export async function automationRuntime(edge=()=>new Response('refused',{status:
  }
  await start();
  for(const name of (await readdir('migrations/core')).filter(n=>n.endsWith('.sql')).sort())await db.batch(split(await readFile('migrations/core/'+name,'utf8')).map(q=>db.prepare(q)));
- return {get db(){return db;},get origin(){return origin;},get mf(){return mf;},async restart(){await mf.dispose();await start();},async close(){await mf.dispose();await rm(directory,{recursive:true,force:true});},async request(path,data,cookie='',headers={}){const response=await fetch(origin+path,{method:data===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',cookie,...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:response.status,value:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0],headers:response.headers};}};
+ return {get db(){return db;},get origin(){return origin;},get mf(){return mf;},outboundRequests:async()=>structuredClone(outbound),async restart(){await mf.dispose();await start();},async close(){await mf.dispose();await rm(directory,{recursive:true,force:true});},async request(path,data,cookie='',headers={}){const response=await fetch(origin+path,{method:data===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',cookie,...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:response.status,value:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0],headers:response.headers};}};
 }
 
 

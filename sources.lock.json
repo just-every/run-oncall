@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5362c505edb63979e142e149631657ec0d2ddcb5542a2dd6c0d1f4ba772b5f4d",
+      "sha256": "7a896f1d26378dd19808b9428c43a1df39f2c8314e87bceadd68cf27f3fd29e1",
       "executable": false
     },
     "DEMO.md": {
@@ -5868,7 +5868,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "196fa14ed77d6375e03b2c028fe645d47f92c4105221a38b3951250da0784fb1",
+      "sha256": "ef97154dd648078c1730ab9ab7511b24d92c6ae95e246e45b54d5a2d54fee537",
       "executable": false
     },
     "tests/transfer.mjs": {
@@ -5888,7 +5888,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "8819a7588ccb071116e08ef0f7ba3abd6eec6025f9a4f5e2657c9681ee390399",
+      "sha256": "51a18166088dd0e0468a5c509a3c459f4b69bd144511c0cd35477f81a4118449",
       "executable": false
     },
     "tsconfig.json": {
