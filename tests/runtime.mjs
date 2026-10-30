@@ -665,6 +665,10 @@ try {
     ),
   );
   const key = "synthetic-intake-secret-not-a-provider-0001";
+  const admissionPolicy = ok(await request('/api/command', {
+    type: 'policy', service: service.id, severity: 'critical', action: 'route',
+    owner: admin.id, reason: 'Synthetic severity ownership at admission', baseVersion: 0,
+  }, cookie));
   const privateService = ok(await request("/api/command", {
     type: "service", id: "private-service", name: "Private service",
     environment: "production", owner: admin.id, runbook: [], pager: "",
@@ -755,6 +759,10 @@ try {
     authorization: "Bearer " + key,
   }));
   const first = ok(admission.response, 201);
+  const admittedEvent = structuredClone(admission.after.events.find(stored => stored.id === first.id));
+  assert.equal(admittedEvent.decision.policy, admissionPolicy.id);
+  assert.equal(admittedEvent.decision.version, admissionPolicy.version);
+  assert.equal(admittedEvent.decision.owner, admin.id);
   assert.ok(admission.after.events.some(stored => stored.id === first.id), "the audited admission is visible in committed state");
   const admittedSource = admission.committed.find(row => row.source)?.source;
   assert.ok(admittedSource && admittedSource !== event.source, "intake identifies the source only by its random audit alias");
@@ -1077,10 +1085,32 @@ try {
     action: incident.actions[0].id,
     evidence: "https://example.test/regression",
   });
+  const changedPolicy = ok(await request('/api/command', {
+    ...admissionPolicy, type: 'policy', baseVersion: admissionPolicy.version,
+    owner: responder.id, reason: 'Synthetic reviewed severity ownership change',
+  }, cookie));
   const before = ok(await request("/api/state", undefined, cookie));
-  const replay = ok(await request("/api/replay", { events: [event] }, cookie));
+  const replayAudit = rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  const replay = ok(await request("/api/replay", {
+    events: [{...event, eventId: 'newer-generation', generation: 'release-2'}, event],
+  }, cookie));
   assert.equal(replay.sideEffects, false);
+  assert.equal(replay.workspaceRevision, before.revision);
+  assert.deepEqual(replay.decisions.map(row => row.eventId), ['newer-generation', event.eventId]);
+  const comparison = replay.decisions[1];
+  assert.deepEqual(comparison.historical, admittedEvent.decision);
+  assert.deepEqual(comparison.historicalEvaluation, admittedEvent.routingSnapshot);
+  assert.equal(comparison.historicalEvaluation.evaluatedAt, first.acceptedAt);
+  assert.deepEqual(comparison.proposed, {
+    policy: changedPolicy.id, version: changedPolicy.version, action: 'route',
+    owner: responder.id, reason: changedPolicy.reason,
+  });
+  assert.ok(Number.isFinite(Date.parse(comparison.proposedEvaluation)));
+  assert.deepEqual(before.events.find(stored => stored.id === first.id), admittedEvent,
+    'a changed policy never rewrites the frozen admission decision or evaluation snapshot');
   assert.deepEqual(ok(await request("/api/state", undefined, cookie)), before);
+  assert.deepEqual(rows('SELECT * FROM oc_admin_audit ORDER BY ordinal'), replayAudit);
+  console.log('PASS OC-002 native replay: frozen severity decision, owner, version and evaluation beside changed ownership in submitted order; no state or permanent-audit writes');
   const rotatedNativeKey = randomBytes(32).toString("hex");
   const rotation = await auditedMutation(cookie, () => request("/api/sources", {
     id: "monitor", key: rotatedNativeKey, scopes: [service.id, stagingService.id],
