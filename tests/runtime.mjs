@@ -1345,6 +1345,8 @@ try {
   assert.deepEqual(ok(await request('/api/state', undefined, mapped.cookie)), passwordState);
   ok(await request('/api/state', undefined, passwordSession.cookie));
   ok(await request('/api/login', {name:'Viewer',password:'synthetic-oncall-416-password'}), 401);
+  const passwordAfterFailure = await request('/api/login', {name:'Viewer',password:'new-viewer-password'});
+  ok(passwordAfterFailure);
   const passwordRetry = await auditedMutation(mapped.cookie, () => request(
     '/api/password', {member:viewer.id,password:'synthetic-oncall-416-password'}, mapped.cookie));
   ok(passwordRetry.response);
@@ -1354,8 +1356,13 @@ try {
   assert.equal(passwordFact.subject, changedPassword.committed[0].subject);
   assert.deepEqual(passwordRetry.after, passwordRetry.before, 'changing credentials leaves application history unchanged');
   ok(await request('/api/state', undefined, passwordSession.cookie), 401);
+  ok(await request('/api/state', undefined, passwordAfterFailure.cookie), 401);
   ok(await request('/api/login', {name:'Viewer',password:'new-viewer-password'}), 401);
   ok(await request('/api/login', {name:'Viewer',password:'synthetic-oncall-416-password'}));
+  const passwordAudit = JSON.stringify(await auditExport(mapped.cookie));
+  for (const secret of ['new-viewer-password','synthetic-oncall-416-password',viewer.id,
+    ...rows('SELECT salt,digest FROM credentials').flatMap(row=>[row.salt,row.digest]),passwordSession.cookie.split('=')[1]])
+    assert.ok(!passwordAudit.includes(secret), 'password audit facts expose no credential, session or subject identity');
   console.log('PROBE OC-041 password: protected password change and targeted audit failure -> credential and session rollback, one accepted revision-bound fact, old authority revoked');
   console.log(
     "PASS OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; emitted Worker + local D1: setup/session/roles/CSRF, scoped bearer and raw-body HMAC ingress, identities, concurrent CAS, incident/recovery/runbook/review/follow-up, replay purity, archive equality/rollback, session invalidation, restart and repeat migration, truthful handoffs.",
