@@ -1460,7 +1460,7 @@
       "executable": false
     },
     "src/app/shell/frame.css": {
-      "sha256": "6908aaa828063767a4a1514046359d10eb54556871197cfa400e3bc360c7dcc8",
+      "sha256": "83079a9b5a9ff293016e763c510fa1ea322aaff080533f8c9c9cefa6fc703833",
       "executable": false
     },
     "src/app/shell/nav.ts": {
