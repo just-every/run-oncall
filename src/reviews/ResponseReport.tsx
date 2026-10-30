@@ -36,7 +36,7 @@ export function ResponseReport({state}: {state: State}) {
     finally { if (current === sequence.current) setLoading(false); }
   }
   useEffect(()=>{if(period==='custom'&&(!from||!to||to<=from))return;void load({...periodBounds(period,zone,from,to),service});return()=>{sequence.current++;};},[period,zone,from,to,service]);
-  useEffect(() => {if (report) void load(applied, true);}, [state]);
+  useEffect(() => {if (report) void load(applied, true);}, [state.revision]);
   const csv = report ? new URLSearchParams({from: report.cohort.from, to: report.cohort.to,
     ...(report.cohort.service ? {service: report.cohort.service} : {}), at: report.generatedAt, revision:String(report.revision), schedulingRevision:String(report.load.schedulingRevision)}) : null;
   return <section className="panel padded response-report" aria-busy={loading}>

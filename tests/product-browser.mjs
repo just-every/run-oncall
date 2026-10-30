@@ -303,11 +303,12 @@ async function changeAndSigningBrowser(page,context){
   await page.goto(origin+'/settings/archive');const settings=page.locator('.erase-data');await settings.locator(':scope > summary').click();
   await settings.getByLabel('Retained change',{exact:true}).selectOption(erasureChange.id);
   assert.equal(await settings.getByRole('button',{name:'Erase retained change',exact:true}).isEnabled(),false);
-  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label));
+  const erasedName=await settings.locator('select').nth(1).evaluate(select=>select.selectedOptions[0].label);
+  await settings.getByLabel('Erasure confirmation',{exact:true}).fill('erase '+erasedName);
   await settings.getByLabel('Erasure confirmation',{exact:true}).scrollIntoViewIfNeeded();await check('oc040-erasure-review',width);
   const erasureResponse=page.waitForResponse(r=>r.url().endsWith('/api/changes/'+erasureChange.id+'/erase'));
   await settings.getByRole('button',{name:'Erase retained change',exact:true}).click();assert.equal((await erasureResponse).status(),200);
-  await settings.getByText('Local erasure complete. Standby not reconciled.',{exact:true}).waitFor();
+  await settings.getByText(erasedName+' erased: 1 change. Standby not reconciled.',{exact:true}).waitFor();
   assert.equal((await (await erasureResponse).json()).stores.oc_changes.deleted,1);assert.equal((await (await erasureResponse).json()).stores.oc_changes.updated,0);
   assert.ok(!(await request('/api/state')).changes.some(row=>row.id===erasureChange.id));
   await settings.getByRole('status').scrollIntoViewIfNeeded();await check('oc040-erasure-receipt',width);

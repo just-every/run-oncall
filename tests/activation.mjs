@@ -4,7 +4,7 @@ import {join,resolve} from 'node:path'
 import {execFileSync,spawnSync} from 'node:child_process'
 import assert from 'node:assert/strict'
 import {createHash,createHmac} from 'node:crypto'
-import {localWorker,ownerDoor} from './worker.mjs'
+import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
 import {checkpointCli,checkpointErasureCli} from './checkpoint-cli.mjs'
 // paging-history: part of this public journey.
 // Retained synthetic records enter through the strict module restore door;
@@ -54,6 +54,34 @@ export async function pagingHistory(w,cookie) {
    assert.deepEqual(audit,[{kind:path.endsWith('/archive')?'paging.archive':'paging.restore',outcome:'refused',workspace_before:retainedWorkspace.revision,workspace_after:retainedWorkspace.revision,paging_before:retainedPaging.revision,paging_after:retainedPaging.revision}],'authenticated refusals retain their audit without a product write')
   }
  }
+ // OC-014: populated delivery history remains historical through every schedule preview.
+ const pagingBefore=ok(await req('/api/paging/state')),recordsBefore=durableSnapshot(w)
+ assert.equal(pagingBefore.mode,'synthetic-only');assert.equal(pagingBefore.paging,'OFF')
+ assert.deepEqual(pagingBefore.receipts,receipts);assert.deepEqual(pagingBefore.callbacks,callbacks)
+ assert.ok(pagingBefore.jobs.every(job=>job.steps[0].deadline===at+180000&&job.nextDue===null))
+ assert.deepEqual(await w.outboundRequests(),[],'restoring synthetic history never contacts a provider')
+ const draft={...schedule,primary:{...schedule.primary,members:[]}},range={from:at,to:at+3600000}
+ const now=ok(await req('/api/schedules/history/now-next?at='+new Date(at).toISOString()))
+ assert.equal(now.now.primary,actor.id);assert.equal(now.paging,'OFF')
+ assert.deepEqual(durableSnapshot(w),recordsBefore,'now and next preserve every durable record, deadline and outbound work item')
+ for(const [input,primary] of [[{scheduleId:schedule.id},actor.id],[{schedule:draft},null]]){
+  const preview=ok(await req('/api/paging/preview',{...input,...range}))
+  assert.equal(preview[0].primary,primary)
+  assert.deepEqual(durableSnapshot(w),recordsBefore,'saved and draft previews preserve every durable record, audit, receipt, job and deadline')
+  assert.deepEqual(await w.outboundRequests(),[],'schedule previews issue zero outbound network requests')
+ }
+ const review=ok(await req('/api/schedules/history/review',{schedule:draft,...range}))
+ assert.equal(review.coverage[0].primary,null);assert.ok(review.intervals.some(row=>row.role==='primary'&&row.newGap))
+ assert.deepEqual(durableSnapshot(w),recordsBefore,'reviewing a draft never saves it or creates outbound work')
+ for(const job of restored.jobs){
+  const replay=ok(await req('/api/paging/jobs/'+job.id+'/replay'))
+  assert.equal(replay.length,1);assert.deepEqual(replay[0].recorded,job.history[1].attempt)
+  assert.deepEqual(replay[0].recomputed,coverage,'historical replay uses the frozen assignment and member snapshot')
+  assert.deepEqual(durableSnapshot(w),recordsBefore,'historical replay changes no durable row or timer')
+ }
+ assert.deepEqual(ok(await req('/api/paging/state')),pagingBefore,'all previews retain the synthetic label and complete delivery history')
+ assert.deepEqual(await w.outboundRequests(),[],'now and next, draft review and historical replay issue zero outbound requests')
+ console.log('PASS OC-014 preview isolation: populated synthetic-only history, saved and draft schedules, draft review, now and next, historical replay, every durable row and deadline unchanged, zero outbound network requests')
  const beforeIncident=ok(await req('/api/state')).incidents.find(i=>i.id===incident.id)
  for(const [id,action] of [['historical-ack','ack'],['historical-cancel','cancel']]){
   const old=restored.jobs.find(j=>j.id===id),at=Math.max(Date.now(),old.lastEvaluatedAt)
@@ -85,7 +113,7 @@ export async function pagingHistory(w,cookie) {
 // schedule-coordination: part of this public journey.
 export async function scheduleCoordination(){
  await scheduleLayers();
- const w=await localWorker({}, {clock:true});
+ const w=await localWorker({}, {clock:true,outboundLedger:true});
  try{
   const owner=await w.request('/api/setup',{name:'synthetic-oncall-250',password:'synthetic-oncall-250-password'});ok(owner);let cookie=owner.cookie;
   const req=(path,input)=>w.request(path,input,cookie),coord=input=>req('/api/schedule-coordination',input),rows=async()=>ok(await coord()).records;
@@ -101,7 +129,7 @@ export async function scheduleCoordination(){
   {
    const at=Date.parse(start),schedules=ok(await req('/api/paging/state')).schedules;
    const counts=()=>{const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").map(row=>row.name);return w.statements(names.map(name=>'SELECT COUNT(*) AS count FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>({table:names[index],count:rows[0].count}));};
-   const before=counts(),workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state'));
+   const before=counts(),workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state')),recordsBefore=durableSnapshot(w);
    for(let n=0;n<20;n++){
     const all=ok(await req('/api/on-call?at='+encodeURIComponent(start)));
     assert.equal(all.rotas.length,schedules.length,'all rotas appear together');
@@ -121,6 +149,8 @@ export async function scheduleCoordination(){
    assert.deepEqual(counts(),before,'twenty reads leave every table count unchanged');
    assert.deepEqual(ok(await req('/api/state')),workspace,'twenty reads preserve workspace and revision');
    assert.deepEqual(ok(await req('/api/paging/state')),paging,'twenty reads preserve scheduling revisions');
+   assert.deepEqual(durableSnapshot(w),recordsBefore,'aggregate now and next preserve every durable row including audit and outbound work');
+   assert.deepEqual(await w.outboundRequests(),[],'aggregate now and next issue zero outbound network requests');
    const combined=ok(await req('/api/workspace'));assert.deepEqual(combined.onCall.rotas.map(row=>row.id),schedules.map(row=>row.id));
    ok(await w.request('/api/on-call'),401);ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,viewerCookie));ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,substituteCookie));
    const stakeholder=ok(await req('/api/members',{name:'synthetic-oncall-254',role:'stakeholder',password:'synthetic-oncall-254-password'}),201);
@@ -337,7 +367,7 @@ export async function migrationUpgrade(){await upgradeFrom(143);}
 const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'?r.value:JSON.stringify(r.value));return r.value}
 await migrationUpgrade()
 await scheduleCoordination()
-const w=await localWorker(),checks=[]
+const w=await localWorker({}, {outboundLedger:true}),checks=[]
 try {
  const initial=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'}),admin=ok(initial).member,cookie=initial.cookie
  const req=(path,input)=>w.request(path,input,cookie),record=s=>{checks.push(s);console.log(s)}
@@ -486,6 +516,57 @@ try {
  assert.equal(ok(await door.undo('opsgenie',interruptedPreview.planId)).job.state,'rolled_back')
  assert.deepEqual(ok(await req('/api/move-in/objects')),[],'explicit rollback removes the accepted partial effects')
  record('OC-022/041: a lost response after an accepted import batch became durably interrupted with its audit, refused retry after restart, and retained its partial effects until explicit rollback')
+ // Stop between bounded requests while the reviewed import still has work to do.
+ for(const vendor of ['pagerduty','opsgenie']) {
+  const bundle=JSON.parse(await readFile(`tests/fixtures/${vendor}.json`,'utf8'))
+  const people=Array.from({length:25},(_,index)=>{
+   const id='synthetic-oncall-'+vendor+'-'+index,email=[id,'example.test'].join('@')
+   return vendor==='opsgenie'?{id,username:email,fullName:id}:{id,email,name:id}
+  })
+  ;(vendor==='opsgenie'?bundle.users.data:bundle.users).push(...people)
+  const beforeObjects=ok(await req('/api/move-in/objects')),beforeNative=ok(await req('/api/state')),beforePaging=ok(await req('/api/paging/state'))
+  const preview=ok(await door.preview(vendor,JSON.stringify(bundle)))
+  assert.ok(preview.counts.mapped>20,'the reviewed source exceeds one door batch')
+  assert.deepEqual(ok(await req('/api/move-in/objects')),beforeObjects,'preview publishes no imported objects')
+  const reviewed={planId:preview.planId,reviewedFingerprint:preview.fingerprint}
+  const first=ok(await door.call(vendor,'apply',reviewed)).job
+  assert.equal(first.state,'applying');assert.equal(first.fingerprint,preview.fingerprint)
+  assert.ok(first.checkpoint>0&&first.checkpoint<first.total,'exactly one apply commits an unfinished prefix')
+  const partial=ok(await req('/api/move-in/objects'))
+  assert.ok(partial.length>beforeObjects.length&&partial.length<preview.items.flatMap(item=>item.effects).length,'native effects exist for only part of the reviewed plan')
+  const status=()=>door.call(vendor,'status',{planId:preview.planId})
+  assert.deepEqual(ok(await status()).job,first)
+  await w.stop();await w.start()
+  const retained=ok(await status())
+  assert.equal(retained.planId,preview.planId);assert.equal(retained.fingerprint,preview.fingerprint)
+  assert.deepEqual(retained.job,first,'restart retains the same unfinished job and committed checkpoint')
+  const journal=ok(await req('/api/move-in/jobs?vendor='+vendor)).find(job=>job.id===first.id)
+  assert.ok(journal);assert.equal(journal.state,'applying');assert.equal(journal.checkpoint,first.checkpoint)
+  assert.deepEqual(journal.door,{planId:preview.planId,fingerprint:preview.fingerprint,business:false})
+  assert.deepEqual(ok(await req('/api/move-in/objects')),partial,'restart preserves every committed object and its revision')
+  const completed=ok(await door.apply(vendor,preview)).job
+  assert.equal(completed.id,first.id);assert.equal(completed.fingerprint,first.fingerprint)
+  assert.equal(completed.state,'completed');assert.equal(completed.checkpoint,first.total)
+  const applied=ok(await req('/api/move-in/objects'))
+  assert.equal(applied.length,preview.items.flatMap(item=>item.effects).length)
+  assert.equal(new Set(applied.map(row=>row.targetKind+':'+row.targetId)).size,applied.length)
+  for(const person of people)assert.equal(applied.filter(row=>row.targetKind==='user'&&row.targetId===(person.email??person.username)).length,1,'every remaining person is created exactly once')
+  for(const row of partial)assert.deepEqual(applied.find(item=>item.targetKind===row.targetKind&&item.targetId===row.targetId),row,'resume does not replace the committed prefix')
+  assert.ok(applied.every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
+  const batches=()=>w.sql(`SELECT position,end_position FROM ik_batches WHERE job_id='${first.id}' AND action='apply' ORDER BY position`)
+  const committed=batches();let checkpoint=0
+  for(const batch of committed){assert.equal(batch.position,checkpoint);assert.ok(batch.end_position>checkpoint);checkpoint=batch.end_position}
+  assert.equal(checkpoint,completed.total,'committed batches cover the reviewed plan once without gaps or overlap')
+  assert.deepEqual(ok(await door.call(vendor,'apply',reviewed)).job,completed,'completed retry keeps job identity and progress')
+  assert.deepEqual(batches(),committed,'completed retry commits no new batch')
+  assert.deepEqual(ok(await req('/api/move-in/objects')),applied,'completed retry changes no object or revision')
+  const undone=ok(await door.undo(vendor,preview.planId)).job
+  assert.equal(undone.id,first.id);assert.equal(undone.state,'undone')
+  assert.deepEqual(ok(await req('/api/move-in/objects')),beforeObjects,'undo removes exactly this import')
+  assert.deepEqual(ok(await req('/api/state')),beforeNative,'resume and undo grant no native membership or coordination authority')
+  assert.deepEqual(ok(await req('/api/paging/state')),beforePaging,'resume and undo leave paging OFF with unchanged jobs and receipts')
+  record(`OC-022 ${vendor}: unfinished checkpoint ${first.checkpoint} of ${first.total} survived Worker restart; the same reviewed job completed once, retried without changes and undid exactly`)
+ }
  // Each documented response shape runs the whole guarantee: bare fixtures, saved responses (lists and single details) and PagerDuty layer history.
  const shapes=[
   {file:'opsgenie',vendor:'opsgenie',id:'opsgenie:ops-daily',at:'2026-03-08T13:00:00Z',primary:'alice@example.test'},
@@ -734,6 +815,7 @@ try {
  ok(await A('/api/handoffs/h1/review',act(h1,'r1','Changed reason')),409) // review identity conflicts on changed content
  assert.equal(reviewed.history.at(-1).selfReview,true,'an author review is recorded as self-review, never independent review')
  const packet=ok(await A('/api/handoffs/h1/export'));assert.ok(packet.transport==='unsent'&&packet.providerActions.length===0,'an eligible review exports unsent copy with no provider action')
+ assert.deepEqual(packet.record,reviewed,'HTTP export preserves the exact reviewed payload, source snapshots, hashes, revision and attributed history')
  incident=ok(await A('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:'Source drift'}))
  ok(await A('/api/handoffs/h1/export'),409) // source drift makes the review ineligible
  const withdrawn=ok(await A('/api/handoffs/h1/withdraw',act(reviewed,'w1','Superseded by current copy'))).record

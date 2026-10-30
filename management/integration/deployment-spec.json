@@ -369,6 +369,12 @@
       "name": "0156_agent_team_receipts.sql",
       "sha256": "753bd673792455f4cf1474288bfd913b96ca11bab6a0b5f41d6561e82c95e812",
       "sql": "-- Installation-bound team effect evidence, without names, arguments or results.\nCREATE TABLE oc_agent_team_receipts (\n  agent TEXT NOT NULL,\n  key_sha256 TEXT NOT NULL,\n  person TEXT NOT NULL,\n  client TEXT,\n  consent TEXT,\n  approval TEXT,\n  operation TEXT NOT NULL,\n  args_sha256 TEXT NOT NULL,\n  team TEXT NOT NULL,\n  team_sha256 TEXT NOT NULL,\n  requested_revision INTEGER NOT NULL,\n  team_revision INTEGER NOT NULL,\n  manager_gains TEXT NOT NULL CHECK(json_valid(manager_gains) AND json_type(manager_gains)='array'),\n  workspace TEXT NOT NULL,\n  workspace_revision INTEGER NOT NULL,\n  workspace_token TEXT NOT NULL,\n  PRIMARY KEY(agent,key_sha256)\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0157_audit_detail.sql",
+      "sha256": "375ffbbc7c74d2027d91a35346bb6707d0081a80d337ea3c9cd171193bc2e31a",
+      "sql": "-- One audit kind per operation; the facts that vary (provider, region, counts) travel in detail.\nALTER TABLE oc_admin_audit ADD COLUMN detail TEXT;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",
