@@ -565,7 +565,7 @@ api.get("/api/audit/export", async (c) => {
   const guard = sessionGuard(c);
   const rows = await c.env.DB.batch([
     c.env.DB.prepare(`SELECT 1 AS allowed FROM oc_members m WHERE m.id=? AND json_extract(m.data,'$.active')=1 AND json_extract(m.data,'$.role')='admin' AND ${guard.sql}`).bind(c.get('actor').id,...guard.values),
-    c.env.DB.prepare(`SELECT id,kind,feature,actor,subject,source,named_member AS namedMember,at,before_revision AS beforeRevision,after_revision AS afterRevision,outcome,workspace_before AS workspaceBefore,workspace_after AS workspaceAfter,paging_before AS pagingBefore,paging_after AS pagingAfter,handoff_before AS handoffBefore,handoff_after AS handoffAfter FROM oc_admin_audit WHERE ${guard.sql} AND EXISTS(SELECT 1 FROM oc_members WHERE id=? AND json_extract(data,'$.role')='admin' AND json_extract(data,'$.active')=1) ORDER BY ordinal`).bind(...guard.values,c.get('actor').id),
+    c.env.DB.prepare(`SELECT id,kind,feature,actor,subject,source,named_member AS namedMember,detail,at,before_revision AS beforeRevision,after_revision AS afterRevision,outcome,workspace_before AS workspaceBefore,workspace_after AS workspaceAfter,paging_before AS pagingBefore,paging_after AS pagingAfter,handoff_before AS handoffBefore,handoff_after AS handoffAfter FROM oc_admin_audit WHERE ${guard.sql} AND EXISTS(SELECT 1 FROM oc_members WHERE id=? AND json_extract(data,'$.role')='admin' AND json_extract(data,'$.active')=1) ORDER BY ordinal`).bind(...guard.values,c.get('actor').id),
   ]);
   if(!rows[0].results.length) fail('Current admin required',403);
   c.header('Content-Disposition','attachment; filename="oncall-audit.json"');
