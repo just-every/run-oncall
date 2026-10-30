@@ -418,7 +418,15 @@
       "signIn": {
         "path": "/signin",
         "loginHint": true
-      }
+      },
+      "readiness": [
+        {
+          "path": "/health",
+          "statuses": [
+            200
+          ]
+        }
+      ]
     }
   },
   "recovery": "Hosted incident coordination runs beside your existing pager. Paging is OFF; there is no independent standby or delivery guarantee. Signed-in admins can export coordination records from Archive. rer export and rer import recover local installation data; see docs/data.md and docs/checkpoints.md."

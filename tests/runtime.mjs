@@ -12,12 +12,12 @@ import {createHmac,pbkdf2Sync,createHash,randomBytes} from 'node:crypto'
 import {createServer} from 'node:net'
 
 const runtimePart=process.env.ONCALL_RUNTIME_PART??'all'
-if(!['all','core','machines'].includes(runtimePart))throw Error(`Unknown runtime journey: ${runtimePart}`)
-if(runtimePart!=='machines') {
+if(!['all','core','machines','delivery'].includes(runtimePart))throw Error(`Unknown runtime journey: ${runtimePart}`)
+if(['all','core'].includes(runtimePart)) {
  const started=performance.now();await coordinationJourney()
  console.log(`Runtime core completed (${((performance.now()-started)/1000).toFixed(1)}s)`)
 }
-if(runtimePart!=='core') {
+if(['all','machines'].includes(runtimePart)) {
  const started=performance.now()
 await automationJourney();
 
@@ -142,6 +142,10 @@ const {default:assert}=await import('node:assert/strict')
 const {readdir,readFile}=await import('node:fs/promises')
 const {join}=await import('node:path')
 const {serveHosted}=await import('@runeditrun/rer/internal/cli/hosted-output.mjs')
+const {deploymentSpec}=await import('../scripts/delivery/base/spec.mjs')
+const {artifact:{specInputs}}=JSON.parse(await readFile('scripts/delivery/base/packaging.json','utf8'))
+const declared=JSON.parse(await readFile('management/integration/deployment-spec.json','utf8'))
+assert.deepEqual(await deploymentSpec(process.cwd(),specInputs),declared,'The packaged delivery specification must match the declared plan, including surfaces, readiness and provider effects')
 
 // Every page or file the app links, and every built HTML file, must answer when the build is served
 // the way rer deploy hosts it (the Worker runs before the static assets). A link that redirects and
