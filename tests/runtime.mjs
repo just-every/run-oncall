@@ -913,6 +913,19 @@ try {
   assert.deepEqual(incident.alerts, [admittedAlert], 'declaration links exactly the admitted alert identity');
   assert.deepEqual(ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id).alerts,
     [admittedAlert], 'the declared alert link reads back through protected HTTP');
+  const copiedRunbook = service.runbook.map(text => ({ text, done: false }));
+  assert.deepEqual(incident.runbook, copiedRunbook, 'declaration copies every applicable service step');
+  const revisedRunbook = ['synthetic-oncall-501 revised service instruction', 'synthetic-oncall-502 new service step'];
+  const editedService = ok(await request('/api/command', {
+    type: 'service', id: service.id, field: 'runbook', from: service.runbook, to: revisedRunbook,
+  }, cookie));
+  assert.deepEqual(editedService.runbook, revisedRunbook);
+  const afterRunbookEdit = ok(await request('/api/state', undefined, cookie));
+  assert.deepEqual(afterRunbookEdit.services.find(s => s.id === service.id).runbook, revisedRunbook,
+    'the accepted service edit reads back with the new instructions');
+  assert.deepEqual(afterRunbookEdit.incidents.find(i => i.id === incident.id), incident,
+    'editing the service preserves the entire declared incident, including copied steps and revision');
+  console.log('PROBE OC-005 copied steps: protected service command and state read -> new service instructions; original incident copy unchanged');
   await awaitingCoordinationAuthority({ origin, request, cookie, incident: incident.id });
   const responder = ok(await request('/api/members', {
     name: 'synthetic-oncall-303', role: 'responder', password: 'synthetic-oncall-303-password',
@@ -1012,6 +1025,28 @@ try {
   incident = concurrently.find((v) => v.status === 200).value;
   await mutate({ type: "runbook", index: 0, done: true });
   await mutate({
+    type: 'action', title: 'synthetic-oncall-503 retained follow-up', owner: responder.id, due: '2026-11-03',
+  });
+  const unfinishedAction = structuredClone(incident.actions.at(-1));
+  const actionState = ok(await request('/api/state', undefined, cookie));
+  assert.deepEqual(actionState.incidents.find(i => i.id === incident.id).actions.find(a => a.id === unfinishedAction.id),
+    unfinishedAction, 'the owned, due-dated open action reads back over protected HTTP');
+  assert.equal(unfinishedAction.owner, responder.id);
+  assert.equal(unfinishedAction.due, '2026-11-03');
+  assert.equal(unfinishedAction.done, false);
+  assert.equal(unfinishedAction.evidence, '');
+  assert.equal(unfinishedAction.completionPolicy, 'human-review');
+  assert.ok(incident.timeline.at(-1).text.includes('2026-11-03 (UTC calendar date)'));
+  console.log('PROBE OC-005 owned action: protected action command and state read -> responder owner, 2026-11-03 UTC calendar due date, open with no evidence');
+  const noEvidence = await request('/api/command', {
+    type: 'complete', incident: incident.id, revision: incident.revision, action: unfinishedAction.id,
+  }, cookie);
+  ok(noEvidence, 400);
+  assert.match(noEvidence.value.error, /Completion evidence URL required/);
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)), actionState,
+    'completion without evidence preserves all application records, actions and revisions; refusal audit may append');
+  console.log('PROBE OC-005 evidence refusal: protected completion without evidence -> 400; complete application state and revisions unchanged');
+  await mutate({
     type: "transition",
     state: "mitigating",
     summary: "Mitigation is being reviewed",
@@ -1070,6 +1105,11 @@ try {
   const resolvedIncident = ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id);
   assert.equal(resolvedIncident.state, 'resolved');
   assert.equal(resolvedIncident.recovery, 'https://example.test/recovery');
+  assert.deepEqual(resolvedIncident.actions.find(a => a.id === unfinishedAction.id), unfinishedAction,
+    'evidenced resolution retains unfinished work with its identity, owner, due date and open state');
+  assert.deepEqual(resolvedIncident.runbook, copiedRunbook.map((step, index) => ({ ...step, done: index === 0 })),
+    'resolution retains copied instructions and the responder checklist progress');
+  console.log('PROBE OC-005 unfinished work: protected evidenced recovery and summarized resolution -> resolved incident retains the unchanged open action');
   assert.equal(resolvedIncident.timeline.find(e => e.kind === 'declared').actor, admin.id);
   for (const [state, actor, summary] of [
     ['acknowledged', responder.id, 'Taking responsibility'],
@@ -1089,6 +1129,11 @@ try {
     type: "review",
     text: "Cause: missing migration. Repair verified against preserved customer behavior.",
   });
+  assert.equal(ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id).review,
+    incident.review, 'a review written after resolution reads back');
+  await mutate({ type: 'review', text: incident.review + ' Follow-up review remains editable.' });
+  assert.equal(ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id).review,
+    incident.review, 'the resolved incident retains an editable review');
   await mutate({
     type: "action",
     title: "Guard prior-data upgrades",
@@ -1097,9 +1142,20 @@ try {
   });
   await mutate({
     type: "complete",
-    action: incident.actions[0].id,
+    action: incident.actions.at(-1).id,
     evidence: "https://example.test/regression",
   });
+  const submittedAction = incident.actions.at(-1);
+  assert.equal(submittedAction.evidence, 'https://example.test/regression');
+  assert.equal(submittedAction.submission.by, admin.id);
+  assert.equal(submittedAction.done, false, 'evidence submission under human-review policy awaits human acceptance');
+  await mutate({ type: 'accept-action', action: submittedAction.id, reason: 'Synthetic human reviewed the retained regression evidence' });
+  assert.equal(incident.actions.at(-1).done, true);
+  assert.equal(incident.actions.at(-1).accepted.by, admin.id);
+  assert.deepEqual(incident.actions.find(a => a.id === unfinishedAction.id), unfinishedAction,
+    'completing another action never closes the retained unfinished work');
+  assert.deepEqual(ok(await request('/api/state', undefined, cookie)).incidents.find(i => i.id === incident.id), incident,
+    'resolved review edits, evidenced human completion and unfinished work read back together');
   const before = ok(await request("/api/state", undefined, cookie));
   const replay = ok(await request("/api/replay", { events: [event] }, cookie));
   assert.equal(replay.sideEffects, false);
