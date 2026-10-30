@@ -1387,13 +1387,13 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 ## Status
 
-Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe5f` (24 October 2026).
+Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f207859a` (30 October 2026).
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 10 | 12 | 0 | 22 |
+| Published | 11 | 11 | 0 | 22 |
 | Target and push further | 4 | 34 | 41 | 79 |
-| All | 14 | 46 | 41 | 101 |
+| All | 15 | 45 | 41 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1406,7 +1406,7 @@ Judged from the code and tests at commit `c6acc13192864220f81437a86e3eb489cfcbfe
 | `OC-007` | Native archive | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` |  |
 | `OC-008` | User-authored records kept | published | done | `src/api.ts`; `src/native-incomplete.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/product-browser-journey.mjs`; `tests/product-browser.mjs` |  |
 | `OC-009` | Accessible interface | published | partial | `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/product-browser-journey.mjs`; `tests/product-browser-journey.mjs` | Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. BASE-ACCESSIBILITY-001 is not established across every Oncall journey and the OC-029 apps; the human passes and the VPAT are register rows R-3 and R-4. |
-| `OC-010` | Health and honest commands | published | partial | `src/api.ts`; `src/base/deployment-health.ts`; `OPERATIONS.json`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/runtime.mjs`; `tests/transfer.mjs` | No cited test records provider or human-drill outcomes separately from local and hosted ones; check, describe, storage-unavailable health with the deployed identity and the hosted build's identity are asserted. Coordination storage loss reports 503 with deployment identity and recovers without changed records. Paging health and capacity are unclaimed and inherited by OC-026–029/064. |
+| `OC-010` | Health and honest commands | published | done | `tests/runtime.mjs` — coordinationHealth: check and describe with storage available and unavailable, exact emitted build identity, storage-loss 503 and recovery with unchanged records; hosted production output: actual source and artifact identity, supplied version binding and linked-page results. `tests/transfer.mjs` — managed installation transfer: observed CLI outcomes, populated inactive restore and erasure fences. `tests/health-outcomes.mjs` — separate local and locally executed hosted-mode records, dated prior R-1 and R-2 provider receipts with their source SHAs, and R-8 explicitly not run. Paging health and measured capacity remain with OC-026 to OC-029 and OC-064. |  |
 | `OC-011` | Calendar-day rotations | published | partial | `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs` | Fall-DST hand-offs, ambiguous and nonexistent minutes, viewer and missing slots kept as gaps and duplicate primary/backup detection are not asserted in the cited test; spring DST, override edges, overlap refusal and an inactive member's gap are asserted. |
 | `OC-012` | Paging off | published | partial | `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation.mjs` | The refusal's paging-OFF explanation and the demo's simulation label are not read back by the cited tests; each door's refusal and the absence of receipts are asserted. No production paging authorization is created by this contract. |
 | `OC-013` | Held history stays historical | published | done | `src/family/response-operations/escalation.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs` |  |
