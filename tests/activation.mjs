@@ -367,7 +367,7 @@ export async function migrationUpgrade(){await upgradeFrom(143);}
 const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'?r.value:JSON.stringify(r.value));return r.value}
 await migrationUpgrade()
 await scheduleCoordination()
-const w=await localWorker({}, {outboundLedger:true}),checks=[]
+const w=await localWorker({}, {clock:true,outboundLedger:true}),checks=[]
 try {
  const initial=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'}),admin=ok(initial).member,cookie=initial.cookie
  const req=(path,input)=>w.request(path,input,cookie),record=s=>{checks.push(s);console.log(s)}
@@ -398,10 +398,70 @@ try {
  ok(await req('/api/schedules/daily/overrides',{revision:changed.revision,override:{...override,id:'overlap'}}),400)
  const ics=await req('/api/schedules/daily/calendar.ics?from=2026-03-07T14:00:00Z&to=2026-03-09T13:00:00Z');ok(ics);assert.match(ics.headers.get('content-type'),/text\/calendar/);assert.match(ics.value,/DTEND:20260308T130000Z/);assert.match(ics.value,/DTSTART:20260308T150000Z/)
  ok(await w.request('/api/schedules/daily/calendar.ics'),401)
+ // OC-020: compare the downloaded events to resolved coverage, with an independent DST and override oracle.
+ const calendarFrom=Date.parse('2026-03-07T14:00:00Z'),calendarTo=Date.parse('2026-03-09T13:00:00Z'),calendarPath='/api/schedules/daily/calendar.ics'
+ const calendarDate=at=>new Date(at).toISOString().replace(/[-:]/g,'').replace('.000','')
+ const calendarEvents=text=>text.replace(/\r\n[ \t]/g,'').split('BEGIN:VEVENT\r\n').slice(1).map(block=>Object.fromEntries(block.split('END:VEVENT')[0].trim().split('\r\n').map(line=>{const colon=line.indexOf(':');return [line.slice(0,colon),line.slice(colon+1)]})))
+ const checkCalendar=async(response,from,to)=>{
+  ok(response);assert.equal(response.headers.get('cache-control'),'private, no-store')
+  const events=calendarEvents(response.value),windows=ok(await req('/api/paging/preview',{scheduleId:'daily',from,to})),members=ok(await req('/api/state')).members
+  const expected=windows.flatMap((window,index)=>['primary','backup'].map(role=>({
+   DTSTART:calendarDate(window.at),DTEND:calendarDate(windows[index+1]?.at??to),
+   SUMMARY:'Daily hand-off / '+role+': '+(window[role]?members.find(member=>member.id===window[role]).name:'Coverage gap')
+  })))
+  assert.deepEqual(events.map(({DTSTART,DTEND,SUMMARY})=>({DTSTART,DTEND,SUMMARY})),expected,'both roles, overrides and gaps use the resolved UTC intervals')
+  assert.equal(new Set(events.map(event=>event.UID)).size,events.length,'primary and backup remain distinct calendar events')
+  assert.ok(events.every(event=>event.DTSTAMP===calendarDate(from)))
+  assert.equal(events[0].DTSTART,calendarDate(from));assert.equal(events.at(-1).DTEND,calendarDate(to))
+  return events
+ }
+ const calendarRecords=durableSnapshot(w)
+ await w.time(calendarFrom)
+ const defaultEvents=await checkCalendar(await req(calendarPath),calendarFrom,calendarFrom+7*86400000)
+ assert.deepEqual(defaultEvents.slice(0,2).map(event=>event.SUMMARY),['Daily hand-off / primary: Alice','Daily hand-off / backup: Bob'])
+ const overrideEvents=await checkCalendar(ics,calendarFrom,calendarTo)
+ assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / primary: Alice'&&event.DTSTART==='20260308T130000Z'&&event.DTEND==='20260308T150000Z'))
+ assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / backup: Coverage gap'&&event.DTSTART==='20260308T130000Z'&&event.DESCRIPTION.includes('same member')))
+ assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / backup: Alice'&&event.DTSTART==='20260308T150000Z'))
+ assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / primary: Bob'&&event.DTSTART==='20260308T150000Z'))
+ const calendarLimit=calendarFrom+31*86400000,calendarURL=to=>calendarPath+'?from='+new Date(calendarFrom).toISOString()+'&to='+new Date(to).toISOString()
+ await checkCalendar(await req(calendarURL(calendarLimit)),calendarFrom,calendarLimit)
+ assert.deepEqual(durableSnapshot(w),calendarRecords,'successful calendar reads preserve all durable records')
+ for(const to of [calendarLimit+1000,calendarFrom,calendarFrom-1000]){
+  const refusal=ok(await req(calendarURL(to)),400);assert.match(refusal.error,/positive and at most 31 elapsed days/)
+ }
+ const afterCalendarRefusals=durableSnapshot(w),withoutRefusalAudit=records=>Object.fromEntries(Object.entries(records).filter(([table])=>!['oc_admin_audit','oc_audit_clock'].includes(table)))
+ assert.deepEqual(withoutRefusalAudit(afterCalendarRefusals),withoutRefusalAudit(calendarRecords),'invalid calendar windows preserve all records except the required refusal audit and its bookkeeping')
+ assert.equal(afterCalendarRefusals.oc_admin_audit.length,calendarRecords.oc_admin_audit.length+3)
+ assert.ok(afterCalendarRefusals.oc_admin_audit.filter(row=>!calendarRecords.oc_admin_audit.some(prior=>prior.id===row.id)).every(row=>row.kind==='schedules.request'&&row.outcome==='refused'&&row.workspace_before===row.workspace_after&&row.paging_before===row.paging_after))
+ await w.time(Date.now())
+ record('PROBE OC-020 seven-day default: authenticated calendar.ics at 2026-03-07T14:00:00Z -> exact seven-day UTC window across DST')
+ record('PROBE OC-020 elapsed bound: calendar.ics with 31 days -> 200; 31 days plus one second, zero and reverse windows -> 400')
+ record('PROBE OC-020 separate roles: calendar.ics -> distinct primary and backup events match resolved coverage and exact DST override boundaries')
  ok(await req('/api/command',{type:'member',id:b.id,active:false,role:'responder'}))
  assert.equal(ok(await req('/api/schedules/daily/now-next?at=2026-03-08T15:00:00Z')).now.primary,null,'inactive member keeps its slot as a gap')
+ const gapEvents=await checkCalendar(await req(calendarURL(calendarTo)),calendarFrom,calendarTo)
+ assert.ok(gapEvents.some(event=>event.SUMMARY==='Daily hand-off / primary: Coverage gap'&&event.DTSTART==='20260308T150000Z'&&event.DESCRIPTION.includes('inactive')))
+ assert.ok(gapEvents.some(event=>event.SUMMARY==='Daily hand-off / backup: Coverage gap'&&event.DTSTART==='20260307T140000Z'&&event.DESCRIPTION.includes('inactive')))
+ record('PROBE OC-020 explicit gaps: calendar.ics with inactive responder -> primary and backup Coverage gap events with exact UTC intervals and explanations')
  ok(await req('/api/command',{type:'member',id:b.id,active:true,role:'responder'}))
  ok(await req('/api/paging/policies',{service:'checkout',scheduleId:'daily',revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}))
+ const calendarSource='synthetic-oncall-20',calendarKey='synthetic-oncall-20-native-credential'
+ ok(await req('/api/sources',{id:calendarSource,key:calendarKey,scopes:['checkout']}))
+ const pagingBeforeAdmission=ok(await req('/api/paging/state')),signal={source:calendarSource,eventId:'synthetic-oncall-20-event',service:'checkout',environment:'production',key:'synthetic-oncall-20-alert',generation:'synthetic-oncall-20-generation',intent:'trigger',severity:'warning',title:'Synthetic calendar intake',observedAt:'2026-03-07T14:00:00Z',evidence:''}
+ const admitted=ok(await w.request('/api/ingress/'+calendarSource,signal,undefined,{authorization:'Bearer '+calendarKey}),201)
+ const admittedState=ok(await req('/api/state')),admittedEvent=admittedState.events.find(event=>event.id===admitted.id)
+ assert.ok(admittedEvent);assert.equal(admittedEvent.source,calendarSource);assert.equal(admittedEvent.eventId,signal.eventId)
+ assert.ok(admittedState.alerts.some(alert=>alert.state==='active'&&alert.events.includes(admitted.id)),'native admission opens a real retained alert')
+ assert.deepEqual(ok(await req('/api/paging/state')),{...pagingBeforeAdmission,workspaceRevision:admittedState.revision},'admission with a saved paging policy creates no jobs, deadlines or receipts')
+ const duplicate=ok(await w.request('/api/ingress/'+calendarSource,signal,undefined,{authorization:'Bearer '+calendarKey}))
+ assert.equal(duplicate.id,admitted.id);assert.deepEqual(ok(await req('/api/state')),admittedState,'repeated capture preserves immutable event and alert records')
+ ok(await req('/api/sources/'+calendarSource+'/revoke',{}))
+ ok(await w.request('/api/ingress/'+calendarSource,{...signal,eventId:'synthetic-oncall-20-refused'},undefined,{authorization:'Bearer '+calendarKey}),401)
+ assert.deepEqual(ok(await req('/api/state')),admittedState,'revoked source cannot admit another capture')
+ assert.deepEqual(ok(await req('/api/paging/state')),{...pagingBeforeAdmission,workspaceRevision:admittedState.revision})
+ assert.deepEqual(await w.outboundRequests(),[],'calendar reads, native admission, retries and revocation issue zero outbound requests')
+ record('PROBE OC-020 paging-free admission: scoped native ingress -> immutable event and active alert; retry returns original event; revoked key -> 401; paging snapshot unchanged and zero outbound requests')
  // OC-024 layer, holiday, PTO and long-range doors run in scheduleCoordination above.
  // OC-024 reviewed schedule changes bind the full proposal and coverage to the revision.
  const reviewFrom=Date.parse('2026-10-24T00:00:00Z'),reviewTo=Date.parse('2026-11-09T00:00:00Z')
