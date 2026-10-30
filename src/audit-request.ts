@@ -31,7 +31,7 @@ function route(path: string): { feature: string; kind: string } {
   const feature = prefixes.find(value => path === `/api/${value}` || path.startsWith(`/api/${value}/`))
     ?? (path.startsWith('/auth/') || path.startsWith('/__dev/') ? 'access' : path.startsWith('/api/ingress/') || path.startsWith('/v2/') || path.startsWith('/integrations/') || path.startsWith('/generic/') ? 'ingest' : 'workspace')
   const operation = path.split('/').at(-1) ?? ''
-  const operations = new Set(['publish','revoke','review','prepare','export','ack','cancel','resume','apply','erase','undo','approve','rotate','overrides','schedules','policies','jobs','tick','callbacks','bulk','views','archive','restore','key','confirm','logout','identity','imports'])
+  const operations = new Set(['publish','revoke','review','withdraw','prepare','export','ack','cancel','resume','apply','erase','undo','approve','rotate','overrides','schedules','policies','jobs','tick','callbacks','bulk','views','archive','restore','key','confirm','logout','identity','imports'])
   return { feature, kind: `${feature}.${operations.has(operation) ? operation : 'request'}` }
 }
 export async function auditedRequest(request: Request, env: Bindings, handle: (env: Bindings) => Promise<Response>): Promise<Response> {
