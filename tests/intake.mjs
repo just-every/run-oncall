@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
-import {localWorker,ownerDoor} from './worker.mjs'
+import {durableSnapshot,localWorker,ownerDoor} from './worker.mjs'
 import {readFile} from 'node:fs/promises'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 // One real emitted-Worker journey. Provider request bodies are synthetic test
 // inputs built to their documented protocols; no live-sender claim is made.
-const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const keys={pd:randomBytes(32).toString('hex'),og:randomBytes(32).toString('hex'),sp:randomBytes(32).toString('hex'),other:randomBytes(32).toString('hex')};
 let cookie;
 const request=(path,data)=>w.request(path,data,cookie);
@@ -299,6 +299,59 @@ try {
   assert.equal(ok(await request('/api/email')).receipts.at(-1).diagnostic,'unknown_address');
   assert.ok(!ok(await request('/api/state')).alerts.some(a=>a.source==='email:'+erasureId));
   console.log('OC-040 email integration erasure: authority, confirmation, stale refusal, audit/table rollback, committed per-store counts, linked incident retention, transfer invalidation, forged-journal archive/checkpoint refusal, identity reuse and restart/retired delivery refusal passed');
+  // Authenticated new receipts exhaust the address allowance even when every
+  // subject groups into one alert. Refusal must happen before that custody moves.
+  const rateAt='2026-10-30T00:00:00.000Z',rateAddress='synthetic-oncall-840',isolatedAddress='synthetic-oncall-841';
+  await w.time(Date.parse(rateAt));
+  const ratePart=localPart(),isolatedPart=localPart(),rateSubject='Synthetic grouped monitor failure';
+  for(const [id,part] of [[rateAddress,ratePart],[isolatedAddress,isolatedPart]])ok(await request('/api/email/addresses',{id,name:id,service:'payments',owner:actor.id,localPart:part,mode:'subject',fallback:'subject',rules:[]}),201);
+  for(let n=0;n<60;n++)assert.equal((await mail(w,ratePart,rateSubject,{id:'synthetic-oncall-840-'+n,auth:'pass'})).status,200);
+  const groupedEmail=ok(await request('/api/email')),groupedReceipts=groupedEmail.receipts.filter(r=>r.address===rateAddress);
+  assert.equal(groupedReceipts.length,60);assert.equal(new Set(groupedReceipts.map(r=>r.messageDigest)).size,60);
+  assert.deepEqual(groupedReceipts.map(r=>r.outcome),['opened',...Array(59).fill('deduplicated')]);
+  assert.ok(groupedReceipts.every(r=>r.deliveries===1&&r.at===rateAt&&r.decision.mode==='subject'&&r.decision.action==='trigger'));
+  const groupedState=ok(await request('/api/state')),groupedAlerts=groupedState.alerts.filter(a=>a.source==='email:'+rateAddress);
+  assert.equal(groupedAlerts.length,1);const groupedAlert=groupedAlerts[0];
+  assert.equal(groupedAlert.state,'active');assert.ok(groupedAlert.generation);assert.ok(groupedAlert.obligation.id);
+  assert.equal(groupedAlert.obligation.state,'recorded');assert.equal(groupedAlert.obligation.paging,'off');assert.equal(groupedAlert.obligation.automatic,false);
+  assert.ok(groupedReceipts.every(r=>r.alert===groupedAlert.id&&r.generation===groupedAlert.generation&&r.obligation===groupedAlert.obligation.id));
+  assert.deepEqual(groupedAlert.events,groupedReceipts.map(r=>r.event));
+  assert.equal(groupedState.events.filter(e=>e.source==='email:'+rateAddress).length,60);
+  assert.equal(groupedEmail.samples.filter(s=>s.address===rateAddress).length,60);
+  const beforeRate=durableSnapshot(w);
+  const overflow=await mail(w,ratePart,rateSubject,{id:'synthetic-oncall-840-60',auth:'pass'});
+  assert.equal(overflow.status,400);assert.equal(overflow.text,'Worker rejected email with the following reason: address_rate_limit');
+  const refusedEmail=ok(await request('/api/email')),refusedState=ok(await request('/api/state'));
+  assert.deepEqual(refusedState.alerts,groupedState.alerts,'refusal preserves alert, generation and canonical obligation exactly');
+  assert.deepEqual(refusedState.events,groupedState.events);assert.deepEqual(refusedEmail.samples,groupedEmail.samples);
+  assert.deepEqual(refusedEmail.receipts.slice(0,-1),groupedEmail.receipts);
+  const rateReceipt=refusedEmail.receipts.at(-1);
+  assert.equal(rateReceipt.address,rateAddress);assert.equal(rateReceipt.at,rateAt);assert.equal(rateReceipt.outcome,'quarantined');assert.equal(rateReceipt.diagnostic,'address_rate_limit');
+  assert.equal(rateReceipt.decision.action,'quarantine');assert.equal(rateReceipt.decision.reason,'address_rate_limit');
+  for(const field of ['alert','event','generation','obligation','sample'])assert.equal(rateReceipt[field],null,'refused mail acquires no '+field);
+  assert.deepEqual(refusedEmail.quarantine,[...groupedEmail.quarantine,{id:rateReceipt.id,receipt:rateReceipt.id,address:rateAddress,reason:'address_rate_limit'}]);
+  const afterRate=durableSnapshot(w),rateWrites=new Set(['workspace_control','oc_audit_clock','oc_admin_audit','oc_email_receipts','oc_email_quarantine']);
+  for(const [table,rows] of Object.entries(beforeRate))if(!rateWrites.has(table))assert.deepEqual(afterRate[table],rows,table+' unchanged by address refusal');
+  for(const table of ['oc_email_receipts','oc_email_quarantine']) {
+    assert.equal(afterRate[table].length,beforeRate[table].length+1);
+    assert.deepEqual(afterRate[table].filter(row=>row.id!==rateReceipt.id),beforeRate[table],table+' retains every prior row exactly');
+  }
+  const rateAudit=afterRate.oc_admin_audit.filter(row=>!beforeRate.oc_admin_audit.some(prior=>prior.id===row.id));
+  assert.deepEqual(afterRate.oc_admin_audit.filter(row=>beforeRate.oc_admin_audit.some(prior=>prior.id===row.id)),beforeRate.oc_admin_audit);
+  assert.equal(rateAudit.length,1);assert.equal(rateAudit[0].kind,'email.receive');assert.equal(rateAudit[0].outcome,'refused');assert.equal(rateAudit[0].at,rateAt);
+  assert.equal(rateAudit[0].workspace_before,groupedState.revision);assert.equal(rateAudit[0].workspace_after,groupedState.revision+1);
+  for(let n=61;n<64;n++) {
+    const refused=await mail(w,ratePart,rateSubject,{id:'synthetic-oncall-840-'+n,auth:'pass'});
+    assert.equal(refused.status,400);assert.equal(refused.text,overflow.text);
+    assert.deepEqual(durableSnapshot(w),afterRate,'subsequent refused message adds no per-message custody or audit');
+  }
+  assert.equal((await mail(w,isolatedPart,rateSubject,{id:'synthetic-oncall-841-0',auth:'pass'})).status,200);
+  const isolatedEmail=ok(await request('/api/email')),isolatedReceipt=isolatedEmail.receipts.at(-1),isolatedState=ok(await request('/api/state'));
+  assert.equal(isolatedReceipt.address,isolatedAddress);assert.equal(isolatedReceipt.outcome,'opened');assert.notEqual(isolatedReceipt.generation,groupedAlert.generation);
+  assert.equal(isolatedEmail.receipts.filter(r=>r.address===rateAddress).length,61);
+  assert.deepEqual(isolatedState.alerts.find(a=>a.id===groupedAlert.id),groupedAlert);
+  assert.deepEqual(isolatedEmail.samples.filter(s=>s.address===rateAddress),groupedEmail.samples.filter(s=>s.address===rateAddress));
+  console.log('PASS OC-084 authenticated email allowance before grouping: emitted email door at '+rateAt+'; 60 distinct authenticated same-subject messages -> one generation and recorded obligation; next message -> address_rate_limit before grouping, exact alert, events, samples and prior D1 rows retained; three later refusals -> zero writes; another address -> opened');
   const floodPart=localPart();ok(await request('/api/email/addresses',{id:'email-flood',name:'Flooded monitor',service:'payments',owner:actor.id,localPart:floodPart,mode:'subject',fallback:'subject',rules:[]}),201);
   for(let n=0;n<70;n++)await mail(w,floodPart,'Unauthenticated flood',{auth:'fail'});
   const flooded=ok(await request('/api/email')).receipts.filter(r=>r.address==='email-flood');
