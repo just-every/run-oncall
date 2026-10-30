@@ -310,7 +310,7 @@ try {
   assert.equal(ok(await req('/api/workspace')).moveIn.pagerdutyConnect,true);console.log('O2 workspace moveIn.pagerdutyConnect=true');
   for(const vendor of ['pagerduty','opsgenie'])for(const region of ['us','eu']) {
    await control('many-pages');let cursor,bundle;
-   const auditBefore=w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE kind LIKE 'move-in.read.%'")[0].n;
+   const auditBefore=w.sql("SELECT COUNT(*) AS n FROM oc_admin_audit WHERE kind='move-in.read'")[0].n;
    do {
     const before=(await observed()).calls.length;
     const response=await req('/api/move-in/read',{source:vendor,region,key,...(cursor?{cursor}:{})});responses.push(JSON.stringify(response.value));
@@ -323,9 +323,9 @@ try {
     if(cursor){const altered=cursor.slice(0,-1)+(cursor.endsWith('0')?'1':'0');ok(await req('/api/move-in/read',{source:vendor,region,key,cursor:altered}),400)}
    }while(cursor);
    assert.ok(bundle.users.length>40,'the complete read survived its continuation');
-   const finished=w.sql("SELECT kind FROM oc_admin_audit WHERE kind LIKE 'move-in.read.%'");
+   const finished=w.sql("SELECT detail FROM oc_admin_audit WHERE kind='move-in.read'");
    assert.equal(finished.length,auditBefore+1,'one permanent audit fact per finished read');
-   const fact=JSON.parse(finished.at(-1).kind.slice('move-in.read.'.length));assert.equal(fact.provider,vendor);assert.equal(fact.region,region);assert.equal(fact.counts.users,bundle.users.length);
+   const fact=JSON.parse(finished.at(-1).detail);assert.equal(fact.provider,vendor);assert.equal(fact.region,region);assert.equal(fact.counts.users,bundle.users.length);
   }
   for(const mode of ['wrong-key','redirect','too-many','too-big','echo','encoded-echo','unsafe-page','header-key','timeout']) {
    await control(mode);
@@ -371,7 +371,7 @@ try {
   const failedCallback=await w.request('/api/move-in/pagerduty/callback?code=synthetic-revocation-code&state='+failedAddress.searchParams.get('state'),undefined,failedStart.headers.getSetCookie().map(value=>value.split(';')[0]).join('; '));ok(failedCallback,302);
   const failedCookie=failedCallback.headers.getSetCookie().find(line=>line.startsWith('oncall_move_in_token='));await control('revoke-failure');
   const refusedClose=await w.request('/api/move-in/read',{source:'pagerduty',region:'us'},owner.cookie+'; '+failedCookie.split(';')[0]);ok(refusedClose,400);responses.push(JSON.stringify(refusedClose.value));
-  assert.ok(refusedClose.headers.getSetCookie().some(line=>/Max-Age=0/.test(line)));assert.equal(w.sql("SELECT outcome FROM oc_admin_audit WHERE kind LIKE 'move-in.read.%' ORDER BY ordinal DESC LIMIT 1")[0].outcome,'failed');
+  assert.ok(refusedClose.headers.getSetCookie().some(line=>/Max-Age=0/.test(line)));assert.equal(w.sql("SELECT outcome FROM oc_admin_audit WHERE kind='move-in.read' ORDER BY ordinal DESC LIMIT 1")[0].outcome,'failed');
   const retryLease=w.sql('SELECT revoke_at FROM oc_move_in_consent')[0];assert.ok(retryLease);await control();w.sql('UPDATE oc_move_in_consent SET revoke_at=0');ok(await w.request('/__provider_cron'));assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_move_in_consent')[0].n,0);
   console.log('O2 failed revocation: plain refusal, cleared cookie, permanent failed audit, sealed retry and scheduled cleanup passed');
   // A return that fails after the exchange (the lease cap is full) while PagerDuty refuses the revocation

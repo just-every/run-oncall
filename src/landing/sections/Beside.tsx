@@ -16,7 +16,7 @@ const people = ["Priya Shah", "Tom Okafor", "Ana Ruiz"];
 const band = (states: State[]): Segment[] =>
   people.map((name, index) => ({ key: name, state: states[index], handover: index > 0, inside: <span className="oc-lineup-name">{name}</span> }));
 
-// The move-in kit's preview (MoveInWorkspace.tsx), after a clean Opsgenie export, on a clip-on card.
+// The Move in screen's preview (src/move-in/MoveIn.tsx), after a clean Opsgenie export, on a clip-on card.
 function MoveInBadge() {
   return (
     <figure className="oc-drawing oc-movein">
