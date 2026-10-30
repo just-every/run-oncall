@@ -1,5 +1,5 @@
 import { runtimeBindings } from '../auth.server'
-import { auditIdentity, auditKind } from '../audit-store'
+import { auditDetail, auditIdentity, auditKind } from '../audit-store'
 import { markMoveInReadStep } from './read-audit'
 import { Fault, fail } from '../family/response-operations/domain'
 import { changeHmac, equalSignature } from '../changes/credentials'
@@ -65,7 +65,8 @@ export function installMoveInRead(api: any) {
    if (!next) {
     // Counts only: provider values and the credential never become an audit identity or row.
     auditIdentity(c.env.DB, { source: { kind: 'provider', id: source } })
-    auditKind(c.env.DB, 'move-in.read.' + JSON.stringify({ provider: source, region, counts: Object.fromEntries(Object.entries(result.state.bundle).map(([kind, rows]) => [kind, rows.length])) }))
+    auditKind(c.env.DB, 'move-in.read')
+    auditDetail(c.env.DB, { provider: source, region, counts: Object.fromEntries(Object.entries(result.state.bundle).map(([kind, rows]) => [kind, rows.length])) })
     if (held) { closing = true; await endConsent(c, held) }
    } else {
     // This step changed no durable data; only the finished read gets its audit entry.

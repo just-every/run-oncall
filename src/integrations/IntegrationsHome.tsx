@@ -9,7 +9,7 @@ export function IntegrationsHome(props: IntegrationProps & { native: NativeDefin
   const remember=()=>{try{sessionStorage.setItem('oncall:integration-list-scroll',String(window.scrollY));}catch{}};
   const sources = sourcesFrom(props.state, props.native, props.admin);
   return <div className="integrations-home">
-    <section className="panel padded integrations" aria-label="Integration sources"><div className="integration-heading"><h2>Sources</h2>{sources.length > 0 && <a className="integration-link" href="/settings/integrations/new">Add integration</a>}</div>
+    <section className="panel padded integrations" aria-label="Integration sources"><div className="integration-heading"><h2>Sources</h2>{sources.length > 0 && props.admin && <a className="integration-link" href="/settings/integrations/new">Add integration</a>}</div>
       {props.readFailure}
       {Object.entries(integrationKinds).map(([kind, label]) => {
         const rows = sources.filter(s => s.kind === kind);
