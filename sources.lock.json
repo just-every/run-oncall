@@ -256,7 +256,7 @@
       "executable": false
     },
     "docs/limits.md": {
-      "sha256": "70308e7631745a0e91ebf2c82b6557928670c3e98cbb5c9135b2a7765ab8755e",
+      "sha256": "c856baea24520a29a838c5a17250b676dd8af04b241baaea71ec49f14deb3376",
       "executable": false
     },
     "docs/monitoring-providers.md": {
@@ -5856,7 +5856,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "8bbbce9bed05fdd0b5b46d4012ae9f632368dc19708f1a8e20a76f8527c0db26",
+      "sha256": "6630b606ed8cca60d7ed7dbf4cac4351a3bb52e8ed15a6a6f865bd19433fc9a2",
       "executable": false
     },
     "tests/readiness.mjs": {
