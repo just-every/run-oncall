@@ -24,9 +24,13 @@ Open **Generated review material and human acceptance** for an incident. Oncall 
 
 For a resolved incident, write a human-assessed root cause, impact and review, then explicitly confirm the current material revision. The server checks both incident and workspace revisions again, including source observations and dependency/change context. A newly admitted source event invalidates the old material even when the incident revision did not change. Acceptance records the person, time and both material revisions. The accepted root cause, impact and review are also retained as an immutable timeline snapshot. Later incident changes leave the earlier acceptance visible as an earlier revision. Generated material is never automatically copied into an accepted assessment.
 
+Editing an accepted assessment saves a draft and clears its current acceptance. The earlier accepted root cause, impact and review stay in the immutable timeline. Accept the correction explicitly against newly loaded incident and workspace revisions; the next acceptance records the current human actor and appends another snapshot. A revoked reviewer can neither read the private material nor correct or accept it.
+
 ## Follow required improvements
 
 Follow-ups have P1/P2/P3 priority, owner, a UTC calendar due date, a manual escalation contact and completion policy. They sort open first, then priority and due date. The due date runs through its full UTC day; overdue begins at 00:00 UTC the next day. Existing records retain their original evidence-completion behavior and are labeled legacy when attribution or policy was not recorded.
+
+Resolving an incident leaves its open critical follow-ups intact, including their owner, due date, escalation contact and completion policy. Generated review material continues to list that work.
 
 New follow-ups default to human review. P1 always requires it. Submitting an HTTP(S) evidence URL leaves such work awaiting acceptance. A current responder must explicitly accept completion with a reason; the person and time are recorded. An evidence-policy action completes when a responder submits evidence. Neither a quiet alert nor a remote ticket can complete work through these commands.
 

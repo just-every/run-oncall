@@ -730,7 +730,7 @@ try {
 const {default:assert}=await import('node:assert/strict')
 const {randomBytes}=await import('node:crypto')
 const {localWorker}=await import('./worker.mjs')
-const w=await localWorker(),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const w=await localWorker({}, {outboundLedger:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 try{
  let cookie=(await w.request('/api/setup',{name:'Response lead',password:'synthetic-review-testing-password'})).cookie;
  const req=(path,data)=>w.request(path,data,cookie),actor=ok(await req('/api/session')).member;
@@ -781,10 +781,12 @@ try{
  const submittedRevision=incident.revision;
  const accepted=ok(await w.request('/api/command',{type:'accept-action',incident:incident.id,revision:incident.revision,action:action.id,reason:'Reviewed regional guard and sustained monitor evidence'},reviewerCookie));incident=accepted;assert.equal(incident.actions[0].done,true);assert.equal(incident.actions[0].accepted.by,reviewer.id);
  ok(await req('/api/command',{type:'accept-action',incident:incident.id,revision:submittedRevision,action:action.id,reason:'stale'}),409);
+ const applicationRecords=()=>Object.fromEntries(Object.entries(durableSnapshot(w)).filter(([table])=>!['oc_admin_audit','oc_audit_clock','oc_audit_identities'].includes(table)));
  const refuseReview=async(input,status=409,session=cookie)=>{
-  const before=ok(await req('/api/state'));
+  const before=ok(await req('/api/state')),records=applicationRecords();
   ok(await w.request('/api/command',{type:'review',incident:incident.id,revision:incident.revision,...input},session),status);
   assert.deepEqual(ok(await req('/api/state')),before,'refused review preserves application records, revisions and immutable timeline; refusal audit is separate');
+  assert.deepEqual(applicationRecords(),records,'refused correction and acceptance preserve every durable application row, including paging and custody');
  };
  let material=ok(await req('/api/reviews/'+incident.id+'/material'));assert.equal(material.incidentRevision,incident.revision);assert.ok(material.observations.some(o=>o.eventId===event.eventId));assert.ok(material.assertions.some(a=>a.id===finalRecovery.id));assert.ok(material.changes.some(c=>c.eventId==='checkout-release'),'generated material includes the same retained changes responders see');assert.equal(material.accepted,null);assert.ok(material.missing.length>0);
  await refuseReview({materialRevision:incident.revision-1,materialWorkspaceRevision:material.workspaceRevision,accept:true,rootCause:'Pool limits exceeded',impact:'Checkout requests delayed',text:'Human review'});
@@ -824,6 +826,14 @@ try{
   assert.deepEqual(assertion.review,snapshot.review);assert.equal(assertion.actor,person.id);assert.equal(assertion.actorName,person.name);assert.equal(assertion.classification,'human assertion');
  }
  await refuseReview({text:'viewer cannot accept'},403,viewerCookie);
+ await refuseReview(correction,401,'');
+ ok(await req('/api/command',{type:'member',id:reviewer.id,role:'responder',active:false}));
+ const revokedMaterial=ok(await req('/api/reviews/'+incident.id+'/material'));
+ await refuseReview(correction,401,reviewerCookie);
+ await refuseReview({...correction,accept:true,materialRevision:revokedMaterial.incidentRevision,materialWorkspaceRevision:revokedMaterial.workspaceRevision},401,reviewerCookie);
+ ok(await w.request('/api/reviews/'+incident.id+'/material',undefined,reviewerCookie),401);
+ assert.deepEqual(revokedMaterial.accepted,incident.reviewAcceptance,'revoking authority preserves the earlier human acceptance');
+ console.log('PROBE OC-036 authority: anonymous correction and revoked reviewer correction, acceptance and material read -> 401; existing human snapshots and durable application rows unchanged');
  console.log('PROBE OC-036 acceptance 1 accepted correction: protected review commands -> draft clears current acceptance but preserves the original snapshot; stale correction, stale incident material, stale workspace material and viewer commands refuse without application changes; fresh revisions accept the correction as the actual responder and retain both snapshots');
  ok(await req('/api/reports/response.csv?'+frozen),409);frozen.delete('revision');const currentReport=ok(await req('/api/reports/response?'+frozen));frozen.set('revision',String(currentReport.revision));
  assert.equal(ok(await w.request('/api/reports/response.csv?'+frozen,undefined,viewerCookie)),ok(await req('/api/reports/response.csv?'+frozen)),'same permissions and frozen snapshot produce the same CSV');
@@ -840,6 +850,11 @@ try{
  assert.deepEqual(restartedMaterial.assertions.filter(entry=>entry.review).map(({actorName,classification,...entry})=>entry),acceptedSnapshots,'both immutable accepted snapshots survive archive replacement and Worker restart');
  assert.deepEqual(restartedMaterial.followups,incident.actions,'follow-up identity, policy and human evidence acceptance survive archive replacement and restart');
  console.log('PROBE OC-036 custody: populated protected archive replacement and Worker restart -> both accepted review snapshots and the explicitly human-accepted P1 follow-up read back unchanged');
+ const beforeMaterial=durableSnapshot(w),pagingBeforeMaterial=ok(await req('/api/paging/state'));
+ for(let read=0;read<2;read++)ok(await req('/api/reviews/'+incident.id+'/material'));
+ assert.deepEqual(durableSnapshot(w),beforeMaterial,'generated material reads preserve all durable records and permanent audit');
+ assert.deepEqual(ok(await req('/api/paging/state')),pagingBeforeMaterial);
+ assert.deepEqual(await w.outboundRequests(),[],'generated review material and evidence links attempt no external request');
  // OC-037 response report keeps unknown cases visible and normalises load by scheduled coverage.
  const responder=async name=>({...ok(await req('/api/members',{name,role:'responder',password:'synthetic-load-testing-password'}),201),cookie:(await w.request('/api/login',{name,password:'synthetic-load-testing-password'})).cookie});
  const shift=await responder('Shift responder'),floater=await responder('On-call floater');
