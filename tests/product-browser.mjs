@@ -1,7 +1,7 @@
 import {openWorkspaceSection,openHistoryComparison,selectRoutedSource,keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes,createHmac} from 'node:crypto'
-import {mkdir} from 'node:fs/promises'
+import {mkdir,readFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor} from './worker.mjs'
@@ -266,6 +266,45 @@ async function incidentWorkflowBrowser(page,context) {
  console.log('PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440; overflow, axe and hydration checked');
 }
 
+// Read the emitted public guidance against the installed release observations.
+async function limitationsBrowser(page,context){
+ const origin=new URL(page.url()).origin;
+ const response=await page.goto(origin+'/docs/limits');assert.equal(response.status(),200);
+ await page.setViewportSize({width:1440,height:1000});
+ const article=page.locator('.docs-article[data-doc="limits"]');await article.waitFor();
+ const text=await article.innerText();
+ const emergency=article.getByRole('heading',{name:/US emergency, call 911 directly/i});
+ assert.equal(await emergency.isVisible(),true,'US emergency guidance is visible without opening a disclosure');
+ assert.match(text,/not a 911 dispatch service/i);assert.match(text,/Do not .*wait for an Oncall/i);
+ const reportResponse=await context.request.get('/api/readiness');assert.equal(reportResponse.status(),200);
+ const report=await reportResponse.json(),row=id=>report.matrix.find(item=>item.id===id);
+ assert.equal(report.pagerCoverage.paging,'off');assert.equal(row('paging').state,'off');
+ assert.equal(row('standby').state,'not-built');assert.equal(row('reference-load').state,'unproven-live');assert.equal(row('reference-load').evidence.kind,'none');
+ assert.match(text,/Paging is OFF/i);assert.match(text,/standby is not built/i);assert.match(text,/OC-064[^.]*unmeasured/i);
+ assert.match(text,/no measured availability commitment/i);assert.match(text,/healthy[^.]*does not prove/i);
+ assert.match(text,/no HIPAA compliance or regulated-data suitability claim/i);assert.match(text,/agreements and validated controls have not been established/i);
+ assert.match(text,/Do not put protected health information/i);assert.match(text,/Use redacted incident descriptions/i);
+ const contract=await readFile('CONTRACT.md','utf8');
+ for(const id of ['R-1','R-2','R-5','R-6','R-8']){
+  const cells=contract.split('\n').find(line=>line.startsWith('| '+id+' |')).split('|').map(cell=>cell.trim());
+  const mention=text.slice(text.indexOf(id),text.indexOf(id)+240);
+  if(cells[4]==='passed')assert.ok(mention.includes(cells[5]),id+' guidance preserves the dated prior field observation');
+  else {assert.equal(cells[4],'not run');assert.match(text.slice(text.indexOf('R-5')),/not run/i);}
+ }
+ assert.match(text,/dated prior observations, not a current deployment/i);assert.match(text,/not[^.]*outbound paging proof/i);
+ const readiness=article.getByRole('link',{name:'Readiness',exact:true});await readiness.click();
+ await page.locator('.docs-article[data-doc="readiness"]').waitFor();
+ await page.goto(origin+'/docs/limits');await article.waitFor();
+ assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'limitations fit the desktop viewport');
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+ assert.deepEqual(axe.violations,[],'limitations have no WCAG axe violations');
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
+ for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc044-limits-${width}.png`,fullPage:true});}
+ await page.setViewportSize({width:1440,height:1000});
+ console.log('PROBE OC-044 acceptance 2: GET /docs/limits -> direct US emergency guidance; paging OFF, standby not built, unmeasured load, no availability or regulated-data claim; dated field evidence distinct from not-run rows; Readiness link works; desktop assertions and 1440/390 visual proof passed');
+}
+
 async function changeAndSigningBrowser(page,context){
  const origin=new URL(page.url()).origin;
  const request=async(path,data)=>{const response=await context.request.fetch(path,{method:data===undefined?'GET':'POST',headers:{origin:new URL(page.url()).origin},...(data===undefined?{}:{data})});const value=await response.json();assert.ok(response.ok(),JSON.stringify(value));return value;};
@@ -450,7 +489,7 @@ async function changeAndSigningBrowser(page,context){
   await panel.getByRole('button',{name:'Disable signature check',exact:true}).click();await panel.getByRole('button',{name:'Disable check',exact:true}).click();await panel.getByText('Bearer authentication only',{exact:true}).waitFor();
   await panel.getByRole('button',{name:'Enable signature check',exact:true}).click();await panel.getByRole('button',{name:'Create signing key',exact:true}).click();assert.ok(await panel.getByLabel('Signing key',{exact:true}).inputValue());await panel.getByRole('button',{name:'Done',exact:true}).click();await panel.getByText('Signature required with bearer authentication',{exact:true}).waitFor();await page.reload();await panel.locator('summary').click();assert.equal(await panel.getByLabel('Signing key',{exact:true}).count(),0);await panel.scrollIntoViewIfNeeded();await check('oc030-signing',width);
   for(const [slug,section] of [['changes','erase-a-retained-change'],['routed-intake','event-time-correlation-and-flapping'],['data','incident-member-and-integration-erasure'],['urgency','']]){await page.goto(new URL(page.url()).origin+'/docs/'+slug+(section?'#'+section:''));await page.locator('.docs-article').waitFor();if(section)await page.locator('#'+section).scrollIntoViewIfNeeded();await check('oc040-043-docs-'+slug,width);}
-  for(const slug of docSlugs.filter(slug=>!['changes','routed-intake','data','urgency'].includes(slug))){await page.goto(new URL(page.url()).origin+'/docs/'+slug);await page.locator('.docs-article').waitFor();await check('oc040-043-docs-'+slug,width);}
+  for(const slug of docSlugs.filter(slug=>!['changes','routed-intake','data','urgency'].includes(slug))){await page.goto(new URL(page.url()).origin+'/docs/'+slug);await page.locator('.docs-article').waitFor();if(slug==='limits')await limitationsBrowser(page,context);else await check('oc040-043-docs-'+slug,width);}
   await page.goto(new URL(page.url()).origin);
  }
  console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440; overflow, axe and hydration');
@@ -522,8 +561,9 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['readiness','accessibility'].includes(focused))throw Error('Unknown focused product journey');
- if(process.env.ONCALL_PRODUCT_JOURNEY!=='readiness'){
+ if(focused&&!['readiness','accessibility','limitations'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused==='limitations')await limitationsBrowser(page,context);
+ if(!['readiness','limitations'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime:async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));}})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -534,7 +574,7 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(focused!=='accessibility')await readinessBrowser(page,context)
+ if(!['accessibility','limitations'].includes(focused))await readinessBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
  console.log(focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
