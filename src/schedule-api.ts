@@ -27,6 +27,7 @@ export function installSchedules(api:any,body:(c:any)=>Promise<any>) {
   const s=await pagingSnapshot(c.env.DB),schedule=s.archive.schedules.find(v=>v.id===c.req.param('id'))
   if(!schedule) fail('Unknown schedule',404)
   const from=clock(c.req.query('from')),to=c.req.query('to')?clock(c.req.query('to')):from+7*86400000
+  if(to<=from||to-from>31*86400000)fail('Calendar window must be positive and at most 31 elapsed days')
   return new Response(calendar(schedule,s.workspace.members,from,to),{headers:{'Content-Type':'text/calendar; charset=utf-8','Cache-Control':'private, no-store','Content-Disposition':'inline; filename="oncall.ics"'}})
  })
  for(const action of ['pto-review','pto-apply'] as const) api.post(`/api/schedules/:id/${action}`,async(c:any)=>{
