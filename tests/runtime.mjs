@@ -1546,7 +1546,8 @@ try {
 } finally {await erasureRuntime.close();}
 
 const sign=(key,text)=>createHmac('sha256',key).update(text).digest('hex');
-const apiKey=randomBytes(32).toString('hex'),firstReceiverKey=randomBytes(32).toString('hex'),seen=[],applied=new Set();let receiverKey=firstReceiverKey,behavior='accepted',release,entered;
+const chosenEndpoint='https://8.8.8.8/events',redirectTargets=['http://127.0.0.1/private','https://8.8.8.8/synthetic-oncall-redirect','https://1.1.1.1/synthetic-oncall-redirect'];
+const apiKey=randomBytes(32).toString('hex'),firstReceiverKey=randomBytes(32).toString('hex'),seen=[],applied=new Set();let receiverKey=firstReceiverKey,behavior='accepted',redirectTarget=redirectTargets[0],release,entered;
 const runtime=await automationRuntime(async request=>{
  const raw=await request.text(),body=JSON.parse(raw),timestamp=request.headers.get('x-oncall-timestamp');
  assert.equal(request.headers.get('x-oncall-signature'),sign(receiverKey,timestamp+'.'+raw));
@@ -1554,7 +1555,7 @@ const runtime=await automationRuntime(async request=>{
  assert.deepEqual(Object.keys(body).sort(),['at','incident','operationId','revision','service','state','type']);
  assert.equal(new URL(request.url).hostname,'8.8.8.8');seen.push(body);
  if(behavior==='hold'){entered?.();await new Promise(r=>release=r);}
- if(behavior==='redirect')return new Response(null,{status:302,headers:{location:'http://127.0.0.1/private'}});
+ if(behavior==='redirect')return new Response(null,{status:302,headers:{location:redirectTarget}});
  if(behavior==='ambiguous'){applied.add(body.operationId);return new Response(null,{status:200});}
  if(behavior==='retry')return new Response(null,{status:503,headers:{'x-oncall-result':'retry','x-oncall-receipt':sign(receiverKey,body.operationId+'.'+timestamp+'.retry')}});
  applied.add(body.operationId);return new Response(null,{status:200,headers:{'x-oncall-result':'accepted','x-oncall-receipt':sign(receiverKey,body.operationId+'.'+timestamp+'.accepted')}});
@@ -1565,6 +1566,13 @@ const owner=(path,data)=>runtime.request(path,data,cookie);
 const api=(path,data,key=apiKey,replay='synthetic-oncall-'+randomBytes(5).toString('hex'))=>runtime.request('/api/v1/'+path,data,'',{authorization:'Bearer '+key,'idempotency-key':replay});
 const state=async()=>ok(await owner('/api/state'));
 const sql=(query,...args)=>runtime.db.prepare(query).bind(...args).run();
+// Record at the isolated transport edge before receiver assertions or responses.
+// The ledger survives Worker restart and includes unexpected and redirected calls.
+const isolated=async(phase,count=seen.length)=>{
+ const ledger=await runtime.outboundRequests();
+ assert.deepEqual(ledger.map(({url,method})=>({url,method})),Array.from({length:count},()=>({url:chosenEndpoint,method:'POST'})),phase+': only the complete approved HTTPS origin and path receive POST requests');
+ return ledger;
+};
 try {
  const setup=await runtime.request('/api/setup',{name:'Synthetic Owner',password:'synthetic-oncall-owner-password'});cookie=setup.cookie;const admin=ok(setup).member;
  const service=ok(await owner('/api/command',{type:'service',id:'synthetic-oncall-service',name:'Synthetic service',environment:'test',owner:admin.id,runbook:['Inspect'],pager:''}));
@@ -1573,7 +1581,7 @@ try {
  const client=ok(await owner('/api/automation/clients',{name:'Synthetic client',key:apiKey,services:[service.id],permissions:allPermissions}),201);
  for(const url of ['http://8.8.8.8/a','https://127.0.0.1/a','https://10.0.0.1/a','https://169.254.169.254/a','https://localhost/a','https://8.8.8.8/a?token=bad','https://user@8.8.8.8/a'])ok(await owner('/api/automation/endpoints',{name:'Unsafe',key:receiverKey,client:client.id,services:[service.id],url,approve:true}),400);
  const receiverApiKey=randomBytes(32).toString('hex'),receiverClient=ok(await owner('/api/automation/clients',{name:'Receiving access',key:receiverApiKey,services:[service.id],permissions:['incidents:read']}),201);
- let endpoint=ok(await owner('/api/automation/endpoints',{name:'Synthetic receiver',key:receiverKey,client:receiverClient.id,services:[service.id],url:'https://8.8.8.8/events',approve:true}),201);
+ let endpoint=ok(await owner('/api/automation/endpoints',{name:'Synthetic receiver',key:receiverKey,client:receiverClient.id,services:[service.id],url:chosenEndpoint,approve:true}),201);assert.equal(endpoint.url,chosenEndpoint);
  const unset=await api('incidents');ok(unset,403);assert.equal(unset.value.error.code,'policy_unset');
  await autonomousCoordination(runtime,cookie);
  ok(await owner('/api/automation/clients/'+client.id+'/rotate',{revision:client.revision,key:apiKey}),409);ok(await owner('/api/automation/endpoints/'+endpoint.id+'/rotate',{revision:endpoint.revision,key:receiverKey,approve:true}),409);assert.equal((await state()).apiClients.find(c=>c.id===client.id).revision,1);assert.equal((await state()).apiEndpoints.find(e=>e.id===endpoint.id).revision,1);
@@ -1596,7 +1604,7 @@ try {
  const managementDoors=[['/api/automation',undefined],['/api/automation/clients',{name:'Denied',key:randomBytes(32).toString('hex'),services:[service.id],permissions:allPermissions}],['/api/automation/clients/'+client.id+'/rotate',{revision:client.revision,key:randomBytes(32).toString('hex')}],['/api/automation/clients/'+client.id+'/revoke',{revision:client.revision}],['/api/automation/endpoints',{name:'Denied',key:randomBytes(32).toString('hex'),client:receiverClient.id,services:[service.id],url:'https://8.8.8.8/events',approve:true}],['/api/automation/endpoints/'+endpoint.id+'/rotate',{revision:endpoint.revision,key:randomBytes(32).toString('hex'),approve:true}],['/api/automation/endpoints/'+endpoint.id+'/revoke',{revision:endpoint.revision}],['/api/automation/dispatch',{}],['/api/automation/outbox/'+outcome.id+'/replay',{revision:outcome.revision,approve:true}]];
  for(const caller of deniedCallers)for(const [path,data] of managementDoors)ok(await runtime.request(path,data,caller.cookie,caller.headers),caller.status);
  for(const path of ['/api/state','/api/export','/api/audit/export'])ok(await runtime.request(path,undefined,'',{authorization:'Bearer '+apiKey}),401);
- const afterManagementDenial=await state();for(const category of ['apiClients','apiEndpoints','apiOutbox','apiOperations','incidents'])assert.deepEqual(afterManagementDenial[category],beforeManagementDenial[category]);assert.equal(seen.length,0);
+ const afterManagementDenial=await state();for(const category of ['apiClients','apiEndpoints','apiOutbox','apiOperations','incidents'])assert.deepEqual(afterManagementDenial[category],beforeManagementDenial[category]);assert.equal(seen.length,0);await isolated('hostile setup and management authority refusal',0);
  console.log('PASS OC-053 management denial: anonymous/token-only 401, viewer/responder 403 across read, create, rotate, revoke, dispatch and replay; token has no session/export/audit door');
  const memberA=ok(await owner('/api/members',{name:'synthetic-oncall-responder-a@example.test',role:'responder',password:'synthetic-oncall-responder-password'}),201);
  const memberB=ok(await owner('/api/members',{name:'synthetic-oncall-responder-b',role:'responder',password:'synthetic-oncall-responder-password'}),201);
@@ -1643,6 +1651,7 @@ try {
  await runtime.restart();const committedLogin=await runtime.request('/api/login',{name:'Synthetic Owner',password:'synthetic-oncall-owner-password'});ok(committedLogin);cookie=committedLogin.cookie;assert.deepEqual((await state()).apiOutbox,snapshot.apiOutbox,'restart after domain commit retains queued operations exactly');
  const scheduled=await fetch(runtime.origin+'/cdn-cgi/local/scheduled');assert.equal(scheduled.status,200);await scheduled.text();assert.equal((await state()).apiOutbox.filter(o=>o.status==='sent').length,10,'one scheduled step is bounded to ten deliveries');const nextScheduled=await fetch(runtime.origin+'/cdn-cgi/local/scheduled');assert.equal(nextScheduled.status,200);await nextScheduled.text();assert.ok((await state()).apiOutbox.every(o=>o.status==='sent'),'scheduled handler dispatches the durable batch without a browser');
  assert.equal(applied.size,12);assert.equal((await state()).incidents.length,4);
+ await isolated('scheduled delivery before rotation',12);
  receiverKey=randomBytes(32).toString('hex');endpoint=ok(await owner('/api/automation/endpoints/'+endpoint.id+'/rotate',{revision:endpoint.revision,key:receiverKey,approve:true}));
  // Real foreign records never appear through direct IDs, pagination or linked mutations.
  let hidden=ok(await owner('/api/command',{...input,service:foreign.id,title:'Hidden incident'}));hidden=ok(await owner('/api/command',{type:'action',incident:hidden.id,revision:hidden.revision,title:'Hidden action',owner:admin.id,due:'2026-12-01'}));
@@ -1666,9 +1675,16 @@ try {
  await runtime.restart();const loggedIn=await runtime.request('/api/login',{name:'Synthetic Owner',password:'synthetic-oncall-owner-password'});ok(loggedIn);cookie=loggedIn.cookie;
  assert.equal(ok(await owner('/api/automation/dispatch',{})).processed,0);
  ok(await owner('/api/automation/outbox/'+uncertain.id+'/replay',{revision:uncertain.revision,approve:true}));behavior='accepted';assert.equal(ok(await owner('/api/automation/dispatch',{})).status,'sent');assert.equal(applied.size,count);assert.equal((await state()).incidents.length,incidentCount);
+ await isolated('rotated signing key and replay after restart');
  // Signed retry is due-bounded; redirects never reach their target.
  ok(await api('incidents',{...input,title:'Retry later'}),201);behavior='retry';assert.equal(ok(await owner('/api/automation/dispatch',{})).status,'failed');assert.equal(ok(await owner('/api/automation/dispatch',{})).processed,0);
- const failed=(await state()).apiOutbox.at(-1);assert.ok(Date.parse(failed.due)>Date.now());ok(await owner('/api/automation/outbox/'+failed.id+'/replay',{revision:failed.revision,approve:true}));behavior='redirect';assert.equal(ok(await owner('/api/automation/dispatch',{})).status,'terminal');
+ const failed=(await state()).apiOutbox.at(-1);assert.ok(Date.parse(failed.due)>Date.now());
+ for(const target of redirectTargets){
+  const item=(await state()).apiOutbox.find(o=>o.id===failed.id),priorRequests=seen.length;
+  ok(await owner('/api/automation/outbox/'+item.id+'/replay',{revision:item.revision,approve:true}));behavior='redirect';redirectTarget=target;
+  assert.equal(ok(await owner('/api/automation/dispatch',{})).status,'terminal');
+  const ledger=await isolated('redirect to '+target,priorRequests+1);assert.equal(ledger.filter(call=>call.url===target).length,0,'redirect target receives no request');
+ }
  // A failed durable lease commit cannot leak a network effect.
  ok(await api('incidents',{...input,title:'Lease rollback'}),201);const beforeLease=seen.length;
  await sql("CREATE TRIGGER synthetic_dispatch_fault BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='automation.dispatch' BEGIN SELECT RAISE(ABORT,'synthetic storage failure'); END");
@@ -1698,6 +1714,7 @@ try {
  ok(await owner('/api/automation/clients/'+receiverClient.id+'/rotate',{revision:receiverClient.revision+1,key:receiverApiKey}));ok(await api('incidents',{...input,title:'Revoked queued client'}),201);
  // Revocation applies to reads, writes and existing operation replay.
  ok(await owner('/api/automation/clients/'+client.id+'/revoke',{revision:client.revision}));ok(await api('incidents'),401);ok(await api('incidents',input,apiKey,'synthetic-oncall-repeat'),401);assert.equal(ok(await owner('/api/automation/dispatch',{})).status,'terminal');assert.equal(seen.length,beforeRefusal);
+ await isolated('revoked endpoint, receiver and originating client',beforeRefusal);
  const readKey=randomBytes(32).toString('hex');const reader=ok(await owner('/api/automation/clients',{name:'Reader',key:readKey,services:[service.id],permissions:['incidents:read']}),201);ok(await api('incidents',input,readKey),403);ok(await api('services',undefined,readKey),403);
  let limited=false;const windows=new Map();for(let n=0;n<130;n++){const window=Math.floor(Date.now()/60000),result=await api('incidents',undefined,readKey);if(result.status===429){limited=true;assert.ok(Number(result.headers.get('retry-after'))>=1);break;}ok(result);if(window===Math.floor(Date.now()/60000)){windows.set(window,(windows.get(window)??0)+1);assert.ok(windows.get(window)<=60,'no client receives more than 60 reads in one minute window');}}assert.ok(limited,'rate refusal occurs even when the journey straddles a minute boundary');
  const rotatedKey=randomBytes(32).toString('hex');ok(await owner('/api/automation/clients/'+reader.id+'/rotate',{revision:reader.revision,key:rotatedKey}));ok(await api('incidents',undefined,readKey),401);ok(await api('incidents',undefined,rotatedKey));
@@ -1722,6 +1739,7 @@ try {
   assert.equal((await state()).apiClients.find(c=>c.id===owned.id).owner,creator.id);assert.equal((await state()).apiEndpoints.find(e=>e.id===destination.id).owner,custody==='endpoint'?creator.id:admin.id);
   await runtime.restart();const loginAgain=await runtime.request('/api/login',{name:'Synthetic Owner',password:'synthetic-oncall-owner-password'});ok(loginAgain);cookie=loginAgain.cookie;
   ok(await api('incidents',undefined,ownedKey),401);ok(await api('incidents',command,ownedKey),401);assert.equal(ok(await owner('/api/automation/dispatch',{})).processed,0);
+  await isolated('creator authority refused before and after restart',sends);
   ok(await owner('/api/automation/endpoints/'+destination.id+'/revoke',{revision:destination.revision}));
   // A named responder losing membership never becomes a valid machine acknowledgment.
   if(custody==='origin') {
@@ -1747,6 +1765,14 @@ try {
  ok(await owner('/api/command',{...input,title:'Queued at export'}));assert.equal((await state()).apiOutbox.at(-1).status,'queued');
  const archive=ok(await owner('/api/archive')),checkpoint=ok(await owner('/api/recovery/checkpoint'));
  for(const secret of [apiKey,firstReceiverKey,receiverKey,readKey,rotatedKey,probeKey,receiverApiKey,savedCustody.custody])assert.ok(!JSON.stringify([archive,checkpoint,ok(await owner('/api/audit/export'))]).includes(secret));
+ const ledger=await isolated('all dispatches and authority refusals');
+ for(const call of ledger){
+  const body=JSON.parse(call.body),frozen=archive.apiOutbox.find(item=>item.id===body.operationId);
+  assert.ok(frozen,'every attempted send belongs to a retained approved operation');
+  assert.deepEqual(Object.keys(body).sort(),['at','incident','operationId','revision','service','state','type']);
+  assert.deepEqual(body,frozen.payload,'only the exact frozen minimal payload reaches the chosen endpoint');
+ }
+ console.log(`PROBE OC-042 acceptance-1: protected setup and emitted Worker dispatch -> ${ledger.length} POST requests only to ${chosenEndpoint}; all three redirect targets receive zero requests; authority refusals add zero requests; exact frozen seven-field payloads and archive credential exclusion pass`);
  assert.ok(archive.apiClients.find(c=>c.id===reader.id).lastUsed);
  const malformed=structuredClone(archive);malformed.apiOutbox[0].payload.secret='not-authorized';const retainedBefore=await state();ok(await owner('/api/restore',{mode:'replace',archive:malformed,adminMapping:admin.id}),400);assert.deepEqual((await state()).incidents,retainedBefore.incidents);assert.deepEqual((await state()).apiOutbox,retainedBefore.apiOutbox);
  const limitArchive=structuredClone(archive);while(limitArchive.apiOperations.length<1000){const n=limitArchive.apiOperations.length;limitArchive.apiOperations.push({...op,id:'synthetic-oncall-receipt-'+n,key:createHash('sha256').update('synthetic-oncall-receipt-'+n).digest('hex')});}
