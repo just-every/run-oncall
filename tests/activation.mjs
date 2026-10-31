@@ -803,13 +803,13 @@ try {
  const act=(record,actionId,reason='Exact copy checked')=>({actionId,revision:record.revision,payloadHash:record.payloadHash,sourceHash:record.sourceHash,reason})
  // Each native handoff mutation must survive the same audit-failure boundary.
  const handoffMutation=async(call,path,input,status=200)=>{
-  const before=durableSnapshot(w),handoffBefore=ok(await O('/api/handoffs')),workspaceBefore=ok(await O('/api/state')),pagingBefore=ok(await O('/api/paging/state'));
+  const before=durableSnapshot(w),handoffBefore=ok(await call('/api/handoffs')),workspaceBefore=ok(await call('/api/state')),pagingBefore=ok(await call('/api/paging/state'));
   const kind='handoffs.'+path.split('/').at(-1),ids=new Set(before.oc_admin_audit.map(row=>row.id));
   w.sql("CREATE TRIGGER synthetic_oncall_handoff_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='"+kind+"' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-handoff-audit'); END");
   try{ok(await call(path,input),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_handoff_audit')}
   assert.deepEqual(durableSnapshot(w),before,path+' audit failure preserves all durable records, revisions, credentials and immutable history');
   const response=await call(path,input);ok(response,status);
-  const after=ok(await O('/api/handoffs')),facts=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').filter(row=>!ids.has(row.id)&&row.kind===kind&&row.outcome==='accepted');
+  const after=ok(await call('/api/handoffs')),facts=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').filter(row=>!ids.has(row.id)&&row.kind===kind&&row.outcome==='accepted');
   assert.equal(facts.length,1,path+' commits exactly one permanent audit fact');
   const fact=facts[0];assert.equal(fact.after_revision,fact.before_revision+1);
   assert.deepEqual([fact.workspace_before,fact.workspace_after],[workspaceBefore.revision,workspaceBefore.revision]);

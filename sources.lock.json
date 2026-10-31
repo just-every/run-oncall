@@ -1348,7 +1348,7 @@
       "executable": false
     },
     "src/audit-request.ts": {
-      "sha256": "5a2b754ed8385c4eb6652203407af87e1bcda5a8640ec8787e2244746230aa15",
+      "sha256": "77129dba3ffad87323a7d9cbb12fb85ccdebaf63a2627d4fe0330568acf63bec",
       "executable": false
     },
     "src/audit-store.ts": {
@@ -5660,7 +5660,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "3a66d9f8600f9fae53f09d748a744278e1c123b3b301225361252b23fd5c63f3",
+      "sha256": "b20107b1eb5c79f70c5a2a7dce86e37109f8a290741e728fc29d6485f8521bdc",
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
@@ -5876,7 +5876,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "cb167ce370d14e918aabb85a4f5fdb46a0a35929d633145d1db9de2f85f1f99b",
+      "sha256": "7b0526b997a9f0482f93a2d213c2d5dd12b81f44d0c5c89490c7ff089eec56d8",
       "executable": false
     },
     "tests/triage.mjs": {
