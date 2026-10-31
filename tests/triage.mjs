@@ -16,7 +16,42 @@ export async function triageBulkCompletion(){
   const bulk=async input=>{let result;do{result=await req('/api/triage/bulk',input);}while(result.status===200&&result.value.remaining>0&&!result.value.interrupted);return result;};
   const item=i=>({id:i.id,revision:i.revision,...(i.kind?{kind:i.kind}:{})});
   let a=await declare(1),b=await declare(2),target=await declare(3),c=await declare(4);
-  const acknowledgedIncidents=ok(await bulk({operationId:'synthetic-oncall-600-ack',action:'acknowledge',reason:'Take responsibility for the selected incidents',items:[a,b].map(item)}));assert.ok(acknowledgedIncidents.results.every(r=>r.ok),JSON.stringify(acknowledgedIncidents));
+  const storm=[a,b];for(let n=5;storm.length<50;n++)storm.push(await declare(n));
+  const responder=ok(await req('/api/members',{name:'synthetic-oncall-602',role:'responder',password:'synthetic-oncall-602-password'}),201);
+  const responderLogin=await w.request('/api/login',{name:responder.name,password:'synthetic-oncall-602-password'});ok(responderLogin);
+  const acknowledge={operationId:'synthetic-oncall-600-ack',action:'acknowledge',reason:'Take responsibility for the selected incidents',items:storm.map(item)};
+  let acknowledgedIncidents,acknowledgeCalls=0,completed=[];
+  do{
+   assert.ok(acknowledgeCalls<storm.length,'the logical action must finish within a bounded number of continuations');
+   acknowledgedIncidents=ok(await w.request('/api/triage/bulk',acknowledge,responderLogin.cookie));acknowledgeCalls++;
+   assert.equal(acknowledgedIncidents.operationId,acknowledge.operationId);assert.equal(acknowledgedIncidents.interrupted,false);
+   assert.equal(acknowledgedIncidents.remaining,storm.length-acknowledgedIncidents.results.length);
+   assert.deepEqual(acknowledgedIncidents.results.slice(0,completed.length),completed,'continuations retain the previously committed results');
+   assert.ok(acknowledgedIncidents.results.length>completed.length,'each continuation makes progress');completed=acknowledgedIncidents.results;
+  }while(acknowledgedIncidents.remaining>0);
+  assert.ok(acknowledgeCalls>1,'one logical 50-incident action crosses bounded HTTP invocations');
+  assert.equal(new Set(acknowledgedIncidents.results.map(r=>r.id)).size,50);
+  assert.deepEqual(acknowledgedIncidents.results,storm.map(i=>({id:i.id,ok:true,revision:i.revision+1})));
+  const afterAcknowledge=await state();
+  for(const selected of storm){
+   const incident=afterAcknowledge.incidents.find(i=>i.id===selected.id);assert.ok(incident);
+   assert.equal(incident.state,'acknowledged');assert.equal(incident.revision,selected.revision+1);
+   assert.equal(incident.assignee,responder.id);assert.equal(incident.commander,responder.id);
+   const entries=incident.timeline.filter(e=>e.operationId===acknowledge.operationId);assert.equal(entries.length,1);
+   assert.equal(entries[0].actor,responder.id);assert.equal(entries[0].kind,'bulk-acknowledge');
+   assert.deepEqual(entries[0].lifecycle,{from:'declared',to:'acknowledged'});
+  }
+  const auditBeforeRetry=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  assert.deepEqual(ok(await w.request('/api/triage/bulk',acknowledge,responderLogin.cookie)),acknowledgedIncidents,'completed retry returns the identical 50 successful results');
+  assert.deepEqual(await state(),afterAcknowledge,'completed retry changes no application record, revision, timeline or bulk receipt');
+  const auditAfterRetry=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  assert.deepEqual(auditAfterRetry.slice(0,auditBeforeRetry.length),auditBeforeRetry,'completed retry retains all prior immutable audit commits');
+  const retryAttempts=auditAfterRetry.slice(auditBeforeRetry.length);assert.equal(retryAttempts.length,1,'only the required retry-attempt audit is appended');
+  for(const attempt of retryAttempts){
+   assert.equal(attempt.kind,'triage.acknowledge');assert.equal(attempt.outcome,'accepted');assert.equal(attempt.detail,null,'retry audit contains no action values');
+   for(const [before,after] of [['before_revision','after_revision'],['workspace_before','workspace_after'],['paging_before','paging_after'],['handoff_before','handoff_after']])assert.equal(attempt[before],attempt[after],'retry audit records no state-changing commit');
+  }
+  console.log('PROBE OC-079 acceptance 1 and 2: protected bulk HTTP acknowledged 50 distinct declared incidents with expected revisions, responder attribution and one shared-operation timeline entry each; identical payload continuations completed and exact retry added only a value-free attempt audit.');
   [a,b]=(await state()).incidents.filter(i=>[a.id,b.id].includes(i.id));
   const snooze={operationId:'synthetic-oncall-600-snooze',action:'snooze',minutes:15,reason:'Hold investigation while the dependency recovers',items:[a,b].map(item),confirmedCount:2};
   const snoozed=ok(await bulk(snooze));assert.ok(snoozed.results.every(r=>r.ok),JSON.stringify(snoozed));assert.deepEqual(ok(await bulk(snooze)),snoozed);
