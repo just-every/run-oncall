@@ -7,11 +7,11 @@ import {randomBytes,randomUUID} from 'node:crypto'
 import AxeBuilder from '@axe-core/playwright'
 import assert from 'node:assert/strict'
 // product-import-browser: part of this public journey.
-export async function productImport(page,context,width,session) {
+export async function productImport(page,context,width,session,proof) {
   const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
   await openWorkspaceSection(page,'move-in')
   await fileJourney(page,context,new URL(page.url()).origin)
-  await providerExport(page,context,width)
+  await providerExport(page,context,width,proof)
   // OC-038 source-specific file guidance and a new-source review at both viewports.
   for(const vendor of ['splunk','jsm','betterstack']) {
    await fileSource(page,vendor)
@@ -108,11 +108,82 @@ async function incumbentActivation(page,context,width) {
 }
 
 
+// Reading the real guide must never start the migration it describes.
+async function opsgenieReadiness(page,context,proof) {
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',viewport=page.viewportSize()
+ const get=async path=>{const response=await context.request.get(path);assert.equal(response.status(),200);return response.json()}
+ const before=proof.snapshot(),native=await get('/api/state'),paging=await get('/api/paging/state'),outbound=await proof.outbound()
+ assert.ok(native.members.length,'the unchanged native snapshot contains the signed-in member')
+ const attempts=[],record=request=>{
+  const url=new URL(request.url())
+  if(url.pathname.startsWith('/api/')&&request.method()!=='GET')attempts.push({path:url.pathname,method:request.method()})
+ }
+ context.on('request',record)
+ try {
+  for(const width of [1440,390]) {
+   await page.setViewportSize({width,height:1000})
+   await page.goto(new URL('/settings/move-in',page.url()).href)
+   await page.getByLabel('Source',{exact:true}).selectOption('opsgenie')
+   await page.locator('.move-in-fallback > summary').click()
+   const help=page.locator('.move-in-export-help');await help.locator('summary').click()
+   const link=help.getByRole('link',{name:'Opsgenie migration readiness checklist',exact:true})
+   await link.scrollIntoViewIfNeeded()
+   if(width===1440){
+    const dates=await help.locator('time').evaluateAll(times=>times.map(time=>time.dateTime))
+    assert.equal(dates.length,2);assert.ok(dates.every(value=>Number.isFinite(Date.parse(value))))
+    assert.ok(Date.parse(dates[0])<Date.parse(dates[1]),'dated review precedes the announced shutdown')
+    assert.match(await help.innerText(),/Recheck provider and export availability at execution/)
+    assert.match(await help.innerText(),/account and export checks are blocked and unverified/)
+   }
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+   await page.screenshot({path:`${directory}/opsgenie-checklist-help-${width}.png`})
+   await link.click()
+   await page.waitForURL('**/docs/move-in#opsgenie-migration-readiness-checklist')
+   const heading=page.getByRole('heading',{name:'Opsgenie migration readiness checklist',exact:true})
+   await heading.scrollIntoViewIfNeeded()
+   if(width===1440){
+    const article=page.locator('.docs-article'),text=await article.innerText()
+    assert.match(text,/Execution date for this public-documentation review: .*\d{4} \(UTC\)/)
+    assert.match(text,/no account migration was executed and no migration execution date is scheduled/)
+    const gates=article.locator('ul').filter({hasText:'Unchecked — Authenticated availability'})
+    const labels=await gates.locator('li').allTextContents()
+    for(const outcome of [/Authenticated availability.*BLOCKED/,/Inventory and pagination.*BLOCKED/,/Reviewed mapping differences.*NOT RUN/,/Inactive import, restart, reconcile and undo.*NOT RUN/,/Cutover prerequisites.*BLOCKED/])assert.ok(labels.some(label=>outcome.test(label)),String(outcome))
+    assert.ok(labels.every(label=>label.startsWith('Unchecked — ')),'every execution gate remains explicitly unchecked')
+    assert.match(text,/Recheck current provider and export availability/)
+    assert.match(text,/public page being readable does not establish authenticated account access or a working export/)
+    assert.match(text,/R-11 remains not run/);assert.match(text,/paging OFF/)
+    for(const name of ['Atlassian migration announcement','shutdown guidance','pagination reference','API integration setup']){
+     const source=article.getByRole('link',{name,exact:true}),url=new URL(await source.getAttribute('href'))
+     assert.equal(url.protocol,'https:');assert.ok(url.hostname==='docs.opsgenie.com'||url.hostname==='www.atlassian.com'||url.hostname==='support.atlassian.com')
+    }
+    assert.match(text,/API access settings reference could not be retrieved/)
+    const instructions=article.getByRole('link',{name:'the saved-export instructions',exact:true})
+    await instructions.click()
+    await page.waitForURL('**/docs/move-in#save-your-export-with-the-downloadable-tool')
+    await page.locator('#save-your-export-with-the-downloadable-tool').waitFor({state:'visible'})
+    await page.getByRole('link',{name:'Opsgenie migration readiness checklist',exact:true}).first().click()
+    await heading.scrollIntoViewIfNeeded()
+    const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
+    assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[])
+   }
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+   await page.screenshot({path:`${directory}/opsgenie-checklist-docs-${width}.png`,fullPage:true})
+  }
+ } finally {context.off('request',record);await page.setViewportSize(viewport)}
+ assert.deepEqual(attempts,[],'guidance initiates no provider read, upload, plan, apply or other mutation request')
+ assert.deepEqual(await proof.outbound(),outbound,'guidance makes zero outbound provider requests')
+ assert.deepEqual(await get('/api/state'),native,'guidance leaves native records unchanged')
+ assert.deepEqual(await get('/api/paging/state'),paging,'guidance leaves paging records unchanged')
+ assert.deepEqual(proof.snapshot(),before,'guidance changes no durable records, revisions, audit or import custody')
+ console.log('PROBE OC-038 acceptance 5: Opsgenie selection → dated readiness checklist → saved-export instructions; official sources, blocked account checks and unchecked import and cutover gates observed; zero mutation or provider requests and unchanged native, paging and durable records; browser proof at 1440 and 390')
+}
+
 // provider-export-browser: part of this public journey.
 // The browser's real download produces importable bundles; only the external provider HTTP edge is faked.
-export async function providerExport(page,context,width) {
+export async function providerExport(page,context,width,proof) {
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
  await context.grantPermissions(['clipboard-read','clipboard-write'])
+ await opsgenieReadiness(page,context,proof)
  // Follow the maintainer guide's real fragment to the served owner guide, then download its tool.
  const maintainer=await readFile('MOVE-IN.md','utf8')
  const reference=maintainer.match(/\]\((docs\/move-in\.md#[^)]+)\)/)
@@ -1191,7 +1262,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   if(width===1440)await productSchedule(page,context,width,session,{ownerLink,setTime})
   await triageFiltersBrowser(page,context,{setTime,proof:triageProof})
   await triageBulkBrowser(page,context,width)
-  await productImport(page,context,width,session)
+  await productImport(page,context,width,session,triageProof)
   await routingBrowser(page,context,width)
   await openWorkspaceSection(page,'routing');await openHistoryComparison(page);await page.getByLabel('Event JSON',{exact:true}).fill(JSON.stringify([{source:'browser',eventId:'replay-'+width,service:'checkout',environment:'production',key:'browser',generation:'g1',intent:'trigger',severity:'critical',title:'Replay '+width,observedAt:'2026-10-12T00:00:00.000Z'}]))
   // An ordinary pointer click where the button sits at the viewport's lower edge;
