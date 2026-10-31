@@ -131,7 +131,7 @@ Core · published · **partial** · Cites BASE-ACCESSIBILITY-001, BASE-PUBLIC-00
 1. Run declaration, acknowledgment, notes, schedules, overrides and preview against BASE-ACCESSIBILITY-001.
 2. A real stale-write failure is announced with no saved claim.
 
-**Evidence.** `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/product-browser-journey.mjs`; `tests/product-browser-journey.mjs`
+**Evidence.** `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/product-browser-journey.mjs`; `tests/product-browser-journey.mjs`; productSchedule: native-key rota person order, date and time entry, phone preview disclosure, cover preparation, zero-write review, Escape, explicit confirmation and protected assignment and preview readback at 1440 and 390. `tests/product-browser.mjs` runs these legs in push Verify with a controlled platform and browser clock; `tests/keyboard.mjs` checks visible focus; selected states check labels, overflow and serious or critical axe findings.
 **Gap.** Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. BASE-ACCESSIBILITY-001 is not established across every Oncall journey and the OC-029 apps; the human passes and the VPAT are register rows R-3 and R-4.
 
 #### OC-010 — Health and honest commands
