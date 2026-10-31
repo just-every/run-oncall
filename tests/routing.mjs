@@ -373,7 +373,20 @@ try {
  const create=(id,provider,key)=>req('/api/routing/keys',{id,name:id+' routed monitor',provider,scope:['payments','search'],owner:actor.id,key,revision:0,rules:[],catchAll:null});
  ok(await create('pd','pagerduty',keys.pd),201);
  const publish=(baseVersion,nextRules=rules,catchAll=null)=>req('/api/routing/keys/pd/publish',{baseVersion,rules:nextRules,catchAll});
- ok(await publish(1),201);
+ const publicationBefore=durableSnapshot(w),publicationState=ok(await req('/api/state'));
+ w.sql("CREATE TRIGGER synthetic_oncall_publication_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='routing.publish' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-publication-audit'); END");
+ try{ok(await publish(1),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_publication_audit')}
+ assert.deepEqual(durableSnapshot(w),publicationBefore,'audit failure preserves routing definitions, credentials, revisions and all prior history');
+ const published=ok(await publish(1),201),publicationAfter=ok(await req('/api/state'));
+ const publishedSource=publicationAfter.intakeSources.find(row=>row.id==='pd'),previousSource=publicationState.intakeSources.find(row=>row.id==='pd');
+ assert.deepEqual(publishedSource.routing.versions.at(-1),published);assert.equal(published.version,2);assert.equal(published.publishedBy,actor.id);
+ assert.equal(publishedSource.revision,previousSource.revision+1);assert.deepEqual(publishedSource.routing.versions.slice(0,-1),previousSource.routing.versions);
+ const publicationIds=new Set(publicationBefore.oc_admin_audit.map(row=>row.id)),publicationFacts=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').filter(row=>!publicationIds.has(row.id)&&row.kind==='routing.publish'&&row.outcome==='accepted');
+ assert.equal(publicationFacts.length,1);const publicationFact=publicationFacts[0];
+ assert.deepEqual([publicationFact.workspace_before,publicationFact.workspace_after],[publicationState.revision,publicationAfter.revision]);assert.equal(publicationAfter.revision,publicationState.revision+1);
+ assert.equal(publicationFact.after_revision,publicationFact.before_revision+1);assert.equal(publicationFact.paging_before,publicationFact.paging_after);assert.equal(publicationFact.handoff_before,publicationFact.handoff_after);
+ const publicationHistory=new Map(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').map(row=>[row.id,row]));for(const row of publicationBefore.oc_admin_audit)assert.deepEqual(publicationHistory.get(row.id),row);
+ console.log('PROBE OC-041 routing publication: protected publish and targeted audit failure -> unchanged rule versions and custody, then attributed publication with one committed revision-bound audit fact');
  ok(await pd('trigger','shared',{team:'payments',token:'must-not-survive',echo:keys.pd}),202);
  ok(await pd('trigger','shared',{team:'search'}),202);
  ok(await pd('trigger','dynamic',{service:'service:search'}),202);

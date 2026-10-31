@@ -479,6 +479,21 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  await business.assertInactive(cookie,oldCookie,sql)
  console.log('OC-052 portable restore: complete import history preserved and restored pending Business execution refused')
  assert.equal((await req('/api/delivery',{})).status,409)
+ // Restored entity IDs do not recover the source installation's audit labels.
+ const historicalLabels=new Set(permanentAudit.flatMap(row=>[row.actor,row.subject,row.source,row.namedMember]).filter(Boolean));
+ const restoredLinks=sql('SELECT * FROM oc_audit_identities');
+ assert.ok(restoredLinks.every(row=>!historicalLabels.has(row.label)),'receiving identity associations never adopt portable historical labels');
+ const beforeNewActivity=ok(await req('/api/state')),oldIncident=beforeNewActivity.incidents.find(row=>row.id===incident.id);
+ const freshActivity=ok(await req('/api/command',{type:'note',incident:oldIncident.id,revision:oldIncident.revision,text:'Synthetic receiving-installation activity'}));
+ assert.equal(freshActivity.timeline.at(-1).actor,member.id,'fresh activity uses the explicitly mapped current actor');
+ const afterNewActivity=ok(await req('/api/audit/export')).rows,newFact=afterNewActivity.filter(row=>row.kind==='command.note'&&!restoredAudit.has(row.id)).at(-1);
+ assert.ok(newFact);assert.equal(newFact.outcome,'accepted');assert.equal(newFact.workspaceBefore,beforeNewActivity.revision);assert.equal(newFact.workspaceAfter,ok(await req('/api/state')).revision);
+ for(const label of [newFact.actor,newFact.subject,newFact.source])assert.ok(label&&!historicalLabels.has(label),'fresh actor, subject and source labels never adopt restored chronology');
+ const linksAfterActivity=sql('SELECT * FROM oc_audit_identities');
+ assert.equal(linksAfterActivity.find(row=>row.kind==='member'&&row.entity_id===member.id).label,newFact.actor);
+ assert.equal(linksAfterActivity.find(row=>row.kind==='entity'&&row.entity_id===incident.id).label,newFact.subject);
+ const continuedHistory=new Map(afterNewActivity.map(row=>[row.id,row]));for(const row of permanentAudit)assert.deepEqual(continuedHistory.get(row.id),row,'new receiving activity never rewrites any portable audit fact');
+ console.log('PROBE OC-041 portable labels: CLI restore, explicit owner mapping and protected incident note -> exact retained audit rows, absent old associations and fresh actor, subject and source labels');
  // Erasing an imported person: a signed-out request and an unknown email are refused, the person leaves every table, and the archive made before the erasure is refused whole under the later journal.
  const emailAddress=ok(await req('/api/email')).addresses[0];ok(await req('/api/email/addresses/portable-email/erase',{revision:emailAddress.revision}));assert.equal(ok(await req('/api/email')).samples.length,0)
  const erase=email=>req('/api/move-in/erase',{email,confirmation:'erase '+email})
