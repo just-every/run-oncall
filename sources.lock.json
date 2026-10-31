@@ -5368,7 +5368,7 @@
       "executable": false
     },
     "src/schedule-api.ts": {
-      "sha256": "b46827f50b1996d48e779da591e6e68c048ec3f9e16b4e58c62e7c102267276b",
+      "sha256": "648f8a6cc3cb52667d8187febfc15a71d7717322c1a6a2a5110ac832af2ed635",
       "executable": false
     },
     "src/schedule-coordination/api.ts": {
@@ -5660,7 +5660,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "d48ade8b6c96688087bf1ccde701499c253e0254704e860595586d900ca31eb3",
+      "sha256": "e716c605b0333e7c4c8615d50e5e8a1a99e2edff8ab829210d8425879f08bd5f",
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
