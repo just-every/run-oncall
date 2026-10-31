@@ -539,7 +539,7 @@ try {
  }
  if(!['accessibility','triage'].includes(focused))await readinessBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log(focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})

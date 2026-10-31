@@ -654,7 +654,7 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  assert.equal(closed.results.filter(row=>row.ok).length,5);
  // Even past its due time, a read must keep a recorded snooze pending.
  await setTime(Date.parse(storm[30].deadlines.at(-1).dueAt)+60000);
- const snapshot=()=>proof?.snapshot(),outbound=async()=>proof?await proof.outbound():[];
+ const snapshot=()=>proof.snapshot(),outbound=()=>proof.outbound();
  const before=snapshot(),beforeOutbound=await outbound(),paging=await call('/api/paging/state');
  await page.setViewportSize({width:1440,height:1000});
  const triage=page.getByRole('region',{name:'Incident triage',exact:true});
