@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5a5178cb0fd3d322ba0a7ca6e9eb835d77ddaa5923ccdfefa1f3a865316e6248",
+      "sha256": "e829fae3487a783bbaff1a81cef9ecf1e80b5c3bf8b4a58d097c357b78f7ad97",
       "executable": false
     },
     "DEMO.md": {
@@ -280,7 +280,7 @@
       "executable": false
     },
     "docs/reviews.md": {
-      "sha256": "4ae5b90b0c6c3720bc2236449cb8044b1b1a766aecc2e1e91a532f19a16d670d",
+      "sha256": "d00130921eefb083757e7ef17db80065182e882278fa0d3dcb7e5a2c8c4fa3a0",
       "executable": false
     },
     "docs/routed-intake.md": {
@@ -5884,7 +5884,7 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "59627d035922931a4cf56cefabe17d88d93cbb3428e93d6a80deb33b33e8680d",
+      "sha256": "830017b9db94b0a378201d039a8ee3eb8fbf0d36a0209a13e0b257adb9e9be13",
       "executable": false
     },
     "tests/verify.mjs": {
