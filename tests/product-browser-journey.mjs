@@ -823,6 +823,10 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  assert.deepEqual(external,[],'hostile text triggers no external fetch');page.off('request',observe)
  await step.scrollIntoViewIfNeeded()
  await page.screenshot({path:`evidence/browser/OC-008-literal-runbook-${width}.png`,fullPage:true})
+ // Reuse the desktop assertions; record the same authored incident on the phone.
+ await page.setViewportSize({width:390,height:1000})
+ await page.screenshot({path:'evidence/browser/OC-052-literal-runbook-390.png',fullPage:true})
+ await page.setViewportSize({width,height:1000})
  const archive=await (await context.request.get('/api/archive')).json()
  const authored=archive.incidents.find(item=>item.title===`Keyboard incident ${width}`)
  assert.deepEqual(authored.runbook,[{text:runbookText,done:true}],'OC-008: export retains the authored runbook verbatim')
