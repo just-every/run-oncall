@@ -84,6 +84,12 @@ export async function triageBulkCompletion(){
   assert.equal(new Set(lowAlerts.map(alert=>alert.id)).size,2);
   assert.ok(lowAlerts.every(alert=>alert.urgency==='low'&&alert.state==='active'));
   const lowQuery={kind:'alerts',urgency:'low',status:'triggered',q:'Synthetic retained low'};
+  const lowPath='/api/triage?'+new URLSearchParams(lowQuery);
+  assert.deepEqual(ok(await w.request(lowPath,undefined,viewerLogin.cookie)).items.map(i=>i.id).sort(),lowAlerts.map(a=>a.id).sort(),'a current viewer can read the populated low-alert cohort');
+  for(const headers of [{},{authorization:'Bearer '+key}]){
+    const refused=ok(await w.request(lowPath,undefined,undefined,headers),401);
+    assert.ok(!JSON.stringify(refused).includes(lowAlerts[0].id)&&!JSON.stringify(refused).includes(lowAlerts[1].id),'anonymous and intake credentials disclose no filtered alert');
+  }
   const retained=durableSnapshot(w),paging=ok(await req('/api/paging/state'));
   for(let read=0;read<3;read++){
     const listed=await list(lowQuery);assert.deepEqual(listed.items.map(i=>i.id).sort(),lowAlerts.map(a=>a.id).sort());
@@ -109,6 +115,20 @@ export async function triageBulkCompletion(){
   }
   assert.equal(lowAfter.find(a=>a.id===lowA.id).coordination.state,'acknowledged');
   assert.equal(lowAfter.find(a=>a.id===lowB.id).coordination.state,'closed');
+  const coordinated=await state();
+  for(const input of lowInputs){
+    const replay=ok(await w.request('/api/ingress/synthetic-oncall-600',input,undefined,{authorization:'Bearer '+key}));
+    assert.equal(replay.duplicate,true);
+    assert.equal(replay.id,coordinated.events.find(event=>event.eventId===input.eventId).id);
+  }
+  assert.deepEqual(await state(),coordinated,'replaying accepted intake cannot reopen acknowledged or explicitly closed low alerts');
+  assert.equal((await list(lowQuery)).items.length,0);
+  assert.deepEqual((await list({...lowQuery,status:'acknowledged'})).items.map(i=>i.id),[lowA.id]);
+  assert.deepEqual((await list({...lowQuery,status:'resolved'})).items.map(i=>i.id),[lowB.id]);
+  ok(await req('/api/sources/synthetic-oncall-600/revoke',{}));
+  const afterRevoke=await state();
+  for(const input of lowInputs)ok(await w.request('/api/ingress/synthetic-oncall-600',input,undefined,{authorization:'Bearer '+key}),401);
+  assert.deepEqual(await state(),afterRevoke,'a revoked source cannot change retained low-alert coordination or history');
   assert.deepEqual(pagingRecords(ok(await req('/api/paging/state'))),pagingRecords(paging));assert.deepEqual(await w.outboundRequests(),[]);
   await w.time(Date.parse(snoozedAlert.coordination.snoozeDue)+60000);
   const snoozeFilters=durableSnapshot(w);
@@ -117,7 +137,7 @@ export async function triageBulkCompletion(){
   assert.ok(!(await list({kind:'alerts',status:'acknowledged'})).items.some(i=>i.id===snoozedAlert.id));
   assert.deepEqual(durableSnapshot(w),snoozeFilters);
   await w.time(null);
-  console.log('PROBE OC-060 acceptance 3: native low alerts -> two stable identities retained over repeated protected reads, one attributed acknowledgment, one explicit human close, acknowledged and resolved views retain history with active source state; unchanged paging and zero outbound requests');
+  console.log('PROBE OC-060 acceptance 3: native low alerts -> two stable identities retained over repeated protected reads, one attributed acknowledgment, one explicit human close, acknowledged and resolved views retain history with active source state; anonymous and intake-only reads refused, duplicate intake cannot reopen, revoked intake changes nothing; unchanged paging and zero outbound requests');
   const archive=ok(await req('/api/archive'));assert.ok(archive.triage.some(r=>r.id===merge.operationId));
   const checkpoint=ok(await req('/api/recovery/checkpoint'));
   const restored=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(restored);cookie=restored.cookie;assert.deepEqual((await state()).alerts,archive.alerts,'native restore retains every closed state, assignee, snooze record, revision and shared operation history');
