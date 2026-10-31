@@ -417,6 +417,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const builtFiles=(await readdir('dist',{recursive:true,withFileTypes:true})).filter(entry=>entry.isFile()).map(entry=>join(entry.parentPath,entry.name))
  assert.ok(builtFiles.some(path=>path.includes(join('dist','client','assets'))&&path.endsWith('.js')),'the build emits production client assets')
  assert.ok(privateBuildValues.every(Boolean),'the installed fixture has private settings and a development key to exclude')
+ assert.ok(privateBuildValues.every(value=>!buildOutput.includes(value)),'successful build output does not disclose private fixture values or the development key')
  for(const path of builtFiles){
   assert.ok(!/(?:^|\/)(?:\.dev\.vars(?:\.[^/]*)?|\.env(?:\.[^/]*)?|[^/]+\.env)$/.test(path),'production output contains no private settings file')
   const bytes=await readFile(path)
