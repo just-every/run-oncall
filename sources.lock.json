@@ -5856,11 +5856,11 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "ca6d69b180ed93b2e6b74aa39b1927433c2573794692bf32499735b711c6a8db",
+      "sha256": "053918e15fcafdc222aab2e4dbe130d1baed982da470b64d82d0334961b3967c",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "ae3f42e2b820abbf065444a58536e0e23bdcb5526d02a5660f25893934fd448d",
+      "sha256": "b7d308675b733fabb8b1b63db965a31380cf5b1942d3b4c3732cc50cf8b65232",
       "executable": false
     },
     "tests/readiness.mjs": {

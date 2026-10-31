@@ -1060,6 +1060,104 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
 }
 
 
+// OC-050: extend the existing template journey with native role controls.
+export async function incidentRolesBrowser(page,context,incident,{proof}={}) {
+ const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ await mkdir(directory,{recursive:true});
+ const call=async(path,data,status=200,as=context)=>{
+  const response=data===undefined?await as.request.get(origin+path):await as.request.post(origin+path,{headers:{origin},data});
+  assert.equal(response.status(),status,path);return response.json();
+ };
+ const actor=(await call('/api/session')).member,password=randomBytes(24).toString('hex');
+ const responder=await call('/api/members',{name:'Synthetic role responder',role:'responder',password},201);
+ const pagingRecords=({workspaceRevision,...records})=>records;
+ const pagingBefore=pagingRecords(await call('/api/paging/state')),outboundBefore=await proof.outbound();
+ assert.deepEqual(outboundBefore,[],'native coordination starts with an empty outbound edge ledger');
+ await page.setViewportSize({width:1440,height:1000});
+ const open=async()=>{
+  await page.goto(origin+'/incidents/'+encodeURIComponent(incident.id));
+  await page.locator('.detail').getByRole('heading',{name:incident.title,exact:true}).waitFor();
+ };
+ const stored=async()=>(await call('/api/state')).incidents.find(row=>row.id===incident.id);
+ const checkChoice=async(role,person,choose)=>{
+  const before=await call('/api/state'),previous=before.incidents.find(row=>row.id===incident.id);
+  const accepted=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().method()==='POST'&&response.request().postDataJSON().type==='assign-role');
+  await choose();const response=await accepted;assert.equal(response.status(),200);
+  const command=response.request().postDataJSON();
+  assert.deepEqual({incident:command.incident,revision:command.revision,role:command.role,member:command.member},{incident:incident.id,revision:previous.revision,role,member:person.id});
+  const result=await response.json(),after=await call('/api/state'),current=after.incidents.find(row=>row.id===incident.id);
+  assert.equal(result[role],person.id);assert.equal(result.revision,previous.revision+1);
+  assert.equal(current[role],person.id);assert.equal(current.revision,previous.revision+1);assert.equal(after.revision,before.revision+1);
+  assert.deepEqual(current.timeline.slice(0,-1),previous.timeline,'role choice retains prior history');
+  const entry=current.timeline.at(-1),old=before.members.find(row=>row.id===previous[role])?.name??'Unassigned';
+  assert.equal(current.timeline.length,previous.timeline.length+1);
+  assert.equal(entry.kind,'assign-role');assert.equal(entry.actor,actor.id);assert.equal(entry.text,`${role}: ${old} → ${person.name}`);assert.ok(Number.isFinite(Date.parse(entry.at)));
+  await open();
+  assert.deepEqual(await stored(),current,'reload and protected readback retain the exact accepted role, revision and history');
+  if(role==='commander')await page.getByRole('button',{name:'Lead: '+person.name,exact:true}).waitFor();
+  else {
+   const people=await openIncidentAction(page,'People and priority');
+   assert.equal(await people.getByLabel(role==='scribe'?'Scribe':'Communications',{exact:true}).inputValue(),person.id);
+   await people.getByRole('button',{name:'Close',exact:true}).click();
+  }
+  const visible=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:entry.text});
+  await visible.getByText(entry.text,{exact:true}).waitFor();await visible.getByText(actor.name,{exact:true}).waitFor();
+  console.log(`PROBE OC-050 acceptance 1 ${role}: native choice ${old} → ${person.name} -> HTTP and reloaded control agree, revision ${previous.revision} → ${current.revision}, one human-attributed old and new role timeline entry`);
+ };
+ const lead=person=>async()=>{
+  await page.getByRole('button',{name:/^Lead:/}).click();
+  await page.getByRole('listbox',{name:'Lead',exact:true}).getByRole('option',{name:person.id===actor.id?'Me · '+actor.name:person.name,exact:true}).click();
+ };
+ await open();assert.equal((await stored()).commander,actor.id,'existing acknowledgment supplies the initial Lead');
+ await checkChoice('commander',responder,lead(responder));
+ for(const role of ['scribe','communications']) {
+  assert.equal((await stored())[role]??null,null,'the selected role starts unassigned');
+  for(const person of [actor,responder])await checkChoice(role,person,async()=>{
+   const people=await openIncidentAction(page,'People and priority');
+   await people.getByLabel(role==='scribe'?'Scribe':'Communications',{exact:true}).selectOption(person.id);
+  });
+ }
+ const delegated=await page.context().browser().newContext({baseURL:origin,extraHTTPHeaders:{connection:'close'}});
+ try {
+  await call('/api/login',{name:responder.name,password},200,delegated);
+  assert.equal((await call('/api/session',undefined,200,delegated)).member.role,'responder');
+  const before=await call('/api/state');
+  for(const [path,data] of [
+   ['/api/command',{type:'service',name:'Refused role authority',environment:'test',owner:responder.id,runbook:[],pager:''}],
+   ['/api/members',{name:'Refused role administrator',role:'admin',password:randomBytes(24).toString('hex')}],
+   ['/api/sources',undefined],
+  ])await call(path,data,403,delegated);
+  assert.deepEqual(await call('/api/state'),before,'commander, scribe and communications confer no administrator authority or application effect');
+ }finally{await delegated.close();}
+ const capture=async(name,width)=>{
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`OC-050 ${name} fits ${width}`);
+  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
+  await page.screenshot({path:`${directory}/oc050-${name}-${width}.png`,fullPage:true});
+ };
+ // Assertions use the desktop flow; the same saved incident supplies phone proof.
+ for(const width of [1440,390]) {
+  await page.setViewportSize({width,height:1000});await open();
+  await page.getByRole('button',{name:'Lead: '+responder.name,exact:true}).click();
+  const picker=page.getByRole('dialog',{name:'Choose lead',exact:true});
+  await picker.getByRole('option',{name:responder.name,exact:true}).waitFor();
+  await picker.getByRole('button',{name:'Close picker',exact:true}).focus();
+  await page.getByRole('tooltip',{name:'Close picker',exact:true}).waitFor();await capture('lead-transfer',width);
+  await page.keyboard.press('Escape');
+  const people=await openIncidentAction(page,'People and priority');
+  await people.getByLabel('Scribe',{exact:true}).waitFor();await people.getByLabel('Communications',{exact:true}).waitFor();
+  await people.getByRole('button',{name:'Close',exact:true}).focus();await page.getByRole('tooltip',{name:'Close dialog',exact:true}).waitFor();
+  await capture('response-roles',width);await people.getByRole('button',{name:'Close',exact:true}).click();
+ }
+ // Return the Lead through the same public control so the retained checklist leg continues unchanged.
+ await page.setViewportSize({width:1440,height:1000});await checkChoice('commander',actor,lead(actor));
+ assert.deepEqual(pagingRecords(await call('/api/paging/state')),pagingBefore,'role choices and authority refusals leave paging records, jobs and receipts unchanged');
+ assert.deepEqual(await proof.outbound(),[],'role choices and authority refusals attempt no outbound request');
+ console.log('PROBE OC-050 authority: responder holding all command roles -> service and member mutations and source reads refused with 403, exact application state unchanged; paging unchanged and outbound ledger empty');
+ console.log('PASS OC-050 native role controls: Lead transfer, Scribe and Communications assignment and transfer, exact revisions and attributed history after reload at 1440; selected controls captured at 1440 and 390 with labels, tooltips, overflow, hydration and serious or critical axe checks');
+}
+
 // One desktop journey through the emitted production Worker and its browser UI.
 export async function productBrowserJourney(page,context,{ownerLink,openSession,accessibilityOnly=false,setTime=async()=>{},triageProof}={}) {
  const key=keyboardUser(page)
