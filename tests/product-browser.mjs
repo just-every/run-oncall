@@ -509,15 +509,22 @@ try {
  const errors=[];page.on('pageerror',error=>errors.push(error.message))
  await page.goto(worker.origin)
  await page.locator('.oncall-frame').waitFor({timeout:60000})
+ let selectedTime=null
  const openSession=async(second,secondPage)=>{
+  // oc_current_sessions also checks SQLite's wall clock. Issue the independent
+  // session at real time, then resume the journey clock; a historical login
+  // would already be expired in that view once its twelve-hour window passes.
+  await worker.time(null)
+  try {
   const login=await second.request.post('/api/login',{headers:{origin:worker.origin},data:credentials})
   assert.equal(login.status(),200,'the second browser context signs in through the real login door')
   await secondPage.goto(worker.origin)
+  } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
  if(focused&&!['readiness','accessibility'].includes(focused))throw Error('Unknown focused product journey');
  if(process.env.ONCALL_PRODUCT_JOURNEY!=='readiness'){
- await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime:async at=>{await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));}})
+ await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime:async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));}})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
  console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440; overflow, axe and hydration checked')

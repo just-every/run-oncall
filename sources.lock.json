@@ -5860,7 +5860,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "50ed6d915563a049094fbc75f32a3a2d299cf6649fd96999f943cbca15ce1b0a",
+      "sha256": "036017895d9f6f9bc7a1df0285ccf53b8fbb6cb6a9de74e4a4c0ba5d1739560e",
       "executable": false
     },
     "tests/readiness.mjs": {
