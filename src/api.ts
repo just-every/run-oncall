@@ -496,13 +496,20 @@ api.post("/api/replay", async (c) => {
   if (!Array.isArray(input.events) || input.events.length > 200)
     fail("Replay needs up to 200 events");
   const evaluatedAt = new Date().toISOString();
+  const events: {signal: ReturnType<typeof signalInput>; index: number}[] = input.events.map((event: any, index: number) => ({signal: signalInput(event), index}));
+  const accepted = (signal: ReturnType<typeof signalInput>) =>
+    state.events.find(event => event.source === signal.source && event.eventId === signal.eventId)?.acceptedAt ?? signal.observedAt;
+  // Grouping and open-generation protections evaluate chronologically. Keep
+  // each submitted position so the comparison rows still follow the caller.
+  events.sort((a, b) =>
+    accepted(a.signal).localeCompare(accepted(b.signal)) || a.signal.source.localeCompare(b.signal.source) || a.signal.eventId.localeCompare(b.signal.eventId));
+  const decisions: ReturnType<typeof replayService> = [];
+  replayService(state, events.map(event => event.signal), evaluatedAt)
+    .forEach((decision, index) => { decisions[events[index].index] = decision; });
   return c.json({
     sideEffects: false,
     workspaceRevision: state.revision,
-    decisions: replayService(state,input.events.map((e:any)=>signalInput(e)).sort((a:any,b:any)=>{
-      const accepted=(signal:any)=>state.events.find(event=>event.source===signal.source&&event.eventId===signal.eventId)?.acceptedAt??signal.observedAt;
-      return accepted(a).localeCompare(accepted(b))||a.source.localeCompare(b.source)||a.eventId.localeCompare(b.eventId);
-    }),evaluatedAt),
+    decisions,
   });
 });
 api.post("/api/members", async (c) => {
