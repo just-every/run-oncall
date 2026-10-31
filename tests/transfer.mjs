@@ -1,7 +1,7 @@
 import {developmentReadiness} from './readiness.mjs'
 import {recordHealthOutcome} from './health-outcomes.mjs'
 import {generateKeyPairSync,sign,createHash,randomUUID,randomBytes,createHmac} from 'node:crypto'
-import {appendFile,mkdtemp,symlink,cp,lstat,mkdir,readFile,writeFile,rm} from 'node:fs/promises'
+import {appendFile,mkdtemp,symlink,cp,lstat,mkdir,readFile,readdir,writeFile,rm} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {dirname,join,relative} from 'node:path'
 import {fileURLToPath} from 'node:url'
@@ -403,7 +403,32 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  // A live-upgraded installation may still carry the original embedded legacy bytes.
  const legacyPrefix=prefixesBefore[0];
  sql(`UPDATE oc_intake_receipts SET data=json_set(data,'$.details.nativePrefix',json_object('encoding','base64','value','${legacyPrefix.prefix}')) WHERE id='${legacyPrefix.id}'`)
- await m.close();await m.preview();await m.close()
+ await m.close()
+ // Build through the pinned root command with real private fixture settings.
+ // Removing prepared output makes setup's build or a copied build insufficient.
+ const privateBuildValues=['synthetic-oncall-180','synthetic-oncall-181',await readDevKey(process.cwd())]
+ const privateBuildFiles=['.dev.vars','.dev.vars.previous']
+ for(const [index,path] of privateBuildFiles.entries())await appendFile(path,'\nONCALL_BUILD_PRIVATE='+privateBuildValues[index]+'\n',{mode:0o600})
+ const privateBuildBefore=await Promise.all(privateBuildFiles.map(async path=>({bytes:await readFile(path),mode:(await lstat(path)).mode&0o777})))
+ await rm('dist',{recursive:true,force:true})
+ const buildOutput=await m.command(['build','--non-interactive'])
+ assert.match(buildOutput,/dist\/server\/index\.js/,'the explicit build reports its emitted production Worker')
+ assert.ok((await readFile('dist/server/index.js')).length>0,'the build emits a nonempty production Worker')
+ const builtFiles=(await readdir('dist',{recursive:true,withFileTypes:true})).filter(entry=>entry.isFile()).map(entry=>join(entry.parentPath,entry.name))
+ assert.ok(builtFiles.some(path=>path.includes(join('dist','client','assets'))&&path.endsWith('.js')),'the build emits production client assets')
+ assert.ok(privateBuildValues.every(Boolean),'the installed fixture has private settings and a development key to exclude')
+ for(const path of builtFiles){
+  assert.ok(!/(?:^|\/)(?:\.dev\.vars(?:\.[^/]*)?|\.env(?:\.[^/]*)?|[^/]+\.env)$/.test(path),'production output contains no private settings file')
+  const bytes=await readFile(path)
+  assert.ok(!bytes.includes('rer-dev-layer:local-only-never-deploy'),'production output contains no development identity layer')
+  assert.ok(privateBuildValues.every(value=>!bytes.includes(value)),'production output excludes private fixture values and the development key')
+ }
+ for(const [index,path] of privateBuildFiles.entries()){
+  assert.ok((await readFile(path)).equals(privateBuildBefore[index].bytes),'the build restores private fixture settings byte for byte')
+  assert.equal((await lstat(path)).mode&0o777,privateBuildBefore[index].mode,'the build preserves private settings permissions')
+ }
+ console.log('PROBE OC-018 build: pinned rer build after removing dist -> exit 0, production Worker and client assets, no dev identity or private settings, exact settings restoration')
+ await m.preview();await m.close()
  console.log('Managed production preview refuses anonymous state and carries no dev identity')
  await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
