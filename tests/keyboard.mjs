@@ -63,6 +63,14 @@ export async function focusWorkspace(page) {
  * they never click, focus, fill or select on this keyboard journey. */
 export function keyboardUser(page) {
  const focused = locator => locator.evaluate(element => element === document.activeElement)
+ async function visibleFocus(locator) {
+  assert.ok(await locator.evaluate(element=>{
+   const style=getComputedStyle(element)
+   return element===document.activeElement&&element.matches(':focus-visible')&&(
+    style.outlineStyle!=='none'&&parseFloat(style.outlineWidth)>=2||
+    ['INPUT','SELECT','TEXTAREA'].includes(element.tagName)&&style.borderTopStyle!=='none'&&parseFloat(style.borderTopWidth)>=2)
+  }),'keyboard focus has a visible outline or thickened field border')
+ }
  async function reach(locator, backwards = false) {
   await locator.waitFor({state:'visible'})
   for(let count=0;count<240;count++) {
@@ -73,10 +81,30 @@ export function keyboardUser(page) {
  }
  return {
   reach,
-  async activate(locator, key='Enter') { await reach(locator);await page.keyboard.press(key) },
-  async text(locator, value) { await reach(locator);await page.keyboard.press('ControlOrMeta+A');await page.keyboard.insertText(value);await page.keyboard.press('Tab') },
+  visibleFocus,
+  async activate(locator, key='Enter') { await reach(locator);await visibleFocus(locator);await page.keyboard.press(key) },
+  async text(locator, value) { await reach(locator);await visibleFocus(locator);await page.keyboard.press('ControlOrMeta+A');await page.keyboard.type(value);await page.keyboard.press('Tab') },
+  async calendar(locator, value) {
+   await reach(locator);await visibleFocus(locator)
+   const type=await locator.getAttribute('type')
+   assert.ok(['date','time','datetime-local'].includes(type),'a native calendar or clock field')
+   // The journey uses Chromium's en-US segmented editor. Move to its first
+   // segment with keys; two-digit month, day, hour and minute entries advance
+   // natively, while the year needs one Right before the clock segments.
+   for(let count=0;count<8;count++)await page.keyboard.press('ArrowLeft')
+   if(type!=='time') {
+    const [year,month,day]=value.slice(0,10).split('-')
+    await page.keyboard.type(month+day+year)
+    if(type==='datetime-local')await page.keyboard.press('ArrowRight')
+   }
+   if(type!=='date') {
+    const [hour,minute]=(type==='time'?value:value.slice(11)).split(':').map(Number)
+    await page.keyboard.type(String(hour%12||12).padStart(2,'0')+String(minute).padStart(2,'0')+(hour<12?'AM':'PM'))
+   }
+   await page.keyboard.press('Tab');assert.equal(await locator.inputValue(),value,'native key input retains the requested date and time')
+  },
   async option(locator, value) {
-   await reach(locator)
+   await reach(locator);await visibleFocus(locator)
    const options=await locator.locator('option').evaluateAll(items=>items.map(item=>({value:item.value,label:item.label}))),option=options.find(item=>item.value===value)
    assert.ok(option,'native select contains intended option')
    // Repeating the initial character cycles native options with the same prefix.
@@ -92,8 +120,23 @@ export function keyboardUser(page) {
   },
   async focusScreenshot(locator,path) {
    await reach(locator,true)
-   assert.ok(await locator.evaluate(element=>element.matches(':focus-visible')&&getComputedStyle(element).outlineStyle!=='none'&&parseFloat(getComputedStyle(element).outlineWidth)>0),'keyboard focus is visibly outlined')
+   await visibleFocus(locator)
    await page.screenshot({path,fullPage:true})
+  },
+  async dialog(dialog) {
+   assert.ok(await dialog.evaluate(element=>element.contains(document.activeElement)),'opening the dialog moves focus inside')
+   const controls=dialog.locator('button:enabled:visible,a[href]:visible,input:enabled:visible,select:enabled:visible,textarea:enabled:visible,summary:visible,[tabindex="0"]:visible')
+   const first=controls.first(),last=controls.last()
+   await reach(last);await visibleFocus(last);await page.keyboard.press('Tab')
+   assert.ok(await focused(first),'Tab at the last dialog control wraps to the first')
+   await visibleFocus(first);await page.keyboard.press('Shift+Tab')
+   assert.ok(await focused(last),'Shift+Tab at the first dialog control wraps to the last')
+   await visibleFocus(last)
+  },
+  async dismiss(dialog,opener) {
+   await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'})
+   assert.ok(await focused(opener),'Escape returns focus to the dialog opener')
+   await visibleFocus(opener)
   },
  }
 }
