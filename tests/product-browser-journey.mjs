@@ -711,10 +711,12 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  console.log('PROBE OC-060 acceptance 1 web: 50 incidents -> rendered IDs and counts equal protected HTTP for service, urgency, triggered, declared, acknowledged, snoozed, resolved and mine; controls and URL agree; all durable rows, audit and paging unchanged, zero outbound requests');
  await setTime(null);
  const source='synthetic-oncall-6060',key=randomBytes(32).toString('hex');await call('/api/sources',{id:source,key,scopes:[services[0].id]});
+ const lowInputs=[];
  const lowTitle='Synthetic retained low alert';
  for(let n=0;n<2;n++){
   const identity='synthetic-oncall-6060-low-'+n;
-  const response=await context.request.post(origin+'/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:{source,eventId:identity,service:services[0].id,environment:'test',key:identity,generation:identity,intent:'trigger',severity:'warning',title:lowTitle+' '+n,observedAt:new Date().toISOString(),evidence:''}});assert.equal(response.status(),201);
+  const input={source,eventId:identity,service:services[0].id,environment:'test',key:identity,generation:identity,intent:'trigger',severity:'warning',title:lowTitle+' '+n,observedAt:new Date().toISOString(),evidence:''};lowInputs.push(input);
+  const response=await context.request.post(origin+'/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:input});assert.equal(response.status(),201);
  }
  const low=(await call('/api/state')).alerts.filter(a=>a.source===source);assert.equal(new Set(low.map(a=>a.id)).size,2);assert.ok(low.every(a=>a.urgency==='low'&&a.state==='active'));
  const query={kind:'alerts',q:lowTitle,urgency:'low',status:'triggered'};
@@ -737,9 +739,16 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
  const after=(await call('/api/state')).alerts.filter(a=>a.source===source);
  for(const alert of after){const original=low.find(a=>a.id===alert.id);assert.equal(alert.state,'active');assert.equal(alert.urgency,'low');assert.deepEqual(alert.events,original.events);assert.equal(alert.coordination.history.length,1);assert.equal(alert.coordination.history[0].actor,actor.id);assert.ok(Number.isFinite(Date.parse(alert.coordination.history[0].at)));}
  assert.equal(after.find(a=>a.id===low[0].id).coordination.state,'acknowledged');assert.equal(after.find(a=>a.id===low[1].id).coordination.state,'closed');
+ for(const input of lowInputs){
+  const replay=await context.request.post(origin+'/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:input});assert.equal(replay.status(),200);assert.equal((await replay.json()).duplicate,true);
+ }
+ assert.deepEqual((await call('/api/state')).alerts.filter(a=>a.source===source),after,'replayed intake preserves both human outcomes before browser reload');
+ await call('/api/sources/'+source+'/revoke',{});
+ for(const input of lowInputs){const refused=await context.request.post(origin+'/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:input});assert.equal(refused.status(),401);}
+ assert.deepEqual((await call('/api/state')).alerts.filter(a=>a.source===source),after,'revoked intake cannot replace retained human history');
  assert.deepEqual(pagingRecords(await call('/api/paging/state')),pagingRecords(lowPaging));assert.deepEqual((await outbound()).slice(lowOutbound.length),[]);
- const afterActions=snapshot();await page.reload();await compare({...query,status:'resolved'},[low[1]],{navigate:false});await compare({...query,status:'acknowledged'},[low[0]]);assert.deepEqual(snapshot(),afterActions);
- console.log('PROBE OC-060 acceptance 3 web: two native low alerts -> retained explicit low urgency across reloads, separate attributed acknowledgment and close, retained acknowledged and resolved history, active sources, unchanged paging and zero outbound requests; changed screens captured once at 1440 and 390');
+ const afterActions=snapshot();await page.reload();await compare({...query,status:'resolved'},[low[1]],{navigate:false});await compare({...query,status:'acknowledged'},[low[0]]);await compare(query,[]);assert.deepEqual(snapshot(),afterActions);
+ console.log('PROBE OC-060 acceptance 3 web: two native low alerts -> retained explicit low urgency across reloads, separate attributed acknowledgment and close, retained acknowledged and resolved history despite duplicate intake and source revocation, active source state, unchanged paging and zero outbound requests; changed screens captured once at 1440 and 390');
  await page.goto(origin+'/incidents');
 }
 
