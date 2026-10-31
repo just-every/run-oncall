@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "9ebf57b83fbcc41afc5d76c93e8b51fb0bce3f07885da2965d92f29362f2e2bc",
+      "sha256": "c64c07fb2e821878f88d53bf6976a8ad7e4c62d83823f13631e817469dcf4cb7",
       "executable": false
     },
     "agent-surface.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "0f10df4f5a0ed5cf8205b6e59e952f69ed6a1661947770849a1b2a2107b12870",
+      "sha256": "cabe360510f961679bde917c446124e1d922720cd5fc44ba8b528c3eb7af498d",
       "executable": false
     },
     "DEMO.md": {
@@ -264,7 +264,7 @@
       "executable": false
     },
     "docs/move-in.md": {
-      "sha256": "d73db3f7f8ba5a3e91090fd1002835a7289a9e235a2651545fa9d2b4966138c9",
+      "sha256": "1cafe0d155cdd6954dd46e32a896255ec418c5fcf4a35d00a1c17aaae1b5cf5b",
       "executable": false
     },
     "docs/overview.md": {
@@ -5856,11 +5856,11 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "a9271c2abd25639b16ef97725f26d2325071fc3b1c584ac5d2dfc4881892337c",
+      "sha256": "933ab6f4c3e02b18702f5e7ecc40eebed980ca7aa0442b364272ab916b2dfe90",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "86ad64f0603e507bd4311480ae73b77636472ee2d5b16f7fec3a1fe5c8013d97",
+      "sha256": "6452943542d5ca4fb69b62ab4f85774b74404e3d3df81574609345b891d9cf58",
       "executable": false
     },
     "tests/readiness.mjs": {

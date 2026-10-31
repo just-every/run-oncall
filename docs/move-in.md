@@ -32,10 +32,11 @@ migration; do not assume every account remains accessible until the deadline.
 The public [pagination reference](https://docs.opsgenie.com/docs/pagination)
 described next-page links in headers and response bodies. The official
 [API integration setup](https://support.atlassian.com/opsgenie/docs/create-a-default-api-integration/)
-page was reachable. These checks used no account or provider API key. The
+page described creating a separate integration and turning it on. The
 [API access settings reference](https://docs.opsgenie.com/docs/api-access-management)
-could not be retrieved during this review; its current instructions remain
-unverified. Re-read these official references at execution; follow up with
+described read-only access and configuration restrictions. All five public pages
+were reachable during this review; no account or provider API key was used.
+This does not verify that an authorized account can create or use an export key. Re-read these official references at execution; follow up with
 Atlassian if a reference or an export surface is unavailable.
 
 ### Unchecked execution gates

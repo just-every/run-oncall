@@ -6,7 +6,7 @@ import {mkdir,readFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
-import {productBrowserJourney,triageFiltersBrowser,providerExport} from './product-browser-journey.mjs'
+import {productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -225,7 +225,7 @@ async function responsePolicyBrowser(page,context) {
  }
 }
 
-async function incidentWorkflowBrowser(page,context) {
+async function incidentWorkflowBrowser(page,context,proof) {
  const origin=new URL(page.url()).origin;
  const req=async(path,data,status=200)=>{const r=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});assert.equal(r.status(),status,`OC-050 ${path}`);return r.json()};
  const {member}=await req('/api/session');
@@ -252,6 +252,7 @@ async function incidentWorkflowBrowser(page,context) {
   await form.getByLabel('Incident title',{exact:true}).fill(targetTitle);await form.getByLabel('Service',{exact:true}).selectOption(serviceId);await form.getByText('More options',{exact:true}).click();await form.getByLabel('Incident type (service template)',{exact:true}).selectOption('Database failure');await form.getByLabel('Severity',{exact:true}).selectOption('warning');await form.getByLabel('Customer impact and current evidence',{exact:true}).fill('Customers observe slower checkout; response team is investigating.');await submit(form.getByRole('button',{name:'Declare',exact:true}));
   await page.locator('.detail').getByRole('heading',{name:targetTitle,exact:true}).waitFor();let state=await req('/api/state'),target=state.incidents.find(i=>i.title===targetTitle);assert.equal(target.template.incidentType,'Database failure');
   await req('/api/command',{type:'transition',incident:target.id,revision:target.revision,state:'acknowledged',summary:'Commander coordinates checkout response'});
+  await incidentRolesBrowser(page,context,target,{proof});
   const sourceId='synthetic-oncall-workflow-'+width,key=randomBytes(32).toString('hex');await req('/api/sources',{id:sourceId,key,mode:'bearer',scopes:[serviceId]});
   const alerts=[];for(const keyName of ['checkout-replica','unrelated-batch']){const r=await context.request.post('/api/ingress/'+sourceId,{headers:{origin,authorization:'Bearer '+key},data:{source:sourceId,eventId:keyName+'-'+width,service:serviceId,environment:'production',key:keyName,generation:'cycle-'+width,intent:'trigger',severity:'warning',title:keyName+' investigation',observedAt:new Date().toISOString(),evidence:''}});assert.equal(r.status(),201);const receipt=await r.json();alerts.push((await req('/api/state')).alerts.find(a=>a.events.includes(receipt.id)).id)}
   const sourceTitle='Replica and batch investigation '+width;let source=await req('/api/command',{type:'declare',service:serviceId,severity:'warning',title:sourceTitle,summary:'Investigate related source alerts before separating the batch group.',alerts});source=await req('/api/command',{type:'note',incident:source.id,revision:source.revision,text:'Replica lag was observed before customer impact.'});source=await req('/api/command',{type:'action',incident:source.id,revision:source.revision,title:'Replica capacity follow-up',owner:member.id,escalationRecipient:member.id,due:'2026-12-01',completionPolicy:'human-review',priority:'P2'});
@@ -635,27 +636,32 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['readiness','accessibility','triage','limitations','move-in-guide'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['readiness','accessibility','triage','limitations','roles','move-in-guide'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
+ if(focused==='roles'){
+  const member=(await (await context.request.get('/api/session')).json()).member;
+  const baseline=await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',name:'Synthetic existing service',environment:'test',owner:member.id,runbook:[],pager:''}});assert.equal(baseline.status(),200);
+  await incidentWorkflowBrowser(page,context,triageProof);
+ }
  if(focused==='limitations')await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['readiness','triage','limitations','move-in-guide'].includes(focused)){
+ if(!['readiness','triage','limitations','roles','move-in-guide'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
  console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440; overflow, axe and hydration checked')
  await responsePolicyBrowser(page,context)
- await incidentWorkflowBrowser(page,context)
+ await setTime(null);await incidentWorkflowBrowser(page,context,triageProof)
  await changeAndSigningBrowser(page,context)
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['accessibility','triage','limitations','move-in-guide'].includes(focused))await readinessBrowser(page,context)
+ if(!['accessibility','triage','limitations','roles','move-in-guide'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log(focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -666,4 +672,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['accessibility','triage','limitations','move-in-guide'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['accessibility','triage','limitations','roles','move-in-guide'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
