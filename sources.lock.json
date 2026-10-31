@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5a88ba805ec22dcd1831c60e5f78ed32a6a5c5b46612a532cf97b8a1511d3ef9",
+      "sha256": "3b5ec4add0c4357ab77d868bce76a857eb4fe723dd0c68b369c21396f3c44f2c",
       "executable": false
     },
     "DEMO.md": {
@@ -5816,7 +5816,7 @@
       "executable": false
     },
     "tests/intake.mjs": {
-      "sha256": "6959d6d4236c6fec732b0812113c75c20f3beafccde41dca5df2530d656408f0",
+      "sha256": "caeab0d3faef8850a01c71a4dab1e4c38a58563f710cd57fdd75c5619238fdeb",
       "executable": false
     },
     "tests/keyboard.mjs": {
