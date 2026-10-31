@@ -365,16 +365,27 @@ async function invalidWindow(page) {
  assert.ok(await page.locator('.oc-preview li').count()>0,'fixing the window restores coverage');
 }
 
-export async function productSchedule(page,context,width,session,{ownerLink}={}) {
+async function accessibleState(page,name,width,focus) {
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true})
+ if(focus)await keyboardUser(page).focusScreenshot(focus,`${directory}/oc009-${name}-${width}.png`)
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${name} has no horizontal overflow`)
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
+ assert.deepEqual(axe.violations.filter(violation=>['serious','critical'].includes(violation.impact)),[],`${name} has no serious or critical axe findings`)
+}
+
+const keyboardInstant=Date.parse('2026-10-30T12:00:00.000Z')
+export async function productSchedule(page,context,width,session,{ownerLink,selectedOnly=false,setTime=async()=>{}}={}) {
+ await setTime(keyboardInstant);
+ const now=keyboardInstant;
  const key=keyboardUser(page),origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const api=async(path,input)=>{const response=await (input===undefined?context.request.get(origin+path):context.request.post(origin+path,{headers:{origin},data:input}));assert.equal(response.status(),200);return response.json();};
  let state=await api('/api/state');
  let second=state.members.find(member=>member.active&&member.id!==session.member.id&&['admin','responder'].includes(member.role));
  if(!second){const response=await context.request.post(origin+'/api/members',{headers:{origin},data:{name:'Schedule colleague '+width,role:'responder',password:'synthetic-schedule-colleague-password'}});assert.equal(response.status(),201);second=await response.json();}
- const anchor=new Date(Date.now()-86400000).toISOString().slice(0,10)+'T09:00';
+ const anchor=new Date(now-86400000).toISOString().slice(0,10)+'T09:00';
  // OC-020 / OC-011: both rota rows are visible together; a four-step weekly create agrees with its zero-write preview.
  const fixtures=[];
- for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(Date.now()-2*86400000).toISOString(),validUntil:null,primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[]}));
+ for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(now-2*86400000).toISOString(),validUntil:null,primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[]}));
  await page.goto(origin+'/on-call');
  const onCall=await api('/api/on-call');
  for(const fixture of fixtures){const row=page.locator('[data-rota="'+fixture.id+'"]');await row.waitFor();const coverage=onCall.rotas.find(rota=>rota.id===fixture.id);assert.ok((await row.innerText()).includes(coverage.now.primary.name));assert.ok((await row.innerText()).includes(coverage.next.primary.name));assert.ok((await row.innerText()).includes(coverage.now.backup.name));}
@@ -384,45 +395,79 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  await key.activate(page.locator('.oc-page-head').getByRole('link',{name:'New rota',exact:true}));
  if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
  await key.text(page.getByLabel('Rota name',{exact:true}),'Checkout rota '+width);
+ await accessibleState(page,'rota-name',width,page.getByLabel('Rota name',{exact:true}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();
- const remove=page.getByRole('button',{name:'Remove person',exact:true}).first();await remove.focus();await page.getByRole('tooltip',{name:'Remove person',exact:true}).first().waitFor();
+ await key.option(page.getByRole('combobox',{name:'Primary person 1',exact:true}),second.id);await key.option(page.getByRole('combobox',{name:'Primary person 2',exact:true}),session.member.id);
+ const remove=page.getByRole('button',{name:'Remove person',exact:true}).first();await key.reach(remove);await page.getByRole('tooltip',{name:'Remove person',exact:true}).first().waitFor();
+ await accessibleState(page,'rota-people',width,remove);
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Hand-over',exact:true}).waitFor();
  const own=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);assert.equal(await page.getByLabel('Time zone',{exact:true}).inputValue(),own);assert.equal(await page.getByLabel('Time zone',{exact:true}).locator('option').first().getAttribute('value'),own);
- const starts=new Date(Date.now()+86400000).toISOString().slice(0,10);
+ const starts=new Date(now+86400000).toISOString().slice(0,10);
+ const startsChange=async()=>{await key.calendar(page.getByLabel('Starts',{exact:true}),starts);await key.calendar(page.getByLabel('At',{exact:true}),'10:30');};
  if(width===1440)await retainPreview(page,async()=>{await page.getByLabel('Starts',{exact:true}).fill(starts);await page.getByLabel('At',{exact:true}).fill('10:30');});
- else await page.getByLabel('Starts',{exact:true}).fill(starts);
+ await startsChange();
+ await accessibleState(page,'rota-handover',width,page.getByRole('button',{name:'Continue',exact:true}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Check',exact:true}).waitFor();
  if(width===1440){
-  await retainPreview(page,()=>page.getByLabel('Ends (optional)',{exact:true}).fill(new Date(Date.now()+60*86400000).toISOString().slice(0,10)),page.getByRole('button',{name:'Create rota',exact:true}));
+  const ends=new Date(now+60*86400000).toISOString().slice(0,10);
+  await retainPreview(page,()=>page.getByLabel('Ends (optional)',{exact:true}).fill(ends),page.getByRole('button',{name:'Create rota',exact:true}));
+  await key.calendar(page.getByLabel('Ends (optional)',{exact:true}),ends);
   await invalidWindow(page);
  }
- if(width<761)await key.activate(page.locator('.oc-preview > summary'));
+ if(width<761){
+  const disclosure=page.locator('.oc-preview > summary');await key.activate(disclosure);
+  await page.getByRole('list',{name:'Resolved coverage spans',exact:true}).waitFor();
+  await accessibleState(page,'narrow-preview-open',width,disclosure);
+  await key.activate(disclosure,'Space');assert.equal(await page.getByRole('list',{name:'Resolved coverage spans',exact:true}).isVisible(),false,'the narrow preview closes with Space');
+  await key.activate(disclosure);await page.getByRole('list',{name:'Resolved coverage spans',exact:true}).waitFor();
+ }
  await key.focusScreenshot(page.getByRole('button',{name:'Create rota',exact:true}),`${directory}/keyboard-rota-create-${width}.png`);
+ await accessibleState(page,'rota-preview',width,page.getByRole('button',{name:'Create rota',exact:true}));
  assert.deepEqual(await api('/api/paging/state'),previewBefore,'live draft previews write no schedule, job or scheduling revision');assert.deepEqual(await api('/api/state'),workspaceBefore,'live draft previews preserve workspace records and revision');const auditAfter=await api('/api/audit/export');assert.deepEqual(auditAfter.rows.filter(row=>row.kind!=='audit.export'),auditBefore.rows.filter(row=>row.kind!=='audit.export'),'draft previews append no permanent audit record; the observing exports keep their own audits');
- await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]')?.disabled);await page.getByRole('button',{name:'Create rota',exact:true}).click();await page.waitForURL(/\/on-call\/rota-[a-f0-9]{8}$/);
+ await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]')?.disabled);await key.activate(page.getByRole('button',{name:'Create rota',exact:true}));await page.waitForURL(/\/on-call\/rota-[a-f0-9]{8}$/);
  const id=decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1)),created=(await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id),last=previews.filter(value=>value.input.schedule.id===id).at(-1);page.off('response',observe);
  assert.ok(last?.windows.length>1);assert.equal(created.timezone,own);
+ assert.deepEqual(created.primary.members,[second.id,session.member.id],'protected HTTP readback keeps the keyboard-selected person order');
  const saved=await api('/api/paging/preview',{scheduleId:id,from:last.input.from,to:last.input.to});const assignments=windows=>windows.map(({scheduleRevision,...coverage})=>coverage);assert.deepEqual(assignments(saved),assignments(last.windows),'create preserves every previewed hand-over and assignment');
  const first=await api('/api/schedules/'+encodeURIComponent(id)+'/now-next?at='+encodeURIComponent(new Date(last.input.from).toISOString()));assert.equal(Date.parse(first.now.windows.find(window=>window.role==='primary').end),last.windows[1].at,'the first weekly hand-over equals the live preview');
- const future=scheduleReviewWindow(Date.now());
+ const future=scheduleReviewWindow(now);
  // Keep the prior reviewed-editor checks through Cover and Edit: a new gap, explicit confirmation and both named-zone clock changes.
- await page.getByRole('button',{name:'Cover a shift',exact:true}).click();const cover=page.getByRole('dialog',{name:'Cover a shift',exact:true});
- await cover.getByLabel('Who',{exact:true}).selectOption('');await cover.getByLabel('From',{exact:true}).fill(future.overrideStart);await cover.getByLabel('To',{exact:true}).fill(future.overrideEnd);
- const coverBefore=await api('/api/paging/state');await cover.getByRole('button',{name:'Review change',exact:true}).click();await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
+ const coverOpener=page.getByRole('button',{name:'Cover a shift',exact:true}),cover=page.getByRole('dialog',{name:'Cover a shift',exact:true});
+ const beforeDismiss=await api('/api/paging/state');
+ await key.activate(coverOpener);await key.dialog(cover);await key.reach(cover.getByRole('button',{name:'Close sheet',exact:true}));await page.getByRole('tooltip',{name:'Close sheet',exact:true}).waitFor();await key.dismiss(cover,coverOpener);
+ assert.deepEqual(await api('/api/paging/state'),beforeDismiss,'Escape dismisses cover preparation without saving');
+ await key.activate(coverOpener);
+ await key.option(cover.getByLabel('Who',{exact:true}),'');await key.option(cover.getByLabel('Role',{exact:true}),'primary');await key.calendar(cover.getByLabel('From',{exact:true}),future.overrideStart);await key.calendar(cover.getByLabel('To',{exact:true}),future.overrideEnd);
+ await accessibleState(page,'cover-preparation',width,cover.getByRole('button',{name:'Review change',exact:true}));
+ const coverBefore=await api('/api/paging/state'),coverReviewResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/schedules/'+id+'/review'&&r.request().method()==='POST');
+ await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
+ const coverReviewReply=await coverReviewResponse;assert.equal(coverReviewReply.status(),200);const coverReview=await coverReviewReply.json();
  assert.deepEqual(await api('/api/paging/state'),coverBefore,'cover review writes nothing');assert.equal(await cover.getByRole('button',{name:'Apply reviewed change',exact:true}).isDisabled(),true);
+ await key.dialog(cover);await accessibleState(page,'cover-review',width,cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}));
+ await key.dismiss(cover,coverOpener);assert.deepEqual(await api('/api/paging/state'),coverBefore,'Escape from the review writes nothing');
+ await key.activate(coverOpener);await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
  await key.activate(cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}),'Space');await key.activate(cover.getByRole('button',{name:'Apply reviewed change',exact:true}));await cover.waitFor({state:'detached'});
+ await key.visibleFocus(coverOpener);
+ const covered=(await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id),override=covered.overrides.at(-1);
+ assert.deepEqual({member:override.member,role:override.role,start:override.start,end:override.end},{member:null,role:'primary',start:future.overrideStart+':00.000Z',end:future.overrideEnd+':00.000Z'},'protected readback retains the exact keyboard cover interval and assignment');
+ assert.equal(covered.revision,created.revision+1,'only confirmation saves the cover');
+ const reviewedCoverage=await api('/api/paging/preview',{scheduleId:id,from:coverReview.from,to:coverReview.to});
+ for(const interval of coverReview.intervals){const actual=reviewedCoverage.findLast(window=>window.at<=interval.start);assert.ok(actual);assert.equal(actual[interval.role],interval.after,'saved coverage matches each reviewed role assignment');}
+ await accessibleState(page,'cover-saved',width,coverOpener);
  // Give the old rota its named New York clock through the same reviewed door, then use the four-step editor for London.
  let current=(await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id),from=Date.parse(future.previewFrom+'Z'),to=Date.parse(future.previewTo+'Z');
  const named={...current,timezone:'America/New_York'},namedReview=await api('/api/schedules/'+id+'/review',{schedule:named,from,to});await api('/api/schedules/'+id+'/apply',{schedule:named,from,to,digest:namedReview.digest,confirmed:true});
  await page.reload();await key.activate(page.getByRole('link',{name:'Edit rota',exact:true}));await page.getByLabel('Rota name',{exact:true}).waitFor();
  if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Hand-over',exact:true}).waitFor();
- const handover=async()=>{await page.getByLabel('Time zone',{exact:true}).selectOption('Europe/London');await page.getByLabel('Starts',{exact:true}).fill(future.previewFrom.slice(0,10));};
- if(width===1440)await retainPreview(page,async()=>{await handover();await page.getByLabel('At',{exact:true}).fill('09:00');});
- else await handover();
+ const handover=async()=>{await key.option(page.getByLabel('Time zone',{exact:true}),'Europe/London');await key.calendar(page.getByLabel('Starts',{exact:true}),future.previewFrom.slice(0,10));await key.calendar(page.getByLabel('At',{exact:true}),'09:00');};
+ if(width===1440)await retainPreview(page,async()=>{await page.getByLabel('Time zone',{exact:true}).selectOption('Europe/London');await page.getByLabel('Starts',{exact:true}).fill(future.previewFrom.slice(0,10));await page.getByLabel('At',{exact:true}).fill('09:00');});
+ await handover();
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Check',exact:true}).waitFor();
  if(width===1440){
-  await retainPreview(page,()=>page.getByLabel('Ends (optional)',{exact:true}).fill(new Date(Date.parse(future.previewFrom+'Z')+60*86400000).toISOString().slice(0,10)),page.getByRole('button',{name:'Review change',exact:true}));
+  const ends=new Date(Date.parse(future.previewFrom+'Z')+60*86400000).toISOString().slice(0,10);
+  await retainPreview(page,()=>page.getByLabel('Ends (optional)',{exact:true}).fill(ends),page.getByRole('button',{name:'Review change',exact:true}));
+  await key.calendar(page.getByLabel('Ends (optional)',{exact:true}),ends);
   await invalidWindow(page);
  }
  await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]')?.disabled);await key.activate(page.getByRole('button',{name:'Review change',exact:true}));
@@ -431,11 +476,12 @@ export async function productSchedule(page,context,width,session,{ownerLink}={})
  const axe=await new AxeBuilder({page}).include('.oc-rota-steps').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations,[]);
  await review.screenshot({path:`${directory}/schedule-review-panel-${width}.png`});await key.activate(review.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}),'Space');await key.activate(review.getByRole('button',{name:'Apply reviewed change',exact:true}));await page.waitForURL(url=>url.pathname==='/on-call/'+id);
  assert.equal((await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id).timezone,'Europe/London');
- await page.getByText('Calendar feed',{exact:true}).click();const feed=page.getByRole('link',{name:'Open private ICS feed',exact:true});const calendar=await context.request.get(await feed.getAttribute('href'));assert.equal(calendar.status(),200);
+ await key.activate(page.getByText('Calendar feed',{exact:true}));const feed=page.getByRole('link',{name:'Open private ICS feed',exact:true});const calendar=await context.request.get(await feed.getAttribute('href'));assert.equal(calendar.status(),200);
  const times=(await calendar.text()).split('\r\n').filter(line=>/^DT(STAMP|START|END):/.test(line));assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'calendar uses whole-second UTC times');
  await page.screenshot({path:`${directory}/rota-page-${width}.png`,fullPage:true});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
- await coverageRulesBrowser(page,context,width,session,{ownerLink});
- await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});
+ await setTime(Date.now());
+ if(!selectedOnly){await coverageRulesBrowser(page,context,width,session,{ownerLink});await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});}
+ console.log(`PROBE OC-009 schedules, overrides and preview ${width}: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed`);
 }
 // Pair the next nearby offset changes from the zones themselves, beyond tomorrow.
 export function scheduleReviewWindow(now) {
@@ -768,7 +814,8 @@ async function singleIncidentPerAlert(page,context,width,service,source,key) {
 
 // keyboard-coordination: part of this public journey.
 export async function keyboardCoordination(page,context,width,ownerLink,openSession) {
- const key=keyboardUser(page)
+ const key=keyboardUser(page),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
+ await mkdir(directory,{recursive:true})
  const hostile=`<img data-hostile="oncall-probe" src="https://hostile.invalid/probe" onerror="window.__oncallHostile=true"><script data-hostile="oncall-probe">window.__oncallHostile=true</script>`
  const external=[];const observe=request=>{if(request.url().startsWith('https://hostile.invalid/'))external.push(request.url())};page.on('request',observe)
  // OC-008: author a runbook containing a link and HTML, then use its copied incident step.
@@ -789,7 +836,7 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  await key.option(page.getByLabel('Page urgency',{exact:true}),'low')
  await key.option(page.getByLabel('Page priority',{exact:true}),'P2')
  await key.text(page.getByLabel('Customer impact and current evidence',{exact:true}),'Customer impact reviewed using the keyboard')
- await key.focusScreenshot(page.getByRole('button',{name:'Declare',exact:true}),`evidence/browser/keyboard-coordination-${width}.png`)
+ await accessibleState(page,'declaration',width,page.getByRole('button',{name:'Declare',exact:true}))
  await page.keyboard.press('Enter')
  await page.getByRole('heading',{name:`Keyboard incident ${width}`,exact:true}).last().waitFor()
  const manualState=await (await context.request.get('/api/state')).json(),manual=manualState.incidents.find(i=>i.title===`Keyboard incident ${width}`);assert.equal(manual.urgency,'low');assert.equal(manual.priority,'P2');assert.ok(manual.manualPage.operation);assert.ok(manual.manualPage.obligations.every(o=>o.automatic===false&&o.paging==='off'));console.log('OC-068 keyboard manual page: urgency, priority, replay-safe operation and recorded target obligation persisted')
@@ -806,10 +853,14 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
   const afterLead=await (await context.request.get('/api/state')).json(),afterIncident=afterLead.incidents.find(i=>i.id===manual.id)
   assert.equal(afterIncident.timeline.length,beforeIncident.timeline.length+1,'one Lead choice creates one timeline line')
   assert.equal(afterIncident.timeline.at(-1).actor,me.id,'Lead change is attributed to the signed-in member')
-  await key.activate(page.getByRole('button',{name:'Incident actions',exact:true}))
-  await key.activate(page.getByRole('menuitem',{name:'People and priority',exact:true}))
-  await key.activate(page.getByRole('button',{name:'Close',exact:true}),'Escape')
  }
+ const actions=page.getByRole('button',{name:'Incident actions',exact:true})
+ await key.activate(actions)
+ const menu=page.getByRole('dialog',{name:'Incident actions',exact:true});await key.dialog(menu)
+ await key.activate(page.getByRole('menuitem',{name:'People and priority',exact:true}))
+ const people=page.getByRole('dialog',{name:'People and priority',exact:true});await key.dialog(people)
+ await accessibleState(page,'incident-dialog',width,people.getByRole('button',{name:'Close',exact:true}))
+ await page.getByRole('tooltip',{name:'Close',exact:true}).waitFor();await key.dismiss(people,actions)
  const step=page.getByRole('checkbox',{name:runbookText,exact:true})
  await key.activate(step,'Space')
  await page.waitForFunction(({title,text})=>fetch('/api/state').then(r=>r.json()).then(s=>s.incidents.some(i=>i.title===title&&i.runbook.some(r=>r.text===text&&r.done))),{title:`Keyboard incident ${width}`,text:runbookText})
@@ -818,17 +869,27 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  await key.activate(page.getByRole('button',{name:'Add note',exact:true}))
  // The runbook step's own entry also contains the hostile text: wait for the note itself.
  await page.locator('.timeline').getByText(hostile,{exact:true}).waitFor()
+ await accessibleState(page,'notes',width,page.getByRole('button',{name:'Add note',exact:true}))
  assert.equal(await page.locator('[data-hostile="oncall-probe"]').count(),0,'hostile content creates no HTML elements')
  assert.equal(await page.evaluate(()=>window.__oncallHostile),undefined,'hostile script/handler did not execute')
  assert.deepEqual(external,[],'hostile text triggers no external fetch');page.off('request',observe)
  await step.scrollIntoViewIfNeeded()
- await page.screenshot({path:`evidence/browser/OC-008-literal-runbook-${width}.png`,fullPage:true})
+ await page.screenshot({path:`${directory}/OC-008-literal-runbook-${width}.png`,fullPage:true})
  const archive=await (await context.request.get('/api/archive')).json()
  const authored=archive.incidents.find(item=>item.title===`Keyboard incident ${width}`)
  assert.deepEqual(authored.runbook,[{text:runbookText,done:true}],'OC-008: export retains the authored runbook verbatim')
  assert.ok(authored.timeline.some(item=>item.text===hostile),'OC-008: export retains the hostile note as authored text')
  await key.activate(page.getByRole('button',{name:'Acknowledge',exact:true}))
  await page.locator('.incident-state').filter({hasText:'acknowledged'}).waitFor()
+ const acknowledged=(await (await context.request.get('/api/state')).json()).incidents.find(incident=>incident.id===manual.id),actor=(await (await context.request.get('/api/session')).json()).member.id
+ assert.equal(acknowledged.state,'acknowledged','protected readback confirms keyboard acknowledgment')
+ assert.equal(acknowledged.commander,actor,'the acknowledging human becomes commander')
+ assert.ok(acknowledged.timeline.some(entry=>entry.text===hostile&&entry.actor===actor),'protected readback retains the literal keyboard note and its actor')
+ await accessibleState(page,'acknowledged',width,page.getByRole('button',{name:'Add note',exact:true}))
+ console.log(`PROBE OC-009 declaration, acknowledgment and notes ${width}: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed`)
+ // The existing desktop conflict is the acceptance-2 proof. The phone leg
+ // adds the selected coordination screens, without duplicating the transport race.
+ if(width!==1440)return
  // A separately authenticated HTTP context advances the real stored revision.
  // Delay this browser's real workspace reads while the second session wins,
  // so a live-update clock cannot make this stale-write transport case disappear.
@@ -868,23 +929,34 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
   assert.equal(await page.locator('.notice[role="status"]').innerText(),'','failed write never claims saved')
   assert.equal(await page.getByLabel('Observation, decision or evidence',{exact:true}).inputValue(),'Losing browser note must not save','failed draft remains editable')
   assert.deepEqual(await (await second.request.get('/api/state')).json(),before,'rejected write leaves the winning server data unchanged')
-  await key.focusScreenshot(page.getByRole('button',{name:'Add note',exact:true}),`evidence/browser/keyboard-rejected-write-${width}.png`)
+  await accessibleState(page,'rejected-write',width,page.getByRole('button',{name:'Add note',exact:true}))
+  console.log('PROBE OC-009 stale write 1440: second authenticated HTTP session wins -> real 409, alert announcement, editable losing draft and no saved claim; winning data unchanged')
  } finally { await releaseReads();await second.close() }
 }
 
 
 // One desktop journey through the emitted production Worker and its browser UI.
-export async function productBrowserJourney(page,context,{ownerLink,openSession}={}) {
+export async function productBrowserJourney(page,context,{ownerLink,openSession,accessibilityOnly=false,setTime=async()=>{}}={}) {
  const key=keyboardUser(page)
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json())
  assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
  await openWorkspaceSection(page,'services',{keyboard:true});await key.text(page.getByLabel('Service name',{exact:true}),'Checkout');await key.activate(page.getByRole('button',{name:'Create service',exact:true}));await page.getByRole('heading',{name:'Checkout',exact:true}).waitFor();await key.text(page.getByLabel('Runbook steps (one per line)',{exact:true}),'Verify recovery')
+ if(accessibilityOnly){
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});await setTime(keyboardInstant);
+   await keyboardCoordination(page,context,width,ownerLink,openSession);
+   await productSchedule(page,context,width,session,{ownerLink,selectedOnly:true,setTime});
+  }
+  return;
+ }
  for(const width of [1440]) {
   await page.setViewportSize({width,height:1000})
+  await setTime(keyboardInstant)
   await keyboardCoordination(page,context,width,ownerLink,openSession)
+  await setTime(Date.now())
   if(width===1440)await sharedIncidentLinks(page,context)
   await alertSeverity(page,context,width)
-  if(width===1440)await productSchedule(page,context,width,session,{ownerLink})
+  if(width===1440)await productSchedule(page,context,width,session,{ownerLink,setTime})
   await triageBulkBrowser(page,context,width)
   await productImport(page,context,width,session)
   await routingBrowser(page,context,width)
@@ -897,6 +969,13 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession}
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'routing viewport has no horizontal overflow')
   console.log(`Product browser journey ${width}: keyboard incident coordination, stale-write alert, hostile text, schedules, overrides, coverage/ICS, provider export, reviewed import/adoption/erasure, pointer replay and responsive layout passed`)
  }
+ // OC-009's bounded phone leg reuses the selected flow; unrelated desktop
+ // imports, routing, bulk actions and provider journeys keep their single width.
+ await page.setViewportSize({width:390,height:1000})
+ await setTime(keyboardInstant)
+ await keyboardCoordination(page,context,390,ownerLink,openSession)
+ await productSchedule(page,context,390,session,{ownerLink,selectedOnly:true,setTime})
+ await page.setViewportSize({width:1440,height:1000})
 }
 
 async function sharedIncidentLinks(page,context) {

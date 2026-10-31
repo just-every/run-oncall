@@ -489,7 +489,7 @@ async function readinessBrowser(page,context) {
 }
 
 // Production Worker + real local D1, without starting a managed rer dev server.
-const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'})
+const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true})
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
 let browser,page
 try {
@@ -500,7 +500,7 @@ try {
  browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
  // The journey pauses for D1 reads and held responses. Match localWorker's
  // one-request connections so Playwright cannot reuse a Worker-idle socket.
- const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000},extraHTTPHeaders:{connection:'close'}})
+ const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000},locale:'en-US',timezoneId:'UTC',extraHTTPHeaders:{connection:'close'}})
  await context.addCookies(owner.headers.getSetCookie().map(line=>{
   const pair=line.split(';')[0],at=pair.indexOf('=')
   return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}
@@ -514,9 +514,11 @@ try {
   assert.equal(login.status(),200,'the second browser context signs in through the real login door')
   await secondPage.goto(worker.origin)
  }
- if(process.env.ONCALL_PRODUCT_JOURNEY&&process.env.ONCALL_PRODUCT_JOURNEY!=='readiness')throw Error('Unknown focused product journey');
+ const focused=process.env.ONCALL_PRODUCT_JOURNEY;
+ if(focused&&!['readiness','accessibility'].includes(focused))throw Error('Unknown focused product journey');
  if(process.env.ONCALL_PRODUCT_JOURNEY!=='readiness'){
- await productBrowserJourney(page,context,{openSession})
+ await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime:async at=>{await worker.time(at);await page.clock.setFixedTime(new Date(at));}})
+ if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
  console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440; overflow, axe and hydration checked')
  await responsePolicyBrowser(page,context)
@@ -524,9 +526,10 @@ try {
  await changeAndSigningBrowser(page,context)
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
- await readinessBrowser(page,context)
+ }
+ if(focused!=='accessibility')await readinessBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log('Emitted Worker product browser journey passed at 1440')
+ console.log(focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -537,4 +540,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-await import('./agent-door-browser.mjs');
+if(process.env.ONCALL_PRODUCT_JOURNEY!=='accessibility')await import('./agent-door-browser.mjs');
