@@ -1469,6 +1469,55 @@ try {
  let cookie=setup.cookie;
  const request=(p,d)=>erasureRuntime.request(p,d,cookie),value=async p=>{const r=await request(p);assert.equal(r.status,200);return r.value;};
  const service=await request('/api/command',{type:'service',id:'synthetic-oncall-erasure',name:'synthetic-oncall-erasure',environment:'test',owner:setup.value.member.id,runbook:[],pager:''});assert.equal(service.status,200);
+ // Before any optional connector is approved, every external request is refused
+ // by this emitted Worker's outboundService and recorded in erasureCalls.
+ let independent=await request('/api/command',{type:'declare',service:service.value.id,title:'synthetic-oncall-522 private incident',summary:'synthetic-oncall-522 private impact',severity:'warning'});
+ assert.equal(independent.status,200);independent=independent.value;
+ for(const change of [
+  {type:'transition',state:'acknowledged',summary:'synthetic-oncall-522 native acknowledgment'},
+  {type:'note',text:'synthetic-oncall-522 native observation'},
+  {type:'transition',state:'mitigating',summary:'synthetic-oncall-522 mitigation'},
+  {type:'transition',state:'recovered',summary:'synthetic-oncall-522 verified recovery',evidence:'https://example.test/synthetic-oncall-522'},
+  {type:'transition',state:'resolved',summary:'synthetic-oncall-522 restored service'},
+ ]) {
+  const result=await request('/api/command',{incident:independent.id,revision:independent.revision,...change});
+  assert.equal(result.status,200,JSON.stringify(result.value));independent=result.value;
+ }
+ const nativeState=await value('/api/state'),coordinated=nativeState.incidents.find(row=>row.id===independent.id);
+ assert.deepEqual(coordinated,independent,'native lifecycle reads back without an AI connection');
+ assert.equal(coordinated.state,'resolved');
+ assert.ok(coordinated.timeline.some(row=>row.text==='synthetic-oncall-522 native observation'&&row.actor===setup.value.member.id));
+ assert.deepEqual(erasureCalls,[],'native declaration, acknowledgment, notes, recovery and resolution attempt no outbound request');
+ console.log('PROBE OC-052 denied-AI: emitted Worker native lifecycle -> resolved with attributed note; outbound attempts=0');
+ // Probe the private incident itself and plausible undeclared embed surfaces
+ // with no session, including a foreign origin: neither HTML nor JSON may leak it.
+ for(const path of ['/incidents/'+independent.id,'/embed/incidents/'+independent.id,'/api/embed/incidents/'+independent.id]) {
+  const response=await fetch(erasureRuntime.origin+path,{headers:{origin:'https://example.test'},redirect:'manual'}),text=await response.text();
+  assert.ok([200,401,403,404].includes(response.status));
+  if(path.includes('/embed/')){
+   assert.ok([401,403,404].includes(response.status),'anonymous embed is refused');
+   const ownerResponse=await fetch(erasureRuntime.origin+path,{headers:{cookie},redirect:'manual'});
+   assert.equal(ownerResponse.status,404,'no incident embed is declared even for an authorized owner');await ownerResponse.text();
+  }
+  for(const privateValue of [independent.id,independent.title,'synthetic-oncall-522 private impact','synthetic-oncall-522 native observation'])assert.ok(!text.includes(privateValue),'anonymous document or embed exposes no incident content');
+  assert.notEqual(response.headers.get('access-control-allow-origin'),'*');
+ }
+ console.log('PROBE OC-052 public-embed: anonymous incident and foreign-origin embed GET -> no incident disclosure; owner embed=404');
+ const tables=(await erasureRuntime.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").all()).results
+  .map(row=>row.name).filter(name=>!['oc_admin_audit','oc_audit_identities','oc_audit_clock'].includes(name));
+ const custody=async()=>Object.fromEntries((await erasureRuntime.db.batch(tables.map(name=>erasureRuntime.db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"')))).map((result,index)=>[tables[index],result.results.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]));
+ const beforeAttachment=await custody();
+ for(const path of ['/api/uploads','/api/incidents/'+independent.id+'/attachments'])for(const as of ['',cookie]) {
+  const form=new FormData();form.set('incident',independent.id);form.set('file',new Blob(['synthetic-oncall-523 arbitrary attachment'],{type:'text/plain'}),'synthetic-oncall-523.txt');
+  const response=await fetch(erasureRuntime.origin+path,{method:'POST',headers:{origin:erasureRuntime.origin,cookie:as},body:form});
+  if(as)assert.equal(response.status,404,'arbitrary attachment submission has no declared owner door');
+  else assert.ok([401,403,404].includes(response.status),'anonymous arbitrary attachment submission is refused');
+  const text=await response.text();assert.ok(!text.includes(independent.title));
+  assert.deepEqual(await custody(),beforeAttachment,'refused attachments create no record, chunk, blob or import custody; refusal audit may append');
+ }
+ assert.deepEqual(await value('/api/state'),nativeState,'embed and attachment probes preserve native records and revisions');
+ assert.deepEqual(erasureCalls,[],'neither undeclared door attempts an external request');
+ console.log('PROBE OC-052 arbitrary-upload: anonymous multipart POST refused and owner POST=404; all non-audit durable tables unchanged; outbound attempts=0');
  const door=ownerDoor(erasureRuntime,cookie),plan=await door.preview('opsgenie',await readFile('tests/fixtures/opsgenie.json','utf8'));assert.equal(plan.status,200);assert.equal((await door.apply('opsgenie',plan.value)).status,200);
  const label='alice@example.test automation';
  const client=await request('/api/automation/clients',{name:label,key:randomBytes(32).toString('hex'),services:[service.value.id],permissions:['incidents:read']});assert.equal(client.status,201);
