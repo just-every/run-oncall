@@ -796,15 +796,26 @@ try {
  ok(await O('/api/members',{name:'Rhea',password:'synthetic-local-testing-password',role:'responder'}),201);ok(await O('/api/members',{name:'Vic',password:'synthetic-local-testing-password',role:'viewer'}),201)
  const alice=await w.request('/api/login',{name:'Rhea',password:'synthetic-local-testing-password'}),view=await w.request('/api/login',{name:'Vic',password:'synthetic-local-testing-password'});ok(alice);ok(view)
  const A=(p,i)=>w.request(p,i,alice.cookie),V=(p,i)=>w.request(p,i,view.cookie)
+ const outboundBefore=ok(await O('/api/paging/state'))
+ assert.deepEqual(await w.outboundRequests(),[], 'normal coordination starts with no attempted outbound request')
+ const automationBefore=ok(await O('/api/automation'))
+ assert.deepEqual(automationBefore.endpoints,[], 'no approved OC-053 response endpoint exists')
+ assert.deepEqual(automationBefore.outbox,[], 'no response event is waiting for external dispatch')
  let incident=ok(await A('/api/command',{type:'declare',service:'checkout',title:'Checkout errors',severity:'critical',summary:'Elevated errors',alerts:[]}))
  let source=ok(await A('/api/handoffs/context/'+incident.id))
- const copy={audience:'internal',title:'Checkout update',summary:'Errors are being mitigated',evidenceLinks:[],impactLinks:[]}
+ const draft=ok(await A('/api/handoff/'+incident.id))
+ assert.equal(draft.intent,'reviewed-handoff-required','the legacy exported draft remains explicitly unreviewed')
+ assert.equal(draft.visibility,'internal');assert.equal(draft.lamp.publication,'not-published');assert.deepEqual(draft.providerActions,[])
+ const copy={audience:'internal',title:'Checkout update',summary:'Errors are being mitigated',evidenceLinks:[w.origin+'/api/handoffs/context/'+incident.id],impactLinks:[w.origin+'/api/state']}
  const prepare=(id,payload,extra={})=>({id,incident:incident.id,incidentRevision:incident.revision,serviceHash:source.serviceHash,payload,...extra})
  const act=(record,actionId,reason='Exact copy checked')=>({actionId,revision:record.revision,payloadHash:record.payloadHash,sourceHash:record.sourceHash,reason})
  const {audience,...unaddressed}=copy
  ok(await A('/api/handoffs/prepare',prepare('no-audience',unaddressed)),400) // explicit intended audience
  ok(await V('/api/handoffs/prepare',prepare('viewer-copy',copy)),403) // only responders/admins prepare
- const h1=ok(await A('/api/handoffs/prepare',prepare('h1',copy)),201).record
+ const prepared=ok(await A('/api/handoffs/prepare',prepare('h1',copy)),201),h1=prepared.record
+ assert.equal(h1.status,'prepared');assert.equal(prepared.eligibility.eligible,false)
+ ok(await A('/api/handoffs/h1/export'),409) // preparing copy never supplies the review required by the separate export door
+ assert.deepEqual(await w.outboundRequests(),[], 'coordination, draft export, preparation and refused unreviewed export attempt no AI or other outbound request')
  assert.equal(ok(await A('/api/handoffs/prepare',prepare('h1',copy))).record.revision,h1.revision,'repeated identical preparation returns the original record')
  ok(await A('/api/handoffs/prepare',prepare('h1',{...copy,title:'Changed copy'})),409) // preparation identity conflicts on changed content
  assert.equal(ok(await V('/api/handoffs/h1')).record.payloadHash,h1.payloadHash,'viewers inspect internal records')
@@ -816,6 +827,22 @@ try {
  assert.equal(reviewed.history.at(-1).selfReview,true,'an author review is recorded as self-review, never independent review')
  const packet=ok(await A('/api/handoffs/h1/export'));assert.ok(packet.transport==='unsent'&&packet.providerActions.length===0,'an eligible review exports unsent copy with no provider action')
  assert.deepEqual(packet.record,reviewed,'HTTP export preserves the exact reviewed payload, source snapshots, hashes, revision and attributed history')
+ assert.equal(packet.publication,'not-published');assert.equal(packet.review.status,'reviewed')
+ const sourceReadState=ok(await O('/api/state')),sourceReadHandoffs=ok(await O('/api/handoffs/archive'))
+ for(const reference of [...packet.lamp.draft.evidenceLinks,...packet.lamp.draft.impactLinks]){
+  const link=new URL(reference);assert.equal(link.origin,w.origin)
+  const path=link.pathname+link.search,permitted=ok(await A(path))
+  if(permitted.source)assert.equal(permitted.source.incident.id,incident.id)
+  else assert.ok(permitted.incidents.some(row=>row.id===incident.id))
+  assert.deepEqual(Object.keys(ok(await w.request(path),401)),['error'],'the exported source link grants anonymous callers no private access')
+ }
+ assert.deepEqual(ok(await O('/api/state')),sourceReadState,'anonymous source reads change no coordination records')
+ assert.deepEqual(ok(await O('/api/handoffs/archive')),sourceReadHandoffs,'anonymous source reads change no handoff records or review history')
+ assert.deepEqual(ok(await O('/api/paging/state')),{...outboundBefore,workspaceRevision:sourceReadState.revision},'coordination advances its workspace revision but creates no paging job, receipt or paging revision')
+ assert.deepEqual(ok(await O('/api/automation')),automationBefore,'coordination and handoff work create no outbound response action')
+ assert.deepEqual(await w.outboundRequests(),[], 'the emitted Worker network edge refuses and records all outbound attempts; handoff preparation, review and export attempted none')
+ record('PROBE OC-006 1: emitted Worker coordination, legacy draft export, preparation, refused unreviewed export and reviewed export without an approved endpoint -> empty outbound ledger, unchanged paging state, no provider action or Lamp publication')
+ record('PROBE OC-006 2: exported legacy review-required draft and reviewed copy source links -> draft still unreviewed, prepared export refused, authorized sources populated, anonymous source reads 401 with error only')
  incident=ok(await A('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:'Source drift'}))
  ok(await A('/api/handoffs/h1/export'),409) // source drift makes the review ineligible
  const withdrawn=ok(await A('/api/handoffs/h1/withdraw',act(reviewed,'w1','Superseded by current copy'))).record
