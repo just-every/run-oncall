@@ -674,8 +674,8 @@ Core · target · **partial**
 1. Complete a US installation/dependency checklist, inspect a USD usage report and budget warning during a real paging obligation, hit an explicit capacity/provider quota refusal and observe the alternate/escalation outcome, then follow Lamp/Spool/Uptime links with independent access controls.
 2. Verify emergency guidance and advertised availability/regulated claims against the actual release evidence.
 
-**Evidence.** `src/delivery.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
-**Gap.** Current release hold, structured bounds and explicit local capacity refusal exist; provider usage/budget and target integration acceptance do not.
+**Evidence.** `docs/limits.md`; `tests/product-browser.mjs` — limitationsBrowser: emitted public limitations document, Readiness navigation, desktop accessibility and visual proof at 1440 and 390; `tests/readiness.mjs` — readinessHealth: paging OFF, unbuilt standby and unmeasured reference load; `src/delivery.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
+**Gap.** Current release hold, structured bounds and explicit local capacity refusal exist; provider usage/budget and target integration acceptance do not. Acceptance 2 guidance names no availability or regulated-data guarantee; applicable agreements and validated controls are absent. Acceptance 1 remains unproved: complete US installation and dependency checklist, real USD usage by channel and country, budget warning during a real paging obligation, provider or capacity quota alternate or escalation, and Lamp, Spool and Uptime journeys with independent access controls. Paging remains OFF; provider authorization, A2P registration, live delivery, independent standby, real-phone drills and OC-064 reference-load measurements remain required. R-1 and R-2 are dated prior evidence; not-run field rows supply no new proof or authorization.
 
 ### Complete coordination and operating guarantees
 
