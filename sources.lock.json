@@ -5660,7 +5660,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "f41aa10bc49051b76cb651e6c71a6b6f035baf8b5fc819a1d095579e661b6623",
+      "sha256": "7344c4f460a5899fa1ba461561e5f71746258f53409fd78407501a4b2803cceb",
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
