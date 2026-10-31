@@ -552,7 +552,7 @@ Core · target · **partial** · Rules D-3, D-4 · Register R-12
 1. Resolve with open critical work, generate review material, accept a correction and create a Jira, Linear, GitHub and GitLab follow-up.
 2. Advance due time with the browser shut, reopen a remote issue and revoke its connector; verify reminders, escalation, synchronization/conflicts and evidence-required completion without erasing history.
 
-**Evidence.** `src/reviews/material.ts`; `src/reviews/review-controls.ts`; `src/reviews/ReviewsHome.tsx`; `src/reviews/ReviewSheet.tsx`; `tests/runtime.mjs`; `docs/reviews.md`
+**Evidence.** `src/reviews/material.ts`; `src/reviews/review-controls.ts`; `src/reviews/ReviewsHome.tsx`; `src/reviews/ReviewSheet.tsx`; `tests/runtime.mjs`; `docs/reviews.md`; `tests/triage.mjs` — Response learning: retained pre-resolution P1 custody, revision-bound review correction/refusal, both attributed accepted snapshots and archive/restart retention
 **Gap.** Generated source-attributed observations, literal human assertions, response source entries, changes and follow-ups remain separate from revision-bound human acceptance of root cause, impact and review. Accepted assessments retain immutable timeline snapshots. Priority, UTC due dates, manual escalation contacts and evidence/human-review completion policies ship; P1 evidence submission stays open until explicit acceptance. Automatic reminders/escalation, recurring review, hypotheses/chat context and remote ticket synchronization remain missing.
 
 #### OC-037 — Response analytics and fair on-call load
