@@ -1,7 +1,8 @@
+import {nightResponseScenario,assertNightResponse,responseCsvRows} from './response-report-fixture.mjs'
 import {openWorkspaceSection,openHistoryComparison,selectRoutedSource,keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes,createHmac} from 'node:crypto'
-import {mkdir} from 'node:fs/promises'
+import {mkdir,readFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor} from './worker.mjs'
@@ -456,6 +457,79 @@ async function changeAndSigningBrowser(page,context){
  console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440; overflow, axe and hydration');
 }
 
+// The screen, API and downloaded CSV observe one frozen, populated night cohort.
+async function responseReportBrowser(browser) {
+ const w=await localWorker({}, {clock:true});let context
+ try {
+  const scenario=await nightResponseScenario(w),origin=w.origin
+  context=await browser.newContext({baseURL:origin,viewport:{width:1440,height:1000},timezoneId:'America/New_York',extraHTTPHeaders:{connection:'close'}})
+  await context.addCookies(scenario.headers.getSetCookie().map(line=>{const pair=line.split(';')[0],at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:origin,httpOnly:true,sameSite:'Lax'}}))
+  const page=await context.newPage();await page.clock.setFixedTime(new Date(scenario.observed))
+  const errors=[];page.on('pageerror',error=>errors.push(error.message))
+  await page.goto(origin+'/reviews');await page.getByText('Response numbers',{exact:true}).click()
+  const panel=page.locator('.response-report');await panel.getByLabel('Period',{exact:true}).selectOption('custom')
+  await panel.getByLabel('From date',{exact:true}).fill('2030-10-28')
+  await panel.getByLabel('Until date (excluded)',{exact:true}).fill('2030-10-30')
+  const response=page.waitForResponse(r=>{const u=new URL(r.url());return u.pathname==='/api/reports/response'&&u.searchParams.get('service')===scenario.service&&u.searchParams.get('from')==='2030-10-28T04:00:00.000Z'&&u.searchParams.get('to')==='2030-10-30T04:00:00.000Z'})
+  await panel.getByLabel('Service',{exact:true}).selectOption(scenario.service)
+  const reply=await response;assert.equal(reply.status(),200);const snapshot=await reply.json()
+  assertNightResponse(snapshot,scenario,{from:'2030-10-28T04:00:00.000Z',to:'2030-10-30T04:00:00.000Z',uncovered:23*3600})
+  await expect(panel).toHaveAttribute('aria-busy','false')
+  await expect(panel.locator('.review-snapshot strong')).toHaveText('5 incidents')
+  const metric=label=>panel.locator('article.response-metric').filter({has:page.getByRole('heading',{name:label,exact:true,level:3})})
+  const stat=async(card,label,value)=>expect(card.locator('dl > div').filter({has:page.locator('dt').filter({hasText:new RegExp('^'+label+'$')})}).locator('dd')).toHaveText(value)
+  const elapsed=value=>value===null?'No samples':value<3600?new Intl.NumberFormat('en',{maximumFractionDigits:1}).format(value / 60)+' min':new Intl.NumberFormat('en',{maximumFractionDigits:1}).format(value / 3600)+' h'
+  for(const [key,label] of [['mtta','Acknowledgement'],['mttr','Resolution'],['recovery','Human recovery attestation'],['sourceRecovery','Source-reported recovery']]) {
+   const card=metric(label),aggregate=snapshot.aggregates[key]
+   for(const [name,caption] of [['mean','Average'],['p50','p50'],['p90','p90'],['p95','p95']])await stat(card,caption,elapsed(aggregate[name]))
+   await expect(card.locator(':scope > .review-meta')).toHaveText(`Total ${aggregate.total} · measured ${aggregate.measured} · censored ${aggregate.censored} · unknown ${aggregate.unknown}`)
+  }
+  await stat(metric('Acknowledgement'),'Average','38.3 min');await stat(metric('Acknowledgement'),'p50','15 min');await stat(metric('Acknowledgement'),'p95','1.6 h')
+  await metric('Acknowledgement').getByText('Distribution',{exact:true}).click()
+  assert.deepEqual(await metric('Acknowledgement').locator('.response-distribution strong').allTextContents(),['0','0','1','1','1','0','0'])
+  const load=panel.locator('.coverage-load').filter({has:page.getByRole('heading',{name:'Load by scheduled coverage',exact:true})})
+  await expect(load).toContainText('Synthetic New York night (America/New_York)')
+  const person=name=>load.locator('article').filter({has:page.getByRole('heading',{name,exact:true,level:5})})
+  await stat(person(scenario.night.name),'Primary','6 h');await stat(person(scenario.night.name),'Acknowledged','2');await stat(person(scenario.night.name),'Per 24 primary hours','8')
+  await expect(person(scenario.night.name)).toContainText('Acknowledgement share 66.7% · primary-hour share 75% · load to coverage 0.89')
+  await expect(person(scenario.night.name)).toContainText('Outside scheduled coverage 1')
+  await stat(person(scenario.relief.name),'Primary','2 h');await stat(person(scenario.relief.name),'Acknowledged','1');await stat(person(scenario.relief.name),'Per 24 primary hours','12')
+  await expect(person(scenario.relief.name)).toContainText('Acknowledgement share 33.3% · primary-hour share 25% · load to coverage 1.33')
+  await stat(person(scenario.owner.name),'Backup','8 h')
+  await stat(person('Synthetic night response'),'Primary covered','8 h');await stat(person('Synthetic night response'),'Primary uncovered','23 h')
+  const noise=panel.locator('.alert-noise-stats')
+  for(const [label,value] of [['Alerts triggered','1'],['Trigger events','2'],['Repeated alerts','1'],['Noisy keys','1']])await stat(noise.locator('..'),label,value)
+  await panel.getByText('How these are counted',{exact:true}).click()
+  await expect(panel).toContainText('Exact UTC bounds: Mon, 28 Oct 2030 04:00:00 GMT inclusive to Wed, 30 Oct 2030 04:00:00 GMT exclusive.')
+  await expect(panel).toContainText('They are scheduled hours, not worked hours.')
+  await panel.getByText('Incidents in this period (5)',{exact:true}).click()
+  const late=panel.locator('.review-record').filter({has:page.getByRole('link',{name:scenario.late.title,exact:true})})
+  await expect(late.locator('section').filter({has:page.getByRole('heading',{name:'Acknowledgement',exact:true,level:4})})).toContainText('1.6 h · measured')
+  const frozen=new URLSearchParams({from:snapshot.cohort.from,to:snapshot.cohort.to,service:scenario.service,at:snapshot.generatedAt,revision:String(snapshot.revision),schedulingRevision:String(snapshot.load.schedulingRevision)})
+  assert.deepEqual(await scenario.req('/api/reports/response?'+frozen),snapshot)
+  const csv=await scenario.req('/api/reports/response.csv?'+frozen),table=responseCsvRows(csv),column=name=>table[0].indexOf(name)
+  for(const row of snapshot.incidents) {
+   const exported=table.find(r=>r[column('incidentId')]===row.id);assert.ok(exported)
+   for(const key of ['mtta','mttr','recovery','sourceRecovery'])for(const field of ['status','seconds','sourceAt','sourceEntryId'])assert.equal(exported[column(key+'.'+field)],row[key][field]===null?'':String(row[key][field]))
+   assert.equal(exported[column('cohortCount')],'5');assert.equal(exported[column('generatedAt')],snapshot.generatedAt)
+  }
+  for(const row of snapshot.load.responders) {
+   const exported=table.find(r=>r[0]==='responder-load'&&r[column('loadSubjectId')]===row.member)
+   for(const [csvField,field] of [['scheduledPrimarySeconds','primarySeconds'],['scheduledBackupSeconds','backupSeconds'],['loadAcknowledgements','acknowledgements'],['acknowledgementsOutsideCoverage','outsideCoverage'],['acknowledgementShare','acknowledgementShare'],['primaryHourShare','primaryShare'],['loadToCoverage','loadToCoverage']])assert.equal(exported[column(csvField)],row[field]===null?'':String(row[field]))
+  }
+  const download=page.waitForEvent('download'),exportResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/reports/response.csv')
+  await panel.getByRole('button',{name:'Export CSV',exact:true}).click();const downloaded=await download
+  const exported=await exportResponse;assert.equal(exported.status(),200);assert.equal(await readFile(await downloaded.path(),'utf8'),csv)
+  const exportQuery=new URL(exported.url()).searchParams;for(const [key,value] of frozen)assert.equal(exportQuery.get(key),value)
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true)
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(row=>['serious','critical'].includes(row.impact)),[])
+  assert.deepEqual(errors,[])
+  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser';await mkdir(directory,{recursive:true})
+  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc037-response-report-${width}.png`,fullPage:true})}
+  console.log('PROBE OC-037 dashboard: emitted Reviews at 1440 -> measured mean 38.3 minutes, p50 15 minutes, p95 1.6 hours, 5-case cohort and load for 6 and 2 scheduled hours match frozen API and downloaded CSV; visual proof once at 1440 and 390')
+ } finally {try{await context?.close()}finally{await w.close()}}
+}
+
 // OC-054 uses the real read door. Assertions run at 1440; 390 is visual proof only.
 async function readinessBrowser(page,context) {
  const origin=new URL(page.url()).origin;
@@ -535,6 +609,7 @@ try {
  }
  }
  if(focused!=='accessibility')await readinessBrowser(page,context)
+ if(!focused)await responseReportBrowser(browser)
  assert.deepEqual(errors,[],'no browser application errors')
  console.log(focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
