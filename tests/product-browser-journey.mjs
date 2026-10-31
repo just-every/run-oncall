@@ -111,6 +111,7 @@ async function incumbentActivation(page,context,width) {
 // Reading the real guide must never start the migration it describes.
 async function opsgenieReadiness(page,context,proof) {
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',viewport=page.viewportSize()
+ await mkdir(directory,{recursive:true})
  const get=async path=>{const response=await context.request.get(path);assert.equal(response.status(),200);return response.json()}
  const before=proof.snapshot(),native=await get('/api/state'),paging=await get('/api/paging/state'),outbound=await proof.outbound()
  assert.ok(native.members.length,'the unchanged native snapshot contains the signed-in member')
@@ -167,7 +168,14 @@ async function opsgenieReadiness(page,context,proof) {
     assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[])
    }
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
-   await page.screenshot({path:`${directory}/opsgenie-checklist-docs-${width}.png`,fullPage:true})
+   const clip=await heading.evaluate(heading=>{
+    let end=heading.nextElementSibling
+    while(end&&!end.textContent.startsWith('Connect this installation'))end=end.nextElementSibling
+    if(!end)throw Error('Missing section after readiness checklist')
+    const top=heading.getBoundingClientRect().top+scrollY
+    return {x:0,y:top,width:innerWidth,height:end.getBoundingClientRect().top+scrollY-top}
+   })
+   await page.screenshot({path:`${directory}/opsgenie-checklist-docs-${width}.png`,fullPage:true,clip})
    // The saved-response help had the other deadline reference; its link must
    // reach this same served checklist without starting an import either.
    await fileSource(page,'splunk')
