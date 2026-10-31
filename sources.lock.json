@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2a48193f0d0db3137d1912ca9ed7c2e8033543b441f0b4f2347c0cb3afdd572e",
+      "sha256": "33680e50b44af2e198a92102e6a01b828d6ebc4ebe2a3b14ad74c6d360d93dc2",
       "executable": false
     },
     "agent-surface.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "609b6e84e3da7d8d83af643b654dec0f082cd02413f8883fbddd5e7477e4188e",
+      "sha256": "c5dc2f0e6650f07bbc0e1ec9a8dd5384bb79c7cdd0359eb16f56fb9452e61cc8",
       "executable": false
     },
     "DEMO.md": {
@@ -5860,11 +5860,15 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "ae3f42e2b820abbf065444a58536e0e23bdcb5526d02a5660f25893934fd448d",
+      "sha256": "f87591380e57a90b676273890bc642cbf681cfbc7b55ed4b80619d76ad4d7277",
       "executable": false
     },
     "tests/readiness.mjs": {
       "sha256": "f1086f34b86c1d10efe9eabb2cd467799b1a2c14022fcc8b685947df519b88e2",
+      "executable": false
+    },
+    "tests/response-report-fixture.mjs": {
+      "sha256": "c509cefdf83770573fa6b2e4291bf993c79b6b0db0c1a5c8c2ef3f2728f43318",
       "executable": false
     },
     "tests/routing.mjs": {
@@ -5880,7 +5884,7 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "4d3f50db48ea5fbbad74ca4c1ac9d20bfdc57c097031a78bb7a33a9e71da5c3b",
+      "sha256": "59627d035922931a4cf56cefabe17d88d93cbb3428e93d6a80deb33b33e8680d",
       "executable": false
     },
     "tests/verify.mjs": {
