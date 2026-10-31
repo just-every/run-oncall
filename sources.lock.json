@@ -5872,7 +5872,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "27efc0eabd31193a95fa96f3d6171849eea391db23260bcc10696a4402a466a6",
+      "sha256": "7d44bc91f2a0b64761098276d502e53a3636887e05480157bd85031ad3e8da0b",
       "executable": false
     },
     "tests/transfer.mjs": {
@@ -5892,7 +5892,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "8819a7588ccb071116e08ef0f7ba3abd6eec6025f9a4f5e2657c9681ee390399",
+      "sha256": "51a18166088dd0e0468a5c509a3c459f4b69bd144511c0cd35477f81a4118449",
       "executable": false
     },
     "tsconfig.json": {
