@@ -1180,7 +1180,7 @@
       "executable": false
     },
     "src/api.ts": {
-      "sha256": "4fda8ea03f1c9407685e138c094d0c7d6adfa3eec7e77d1fd9ab3e2bbae7daab",
+      "sha256": "b07f047ce232804a62db13b348ed641a5c6309b7601d92dd8300f5dc103d504d",
       "executable": false
     },
     "src/app/AlertsPanel.tsx": {
@@ -5868,11 +5868,11 @@
       "executable": false
     },
     "tests/routing.mjs": {
-      "sha256": "2f7ad1f86eff7a9b9413105881c9fd34a190ba83c7096b70cf1c5e2cb7686a2a",
+      "sha256": "164754b5899955c12730a1974293131e35144c163ead6225a710021013cb9753",
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "2a00e31f0cc56d30949814f27a51929fb1d864e0d11fca398c8fe0bf6377e08d",
+      "sha256": "76fce526aeabe2f57bf85817e7ea2993481fa4aa298046ac324e814c6b2af64d",
       "executable": false
     },
     "tests/transfer.mjs": {
