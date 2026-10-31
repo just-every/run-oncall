@@ -1,5 +1,6 @@
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
+import {isDeepStrictEqual} from 'node:util'
 import {readFile,mkdir} from 'node:fs/promises'
 import {selectRoutedSource,openIncidentAction,focusWorkspace,openWorkspaceSection,routingBrowser,openHistoryComparison,keyboardUser} from './keyboard.mjs'
 import {randomBytes,randomUUID} from 'node:crypto'
@@ -366,10 +367,10 @@ async function invalidWindow(page) {
 }
 
 async function accessibleState(page,name,width,focus) {
- const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true})
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser';await mkdir(directory,{recursive:true})
  if(focus)await keyboardUser(page).focusScreenshot(focus,`${directory}/oc009-${name}-${width}.png`)
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${name} has no horizontal overflow`)
- const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
+ const axe=await new AxeBuilder({page}).analyze()
  assert.deepEqual(axe.violations.filter(violation=>['serious','critical'].includes(violation.impact)),[],`${name} has no serious or critical axe findings`)
 }
 
@@ -424,11 +425,19 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  await key.focusScreenshot(page.getByRole('button',{name:'Create rota',exact:true}),`${directory}/keyboard-rota-create-${width}.png`);
  await accessibleState(page,'rota-preview',width,page.getByRole('button',{name:'Create rota',exact:true}));
  assert.deepEqual(await api('/api/paging/state'),previewBefore,'live draft previews write no schedule, job or scheduling revision');assert.deepEqual(await api('/api/state'),workspaceBefore,'live draft previews preserve workspace records and revision');const auditAfter=await api('/api/audit/export');assert.deepEqual(auditAfter.rows.filter(row=>row.kind!=='audit.export'),auditBefore.rows.filter(row=>row.kind!=='audit.export'),'draft previews append no permanent audit record; the observing exports keep their own audits');
- await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]')?.disabled);await key.activate(page.getByRole('button',{name:'Create rota',exact:true}));await page.waitForURL(/\/on-call\/rota-[a-f0-9]{8}$/);
- const id=decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1)),created=(await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id),last=previews.filter(value=>value.input.schedule.id===id).at(-1);page.off('response',observe);
+ const visiblePreview=await page.getByRole('list',{name:'Resolved coverage spans',exact:true}).locator(':scope > li').evaluateAll(items=>items.map(item=>({at:item.querySelector('time').dateTime,primary:item.querySelector('strong').textContent,backup:[...item.querySelectorAll('p')].find(p=>p.textContent.startsWith('Backup · ')).textContent.replace(/^Backup · /,'')})));
+ await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]')?.disabled);
+ const creating=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/paging/schedules'&&response.request().method()==='POST');
+ await key.activate(page.getByRole('button',{name:'Create rota',exact:true}));await page.waitForURL(/\/on-call\/rota-[a-f0-9]{8}$/);
+ const createdReply=await creating;assert.equal(createdReply.status(),200);const submitted=createdReply.request().postDataJSON();
+ // Native segmented edits send intermediate valid drafts. Their HTTP responses
+ // can finish after the final draft; compare the preview of the submitted draft.
+ const id=decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1)),created=(await api('/api/paging/state')).schedules.find(schedule=>schedule.id===id),last=previews.filter(value=>isDeepStrictEqual(value.input.schedule,submitted)).at(-1);page.off('response',observe);
  assert.ok(last?.windows.length>1);assert.equal(created.timezone,own);
  assert.deepEqual(created.primary.members,[second.id,session.member.id],'protected HTTP readback keeps the keyboard-selected person order');
  const saved=await api('/api/paging/preview',{scheduleId:id,from:last.input.from,to:last.input.to});const assignments=windows=>windows.map(({scheduleRevision,...coverage})=>coverage);assert.deepEqual(assignments(saved),assignments(last.windows),'create preserves every previewed hand-over and assignment');
+ const personName=id=>workspaceBefore.members.find(member=>member.id===id)?.name??'Nobody on call';
+ assert.deepEqual(visiblePreview,saved.slice(0,80).map(window=>({at:new Date(window.at).toISOString(),primary:personName(window.primary),backup:personName(window.backup)})),'the rendered preview names and times match protected saved coverage');
  const first=await api('/api/schedules/'+encodeURIComponent(id)+'/now-next?at='+encodeURIComponent(new Date(last.input.from).toISOString()));assert.equal(Date.parse(first.now.windows.find(window=>window.role==='primary').end),last.windows[1].at,'the first weekly hand-over equals the live preview');
  const future=scheduleReviewWindow(now);
  // Keep the prior reviewed-editor checks through Cover and Edit: a new gap, explicit confirmation and both named-zone clock changes.
@@ -442,6 +451,8 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  const coverBefore=await api('/api/paging/state'),coverReviewResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/schedules/'+id+'/review'&&r.request().method()==='POST');
  await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
  const coverReviewReply=await coverReviewResponse;assert.equal(coverReviewReply.status(),200);const coverReview=await coverReviewReply.json();
+ const reviewedNames=await cover.getByRole('region',{name:'Coverage change intervals',exact:true}).locator('.scheduling-window > p > strong').allTextContents(),reviewName=id=>id===null?'Coverage gap':coverReview.members.find(member=>member.id===id)?.name??'Unavailable member';
+ assert.deepEqual(reviewedNames,[...coverReview.intervals].sort((a,b)=>Number(b.after===null)-Number(a.after===null)||a.start-b.start||a.role.localeCompare(b.role)).slice(0,80).map(interval=>interval.role+': '+reviewName(interval.before)+' → '+reviewName(interval.after)),'the cover review renders every protected before and after assignment');
  assert.deepEqual(await api('/api/paging/state'),coverBefore,'cover review writes nothing');assert.equal(await cover.getByRole('button',{name:'Apply reviewed change',exact:true}).isDisabled(),true);
  await key.dialog(cover);await accessibleState(page,'cover-review',width,cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}));
  await key.dismiss(cover,coverOpener);assert.deepEqual(await api('/api/paging/state'),coverBefore,'Escape from the review writes nothing');
@@ -479,7 +490,7 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  await key.activate(page.getByText('Calendar feed',{exact:true}));const feed=page.getByRole('link',{name:'Open private ICS feed',exact:true});const calendar=await context.request.get(await feed.getAttribute('href'));assert.equal(calendar.status(),200);
  const times=(await calendar.text()).split('\r\n').filter(line=>/^DT(STAMP|START|END):/.test(line));assert.ok(times.length>0);assert.ok(times.every(line=>/^DT(STAMP|START|END):[0-9]{8}T[0-9]{6}Z$/.test(line)),'calendar uses whole-second UTC times');
  await page.screenshot({path:`${directory}/rota-page-${width}.png`,fullPage:true});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
- await setTime(Date.now());
+ await setTime(null);
  if(!selectedOnly){await coverageRulesBrowser(page,context,width,session,{ownerLink});await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});}
  console.log(`PROBE OC-009 schedules, overrides and preview ${width}: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed`);
 }
@@ -814,7 +825,7 @@ async function singleIncidentPerAlert(page,context,width,service,source,key) {
 
 // keyboard-coordination: part of this public journey.
 export async function keyboardCoordination(page,context,width,ownerLink,openSession) {
- const key=keyboardUser(page),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
+ const key=keyboardUser(page),directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser'
  await mkdir(directory,{recursive:true})
  const hostile=`<img data-hostile="oncall-probe" src="https://hostile.invalid/probe" onerror="window.__oncallHostile=true"><script data-hostile="oncall-probe">window.__oncallHostile=true</script>`
  const external=[];const observe=request=>{if(request.url().startsWith('https://hostile.invalid/'))external.push(request.url())};page.on('request',observe)
@@ -860,7 +871,7 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  await key.activate(page.getByRole('menuitem',{name:'People and priority',exact:true}))
  const people=page.getByRole('dialog',{name:'People and priority',exact:true});await key.dialog(people)
  await accessibleState(page,'incident-dialog',width,people.getByRole('button',{name:'Close',exact:true}))
- await page.getByRole('tooltip',{name:'Close',exact:true}).waitFor();await key.dismiss(people,actions)
+ await page.getByRole('tooltip',{name:'Close dialog',exact:true}).waitFor();await key.dismiss(people,actions)
  const step=page.getByRole('checkbox',{name:runbookText,exact:true})
  await key.activate(step,'Space')
  await page.waitForFunction(({title,text})=>fetch('/api/state').then(r=>r.json()).then(s=>s.incidents.some(i=>i.title===title&&i.runbook.some(r=>r.text===text&&r.done))),{title:`Keyboard incident ${width}`,text:runbookText})
@@ -953,7 +964,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   await page.setViewportSize({width,height:1000})
   await setTime(keyboardInstant)
   await keyboardCoordination(page,context,width,ownerLink,openSession)
-  await setTime(Date.now())
+  await setTime(null)
   if(width===1440)await sharedIncidentLinks(page,context)
   await alertSeverity(page,context,width)
   if(width===1440)await productSchedule(page,context,width,session,{ownerLink,setTime})

@@ -21,7 +21,7 @@ export function ActionSheet({title, children, close, menu = false}: {title: stri
     if (event.shiftKey && document.activeElement === first) {event.preventDefault();last?.focus();}
     else if (!event.shiftKey && document.activeElement === last) {event.preventDefault();first?.focus();}
   }}>
-    <div className="incident-sheet-head"><h2>{title}</h2><Tooltip label="Close" dismissOnEscape><button type="button" className="incident-icon" aria-label="Close" onClick={close}>×</button></Tooltip></div>
+    <div className="incident-sheet-head"><h2>{title}</h2><Tooltip label="Close dialog" dismissOnEscape><button type="button" className="incident-icon" aria-label="Close" onClick={close}>×</button></Tooltip></div>
     <div className="incident-sheet-body">{children}</div>
   </dialog>, document.body);
 }

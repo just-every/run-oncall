@@ -121,7 +121,7 @@ const RealDate=Date;let at;
 // Explicit source timestamps and all native Date parsing remain unchanged.
 if(${clock})globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
 ${fetchSource}
-export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__provider_control'&&${Boolean(fetchSource)}){const input=await request.json();providerMode=input.mode??'normal';providerCalls=[];pkceChallenge=input.challenge??pkceChallenge;return Response.json({ok:true});}if(new URL(request.url).pathname==='/__provider_calls'&&${Boolean(fetchSource)})return Response.json({calls:providerCalls,pkceValid,revoked});if(new URL(request.url).pathname==='/__provider_cron'&&${Boolean(fetchSource)}){await app.scheduled({},env,ctx);return Response.json({ok:true});}if(new URL(request.url).pathname==='/__test_clock'){at=Number(await request.text());return new Response('clock injected');}return app.fetch(request,env,ctx);}};`);
+export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__provider_control'&&${Boolean(fetchSource)}){const input=await request.json();providerMode=input.mode??'normal';providerCalls=[];pkceChallenge=input.challenge??pkceChallenge;return Response.json({ok:true});}if(new URL(request.url).pathname==='/__provider_calls'&&${Boolean(fetchSource)})return Response.json({calls:providerCalls,pkceValid,revoked});if(new URL(request.url).pathname==='/__provider_cron'&&${Boolean(fetchSource)}){await app.scheduled({},env,ctx);return Response.json({ok:true});}if(new URL(request.url).pathname==='/__test_clock'){const value=await request.text();at=value==='real'?undefined:Number(value);return new Response('clock injected');}return app.fetch(request,env,ctx);}};`);
   await writeFile(config,JSON.stringify({...built,main:name+'.js'}));
  }
  let worker,diagnostics,logLines=''
@@ -165,7 +165,7 @@ export default {...app,async fetch(request,env,ctx){if(new URL(request.url).path
  failureHandler=()=>diagnostics.report('test failure')
  process.once('uncaughtExceptionMonitor',failureHandler)
  process.once('exit',code=>{if(code!==0)failureHandler()})
- return {origin,vars,sql,statements,request,send,start,stop,logs:()=>logLines,outboundRequests:async()=>{if(!ledger)throw Error('Outbound ledger not enabled');return (await readFile(ledger,'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line));},time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
+ return {origin,vars,sql,statements,request,send,start,stop,logs:()=>logLines,outboundRequests:async()=>{if(!ledger)throw Error('Outbound ledger not enabled');return (await readFile(ledger,'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line));},time:async at=>{if(!clock)throw Error('Clock not injected');const r=await send('/__test_clock',at===null?'real':String(at));if(r.status<200||r.status>=300)throw Error('Clock injection failed');},close:async()=>{await stop();await rm(dir,{recursive:true,force:true});for(const file of clockFiles)await rm(file,{force:true});}}
 }
 
 // The move-in screen's transport: the owner-session import door, one namespace per vendor. preview uploads the
