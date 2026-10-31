@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "5bfb1147c2ee9d7182b7d76b3f5a1fdd0e22468c5ab6cece96fc8d6acb7f72dd",
+      "sha256": "0afc781bb9e12efdbab07162599bc56782fae3b1d604211d6a844b20b4d121a2",
       "executable": false
     },
     "agent-surface.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "3b5ec4add0c4357ab77d868bce76a857eb4fe723dd0c68b369c21396f3c44f2c",
+      "sha256": "52dbed7834a45b5be29fb2d2725f737cf7cdefd89634f8a1b2f3e90672d3a705",
       "executable": false
     },
     "DEMO.md": {
@@ -1348,7 +1348,7 @@
       "executable": false
     },
     "src/audit-request.ts": {
-      "sha256": "5a2b754ed8385c4eb6652203407af87e1bcda5a8640ec8787e2244746230aa15",
+      "sha256": "77129dba3ffad87323a7d9cbb12fb85ccdebaf63a2627d4fe0330568acf63bec",
       "executable": false
     },
     "src/audit-store.ts": {
@@ -5660,7 +5660,7 @@
       "executable": false
     },
     "tests/activation.mjs": {
-      "sha256": "3a87bda0c20f877e1f87a780df914ba2ab0fa262f25b974db7a1efd87c878eb5",
+      "sha256": "330642c33506a61bbef2b83c3422debe34dd5ee7b3e81d7672b3b60744e6ad5c",
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
@@ -5868,15 +5868,15 @@
       "executable": false
     },
     "tests/routing.mjs": {
-      "sha256": "164754b5899955c12730a1974293131e35144c163ead6225a710021013cb9753",
+      "sha256": "a8940a2a8d521265e0c977e14c1edd23b2ed01b6bb4bc27c30a5602b81c08f45",
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "76fce526aeabe2f57bf85817e7ea2993481fa4aa298046ac324e814c6b2af64d",
+      "sha256": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3",
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "85af125fda00fbf548b5a177e47f1bd0fa44f0b4eca9b8e8080f9079c8b32273",
+      "sha256": "7b0526b997a9f0482f93a2d213c2d5dd12b81f44d0c5c89490c7ff089eec56d8",
       "executable": false
     },
     "tests/triage.mjs": {

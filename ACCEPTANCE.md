@@ -634,7 +634,7 @@ Core · target · **partial** · Cites BASE-AUDIT-001, BASE-OPS-005, BASE-OPS-00
 3. Interrupt import apply/resume and expire its lease; inspect durable outcomes and safe resume.
 4. Restore held data without rewriting operational history, compare portable permanent audit, and prove restored history never grants authority or reassigns labels.
 
-**Evidence.** `src/audit-store.ts`; `src/audit-database.ts`; `src/audit-request.ts`; `migrations/core/0129_admin_audit.sql`; `migrations/core/0130_import_audit_lifecycle.sql`; `tests/runtime.mjs`; `tests/transfer.mjs`; `tests/activation.mjs`; `tests/triage.mjs`; `docs/audit.md`
+**Evidence.** `src/audit-store.ts`; `src/audit-database.ts`; `src/audit-request.ts`; `migrations/core/0129_admin_audit.sql`; `migrations/core/0130_import_audit_lifecycle.sql`; `tests/runtime.mjs`; `tests/transfer.mjs`; `tests/activation.mjs`; `tests/triage.mjs`; `docs/audit.md`; `tests/routing.mjs` — attributed revision-bound publication and audit rollback
 **Gap.** Audit commits for password changes, handoff actions and routing publication, and no label reassignment after restore, are not asserted in the cited tests; workspace commands, member and access changes, source keys and admission, schedules, paging refusals, triage bulk actions, move-in, the import door and erasure commit with their audit, audit-write failures roll back, and export authority, erasure-safe labels and lease interruption are asserted. Restore is asserted to keep history and audit unchanged and grant no intake authority.
 
 #### OC-042 — Credential custody and declared external flows
