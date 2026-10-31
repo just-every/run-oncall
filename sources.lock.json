@@ -5856,7 +5856,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "cb36473bc7dc42c385a373f95863d651e7246ade939dbe8444dc9868179e1432",
+      "sha256": "85540cce0a0600cb7af7a556feb053c389b5477e2e368c8b0b460db602272f2e",
       "executable": false
     },
     "tests/product-browser.mjs": {
@@ -5872,7 +5872,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "7d44bc91f2a0b64761098276d502e53a3636887e05480157bd85031ad3e8da0b",
+      "sha256": "2a00e31f0cc56d30949814f27a51929fb1d864e0d11fca398c8fe0bf6377e08d",
       "executable": false
     },
     "tests/transfer.mjs": {
