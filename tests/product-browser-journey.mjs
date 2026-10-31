@@ -168,6 +168,18 @@ async function opsgenieReadiness(page,context,proof) {
    }
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
    await page.screenshot({path:`${directory}/opsgenie-checklist-docs-${width}.png`,fullPage:true})
+   // The saved-response help had the other deadline reference; its link must
+   // reach this same served checklist without starting an import either.
+   await fileSource(page,'splunk')
+   await page.locator('.move-in-fallback > summary').click()
+   const savedHelp=page.locator('.move-in-export-help');await savedHelp.locator('summary').click()
+   const savedLink=savedHelp.getByRole('link',{name:'Opsgenie migration readiness checklist',exact:true})
+   await savedLink.scrollIntoViewIfNeeded()
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+   await page.screenshot({path:`${directory}/opsgenie-checklist-saved-help-${width}.png`})
+   await savedLink.click()
+   await page.waitForURL('**/docs/move-in#opsgenie-migration-readiness-checklist')
+   await heading.waitFor({state:'visible'})
   }
  } finally {context.off('request',record);await page.setViewportSize(viewport)}
  assert.deepEqual(attempts,[],'guidance initiates no provider read, upload, plan, apply or other mutation request')
