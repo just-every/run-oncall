@@ -1,3 +1,4 @@
+import {nightResponseScenario,assertNightResponse,responseCsvRows} from './response-report-fixture.mjs';
 import {autonomousCoordination} from './agent-policy-fixture.mjs';
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
@@ -770,6 +771,26 @@ try{
  await w.stop();await w.start();const durable=ok(await req('/api/reports/response?'+window));assert.equal(durable.cohort.count,erased.cohort.count);assert.equal(durable.incidents.find(row=>row.id===caseRow.id).mtta.status,'unknown');
  console.log('PASS OC-040 erasure-proof response denominators: erased member load remains explicit; incident becomes anonymous unknown case; audit rollback, matching CSV, changed-workspace refusal, current restore and restart preserve the cohort');
 
+ const nightWorker=await localWorker({}, {clock:true});
+ try{
+ const night=await nightResponseScenario(nightWorker),req=(path,data)=>nightWorker.request(path,data,night.cookie),nightReport=ok(await req('/api/reports/response?'+night.query));
+ assertNightResponse(nightReport,night);
+ const coverageAt=async at=>ok(await req('/api/schedules/'+night.service+'/now-next?at='+at)).now;
+ const nightCoverage=await coverageAt('2030-10-29T04:05:00.000Z'),reliefCoverage=await coverageAt('2030-10-29T08:05:00.000Z'),outsideCoverage=await coverageAt('2030-10-29T10:15:00.000Z');
+ assert.equal(nightCoverage.timezone,'America/New_York');
+ assert.deepEqual(nightCoverage.windows.map(row=>[row.role,row.member,row.start,row.end]),[['primary',night.night.id,'2030-10-29T02:00:00.000Z','2030-10-29T08:00:00.000Z'],['backup',night.owner.id,'2030-10-29T02:00:00.000Z','2030-10-29T10:00:00.000Z']]);
+ assert.deepEqual([reliefCoverage.primary,reliefCoverage.windows[0].start,reliefCoverage.windows[0].end],[night.relief.id,'2030-10-29T08:00:00.000Z','2030-10-29T10:00:00.000Z']);
+ assert.deepEqual([outsideCoverage.primary,outsideCoverage.backup],[null,null]);
+ const frozenNight=new URLSearchParams(night.query);frozenNight.set('revision',String(nightReport.revision));frozenNight.set('schedulingRevision',String(nightReport.load.schedulingRevision));
+ assert.deepEqual(ok(await req('/api/reports/response?'+frozenNight)),nightReport,'API preserves the exact frozen observation and both revisions');
+ const nightCsv=responseCsvRows(ok(await req('/api/reports/response.csv?'+frozenNight))),nightColumn=name=>nightCsv[0].indexOf(name);
+ const lateCsv=nightCsv.find(row=>row[nightColumn('incidentId')]===night.late.id);
+ assert.deepEqual(['mtta.seconds','mtta.sourceAt','mtta.sourceEntryId','cohortCount','cohortFrom','cohortTo'].map(name=>lateCsv[nightColumn(name)]),['5700',night.acknowledgement.at,night.acknowledgement.id,'5','2030-10-29T02:00:00.000Z',night.observed]);
+ const nightLoad=nightCsv.find(row=>row[0]==='responder-load'&&row[nightColumn('loadSubjectId')]===night.night.id);
+ assert.deepEqual(['scheduledPrimarySeconds','loadAcknowledgements','acknowledgementsOutsideCoverage','acknowledgementShare','primaryHourShare','loadToCoverage'].map(name=>nightLoad[nightColumn(name)]),['21600','2','1',String(2/3),'0.75',String((2/3)/(3/4))]);
+ console.log('PROBE OC-037 late acknowledgement: protected HTTP declaration at 02:30Z and acknowledgement at 04:05Z -> 5700 seconds; measured mean 2300, p50 900, p90 and p95 5700; censored and unknown cases retained');
+ console.log('PROBE OC-037 after-hours coverage: America New York night 22:00 to 06:00 -> UTC 02:00 to 10:00, primary hours 6 and 2, backup 8; acknowledgement after 10:00 outside coverage; shares use 3 acknowledgements and 8 primary hours');
+ }finally{await nightWorker.close();}
  console.log('Response learning: measured/censored/unknown reports and CSV, relapse drilldown, generated material, human review, prioritized evidence acceptance, authority and archive/restart passed');
 }finally{await w.close();}
 
