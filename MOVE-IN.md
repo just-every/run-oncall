@@ -144,7 +144,7 @@ mapping, paused target adapter, review list and named refusals remain
 product-owned. Migration 0126 records which pending plans are the screen's own
 previews.
 
-The same reviewed file door now inventories [Splunk](docs/move-in.md#splunk-saved-responses), [JSM Ops](docs/move-in.md#jsm-saved-responses) and [Better Stack](docs/move-in.md#betterstack-saved-responses). Their documented-shape assumptions remain unverified against live accounts; unsupported objects remain named in the journal, and imported integration inventory stays inactive and keyless. Opsgenie readiness checklist deadline: 5 April 2027.
+The same reviewed file door now inventories [Splunk](docs/move-in.md#splunk-saved-responses), [JSM Ops](docs/move-in.md#jsm-saved-responses) and [Better Stack](docs/move-in.md#betterstack-saved-responses). Their documented-shape assumptions remain unverified against live accounts; unsupported objects remain named in the journal, and imported integration inventory stays inactive and keyless. Use the dated [Opsgenie migration readiness checklist](docs/move-in.md#opsgenie-migration-readiness-checklist) for the announced 5 April 2027 shutdown. Its public-documentation review was executed on 31 October 2026 (UTC); authenticated availability and live-account export checks are blocked, R-11 remains not run, and every import and cutover gate is unchecked. Recheck provider and export availability at the actual execution date. Reading the guide grants no authority and leaves the existing pager in charge.
 
 ## Read-only provider flow
 

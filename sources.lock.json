@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "4c225746895e8cca146de993efce7fa54921578409955814b392bfb83dde3970",
+      "sha256": "433624c22f2b0294d8e68d069ac1a20f499ca0308543609f73743808421ee077",
       "executable": false
     },
     "DEMO.md": {
@@ -264,7 +264,7 @@
       "executable": false
     },
     "docs/move-in.md": {
-      "sha256": "3dcc7909674581ec7ffb6a59771c1031fb50de4ecd298670d823ca2e45989075",
+      "sha256": "d73db3f7f8ba5a3e91090fd1002835a7289a9e235a2651545fa9d2b4966138c9",
       "executable": false
     },
     "docs/overview.md": {
@@ -684,7 +684,7 @@
       "executable": false
     },
     "MOVE-IN.md": {
-      "sha256": "0981dac1f6305667fbaeaa244553bfea3e428c8e2edee2947e800ced26ef4e50",
+      "sha256": "9b6a4667141cca28f84f9351963daffab7cb2d44e3836a888a4442809aa41171",
       "executable": false
     },
     "NOTICE.md": {
@@ -4728,7 +4728,7 @@
       "executable": false
     },
     "src/move-in/ExportHelp.tsx": {
-      "sha256": "f0905ad6c6eb6140034fc3335383d06e0e055c1aa13d28363efb01068c9ecca2",
+      "sha256": "eeaaf190e601d668836867c707c4a19626401eacd502b4f2c7b968d9f4b8a50c",
       "executable": false
     },
     "src/move-in/import-lifecycle-sql.d.mts": {
@@ -4816,7 +4816,7 @@
       "executable": false
     },
     "src/move-in/SavedExportHelp.tsx": {
-      "sha256": "f8d5ba652c26eb7abc56ceab985732aecd8e747bcdae122e39f1a850c2a46aec",
+      "sha256": "d7d8c4b6b4a02051f9b35360bf305596299c9da711efa65ac8cba735ce49625d",
       "executable": false
     },
     "src/move-in/source.ts": {
@@ -5856,11 +5856,11 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "5bc0a08f7807fe3d2926db4de0d16827c868795a7bf89ea4ed30c8d27dca6389",
+      "sha256": "f9239242be0571c31dfe063035a64df23f5430e4911fa6fafa570ebfe2baa1e8",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "3640b035c839ee41a1b53417b45d29c2f814cf8d34db2994c002de1058e50cce",
+      "sha256": "86ad64f0603e507bd4311480ae73b77636472ee2d5b16f7fec3a1fe5c8013d97",
       "executable": false
     },
     "tests/readiness.mjs": {

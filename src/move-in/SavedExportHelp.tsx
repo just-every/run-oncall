@@ -15,7 +15,7 @@ export function SavedExportHelp({vendor}:{vendor:string}) {
   <li>Upload the JSON, review every object and named limitation, then confirm the paused import. An integration says “incumbent key: not supplied”; nothing activates automatically.</li></ol>
   <p>{guide.limits}</p><p>Contact numbers remain unverified history and never count as paging routes. Open incidents and historical timelines remain source evidence, never live delivery.</p>
   <p>Format assumptions are unverified against a live account. A saved file cannot prove account completeness; check every pagination link and object against your own inventory. The local input limit is 512 KiB and 500 source objects.</p>
-  <p>Readiness checklist: reconcile your Opsgenie migration before its <strong>5 April 2027</strong> shutdown. Keep the incumbent pager in charge while reviewing differences.</p>
+  <p>For the announced <strong>5 April 2027</strong> Opsgenie shutdown, use the dated <a href="/docs/move-in#opsgenie-migration-readiness-checklist">Opsgenie migration readiness checklist</a>. Recheck provider and export availability at execution; unverified account checks stay blocked and cutover gates stay unchecked. Keep the incumbent pager in charge while reviewing differences.</p>
   <a href={'/docs/move-in#'+vendor+'-saved-responses'}>Source-specific assumptions and remaining gaps</a>
  </details>
 }

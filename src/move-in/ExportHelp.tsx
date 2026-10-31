@@ -18,6 +18,11 @@ export function ExportHelp({vendor}:{vendor:string}) {
  return <details className="move-in-export-help" key={vendor}>
   <summary>How to export from {name}</summary>
   <p>Use the downloadable exporter on your computer to create one ready-to-upload JSON file. It reads {name} with GET requests, handles every page, gets schedule details and joins each override to its schedule. Your existing pager stays in charge.</p>
+  {ops&&<>
+   <h3>Opsgenie migration readiness</h3>
+   <p>Public-documentation review executed <time dateTime="2026-10-31">31 October 2026 (UTC)</time>. Announced shutdown: <time dateTime="2027-04-05">5 April 2027</time>. Read the <a href="/docs/move-in#opsgenie-migration-readiness-checklist">Opsgenie migration readiness checklist</a> before exporting.</p>
+   <p>Recheck provider and export availability at execution. Authenticated account and export checks are blocked and unverified; import and cutover gates remain unchecked. Reading this guidance makes no provider request and grants no cutover authority. Keep the existing pager in charge.</p>
+  </>}
   <h3>1. Get a read-only key in {name}</h3>
   {ops?<>
    <p>Ask your Opsgenie administrator to create a separate API integration for this export:</p>
