@@ -4,8 +4,8 @@ import {randomBytes,createHmac} from 'node:crypto'
 import {mkdir} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import {localWorker,ownerDoor} from './worker.mjs'
-import {productBrowserJourney} from './product-browser-journey.mjs'
+import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
+import {productBrowserJourney,triageFiltersBrowser} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -489,7 +489,7 @@ async function readinessBrowser(page,context) {
 }
 
 // Production Worker + real local D1, without starting a managed rer dev server.
-const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true})
+const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true,outboundLedger:true})
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
 let browser,page
 try {
@@ -522,9 +522,12 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['readiness','accessibility'].includes(focused))throw Error('Unknown focused product journey');
- if(process.env.ONCALL_PRODUCT_JOURNEY!=='readiness'){
- await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime:async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));}})
+ if(focused&&!['readiness','accessibility','triage'].includes(focused))throw Error('Unknown focused product journey');
+ const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
+ const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
+ if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
+ if(!['readiness','triage'].includes(focused)){
+ await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
  console.log('PASS OC-059 incomplete intake browser: high owner obligation in alerts and routing at 1440; overflow, axe and hydration checked')
@@ -534,7 +537,7 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(focused!=='accessibility')await readinessBrowser(page,context)
+ if(!['accessibility','triage'].includes(focused))await readinessBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
  console.log(focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
@@ -547,4 +550,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(process.env.ONCALL_PRODUCT_JOURNEY!=='accessibility')await import('./agent-door-browser.mjs');
+if(!['accessibility','triage'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

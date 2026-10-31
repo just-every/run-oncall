@@ -5,6 +5,21 @@ import { fail, text, type Incident, type Member, type State } from './domain.ts'
 import { incidentAssignee, incidentUpdated, incidentUrgency } from './incident-controls.ts';
 
 export type TriageQuery = Partial<Record<'kind' | 'q' | 'status' | 'severity' | 'urgency' | 'priority' | 'service' | 'assignee' | 'mine' | 'createdAfter' | 'createdBefore' | 'updatedAfter' | 'updatedBefore' | 'sort', string>>;
+export type TriageStatus = Incident['state'] | 'triggered' | 'snoozed';
+export type TriageItem = Incident & {kind: 'incident' | 'alert'; triageStatus: TriageStatus};
+
+// Membership follows retained coordination records, never the wall clock. A
+// read cannot fire a deadline or resume an inactive restored response.
+function incidentTriageStatus(i: Incident): TriageStatus {
+  if (i.state === 'acknowledged' && i.deadlines?.some(d => d.kind === 'snooze' && d.state === 'pending')) return 'snoozed';
+  return i.state === 'declared' ? 'triggered' : i.state;
+}
+function matchesStatus(query: TriageQuery, state: Incident['state'], status: TriageStatus) {
+  if (!query.status) return true;
+  if (query.status === 'open') return state !== 'resolved';
+  // Existing saved declared queries retain their lifecycle interpretation.
+  return query.status === 'declared' ? state === 'declared' : query.status === status;
+}
 export type BulkResult = {id: string; ok: boolean; revision?: number; error?: string; kind?:'alert'|'workflow';step?:'reassign'|'declare'|'notify';incident?:string};
 export type SavedView = {id: string; kind: 'view'; actor: string; name: string; query: TriageQuery};
 export type BulkOperation = {rule?:RuleRun;id: string; kind: 'bulk'; actor: string; fingerprint: string; at: string; results: BulkResult[]; workflow?: {action?:'orchestrate';version?:1;items:{id:string;revision:number;kind:'alert'}[];member:string|null;reason:string}};
@@ -18,7 +33,7 @@ export function triageQuery(value: Record<string, unknown>): TriageQuery {
     if (value[key] === undefined || value[key] === '') continue;
     q[key] = text(value[key], key, key === 'q' ? 600 : 100);
   }
-  const choices = {kind:['incidents','alerts'],status: ['declared', 'acknowledged', 'mitigating', 'recovered', 'resolved', 'open'], severity: ['critical', 'warning', 'info'], urgency: ['high', 'low'], priority: ['P1', 'P2', 'P3', 'P4', 'P5', 'unset'], mine: ['true'], sort: ['created', 'updated', 'urgency', 'priority']};
+  const choices = {kind:['incidents','alerts'],status: ['triggered', 'snoozed', 'declared', 'acknowledged', 'mitigating', 'recovered', 'resolved', 'open'], severity: ['critical', 'warning', 'info'], urgency: ['high', 'low'], priority: ['P1', 'P2', 'P3', 'P4', 'P5', 'unset'], mine: ['true'], sort: ['created', 'updated', 'urgency', 'priority']};
   for (const [key, allowed] of Object.entries(choices)) if ((q as any)[key] && !allowed.includes((q as any)[key])) fail(`Invalid ${key} filter`);
   for (const key of ['createdAfter', 'createdBefore', 'updatedAfter', 'updatedBefore'] as const) {
     if (!q[key]) continue;
@@ -40,7 +55,7 @@ export function matchingIncidents(state: State, actor: Member, query: TriageQuer
     const keys = i.alerts.map(id => state.alerts.find(a => a.id === id)?.key ?? '');
     const haystack = [i.title, service?.name, service?.environment, ...keys, ...mergedTimeline(state,i).map(e=>e.text),...retainedIncidentSources(state,i).map(source=>source.title)].join(' ').toLocaleLowerCase();
     if (!terms.every(term => haystack.includes(term))) return false;
-    if (query.status && (query.status === 'open' ? i.state === 'resolved' : i.state !== query.status)) return false;
+    if (!matchesStatus(query, i.state, incidentTriageStatus(i))) return false;
     if (query.severity && i.severity !== query.severity || query.urgency && incidentUrgency(i) !== query.urgency) return false;
     if (query.priority && (i.priority ?? 'unset') !== query.priority || query.service && i.service !== query.service) return false;
     if (query.assignee && (incidentAssignee(i) ?? 'unassigned') !== query.assignee || query.mine && incidentAssignee(i) !== actor.id) return false;
@@ -57,17 +72,19 @@ export function matchingIncidents(state: State, actor: Member, query: TriageQuer
 }
 
 /** Alert-only list rows are a display projection; no incident is created. */
-export function matchingItems(state:State,actor:Member,query:TriageQuery):(Incident&{kind:'incident'|'alert'})[]{
- if(query.kind!=='alerts')return matchingIncidents(state,actor,query).map(i=>({...i,kind:'incident' as const}));
+export function matchingItems(state:State,actor:Member,query:TriageQuery):TriageItem[]{
+ if(query.kind!=='alerts')return matchingIncidents(state,actor,query).map(i=>({...i,kind:'incident' as const,triageStatus:incidentTriageStatus(i)}));
  return state.alerts.filter(a=>!state.incidents.some(i=>i.alerts.includes(a.id))).map(a=>{
   const events=a.events.map(id=>state.events.find(e=>e.id===id)).filter(e=>!!e),first=events[0],last=events.at(-1),held=a.coordination;
   const severity=alertSeverity(state,a);
-  return {id:a.id,kind:'alert' as const,revision:a.revision??1,title:first?.title??a.key,summary:a.key,service:a.service??'',severity,state:held?.state==='closed'||a.state==='recovered'?'resolved':held?.state==='acknowledged'?'acknowledged':'declared',createdAt:first?.acceptedAt??state.intakeReceipts?.find(r=>r.alert===a.id)?.acceptedAt??'2000-01-01T00:00:00.000Z',assignee:held?.assignee??a.owner,commander:null,urgency:a.urgency??'high',priority:a.priority??null,alerts:[a.id],runbook:[],actions:[],timeline:held?.history??[],recovery:'',review:''} as Incident&{kind:'alert'};
+  const lifecycle=held?.state==='closed'||a.state==='recovered'?'resolved':held?.state==='acknowledged'?'acknowledged':'declared';
+  const triageStatus=lifecycle==='resolved'?'resolved':held?.state==='acknowledged'?(held.snoozeDue?'snoozed':'acknowledged'):'triggered';
+  return {id:a.id,kind:'alert' as const,triageStatus,revision:a.revision??1,title:first?.title??a.key,summary:a.key,service:a.service??'',severity,state:lifecycle,createdAt:first?.acceptedAt??state.intakeReceipts?.find(r=>r.alert===a.id)?.acceptedAt??'2000-01-01T00:00:00.000Z',assignee:held?.assignee??a.owner,commander:null,urgency:a.urgency??'high',priority:a.priority??null,alerts:[a.id],runbook:[],actions:[],timeline:held?.history??[],recovery:'',review:''} as TriageItem;
  }).filter(i=>{
   const service=state.services.find(s=>s.id===i.service),terms=query.q?.toLocaleLowerCase().split(/\s+/).filter(Boolean)??[];
   const haystack=[i.title,state.alerts.find(a=>a.id===i.id)?.key,service?.name,service?.environment,...i.timeline.map(e=>e.text)].join(' ').toLocaleLowerCase();
   if(!terms.every(term=>haystack.includes(term)))return false;
-  if(query.status&&(query.status==='open'?i.state==='resolved':query.status!==i.state))return false;
+  if(!matchesStatus(query,i.state,i.triageStatus))return false;
   if(query.severity&&query.severity!==i.severity||query.service&&query.service!==i.service||query.urgency&&query.urgency!==i.urgency||query.priority&&(i.priority??'unset')!==query.priority||query.assignee&&(i.assignee??'unassigned')!==query.assignee||query.mine&&i.assignee!==actor.id)return false;
   const updated=incidentUpdated(i);return !(query.createdAfter&&i.createdAt<query.createdAfter||query.createdBefore&&i.createdAt>=query.createdBefore||query.updatedAfter&&updated<query.updatedAfter||query.updatedBefore&&updated>=query.updatedBefore);
  }).sort((a,b)=>query.sort==='priority'?(a.priority??'P9').localeCompare(b.priority??'P9')||a.id.localeCompare(b.id):query.sort==='urgency'?Number(b.urgency==='high')-Number(a.urgency==='high')||a.id.localeCompare(b.id):Date.parse(query.sort==='updated'?incidentUpdated(b):b.createdAt)-Date.parse(query.sort==='updated'?incidentUpdated(a):a.createdAt)||a.id.localeCompare(b.id));

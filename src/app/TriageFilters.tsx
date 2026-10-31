@@ -22,7 +22,7 @@ export function TriageFilters({query, change, services, members}: {query: Triage
     <label className="search">Search<input aria-label="Search incidents" placeholder="Title, notes, service or alert key" value={query.q ?? ''} onChange={e => change('q', e.target.value)} /></label>
     <details><summary>Filter and sort incidents</summary><div className="triage-filter-grid">
       <label className="triage-mine"><input type="checkbox" checked={query.mine === 'true'} onChange={e => change('mine', e.target.checked ? 'true' : '')} />Assigned to me</label>
-      {select('status', 'Incident status', options('open', 'declared', 'acknowledged', 'mitigating', 'recovered', 'resolved'))}
+      {select('status', 'Incident status', options('open', 'triggered', 'acknowledged', 'snoozed', 'resolved', 'declared', 'mitigating', 'recovered'))}
       {select('service', 'Filter service', services)}
       {select('assignee', 'Filter assignee', [{id: 'unassigned', name: 'Unassigned'}, ...members])}
       {select('urgency', 'Filter urgency', options('high', 'low'))}

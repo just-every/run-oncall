@@ -1,13 +1,14 @@
 import {autonomousCoordination} from './agent-policy-fixture.mjs';
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
-import {localWorker,ownerDoor} from './worker.mjs'
+import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 // triage-bulk: part of this public journey.
 export async function triageBulkCompletion(){
  const ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value;};
+ const pagingRecords=({workspaceRevision,...records})=>records;
 
- const w=await localWorker({}, {clock:true});
+ const w=await localWorker({}, {clock:true,outboundLedger:true});
  try{
   const setup=await w.request('/api/setup',{name:'synthetic-oncall-600',password:'synthetic-oncall-600-password'});ok(setup);let cookie=setup.cookie;
   const req=(path,input)=>w.request(path,input,cookie),state=async()=>ok(await req('/api/state'));
@@ -76,6 +77,47 @@ export async function triageBulkCompletion(){
   w.sql("CREATE TRIGGER synthetic_bulk_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='triage.resolve' AND EXISTS(SELECT 1 FROM oc_alerts WHERE id='"+unresolved.id+"' AND json_extract(data,'$.coordination.state')='closed') BEGIN SELECT RAISE(ABORT,'synthetic-oncall-600-audit'); END");
   try{const failed=ok(await bulk(rollback));assert.equal(failed.interrupted,true);assert.deepEqual((await state()).alerts.find(a=>a.id===unresolved.id),heldAlert);assert.deepEqual((await state()).triage.find(r=>r.id===rollback.operationId).results,[]);}finally{w.sql('DROP TRIGGER synthetic_bulk_audit');}
   assert.equal(ok(await bulk(rollback)).results[0].ok,true);
+  // OC-060: two independently admitted low alerts remain until explicit human coordination.
+  const lowInputs=[signal(60601),signal(60602)];
+  for(const input of lowInputs){input.title='Synthetic retained low '+input.eventId;await ingest(input);}
+  const lowAlerts=(await state()).alerts.filter(alert=>lowInputs.some(input=>input.key===alert.key));
+  assert.equal(new Set(lowAlerts.map(alert=>alert.id)).size,2);
+  assert.ok(lowAlerts.every(alert=>alert.urgency==='low'&&alert.state==='active'));
+  const lowQuery={kind:'alerts',urgency:'low',status:'triggered',q:'Synthetic retained low'};
+  const retained=durableSnapshot(w),paging=ok(await req('/api/paging/state'));
+  for(let read=0;read<3;read++){
+    const listed=await list(lowQuery);assert.deepEqual(listed.items.map(i=>i.id).sort(),lowAlerts.map(a=>a.id).sort());
+    assert.ok(listed.items.every(i=>i.urgency==='low'&&i.triageStatus==='triggered'));
+    assert.deepEqual((await list({...lowQuery,status:'declared'})).items,listed.items,'declared compatibility remains available for alerts');
+  }
+  assert.deepEqual(durableSnapshot(w),retained);assert.deepEqual(ok(await req('/api/paging/state')),paging);assert.deepEqual(await w.outboundRequests(),[]);
+  const lowA=lowAlerts[0],lowB=lowAlerts[1],lowItem=alert=>({id:alert.id,revision:alert.revision??1,kind:'alert'});
+  const acknowledgedLow=ok(await bulk({operationId:'synthetic-oncall-60601-ack',action:'acknowledge',items:[lowItem(lowA)],confirmedCount:1,reason:'Responder takes the low alert'}));
+  assert.equal(acknowledgedLow.results[0].ok,true);
+  assert.deepEqual((await list(lowQuery)).items.map(i=>i.id),[lowB.id]);
+  assert.deepEqual((await list({...lowQuery,status:'acknowledged'})).items.map(i=>i.id),[lowA.id]);
+  const closedLow=ok(await bulk({operationId:'synthetic-oncall-60602-close',action:'resolve',items:[lowItem(lowB)],confirmedCount:1,reason:'Human explicitly closes the low alert'}));
+  assert.equal(closedLow.results[0].ok,true);assert.equal((await list(lowQuery)).items.length,0);
+  assert.deepEqual((await list({...lowQuery,status:'resolved'})).items.map(i=>i.id),[lowB.id]);
+  const lowAfter=(await state()).alerts.filter(alert=>lowAlerts.some(old=>old.id===alert.id));
+  for(const alert of lowAfter){
+    assert.equal(alert.state,'active','human coordination never fabricates source recovery');
+    assert.deepEqual(alert.events,lowAlerts.find(old=>old.id===alert.id).events);
+    assert.equal(alert.urgency,'low');assert.equal(alert.coordination.history.length,1);
+    assert.equal(alert.coordination.history[0].actor,setup.value.member.id);
+    assert.ok(Number.isFinite(Date.parse(alert.coordination.history[0].at)));
+  }
+  assert.equal(lowAfter.find(a=>a.id===lowA.id).coordination.state,'acknowledged');
+  assert.equal(lowAfter.find(a=>a.id===lowB.id).coordination.state,'closed');
+  assert.deepEqual(pagingRecords(ok(await req('/api/paging/state'))),pagingRecords(paging));assert.deepEqual(await w.outboundRequests(),[]);
+  await w.time(Date.parse(snoozedAlert.coordination.snoozeDue)+60000);
+  const snoozeFilters=durableSnapshot(w);
+  const recordedSnooze=(await list({kind:'alerts',status:'snoozed'})).items;
+  assert.deepEqual(recordedSnooze.map(i=>i.id),[snoozedAlert.id]);assert.equal(recordedSnooze[0].state,'acknowledged');
+  assert.ok(!(await list({kind:'alerts',status:'acknowledged'})).items.some(i=>i.id===snoozedAlert.id));
+  assert.deepEqual(durableSnapshot(w),snoozeFilters);
+  await w.time(null);
+  console.log('PROBE OC-060 acceptance 3: native low alerts -> two stable identities retained over repeated protected reads, one attributed acknowledgment, one explicit human close, acknowledged and resolved views retain history with active source state; unchanged paging and zero outbound requests');
   const archive=ok(await req('/api/archive'));assert.ok(archive.triage.some(r=>r.id===merge.operationId));
   const checkpoint=ok(await req('/api/recovery/checkpoint'));
   const restored=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(restored);cookie=restored.cookie;assert.deepEqual((await state()).alerts,archive.alerts,'native restore retains every closed state, assignee, snooze record, revision and shared operation history');
@@ -88,7 +130,7 @@ export async function triageBulkCompletion(){
 await triageBulkCompletion();
 
 // One storm journey through emitted Worker/D1 HTTP: query, coordinate and restore.
-const w = await localWorker({INBOUND_EMAIL_DOMAIN: 'inbound.example.test'});
+const w = await localWorker({INBOUND_EMAIL_DOMAIN: 'inbound.example.test'}, {clock:true,outboundLedger:true});
 const passwords = {owner: randomBytes(24).toString('hex'), scribe: randomBytes(24).toString('hex'), viewer: randomBytes(24).toString('hex')};
 const ok = (r, status = 200) => {assert.equal(r.status, status, JSON.stringify(r.value)); return r.value;};
 try {
@@ -104,11 +146,12 @@ try {
   const actor = ok(await req('/api/session')).member;
   const service = ok(await req('/api/command', {type: 'service', name: 'Payments', environment: 'production', owner: actor.id, runbook: ['Inspect queue pressure'], pager: ''}));
   const backup = ok(await req('/api/members', {name: 'Response scribe', role: 'responder', password: passwords.scribe}), 201);
+  const queueService = ok(await req('/api/command', {type:'service',name:'Order queues',environment:'production',owner:actor.id,runbook:[],pager:''}));
   const incidents = [];
-  for (let n = 0; n < 50; n++) incidents.push(ok(await req('/api/command', {type: 'declare', service: service.id, severity: n < 40 ? 'critical' : 'warning', title: `Payment processing ${n}`, summary: 'Queue backlog with customer checkout delays'})));
-  let page = ok(await req('/api/triage?q=backlog&service=' + service.id + '&limit=25'));
+  for (let n = 0; n < 50; n++) incidents.push(ok(await req('/api/command', {type: 'declare', service: n < 40 ? service.id : queueService.id, severity: n < 40 ? 'critical' : 'warning', title: `Payment processing ${n}`, summary: 'Queue backlog with customer checkout delays'})));
+  let page = ok(await req('/api/triage?q=backlog&limit=25'));
   assert.equal(page.total, 50); assert.equal(page.items.length, 25);
-  const next = ok(await req('/api/triage?q=backlog&service=' + service.id + '&limit=25&cursor=' + encodeURIComponent(page.nextCursor)));
+  const next = ok(await req('/api/triage?q=backlog&limit=25&cursor=' + encodeURIComponent(page.nextCursor)));
   assert.equal(new Set([...page.items, ...next.items].map(i => i.id)).size, 50);
   const view = ok(await req('/api/triage/views', {name: 'Payments storm', query: {q: 'backlog', service: service.id}})).views[0];
   assert.equal(ok(await req('/api/triage/views')).views[0].id, view.id);
@@ -135,6 +178,38 @@ try {
   assert.equal(ok(await req('/api/triage?q=database')).total, 1, 'search includes notes');
   assert.equal(ok(await req('/api/triage?severity=critical&urgency=high')).total, 40);
   assert.equal(ok(await req('/api/triage?createdAfter=2090-01-01T00%3A00%3A00Z')).total, 0);
+  // OC-060: the same storm has populated service, urgency, status and mine cohorts.
+  const ids = rows => rows.map(row => row.id).sort();
+  const filtered = async (query, expected, status) => {
+    const result = ok(await req('/api/triage?' + new URLSearchParams({...query,limit:'100'})));
+    assert.equal(result.total,expected.length);assert.deepEqual(ids(result.items),ids(expected));
+    if(status)assert.ok(result.items.every(row=>row.triageStatus===status));
+    return result;
+  };
+  const snoozeTarget=state.incidents.find(i=>i.id===incidents[2].id);
+  const snoozed=ok(await req('/api/command',{type:'snooze',incident:snoozeTarget.id,revision:snoozeTarget.revision,minutes:15}));
+  await w.time(Date.parse(snoozed.deadlines.at(-1).dueAt)+60000);
+  const beforeFilters=durableSnapshot(w),pagingBefore=ok(await req('/api/paging/state'));
+  for(let read=0;read<2;read++){
+    await filtered({service:service.id},incidents.slice(0,40));
+    await filtered({service:queueService.id,urgency:'low'},incidents.slice(40));
+    await filtered({status:'triggered'},[incidents[0]],'triggered');
+    await filtered({status:'declared'},[incidents[0]],'triggered');
+    await filtered({status:'snoozed'},[snoozed],'snoozed');
+    await filtered({status:'acknowledged'},incidents.filter((_,n)=>n!==0&&n!==2),'acknowledged');
+    await filtered({mine:'true',service:queueService.id,urgency:'low',status:'acknowledged'},incidents.slice(40));
+  }
+  assert.deepEqual(ok(await req('/api/paging/state')),pagingBefore);
+  assert.deepEqual(durableSnapshot(w),beforeFilters,'filters preserve every durable row and permanent audit, including the overdue pending snooze');
+  assert.deepEqual(await w.outboundRequests(),[]);
+  const unchangedSnooze=ok(await req('/api/state')).incidents.find(i=>i.id===snoozed.id);
+  assert.equal(unchangedSnooze.state,'acknowledged');assert.equal(unchangedSnooze.deadlines.at(-1).state,'pending');
+  console.log('PROBE OC-060 acceptance 1: protected HTTP on 50 incidents -> exact service, high and low urgency, triggered, declared, acknowledged, snoozed and assigned-to-me IDs; overdue reads preserve all durable rows, audit, paging and zero outbound requests');
+  await w.time(null);
+  const cancelledSnooze=ok(await req('/api/command',{type:'cancel-deadline',incident:snoozed.id,revision:snoozed.revision}));
+  assert.equal(cancelledSnooze.deadlines.at(-1).state,'cancelled');
+  await filtered({status:'snoozed'},[]);
+  await filtered({status:'acknowledged'},incidents.slice(1),'acknowledged');
   let target = state.incidents.find(i => i.id === incidents[1].id);
   target = ok(await req('/api/command', {type: 'assign-role', incident: target.id, revision: target.revision, role: 'scribe', member: backup.id, reason: 'Record investigation decisions'}));
   assert.equal(target.scribe, backup.id); assert.equal(target.commander, actor.id);
@@ -148,6 +223,7 @@ try {
   const resolved = ok(await req('/api/triage/bulk', {...resolve, operationId: 'storm-resolve', reason: 'Database pool repaired; checkout verified by operator', evidence: 'https://example.test/checks/checkout'}));
   assert.equal(resolved.results[0].ok, true);
   assert.equal(ok(await req('/api/state')).incidents.find(i => i.id === target.id).state, 'resolved');
+  await filtered({status:'resolved'},[target],'resolved');
   const viewer = ok(await req('/api/members', {name: 'Storm observer', role: 'viewer', password: passwords.viewer}), 201);
   const viewerCookie = (await w.request('/api/login', {name: viewer.name, password: passwords.viewer})).cookie;
   const beforeViewerAudit=new Set(ok(await req('/api/audit/export')).rows.map(row=>row.id));

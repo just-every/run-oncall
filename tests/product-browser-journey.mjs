@@ -633,6 +633,116 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
 }
 
 
+// OC-060 extends the product journey with one populated storm and two low alerts.
+export async function triageFiltersBrowser(page,context,{setTime=async()=>{},proof}={}) {
+ const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
+ const call=async(path,data,status=200)=>{const response=data===undefined?await context.request.get(origin+path):await context.request.post(origin+path,{headers:{origin},data});assert.equal(response.status(),status,path);return response.json();};
+ const actor=(await call('/api/session')).member,prefix='Synthetic triage storm';
+ const pagingRecords=({workspaceRevision,...records})=>records;
+ const services=[];
+ for(const [n,name] of ['Triage payments','Triage queue'].entries())services.push(await call('/api/command',{type:'service',id:'synthetic-oncall-6060-'+n,name,environment:'test',owner:actor.id,runbook:[],pager:''}));
+ const other=await call('/api/members',{name:'synthetic-oncall-6060-responder',role:'responder',password:randomBytes(24).toString('hex')},201),storm=[];
+ for(let n=0;n<50;n++) {
+  let incident=await call('/api/command',{type:'declare',service:services[n<30?0:1].id,severity:n<20?'critical':'warning',title:prefix+' '+n,summary:'Customer requests need a human response'});
+  if(n>=10)incident=await call('/api/command',{type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Take responsibility'});
+  if(n>=40)incident=await call('/api/command',{type:'reassign',incident:incident.id,revision:incident.revision,member:other.id,reason:'Transfer responsibility to the other responder'});
+  if(n>=30&&n<35)incident=await call('/api/command',{type:'snooze',incident:incident.id,revision:incident.revision,minutes:15});
+  storm.push(incident);
+ }
+ const closing={operationId:'synthetic-oncall-6060-resolved',action:'resolve',items:storm.slice(45).map(i=>({id:i.id,revision:i.revision})),reason:'Operator verified repair',evidence:'https://example.test/triage-repair'};
+ let closed;do{closed=await call('/api/triage/bulk',closing);}while(closed.remaining&&!closed.interrupted);
+ assert.equal(closed.results.filter(row=>row.ok).length,5);
+ // Even past its due time, a read must keep a recorded snooze pending.
+ await setTime(Date.parse(storm[30].deadlines.at(-1).dueAt)+60000);
+ const snapshot=()=>proof?.snapshot(),outbound=async()=>proof?await proof.outbound():[];
+ const before=snapshot(),beforeOutbound=await outbound(),paging=await call('/api/paging/state');
+ await page.setViewportSize({width:1440,height:1000});
+ const triage=page.getByRole('region',{name:'Incident triage',exact:true});
+ const ids=rows=>rows.map(row=>row.id).sort();
+ const compare=async(query,expected,{navigate=true}={})=>{
+  const api=await call('/api/triage?'+new URLSearchParams({...query,limit:'100'}));
+  assert.equal(api.total,expected.length);assert.deepEqual(ids(api.items),ids(expected));
+  if(navigate)await page.goto(origin+'/incidents?'+new URLSearchParams(Object.entries(query).map(([key,value])=>['triage_'+key,value])));
+  await triage.locator('.triage-count').getByText(`${expected.length} matching ${query.kind==='alerts'?'alert-only items':'incidents'}`,{exact:true}).waitFor();
+  for(let loaded=25;loaded<expected.length;loaded+=25){
+   await triage.getByRole('button',{name:'Load more incidents',exact:true}).click();
+   await page.waitForFunction(count=>document.querySelectorAll('[data-triage-id]').length>=count,Math.min(expected.length,loaded+25));
+  }
+  await page.waitForFunction(expected=>{
+   const actual=[...document.querySelectorAll('[data-triage-id]')].map(row=>row.dataset.triageId).sort();
+   return JSON.stringify(actual)===JSON.stringify(expected);
+  },ids(expected));
+  assert.deepEqual(await triage.locator('[data-triage-id]').evaluateAll(rows=>rows.map(row=>row.dataset.triageId).sort()),ids(api.items));
+  return api;
+ };
+ const capture=async name=>{
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'triage fits the desktop viewport');
+  const axe=await new AxeBuilder({page}).include('[aria-label="Incident triage"]').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await triage.screenshot({path:`${directory}/OC-060-${name}-${width}.png`});}
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ await compare({q:prefix},storm);
+ await compare({q:prefix,service:services[0].id},storm.slice(0,30));
+ await compare({q:prefix,service:services[1].id,urgency:'low'},storm.slice(30));
+ await compare({q:prefix,urgency:'high'},storm.slice(0,20));
+ await compare({q:prefix,status:'triggered'},storm.slice(0,10));
+ await triage.getByText('Triggered',{exact:true}).first().waitFor();await capture('triggered');
+ await compare({q:prefix,status:'declared'},storm.slice(0,10));
+ await compare({q:prefix,status:'acknowledged'},[...storm.slice(10,30),...storm.slice(35,45)]);
+ await compare({q:prefix,status:'resolved'},storm.slice(45));
+ await compare({q:prefix,status:'snoozed'},storm.slice(30,35));
+ await triage.getByText('Snoozed',{exact:true}).first().waitFor();await capture('snoozed');
+ await page.reload();await compare({q:prefix,status:'snoozed'},storm.slice(30,35),{navigate:false});
+ await compare({q:prefix,mine:'true'},storm.slice(10,40));
+ await compare({q:prefix,mine:'true',service:services[1].id,urgency:'low',status:'snoozed'},storm.slice(30,35));
+ // Exercise the same combination through actual controls, including URL state.
+ await page.goto(origin+'/incidents');
+ await triage.getByLabel('Search incidents',{exact:true}).fill(prefix);
+ await triage.getByText('Filter and sort incidents',{exact:true}).click();
+ await triage.getByLabel('Filter service',{exact:true}).selectOption(services[1].id);
+ await triage.getByLabel('Filter urgency',{exact:true}).selectOption('low');
+ await triage.getByLabel('Incident status',{exact:true}).selectOption('snoozed');
+ await triage.getByLabel('Assigned to me',{exact:true}).check();
+ await compare({q:prefix,mine:'true',service:services[1].id,urgency:'low',status:'snoozed'},storm.slice(30,35),{navigate:false});
+ assert.equal(new URL(page.url()).searchParams.get('triage_status'),'snoozed');
+ assert.deepEqual(snapshot(),before,'filtering, pagination and reloads preserve all durable rows and permanent audit');
+ assert.deepEqual(await call('/api/paging/state'),paging);assert.deepEqual((await outbound()).slice(beforeOutbound.length),[]);
+ console.log('PROBE OC-060 acceptance 1 web: 50 incidents -> rendered IDs and counts equal protected HTTP for service, urgency, triggered, declared, acknowledged, snoozed, resolved and mine; controls and URL agree; all durable rows, audit and paging unchanged, zero outbound requests');
+ await setTime(null);
+ const source='synthetic-oncall-6060',key=randomBytes(32).toString('hex');await call('/api/sources',{id:source,key,scopes:[services[0].id]});
+ const lowTitle='Synthetic retained low alert';
+ for(let n=0;n<2;n++){
+  const identity='synthetic-oncall-6060-low-'+n;
+  const response=await context.request.post(origin+'/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:{source,eventId:identity,service:services[0].id,environment:'test',key:identity,generation:identity,intent:'trigger',severity:'warning',title:lowTitle+' '+n,observedAt:new Date().toISOString(),evidence:''}});assert.equal(response.status(),201);
+ }
+ const low=(await call('/api/state')).alerts.filter(a=>a.source===source);assert.equal(new Set(low.map(a=>a.id)).size,2);assert.ok(low.every(a=>a.urgency==='low'&&a.state==='active'));
+ const query={kind:'alerts',q:lowTitle,urgency:'low',status:'triggered'};
+ const lowBefore=snapshot(),lowOutbound=await outbound(),lowPaging=await call('/api/paging/state');
+ await compare(query,low);await page.reload();await compare(query,low,{navigate:false});await compare(query,low);
+ assert.equal(await triage.getByText('Low urgency',{exact:true}).count(),2);await capture('low-open');
+ assert.deepEqual(snapshot(),lowBefore);assert.deepEqual(await call('/api/paging/state'),lowPaging);assert.deepEqual((await outbound()).slice(lowOutbound.length),[]);
+ const act=async(alert,action)=>{
+  const title=lowTitle+' '+(alert.key.endsWith('-0')?0:1);
+  await triage.getByLabel('Select '+title,{exact:true}).check();
+  const bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption(action);
+  await bulk.getByLabel(action==='resolve'?'Resolution summary for declared incidents':'Bulk action reason',{exact:true}).fill('Authorized human '+action+' of this low alert');
+  await bulk.getByRole('button',{name:'Apply to 1 alert-only items',exact:true}).click();await page.getByText('1 changed; 0 refused',{exact:true}).waitFor();
+  await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();
+ };
+ await act(low[0],'acknowledge');await compare(query,[low[1]]);
+ await compare({...query,status:'acknowledged'},[low[0]]);await triage.getByText('Acknowledged',{exact:true}).waitFor();await capture('low-acknowledged');
+ await compare(query,[low[1]]);await act(low[1],'resolve');await compare(query,[]);
+ await compare({...query,status:'resolved'},[low[1]]);await triage.getByText('Resolved',{exact:true}).waitFor();await capture('low-resolved');
+ const after=(await call('/api/state')).alerts.filter(a=>a.source===source);
+ for(const alert of after){const original=low.find(a=>a.id===alert.id);assert.equal(alert.state,'active');assert.equal(alert.urgency,'low');assert.deepEqual(alert.events,original.events);assert.equal(alert.coordination.history.length,1);assert.equal(alert.coordination.history[0].actor,actor.id);assert.ok(Number.isFinite(Date.parse(alert.coordination.history[0].at)));}
+ assert.equal(after.find(a=>a.id===low[0].id).coordination.state,'acknowledged');assert.equal(after.find(a=>a.id===low[1].id).coordination.state,'closed');
+ assert.deepEqual(pagingRecords(await call('/api/paging/state')),pagingRecords(lowPaging));assert.deepEqual((await outbound()).slice(lowOutbound.length),[]);
+ const afterActions=snapshot();await page.reload();await compare({...query,status:'resolved'},[low[1]],{navigate:false});await compare({...query,status:'acknowledged'},[low[0]]);assert.deepEqual(snapshot(),afterActions);
+ console.log('PROBE OC-060 acceptance 3 web: two native low alerts -> retained explicit low urgency across reloads, separate attributed acknowledgment and close, retained acknowledged and resolved history, active sources, unchanged paging and zero outbound requests; changed screens captured once at 1440 and 390');
+ await page.goto(origin+'/incidents');
+}
+
 // triage-bulk-browser: part of this public journey.
 export async function triageBulkBrowser(page,context,width){
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
@@ -951,7 +1061,7 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
 
 
 // One desktop journey through the emitted production Worker and its browser UI.
-export async function productBrowserJourney(page,context,{ownerLink,openSession,accessibilityOnly=false,setTime=async()=>{}}={}) {
+export async function productBrowserJourney(page,context,{ownerLink,openSession,accessibilityOnly=false,setTime=async()=>{},triageProof}={}) {
  const key=keyboardUser(page)
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json())
  assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
@@ -972,6 +1082,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   if(width===1440)await sharedIncidentLinks(page,context)
   await alertSeverity(page,context,width)
   if(width===1440)await productSchedule(page,context,width,session,{ownerLink,setTime})
+  await triageFiltersBrowser(page,context,{setTime,proof:triageProof})
   await triageBulkBrowser(page,context,width)
   await productImport(page,context,width,session)
   await routingBrowser(page,context,width)
