@@ -111,12 +111,13 @@ async function incumbentActivation(page,context,width) {
 // Reading the real guide must never start the migration it describes.
 async function opsgenieReadiness(page,context,proof) {
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',viewport=page.viewportSize()
+ await mkdir(directory,{recursive:true})
  const get=async path=>{const response=await context.request.get(path);assert.equal(response.status(),200);return response.json()}
  const before=proof.snapshot(),native=await get('/api/state'),paging=await get('/api/paging/state'),outbound=await proof.outbound()
  assert.ok(native.members.length,'the unchanged native snapshot contains the signed-in member')
  const attempts=[],record=request=>{
   const url=new URL(request.url())
-  if(url.pathname.startsWith('/api/')&&request.method()!=='GET')attempts.push({path:url.pathname,method:request.method()})
+  if(url.origin!==new URL(page.url()).origin||url.pathname.startsWith('/api/')&&request.method()!=='GET'||/^\/api\/move-in\/pagerduty\/(start|callback)$/.test(url.pathname))attempts.push({path:url.pathname,method:request.method()})
  }
  context.on('request',record)
  try {
@@ -152,11 +153,11 @@ async function opsgenieReadiness(page,context,proof) {
     assert.match(text,/Recheck current provider and export availability/)
     assert.match(text,/public page being readable does not establish authenticated account access or a working export/)
     assert.match(text,/R-11 remains not run/);assert.match(text,/paging OFF/)
-    for(const name of ['Atlassian migration announcement','shutdown guidance','pagination reference','API integration setup']){
+    for(const name of ['Atlassian migration announcement','shutdown guidance','pagination reference','API integration setup','API access settings reference']){
      const source=article.getByRole('link',{name,exact:true}),url=new URL(await source.getAttribute('href'))
      assert.equal(url.protocol,'https:');assert.ok(url.hostname==='docs.opsgenie.com'||url.hostname==='www.atlassian.com'||url.hostname==='support.atlassian.com')
     }
-    assert.match(text,/API access settings reference could not be retrieved/)
+    assert.match(text,/does not verify that an authorized account can create or use an export key/)
     const instructions=article.getByRole('link',{name:'the saved-export instructions',exact:true})
     await instructions.click()
     await page.waitForURL('**/docs/move-in#save-your-export-with-the-downloadable-tool')
@@ -167,7 +168,14 @@ async function opsgenieReadiness(page,context,proof) {
     assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[])
    }
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
-   await page.screenshot({path:`${directory}/opsgenie-checklist-docs-${width}.png`,fullPage:true})
+   const clip=await heading.evaluate(heading=>{
+    let end=heading.nextElementSibling
+    while(end&&!end.textContent.startsWith('Connect this installation'))end=end.nextElementSibling
+    if(!end)throw Error('Missing section after readiness checklist')
+    const top=heading.getBoundingClientRect().top+scrollY
+    return {x:0,y:top,width:innerWidth,height:end.getBoundingClientRect().top+scrollY-top}
+   })
+   await page.screenshot({path:`${directory}/opsgenie-checklist-docs-${width}.png`,fullPage:true,clip})
    // The saved-response help had the other deadline reference; its link must
    // reach this same served checklist without starting an import either.
    await fileSource(page,'splunk')
