@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 15 | 45 | 24 | 84 |
-| Agent surface | 0 | 0 | 17 | 17 |
+| Core | 25 | 35 | 24 | 84 |
+| Agent surface | 0 | 15 | 2 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 15 | 45 | 41 | 101 |
+| Full target | 25 | 50 | 26 | 101 |
 
-Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f207859a` (30 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `0e4b711ed25b56bbc202323246ab3f4814bf130b` (1 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -34,15 +34,15 @@ Core · published · **done** · Cites BASE-OPS-003
 
 #### OC-002 — Routing replay
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Retain the routing policy version and explanation at admission. Release 1 routes coordination ownership, with no timed escalation or paging. Replay is read-only: it returns the historical decision, ownership, policy and evaluation snapshot beside the proposed current decision, in submitted order, and produces no alert, incident or external effect; it does not claim schedule replay. Unmatched signals remain visible and unowned; suppression reasons remain inspectable.
 
 **Acceptance.**
 1. Admit a severity-routed event, change the policy and replay it: the immutable admission explanation is compared with the proposed decision in submitted order, and durable state is unchanged before and after (zero writes).
 
-**Evidence.** `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
-**Gap.** Replay after a policy change, returning the immutable admission explanation of a severity-routed event beside the proposed decision, is not asserted in the cited test (`tests/routing.mjs` holds such a comparison); zero writes and submitted order are asserted.
+**Evidence.** `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/routing.mjs`
+**Gap.** None.
 
 #### OC-003 — Roles and authority
 
@@ -71,7 +71,7 @@ Core · published · **done**
 
 #### OC-005 — Copied runbooks
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Runbooks are copied into the incident at declaration; future service edits never silently rewrite incident instructions. Follow-ups carry owner, due date, open or completed state and completion evidence. Resolved incidents retain open work and editable review.
 
@@ -79,11 +79,11 @@ Core · published · **partial**
 1. Declare an incident and edit its service runbook, and the copied incident steps remain unchanged; an owned, due-dated action requires completion evidence; unfinished work and the review are retained after resolution.
 
 **Evidence.** `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
-**Gap.** The copied steps after a service runbook edit, creation of an owned, due-dated action, the refusal to complete an action without evidence and unfinished work kept after resolution are not asserted in the cited test; a review written after resolution is asserted to persist. Alert-level runbook access and follow-up policies are targets in OC-023/036.
+**Gap.** None.
 
 #### OC-006 — Bounded outbound incident effects
 
-Core · published · **partial** · Cites BASE-DATA-004
+Core · published · **done** · Cites BASE-DATA-004
 
 **Requirement.** In release 1, only signed OC-053 response events to an endpoint a current administrator explicitly approved may leave the incident workspace (RL-2). No paging provider notification, AI call, production action or Lamp publication occurs in release 1. Configured remote mail sends sign-in links only. Handoffs are minimum summaries with stable identity and visibility; an exported draft is explicitly unreviewed. Source links grant no access. External acceptance, delivery and acknowledgment are distinct later records. Approved OC-053 events are proved under OC-053.
 
@@ -92,7 +92,7 @@ Core · published · **partial** · Cites BASE-DATA-004
 2. Draft exports remain unreviewed, and source links confer no access.
 
 **Evidence.** `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs`
-**Gap.** No cited test asserts the absence of an AI call, that an exported draft stays marked unreviewed, or that a source link grants no access; no paging receipt, no production action and no Lamp publication are asserted. This is the current-release safety boundary, not the final product boundary.
+**Gap.** None.
 
 #### OC-007 — Native archive
 
@@ -151,7 +151,7 @@ Core · published · **done** · Cites BASE-OPS-001 · Rules D-1
 
 #### OC-011 — Calendar-day rotations
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Named-zone calendar-day rotations retain fixed primary and backup member slots. Hand-offs use the wall minute plus integer civil days, not fixed elapsed seconds. Repeated minutes explicitly choose earlier, later or reject; nonexistent or rejected boundaries produce visible gaps. Override intervals include their start and exclude their end; an overlap in the same role is rejected. Inactive, viewer and missing members do not shift slots. A duplicated primary and backup assignment leaves the backup unavailable.
 
@@ -159,7 +159,7 @@ Core · published · **partial**
 1. Save primary and backup schedules and query the HTTP preview across spring and fall DST, ambiguous and nonexistent minutes, override edges and an overlap refusal; inactive, viewer and missing slots are retained as gaps, and duplicate primary and backup responders are detected.
 
 **Evidence.** `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs`
-**Gap.** Fall-DST hand-offs, ambiguous and nonexistent minutes, viewer and missing slots kept as gaps and duplicate primary/backup detection are not asserted in the cited test; spring DST, override edges, overlap refusal and an inactive member's gap are asserted.
+**Gap.** None.
 
 #### OC-012 — Paging off
 
@@ -188,7 +188,7 @@ Core · published · **done**
 
 #### OC-014 — Side-effect-free previews
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Schedule preview, now/next and replay are side-effect-free; actual historical delivery claims remain labeled synthetic. Nothing in this release certifies production delivery.
 
@@ -196,7 +196,7 @@ Core · published · **partial**
 1. Read now/next and the schedule and routing previews: durable state and receipt counts are unchanged, no timers or provider actions are created, and historical synthetic data stays labeled.
 
 **Evidence.** `src/schedule-api.ts`; `src/paging-api.ts`; `src/family/response-operations/paging-archive.ts`; `tests/activation.mjs` — **scheduleCoordination** and **pagingHistory** (preview isolation); `tests/routing.mjs` — **OC-014 service routing preview isolation**
-**Gap.** No cited test compares durable state, receipt counts, timers or provider actions before and after a now/next, schedule or routing preview, or reads the synthetic label on historical delivery data.
+**Gap.** None.
 
 #### OC-015 — Strict module archives
 
@@ -229,7 +229,7 @@ Core · published · **done** · Cites BASE-DATA-001
 
 #### OC-017 — Reviewed handoffs
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Persist explicitly authored, unsent handoff copy with an explicit intended audience, immutable incident and service snapshots and canonical content hashes. Preparation and review actions have stable identities that conflict on changed content. Only current active responders and admins prepare, review or withdraw; viewers inspect permitted internal records and admins restore. A review binds exact copy and source versions, becomes ineligible on source drift or a recovery hold, and never grants sending, publication, recovery verification or independent-review authority. Withdrawal is terminal and preserves attributed append-only history. OC-006 and historical unreviewed envelopes stay unchanged. Separate additive handoff storage and archive are bounded to 64 records, 128 history entries per record, 128 KiB per record and 1 MiB aggregate. Explicit checkpoint version 2 includes handoffs; version 1 remains supported. Restore retains historical identities and holds active approvals atomically alongside existing recovery and credential and session safeguards. Invalid input, capacity or storage failure or losing concurrent writes preserve the complete prior state. HANDOFF-STAGE.md defines retained snapshots, eligibility and permissions. No provider send, remote fetch or Lamp publication is authorized.
 
@@ -237,8 +237,8 @@ Core · published · **partial**
 1. Prepare, review, inspect and export exact handoff copy over protected HTTP; change the source or revision, withdraw, restore versions 1 and 2 and race writes.
 2. Eligibility and holds, stable action identities, append-only attribution and every storage bound hold, with no send authority.
 
-**Evidence.** `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs`
-**Gap.** The exported packet's copy is not compared with the reviewed copy in the cited test (`tests/checkpoint-cli.mjs` holds that comparison); preparation, review, inspection, eligibility, holds, identities, attribution, every bound and the unsent export are asserted. Connected communication is a separate target in OC-034/051.
+**Evidence.** `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs`; `tests/checkpoint-cli.mjs`
+**Gap.** None.
 
 ### Activated installation and move-in
 
@@ -268,7 +268,7 @@ Core · published · **done** · Cites BASE-OPS-002
 
 #### OC-020 — Now/next and calendar feed
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Now/next explains current coverage and each role's next effective hand-off. The private ICS feed uses the same resolved UTC boundaries, including overrides and gaps, and exports primary and backup separately. It requires a current session; the default window is seven days, and explicit windows are bounded to 31 elapsed days. Calendar downloads carry no public bearer access. Alert intake records immutable events with scoped source credentials; intake never starts paging.
 
@@ -276,7 +276,7 @@ Core · published · **partial**
 1. Read now/next and the authenticated ICS feed for the seven-day default and bounded explicit windows: primary and backup UTC boundaries, overrides and gaps are correct, unauthenticated access is denied, and admission starts no paging.
 
 **Evidence.** `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/product-browser-journey.mjs`
-**Gap.** The seven-day default, the 31-day bound on explicit windows, the separate backup feed, gaps in the feed and paging-free admission are not asserted in the cited tests; now/next, an authenticated explicit-window feed with override boundaries and unauthenticated refusal are asserted. Private ICS downloads support Google Calendar/Outlook import; persistent subscription credentials are OC-025.
+**Gap.** None.
 
 #### OC-021 — Move-in preview
 
@@ -624,7 +624,7 @@ Core · target · **partial** · Cites BASE-DATA-002, BASE-DATA-003, BASE-DATA-0
 
 #### OC-041 — Durable operational audit
 
-Core · target · **partial** · Cites BASE-AUDIT-001, BASE-OPS-005, BASE-OPS-004 · Rules D-1, D-2
+Core · target · **done** · Cites BASE-AUDIT-001, BASE-OPS-005, BASE-OPS-004 · Rules D-1, D-2
 
 **Requirement.** Keep a structured, append-only permanent audit separate from the unchanged held operational history, incident timelines and reviewed handoff copy. Each permanent entry records the actor or feature, subject and source as permanent random pseudonyms, operation kind, time, before and after revision where applicable and an allowlisted outcome. Identity associations are separate and erasable: erasure deletes those associations while immutable kind, time and outcome and unlinkable labels survive. Labels are never reassigned, including after erase, restore or recreation; old chronology never becomes a new actor's. No raw identities, hashes, credential labels, tokens, telephone or message content, payload content or telemetry secrets enter this audit. Operational payload history retains its own access, retention and erasure policy under OC-040; keeping both records does not rewrite it into anonymous history. Every current mutation path commits its accepted state and permanent audit entry in the same D1 batch: workspace commands and native member and access changes, password changes, native source, intake and change keys and admission, schedules, paging refusals and historical acknowledgment and cancellation, triage bulk actions, handoffs, routing publication, move-in, the import door and erasure. Audit-write failure rolls back the state change. Committed mutations and decision receipts advance a global revision and retain workspace, paging and handoff revision snapshots. Under OC-050, an authorized human command whose every submitted value equals its stored value is a pure comparison no-op and writes no timeline, audit or revision entry. Denials, failed authorization, stale-revision conflicts and any no-op touching permission, credential, notification-routing or retention surfaces still write an audit fact, retaining equal before and after revisions when no state changes. The Response API retains its audited 201 receipt for a new operation and 200 replay; bulk operations retain durable receipts. Import apply and resume have a durable lease and retain a failed, interrupted or uncertain outcome on interruption or lease expiry; a vanished process cannot silently erase its operation. The protected audit export serves permanent audit to the current administrator; the installation owner acts as administrator until OC-023 introduces team-scoped export. The permanent audit is included in OC-052's durable transfer and erasure policy without transferring identity or execution authority. Future execution classes inherit their own atomic audit and crash and lease outcomes under door rule D-1 before shipping; those unbuilt flows remain requirements of their own clauses, and current audit completion does not establish their delivery, execution or crash proof.
 
@@ -635,11 +635,11 @@ Core · target · **partial** · Cites BASE-AUDIT-001, BASE-OPS-005, BASE-OPS-00
 4. Restore held data without rewriting operational history, compare portable permanent audit, and prove restored history never grants authority or reassigns labels.
 
 **Evidence.** `src/audit-store.ts`; `src/audit-database.ts`; `src/audit-request.ts`; `migrations/core/0129_admin_audit.sql`; `migrations/core/0130_import_audit_lifecycle.sql`; `tests/runtime.mjs`; `tests/transfer.mjs`; `tests/activation.mjs`; `tests/triage.mjs`; `docs/audit.md`; `tests/routing.mjs` — attributed revision-bound publication and audit rollback
-**Gap.** Audit commits for password changes, handoff actions and routing publication, and no label reassignment after restore, are not asserted in the cited tests; workspace commands, member and access changes, source keys and admission, schedules, paging refusals, triage bulk actions, move-in, the import door and erasure commit with their audit, audit-write failures roll back, and export authority, erasure-safe labels and lease interruption are asserted. Restore is asserted to keep history and audit unchanged and grant no intake authority.
+**Gap.** None.
 
 #### OC-042 — Credential custody and declared external flows
 
-Core · target · **partial** · Cites BASE-SECRET-001, BASE-DATA-004 · Rules D-3
+Core · target · **done** · Cites BASE-SECRET-001, BASE-DATA-004 · Rules D-3
 
 **Requirement.** Encrypt telephone destinations, provider tokens and webhook and chat capabilities at rest under installation-local key custody; display only redacted definitions and verification state. Rotate and revoke with visible effects on queued and in-flight work and independently provision standby credentials. Declare every outbound recipient and data category before enabling a connector: telecom receives the destination, minimum incident text and acknowledgment capabilities; APNs/FCM receives the device token and minimum alert; collaboration receives reviewed incident context; monitoring, code and Resolve-style connectors receive only granted query scope; mail receives addressed messages and links. AI receives only redacted incident-granted context with a named processor and retention choice. No arbitrary destination fetch or production command is authorized by a runbook or link. Restrict redirects, SSRF, budgets and signed callbacks; credential values never enter archives, logs, the UI, audit or AI context. Each capability that adds a credential or outbound flow, including telephone, paging, push-device, chat and collaboration, monitoring, code and Resolve-style query, AI and standby connectors (specifically OC-026/028/029/033/034/035/039/045/048/051/053/063/066/067/069/071), inherits this clause's obligations as door rule D-3 and proves them under its own clause before it ships. Subscriber delivery for OC-061 business services stays under this clause's custody with the held SendGrid sender, pending delivery proof: subscribers can be users, teams, Slack/Teams channels and email lists, each choosing email, push (OC-029) or chat delivery, and approved internal updates (OC-051) and optional templated "impact started/ended" notices reach subscribers of the impacted business services, with raw alert text never sent (received under RL-5).
 
@@ -647,7 +647,7 @@ Core · target · **partial** · Cites BASE-SECRET-001, BASE-DATA-004 · Rules D
 1. Configure and rotate each connector over a protected setup door, inspect authorized network traffic at its network edge and all persisted/exported representations, submit hostile URLs/redirects and revoked credentials, and prove only the chosen endpoint receives the minimum permitted content and secrets never travel in an archive or model request.
 
 **Evidence.** `src/native-sources.ts`; `src/changes/credentials.ts`; `src/changes/api.ts`; `migrations/core/0127_source_signing_custody.sql`; `src/portability-policy.mjs`; `tests/runtime.mjs`; `tests/changes.mjs`; `tests/transfer.mjs`
-**Gap.** No cited test inspects outbound traffic at a network edge, submits a hostile URL or redirect, or proves which endpoint receives which content, and there is no model request to inspect; native source custody, rotation, revocation, echo refusal and archive exclusion are asserted. Subscriber delivery under this clause's custody (OC-061) remains unbuilt, pending delivery proof with the held SendGrid sender.
+**Gap.** None.
 
 #### OC-043 — Explainable grouping and event orchestration
 
@@ -708,7 +708,7 @@ Core · target · **partial** · Rules D-1, D-3, D-4 · Register R-12
 
 #### OC-052 — Complete portable target archive and Base replacements
 
-Core · target · **partial** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT-003, BASE-PUBLIC-002, BASE-DATA-005 · Rules D-2
+Core · target · **done** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT-003, BASE-PUBLIC-002, BASE-DATA-005 · Rules D-2
 
 **Requirement.** Extend the OC-007, OC-015 and OC-016 archives to every new durable product record: teams and services, complete coverage, policies, responder destination definitions and verification history, alert and incident identities, delivery, escalation and call histories, reviews and actions, connector definitions, investigations, plans and grants as inactive history, audit, import provenance and erasure journals. Exclude sessions, passwords, provider keys, device and acknowledgment capabilities and execution credentials as installation-local authority; declare these exclusions as the product's explicit BASE-DATA-001 replacement rather than claiming credential portability. Restore atomically into the documented receiving state with all sends, schedules needing reauthorization, agent actions and publication paused; preserved history cannot satisfy live readiness or replay effects. BASE-INPUT-002 uses literal structured text and no arbitrary supplied HTML; BASE-INPUT-003 treats current JSON imports as bounded structured data with no arbitrary attachment upload (any future recording or upload must add validated scoped custody); BASE-PUBLIC-002 has no public incident embed. Native coordination has no AI dependency, and any optional management connector is explicit and revocable. These replacements preserve security, erasure and operating obligations; they do not claim untested baseline equivalence. Every new durable category keeps door rule D-2.
 
@@ -717,8 +717,8 @@ Core · target · **partial** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT
 2. Supply malformed/over-limit/erased/unknown records and inject storage/concurrency faults; preserve the full prior state.
 3. Deny optional AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.
 
-**Evidence.** `scripts/installer/archive-policy.mjs`; `src/portability-policy.mjs`; `tests/transfer.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`
-**Gap.** No cited test denies optional AI network access while native coordination runs, verifies literal input, or checks for the absence of an undeclared public embed or upload door; populated HTTP and CLI export, inactive restore with local reauthorization, refusal of malformed, over-limit, erased and unknown records and rollback under storage and concurrency faults are asserted. All current durable categories restore inactive without authority or replay.
+**Evidence.** `scripts/installer/archive-policy.mjs`; `src/portability-policy.mjs`; `tests/transfer.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`; `tests/runtime.mjs`; `tests/product-browser-journey.mjs`
+**Gap.** None.
 
 #### OC-053 — Public API, outbound events and reliable automation
 
@@ -1248,7 +1248,7 @@ Core · push-further · **partial** · Rules D-1, D-4
 
 #### BASE-AGENT-001 — One MCP door per seed
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Every seed, hosted or self-hosted, serves one remote MCP endpoint at `/mcp` over Streamable HTTP. It speaks the current revision (2026-07-28) and accepts 2025-11-25 clients through the twelve-month deprecation window. It implements `server / discover`, tools, resources and prompts. Lists are deterministic and carry `ttlMs` and `cacheScope: "private"`. Roots, Sampling and Logging are not served.
 
@@ -1260,12 +1260,12 @@ Agent surface · target · **missing**
 5. A foreign Origin returns 403, and a header and body method mismatch returns `HeaderMismatch`.
 6. An oversized body returns 413 with no effect.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass
+**Gap.** Acceptance 1 to 6 pass (`server / discover`, both protocol revisions, `UnsupportedProtocolVersion`, stable lists, Origin and method checks, size limit), but resources and prompts are not served: the declared capabilities are tools, policy, pause, audit and idempotency.
 
 #### BASE-AGENT-002 — The seed's jobs are tools, through the UI's own actions
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Each Core job a person does in the product is a tool. Where one is not, the Agent surface says why: it runs on a device, it is a person's interactive screen, it belongs to a connector or the import door, or it is an installation fact. Risk is never the reason: a risky job is a tool with its class (BASE-AGENT-006). Tools are named `<seed>.<area>.<verb>` and declare input and output schemas and truthful annotations. Each calls the same server action as the UI, so validation and authorization are written once, and the seed's embedded agents use the same registry. A business refusal returns `isError` with the seed's stable error code.
 
@@ -1277,8 +1277,8 @@ Agent surface · target · **missing**
 5. The UI action and its tool, on the same fixture, give the same record state and the same audit event type.
 6. The seed's embedded agents appear in the audit as calls to the same tools.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/oncall-agent-flow.mjs`
+**Gap.** Shipped tools validate against their schemas, carry annotations and call the native actions, but the 40 shipped tools cover only part of the Core jobs the Agent surface table lists; hand-off, routing, triage, restore and erasure jobs have no tool. No embedded agent exists, so acceptance 6 is vacuous.
 
 #### BASE-AGENT-003 — Records are resources
 
@@ -1299,7 +1299,7 @@ Agent surface · target · **missing**
 
 #### BASE-AGENT-004 — Business identity and short-lived, audience-bound tokens
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** The door is an OAuth 2.1 resource server. Its RFC 9728 metadata names the authorization servers this installation trusts. That is the paired Business when Business provisioned it, verified with the owner-claim trust the installation already holds for its import door; otherwise it is the seed's own sign-in. Access tokens are RFC 9068 JWTs with `aud` set to the seed's canonical MCP URI, `sub` the sponsoring person, `act` the agent (RFC 8693) with its specialist, scopes per tool family, and a lifetime of 15 minutes or less (5 by default). The policy scopes rules on the sponsor, agent and specialist the token names. The consent behind the tokens can last longer and is revocable. Tokens travel only in the Authorization header, and there is no passthrough.
 
@@ -1312,12 +1312,12 @@ Agent surface · target · **missing**
 6. Revoking consent in the seed or in Business refuses the next call within 60 seconds.
 7. After unpairing, Business tokens are refused and the seed's own sign-in still works.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/oncall-agent-flow.mjs`
+**Gap.** Points for acceptance 1 to 6 pass (challenge and metadata, audience, expiry, lifetime, insufficient scope, query-string token, sponsor, consent revocation); no point asserts a Business token refused after unpairing with local sign-in kept (acceptance 7).
 
 #### BASE-AGENT-005 — An agent acts as a person in a role, never more
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Every call is authorized as the sponsoring person's current role and access (BASE-ACCESS-004), intersected with the grant's resources, actions and budget. A grant only narrows. No call widens the calling agent's own authority. A call that would widen its own grant or its sponsor's role, or change the company policy or Pause, is refused with `self_escalation`, whatever the policy says; narrowing its own grant is allowed. Other access and security changes are ordinary actions in the access and security classes. An agent never acts after its sponsor is suspended. Anything an agent reads (records, files, emails, imports, other seeds' results) is data and cannot change its scope, its targets or a call's class.
 
@@ -1328,12 +1328,12 @@ Agent surface · target · **missing**
 4. Calls that widen the agent's own grant or its sponsor's role, or change the policy or Pause, return `self_escalation` and change nothing, even under a policy with every class autonomous; dropping a scope from its own grant runs.
 5. An injection fixture yields no out-of-grant call and no change of class: record text asking for a wider action, or claiming that a recipient is internal.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/oncall-agent-flow.mjs`
+**Gap.** Narrowing, escalation and injection points pass, and sponsor demotion refuses the next call; no point asserts a per-role parity matrix of every tool against the UI (acceptance 1).
 
 #### BASE-AGENT-006 — Every action declares its risk class
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Classes come from the fleet list in RISK-POLICY.md: standard, external, money, commitment, accounts, gated, access, security, destructive, sensitive and live. In the registry, each tool declares the classes it can carry and a server-side classifier that decides them per call from the arguments, current records and, for gated, the provider's answer. The classifier also supplies each class's facts: the measure (items, recipients, amount and currency, people or records), the counterparty (internal, known, new or public), the direction for access, the provider and step for gated, and the data kind for sensitive. A classifier never reads a flag, label or claim supplied by the agent or by record text. A seed cannot add a class; it proposes one for the fleet list.
 
@@ -1345,12 +1345,12 @@ Agent surface · target · **missing**
 5. No tool in `tools / list` declares a class outside the fleet list, and `rer check` fails on one.
 6. A refused call's audit row still records its computed classes.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/oncall-agent-flow.mjs`
+**Gap.** Per-tool classes, fixture facts and audit of refused calls pass for the shipped tools, but acceptance 1 (classes equal the Agent surface table) fails: 34 table tools are not shipped. No BASE-AGENT-006 point asserts that a supplied flag leaves classes unchanged (acceptance 3) or the fact fields of acceptance 4.
 
 #### BASE-AGENT-007 — The company's policy decides, at one chokepoint
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Every agent door calls one decision function: MCP, the integration API with agent tokens, and the seed's embedded agents. It evaluates the call's classes against the company's policy, as above. The seed ships no dispositions and fills no gap with one: agent access opens only under a complete policy that setup has asked for (RISK-POLICY.md), and before then every agent call returns `policy_unset` with the setup link and changes nothing. *Autonomous* runs the call. *Review* runs it and adds it to the review feed. *Approval* saves a pending action with server-computed facts and returns `input_required`, with a URL-mode elicitation to the seed's approval page and a pending handle. Each person the rule names approves the exact saved revision in a signed-in browser, and changed inputs need a new approval. The retried call returns the result and a receipt. A rejection returns `approval_rejected`, and a lapse past the wait the rule sets returns `approval_expired`. *Blocked* returns `policy_blocked`, naming the class, rule and revision.
 
@@ -1364,12 +1364,12 @@ Agent surface · target · **missing**
 7. A policy change applies to the next call within 60 seconds, and the audit cites the new revision.
 8. A policy document with a bad signature or another Business's id is rejected, and the door keeps the last valid revision.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/oncall-agent-flow.mjs`
+**Gap.** Dispositions per class, `policy_unset`, approvals with revision and summary binding, policy change and bad-signature points pass; acceptance 3 (amount thresholds) does not apply to Oncall, and acceptance 6 (the same decision through MCP, the integration API and an embedded agent) is asserted for MCP and the native REST door only.
 
 #### BASE-AGENT-008 — Truthful attribution
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Every agent act is recorded and shown as `"<agent> for <person>"`, and mail and messages an agent sends outside name it that way as their sender. An approval, a review mark, a confirmation (a warning dialog, a typed-field confirmation, a delivery confirmation), a decision or a signature attributed to a person comes only from that person's signed-in session. When an agent does the equivalent act, the record names the agent, and the act carries its own class; a binding decision or a signature is commitment. Agent doors ignore arguments that stand for a person's confirmation. No tool solves a bot check, or enters a person's own password or 2FA code at an outside service. A provider step that demands a person goes to a person, whatever the policy says; the gated class marks such steps before they run.
 
@@ -1382,12 +1382,12 @@ Agent surface · target · **missing**
 6. Activity and exports at 1440 and 390 show `"<agent> for <person>"` for every agent act.
 7. Mail an agent sends to an outside address names `"<agent> for <person>"` as its sender.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/agent-door-browser.mjs`
+**Gap.** Agent tokens cannot approve and preparer and approver attribution are asserted; no BASE-AGENT-008 point asserts a person-confirmation flag leaving the decision unchanged (acceptance 1), form elicitation never completing an approval (3) or agent-sent mail naming the agent (7).
 
 #### BASE-AGENT-009 — Every agent action is audited with its class and decision
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Extending BASE-OPS-005, each call that reads private data or changes anything records the agent client, name and specialist, and the run or task id (`traceparent` when sent); the sponsoring person, the grant, the tool and the targets; the classes and their facts, and the policy revision and rule; the decision (autonomous, review, approval, blocked, unset or self_escalation) and the outcome (done, refused, pending or failed); the approval or review id and person, and the idempotency key. For a period, the seed's Agents page shows actions by class and decision with the notable ones, the review feed (Mark reviewed, Flag, and Undo where reversible), pending approvals, steps waiting for a person and setup questions. Business shows the same across seeds.
 
@@ -1400,8 +1400,8 @@ Agent surface · target · **missing**
 6. Removing the agent keeps its rows and its name.
 7. The Agents page works at 1440 and 390 with no serious or critical axe findings.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/agent-door-browser.mjs`
+**Gap.** Complete audit rows, refused and pending calls and the review feed pass, and the Agents page is driven at 1440 and 390; no cited assertion compares its counts by class and decision with a fixture week (acceptance 3) or removes an agent and keeps its rows (6).
 
 #### BASE-AGENT-010 — Agents can follow changes
 
@@ -1422,7 +1422,7 @@ Agent surface · target · **missing**
 
 #### BASE-AGENT-011 — Limits are policy, and Pause stops everything
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Business limits are rules in the company's policy: per-call and per-day thresholds on any class's measure, such as money moved, outside recipients or items destroyed; spend caps on provider cost (models, SMS, email) per seed, specialist or agent, which setup asks with the classes; "no cap" is an answer. Tools with provider cost declare an estimate before they run, and an exhausted cap returns `budget_exhausted` before any partial effect. The seed's capacity limits (request rate, body and byte sizes) protect the installation: they bound rate and size, never daily business volume, are documented and are not policy. A grant carries budgets only when the person granting it sets them. A **Pause agents** control in the seed, and Pause all agents in Business when paired, refuses every agent token within 60 seconds until a person resumes; browser sessions and devices keep working.
 
@@ -1435,12 +1435,12 @@ Agent surface · target · **missing**
 6. Pause and Pause all agents each stop the next call within 60 seconds, and resume restores access.
 7. An agent token cannot resume.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass
+**Gap.** Pause and resume pass (acceptance 6); no point asserts the 429 rate response, per-day caps, spend caps with `budget_exhausted`, "no cap" answers or the usage view.
 
 #### BASE-AGENT-012 — Writes are idempotent and conflict-safe
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Every mutating tool requires an idempotency key and takes an optional expected revision. The same key with the same arguments returns the first outcome for at least 24 hours; the same key with different arguments returns `idempotency_conflict`; a stale revision returns `revision_conflict` with the current revision. Long work returns a job handle and a status tool, with no dependence on the Tasks extension.
 
@@ -1451,12 +1451,12 @@ Agent surface · target · **missing**
 4. A stale revision returns a conflict naming the current revision.
 5. A job handle used by another person's token reads as not found.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/oncall-agent-flow.mjs`
+**Gap.** Same-key replay, key conflict and stale revision are asserted for incident, service and schedule tools; no job handle or status tool exists, so acceptance 5 is unmet, and replay after 24 hours is not asserted.
 
 #### BASE-AGENT-013 — Manifest, docs and the conformance journey
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** `server / discover` instructions and an on-site `/docs/agents` page are generated from the action registry. The page lists tools by job, with each tool's classes, the test that adds each computed class, its scopes, resource templates, event types, capacity limits and error codes, and the specialist role. `prompts / list` carries the specialist's jobs. Base ships the conformance journey, a harness that `rer verify` runs against `rer dev` and seeds run in CI. It is an MCP client; a signed-in test person takes a person's steps (setup answers, approvals, review marks, resume) through the URLs the door returns, and the same browser leg runs the UI-parity actions and the page checks at 1440 and 390. It runs every acceptance point of BASE-AGENT-001 to 012 and of the seed's SURFACE clauses under two company policies: *all autonomous* (`*`), and *held* (standard review, every other class the seed declares approval, which the test person grants), plus the single-class variants a point names. A point that names no disposition passes under both.
 
@@ -1467,14 +1467,14 @@ Agent surface · target · **missing**
 4. Every acceptance point runs under both policies, every decision matches the policy in force, and under all autonomous no call waits for a person or is refused by policy.
 5. A stranger agent given only the seed URL completes the specialist journey through MCP.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/oncall-agent-native.mjs`
+**Gap.** The conformance journey, the registry checks and a stranger-agent specialist journey pass under both policies; the `/docs/agents` page does not list resource templates or tool classes with their tests, and `prompts / list` is not served, so acceptance 1 and 2 are unmet.
 
 ### Agent surface
 
 #### SURFACE-001 — The registry equals this table, and the Base harness passes
 
-Agent surface · target · **missing** · From new · Cites BASE-AGENT-001, BASE-AGENT-002, BASE-AGENT-003, BASE-AGENT-010, BASE-AGENT-012, BASE-AGENT-013
+Agent surface · target · **partial** · From new · Cites BASE-AGENT-001, BASE-AGENT-002, BASE-AGENT-003, BASE-AGENT-010, BASE-AGENT-012, BASE-AGENT-013
 
 **Requirement.** Oncall serves the Base MCP door with exactly the tools, resources, events and prompts this area lists.
 
@@ -1483,12 +1483,12 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-001, BASE
 2. `resources/templates/list` names the record types listed above, and each listed event type arrives with its record URI.
 3. The Base conformance journey (BASE-AGENT-013) passes on Oncall's own fixtures under the all-autonomous and held company policies.
 
-**Evidence.** None.
-**Gap.** No implementing flow. No MCP door, tool registry or conformance harness exists; machine clients use only the OC-053 service-account API.
+**Evidence.** `src/agent-door/index.server.ts`; `agent-surface.json`; `tests/agent-door.mjs` — Base conformance on Oncall's own fixtures: 5998 of 5998 points pass; `tests/oncall-agent-flow.mjs`
+**Gap.** The door serves tools, policy, Pause, audit and idempotency, and `tools / list` matches `agent-surface.json`, but not this area's table: 34 listed tools are not shipped (for example `oncall.handoffs.prepare`, `oncall.routing.publish`, `oncall.triage.bulk`, `oncall.erasure.run`, `oncall.archive.restore`) and 34 shipped tools are not in it (for example `oncall.access.update`, `oncall.privacy.erase`, `oncall.notes.add`). The door refuses resources, events, prompts and subscriptions (`capability_not_declared`), so acceptance 2 is unmet; acceptance 3 passes on the shipped surface only.
 
 #### SURFACE-002 — Oncall computes each class from the call and its records
 
-Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
+Agent surface · target · **partial** · From new · Cites BASE-AGENT-006
 
 **Requirement.** Each tool carries the classes computed by Oncall's class rules in this area.
 
@@ -1502,12 +1502,12 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
 7. `oncall.ownership.propose` adds access when the change grants or removes a team's access and adds live when the change alters whom an active service pages.
 8. `oncall.incidents.update` is standard for an incident note and adds live when escalation or another incident update changes who is paged or when.
 
-**Evidence.** None.
-**Gap.** No implementing flow. No tool or server-side class computation exists.
+**Evidence.** `src/agent-door/index.server.ts`; `src/agent-door/management-tools.ts`; `agent-surface.json`; `tests/agent-door.mjs` — BASE-AGENT-006 class points; `tests/oncall-agent-flow.mjs`
+**Gap.** Shipped tools carry server-computed classes (`oncall.services.update`, `oncall.incidents.update`, `oncall.incidents.resolve`, `oncall.schedules.update`), but `oncall.contacts.update`, `oncall.triage.bulk`, `oncall.followups.update`, `oncall.actions.run`, `oncall.remediation.run` and `oncall.ownership.propose` do not exist, so acceptance 2, 3, 4, 5, 6 and 7 are unmet.
 
 #### SURFACE-003 — A stranger agent runs a seeded on-call week under two company policies
 
-Agent surface · target · **missing** · From new · Cites BASE-AGENT-004, BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008, BASE-AGENT-009, BASE-AGENT-011, BASE-AGENT-013
+Agent surface · target · **partial** · From new · Cites BASE-AGENT-004, BASE-AGENT-005, BASE-AGENT-007, BASE-AGENT-008, BASE-AGENT-009, BASE-AGENT-011, BASE-AGENT-013
 
 **Requirement.** Given only the Oncall URL, a stranger agent acting for a named responder runs a seeded week of on-call coordination through MCP: it reads coverage and alerts, declares and works an incident, moves an override, publishes a routing rule version, prepares and reviews a hand-off and closes a follow-up. The company's policy decides every call, and the four fixed rules hold whatever the policy says.
 
@@ -1516,12 +1516,12 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-004, BASE
 2. Under the held policy (standard calls reviewed, every other class Oncall declares waiting for approval, which the test person grants), each live and commitment call waits with no effect and runs once approved, and the review feed holds the week's standard calls.
 3. An OC-053 service-account act in the same week reads as that service account, never as an agent's or a person's act.
 
-**Evidence.** None.
-**Gap.** No implementing flow. No MCP door, company policy or specialist journey exists.
+**Evidence.** `tests/oncall-agent-native.mjs`; `tests/agent-door.mjs` — the Base journey under the all-autonomous and held policies; `tests/oncall-agent-flow.mjs`; `tests/agent-door-browser.mjs`
+**Gap.** The shipped journey reads coverage and alerts, declares, acknowledges and notes an incident, creates and submits a follow-up, moves a schedule and an override and dispatches an approved event, under both policies. It does not publish a routing rule version or prepare and review a hand-off (no such tool), and a human, not the agent, accepts the follow-up. Acceptance 3 (an OC-053 service-account act reading as that account) has no cited assertion.
 
 #### SURFACE-004 — Configuration, restore and erasure carry every affected class
 
-Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
+Agent surface · target · **partial** · From new · Cites BASE-AGENT-006
 
 **Requirement.** Configuration, restore and erasure calls carry every class their effects meet under Oncall's class rules.
 
@@ -1535,8 +1535,8 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
 7. `oncall.actions.update` adds security when it changes an executor binding, second-person approval for runs by people or output redaction rules; a description-only edit remains standard.
 8. `oncall.followups.update` adds external when it creates or synchronizes a Jira, Linear, GitHub or GitLab issue or pull request, with the counterparty public for a public repository; an Oncall-only follow-up edit remains standard.
 
-**Evidence.** None.
-**Gap.** No implementing flow. No MCP door or server-side class computation exists for configuration, restore or erasure.
+**Evidence.** `src/agent-door/management-tools.ts`; `src/agent-door/erasure-receipts.ts`; `src/agent-door/team-receipts.ts`; `tests/oncall-agent-erase-replay.mjs`; `tests/oncall-agent-team-replay.mjs`; `tests/oncall-agent-schedule-replay.mjs`
+**Gap.** Class computation exists only for the shipped erasure (`oncall.privacy.erase`), team, client, endpoint and service tools. `oncall.intake.keys`, `oncall.members.update`, `oncall.erasure.run`, `oncall.archive.restore`, `oncall.sso.configure` and `oncall.actions.update` do not exist, so acceptance 1, 3, 4, 5, 6 and 7 are unmet.
 
 ## Later
 
