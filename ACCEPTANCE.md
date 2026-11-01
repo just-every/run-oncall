@@ -1250,7 +1250,7 @@ Core · push-further · **partial** · Rules D-1, D-4
 
 Agent surface · target · **missing**
 
-**Requirement.** Every seed, hosted or self-hosted, serves one remote MCP endpoint at `/mcp` over Streamable HTTP. It speaks the current revision (2026-07-28) and accepts 2025-11-25 clients through the twelve-month deprecation window. It implements `server / discover`, tools, resources and prompts. Lists are deterministic and carry `ttlMs` and `cacheScope: "private"`. Roots, Sampling and Logging are not served.
+**Requirement.** Every seed, hosted or self-hosted, serves one remote MCP endpoint at `/mcp` over Streamable HTTP. It speaks the current revision (2026-07-28) and accepts 2025-11-25 clients through the twelve-month deprecation window. It implements `server / discover` and the capabilities the seed declares in its agent-surface manifest: tools, policy, pause, audit and idempotency. A request for a capability the seed has not declared is refused with `capability_not_declared`. Resources, events and prompts are obligations a seed declares through its own Agent surface clause (here SURFACE-001), not a blanket Base requirement. Lists are deterministic and carry `ttlMs` and `cacheScope: "private"`. Roots, Sampling and Logging are not served.
 
 **Acceptance.**
 1. `server / discover` returns the supported versions, capabilities, `serverInfo` and instructions.
@@ -1259,6 +1259,7 @@ Agent surface · target · **missing**
 4. Two `tools / list` calls return the same order, with cache fields.
 5. A foreign Origin returns 403, and a header and body method mismatch returns `HeaderMismatch`.
 6. An oversized body returns 413 with no effect.
+7. A request for a capability the seed has not declared returns `capability_not_declared` with no effect.
 
 **Evidence.** None.
 **Gap.** Not yet judged through this seed's own doors.
@@ -1476,7 +1477,7 @@ Agent surface · target · **missing**
 
 Agent surface · target · **missing** · From new · Cites BASE-AGENT-001, BASE-AGENT-002, BASE-AGENT-003, BASE-AGENT-010, BASE-AGENT-012, BASE-AGENT-013
 
-**Requirement.** Oncall serves the Base MCP door with exactly the tools, resources, events and prompts this area lists.
+**Requirement.** Oncall serves the Base MCP door with exactly the tools, resources, events and prompts this area lists. The table marks each tool shipped or not yet shipped, and the resources, events and prompts are marked as not yet declared by the door; this clause stays unmet until every row ships and the door declares them.
 
 **Acceptance.**
 1. `tools/list` names exactly the tools in this area's table, each with its Core clauses and classes in `_meta`.
@@ -1529,7 +1530,7 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
 1. `oncall.intake.keys` carries security and adds live when a mode, trigger or resolve rule, activation, revocation, allowance or adapter binding changes which events admit or page.
 2. `oncall.services.update` adds live when an edit changes whom an active service pages; a runbook-only edit remains standard.
 3. `oncall.members.update` carries access and adds live when a role or activation change affects current or future coverage; changing an unscheduled member carries access alone.
-4. `oncall.erasure.run` carries destructive, adds live when the erased subject changes coverage, intake or pending delivery, adds access when it removes a member or an API client's authority, and adds security when it deletes an integration's intake keys or email addresses or an API client's keys; an incident-history-only erasure carries destructive alone.
+4. `oncall.privacy.erase` carries destructive, adds live when the erased subject changes coverage, intake or pending delivery, adds access when it removes a member or an API client's authority, and adds security when it deletes an integration's intake keys or email addresses or an API client's keys; an incident-history-only erasure carries destructive alone.
 5. `oncall.archive.restore` carries destructive, live and access when it replaces state, pauses sends and schedules and revokes prior authority. It adds security when it replaces the workspace, deleting every intake, email, change, incumbent, API client and endpoint credential and every other member's password; a module-only restore does not.
 6. `oncall.sso.configure` carries security and adds access when it enables or changes just-in-time accounts, their default role or group mapping; a signing-certificate-only rotation carries security alone.
 7. `oncall.actions.update` adds security when it changes an executor binding, second-person approval for runs by people or output redaction rules; a description-only edit remains standard.
