@@ -982,7 +982,7 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 *Tier:* Agent surface
 
-**Requirement.** Every seed, hosted or self-hosted, serves one remote MCP endpoint at `/mcp` over Streamable HTTP. It speaks the current revision (2026-07-28) and accepts 2025-11-25 clients through the twelve-month deprecation window. It implements `server / discover`, tools, resources and prompts. Lists are deterministic and carry `ttlMs` and `cacheScope: "private"`. Roots, Sampling and Logging are not served.
+**Requirement.** Every seed, hosted or self-hosted, serves one remote MCP endpoint at `/mcp` over Streamable HTTP. It speaks the current revision (2026-07-28) and accepts 2025-11-25 clients through the twelve-month deprecation window. It implements `server / discover` and the capabilities the seed declares in its agent-surface manifest: tools, policy, pause, audit and idempotency. A request for a capability the seed has not declared is refused with `capability_not_declared`. Resources, events and prompts are obligations a seed declares through its own Agent surface clause (here SURFACE-001), not a blanket Base requirement. Lists are deterministic and carry `ttlMs` and `cacheScope: "private"`. Roots, Sampling and Logging are not served.
 
 **Acceptance.**
 1. `server / discover` returns the supported versions, capabilities, `serverInfo` and instructions.
@@ -991,6 +991,7 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 4. Two `tools / list` calls return the same order, with cache fields.
 5. A foreign Origin returns 403, and a header and body method mismatch returns `HeaderMismatch`.
 6. An oversized body returns 413 with no effect.
+7. A request for a capability the seed has not declared returns `capability_not_declared` with no effect.
 
 #### BASE-AGENT-002 — The seed's jobs are tools, through the UI's own actions
 
@@ -1182,48 +1183,78 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 | Tool | Does | Core clauses | Risk class | Today |
 | --- | --- | --- | --- | --- |
-| `oncall.alerts.list` | Read alerts, events and their routing explanations | OC-001, OC-002, OC-059 | standard | API (integrations) |
-| `oncall.alerts.replay` | Replay events against the current or a draft policy with zero writes | OC-002, OC-014, OC-043, OC-070 | standard | none |
-| `oncall.incidents.declare` | Declare an incident from alerts | OC-004, OC-050, OC-056 | standard | API (incidents) |
-| `oncall.incidents.update` | Acknowledge, note, reassign, snooze or escalate an incident and assign its roles | OC-004, OC-027, OC-050, OC-058 | standard (+ live) | API (incidents) |
-| `oncall.bridges.create` | Create or join a Zoom or Teams incident bridge and record its participants and link | OC-035 | external | none |
-| `oncall.incidents.resolve` | Resolve a declared incident with its summary and evidence | OC-004, OC-056 | commitment | API (incidents) |
-| `oncall.incidents.merge` | Merge related incidents or split an unrelated alert group | OC-050 | standard | none |
-| `oncall.triage.list` | Search, filter and save triage views | OC-060 | standard | none |
-| `oncall.triage.bulk` | Apply one action to selected or matching items | OC-079 | standard (+ commitment) (+ live) | none |
-| `oncall.pages.create` | Page a service, a person or a policy, or request responders | OC-026, OC-068 | live | API (incidents) |
-| `oncall.schedules.update` | Change rotations, layers, overrides, holiday and PTO coverage | OC-011, OC-024, OC-077 | live | API (schedules) |
-| `oncall.swaps.respond` | Request, accept or decline a swap | OC-025 | live | none |
-| `oncall.coverage.read` | Read now/next, coverage previews and route counts | OC-014, OC-020, OC-076 | standard | API (schedules) |
-| `oncall.calendar.subscribe` | Issue or revoke a private calendar feed | OC-020, OC-025 | external · security | none |
-| `oncall.policies.update` | Publish escalation, urgency, response, timeout and user-assignment rules | OC-027, OC-056, OC-057, OC-058, OC-068 | live | none |
-| `oncall.routing.publish` | Publish routing rule sets, catch-alls and orchestration rules, and re-admit unrouted events | OC-043, OC-072, OC-083 | live | none |
-| `oncall.intake.keys` | Create, rotate, activate or revoke intake keys, allowances, email addresses, modes and adapters | OC-030, OC-031, OC-033, OC-042, OC-055, OC-070, OC-072, OC-084 | security (+ live) | API (integrations) |
-| `oncall.services.update` | Maintain services, teams, ownership, dependencies and business services | OC-023, OC-061 | standard (+ access) (+ live) | API (services) |
-| `oncall.members.update` | Add members, change roles and deactivate | OC-003, OC-039 | access (+ live) | none |
-| `oncall.contacts.update` | Enroll and verify a responder's destinations and notification rules | OC-026, OC-066 | standard (+ gated) (+ live) | none |
-| `oncall.handoffs.prepare` | Prepare or withdraw hand-off copy | OC-017 | standard | none |
-| `oncall.handoffs.review` | Review exact hand-off copy | OC-017 | commitment | none |
-| `oncall.updates.publish` | Publish a reviewed internal or customer update | OC-051, OC-061 | external · commitment | none |
-| `oncall.followups.update` | Create, complete or accept follow-ups, root causes and reviews | OC-005, OC-036, OC-049 | standard (+ commitment) (+ external) | API (actions) |
-| `oncall.reports.read` | Read response analytics, load, usage and readiness | OC-037, OC-044, OC-054 | standard | API (analytics) |
-| `oncall.changes.list` | List recent changes for a service, alert or incident | OC-065 | standard | none |
-| `oncall.archive.export` | Export the archive, a checkpoint or the permanent audit | OC-007, OC-015, OC-016, OC-041, OC-052 | standard | none |
-| `oncall.archive.restore` | Restore an archive or checkpoint, replacing state | OC-007, OC-013, OC-015, OC-016, OC-052 | destructive · live · access (+ security) | none |
-| `oncall.paging.history` | Acknowledge or cancel held historical paging jobs | OC-013 | standard | none |
-| `oncall.erasure.run` | Erase a person, incident, integration or change record | OC-040 | destructive (+ live) (+ access) (+ security) | none |
-| `oncall.automation.clients` | Create, rotate or revoke API clients | OC-053 | access · security | none |
-| `oncall.automation.endpoints` | Register, rotate or revoke outbound event endpoints | OC-053 | external · security | none |
-| `oncall.automation.replay` | Replay a held or uncertain outbound event | OC-053 | external | none |
-| `oncall.actions.update` | Create, edit or retire library actions, including their executors, bounds and allowed teams and roles | OC-063 | standard (+ access) (+ security) | none |
-| `oncall.actions.run` | Run a library action through its named executor | OC-063 | live (+ destructive) | none |
-| `oncall.remediation.run` | Run a bounded remediation plan | OC-048 | live (+ destructive) | none |
-| `oncall.investigations.start` | Start or stop an investigation of an incident | OC-045 | standard | none |
-| `oncall.ownership.propose` | Prepare and apply ownership, dependency and runbook changes | OC-046 | standard (+ access) (+ live) | none |
-| `oncall.readiness.drill` | Schedule or run a readiness drill | OC-047, OC-054 | live | none |
-| `oncall.sso.configure` | Configure SSO connections, just-in-time accounts and required SSO | OC-039, OC-069 | security (+ access) | none |
+| `oncall.alerts.list` | Read alerts, events and their routing explanations | OC-001, OC-002, OC-059 | standard | Not yet shipped · API (integrations) |
+| `oncall.alerts.replay` | Replay events against the current or a draft policy with zero writes | OC-002, OC-014, OC-043, OC-070 | standard | Not yet shipped |
+| `oncall.incidents.declare` | Declare an incident from alerts | OC-004, OC-050, OC-056 | standard | Shipped |
+| `oncall.incidents.list` | List incidents the caller may read | OC-003, OC-053 | standard (+ sensitive) | Shipped |
+| `oncall.incidents.read` | Read one incident | OC-003, OC-004, OC-053 | standard (+ sensitive) | Shipped |
+| `oncall.incidents.receipt` | Read the receipt of an earlier incident call by its idempotency key | OC-053 | standard | Shipped |
+| `oncall.incidents.update` | Acknowledge, note, reassign, snooze or escalate an incident and assign its roles | OC-004, OC-027, OC-050, OC-058 | standard (+ live) | Shipped for reassign, role and recovery changes; acknowledge and note ship as oncall.incidents.acknowledge and oncall.notes.add; snooze, escalate and the live addition not yet shipped |
+| `oncall.incidents.acknowledge` | Record an agent acknowledgment naming an active human responder | OC-004, OC-053 | standard (+ sensitive) | Shipped |
+| `oncall.notes.add` | Append an agent-attributed note to an incident | OC-004, OC-008 | standard (+ sensitive) | Shipped |
+| `oncall.bridges.create` | Create or join a Zoom or Teams incident bridge and record its participants and link | OC-035 | external | Not yet shipped |
+| `oncall.incidents.resolve` | Resolve a declared incident with its summary and evidence | OC-004, OC-056 | commitment | Shipped |
+| `oncall.incidents.merge` | Merge related incidents or split an unrelated alert group | OC-050 | standard | Not yet shipped |
+| `oncall.triage.list` | Search, filter and save triage views | OC-060 | standard | Not yet shipped |
+| `oncall.triage.bulk` | Apply one action to selected or matching items | OC-079 | standard (+ commitment) (+ live) | Not yet shipped |
+| `oncall.pages.create` | Page a service, a person or a policy, or request responders | OC-026, OC-068 | live | Not yet shipped · API (incidents) |
+| `oncall.schedules.update` | Change rotations, layers, overrides, holiday and PTO coverage | OC-011, OC-024, OC-077 | live | Shipped |
+| `oncall.schedules.create` | Create a native schedule within the granted service and team authority | OC-003, OC-011, OC-012, OC-024, OC-053 | standard (+ sensitive) (+ live) | Shipped |
+| `oncall.schedules.override` | Append a primary or backup override to a schedule | OC-003, OC-011, OC-012, OC-024, OC-053 | standard (+ sensitive) (+ live) | Shipped |
+| `oncall.schedules.read` | Read schedules within the granted service scope | OC-003, OC-011, OC-014, OC-053 | standard (+ sensitive) | Shipped |
+| `oncall.schedules.review` | Compute the coverage diff and review digest of a schedule change without writing | OC-003, OC-011, OC-014, OC-024 | standard (+ sensitive) | Shipped |
+| `oncall.schedules.receipt` | Read the receipt of an earlier schedule call by its idempotency key | OC-053 | standard | Shipped |
+| `oncall.swaps.respond` | Request, accept or decline a swap | OC-025 | live | Not yet shipped |
+| `oncall.schedules.coverage` | Read now/next, coverage previews and route counts | OC-014, OC-020, OC-076 | standard | Shipped |
+| `oncall.calendar.subscribe` | Issue or revoke a private calendar feed | OC-020, OC-025 | external · security | Not yet shipped |
+| `oncall.policies.update` | Publish escalation, urgency, response, timeout and user-assignment rules | OC-027, OC-056, OC-057, OC-058, OC-068 | live | Not yet shipped |
+| `oncall.routing.publish` | Publish routing rule sets, catch-alls and orchestration rules, and re-admit unrouted events | OC-043, OC-072, OC-083 | live | Not yet shipped |
+| `oncall.intake.keys` | Create, rotate, activate or revoke intake keys, allowances, email addresses, modes and adapters | OC-030, OC-031, OC-033, OC-042, OC-055, OC-070, OC-072, OC-084 | security (+ live) | Not yet shipped · API (integrations) |
+| `oncall.services.update` | Maintain services, teams, ownership, dependencies and business services | OC-023, OC-061 | standard (+ access) (+ live) | Shipped for the native service record (standard class only today); teams ship as oncall.teams.update; the access and live additions not yet computed |
+| `oncall.services.list` | List services | OC-003, OC-053 | standard | Shipped |
+| `oncall.services.read` | Read one service | OC-003, OC-005, OC-053 | standard | Shipped |
+| `oncall.services.receipt` | Read the receipt of an earlier service call by its idempotency key | OC-053 | standard | Shipped |
+| `oncall.teams.update` | Create or edit a public team | OC-023, OC-041 | standard (+ access) | Shipped |
+| `oncall.members.update` | Add members, change roles and deactivate | OC-003, OC-039 | access (+ live) | Not yet shipped |
+| `oncall.access.read` | Read member access and roles | OC-003, OC-023 | standard (+ sensitive) | Shipped |
+| `oncall.access.update` | Change an existing member's role and active access under a current administrator sponsor | OC-003, OC-041, OC-053 | access | Shipped |
+| `oncall.contacts.update` | Enroll and verify a responder's destinations and notification rules | OC-026, OC-066 | standard (+ gated) (+ live) | Not yet shipped |
+| `oncall.handoffs.prepare` | Prepare or withdraw hand-off copy | OC-017 | standard | Not yet shipped |
+| `oncall.handoffs.review` | Review exact hand-off copy | OC-017 | commitment | Not yet shipped |
+| `oncall.updates.publish` | Publish a reviewed internal or customer update | OC-051, OC-061 | external · commitment | Not yet shipped |
+| `oncall.followups.update` | Create, complete or accept follow-ups, root causes and reviews | OC-005, OC-036, OC-049 | standard (+ commitment) (+ external) | Not yet shipped · API (actions) |
+| `oncall.actions.create` | Create an owned, due-dated follow-up | OC-005, OC-053 | standard (+ sensitive) | Shipped |
+| `oncall.actions.list` | List follow-ups | OC-005, OC-053 | standard (+ sensitive) | Shipped |
+| `oncall.actions.read` | Read one follow-up | OC-005, OC-036 | standard (+ sensitive) | Shipped |
+| `oncall.actions.submit` | Submit completion evidence for a follow-up | OC-005, OC-053 | standard (+ sensitive) | Shipped |
+| `oncall.actions.receipt` | Read the receipt of an earlier follow-up call by its idempotency key | OC-053 | standard | Shipped |
+| `oncall.reviews.read` | Read an incident's review material | OC-036, OC-049 | standard (+ sensitive) | Shipped |
+| `oncall.analytics.read` | Read response analytics, load, usage and readiness | OC-037, OC-044, OC-054 | standard | Shipped as response analytics (OC-030, OC-053); load, usage and readiness reading not yet shipped |
+| `oncall.coordination.read` | Read the workspace coordination state and its revision | OC-003, OC-004, OC-036, OC-053 | standard | Shipped |
+| `oncall.events.list` | List events an agent can follow | BASE-AGENT-010 | standard | Shipped |
+| `oncall.imports.read` | Read imports | OC-038, OC-040 | standard | Shipped |
+| `oncall.changes.read` | List recent changes for a service, alert or incident | OC-065 | standard | Shipped |
+| `oncall.archive.export` | Export the archive, a checkpoint or the permanent audit | OC-007, OC-015, OC-016, OC-041, OC-052 | standard | Not yet shipped |
+| `oncall.archive.restore` | Restore an archive or checkpoint, replacing state | OC-007, OC-013, OC-015, OC-016, OC-052 | destructive · live · access (+ security) | Not yet shipped |
+| `oncall.paging.history` | Acknowledge or cancel held historical paging jobs | OC-013 | standard | Not yet shipped |
+| `oncall.privacy.erase` | Erase a person, incident, integration or change record | OC-040 | destructive (+ live) (+ access) (+ security) | Shipped (destructive class only today; live, access and security additions not yet computed) |
+| `oncall.clients.update` | Create, rotate or revoke API clients | OC-053 | access · security | Shipped as revoke; create and rotate not yet shipped |
+| `oncall.endpoints.update` | Register, rotate or revoke outbound event endpoints | OC-053 | external · security | Shipped as revoke; register and rotate not yet shipped |
+| `oncall.automation.replay` | Replay a held or uncertain outbound event | OC-053 | external | Shipped |
+| `oncall.automation.dispatch` | Dispatch a minimal response event to an approved receiver | OC-006, OC-053 | external | Shipped |
+| `oncall.automation.read` | Read API clients and endpoints with their effective grants | OC-053 | standard | Shipped |
+| `oncall.integrations.read` | Read integrations | OC-053 | standard | Shipped |
+| `oncall.actions.update` | Create, edit or retire library actions, including their executors, bounds and allowed teams and roles | OC-063 | standard (+ access) (+ security) | Not yet shipped |
+| `oncall.actions.run` | Run a library action through its named executor | OC-063 | live (+ destructive) | Not yet shipped |
+| `oncall.remediation.run` | Run a bounded remediation plan | OC-048 | live (+ destructive) | Not yet shipped |
+| `oncall.investigations.start` | Start or stop an investigation of an incident | OC-045 | standard | Not yet shipped |
+| `oncall.ownership.propose` | Prepare and apply ownership, dependency and runbook changes | OC-046 | standard (+ access) (+ live) | Not yet shipped |
+| `oncall.readiness.drill` | Schedule or run a readiness drill | OC-047, OC-054 | live | Not yet shipped |
+| `oncall.sso.configure` | Configure SSO connections, just-in-time accounts and required SSO | OC-039, OC-069 | security (+ access) | Not yet shipped |
 
-**Resources.** `oncall://incidents/{id}`, `oncall://alerts/{id}`, `oncall://services/{id}`, `oncall://schedules/{id}`, `oncall://handoffs/{id}`, `oncall://changes/{id}` and `oncall://reports/{period}`. **Events.** `incident.declared`, `incident.acknowledged`, `incident.reassigned`, `incident.resolved`, `alert.triggered`, `alert.recovered`, `schedule.changed`, `handoff.reviewed` and `update.published`, with Base's approval, review and policy events. **Prompts.** "Work an incident" (OC-004, OC-050, OC-079), "Cover a shift" (OC-011, OC-024, OC-025), "Route a new monitor" (OC-033, OC-055, OC-072), "Prepare the hand-off and update" (OC-017, OC-051) and "Close the follow-ups" (OC-005, OC-036, OC-049).
+**Table status.** The Today column marks each tool shipped or not yet shipped in `agent-surface.json` on main; a not-yet-shipped row stays a target obligation, and a shipped row keeps its target text until its note says it is complete. The door declares only tools, policy, pause, audit and idempotency, so the resources, events and prompts below are target obligations that the door does not yet declare.
+
+**Resources (not yet declared by the door).** `oncall://incidents/{id}`, `oncall://alerts/{id}`, `oncall://services/{id}`, `oncall://schedules/{id}`, `oncall://handoffs/{id}`, `oncall://changes/{id}` and `oncall://reports/{period}`. **Events (not yet declared by the door).** `incident.declared`, `incident.acknowledged`, `incident.reassigned`, `incident.resolved`, `alert.triggered`, `alert.recovered`, `schedule.changed`, `handoff.reviewed` and `update.published`, with Base's approval, review and policy events. **Prompts (not yet declared by the door).** "Work an incident" (OC-004, OC-050, OC-079), "Cover a shift" (OC-011, OC-024, OC-025), "Route a new monitor" (OC-033, OC-055, OC-072), "Prepare the hand-off and update" (OC-017, OC-051) and "Close the follow-ups" (OC-005, OC-036, OC-049).
 **Not tools, and why.** Device-only: the native apps and their lock-screen and offline behaviour (OC-029), and the SMS replies, voice keys and phone calls a responder makes from a handset (OC-035, OC-071, OC-082). A person's screen: the accessible web app (OC-009) and owner entry and sign-in (OC-018). Connectors: the Slack and Teams apps with their buttons and commands (OC-034, OC-067, OC-081), the sibling error and uptime sources (OC-032), the Terraform and OpenTofu provider, which is itself an OC-053 client (OC-062), and live incumbent APIs (OC-074). The import door: file move-in, resume and undo (OC-021, OC-022, OC-038). Installation facts: the release-1 outbound and paging boundaries (OC-006, OC-012), input bounds and retention (OC-008), health and commands (OC-010), upgrades (OC-019), standby (OC-028), timing bars and reference load (OC-064), memory capacity (OC-073), and Oncall's own delivery and timers, which run inside paging obligations rather than as a person's job (OC-075, OC-078, OC-080).
 **Limits.** Capacity limits are each door's request rate and body bounds, documented with the intake, API and archive doors; business limits and spend caps are the company's policy (BASE-AGENT-011).
 **Handoffs.** Listens for Uptime monitor events and Spool error groups (OC-032), Lamp publication results (OC-051) and Business policy revisions; emits incident lifecycle, schedule-change and hand-off events for Lamp's status specialist and the Business overview.
@@ -1232,7 +1263,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 *Tier:* Agent surface · *From:* new · *Cites:* BASE-AGENT-001, BASE-AGENT-002, BASE-AGENT-003, BASE-AGENT-010, BASE-AGENT-012, BASE-AGENT-013
 
-**Requirement.** Oncall serves the Base MCP door with exactly the tools, resources, events and prompts this area lists.
+**Requirement.** Oncall serves the Base MCP door with exactly the tools, resources, events and prompts this area lists. The table marks each tool shipped or not yet shipped, and the resources, events and prompts are marked as not yet declared by the door; this clause stays unmet until every row ships and the door declares them.
 
 **Acceptance.**
 1. `tools/list` names exactly the tools in this area's table, each with its Core clauses and classes in `_meta`.
