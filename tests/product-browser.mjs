@@ -6,7 +6,7 @@ import {mkdir,readFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
-import {productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser} from './product-browser-journey.mjs'
+import {productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -636,7 +636,7 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['readiness','accessibility','triage','limitations','roles'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['readiness','accessibility','triage','limitations','roles','move-in-guide'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
  if(focused==='roles'){
@@ -644,9 +644,10 @@ try {
   const baseline=await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',name:'Synthetic existing service',environment:'test',owner:member.id,runbook:[],pager:''}});assert.equal(baseline.status(),200);
   await incidentWorkflowBrowser(page,context,triageProof);
  }
+ if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(focused==='limitations')await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['readiness','triage','limitations','roles'].includes(focused)){
+ if(!['readiness','triage','limitations','roles','move-in-guide'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -657,10 +658,10 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['accessibility','triage','limitations','roles'].includes(focused))await readinessBrowser(page,context)
+ if(!['accessibility','triage','limitations','roles','move-in-guide'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log(focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -671,4 +672,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['accessibility','triage','limitations','roles'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['accessibility','triage','limitations','roles','move-in-guide'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

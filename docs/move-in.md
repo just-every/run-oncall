@@ -13,6 +13,47 @@ limits; no real customer export, complete account migration or live cutover is
 certified. [Business imports and bounded catch-up](../MOVE-IN.md#optional-business-imports)
 use the same door and source allow-list.
 
+## Opsgenie migration readiness checklist
+
+**Execution date for this public-documentation review: 31 October 2026 (UTC).**
+The announced Opsgenie shutdown is **5 April 2027**. This is planning guidance;
+no account migration was executed and no migration execution date is scheduled.
+At execution, record the actual UTC date, operator, account, region and evidence
+for each gate. Recheck current provider and export availability then: a public
+page being readable does not establish authenticated account access or a working
+export. An unavailable or unverified check stays **BLOCKED**, never passed.
+
+### Public documentation checked
+
+On the review date, the public [Atlassian migration announcement](https://www.atlassian.com/software/opsgenie/migration)
+confirmed the shutdown date. The official [shutdown guidance](https://support.atlassian.com/opsgenie/docs/what-happens-when-opsgenie-is-turned-off/)
+described permanent loss of access and earlier shutdown after an Atlassian
+migration; do not assume every account remains accessible until the deadline.
+The public [pagination reference](https://docs.opsgenie.com/docs/pagination)
+described next-page links in headers and response bodies. The official
+[API integration setup](https://support.atlassian.com/opsgenie/docs/create-a-default-api-integration/)
+page was reachable. These checks used no account or provider API key. The
+[API access settings reference](https://docs.opsgenie.com/docs/api-access-management)
+could not be retrieved during this review; its current instructions remain
+unverified. Re-read these official references at execution; follow up with
+Atlassian if a reference or an export surface is unavailable.
+
+### Unchecked execution gates
+
+Every gate below is unchecked. Reading this checklist does not complete a gate,
+connect an account, upload a file, make a plan or apply an import.
+
+- **Unchecked — Authenticated availability — BLOCKED: no authorized live account checked.** An authorized account administrator must verify current sign-in, subscription and shutdown state, account region, least-privilege read access and each required export endpoint at execution. Check team scope and API configuration access; do not infer account readiness from public documentation. Record refusal or unavailable exports explicitly and stop that migration path.
+- **Unchecked — Inventory and pagination — BLOCKED: account inventory and exports unverified.** Compare the account's users, teams, contacts, schedules, layers, overrides, PTO, services, integrations, notification and escalation rules, repeat and round-robin settings, open incidents, history, reviews and actions against saved exports. Follow every pagination link and obtain required details with foreign IDs and timestamps intact. The shipped exporter covers accessible people, schedules, overrides, policies and bounded timelines, not a whole account. Name every missing or unsupported object; never truncate to fit the 512 KiB or 500-object file bounds.
+- **Unchecked — Reviewed mapping differences — NOT RUN.** Use [the saved-export instructions](#save-your-export-with-the-downloadable-tool), retain original source evidence privately, and review the exact fingerprint, named rejections, unconverted rules, contact verification gaps and coverage differences across a US DST change. A bounded comparison is not future equivalence. Do not approximate unsupported rotations or claim complete email-filter, routed-key, chat, automation, Terraform or business-service conversion.
+- **Unchecked — Inactive import, restart, reconcile and undo — NOT RUN for this account.** With explicit administrator approval of that fingerprint, rehearse the existing paused apply and resume path after restart, compare native records with the reviewed source, and rehearse newest-first undo without overwriting native edits. Retain the journal and resolve conflicts individually. Imported people grant no login; contacts remain unverified, integrations and send authority stay inactive. Synthetic file proof does not verify a live export.
+- **Unchecked — Cutover prerequisites — BLOCKED.** Keep the existing pager authoritative and paging OFF. Before any rerouting or retirement, separately obtain provider authorization and verified routes, independent standby, a passed real-phone drill, reviewed parallel alert outcomes and DST coverage, and a rehearsed rollback leaving one paging authority. An administrator must explicitly accept the drill and cutover under OC-026 to OC-029. These operations are not supplied or authorized by this checklist; do not turn off Opsgenie based on it.
+
+Live-account field proof **R-11 remains not run**. Authenticated export
+availability and live-account response shapes remain unverified. OC-038 stays
+PARTIAL and OC-074's live API reconciliation stays held. This guidance grants no
+account, activation, delivery, publication or cutover authority.
+
 ### Connect this installation’s PagerDuty app
 
 The installer can supply the two optional settings in `rer setup`: `PAGERDUTY_OAUTH_CLIENT_ID` and `PAGERDUTY_OAUTH_CLIENT_SECRET`. Register `<app address>/api/move-in/pagerduty/callback` as the app’s redirect address, with only `users.read`, `schedules.read` and `escalation_policies.read` scopes. Without both settings the app offers the key path. Opsgenie always uses a read-only key.
@@ -171,7 +212,7 @@ Choose **Other: from a file**, then **Better Stack** under **File source**. Save
 
 For all three sources, the existing reviewed fingerprint, bounded apply, restart, reconciliation and undo journal remain authoritative. Original rejected objects, contacts, teams, services, escalation/repeat settings, open incidents and historical timelines remain provenance-carrying source evidence; they are not live incidents or delivery. Inactive integration inventory holds only opaque foreign ID, source and kind, never a key; personal labels stay in erasable source custody. Related foreign user references are recorded in the mapping report so the existing person erasure can retire their retained source records.
 
-No live API pull, account completeness reconciliation, phone cutover or parallel-routing rehearsal is provided. Terraform, automation actions, routed-key import, chat re-creation, email-mode rules and business services remain named unsupported objects. Checklist: finish and reconcile Opsgenie migration before **5 April 2027**. Paging stays OFF; these are unverified synthetic file-format proofs, not dated live-provider acceptance.
+No live API pull, account completeness reconciliation, phone cutover or parallel-routing rehearsal is provided. Terraform, automation actions, routed-key import, chat re-creation, email-mode rules and business services remain named unsupported objects. Use the dated [Opsgenie migration readiness checklist](#opsgenie-migration-readiness-checklist); its account checks and cutover gates remain unchecked. Paging stays OFF; these are unverified synthetic file-format proofs, not dated live-provider acceptance.
 
 ### Separate administrator key activation
 
