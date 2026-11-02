@@ -9,9 +9,9 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Core | 15 | 45 | 24 | 84 |
-| Agent surface | 0 | 0 | 17 | 17 |
+| Agent surface | 0 | 1 | 16 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 15 | 45 | 41 | 101 |
+| Full target | 15 | 46 | 40 | 101 |
 
 Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f207859a` (30 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -1334,7 +1334,7 @@ Agent surface · target · **missing**
 
 #### BASE-AGENT-006 — Every action declares its risk class
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Classes come from the fleet list in RISK-POLICY.md: standard, external, money, commitment, accounts, gated, access, security, destructive, sensitive and live. In the registry, each tool declares the classes it can carry and a server-side classifier that decides them per call from the arguments, current records and, for gated, the provider's answer. The classifier also supplies each class's facts: the measure (items, recipients, amount and currency, people or records), the counterparty (internal, known, new or public), the direction for access, the provider and step for gated, and the data kind for sensitive. A classifier never reads a flag, label or claim supplied by the agent or by record text. A seed cannot add a class; it proposes one for the fleet list.
 
@@ -1346,8 +1346,8 @@ Agent surface · target · **missing**
 5. No tool in `tools / list` declares a class outside the fleet list, and `rer check` fails on one.
 6. A refused call's audit row still records its computed classes.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `tests/oncall-agent-flow.mjs` — incident resolution classification: emitted MCP declarations, server-computed commitment and sensitive facts, autonomous resolution, isolated commitment and sensitive refusals, pending and stale approval state preservation, caller and record claims, attributed effect-free retry and audit classes; `tests/agent-door-browser.mjs` — exact saved incident-resolution approval and attributed once-only resolution; `tests/agent-door.mjs` — generic conformance with the resolution fixture.
+**Gap.** Only the native incident-resolution slice of points 1, 2, 3 and 6 is proved. Every other tool declaration and class combination, remaining per-class fixtures, injection checks, class facts, catalog enforcement and refused-call auditing remain unproved here. Model, investigation, ownership, remediation, recurrence and executor flows remain omitted; OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold. Paging stays OFF; provider delivery, independent standby and real-phone duties remain held.
 
 #### BASE-AGENT-007 — The company's policy decides, at one chokepoint
 
