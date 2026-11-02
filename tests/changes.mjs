@@ -135,6 +135,10 @@ try {
   const root='synthetic-oncall-231',target='synthetic-oncall-232';
   assert.deepEqual(largeAfter.services.find(s=>s.id===root).dependencies,['gateway']);
   assert.equal(largeAfter.services.find(s=>s.id===root).dependencyImport.references[1].ref,catalog[0].spec.dependsOn[1]);
+  ok(await req('/api/command',{type:'service',id:root,field:'runbook',from:[],to:['synthetic-oncall-255 retain the copied response instructions']}));
+  const dependentIncident=ok(await req('/api/command',{type:'declare',service:root,severity:'warning',title:'synthetic-oncall-255',summary:'synthetic-oncall-255',alerts:[]}));
+  const dependencyHistory=async()=>ok(await req('/api/state')).incidents.find(i=>i.id===dependentIncident.id);
+  assert.deepEqual(dependentIncident.runbook.map(step=>step.text),['synthetic-oncall-255 retain the copied response instructions']);
   const dependencyCatalog=[{kind:'Component',metadata:{name:root},spec:{dependsOn:['component:default/'+target]}},{kind:'Component',metadata:{name:target},spec:{}}];
   const dependencyPreview=async(c=dependencyCatalog)=>ok(await req('/api/teams/backstage/preview',{catalog:c}));
   const applyDependencies=(p,choices={},c=dependencyCatalog)=>req('/api/teams/backstage/apply',{catalog:c,digest:p.digest,choices});
@@ -148,13 +152,13 @@ try {
    assert.deepEqual(await records(),dependencyBefore,name+' failure rolls back dependency state and provenance');
    assert.deepEqual(await acceptedImports(),dependencyFacts,name+' failure publishes no accepted import audit');
   }
-  const incidentBeforeDependencies=await history();
+  const incidentBeforeDependencies=await dependencyHistory();
   ok(await applyDependencies(dependencyReview));
   let dependencyState=ok(await req('/api/state')),dependencyService=dependencyState.services.find(s=>s.id===root);
   assert.deepEqual(dependencyService.dependencies,[target],'supported replacement adds one dependency and removes the old one');
   assert.equal(dependencyService.dependencyImport.references[0].service,target);
   assert.equal((await acceptedImports()).length,dependencyFacts.length+1);
-  assert.deepEqual(await history(),incidentBeforeDependencies,'dependency import keeps incident identity, history and copied runbook');
+  assert.deepEqual(await dependencyHistory(),incidentBeforeDependencies,'dependency import keeps the affected service incident identity, history and copied runbook');
   const completed=await records(),completedAudit=await acceptedImports();
   ok(await applyDependencies(dependencyReview),409); // A lost old response never authorizes another write.
   const repeat=await dependencyPreview();assert.deepEqual(ok(await applyDependencies(repeat)).applied,[]);
@@ -184,6 +188,10 @@ try {
   assert.deepEqual(dependencyContext.source.service.dependencyImport,withUnknown.dependencyImport);
   const dependencyHandoff=ok(await req('/api/handoffs/prepare',{id:'synthetic-oncall-253',incident:snapshotIncident.id,incidentRevision:snapshotIncident.revision,serviceHash:dependencyContext.serviceHash,payload:{audience:'internal',title:'synthetic-oncall-253',summary:'synthetic-oncall-253',evidenceLinks:[],impactLinks:[]}}),201).record;
   ok(await req('/api/handoffs/synthetic-oncall-253/review',{actionId:'synthetic-oncall-253',revision:dependencyHandoff.revision,payloadHash:dependencyHandoff.payloadHash,sourceHash:dependencyHandoff.sourceHash,reason:'synthetic-oncall-253'}));
+  const handoffArchive=ok(await req('/api/handoffs/archive')),invalidHandoff=structuredClone(handoffArchive);
+  invalidHandoff.records.find(r=>r.id===dependencyHandoff.id).source.service.dependencies={};
+  ok(await req('/api/handoffs/restore',{mode:'replace',archive:invalidHandoff}),400);
+  assert.deepEqual(ok(await req('/api/handoffs/archive')),handoffArchive,'malformed dependency snapshots refuse before replacing any handoff history');
   const clearing=[{kind:'Component',metadata:{name:root},spec:{dependsOn:[]}}],clearReview=await dependencyPreview(clearing);
   const races=await Promise.all([applyDependencies(clearReview,{},clearing),applyDependencies(clearReview,{},clearing)]);
   assert.deepEqual(races.map(r=>r.status).sort(),[200,409]);
