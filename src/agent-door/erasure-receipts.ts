@@ -2,7 +2,7 @@ import type { Bindings } from '../auth.server'
 import { changeHash } from '../changes/credentials'
 import { canonical } from '../paging-store'
 import { subjectErasureIdentity } from '../subject-erasure-identity'
-import { ToolRefusal, type ToolContext } from '../modules/agent-door/index.ts'
+import { ToolRefusal, type ToolContext, type ClassAndFacts } from '../modules/agent-door/index.ts'
 import { nativeAccess } from './native'
 import { oncallPeople } from './people'
 
@@ -12,6 +12,7 @@ interface Receipt {
   person: string; client: string | null; consent: string | null; approval: string | null
   args_sha256: string; target_sha256: string; requested_revision: number
   workspace_revision: number; current_commit: number
+  classification: string | null
 }
 
 /** Admission metadata only: Base alone owns approval state and cached outcomes. */
@@ -51,20 +52,23 @@ export async function completedErasure(env: Bindings, ctx: ToolContext, args: Ar
     || receipt.args_sha256 !== await changeHash(canonical(args)) || receipt.target_sha256 !== await subjectErasureIdentity(String(args.kind), String(args.id))
     || receipt.requested_revision !== args.workspaceRevision || receipt.approval !== await approvalId(env, ctx, args)) throw new ToolRefusal('idempotency_conflict')
   if (!receipt.current_commit || receipt.workspace_revision !== access.state.revision) throw new ToolRefusal('revision_conflict')
-  // One retained, committed native subject erasure is one destructive item.
-  return [{ class: 'destructive' as const, facts: { measure: 1 } }]
+  // Upgraded held receipts cannot establish effects they never recorded.
+  if (receipt.classification === null) throw new ToolRefusal('erasure_classification_unavailable', 'This older erasure has no retained class facts; no erasure was repeated.')
+  const saved = JSON.parse(receipt.classification) as { v: number; classes: ClassAndFacts[] }
+  if (saved.v !== 1 || !Array.isArray(saved.classes) || !saved.classes.some(row => row.class === 'destructive')) throw new ToolRefusal('erasure_classification_unavailable')
+  return saved.classes
 }
 
 /** The erasure batch's CAS guard precedes this insert; rollback removes both. */
-export async function erasureReceipt(env: Bindings, ctx: ToolContext, args: Args) {
+export async function erasureReceipt(env: Bindings, ctx: ToolContext, args: Args, classes: ClassAndFacts[]) {
   if (!ctx.idempotencyKey) throw new ToolRefusal('idempotency_key_required')
   const approval = await approvalId(env, ctx, args)
   if (ctx.approvers.length && !approval) throw new ToolRefusal('approval_required')
   return env.DB.prepare(`INSERT INTO oc_agent_erasure_receipts
-    (agent,key_sha256,person,client,consent,approval,operation,args_sha256,target_sha256,requested_revision,workspace,workspace_revision,workspace_token)
-    SELECT ?,?,?,?,?,?,?,?,?,?,p.source_identity,w.revision,w.write_token
+    (agent,key_sha256,person,client,consent,approval,operation,args_sha256,target_sha256,requested_revision,workspace,workspace_revision,workspace_token,classification)
+    SELECT ?,?,?,?,?,?,?,?,?,?,p.source_identity,w.revision,w.write_token,?
     FROM workspace_control w JOIN rer_portability_state p ON p.id=w.id WHERE w.id=1 AND w.revision=?`)
     .bind(ctx.agent.id, await changeHash(ctx.idempotencyKey), ctx.person.id, ctx.clientId ?? null, ctx.consent ?? null, approval,
       ctx.operationId, await changeHash(canonical(args)), await subjectErasureIdentity(String(args.kind), String(args.id)), args.workspaceRevision,
-      Number(args.workspaceRevision) + 1)
+      JSON.stringify({ v: 1, classes }), Number(args.workspaceRevision) + 1)
 }
