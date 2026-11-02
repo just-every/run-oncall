@@ -5,19 +5,30 @@ import type { ClassAndFacts } from '../modules/agent-door/index.ts'
 
 /** Only native references and credential existence determine the effect classes.
  * No subject names, record text, secrets or caller claims enter retained facts. */
-export async function erasureClasses(env: Bindings, state: State, kind: string, id: string): Promise<ClassAndFacts[]> {
+export async function erasureClasses(env: Bindings, state: State, kind: string, id: string, admission?: { sql: string; values: (string | number | null)[] }): Promise<ClassAndFacts[]> {
   const classes: ClassAndFacts[] = [{ class: 'destructive', facts: { measure: 1 } }]
   const services = new Set<string>()
   const member = kind === 'member' ? state.members.find(row => row.id === id) : undefined
   const clients = (state.apiClients ?? []).filter(row => kind === 'client' ? row.id === id : member && row.owner === id)
   const endpoints = (state.apiEndpoints ?? []).filter(row => kind === 'endpoint' ? row.id === id : clients.some(client => client.id === row.client) || member && row.owner === id)
-  const credentials = async (table: string, column: string, ids: string[]) => ids.length > 0 && !!await env.DB.prepare(`SELECT 1 FROM ${table} WHERE ${column} IN (SELECT value FROM json_each(?)) LIMIT 1`).bind(JSON.stringify(ids)).first()
+  const guard = (sql: string, ...values: (string | number | null)[]) => {
+    if (admission) { admission.sql += ` AND (${sql})`; admission.values.push(...values) }
+  }
+  const credentials = async (table: string, column: string, ids: string[]) => {
+    if (!ids.length) return false
+    const query = `SELECT COUNT(*) AS n FROM ${table} WHERE ${column} IN (SELECT value FROM json_each(?))`
+    const values = JSON.stringify(ids), row = await env.DB.prepare(query).bind(values).first<{ n: number }>()
+    guard(`(${query})=?`, values, row!.n)
+    return row!.n > 0
+  }
   let security = false
   if (member?.active || clients.some(row => row.active)) classes.push({ class: 'access', facts: { measure: 1, direction: 'narrows' } })
   if (member?.active && ['admin', 'responder'].includes(member.role)) {
     for (const service of state.services) if (service.owner === id) services.add(service.id)
     for (const policy of state.policies) if (policy.action === 'route' && policy.owner === id) services.add(policy.service)
-    for (const row of (await env.DB.prepare('SELECT data FROM paging_schedules').all<{ data: string }>()).results) {
+    const [control, schedules] = await env.DB.batch([env.DB.prepare('SELECT revision FROM paging_control WHERE id=1'), env.DB.prepare('SELECT data FROM paging_schedules')])
+    guard('EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)', (control.results[0] as { revision: number }).revision)
+    for (const row of schedules.results as { data: string }[]) {
       const schedule = validateSchedule(JSON.parse(row.data))
       if (schedule.primary.members.includes(id) || schedule.backup.members.includes(id)
         || schedule.layers?.some(layer => layer.rotation.members.includes(id)) || schedule.overrides.some(override => override.member === id)) services.add(schedule.service)
@@ -26,6 +37,7 @@ export async function erasureClasses(env: Bindings, state: State, kind: string, 
   const sourceIds = new Set<string>()
   if (kind === 'native') {
     const source = await env.DB.prepare('SELECT scopes FROM sources WHERE id=?').bind(id).first<{ scopes: string }>()
+    guard("COALESCE((SELECT scopes FROM sources WHERE id=?),'')=?", id, source?.scopes ?? '')
     if (source) { security = true; for (const service of JSON.parse(source.scopes)) services.add(service) }
     sourceIds.add(id)
     for (const source of state.intakeSources ?? []) if (source.id.startsWith('native:') && source.name === 'Native incomplete: ' + id) sourceIds.add('intake:' + source.id)
