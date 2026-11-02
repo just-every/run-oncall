@@ -7,6 +7,6 @@ export const run: RunData = {
   clone: 'npx -y @runeditrun/rer dev just-every/run-oncall',
   licence: 'MIT',
   docs: true,
-  paths: { product: null },
+  paths: { product: 'oncall' },
   pricing: runPricing,
 }
