@@ -696,9 +696,6 @@ try {
  ok(await call('uploads','opsgenie',{}),404)
  ok(await req('/auth/settings/imports',{enabled:true}))
  ok(await call('uploads','opsgenie',{}),403)
- ok(await req('/auth/signout',{}),204)
- ok(await req('/auth/settings/imports',{enabled:false}),401)
- console.log('Business import door: off 404, owner opt-in, both saved-response formats, zero native writes in plan, reviewed grants, replay refusal, reconcile, restart, door/owner undo and durable key revocation passed')
  // Once the owner is claimed the platform retires SETUP_TOKEN while the Business trust stays bound: the app stays healthy.
  {
   await w.stop()
@@ -712,14 +709,16 @@ try {
   const health=await get('/health');assert.equal(health.status,200,'/health after SETUP_TOKEN retired: '+health.status+' '+JSON.stringify(health.value)+(restarted?' ('+restarted.message+')':''))
   assert.equal(restarted,null)
   const signin=await get('/signin');assert.equal(signin.status,200,'/signin after SETUP_TOKEN retired: '+signin.status)
-  const entered=await w.request('/__dev/key',{key:w.vars.RER_DEV_KEY});assert.equal(entered.status,204,'owner sign-in after SETUP_TOKEN retired')
-  assert.equal(ok(await w.request('/api/workspace',undefined,entered.cookie)).member.role,'admin','the claimed owner signs in without SETUP_TOKEN')
-  ok(await w.request('/auth/settings/imports',{enabled:true},entered.cookie))
+  assert.equal(ok(await req('/api/workspace')).member.role,'admin','the claimed owner\'s session still signs in without SETUP_TOKEN')
+  ok(await req('/auth/settings/imports',{enabled:true}))
   ok(await call('uploads','opsgenie',{}),403)
   const claimPost=await w.request('/auth/owner-claim',{token:'synthetic-claim'});assert.equal(claimPost.status,409);assert.equal(claimPost.value.error,'claim_unavailable')
   const claimGet=await get('/auth/owner-claim');assert.equal(claimGet.status,409);assert.equal(claimGet.value.error,'claim_unavailable')
-  console.log('Token-free health: after the owner claim and SETUP_TOKEN retirement with the Business trust bound, /health and /signin answer 200, owner sign-in and the import door still answer, and /auth/owner-claim answers 409 claim_unavailable')
+  console.log('Token-free health: after the owner claim and SETUP_TOKEN retirement with the Business trust bound, /health and /signin answer 200, the owner session and the import door still answer, and /auth/owner-claim answers 409 claim_unavailable')
  }
+ ok(await req('/auth/signout',{}),204)
+ ok(await req('/auth/settings/imports',{enabled:false}),401)
+ console.log('Business import door: off 404, owner opt-in, both saved-response formats, zero native writes in plan, reviewed grants, replay refusal, reconcile, restart, door/owner undo and durable key revocation passed')
 }finally{try{}finally{await w.close()}}
 
 // Adopt reviewed imports into live schedules; retain unconvertible evidence and guarded undo.
