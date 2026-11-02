@@ -52,6 +52,7 @@ export default withDemo({
       return new Response(null, { status: 308, headers: { location: '/brand/mark.svg' } });
     const asset=await staticAssetResponse(request,env);if(asset)return asset;
     const bindings=runtimeBindings(env);
+    if (new URL(request.url).pathname === '/api/rer/agent-decisions') return (await oncallAgentDoor(bindings).handle(received))!;
     const settings=await businessSettings(bindings).handle(received);if(settings)return settings;
     const linking=await businessPeopleResponse(bindings,received);if(linking)return linking;
     const agents=await oncallAgentDoor(bindings).handle(received);
