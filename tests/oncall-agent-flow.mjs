@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {agentRuntime} from './agent-door-runtime.mjs';
-import {eraseReplay} from './oncall-agent-erase-replay.mjs';
+import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
@@ -122,6 +122,7 @@ try{
  await teamReplay(runtime);
  await scheduleReplay(runtime);
  await eraseReplay(runtime);
+ await eraseClasses(runtime);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const events=await tool('oncall.events.list',{limit:200});assert.equal(code(events),'capability_not_declared');assert.equal(events.result.structuredContent,undefined);
  assert.ok((await audit()).rows.some(row=>row.agent.id===runtime.context.agentId&&row.outcome==='done'));

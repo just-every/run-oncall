@@ -368,12 +368,16 @@
       "scope": "privacy:write",
       "readOnly": false,
       "classes": [
-        "destructive"
+        "destructive",
+        "access",
+        "security",
+        "live"
       ],
       "clauses": [
         "OC-040",
         "OC-041",
-        "OC-052"
+        "OC-052",
+        "SURFACE-004"
       ]
     },
     {
@@ -1915,6 +1919,9 @@
       "expect": [
         {
           "class": "destructive"
+        },
+        {
+          "class": "live"
         }
       ]
     },
@@ -1991,6 +1998,103 @@
       "expect": [
         {
           "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "erase-member-state",
+      "tool": "oncall.coordination.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "erase-member",
+      "tool": "oncall.privacy.erase",
+      "args": {
+        "kind": "member",
+        "id": {
+          "$fixture": "eraseMember",
+          "pointer": "/id"
+        },
+        "workspaceRevision": {
+          "$from": "erase-member-state",
+          "pointer": "/data/revision"
+        },
+        "confirmation": {
+          "$fixture": "eraseMember",
+          "pointer": "/confirmation"
+        },
+        "identitiesReviewed": true,
+        "importedPeople": []
+      },
+      "expect": [
+        {
+          "class": "destructive",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "access",
+          "facts": {
+            "measure": 1,
+            "direction": "narrows"
+          }
+        }
+      ]
+    },
+    {
+      "id": "erase-client-state",
+      "tool": "oncall.coordination.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "erase-client",
+      "tool": "oncall.privacy.erase",
+      "args": {
+        "kind": "client",
+        "id": {
+          "$fixture": "eraseClient",
+          "pointer": "/id"
+        },
+        "workspaceRevision": {
+          "$from": "erase-client-state",
+          "pointer": "/data/revision"
+        },
+        "confirmation": {
+          "$fixture": "eraseClient",
+          "pointer": "/confirmation"
+        }
+      },
+      "expect": [
+        {
+          "class": "destructive",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "access",
+          "facts": {
+            "measure": 1,
+            "direction": "narrows"
+          }
+        },
+        {
+          "class": "security",
+          "facts": {
+            "measure": 1,
+            "setting": "erasure-credentials"
+          }
         }
       ]
     }

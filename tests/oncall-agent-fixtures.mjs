@@ -27,6 +27,12 @@ export default async function prepare({ phase, request, origin, cookie }) {
   if (phase === 'initial') return { clients };
 
   const values = {};
+  const eraseMember = (await http('/api/members', { name: `Synthetic erasure member ${phase}`, role: 'viewer',
+    password: `synthetic-oncall-erasure-password-${phase}` }, { status: 201 })).body;
+  const eraseClient = (await http('/api/automation/clients', { name: `Synthetic erasure client ${phase}`,
+    key: `synthetic-oncall-erasure-client-${phase}-credential`, services: ['agent-service'], permissions: ['incidents:read'] }, { status: 201 })).body;
+  values.eraseMember = { id: eraseMember.id, confirmation: 'erase ' + eraseMember.id };
+  values.eraseClient = { id: eraseClient.id, confirmation: 'erase ' + eraseClient.id };
   async function operation(family, input) {
     const key = randomUUID();
     const receipt = (await http(`/api/v1/${family}`, input, { bearer: token, key, status: 201 })).body;

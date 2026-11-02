@@ -8,6 +8,7 @@ import { subjectErasureIdentity } from '../subject-erasure-identity'
 import { defineTool, type JsonSchema, type ToolContext, type ToolDefinition } from '../modules/agent-door/index.ts'
 import { nativeAccess, nativeActor, nativeAudit, nativeCall, persistNative, type NativeAccess } from './native'
 import { completedErasure, erasureReceipt } from './erasure-receipts'
+import { erasureClasses } from './erasure-classes'
 import { completedTeamChange, teamFacts, teamReceipt } from './team-receipts'
 
 type Args = Record<string, unknown>
@@ -177,13 +178,13 @@ function privacyTool(env: Bindings): ToolDefinition {
   return defineTool({
     name: 'oncall.privacy.erase', title: 'Erase a native subject',
     description: 'Irreversibly erase a native subject and its owned local and imported custody with the native transaction and counts receipt. Requires the exact confirmation “erase <id>” and current workspaceRevision; member erasure also requires explicit retained importedPeople selection and identitiesReviewed. The confirmation is an agent request, never a human approval. Own-sponsor erasure, owner-identity erasure and sending or uncertain delivery remain refused. External or standby deletion is not claimed. There is no Undo.',
-    scope: 'privacy:write', readOnly: false, classes: ['destructive'], clauses: ['OC-040', 'OC-041', 'OC-052'], untrusted: true,
+    scope: 'privacy:write', readOnly: false, classes: ['destructive', 'access', 'security', 'live'], clauses: ['OC-040', 'OC-041', 'OC-052', 'SURFACE-004'], untrusted: true,
     inputSchema: { type: 'object', additionalProperties: false, properties: { kind: { enum: erasureKinds }, id: string(), workspaceRevision: revision, confirmation: string(110), identitiesReviewed: { type: 'boolean' }, importedPeople: { type: 'array', items: string(254), maxItems: 1000, uniqueItems: true } }, required: ['kind', 'id', 'workspaceRevision', 'confirmation'] },
     outputSchema: erasureOutput,
     classify: (args, ctx, completed) => nativeCall(async () => {
       if (completed) return completedErasure(env, ctx, args)
-      await current(args, ctx)
-      return [{ class: 'destructive', facts: { measure: 1 } }]
+      const { access, kind, id } = await current(args, ctx)
+      return erasureClasses(env, access.state, kind, id)
     }),
     authority: (args, ctx) => nativeCall(async () => ({ subject: (await current(args, ctx)).id, widens: false })),
     target: (args, ctx) => nativeCall(async () => { const { kind, id } = await current(args, ctx); return { kind: 'erasure', id: await subjectErasureIdentity(kind, id) } }),
@@ -199,7 +200,7 @@ function privacyTool(env: Bindings): ToolDefinition {
       nativeAudit(env, ctx, `${kind}.erase`, id)
       const importContext = nativeImportErasureContext(env.DB, access.member.id, () => ({ sql: access.guard.sql, params: access.guard.values }))
       const input: SubjectErasureInput = { confirmation: args.confirmation as string, workspaceRevision: args.workspaceRevision as number, identitiesReviewed: args.identitiesReviewed as boolean | undefined, importedPeople: args.importedPeople as string[] | undefined }
-      const custody = [await erasureReceipt(env, ctx, args)]
+      const custody = [await erasureReceipt(env, ctx, args, await erasureClasses(env, access.state, kind, id))]
       const result = await eraseSubject({ secret: env.SESSION_SECRET, db: env.DB, state: access.state, actor, guard: access.guard, input, kind, id, importContext, custody })
       const resource = uri('erasures', await subjectErasureIdentity(kind,id))
       ctx.emit('privacy.erased', resource, { kind, state: result.state })
