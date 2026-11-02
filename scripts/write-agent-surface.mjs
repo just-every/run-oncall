@@ -24,8 +24,9 @@ export default {async fetch(request,env){
  const {oncallResources}=await import('./src/agent-door/resources.ts');
  // Both teammate-role and public-team edits require an active native admin.
  // That sponsor already has all native role/coverage authority; these edits
- // cannot widen it. Other-person widening and narrowing remain in the journey.
- const tools=oncallTools(env).map(({name,scope,readOnly,classes,clauses,widens,narrowing,inputSchema})=>({name,scope,readOnly,classes,clauses,...(widens===false?{widens,narrowing,inputSchema}:{}),...(['oncall.access.update','oncall.teams.update'].includes(name)?{sponsorEscalation:false}:{})}));
+ // cannot widen it. Erasure only removes authority and cannot promote its sponsor.
+ // Other-person widening and narrowing remain in the journey.
+ const tools=oncallTools(env).map(({name,scope,readOnly,classes,clauses,widens,narrowing,inputSchema})=>({name,scope,readOnly,classes,clauses,...(widens===false?{widens,narrowing,inputSchema}:{}),...(['oncall.access.update','oncall.teams.update','oncall.privacy.erase'].includes(name)?{sponsorEscalation:false}:{})}));
  tools.push({name:'oncall.events.list',scope:'events:read',readOnly:true,classes:['standard'],clauses:['BASE-AGENT-010']});
  return Response.json({capabilities:oncallCapabilities,tools:tools.sort((a,b)=>a.name.localeCompare(b.name)),resources:oncallResources(env).map(resource=>resource.uriTemplate).sort(),notTools:oncallNotTools});
 }};` } });

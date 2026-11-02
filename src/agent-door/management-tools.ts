@@ -163,7 +163,7 @@ function privacyTool(env: Bindings): ToolDefinition {
     let target: { id: string; name?: string; title?: string } | undefined
     switch (kind) {
       case 'incident': target = state.incidents.find(row => row.id === id); break
-      case 'member': target = state.members.find(row => row.id === id); break
+      case 'member': target = state.members.find(row => row.id === id && !row.erased); break
       case 'client': target = state.apiClients?.find(row => row.id === id); break
       case 'endpoint': target = state.apiEndpoints?.find(row => row.id === id); break
       case 'email': target = state.emailAddresses?.find(row => row.id === id); break
@@ -200,7 +200,8 @@ function privacyTool(env: Bindings): ToolDefinition {
       nativeAudit(env, ctx, `${kind}.erase`, id)
       const importContext = nativeImportErasureContext(env.DB, access.member.id, () => ({ sql: access.guard.sql, params: access.guard.values }))
       const input: SubjectErasureInput = { confirmation: args.confirmation as string, workspaceRevision: args.workspaceRevision as number, identitiesReviewed: args.identitiesReviewed as boolean | undefined, importedPeople: args.importedPeople as string[] | undefined }
-      const custody = [await erasureReceipt(env, ctx, args, await erasureClasses(env, access.state, kind, id))]
+      const classes = await erasureClasses(env, access.state, kind, id, access.guard)
+      const custody = [await erasureReceipt(env, ctx, args, classes)]
       const result = await eraseSubject({ secret: env.SESSION_SECRET, db: env.DB, state: access.state, actor, guard: access.guard, input, kind, id, importContext, custody })
       const resource = uri('erasures', await subjectErasureIdentity(kind,id))
       ctx.emit('privacy.erased', resource, { kind, state: result.state })
