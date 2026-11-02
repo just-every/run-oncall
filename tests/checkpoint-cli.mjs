@@ -17,6 +17,9 @@ export async function checkpointFixtures(w,cookie) {
  const actor=ok(await req('/api/session')).member,id='checkpoint-cli'
  ok(await req('/api/command',{type:'service',id,name:'Checkpoint retained history',environment:'production',owner:actor.id,runbook:['Keep the original instructions'],pager:''}))
  ok(await req('/api/command',{type:'policy',service:id,severity:'*',action:'route',owner:actor.id,reason:'Retain the authored routing rule'}))
+ const dependencyCatalog=[{kind:'Component',metadata:{name:id},spec:{dependsOn:['resource:default/synthetic-oncall-155']}}];
+ const dependencyReview=ok(await req('/api/teams/backstage/preview',{catalog:dependencyCatalog}));
+ ok(await req('/api/teams/backstage/apply',{catalog:dependencyCatalog,digest:dependencyReview.digest,choices:{}}));
  const incident=ok(await req('/api/command',{type:'declare',service:id,title:'Checkpoint historical evidence',severity:'warning',summary:'Synthetic retained history only',alerts:[]}))
  const schedule=ok(await req('/api/paging/schedules',{id,name:'Checkpoint calendar',service:id,revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[actor.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}))
  const policy=ok(await req('/api/paging/policies',{service:id,scheduleId:schedule.id,revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}))

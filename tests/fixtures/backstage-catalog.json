@@ -13,7 +13,11 @@
     "spec": {
       "type": "service",
       "lifecycle": "production",
-      "owner": "group:default/synthetic-oncall-241"
+      "owner": "group:default/synthetic-oncall-241",
+      "dependsOn": [
+        "component:default/gateway",
+        "resource:default/synthetic-oncall-250"
+      ]
     }
   },
   {

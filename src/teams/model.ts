@@ -1,5 +1,6 @@
 import {fail,text,type State,type Member} from '../family/response-operations/domain.ts';
 import {cannotManage,managesButNotMember,noLongerActive,staleTeam,teamNameRule} from './words.ts';
+import {validateProvenance} from './provenance';
 
 export type Team={id:string;name:string;visibility:'public';active:boolean;revision:number;members:string[];managers:string[]};
 function teamName(value:unknown){try{return text(value,'Team name',200);}catch{fail(teamNameRule);}}
@@ -39,7 +40,7 @@ export function validateTeams(state:State) {
  }
  for(const service of state.services)if(service.team!==undefined&&service.team!==null&&!state.teams.some(t=>t.id===service.team))fail('Choose an available owning team or Unassigned.');
  // Imported ownership names the Backstage component it came from; it holds no person.
- for(const {ownership:o,team} of state.services)if(o!==undefined&&(!o||typeof o!=='object'||Array.isArray(o)||Object.keys(o).length!==4||o.source!=='backstage'||typeof o.entity!=='string'||!/^component:[^/]{1,253}\/[^/]{1,253}$/.test(o.entity)||typeof o.importId!=='string'||!o.importId||o.importId.length>100||typeof o.importedAt!=='string'||Number.isNaN(Date.parse(o.importedAt))||!team))fail('Imported service ownership is not valid.');
+ for(const {ownership,team} of state.services)if(ownership!==undefined){validateProvenance(ownership);if(!team)fail('Imported service ownership is not valid.');}
 }
 export function editTeam(state:State,actor:Member,input:any):Team {
  if(!state.members.some(m=>m.id===actor.id&&m.active&&m.role==='admin'))fail('Only a current workspace administrator can change teams.',403);
