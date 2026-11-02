@@ -67,6 +67,6 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
   const input=await body(c),ctx=context(c,'opsgenie')
   let email:string;try{email=mailbox(input.email)}catch{fail('Supply the exact email of an imported person')}
   if(input.confirmation!==`erase ${email}`)fail(`Type "erase ${email}" to confirm`,409)
-  return c.json(await eraseImportedPerson(ctx,email))
+  return c.json(await eraseImportedPerson(ctx,email,c.env.SESSION_SECRET))
  })
 }

@@ -74,11 +74,14 @@ export function oncallPeople(env: Bindings): PeopleAdapter {
 
   return {
     person,
+    async businessStopped() {
+      return !!await env.DB.prepare('SELECT 1 FROM bs_settings WHERE singleton=1 AND stopped=1').first()
+    },
     // A native administrator is not implicitly a Business policy editor.
     businessRole: current => rolesById.get(current.id)??null,
     businessMember,
     async sponsor({ sub }) {
-      const settings = await env.DB.prepare('SELECT owner_id FROM bs_settings WHERE singleton=1 AND stopped=0')
+      const settings = await env.DB.prepare('SELECT owner_id FROM bs_settings WHERE singleton=1')
         .first<{ owner_id: string | null }>()
       if (!settings) return null
       if (settings.owner_id === sub) {
@@ -86,11 +89,12 @@ export function oncallPeople(env: Bindings): PeopleAdapter {
         return owner ? person(owner.id) : null
       }
       const row = await env.DB.prepare(`SELECT operator_id FROM bs_team
-        WHERE business_id=? AND state='active' AND operator_id IS NOT NULL`)
+        WHERE business_id=? AND state<>'conflict' AND operator_id IS NOT NULL`)
         .bind(sub).first<{ operator_id: string }>()
       if (!row) return null
       const current = await person(row.operator_id)
-      return current && (await businessMember(current))?.id === sub ? current : null
+      const unique = await env.DB.prepare("SELECT COUNT(*) AS n FROM bs_team WHERE operator_id=? AND state<>'conflict' AND business_id IS NOT NULL").bind(row.operator_id).first<{ n: number }>()
+      return current && unique?.n === 1 ? current : null
     },
     async session(request) {
       const token = readSessionCookie(request)

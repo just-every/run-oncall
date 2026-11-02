@@ -200,9 +200,9 @@ function privacyTool(env: Bindings): ToolDefinition {
       const importContext = nativeImportErasureContext(env.DB, access.member.id, () => ({ sql: access.guard.sql, params: access.guard.values }))
       const input: SubjectErasureInput = { confirmation: args.confirmation as string, workspaceRevision: args.workspaceRevision as number, identitiesReviewed: args.identitiesReviewed as boolean | undefined, importedPeople: args.importedPeople as string[] | undefined }
       const custody = [await erasureReceipt(env, ctx, args)]
-      const result = await eraseSubject({ db: env.DB, state: access.state, actor, guard: access.guard, input, kind, id, importContext, custody })
+      const result = await eraseSubject({ secret: env.SESSION_SECRET, db: env.DB, state: access.state, actor, guard: access.guard, input, kind, id, importContext, custody })
       const resource = uri('erasures', await subjectErasureIdentity(kind,id))
-      ctx.emit('privacy.erased', resource, { kind, id, state: result.state })
+      ctx.emit('privacy.erased', resource, { kind, state: result.state })
       return { result, resources: [{ uri: resource, name: `Erased ${kind}` }] }
     }),
   })

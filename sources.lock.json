@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "8d25b7528ba7c5301de349b51b7e6ca44d6b87478f27b5685a5c07b567612e13"
+    "sha256": "238835f8dd7744607c59c2f7ff868f35ea9af73310f7391ecbee2d44fa863b0e"
   },
   "components": [
     {
@@ -436,7 +436,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "7f7a5cdc427461dedfdda70dcf269f2d6a7de87cde8c901a0142691e1117a063",
+      "sha256": "7d8a3fbebcd623b6d74925a9169ec1b1510cc815595f87922e8f8cc4eb2c8989",
       "executable": false
     },
     "migrations/core/0001_initial.sql": {
@@ -1576,7 +1576,7 @@
       "executable": false
     },
     "scripts/installer/archive-policy.mjs": {
-      "sha256": "65d2152dc8076a63802b57bc9986ea3828cd14dd1c9f4fa41439717133a5a2b1",
+      "sha256": "f92049b5df001b416edb96f02a8c7598aab406a08d9fd809a1fa620126f7c977",
       "executable": false
     },
     "scripts/installer/audit-archive.mjs": {
@@ -1675,12 +1675,16 @@
       "sha256": "54a1583be05406c3cc3ce18b6fce68c7e65115d9c97fdd50822d957de4457a98",
       "executable": false
     },
+    "src/agent-door/erasure.ts": {
+      "sha256": "95db418ae54b741d967c0f8b21fe48a335c564bb425fbc24d3f80ffc2c45bf12",
+      "executable": false
+    },
     "src/agent-door/index.server.ts": {
-      "sha256": "d062562986027b5a23e0fc98117f004f8f7d17b5baadaa05c88988f0ddc4b7dd",
+      "sha256": "7271c1f5c80f3e2a3ec91a63ef6249bf465573738b005e1fcef98f81691ae857",
       "executable": false
     },
     "src/agent-door/management-tools.ts": {
-      "sha256": "ea7c13a20a9fa9343e2fd2765f60322eb62da66cff9c73b71bdbef568ae96890",
+      "sha256": "b4590a6edf5b7de823acf3ad4a0e47d75b0cba29aa6338beb74f89974b93ca05",
       "executable": false
     },
     "src/agent-door/native.ts": {
@@ -1692,7 +1696,7 @@
       "executable": false
     },
     "src/agent-door/people.ts": {
-      "sha256": "cde9a855c80185f994dd6eb3f76f6b8a1e2a368a67a9e5507acb685b98d060e9",
+      "sha256": "22450db321ff1d94f5f406f285c5241612f9d339a9437690b948b56fa5092469",
       "executable": false
     },
     "src/agent-door/read-tools.ts": {
@@ -2160,7 +2164,7 @@
       "executable": false
     },
     "src/changes/erasure.ts": {
-      "sha256": "856175e00a75c99c6432a25ce7841f6a812be529ba7cf95f113749e3178af04d",
+      "sha256": "fc7bc1facd064c6495b1f10d8ff88a2dae03541e749479371df700bd06d21871",
       "executable": false
     },
     "src/changes/identity.ts": {
@@ -5304,7 +5308,7 @@
       "executable": false
     },
     "src/move-in/api.ts": {
-      "sha256": "ace657387f84dedf55115f49469bedc5584428ed8e647ae3babf45061d698150",
+      "sha256": "927a956bdb180c9916b545db9784ef0fdac2856861c1903a107094668003edba",
       "executable": false
     },
     "src/move-in/collect/bundle.ts": {
@@ -5348,7 +5352,7 @@
       "executable": false
     },
     "src/move-in/erasure.ts": {
-      "sha256": "765c5e4fee5c41f00b894c54711f2fc4266246257d08d164481b6050a0834a28",
+      "sha256": "5d804e4a3e8b1f70aee635bd38ee2e2fd1421f4cf904435abd6f0d016c522971",
       "executable": false
     },
     "src/move-in/export-help.css": {
@@ -5608,7 +5612,7 @@
       "executable": false
     },
     "src/portability-policy.mjs": {
-      "sha256": "c7d4130113e460cc8ce070cdcdc076ecc37e5af1a2e4e106c56d8170525a4c51",
+      "sha256": "2b15605d138550e2a6c1ebdacc84514ce1af40e24fde89d3d4a06ad72964a7b3",
       "executable": false
     },
     "src/raw.d.ts": {
@@ -6088,7 +6092,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "27ad32f809a773ba433a10dba2cc2825d8b525fd29957b0d7d85313c910b1347",
+      "sha256": "a432417966a9c94c2b143be133f1193889f34d2c3b523f805de3c6ca4555971b",
       "executable": false
     },
     "src/services/DraftComparison.tsx": {
@@ -6168,7 +6172,7 @@
       "executable": false
     },
     "src/subject-erasure.ts": {
-      "sha256": "53cf187ca76f9e9a16560997d4e1c686a81dc0638da237b473ed413590419720",
+      "sha256": "e7a5b35b38e15ef1259e6b8b53bf8b901e70952d2fa5d5e655b9efecc509bb9d",
       "executable": false
     },
     "src/team/MemberRow.tsx": {
@@ -6300,7 +6304,7 @@
       "executable": false
     },
     "tests/agent-door.mjs": {
-      "sha256": "41f05543b8d7a793a489ca05b2831929729c268545990032f2c666c354f67fe3",
+      "sha256": "af1514b628ad264ea36c4c7cbcd2d0d104ec49b27e01a3b37142668dd8fb49da",
       "executable": false
     },
     "tests/agent-policy-fixture.mjs": {

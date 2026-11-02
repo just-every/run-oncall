@@ -1,9 +1,18 @@
+// Imported private replay/relay custody belongs to its source installation.
+// Refuse rows before publication, including aliases Base would otherwise skip.
+export function rejectPrivateAgentCustody({manifest}) {
+  if(manifest.tables.some(table=>['agent_door_replay_aliases','agent_door_relay'].includes(table.name)&&table.count>0))
+    throw Error('INSTALLATION_PRIVATE_AGENT_CUSTODY')
+  return true
+}
+
 // One archive policy for `rer export`/`rer import` (scripts/installer/local.mjs) and for the
 // restore fence the Worker's person erasure commits (src/move-in/erasure.ts).
 export const portabilityPolicy = {
   product: 'just-every/oncall',
+  validateStaged: rejectPrivateAgentCustody,
   includeTables: ['oc_teams','oc_erased_report_cases','oc_schedule_records','oc_business_services','oc_erasure_fences','oc_native_prefixes','oc_key_allowances','oc_api_clients','oc_api_endpoints','oc_api_operations','oc_api_outbox','oc_audit_clock', 'oc_admin_audit', 'oc_import_lifecycle', 'oc_members', 'oc_services', 'oc_policies', 'oc_events', 'oc_alerts', 'oc_incidents', 'oc_audit', 'oc_triage', 'oc_changes', 'oc_change_sources', 'oc_intake_sources', 'oc_intake_receipts', 'oc_email_addresses', 'oc_email_rules', 'oc_email_samples', 'oc_email_receipts', 'oc_email_quarantine'],
   replaceableTables: ['oc_audit_clock', 'workspace_control', 'paging_control', 'handoff_state'],
-  excludeTables: ['oc_agent_team_receipts','oc_agent_erasure_receipts','oc_agent_schedule_receipts','oc_agent_deadlines','oc_agent_operations','oc_agent_outbox','oc_move_in_consent','rer_command_receipts','oc_incumbent_credentials','oc_key_rate_usage','oc_key_rate_notified','oc_api_credentials','oc_endpoint_credentials','oc_email_erased_samples', 'oc_email_credentials', 'oc_audit_identities', 'oc_intake_credentials', 'oc_change_credentials', 'credentials', 'sessions', 'sources', 'login_attempts', 'operator_members', 'rer_erasure_blobs', 'rer_erasure_guard', 'rer_erasure_scope'],
+  excludeTables: ['agent_door_relay','agent_door_replay_aliases','oc_agent_team_receipts','oc_agent_erasure_receipts','oc_agent_schedule_receipts','oc_agent_deadlines','oc_agent_operations','oc_agent_outbox','oc_move_in_consent','rer_command_receipts','oc_incumbent_credentials','oc_key_rate_usage','oc_key_rate_notified','oc_api_credentials','oc_endpoint_credentials','oc_email_erased_samples', 'oc_email_credentials', 'oc_audit_identities', 'oc_intake_credentials', 'oc_change_credentials', 'credentials', 'sessions', 'sources', 'login_attempts', 'operator_members', 'rer_erasure_blobs', 'rer_erasure_guard', 'rer_erasure_scope'],
   requiredConfiguration: ['OWNER_EMAIL', 'SESSION_SECRET', 'SETUP_TOKEN', 'AUTH_ORIGIN', 'MAIL_PROVIDER', 'MAIL_FROM'],
 }

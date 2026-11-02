@@ -23,12 +23,14 @@ import { workspaceDocument } from './workspace-document'
 import {readSessionCookie} from './session-cookie'
 import {importDoorResponse} from './move-in/door'
 import { oncallAgentDoor } from './agent-door/index.server'
+import { expireReplayCalls } from './modules/agent-door/index.ts'
 import { businessSettings } from './agent-door/business'
 import { businessPeopleResponse } from './agent-door/people-link'
 import { oncallPeople } from './agent-door/people'
 type Env=Bindings
 export default withDemo({
   async scheduled(_event,env) {
+    await expireReplayCalls({ options: { db: env.DB }, now: Date.now });
     const moveIn=auditedDatabase(env.DB,{feature:'move-in',kind:'move-in.consent.cleanup',actor:{kind:'service',id:'move-in-consent'},source:{kind:'provider',id:'pagerduty'},commits:0,storageFailed:false});
     if((await sweepMoveInConsent({...env,DB:moveIn.db})).failed)await moveIn.record('failed');
     const deadlines=auditedDatabase(env.DB,{feature:'incident-deadlines',kind:'deadline.sweep',actor:{kind:'service',id:'incident-deadlines'},source:{kind:'door',id:'scheduled'},commits:0,storageFailed:false});
@@ -55,6 +57,7 @@ export default withDemo({
     if (new URL(request.url).pathname === '/api/rer/agent-decisions') return (await oncallAgentDoor(bindings).handle(received))!;
     const settings=await businessSettings(bindings).handle(received);if(settings)return settings;
     const linking=await businessPeopleResponse(bindings,received);if(linking)return linking;
+    // Includes signed POST /api/rer/agent-decisions, before native app authentication.
     const agents=await oncallAgentDoor(bindings).handle(received);
     if(agents){
       if(new URL(request.url).pathname==='/agents'&&agents.headers.get('content-type')?.startsWith('text/html')&&await oncallPeople(bindings).session(request)){
