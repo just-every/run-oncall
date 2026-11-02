@@ -1,3 +1,7 @@
+# 0.5.5 · 2026-11-02
+
+Managed installations stay healthy after the owner claim retires the setup token: /health and /signin answer 200 and the signed owner-claim route answers 409 claim_unavailable without a token, because Oncall now builds the signed claim handler only for /auth/owner-claim. The copied Base runtime moves from rer 0.2.93 to rer 0.2.96, adding agent-door replay custody (migration 0158) and the Business decision relay, a signed Business pull of public agent-decision projections at POST /api/rer/agent-decisions (migration 0159). Contract and proof replays landed on current main without changing any clause status; they also carry small product changes, including read-only triggered and snoozed triage status filters, service replay comparison rows in submitted order, keyboard focus kept inside incident action dialogs, schedule calendar exports limited to at most 31 days and dated Opsgenie migration readiness guidance. Back up first, keep applied migrations unchanged, and keep the existing pager active: paging stays OFF.
+
 # 0.5.4 · 2026-10-30
 
 The delivery declarations for surfaces, provider effects and readiness now agree so the platform accepts release preparation.
