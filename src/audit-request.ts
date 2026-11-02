@@ -1,3 +1,4 @@
+import {isReadinessReport} from './readiness/read-audit';
 import { isMoveInReadStep } from './move-in/read-audit'
 import { auditPrincipal } from './audit-principal'
 import { auditedDatabase } from './audit-database'
@@ -30,7 +31,7 @@ function route(path: string): { feature: string; kind: string } {
   const feature = prefixes.find(value => path === `/api/${value}` || path.startsWith(`/api/${value}/`))
     ?? (path.startsWith('/auth/') || path.startsWith('/__dev/') ? 'access' : path.startsWith('/api/ingress/') || path.startsWith('/v2/') || path.startsWith('/integrations/') || path.startsWith('/generic/') ? 'ingest' : 'workspace')
   const operation = path.split('/').at(-1) ?? ''
-  const operations = new Set(['publish','revoke','review','prepare','export','ack','cancel','resume','apply','erase','undo','approve','rotate','overrides','schedules','policies','jobs','tick','callbacks','bulk','views','archive','restore','key','confirm','logout','identity','imports'])
+  const operations = new Set(['publish','revoke','review','withdraw','prepare','export','ack','cancel','resume','apply','erase','undo','approve','rotate','overrides','schedules','policies','jobs','tick','callbacks','bulk','views','archive','restore','key','confirm','logout','identity','imports'])
   return { feature, kind: `${feature}.${operations.has(operation) ? operation : 'request'}` }
 }
 export async function auditedRequest(request: Request, env: Bindings, handle: (env: Bindings) => Promise<Response>): Promise<Response> {
@@ -47,9 +48,9 @@ export async function auditedRequest(request: Request, env: Bindings, handle: (e
     // state write, including paging OFF, still survives as an attributed attempt.
     // The OC-050 human comparison exception excludes denials, failed authority
     // and stale revisions; Response API and bulk receipt contracts remain audited.
-    const zeroWriteReplay = response.ok && (isMoveInReadStep(audit.db) || path === '/api/replay' || path === '/api/paging/preview' || /^\/api\/schedules\/[^/]+\/review$/.test(path) || path === '/api/triage/workflows/preview' || /^\/api\/(?:email\/addresses|routing\/keys)\/[^/]+\/preview$/.test(path));
+    const zeroWriteReplay = response.ok && (isMoveInReadStep(audit.db) || path === '/api/replay' || path === '/api/teams/backstage/preview' || path === '/api/paging/preview' || /^\/api\/schedules\/[^/]+\/review$/.test(path) || path === '/api/triage/workflows/preview' || /^\/api\/(?:email\/addresses|routing\/keys)\/[^/]+\/preview$/.test(path));
     const unchangedCommand = path === '/api/command' && request.method === 'POST' && status === 200 && context.commits === 0 && commandNoops.has(audit.db)
-    if (!context.ownerCustodyRefusal && !(context.refusalCommitted && status === 409) && !zeroWriteReplay && !unchangedCommand && context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
+    if (!isReadinessReport(audit.db) && !context.ownerCustodyRefusal && !(context.refusalCommitted && status === 409) && !zeroWriteReplay && !unchangedCommand && context.actor && (context.outcome || status >= 400 || context.commits === 0 && request.method !== 'GET' || context.kind.endsWith('.export') || context.kind === 'workspace.archive'))
       await audit.record(context.outcome ?? (status >= 500 ? 'failed' : status >= 400 ? 'refused' : 'accepted'))
     return response
   } catch {

@@ -1,0 +1,67 @@
+[
+  {
+    "apiVersion": "backstage.io/v1alpha1",
+    "kind": "Component",
+    "metadata": {
+      "name": "synthetic-oncall-231",
+      "namespace": "default",
+      "title": "synthetic-oncall-231",
+      "annotations": {
+        "backstage.io/managed-by-location": "url:https://example.com/synthetic-oncall-231/catalog-info.yaml"
+      }
+    },
+    "spec": {
+      "type": "service",
+      "lifecycle": "production",
+      "owner": "group:default/synthetic-oncall-241"
+    }
+  },
+  {
+    "apiVersion": "backstage.io/v1alpha1",
+    "kind": "Component",
+    "metadata": {
+      "name": "synthetic-oncall-232"
+    },
+    "spec": {
+      "type": "service",
+      "lifecycle": "production",
+      "owner": "synthetic-oncall-241"
+    }
+  },
+  {
+    "apiVersion": "backstage.io/v1alpha1",
+    "kind": "Component",
+    "metadata": {
+      "name": "synthetic-oncall-233"
+    },
+    "spec": {
+      "type": "service",
+      "lifecycle": "production",
+      "owner": "group:synthetic-oncall-241"
+    }
+  },
+  {
+    "apiVersion": "backstage.io/v1alpha1",
+    "kind": "Component",
+    "metadata": {
+      "name": "synthetic-oncall-234"
+    },
+    "spec": {
+      "type": "service",
+      "lifecycle": "production",
+      "owner": "group:default/synthetic-oncall-241"
+    }
+  },
+  {
+    "apiVersion": "backstage.io/v1alpha1",
+    "kind": "Group",
+    "metadata": {
+      "name": "synthetic-oncall-241",
+      "namespace": "default"
+    },
+    "spec": {
+      "type": "team",
+      "children": []
+    }
+  }
+]

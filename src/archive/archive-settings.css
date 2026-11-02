@@ -11,7 +11,6 @@
 .archive-settings .erase-data > summary > span:first-child { font-family: var(--oc-font); font-size: 20px; font-weight: 650; }
 .archive-settings .erase-data > summary > span + span { font-weight: 400; color: var(--oc-muted); }
 .archive-settings .erase-data > summary::after { position: absolute; right: 0; top: 0; font-size: 20px; }
-.archive-settings .field :is(input, select, textarea):focus-visible { outline: none; border: 2px solid var(--oc-ink); box-shadow: none; }
 .archive-settings pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
 @media (max-width: 600px) {
   .archive-settings .field { width: 100%; }

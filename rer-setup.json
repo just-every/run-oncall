@@ -216,7 +216,7 @@
     {
       "name": "PAGERDUTY_OAUTH_CLIENT_ID",
       "label": "PagerDuty app client ID",
-      "help": "Optional: connect PagerDuty with this installation\u2019s own read-only OAuth app. Register <app address>/api/move-in/pagerduty/callback as the redirect address. Without both settings, use a read-only key for one read.",
+      "help": "Optional: connect PagerDuty with this installation’s own read-only OAuth app. Register <app address>/api/move-in/pagerduty/callback as the redirect address. Without both settings, use a read-only key for one read.",
       "kind": "secret",
       "input": "entered",
       "required": false,
@@ -226,7 +226,7 @@
     {
       "name": "PAGERDUTY_OAUTH_CLIENT_SECRET",
       "label": "PagerDuty app client secret",
-      "help": "Optional: connect PagerDuty with this installation\u2019s own read-only OAuth app. Register <app address>/api/move-in/pagerduty/callback as the redirect address. Without both settings, use a read-only key for one read.",
+      "help": "Optional: connect PagerDuty with this installation’s own read-only OAuth app. Register <app address>/api/move-in/pagerduty/callback as the redirect address. Without both settings, use a read-only key for one read.",
       "kind": "secret",
       "input": "entered",
       "required": false,
@@ -245,5 +245,17 @@
       "emailField": "OWNER_EMAIL",
       "tokenField": "SETUP_TOKEN"
     }
-  ]
+  ],
+  "business": {
+    "settings": 1,
+    "values": [
+      "display_name"
+    ],
+    "team": {
+      "roles": {
+        "admin": "admin",
+        "member": "responder"
+      }
+    }
+  }
 }

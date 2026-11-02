@@ -24,13 +24,14 @@
 .incident:hover:not(:disabled) { border-color: #d9c4ab; }
 .incident.current { border-color: var(--oc-now); background: #fbece5; }
 .incident.current:has(.state-resolved) { border-color: #6f9a77; background: var(--app-sage-wash); }
-.incident-top { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--oc-ink-soft); }
-.incident h3 { margin: 8px 0 4px; font-size: 17px; line-height: 1.35; font-weight: 680; overflow-wrap: anywhere; }
-.incident .service { margin: 0; color: var(--oc-muted); font-size: 14px; }
-.incident time { display: block; margin-top: 2px; color: var(--oc-muted); font-size: 14px; }
-.incident .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--oc-now); box-shadow: 0 0 0 3px var(--oc-now-wash); }
-.dot.green { background: #6f9a77; box-shadow: 0 0 0 3px var(--app-sage-wash); }
+.incident h3 { margin: 0 0 4px; font-size: 17px; line-height: 1.35; font-weight: 680; overflow-wrap: anywhere; }
+.incident-meta { margin: 0; color: var(--oc-muted); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.incident-meta > * + *::before { content: " · "; white-space: pre; }
+.incident-meta .sev-critical { color: var(--oc-now-ink); }
+.incident-meta .sev-warning { color: var(--app-ochre-ink); }
+.incident-meta .sev-info { color: var(--app-next-ink); }
+.incident-meta .state-resolved { color: var(--app-sage-ink); }
+.incident-meta :is(.sev-critical, .sev-warning, .sev-info, .state-resolved) { background: none; }
 .priority { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; background: var(--oc-paper-deep); color: var(--oc-ink-soft); font-size: 13px; font-weight: 600; }
 .sev-critical { background: var(--oc-now-wash); color: var(--oc-now-ink); }
 .sev-warning { background: var(--app-ochre-wash); color: var(--app-ochre-ink); }

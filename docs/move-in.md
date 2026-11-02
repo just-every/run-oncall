@@ -1,8 +1,59 @@
-# Move in from Opsgenie or PagerDuty
+# Move in from a saved on-call export
 
 Open **Settings → Move in** to read schedules from PagerDuty or Opsgenie, then review the result before anything is imported. PagerDuty uses its own sign-in when this installation has a PagerDuty app; either provider can use a read-only key for this one read. The key stays in page and request memory and is never kept in an archive, audit entry or log. No provider schedules or routing are changed, and everything imported arrives paused. Paging stays off.
 
 Choose **Other: from a file** for a saved export. The private terminal fallback is folded under **No key? Use the exporter on your computer**. Both paths lead to Review, then Import paused. Adoption, Undo and integration activation each ask once on the same page.
+
+The shared file door accepts **PagerDuty, Opsgenie, Splunk On-Call, Jira Service
+Management Ops and Better Stack** exports. Choose **Other: from a file** for the
+additional sources. Preview retains the uploaded file and import bookkeeping;
+it writes zero native objects and grants no login or paging authority. These
+adapters have synthetic saved-response proof within their documented mapping
+limits; no real customer export, complete account migration or live cutover is
+certified. [Business imports and bounded catch-up](../MOVE-IN.md#optional-business-imports)
+use the same door and source allow-list.
+
+## Opsgenie migration readiness checklist
+
+**Execution date for this public-documentation review: 31 October 2026 (UTC).**
+The announced Opsgenie shutdown is **5 April 2027**. This is planning guidance;
+no account migration was executed and no migration execution date is scheduled.
+At execution, record the actual UTC date, operator, account, region and evidence
+for each gate. Recheck current provider and export availability then: a public
+page being readable does not establish authenticated account access or a working
+export. An unavailable or unverified check stays **BLOCKED**, never passed.
+
+### Public documentation checked
+
+On the review date, the public [Atlassian migration announcement](https://www.atlassian.com/software/opsgenie/migration)
+confirmed the shutdown date. The official [shutdown guidance](https://support.atlassian.com/opsgenie/docs/what-happens-when-opsgenie-is-turned-off/)
+described permanent loss of access and earlier shutdown after an Atlassian
+migration; do not assume every account remains accessible until the deadline.
+The public [pagination reference](https://docs.opsgenie.com/docs/pagination)
+described next-page links in headers and response bodies. The official
+[API integration setup](https://support.atlassian.com/opsgenie/docs/create-a-default-api-integration/)
+page described creating a separate integration and turning it on. The
+[API access settings reference](https://docs.opsgenie.com/docs/api-access-management)
+described read-only access and configuration restrictions. All five public pages
+were reachable during this review; no account or provider API key was used.
+This does not verify that an authorized account can create or use an export key. Re-read these official references at execution; follow up with
+Atlassian if a reference or an export surface is unavailable.
+
+### Unchecked execution gates
+
+Every gate below is unchecked. Reading this checklist does not complete a gate,
+connect an account, upload a file, make a plan or apply an import.
+
+- **Unchecked — Authenticated availability — BLOCKED: no authorized live account checked.** An authorized account administrator must verify current sign-in, subscription and shutdown state, account region, least-privilege read access and each required export endpoint at execution. Check team scope and API configuration access; do not infer account readiness from public documentation. Record refusal or unavailable exports explicitly and stop that migration path.
+- **Unchecked — Inventory and pagination — BLOCKED: account inventory and exports unverified.** Compare the account's users, teams, contacts, schedules, layers, overrides, PTO, services, integrations, notification and escalation rules, repeat and round-robin settings, open incidents, history, reviews and actions against saved exports. Follow every pagination link and obtain required details with foreign IDs and timestamps intact. The shipped exporter covers accessible people, schedules, overrides, policies and bounded timelines, not a whole account. Name every missing or unsupported object; never truncate to fit the 512 KiB or 500-object file bounds.
+- **Unchecked — Reviewed mapping differences — NOT RUN.** Use [the saved-export instructions](#save-your-export-with-the-downloadable-tool), retain original source evidence privately, and review the exact fingerprint, named rejections, unconverted rules, contact verification gaps and coverage differences across a US DST change. A bounded comparison is not future equivalence. Do not approximate unsupported rotations or claim complete email-filter, routed-key, chat, automation, Terraform or business-service conversion.
+- **Unchecked — Inactive import, restart, reconcile and undo — NOT RUN for this account.** With explicit administrator approval of that fingerprint, rehearse the existing paused apply and resume path after restart, compare native records with the reviewed source, and rehearse newest-first undo without overwriting native edits. Retain the journal and resolve conflicts individually. Imported people grant no login; contacts remain unverified, integrations and send authority stay inactive. Synthetic file proof does not verify a live export.
+- **Unchecked — Cutover prerequisites — BLOCKED.** Keep the existing pager authoritative and paging OFF. Before any rerouting or retirement, separately obtain provider authorization and verified routes, independent standby, a passed real-phone drill, reviewed parallel alert outcomes and DST coverage, and a rehearsed rollback leaving one paging authority. An administrator must explicitly accept the drill and cutover under OC-026 to OC-029. These operations are not supplied or authorized by this checklist; do not turn off Opsgenie based on it.
+
+Live-account field proof **R-11 remains not run**. Authenticated export
+availability and live-account response shapes remain unverified. OC-038 stays
+PARTIAL and OC-074's live API reconciliation stays held. This guidance grants no
+account, activation, delivery, publication or cutover authority.
 
 ### Connect this installation’s PagerDuty app
 
@@ -134,7 +185,7 @@ Apart from the explicitly flagged 0-to-1-minute first-step mapping above, unsupp
 - policies with more than two steps, zero-minute later steps, repeats, other conditions, several people at once, or a person instead of a schedule
 - any rotation or rule field Oncall does not know
 
-Some things are not moved at all: notification rules (kept as notes only, never switched on), routes and event rules, maintenance windows, and incident history.
+Notification rules remain notes only, never switched on. PagerDuty account files also retain routes, event rules, maintenance windows and resolved incidents as named source evidence or refusals; they create no native routing, maintenance or history. Open incidents are individually refused as live imports. See [PagerDuty account saved responses](#pagerduty-account-saved-responses) for the receiving clauses and fields.
 
 ## Before you trust it
 
@@ -162,8 +213,106 @@ Choose **Other: from a file**, then **Better Stack** under **File source**. Save
 
 For all three sources, the existing reviewed fingerprint, bounded apply, restart, reconciliation and undo journal remain authoritative. Original rejected objects, contacts, teams, services, escalation/repeat settings, open incidents and historical timelines remain provenance-carrying source evidence; they are not live incidents or delivery. Inactive integration inventory holds only opaque foreign ID, source and kind, never a key; personal labels stay in erasable source custody. Related foreign user references are recorded in the mapping report so the existing person erasure can retire their retained source records.
 
-No live API pull, account completeness reconciliation, phone cutover or parallel-routing rehearsal is provided. Terraform, automation actions, routed-key import, chat re-creation, email-mode rules and business services remain named unsupported objects. Checklist: finish and reconcile Opsgenie migration before **5 April 2027**. Paging stays OFF; these are unverified synthetic file-format proofs, not dated live-provider acceptance.
+No live API pull, account completeness reconciliation, phone cutover or parallel-routing rehearsal is provided. Terraform, automation actions, routed-key import, chat re-creation, email-mode rules and business services remain named unsupported objects. Use the dated [Opsgenie migration readiness checklist](#opsgenie-migration-readiness-checklist); its account checks and cutover gates remain unchecked. Paging stays OFF; these are unverified synthetic file-format proofs, not dated live-provider acceptance.
 
 ### Separate administrator key activation
 
 After a reviewed import, a supported PagerDuty Events v1/v2, Opsgenie/JSM API, or Splunk REST integration has an **Activate imported integration** panel. Bind its Oncall ID and service, then supply its incumbent key in the password field. The field clears immediately; the key is never shown again or accepted from a saved file. Supplying or replacing a key leaves intake inactive. Confirm **Activate compatible intake · paging OFF** separately; a new native Oncall key is shown once alongside the now-active definition. Both credentials address the same integration. Revoke removes both verification hashes. A restore keeps the definition inactive and requires keys again. Supplying a key marks the imported object as locally edited, so undo cannot overwrite that custody decision. Unsupported kinds stay inactive. See [credential and identity assumptions](compatible-intake.md).
+
+## Shared file door: implementation and proof limits
+
+OC-021 and OC-022 use one server-owned source allow-list for the signed-in administrator mount (`/api/operator/import/*`) and the opted-in Business grant mount (`/api/rer/import/*`): `pagerduty`, `opsgenie`, `splunk`, `jsm` and `betterstack`. The installation owner enables or disables Business imports and permanently revokes trusted signing keys in Sign-in settings; administrators retain their own file import/history/undo access. Upload → plan → fingerprint approval → bounded apply/resume → native reconcile → newest-first undo is the common lifecycle. Preview creates custody and bookkeeping, never native objects or login/send authority. Erasure withdraws retained bundle content while keeping explicit history metadata as described in MOVE-IN.md; archive restore leaves Business imports disabled.
+
+`tests/import-door.mjs`, extended by `tests/import-door-catchup.mjs`, exercises signed standing approval on a synthetic saved PagerDuty rota with users, schedule layers and escalation policies: replacement plus addition, native reconciliation after restart, layered newest-first undo, and preservation of a manually edited native schedule. A bounded standing plan/apply binds the same approval identity/time and admits fewer than five percent changed source records against a nonempty baseline, with no gone, rejected, unmapped or conflicting changed records. Outside-allowance, gone-source and adopted/hand-edited-target cases require a new proposal; erasure withdraws the baseline so standing approval cannot resurrect a gone native record; strict undo refuses the native edit and reconciliation reports it. Paging remains OFF, with no new paging jobs, receipts or callbacks. This extends the existing registration without adding an acceptance point or changing clause status.
+
+These are synthetic local test-install proofs, not authorized real exports, live-account shape verification, a hosted catch-up receipt, complete incumbent migration, live API reconciliation or cutover. OC-021 remains done within its saved-file limits; OC-022 remains partial after the carried-done audit; OC-038 and OC-040 remain partial and OC-074 remains missing. The Move-in screen's reconciliation/completion work is a separate round; a public reconcile endpoint does not itself prove browser reconciliation. Large held native sets beyond this journey are unproved. No production paging or real-phone acceptance is claimed.
+
+The five-source shared file door is implemented within documented mapping limits. Preview writes zero native objects, with custody/bookkeeping retained; complete incumbent migration and real-export acceptance remain OC-038. No real-export receipt or status promotion is claimed.
+
+## PagerDuty account saved responses
+
+The synthetic [account fixture](../tests/fixtures/pagerduty-account.json) uses
+invented people at example.test and saved REST list/detail responses, including
+pagination fields. The outer bundle and enrichment of users' contact methods,
+notification rules and team members are assembled by the owner's own tooling.
+Integration keys are removed before saving. This is documented-shape evidence;
+it has not been verified against a live account.
+
+Format references read on **28 October 2026**: PagerDuty's
+[user](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user),
+[contact methods](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user-contact-methods),
+[notification rules](https://docs.pagerduty.com/developer/api/reference/rest/users/get-user-notification-rules),
+[service and integrations](https://docs.pagerduty.com/developer/api/reference/rest/services/get-service),
+[team](https://docs.pagerduty.com/developer/api/reference/rest/teams/get-team),
+[incidents](https://docs.pagerduty.com/developer/api/reference/rest/incidents/list-incidents),
+[maintenance windows](https://docs.pagerduty.com/developer/api/reference/rest/maintenance-windows/list-maintenance-windows),
+[business service](https://docs.pagerduty.com/developer/api/reference/rest/business-services/get-business-service),
+[orchestration lists](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/list-event-orchestrations),
+[orchestration detail](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/get-orchestration),
+[router](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/get-orch-path-router)
+and [dynamic router rule](https://docs.pagerduty.com/developer/api/reference/rest/event-orchestrations/update-orch-path-router)
+references. The shipped exporter and in-app read still collect only users,
+schedules, overrides and escalation policies (with schedule comparison timelines);
+they do not collect the whole account. No OAuth scope is widened here.
+
+The saved-file reader accepts list pages and single-detail wrappers for `users`,
+`schedules`, `overrides`, `escalation_policies`, `services`, `integrations`,
+`teams`, `incidents`, `maintenance_windows`, `business_services` and
+`event_orchestrations` (the `orchestrations` list, `orchestration` detail,
+or the router's `orchestration_path` detail).
+Keep every page in the bundle. An override list must carry its `schedule_id`
+when more than one schedule is present. The reader inventories each service's
+embedded integration separately, at its original pointer; the service remains
+one source record. The unchanged limits are 512 KiB and 500 records, counting
+those integrations. Nothing is truncated. Narrow an export that exceeds either
+limit. Duplicate IDs within a kind, Opsgenie `data` envelopes selected as
+PagerDuty, and account objects with missing referenced users, policies, teams,
+schedules or services refuse the file. Include the missing details or correct
+the reference and preview again. Schedule-only files from the unchanged
+four-category exporter retain user team references as notes without requiring
+a team collection. Strict schedule and policy conversion refusals remain as
+described above.
+
+Each source record has one review entry and one exclusive disposition: mapped,
+mapped with differences (including retained source evidence), or rejected. The
+owner door returns their disjoint `classification` counts, which sum to
+`summary.sourceRecords`; the screen's existing direct-mapping and field-note
+counts overlap, as its explanation says. Reconciliation accounts for both
+present objects and explained source-only records.
+
+- Phone and SMS details compose E.164 from an integer `country_code` and national
+  `address` digits. A shared phone/SMS number becomes one unverified contact.
+  Missing details, a trunk prefix, formatting or non-numeric values are named
+  individually, with no guessed number. Every imported number remains unlisted
+  for paging until country coverage and OC-026/OC-066 verification establish
+  coverage; it does not satisfy two-route coverage. Email, push, notification
+  rules and their delivery settings remain notes, with no delivery.
+- Events v1, Events v2 and generic Events API integrations become inactive,
+  keyless inventory bound to the **source** service identity. The file cannot
+  supply a key. Email integrations are named for OC-070 and OC-038's inherited
+  email import duty. Vendor-hosted integrations such as Datadog, CloudWatch and
+  Grafana are named for re-creation as the matching Oncall source or generic
+  webhook. Unsupported integrations retain their original settings.
+- Services remain source evidence. Grouping, urgency, support hours, auto-resolve
+  and acknowledgment timeouts, policy and team references are each named as
+  unconverted. No native service is created; schedule adoption still requires
+  an administrator's explicit choice of an existing service.
+- Teams (OC-023), business services (OC-061), maintenance windows (OC-043) and
+  orchestration routers (OC-072 routed keys) are named refusals with their
+  original source kept. Each router rule, dynamic rule and catch-all is listed
+  individually as not converted. No routed key is created or activated.
+- Triggered and acknowledged incidents are refused individually as live imports:
+  no timeline, delivery or state change is created. Resolved incidents remain
+  counted source evidence. Imported history never counts as live delivery.
+
+Apply requires the reviewed fingerprint and retains paused, non-paging,
+non-login data. Identical bytes reuse the applied plan; an explicit catch-up
+of those bytes proposes zero changes. A changed file
+adds new objects and replaces unchanged imported targets; it names native edits
+as conflicts and lists missing source objects without deleting them. The
+existing strict undo refuses before changing anything when an affected imported
+target has a native edit. Restart between bounded apply steps resumes from the
+committed prefix; an uncertain interrupted publication still follows the
+existing failed-import/explicit-rollback rules. Related people in retained and
+rejected PagerDuty records, including opaque user references and imported
+numbers, participate in the existing person-erasure flow.

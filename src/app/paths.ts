@@ -10,7 +10,7 @@ export function workspaceAddress(path: string) {
   if (service) {try {if (service[1]) decodeURIComponent(service[1]);return {page: 'services', incident: ''};} catch {return {page: 'not-found', incident: ''};}}
   if (path === '/' || /^\/on-call\/?$/.test(path)) return {page: 'on-call', incident: ''};
   if (/^\/settings\/?$/.test(path)) return {page: 'services', incident: ''};
-  const setting = /^\/settings\/(services|integrations|routing|team|move-in|archive)\/?$/.exec(path);
+  const setting = /^\/settings\/(services|integrations|routing|team|move-in|archive|readiness)\/?$/.exec(path);
   if (setting) return {page: setting[1], incident: ''};
   if (/^\/settings\/integrations(?:\/(?:new(?:\/[^/]+)?|[^/]+))?\/?$/.test(path)) return {page:'integrations',incident:''};
   const section = workspaceSections.find(section => path === `/${section}` || path === `/${section}/`);

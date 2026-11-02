@@ -11,9 +11,9 @@
 .intake-list > li p { margin: 8px 0; }
 .intake-list dt { color: var(--oc-muted); font-size: 13px; }
 .intake-list dd { margin: 0 0 10px; }
-.compatible-intake pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; max-width: 100%; }
+.compatible-intake pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; line-height: 1.5; max-width: 100%; }
 .intake-example { padding: 16px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper-deep); }
-.intake-example textarea { font-family: var(--oc-mono, monospace); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.intake-example textarea { font-family: var(--oc-mono, monospace); font-size: 13px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 .intake-receipts { margin-top: 24px; }
 @media (max-width: 480px) {
   .compatible-intake .intake-actions > button { max-width: 100%; white-space: normal; }

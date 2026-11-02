@@ -10,7 +10,7 @@ export type IncidentAction = typeof incidentActions[number][0];
 export function MoreMenu({demo, canEdit, choose, close}: {demo: boolean; canEdit: boolean; choose: (action: IncidentAction) => void; close: () => void}) {
   const menu = useRef<HTMLDivElement>(null);
   useEffect(() => {menu.current?.querySelector<HTMLButtonElement>('[role=menuitem]')?.focus();}, []);
-  const actions = incidentActions.filter(([id]) => (id !== 'test' || demo && canEdit) && (canEdit || !['merge', 'split', 'test'].includes(id)));
+  const actions = incidentActions.filter(([id]) => (id !== 'test' || demo && canEdit) && (canEdit || !['snooze', 'merge', 'split', 'test'].includes(id)));
   return <ActionSheet title="Incident actions" menu close={close}>
     <div ref={menu} role="menu" aria-label="Incident actions" className="incident-action-list" onKeyDown={event => {
       const buttons = Array.from(menu.current!.querySelectorAll<HTMLButtonElement>('[role=menuitem]'));

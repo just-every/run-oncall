@@ -4,14 +4,17 @@ import { Field, Form } from '../forms';
 import type { Member } from '../family/response-operations/domain';
 import type { BulkResult } from '../family/response-operations/triage';
 
-export function IncidentBulkActions({items, allMatching, count, query, workspaceRevision, members, incidents, busy, canEdit, run, clear}: {items: {id: string; revision: number;kind?:string}[]; allMatching: boolean; count: number; query: unknown; workspaceRevision: number; members: Member[]; incidents:{id:string;title:string;revision:number}[]; busy: boolean; canEdit: boolean; run: (path: string | (() => Promise<any>), data?: any, message?: any) => Promise<any>; clear: () => void}) {
+export function IncidentBulkActions({items, allMatching, count, total, refreshing, selectPage, selectMatching, query, workspaceRevision, members, incidents, busy, canEdit, run, clear}: {items: {id: string; revision: number;kind?:string}[]; allMatching: boolean; count: number; total: number; refreshing: boolean; selectPage: () => void; selectMatching: () => void; query: unknown; workspaceRevision: number; members: Member[]; incidents:{id:string;title:string;revision:number}[]; busy: boolean; canEdit: boolean; run: (path: string | (() => Promise<any>), data?: any, message?: any) => Promise<any>; clear: () => void}) {
   const pending = useRef<{key: string; operationId: string;payload:any} | null>(null);
   const [preview,setPreview]=useState<{comparison:{position:number;alert:string;step:string;ok:boolean;error?:string;templateVersion?:number|null;member?:string}[]}|null>(null);
   const [durable,setDurable]=useState(false);
   const [action, setAction] = useState('acknowledge');
   const [result, setResult] = useState<{operationId: string; results: BulkResult[]; remaining?: number} | null>(null);
   return <section className="triage-bulk" aria-label="Bulk incident actions">
-    <strong>{items.length} selected{allMatching ? ' · all matching' : ''}</strong> <button className="quiet" disabled={busy} onClick={clear}>Clear selection</button>
+    <div className="triage-selection"><strong>{items.length} selected{allMatching ? ' · all matching' : ''}</strong>
+      <button className="quiet" disabled={busy || refreshing} onClick={selectPage}>Select this page</button>
+      {total <= 1000 && !allMatching && <button className="quiet" disabled={busy || refreshing} onClick={selectMatching}>Select all {total} matching</button>}
+      <button className="quiet" disabled={busy} onClick={clear}>Clear selection</button></div>
     <label>Bulk action<select aria-label="Bulk action" disabled={busy || !canEdit} value={action} onChange={e => setAction(e.target.value)}><option value="acknowledge">Acknowledge</option><option value="reassign">Reassign</option>{items.every(item=>item.kind==='alert')&&!allMatching&&<option value="orchestrate">Declare incidents and record notifications</option>}<option value="set-priority">Set priority</option><option value="set-urgency">Set urgency</option><option value="snooze">Snooze</option><option value="merge">Merge into incident</option><option value="resolve">Resolve / close alert-only items</option></select></label>
     <Form busy={busy} disabled={!canEdit} label={`Apply to ${items.length} ${items.every(i=>i.kind==='alert')?'alert-only items':'incidents'}`} onSubmit={async data => {
       const target=incidents.find(i=>i.id===data.target);

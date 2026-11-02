@@ -9,6 +9,7 @@ export type RotaDraft = {
   primary: string[]; differentBackup: boolean; backup: string[];
   starts: string; time: string; every: number; customEvery?: boolean; ambiguity: Ambiguity; ends: string;
   original?: Schedule;
+  layers?: Schedule["layers"]; companyDates?: Schedule["companyDates"]; pto?: Schedule["pto"];
 };
 export const viewerZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 export function localDate(at: number, zone: string) {
@@ -41,7 +42,8 @@ export function toSchedule(draft: RotaDraft): Schedule {
     validFrom: unchangedAnchor ? draft.original!.validFrom : new Date(at).toISOString(),
     validUntil: draft.ends ? draft.original?.validUntil && localDate(Date.parse(draft.original.validUntil), draft.zone).slice(0, 10) === draft.ends ? draft.original.validUntil : new Date(end!).toISOString() : null,
     primary: {...rotation, members: draft.primary}, backup: {...backupRotation, members: draft.differentBackup ? draft.backup : nextBackup(draft.primary)},
-    overrides: draft.original?.overrides ?? []};
+    overrides: draft.original?.overrides ?? [],
+    ...Object.fromEntries((['layers','companyDates','pto'] as const).flatMap(key => {const value=draft[key]??draft.original?.[key];return value===undefined?[]:[[key,value]];}))};
 }
 export function hasRepeatedHandover(draft: RotaDraft, now = Date.now()): boolean {
   if (!draft.starts || !draft.time || !Number.isInteger(draft.every) || draft.every < 1) return false;
@@ -76,6 +78,6 @@ export function isRotaDraft(value: unknown): value is RotaDraft {
 export function sameRota(left: Schedule, right: Schedule): boolean {
   const answers = (schedule: Schedule) => [schedule.id,schedule.name,schedule.service,schedule.timezone,schedule.validFrom,schedule.validUntil,
     ...(['primary','backup'] as const).map(role => {const rotation=schedule[role];return [rotation.anchorLocal,rotation.periodDays,rotation.ambiguity,rotation.members];}),
-    schedule.overrides.map(override => [override.id,override.role,override.start,override.end,override.member])];
+    schedule.overrides.map(override => [override.id,override.role,override.start,override.end,override.member]),schedule.layers,schedule.companyDates,schedule.pto];
   return JSON.stringify(answers(left)) === JSON.stringify(answers(right));
 }

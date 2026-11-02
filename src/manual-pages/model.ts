@@ -72,7 +72,7 @@ export function manualCommand(state:State,actor:Member,input:any,at:string,conte
   incident.revision++;incident.timeline.push({id:crypto.randomUUID(),at,actor:actor.id,kind:input.type,text:detail});return incident;
 }
 export function finishManualRecords(incident:Incident,actor:Member,at:string) {
-  if(incident.manualPage&&incident.state==='acknowledged'&&!incident.manualPage.acknowledgment){incident.manualPage.acknowledgment={by:actor.id,at};for(const o of incident.manualPage.obligations){o.state='stopped';o.outcome='Primary incident acknowledged';}}
+  if(incident.manualPage&&incident.state==='acknowledged'&&!incident.manualPage.acknowledgment){incident.manualPage.acknowledgment={by:actor.id,at,...(actor.agent?{kind:'agent' as const}:{})};for(const o of incident.manualPage.obligations){o.state='stopped';o.outcome='Primary incident acknowledged';}}
   if(incident.state!=='resolved')return;
   for(const o of incident.manualPage?.obligations??[]){o.state='stopped';o.outcome='Incident resolved';}
   for(const request of incident.responderRequests??[]){if(request.status==='pending')request.status='ended';request.obligation.state='stopped';request.obligation.outcome='Incident resolved';if(request.notice)request.notice.state='stopped';}

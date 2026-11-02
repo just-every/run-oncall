@@ -21,6 +21,5 @@
   .history-sheet { inset: 64px 0 0; padding: 20px 16px; border-radius: 14px 14px 0 0; }
 }
 
-.routing-settings .field :is(input,select,textarea):focus-visible { outline:none; border:2px solid var(--oc-ink); box-shadow:none; }
 .routing-settings .routing-condition>details { min-width:0; }
 .routing-settings .routing-condition>details>summary { display:flex; align-items:center; justify-content:space-between; gap:12px; }

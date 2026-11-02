@@ -37,17 +37,20 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
         <Tooltip label="Review actions"><button aria-label="Review actions" aria-expanded={menu} onClick={()=>setMenu(!menu)}>⋯</button></Tooltip>
         <Tooltip label="Close review"><button aria-label="Close review" onClick={close}>×</button></Tooltip>
       </header>
-      {menu&&<div className="review-sheet-menu"><button disabled={accepting} onClick={()=>{setMenu(false);void refresh();}}>Refresh material</button>{accepting&&<p>Wait for review acceptance to finish.</p>}</div>}
+      {menu&&<div className="review-sheet-menu"><button disabled={accepting} onClick={()=>{setMenu(false);void refresh();}}>Refresh material</button></div>}
       <FailureLine failure={failures.failure}/>
       {(['text','rootCause','impact'] as const).map(field=><div key={field} className="review-edit"><label className="field"><span>{field==='text'?'Review':field==='rootCause'?'Root cause':'Impact'} <SavedState state={save.states[field]}/></span><textarea aria-label={field==='text'?'Review':field==='rootCause'?'Root cause':'Impact'} rows={field==='text'?4:3} maxLength={field==='text'?10000:3000} value={save.values[field]} readOnly={!canEdit||incident.state!=='resolved'} disabled={accepting} onChange={e=>{setConfirm(false);save.change(field,e.target.value,'text');}} onBlur={()=>save.blur(field)}/></label><SaveFeedback state={save.states[field]} retry={()=>save.retry(field)} useMine={()=>save.useMine(field)}/></div>)}
       {incident.state!=='resolved'&&<p>Resolve the incident before writing its review.</p>}
       {current.reviewAcceptance&&<p className="review-meta">Accepted by {state.members.find(m=>m.id===current.reviewAcceptance!.by)?.name??'Former member'} · {shortTime(current.reviewAcceptance.at)}</p>}
+      {accepting&&<p role="status">Wait for review acceptance to finish.</p>}
+      {!canEdit&&<p>A responder or administrator can write and accept this review.</p>}
+      {canEdit&&incident.state==='resolved'&&!accepting&&!Object.values(save.values).every(v=>v.trim())&&<p>Complete Review, Root cause and Impact to accept this review.</p>}
       {canEdit&&incident.state==='resolved'&&<button disabled={accepting||!Object.values(save.values).every(v=>v.trim())} onClick={async()=>{if(await save.flush())setConfirm(true);}}>Accept review</button>}
       {confirm&&<InlineConfirm action="Accept this review" keep="Keep writing" busy={accepting} onCancel={()=>setConfirm(false)} onConfirm={async()=>{
         if(!await save.flush())return;setAccepting(true);failures.clear();
         try{const retained:Material=await request('/api/reviews/'+encodeURIComponent(incident.id)+'/material');const result:Incident=await autosaveRequest('/api/command',{type:'review',incident:incident.id,revision:retained.incidentRevision,...save.values,accept:true,materialRevision:retained.incidentRevision,materialWorkspaceRevision:retained.workspaceRevision});setLatest(result);onSaved?.(result);setConfirm(false);await refresh();}catch(error){failures.show(error);}finally{setAccepting(false);}
       }}>Accept the Review, Root cause and Impact on screen now as your human assessment?</InlineConfirm>}
-      {material&&<ReviewMaterial material={material} name={id=>state.members.find(m=>m.id===id)?.name??'Former member'}/>}
+      {material&&<ReviewMaterial material={material} state={state}/>}
       <p><a href={'/incidents/'+encodeURIComponent(incident.id)}>Add a follow-up on this incident</a></p>
     </div>
   </div>;

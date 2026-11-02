@@ -15,6 +15,7 @@ import { rejectedResponse } from './base/rejected-response'
 const theme = { href: '/rer-theme.css', productName: branding.name, accentColor: branding.primaryColor }
 
 export interface Bindings {
+ RER_BUSINESS_TRUST?: string
  RER_DEMO?: string
  RER_OWNER_CLAIM_PUBLIC_KEYS?: string
  RER_OWNER_CLAIM_ISSUER?: string

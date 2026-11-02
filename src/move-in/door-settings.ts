@@ -19,7 +19,7 @@ export async function readImportSettings(env:Bindings) {
 /** One row in the existing owner settings frame; no copied Base UI is edited. */
 export function importSettingsRow(state:Awaited<ReturnType<typeof readImportSettings>>) {
  return `<form class="business-import-settings" action="/auth/settings/imports" method="post"><label class="check"><input type="checkbox" name="enabled" value="true"${state.enabled?' checked':''}${!state.configured?' disabled':''}>Allow Business imports</label>`
-  + '<p>Business may import saved PagerDuty and Opsgenie exports after owner approval. Imported data stays paused; paging stays OFF.</p>'
+  + '<p>Business may import saved PagerDuty, Opsgenie, Splunk On-Call, Jira Service Management Ops and Better Stack exports after owner approval. Imported data stays paused; paging stays OFF.</p>'
   + (state.configured?`<label>Revoke grant key<select name="revokeKid" aria-label="Revoke grant key"><option value="">Keep current keys</option>${state.keys.filter(key=>!key.revoked).map(key=>`<option value="${escape(key.kid)}">${escape(key.kid)}</option>`).join('')}</select></label>`
    + (state.keys.some(key=>key.revoked)?`<p>Revoked keys: ${state.keys.filter(key=>key.revoked).map(key=>escape(key.kid)).join(', ')}. Revocation is permanent.</p>`:'')
    + '<button>Save import settings</button>':'<p>Configure this installation’s trusted RER grant keys before enabling imports.</p>')+'</form>'

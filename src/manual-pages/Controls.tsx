@@ -6,6 +6,7 @@ import {Field,Form} from '../forms';
 import {request} from '../useWorkspace';
 import type {Incident,Member,Service,State} from '../family/response-operations/domain';
 import {assignmentRule} from './model';
+import {memberName} from '../incident/types';
 function usePolicies(){
  const [policies,setPolicies]=useState<{service:string;revision:number}[]|null>(null), failures=useActionFailure();
  const load=async()=>{try{setPolicies((await request('/api/paging/state')).policies);failures.clear();}catch(error){failures.show(error,{read:true,target:null,retry:load});}};
@@ -16,18 +17,6 @@ function Targets({state,policies,compact=false}:{state:State;policies:{service:s
  {(!!policies.length||!compact)&&<Field name="policy" label="Escalation policy" required={false}><option value="">No policy override</option>{policies.map(p=><option key={p.service} value={p.service}>{state.services.find(s=>s.id===p.service)?.name} · version {p.revision}</option>)}</Field>}
  {!compact&&<p>Choose named users or one policy. Each target is a recorded obligation; paging OFF.</p>}
  </>;}
-export function ManualDeclare({state,busy,submit}:{state:State;busy:boolean;submit:(data:any)=>Promise<any>}){
- const {policies,failure}=usePolicies(),[operation]=useState(()=>crypto.randomUUID()),[serviceId,setServiceId]=useState(state.services[0]?.id??'');
- const template=state.services.find(s=>s.id===serviceId)?.incidentTemplates?.at(-1);
- return <><p>Manual page records an incident and its intended targets. No sender runs.</p><FailureLine failure={failure}/><Form busy={busy} disabled={policies===null} label="Declare" onSubmit={data=>submit({...data,type:'manual-page',operationId:operation,users:data.users??[]})}>
- <Field name="title" label="Incident title"/><label className="field"><span id="declaration-service-label">Service</span><select aria-labelledby="declaration-service-label" name="service" required value={serviceId} onChange={event=>setServiceId(event.target.value)}>{state.services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
- <Field key={serviceId} name="incidentType" label="Incident type (service template)" required={false}><option value="">Service template default</option>{(template?.incidentTypes??[]).map(type=><option key={type}>{type}</option>)}</Field>
- <Field name="severity" label="Severity">{(['critical','warning','info'] as const).map(severity=><option key={severity} value={severity}>{template?.severityWording[severity]??severity}</option>)}</Field>
- <Field name="urgency" label="Page urgency" required={false}><option value="">Service rule (high when severity is required)</option><option value="high">High</option><option value="low">Low</option></Field>
- <Field name="priority" label="Page priority" required={false}><option value="">Unset</option>{['P1','P2','P3','P4','P5'].map(p=><option key={p}>{p}</option>)}</Field>
- <Field name="summary" label="Customer impact and current evidence" help={template?.impactPrompt} type="textarea" required={false}/><Targets state={state} policies={policies??[]}/>
- </Form></>;
-}
 export function UserAssignment({service,state}:{service:Service;state:State;busy:boolean;submit:(data:any)=>Promise<any>}){
  const {policies,failure}=usePolicies(),rule=assignmentRule(state,service.id);
  const snapshot=(current:State)=>{const value=assignmentRule(current,service.id);return {values:{mode:value.mode,minutes:String(value.minutes),policy:value.policy},revision:value.version}};
@@ -43,7 +32,7 @@ export function UserAssignment({service,state}:{service:Service;state:State;busy
  </div></details>;
 }
 export function ResponderRequests({incident,state,actor,busy,submit,expanded=false}:{incident:Incident;state:State;actor:Member;busy:boolean;submit:(data:any)=>Promise<any>;expanded?:boolean}){
- const {policies,failure}=usePolicies(),editable=['admin','responder'].includes(actor.role),name=(id:string)=>state.members.find(m=>m.id===id)?.name??state.services.find(s=>s.id===id)?.name??'Erased member';
+ const {policies,failure}=usePolicies(),editable=['admin','responder'].includes(actor.role),name=(id:string)=>state.services.find(s=>s.id===id)?.name??memberName(state,id);
  const send=(data:any)=>submit({...data,incident:incident.id,revision:incident.revision});
  return <section className="response-controls" aria-label="Manual obligations and responder requests">{!expanded&&<h3>Manual obligations and responder requests</h3>}
  {incident.manualPage&&<><p>Created by {incident.manualPage.erasedCreator?'Erased member':name(incident.manualPage.creator)} · {incident.urgency} urgency · {incident.manualPage.assignment.mode} after {incident.manualPage.assignment.minutes} minutes (version {incident.manualPage.assignment.version}) · automatic action unavailable.</p><p>Primary acknowledgment: {incident.manualPage.acknowledgment&&incident.state!=='declared'?(incident.manualPage.erasedAcknowledgment?'Erased member':name(incident.manualPage.acknowledgment.by)):'Unacknowledged'}</p>{incident.state==='declared'&&incident.manualPage.acknowledgment&&<p>Earlier manual-page acknowledgment: {incident.manualPage.erasedAcknowledgment?'Erased member':name(incident.manualPage.acknowledgment.by)} · {expanded?new Date(incident.manualPage.acknowledgment.at).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):incident.manualPage.acknowledgment.at}</p>}{incident.manualPage.obligations.map(o=><p key={o.id}>Recorded obligation · {o.target.kind}: {name(o.target.id)} · {o.state} · {o.outcome} · no sender · paging OFF</p>)}</>}

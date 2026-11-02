@@ -1,3 +1,4 @@
+import {incidentStateLabel, severityLabel} from '../reviews/display';
 import {Tooltip} from '../app/Tooltip';
 import type {IncidentProps} from './types';
 import {shortTime} from './types';
@@ -9,6 +10,6 @@ export function IncidentHead({incident, state, actions}: Pick<IncidentProps, 'in
       <h1 tabIndex={-1}>{incident.title}</h1>
       <Tooltip label="Incident actions" dismissOnEscape><button type="button" className="incident-icon" aria-label="Incident actions" aria-haspopup="menu" onClick={actions}>⋯</button></Tooltip>
     </div>
-    <p className="incident-meta"><span className={'incident-state state-' + incident.state}>{incident.state}</span> · {service?.name} · {service?.environment} · {incident.severity} · {shortTime(incident.createdAt)}</p>
+    <p className="incident-meta"><span className={'incident-state state-' + incident.state}>{incidentStateLabel(incident.state)}</span> · {service?.name} · {service?.environment} · {severityLabel(incident.severity)} · <time dateTime={incident.createdAt}>{shortTime(incident.createdAt)}</time></p>
   </header>;
 }

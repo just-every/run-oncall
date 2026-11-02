@@ -4,10 +4,10 @@ import { Tooltip } from './Tooltip';
 import { useEffect, useState, type ReactNode } from 'react';
 import { request } from '../useWorkspace';
 import type { Incident, Member, State } from '../family/response-operations/domain';
-import { queryFields, type SavedView, type TriageQuery } from '../family/response-operations/triage';
-import { incidentAssignee, incidentUrgency } from '../family/response-operations/incident-controls';
+import { queryFields, type SavedView, type TriageItem, type TriageQuery } from '../family/response-operations/triage';
 import { TriageFilters } from './TriageFilters';
 import { IncidentBulkActions } from './IncidentBulkActions';
+import { IncidentMeta } from './IncidentMeta';
 import './triage.css';
 
 const readQuery = (): TriageQuery => typeof location === 'undefined' ? {} : Object.fromEntries(queryFields.flatMap(key => new URLSearchParams(location.search).has('triage_' + key) ? [[key, new URLSearchParams(location.search).get('triage_' + key)!]] : []));
@@ -15,7 +15,7 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
   const navigate=useNavigate();
   const failures=useActionFailure();
   const [query, setQuery] = useState<TriageQuery>(readQuery);
-  const [page, setPage] = useState<{items: (Incident&{kind?:'incident'|'alert'})[]; total: number; nextCursor: string | null; workspaceRevision: number} | null>(null);
+  const [page, setPage] = useState<{items: TriageItem[]; total: number; nextCursor: string | null; workspaceRevision: number} | null>(null);
   const [views, setViews] = useState<SavedView[]>([]);
   const [selection, setSelection] = useState<{id: string; revision: number;kind?:string}[]>([]);
   const [allMatching, setAllMatching] = useState(false);
@@ -59,15 +59,13 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
     </details>
     <div className="triage-count" role="status">{loading ? 'Loading incidents…' : `${page?.total ?? 0} matching ${query.kind==='alerts'?'alert-only items':'incidents'}`}</div>
     <FailureLine failure={failures.failure} />
-    {actor.role !== 'viewer' && !!page?.total && <div className="triage-selection"><button disabled={refreshing || busy} onClick={() => {setSelection(page.items.slice(0, 500).map(i => ({id: i.id, revision: i.revision,kind:i.kind}))); setAllMatching(false);}}>Select this page</button>{page.total <= 1000 && <button disabled={refreshing || busy} onClick={selectMatching}>Select all {page.total} matching</button>}</div>}
     {(state.triage??[]).some(row=>row.kind==='bulk'&&row.workflow&&row.actor===actor.id)&&<details className="triage-bulk"><summary>Recorded coordination workflows</summary><p>Explicitly resume up to two ordered coordination steps. No timer or sender runs. Completed and refused steps are retained and never repeated.</p><ul tabIndex={0} aria-label="Recorded workflow progress">{(state.triage??[]).filter(row=>row.kind==='bulk'&&row.workflow&&row.actor===actor.id).map(row=>row.kind==='bulk'&&row.workflow&&<li key={row.id}><strong>{row.results.length===(row.workflow.items.length*(row.rule?3:row.workflow.action==='orchestrate'?2:1))?'Complete':'Pending'} · {row.workflow.action==='orchestrate'?'recorded declaration and notification':'recorded reassignment'}</strong><p>{row.results.length} of {(row.workflow.items.length*(row.rule?3:row.workflow.action==='orchestrate'?2:1))} processed · {row.results.filter(result=>!result.ok).length} refused</p><p style={{overflowWrap:'anywhere'}}>Operation {row.id}</p>{row.rule&&<p>Rule v{row.rule.policyVersion} · approved workflow v{row.rule.workflowVersion} · {row.rule.state==='running'?'Execution uncertain until its lease is cleared':row.rule.state} · non-automatic · paging OFF</p>}{row.rule?.state==='running'&&<button disabled={busy} onClick={()=>run('/api/triage/workflows/'+encodeURIComponent(row.id)+'/clear-expired',{approve:true,revision:row.rule!.revision},'Expired workflow lease cleared; explicit resume required')}>Clear expired workflow</button>}{row.results.filter(result=>!result.ok).map(result=><p key={result.id}>{result.error}</p>)}{row.results.length<(row.workflow.items.length*(row.rule?3:row.workflow.action==='orchestrate'?2:1))&&<button disabled={busy||actor.role==='viewer'} onClick={()=>run('/api/triage/workflows/'+encodeURIComponent(row.id)+'/resume',{approve:true,...(row.rule?{revision:row.rule.revision}:{})},'Recorded workflow advanced; inspect retained outcomes')}>{row.workflow.action==='orchestrate'?'Resume recorded workflow':'Resume recorded reassignment'}</button>}</li>)}</ul></details>}
-    {selection.length > 0 && <IncidentBulkActions items={selection} allMatching={allMatching} count={selection.length} query={query} workspaceRevision={selectionRevision} members={state.members} incidents={state.incidents.filter(i=>!i.mergedInto&&i.state!=='resolved')} busy={busy || refreshing} canEdit={actor.role !== "viewer"} run={run} clear={() => {setSelection([]); setAllMatching(false);}} />}
-    {page?.items.map(i => <div className="triage-item" key={i.id}>
+    {selection.length > 0 && <IncidentBulkActions items={selection} allMatching={allMatching} count={selection.length} total={page?.total ?? 0} refreshing={refreshing} selectPage={() => {setSelection((page?.items ?? []).slice(0, 500).map(i => ({id: i.id, revision: i.revision,kind:i.kind}))); setAllMatching(false);}} selectMatching={selectMatching} query={query} workspaceRevision={selectionRevision} members={state.members} incidents={state.incidents.filter(i=>!i.mergedInto&&i.state!=='resolved')} busy={busy || refreshing} canEdit={actor.role !== "viewer"} run={run} clear={() => {setSelection([]); setAllMatching(false);}} />}
+    {page?.items.map(i => <div className="triage-item" key={i.id} data-triage-id={i.id}>
       {actor.role !== 'viewer' && <label className="triage-check"><input type="checkbox" aria-label={`Select ${i.title}`} checked={selection.some(s => s.id === i.id)} disabled={busy || refreshing || selection.length >= 500 && !selection.some(s => s.id === i.id)} onChange={e => {setAllMatching(false); setSelection(old => e.target.checked ? [...old, {id: i.id, revision: i.revision,kind:i.kind}].slice(0, 500) : old.filter(s => s.id !== i.id));}} /></label>}
       <button className={`incident ${current === i.id ? 'current' : ''}`} onClick={() => {if(i.kind==='alert')void navigate({to:'/alerts/'+encodeURIComponent(i.id),resetScroll:false} as any);else select(i.id);}}>
-        <div className="incident-top"><span className={`dot ${i.state === 'resolved' ? 'green' : 'red'}`} /><span>{i.id.slice(0, 8)}</span><span className={`priority ${i.state === 'resolved' ? 'state-resolved' : `sev-${i.severity}`}`}>{i.severity}{i.state === 'resolved' && ' · resolved'}</span></div>
-        <h3>{i.kind==='alert'&&'Alert-only: '}{i.title}</h3><p className="service">{state.services.find(v => v.id === i.service)?.name} · {i.state}</p>
-        <time>{new Date(i.createdAt).toLocaleString()}</time><div className="tags"><span className="tag">{incidentUrgency(i)} urgency</span>{i.priority && <span className="tag">{i.priority}</span>}<span className="tag">{state.members.find(m => m.id === incidentAssignee(i))?.name ?? 'Unassigned'}</span><span className="tag">{i.actions.filter(a => !a.done).length} open follow-ups</span></div>
+        <h3>{i.kind==='alert'&&'Alert-only: '}{i.title}</h3>
+        <IncidentMeta incident={i} state={state} triageStatus={i.triageStatus} />
       </button>
     </div>)}
     {page?.total === 0 && state.incidents.length > 0 && <p>No incidents match these filters.</p>}

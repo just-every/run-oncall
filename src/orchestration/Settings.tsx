@@ -1,3 +1,4 @@
+import {shortTime} from '../reviews/time';
 import type {Service, State} from '../family/response-operations/domain';
 import type {IntakeRun} from '../intake/CompatibleTest';
 import {autosaveRequest} from '../app/autosave/useAutosave';
@@ -10,7 +11,7 @@ type Props = {service: Service; state: State; busy: boolean; run: IntakeRun; ref
 export function CorrelationSettings({service, state, refresh, admin = true}: Props) {
   const policy = state.policies.find(row => row.service === service.id && row.severity === '*'), version = policy?.version ?? 0;
   const saved = groupingDraft(service, state), draft = usePolicyDraft('grouping', service.id, version, saved, !!admin);
-  return <details className="response-policy service-grouping"><summary>Grouping · version {version}</summary>
+  return <details className="response-policy service-grouping"><summary>Grouping</summary>
     <DraftComparison stale={draft.stale} baseVersion={draft.baseVersion} currentVersion={version} useMine={draft.useMine}><GroupingFields value={saved} change={() => {}} state={state} readOnly/></DraftComparison>
     <form onSubmit={event => event.preventDefault()}><GroupingFields value={admin ? draft.value : saved} change={draft.change} state={state} readOnly={!admin}/>
       {admin && <PolicyPublication dirty={draft.dirty} stale={draft.stale} version={version + 1} publish={async reason => {
@@ -32,7 +33,7 @@ export function WorkflowSettings({service, state, refresh, admin = true}: Props)
   const draft = usePolicyDraft('workflow', service.id, version, saved, !!admin);
   // Approval belongs to the workflow version; concurrency belongs to its service rule.
   const next = (policy?.workflow?.version ?? 0) + 1;
-  return <details className="response-policy service-workflow"><summary>Approved workflows · version {policy?.workflow?.version ?? 0}</summary>
+  return <details className="response-policy service-workflow"><summary>Approved workflows</summary>
     {policy?.workflow?.held && <p>Approval is needed after restoring this workflow.</p>}
     {policy?.action === 'suppress' && <p>Change the service’s suppression rule in Settings › Routing before approving a workflow.</p>}
     <DraftComparison stale={draft.stale} baseVersion={draft.baseVersion} currentVersion={version} useMine={draft.useMine}><WorkflowFields value={saved} change={() => {}} state={state} readOnly/></DraftComparison>
@@ -55,5 +56,5 @@ export function WorkflowSettings({service, state, refresh, admin = true}: Props)
 
 function PolicyHistory({state,policy,label}: {state: State;policy?: string;label: string}) {
   const entries=policy ? state.audit.filter(entry => entry.kind === 'policy' && entry.text.startsWith(policy+' ')).slice().reverse() : [];
-  return <details className="service-policy-history"><summary>{label}</summary>{entries.length ? <ol>{entries.map(entry => <li key={entry.id}>{entry.text.slice(policy!.length+1)} · {state.members.find(member => member.id === entry.actor)?.name ?? 'Former member'} · {new Date(entry.at).toLocaleDateString(undefined,{day:'numeric',month:'short'})}</li>)}</ol> : <p>No published versions.</p>}</details>;
+  return <details className="service-policy-history"><summary>{label}</summary>{entries.length ? <ol>{entries.map(entry => <li key={entry.id}>{entry.text.slice(policy!.length+1)} · {state.members.find(member => member.id === entry.actor)?.name ?? 'Former member'} · {shortTime(entry.at)}</li>)}</ol> : <p>No published versions.</p>}</details>;
 }

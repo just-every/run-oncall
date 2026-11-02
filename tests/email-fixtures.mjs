@@ -1,4 +1,4 @@
-import {randomBytes} from 'node:crypto';
+import {randomBytes} from 'node:crypto'
 export const localPart=()=> 'oncall-test-'+randomBytes(20).toString('hex');
 export const recoveryRules=()=>[
  {id:'failed',action:'trigger',match:'all',conditions:[{field:'subject',op:'matches',value:'FAILED: (\\S+)'}],key:{field:'subject',kind:'regex',pattern:'FAILED: (\\S+)',group:1},severity:'critical',urgency:'high',priority:'P1'},

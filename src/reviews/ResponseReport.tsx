@@ -7,7 +7,7 @@ import { AlertNoise } from './AlertNoise';
 import {browserZone,periodBounds,shortTime} from './time';
 import {FailureLine, useActionFailure} from '../app/FailureLine';
 import { request } from '../useWorkspace';
-import { duration, DurationSource, utc } from './display';
+import { duration, DurationSource, incidentStateLabel, severityLabel } from './display';
 import './reviews.css';
 
 const metrics = [['mtta', 'Acknowledgement'], ['mttr', 'Resolution'], ['recovery', 'Human recovery attestation'], ['sourceRecovery', 'Source-reported recovery']] as const;
@@ -36,7 +36,7 @@ export function ResponseReport({state}: {state: State}) {
     finally { if (current === sequence.current) setLoading(false); }
   }
   useEffect(()=>{if(period==='custom'&&(!from||!to||to<=from))return;void load({...periodBounds(period,zone,from,to),service});return()=>{sequence.current++;};},[period,zone,from,to,service]);
-  useEffect(() => {if (report) void load(applied, true);}, [state]);
+  useEffect(() => {if (report) void load(applied, true);}, [state.revision]);
   const csv = report ? new URLSearchParams({from: report.cohort.from, to: report.cohort.to,
     ...(report.cohort.service ? {service: report.cohort.service} : {}), at: report.generatedAt, revision:String(report.revision), schedulingRevision:String(report.load.schedulingRevision)}) : null;
   return <section className="panel padded response-report" aria-busy={loading}>
@@ -83,14 +83,14 @@ export function ResponseReport({state}: {state: State}) {
       <CoverageLoad load={report.load} showBasis={false} zone={zone}/>
       <details className="review-material"><summary>How these are counted</summary>
         <p>Declarations from {shortTime(report.cohort.from,zone)} inclusive to {shortTime(report.cohort.to,zone)} exclusive · {zone}.</p><p>Exact UTC bounds: {new Date(report.cohort.from).toUTCString()} inclusive to {new Date(report.cohort.to).toUTCString()} exclusive.</p><p>Observed through {shortTime(report.generatedAt,zone)}. Unassignable declaration timestamps: {report.cohort.unassignableDeclarations}; erased cases with unknown durations: {report.cohort.erased}.</p><p>Censored cases are lower bounds and are excluded from measured averages and percentiles. Unknown durations have no measurable source.</p><p>{report.noise.definition}</p><p>{report.cohort.inclusion}</p><ul>{report.load.basis.map(line=><li key={line}>{line}</li>)}</ul>
-        <dl>{Object.entries(report.definitions).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl>
+        <dl>{Object.entries(report.definitions).map(([key, value]) => <div key={key}><dt>{metrics.find(([name]) => name === key)?.[1] ?? key}</dt><dd>{value}</dd></div>)}</dl>
         <h3>Unavailable evidence and limits</h3><ul>{report.limitations.map(limit => <li key={limit}>{limit}</li>)}</ul>
       </details>
       <details className="review-material"><summary>Incidents in this period ({report.incidents.length})</summary>
         {!report.incidents.length && <p>No retained incidents declared in this cohort.</p>}
         {report.incidents.map(row => <article className="review-record" key={row.id}>
-          <h3>{row.href ? <a href={row.href}>{row.title}</a> : row.title} <span className="tag">{row.state}</span></h3>
-          <p className="review-meta">{row.serviceName ?? 'Former service'} · {row.severity}<br />Declared {row.declaredAt ? shortTime(row.declaredAt,zone) : 'Time unavailable'} · {row.incidentRevision === null ? 'Retained erased case; durations unknown' : ''}</p>
+          <h3>{row.href ? <a href={row.href}>{row.title}</a> : row.title} <span className="tag">{incidentStateLabel(row.state)}</span></h3>
+          <p className="review-meta">{row.serviceName ?? 'Former service'} · {severityLabel(row.severity)}<br />Declared {row.declaredAt ? shortTime(row.declaredAt,zone) : 'Time unavailable'} · {row.incidentRevision === null ? 'Retained erased case; durations unknown' : ''}</p>
           <div className="response-metrics">{metrics.map(([key, label]) => <section key={key}><h4>{label}</h4><DurationSource value={row[key]} zone={zone}/></section>)}</div>
         </article>)}
       </details>

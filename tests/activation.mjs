@@ -1,15 +1,490 @@
+import {mkdtemp,readdir,copyFile,readFile,writeFile,mkdir,rm} from 'node:fs/promises'
+import {tmpdir} from 'node:os'
+import {join,resolve} from 'node:path'
+import {execFileSync,spawnSync} from 'node:child_process'
 import assert from 'node:assert/strict'
-import {readFile,writeFile,mkdir,rm} from 'node:fs/promises'
-import {spawnSync} from 'node:child_process'
 import {createHash,createHmac} from 'node:crypto'
-import {localWorker,ownerDoor} from './worker.mjs'
+import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
 import {checkpointCli,checkpointErasureCli} from './checkpoint-cli.mjs'
-import {pagingHistory} from './paging-history.mjs'
+// paging-history: part of this public journey.
+// Retained synthetic records enter through the strict module restore door;
+// no timer or provider is run by this flow.
+export async function pagingHistory(w,cookie) {
+ const req=(p,i)=>w.request(p,i,cookie),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value}
+ const state=ok(await req('/api/state')),actor=ok(await req('/api/session')).member
+ const service=state.services[0],at=Date.parse('2026-01-02T12:00:00Z')
+ const incident=ok(await req('/api/command',{type:'declare',service:service.id,title:'Retained paging history',severity:'warning',summary:'Synthetic historical record only',alerts:[]}))
+ const schedule=ok(await req('/api/paging/schedules',{id:'history',name:'Historical assignment',service:service.id,revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[actor.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}))
+ const coverage=ok(await req(`/api/schedules/history/now-next?at=${new Date(at).toISOString()}`)).now
+ const workspace=ok(await req('/api/state'))
+ const policy={service:service.id,scheduleId:schedule.id,revision:1,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}
+ const historical=id=>{
+  const key=id+':0',receipt={id:key,key,jobId:id,incident:incident.id,service:service.id,step:0,target:actor.id,payload:{incident:incident.id,service:service.id,role:'primary',target:actor.id},acceptedAt:at,status:'accepted'}
+  const step={step:0,role:'primary',target:actor.id,deliveryKey:key,startedAt:at,deadline:at+180000,attempts:1,outcome:'accepted',receipt}
+  const attempt={step:0,role:'primary',key,target:actor.id,at,outcome:'accepted',coverage,members:workspace.members,workspaceRevision:workspace.revision,selectionWarnings:[]}
+  return {id,incident:incident.id,service:service.id,revision:2,status:'pending',nextDue:step.deadline,createdAt:at,lastEvaluatedAt:at,currentStep:0,policy,schedule,behaviors:{primary:'accepted',backup:'accepted'},steps:[step],history:[{type:'created',at,actor:null,reason:null,attempt:null},{type:'attempt',at,actor:null,reason:null,attempt}]}
+ }
+ const jobs=['historical-ack','historical-cancel'].map(historical),receipts=jobs.map(j=>j.steps[0].receipt),callbacks=receipts.map((r,i)=>({id:'callback-'+i,key:r.key,outcome:'delivered',at:at+1000,late:false,actor:actor.id}))
+ const prior=ok(await req('/api/paging/archive')),archive={...prior,jobs,receipts,callbacks}
+ const restored=ok(await req('/api/paging/restore',{mode:'replace',archive}))
+ for(const job of restored.jobs){assert.equal(job.status,'paused');assert.deepEqual(job.history.slice(0,-1),jobs.find(j=>j.id===job.id).history)}
+ // Checkpoint recovery removes other passwords; reauthorize the existing fixtures through the admin door.
+ const callers=[{role:'anonymous',cookie:undefined,status:401}]
+ for(const [name,role] of [['Vic','viewer'],['Rhea','responder']]){
+  const member=state.members.find(member=>member.name===name);assert.ok(member)
+  ok(await req('/api/password',{member:member.id,password:'synthetic-local-testing-password'}))
+  const login=await w.request('/api/login',{name,password:'synthetic-local-testing-password'});ok(login)
+  const current=ok(await w.request('/api/session',undefined,login.cookie)).member
+  assert.equal(current.role,role);assert.equal(current.active,true)
+  callers.push({role,cookie:login.cookie,status:403})
+ }
+ const retainedWorkspace=ok(await req('/api/state')),retainedPaging=ok(await req('/api/paging/state'))
+ const moduleRows=()=>w.statements(['paging_control','paging_schedules','paging_policies','paging_jobs','paging_receipts','paging_callbacks'].map(table=>`SELECT * FROM ${table} ORDER BY rowid`).join(';'))
+ const retainedRows=moduleRows()
+ for(const caller of callers)for(const [path,input] of [['/api/paging/archive',undefined],['/api/paging/restore',{mode:'replace',archive}]]){
+  const ordinal=w.sql('SELECT COALESCE(MAX(ordinal),0) AS ordinal FROM oc_admin_audit')[0].ordinal
+  const refused=ok(await w.request(path,input,caller.cookie),caller.status)
+  assert.deepEqual(Object.keys(refused),['error'],`${caller.role} refusal discloses no archive or restored records`)
+  assert.equal(typeof refused.error,'string')
+  assert.deepEqual(moduleRows(),retainedRows,`${caller.role} ${path} preserves every module record and revision`)
+  assert.deepEqual(ok(await req('/api/state')),retainedWorkspace,'refused module access preserves coordination records and revision')
+  assert.deepEqual(ok(await req('/api/paging/state')),retainedPaging,'refused module access preserves the complete paging snapshot')
+  if(caller.cookie){
+   const audit=w.sql(`SELECT kind,outcome,workspace_before,workspace_after,paging_before,paging_after FROM oc_admin_audit WHERE ordinal>${ordinal}`)
+   assert.deepEqual(audit,[{kind:path.endsWith('/archive')?'paging.archive':'paging.restore',outcome:'refused',workspace_before:retainedWorkspace.revision,workspace_after:retainedWorkspace.revision,paging_before:retainedPaging.revision,paging_after:retainedPaging.revision}],'authenticated refusals retain their audit without a product write')
+  }
+ }
+ // OC-014: populated delivery history remains historical through every schedule preview.
+ const pagingBefore=ok(await req('/api/paging/state')),recordsBefore=durableSnapshot(w)
+ assert.equal(pagingBefore.mode,'synthetic-only');assert.equal(pagingBefore.paging,'OFF')
+ assert.deepEqual(pagingBefore.receipts,receipts);assert.deepEqual(pagingBefore.callbacks,callbacks)
+ assert.ok(pagingBefore.jobs.every(job=>job.steps[0].deadline===at+180000&&job.nextDue===null))
+ assert.deepEqual(await w.outboundRequests(),[],'restoring synthetic history never contacts a provider')
+ const draft={...schedule,primary:{...schedule.primary,members:[]}},range={from:at,to:at+3600000}
+ const now=ok(await req('/api/schedules/history/now-next?at='+new Date(at).toISOString()))
+ assert.equal(now.now.primary,actor.id);assert.equal(now.paging,'OFF')
+ assert.deepEqual(durableSnapshot(w),recordsBefore,'now and next preserve every durable record, deadline and outbound work item')
+ for(const [input,primary] of [[{scheduleId:schedule.id},actor.id],[{schedule:draft},null]]){
+  const preview=ok(await req('/api/paging/preview',{...input,...range}))
+  assert.equal(preview[0].primary,primary)
+  assert.deepEqual(durableSnapshot(w),recordsBefore,'saved and draft previews preserve every durable record, audit, receipt, job and deadline')
+  assert.deepEqual(await w.outboundRequests(),[],'schedule previews issue zero outbound network requests')
+ }
+ const review=ok(await req('/api/schedules/history/review',{schedule:draft,...range}))
+ assert.equal(review.coverage[0].primary,null);assert.ok(review.intervals.some(row=>row.role==='primary'&&row.newGap))
+ assert.deepEqual(durableSnapshot(w),recordsBefore,'reviewing a draft never saves it or creates outbound work')
+ for(const job of restored.jobs){
+  const replay=ok(await req('/api/paging/jobs/'+job.id+'/replay'))
+  assert.equal(replay.length,1);assert.deepEqual(replay[0].recorded,job.history[1].attempt)
+  assert.deepEqual(replay[0].recomputed,coverage,'historical replay uses the frozen assignment and member snapshot')
+  assert.deepEqual(durableSnapshot(w),recordsBefore,'historical replay changes no durable row or timer')
+ }
+ assert.deepEqual(ok(await req('/api/paging/state')),pagingBefore,'all previews retain the synthetic label and complete delivery history')
+ assert.deepEqual(await w.outboundRequests(),[],'now and next, draft review and historical replay issue zero outbound requests')
+ console.log('PASS OC-014 preview isolation: populated synthetic-only history, saved and draft schedules, draft review, now and next, historical replay, every durable row and deadline unchanged, zero outbound network requests')
+ const beforeIncident=ok(await req('/api/state')).incidents.find(i=>i.id===incident.id)
+ for(const [id,action] of [['historical-ack','ack'],['historical-cancel','cancel']]){
+  const old=restored.jobs.find(j=>j.id===id),at=Math.max(Date.now(),old.lastEvaluatedAt)
+  const changed=ok(await req(`/api/paging/jobs/${id}/${action}`,{revision:old.revision,at,...(action==='cancel'?{reason:'Explicitly close historical work'}:{})}))
+  assert.deepEqual(changed.history.slice(0,-1),old.history,'human action only appends history')
+  assert.equal(changed.history.at(-1).actor,actor.id);assert.equal(changed.history.at(-1).type,action==='ack'?'acknowledged':'cancelled')
+  assert.equal(changed.nextDue,null)
+ }
+ assert.deepEqual(ok(await req('/api/state')).incidents.find(i=>i.id===incident.id),beforeIncident,'historical acknowledgement or cancellation never proves incident recovery')
+ const after=ok(await req('/api/paging/archive'))
+ assert.deepEqual(after.receipts,receipts);assert.deepEqual(after.callbacks,callbacks)
+ for(const invalid of [
+  {...after,unknown:true}, {...after,schemaVersion:2},
+  {...after,schedules:after.schedules.map((s,i)=>i? s:{...s,service:'missing-service'})},
+  {...after,jobs:after.jobs.map((j,i)=>i?j:{...j,incident:'missing-incident'})},
+  {...after,receipts:after.receipts.slice(1)},
+  {...after,callbacks:after.callbacks.map((c,i)=>i?c:{...c,key:'missing-receipt'})}
+ ]){
+  ok(await req('/api/paging/restore',{mode:'replace',archive:invalid}),400)
+  assert.deepEqual(ok(await req('/api/paging/archive')),after,'malformed module archive preserves every retained record')
+ }
+ w.sql("CREATE TRIGGER history_restore_failure BEFORE INSERT ON paging_callbacks BEGIN SELECT RAISE(ABORT,'INJECTED_STORAGE_FAILURE'); END")
+ try{ok(await req('/api/paging/restore',{mode:'replace',archive:after}),503);assert.deepEqual(ok(await req('/api/paging/archive')),after,'SQL failure rolls back complete module replacement')}
+ finally{w.sql('DROP TRIGGER history_restore_failure')}
+ return {archive:after,incident:beforeIncident}
+}
 
-await (await import('./migration-upgrade.mjs')).migrationUpgrade()
-await (await import('./schedule-coordination.mjs')).scheduleCoordination()
-const w=await localWorker(),checks=[]
+
+// schedule-coordination: part of this public journey.
+export async function scheduleCoordination(){
+ await scheduleLayers();
+ await savedRotationCoverage();
+ const w=await localWorker({}, {clock:true,outboundLedger:true});
+ try{
+  const owner=await w.request('/api/setup',{name:'synthetic-oncall-250',password:'synthetic-oncall-250-password'});ok(owner);let cookie=owner.cookie;
+  const req=(path,input)=>w.request(path,input,cookie),coord=input=>req('/api/schedule-coordination',input),rows=async()=>ok(await coord()).records;
+  const substitute=ok(await req('/api/members',{name:'synthetic-oncall-251',role:'responder',password:'synthetic-oncall-251-password'}),201),outsider=ok(await req('/api/members',{name:'synthetic-oncall-252',role:'responder',password:'synthetic-oncall-252-password'}),201),viewer=ok(await req('/api/members',{name:'synthetic-oncall-253',role:'viewer',password:'synthetic-oncall-253-password'}),201);
+  const login=async(member,n)=>{const response=await w.request('/api/login',{name:member.name,password:'synthetic-oncall-'+n+'-password'});ok(response);return response.cookie;};
+  const substituteCookie=await login(substitute,251),outsiderCookie=await login(outsider,252),viewerCookie=await login(viewer,253);
+  const as=(asCookie,input)=>w.request('/api/schedule-coordination',input,asCookie);
+  const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-250',name:'Synthetic shift service',environment:'test',owner:owner.value.member.id,runbook:[],pager:''}));
+  const start=new Date(Math.ceil((Date.now()+2*3600000)/3600000)*3600000).toISOString(),end=new Date(Date.parse(start)+3600000).toISOString();
+  let schedule=ok(await req('/api/paging/schedules',{id:'synthetic-oncall-250',name:'Synthetic coordination rota',service:service.id,revision:0,timezone:'UTC',validFrom:start,validUntil:null,primary:{anchorLocal:start.slice(0,16),periodDays:1,members:[owner.value.member.id,outsider.id],ambiguity:'earlier'},backup:{anchorLocal:start.slice(0,16),periodDays:1,members:[],ambiguity:'earlier'},overrides:[]}));
+  const overlap=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-255',revision:0,backup:{...schedule.backup,members:[substitute.id]}}));
+  // OC-020 / OC-014: one aggregate read agrees with each rota's existing resolver and never commits.
+  {
+   const at=Date.parse(start),schedules=ok(await req('/api/paging/state')).schedules;
+   const counts=()=>{const names=w.sql("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").map(row=>row.name);return w.statements(names.map(name=>'SELECT COUNT(*) AS count FROM "'+name.replaceAll('"','""')+'"').join(';')).map((rows,index)=>({table:names[index],count:rows[0].count}));};
+   const before=counts(),workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state')),recordsBefore=durableSnapshot(w);
+   for(let n=0;n<20;n++){
+    const all=ok(await req('/api/on-call?at='+encodeURIComponent(start)));
+    assert.equal(all.rotas.length,schedules.length,'all rotas appear together');
+    for(const schedule of schedules){
+     const rota=all.rotas.find(row=>row.id===schedule.id),single=ok(await req('/api/schedules/'+encodeURIComponent(schedule.id)+'/now-next?at='+encodeURIComponent(start)));
+     assert.ok(rota);assert.equal(rota.now.primary?.id??null,single.now.primary);assert.equal(rota.now.backup?.id??null,single.now.backup);
+     const nextAt=Math.min(...single.now.windows.flatMap(window=>window.end?[Date.parse(window.end)]:[]));
+     if(Number.isFinite(nextAt)){
+      assert.equal(Date.parse(rota.next.at),nextAt);
+      const next=ok(await req('/api/schedules/'+encodeURIComponent(schedule.id)+'/now-next?at='+encodeURIComponent(rota.next.at)));
+      assert.equal(rota.next.primary?.id??null,next.now.primary);assert.equal(rota.next.backup?.id??null,next.now.backup);
+     }
+    }
+    assert.ok(all.rotas.find(row=>row.id===schedule.id).gaps.some(gap=>gap.role==='backup'&&Date.parse(gap.from)<=at&&Date.parse(gap.to)>at),'empty backup slots are gaps');
+   }
+   console.log(JSON.stringify({onCallReads:20,countsBefore:before,countsAfter:counts(),workspaceRevision:workspace.revision,pagingRevision:paging.revision}));
+   assert.deepEqual(counts(),before,'twenty reads leave every table count unchanged');
+   assert.deepEqual(ok(await req('/api/state')),workspace,'twenty reads preserve workspace and revision');
+   assert.deepEqual(ok(await req('/api/paging/state')),paging,'twenty reads preserve scheduling revisions');
+   assert.deepEqual(durableSnapshot(w),recordsBefore,'aggregate now and next preserve every durable row including audit and outbound work');
+   assert.deepEqual(await w.outboundRequests(),[],'aggregate now and next issue zero outbound network requests');
+   const combined=ok(await req('/api/workspace'));assert.deepEqual(combined.onCall.rotas.map(row=>row.id),schedules.map(row=>row.id));
+   ok(await w.request('/api/on-call'),401);ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,viewerCookie));ok(await w.request('/api/on-call?at='+encodeURIComponent(start),undefined,substituteCookie));
+   const stakeholder=ok(await req('/api/members',{name:'synthetic-oncall-254',role:'stakeholder',password:'synthetic-oncall-254-password'}),201);
+   ok(await w.request('/api/on-call',undefined,await login(stakeholder,254)),403);
+   const ended=await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-253-password'});ok(ended);ok(await w.request('/api/logout',{},ended.cookie));ok(await w.request('/api/on-call',undefined,ended.cookie),401);
+   const expiredRead=await w.request('/api/login',{name:viewer.name,password:'synthetic-oncall-253-password'});ok(expiredRead);w.sql("UPDATE sessions SET expires=0 WHERE token=(SELECT token FROM sessions WHERE member='"+viewer.id+"' ORDER BY expires DESC LIMIT 1)");ok(await w.request('/api/on-call',undefined,expiredRead.cookie),401);
+   console.log('PASS OC-020 / OC-014 aggregate on-call: all rotas match now/next, empty slot is a gap, 20 reads preserve every table and both revisions, workspace snapshot carries coverage, viewer/responder reads and anonymous/stakeholder/revoked refusals');
+  }
+  ok(await coord({action:'request',schedule:overlap.id,scheduleRevision:overlap.revision,substitute:substitute.id,role:'primary',start,end}),409);
+  const formerService=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-256',name:'Synthetic former service',environment:'test',owner:outsider.id,runbook:[],pager:''}));
+  const moved=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-256',service:formerService.id,revision:0,primary:{...schedule.primary,members:[owner.value.member.id]}}));
+  const beforeMove=ok(await req('/api/state')),beforeMovePaging=ok(await req('/api/paging/state'));
+  ok(await req('/api/schedules/'+moved.id+'/review',{schedule:{...moved,service:service.id},from:Date.parse(start),to:Date.parse(end)}),400);
+  assert.deepEqual(ok(await req('/api/state')),beforeMove,'a refused service-identity change records no notices');
+  assert.deepEqual(ok(await req('/api/paging/state')),beforeMovePaging,'a refused service-identity change preserves assignments and history');
+  const request={action:'request',schedule:schedule.id,scheduleRevision:schedule.revision,substitute:substitute.id,role:'primary',start,end};
+  ok(await as(viewerCookie,request),403);ok(await as(outsiderCookie,request),409);
+  let swap=ok(await coord(request)).record;
+  ok(await as(outsiderCookie,{action:'accept',id:swap.id,revision:swap.revision}),403);
+  ok(await as(substituteCookie,{action:'accept',id:swap.id,revision:swap.revision}),403);
+  ok(await as(outsiderCookie,{action:'approve',id:swap.id,revision:swap.revision}),403);
+  swap=ok(await coord({action:'approve',id:swap.id,revision:swap.revision})).record;
+  let racing=ok(await coord(request)).record;racing=ok(await coord({action:'approve',id:racing.id,revision:racing.revision})).record;
+  const raced=await Promise.all([swap,racing].map(row=>as(substituteCookie,{action:'accept',id:row.id,revision:row.revision})));
+  assert.equal(raced.filter(r=>r.status===200).length,1);assert.equal(raced.filter(r=>r.status===409).length,1);
+  schedule=ok(await req('/api/paging/state')).schedules.find(s=>s.id===schedule.id);assert.equal(schedule.overrides.length,1);
+  const coverage=ok(await req('/api/schedules/'+schedule.id+'/now-next?at='+encodeURIComponent(start)));assert.equal(coverage.now.primary,substitute.id);assert.equal(coverage.now.backup,null);
+  const pending=(await rows()).find(r=>r.kind==='swap'&&r.data.status==='pending');ok(await coord({action:'cancel',id:pending.id,revision:pending.revision}));
+  const notices=ok(await req('/api/state')).scheduleRecords.filter(r=>r.kind==='notice'&&r.data.schedule===schedule.id&&r.data.key.includes(':2:'));
+  assert.deepEqual(new Set(notices.map(r=>r.member)),new Set([owner.value.member.id,substitute.id,outsider.id]));
+  for(const notice of notices){assert.equal(notice.data.obligation.reason,'schedule-change');assert.equal(notice.data.obligation.automatic,false);assert.match(notice.data.obligation.outcome,/not deliverable/);}
+  const policy=ok(await coord({action:'policy',schedule:schedule.id,swapApproval:'none'})).record;
+  assert.equal(policy.data.swapApproval,'none');
+  const laterStart=new Date(Date.parse(start)+2*86400000).toISOString(),laterEnd=new Date(Date.parse(end)+2*86400000).toISOString();
+  const later=ok(await coord({...request,scheduleRevision:schedule.revision,start:laterStart,end:laterEnd})).record;assert.equal(later.data.approved,true);
+  const held=ok(await req('/api/state'));
+  w.sql("CREATE TRIGGER synthetic_schedule_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='schedule.accept' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-250-audit'); END");
+  try{ok(await as(substituteCookie,{action:'accept',id:later.id,revision:later.revision}),503);}finally{w.sql('DROP TRIGGER synthetic_schedule_audit');}
+  assert.deepEqual(ok(await req('/api/state')),held,'failed audit publishes no swap decision, override or notice');
+  assert.equal(ok(await req('/api/paging/state')).schedules.find(s=>s.id===schedule.id).overrides.length,1);
+  const reminder=ok(await coord({action:'reminder',leadMinutes:30,channel:'email'})).record;
+  assert.equal(reminder.data.leadMinutes,30);const due=(await rows()).find(r=>r.id===reminder.id);assert.ok(Number.isFinite(Date.parse(due.dueAt)));assert.equal(due.label,'not sent (no timer)');
+  const subscriptions=[];
+  for(const scope of ['schedule','service','own']){
+   const created=ok(await coord({action:'subscribe',scope,target:scope==='service'?service.id:schedule.id}));subscriptions.push(created);
+   const feed=await w.send(new URL(created.url).pathname,undefined,{},'GET');assert.equal(feed.status,200);assert.match(feed.value,/BEGIN:VCALENDAR/);assert.match(feed.value,/BEGIN:VEVENT/);
+   for(const forbidden of ['CONTACT','ATTENDEE','mailto:',owner.value.member.name,substitute.name,'synthetic-oncall-250-password',created.url])assert.ok(!feed.value.includes(forbidden),'capability feed contains schedule windows only');
+   const stored=w.sql("SELECT data FROM oc_schedule_records WHERE id='"+created.record.id+"'")[0].data;
+   assert.ok(!stored.includes(new URL(created.url).pathname.split('/').at(-1).replace('.ics','')),'only a token hash is stored');
+   assert.ok(!(await rows()).some(r=>r.kind==='subscription'&&Object.hasOwn(r.data,'hash')),'normal reads never disclose hashes or bearer URLs');
+  }
+  const otherFeed=ok(await as(substituteCookie,{action:'subscribe',scope:'own'}));ok(await coord({action:'revoke',id:otherFeed.record.id,revision:otherFeed.record.revision}));assert.equal((await w.send(new URL(otherFeed.url).pathname,undefined,{},'GET')).status,404,'admin revocation takes effect immediately for another member');
+  const revoked=subscriptions[0],history=ok(await req('/api/paging/state')).schedules;
+  ok(await as(outsiderCookie,{action:'revoke',id:revoked.record.id,revision:revoked.record.revision}),403);
+  ok(await coord({action:'revoke',id:revoked.record.id,revision:revoked.record.revision}));assert.equal((await w.send(new URL(revoked.url).pathname,undefined,{},'GET')).status,404);
+  assert.deepEqual(ok(await req('/api/paging/state')).schedules,history,'revoking access never changes assignment history');
+  for(let n=3;n<20;n++)ok(await coord({action:'subscribe',scope:'own'}));ok(await coord({action:'subscribe',scope:'own'}),429);
+  const checkpoint=ok(await req('/api/recovery/checkpoint')),before=ok(await req('/api/state')),invalid=structuredClone(checkpoint);invalid.coordination.scheduleRecords[0].kind='invalid';
+  ok(await req('/api/recovery/restore',{mode:'replace',checkpoint:invalid}),400);assert.deepEqual(ok(await req('/api/state')),before);
+  const jsonArchive=ok(await req('/api/archive')),nativeRestore=await req('/api/restore',{mode:'replace',archive:jsonArchive});ok(nativeRestore);cookie=nativeRestore.cookie;
+  assert.ok(ok(await req('/api/state')).scheduleRecords.every(row=>!row.active&& (row.kind!=='subscription'||row.data.hash===null)),'native archive recovery holds the complete category inactive');
+  assert.equal((await w.send(new URL(subscriptions[1].url).pathname,undefined,{},'GET')).status,404);
+  const restore=await req('/api/recovery/restore',{mode:'replace',checkpoint});ok(restore);cookie=restore.cookie;
+  const restored=ok(await req('/api/state')).scheduleRecords;assert.ok(restored.every(r=>!r.active));assert.ok(restored.filter(r=>r.kind==='subscription').every(r=>r.data.hash===null));
+  assert.equal((await w.send(new URL(subscriptions[1].url).pathname,undefined,{},'GET')).status,404,'restored historical subscription cannot authorize a feed');
+  const inactiveSwap=restored.find(r=>r.kind==='swap'&&r.data.status==='pending');ok(await coord({action:'accept',id:inactiveSwap.id,revision:inactiveSwap.revision}),409);
+  const overdue=ok(await coord({...request,scheduleRevision:schedule.revision,start:laterStart,end:laterEnd})).record;
+  await w.time(Date.parse(laterStart)+1);
+  // Reading the durable request needs a currently valid session after the clock advance.
+  const renewed=await w.request('/api/login',{name:'synthetic-oncall-250',password:'synthetic-oncall-250-password'});ok(renewed);cookie=renewed.cookie;
+  assert.equal((await rows()).find(r=>r.id===overdue.id).status,'overdue');assert.equal(w.sql("SELECT data FROM oc_schedule_records WHERE id='"+overdue.id+"'").map(r=>JSON.parse(r.data))[0].data.status,'pending','overdue never auto-resolves');
+  ok(await coord({action:'cancel',id:overdue.id,revision:overdue.revision}));
+  console.log('PASS OC-025 public schedule coordination: holder/substitute authority, default admin and none approval, racing acceptance, one effective override, audit rollback, recorded not-deliverable notices, durable reminder settings/due label, three digest-only feed scopes, 20 cap, immediate revocation and unchanged history, strict inactive recovery and overdue cancellation. Paging OFF.');
+ }finally{await w.close();}
+}
+
+
+// One saved-rotation journey uses the emitted HTTP doors and retained D1 data.
+async function savedRotationCoverage(){
+ const w=await localWorker({}, {outboundLedger:true});
+ try{
+  const owner=await w.request('/api/setup',{name:'synthetic-oncall-1100',password:'synthetic-oncall-1100-password'});ok(owner);let cookie=owner.cookie;
+  const req=(path,input)=>w.request(path,input,cookie);
+  const member=async(n,role)=>ok(await req('/api/members',{name:'synthetic-oncall-'+n,password:'synthetic-oncall-'+n+'-password',role}),201);
+  const a=await member(1101,'responder'),b=await member(1102,'responder'),viewer=await member(1103,'viewer');
+  const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-1100',name:'Synthetic calendar coverage',environment:'test',owner:owner.value.member.id,runbook:[],pager:''}));
+  const rotation=(anchorLocal,members,ambiguity='earlier')=>({anchorLocal,periodDays:1,members,ambiguity});
+  const save=async(n,timezone,anchor,ambiguity='earlier',primary=[a.id,b.id],backup=[b.id,a.id])=>{
+   const schedule={id:'synthetic-oncall-'+n,name:'Synthetic saved rotation '+n,service:service.id,revision:0,timezone,validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:rotation(anchor,primary,ambiguity),backup:rotation(anchor,backup,ambiguity),overrides:[]};
+   const saved=ok(await req('/api/paging/schedules',schedule));
+   assert.deepEqual(saved,{...schedule,revision:1});
+   assert.deepEqual(ok(await req('/api/paging/state')).schedules.find(row=>row.id===saved.id),saved,'the saved configuration is read from durable storage');
+   return saved;
+  };
+  const iso=at=>new Date(at).toISOString();
+  const observe=async(schedule,from,to,expected)=>{
+   const retained=durableSnapshot(w),paging=ok(await req('/api/paging/state'));
+   const values=ok(await req('/api/paging/preview',{scheduleId:schedule.id,from:Date.parse(from),to:Date.parse(to)}));
+   assert.deepEqual(values.map(value=>[iso(value.at),value.primary,value.backup,...value.windows.map(window=>[window.role,window.member,window.start,window.end,window.origin])]),
+    expected.map(([at,primary,backup,start,end])=>[at,primary,backup,['primary',primary,start,end,primary===null?'gap':'rotation'],['backup',backup,start,end,backup===null?'gap':'rotation']]),'saved preview retains exact UTC boundaries and fixed role assignments');
+   for(let index=0;index<expected.length;index++){
+    const [at,primary,backup,start,end,warning]=expected[index];
+    const result=ok(await req('/api/schedules/'+schedule.id+'/now-next?at='+at));
+    assert.equal(result.paging,'OFF');assert.deepEqual(result.now,values[index]);
+    if(warning)assert.match(result.now.warnings.join('; '),warning,'the coverage gap has a visible explanation');
+    const next=expected[index+1];
+    if(next){
+     for(const role of ['primary','backup']){
+      assert.equal(iso(result.next[role].at),end);
+      assert.equal(result.next[role].primary,next[1]);assert.equal(result.next[role].backup,next[2]);
+     }
+     const edge=ok(await req('/api/schedules/'+schedule.id+'/now-next?at='+iso(Date.parse(end)-1))).now;
+     assert.equal(edge.primary,primary);assert.equal(edge.backup,backup,'the preceding slot lasts until the exact handoff');
+    }
+   }
+   assert.deepEqual(ok(await req('/api/paging/state')),paging,'preview and now-next never create a job, receipt, callback or changed schedule');
+   assert.deepEqual(durableSnapshot(w),retained,'preview and now-next preserve every durable row, revision, audit and outbound work item');
+   assert.deepEqual(await w.outboundRequests(),[],'coverage reads make no outbound requests');
+  };
+  const fall=await save(1110,'America/New_York','2026-10-31T09:00');
+  await observe(fall,'2026-10-31T13:00:00Z','2026-11-02T15:00:00Z',[
+   ['2026-10-31T13:00:00.000Z',a.id,b.id,'2026-10-31T13:00:00.000Z','2026-11-01T14:00:00.000Z'],
+   ['2026-11-01T14:00:00.000Z',b.id,a.id,'2026-11-01T14:00:00.000Z','2026-11-02T14:00:00.000Z'],
+   ['2026-11-02T14:00:00.000Z',a.id,b.id,'2026-11-02T14:00:00.000Z','2026-11-03T14:00:00.000Z'],
+  ]);
+  console.log('PROBE OC-011 fall handoff: saved New York 09:00 primary and backup -> 13:00Z then 14:00Z, a 25-hour civil day');
+  for(const [n,choice,boundary] of [[1111,'earlier','2026-11-01T05:30:00.000Z'],[1112,'later','2026-11-01T06:30:00.000Z'],[1113,'reject',null]]){
+   const saved=await save(n,'America/New_York','2026-10-31T01:30',choice);
+   const expected=[['2026-10-30T05:30:00.000Z',b.id,a.id,'2026-10-30T05:30:00.000Z','2026-10-31T05:30:00.000Z'],
+    ...(boundary?[
+     ['2026-10-31T05:30:00.000Z',a.id,b.id,'2026-10-31T05:30:00.000Z',boundary],
+     [boundary,b.id,a.id,boundary,'2026-11-02T06:30:00.000Z'],
+    ]:[['2026-10-31T05:30:00.000Z',null,null,'2026-10-31T05:30:00.000Z','2026-11-02T06:30:00.000Z',/primary: calendar boundary is nonexistent, rejected as ambiguous/]]),
+    ['2026-11-02T06:30:00.000Z',a.id,b.id,'2026-11-02T06:30:00.000Z','2026-11-03T06:30:00.000Z']];
+   await observe(saved,'2026-10-30T05:30:00Z','2026-11-02T07:00:00Z',expected);
+   for(const at of ['2026-11-01T05:45:00Z','2026-11-01T06:15:00Z']){
+    const value=ok(await req('/api/schedules/'+saved.id+'/now-next?at='+at)).now;
+    assert.equal(value.primary,choice==='earlier'?b.id:choice==='later'?a.id:null);
+    assert.equal(value.backup,choice==='earlier'?a.id:choice==='later'?b.id:null);
+    if(choice==='reject')assert.match(value.warnings.join('; '),/backup: calendar boundary is nonexistent, rejected as ambiguous/);
+   }
+   console.log('PROBE OC-011 repeated minute '+choice+': saved New York 01:30 -> '+(boundary??'both roles visibly unavailable until 2026-11-02T06:30:00.000Z'));
+  }
+  for(const [n,choice] of [[1114,'earlier'],[1115,'later'],[1116,'reject']]){
+   const saved=await save(n,'America/New_York','2026-03-07T02:30',choice);
+   await observe(saved,'2026-03-06T07:30:00Z','2026-03-09T07:00:00Z',[
+    ['2026-03-06T07:30:00.000Z',b.id,a.id,'2026-03-06T07:30:00.000Z','2026-03-07T07:30:00.000Z'],
+    ['2026-03-07T07:30:00.000Z',null,null,'2026-03-07T07:30:00.000Z','2026-03-09T06:30:00.000Z',/backup: calendar boundary is nonexistent, rejected as ambiguous/],
+    ['2026-03-09T06:30:00.000Z',a.id,b.id,'2026-03-09T06:30:00.000Z','2026-03-10T06:30:00.000Z'],
+   ]);
+   console.log('PROBE OC-011 nonexistent minute '+choice+': saved New York 02:30 -> both roles have an explained gap from 2026-03-07T07:30Z to 2026-03-09T06:30Z, then original slot order resumes');
+  }
+  const slotRows=(unavailable)=>[
+   ['2026-01-01T00:00:00.000Z',a.id,b.id,'2026-01-01T00:00:00.000Z','2026-01-02T00:00:00.000Z'],
+   ['2026-01-02T00:00:00.000Z',null,a.id,'2026-01-02T00:00:00.000Z','2026-01-03T00:00:00.000Z',new RegExp('primary: member .* is '+unavailable+'; slot is retained')],
+   ['2026-01-03T00:00:00.000Z',b.id,null,'2026-01-03T00:00:00.000Z','2026-01-04T00:00:00.000Z',new RegExp('backup: member .* is '+unavailable+'; slot is retained')],
+   ['2026-01-04T00:00:00.000Z',a.id,b.id,'2026-01-04T00:00:00.000Z','2026-01-05T00:00:00.000Z'],
+  ];
+  const withViewer=await save(1117,'UTC','2026-01-01T00:00','earlier',[a.id,viewer.id,b.id],[b.id,a.id,viewer.id]);
+  await observe(withViewer,'2026-01-01T00:00:00Z','2026-01-04T01:00:00Z',slotRows('not an authorized responder'));
+  console.log('PROBE OC-011 viewer slots: saved three-slot primary and backup -> viewer turns remain explained gaps and all subsequent responders keep their turns');
+  const duplicate=await save(1118,'UTC','2026-01-01T00:00','earlier',[a.id,b.id],[a.id,b.id]);
+  await observe(duplicate,'2026-01-01T00:00:00Z','2026-01-02T01:00:00Z',[
+   ['2026-01-01T00:00:00.000Z',a.id,null,'2026-01-01T00:00:00.000Z','2026-01-02T00:00:00.000Z',/backup: same member .* as primary; backup is unavailable/],
+   ['2026-01-02T00:00:00.000Z',b.id,null,'2026-01-02T00:00:00.000Z','2026-01-03T00:00:00.000Z',/backup: same member .* as primary; backup is unavailable/],
+  ]);
+  console.log('PROBE OC-011 duplicate responder: saved identical role rotations -> primary retained, backup unavailable with explanation on both turns');
+  // Restore a real older membership snapshot, then retain the saved module history.
+  const olderMembership=ok(await req('/api/archive')),departed=await member(1104,'responder');
+  const departedSession=await req('/api/login',{name:departed.name,password:'synthetic-oncall-1104-password'});ok(departedSession);
+  const history=await save(1119,'UTC','2026-01-01T00:00','earlier',[a.id,departed.id,b.id],[b.id,a.id,departed.id]);
+  const custody=ok(await req('/api/paging/archive'));
+  const restored=await req('/api/restore',{mode:'replace',archive:olderMembership});ok(restored);cookie=restored.cookie;
+  assert.equal(ok(await req('/api/state')).members.some(row=>row.id===departed.id),false);
+  ok(await w.request('/api/state',undefined,departedSession.cookie),401);
+  ok(await req('/api/login',{name:departed.name,password:'synthetic-oncall-1104-password'}),401);
+  assert.deepEqual(ok(await req('/api/paging/state')).schedules.find(row=>row.id===history.id),history,'membership recovery retains the exact historical slots');
+  const refusedBefore=ok(await req('/api/paging/state'));
+  ok(await req('/api/paging/schedules',{...history,id:'synthetic-oncall-1120',revision:0}),400);
+  assert.deepEqual(ok(await req('/api/paging/state')),refusedBefore,'new schedules cannot introduce unknown members');
+  const retained=ok(await req('/api/paging/restore',{mode:'replace',archive:custody}));
+  assert.deepEqual(retained.schedules.find(row=>row.id===history.id),history,'the strict module custody door preserves missing historical member references');
+  await observe(history,'2026-01-01T00:00:00Z','2026-01-04T01:00:00Z',slotRows('missing'));
+  assert.equal(ok(await req('/api/state')).members.some(row=>row.id===departed.id),false,'retained schedule history grants no membership');
+  console.log('PROBE OC-011 missing slots: older membership and saved module custody restored over protected HTTP -> missing turns remain explained gaps, later turns unchanged, old session refused, no membership recreated');
+  const paging=ok(await req('/api/paging/state'));
+  assert.equal(paging.paging,'OFF');assert.deepEqual(paging.jobs,[]);assert.deepEqual(paging.receipts,[]);assert.deepEqual(paging.callbacks,[]);
+  assert.deepEqual(await w.outboundRequests(),[]);
+  console.log('PROBE OC-011 preview effects: all saved previews and now-next reads -> every durable row unchanged, zero jobs, receipts, callbacks and outbound requests');
+ }finally{await w.close();}
+}
+
+
+export async function scheduleLayers(){
+ const w=await localWorker();
+ try{
+  const owner=await w.request('/api/setup',{name:'synthetic-oncall-240',password:'synthetic-oncall-240-password'});ok(owner);const cookie=owner.cookie,req=(path,input)=>w.request(path,input,cookie);
+  const first=owner.value.member,second=ok(await req('/api/members',{name:'synthetic-oncall-241',role:'responder',password:'synthetic-oncall-241-password'}),201),third=ok(await req('/api/members',{name:'synthetic-oncall-242',role:'responder',password:'synthetic-oncall-242-password'}),201);
+  const service=ok(await req('/api/command',{type:'service',id:'synthetic-oncall-240',name:'synthetic-oncall-240',environment:'test',owner:first.id,runbook:[],pager:''}));
+  const rotation={anchorLocal:'2026-01-01T00:00',periodDays:1,members:[first.id],ambiguity:'earlier'};
+  let saved=ok(await req('/api/paging/schedules',{id:'synthetic-oncall-940',name:'synthetic-oncall-340',service:service.id,revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:rotation,backup:{...rotation,members:[]},overrides:[]}));
+  const from=Date.UTC(2026,0,1),to=from+366*86400000,path='/api/schedules/'+saved.id;
+  const legacy=ok(await req('/api/paging/preview',{scheduleId:saved.id,from,to:from+2*86400000}));
+  const layer=(n,timezone,member,startHour,endHour)=>({id:'synthetic-oncall-'+n,name:'synthetic-oncall-'+(n+100),role:'primary',timezone,kind:'business',rotation:{...rotation,members:[member]},start:saved.validFrom,end:null,weekdays:[1,2,3,4,5],startHour,endHour,holidayCalendars:[],holidayAction:'next',ptoAction:'next'});
+  const layers=[layer(244,'Europe/London',first.id,9,17),layer(245,'America/New_York',second.id,9,17),layer(246,'America/Los_Angeles',third.id,9,17)];
+  let draft={...saved,layers},input={schedule:draft,from,to},review=ok(await req(path+'/review',input));
+  assert.ok(review.clocks.some(c=>c.zone==='Europe/London'&&c.before!==c.after));assert.ok(review.clocks.some(c=>c.zone==='America/New_York'&&c.before!==c.after));assert.ok(review.clocks.some(c=>c.zone==='America/Los_Angeles'&&c.before!==c.after));
+  assert.ok(review.intervals.some(r=>r.newGap));assert.ok(review.coverage.length>0&&review.coverage.length<=20000);
+  ok(await req('/api/paging/preview',{schedule:draft,from,to:to+1}),400);
+  const preview=async(schedule,at)=>ok(await req('/api/paging/preview',{schedule,from:Date.parse(at),to:Date.parse(at)+3600000}))[0];
+  for(const [at,member] of [['2026-11-02T10:00:00Z',first.id],['2026-11-02T18:00:00Z',second.id],['2026-11-02T23:00:00Z',third.id],['2026-11-03T02:00:00Z',null]])assert.equal((await preview(draft,at)).primary,member);
+  const overlap=await preview(draft,'2026-11-02T15:00:00Z');assert.equal(overlap.primary,first.id);assert.deepEqual(overlap.windows[0].decisions.map(d=>d.state),['winner','overridden','business-off']);
+  const holiday={...draft,layers:layers.map(l=>({...l,holidayCalendars:['us-federal']}))};
+  const holidayAt='2026-11-26T15:00:00Z';assert.equal((await preview(draft,holidayAt)).primary,first.id);const off=await preview(holiday,holidayAt);assert.equal(off.primary,null);assert.ok(off.windows[0].decisions.some(d=>d.state==='holiday-off'));
+  const selectedHandoff={...draft,layers:layers.map((l,index)=>({...l,holidayCalendars:index<2?['us-federal']:[]}))};assert.equal((await preview(selectedHandoff,'2026-11-26T18:00:00Z')).primary,third.id);
+  assert.equal((await preview(holiday,'2026-07-03T10:00:00Z')).windows[0].decisions[0].state,'holiday-off');
+  const company={...draft,companyDates:[{id:'synthetic-oncall-247',name:'synthetic-oncall-247',date:'2026-11-02',timezone:'Europe/London',revision:1}],layers:layers.map(l=>({...l,holidayCalendars:['company']}))};const companyAt=await preview(company,'2026-11-02T15:00:00Z');assert.equal(companyAt.primary,second.id);assert.equal(companyAt.windows[0].decisions[0].state,'company-off');
+  const pto={id:'synthetic-oncall-248',member:first.id,start:'2026-11-02T09:00:00.000Z',end:'2026-11-02T17:00:00.000Z',reason:''};
+  const absence={...draft,pto:[pto]};assert.equal((await preview(absence,'2026-11-02T15:00:00Z')).primary,second.id);assert.equal((await preview(absence,'2026-11-02T10:00:00Z')).primary,null);
+  const gap=await preview({...absence,layers:layers.map(l=>({...l,ptoAction:'gap'}))},'2026-11-02T15:00:00Z');assert.equal(gap.primary,null);assert.equal(gap.windows[0].decisions[0].state,'pto-gap');
+  for(const kind of ['daily','weekly','custom']){const value=await preview({...draft,layers:[{...layers[0],kind,rotation:{...rotation,periodDays:kind==='weekly'?7:kind==='custom'?3:1}}]},'2026-11-02T23:00:00Z');assert.equal(value.primary,first.id);}
+  const repeated={...draft,layers:[{...layers[1],kind:'daily',rotation:{...rotation,anchorLocal:'2026-10-31T01:30',members:[first.id,second.id]}}]};
+  for(const at of ['2026-11-01T05:45:00Z','2026-11-01T06:15:00Z'])assert.equal((await preview(repeated,at)).primary,second.id);
+  const skipped=await preview({...repeated,layers:[{...repeated.layers[0],rotation:{...repeated.layers[0].rotation,anchorLocal:'2026-03-07T02:30'}}]},'2026-03-08T08:00:00Z');assert.equal(skipped.primary,null);assert.equal(skipped.windows[0].decisions[0].state,'unavailable');
+  for(const limits of [{validFrom:'2026-12-01T00:00:00.000Z'},{validUntil:'2026-10-01T00:00:00.000Z'}])assert.equal((await preview({...draft,...limits},'2026-11-02T15:00:00Z')).primary,null);
+  const login=await w.request('/api/login',{name:second.name,password:'synthetic-oncall-241-password'});ok(login);
+  ok(await w.request(path+'/pto-review',{revision:saved.revision,member:second.id,entries:[{...pto,member:second.id}],from,to},login.cookie),403);
+  const invalid=structuredClone(draft);invalid.layers[0].unknown=true;ok(await req('/api/paging/preview',{schedule:invalid,from,to:from+86400000}),400);
+  const workspaceBeforeFailure=ok(await req('/api/state'));
+  w.sql("CREATE TRIGGER synthetic_layers_audit BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'SYNTHETIC_LAYERS_AUDIT_FAILURE'); END");
+  try{ok(await req(path+'/apply',{...input,digest:review.digest,confirmed:true}),503);assert.deepEqual(ok(await req('/api/paging/preview',{scheduleId:saved.id,from,to:from+2*86400000})),legacy);assert.deepEqual(ok(await req('/api/state')),workspaceBeforeFailure);}finally{w.sql('DROP TRIGGER synthetic_layers_audit');}
+  saved=ok(await req(path+'/apply',{...input,digest:review.digest,confirmed:true})).schedule;
+  for(const member of [first.id,second.id,third.id])assert.ok(ok(await req('/api/state')).scheduleRecords.some(row=>row.kind==='notice'&&row.member===member&&row.data.schedule===saved.id));
+  assert.deepEqual(ok(await req('/api/paging/preview',{scheduleId:saved.id,from,to})),review.coverage);ok(await req(path+'/apply',{...input,digest:review.digest,confirmed:true}),409);
+  const at='2026-11-02T15:00:00Z',now=ok(await req(path+'/now-next?at='+at)).now,values=ok(await req('/api/paging/preview',{scheduleId:saved.id,from:Date.parse(at),to:Date.parse(at)+3600000}));assert.deepEqual(values[0],now);
+  const feed=ok(await req(path+'/calendar.ics?from='+at+'&to=2026-11-02T16:00:00Z')).replace(/\r\n /g,'');for(const id of [...layers.map(l=>l.id),first.id,second.id,third.id])assert.equal(feed.includes(id),false);
+  for(const window of now.windows)if(window.explanation)assert.ok(feed.includes(window.explanation.replaceAll(';','\\;').replaceAll(',','\\,')));
+  const upload={revision:saved.revision,member:first.id,content:await (await import('node:fs/promises')).readFile('tests/fixtures/pto-calendar.ics','utf8'),from,to};
+  const imported=ok(await req(path+'/pto-review',upload));assert.equal(imported.import.entries.length,3);assert.equal(imported.import.refused.length,1);assert.ok(imported.import.refused[0].line>0);
+  for(const action of ['pto-review','pto-apply'])ok(await w.request(path+'/'+action,upload),401);
+  const before=ok(await req('/api/paging/archive'));ok(await req(path+'/pto-apply',{...upload,digest:imported.digest,confirmed:false}),409);assert.deepEqual(ok(await req('/api/paging/archive')),before);
+  saved=ok(await req(path+'/pto-apply',{...upload,digest:imported.digest,confirmed:true})).schedule;assert.equal(saved.pto.length,3);
+  const nextInput={revision:saved.revision,member:second.id,entries:[{...pto,id:'synthetic-oncall-249',member:second.id}],from,to},nextReview=ok(await req(path+'/pto-review',nextInput));saved=ok(await req(path+'/pto-apply',{...nextInput,digest:nextReview.digest,confirmed:true})).schedule;assert.equal(saved.pto.length,4);ok(await req(path+'/pto-apply',{...upload,digest:imported.digest,confirmed:true}),409);
+  // Ordinary members use only the PTO doors; team-management authority stays intact.
+  let team=ok(await req('/api/teams',{id:'synthetic-pto-team',name:'Synthetic PTO team',visibility:'public',active:true,revision:0,members:[second.id,third.id],managers:[third.id]}));
+  ok(await req('/api/teams/ownership',{service:service.id,team:team.id,workspaceRevision:ok(await req('/api/state')).revision}));
+  let own=ok(await req('/api/paging/schedules',{...saved,id:'synthetic-self-pto',revision:0,primary:{...rotation,members:[second.id]},backup:{...rotation,members:[]},layers:[],pto:[]}));
+  const ownPath='/api/schedules/'+own.id,asMember=(action,body)=>w.request(ownPath+'/'+action,body,login.cookie);
+  const range={from:Date.UTC(2026,10,2),to:Date.UTC(2026,10,3)},self={revision:own.revision,member:second.id,entries:[{...pto,id:'synthetic-self-entry',member:second.id}],...range};
+  const noWrite=async(perform,status)=>{const workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state'));ok(await perform(),status);assert.deepEqual(ok(await req('/api/state')),workspace);assert.deepEqual(ok(await req('/api/paging/state')),paging);};
+  let selfReview=ok(await asMember('pto-review',self));
+  assert.ok(selfReview.intervals.some(row=>row.before===second.id&&row.after===null&&row.newGap));
+  await noWrite(()=>asMember('pto-apply',{...self,digest:selfReview.digest,confirmed:false}),409);
+  own=ok(await asMember('pto-apply',{...self,digest:selfReview.digest,confirmed:true})).schedule;
+  assert.equal(own.revision,self.revision+1);assert.equal(own.pto[0].member,second.id);assert.deepEqual(own.primary.members,[second.id]);
+  const afterPTO=ok(await req('/api/paging/preview',{scheduleId:own.id,...range}));assert.ok(afterPTO.some(row=>row.primary===null));assert.deepEqual(afterPTO,selfReview.coverage);
+  const selfICS={revision:own.revision,member:second.id,content:'BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20261103T090000Z\nDTEND:20261103T170000Z\nSTATUS:CONFIRMED\nEND:VEVENT\nEND:VCALENDAR',...range};
+  selfReview=ok(await asMember('pto-review',selfICS));assert.equal(selfReview.import.entries.length,1);
+  own=ok(await asMember('pto-apply',{...selfICS,digest:selfReview.digest,confirmed:true})).schedule;
+  assert.equal(own.revision,self.revision+2);assert.equal(own.pto.length,2);
+  await noWrite(()=>asMember('pto-apply',{...self,digest:selfReview.digest,confirmed:true}),409);
+  for(const action of ['pto-review','pto-apply']){
+   await noWrite(()=>asMember(action,{...self,revision:own.revision,member:third.id,entries:[{...pto,member:third.id}]}),403);
+   await noWrite(()=>asMember(action,{...self,revision:own.revision,entries:[{...pto,member:third.id}]}),400);
+  }
+  // The same authenticated member cannot repurpose the general editing doors.
+  for(const action of ['review','apply'])await noWrite(()=>asMember(action,{schedule:{...own,name:'Unauthorized rename'},...range}),404);
+  await noWrite(()=>asMember('overrides',{revision:own.revision,override:{id:'synthetic-denied-cover',member:second.id,role:'primary',start:pto.start,end:pto.end}}),404);
+  const otherTeam=ok(await req('/api/teams',{id:'synthetic-other-team',name:'Synthetic other team',visibility:'public',active:true,revision:0,members:[third.id],managers:[third.id]}));
+  const otherService=ok(await req('/api/command',{type:'service',id:'synthetic-other-service',name:'Synthetic other service',environment:'test',owner:first.id,runbook:[],pager:'',team:otherTeam.id}));
+  ok(await req('/api/teams/ownership',{service:otherService.id,team:otherTeam.id,workspaceRevision:ok(await req('/api/state')).revision}));
+  const other=ok(await req('/api/paging/schedules',{...own,id:'synthetic-other-rota',service:otherService.id,revision:0,pto:[]}));
+  for(const action of ['pto-review','pto-apply'])await noWrite(()=>w.request('/api/schedules/'+other.id+'/'+action,{...self,revision:other.revision},login.cookie),403);
+  const pending={...self,revision:own.revision,entries:[{...pto,id:'synthetic-revoked-entry',member:second.id}]},pendingReview=ok(await asMember('pto-review',pending));
+  team=ok(await req('/api/teams',{...team,members:[third.id]}));
+  for(const action of ['pto-review','pto-apply'])await noWrite(()=>asMember(action,action==='pto-apply'?{...pending,digest:pendingReview.digest,confirmed:true}:pending),403);
+  team=ok(await req('/api/teams',{...team,members:[second.id,third.id]}));
+  await noWrite(()=>asMember('pto-apply',{...pending,digest:pendingReview.digest,confirmed:true}),409);
+  ok(await req('/api/command',{type:'member',id:second.id,role:'responder',active:false}));
+  for(const action of ['pto-review','pto-apply'])await noWrite(()=>asMember(action,action==='pto-apply'?{...pending,digest:pendingReview.digest,confirmed:true}:pending),401);
+  ok(await req('/api/command',{type:'member',id:second.id,role:'responder',active:true}));
+  const managerLogin=await w.request('/api/login',{name:third.name,password:'synthetic-oncall-242-password'});ok(managerLogin);
+  const managerInput={...pending,member:third.id,entries:[{...pto,id:'synthetic-manager-entry',member:third.id}]};
+  const managerReview=ok(await w.request(ownPath+'/pto-review',managerInput,managerLogin.cookie));
+  own=ok(await w.request(ownPath+'/pto-apply',{...managerInput,digest:managerReview.digest,confirmed:true},managerLogin.cookie)).schedule;
+  const managerEdit={schedule:{...own,name:own.name+' managed'},...range},managerChange=ok(await w.request(ownPath+'/review',managerEdit,managerLogin.cookie));
+  own=ok(await w.request(ownPath+'/apply',{...managerEdit,digest:managerChange.digest,confirmed:true},managerLogin.cookie)).schedule;
+  assert.equal(own.name,managerEdit.schedule.name);
+  console.log('PASS OC-024 member PTO: ordinary self review/apply 200, self ICS 200, revisions 1→2→3, preview gap and retained slots; other member/team 403, spoofed entry 400, general edit 404, revoked team 403/session 401, stale 409 with no writes; manager own PTO and general editing 200; administrator PTO preserved');
+  const archive=ok(await req('/api/paging/archive'));assert.deepEqual(ok(await req('/api/paging/restore',{mode:'replace',archive})).schedules[0],saved);
+  const bad=structuredClone(archive);bad.schedules[0].pto[0].unknown=true;ok(await req('/api/paging/restore',{mode:'replace',archive:bad}),400);
+  for(const [key,count] of [['layers',25],['pto',1001],['companyDates',367]]){const excessive=structuredClone(archive);excessive.schedules[0][key]=Array.from({length:count},(_,index)=>({...((archive.schedules[0][key]??[])[0]??{}),id:'synthetic-oncall-'+(1000+index)}));ok(await req('/api/paging/restore',{mode:'replace',archive:excessive}),400);}
+  const workspace=ok(await req('/api/state'));ok(await req('/api/erasure/member/'+second.id,{workspaceRevision:workspace.revision,confirmation:'erase '+second.id,identitiesReviewed:true,importedPeople:[]}));const erased=ok(await req('/api/paging/state')).schedules.find(s=>s.id===saved.id);assert.equal(erased.pto.find(e=>e.id==='synthetic-oncall-249').member,null);assert.equal(erased.pto.length,4);assert.equal((await preview(erased,'2026-11-02T18:00:00Z')).primary,null);ok(await req('/api/paging/restore',{mode:'replace',archive}),409);
+  console.log('PASS OC-024 public layers: three-zone handoffs, overlap decisions, federal and company selections, PTO next and gap, rotation kinds, 366-day review, both DST transitions, stale review, atomic rollback, equality, ICS review and refusal, consecutive writes, archive strictness and non-attributing erasure');
+ }finally{await w.close();}
+}
+
+
+// migration-upgrade: part of this public journey.
+// Exercise the maintained migration CLI on a populated pre-stack installation.
+async function upgradeFrom(baseline){
+ const root=await mkdtemp(join(tmpdir(),'oncall-upgrade-')),old=join(root,'migrations'),config=join(root,'wrangler.json'),persist=join(root,'state');
+ const names=(await readdir('migrations/core')).filter(n=>n.endsWith('.sql')).sort();
+ const env={...process.env,CI:'true',WRANGLER_SEND_METRICS:'false'};
+ const cli=(...args)=>execFileSync(process.execPath,['node_modules/wrangler/bin/wrangler.js',...args,'--config',config,'--local','--persist-to',persist],{env,encoding:'utf8',stdio:['ignore','pipe','pipe'],maxBuffer:16*1024*1024});
+ const sql=command=>JSON.parse(cli('d1','execute','DB','--command',command,'--json'))[0].results;
+ const quote=value=>"'"+JSON.stringify(value).replaceAll("'","''")+"'";
+ try{
+  await mkdir(old);
+  for(const name of names.filter(n=>Number(n.slice(0,4))<=baseline))await copyFile(join('migrations/core',name),join(old,name));
+  const bindings={name:'synthetic-oncall-upgrade',compatibility_date:'2026-09-08',d1_databases:[{binding:'DB',database_name:'synthetic-oncall-upgrade',database_id:'00000000-0000-0000-0000-000000000001',migrations_dir:old}]};
+  await writeFile(config,JSON.stringify(bindings));cli('d1','migrations','apply','DB');
+  const member={id:'synthetic-oncall-1',name:'Held upgrade owner',role:'admin',active:true};
+  const service={id:'synthetic-oncall-1',name:'Held upgrade service',environment:'production',owner:member.id,runbook:['Retain this authored step'],pager:''};
+  sql(`INSERT INTO oc_members VALUES('synthetic-oncall-1',0,${quote(member)}); INSERT INTO oc_services VALUES('synthetic-oncall-1',0,${quote(service)}); INSERT INTO workspace_control VALUES(1,7,'synthetic-oncall-1');`);
+  let heldBusiness=[];
+  if(baseline>=141){const business={id:'synthetic-oncall-61',name:'Held business status',owningTeam:'Held team label',supporting:[service.id],communicationsOwner:member.id,audience:[],highUrgencyImpact:false,active:true,revision:1,derived:'operational',impactRevision:0,override:null,subscriptions:[],notices:[]};sql(`INSERT INTO oc_business_services VALUES('synthetic-oncall-61',0,${quote(business)});`);heldBusiness=sql('SELECT id,ordinal,data FROM oc_business_services');}
+  const before=sql('SELECT id,ordinal,data FROM oc_members UNION ALL SELECT id,ordinal,data FROM oc_services');
+  bindings.d1_databases[0].migrations_dir=resolve('migrations/core');await writeFile(config,JSON.stringify(bindings));cli('d1','migrations','apply','DB');
+  assert.deepEqual(sql('SELECT id,ordinal,data FROM oc_members UNION ALL SELECT id,ordinal,data FROM oc_services'),before,'all held identities, fields and authored runbooks survive the real upgrade');
+  assert.equal(sql('SELECT revision FROM workspace_control')[0].revision,7);
+  assert.equal(sql('SELECT COUNT(*) AS n FROM oc_teams')[0].n,0,'held services remain explicitly unassigned after additive team upgrade');
+  assert.deepEqual(sql('SELECT id,ordinal,data FROM oc_business_services'),heldBusiness,'held pre-email-list business-service records remain byte-identical');assert.equal(sql('SELECT COUNT(*) AS n FROM rer_command_receipts')[0].n,0);assert.equal(sql('SELECT COUNT(*) AS n FROM oc_erased_report_cases')[0].n,0);
+  console.log(`PASS populated migration CLI upgrade: main ${String(baseline).padStart(4,'0')} to candidate, held member/service/runbook bytes and workspace revision preserved`);
+ }finally{await rm(root,{recursive:true,force:true});}
+}
+export async function migrationUpgrade(){await upgradeFrom(143);}
+
+
 const ok=(r,status=200)=>{assert.equal(r.status,status,typeof r.value==='string'?r.value:JSON.stringify(r.value));return r.value}
+await migrationUpgrade()
+await scheduleCoordination()
+const w=await localWorker({}, {clock:true,outboundLedger:true}),checks=[]
 try {
  const initial=await w.request('/api/setup',{name:'Admin',password:'synthetic-local-testing-password'}),admin=ok(initial).member,cookie=initial.cookie
  const req=(path,input)=>w.request(path,input,cookie),record=s=>{checks.push(s);console.log(s)}
@@ -40,10 +515,71 @@ try {
  ok(await req('/api/schedules/daily/overrides',{revision:changed.revision,override:{...override,id:'overlap'}}),400)
  const ics=await req('/api/schedules/daily/calendar.ics?from=2026-03-07T14:00:00Z&to=2026-03-09T13:00:00Z');ok(ics);assert.match(ics.headers.get('content-type'),/text\/calendar/);assert.match(ics.value,/DTEND:20260308T130000Z/);assert.match(ics.value,/DTSTART:20260308T150000Z/)
  ok(await w.request('/api/schedules/daily/calendar.ics'),401)
+ // OC-020: compare the downloaded events to resolved coverage, with an independent DST and override oracle.
+ const calendarFrom=Date.parse('2026-03-07T14:00:00Z'),calendarTo=Date.parse('2026-03-09T13:00:00Z'),calendarPath='/api/schedules/daily/calendar.ics'
+ const calendarDate=at=>new Date(at).toISOString().replace(/[-:]/g,'').replace('.000','')
+ const calendarEvents=text=>text.replace(/\r\n[ \t]/g,'').split('BEGIN:VEVENT\r\n').slice(1).map(block=>Object.fromEntries(block.split('END:VEVENT')[0].trim().split('\r\n').map(line=>{const colon=line.indexOf(':');return [line.slice(0,colon),line.slice(colon+1)]})))
+ const checkCalendar=async(response,from,to)=>{
+  ok(response);assert.equal(response.headers.get('cache-control'),'private, no-store')
+  const events=calendarEvents(response.value),windows=ok(await req('/api/paging/preview',{scheduleId:'daily',from,to})),members=ok(await req('/api/state')).members
+  const expected=windows.flatMap((window,index)=>['primary','backup'].map(role=>({
+   DTSTART:calendarDate(window.at),DTEND:calendarDate(windows[index+1]?.at??to),
+   SUMMARY:'Daily hand-off / '+role+': '+(window[role]?members.find(member=>member.id===window[role]).name:'Coverage gap')
+  })))
+  assert.deepEqual(events.map(({DTSTART,DTEND,SUMMARY})=>({DTSTART,DTEND,SUMMARY})),expected,'both roles, overrides and gaps use the resolved UTC intervals')
+  assert.equal(new Set(events.map(event=>event.UID)).size,events.length,'primary and backup remain distinct calendar events')
+  assert.ok(events.every(event=>event.DTSTAMP===calendarDate(from)))
+  assert.equal(events[0].DTSTART,calendarDate(from));assert.equal(events.at(-1).DTEND,calendarDate(to))
+  return events
+ }
+ const calendarRecords=durableSnapshot(w)
+ await w.time(calendarFrom)
+ const defaultEvents=await checkCalendar(await req(calendarPath),calendarFrom,calendarFrom+7*86400000)
+ assert.deepEqual(defaultEvents.slice(0,2).map(event=>event.SUMMARY),['Daily hand-off / primary: Alice','Daily hand-off / backup: Bob'])
+ const overrideEvents=await checkCalendar(ics,calendarFrom,calendarTo)
+ assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / primary: Alice'&&event.DTSTART==='20260308T130000Z'&&event.DTEND==='20260308T150000Z'))
+ assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / backup: Coverage gap'&&event.DTSTART==='20260308T130000Z'&&event.DESCRIPTION.includes('same member')))
+ assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / backup: Alice'&&event.DTSTART==='20260308T150000Z'))
+ assert.ok(overrideEvents.some(event=>event.SUMMARY==='Daily hand-off / primary: Bob'&&event.DTSTART==='20260308T150000Z'))
+ const calendarLimit=calendarFrom+31*86400000,calendarURL=to=>calendarPath+'?from='+new Date(calendarFrom).toISOString()+'&to='+new Date(to).toISOString()
+ await checkCalendar(await req(calendarURL(calendarLimit)),calendarFrom,calendarLimit)
+ assert.deepEqual(durableSnapshot(w),calendarRecords,'successful calendar reads preserve all durable records')
+ for(const to of [calendarLimit+1000,calendarFrom,calendarFrom-1000]){
+  const refusal=ok(await req(calendarURL(to)),400);assert.match(refusal.error,/positive and at most 31 elapsed days/)
+ }
+ const afterCalendarRefusals=durableSnapshot(w),withoutRefusalAudit=records=>Object.fromEntries(Object.entries(records).filter(([table])=>!['oc_admin_audit','oc_audit_clock'].includes(table)))
+ assert.deepEqual(withoutRefusalAudit(afterCalendarRefusals),withoutRefusalAudit(calendarRecords),'invalid calendar windows preserve all records except the required refusal audit and its bookkeeping')
+ assert.equal(afterCalendarRefusals.oc_admin_audit.length,calendarRecords.oc_admin_audit.length+3)
+ assert.ok(afterCalendarRefusals.oc_admin_audit.filter(row=>!calendarRecords.oc_admin_audit.some(prior=>prior.id===row.id)).every(row=>row.kind==='schedules.request'&&row.outcome==='refused'&&row.workspace_before===row.workspace_after&&row.paging_before===row.paging_after))
+ await w.time(Date.now())
+ record('PROBE OC-020 seven-day default: authenticated calendar.ics at 2026-03-07T14:00:00Z -> exact seven-day UTC window across DST')
+ record('PROBE OC-020 elapsed bound: calendar.ics with 31 days -> 200; 31 days plus one second, zero and reverse windows -> 400')
+ record('PROBE OC-020 separate roles: calendar.ics -> distinct primary and backup events match resolved coverage and exact DST override boundaries')
  ok(await req('/api/command',{type:'member',id:b.id,active:false,role:'responder'}))
  assert.equal(ok(await req('/api/schedules/daily/now-next?at=2026-03-08T15:00:00Z')).now.primary,null,'inactive member keeps its slot as a gap')
+ const gapEvents=await checkCalendar(await req(calendarURL(calendarTo)),calendarFrom,calendarTo)
+ assert.ok(gapEvents.some(event=>event.SUMMARY==='Daily hand-off / primary: Coverage gap'&&event.DTSTART==='20260308T150000Z'&&event.DESCRIPTION.includes('inactive')))
+ assert.ok(gapEvents.some(event=>event.SUMMARY==='Daily hand-off / backup: Coverage gap'&&event.DTSTART==='20260307T140000Z'&&event.DESCRIPTION.includes('inactive')))
+ record('PROBE OC-020 explicit gaps: calendar.ics with inactive responder -> primary and backup Coverage gap events with exact UTC intervals and explanations')
  ok(await req('/api/command',{type:'member',id:b.id,active:true,role:'responder'}))
  ok(await req('/api/paging/policies',{service:'checkout',scheduleId:'daily',revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}))
+ const calendarSource='synthetic-oncall-20',calendarKey='synthetic-oncall-20-native-credential'
+ ok(await req('/api/sources',{id:calendarSource,key:calendarKey,scopes:['checkout']}))
+ const pagingBeforeAdmission=ok(await req('/api/paging/state')),signal={source:calendarSource,eventId:'synthetic-oncall-20-event',service:'checkout',environment:'production',key:'synthetic-oncall-20-alert',generation:'synthetic-oncall-20-generation',intent:'trigger',severity:'warning',title:'Synthetic calendar intake',observedAt:'2026-03-07T14:00:00Z',evidence:''}
+ const admitted=ok(await w.request('/api/ingress/'+calendarSource,signal,undefined,{authorization:'Bearer '+calendarKey}),201)
+ const admittedState=ok(await req('/api/state')),admittedEvent=admittedState.events.find(event=>event.id===admitted.id)
+ assert.ok(admittedEvent);assert.equal(admittedEvent.source,calendarSource);assert.equal(admittedEvent.eventId,signal.eventId)
+ assert.ok(admittedState.alerts.some(alert=>alert.state==='active'&&alert.events.includes(admitted.id)),'native admission opens a real retained alert')
+ assert.deepEqual(ok(await req('/api/paging/state')),{...pagingBeforeAdmission,workspaceRevision:admittedState.revision},'admission with a saved paging policy creates no jobs, deadlines or receipts')
+ const duplicate=ok(await w.request('/api/ingress/'+calendarSource,signal,undefined,{authorization:'Bearer '+calendarKey}))
+ assert.equal(duplicate.id,admitted.id);assert.deepEqual(ok(await req('/api/state')),admittedState,'repeated capture preserves immutable event and alert records')
+ ok(await req('/api/sources/'+calendarSource+'/revoke',{}))
+ ok(await w.request('/api/ingress/'+calendarSource,{...signal,eventId:'synthetic-oncall-20-refused'},undefined,{authorization:'Bearer '+calendarKey}),401)
+ assert.deepEqual(ok(await req('/api/state')),admittedState,'revoked source cannot admit another capture')
+ assert.deepEqual(ok(await req('/api/paging/state')),{...pagingBeforeAdmission,workspaceRevision:admittedState.revision})
+ assert.deepEqual(await w.outboundRequests(),[],'calendar reads, native admission, retries and revocation issue zero outbound requests')
+ record('PROBE OC-020 paging-free admission: scoped native ingress -> immutable event and active alert; retry returns original event; revoked key -> 401; paging snapshot unchanged and zero outbound requests')
+ // OC-024 layer, holiday, PTO and long-range doors run in scheduleCoordination above.
  // OC-024 reviewed schedule changes bind the full proposal and coverage to the revision.
  const reviewFrom=Date.parse('2026-10-24T00:00:00Z'),reviewTo=Date.parse('2026-11-09T00:00:00Z')
  const reviewBase=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-1',name:'Reviewed multi-zone rota',primary:{...schedule.primary,members:[a.id]},backup:{...schedule.backup,members:[b.id]}}))
@@ -157,6 +693,57 @@ try {
  assert.equal(ok(await door.undo('opsgenie',interruptedPreview.planId)).job.state,'rolled_back')
  assert.deepEqual(ok(await req('/api/move-in/objects')),[],'explicit rollback removes the accepted partial effects')
  record('OC-022/041: a lost response after an accepted import batch became durably interrupted with its audit, refused retry after restart, and retained its partial effects until explicit rollback')
+ // Stop between bounded requests while the reviewed import still has work to do.
+ for(const vendor of ['pagerduty','opsgenie']) {
+  const bundle=JSON.parse(await readFile(`tests/fixtures/${vendor}.json`,'utf8'))
+  const people=Array.from({length:25},(_,index)=>{
+   const id='synthetic-oncall-'+vendor+'-'+index,email=[id,'example.test'].join('@')
+   return vendor==='opsgenie'?{id,username:email,fullName:id}:{id,email,name:id}
+  })
+  ;(vendor==='opsgenie'?bundle.users.data:bundle.users).push(...people)
+  const beforeObjects=ok(await req('/api/move-in/objects')),beforeNative=ok(await req('/api/state')),beforePaging=ok(await req('/api/paging/state'))
+  const preview=ok(await door.preview(vendor,JSON.stringify(bundle)))
+  assert.ok(preview.counts.mapped>20,'the reviewed source exceeds one door batch')
+  assert.deepEqual(ok(await req('/api/move-in/objects')),beforeObjects,'preview publishes no imported objects')
+  const reviewed={planId:preview.planId,reviewedFingerprint:preview.fingerprint}
+  const first=ok(await door.call(vendor,'apply',reviewed)).job
+  assert.equal(first.state,'applying');assert.equal(first.fingerprint,preview.fingerprint)
+  assert.ok(first.checkpoint>0&&first.checkpoint<first.total,'exactly one apply commits an unfinished prefix')
+  const partial=ok(await req('/api/move-in/objects'))
+  assert.ok(partial.length>beforeObjects.length&&partial.length<preview.items.flatMap(item=>item.effects).length,'native effects exist for only part of the reviewed plan')
+  const status=()=>door.call(vendor,'status',{planId:preview.planId})
+  assert.deepEqual(ok(await status()).job,first)
+  await w.stop();await w.start()
+  const retained=ok(await status())
+  assert.equal(retained.planId,preview.planId);assert.equal(retained.fingerprint,preview.fingerprint)
+  assert.deepEqual(retained.job,first,'restart retains the same unfinished job and committed checkpoint')
+  const journal=ok(await req('/api/move-in/jobs?vendor='+vendor)).find(job=>job.id===first.id)
+  assert.ok(journal);assert.equal(journal.state,'applying');assert.equal(journal.checkpoint,first.checkpoint)
+  assert.deepEqual(journal.door,{planId:preview.planId,fingerprint:preview.fingerprint,business:false})
+  assert.deepEqual(ok(await req('/api/move-in/objects')),partial,'restart preserves every committed object and its revision')
+  const completed=ok(await door.apply(vendor,preview)).job
+  assert.equal(completed.id,first.id);assert.equal(completed.fingerprint,first.fingerprint)
+  assert.equal(completed.state,'completed');assert.equal(completed.checkpoint,first.total)
+  const applied=ok(await req('/api/move-in/objects'))
+  assert.equal(applied.length,preview.items.flatMap(item=>item.effects).length)
+  assert.equal(new Set(applied.map(row=>row.targetKind+':'+row.targetId)).size,applied.length)
+  for(const person of people)assert.equal(applied.filter(row=>row.targetKind==='user'&&row.targetId===(person.email??person.username)).length,1,'every remaining person is created exactly once')
+  for(const row of partial)assert.deepEqual(applied.find(item=>item.targetKind===row.targetKind&&item.targetId===row.targetId),row,'resume does not replace the committed prefix')
+  assert.ok(applied.every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
+  const batches=()=>w.sql(`SELECT position,end_position FROM ik_batches WHERE job_id='${first.id}' AND action='apply' ORDER BY position`)
+  const committed=batches();let checkpoint=0
+  for(const batch of committed){assert.equal(batch.position,checkpoint);assert.ok(batch.end_position>checkpoint);checkpoint=batch.end_position}
+  assert.equal(checkpoint,completed.total,'committed batches cover the reviewed plan once without gaps or overlap')
+  assert.deepEqual(ok(await door.call(vendor,'apply',reviewed)).job,completed,'completed retry keeps job identity and progress')
+  assert.deepEqual(batches(),committed,'completed retry commits no new batch')
+  assert.deepEqual(ok(await req('/api/move-in/objects')),applied,'completed retry changes no object or revision')
+  const undone=ok(await door.undo(vendor,preview.planId)).job
+  assert.equal(undone.id,first.id);assert.equal(undone.state,'undone')
+  assert.deepEqual(ok(await req('/api/move-in/objects')),beforeObjects,'undo removes exactly this import')
+  assert.deepEqual(ok(await req('/api/state')),beforeNative,'resume and undo grant no native membership or coordination authority')
+  assert.deepEqual(ok(await req('/api/paging/state')),beforePaging,'resume and undo leave paging OFF with unchanged jobs and receipts')
+  record(`OC-022 ${vendor}: unfinished checkpoint ${first.checkpoint} of ${first.total} survived Worker restart; the same reviewed job completed once, retried without changes and undid exactly`)
+ }
  // Each documented response shape runs the whole guarantee: bare fixtures, saved responses (lists and single details) and PagerDuty layer history.
  const shapes=[
   {file:'opsgenie',vendor:'opsgenie',id:'opsgenie:ops-daily',at:'2026-03-08T13:00:00Z',primary:'alice@example.test'},
@@ -212,6 +799,36 @@ try {
  const chunksHolding=secret=>w.sql('SELECT base64 FROM ik_door_chunks').filter(c=>Buffer.from(c.base64,'base64').toString().includes(secret)).length
  for(const [vendor,file,field] of [['opsgenie','credential-opsgenie','apiKey'],['pagerduty','credential-pagerduty','integration_key']]){const rows=rowCounts(),refused=ok(await door.preview(vendor,await readFile(`tests/fixtures/${file}.json`,'utf8')),400);assert.match(refused.error,new RegExp(`^Credential-bearing field "${field}"`));assert.ok(refused.code,'the refusal carries a code, so the screen shows its sentence as written')
   assert.equal(chunksHolding('synthetic-fixture-credential'),0,`no ik_door_chunks row decodes to the refused ${field}`);wroteNothing(rows,'the refused preview retained audit without import rows or bytes')}
+ // OC-038 PagerDuty account refusal matrix: each invalid file leaves no import custody or product writes.
+ const account=JSON.parse(await readFile('tests/fixtures/pagerduty-account.json','utf8'))
+ const credentialAccount=structuredClone(account);credentialAccount.services[0].services[0].integrations[0].integration_key='synthetic-oncall-refused-key'
+ const duplicateAccount=structuredClone(account);duplicateAccount.users.push({user:structuredClone(account.users[0].users[0])})
+ const danglingAccount=structuredClone(account);danglingAccount.services[0].services[0].escalation_policy.id='synthetic-oncall-missing-policy'
+ const danglingTeam=structuredClone(account);danglingTeam.services[0].services[0].teams[0].id='synthetic-oncall-missing-team'
+ const danglingRoute=structuredClone(account);danglingRoute.event_orchestrations[0].orchestration_path.sets[0].rules[0].actions.route_to='synthetic-oncall-missing-service'
+ const oversized=JSON.stringify({users:[{id:'synthetic-oncall-large',email:'large@example.test',name:'x'.repeat(512*1024)}]})
+ const tooMany=JSON.stringify({users:Array.from({length:501},(_,i)=>({id:'synthetic-oncall-limit-'+i,email:'pd-limit-'+i+'@example.test'}))})
+ const badAccounts=[
+  ['integration key',JSON.stringify(credentialAccount),400,[/integration_key/,/\/services\/0\/services\/0\/integrations\/0\/integration_key/,/remove/]],
+  ['malformed JSON','{"users":[',400,[/Malformed JSON/,/save a complete JSON response/]],
+  ['wrong vendor',await readFile('tests/fixtures/opsgenie-saved.json','utf8'),400,[/PagerDuty users/,/Opsgenie-shaped/,/choose Opsgenie/]],
+  ['byte limit',oversized,413,[new RegExp(String(Buffer.byteLength(oversized))),/512 KiB/,/narrow the export/,/Nothing was imported or truncated/]],
+  ['record limit',tooMany,413,[/501 records/,/500-record limit/,/narrow the export/,/Nothing was imported or truncated/]],
+  ['duplicate identity',JSON.stringify(duplicateAccount),400,[/Duplicate PagerDuty users source id/,/synthetic-oncall-u1/,/\/users\//,/keep one saved detail/]],
+  ['missing policy',JSON.stringify(danglingAccount),400,[/dangling escalation_policies reference/,/synthetic-oncall-missing-policy/,/\/services\/0\/services\/0\/escalation_policy/,/include that object's saved detail/]],
+  ['missing route',JSON.stringify(danglingRoute),400,[/dangling services route/,/synthetic-oncall-missing-service/,/\/route_to/,/include that service's saved detail/]],
+  ['missing team',JSON.stringify(danglingTeam),400,[/dangling teams reference/,/synthetic-oncall-missing-team/,/\/teams\/0/,/include that object's saved detail/]],
+ ]
+ for(const [name,raw,status,patterns] of badAccounts) {
+  const rows=rowCounts(),objects=w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),workspace=ok(await req('/api/state')),paging=ok(await req('/api/paging/state'))
+  const refused=ok(await door.preview('pagerduty',raw),status)
+  for(const pattern of patterns)assert.match(refused.error,pattern,name)
+  wroteNothing(rows,'PagerDuty '+name+' retains only refusal audit')
+  assert.deepEqual(w.sql('SELECT * FROM move_in_objects ORDER BY kind,id'),objects,name)
+  assert.deepEqual(ok(await req('/api/state')),workspace,name);assert.deepEqual(ok(await req('/api/paging/state')),paging,name)
+ }
+ assert.equal(chunksHolding('synthetic-oncall-refused-key'),0)
+ record('OC-038 PagerDuty account refusal matrix: named credential field/pointer, malformed JSON, wrong vendor, byte/count bounds, duplicate source IDs and dangling policy/team references; no truncation, rows or retained upload bytes')
  record('OC-021: every shape Oncall cannot hold exactly was rejected by name with no effect; ended layers kept as history; credential-bearing keys refused and not kept')
  // Variants of the bare fixtures run preview, apply, coverage at a sample instant and undo: a refused schedule keeps every reason and is never imported, so it names no one.
  const variant=(vendor,change)=>{const value=JSON.parse(sources[vendor]);change(value);return JSON.stringify(value)}
@@ -356,28 +973,75 @@ try {
  ok(await O('/api/members',{name:'Rhea',password:'synthetic-local-testing-password',role:'responder'}),201);ok(await O('/api/members',{name:'Vic',password:'synthetic-local-testing-password',role:'viewer'}),201)
  const alice=await w.request('/api/login',{name:'Rhea',password:'synthetic-local-testing-password'}),view=await w.request('/api/login',{name:'Vic',password:'synthetic-local-testing-password'});ok(alice);ok(view)
  const A=(p,i)=>w.request(p,i,alice.cookie),V=(p,i)=>w.request(p,i,view.cookie)
+ const outboundBefore=ok(await O('/api/paging/state'))
+ assert.deepEqual(await w.outboundRequests(),[], 'normal coordination starts with no attempted outbound request')
+ const automationBefore=ok(await O('/api/automation'))
+ assert.deepEqual(automationBefore.endpoints,[], 'no approved OC-053 response endpoint exists')
+ assert.deepEqual(automationBefore.outbox,[], 'no response event is waiting for external dispatch')
  let incident=ok(await A('/api/command',{type:'declare',service:'checkout',title:'Checkout errors',severity:'critical',summary:'Elevated errors',alerts:[]}))
  let source=ok(await A('/api/handoffs/context/'+incident.id))
- const copy={audience:'internal',title:'Checkout update',summary:'Errors are being mitigated',evidenceLinks:[],impactLinks:[]}
+ const draft=ok(await A('/api/handoff/'+incident.id))
+ assert.equal(draft.intent,'reviewed-handoff-required','the legacy exported draft remains explicitly unreviewed')
+ assert.equal(draft.visibility,'internal');assert.equal(draft.lamp.publication,'not-published');assert.deepEqual(draft.providerActions,[])
+ const copy={audience:'internal',title:'Checkout update',summary:'Errors are being mitigated',evidenceLinks:[w.origin+'/api/handoffs/context/'+incident.id],impactLinks:[w.origin+'/api/state']}
  const prepare=(id,payload,extra={})=>({id,incident:incident.id,incidentRevision:incident.revision,serviceHash:source.serviceHash,payload,...extra})
  const act=(record,actionId,reason='Exact copy checked')=>({actionId,revision:record.revision,payloadHash:record.payloadHash,sourceHash:record.sourceHash,reason})
+ // Each native handoff mutation must survive the same audit-failure boundary.
+ const handoffMutation=async(call,path,input,status=200)=>{
+  const before=durableSnapshot(w),handoffBefore=ok(await call('/api/handoffs')),workspaceBefore=ok(await call('/api/state')),pagingBefore=ok(await call('/api/paging/state'));
+  const kind='handoffs.'+path.split('/').at(-1),ids=new Set(before.oc_admin_audit.map(row=>row.id));
+  w.sql("CREATE TRIGGER synthetic_oncall_handoff_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='"+kind+"' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-handoff-audit'); END");
+  try{ok(await call(path,input),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_handoff_audit')}
+  assert.deepEqual(durableSnapshot(w),before,path+' audit failure preserves all durable records, revisions, credentials and immutable history');
+  const response=await call(path,input);ok(response,status);
+  const after=ok(await call('/api/handoffs')),facts=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').filter(row=>!ids.has(row.id)&&row.kind===kind&&row.outcome==='accepted');
+  assert.equal(facts.length,1,path+' commits exactly one permanent audit fact');
+  const fact=facts[0];assert.equal(fact.after_revision,fact.before_revision+1);
+  assert.deepEqual([fact.workspace_before,fact.workspace_after],[workspaceBefore.revision,workspaceBefore.revision]);
+  assert.deepEqual([fact.paging_before,fact.paging_after],[pagingBefore.revision,pagingBefore.revision]);
+  assert.deepEqual([fact.handoff_before,fact.handoff_after],[handoffBefore.revision,after.revision]);assert.equal(after.revision,handoffBefore.revision+1);
+  const retained=new Map(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal').map(row=>[row.id,row]));for(const row of before.oc_admin_audit)assert.deepEqual(retained.get(row.id),row);
+  console.log('PROBE OC-041 '+path+': protected HTTP and targeted audit failure -> complete rollback, then one accepted audit fact at the committed handoff revision');
+  return response;
+ }
  const {audience,...unaddressed}=copy
  ok(await A('/api/handoffs/prepare',prepare('no-audience',unaddressed)),400) // explicit intended audience
  ok(await V('/api/handoffs/prepare',prepare('viewer-copy',copy)),403) // only responders/admins prepare
- const h1=ok(await A('/api/handoffs/prepare',prepare('h1',copy)),201).record
+ const prepared=ok(await handoffMutation(A,'/api/handoffs/prepare',prepare('h1',copy),201),201),h1=prepared.record
+ assert.equal(h1.status,'prepared');assert.equal(prepared.eligibility.eligible,false)
+ ok(await A('/api/handoffs/h1/export'),409) // preparing copy never supplies the review required by the separate export door
+ assert.deepEqual(await w.outboundRequests(),[], 'coordination, draft export, preparation and refused unreviewed export attempt no AI or other outbound request')
  assert.equal(ok(await A('/api/handoffs/prepare',prepare('h1',copy))).record.revision,h1.revision,'repeated identical preparation returns the original record')
  ok(await A('/api/handoffs/prepare',prepare('h1',{...copy,title:'Changed copy'})),409) // preparation identity conflicts on changed content
  assert.equal(ok(await V('/api/handoffs/h1')).record.payloadHash,h1.payloadHash,'viewers inspect internal records')
  ok(await A('/api/handoffs/h1/review',{...act(h1,'r1'),payloadHash:'0'.repeat(64)}),409) // a review binds the exact copy
  ok(await V('/api/handoffs/h1/review',act(h1,'r1')),403) // viewers never review
  ok(await V('/api/handoffs/h1/withdraw',act(h1,'viewer-withdraw','Viewer attempt')),403) // or withdraw
- const reviewed=ok(await A('/api/handoffs/h1/review',act(h1,'r1'))).record
+ const reviewed=ok(await handoffMutation(A,'/api/handoffs/h1/review',act(h1,'r1'))).record
  ok(await A('/api/handoffs/h1/review',act(h1,'r1','Changed reason')),409) // review identity conflicts on changed content
  assert.equal(reviewed.history.at(-1).selfReview,true,'an author review is recorded as self-review, never independent review')
  const packet=ok(await A('/api/handoffs/h1/export'));assert.ok(packet.transport==='unsent'&&packet.providerActions.length===0,'an eligible review exports unsent copy with no provider action')
+ assert.deepEqual(packet.record,reviewed,'HTTP export preserves the exact reviewed payload, source snapshots, hashes, revision and attributed history')
+ assert.equal(packet.publication,'not-published');assert.equal(packet.review.status,'reviewed')
+ assert.deepEqual(ok(await A('/api/handoff/'+incident.id)),draft,'reviewing separate authored copy never promotes the legacy exported draft from review required')
+ const sourceReadState=ok(await O('/api/state')),sourceReadHandoffs=ok(await O('/api/handoffs/archive'))
+ for(const reference of [...packet.lamp.draft.evidenceLinks,...packet.lamp.draft.impactLinks]){
+  const link=new URL(reference);assert.equal(link.origin,w.origin)
+  const path=link.pathname+link.search,permitted=ok(await A(path))
+  if(permitted.source)assert.equal(permitted.source.incident.id,incident.id)
+  else assert.ok(permitted.incidents.some(row=>row.id===incident.id))
+  assert.deepEqual(Object.keys(ok(await w.request(path),401)),['error'],'the exported source link grants anonymous callers no private access')
+ }
+ assert.deepEqual(ok(await O('/api/state')),sourceReadState,'anonymous source reads change no coordination records')
+ assert.deepEqual(ok(await O('/api/handoffs/archive')),sourceReadHandoffs,'anonymous source reads change no handoff records or review history')
+ assert.deepEqual(ok(await O('/api/paging/state')),{...outboundBefore,workspaceRevision:sourceReadState.revision},'coordination advances its workspace revision but creates no paging job, receipt or paging revision')
+ assert.deepEqual(ok(await O('/api/automation')),automationBefore,'coordination and handoff work create no outbound response action')
+ assert.deepEqual(await w.outboundRequests(),[], 'the emitted Worker network edge refuses and records all outbound attempts; handoff preparation, review and export attempted none')
+ record('PROBE OC-006 1: emitted Worker coordination, legacy draft export, preparation, refused unreviewed export and reviewed export without an approved endpoint -> empty outbound ledger, unchanged paging state, no provider action or Lamp publication')
+ record('PROBE OC-006 2: exported legacy review-required draft and reviewed copy source links -> draft still unreviewed, prepared export refused, authorized sources populated, anonymous source reads 401 with error only')
  incident=ok(await A('/api/command',{type:'note',incident:incident.id,revision:incident.revision,text:'Source drift'}))
  ok(await A('/api/handoffs/h1/export'),409) // source drift makes the review ineligible
- const withdrawn=ok(await A('/api/handoffs/h1/withdraw',act(reviewed,'w1','Superseded by current copy'))).record
+ const withdrawn=ok(await handoffMutation(A,'/api/handoffs/h1/withdraw',act(reviewed,'w1','Superseded by current copy'))).record
  ok(await A('/api/handoffs/h1/review',act(withdrawn,'r1-again')),409) // withdrawal is terminal
  assert.deepEqual(withdrawn.history.slice(0,reviewed.history.length),reviewed.history,'withdrawal appends to attributed history')
  source=ok(await A('/api/handoffs/context/'+incident.id))
@@ -423,6 +1087,10 @@ try {
  ok(await L('/api/members',{name:'Rex',password:'synthetic-local-testing-password',role:'responder'}),201);ok(await w.request('/api/handoffs/restore',{mode:'replace',archive},(await w.request('/api/login',{name:'Rex',password:'synthetic-local-testing-password'})).cookie),403) // only admins restore handoff archives
  ok(await L('/api/handoffs/restore',{mode:'replace',archive:{...archive,records:Array.from({length:65},(_,i)=>({...archive.records[0],id:'cap-'+i}))}}),400) // handoff capacity refuses
  assert.deepEqual(ok(await L('/api/handoffs/archive')),archive,'handoff refusal preserves the prior archive')
+ const restoredHandoffs=ok(await handoffMutation(L,'/api/handoffs/restore',{mode:'replace',archive}));
+ assert.deepEqual(ok(await L('/api/handoffs/archive')),restoredHandoffs,'accepted handoff restore publishes the complete held archive');
+ assert.deepEqual(restoredHandoffs.records.find(row=>row.id==='h1'),archive.records.find(row=>row.id==='h1'),'restore preserves withdrawn history exactly');
+ assert.ok(restoredHandoffs.records.find(row=>row.id==='h2').held,'restored active copy retains its recovery hold');
  let h3=ok(await L('/api/handoffs/prepare',{id:'h3',incident:incident.id,incidentRevision:incident.revision,serviceHash:ok(await L('/api/handoffs/context/'+incident.id)).serviceHash,payload:copy}),201).record
  while(h3.history.length<127)h3=ok(await L('/api/handoffs/h3/review',act(h3,'bulk-'+h3.history.length))).record
  const full=ok(await L('/api/handoffs/archive'));ok(await L('/api/handoffs/h3/review',act(h3,'bulk-over')),429) // 128 history entries per record, one kept for a recovery hold
@@ -456,7 +1124,7 @@ try {
  }
  const last=await w.request('/api/login',{name:'Admin',password:'synthetic-local-testing-password'});ok(last)
  await pagingHistory(w,last.cookie)
- record('OC-013/015: restored historical acknowledgement/cancellation append attribution without recovery; strict module references, retained callbacks and SQL rollback passed')
+ record('OC-013 and OC-015: restored historical acknowledgement and cancellation append attribution without recovery; populated module archive refuses anonymous, viewer and responder access without disclosure or product writes; strict references, retained callbacks and SQL rollback passed')
  { // OC-040 change-event erasure: public admin door, atomic counts and restore fences.
  let erasureCookie=last.cookie;
  const erasureReq=(path,input)=>w.request(path,input,erasureCookie);
@@ -640,11 +1308,15 @@ try {
  const personalChange=ok(await w.request('/api/changes/ingress/'+personalChangeSource,{eventId:'synthetic-oncall-418',summary:'Synthetic person local change',author:erasedName,timestamp:new Date().toISOString()},undefined,{authorization:'Bearer '+memberKey}),201);
  const memberPath='/api/erasure/member/'+erasedMember.id,memberBefore=ok(await erasureReq('/api/archive'));
  const memberInput={workspaceRevision:memberBefore.revision,confirmation:'erase '+erasedMember.id,identitiesReviewed:true,importedPeople:[erasedName]};
+ const memberEventRows=()=>w.sql("SELECT id,event FROM agent_door_events WHERE json_extract(event,'$.actor.person.id')='"+erasedMember.id+"' ORDER BY sequence");
+ const memberEventsBefore=memberEventRows();assert.ok(memberEventsBefore.length>0,'native person actions retain typed events before erasure');
+
  ok(await erasureReq(memberPath,{...memberInput,identitiesReviewed:false}),409);
  ok(await erasureReq(memberPath,{...memberInput,importedPeople:[]}),409);
  w.sql("CREATE TRIGGER synthetic_oncall_413_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='member.erase' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-413'); END");
  try{ok(await erasureReq(memberPath,memberInput),503)}finally{w.sql('DROP TRIGGER synthetic_oncall_413_audit')}
  assert.deepEqual(ok(await erasureReq('/api/archive')),memberBefore,'native identity, imported original and schedules roll back with their audit');
+ assert.deepEqual(memberEventRows(),memberEventsBefore,'audit failure also rolls back typed event redaction');
  let memberReceipt;
  erasureCookie=await checkpointErasureCli(w,erasureCookie,async()=>{memberReceipt=ok(await erasureReq(memberPath,memberInput));assert.equal(memberReceipt.state,'complete');assert.equal(memberReceipt.outstanding.length,1);assert.equal(memberReceipt.outstanding[0].state,'not-requested');assert.deepEqual(w.sql('SELECT * FROM oa_operators ORDER BY id'),authBefore);assert.deepEqual(w.sql('SELECT * FROM oa_sessions ORDER BY id'),authSessionsBefore);ok(await w.request('/auth/session',undefined,authCookie));ok(await w.request('/api/state',undefined,authCookie),401);assert.equal(w.sql("SELECT * FROM operator_members WHERE operator_id='synthetic-oncall-413-auth'").length,0);ok(await w.request('/api/changes/ingress/'+personalChangeSource,{eventId:'synthetic-oncall-418',summary:'Synthetic person local change',author:erasedName,timestamp:new Date().toISOString()},undefined,{authorization:'Bearer '+memberKey}),410);assert.match(memberReceipt.outstanding[0].destination,/Approved response recipient/);assert.equal(memberReceipt.stores.credentials.deleted,1);assert.equal(memberReceipt.stores.oc_api_credentials.deleted,1);assert.equal(memberReceipt.stores.oc_endpoint_credentials.deleted,1);assert.ok(memberReceipt.stores.oc_api_outbox.deleted>0);assert.equal(memberReceipt.stores.handoff_state.updated,1);ok(await w.request('/api/state',undefined,memberLogin.cookie),401);ok(await erasureReq('/api/login',{name:erasedName,password:'synthetic-oncall-413-password'}),401);assert.ok(memberReceipt.importCustody.stores.some(row=>row.rows>0));});
  assert.ok(!JSON.stringify(ok(await erasureReq('/api/handoffs/archive'))).includes(erasedName));ok(await erasureReq('/api/handoffs/restore',{mode:'replace',archive:memberHandoffs}),409);
@@ -674,9 +1346,47 @@ try {
  w.sql("INSERT INTO login_attempts(name,attempts,reset) VALUES('"+keptName+"',10,"+(Date.now()+60000)+") ON CONFLICT(name) DO UPDATE SET attempts=10,reset=excluded.reset");
  ok(await erasureReq('/api/login',{name:keptName,password:'synthetic-oncall-414-password'}),429);assert.equal(w.sql("SELECT attempts FROM login_attempts WHERE name='"+keptName+"'")[0].attempts,11,'erasing someone else preserves an active account’s existing throttle');
  w.sql("DELETE FROM login_attempts WHERE name='"+keptName+"'");
+ const memberEventsAfter=memberEventRows();assert.deepEqual(memberEventsAfter.map(row=>row.id),memberEventsBefore.map(row=>row.id),'erasure retains typed event IDs and cursor order');
+ assert.ok(memberEventsAfter.every(row=>JSON.parse(row.event).actor.person.name==='Erased member'));
  const retainedPersonal=everything(false);assert.equal([erasedName,'synthetic-oncall-413-user','Synthetic erased contact'].some(value=>retainedPersonal.includes(value)),false,'no Oncall-owned table retains the erased person; the separate Auth identity is deliberately retained');
  record('OC-040 member erasure: native business audience/subscriptions and calendar/reminder custody, linked Auth owner refusal/non-owner preservation, reviewed imported identity, native credentials/session, audit-failure rollback, anonymous tombstone, immutable slot gaps without reassignment, unrelated member retention and CLI/native restore fences passed');
  record('OC-040 change-event erasure: admin-only confirmation, stale refusal, atomic audit-failure rollback, per-table local receipt, last receipt unlink, immutable pseudonymous audit, CLI/native restore fence, restart and provider retry refusal passed');
  }
  console.log(`Activation passed: ${checks.length} requirement flow groups`)
 }finally{await w.close();await rm('.rer/local/handoff-session',{force:true});await rm('.rer/local/handoffs.json',{force:true})}
+
+// The explicitly labelled demo exercises coordination and simulated delivery without activating production paging.
+{
+const {default:assert}=await import('node:assert/strict')
+const { localWorker }=await import('./worker.mjs')
+
+const worker = await localWorker({ RER_DEMO: '1' })
+const ok = (result, status = 200) => {
+  assert.equal(result.status, status, JSON.stringify(result.value))
+  return result.value
+}
+try {
+  const owner = await worker.request('/auth/bootstrap', { token: worker.vars.SETUP_TOKEN, displayName: 'Alex Morgan' }, undefined, { 'CF-Connecting-IP': '127.0.0.1' })
+  ok(owner, 303)
+  const req = (path, input) => worker.request(path, input, owner.cookie, { 'CF-Connecting-IP': '127.0.0.1' })
+  const state = ok(await req('/api/state'))
+  const incident = state.incidents.find(item => item.state !== 'resolved')
+  ok(await req('/api/command', { type: 'transition', incident: incident.id, revision: incident.revision,
+    state: 'acknowledged', summary: 'Investigating the certificate rotation' }))
+  const page = ok(await req('/api/paging/jobs', { incident: incident.id }))
+  assert.equal(page.status, 'sent')
+  assert.deepEqual(new Set(page.sends.map(send => send.channel)), new Set(['sms', 'voice', 'push', 'email']))
+  assert.ok(page.sends.every(send => send.status === 'sent'))
+  for (const channel of ['sms', 'voice', 'push', 'email'])
+    assert.equal(ok(await req('/api/delivery', { incident: incident.id, channel })).sends[0].status, 'sent')
+  const changed = ok(await req('/api/state')).incidents.find(item => item.id === incident.id)
+  assert.equal(changed.state, 'acknowledged')
+  ok(await req('/auth/magic-link', { email: worker.vars.OWNER_EMAIL }), 202)
+  ok(await req('/api/paging/jobs', { incident: 'missing' }), 404)
+  ok(await worker.request('/api/paging/jobs', { incident: incident.id }), 401)
+  console.log('Demo HTTP flow passed: acknowledgment, simulated SMS/voice/push/email and suppressed mail; auth and invalid incident checks remain real.')
+} finally {
+  await worker.close()
+}
+
+}

@@ -10,7 +10,11 @@ export function auditedDatabase(database: D1Database, context: AuditContext) {
   async function batch<T>(statements: D1PreparedStatement[], finalOutcome?: AuditOutcome): Promise<D1Result<T>[]> {
     const entries = statements.map(statement => originals.get(statement) ?? { statement, sql: '' })
     if (!finalOutcome && !entries.some(entry => writes(entry.sql))) return database.batch<T>(entries.map(entry => entry.statement))
-    const transaction = auditTransaction(database, context, entries.map(entry => entry.statement), finalOutcome)
+    // Base records policy decisions itself. Its custody/audit writes must not
+    // look like repeated executions of the native action that preceded them.
+    const sharedWrites = entries.filter(entry=>writes(entry.sql))
+    const sharedPersistence = sharedWrites.length>0&&sharedWrites.every(entry=>/^\s*(?:INSERT(?:\s+OR\s+\w+)?\s+INTO|UPDATE|DELETE\s+FROM)\s+agent_door_/i.test(entry.sql))
+    const transaction = auditTransaction(database, sharedPersistence?{...context,kind:'agent-door.persistence'}:context, entries.map(entry => entry.statement), finalOutcome)
     try {
       const result = await database.batch<T>(transaction.statements)
       context.commits++

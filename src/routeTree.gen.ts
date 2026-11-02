@@ -34,6 +34,7 @@ import { Route as SettingsIndexRouteImport } from './routes/settings.index'
 import { Route as SettingsArchiveRouteImport } from './routes/settings.archive'
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings.integrations'
 import { Route as SettingsMoveInRouteImport } from './routes/settings.move-in'
+import { Route as SettingsReadinessRouteImport } from './routes/settings.readiness'
 import { Route as SettingsRoutingRouteImport } from './routes/settings.routing'
 import { Route as SettingsServicesRouteImport } from './routes/settings.services'
 import { Route as SettingsTeamRouteImport } from './routes/settings.team'
@@ -169,6 +170,11 @@ const SettingsMoveInRoute = SettingsMoveInRouteImport.update({
   path: '/move-in',
   getParentRoute: () => SettingsRoute,
 } as any)
+const SettingsReadinessRoute = SettingsReadinessRouteImport.update({
+  id: '/readiness',
+  path: '/readiness',
+  getParentRoute: () => SettingsRoute,
+} as any)
 const SettingsRoutingRoute = SettingsRoutingRouteImport.update({
   id: '/routing',
   path: '/routing',
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/settings/archive': typeof SettingsArchiveRoute
   '/settings/integrations': typeof SettingsIntegrationsRouteWithChildren
   '/settings/move-in': typeof SettingsMoveInRoute
+  '/settings/readiness': typeof SettingsReadinessRoute
   '/settings/routing': typeof SettingsRoutingRoute
   '/settings/services': typeof SettingsServicesRouteWithChildren
   '/settings/team': typeof SettingsTeamRoute
@@ -275,6 +282,7 @@ export interface FileRoutesByTo {
   '/settings/archive': typeof SettingsArchiveRoute
   '/settings/integrations': typeof SettingsIntegrationsRouteWithChildren
   '/settings/move-in': typeof SettingsMoveInRoute
+  '/settings/readiness': typeof SettingsReadinessRoute
   '/settings/routing': typeof SettingsRoutingRoute
   '/settings/services': typeof SettingsServicesRouteWithChildren
   '/settings/team': typeof SettingsTeamRoute
@@ -312,6 +320,7 @@ export interface FileRoutesById {
   '/settings/archive': typeof SettingsArchiveRoute
   '/settings/integrations': typeof SettingsIntegrationsRouteWithChildren
   '/settings/move-in': typeof SettingsMoveInRoute
+  '/settings/readiness': typeof SettingsReadinessRoute
   '/settings/routing': typeof SettingsRoutingRoute
   '/settings/services': typeof SettingsServicesRouteWithChildren
   '/settings/team': typeof SettingsTeamRoute
@@ -350,6 +359,7 @@ export interface FileRouteTypes {
     | '/settings/archive'
     | '/settings/integrations'
     | '/settings/move-in'
+    | '/settings/readiness'
     | '/settings/routing'
     | '/settings/services'
     | '/settings/team'
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/settings/archive'
     | '/settings/integrations'
     | '/settings/move-in'
+    | '/settings/readiness'
     | '/settings/routing'
     | '/settings/services'
     | '/settings/team'
@@ -421,6 +432,7 @@ export interface FileRouteTypes {
     | '/settings/archive'
     | '/settings/integrations'
     | '/settings/move-in'
+    | '/settings/readiness'
     | '/settings/routing'
     | '/settings/services'
     | '/settings/team'
@@ -634,6 +646,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsMoveInRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/settings/readiness': {
+      id: '/settings/readiness'
+      path: '/readiness'
+      fullPath: '/settings/readiness'
+      preLoaderRoute: typeof SettingsReadinessRouteImport
+      parentRoute: typeof SettingsRoute
+    }
     '/settings/routing': {
       id: '/settings/routing'
       path: '/routing'
@@ -776,6 +795,7 @@ interface SettingsRouteChildren {
   SettingsArchiveRoute: typeof SettingsArchiveRoute
   SettingsIntegrationsRoute: typeof SettingsIntegrationsRouteWithChildren
   SettingsMoveInRoute: typeof SettingsMoveInRoute
+  SettingsReadinessRoute: typeof SettingsReadinessRoute
   SettingsRoutingRoute: typeof SettingsRoutingRoute
   SettingsServicesRoute: typeof SettingsServicesRouteWithChildren
   SettingsTeamRoute: typeof SettingsTeamRoute
@@ -786,6 +806,7 @@ const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsArchiveRoute: SettingsArchiveRoute,
   SettingsIntegrationsRoute: SettingsIntegrationsRouteWithChildren,
   SettingsMoveInRoute: SettingsMoveInRoute,
+  SettingsReadinessRoute: SettingsReadinessRoute,
   SettingsRoutingRoute: SettingsRoutingRoute,
   SettingsServicesRoute: SettingsServicesRouteWithChildren,
   SettingsTeamRoute: SettingsTeamRoute,

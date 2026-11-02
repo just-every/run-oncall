@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-          fetch-depth: 2
+          fetch-depth: 0
       - name: Check reusable workflow permissions
         run: node scripts/verify-ci.mjs --check-workflows
       - name: Look up complete nightly marker
@@ -66,6 +66,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Free unused runner SDKs for the 15 GiB disk guard
         run: |
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
@@ -81,8 +82,10 @@ jobs:
           path: ${{ runner.temp }}/pnpm-store
           key: seed-ubuntu24-temp-store-${{ runner.arch }}-build-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
-      - name: Check edition source lock with the installed package
-        run: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
+      - name: Check the generated contract documents
+        run: node src/base/contract-docs.mjs check
+      - name: Check edition source lock with the vendored authoring tool
+        run: node scripts/edition-authoring/cli.mjs check
       - run: pnpm run deps
       - name: Check, build and typecheck the exact checkout once
         run: node scripts/verify-oncall-build.mjs
@@ -118,6 +121,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version-file: .node-version
@@ -148,8 +152,10 @@ jobs:
           # Old snapshots contain absolute HOME paths; do not restore them here.
           key: seed-ubuntu24-temp-store-${{ runner.arch }}-browser-${{ matrix.browser }}-${{ hashFiles('pnpm-lock.yaml', 'package.json') }}
       - run: pnpm install --frozen-lockfile
-      - name: Check edition source lock with the installed package
-        run: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
+      - name: Check the generated contract documents
+        run: node src/base/contract-docs.mjs check
+      - name: Check edition source lock with the vendored authoring tool
+        run: node scripts/edition-authoring/cli.mjs check
       - run: pnpm run deps
       - name: Install and probe Chromium before system dependencies
         if: matrix.browser
@@ -187,7 +193,7 @@ jobs:
           ONCALL_BROWSER_EVIDENCE: ${{ runner.temp }}/oncall-browser-evidence
         run: node scripts/verify-oncall.mjs "$SHARD"
       - uses: actions/upload-artifact@v4
-        if: always() && matrix.browser
+        if: always()
         with:
           name: oncall-browser-evidence-${{ matrix.name }}
           path: |
@@ -206,6 +212,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version-file: .node-version
@@ -213,8 +220,10 @@ jobs:
       - run: npm install --global pnpm@10.12.4
       - run: pnpm config set store-dir "$RUNNER_TEMP/pnpm-store"
       - run: pnpm install --frozen-lockfile
-      - name: Check edition source lock with the installed package
-        run: node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
+      - name: Check the generated contract documents
+        run: node src/base/contract-docs.mjs check
+      - name: Check edition source lock with the vendored authoring tool
+        run: node scripts/edition-authoring/cli.mjs check
       - run: pnpm run deps
       - name: Run the changed files' reviewed readers and build the run site
         env:

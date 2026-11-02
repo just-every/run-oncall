@@ -1,3 +1,4 @@
+
 /** Failure-only diagnostics. Redact complete lines before retaining a bounded tail. */
 const sensitiveName = /secret|token|password|cookie|auth|session|api.?key|private.?key|access.?key|credential|dev.?key/i
 const sensitiveAssignment = new RegExp(String.raw`["']?([\w.-]*(?:${sensitiveName.source})[\w.-]*)["']?\s*[:=][ \t]*`, 'gi')

@@ -1,7 +1,7 @@
 .ingress .field small { color: var(--oc-muted); font-size: 13px; font-weight: 400; }
 .ingress-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .ingress-example { margin: 16px 0 24px; padding: 16px; border: 1px solid var(--app-line); border-radius: 10px; background: var(--oc-paper-deep); }
-.ingress-example textarea { font-family: var(--oc-mono, monospace); font-size: 12px; line-height: 1.5; min-height: 260px; }
+.ingress-example textarea { font-family: var(--oc-mono, monospace); font-size: 13px; line-height: 1.5; min-height: 260px; }
 .ingress code { overflow-wrap: anywhere; }
 .ingress details > summary { cursor: pointer; font-weight: 600; }
 .ingress-sources ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }

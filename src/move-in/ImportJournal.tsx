@@ -7,7 +7,7 @@ const label=(job:any)=>[provider(job),...(job.schedules??[]),...(job.files??[]),
 const resumable=(job:any)=>job.door?job.state==='rolling_back'||(!job.door.business&&['queued','applying'].includes(job.state)):['queued','applying','failed','rolling_back'].includes(job.state)
 const undoable=(job:any)=>['completed','undoing'].includes(job.state)||(job.door&&job.state==='failed')
 
-export function ImportJournal({jobs,job,busy,select,resume,undo}:{jobs:any[];job:any;busy:boolean;select:(job:any)=>void;resume:()=>void;undo:()=>void}) {
+export function ImportJournal({jobs,job,busy,select,resume,reconcile,undo}:{jobs:any[];job:any;busy:boolean;select:(job:any)=>void;resume:()=>void;reconcile:()=>void;undo:()=>void}) {
  return <>
  {jobs.length>1&&<label className="scheduling-field">Saved import journal<select aria-label="Saved import journal" value={job?.id??''} onChange={event=>select(jobs.find(saved=>saved.id===event.target.value)??null)}><option value="">Choose an import</option>{jobs.map((saved,index)=><option key={saved.id} value={saved.id}>{shortProvider(saved)} · {saved.state.replaceAll('_',' ')} {index+1}</option>)}</select></label>}
  {jobs.length===1&&!job&&<button disabled={busy} onClick={()=>select(jobs[0])}>Open saved import</button>}
@@ -16,6 +16,7 @@ export function ImportJournal({jobs,job,busy,select,resume,undo}:{jobs:any[];job
  {job.comparisons?.map((comparison:string)=><p key={comparison}>Coverage comparison: {comparison}</p>)}
  {job.approval&&<details><summary>Approval details</summary><p style={{overflowWrap:'anywhere'}}>{job.approval}</p></details>}
  {resumable(job)&&<button disabled={busy} onClick={resume}>{job.state==='rolling_back'?'Continue rollback':'Resume import'}</button>}
+ {job.door&&job.state==='completed'&&<button disabled={busy} onClick={reconcile}>Check imported data</button>}
  {undoable(job)&&<button disabled={busy} onClick={undo}>{job.state==='undoing'?'Continue undo':'Undo this import'}</button>}
  {job.state==='undoing'&&<p>Undo is still in progress. Continue undo to finish removing the unchanged imported objects.</p>}
  {['undone','rolled_back'].includes(job.state)&&<p>To import this file again, choose it under Other: from a file, review it, then confirm Import paused.</p>}

@@ -83,6 +83,7 @@ export function validatePagingArchive(input: unknown, workspace?: State): Paging
   const services = new Set(workspace?.services.map(service => service.id) ?? []);
   for (const schedule of schedules) {
     // Historical slots are intentionally retained even when a member disappears.
+    if(workspace&&schedule.pto?.some(entry=>entry.member!==null&&workspace.members.some(member=>member.id===entry.member&&member.erased)))fail("PTO predates member erasure; nothing restored",409);
     if (workspace && !services.has(schedule.service)) fail("Unknown archive schedule service");
   }
   for (const policy of policies) {

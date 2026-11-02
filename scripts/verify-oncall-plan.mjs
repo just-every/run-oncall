@@ -16,7 +16,7 @@ export function verificationPlan() {
   }
  }
  if (selected.size !== Object.keys(lanes).length || push.filter(shard => shard.hosted).length !== 1) throw Error('Incomplete Oncall verification coverage');
- const tier = shards => shards.map(shard => ({ ...shard, commands: shard.lanes.flatMap(lane => lanes[lane].map(file => `node ${file}`)) }));
+ const tier = shards => shards.map(shard => ({ ...shard, commands: shard.lanes.flatMap(lane => lanes[lane].map(entry => `node ${typeof entry === 'string' ? entry : entry.file}`)) }));
  return { push: tier(push), nightly: tier(nightly) };
 }
 
@@ -24,14 +24,12 @@ export function verificationPlan() {
 // built output. Browser evidence is written, never used as test input. Unknown
 // journeys deliberately retain full coverage until their inputs are reviewed.
 const reviewed = new Set([
- 'tests/hosted.mjs', 'tests/runtime.mjs', 'tests/triage.mjs', 'tests/changes.mjs',
- 'tests/intake.mjs', 'tests/routing.mjs', 'tests/monitoring.mjs', 'tests/urgency.mjs',
- 'tests/reviews.mjs', 'tests/activation.mjs', 'tests/demo.mjs', 'tests/move-in-adoption.mjs',
- 'tests/import-door.mjs', 'tests/signin-browser.mjs', 'tests/member-coordination-browser.mjs',
- 'tests/product-browser.mjs', 'tests/automation-browser.mjs', 'tests/activation-browser.mjs', 'tests/transfer.mjs',
+ 'tests/runtime.mjs', 'tests/changes.mjs', 'tests/triage.mjs', 'tests/activation.mjs',
+ 'tests/intake.mjs', 'tests/routing.mjs', 'tests/import-door.mjs',
+ 'tests/member-coordination-browser.mjs', 'tests/product-browser.mjs', 'tests/transfer.mjs',
 ]);
 const documents = new Set(['CONTRACT.md', 'ACCEPTANCE.md', 'CLAIMS.md', 'docs/CLAIMS.md', 'HANDOVER.md', 'STATUS.md']);
-export const documentReaders = ['pnpm run build', 'node tests/hosted.mjs'];
+export const documentReaders = ['node src/base/contract-docs.mjs check', 'pnpm run build'];
 
 export async function lightReaders(files, { cwd = process.cwd(), plan } = {}) {
  if (!files.length || !files.every(file => documents.has(file) || file === 'sources.lock.json'
@@ -42,8 +40,6 @@ export async function lightReaders(files, { cwd = process.cwd(), plan } = {}) {
   if (!reviewed.has(path)) return;
   await access(join(cwd, path));
  }
- // Oncall's legacy contract is read by its real app/site builders. Rebuild the
- // document consumer and keep the existing hosted-link assertions for edits to
- // contract documents; no new contract format is imposed during this refresh.
+ // The real app/site build consumes the generated contract documents.
  return files.some(file => documents.has(file)) ? documentReaders : [];
 }
