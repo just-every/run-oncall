@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "28086b2daff8f097b92ace576ed88e8cc454de1268c5076d8fc616e4b3cc128e",
+      "sha256": "384b682691905e9c2f10e210266372923e7aeed3de4b3cca0bf61911c9a90e61",
       "executable": false
     },
     "DEMO.md": {
@@ -1664,7 +1664,7 @@
       "executable": false
     },
     "src/agent-door/coordination-tools.ts": {
-      "sha256": "72539ecc87e8ab94ea162c0476c246df3b5fd13e3bbd7b2565344bcdcb060d99",
+      "sha256": "6bc34b311155216ead313335396ab1058d0c5b9e90eb6f7a5c150f544d1089b1",
       "executable": false
     },
     "src/agent-door/deadlines.ts": {

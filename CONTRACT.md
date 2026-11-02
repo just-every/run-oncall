@@ -1193,7 +1193,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.incidents.acknowledge` | Record an agent acknowledgment naming an active human responder | OC-004, OC-053 | standard (+ sensitive) | Shipped |
 | `oncall.notes.add` | Append an agent-attributed note to an incident | OC-004, OC-008 | standard (+ sensitive) | Shipped |
 | `oncall.bridges.create` | Create or join a Zoom or Teams incident bridge and record its participants and link | OC-035 | external | Not yet shipped |
-| `oncall.incidents.resolve` | Resolve a declared incident with its summary and evidence | OC-004, OC-056 | commitment | Shipped |
+| `oncall.incidents.resolve` | Resolve a declared incident with its summary and evidence | OC-004, OC-056 | commitment (+ sensitive) | Shipped |
 | `oncall.incidents.merge` | Merge related incidents or split an unrelated alert group | OC-050 | standard | Not yet shipped |
 | `oncall.triage.list` | Search, filter and save triage views | OC-060 | standard | Not yet shipped |
 | `oncall.triage.bulk` | Apply one action to selected or matching items | OC-079 | standard (+ commitment) (+ live) | Not yet shipped |

@@ -37,7 +37,7 @@ const operations: Operation[] = [
   { name: 'incidents.acknowledge', title: 'Acknowledge for a named responder', description: 'Record the agent acknowledgment naming an active human responder. This is attributed to the agent, not a human attestation.', scope: 'incidents:write', clauses: ['OC-004', 'OC-053'],
     properties: { incident: string(100), revision, member: string(100), summary: string() }, required: ['incident', 'revision', 'member', 'summary'],
     input: a => ({ type: 'transition', state: 'acknowledged', incident: a.incident, revision: a.revision, member: a.member, summary: a.summary }) },
-  { name: 'incidents.resolve', title: 'Resolve a recovered incident', description: 'Resolve an incident already in recovered state with retained recovery evidence and a resolution summary. Requires its current revision.', scope: 'incidents:write', clauses: ['OC-004'],
+  { name: 'incidents.resolve', title: 'Resolve a recovered incident', description: 'Commit the resolution of one recovered incident with retained recovery evidence and a summary. Company commitment and sensitive policies apply. Requires its current revision.', scope: 'incidents:write', clauses: ['OC-004'],
     properties: { incident: string(100), revision, summary: string() }, required: ['incident', 'revision', 'summary'],
     input: a => ({ type: 'transition', state: 'resolved', incident: a.incident, revision: a.revision, summary: a.summary }) },
   { name: 'notes.add', title: 'Add an incident note', description: 'Append a literal agent-attributed note at the current incident revision.', scope: 'incidents:write', clauses: ['OC-004', 'OC-008'],
