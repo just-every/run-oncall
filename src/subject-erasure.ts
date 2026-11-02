@@ -18,7 +18,7 @@ import { handoffSnapshot } from './handoff-store'
 
 type Dependencies={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;guard:(c:any)=>{sql:string;values:(string|number|null)[]}}
 export type SubjectErasureInput={confirmation:string;workspaceRevision:number;identitiesReviewed?:boolean;importedPeople?:string[]}
-export type SubjectErasureOptions={db:D1Database;state:State;actor:Member;guard:ReturnType<Dependencies['guard']>;input:SubjectErasureInput;kind:string;id:string;importContext:D1ImportContext;custody?:D1PreparedStatement[]}
+export type SubjectErasureOptions={secret:string;db:D1Database;state:State;actor:Member;guard:ReturnType<Dependencies['guard']>;input:SubjectErasureInput;kind:string;id:string;importContext:D1ImportContext;custody?:D1PreparedStatement[]}
 const guardStatement=(db:D1Database,sql:string,...values:(string|number|null)[])=>db.prepare(`INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN ${sql} THEN 1 ELSE 0 END`).bind(...values)
 // A sending lease is a durable exclusion boundary, not a promise to recall an
 // external call. Erasure refuses until that call has a recorded outcome.
@@ -28,15 +28,16 @@ function requireNoFlight(state:State,predicate:(o:NonNullable<State['apiOutbox']
 export function installSubjectErasure(api:any,deps:Dependencies) {
  api.post('/api/erasure/:kind/:id',async(c:any)=>{
   const state=await deps.state(c,true),input=await deps.body(c)
-  return c.json(await eraseSubject({db:c.env.DB,state,actor:c.get('actor'),guard:deps.guard(c),input,kind:c.req.param('kind'),id:c.req.param('id'),importContext:importErasureContext(c)}))
+  return c.json(await eraseSubject({secret:c.env.SESSION_SECRET,db:c.env.DB,state,actor:c.get('actor'),guard:deps.guard(c),input,kind:c.req.param('kind'),id:c.req.param('id'),importContext:importErasureContext(c)}))
  })
 }
 
 /** Native erasure and imported custody commit together for either public door. */
-export async function eraseSubject({db,state,actor,guard,input,kind,id,importContext,custody=[]}:SubjectErasureOptions) {
+export async function eraseSubject({secret,db,state,actor,guard,input,kind,id,importContext,custody=[]}:SubjectErasureOptions) {
   if(actor.agent&&!actor.machine)fail('Invalid agent actor',403)
   authority(state,actor,true)
   if(actor.machine&&(!actor.agent||actor.agent.client))fail('A current administrator sponsor is required for erasure',403)
+  const agentNames = kind==='member' ? state.members.filter(row=>row.id===id).map(row=>({name:row.name})) : []
   const sponsor=actor.agent?.sponsor??actor.id
   if(importContext.storage.database!==db||importContext.destination!=='oncall'||importContext.authorization.principalId!==sponsor)fail('Erasure custody must use the native subject database and current administrator',409)
   if(input.confirmation!==`erase ${id}`)fail('Type erase followed by the exact subject ID',409)
@@ -183,16 +184,8 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
    // Native UI events retain the same stable identities and cursor positions,
    // while the member's display identity is removed in the erasure transaction.
    remember('agent_door_events')
-   const personEvents=await db.prepare("SELECT COUNT(*) AS n FROM agent_door_events WHERE json_extract(event,'$.actor.person.id')=? OR json_extract(event,'$.actor.for.id')=?").bind(id,id).first<{n:number}>()
-   updated.agent_door_events=personEvents!.n
-   statements.push(db.prepare("UPDATE agent_door_events SET event=json_set(event,'$.actor.person.name','Erased member') WHERE json_extract(event,'$.actor.person.id')=?").bind(id),
-     db.prepare("UPDATE agent_door_events SET event=json_set(event,'$.actor.for.name','Erased member','$.actor.label',json_extract(event,'$.actor.agent.name')||' for Erased member') WHERE json_extract(event,'$.actor.for.id')=?").bind(id))
-   remember('oc_agent_deadlines');remember('agent_door_agents');remember('agent_door_audit');remember('agent_door_approvals');remember('agent_door_reviews')
-   statements.push(db.prepare("DELETE FROM oc_agent_deadlines WHERE json_extract(principal,'$.person.id')=?").bind(id),
-     db.prepare("UPDATE agent_door_agents SET sponsor_name='Erased member',revoked=1 WHERE sponsor=?").bind(id),
-     db.prepare("UPDATE agent_door_audit SET row=json_set(row,'$.sponsor.name','Erased member','$.label',json_extract(row,'$.agent.name')||' for Erased member') WHERE json_extract(row,'$.sponsor.id')=?").bind(id),
-     db.prepare("UPDATE agent_door_approvals SET state=CASE WHEN state='pending' THEN 'expired' ELSE state END,saved=json_set(saved,'$.principal.person.name','Erased member','$.principal.person.email','') WHERE json_extract(saved,'$.principal.person.id')=?").bind(id),
-     db.prepare("UPDATE agent_door_reviews SET saved=json_set(saved,'$.principal.person.name','Erased member','$.principal.person.email','') WHERE json_extract(saved,'$.principal.person.id')=?").bind(id))
+   remember('oc_agent_deadlines')
+   statements.push(db.prepare("DELETE FROM oc_agent_deadlines WHERE json_extract(principal,'$.person.id')=?").bind(id))
    if(member.role==='admin'&&member.active&&state.members.filter(m=>m.active&&m.role==='admin').length===1)fail('The last administrator cannot be erased',409)
    if(input.identitiesReviewed!==true||!Array.isArray(input.importedPeople)||input.importedPeople.some((v:unknown)=>typeof v!=='string')||new Set(input.importedPeople).size!==input.importedPeople.length)fail('Review and select this member’s retained imported identities',409)
    const people=(await db.prepare("SELECT id,data FROM move_in_objects WHERE kind='user'").all<{id:string;data:string}>()).results
@@ -335,6 +328,6 @@ export async function eraseSubject({db,state,actor,guard,input,kind,id,importCon
   // paired with a newer native journal on either restore door.
   await fence(kind,id)
   auditKind(db,kind+'.erase');auditIdentity(db,{subject:{kind,id}})
-  const receipt=await commitSubjectErasure(db,state,guard,{tables,identities,statements,updated,inserted,execute:imported?.execute})
+  const receipt=await commitSubjectErasure(db,state,guard,{tables,identities,statements,updated,inserted,execute:imported?.execute,agentValues:kind==='member'?[...identities,...agentNames]:undefined},secret)
   return {...receipt,...(kind==='member'?{outstanding}:{} ),...(imported?{importCustody:imported.counts()}:{})}
 }

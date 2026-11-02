@@ -12,12 +12,13 @@ import {pauseIntakeSources} from '../../src/intake/model.ts'
 import {pauseChangeSources} from '../../src/changes/model.ts'
 import {validateRecoveryCheckpoint} from '../../src/family/response-operations/recovery.ts'
 import {holdHandoffsForRecovery} from '../../src/family/response-operations/handoffs.ts'
-import {portabilityPolicy} from '../../src/portability-policy.mjs'
+import {portabilityPolicy,rejectPrivateAgentCustody} from '../../src/portability-policy.mjs'
 // Product restore policy runs inside Base portability's staging validation.
 // Imported timers become historical paused data before atomic publication.
 export default {
  ...portabilityPolicy,
- async validateStaged({db,tables,read}) {
+ async validateStaged({db,tables,read,manifest}) {
+  rejectPrivateAgentCustody({manifest})
   const auditRestore=await interruptStagedImports(db,tables,read)
   // Receiving opt-in is local authority; keep plans, approvals and replay journals as history.
   if(tables.ik_door_settings)await db.prepare('UPDATE "'+tables.ik_door_settings.replaceAll('"','""')+'" SET enabled=0').run()

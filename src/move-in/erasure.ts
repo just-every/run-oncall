@@ -1,3 +1,4 @@
+import { eraseOncallAgentArtifacts } from '../agent-door/erasure.ts'
 import {subjectErasureIdentity} from '../subject-erasure-identity';
 import {eraseDeadlineMember} from '../incident-deadlines/archive';
 import {eraseManualMember} from '../manual-pages/archive';
@@ -114,7 +115,7 @@ export type PersonErasure = { receiptId: string; recordsErased: number; jobsReti
 async function reindex(ctx: D1ImportContext) { while (!(await upgradeD1ImportErasureIndex(ctx)).complete); }
 
 /** Erase one imported person by exact email, in one D1 batch: the paused user object, their slot in imported schedules, and every retained copy in import custody. */
-export async function eraseImportedPerson(ctx: D1ImportContext, email: string): Promise<PersonErasure> {
+export async function eraseImportedPerson(ctx: D1ImportContext, email: string, secret: string): Promise<PersonErasure> {
   const db = ctx.storage.database
   setAuditSubject(db as unknown as D1Database, 'import-person', email)
   await reindex(ctx)
@@ -215,11 +216,12 @@ export async function eraseImportedPerson(ctx: D1ImportContext, email: string): 
   const checkpoint = [...(await portability.redactionStatements()).map(toD1Sql),{sql:syncErasureFences,params:[]}]
   // Every erasure commit drops in-flight transfer copies, which may hold the person; the native erasure already does when there is one.
   const transfers = native ? [] : (await portability.invalidateTransfersStatements()).map(toD1Sql)
+  const agentStatements = await eraseOncallAgentArtifacts(db as unknown as D1Database,secret,[email,...ids,...memberIds],{erasure_id:native?.operationId??crypto.randomUUID(),at:new Date().toISOString()})
   let entry
   // The immutable audit labels stay, but erasure severs every identity lookup
   // for this imported person in the same commit as their retained records.
   const unlink = forgetAuditIdentityQueries([...memberIds])
-  try { entry = await retireD1ImportCustody({ target: { kind: 'user', id: email }, values: [email, ...filenames], related }, [...native?.statements ?? transfers, ...rewrite, ...unlink], ctx, checkpoint) }
+  try { entry = await retireD1ImportCustody({ target: { kind: 'user', id: email }, values: [email, ...filenames], related }, [...agentStatements.map(toD1Sql),...native?.statements ?? transfers, ...rewrite, ...unlink], ctx, checkpoint) }
   catch (error) { if (/CHECK constraint|IMPORT_ATOMIC_GUARD/.test(String((error as Error).message))) fail('Imported data changed while the erasure was prepared; nothing was erased. Retry.', 409); throw error }
   // Follow-up index maintenance must not recreate the erased identity link.
   auditIdentity(db as unknown as D1Database, { subject: { kind: 'erased', id: crypto.randomUUID() } })

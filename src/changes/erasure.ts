@@ -1,3 +1,4 @@
+import { eraseOncallAgentArtifacts, type AgentSubjectValue } from '../agent-door/erasure.ts'
 import { auditIdentity, auditKind, forgetAuditIdentities } from '../audit-store'
 import { fail, type State } from '../family/response-operations/domain'
 import { syncErasureFences } from '../erasure-fence'
@@ -22,12 +23,12 @@ export function installChangeErasure(api:any,deps:Dependencies) {
   if(clearLast)delete source.lastAccepted
   ;(state.erasureFences??=[]).push({id:identity,epoch:0})
   auditKind(db,'change.erase');auditIdentity(db,{subject:{kind:'change',id:change.id},source:{kind:'change-source',id:change.source}})
-  return c.json(await commitSubjectErasure(db,state,deps.guard(c),{tables:['oc_changes','oc_change_sources'],identities:[change.id],statements:[],updated:{oc_change_sources:clearLast?1:0}}))
+  return c.json(await commitSubjectErasure(db,state,deps.guard(c),{tables:['oc_changes','oc_change_sources'],identities:[change.id],statements:[],updated:{oc_change_sources:clearLast?1:0}},c.env.SESSION_SECRET))
  })
 }
 
 /** All native subjects share C20's receipt, transfer-copy, audit and fence commit. */
-export async function commitSubjectErasure(db:D1Database,state:State,guard:ReturnType<Dependencies['guard']>,plan:{tables:string[];identities:string[];statements:D1PreparedStatement[];updated?:Record<string,number>;inserted?:Record<string,number>;execute?:(statements:D1PreparedStatement[],checkpoint:D1PreparedStatement[])=>Promise<D1Result[]>}) {
+export async function commitSubjectErasure(db:D1Database,state:State,guard:ReturnType<Dependencies['guard']>,plan:{tables:string[];identities:string[];statements:D1PreparedStatement[];updated?:Record<string,number>;inserted?:Record<string,number>;agentValues?:AgentSubjectValue[];execute?:(statements:D1PreparedStatement[],checkpoint:D1PreparedStatement[])=>Promise<D1Result[]>},secret:string) {
  const portability=await createPortability({db,policy:portabilityPolicy})
   const checkpoint=await portability.redactionStatements()
   // Transfer snapshots can contain any local category. Count the rows inside the
@@ -36,9 +37,10 @@ export async function commitSubjectErasure(db:D1Database,state:State,guard:Retur
   const copies=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'rer_portability_snap_*' OR name GLOB 'rer_portability_stage_*') ORDER BY name").all<{name:string}>()).results.map(row=>row.name)
   const transfers=await portability.invalidateTransfersStatements()
   const token=crypto.randomUUID(),writes=workspaceWrite(db,state,state.revision,guard,token),mutations=workspaceMutationCounts(state)
+  const agents=plan.agentValues?await eraseOncallAgentArtifacts(db,secret,plan.agentValues,{erasure_id:token,at:new Date().toISOString()}):[]
   const tables=[...new Set([...plan.tables,...Object.keys(mutations),'oc_audit_identities','rer_portability_segments','rer_portability_parts','rer_portability_jobs',...copies])]
   const counts=tables.map(name=>db.prepare(`SELECT COUNT(*) AS n FROM "${name.replaceAll('"','""')}"`))
-  const statements=[...counts,...writes,
+  const statements=[...counts,...agents,...writes,
    db.prepare(`INSERT INTO rer_erasure_guard(value) SELECT CASE WHEN
     (SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND (name GLOB 'rer_portability_snap_*' OR name GLOB 'rer_portability_stage_*'))=?
     AND NOT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND (name GLOB 'rer_portability_snap_*' OR name GLOB 'rer_portability_stage_*') AND name NOT IN (SELECT value FROM json_each(?)))

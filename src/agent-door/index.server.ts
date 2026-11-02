@@ -9,6 +9,7 @@ import { managementTools } from './management-tools'
 import { automationTools } from './automation-tools'
 import { oncallResources } from './resources'
 import { serviceTools } from './service-tools'
+import { subjectErasureIdentity } from '../subject-erasure-identity.ts'
 
 export function oncallTools(env: Bindings) {
   return [...readTools(env), ...serviceTools(env), ...coordinationTools(env), ...scheduleTools(env), ...managementTools(env), ...automationTools(env)].map((tool):ToolDefinition=>{
@@ -35,6 +36,13 @@ export function oncallAgentDoor(env: Bindings) {
     capabilities: oncallCapabilities,
     seed: 'oncall', name: 'Oncall', specialist: 'oncall-responder', db: env.DB, origin: env.AUTH_ORIGIN,
     trust: claim ? { issuer: claim.issuer, installationId: claim.installationId, appOrigin: claim.appOrigin, publicKeys: claim.publicKeys } : null,
+    erasure: { secret: env.SESSION_SECRET, async fenced(name, args) {
+      if (name === 'oncall.privacy.erase' || typeof args.id !== 'string') return false
+      const kind = ({ incidents: 'incident', members: 'member', clients: 'client', endpoints: 'endpoint' } as Record<string, string>)[name.split('.')[1]]
+      if (!kind) return false
+      const identity = await subjectErasureIdentity(kind, args.id)
+      return !!await env.DB.prepare('SELECT 1 FROM oc_erasure_fences WHERE id=?').bind(identity).first()
+    } },
     people: oncallPeople(env), tools: oncallTools(env), resources: oncallResources(env), notTools: oncallNotTools,
     localCredentials: request => localCredentials(env, request), currentScopes: principal => currentScopes(env, principal),
     prompts: [{ name: 'oncall-responder', title: 'Coordinate beside the existing pager', description: 'Read a selected service and real coverage; coordinate an incident, submit follow-up evidence and inspect a minimal signed event outcome. Paging is OFF.', clauses: ['OC-003', 'OC-004', 'OC-036', 'OC-053'], messages: () => [{ role: 'user', content: { type: 'text', text: 'Read the selected service, copied runbook, current changes and coverage first. Preserve alert generations, observed recovery and assertions separately. Name an active responder for acknowledgment; keep your agent identity. Submit human-review follow-up evidence without accepting it. Review the exact coverage digest before applying. Dispatch only an existing authorized minimal event, inspect its authenticated receipt or uncertainty, and never resend uncertain work. Follow current company policy and native scopes. No paging, remediation executor, invitations, private teams or money-moving capability exists.' } }] }],
