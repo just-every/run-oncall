@@ -319,7 +319,7 @@
       "scope": "incidents:write",
       "readOnly": false,
       "classes": [
-        "standard",
+        "commitment",
         "sensitive"
       ],
       "clauses": [
@@ -925,7 +925,12 @@
       },
       "expect": [
         {
-          "class": "standard"
+          "class": "commitment",
+          "facts": {
+            "measure": 0,
+            "currency": "XXX",
+            "counterparty": "internal"
+          }
         },
         {
           "class": "sensitive"
@@ -937,6 +942,12 @@
           "$from": "declare",
           "pointer": "/id"
         }
+      },
+      "inject": {
+        "internal": true,
+        "confirmExternal": true,
+        "class": "standard",
+        "confirm": true
       }
     },
     {

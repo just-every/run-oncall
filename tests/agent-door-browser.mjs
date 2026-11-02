@@ -4,6 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime} from './agent-door-runtime.mjs';
+import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
@@ -81,6 +82,57 @@ try{
   await page.locator('.incident-page').waitFor();await openIncidentAction(page,'Request responders');
   await page.getByText(/Created by Responder assistant for Alex Chen/).waitFor();
  });
+ // The actual signed-in browser approves the exact saved native resolution.
+ const resolutionTarget=await recoveredResolutionTarget(runtime,'Resolution held for the sponsoring human');
+ const resolvePolicy=autonomousPolicy();resolvePolicy.rules.unshift({id:'resolve-commitment',class:'commitment',do:'approval',approver:['sponsor'],wait:'PT1H'});
+ assert.equal((await runtime.adopt(resolvePolicy)).status,200);
+ const resolveArgs={incident:resolutionTarget.id,revision:resolutionTarget.revision,summary:'Human approves the retained incident resolution',idempotency_key:randomUUID()};
+ const resolutionBefore=await native(),resolutionEdge=await runtime.outboundRequests();
+ const heldResolution=await tool('oncall.incidents.resolve',resolveArgs);
+ assert.equal(heldResolution.result?._meta?.['com.runeditrun/error']?.code,'approval_required');
+ assert.equal(heldResolution.decision.classes.find(row=>row.class==='commitment').do,'approval');
+ assert.equal(heldResolution.decision.classes.find(row=>row.class==='sensitive').do,'autonomous');
+ assert.deepEqual(await native(),resolutionBefore,'Pending browser resolution preserves native state');
+ const approvalHandle=heldResolution.result._meta['com.runeditrun/approval'];
+ const approvalPath=new URL(approvalHandle.url).pathname;
+ const savedApproval=(await (await http('/agents/api/approvals/'+approvalHandle.id)).json()).approval;
+ assert.deepEqual(savedApproval.summary.nativeTarget,{kind:'incident',id:resolutionTarget.id});
+ assert.ok(savedApproval.summary.items.includes('Revision '+resolutionTarget.revision));
+ assert.deepEqual(savedApproval.classes.map(({class:cls,facts})=>({class:cls,facts})),[
+  {class:'commitment',facts:{measure:0,currency:'XXX',counterparty:'internal'}},
+  {class:'sensitive',facts:{measure:2,kind:'personal_or_incident_evidence'}},
+ ]);
+ await capture('resolution-pending',approvalPath,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
+ await page.goto(runtime.origin+approvalPath);
+ await page.getByRole('button',{name:'Approve',exact:true}).click();
+ await page.locator('[data-approval-state="executed"]').waitFor();
+ const resolutionAfter=await native(),resolvedIncident=resolutionAfter.incidents.find(row=>row.id===resolutionTarget.id);
+ assert.equal(resolvedIncident.state,'resolved');assert.equal(resolvedIncident.revision,resolutionTarget.revision+1);
+ const resolutionEntries=resolvedIncident.timeline.filter(row=>row.lifecycle?.to==='resolved');
+ assert.equal(resolutionEntries.length,1);
+ assert.equal(resolutionEntries[0].metadata.agent.agent.id,runtime.context.agentId);
+ const resolutionOwner=(await (await http('/api/workspace')).json()).member;
+ assert.equal(resolutionEntries[0].metadata.agent.for.id,resolutionOwner.id);
+ assert.ok(resolutionEntries[0].metadata.agent.approvers.some(row=>row.id===resolutionOwner.id));
+ const executedApproval=(await (await http('/agents/api/approvals/'+approvalHandle.id)).json()).approval;
+ assert.equal(executedApproval.revision,savedApproval.revision);
+ assert.equal(executedApproval.summary_sha256,savedApproval.summary_sha256);
+ const resolveRetry=await tool('oncall.incidents.resolve',resolveArgs);
+ assert.equal(resolveRetry.result?.isError,false,JSON.stringify(resolveRetry.body));
+ assert.equal(resolveRetry.result.structuredContent.state,'resolved');
+ assert.deepEqual(await native(),resolutionAfter,'Approved resolution retry creates no second effect');
+ assert.deepEqual(await runtime.outboundRequests(),resolutionEdge);
+ const resolutionRows=(await (await http('/agents/api/audit?agent='+encodeURIComponent(runtime.context.agentId))).json()).rows;
+ const executionRow=resolutionRows.find(row=>row.decision_id===heldResolution.decision.id);
+ assert.equal(executionRow.outcome,'done');assert.ok(executionRow.approval.by.includes(resolutionOwner.id));
+ assert.deepEqual(executionRow.classes,savedApproval.classes);
+ await capture('resolution-executed',approvalPath,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
+ await capture('resolution-timeline','/incidents/'+resolutionTarget.id,async()=>{
+  await page.getByRole('region',{name:'Timeline',exact:true}).waitFor();
+  await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
+ });
+ assert.equal((await runtime.adopt()).status,200);
+ console.log('PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry');
  const receiver=await (await http('/api/automation/clients',{name:'Operations receiver',key:randomBytes(32).toString('hex'),services:['agent-service'],permissions:['incidents:read']})).json();
  const key=randomBytes(32).toString('hex');runtime.fixtures.set('https://8.8.8.8',{key});
  const endpoint=await (await http('/api/automation/endpoints',{name:'Operations receiver',client:receiver.id,services:['agent-service'],url:'https://8.8.8.8/oncall-agent',key,approve:true})).json();

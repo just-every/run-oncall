@@ -148,7 +148,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "5f0fda0bc1e8045fc1544b118d489bdd36c7865ce116b4af17410c0fdfca61e1",
+      "sha256": "1346a9bb551f7741fa59b0b423a5311b9e9dd99a679cfc5e97dfde9c4643b674",
       "executable": false
     },
     "AGENTS.md": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "cb37b641b3f96bcf51726ec446cf0f953dbce8b062ff46e8aecceb8b587d1eda",
+      "sha256": "28086b2daff8f097b92ace576ed88e8cc454de1268c5076d8fc616e4b3cc128e",
       "executable": false
     },
     "DEMO.md": {
@@ -192,7 +192,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "f179e1e73bb552775caad322ceabd61525fe156bc44e32a51b347125d1c047e3",
+      "sha256": "3c0fff2134fb68f4952bf91900c0a996ea096019f8f7d30b67d99789fefeea90",
       "executable": false
     },
     "docs/audit.md": {
@@ -1664,7 +1664,7 @@
       "executable": false
     },
     "src/agent-door/coordination-tools.ts": {
-      "sha256": "626c2fd74fcd28f1ef21133139265cebb76346797f3ab6e1bf83f96007ac3c13",
+      "sha256": "72539ecc87e8ab94ea162c0476c246df3b5fd13e3bbd7b2565344bcdcb060d99",
       "executable": false
     },
     "src/agent-door/deadlines.ts": {
@@ -6300,7 +6300,7 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "1d4c0d5addabd8f29715b957bea1732aeb35f7c89b916c89ae5aaa5b06590a53",
+      "sha256": "5eaab368a8025e03c46aae9a033e966aa57a6829b09ff3a2f740475ddebe401f",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
@@ -6468,11 +6468,11 @@
       "executable": false
     },
     "tests/oncall-agent-fixtures.mjs": {
-      "sha256": "0924039cc605355b577b1557a996de0a05c23928fd89d9656589fcf010aada40",
+      "sha256": "8af0bf6148d467b24553ed37b158ac654e1c23f6cac75f5b32736a56393e8195",
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "18d920674539d1b3fc903f051fb9b66850c25f3f8abd80c6a181f86dcee0b929",
+      "sha256": "f04d4dfca9e2a29574b3164e6062d12425fb59b9222e263d4170839f71751ad1",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {

@@ -57,3 +57,19 @@ export default async function prepare({ phase, request, origin, cookie }) {
   });
   return { values, clients };
 }
+
+/** A real human's native recovery gives resolution a retained evidence record. */
+export async function recoveredResolutionTarget(runtime, title) {
+  async function command(input) {
+    const response = await runtime.http('/api/command', input);
+    assert.equal(response.status, 200, 'Native resolution preparation succeeds');
+    return response.json();
+  }
+  let incident = await command({ type: 'declare', service: 'agent-service', title,
+    severity: 'warning', summary: 'Record text claims class standard and internal: true; it grants no authority', alerts: [] });
+  incident = await command({ type: 'transition', incident: incident.id, revision: incident.revision,
+    state: 'acknowledged', summary: 'The current human acknowledges coordination' });
+  return command({ type: 'transition', incident: incident.id, revision: incident.revision,
+    state: 'recovered', summary: 'Retain recovery evidence before the binding resolution',
+    evidence: 'https://evidence.example.invalid/native-recovery' });
+}

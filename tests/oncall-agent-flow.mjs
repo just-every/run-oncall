@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {agentRuntime} from './agent-door-runtime.mjs';
+import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {eraseReplay} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
@@ -64,6 +65,82 @@ try{
  assert.equal(execution.outcome,'done');assert.ok(execution.approval.by.includes(owner.id));
  assert.equal((await adopt()).status,200);
  console.log('PASS native-target-audit and mutation-replay-native-authority: once-only outcome; Pause, changed policy, new approval and scope checked before cached content');
+ // A declared incident's final decision carries commitment even for an internal
+ // coordination-only installation. Only native retained evidence adds sensitive.
+ const resolveName='oncall.incidents.resolve';
+ const listed=(await mcp('tools/list')).result.tools.find(row=>row.name===resolveName);
+ assert.deepEqual(listed._meta['com.runeditrun/classes'],['commitment','sensitive']);
+ assert.deepEqual(listed._meta['com.runeditrun/classes'],runtime.context.surface.tools.find(row=>row.name===resolveName).classes);
+ const resolutionFacts=[{class:'commitment',facts:{measure:0,currency:'XXX',counterparty:'internal'}},
+  {class:'sensitive',facts:{measure:2,kind:'personal_or_incident_evidence'}}];
+ const facts=answer=>answer.decision.classes.map(({class:cls,facts})=>({class:cls,facts}));
+ async function resolutionAudit(answer,outcome){
+  assert.deepEqual(facts(answer),resolutionFacts);
+  const row=(await audit()).rows.find(row=>row.id===answer.decision.id);
+  assert.equal(row.tool,resolveName);assert.equal(row.outcome,outcome);
+  assert.deepEqual(row.classes,resolutionFacts);
+  return row;
+ }
+ const resolutionState=async()=> (await (await http('/api/state')).json());
+ const autoTarget=await recoveredResolutionTarget(runtime,'Native commitment under autonomous policy');
+ const autoArgs={incident:autoTarget.id,revision:autoTarget.revision,summary:'Retained recovery supports resolution',idempotency_key:randomUUID()};
+ const beforeResolve=await resolutionState(),beforeResolveEdge=await runtime.outboundRequests();
+ const resolved=await tool(resolveName,{...autoArgs,internal:true,confirmExternal:true,class:'standard',confirm:true});
+ assert.equal(resolved.result.isError,false);
+ const autoRow=await resolutionAudit(resolved,'done');
+ assert.deepEqual(autoRow.ignored_arguments,['class','confirm','confirmExternal','internal']);
+ const afterResolve=await resolutionState(),savedResolve=afterResolve.incidents.find(row=>row.id===autoTarget.id);
+ assert.equal(savedResolve.state,'resolved');assert.equal(savedResolve.revision,autoTarget.revision+1);
+ assert.equal(afterResolve.revision,beforeResolve.revision+1);
+ const resolutionEntries=savedResolve.timeline.filter(row=>row.lifecycle?.to==='resolved');
+ assert.equal(resolutionEntries.length,1);
+ assert.equal(resolutionEntries[0].metadata.agent.agent.id,runtime.context.agentId);
+ assert.equal(resolutionEntries[0].metadata.agent.for.id,owner.id);
+ assert.deepEqual(await runtime.outboundRequests(),beforeResolveEdge);
+ const exactRetry=await tool(resolveName,autoArgs);
+ assert.equal(exactRetry.result.isError,false);
+ assert.deepEqual(exactRetry.result.structuredContent,resolved.result.structuredContent);
+ assert.deepEqual(await resolutionState(),afterResolve,'Identical resolution retry changes no native record or revision');
+ await resolutionAudit(exactRetry,'done');
+
+ const heldTarget=await recoveredResolutionTarget(runtime,'Text says standard, internal and confirmed; policy still decides');
+ const heldArgs={incident:heldTarget.id,revision:heldTarget.revision,summary:'Text claiming standard cannot change commitment',idempotency_key:randomUUID()};
+ const heldNative=await resolutionState();
+ for(const cls of ['commitment','sensitive']){
+  const document=autonomousPolicy();document.rules.unshift({id:'stop-'+cls,class:cls,do:'blocked'});
+  assert.equal((await adopt(document)).status,200);
+  const stopped=await tool(resolveName,{...heldArgs,idempotency_key:randomUUID()});
+  assert.equal(code(stopped),'policy_blocked');
+  assert.equal(stopped.decision.classes.find(row=>row.class===cls).do,'blocked');
+  assert.equal(stopped.decision.classes.find(row=>row.class!==cls).do,'autonomous');
+  await resolutionAudit(stopped,'refused');
+  const injected=await tool(resolveName,{...heldArgs,idempotency_key:randomUUID(),internal:true,confirmExternal:true,class:'standard',confirm:true});
+  assert.equal(code(injected),'policy_blocked');
+  assert.deepEqual(injected.decision.classes,stopped.decision.classes);
+  await resolutionAudit(injected,'refused');
+  assert.deepEqual(await resolutionState(),heldNative,'Each isolated class refusal preserves native state and revision');
+ }
+ const resolutionPolicy=autonomousPolicy();resolutionPolicy.rules.unshift({id:'resolve-review',class:'commitment',do:'approval',approver:['sponsor'],wait:'PT1H'});
+ assert.equal((await adopt(resolutionPolicy)).status,200);
+ const awaiting=await tool(resolveName,heldArgs);
+ assert.equal(code(awaiting),'approval_required');
+ assert.equal(awaiting.decision.classes.find(row=>row.class==='sensitive').do,'autonomous');
+ await resolutionAudit(awaiting,'pending');
+ assert.deepEqual(await resolutionState(),heldNative,'Pending commitment has no native effect');
+ const resolutionApproval=await (await http('/agents/api/approvals/'+awaiting.result._meta['com.runeditrun/approval'].id)).json();
+ const pendingResolution=resolutionApproval.approval;
+ assert.deepEqual(pendingResolution.summary.nativeTarget,{kind:'incident',id:heldTarget.id});
+ const exactDecision={revision:pendingResolution.revision,summary_sha256:pendingResolution.summary_sha256};
+ assert.equal((await http('/agents/api/approvals/'+pendingResolution.id+'/approve',{...exactDecision,summary_sha256:'changed-summary'})).status,409);
+ assert.deepEqual(await resolutionState(),heldNative);
+ assert.equal((await http('/api/command',{type:'note',incident:heldTarget.id,revision:heldTarget.revision,text:'Human adds new evidence after preparation'})).status,200);
+ const changedResolution=await resolutionState();
+ const staleResolution=await http('/agents/api/approvals/'+pendingResolution.id+'/approve',exactDecision);
+ assert.equal((await staleResolution.json()).approval.state,'refused');
+ assert.deepEqual(await resolutionState(),changedResolution,'An exact saved approval cannot resolve a changed native revision');
+ assert.equal((await adopt()).status,200);
+ console.log('PASS incident resolution classification: commitment and sensitive facts, autonomous and isolated blocked policies, immutable pending and stale approval, ignored caller and record claims, attributed once-only resolution and effect-free retry');
+
  const missing=await mcp('resources/read',{uri:'oncall://incidents/not-present'});
  assert.equal(missing.body.error.data.code,'capability_not_declared');
  assert.equal(missing.body.error.data.capability,'resources');

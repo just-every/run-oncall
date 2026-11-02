@@ -63,10 +63,19 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
     }
     return defineTool({
       name: `oncall.${operation.name}`, title: operation.title, description: operation.description,
-      scope: operation.scope, readOnly: false, classes: operation.name==='incidents.declare'?['standard']:['standard','sensitive'], clauses: operation.clauses, untrusted: true,
+      scope: operation.scope, readOnly: false, classes: operation.name === 'incidents.resolve' ? ['commitment', 'sensitive'] : operation.name === 'incidents.declare' ? ['standard'] : ['standard', 'sensitive'], clauses: operation.clauses, untrusted: true,
       inputSchema: { type: 'object', additionalProperties: false, properties: operation.properties, required: operation.required },
       outputSchema: { type: 'object', properties: { id: string(100), revision: { type: 'integer', minimum: 1 } }, required: ['id', 'revision'] },
-      classify: (args,ctx) => nativeCall(async()=>{ const {incident}=await access(args,ctx); const count=protectedRecords(incident)+Number(typeof args.evidence==='string'&&!!args.evidence); return [{class:'standard',facts:{measure:1}},...(count?[{class:'sensitive' as const,facts:{measure:count,kind:'personal_or_incident_evidence'}}]:[])] }),
+      classify: (args, ctx) => nativeCall(async () => {
+        const { incident } = await access(args, ctx)
+        const count = protectedRecords(incident) + Number(typeof args.evidence === 'string' && !!args.evidence)
+        // Resolution is a binding coordination decision for one native incident.
+        // It moves no money: XXX denotes no currency, never a caller's valuation.
+        const primary = operation.name === 'incidents.resolve'
+          ? { class: 'commitment' as const, facts: { measure: 0, currency: 'XXX', counterparty: 'internal' as const } }
+          : { class: 'standard' as const, facts: { measure: 1 } }
+        return [primary, ...(count ? [{ class: 'sensitive' as const, facts: { measure: count, kind: 'personal_or_incident_evidence' } }] : [])]
+      }),
       target: (args, ctx) => nativeCall(async () => {
         const { current, incident } = await access(args, ctx)
         if (incident) return { kind: 'incident', id: incident.id }
