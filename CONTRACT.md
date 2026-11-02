@@ -1423,8 +1423,8 @@ Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f20785
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 11 | 0 | 22 |
-| Target and push further | 4 | 34 | 41 | 79 |
-| All | 15 | 45 | 41 | 101 |
+| Target and push further | 4 | 35 | 40 | 79 |
+| All | 15 | 46 | 40 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1510,7 +1510,7 @@ Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f20785
 | `SURFACE-001` | The registry equals this table, and the Base harness passes | target | missing |  | No implementing flow. No MCP door, tool registry or conformance harness exists; machine clients use only the OC-053 service-account API. |
 | `SURFACE-002` | Oncall computes each class from the call and its records | target | missing |  | No implementing flow. No tool or server-side class computation exists. |
 | `SURFACE-003` | A stranger agent runs a seeded on-call week under two company policies | target | missing |  | No implementing flow. No MCP door, company policy or specialist journey exists. |
-| `SURFACE-004` | Configuration, restore and erasure carry every affected class | target | missing |  | No implementing flow. No MCP door or server-side class computation exists for configuration, restore or erasure. |
+| `SURFACE-004` | Configuration, restore and erasure carry every affected class | target | partial | `tests/oncall-agent-erase-replay.mjs` — eraseClasses and eraseReplay through emitted Worker MCP; `tests/agent-door-browser.mjs` — native erasure approval and receiver removal. | Acceptance 4: fresh native erasures compute destructive with conditional access, security and live, and retain witnessed facts atomically. Held member erasure redacts its own saved approval; Base returns subject_erased before completed-retry classification, so class-aware replay of that approval still needs a Base seam. Older receipts without facts refuse rather than infer history. Acceptances 1, 2, 3, 5, 6, 7 and 8 remain unproved: intake-key changes, service paging changes, member-update classification, archive restore, SSO, executor settings and remote follow-up synchronization. OC-040 still needs OC-028 standby reconciliation; external deletion, uncertain-send clearance and new erasure categories are omitted. OC-023 team privacy, identity, executor and agent egress authority holds remain; paging stays OFF and provider delivery, independent standby and real-phone proof remain unproved. |
 | `OC-045` | Investigate before the responder opens the alert | push-further | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Incident/alert/runbook context exists as in the audit; no investigator, telemetry or deploy connector is implemented. OC-041 audit and durable crash/lease outcomes for investigation agent grants and actions remain this clause's pre-shipping acceptance. |
 | `OC-046` | Keep ownership and runbooks current from changes | push-further | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Services, copied runbooks and human follow-ups exist; change watching/proposals are missing. OC-041 audit and durable crash/lease outcomes for ownership/runbook agent grants and actions remain this clause's pre-shipping acceptance. |
 | `OC-047` | Continuously rehearse coverage and standby readiness | push-further | partial | `src/schedule-api.ts`; `src/delivery.ts`; `tests/activation.mjs` | Now/next reveals static gaps and production sends refuse; continuous readiness and scheduled live drills are missing. OC-041 audit and durable crash/lease outcomes for readiness agent grants, actions and drills remain this clause's pre-shipping acceptance. |

@@ -378,7 +378,8 @@
         "OC-041",
         "OC-052",
         "SURFACE-004"
-      ]
+      ],
+      "sponsorEscalation": false
     },
     {
       "name": "oncall.reviews.read",
@@ -1998,52 +1999,6 @@
       "expect": [
         {
           "class": "standard"
-        }
-      ]
-    },
-    {
-      "id": "erase-member-state",
-      "tool": "oncall.coordination.read",
-      "args": {},
-      "expect": [
-        {
-          "class": "standard"
-        }
-      ]
-    },
-    {
-      "id": "erase-member",
-      "tool": "oncall.privacy.erase",
-      "args": {
-        "kind": "member",
-        "id": {
-          "$fixture": "eraseMember",
-          "pointer": "/id"
-        },
-        "workspaceRevision": {
-          "$from": "erase-member-state",
-          "pointer": "/data/revision"
-        },
-        "confirmation": {
-          "$fixture": "eraseMember",
-          "pointer": "/confirmation"
-        },
-        "identitiesReviewed": true,
-        "importedPeople": []
-      },
-      "expect": [
-        {
-          "class": "destructive",
-          "facts": {
-            "measure": 1
-          }
-        },
-        {
-          "class": "access",
-          "facts": {
-            "measure": 1,
-            "direction": "narrows"
-          }
         }
       ]
     },

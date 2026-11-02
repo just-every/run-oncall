@@ -123,6 +123,7 @@ try{
  const target=erased.result.structuredContent.id,eraseArgs={kind:'incident',id:target,workspaceRevision:(await native()).revision,confirmation:'erase '+target,idempotency_key:randomUUID()};
  const erasePending=await tool('oncall.privacy.erase',eraseArgs),eraseApproval=erasePending.result?._meta?.['com.runeditrun/approval'];
  assert.ok(eraseApproval);
+ assert.deepEqual(erasePending.decision.classes.map(({class:risk})=>risk),['destructive','live']);
  const erasePath=new URL(eraseApproval.url).pathname;
  await capture('erase-pending',erasePath);
  await page.getByRole('button',{name:'Approve',exact:true}).click();
@@ -132,6 +133,27 @@ try{
  assert.equal(replay.result.structuredContent.state,'complete');
  assert.ok(!(await native()).incidents.some(row=>row.id===target));
  await capture('erase-executed',erasePath);
+ // Removing a receiver also removes its authority, signing keys and queued work.
+ const clientArgs={kind:'client',id:receiver.id,workspaceRevision:(await native()).revision,confirmation:'erase '+receiver.id,idempotency_key:randomUUID()};
+ const clientPending=await tool('oncall.privacy.erase',clientArgs),clientApproval=clientPending.result?._meta?.['com.runeditrun/approval'];
+ assert.ok(clientApproval,JSON.stringify(clientPending.body));
+ assert.deepEqual(clientPending.decision.classes.map(({class:risk,facts})=>({class:risk,facts})),[
+  {class:'destructive',facts:{measure:1}},{class:'access',facts:{measure:1,direction:'narrows'}},
+  {class:'security',facts:{measure:1,setting:'erasure-credentials'}},{class:'live',facts:{measure:1,service:'agent-service'}}
+ ]);
+ const clientPath=new URL(clientApproval.url).pathname;
+ await capture('erase-client-pending',clientPath,async()=>{
+  await page.locator('details').getByText('Details',{exact:true}).click();
+  for(const words of [/deleting information/,/access changes/,/security settings/,/running services/]) await page.getByText(words).first().waitFor();
+ });
+ await page.getByRole('button',{name:'Approve',exact:true}).click();
+ await page.locator('[data-approval-state="executed"]').waitFor();
+ const clientReplay=await tool('oncall.privacy.erase',clientArgs),afterClient=await native();
+ assert.equal(clientReplay.result?.isError,false,JSON.stringify(clientReplay.body));
+ assert.ok(!afterClient.apiClients.some(row=>row.id===receiver.id));
+ assert.ok(!afterClient.apiOutbox.some(row=>row.client===receiver.id||row.endpoint===endpoint.id));
+ assert.deepEqual(clientReplay.decision.classes.map(({class:risk,facts})=>({class:risk,facts})),clientPending.decision.classes.map(({class:risk,facts})=>({class:risk,facts})));
+ await capture('erase-client-executed',clientPath);
  await capture('guide','/docs/agents',async()=>{await page.locator('.docs-article').waitFor()});
  await capture('erasure-data','/docs/data',async()=>{await page.locator('.docs-article').waitFor()});
  console.log('PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements');
