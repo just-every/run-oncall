@@ -1,4 +1,5 @@
 import { fail, link, text, type State } from '../family/response-operations/domain.ts';
+import {validateProvenance} from '../teams/provenance';
 
 export type ChangeProvider = 'native' | 'pagerduty' | 'github' | 'gitlab' | 'argocd' | 'terraform';
 export type ChangeSource = {id: string; name: string; service: string; provider: ChangeProvider; mode: 'bearer' | 'signed' | 'provider'; repository: string; active: boolean; revision: number; createdBy: string; updatedAt: string; lastAccepted?: {id: string; eventId: string; at: string}};
@@ -28,7 +29,10 @@ export function validateChangeArchive(state: State) {
       if (!validDate(source.lastAccepted.at) || !state.changes?.some(c => c.id === source.lastAccepted!.id && c.source === source.id && c.eventId === source.lastAccepted!.eventId)) fail('Invalid last change receipt');
     }
   }
-  for (const service of state.services) if (service.dependencies !== undefined) dependencies(state, service.id, service.dependencies);
+  for (const service of state.services) {
+    if (service.dependencies !== undefined) dependencies(state, service.id, service.dependencies);
+    if (service.dependencyImport !== undefined) validateProvenance(service.dependencyImport,service.dependencies??[]);
+  }
   const identities = new Set<string>();
   for (const change of state.changes ?? []) {
     fields(change, ['id', 'source', 'eventId', 'service', 'kind', 'summary', 'author', 'occurredAt', 'acceptedAt', 'links', 'details', 'fingerprint', 'truncated', 'timeBasis']);

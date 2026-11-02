@@ -1,6 +1,7 @@
 import {setAuditSubject} from '../audit-store';
 import {editTeam,validateTeams} from './model';
-import {applies,catalogComponents,catalogLimit,catalogBodyLimit,importDigest,importRows,type Choices} from './backstage';
+import {applies,appliesDependencies,choiceKeys,catalogComponents,catalogLimit,catalogBodyLimit,importDigest,importRows,type Choices} from './backstage';
+import {validateChangeArchive} from '../changes/model';
 import {cannotBelong,importChanged,notCatalog,serviceGone,staleOwnership,tooManyComponents} from './words';
 import {fail,type State} from '../family/response-operations/domain';
 type Deps={body:(c:any,max?:number,tooLarge?:string)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<State>;save:(c:any,state:State,revision:number)=>Promise<void>};
@@ -32,10 +33,14 @@ export function installTeams(api:any,deps:Deps){
   const input=await deps.body(c,catalogBodyLimit,tooManyComponents),state=await deps.state(c,true),revision=state.revision,rows=importRows(state,catalog(input,['catalog','digest','choices']));
   if(input.digest!==await importDigest(state,rows))fail(importChanged,409);
   const choices:Choices=input.choices??{};
-  if(!choices||typeof choices!=='object'||Array.isArray(choices)||Object.entries(choices).some(([id,choice])=>!['current','backstage'].includes(choice)||!rows.some(r=>r.action==='conflict'&&r.service?.id===id)))fail('Choose Keep current or Use Backstage for each conflict.');
-  const applied=rows.filter(r=>applies(r,choices)),imported={source:'backstage' as const,importId:crypto.randomUUID(),importedAt:new Date().toISOString()};
-  for(const row of applied){const service=state.services.find(s=>s.id===row.service!.id)!;service.team=row.team!.id;service.ownership={...imported,entity:row.entity};}
-  if(applied.length){validateTeams(state);await deps.save(c,state,revision);}
+  if(!choices||typeof choices!=='object'||Array.isArray(choices)||Object.entries(choices).some(([id,choice])=>!['current','backstage'].includes(choice)||!rows.some(r=>choiceKeys(r).includes(id))))fail('Choose Keep current or Use Backstage for each conflict.');
+  const applied=rows.filter(r=>applies(r,choices)||appliesDependencies(r,choices)),imported={source:'backstage' as const,importId:crypto.randomUUID(),importedAt:new Date().toISOString()};
+  for(const row of applied){
+   const service=state.services.find(s=>s.id===row.service!.id)!;
+   if(applies(row,choices)){service.team=row.team!.id;service.ownership={...imported,entity:row.entity};}
+   if(appliesDependencies(row,choices)){service.dependencies=row.dependencies!.next.map(s=>s.id);service.dependencyImport={...imported,entity:row.entity,references:row.dependencies!.references};}
+  }
+  if(applied.length){validateTeams(state);validateChangeArchive(state);await deps.save(c,state,revision);}
   return c.json({rows,applied:applied.map(r=>r.service!.id)});
  });
 }
