@@ -89,7 +89,8 @@ try{
  const resolveArgs={incident:resolutionTarget.id,revision:resolutionTarget.revision,summary:'Human approves the retained incident resolution',idempotency_key:randomUUID()};
  const resolutionBefore=await native(),resolutionEdge=await runtime.outboundRequests();
  const heldResolution=await tool('oncall.incidents.resolve',resolveArgs);
- assert.equal(heldResolution.result?._meta?.['com.runeditrun/error']?.code,'approval_required');
+ assert.equal(heldResolution.result?.resultType,'input_required');
+ assert.equal(heldResolution.decision.disposition,'approval');
  assert.equal(heldResolution.decision.classes.find(row=>row.class==='commitment').do,'approval');
  assert.equal(heldResolution.decision.classes.find(row=>row.class==='sensitive').do,'autonomous');
  assert.deepEqual(await native(),resolutionBefore,'Pending browser resolution preserves native state');

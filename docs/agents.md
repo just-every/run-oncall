@@ -25,6 +25,12 @@ Service-account clients remain bound to the active administrator who created the
 
 ## Approvals and limits
 
+<!-- native-resolution-classes:start -->
+| Tool | Possible risk classes |
+| --- | --- |
+| `oncall.incidents.resolve` | `commitment`, `sensitive` |
+<!-- native-resolution-classes:end -->
+
 Resolving a recovered incident is a `commitment`, including when company policy permits autonomous work. Its server-computed facts identify an internal decision with zero monetary value and currency `XXX` (no currency); the saved target and revision bind it to one incident. Retained recovery and personal evidence also carry `sensitive` with their record count. Both classes must pass company policy. Caller confirmation flags and instructions in incident text cannot downgrade either class. A held resolution leaves native coordination unchanged until the named person approves the exact saved revision. An identical completed retry returns the retained result without another resolution.
 
 Approvals show the saved target, proposed change, native revision and exact summary. A changed revision or coverage digest requires a fresh review. The actual approver is recorded separately from the agent preparer. An agent confirmation is never a person's decision. Review offers Undo only when a real native reversal exists.

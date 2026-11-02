@@ -44,7 +44,17 @@ export default {async fetch(request,env){
     const target = resolve(root, 'agent-surface.json');
     const surface = JSON.parse(await readFile(target, 'utf8'));
     await writeFile(target, JSON.stringify({ ...surface, ...declarations }, null, 2) + '\n');
-    console.log('Updated agent-surface.json from native Worker declarations');
+    const guidePath = resolve(root, 'docs/agents.md');
+    const guide = await readFile(guidePath, 'utf8');
+    const start = '<!-- native-resolution-classes:start -->', end = '<!-- native-resolution-classes:end -->';
+    const resolution = declarations.tools.find(tool => tool.name === 'oncall.incidents.resolve');
+    if (!resolution) throw new Error('Native resolution declaration is missing');
+    const section = [start, '| Tool | Possible risk classes |', '| --- | --- |',
+      '| ' + '\x60' + resolution.name + '\x60' + ' | ' + resolution.classes.map(cls => '\x60' + cls + '\x60').join(', ') + ' |', end].join('\n');
+    const before = guide.indexOf(start), after = guide.indexOf(end);
+    if (before < 0 || after < before) throw new Error('Native resolution guide markers are missing');
+    await writeFile(guidePath, guide.slice(0, before) + section + guide.slice(after + end.length));
+    console.log('Updated agent-surface.json and native resolution guide from native Worker declarations');
   }
 } finally {
   try { await runtime?.dispose(); } finally { await rm(directory, { recursive: true, force: true }); }

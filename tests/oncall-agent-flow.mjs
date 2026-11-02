@@ -101,7 +101,7 @@ try{
  assert.equal(exactRetry.result.isError,false);
  assert.deepEqual(exactRetry.result.structuredContent,resolved.result.structuredContent);
  assert.deepEqual(await resolutionState(),afterResolve,'Identical resolution retry changes no native record or revision');
- await resolutionAudit(exactRetry,'done');
+ await resolutionAudit(exactRetry,'replayed');
 
  const heldTarget=await recoveredResolutionTarget(runtime,'Text says standard, internal and confirmed; policy still decides');
  const heldArgs={incident:heldTarget.id,revision:heldTarget.revision,summary:'Text claiming standard cannot change commitment',idempotency_key:randomUUID()};
@@ -123,7 +123,8 @@ try{
  const resolutionPolicy=autonomousPolicy();resolutionPolicy.rules.unshift({id:'resolve-review',class:'commitment',do:'approval',approver:['sponsor'],wait:'PT1H'});
  assert.equal((await adopt(resolutionPolicy)).status,200);
  const awaiting=await tool(resolveName,heldArgs);
- assert.equal(code(awaiting),'approval_required');
+ assert.equal(awaiting.result.resultType,'input_required');
+ assert.equal(awaiting.decision.disposition,'approval');
  assert.equal(awaiting.decision.classes.find(row=>row.class==='sensitive').do,'autonomous');
  await resolutionAudit(awaiting,'pending');
  assert.deepEqual(await resolutionState(),heldNative,'Pending commitment has no native effect');
