@@ -31,8 +31,8 @@ function LicenceBadge() {
 
 export function Free({ variant = "instance" }: { variant?: SiteVariant }) {
   return (
-    <Section id="oc-free-title" eyebrow="Free" title="Free for the whole rota." drawing={<LicenceBadge />} className="oc-free">
-      <p className="oc-section-line">Oncall is 100% free and open source. It's MIT licensed, so it's yours to use, change and run however you like.</p>
+    <Section id="oc-free-title" eyebrow="Yours" title="The whole rota, in one place." drawing={<LicenceBadge />} className="oc-free">
+      <p className="oc-section-line">Oncall is open source and MIT licensed, so it's yours to use, change and run however you like.</p>
       <ul className="oc-promises">
         {promises.map(([icon, text]) => <li key={text}><span className="oc-icon-disc"><Icon name={icon} /></span>{text}</li>)}
       </ul>
