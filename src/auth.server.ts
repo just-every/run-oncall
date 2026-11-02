@@ -68,8 +68,11 @@ export function clearWorkspaceSession(response: Response, request: Request): Res
 const privateHeaders = { 'cache-control': 'no-store', 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff', 'x-robots-tag': 'noindex, nofollow' }
 export async function authResponse(request: Request, original: Bindings): Promise<Response | null> {
  const env = runtimeBindings(original), url = new URL(request.url)
+ // The signed claim exists only on its own route, and only while the platform still holds SETUP_TOKEN. The trust stays bound after the
+ // claim (the import and agent doors read it), but the platform then retires the token: every other route must not build the handler.
  const claim=ownerClaimConfig(env)
- if (claim) {
+ if (claim && url.pathname === '/auth/owner-claim') {
+  if (!env.SETUP_TOKEN) return Response.json({ error: 'claim_unavailable' }, { status: 409, headers: privateHeaders })
   const signed = await createOwnerClaimHandler({ db: env.DB, authConfig: authConfig(env),
    clientIp: req => req.headers.get('CF-Connecting-IP') ?? '', ...claim })(request)
   if (signed) return signed
