@@ -17,7 +17,7 @@ if (mode === '--plan' && !tier) {
 } else if (mode === '--light' && !tier) {
  const readers = JSON.parse(process.env.LIGHT_READERS);
  if (!Array.isArray(readers) || ![JSON.stringify([]), JSON.stringify(documentReaders)].includes(JSON.stringify(readers))) throw Error('Invalid Oncall light readers');
- run('node', ['scripts/edition-authoring/cli.mjs', 'check']);
+ run('node', ['node_modules/@runeditrun/rer/edition-authoring/cli.mjs', 'check']);
  run('pnpm', ['run', 'check']);
  for (const command of readers) {
   const [program, ...args] = command.split(' ');

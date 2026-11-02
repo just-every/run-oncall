@@ -61,7 +61,7 @@
         "export/verify-nightly.yml"
       ],
       "adapted": {
-        ".github/workflows/verify-nightly.yml": "114ef7a61f080da053af783c5fbe06f625d692cc"
+        ".github/workflows/verify-nightly.yml": "45368920257f072f11e329024cd37fa2625371f6"
       },
       "acknowledged": {
         ".github/workflows/verify-nightly.yml": {
@@ -80,18 +80,18 @@
       "modes": {
         ".github/workflows/verify.yml": "100644"
       },
+      "originFiles": [
+        "export/verify.yml"
+      ],
       "adapted": {
-        ".github/workflows/verify.yml": "25d370982f5bd8afbe650b82cb58adc2137d10e9"
+        ".github/workflows/verify.yml": "45368920257f072f11e329024cd37fa2625371f6"
       },
       "acknowledged": {
         ".github/workflows/verify.yml": {
-          "sha256": "1f638df1b4274c4b0fbdf8a5007bd677eba27e3853a10d0abe63e8024b2aa2f6",
+          "sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
           "mode": "100644"
         }
-      },
-      "originFiles": [
-        "export/verify.yml"
-      ]
+      }
     },
     {
       "path": ".node-version",
