@@ -184,6 +184,8 @@ export async function eraseSubject({secret,db,state,actor,guard,input,kind,id,im
    // Native UI events retain the same stable identities and cursor positions,
    // while the member's display identity is removed in the erasure transaction.
    remember('agent_door_events')
+   const personEvents=await db.prepare("SELECT COUNT(*) AS n FROM agent_door_events WHERE json_extract(event,'$.actor.person.id')=? OR json_extract(event,'$.actor.for.id')=?").bind(id,id).first<{n:number}>()
+   updated.agent_door_events=personEvents!.n
    remember('oc_agent_deadlines')
    statements.push(db.prepare("DELETE FROM oc_agent_deadlines WHERE json_extract(principal,'$.person.id')=?").bind(id))
    if(member.role==='admin'&&member.active&&state.members.filter(m=>m.active&&m.role==='admin').length===1)fail('The last administrator cannot be erased',409)
@@ -328,6 +330,6 @@ export async function eraseSubject({secret,db,state,actor,guard,input,kind,id,im
   // paired with a newer native journal on either restore door.
   await fence(kind,id)
   auditKind(db,kind+'.erase');auditIdentity(db,{subject:{kind,id}})
-  const receipt=await commitSubjectErasure(db,state,guard,{tables,identities,statements,updated,inserted,execute:imported?.execute,agentValues:kind==='member'?[...identities,...agentNames]:undefined},secret)
+  const receipt=await commitSubjectErasure(db,state,guard,{tables,identities,statements,updated,inserted,execute:imported?.execute,agentValues:kind==='member'?[...identities,...agentNames]:undefined,agentMembers:kind==='member'?[id]:undefined},secret)
   return {...receipt,...(kind==='member'?{outstanding}:{} ),...(imported?{importCustody:imported.counts()}:{})}
 }

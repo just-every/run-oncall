@@ -1676,7 +1676,7 @@
       "executable": false
     },
     "src/agent-door/erasure.ts": {
-      "sha256": "95db418ae54b741d967c0f8b21fe48a335c564bb425fbc24d3f80ffc2c45bf12",
+      "sha256": "929ab36e4ab2e3c58348947c64148a41ab82c8c6a211bb86fa329b17d4d3350c",
       "executable": false
     },
     "src/agent-door/index.server.ts": {
@@ -2164,7 +2164,7 @@
       "executable": false
     },
     "src/changes/erasure.ts": {
-      "sha256": "fc7bc1facd064c6495b1f10d8ff88a2dae03541e749479371df700bd06d21871",
+      "sha256": "e64543c65eeef85e7d0c006cc701a359d0d8189e7136f4748d99244f9be30a23",
       "executable": false
     },
     "src/changes/identity.ts": {
@@ -6172,7 +6172,7 @@
       "executable": false
     },
     "src/subject-erasure.ts": {
-      "sha256": "e7a5b35b38e15ef1259e6b8b53bf8b901e70952d2fa5d5e655b9efecc509bb9d",
+      "sha256": "c6e2051e44d68aaf2f285167cd146354b761475c38b2cade5c43f9a63c84ebee",
       "executable": false
     },
     "src/team/MemberRow.tsx": {

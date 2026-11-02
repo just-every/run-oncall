@@ -28,7 +28,7 @@ export function installChangeErasure(api:any,deps:Dependencies) {
 }
 
 /** All native subjects share C20's receipt, transfer-copy, audit and fence commit. */
-export async function commitSubjectErasure(db:D1Database,state:State,guard:ReturnType<Dependencies['guard']>,plan:{tables:string[];identities:string[];statements:D1PreparedStatement[];updated?:Record<string,number>;inserted?:Record<string,number>;agentValues?:AgentSubjectValue[];execute?:(statements:D1PreparedStatement[],checkpoint:D1PreparedStatement[])=>Promise<D1Result[]>},secret:string) {
+export async function commitSubjectErasure(db:D1Database,state:State,guard:ReturnType<Dependencies['guard']>,plan:{tables:string[];identities:string[];statements:D1PreparedStatement[];updated?:Record<string,number>;inserted?:Record<string,number>;agentValues?:AgentSubjectValue[];agentMembers?:string[];execute?:(statements:D1PreparedStatement[],checkpoint:D1PreparedStatement[])=>Promise<D1Result[]>},secret:string) {
  const portability=await createPortability({db,policy:portabilityPolicy})
   const checkpoint=await portability.redactionStatements()
   // Transfer snapshots can contain any local category. Count the rows inside the
@@ -37,7 +37,7 @@ export async function commitSubjectErasure(db:D1Database,state:State,guard:Retur
   const copies=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'rer_portability_snap_*' OR name GLOB 'rer_portability_stage_*') ORDER BY name").all<{name:string}>()).results.map(row=>row.name)
   const transfers=await portability.invalidateTransfersStatements()
   const token=crypto.randomUUID(),writes=workspaceWrite(db,state,state.revision,guard,token),mutations=workspaceMutationCounts(state)
-  const agents=plan.agentValues?await eraseOncallAgentArtifacts(db,secret,plan.agentValues,{erasure_id:token,at:new Date().toISOString()}):[]
+  const agents=plan.agentValues?await eraseOncallAgentArtifacts(db,secret,plan.agentValues,{erasure_id:token,at:new Date().toISOString()},plan.agentMembers):[]
   const tables=[...new Set([...plan.tables,...Object.keys(mutations),'oc_audit_identities','rer_portability_segments','rer_portability_parts','rer_portability_jobs',...copies])]
   const counts=tables.map(name=>db.prepare(`SELECT COUNT(*) AS n FROM "${name.replaceAll('"','""')}"`))
   const statements=[...counts,...agents,...writes,

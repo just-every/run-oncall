@@ -30,6 +30,14 @@ const decisions = `SELECT decision_id FROM agent_door_calls WHERE ${calls}
  UNION SELECT id FROM agent_door_audit WHERE ${audits}
  UNION SELECT decision_id FROM agent_door_calls WHERE agent IN (SELECT id FROM agent_door_agents WHERE ${agents})`
 const match = (sql: string) => ({ sql, params: ['values'] })
+// Native person UI events (0152 triggers) attribute the acting member as
+// actor.person. A natively erased member keeps a pseudonymous "Erased member"
+// tombstone id, so that member's own events keep their id, sequence, type, URI
+// and actor id; the erasure replaces only the display name in the same batch.
+// Base 0.2.96 maps customer subjects, not operator attribution: every
+// decision-linked event and every other mention is still redacted in place.
+const ownEvent = `EXISTS(SELECT 1 FROM json_each(?2) member WHERE json_extract(agent_door_events.event,'$.actor.kind')='person'
+  AND json_extract(agent_door_events.event,'$.actor.person.id')=member.value)`
 export const oncallAgentArtifacts: AgentArtifactMap = { artifacts: [
   { table: 'agent_door_relay', columns: ['sequence','decision_id','business'], unrelated: 'Installation-private decision ids and Business id only. External Business projections are purged by tombstone pulls, stop and unreachable rules; remote deletion is not claimed.' },
   { table: 'agent_door_replay_aliases', columns: ['agent','alias','call_id','tombstone'], unrelated: 'Installation-private HMAC replay associations, excluded from exports and removed with the original call horizon.' },
@@ -39,12 +47,13 @@ export const oncallAgentArtifacts: AgentArtifactMap = { artifacts: [
   { table: 'agent_door_audit', columns: ['sequence','id','at','agent','classes','row','evidence'], match: match(`id IN (${decisions}) OR json_extract(row,'$.decision_id') IN (${decisions}) OR json_extract(row,'$.replay_of') IN (${decisions}) OR agent IN (SELECT id FROM agent_door_agents WHERE ${agents})`) },
   { table: 'agent_door_approvals', columns: ['id','state','saved','approvals','result','version'], match: match(`json_extract(saved,'$.decision_id') IN (${decisions}) OR ${approvals}`) },
   { table: 'agent_door_reviews', columns: ['id','state','saved','marked_by','marked_at'], match: match(`json_extract(saved,'$.decision_id') IN (${decisions}) OR ${reviews}`) },
-  { table: 'agent_door_events', columns: ['sequence','id','uri','event'], match: match(`${mentions('agent_door_events', ['uri','event'])} OR json_extract(event,'$.decision_id') IN (${decisions})`) },
+  { table: 'agent_door_events', columns: ['sequence','id','uri','event'], match: { sql: `json_extract(event,'$.decision_id') IN (${decisions}) OR (NOT ${ownEvent} AND ${mentions('agent_door_events', ['uri','event'])})`, params: ['values','members'] } },
   { table: 'agent_door_usage', columns: ['decision_id','at','seed','specialist','agent','classes'], match: match(`decision_id IN (${decisions}) OR ${mentions('agent_door_usage', ['classes'])}`) },
 ] }
 
-/** Statements join the existing native transaction and its single checkpoint. */
-export async function eraseOncallAgentArtifacts(db: D1Database, secret: string, values: AgentSubjectValue[], tombstone: { erasure_id: string; at: string }) {
+/** Statements join the existing native transaction and its single checkpoint.
+ * `members` are native members this transaction erases to their tombstone. */
+export async function eraseOncallAgentArtifacts(db: D1Database, secret: string, values: AgentSubjectValue[], tombstone: { erasure_id: string; at: string }, members: string[] = []) {
   // Oncall's permanent native audit retains non-person agent display labels.
   // Preserve that existing display contract with a fixed erased-sponsor label,
   // while the released redaction removes the sponsor's id, name and contact.
@@ -52,10 +61,13 @@ export async function eraseOncallAgentArtifacts(db: D1Database, secret: string, 
   const labels = (await db.prepare("SELECT id,json_extract(row,'$.agent.name') AS name FROM agent_door_audit WHERE json_extract(row,'$.sponsor.id') IN (SELECT value FROM json_each(?))")
     .bind(JSON.stringify(ids)).all<{ id: string; name: string | null }>()).results
   const statements = await agentErasureStatements({ db, secret, map: oncallAgentArtifacts,
-    subject: { values: JSON.stringify(values.filter(value => typeof value !== 'string' || value.length > 0)) }, tombstone,
+    subject: { values: JSON.stringify(values.filter(value => typeof value !== 'string' || value.length > 0)), members: JSON.stringify(members) }, tombstone,
     // The caller already appends its existing redaction checkpoint exactly once.
     checkpoint: async () => [],
   })
+  // After the guarded redaction, so only the retained own events remain to rename.
+  const ownEvents = members.length ? [db.prepare("UPDATE agent_door_events SET event=json_set(event,'$.actor.person.name','Erased member') WHERE json_extract(event,'$.actor.kind')='person' AND json_extract(event,'$.actor.person.id') IN (SELECT value FROM json_each(?))")
+    .bind(JSON.stringify(members))] : []
   return [...statements,...labels.map(row=>db.prepare("UPDATE agent_door_audit SET row=json_set(row,'$.sponsor.name','Erased member','$.label',?) WHERE id=? AND json_type(row,'$.tombstone') IS NOT NULL")
-    .bind(`${row.name??'Agent'} for Erased member`,row.id))]
+    .bind(`${row.name??'Agent'} for Erased member`,row.id)),...ownEvents]
 }
