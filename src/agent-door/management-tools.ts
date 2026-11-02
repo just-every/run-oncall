@@ -200,9 +200,12 @@ function privacyTool(env: Bindings): ToolDefinition {
       nativeAudit(env, ctx, `${kind}.erase`, id)
       const importContext = nativeImportErasureContext(env.DB, access.member.id, () => ({ sql: access.guard.sql, params: access.guard.values }))
       const input: SubjectErasureInput = { confirmation: args.confirmation as string, workspaceRevision: args.workspaceRevision as number, identitiesReviewed: args.identitiesReviewed as boolean | undefined, importedPeople: args.importedPeople as string[] | undefined }
-      const classes = await erasureClasses(env, access.state, kind, id, access.guard)
+      // Erasure consumes the credential snapshot. Import custody must still
+      // recheck principal authority after deletion, independently of that snapshot.
+      const admission = { sql: access.guard.sql, values: [...access.guard.values] }
+      const classes = await erasureClasses(env, access.state, kind, id, admission)
       const custody = [await erasureReceipt(env, ctx, args, classes)]
-      const result = await eraseSubject({ secret: env.SESSION_SECRET, db: env.DB, state: access.state, actor, guard: access.guard, input, kind, id, importContext, custody })
+      const result = await eraseSubject({ secret: env.SESSION_SECRET, db: env.DB, state: access.state, actor, guard: admission, input, kind, id, importContext, custody })
       const resource = uri('erasures', await subjectErasureIdentity(kind,id))
       ctx.emit('privacy.erased', resource, { kind, state: result.state })
       return { result, resources: [{ uri: resource, name: `Erased ${kind}` }] }
