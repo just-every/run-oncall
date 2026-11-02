@@ -5,7 +5,7 @@ import { fail, link, type Entry, type Incident, type Member, type Service, type 
 import { validateLifecycleEntry } from "../../reviews/review-controls.ts";
 import { validateUrgencyRuleHistory } from '../../urgency/archive.ts';
 import { validateResponsePolicy } from '../../response-policy/rules.ts';
-import {validateProvenance} from '../../teams/provenance';
+import {validateProvenance} from '../../teams/provenance.ts';
 
 export type HandoffPayload = { audience: "internal" | "customer"; title: string; summary: string; evidenceLinks: string[]; impactLinks: string[] };
 export type HandoffSource = { incident: Pick<Incident, "id" | "revision" | "service" | "title" | "severity" | "state" | "recovery"> & { declaration: Entry }; service: Service };

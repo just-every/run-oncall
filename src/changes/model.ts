@@ -1,5 +1,5 @@
 import { fail, link, text, type State } from '../family/response-operations/domain.ts';
-import {validateProvenance} from '../teams/provenance';
+import {validateProvenance} from '../teams/provenance.ts';
 
 export type ChangeProvider = 'native' | 'pagerduty' | 'github' | 'gitlab' | 'argocd' | 'terraform';
 export type ChangeSource = {id: string; name: string; service: string; provider: ChangeProvider; mode: 'bearer' | 'signed' | 'provider'; repository: string; active: boolean; revision: number; createdBy: string; updatedAt: string; lastAccepted?: {id: string; eventId: string; at: string}};
