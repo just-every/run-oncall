@@ -393,6 +393,18 @@
     {
       "source": "src/modules/agent-door/CLAUSES.md",
       "reason": "Canonical upstream door duties for maintainers; seed judgments remain in CONTRACT.md."
+    },
+    {
+      "source": "scripts/edition-authoring/vendor/babel-parser/README.md",
+      "reason": "Vendored parser documentation for the pinned edition-authoring tooling."
+    },
+    {
+      "source": "scripts/edition-authoring/vendor/yaml/README.md",
+      "reason": "Vendored YAML parser documentation for the pinned edition-authoring tooling."
+    },
+    {
+      "source": "src/modules/agent-door/adoption/penny/README.md",
+      "reason": "Upstream Penny adoption example for developers; Oncall owners read docs/agents.md."
     }
   ]
 }
