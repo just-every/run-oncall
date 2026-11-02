@@ -46,6 +46,7 @@ export type Service = {
   runbook: string[];
   pager: string;
   dependencies?: string[];
+  dependencyImport?: import('../../teams/provenance').DependencyProvenance;
   urgencyRules?: UrgencyRule[];
   responsePolicies?: ResponsePolicy[];
   incidentTemplates?: IncidentTemplate[];
@@ -476,6 +477,7 @@ function applyCommand(
     const next = dependencies(state, service.id, input.dependencies);
     if (JSON.stringify([...(service.dependencies ?? [])].sort()) === JSON.stringify([...next].sort())) return {changed: false, message: 'Nothing to change'};
     service.dependencies = next;
+    delete service.dependencyImport;
     state.audit.push(stamp(actor.id, "service-dependencies", `Saved direct dependencies for ${service.name}`, at));
     return service;
   }
@@ -522,6 +524,7 @@ function applyCommand(
       pager: link(input.pager),
       ...(input.dependencies !== undefined ? {dependencies: dependencies(state, id, input.dependencies)} : previous?.dependencies !== undefined ? {dependencies: [...previous.dependencies]} : {}),
     };
+    if(input.dependencies!==undefined&&JSON.stringify([...(previous?.dependencies??[])].sort())!==JSON.stringify([...service.dependencies!].sort()))delete service.dependencyImport;
     if (service.runbook.length > 30) fail("Maximum 30 runbook steps");
     if (
       service.owner !== "" && !state.members.some(
@@ -854,7 +857,7 @@ export function validateArchive(value: any): State {
   )
     fail("Duplicate member names");
   for (const s of value.services) {
-    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["team", "ownership", "dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
+    object(s, ["id", "name", "environment", "owner", "runbook", "pager"], ["team", "ownership", "dependencies", "dependencyImport", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
     text(s.name, "service", 200);
     text(s.environment, "environment", 100);
     if (s.owner !== "" && !hasMember(s.owner)) fail("Invalid service references");

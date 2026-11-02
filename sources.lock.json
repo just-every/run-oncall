@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "fd60118481e5c607b00325298640b5201519d772c83d6b48651f7f2680fe4ffe",
+      "sha256": "fc752565ff92dfa13c58195d44e31547aefee33d6291c2c50732131f30fd36d3",
       "executable": false
     },
     "DEMO.md": {
@@ -1600,7 +1600,7 @@
       "executable": false
     },
     "src/changes/model.ts": {
-      "sha256": "2a1fada855f467746cb98413d9aea7000f9a1b90357d2b31580d42048c9eed99",
+      "sha256": "923b5ceb6e033ec6e5be700df566a441246531b786321b6a138651d4831c5789",
       "executable": false
     },
     "src/changes/providers.ts": {
@@ -1752,7 +1752,7 @@
       "executable": false
     },
     "src/family/response-operations/domain.ts": {
-      "sha256": "8847086f506b3e44ed91451a64286e25c7d2cb01ae57e5634da347122eb9574e",
+      "sha256": "49532dada780daeb07515c4d341957e47ecaa74fc9baaf446084dadedd0c602e",
       "executable": false
     },
     "src/family/response-operations/escalation.ts": {
@@ -1760,7 +1760,7 @@
       "executable": false
     },
     "src/family/response-operations/handoffs.ts": {
-      "sha256": "66dd9f68c9c773710355d15965168093446cf2065267afc2ee06d7622f77a279",
+      "sha256": "5f66e1b2a0d92a7fe27165eef2d8a7c62cc8e81aaf01831249b6bef57337392c",
       "executable": false
     },
     "src/family/response-operations/incident-controls.ts": {
@@ -5556,15 +5556,15 @@
       "executable": false
     },
     "src/teams/api.ts": {
-      "sha256": "ac4ff74dfa881aa3e7a87333ec8e16d3424cd1ec9ce260865295dcefd277a71b",
+      "sha256": "456d0e3fb02e5855dbd50d8e5c2f9c3ec3b57deff7244db27c85b8302a17e235",
       "executable": false
     },
     "src/teams/backstage.ts": {
-      "sha256": "eab9fda6543a2d1b5fee1e48a7e6841740118a5ad0888edf67b4cb2331356d4d",
+      "sha256": "e1c0d2bceb3aabcdc215302fca015e0efb99abd65186047b820c78dbcc4fb20d",
       "executable": false
     },
     "src/teams/BackstageImport.tsx": {
-      "sha256": "039ebbeb8d6ca8ed07f2358d4b42fc2d666df4b1b80c52b2920b12ee132d378f",
+      "sha256": "7f80a284b15e05f8ed37006cbd61e6d238d8e107c95cb2e7d4298916d5dcbce0",
       "executable": false
     },
     "src/teams/edits.ts": {
@@ -5576,7 +5576,7 @@
       "executable": false
     },
     "src/teams/model.ts": {
-      "sha256": "274b58a111efe41f3cd89b5c152d293e36918be1527acddd5e1ffd99d6b7cae2",
+      "sha256": "55d512c8ea653f898c6fad2dc1b54e1c0815d2cd6d4165c1fee22227a3724358",
       "executable": false
     },
     "src/teams/teams.css": {
@@ -5680,11 +5680,11 @@
       "executable": false
     },
     "tests/changes.mjs": {
-      "sha256": "d111f83346f19276f6954604f685f77239aa513440ec1ab38550e5a232f93103",
+      "sha256": "4a3c9682b3cb99a1d37201eb58fcd07bbbaf6dc9b9ae7fe6daa5ee77c6f2cbde",
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {
-      "sha256": "2b41910beec3b161bad5780b43d2875f1e3a583a7cefd9af8615019de9e02c7c",
+      "sha256": "3c3d13506a3ccae21846a86d8847cd7e97336b90817595ac53cb7c8badfb0c12",
       "executable": false
     },
     "tests/diagnostics.mjs": {
@@ -5700,7 +5700,7 @@
       "executable": false
     },
     "tests/fixtures/backstage-catalog.json": {
-      "sha256": "5f07ec455cbe0a440991a5e3701c71b329d3bb5128b2af2611fa831955373cdf",
+      "sha256": "84df155a6eb0615d262c49fdd456639448920b7ac6da5e4541b8e370fb9b51b0",
       "executable": false
     },
     "tests/fixtures/change-sources.md": {
@@ -5824,7 +5824,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "a8de5d3cc4e48001374cb7977f96b0f6eb74cb5cb591667f0346a1ca69903572",
+      "sha256": "a2072d8e119ef4d99725238ad30096e8b5e359c8cd055160148cd68f10499253",
       "executable": false
     },
     "tests/oncall-agent-erase-replay.mjs": {
@@ -5880,7 +5880,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "757d8a2ff54777c2556d4c20e783c9c58d3b29aaac15a1571bd83c38e9ec4e55",
+      "sha256": "08afaea8e12964b20c52d5528af110827b07dcb1a47cb15ee966005396040687",
       "executable": false
     },
     "tests/triage.mjs": {

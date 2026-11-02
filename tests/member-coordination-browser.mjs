@@ -133,11 +133,56 @@ try {
   assert.deepEqual((await new AxeBuilder({page:owner.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations,[]);
   await panel.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/oc023-public-teams-${width}.png`,fullPage:true});
  }
- // The same Teams panel imports the pasted catalog through Preview and Apply at the journey's desktop width.
- await owner.page.setViewportSize({width:1440,height:1000});await owner.page.goto(worker.origin+'/settings/team');const importPanel=owner.page.locator('.teams-import');
+ // The existing Teams review applies dependency conflicts, then reloads the retained provenance.
  const catalogTeam=ok(await call(owner.page,'/api/teams',{id:'synthetic-catalog-team',name:'Catalog response team',visibility:'public',active:true,revision:0,members:[rosaRecord.id],managers:[rosaRecord.id]}));
- await importPanel.getByText('Import from Backstage',{exact:true}).click();await importPanel.getByLabel('Backstage catalog',{exact:true}).fill(JSON.stringify([{kind:'Component',metadata:{name:'checkout'},spec:{owner:catalogTeam.name}}]));await importPanel.getByRole('button',{name:'Preview import',exact:true}).click();await importPanel.getByLabel('Import choice for Checkout',{exact:true}).selectOption('backstage');
- await importPanel.getByRole('button',{name:'Apply import',exact:true}).click();await expect(importPanel.getByRole('status')).toHaveText('Saved');assert.equal(ok(await call(owner.page,'/api/state')).services.find(s=>s.id==='checkout').ownership.source,'backstage');
+ for(const [id,name] of [['synthetic-oncall-current','Current dependency'],['synthetic-oncall-next','Next dependency']])ok(await call(owner.page,'/api/command',{type:'service',id,name,environment:'production',owner:'',runbook:[],pager:''}));
+ const importCatalog=[{kind:'Component',metadata:{name:'checkout'},spec:{owner:catalogTeam.name,dependsOn:['component:default/synthetic-oncall-next']}}];
+ for(const width of [1440,390]){
+  const current=ok(await call(owner.page,'/api/state'));
+  ok(await call(owner.page,'/api/command',{type:'service-dependencies',service:'checkout',dependencies:['synthetic-oncall-current'],workspaceRevision:current.revision}));
+  await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/team');
+  const importPanel=owner.page.locator('.teams-import');
+  await importPanel.getByText('Import from Backstage',{exact:true}).click();
+  await importPanel.getByLabel('Backstage catalog',{exact:true}).fill(JSON.stringify(importCatalog));
+  const previewAnswer=owner.page.waitForResponse(r=>new URL(r.url()).pathname==='/api/teams/backstage/preview');
+  await importPanel.getByRole('button',{name:'Preview import',exact:true}).click();
+  const reviewed=await (await previewAnswer).json();
+  if(width===1440){
+   assert.equal(reviewed.rows[0].dependencies.action,'conflict');
+   await expect(importPanel.getByText('Dependencies: Current dependency → Next dependency',{exact:true})).toBeVisible();
+   await expect(importPanel.getByLabel('Dependency import choice for Checkout',{exact:true})).toHaveValue('current');
+   await importPanel.getByLabel('Import choice for Checkout',{exact:true}).selectOption('backstage');
+  }
+  await importPanel.getByLabel('Dependency import choice for Checkout',{exact:true}).selectOption('backstage');
+  await importPanel.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/oc023-backstage-review-${width}.png`,fullPage:true});
+  if(width===1440){
+   const before=ok(await call(owner.page,'/api/state')),applyRequests=[];
+   const count=request=>{if(new URL(request.url()).pathname==='/api/teams/backstage/apply')applyRequests.push(request)};
+   owner.page.on('request',count);
+   const lose=async route=>{const response=await route.fetch();assert.equal(response.status(),200);await route.abort('failed')};
+   await owner.page.route('**/api/teams/backstage/apply',lose);
+   await importPanel.getByRole('button',{name:'Apply import',exact:true}).click();
+   await expect(importPanel.getByRole('button',{name:'Retry',exact:true})).toBeVisible();
+   assert.equal(ok(await call(owner.page,'/api/state')).revision,before.revision+1,'the lost response committed once');
+   await owner.page.unroute('**/api/teams/backstage/apply',lose);
+   await importPanel.getByRole('button',{name:'Retry',exact:true}).click();
+   await expect(importPanel.getByRole('status')).toHaveText('Saved');
+   assert.equal(applyRequests.length,1,'Retry confirms dependency and ownership state without a second Apply');
+   assert.equal(ok(await call(owner.page,'/api/state')).revision,before.revision+1);
+   owner.page.off('request',count);
+  }else{
+   await importPanel.getByRole('button',{name:'Apply import',exact:true}).click();await expect(importPanel.getByRole('status')).toHaveText('Saved');
+  }
+  await owner.page.reload();await importPanel.getByText('Import from Backstage',{exact:true}).click();
+  await importPanel.getByLabel('Backstage catalog',{exact:true}).fill(JSON.stringify(importCatalog));
+  await importPanel.getByRole('button',{name:'Preview import',exact:true}).click();
+  await expect(importPanel.getByText('Dependencies: Next dependency → Next dependency · No change',{exact:true})).toBeVisible();
+  if(width===1440){const imported=ok(await call(owner.page,'/api/state')).services.find(s=>s.id==='checkout');assert.deepEqual(imported.dependencies,['synthetic-oncall-next']);assert.equal(imported.dependencyImport.references[0].ref,importCatalog[0].spec.dependsOn[0]);assert.equal(imported.ownership.source,'backstage');}
+  assert.ok(await owner.page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`Backstage review fits ${width}`);
+  assert.deepEqual((await new AxeBuilder({page:owner.page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  await owner.page.screenshot({path:`${captureDirectory}/oc023-backstage-reloaded-${width}.png`,fullPage:true});
+ }
+ console.log('PROBE OC-023 browser: Backstage dependency review, conflict choice, apply, lost-response Retry and reload -> rendered and HTTP state agree; screens captured at 1440 and 390');
  // OC-023: both service forms preserve explicit unassigned ownership.
  for(const width of [1440]) {
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/services');await owner.page.reload();

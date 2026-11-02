@@ -165,7 +165,11 @@ try{
  ok(await req('/api/command',{type:'service',id:'upstream',name:'Upstream service',environment:'production',owner:null,runbook:[],pager:''}))
  const portableTeam=ok(await req('/api/teams',{id:'synthetic-oncall-145',name:'synthetic-oncall-145',visibility:'public',active:true,revision:0,members:[member.id],managers:[member.id]}));
  ok(await req('/api/teams/ownership',{service:'transfer',team:portableTeam.id,workspaceRevision:ok(await req('/api/state')).revision}));
- ok(await req('/api/command',{type:'service-dependencies',service:'transfer',dependencies:['upstream'],workspaceRevision:ok(await req('/api/state')).revision}))
+ const portableCatalog=[{kind:'Component',metadata:{name:'transfer'},spec:{dependsOn:['component:default/upstream','resource:default/synthetic-oncall-155']}}];
+ const portablePreview=ok(await req('/api/teams/backstage/preview',{catalog:portableCatalog}));
+ ok(await req('/api/teams/backstage/apply',{catalog:portableCatalog,digest:portablePreview.digest,choices:{}}));
+ const portableDependencies=ok(await req('/api/state')).services.find(s=>s.id==='transfer').dependencyImport;
+ assert.equal(portableDependencies.references[1].reason,'Only Component dependencies are supported');
  assert.equal((await req('/api/urgency/services/transfer',{baseVersion:0,mode:'support-hours',timezone:'America/New_York',weekly:[{day:1,start:'09:00',end:'17:00'}],holidays:['2026-12-25'],inside:'high',outside:'low',reason:'Retain versioned urgency and service snapshot across installations'})).status,201)
  assert.equal((await req('/api/response/services/transfer',{baseVersion:0,defaultMode:'alert-only',recoveredNotice:'notified',rules:[{id:'synthetic-oncall-80',urgency:'*',severity:'critical',policy:'*',mode:'incident'}],reason:'Retain policy, source recovery and non-automatic notices through installation recovery'})).status,201)
  const portableTemplate=ok(await req('/api/command',{type:'service-template',service:'transfer',baseVersion:0,severityWording:{critical:'Customer transactions blocked',warning:'Customer transactions delayed',info:'Investigation only'},impactPrompt:'Which customer transactions are affected?',incidentTypes:['Dependency','Database'],checklist:[{id:'customer-check',text:'Verify customer recovery'}],reason:'Retain the full incident workflow through installation recovery'}))
@@ -191,7 +195,7 @@ try{
  const context=ok(await req('/api/handoffs/context/'+incident.id)),prepared=await req('/api/handoffs/prepare',{id:'archive-copy',incident:incident.id,incidentRevision:incident.revision,serviceHash:context.serviceHash,payload:{audience:'internal',title:'Exact copy',summary:'Authored transfer evidence',evidenceLinks:[],impactLinks:[]}})
  assert.equal(prepared.status,201);const record=prepared.value.record
  assert.equal(record.source.service.team,portableTeam.id,'reviewed handoffs retain the owning-team snapshot');
- assert.deepEqual(record.source.incident.declaration.lifecycle,{from:null,to:'declared'});assert.deepEqual(record.source.service.dependencies,['upstream'])
+ assert.deepEqual(record.source.incident.declaration.lifecycle,{from:null,to:'declared'});assert.deepEqual(record.source.service.dependencies,['upstream']);assert.deepEqual(record.source.service.dependencyImport,portableDependencies)
  ok(await req('/api/handoffs/archive-copy/review',{actionId:'archive-review',revision:record.revision,payloadHash:record.payloadHash,sourceHash:record.sourceHash,reason:'Reviewed exact copy'}))
  let responseIncident=ok(await req('/api/state')).incidents.find(i=>i.id===incident.id)
  responseIncident=ok(await req('/api/command',{type:'assign-role',incident:incident.id,revision:responseIncident.revision,role:'scribe',member:member.id,reason:'Retain review attribution across installations'}))
@@ -344,6 +348,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const heldBeforeTick=ok(await req('/api/state')),heldTick=await fetch(m.origin+'/cdn-cgi/local/scheduled');assert.equal(heldTick.status,200);await heldTick.text();assert.deepEqual(ok(await req('/api/state')),heldBeforeTick,'an actual scheduled handler cannot resume restored outbox work')
  await m.close();await m.start()
  assert.deepEqual(sql('SELECT id,bytes,request_sha256,prefix FROM oc_native_prefixes ORDER BY id'),prefixesBefore,'checkpoint restore preserves exact native custody');
+ assert.deepEqual(ok(await req('/api/state')).services.find(s=>s.id==='transfer').dependencyImport,portableDependencies,'checkpoint and restart retain bounded dependency provenance');
  console.log('OC-052 populated checkpoint: complete CLI round trip and inactive receiving state passed; activation owns refusal, rollback and concurrency')
  // Reauthorize locally after checkpoint recovery, so portable restore must
  // independently turn active integration definitions back into inactive history.
@@ -465,6 +470,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.deepEqual(ok(await req('/api/state')).teams,prior.teams,'public teams and membership authority survive portable restore');assert.equal(ok(await req('/api/state')).services.find(service=>service.id==='transfer').team,portableTeam.id);
  assert.equal(ok(await req('/api/state')).services.find(service=>service.id==='upstream').owner,'','OC-023 portable restore keeps unassigned ownership without mapping it to the receiving owner');
  assert.equal(ok(await req('/api/state')).businessServices[0].active,false);assert.ok(ok(await req('/api/state')).businessServices[0].subscriptions.every(row=>!row.active));assert.ok(ok(await req('/api/state')).businessServices[0].notices.every(row=>row.state==='stopped'));assert.equal(ok(await req('/api/state')).members.find(row=>row.id===stakeholder.id).active,false)
+ assert.deepEqual(ok(await req('/api/state')).services.find(s=>s.id==='transfer').dependencyImport,portableDependencies,'portable restore retains references without source execution authority');
  const restoredManual=ok(await req('/api/state')).incidents.find(i=>i.id===portableManual.id);assert.equal(restoredManual.manualPage.obligations[0].state,'stopped');assert.equal(restoredManual.responderRequests[0].status,'held');assert.equal(restoredManual.deadlines.at(-1).state,'held');console.log('OC-058 portable custody: absolute deadlines retain due times and attribution but restore held, without resumed execution');console.log('OC-068 archive/checkpoint/portable custody: manual obligations and pending responder requests retained inactive without sender authority')
  assert.ok(ok(await req('/api/state')).scheduleRecords.every(row=>!row.active));assert.ok(ok(await req('/api/state')).scheduleRecords.filter(row=>row.kind==='subscription').every(row=>row.data.hash===null));assert.equal((await fetch(portableSubscription.url)).status,404,'portable restored feed cannot authorize access');console.log('OC-025 portable custody: swaps, reminders, notice history and digest-only subscriptions restore inactive; capability access stays revoked');
  assert.equal(ok(await req('/api/state')).businessServices.find(row=>row.id===statusBusiness.id).emailLists.find(row=>row.id===portableList.id).active,false,'email-list records restore inactive');
@@ -487,7 +493,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.deepEqual(ok(await req('/api/move-in/objects')),objects,'paused import data restored with revisions')
  assert.equal(ok(await req('/api/move-in/objects')).filter(row=>row.targetKind==='integration'&&row.value.active===false&&row.value.incumbentKey==='not supplied').length,3,'OC-038 integration inventory restores inactive, without keys or authority')
  assert.equal(ok(await req('/api/move-in/jobs?vendor=opsgenie')).some(j=>j.id===job.id),true,'durable journal restored')
- const handoff=ok(await req('/api/handoffs/archive-copy'));assert.equal(handoff.record.held,true);assert.deepEqual(handoff.record.payload,record.payload);assert.equal((await req('/api/handoffs/archive-copy/export')).status,409,'restored approval cannot export until reviewed again')
+ const handoff=ok(await req('/api/handoffs/archive-copy'));assert.equal(handoff.record.held,true);assert.deepEqual(handoff.record.payload,record.payload);assert.deepEqual(handoff.record.source.service.dependencyImport,portableDependencies);assert.equal((await req('/api/handoffs/archive-copy/export')).status,409,'restored approval cannot export until reviewed again')
  const restoredAudit=new Map(ok(await req('/api/audit/export')).rows.map(row=>[row.id,row]))
  for(const row of permanentAudit)assert.deepEqual(restoredAudit.get(row.id),row,'OC-041 portable restore retains every permanent audit row unchanged')
  const restoreFact=[...restoredAudit.values()].find(row=>row.kind==='restore.installation'&&row.outcome==='accepted')

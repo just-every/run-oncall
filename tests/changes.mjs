@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {createHmac,randomBytes} from 'node:crypto'
 import {readFile} from 'node:fs/promises'
-import {localWorker} from './worker.mjs'
+import {localWorker,durableSnapshot} from './worker.mjs'
 // One public-door journey. Recorded provider bodies are signed at the network edge.
 const w=await localWorker(),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value;};
 const hmac=(key,body,encoding='hex')=>createHmac('sha256',key).update(body).digest(encoding);
@@ -131,6 +131,84 @@ try {
   assert.equal(overApply.error,overPreview.error,'both import doors share their refusal');
   assert.deepEqual(await records(),largeAfter,'oversize import writes no workspace records');
   assert.deepEqual(await acceptedImports(),overFacts,'oversize import records no accepted change');
+  // Dependency review uses the same protected doors, independently of catalog ownership.
+  const root='synthetic-oncall-231',target='synthetic-oncall-232';
+  assert.deepEqual(largeAfter.services.find(s=>s.id===root).dependencies,['gateway']);
+  assert.equal(largeAfter.services.find(s=>s.id===root).dependencyImport.references[1].ref,catalog[0].spec.dependsOn[1]);
+  const dependencyCatalog=[{kind:'Component',metadata:{name:root},spec:{dependsOn:['component:default/'+target]}},{kind:'Component',metadata:{name:target},spec:{}}];
+  const dependencyPreview=async(c=dependencyCatalog)=>ok(await req('/api/teams/backstage/preview',{catalog:c}));
+  const applyDependencies=(p,choices={},c=dependencyCatalog)=>req('/api/teams/backstage/apply',{catalog:c,digest:p.digest,choices});
+  const baseline=durableSnapshot(w),dependencyReview=await dependencyPreview();
+  assert.deepEqual(durableSnapshot(w),baseline,'dependency preview writes no table, revision or permanent audit');
+  assert.deepEqual(dependencyReview.rows[0].dependencies.next.map(s=>s.id),[target]);
+  assert.equal(dependencyReview.rows[0].dependencies.action,'change','prior imported dependencies can be reviewed for replacement');
+  const dependencyBefore=await records(),dependencyFacts=await acceptedImports();
+  for(const [name,sql] of [['audit',"CREATE TRIGGER synthetic_oncall_dependency_fail BEFORE INSERT ON oc_admin_audit BEGIN SELECT RAISE(ABORT,'synthetic-oncall-251'); END"],['storage',"CREATE TRIGGER synthetic_oncall_dependency_fail BEFORE UPDATE ON oc_services BEGIN SELECT RAISE(ABORT,'synthetic-oncall-252'); END"]]){
+   w.sql(sql);try{ok(await applyDependencies(dependencyReview),503);}finally{w.sql('DROP TRIGGER synthetic_oncall_dependency_fail');}
+   assert.deepEqual(await records(),dependencyBefore,name+' failure rolls back dependency state and provenance');
+   assert.deepEqual(await acceptedImports(),dependencyFacts,name+' failure publishes no accepted import audit');
+  }
+  const incidentBeforeDependencies=await history();
+  ok(await applyDependencies(dependencyReview));
+  let dependencyState=ok(await req('/api/state')),dependencyService=dependencyState.services.find(s=>s.id===root);
+  assert.deepEqual(dependencyService.dependencies,[target],'supported replacement adds one dependency and removes the old one');
+  assert.equal(dependencyService.dependencyImport.references[0].service,target);
+  assert.equal((await acceptedImports()).length,dependencyFacts.length+1);
+  assert.deepEqual(await history(),incidentBeforeDependencies,'dependency import keeps incident identity, history and copied runbook');
+  const completed=await records(),completedAudit=await acceptedImports();
+  ok(await applyDependencies(dependencyReview),409); // A lost old response never authorizes another write.
+  const repeat=await dependencyPreview();assert.deepEqual(ok(await applyDependencies(repeat)).applied,[]);
+  assert.deepEqual(await records(),completed);assert.deepEqual(await acceptedImports(),completedAudit);
+  ok(await req('/api/command',{type:'service',id:root,field:'name',from:dependencyService.name,to:dependencyService.name+' dependency review'}));
+  dependencyState=ok(await req('/api/state'));assert.deepEqual(dependencyState.services.find(s=>s.id===root).dependencyImport,dependencyService.dependencyImport,'unrelated service edit retains dependency provenance');
+  const staleDependencies=await dependencyPreview();
+  ok(await req('/api/command',{type:'service-dependencies',service:root,dependencies:['gateway'],workspaceRevision:dependencyState.revision}));
+  const manual=await records();assert.equal(manual.services.find(s=>s.id===root).dependencyImport,undefined);
+  ok(await applyDependencies(staleDependencies),409);assert.deepEqual(await records(),manual,'stale dependency edit is refused unchanged');
+  const conflict=await dependencyPreview();assert.equal(conflict.rows[0].dependencies.action,'conflict');
+  assert.deepEqual(ok(await applyDependencies(conflict,{['dependencies:'+root]:'current'})).applied,[]);
+  assert.deepEqual(await records(),manual,'Keep current preserves manual dependencies and provenance');
+  ok(await applyDependencies(conflict,{['dependencies:'+root]:'backstage'}));
+  assert.deepEqual(ok(await req('/api/state')).services.find(s=>s.id===root).dependencies,[target]);
+  for(const [id,name] of [['synthetic-oncall-251','synthetic-oncall-shared'],['synthetic-oncall-252','synthetic-oncall-shared']])ok(await req('/api/command',{type:'service',id,name,environment:'production',owner:'',runbook:[],pager:''}));
+  const unresolved=structuredClone(dependencyCatalog);unresolved[0].spec.dependsOn=['component:default/gateway','resource:default/synthetic-oncall-250','component:default/synthetic-oncall-9999','component:default/synthetic-oncall-shared'];
+  const unresolvedReview=await dependencyPreview(unresolved),references=unresolvedReview.rows[0].dependencies.references;
+  assert.deepEqual(references.map(r=>r.ref),unresolved[0].spec.dependsOn);
+  assert.ok(references[1].reason.includes('Only Component'));assert.ok(references[2].reason.includes('No existing'));assert.ok(references[3].reason.includes('Ambiguous'));
+  ok(await applyDependencies(unresolvedReview,{},unresolved));
+  const withUnknown=ok(await req('/api/state')).services.find(s=>s.id===root);
+  assert.deepEqual(withUnknown.dependencies,[target,'gateway'],'unresolved references preserve current dependencies while supported additions apply');
+  assert.deepEqual(withUnknown.dependencyImport.references,references);
+  const snapshotIncident=ok(await req('/api/command',{type:'declare',service:root,severity:'warning',title:'synthetic-oncall-253',summary:'synthetic-oncall-253',alerts:[]}));
+  const dependencyContext=ok(await req('/api/handoffs/context/'+snapshotIncident.id));
+  assert.deepEqual(dependencyContext.source.service.dependencyImport,withUnknown.dependencyImport);
+  const dependencyHandoff=ok(await req('/api/handoffs/prepare',{id:'synthetic-oncall-253',incident:snapshotIncident.id,incidentRevision:snapshotIncident.revision,serviceHash:dependencyContext.serviceHash,payload:{audience:'internal',title:'synthetic-oncall-253',summary:'synthetic-oncall-253',evidenceLinks:[],impactLinks:[]}}),201).record;
+  ok(await req('/api/handoffs/synthetic-oncall-253/review',{actionId:'synthetic-oncall-253',revision:dependencyHandoff.revision,payloadHash:dependencyHandoff.payloadHash,sourceHash:dependencyHandoff.sourceHash,reason:'synthetic-oncall-253'}));
+  const clearing=[{kind:'Component',metadata:{name:root},spec:{dependsOn:[]}}],clearReview=await dependencyPreview(clearing);
+  const races=await Promise.all([applyDependencies(clearReview,{},clearing),applyDependencies(clearReview,{},clearing)]);
+  assert.deepEqual(races.map(r=>r.status).sort(),[200,409]);
+  assert.deepEqual(ok(await req('/api/state')).services.find(s=>s.id===root).dependencies,[],'explicit empty list removes imported dependencies');
+  assert.equal(ok(await req('/api/handoffs/synthetic-oncall-253')).eligibility.eligible,false,'dependency changes retain source-drift holds on reviewed handoffs');
+  const bounded=[{kind:'Component',metadata:{name:root},spec:{dependsOn:Array.from({length:30},(_,i)=>'resource:default/synthetic-oncall-'+i)}}];
+  const boundedReview=await dependencyPreview(bounded);ok(await applyDependencies(boundedReview,{},bounded));
+  assert.equal(ok(await req('/api/state')).services.find(s=>s.id===root).dependencyImport.references.length,30);
+  const boundsBefore=await records();bounded[0].spec.dependsOn.push('resource:default/synthetic-oncall-31');
+  ok(await req('/api/teams/backstage/preview',{catalog:bounded}),400);ok(await req('/api/teams/backstage/apply',{catalog:bounded,digest:boundedReview.digest}),400);
+  bounded[0].spec.dependsOn=['x'.repeat(601)];ok(await req('/api/teams/backstage/preview',{catalog:bounded}),400);
+  assert.deepEqual(await records(),boundsBefore);
+  const anonymousBefore=await records();ok(await w.request('/api/teams/backstage/preview',{catalog:dependencyCatalog}),401);ok(await w.request('/api/teams/backstage/apply',{catalog:dependencyCatalog,digest:repeat.digest}),401);
+  ok(await managerReq('/api/teams/backstage/preview',{catalog:dependencyCatalog}),403);ok(await managerReq('/api/teams/backstage/apply',{catalog:dependencyCatalog,digest:repeat.digest}),403);
+  assert.deepEqual(await records(),anonymousBefore,'unauthorized dependency imports preserve all application state');
+  const importAdmin=ok(await req('/api/members',{name:'synthetic-oncall-254',role:'admin',password:'synthetic-oncall-254-password'}),201),adminLogin=await w.request('/api/login',{name:importAdmin.name,password:'synthetic-oncall-254-password'});
+  const revokedReview=ok(await w.request('/api/teams/backstage/preview',{catalog:dependencyCatalog},adminLogin.cookie));
+  ok(await req('/api/command',{type:'member',id:importAdmin.id,role:'admin',active:false}));
+  const revokedBefore=await records();
+  ok(await w.request('/api/teams/backstage/preview',{catalog:dependencyCatalog},adminLogin.cookie),401);ok(await w.request('/api/teams/backstage/apply',{catalog:dependencyCatalog,digest:revokedReview.digest,choices:{}},adminLogin.cookie),401);
+  assert.deepEqual(await records(),revokedBefore,'revoked administrator cannot disclose or change dependency state');
+  const invalidProvenance=structuredClone(revokedBefore);invalidProvenance.services.find(s=>s.id===root).dependencyImport.references[0].ref='x'.repeat(601);
+  ok(await req('/api/restore',{mode:'replace',archive:invalidProvenance}),400);assert.deepEqual(await records(),revokedBefore,'archive validates imported reference bounds before any restore');
+  await w.stop();await w.start();assert.deepEqual(await records(),revokedBefore,'dependency provenance survives process restart');
+  console.log('PROBE OC-023 dependency import: protected Preview and Apply -> additions, removals, retained unresolved references, conflict choices, stale and concurrent refusals, atomic rollback and effect-free retries passed');
   console.log('PASS OC-023 public teams and Backstage ownership: manager coverage, zero-write preview/refusals, atomic provenance, explicit conflict choice with history, manual ownership and repeat safety');
   // OC-023 ownerless services stay visible without turning the current admin into an owner.
   const unassigned={type:'service',id:'synthetic-oncall-23',name:'synthetic-oncall-23',environment:'production',owner:null,runbook:['synthetic-oncall-23 inspect retained evidence'],pager:''};

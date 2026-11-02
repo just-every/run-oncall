@@ -5,6 +5,7 @@ import { fail, link, type Entry, type Incident, type Member, type Service, type 
 import { validateLifecycleEntry } from "../../reviews/review-controls.ts";
 import { validateUrgencyRuleHistory } from '../../urgency/archive.ts';
 import { validateResponsePolicy } from '../../response-policy/rules.ts';
+import {validateProvenance} from '../../teams/provenance';
 
 export type HandoffPayload = { audience: "internal" | "customer"; title: string; summary: string; evidenceLinks: string[]; impactLinks: string[] };
 export type HandoffSource = { incident: Pick<Incident, "id" | "revision" | "service" | "title" | "severity" | "state" | "recovery"> & { declaration: Entry }; service: Service };
@@ -104,7 +105,9 @@ function source(input: unknown): HandoffSource {
     if (m.rule !== null) snapshotText(m.rule, 'response rule');
     if (!d.actor.startsWith('source:')) fail('Response declaration metadata needs a source actor');
   }
-  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["team", "dependencies", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
+  const v = fields(s.service, ["id", "name", "environment", "owner", "runbook", "pager"], ["team", "ownership", "dependencies", "dependencyImport", "urgencyRules", "responsePolicies", "incidentTemplates", "userAssignments", "ackTimeouts"]);
+  if(v.ownership!==undefined){validateProvenance(v.ownership);if(!v.team)fail('Imported handoff ownership needs a team');}
+  if(v.dependencyImport!==undefined)validateProvenance(v.dependencyImport,v.dependencies??[]);
   if (v.ackTimeouts !== undefined) validateTimeoutHistory(v.ackTimeouts);
   if (v.userAssignments !== undefined) validateAssignmentHistory(v.userAssignments);
   if (v.urgencyRules !== undefined) validateUrgencyRuleHistory(v.urgencyRules);

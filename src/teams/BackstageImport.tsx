@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {HttpFailure,InterruptedTransport,request} from '../useWorkspace';
 import type {State} from '../family/response-operations/domain';
-import {applies,catalogFrom,landed,type Choices,type ImportRow} from './backstage';
+import {applies,appliesDependencies,choiceKeys,dependencyChoice,catalogFrom,landed,type Choices,type ImportRow} from './backstage';
 import {importChanged,tooManyComponents} from './words';
 import {Feedback,Mark,type Note} from './feedback';
 
@@ -19,8 +19,8 @@ function meta(row:ImportRow){
 export function BackstageImport({refresh}:{refresh:()=>Promise<void>}){
  const [text,setText]=useState(''),[preview,setPreview]=useState<Preview|null>(null),[choices,setChoices]=useState<Choices>({}),[busy,setBusy]=useState(false),[previewNote,setPreviewNote]=useState<Note>(),[applyNote,setApplyNote]=useState<Note>();
  // Choices are kept for rows still in conflict, including across "Preview again".
- const chosen:Choices=Object.fromEntries(Object.entries(choices).filter(([id])=>preview?.rows.some(r=>r.action==='conflict'&&r.service?.id===id)));
- const applying=preview?.rows.filter(r=>applies(r,chosen))??[];
+ const chosen:Choices=Object.fromEntries(Object.entries(choices).filter(([id])=>preview?.rows.some(r=>choiceKeys(r).includes(id))));
+ const applying=preview?.rows.filter(r=>applies(r,chosen)||appliesDependencies(r,chosen))??[];
  async function previewImport(){
   setBusy(true);setApplyNote(undefined);
   try{setPreview(await request('/api/teams/backstage/preview',{catalog:catalogFrom(text)}));setPreviewNote(undefined);}
@@ -36,7 +36,7 @@ export function BackstageImport({refresh}:{refresh:()=>Promise<void>}){
   try{
    // A retried import whose first answer was lost but which already landed is saved without a second write.
    const latest:State|null=retry?await request('/api/state'):null;
-   if(!latest||!rows.every(row=>landed(latest,row)))await request('/api/teams/backstage/apply',sent);
+   if(!latest||!rows.every(row=>landed(latest,row,chosen)))await request('/api/teams/backstage/apply',sent);
    await refresh();setPreview(null);setChoices({});setApplyNote({saved:true});
   }catch(error){
    const transport=lost(error),message=error instanceof HttpFailure&&error.status===413?tooManyComponents:error instanceof Error?error.message:'';
@@ -48,8 +48,14 @@ export function BackstageImport({refresh}:{refresh:()=>Promise<void>}){
   <label className="field"><span>Catalog file</span><input type="file" accept=".json,application/json" onChange={async e=>{const file=e.target.files?.[0];if(file)setText(await file.text());}}/></label>
   <div><button type="button" disabled={busy} onClick={()=>void previewImport()}>Preview import</button><Feedback note={previewNote}/></div>
   {preview&&<ul className="teams-import-rows">{preview.rows.map((row,i)=><li key={i}>
-   <span className="teams-import-name">{row.service?.name??row.entity.replace(/^component:[^/]*\//,'')}</span><span className="teams-import-meta">{meta(row)}</span>
+   <span className="teams-import-name">{row.service?.name??row.entity.replace(/^component:[^/]*\//,'')}</span><span className="teams-import-meta">Ownership: {meta(row)}</span>
    {row.action==='conflict'&&<span className="field"><select aria-label={'Import choice for '+row.service!.name} value={chosen[row.service!.id]??'current'} onChange={e=>setChoices(old=>({...old,[row.service!.id]:e.target.value as Choices[string]}))}><option value="current">Keep current</option><option value="backstage">Use Backstage</option></select></span>}
+   {row.dependencies&&<div className="teams-import-meta">
+    <span>Dependencies: {row.dependencies.current.map(s=>s.name).join(', ')||'None'} → {row.dependencies.next.map(s=>s.name).join(', ')||'None'}{row.dependencies.action==='unchanged'?' · No change':''}</span>
+    {row.dependencies.reason&&<p>{row.dependencies.reason}</p>}
+    <ul>{row.dependencies.references.map((r,j)=><li key={j}>{r.ref} · {r.reason??row.dependencies!.next.find(s=>s.id===r.service)!.name}</li>)}</ul>
+    {row.dependencies.action==='conflict'&&<span className="field"><select aria-label={'Dependency import choice for '+row.service!.name} value={chosen[dependencyChoice(row)]??'current'} onChange={e=>setChoices(old=>({...old,[dependencyChoice(row)]:e.target.value as Choices[string]}))}><option value="current">Keep current</option><option value="backstage">Use Backstage</option></select></span>}
+   </div>}
   </li>)}</ul>}
   <div><div className="teams-import-apply"><button type="button" disabled={busy||!applying.length} onClick={()=>void applyImport()}>Apply import</button><Mark note={applyNote}/></div><Feedback note={applyNote}/></div>
  </div></details>;
