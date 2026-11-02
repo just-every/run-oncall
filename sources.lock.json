@@ -6,7 +6,7 @@
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
-    "sha256": "8d25b7528ba7c5301de349b51b7e6ca44d6b87478f27b5685a5c07b567612e13"
+    "sha256": "238835f8dd7744607c59c2f7ff868f35ea9af73310f7391ecbee2d44fa863b0e"
   },
   "components": [
     {
@@ -1924,7 +1924,7 @@
       "executable": false
     },
     "src/auth.server.ts": {
-      "sha256": "fb451944d48c281f5a709e1ddf0e650546ec777d35d2c404bd2fd2e55a028724",
+      "sha256": "264609ad026dc9fee1fddd2adb1403761fd552f17ca2245683818fb18c55be6e",
       "executable": false
     },
     "src/automation/api.ts": {
@@ -6432,7 +6432,7 @@
       "executable": false
     },
     "tests/import-door.mjs": {
-      "sha256": "3c76d3c16e65006ecae5fbf8f9026534311012d4c1bdd452da80c29d7be44aad",
+      "sha256": "c29eab3a44315de7b40e2e879f0fa7e0e1ea365e593f9532263dd36adc575409",
       "executable": false
     },
     "tests/initialize-agent-owner.mjs": {
