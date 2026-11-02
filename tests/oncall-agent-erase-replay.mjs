@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
+import {ownerDoor} from './worker.mjs';
 import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Real MCP approval, native erasure transaction and current-owner admission. */
@@ -89,7 +90,7 @@ export async function eraseClasses(runtime) {
  const facts=answer=>answer.decision.classes.map(({class:risk,facts})=>({class:risk,facts}));
  const destructive={class:'destructive',facts:{measure:1}},access={class:'access',facts:{measure:1,direction:'narrows'}},security={class:'security',facts:{measure:1,setting:'erasure-credentials'}},live={class:'live',facts:{measure:1,service}};
  const tables=['sources','oc_api_credentials','oc_endpoint_credentials','oc_intake_credentials','oc_incumbent_credentials','oc_change_credentials','oc_email_credentials','paging_control','paging_schedules','paging_jobs','oc_agent_erasure_receipts'];
- const snapshot=async()=>({state:await state(),audit:(await db.prepare("SELECT * FROM oc_admin_audit WHERE outcome='accepted' AND (workspace_before<>workspace_after OR paging_before<>paging_after OR handoff_before<>handoff_after) ORDER BY ordinal").all()).results,tables:Object.fromEntries(await Promise.all(tables.map(async table=>[table,(await db.prepare('SELECT * FROM '+table+' ORDER BY rowid').all()).results])))});
+ const snapshot=async()=>({state:await state(),imported:await json('/api/move-in/objects'),audit:(await db.prepare("SELECT * FROM oc_admin_audit WHERE outcome='accepted' AND (workspace_before<>workspace_after OR paging_before<>paging_after OR handoff_before<>handoff_after) ORDER BY ordinal").all()).results,tables:Object.fromEntries(await Promise.all(tables.map(async table=>[table,(await db.prepare('SELECT * FROM '+table+' ORDER BY rowid').all()).results])))});
  const fresh=()=>randomUUID();
  let sequence=500;
  async function fixture(type) {
@@ -112,6 +113,23 @@ export async function eraseClasses(runtime) {
    return {kind:'client',id:client.id,expected:[destructive,access,security,...(type==='pending-client'?[live]:[])]};
   }
   if(type==='native') await json('/api/sources',{id,key,scopes:[service]});
+  if(type==='imported-intake') {
+   const door=ownerDoor({request:async(path,input,cookie,headers)=>{
+    const response=await runtime.request(runtime.origin+path,{method:input===undefined?'GET':'POST',headers:{Origin:runtime.origin,Cookie:cookie,'Content-Type':'application/json',...headers},...(input===undefined?{}:{body:JSON.stringify(input)})});
+    return {status:response.status,value:await response.json()};
+   }},runtime.cookie);
+   const before=new Set((await json('/api/move-in/objects')).map(row=>row.targetId));
+   const plan=await door.preview('splunk',JSON.stringify({integrations:[{id,type:'REST',name:id}]}));
+   assert.equal(plan.status,200,JSON.stringify(plan.value));
+   const applied=await door.apply('splunk',plan.value);
+   assert.equal(applied.status,200,JSON.stringify(applied.value));assert.equal(applied.value.job.state,'completed');
+   const imported=(await json('/api/move-in/objects')).filter(row=>row.targetKind==='integration'&&!before.has(row.targetId));
+   assert.equal(imported.length,1);
+   await json('/api/intake/incumbent',{importedId:imported[0].targetId,importedRevision:imported[0].revision,id,service,name:id,revision:0,key},201);
+   const activated=await http('/api/intake/sources/'+id+'/activate-incumbent',{revision:1,confirmed:true});
+   assert.equal(activated.status,200);await activated.body?.cancel();
+   return {kind:'intake',id,expected:[destructive,security,live]};
+  }
   if(type==='intake'||type==='inactive-intake') {
    await json('/api/intake/sources',{id,name:id,provider:'pagerduty',service,key,revision:0},201);
    if(type==='inactive-intake') await json('/api/intake/sources/'+id+'/revoke',{revision:1});
@@ -120,7 +138,7 @@ export async function eraseClasses(runtime) {
   if(type==='email') await json('/api/email/addresses',{id,name:id,service,owner:owner.id,localPart:'synthetic-oncall-'+sequence+++'-mailbox-credential',mode:'subject',fallback:'subject',rules:[]},201);
   return {kind:type==='inactive-intake'?'intake':type,id,expected:[destructive,...(type==='inactive-intake'?[]:[security,live])]};
  }
- for(const mode of ['autonomous','held']) for(const type of ['history','pending','member','scheduled','client','pending-client','native','intake','inactive-intake','change','email']) {
+ for(const mode of ['autonomous','held']) for(const type of ['history','pending','member','scheduled','client','pending-client','native','intake','inactive-intake','change','email','imported-intake']) {
   assert.equal((await adopt()).status,200);
   const {expected,...target}=await fixture(type);
   const args={...target,workspaceRevision:(await state()).revision,confirmation:'erase '+target.id,idempotency_key:fresh()};
@@ -185,7 +203,7 @@ export async function eraseClasses(runtime) {
   if(target.kind==='client') {
    assert.ok(!once.state.apiClients.some(row=>row.id===target.id));
    assert.ok(!once.state.apiEndpoints.some(row=>row.client===target.id));
-   assert.ok(!once.state.apiOutbox.some(row=>row.client===target.id));
+   assert.ok(!(once.state.apiOutbox??[]).some(row=>row.client===target.id));
    assert.ok(!once.tables.oc_api_credentials.some(row=>row.client===target.id));
   }
   if(target.kind==='native') assert.ok(!once.tables.sources.some(row=>row.id===target.id));
@@ -201,6 +219,10 @@ export async function eraseClasses(runtime) {
    continue;
   }
   assert.equal(first.result?.isError,false,JSON.stringify(first.body));
+  if(type==='imported-intake') {
+   assert.equal(first.result.structuredContent.importCustody.state,'complete');
+   assert.ok(!once.imported.some(row=>row.value.intakeSource===target.id),'Native erasure retires the owned import binding too');
+  }
   assert.equal(first.result.structuredContent.standby,'not-reconciled');
   assert.equal(once.state.revision,before.state.revision+1,'Exactly one native erasure committed');
   assert.deepEqual(facts(first),expected,'A consumed target retains all admitted classes');
