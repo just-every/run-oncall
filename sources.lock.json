@@ -200,7 +200,7 @@
       "executable": false
     },
     "docs/changes.md": {
-      "sha256": "bd124588ca0455f1ec83c9f2c6bc1e4db44f712bec9e09d35967f2efdbbe1d0f",
+      "sha256": "00dfe457af60305b053d12401a9a34792583f0c9f7be9beb9cdea022e182172e",
       "executable": false
     },
     "docs/checkpoints.md": {
@@ -2168,7 +2168,7 @@
       "executable": false
     },
     "src/changes/model.ts": {
-      "sha256": "923b5ceb6e033ec6e5be700df566a441246531b786321b6a138651d4831c5789",
+      "sha256": "1e498bcdf1cc3d192721b8586fd42934679ccb48b7c62347a7b5e881c455bb17",
       "executable": false
     },
     "src/changes/providers.ts": {
@@ -2328,7 +2328,7 @@
       "executable": false
     },
     "src/family/response-operations/handoffs.ts": {
-      "sha256": "5f66e1b2a0d92a7fe27165eef2d8a7c62cc8e81aaf01831249b6bef57337392c",
+      "sha256": "a8cf00e386e211f257f6afe0a3fdfff59f888bc7703e4c6376e2316d2f6346af",
       "executable": false
     },
     "src/family/response-operations/incident-controls.ts": {
@@ -6204,11 +6204,11 @@
       "executable": false
     },
     "src/teams/model.ts": {
-      "sha256": "55d512c8ea653f898c6fad2dc1b54e1c0815d2cd6d4165c1fee22227a3724358",
+      "sha256": "562aac3436541a0a485949c0f5b3e1f9c3a6aed01db95454de88ab024e7dd9f3",
       "executable": false
     },
     "src/teams/provenance.ts": {
-      "sha256": "a44fbc12831397452bc481d9226c44d7b7b832ddd02df61f53d17bceae5184aa",
+      "sha256": "e928808e254619346a279d1eb2e03ea6afbecc4604915a299c6f8e3ed95e9b2a",
       "executable": false
     },
     "src/teams/teams.css": {
@@ -6312,7 +6312,7 @@
       "executable": false
     },
     "tests/changes.mjs": {
-      "sha256": "4a3c9682b3cb99a1d37201eb58fcd07bbbaf6dc9b9ae7fe6daa5ee77c6f2cbde",
+      "sha256": "e651180d5688ef657b850c8c594ea75eb0093c94f5491b16ecc54f08134b19a5",
       "executable": false
     },
     "tests/checkpoint-cli.mjs": {

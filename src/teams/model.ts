@@ -1,6 +1,6 @@
 import {fail,text,type State,type Member} from '../family/response-operations/domain.ts';
 import {cannotManage,managesButNotMember,noLongerActive,staleTeam,teamNameRule} from './words.ts';
-import {validateProvenance} from './provenance';
+import {validateProvenance} from './provenance.ts';
 
 export type Team={id:string;name:string;visibility:'public';active:boolean;revision:number;members:string[];managers:string[]};
 function teamName(value:unknown){try{return text(value,'Team name',200);}catch{fail(teamNameRule);}}
