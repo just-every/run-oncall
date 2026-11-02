@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import {generateKeyPairSync,sign,createHash,randomUUID} from 'node:crypto'
-import {readFile} from 'node:fs/promises'
+import {readFile,readdir,writeFile} from 'node:fs/promises'
+import {tmpdir} from 'node:os'
+import {join} from 'node:path'
 import {localWorker,ownerDoor} from './worker.mjs'
 // import-door-catchup: part of this public journey.
 // Part of the existing import-door registration. Only the signed HTTP client and
@@ -697,6 +699,27 @@ try {
  ok(await req('/auth/signout',{}),204)
  ok(await req('/auth/settings/imports',{enabled:false}),401)
  console.log('Business import door: off 404, owner opt-in, both saved-response formats, zero native writes in plan, reviewed grants, replay refusal, reconcile, restart, door/owner undo and durable key revocation passed')
+ // Once the owner is claimed the platform retires SETUP_TOKEN while the Business trust stays bound: the app stays healthy.
+ {
+  await w.stop()
+  const names=await readdir(tmpdir()),holders=[]
+  for(const name of names.filter(n=>n.startsWith('oncall-flow-'))){const file=join(tmpdir(),name,'local.env');if((await readFile(file,'utf8').catch(()=>'')).includes(w.vars.SESSION_SECRET))holders.push(file)}
+  assert.equal(holders.length,1,'this Worker has exactly one binding file')
+  const bindings=(await readFile(holders[0],'utf8')).split('\n');assert.ok(bindings.some(line=>line.startsWith('RER_OWNER_CLAIM_PUBLIC_KEYS=')),'the Business trust stays bound')
+  await writeFile(holders[0],bindings.filter(line=>!line.startsWith('SETUP_TOKEN=')).join('\n'),{mode:0o600})
+  const restarted=await w.start().then(()=>null,error=>error)
+  const get=path=>w.send(path,undefined,{origin:w.origin},'GET')
+  const health=await get('/health');assert.equal(health.status,200,'/health after SETUP_TOKEN retired: '+health.status+' '+JSON.stringify(health.value)+(restarted?' ('+restarted.message+')':''))
+  assert.equal(restarted,null)
+  const signin=await get('/signin');assert.equal(signin.status,200,'/signin after SETUP_TOKEN retired: '+signin.status)
+  const entered=await w.request('/__dev/key',{key:w.vars.RER_DEV_KEY});assert.equal(entered.status,204,'owner sign-in after SETUP_TOKEN retired')
+  assert.equal(ok(await w.request('/api/workspace',undefined,entered.cookie)).member.role,'admin','the claimed owner signs in without SETUP_TOKEN')
+  ok(await w.request('/auth/settings/imports',{enabled:true},entered.cookie))
+  ok(await call('uploads','opsgenie',{}),403)
+  const claimPost=await w.request('/auth/owner-claim',{token:'synthetic-claim'});assert.equal(claimPost.status,409);assert.equal(claimPost.value.error,'claim_unavailable')
+  const claimGet=await get('/auth/owner-claim');assert.equal(claimGet.status,409);assert.equal(claimGet.value.error,'claim_unavailable')
+  console.log('Token-free health: after the owner claim and SETUP_TOKEN retirement with the Business trust bound, /health and /signin answer 200, owner sign-in and the import door still answer, and /auth/owner-claim answers 409 claim_unavailable')
+ }
 }finally{try{}finally{await w.close()}}
 
 // Adopt reviewed imports into live schedules; retain unconvertible evidence and guarded undo.
