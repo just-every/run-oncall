@@ -1919,10 +1919,17 @@
       },
       "expect": [
         {
-          "class": "destructive"
+          "class": "destructive",
+          "facts": {
+            "measure": 1
+          }
         },
         {
-          "class": "live"
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "agent-service"
+          }
         }
       ]
     },

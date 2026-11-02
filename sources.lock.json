@@ -148,7 +148,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "22eae7a72ad8def951fc3e2381e16f5c9c88bd9070ff5446e2990e17a04d7bd7",
+      "sha256": "7a4a8f50ed21e6070f9f774e87e96a55652c020c056c5ee709334ee718fe833e",
       "executable": false
     },
     "AGENTS.md": {
@@ -1692,7 +1692,7 @@
       "executable": false
     },
     "src/agent-door/management-tools.ts": {
-      "sha256": "9af20dbc22cf014437ace615a21e4b43bb399fa8339747dddfb679234f15dfee",
+      "sha256": "85e701497e0cf5db9ca4bba983627811e5e4912bef49c7fac5cf8cc18e293d1a",
       "executable": false
     },
     "src/agent-door/native.ts": {
@@ -6472,7 +6472,7 @@
       "executable": false
     },
     "tests/oncall-agent-erase-replay.mjs": {
-      "sha256": "2e500734c3de0282f293249b3dcbe7da81e174a18193080a20bf28db8fd22352",
+      "sha256": "90567b823be52a9e18e7fdd746bab8182eba409b9bd76c994d28106142575e53",
       "executable": false
     },
     "tests/oncall-agent-fixtures.mjs": {
