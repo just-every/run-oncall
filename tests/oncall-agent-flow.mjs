@@ -168,7 +168,7 @@ async function manualPageClassification(runtime) {
  const afterPolicy=await snapshot();
  const approval=await http('/agents/api/approvals/'+handle.id+'/approve',{revision:saved.revision,summary_sha256:saved.summary_sha256});
  assert.equal(approval.status,200);const staleResult=(await approval.json()).approval;
- assert.equal(staleResult.state,'refused');assert.equal(staleResult.code,'revision_conflict');
+ assert.equal(staleResult.state,'refused');assert.equal(staleResult.code,'approval_evidence_changed');
  assert.deepEqual(await snapshot(),afterPolicy,'Changed paging custody cannot execute the old approved operation');
  assert.equal((await adopt()).status,200);
  const cross=manualPageFixture();cross.policy='agent-foreign-service';
@@ -177,7 +177,7 @@ async function manualPageClassification(runtime) {
  assert.deepEqual(facts(crossPage),[{class:'standard',facts:{measure:1}},{class:'live',facts:{measure:1,service:'agent-foreign-service, agent-service'}}]);
  assert.equal(crossPage.result.structuredContent.manualPage.obligations[0].target.id,'agent-foreign-service');
  assert.equal((await snapshot()).application.revision,crossBefore.application.revision+1);
- console.log('PROBE SURFACE-002 8 custody: saved policy revision changed -> revision_conflict without an application effect; authorized cross-service policy -> live facts include both affected services');
+ console.log('PROBE SURFACE-002 8 custody: saved policy revision changed -> approval_evidence_changed without an application effect; authorized cross-service policy -> live facts include both affected services');
  const args=manualPageFixture(responder.id,'Synthetic authority refusals'),before=await snapshot();
  assert.equal(code(await tool(name,args,{scope:'incidents:read'})),'insufficient_scope');
  assert.equal(code(await tool(name,{...args,users:['synthetic-oncall-absent']})),'native_request_invalid');
