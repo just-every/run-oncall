@@ -1278,8 +1278,8 @@ Agent surface · target · **missing**
 5. The UI action and its tool, on the same fixture, give the same record state and the same audit event type.
 6. The seed's embedded agents appear in the audit as calls to the same tools.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `tests/oncall-agent-flow.mjs` — native incident note parity via noteParity in `tests/agent-door-runtime.mjs`: equivalent native fixtures, exact note text and target, one revision, preserved prior fields, canonical permanent command.note, separate human and agent-for-person attribution, actual MCP tool audit, held standard review, stale and scope refusals, audit-failure rollback, once-only retry and zero outbound requests; `tests/agent-door-browser.mjs` — actual signed-in Add note compared with MCP under autonomous and held policies, with literal selected notes and attribution shown at 1440 and 390; existing output-schema and annotation conformance in `tests/agent-door.mjs` is reused.
+**Gap.** Main's missing judgment is retained; this bounded acceptance-5 proof does not complete the clause. Only acceptance 5's native incident-note slice is proved. Acceptance 1's complete Core-job coverage and harness and real-CLI gap refusal, acceptances 2 and 3's complete seed judgment, acceptance 4's shared stable-error-code parity, acceptance 5's parity for every other job and acceptance 6's embedded-agent registry and audit proof remain unproved. OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold. OC-023 team privacy, BASE-AGENT-005 work, BASE-AGENT-006 and BASE-AGENT-008 holds, SURFACE-004's held replay seam and all release prerequisites remain unchanged. Paging remains OFF; production delivery, independent standby and real-phone obligations remain omitted.
 
 #### BASE-AGENT-003 — Records are resources
 
