@@ -99,7 +99,7 @@ async function manualPageClassification(runtime) {
  const listed=(await runtime.mcp('tools/list')).result.tools.find(row=>row.name===name);
  assert.deepEqual(listed._meta['com.runeditrun/classes'],['standard','sensitive','live']);
  assert.deepEqual(listed._meta['com.runeditrun/classes'],context.surface.tools.find(row=>row.name===name).classes);
- const manualPolicy=await manualPagePolicy(runtime);
+ await manualPagePolicy(runtime);
  await manualPagePolicy(runtime,'agent-foreign-service');
  const control=await recoveredResolutionTarget(runtime,'Nonpaging update control');
  assert.equal((await adopt()).status,200);
@@ -164,20 +164,23 @@ async function manualPageClassification(runtime) {
   }
  }
  assert.equal((await adopt()).status,200);
- // A paging policy edit is a separate native revision and invalidates a saved page.
+ // Both the incident service and a cross-service target retain paging custody.
  assert.equal((await adopt(heldPolicy())).status,200);
- const staleArgs=manualPageFixture(),stale=await tool(name,staleArgs);
- const handle=stale.result._meta['com.runeditrun/approval'];
- const saved=(await read('/agents/api/approvals/'+handle.id)).approval;
- const changed=await http('/api/paging/policies',{...manualPolicy,primaryWaitSeconds:manualPolicy.primaryWaitSeconds+1});
- assert.equal(changed.status,200);await changed.json();
- const afterPolicy=await snapshot();
- const approval=await http('/agents/api/approvals/'+handle.id+'/approve',{revision:saved.revision,summary_sha256:saved.summary_sha256});
- assert.equal(approval.status,200);const staleResult=(await approval.json()).approval;
- assert.equal(staleResult.state,'refused');assert.equal(staleResult.code,'approval_evidence_changed');
- assert.deepEqual(await snapshot(),afterPolicy,'Changed paging custody cannot execute the old approved operation');
+ for(const service of ['agent-service','agent-foreign-service']){
+  const staleArgs={...manualPageFixture(),policy:service},stale=await tool(name,staleArgs);
+  const handle=stale.result._meta['com.runeditrun/approval'];
+  const saved=(await read('/agents/api/approvals/'+handle.id)).approval;
+  const policy=(await read('/api/paging/state')).policies.find(row=>row.service===service);
+  const changed=await http('/api/paging/policies',{...policy,primaryWaitSeconds:policy.primaryWaitSeconds+1});
+  assert.equal(changed.status,200);await changed.json();
+  const afterPolicy=await snapshot();
+  const approval=await http('/agents/api/approvals/'+handle.id+'/approve',{revision:saved.revision,summary_sha256:saved.summary_sha256});
+  assert.equal(approval.status,200);const staleResult=(await approval.json()).approval;
+  assert.equal(staleResult.state,'refused');assert.equal(staleResult.code,'approval_evidence_changed');
+  assert.deepEqual(await snapshot(),afterPolicy,'Changed target policy cannot execute the old approved operation');
+  console.log(`PROBE SURFACE-002 8 custody ${service}: target policy revision changed -> approval_evidence_changed; application, recorded obligations and paging state unchanged`);
+ }
  assert.equal((await adopt()).status,200);
- console.log('PROBE SURFACE-002 8 custody: saved policy revision changed -> approval_evidence_changed without an application effect; cross-service policy matrix retains both affected services');
  const args=manualPageFixture(responder.id,'Synthetic authority refusals'),before=await snapshot();
  assert.equal(code(await tool(name,args,{scope:'incidents:read'})),'insufficient_scope');
  assert.equal(code(await tool(name,{...args,users:['synthetic-oncall-absent']})),'native_request_invalid');
