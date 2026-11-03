@@ -4,8 +4,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 // Each policy round obtains its own native client and retained API operations.
 // All preparation uses the ordinary owner and scoped service-account doors.
 export default async function prepare({ phase, request, origin, cookie }) {
-  async function http(path, input, { bearer, key, status = 200 } = {}) {
-    const response = await request(new URL(path, origin).href, {
+  const nativeHttp = (path, input, { bearer, key } = {}) => request(new URL(path, origin).href, {
       method: input === undefined ? 'GET' : 'POST', redirect: 'manual',
       headers: { Origin: origin, 'Content-Type': 'application/json',
         ...(bearer ? { Authorization: `Bearer ${bearer}` } : { Cookie: cookie }),
@@ -13,6 +12,8 @@ export default async function prepare({ phase, request, origin, cookie }) {
       },
       ...(input === undefined ? {} : { body: JSON.stringify(input) }),
     });
+  async function http(path, input, { status = 200, ...options } = {}) {
+    const response = await nativeHttp(path, input, options);
     assert.equal(response.status, status, `Native phase fixture refused ${path}`);
     return { body: await response.json(), headers: response.headers };
   }
@@ -26,7 +27,8 @@ export default async function prepare({ phase, request, origin, cookie }) {
   } };
   if (phase === 'initial') return { clients };
 
-  const values = { manualPage: { operationId: randomUUID() } };
+  const values = { manualPage: { operationId: randomUUID() }, manualPolicyPage: { operationId: randomUUID() } };
+  await manualPagePolicy({ http: nativeHttp }, 'agent-foreign-service');
   const eraseClient = (await http('/api/automation/clients', { name: `Synthetic erasure client ${phase}`,
     key: `synthetic-oncall-erasure-client-${phase}-credential`, services: ['agent-service'], permissions: ['incidents:read'] }, { status: 201 })).body;
   values.eraseClient = { id: eraseClient.id, confirmation: 'erase ' + eraseClient.id };
@@ -88,6 +90,11 @@ export const manualPageClasses = [
   { class: 'live', facts: { measure: 1, service: 'agent-service' } },
 ];
 
+export const manualPagePolicyClasses = [
+  { class: 'standard', facts: { measure: 1 } },
+  { class: 'live', facts: { measure: 1, service: 'agent-foreign-service, agent-service' } },
+];
+
 /** Application records exclude required decision custody and value-free audit. */
 export async function manualPageSnapshot(runtime) {
   const names = (await runtime.db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all()).results
@@ -103,13 +110,20 @@ export async function manualPageSnapshot(runtime) {
 /** Prepare a real policy through the existing native configuration door. */
 export async function manualPagePolicy(runtime, service = 'agent-service') {
   const owner = (await (await runtime.http('/api/workspace')).json()).member;
-  const schedule = { id: 'synthetic-oncall-manual-' + service, service, name: 'Synthetic recorded policy rota', revision: 0,
+  const current = await runtime.http('/api/paging/state');
+  assert.equal(current.status, 200); const state = await current.json();
+  const id = 'synthetic-oncall-manual-' + service;
+  const schedule = { id, service, name: 'Synthetic recorded policy rota', revision: state.schedules.find(row => row.id === id)?.revision ?? 0,
     timezone: 'UTC', validFrom: '2026-01-01T00:00:00.000Z', validUntil: null,
     primary: { anchorLocal: '2026-01-01T00:00', periodDays: 1, members: [owner.id], ambiguity: 'earlier' },
     backup: { anchorLocal: '2026-01-01T00:00', periodDays: 1, members: [], ambiguity: 'earlier' }, overrides: [] };
-  const saved = await runtime.http('/api/paging/schedules', schedule);
-  assert.equal(saved.status, 200); await saved.json();
-  const policy = await runtime.http('/api/paging/policies', { service, scheduleId: schedule.id, revision: 0,
+  if (!state.schedules.some(row => row.id === id)) {
+    const saved = await runtime.http('/api/paging/schedules', schedule);
+    assert.equal(saved.status, 200); await saved.json();
+  }
+  const existing = state.policies.find(row => row.service === service);
+  if (existing) return existing;
+  const policy = await runtime.http('/api/paging/policies', { service, scheduleId: schedule.id, revision: state.policies.find(row => row.service === service)?.revision ?? 0,
     primaryWaitSeconds: 180, backupWaitSeconds: 300, retrySeconds: 10, maxAttempts: 3 });
   assert.equal(policy.status, 200); return policy.json();
 }

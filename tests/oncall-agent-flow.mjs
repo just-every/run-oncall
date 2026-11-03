@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {readFile,access} from 'node:fs/promises';
+import {lexer} from 'marked';
 import {agentRuntime,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy} from './oncall-agent-fixtures.mjs';
+import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPagePolicyClasses,manualPageSnapshot,manualPagePolicy} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
+import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
 import {nativeTransport} from './oncall-agent-transport.mjs';
 import {AGENT_CLASSES} from '../src/modules/agent-door/conformance/surface.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
@@ -103,23 +107,25 @@ async function manualPageClassification(runtime) {
  assert.equal(update.result?.isError,false,JSON.stringify(update.body));
  assert.deepEqual(facts(update),[{class:'standard',facts:{measure:1}},{class:'sensitive',facts:{measure:2,kind:'personal_or_incident_evidence'}}]);
  for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
-  for(const target of ['user','policy']){
+  for(const target of ['user','policy','cross-policy']){
    const args=manualPageFixture(target==='user'?responder.id:undefined,`Synthetic ${mode} ${target} coordination`);
+   if(target==='cross-policy')args.policy='agent-foreign-service';
+   const expected=target==='cross-policy'?manualPagePolicyClasses:manualPageClasses;
    const blocked=autonomousPolicy();blocked.rules.unshift({id:'stop-live',class:'live',do:'blocked'});
    assert.equal((await adopt(blocked)).status,200);
    const before=await snapshot();
    const refused=await tool(name,{...args,internal:true,confirm:true,confirmExternal:true,class:'standard'});
    assert.equal(code(refused),'policy_blocked');assert.equal(refused.result.structuredContent,undefined);
-   assert.deepEqual(facts(refused),manualPageClasses);
+   assert.deepEqual(facts(refused),expected);
    assert.equal(refused.decision.classes.find(row=>row.class==='standard').do,'autonomous');
    assert.equal(refused.decision.classes.find(row=>row.class==='live').do,'blocked');
    const refusedAudit=await audit(refused);assert.equal(refusedAudit.outcome,'refused');
-   assert.deepEqual(refusedAudit.resource,{kind:'service',id:'agent-service'});assert.deepEqual(refusedAudit.classes,manualPageClasses);
+   assert.deepEqual(refusedAudit.resource,{kind:'service',id:'agent-service'});assert.deepEqual(refusedAudit.classes,expected);
    assert.deepEqual(refusedAudit.ignored_arguments,['class','confirm','confirmExternal','internal']);
    assert.deepEqual(await snapshot(),before,'Live refusal changes no application record, revision, timeline, manual obligation, paging job or receipt');
    assert.equal((await adopt(policy)).status,200);
    const ready=await snapshot(),answer=await tool(name,args);
-   assert.deepEqual(facts(answer),manualPageClasses);
+   assert.deepEqual(facts(answer),expected);
    assert.equal(answer.decision.disposition,mode==='held'?'approval':'autonomous');
    let pending;
    if(mode==='held'){
@@ -129,7 +135,7 @@ async function manualPageClassification(runtime) {
     assert.equal(new URL(handle.url).origin,runtime.origin);
     const page=await http(new URL(handle.url).pathname);assert.equal(page.status,200);await page.body?.cancel();
     pending=(await read('/agents/api/approvals/'+handle.id)).approval;
-    assert.deepEqual(pending.classes,manualPageClasses);assert.deepEqual(pending.summary.nativeTarget,{kind:'service',id:'agent-service'});
+    assert.deepEqual(pending.classes,expected);assert.deepEqual(pending.summary.nativeTarget,{kind:'service',id:'agent-service'});
     assert.ok(pending.summary.items.some(item=>item.startsWith('Native revision '+ready.application.revision+':')));
     const decision={revision:pending.revision,summary_sha256:pending.summary_sha256};
     assert.equal((await http('/agents/api/approvals/'+handle.id+'/approve',{...decision,summary_sha256:'changed-summary'})).status,409);
@@ -145,16 +151,16 @@ async function manualPageClassification(runtime) {
    const obligation=incident.manualPage.obligations[0];
    assert.equal(obligation.state,'recorded');assert.equal(obligation.paging,'off');assert.equal(obligation.automatic,false);assert.equal(obligation.label,'no sender');
    if(target==='user')assert.deepEqual(obligation.target,{kind:'user',id:responder.id});
-   else {assert.equal(obligation.target.kind,'policy');assert.equal(obligation.target.id,'agent-service');assert.ok(obligation.target.policyRevision>0);}
+   else {assert.equal(obligation.target.kind,'policy');assert.equal(obligation.target.id,args.policy);assert.ok(obligation.target.policyRevision>0);}
    const entry=incident.timeline.filter(row=>row.kind==='manual-page');assert.equal(entry.length,1);
    assert.equal(entry[0].metadata.agent.agent.id,context.agentId);assert.equal(entry[0].metadata.agent.for.id,owner.id);
    if(pending)assert.ok(entry[0].metadata.agent.approvers.some(row=>row.id===owner.id));
    for(const table of Object.keys(ready.records).filter(name=>name.startsWith('paging_')))assert.deepEqual(once.records[table],ready.records[table]);
    const retry=await tool(name,args);assert.equal(retry.result?.isError,false,JSON.stringify(retry.body));
-   assert.deepEqual(retry.result.structuredContent,incident);assert.deepEqual(facts(retry),manualPageClasses);
+   assert.deepEqual(retry.result.structuredContent,incident);assert.deepEqual(facts(retry),expected);
    assert.deepEqual(await snapshot(),once,'Identical retry creates no second recorded operation or application commit');
    assert.deepEqual(await runtime.outboundRequests(),[],'Manual recording never attempts provider egress');
-   console.log(`PROBE SURFACE-002 8 ${mode} ${target}: emitted MCP manual-page -> standard and live with service agent-service; isolated live block unchanged; ${pending?'exact saved approval, ':''}one attributed recorded obligation, effect-free retry, paging OFF and zero outbound requests`);
+   console.log(`PROBE SURFACE-002 8 ${mode} ${target}: emitted MCP manual-page -> standard and live with affected services ${expected[1].facts.service}; isolated live block unchanged; ${pending?'exact saved approval, ':''}one attributed recorded obligation, effect-free retry, paging OFF and zero outbound requests`);
   }
  }
  assert.equal((await adopt()).status,200);
@@ -171,13 +177,7 @@ async function manualPageClassification(runtime) {
  assert.equal(staleResult.state,'refused');assert.equal(staleResult.code,'approval_evidence_changed');
  assert.deepEqual(await snapshot(),afterPolicy,'Changed paging custody cannot execute the old approved operation');
  assert.equal((await adopt()).status,200);
- const cross=manualPageFixture();cross.policy='agent-foreign-service';
- const crossBefore=await snapshot(),crossPage=await tool(name,cross);
- assert.equal(crossPage.result?.isError,false,JSON.stringify(crossPage.body));
- assert.deepEqual(facts(crossPage),[{class:'standard',facts:{measure:1}},{class:'live',facts:{measure:1,service:'agent-foreign-service, agent-service'}}]);
- assert.equal(crossPage.result.structuredContent.manualPage.obligations[0].target.id,'agent-foreign-service');
- assert.equal((await snapshot()).application.revision,crossBefore.application.revision+1);
- console.log('PROBE SURFACE-002 8 custody: saved policy revision changed -> approval_evidence_changed without an application effect; authorized cross-service policy -> live facts include both affected services');
+ console.log('PROBE SURFACE-002 8 custody: saved policy revision changed -> approval_evidence_changed without an application effect; cross-service policy matrix retains both affected services');
  const args=manualPageFixture(responder.id,'Synthetic authority refusals'),before=await snapshot();
  assert.equal(code(await tool(name,args,{scope:'incidents:read'})),'insufficient_scope');
  assert.equal(code(await tool(name,{...args,users:['synthetic-oncall-absent']})),'native_request_invalid');
@@ -228,6 +228,53 @@ try{
  }
  assert.equal(listing.result.nextCursor,undefined,'The catalog probe must enumerate the complete emitted list');
  console.log(`PROBE BASE-AGENT-006 point 5 listed tools: emitted Worker MCP -> all ${listing.result.tools.length} returned tools declare only fleet-catalog classes`);
+ // Compare the whole generated inventory with a separately built public door.
+ // The existing conformance journey executes each referenced computed class;
+ // this check refuses dangling, wrong-tool and wrong-class fixture references.
+ execFileSync(process.execPath,['scripts/write-agent-surface.mjs','--check'],{stdio:'inherit'});
+ const surface=scopedSurface(runtime.context.surface),guide=await readFile('docs/agents.md','utf8');
+ const codes=text=>[...text.matchAll(/`([^`]+)`/g)].map(match=>match[1]);
+ const inventory=lexer(guide).filter(token=>token.type==='table'&&token.header.map(cell=>cell.text).join('|')==='Tool|Scope|Possible risk classes|Computed class checks');
+ assert.ok(inventory.length>0,'The guide must contain its generated tool inventory');
+ const documented=inventory.flatMap(table=>table.rows.map(row=>({name:codes(row[0].text)[0],scope:codes(row[1].text)[0],classes:codes(row[2].text),checks:row[3].text.split('; ').map(text=>codes(text))})));
+ assert.deepEqual(documented.map(row=>row.name),surface.tools.map(row=>row.name));
+ for(const row of documented){
+  assert.deepEqual(row.checks.map(([cls])=>cls),row.classes,`${row.name} documents every possible computed class`);
+  for(const [cls,test,...ids] of row.checks){
+   assert.equal(test,'tests/agent-door.mjs','Class evidence must name the maintained executable journey');
+   await access(test);
+   const fixtures=surface.journey.filter(step=>step.tool===row.name&&step.expect.some(item=>item.class===cls));
+   assert.ok(fixtures.length>0,`${row.name} ${cls} has executable class coverage`);
+   assert.deepEqual(ids,fixtures.map(step=>step.id),`${row.name} ${cls} references its complete maintained coverage`);
+  }
+ }
+ const inventoryState=async()=>({native:await (await http('/api/state')).json(),paging:await (await http('/api/paging/state')).json()});
+ const permanentAudit=async()=>(await runtime.db.prepare('SELECT * FROM oc_admin_audit ORDER BY id').all()).results;
+ for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+  assert.equal((await adopt(document)).status,200);
+  const before=await inventoryState(),edge=await runtime.outboundRequests();
+  const discovered=await mcp('server/discover'),listed=await mcp('tools/list'),templates=await mcp('resources/templates/list');
+  assert.equal(discovered.status,200);assert.equal(listed.status,200);assert.equal(templates.status,200);
+  assert.deepEqual(discovered.result._meta['com.runeditrun/capabilities'].declared,runtime.context.surface.capabilities);
+  assert.equal(discovered.result.capabilities.resources,undefined);
+  assert.equal(listed.result.nextCursor,undefined);
+  assert.deepEqual(documented.map(({checks,...row})=>row),listed.result.tools.map(row=>({name:row.name,scope:row._meta['com.runeditrun/scope'],classes:row._meta['com.runeditrun/classes']})));
+  assert.deepEqual(templates.result.resourceTemplates,surface.resources);
+  assert.deepEqual(surface.resources,[]);
+  // MCP retains its required protocol bookkeeping; the public guide itself
+  // makes no permanent audit write or native effect.
+  const beforeGuideAudit=await permanentAudit();
+  const response=await http('/docs/agents');assert.equal(response.status,200);
+  const html=await response.text(),tables=[...html.matchAll(/<table>([\s\S]*?)<\/table>/g)].map(match=>match[1]);
+  const served=tables.filter(table=>table.includes('<th>Computed class checks</th>')).flatMap(table=>[...table.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].filter(match=>match[1].includes('<td>')).map(match=>[...match[1].matchAll(/<td>([\s\S]*?)<\/td>/g)].map(cell=>[...cell[1].matchAll(/<code>([^<]+)<\/code>/g)].map(code=>code[1]))));
+  assert.deepEqual(served,documented.map(row=>[[row.name],[row.scope],row.classes,row.checks.flat()]));
+  assert.deepEqual(await permanentAudit(),beforeGuideAudit,'The public guide writes no permanent audit');
+  assert.deepEqual(await inventoryState(),before,'Guide and discovery reads preserve native data and paging');
+  assert.deepEqual(await runtime.outboundRequests(),edge);
+  console.log(`PROBE BASE-AGENT-013 1 ${label}: GET /docs/agents and MCP discovery -> ${documented.length} exact tools, scopes and class sets; no resource templates; event target withheld; native and paging unchanged; zero outbound requests`);
+  console.log(`PROBE BASE-AGENT-013 2 ${label}: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs`);
+ }
+ assert.equal((await adopt()).status,200);
  await policyAdoption(runtime);
  await pauseMatrix(runtime);
  await droppedDeclarationReplay(runtime);

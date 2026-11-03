@@ -4,7 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,pauseMatrix} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy} from './oncall-agent-fixtures.mjs';
+import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPagePolicyClasses,manualPageSnapshot,manualPagePolicy} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
@@ -55,12 +55,15 @@ try{
  // Both policies use the existing manual update door. Only held live work
  // reaches the returned person URL; its form sends the exact saved decision.
  await manualPagePolicy(runtime);
+ await manualPagePolicy(runtime,'agent-foreign-service');
  const manualEdge=await runtime.outboundRequests();
  for(const mode of ['autonomous','held']){
   assert.equal((await runtime.adopt(mode==='held'?heldPolicy():autonomousPolicy())).status,200);
   const args=manualPageFixture(mode==='autonomous'?responder.id:undefined,'Synthetic '+mode+' manual coordination');
+  if(mode==='held')args.policy='agent-foreign-service';
+  const expected=mode==='held'?manualPagePolicyClasses:manualPageClasses;
   const before=await manualPageSnapshot(runtime),answer=await tool('oncall.incidents.update',args);
-  assert.deepEqual(answer.decision.classes.map(({class:risk,facts})=>({class:risk,facts})),manualPageClasses);
+  assert.deepEqual(answer.decision.classes.map(({class:risk,facts})=>({class:risk,facts})),expected);
   let saved;
   if(mode==='held'){
    assert.equal(answer.result?.resultType,'input_required');
@@ -68,7 +71,7 @@ try{
    const handle=answer.result._meta['com.runeditrun/approval'],url=new URL(handle.url);
    assert.equal(url.origin,runtime.origin);
    saved=(await (await http('/agents/api/approvals/'+handle.id)).json()).approval;
-   assert.deepEqual(saved.classes,manualPageClasses);
+   assert.deepEqual(saved.classes,expected);
    assert.deepEqual(saved.summary.nativeTarget,{kind:'service',id:'agent-service'});
    await capture('manual-page-pending',url.pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
    await page.goto(handle.url);
@@ -85,6 +88,7 @@ try{
   const once=await manualPageSnapshot(runtime),incident=once.application.incidents.find(row=>row.manualPage?.operation===args.operationId);
   assert.ok(incident);assert.equal(once.application.revision,before.application.revision+1);assert.equal(once.commits.length,before.commits.length+1);
   assert.equal(incident.manualPage.obligations.length,1);
+  assert.deepEqual(incident.manualPage.obligations[0].target,mode==='held'?{kind:'policy',id:'agent-foreign-service',policyRevision:1}:{kind:'user',id:responder.id});
   assert.equal(incident.manualPage.obligations[0].state,'recorded');assert.equal(incident.manualPage.obligations[0].paging,'off');assert.equal(incident.manualPage.obligations[0].automatic,false);
   const entries=incident.timeline.filter(row=>row.kind==='manual-page');assert.equal(entries.length,1);
   assert.equal(entries[0].metadata.agent.agent.id,runtime.context.agentId);
@@ -279,6 +283,38 @@ try{
  assert.ok(!afterClient.apiOutbox.some(row=>row.client===receiver.id||row.endpoint===endpoint.id));
  assert.deepEqual(clientReplay.decision.classes.map(({class:risk,facts})=>({class:risk,facts})),clientPending.decision.classes.map(({class:risk,facts})=>({class:risk,facts})));
  await capture('erase-client-executed',clientPath);
+ // The rendered inventory, including every class fixture reference, agrees
+ // with live discovery under either policy. Assertions run at desktop width.
+ await page.setViewportSize({width:1440,height:1000});
+ for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+  assert.equal((await runtime.adopt(document)).status,200);
+  const before=await native(),paging=await (await http('/api/paging/state')).json(),edge=await runtime.outboundRequests();
+  await page.goto(runtime.origin+'/docs/agents');await page.locator('.docs-article').waitFor();
+  const rows=await page.locator('.docs-article table').evaluateAll(tables=>tables.filter(table=>[...table.querySelectorAll('th')].some(th=>th.textContent==='Computed class checks')).flatMap(table=>[...table.querySelectorAll('tbody tr')].map(row=>[...row.querySelectorAll('td')].map(cell=>[...cell.querySelectorAll('code')].map(code=>code.textContent)))));
+  const listing=await runtime.mcp('tools/list'),discovery=await runtime.mcp('server/discover'),templates=await runtime.mcp('resources/templates/list');
+  assert.equal(listing.status,200);assert.equal(discovery.status,200);assert.equal(templates.status,200);
+  assert.equal(listing.result.nextCursor,undefined);
+  assert.deepEqual(rows.map(([name,scope,classes])=>({name:name[0],scope:scope[0],classes})),listing.result.tools.map(tool=>({name:tool.name,scope:tool._meta['com.runeditrun/scope'],classes:tool._meta['com.runeditrun/classes']})));
+  for(const [name,,classes,checks] of rows){
+   const expected=classes.flatMap(cls=>[cls,'tests/agent-door.mjs',...runtime.context.surface.journey.filter(step=>step.tool===name[0]&&step.expect.some(item=>item.class===cls)).map(step=>step.id)]);
+   assert.deepEqual(checks,expected,`${name[0]} rendered class references match maintained coverage`);
+  }
+  assert.deepEqual(templates.result.resourceTemplates,[]);
+  assert.equal(discovery.result.capabilities.resources,undefined);
+  assert.ok(!rows.some(([names])=>names[0]==='oncall.events.list'));
+  await page.getByRole('heading',{name:'Current resource templates',exact:true}).waitFor();
+  await page.getByText('No resource templates are exposed.',{exact:false}).waitFor();
+  await page.getByRole('heading',{name:'Target capabilities',exact:true}).waitFor();
+  const inventoryRegion=page.locator('.docs-table').filter({has:page.getByRole('columnheader',{name:'Computed class checks',exact:true})}).first();
+  await inventoryRegion.focus();
+  await inventoryRegion.press('ArrowRight');
+  await page.waitForFunction(region=>region.scrollLeft>0,await inventoryRegion.elementHandle());
+  assert.ok(await inventoryRegion.evaluate(region=>region.contains(document.activeElement)||region===document.activeElement),'The complete inventory remains keyboard scrollable');
+  assert.deepEqual(await native(),before);assert.deepEqual(await (await http('/api/paging/state')).json(),paging);
+  assert.deepEqual(await runtime.outboundRequests(),edge);
+  console.log(`PROBE BASE-AGENT-013 rendered ${label}: /docs/agents -> complete ${rows.length}-tool class, scope and fixture inventory agrees with MCP; resources empty; native and paging unchanged; zero outbound requests`);
+ }
+ assert.equal((await runtime.adopt()).status,200);
  await capture('guide','/docs/agents',async()=>{await page.locator('.docs-article').waitFor()});
  await capture('erasure-data','/docs/data',async()=>{await page.locator('.docs-article').waitFor()});
  console.log('PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements');
