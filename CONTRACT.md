@@ -1418,13 +1418,13 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 ## Status
 
-Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f207859a` (30 October 2026).
+Judged from the code and tests at commit `ac1ad202cf41ca868a4cf163d390fe61ca9c1773` (3 November 2026).
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 11 | 0 | 22 |
-| Target and push further | 4 | 37 | 38 | 79 |
-| All | 15 | 48 | 38 | 101 |
+| Target and push further | 5 | 37 | 37 | 79 |
+| All | 16 | 48 | 37 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1516,7 +1516,7 @@ Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f20785
 | `OC-047` | Continuously rehearse coverage and standby readiness | push-further | partial | `src/schedule-api.ts`; `src/delivery.ts`; `tests/activation.mjs` | Now/next reveals static gaps and production sends refuse; continuous readiness and scheduled live drills are missing. OC-041 audit and durable crash/lease outcomes for readiness agent grants, actions and drills remain this clause's pre-shipping acceptance. |
 | `OC-048` | Bounded remediation with independent recovery evidence | push-further | missing |  | No implementing flow. No remediation planner, production executor or independent recovery integration exists. OC-041 audit and durable crash/lease outcomes for remediation agent grants and executor actions remain this clause's pre-shipping acceptance. |
 | `OC-049` | Close the loop on recurrence | push-further | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Owned evidenced follow-ups and retained reviews exist; recurrence comparison and follow-through agents are missing. OC-041 audit and durable crash/lease outcomes for recurrence agent grants and actions remain this clause's pre-shipping acceptance. |
-| `BASE-AGENT-001` | One MCP door per seed | target | missing | | Not yet judged through this seed's own doors. |
+| `BASE-AGENT-001` | One MCP door per seed | target | done | `tests/oncall-agent-flow.mjs` — nativeTransport in `tests/oncall-agent-transport.mjs`, through emitted Worker HTTP under autonomous and held company policies: points 1–5 reuse discoverDoor and listedDoor for discovery, modern stateless requests, legacy initialization parity, version refusal, deterministic private cached lists, Origin and HeaderMismatch refusals; point 6 sends an authenticated native resolution padded only with legal JSON whitespace beyond the advertised bound, observes 413 and identical retained tables including native revisions, timeline, permanent audit, replay, approval, review and paging custody, then completes the identical unpadded action through its ordinary policy; point 7 reuses refusalPhase for every undeclared capability, preserving native and decision custody with only capacity bookkeeping and its required refusal audit. All probes retain zero outbound requests. |  |
 | `BASE-AGENT-002` | The seed's jobs are tools, through the UI's own actions | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-003` | Records are resources | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-004` | Business identity and short-lived, audience-bound tokens | target | missing | | Not yet judged through this seed's own doors. |
