@@ -17,7 +17,7 @@ async function protocolCompatibility(c) {
  for (const method of ['initialize', 'server/discover', 'tools/list', 'tools/call']) {
   for (const credential of [null, 'synthetic-invalid-token']) {
    for (const version of [null, '2025-06-18', VERSION, '2099-01-01']) {
-    const answer = await raw(method, credential, version, { 'Mcp-Method': 'synthetic/mismatch' });
+    const answer = await raw(method, credential, version, { 'Mcp-Method': 'synthetic/mismatch', Connection: 'close' });
     c.add(`BASE-AGENT-004.1.auth-first.${method}.${credential ? 'invalid' : 'missing'}.${version ?? 'no-header'}`, answer.status === 401 && answer.headers.get('www-authenticate') === `Bearer resource_metadata="${c.origin}/.well-known/oauth-protected-resource/mcp"` && answer.body.error?.code === -32001, 'Missing or invalid credentials must get the resource-metadata challenge before version or method-header validation.');
    }
   }
