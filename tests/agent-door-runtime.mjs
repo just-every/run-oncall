@@ -42,9 +42,10 @@ export async function agentRuntime(){
    const token=bearer??await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'},...overrides}),response=await request(runtime.origin+'/mcp',{method:'POST',headers:{Origin:runtime.origin,Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json, text/event-stream','MCP-Protocol-Version':version,'Mcp-Method':method,...(params.name||params.uri?{'Mcp-Name':params.name??params.uri}:{}),...transport.headers},body:JSON.stringify({jsonrpc:'2.0',id:randomUUID(),method,params:version==='2026-07-28'?{...params,_meta:{...params._meta,'io.modelcontextprotocol/protocolVersion':version}}:params})});
    const body=await response.json();return {status:response.status,headers:response.headers,body,message:body,result:body.result,decision:body.result?._meta?.['com.runeditrun/decision']??body.error?.data?._meta?.['com.runeditrun/decision']};
   }
+  const mcpWithToken=(token,method,params={})=>mcp(method,params,{},token);
   const tool=(name,args,overrides,bearer)=>mcp('tools/call',{name,arguments:args},overrides,bearer);
   await settings();
-  return {...runtime,request,http,cookie,context,settings,adopt,mcp,tool,fixtures};
+  return {...runtime,request,http,cookie,context,settings,adopt,mcp,mcpWithToken,tool,fixtures};
  }catch(error){await runtime.close();throw error}
 }
 
