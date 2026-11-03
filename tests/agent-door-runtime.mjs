@@ -70,9 +70,10 @@ export async function agentRuntime(){
     outgoing.end(init.body);
    });
   }
+  const mcpWithToken=(token,method,params={})=>mcp(method,params,{},token);
   const tool=(name,args,overrides,bearer)=>mcp('tools/call',{name,arguments:args},overrides,bearer);
   await settings();
-  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,mcp,tool,discardToolResponse,fixtures};
+  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,mcp,mcpWithToken,tool,discardToolResponse,fixtures};
  }catch(error){await runtime.close();throw error}
 }
 
@@ -208,13 +209,18 @@ export async function pauseMatrix(runtime,{setLocal=async paused=>{
  for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
   assert.equal((await adopt(document)).status,200);
   assert.deepEqual(await flags(),{business:false,local:false});
+  // Retain the exact admitted credential across every flag transition. Minting
+  // a replacement for each call would not prove that Pause stops existing tokens.
+  const retainedToken=await accessToken(runtime.context,{act:{sub:runtime.context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
+  const retainedTool=(name,args)=>runtime.mcpWithToken(retainedToken,'tools/call',{name,arguments:args});
   async function available(phase){
+   for(const [credential,call] of [['retained',retainedTool],['fresh',tool]]){
    const before=await snapshot(),args=await note();
-   const result=await tool('oncall.services.read',{id:'agent-service'});
+   const result=await call('oncall.services.read',{id:'agent-service'});
    assert.equal(result.result?.isError,false);
    assert.equal(result.result.structuredContent.data[0].id,'agent-service');
    assert.equal(result.decision.disposition,label==='held'?'review':'autonomous');
-   const changed=await tool('oncall.notes.add',args);
+   const changed=await call('oncall.notes.add',args);
    assert.equal(changed.decision.disposition,label==='held'?'approval':'autonomous');
    if(label==='held'){
     assert.equal(changed.result.resultType,'input_required');
@@ -228,27 +234,28 @@ export async function pauseMatrix(runtime,{setLocal=async paused=>{
    assert.equal(entry.text,args.text);
    assert.equal(entry.metadata?.agent?.agent.id,runtime.context.agentId);
    assert.deepEqual(await runtime.outboundRequests(),edge);
-   console.log(`PROBE BASE-AGENT-011 6 ${label} ${phase}: next MCP read served; note ${label==='held'?'held then human-approved':'executed'}; zero outbound requests`);
+   console.log(`PROBE BASE-AGENT-011 6 ${label} ${phase}: ${credential} bearer read served; note ${label==='held'?'held then human-approved':'executed'}; zero outbound requests`);
+   }
   }
   async function cannotResume(expected){
    const before=await snapshot(),policy=await read('/agents/api/state');
    const token=await accessToken(runtime.context);
-   for(const withCookie of [false,true]){
-    const response=await runtime.request(runtime.origin+'/agents/api/pause',{method:'POST',headers:{Origin:runtime.origin,Authorization:'Bearer '+token,'Content-Type':'application/json',...(withCookie?{Cookie:runtime.cookie}:{})},body:JSON.stringify({paused:false})});
+   for(const bearer of [retainedToken,token])for(const withCookie of [false,true]){
+    const response=await runtime.request(runtime.origin+'/agents/api/pause',{method:'POST',headers:{Origin:runtime.origin,Authorization:'Bearer '+bearer,'Content-Type':'application/json',...(withCookie?{Cookie:runtime.cookie}:{})},body:JSON.stringify({paused:false})});
     assert.equal(response.status,403);
     assert.equal((await response.json()).code,'person_session_required');
     assert.deepEqual(await read('/agents/api/state'),policy,'Bearer resume cannot change either flag or the policy');
     assert.deepEqual(await snapshot(),before,'Bearer resume preserves application and paging state');
    }
    assert.deepEqual(await flags(),expected);
-   console.log(`PROBE BASE-AGENT-011 7 ${label}: agent bearer resume with and without owner cookie -> 403; flags ${JSON.stringify(expected)} unchanged`);
+   console.log(`PROBE BASE-AGENT-011 7 ${label}: retained and fresh agent bearer resume with and without owner cookie -> 403; flags ${JSON.stringify(expected)} unchanged`);
   }
   async function refused(expected,started,phase){
    // Prepare schema-valid calls at the current native revision. A malformed or
    // stale request cannot substitute for the paused authority refusal.
    const args=await note(),before=await snapshot();
-   for(const [name,input] of [['oncall.services.read',{id:'agent-service'}],['oncall.notes.add',args]]){
-    const answer=await tool(name,input),elapsed=performance.now()-started;maximum=Math.max(maximum,elapsed);
+   for(const call of [retainedTool,tool])for(const [name,input] of [['oncall.services.read',{id:'agent-service'}],['oncall.notes.add',args]]){
+    const answer=await call(name,input),elapsed=performance.now()-started;maximum=Math.max(maximum,elapsed);
     assert.equal(code(answer),'agents_paused',phase+' '+name);
     assert.equal(answer.result.structuredContent,undefined,'Pause discloses no native result');
     assert.ok(elapsed<60000,`Next ${name} refused in ${elapsed.toFixed(0)}ms`);
@@ -257,7 +264,7 @@ export async function pauseMatrix(runtime,{setLocal=async paused=>{
    await cannotResume(expected);
    assert.deepEqual(await runtime.outboundRequests(),edge);
    await observe(label,phase,expected);
-   console.log(`PROBE BASE-AGENT-011 6 ${label} ${phase}: valid next MCP read and note -> agents_paused in ${(performance.now()-started).toFixed(0)}ms; application and paging unchanged; zero outbound requests`);
+   console.log(`PROBE BASE-AGENT-011 6 ${label} ${phase}: retained and fresh bearer valid next MCP read and note -> agents_paused in ${(performance.now()-started).toFixed(0)}ms; application and paging unchanged; zero outbound requests`);
   }
   async function change(action,expected,phase){const started=performance.now();await action();await refused(expected,started,phase)}
   await available('initially on');
