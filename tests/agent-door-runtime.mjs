@@ -166,13 +166,14 @@ export async function consentRevocationMatrix(runtime){
    return {agentId,consent,token,expires:claims.exp};
   }
   const revoked=await client(),control=await client();
-  async function available(client,phase){
+  async function available(client,phase,args){
    assert.ok(seconds()<client.expires,'The exact retained bearer is still unexpired');
    const found=await tool('oncall.services.read',{id:'agent-service'},{token:client.token});
    assert.equal(found.status,200);assert.equal(found.result?.isError,false);
    assert.equal(found.result.structuredContent.data[0].id,'agent-service');
    assert.equal(found.decision.disposition,label==='held'?'review':'autonomous');
-   const args=await note(),before=await read('/api/state'),paging=await read('/api/paging/state');
+   args??=await note();
+   const before=await read('/api/state'),paging=await read('/api/paging/state');
    const changed=await tool('oncall.notes.add',args,{token:client.token});
    assert.equal(changed.status,200);
    assert.equal(changed.decision.disposition,label==='held'?'approval':'autonomous');
@@ -263,7 +264,9 @@ export async function consentRevocationMatrix(runtime){
   const [clockAfter]=await rows('oc_audit_clock'),last=persistence.at(-1);
   assert.ok(Number.isSafeInteger(clockAfter.changes_before)&&clockAfter.changes_before>clockBefore[0].changes_before);
   assert.deepEqual(clockAfter,{...clockBefore[0],revision:clockBefore[0].revision+attempts.length,changed:1,changes_before:clockAfter.changes_before,actor_label:last.actor,subject_label:last.subject,source_label:last.source},'Only the refusal audit clock and attribution advance');
-  await available(control,'control after revocation');
+  // The control completes the exact payload the revoked bearer could not run.
+  // Its current native revision and fields must remain valid after refusal.
+  await available(control,'control after revocation with the identical refused mutation',args);
  }
  assert.equal((await adopt()).status,200);
  console.log(`PASS Business consent receiving door: both company policies, same unexpired bearers, maximum refusal ${maximum.toFixed(0)}ms, fresh mutation and completed retry refused without cached content, exact native and approval and review and paging isolation, attributed refusal audit only, separately consented controls and zero outbound requests; no Business account propagation claim`);
