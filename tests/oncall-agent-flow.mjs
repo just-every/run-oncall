@@ -86,6 +86,83 @@ async function droppedDeclarationReplay(runtime){
  assert.equal((await adopt()).status,200);
 }
 
+/** Optional expected revision refuses before custody, then permits a fresh call. */
+async function staleNoteRevision(runtime){
+ const {db,http,tool,adopt,context}=runtime;
+ const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
+ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
+ // Request-audit scratch and refusal relay bookkeeping are separate from
+ // retained state-changing audit, which is compared explicitly below.
+ const tables=(await rows("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name"))
+  .map(row=>row.name).filter(name=>!['agent_door_audit','agent_door_relay','oc_admin_audit','oc_audit_clock'].includes(name));
+ const commits=()=>rows("SELECT * FROM oc_admin_audit WHERE outcome='accepted' AND (workspace_before<>workspace_after OR paging_before<>paging_after OR handoff_before<>handoff_after) ORDER BY ordinal");
+ const snapshot=async()=>({
+  application:await read('/api/state'),paging:await read('/api/paging/state'),commits:await commits(),
+  records:Object.fromEntries((await db.batch(tables.map(name=>db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"')))).map((result,index)=>[
+   tables[index],result.results.map(row=>{
+    // Capacity counters may advance; agent identity and authority must not.
+    if(tables[index]==='agent_door_agents'){const {window,requests,...identity}=row;return identity}
+    return row;
+   }).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))),
+  ])),
+ });
+ for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
+  assert.equal((await adopt(policy)).status,200);
+  const preparation=await http('/api/command',{type:'declare',service:'agent-service',title:'Synthetic expected revision '+mode,
+   summary:'Synthetic coordination without protected evidence',severity:'warning',alerts:[]});
+  assert.equal(preparation.status,200);
+  const incident=await preparation.json();
+  const args={incident:incident.id,revision:incident.revision,expected_revision:incident.revision-1,
+   text:'Synthetic note after revision reload '+mode,idempotency_key:randomUUID()};
+  const before=await snapshot(),priorAudit=await rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+  const stale=await tool('oncall.notes.add',args);
+  assert.equal(stale.status,200);assert.equal(stale.result.isError,true);
+  const error=stale.result._meta['com.runeditrun/error'];
+  assert.equal(error.code,'revision_conflict');assert.equal(error.current_revision,incident.revision);
+  assert.deepEqual(JSON.parse(stale.result.content[0].text),{code:'revision_conflict',current_revision:incident.revision});
+  assert.equal(stale.result.structuredContent,undefined);
+  assert.deepEqual(await snapshot(),before,'Stale optional revision preserves native records, revisions, timeline, state-changing audit, replay, approval, review and paging custody');
+  const refusedAudit=await rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+  assert.deepEqual(refusedAudit.slice(0,priorAudit.length),priorAudit);
+  assert.equal(refusedAudit.length,priorAudit.length+1);
+  const refusal=JSON.parse(refusedAudit.at(-1).row);
+  assert.equal(refusal.tool,'oncall.notes.add');assert.equal(refusal.code,'revision_conflict');assert.equal(refusal.outcome,'refused');
+  assert.equal(refusal.idempotency_key,args.idempotency_key);assert.equal(refusal.agent.id,context.agentId);
+  assert.deepEqual(refusal.resource,{kind:'incident',id:incident.id});
+
+  const freshArgs={...args,expected_revision:error.current_revision,idempotency_key:randomUUID()};
+  const fresh=await tool('oncall.notes.add',freshArgs);
+  assert.equal(fresh.status,200);assert.equal(fresh.result.isError,false);assert.equal(fresh.decision.disposition,disposition);
+  assert.equal(fresh.result.structuredContent.id,incident.id);
+  const once=await snapshot(),saved=once.application.incidents.find(row=>row.id===incident.id);
+  assert.deepEqual(fresh.result.structuredContent,saved);
+  assert.equal(saved.revision,incident.revision+1);assert.equal(once.application.revision,before.application.revision+1);
+  assert.equal(saved.timeline.length,incident.timeline.length+1);
+  assert.deepEqual(saved.timeline.slice(0,-1),incident.timeline);
+  const entry=saved.timeline.at(-1);
+  assert.equal(entry.text,args.text);assert.equal(entry.metadata.agent.agent.id,context.agentId);
+  assert.equal(once.commits.length,before.commits.length+1);assert.deepEqual(once.commits.slice(0,-1),before.commits);
+  assert.deepEqual(once.paging,{...before.paging,workspaceRevision:once.application.revision});
+  for(const name of tables.filter(name=>name.startsWith('paging_')))assert.deepEqual(once.records[name],before.records[name]);
+  assert.deepEqual(once.records.agent_door_approvals,before.records.agent_door_approvals);
+  const reviews=once.records.agent_door_reviews;
+  assert.equal(reviews.length,before.records.agent_door_reviews.length+Number(mode==='held'));
+  for(const review of before.records.agent_door_reviews)assert.deepEqual(reviews.find(row=>row.id===review.id),review);
+  if(mode==='held'){
+   const review=reviews.find(row=>row.id===fresh.result._meta['com.runeditrun/review'].id);
+   assert.ok(review);assert.equal(review.state,'open');assert.equal(JSON.parse(review.saved).decision_id,fresh.decision.id);
+  }else assert.equal(fresh.result._meta['com.runeditrun/review'],undefined);
+  const replay=await tool('oncall.notes.add',freshArgs);
+  assert.notEqual(replay.body.id,fresh.body.id);assert.equal(replay.result.isError,false);
+  assert.deepEqual(replay.result.structuredContent,fresh.result.structuredContent);
+  assert.deepEqual(replay.result._meta['com.runeditrun/review'],fresh.result._meta['com.runeditrun/review']);
+  assert.deepEqual(await snapshot(),once,'Fresh-key replay adds no duplicate note, revision, native audit commit, review or custody');
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+': valid native note revision '+incident.revision+' with stale expected_revision -> isError revision_conflict, exact current_revision '+error.current_revision+'; durable state and custody unchanged; fresh key using returned revision -> '+disposition+', one note and application commit; retry unchanged; zero outbound requests');
+ }
+ assert.equal((await adopt()).status,200);
+}
+
 const runtime=await agentRuntime();
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
 try{
@@ -152,6 +229,7 @@ try{
  await policyAdoption(runtime);
  await pauseMatrix(runtime);
  await droppedDeclarationReplay(runtime);
+ await staleNoteRevision(runtime);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
  const owner=(await (await http('/api/workspace')).json()).member;
