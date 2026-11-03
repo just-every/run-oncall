@@ -102,7 +102,7 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | `oncall.incidents.read` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`incident-read`, `erase-read`); `sensitive`: `tests/agent-door.mjs` (`incident-read`, `erase-read`) |
 | `oncall.incidents.receipt` | `incidents:write` | `standard` | `standard`: `tests/agent-door.mjs` (`incidents-receipt`) |
 | `oncall.incidents.resolve` | `incidents:write` | `commitment`, `sensitive` | `commitment`: `tests/agent-door.mjs` (`resolve`); `sensitive`: `tests/agent-door.mjs` (`resolve`) |
-| `oncall.incidents.update` | `incidents:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`recover`); `sensitive`: `tests/agent-door.mjs` (`recover`) |
+| `oncall.incidents.update` | `incidents:write` | `standard`, `sensitive`, `live` | `standard`: `tests/agent-door.mjs` (`manual-page`, `recover`); `sensitive`: `tests/agent-door.mjs` (`recover`); `live`: `tests/agent-door.mjs` (`manual-page`) |
 
 ### Integrations
 
@@ -169,6 +169,8 @@ The source manifest retains native resource targets; they are not exposed templa
 ## Approvals and limits
 
 Resolving a recovered incident is a `commitment`, including when company policy permits autonomous work. Its server-computed facts identify an internal decision with zero monetary value and currency `XXX` (no currency); the saved target and revision bind it to one incident. Retained recovery and personal evidence also carry `sensitive` with their record count. Both classes must pass company policy. Caller confirmation flags and instructions in incident text cannot downgrade either class. A held resolution leaves native coordination unchanged until the named person approves the exact saved revision. An identical completed retry returns the retained result without another resolution.
+
+Recording a manual page through `oncall.incidents.update` carries `standard` and `live`. The server validates the service, active named responders and any chosen policy, and computes the affected service IDs from those targets. The held operation binds both workspace and paging revisions and makes no application change before approval through the returned signed-in URL. Approval records one attributed operation; an identical retry has no second effect. Caller flags and description text cannot remove `live`. Existing sensitive evidence still adds `sensitive`. Paging remains OFF: these are recorded obligations, with no sender, automatic action or provider delivery. Other update kinds retain their existing classification; this proof covers only manual pages.
 
 Approvals show the saved target, proposed change, native revision and exact summary. A changed revision or coverage digest requires a fresh review. The actual approver is recorded separately from the agent preparer. An agent confirmation is never a person's decision. Review offers Undo only when a real native reversal exists.
 
