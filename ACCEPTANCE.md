@@ -9,9 +9,9 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Core | 15 | 45 | 24 | 84 |
-| Agent surface | 0 | 3 | 14 | 17 |
+| Agent surface | 0 | 4 | 13 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 15 | 48 | 38 | 101 |
+| Full target | 15 | 49 | 37 | 101 |
 
 Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f207859a` (30 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -1351,7 +1351,7 @@ Agent surface · target · **partial**
 
 #### BASE-AGENT-007 — The company's policy decides, at one chokepoint
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Every agent door calls one decision function: MCP, the integration API with agent tokens, and the seed's embedded agents. It evaluates the call's classes against the company's policy, as above. The seed ships no dispositions and fills no gap with one: agent access opens only under a complete policy that setup has asked for (RISK-POLICY.md), and before then every agent call returns `policy_unset` with the setup link and changes nothing. *Autonomous* runs the call. *Review* runs it and adds it to the review feed. *Approval* saves a pending action with server-computed facts and returns `input_required`, with a URL-mode elicitation to the seed's approval page and a pending handle. Each person the rule names approves the exact saved revision in a signed-in browser, and changed inputs need a new approval. The retried call returns the result and a receipt. A rejection returns `approval_rejected`, and a lapse past the wait the rule sets returns `approval_expired`. *Blocked* returns `policy_blocked`, naming the class, rule and revision.
 
@@ -1365,8 +1365,8 @@ Agent surface · target · **missing**
 7. A policy change applies to the next call within 60 seconds, and the audit cites the new revision.
 8. A policy document with a bad signature or another Business's id is rejected, and the door keeps the last valid revision.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `tests/oncall-agent-flow.mjs` — signed native policy adoption, using `tests/agent-door-runtime.mjs` policyAdoption: native MCP service reads and coordination notes under autonomous and held signed policies; immediate standard-class refusal within 60 seconds, new rule and revision in decisions and retained audit, unchanged application and paging state, zero outbound requests, and policy-appropriate restoration with the original refusal audit preserved.
+**Gap.** Acceptance 7 is proved only through the native MCP door; actual Business UI propagation remains unproved. Acceptances 1 to 6 and 8 retain unproved complete tool, class and disposition coverage; setup and upgrade behavior; monetary and daily thresholds; complete multi-class and approval lifecycle matrices; cross-door decision equality; and signature and Business-identity judgments. Model, investigation, ownership, remediation, recurrence and executor flows remain omitted. OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold. BASE-AGENT-006, BASE-AGENT-008, BASE-AGENT-011, SURFACE-004 and all release prerequisites remain unchanged. Paging remains OFF; production delivery, independent standby and real-phone obligations remain omitted.
 
 #### BASE-AGENT-008 — Truthful attribution
 
