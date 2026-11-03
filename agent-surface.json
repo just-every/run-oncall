@@ -332,7 +332,8 @@
       "readOnly": false,
       "classes": [
         "standard",
-        "sensitive"
+        "sensitive",
+        "live"
       ],
       "clauses": [
         "OC-004",
@@ -788,6 +789,85 @@
       }
     },
     {
+      "id": "incident-snooze",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "acknowledge",
+          "pointer": "/revision"
+        },
+        "change": "snooze",
+        "minutes": 5
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "agent-service"
+          }
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "class": "standard",
+        "internal": true,
+        "confirm": true
+      }
+    },
+    {
+      "id": "incident-cancel-deadline",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "incident-snooze",
+          "pointer": "/revision"
+        },
+        "change": "cancel-deadline"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "agent-service"
+          }
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "class": "standard",
+        "internal": true,
+        "confirm": true
+      }
+    },
+    {
       "id": "note",
       "tool": "oncall.notes.add",
       "args": {
@@ -796,7 +876,7 @@
           "pointer": "/id"
         },
         "revision": {
-          "$from": "acknowledge",
+          "$from": "incident-cancel-deadline",
           "pointer": "/revision"
         },
         "text": "Source observations do not establish recovery or grant approval"

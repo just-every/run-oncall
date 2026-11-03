@@ -1,23 +1,23 @@
 import type { Bindings } from '../auth.server'
-import type { Incident } from '../family/response-operations/domain'
+import { command, type Incident } from '../family/response-operations/domain'
 import { fireDeadline, stopRecoveredDeadlines } from '../incident-deadlines/model'
 import { responseContext } from '../manual-pages/context'
 import { pagingSnapshot } from '../paging-store'
 import { ToolRefusal, type ToolContext } from '../modules/agent-door/index.ts'
+import { incidentWithinServices } from '../incident-workflows/scope'
 import { nativeAccess, nativeActor, nativeAudit, nativeCall, persistNative, type NativePrincipal } from './native'
 
 export type AgentDeadlineArgs = { incident: string; deadline: string; revision: number }
 export type DeadlinePrincipal = NativePrincipal & { consent?: string }
 
-/** A due deadline re-enters the same policy door before any native re-trigger. */
-export async function expireAgentDeadline(env: Bindings, args: Record<string, unknown>, ctx: ToolContext): Promise<{ result: Incident; resources: { uri: string; name: string }[] }> {
-  return nativeCall(async () => {
+/** Resolve current native custody before classification and again at execution. */
+async function dueDeadline(env: Bindings, args: Record<string, unknown>, ctx: ToolContext) {
     const access = await nativeAccess(env, ctx, 'incidents:write')
     const snapshot = await pagingSnapshot(env.DB)
     if (snapshot.workspace.revision !== access.state.revision) throw new ToolRefusal('revision_conflict')
     access.state = snapshot.workspace
     const incident = access.state.incidents.find(row => row.id === args.incident && access.services.includes(row.service))
-    if (!incident) throw new ToolRefusal('not_found')
+    if (!incident || !incidentWithinServices(access.state, incident, access.services)) throw new ToolRefusal('not_found')
     if (!Number.isSafeInteger(args.revision) || incident.revision !== args.revision) throw new ToolRefusal('revision_conflict')
     const deadline = incident.deadlines?.find(row => row.id === args.deadline)
     if (!deadline) throw new ToolRefusal('not_found')
@@ -32,6 +32,32 @@ export async function expireAgentDeadline(env: Bindings, args: Record<string, un
     if (deadline.actor !== actor.id || !createdBy || createdBy.agent.id !== ctx.agent.id || createdBy.sponsor !== ctx.person.id) throw new ToolRefusal('native_authority_required')
     const now = ctx.now(), at = new Date(now).toISOString()
     if (deadline.state !== 'pending' || !Number.isFinite(Date.parse(deadline.dueAt)) || Date.parse(deadline.dueAt) > now) throw new ToolRefusal('revision_conflict', 'Deadline is stopped or not yet due')
+    return { access, snapshot, incident, deadline, binding, actor, now, at }
+}
+
+/** Validate the real operation in memory; classification writes no native state. */
+export async function deadlineUpdateService(env: Bindings, args: Record<string, unknown>, ctx: ToolContext): Promise<string | null> {
+  if (args.change === 'expire-deadline') {
+    const { access, snapshot, incident, deadline, now, at } = await dueDeadline(env, args, ctx)
+    stopRecoveredDeadlines(access.state, at)
+    if (!fireDeadline(access.state, incident, deadline, at, responseContext(snapshot, now))) throw new ToolRefusal('revision_conflict', 'Deadline no longer has authority to re-trigger')
+    return incident.service
+  }
+  const access = await nativeAccess(env, ctx, 'incidents:write')
+  const snapshot = await pagingSnapshot(env.DB)
+  if (snapshot.workspace.revision !== access.state.revision) throw new ToolRefusal('revision_conflict')
+  const incident = snapshot.workspace.incidents.find(row => row.id === args.incident)
+  if (!incident || !incidentWithinServices(snapshot.workspace, incident, access.services)) throw new ToolRefusal('not_found')
+  const active = () => JSON.stringify((incident.deadlines ?? []).filter(row => row.state === 'pending' || row.obligation?.state === 'recorded'))
+  const before = active()
+  command(snapshot.workspace, nativeActor(access, ctx), { type: args.change, incident: incident.id, revision: args.revision, minutes: args.minutes }, new Date(ctx.now()).toISOString(), responseContext(snapshot, ctx.now()))
+  return before !== active() ? incident.service : null
+}
+
+/** A due deadline re-enters the same policy door before any native re-trigger. */
+export async function expireAgentDeadline(env: Bindings, args: Record<string, unknown>, ctx: ToolContext): Promise<{ result: Incident; resources: { uri: string; name: string }[] }> {
+  return nativeCall(async () => {
+    const { access, snapshot, incident, deadline, binding, actor, now, at } = await dueDeadline(env, args, ctx)
     // Source recovery and resolution retain their native stopping authority.
     stopRecoveredDeadlines(access.state, at)
     if (!fireDeadline(access.state, incident, deadline, at, responseContext(snapshot, now))) throw new ToolRefusal('revision_conflict', 'Deadline no longer has authority to re-trigger')
