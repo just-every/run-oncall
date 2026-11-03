@@ -1418,13 +1418,13 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 ## Status
 
-Judged from the code and tests at commit `ac1ad202cf41ca868a4cf163d390fe61ca9c1773` (3 November 2026).
+Judged from the code and tests at commit `d189082d24ac1fdbf1b62272a73949e42e9a36da` (3 November 2026).
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 11 | 11 | 0 | 22 |
+| Published | 12 | 10 | 0 | 22 |
 | Target and push further | 5 | 38 | 36 | 79 |
-| All | 16 | 49 | 36 | 101 |
+| All | 17 | 48 | 36 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1439,7 +1439,7 @@ Judged from the code and tests at commit `ac1ad202cf41ca868a4cf163d390fe61ca9c17
 | `OC-009` | Accessible interface | published | partial | `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/product-browser-journey.mjs` — keyboardCoordination: native-key declaration, acknowledgment, literal attributed notes, action-dialog focus containment and Escape return at 1440 and 390, plus the desktop real-409 alert with no saved claim; productSchedule: native-key rota person order, date and time entry, phone preview disclosure, cover preparation, zero-write review, Escape, explicit confirmation and protected assignment and preview readback at 1440 and 390. `tests/product-browser.mjs` runs these legs in push Verify with a controlled platform and browser clock; `tests/keyboard.mjs` checks visible focus; selected states check labels, overflow and serious or critical axe findings. | Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. BASE-ACCESSIBILITY-001 is not established across every Oncall journey and the OC-029 apps; the human passes and the VPAT are register rows R-3 and R-4. |
 | `OC-010` | Health and honest commands | published | done | `tests/runtime.mjs` — coordinationHealth: check and describe with storage available and unavailable, exact emitted build identity, storage-loss 503 and recovery with unchanged records; hosted production output: actual source and artifact identity, supplied version binding and linked-page results. `tests/transfer.mjs` — managed installation transfer: observed CLI outcomes, populated inactive restore and erasure fences. `tests/health-outcomes.mjs` — separate local and locally executed hosted-mode records, dated prior R-1 and R-2 provider receipts with their source SHAs, and R-8 explicitly not run. Paging health and measured capacity remain with OC-026 to OC-029 and OC-064. |  |
 | `OC-011` | Calendar-day rotations | published | partial | `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs` | Fall-DST hand-offs, ambiguous and nonexistent minutes, viewer and missing slots kept as gaps and duplicate primary/backup detection are not asserted in the cited test; spring DST, override edges, overlap refusal and an inactive member's gap are asserted. |
-| `OC-012` | Paging off | published | partial | `src/delivery.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/activation.mjs` | The refusal's paging-OFF explanation and the demo's simulation label are not read back by the cited tests; each door's refusal and the absence of receipts are asserted. No production paging authorization is created by this contract. |
+| `OC-012` | Paging off | published | done | `tests/activation.mjs` — normal-installation refusal loop: delivery, job, tick, callback and resume each explain paging OFF, the existing pager, independent standby and a passed real-phone drill, preserve workspace and paging records and revisions, retain refusal audit, create no receipt and attempt no outbound request; labelled demo HTTP flow: emitted HTML Demo decoration and title plus the workspace demo flag identify all four simulated channel outcomes, with no production receipt or outbound request. |  |
 | `OC-013` | Held history stays historical | published | done | `src/family/response-operations/escalation.ts`; `src/paging-api.ts`; `tests/runtime.mjs`; `tests/activation.mjs` |  |
 | `OC-014` | Side-effect-free previews | published | partial | `src/schedule-api.ts`; `src/paging-api.ts`; `src/family/response-operations/paging-archive.ts`; `tests/activation.mjs` — **scheduleCoordination** and **pagingHistory** (preview isolation); `tests/routing.mjs` — **OC-014 service routing preview isolation** | No cited test compares durable state, receipt counts, timers or provider actions before and after a now/next, schedule or routing preview, or reads the synthetic label on historical delivery data. |
 | `OC-015` | Strict module archives | published | done | `tests/activation.mjs` pagingHistory: current-admin populated archive round trip; anonymous 401 and active viewer and responder 403 at both archive and restore doors, no disclosure, unchanged module records and both revisions with refusal audit; unknown fields, broken references, retained callbacks, paused pending jobs and injected SQL rollback. |  |
