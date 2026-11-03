@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {readFile,access} from 'node:fs/promises';
+import {lexer} from 'marked';
 import {agentRuntime,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
+import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
 import {nativeTransport} from './oncall-agent-transport.mjs';
 import {AGENT_CLASSES} from '../src/modules/agent-door/conformance/surface.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
@@ -98,6 +102,53 @@ try{
  }
  assert.equal(listing.result.nextCursor,undefined,'The catalog probe must enumerate the complete emitted list');
  console.log(`PROBE BASE-AGENT-006 point 5 listed tools: emitted Worker MCP -> all ${listing.result.tools.length} returned tools declare only fleet-catalog classes`);
+ // Compare the whole generated inventory with a separately built public door.
+ // The existing conformance journey executes each referenced computed class;
+ // this check refuses dangling, wrong-tool and wrong-class fixture references.
+ execFileSync(process.execPath,['scripts/write-agent-surface.mjs','--check'],{stdio:'inherit'});
+ const surface=scopedSurface(runtime.context.surface),guide=await readFile('docs/agents.md','utf8');
+ const codes=text=>[...text.matchAll(/`([^`]+)`/g)].map(match=>match[1]);
+ const inventory=lexer(guide).filter(token=>token.type==='table'&&token.header.map(cell=>cell.text).join('|')==='Tool|Scope|Possible risk classes|Computed class checks');
+ assert.ok(inventory.length>0,'The guide must contain its generated tool inventory');
+ const documented=inventory.flatMap(table=>table.rows.map(row=>({name:codes(row[0].text)[0],scope:codes(row[1].text)[0],classes:codes(row[2].text),checks:row[3].text.split('; ').map(text=>codes(text))})));
+ assert.deepEqual(documented.map(row=>row.name),surface.tools.map(row=>row.name));
+ for(const row of documented){
+  assert.deepEqual(row.checks.map(([cls])=>cls),row.classes,`${row.name} documents every possible computed class`);
+  for(const [cls,test,...ids] of row.checks){
+   assert.equal(test,'tests/agent-door.mjs','Class evidence must name the maintained executable journey');
+   await access(test);
+   const fixtures=surface.journey.filter(step=>step.tool===row.name&&step.expect.some(item=>item.class===cls));
+   assert.ok(fixtures.length>0,`${row.name} ${cls} has executable class coverage`);
+   assert.deepEqual(ids,fixtures.map(step=>step.id),`${row.name} ${cls} references its complete maintained coverage`);
+  }
+ }
+ const inventoryState=async()=>({native:await (await http('/api/state')).json(),paging:await (await http('/api/paging/state')).json()});
+ const permanentAudit=async()=>(await runtime.db.prepare('SELECT * FROM oc_admin_audit ORDER BY id').all()).results;
+ for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+  assert.equal((await adopt(document)).status,200);
+  const before=await inventoryState(),edge=await runtime.outboundRequests();
+  const discovered=await mcp('server/discover'),listed=await mcp('tools/list'),templates=await mcp('resources/templates/list');
+  assert.equal(discovered.status,200);assert.equal(listed.status,200);assert.equal(templates.status,200);
+  assert.deepEqual(discovered.result._meta['com.runeditrun/capabilities'].declared,runtime.context.surface.capabilities);
+  assert.equal(discovered.result.capabilities.resources,undefined);
+  assert.equal(listed.result.nextCursor,undefined);
+  assert.deepEqual(documented.map(({checks,...row})=>row),listed.result.tools.map(row=>({name:row.name,scope:row._meta['com.runeditrun/scope'],classes:row._meta['com.runeditrun/classes']})));
+  assert.deepEqual(templates.result.resourceTemplates,surface.resources);
+  assert.deepEqual(surface.resources,[]);
+  // MCP retains its required protocol bookkeeping; the public guide itself
+  // makes no permanent audit write or native effect.
+  const beforeGuideAudit=await permanentAudit();
+  const response=await http('/docs/agents');assert.equal(response.status,200);
+  const html=await response.text(),tables=[...html.matchAll(/<table>([\s\S]*?)<\/table>/g)].map(match=>match[1]);
+  const served=tables.filter(table=>table.includes('<th>Computed class checks</th>')).flatMap(table=>[...table.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].filter(match=>match[1].includes('<td>')).map(match=>[...match[1].matchAll(/<td>([\s\S]*?)<\/td>/g)].map(cell=>[...cell[1].matchAll(/<code>([^<]+)<\/code>/g)].map(code=>code[1]))));
+  assert.deepEqual(served,documented.map(row=>[[row.name],[row.scope],row.classes,row.checks.flat()]));
+  assert.deepEqual(await permanentAudit(),beforeGuideAudit,'The public guide writes no permanent audit');
+  assert.deepEqual(await inventoryState(),before,'Guide and discovery reads preserve native data and paging');
+  assert.deepEqual(await runtime.outboundRequests(),edge);
+  console.log(`PROBE BASE-AGENT-013 1 ${label}: GET /docs/agents and MCP discovery -> ${documented.length} exact tools, scopes and class sets; no resource templates; event target withheld; native and paging unchanged; zero outbound requests`);
+  console.log(`PROBE BASE-AGENT-013 2 ${label}: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs`);
+ }
+ assert.equal((await adopt()).status,200);
  await policyAdoption(runtime);
  await pauseMatrix(runtime);
  await droppedDeclarationReplay(runtime);
