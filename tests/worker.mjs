@@ -30,6 +30,14 @@ export async function automationRuntime(edge=()=>new Response('refused',{status:
  };
  const directory=await mkdtemp(join(tmpdir(),'oncall-automation-')),build=resolve('dist/server'),config=JSON.parse(await readFile(join(build,'wrangler.json'),'utf8')),entry=join(build,config.main);
  const modules=[entry,...(await walk(build)).filter(p=>p!==entry&&types[extname(p)])].map(path=>({type:types[extname(path)],path}));
+ if(native.clock!==undefined){
+  // Only this emitted test Worker receives the controllable platform clock.
+  // Native parsing and explicit dates retain their original Date semantics.
+  modules.unshift({type:'ESModule',path:join(build,'.automation-clock.mjs'),contents:`import app from './${config.main}';
+const RealDate=Date;let at=${JSON.stringify(native.clock)};
+globalThis.Date=class extends RealDate {constructor(...args){super(...(args.length?args:[at??RealDate.now()]));}static now(){return at??RealDate.now();}};
+export default {...app,async fetch(request,env,ctx){if(new URL(request.url).pathname==='/__test_clock'){at=await request.json();return new Response('clock injected');}return app.fetch(request,env,ctx);}};`});
+ }
  const freePort=async()=>{const socket=createServer();await new Promise(r=>socket.listen(0,'127.0.0.1',r));const selected=socket.address().port;await new Promise(r=>socket.close(r));return selected;};
  let port=await freePort();
  const secret=randomBytes(32).toString('hex');let mf,db,origin='http://127.0.0.1:'+port;
@@ -45,7 +53,7 @@ export async function automationRuntime(edge=()=>new Response('refused',{status:
  }
  await start();
  for(const name of (await readdir('migrations/core')).filter(n=>n.endsWith('.sql')).sort())await db.batch(split(await readFile('migrations/core/'+name,'utf8')).map(q=>db.prepare(q)));
- return {get db(){return db;},get origin(){return origin;},get mf(){return mf;},outboundRequests:async()=>structuredClone(outbound),async restart(){await mf.dispose();await start();},async close(){await mf.dispose();await rm(directory,{recursive:true,force:true});},async request(path,data,cookie='',headers={}){const response=await fetch(origin+path,{method:data===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',cookie,...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:response.status,value:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0],headers:response.headers};}};
+ return {get db(){return db;},get origin(){return origin;},get mf(){return mf;},outboundRequests:async()=>structuredClone(outbound),async time(at){if(native.clock===undefined)throw Error('Clock not injected');const response=await fetch(origin+'/__test_clock',{method:'POST',body:JSON.stringify(at)});if(!response.ok)throw Error('Clock injection failed');},async restart(){await mf.dispose();await start();},async close(){await mf.dispose();await rm(directory,{recursive:true,force:true});},async request(path,data,cookie='',headers={}){const response=await fetch(origin+path,{method:data===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',cookie,...headers},...(data===undefined?{}:{body:JSON.stringify(data)})});return {status:response.status,value:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0],headers:response.headers};}};
 }
 
 
