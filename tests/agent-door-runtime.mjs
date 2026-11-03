@@ -46,6 +46,96 @@ export async function agentRuntime(){
  }catch(error){await runtime.close();throw error}
 }
 
+/** Signed policy changes govern the next native calls and their retained audit. */
+export async function policyAdoption(runtime){
+ const {http,tool,adopt,context}=runtime;
+ const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
+ const snapshot=async()=>({application:await read('/api/state'),paging:await read('/api/paging/state')});
+ const audit=()=>read('/agents/api/audit?agent='+encodeURIComponent(context.agentId));
+ const target=await recoveredResolutionTarget(runtime,'Signed policy adoption coordination');
+ const current=async()=> (await read('/api/state')).incidents.find(row=>row.id===target.id);
+ const note=async()=>({incident:target.id,revision:(await current()).revision,text:'Synthetic coordination under the current signed policy',idempotency_key:randomUUID()});
+ assert.deepEqual(await runtime.outboundRequests(),[]);
+ for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+  assert.equal((await adopt(document)).status,200);
+  async function available(phase){
+   const before=await snapshot(),args=await note();
+   const served=await tool('oncall.services.read',{id:'agent-service'});
+   assert.equal(served.result?.isError,false);
+   assert.equal(served.result.structuredContent.data[0].id,'agent-service');
+   assert.equal(served.decision.disposition,label==='held'?'review':'autonomous');
+   assert.equal(served.decision.revision,context.revision);
+   const changed=await tool('oncall.notes.add',args);
+   assert.equal(changed.decision.revision,context.revision);
+   assert.equal(changed.decision.disposition,label==='held'?'approval':'autonomous');
+   if(label==='held'){
+    assert.equal(changed.result.resultType,'input_required');
+    assert.deepEqual(await snapshot(),before,'Approval preserves native state until the person approves');
+    const pending=(await read('/agents/api/approvals/'+changed.result._meta['com.runeditrun/approval'].id)).approval;
+    assert.equal(pending.revision,context.revision);
+    const response=await http('/agents/api/approvals/'+pending.id+'/approve',{revision:pending.revision,summary_sha256:pending.summary_sha256});
+    assert.equal(response.status,200);assert.equal((await response.json()).approval.state,'executed');
+   }else assert.equal(changed.result?.isError,false);
+   const saved=await current(),entry=saved.timeline.at(-1);
+   assert.equal(saved.revision,args.revision+1);
+   assert.equal(entry.text,args.text);
+   assert.equal(entry.metadata?.agent?.agent.id,context.agentId);
+   const rows=(await audit()).rows;
+   const readRow=rows.find(row=>row.id===served.decision.id);
+   assert.equal(readRow.revision,context.revision);
+   assert.equal(readRow.outcome,'done');
+   if(label==='held')assert.ok(readRow.review?.id,'A restored review read enters the review feed');
+   assert.deepEqual(await runtime.outboundRequests(),[]);
+   console.log(`PROBE BASE-AGENT-007 7 ${label} ${phase}: native MCP read served; note ${label==='held'?'held then person-approved':'executed'} at signed revision ${context.revision}; zero outbound requests`);
+  }
+  await available('before adoption');
+  // Resolve real targets and current revisions before adoption so these are
+  // the very next MCP calls, with no stale or malformed input as a substitute.
+  const args=await note(),before=await snapshot(),priorRevision=context.revision;
+  const rule='stop-standard-'+label,blocked=structuredClone(document);
+  blocked.rules.push({id:rule,class:'standard',do:'blocked'});
+  const started=performance.now(),adoption=await adopt(blocked);
+  assert.equal(adoption.status,200);
+  const revision=context.revision,acknowledged=await adoption.json();
+  assert.ok(revision>priorRevision);
+  assert.deepEqual(acknowledged.adopted,{seq:context.seq,revision});
+  const refusals=[];
+  for(const [name,input] of [['oncall.services.read',{id:'agent-service'}],['oncall.notes.add',args]]){
+   const answer=await tool(name,input),elapsed=performance.now()-started;
+   assert.ok(elapsed<60000,`Signed adoption must refuse the next ${name} within 60 seconds (${elapsed.toFixed(0)}ms)`);
+   const error=answer.result?._meta?.['com.runeditrun/error'];
+   assert.equal(error?.code,'policy_blocked');
+   assert.equal(error.class,'standard');assert.equal(error.rule,rule);assert.equal(error.revision,revision);
+   assert.equal(answer.decision.disposition,'blocked');assert.equal(answer.decision.revision,revision);
+   const standard=answer.decision.classes.find(row=>row.class==='standard');
+   assert.equal(standard.rule,rule);assert.equal(standard.do,'blocked');
+   assert.equal(answer.result.structuredContent,undefined,'A policy refusal discloses no native content');
+   refusals.push({name,id:answer.decision.id,elapsed});
+  }
+  assert.deepEqual(await snapshot(),before,'Adoption and refused calls preserve application and paging state');
+  const adopted=await read('/agents/api/state');
+  assert.equal(adopted.policy.revision,revision);
+  const retained=await audit();
+  assert.equal(retained.differs_from_policy,0);
+  for(const refusal of refusals){
+   const row=retained.rows.find(row=>row.id===refusal.id);
+   assert.ok(row,'The refusal must have a retained native audit row');
+   assert.equal(row.tool,refusal.name);assert.equal(row.code,'policy_blocked');
+   assert.equal(row.decision,'blocked');assert.equal(row.outcome,'refused');assert.equal(row.revision,revision);
+   assert.deepEqual(row.rules.find(item=>item.class==='standard'),{class:'standard',rule,do:'blocked'});
+   assert.deepEqual(await runtime.outboundRequests(),[]);
+   console.log(`PROBE BASE-AGENT-007 7 ${label} ${refusal.name}: next schema-valid MCP call -> policy_blocked in ${refusal.elapsed.toFixed(0)}ms; decision and retained audit rule ${rule}, revision ${revision}; application and paging unchanged; zero outbound requests`);
+  }
+  assert.equal((await adopt(document)).status,200);
+  await available('after restoration');
+  const restored=await audit();
+  assert.equal(restored.differs_from_policy,0);
+  for(const refusal of refusals)assert.deepEqual(restored.rows.find(row=>row.id===refusal.id),retained.rows.find(row=>row.id===refusal.id),'Restoring policy preserves the original refusal revision and rule');
+ }
+ assert.equal((await adopt()).status,200);
+ console.log('PASS signed native policy adoption: next read and coordination mutation blocked within 60 seconds under both policies; retained rule and revision survive restoration; policy-appropriate access restored; zero outbound requests');
+}
+
 /** Public-door Pause matrix; the browser supplies the real local control. */
 export async function pauseMatrix(runtime,{setLocal=async paused=>{
  const response=await runtime.http('/agents/api/pause',{paused});
