@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "6ceb5ae15f3b791cc00321747152afeff7555c51770edd5c7ca3f35fd7e68772",
+      "sha256": "c6bd807059da1485ab4fbf41e5136f700fd57f9eb89391fae7f30eeb05bfc9b2",
       "executable": false
     },
     "DEMO.md": {
@@ -6312,7 +6312,7 @@
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
-      "sha256": "06702fc70cb34c8e00429052576a2ca2f6129478858435e6ef258906d61610f6",
+      "sha256": "28fe44819d5a9695325b8584148bd666c0a5766c59d82c1097a8e87135eef6b0",
       "executable": false
     },
     "tests/agent-door.mjs": {

@@ -37,11 +37,11 @@ export async function agentRuntime(){
    if(response.ok){context.seq=signed.payload.seq;context.revision=signed.payload.revision}
    return response;
   }
-  async function mcp(method,params={},overrides={}){
-   const token=await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'},...overrides}),response=await request(runtime.origin+'/mcp',{method:'POST',headers:{Origin:runtime.origin,Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json, text/event-stream','MCP-Protocol-Version':'2026-07-28','Mcp-Method':method,...(params.name||params.uri?{'Mcp-Name':params.name??params.uri}:{})},body:JSON.stringify({jsonrpc:'2.0',id:randomUUID(),method,params:{...params,_meta:{...params._meta,'io.modelcontextprotocol/protocolVersion':'2026-07-28'}}})});
+  async function mcp(method,params={},overrides={},bearer){
+   const token=bearer??await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'},...overrides}),response=await request(runtime.origin+'/mcp',{method:'POST',headers:{Origin:runtime.origin,Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json, text/event-stream','MCP-Protocol-Version':'2026-07-28','Mcp-Method':method,...(params.name||params.uri?{'Mcp-Name':params.name??params.uri}:{})},body:JSON.stringify({jsonrpc:'2.0',id:randomUUID(),method,params:{...params,_meta:{...params._meta,'io.modelcontextprotocol/protocolVersion':'2026-07-28'}}})});
    const body=await response.json();return {status:response.status,body,message:body,result:body.result,decision:body.result?._meta?.['com.runeditrun/decision']??body.error?.data?._meta?.['com.runeditrun/decision']};
   }
-  const tool=(name,args,overrides)=>mcp('tools/call',{name,arguments:args},overrides);
+  const tool=(name,args,overrides,bearer)=>mcp('tools/call',{name,arguments:args},overrides,bearer);
   await settings();
   return {...runtime,request,http,cookie,context,settings,adopt,mcp,tool,fixtures};
  }catch(error){await runtime.close();throw error}
@@ -59,14 +59,18 @@ export async function policyAdoption(runtime){
  assert.deepEqual(await runtime.outboundRequests(),[]);
  for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
   assert.equal((await adopt(document)).status,200);
+  // Reuse an already admitted credential: observing a new policy cannot rely
+  // on a token refresh or a new agent identity.
+  const bearer=await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
+  const call=(name,args)=>tool(name,args,{},bearer);
   async function available(phase){
    const before=await snapshot(),args=await note();
-   const served=await tool('oncall.services.read',{id:'agent-service'});
+   const served=await call('oncall.services.read',{id:'agent-service'});
    assert.equal(served.result?.isError,false);
    assert.equal(served.result.structuredContent.data[0].id,'agent-service');
    assert.equal(served.decision.disposition,label==='held'?'review':'autonomous');
    assert.equal(served.decision.revision,context.revision);
-   const changed=await tool('oncall.notes.add',args);
+   const changed=await call('oncall.notes.add',args);
    assert.equal(changed.decision.revision,context.revision);
    assert.equal(changed.decision.disposition,label==='held'?'approval':'autonomous');
    if(label==='held'){
@@ -85,9 +89,24 @@ export async function policyAdoption(runtime){
    const readRow=rows.find(row=>row.id===served.decision.id);
    assert.equal(readRow.revision,context.revision);
    assert.equal(readRow.outcome,'done');
+   assert.equal(readRow.decision,served.decision.disposition);
+   assert.deepEqual(readRow.rules,served.decision.classes.map(({class:cls,rule,do:action})=>({class:cls,rule,do:action})));
    if(label==='held')assert.ok(readRow.review?.id,'A restored review read enters the review feed');
+   const noteRow=rows.find(row=>row.id===changed.decision.id);
+   assert.ok(noteRow,'The admitted note retains its policy decision');
+   assert.equal(noteRow.revision,context.revision);
+   assert.equal(noteRow.decision,changed.decision.disposition);
+   assert.equal(noteRow.outcome,label==='held'?'pending':'done');
+   assert.deepEqual(noteRow.rules,changed.decision.classes.map(({class:cls,rule,do:action})=>({class:cls,rule,do:action})));
+   if(label==='held'){
+    const execution=rows.find(row=>row.decision_id===changed.decision.id);
+    assert.ok(execution,'The approved note retains its execution audit');
+    assert.equal(execution.revision,context.revision);assert.equal(execution.outcome,'done');
+    assert.deepEqual(execution.rules,noteRow.rules);
+    assert.ok(execution.approval.by.includes(entry.metadata.agent.for.id));
+   }
    assert.deepEqual(await runtime.outboundRequests(),[]);
-   console.log(`PROBE BASE-AGENT-007 7 ${label} ${phase}: native MCP read served; note ${label==='held'?'held then person-approved':'executed'} at signed revision ${context.revision}; zero outbound requests`);
+   console.log(`PROBE BASE-AGENT-007 7 ${label} ${phase}: same-bearer native MCP read served; note ${label==='held'?'held then person-approved':'executed'} and retained audit at signed revision ${context.revision}; zero outbound requests`);
   }
   await available('before adoption');
   // Resolve real targets and current revisions before adoption so these are
@@ -102,7 +121,7 @@ export async function policyAdoption(runtime){
   assert.deepEqual(acknowledged.adopted,{seq:context.seq,revision});
   const refusals=[];
   for(const [name,input] of [['oncall.services.read',{id:'agent-service'}],['oncall.notes.add',args]]){
-   const answer=await tool(name,input),elapsed=performance.now()-started;
+   const answer=await call(name,input),elapsed=performance.now()-started;
    assert.ok(elapsed<60000,`Signed adoption must refuse the next ${name} within 60 seconds (${elapsed.toFixed(0)}ms)`);
    const error=answer.result?._meta?.['com.runeditrun/error'];
    assert.equal(error?.code,'policy_blocked');
@@ -125,7 +144,7 @@ export async function policyAdoption(runtime){
    assert.equal(row.decision,'blocked');assert.equal(row.outcome,'refused');assert.equal(row.revision,revision);
    assert.deepEqual(row.rules.find(item=>item.class==='standard'),{class:'standard',rule,do:'blocked'});
    assert.deepEqual(await runtime.outboundRequests(),[]);
-   console.log(`PROBE BASE-AGENT-007 7 ${label} ${refusal.name}: next schema-valid MCP call -> policy_blocked in ${refusal.elapsed.toFixed(0)}ms; decision and retained audit rule ${rule}, revision ${revision}; application and paging unchanged; zero outbound requests`);
+   console.log(`PROBE BASE-AGENT-007 7 ${label} ${refusal.name}: next schema-valid MCP call with admitted bearer -> policy_blocked in ${refusal.elapsed.toFixed(0)}ms; decision and retained audit rule ${rule}, revision ${revision}; application and paging unchanged; zero outbound requests`);
   }
   assert.equal((await adopt(document)).status,200);
   await available('after restoration');
@@ -134,7 +153,7 @@ export async function policyAdoption(runtime){
   for(const refusal of refusals)assert.deepEqual(restored.rows.find(row=>row.id===refusal.id),retained.rows.find(row=>row.id===refusal.id),'Restoring policy preserves the original refusal revision and rule');
  }
  assert.equal((await adopt()).status,200);
- console.log('PASS signed native policy adoption: next read and coordination mutation blocked within 60 seconds under both policies; retained rule and revision survive restoration; policy-appropriate access restored; zero outbound requests');
+ console.log('PASS signed native policy adoption: same-bearer next read and coordination mutation blocked within 60 seconds under both policies; retained rule and revision survive restoration; policy-appropriate access restored; zero outbound requests');
 }
 
 /** Public-door Pause matrix; the browser supplies the real local control. */
