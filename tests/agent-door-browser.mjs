@@ -4,7 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,pauseMatrix} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
@@ -52,6 +52,55 @@ try{
   await page.getByRole('button',{name:paused?'Resume agents':'Pause agents',exact:true}).waitFor();
   assert.equal((await (await http('/agents/api/state')).json()).paused.local,paused);
  }
+ // Both policies use the existing manual update door. Only held live work
+ // reaches the returned person URL; its form sends the exact saved decision.
+ await manualPagePolicy(runtime);
+ const manualEdge=await runtime.outboundRequests();
+ for(const mode of ['autonomous','held']){
+  assert.equal((await runtime.adopt(mode==='held'?heldPolicy():autonomousPolicy())).status,200);
+  const args=manualPageFixture(mode==='autonomous'?responder.id:undefined,'Synthetic '+mode+' manual coordination');
+  const before=await manualPageSnapshot(runtime),answer=await tool('oncall.incidents.update',args);
+  assert.deepEqual(answer.decision.classes.map(({class:risk,facts})=>({class:risk,facts})),manualPageClasses);
+  let saved;
+  if(mode==='held'){
+   assert.equal(answer.result?.resultType,'input_required');
+   assert.deepEqual(await manualPageSnapshot(runtime),before,'Pending browser approval creates no manual operation');
+   const handle=answer.result._meta['com.runeditrun/approval'],url=new URL(handle.url);
+   assert.equal(url.origin,runtime.origin);
+   saved=(await (await http('/agents/api/approvals/'+handle.id)).json()).approval;
+   assert.deepEqual(saved.classes,manualPageClasses);
+   assert.deepEqual(saved.summary.nativeTarget,{kind:'service',id:'agent-service'});
+   await capture('manual-page-pending',url.pathname,async()=>{await page.locator('[data-approval-state="pending"]').waitFor()});
+   await page.goto(handle.url);
+   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'));
+   await page.getByRole('button',{name:'Approve',exact:true}).click();
+   const decision=(await submitted).postDataJSON();
+   assert.equal(decision.revision,saved.revision);
+   assert.equal(decision.summary_sha256,saved.summary_sha256);
+   await page.locator('[data-approval-state="executed"]').waitFor();
+   const executed=(await (await http('/agents/api/approvals/'+handle.id)).json()).approval;
+   assert.equal(executed.revision,saved.revision);assert.equal(executed.summary_sha256,saved.summary_sha256);
+   await capture('manual-page-executed',url.pathname,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
+  }else assert.equal(answer.result?.isError,false,JSON.stringify(answer.body));
+  const once=await manualPageSnapshot(runtime),incident=once.application.incidents.find(row=>row.manualPage?.operation===args.operationId);
+  assert.ok(incident);assert.equal(once.application.revision,before.application.revision+1);assert.equal(once.commits.length,before.commits.length+1);
+  assert.equal(incident.manualPage.obligations.length,1);
+  assert.equal(incident.manualPage.obligations[0].state,'recorded');assert.equal(incident.manualPage.obligations[0].paging,'off');assert.equal(incident.manualPage.obligations[0].automatic,false);
+  const entries=incident.timeline.filter(row=>row.kind==='manual-page');assert.equal(entries.length,1);
+  assert.equal(entries[0].metadata.agent.agent.id,runtime.context.agentId);
+  if(saved)assert.ok(entries[0].metadata.agent.approvers.some(row=>row.id===before.application.members.find(row=>row.name==='Alex Chen').id));
+  const retry=await tool('oncall.incidents.update',args);
+  assert.equal(retry.result?.isError,false,JSON.stringify(retry.body));assert.deepEqual(retry.result.structuredContent,incident);
+  assert.deepEqual(await manualPageSnapshot(runtime),once,'Browser-approved manual retry has no second application effect');
+  assert.deepEqual(await runtime.outboundRequests(),manualEdge,'Manual pages issue zero outbound requests');
+  if(mode==='held')await capture('manual-page-timeline','/incidents/'+incident.id,async()=>{
+   await page.getByRole('region',{name:'Timeline',exact:true}).waitFor();
+   await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
+  });
+ }
+ assert.equal((await runtime.adopt()).status,200);
+ console.log('PROBE SURFACE-002 8 browser: autonomous manual update and held policy target -> pending without effect, returned signed-in URL submits exact saved revision and summary, one attributed operation, identical retry unchanged, zero outbound requests; screens at 1440 and 390');
+
  await pauseMatrix(runtime,{
   setLocal,
   async observe(label,phase,flags){
