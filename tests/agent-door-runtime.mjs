@@ -111,7 +111,7 @@ export async function policyAdoption(runtime){
   await available('before adoption');
   // Resolve real targets and current revisions before adoption so these are
   // the very next MCP calls, with no stale or malformed input as a substitute.
-  const args=await note(),before=await snapshot(),priorRevision=context.revision;
+  const args=await note(),before=await snapshot(),beforeApprovals=await read('/agents/api/approvals'),priorRevision=context.revision;
   const rule='stop-standard-'+label,blocked=structuredClone(document);
   blocked.rules.push({id:rule,class:'standard',do:'blocked'});
   const started=performance.now(),adoption=await adopt(blocked);
@@ -130,7 +130,9 @@ export async function policyAdoption(runtime){
    const standard=answer.decision.classes.find(row=>row.class==='standard');
    assert.equal(standard.rule,rule);assert.equal(standard.do,'blocked');
    assert.equal(answer.result.structuredContent,undefined,'A policy refusal discloses no native content');
-   refusals.push({name,id:answer.decision.id,elapsed});
+   assert.deepEqual(await snapshot(),before,'Each blocked call preserves application and paging state');
+   assert.deepEqual(await read('/agents/api/approvals'),beforeApprovals,'A blocked call cannot enqueue an approval');
+   refusals.push({name,id:answer.decision.id,elapsed,decision:answer.decision});
   }
   assert.deepEqual(await snapshot(),before,'Adoption and refused calls preserve application and paging state');
   const adopted=await read('/agents/api/state');
@@ -141,6 +143,8 @@ export async function policyAdoption(runtime){
    const row=retained.rows.find(row=>row.id===refusal.id);
    assert.ok(row,'The refusal must have a retained native audit row');
    assert.equal(row.tool,refusal.name);assert.equal(row.code,'policy_blocked');
+   assert.deepEqual(row.resource,refusal.name==='oncall.services.read'?{kind:'service',id:'agent-service'}:{kind:'incident',id:target.id});
+   assert.deepEqual(row.classes,refusal.decision.classes.map(({class:cls,facts})=>({class:cls,facts})));
    assert.equal(row.decision,'blocked');assert.equal(row.outcome,'refused');assert.equal(row.revision,revision);
    assert.deepEqual(row.rules.find(item=>item.class==='standard'),{class:'standard',rule,do:'blocked'});
    assert.deepEqual(await runtime.outboundRequests(),[]);
