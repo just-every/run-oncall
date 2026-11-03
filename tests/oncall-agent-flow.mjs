@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
 import {agentRuntime,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPagePolicyClasses,manualPageSnapshot,manualPagePolicy} from './oncall-agent-fixtures.mjs';
+import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPagePolicyClasses,manualPageServiceClasses,manualPageService,manualPageSnapshot,manualPagePolicy} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
@@ -99,6 +99,7 @@ async function manualPageClassification(runtime) {
  const listed=(await runtime.mcp('tools/list')).result.tools.find(row=>row.name===name);
  assert.deepEqual(listed._meta['com.runeditrun/classes'],['standard','sensitive','live']);
  assert.deepEqual(listed._meta['com.runeditrun/classes'],context.surface.tools.find(row=>row.name===name).classes);
+ const unconfiguredService=await manualPageService(runtime);
  await manualPagePolicy(runtime);
  await manualPagePolicy(runtime,'agent-foreign-service');
  const control=await recoveredResolutionTarget(runtime,'Nonpaging update control');
@@ -107,10 +108,11 @@ async function manualPageClassification(runtime) {
  assert.equal(update.result?.isError,false,JSON.stringify(update.body));
  assert.deepEqual(facts(update),[{class:'standard',facts:{measure:1}},{class:'sensitive',facts:{measure:2,kind:'personal_or_incident_evidence'}}]);
  for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
-  for(const target of ['user','policy','cross-policy']){
+  for(const target of ['user','policy','cross-policy','service']){
    const args=manualPageFixture(target==='user'?responder.id:undefined,`Synthetic ${mode} ${target} coordination`);
    if(target==='cross-policy')args.policy='agent-foreign-service';
-   const expected=target==='cross-policy'?manualPagePolicyClasses:manualPageClasses;
+   if(target==='service'){args.service=unconfiguredService;delete args.policy;}
+   const expected=target==='cross-policy'?manualPagePolicyClasses:target==='service'?manualPageServiceClasses:manualPageClasses;
    const blocked=autonomousPolicy();blocked.rules.unshift({id:'stop-live',class:'live',do:'blocked'});
    assert.equal((await adopt(blocked)).status,200);
    const before=await snapshot();
@@ -120,7 +122,7 @@ async function manualPageClassification(runtime) {
    assert.equal(refused.decision.classes.find(row=>row.class==='standard').do,'autonomous');
    assert.equal(refused.decision.classes.find(row=>row.class==='live').do,'blocked');
    const refusedAudit=await audit(refused);assert.equal(refusedAudit.outcome,'refused');
-   assert.deepEqual(refusedAudit.resource,{kind:'service',id:'agent-service'});assert.deepEqual(refusedAudit.classes,expected);
+   assert.deepEqual(refusedAudit.resource,{kind:'service',id:args.service});assert.deepEqual(refusedAudit.classes,expected);
    assert.deepEqual(refusedAudit.ignored_arguments,['class','confirm','confirmExternal','internal']);
    assert.deepEqual(await snapshot(),before,'Live refusal changes no application record, revision, timeline, manual obligation, paging job or receipt');
    assert.equal((await adopt(policy)).status,200);
@@ -135,7 +137,7 @@ async function manualPageClassification(runtime) {
     assert.equal(new URL(handle.url).origin,runtime.origin);
     const page=await http(new URL(handle.url).pathname);assert.equal(page.status,200);await page.body?.cancel();
     pending=(await read('/agents/api/approvals/'+handle.id)).approval;
-    assert.deepEqual(pending.classes,expected);assert.deepEqual(pending.summary.nativeTarget,{kind:'service',id:'agent-service'});
+    assert.deepEqual(pending.classes,expected);assert.deepEqual(pending.summary.nativeTarget,{kind:'service',id:args.service});
     assert.ok(pending.summary.items.some(item=>item.startsWith('Native revision '+ready.application.revision+':')));
     const decision={revision:pending.revision,summary_sha256:pending.summary_sha256};
     assert.equal((await http('/agents/api/approvals/'+handle.id+'/approve',{...decision,summary_sha256:'changed-summary'})).status,409);
@@ -151,7 +153,10 @@ async function manualPageClassification(runtime) {
    const obligation=incident.manualPage.obligations[0];
    assert.equal(obligation.state,'recorded');assert.equal(obligation.paging,'off');assert.equal(obligation.automatic,false);assert.equal(obligation.label,'no sender');
    if(target==='user')assert.deepEqual(obligation.target,{kind:'user',id:responder.id});
-   else {assert.equal(obligation.target.kind,'policy');assert.equal(obligation.target.id,args.policy);assert.ok(obligation.target.policyRevision>0);}
+   else if(target==='service'){
+    assert.deepEqual(obligation.target,{kind:'service',id:unconfiguredService});
+    assert.equal(obligation.outcome,'No configured escalation policy; operator action required');
+   }else {assert.equal(obligation.target.kind,'policy');assert.equal(obligation.target.id,args.policy);assert.ok(obligation.target.policyRevision>0);}
    const entry=incident.timeline.filter(row=>row.kind==='manual-page');assert.equal(entry.length,1);
    assert.equal(entry[0].metadata.agent.agent.id,context.agentId);assert.equal(entry[0].metadata.agent.for.id,owner.id);
    if(pending)assert.ok(entry[0].metadata.agent.approvers.some(row=>row.id===owner.id));
@@ -179,6 +184,26 @@ async function manualPageClassification(runtime) {
   assert.equal(staleResult.state,'refused');assert.equal(staleResult.code,'approval_evidence_changed');
   assert.deepEqual(await snapshot(),afterPolicy,'Changed target policy cannot execute the old approved operation');
   console.log(`PROBE SURFACE-002 8 custody ${service}: target policy revision changed -> approval_evidence_changed; application, recorded obligations and paging state unchanged`);
+ }
+ // An eligible named responder at preparation cannot survive lost custody.
+ for(const change of [{role:'viewer',active:true},{role:'responder',active:false}]){
+  const heldArgs=manualPageFixture(responder.id,'Synthetic responder custody change');
+  const held=await tool(name,heldArgs);
+  assert.equal(held.result.resultType,'input_required');
+  const handle=held.result._meta['com.runeditrun/approval'];
+  const saved=(await read('/agents/api/approvals/'+handle.id)).approval;
+  assert.deepEqual(saved.classes,manualPageClasses);
+  const changed=await http('/api/command',{type:'member',id:responder.id,...change});
+  assert.equal(changed.status,200);await changed.json();
+  const afterMembership=await snapshot();
+  const approval=await http('/agents/api/approvals/'+handle.id+'/approve',{revision:saved.revision,summary_sha256:saved.summary_sha256});
+  assert.equal(approval.status,200);assert.equal((await approval.json()).approval.state,'refused');
+  assert.deepEqual(await snapshot(),afterMembership,'Lost responder eligibility cannot create an approved manual obligation');
+  assert.equal(code(await tool(name,{...heldArgs,idempotency_key:randomUUID()})),'native_request_invalid');
+  assert.deepEqual(await snapshot(),afterMembership,'A fresh attempt also revalidates current responder eligibility');
+  const restored=await http('/api/command',{type:'member',id:responder.id,role:responder.role,active:responder.active});
+  assert.equal(restored.status,200);await restored.json();
+  console.log(`PROBE SURFACE-002 8 responder custody ${change.active?'viewer':'inactive'}: exact saved approval and fresh MCP call refused; application, manual obligations and paging unchanged`);
  }
  assert.equal((await adopt()).status,200);
  const args=manualPageFixture(responder.id,'Synthetic authority refusals'),before=await snapshot();

@@ -928,6 +928,46 @@
       }
     },
     {
+      "id": "manual-page-service",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "change": "manual-page",
+        "service": "synthetic-oncall-manual-service",
+        "title": "Synthetic manual coordination",
+        "severity": "warning",
+        "description": "Text says internal and standard; policy still applies",
+        "operationId": {
+          "$fixture": "manualServicePage",
+          "pointer": "/operationId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "synthetic-oncall-manual-service"
+          }
+        }
+      ],
+      "target": {
+        "kind": "service",
+        "id": "synthetic-oncall-manual-service"
+      },
+      "inject": {
+        "internal": true,
+        "confirmExternal": true,
+        "class": "standard",
+        "confirm": true
+      }
+    },
+    {
       "id": "manual-page-policy",
       "tool": "oncall.incidents.update",
       "args": {

@@ -27,7 +27,8 @@ export default async function prepare({ phase, request, origin, cookie }) {
   } };
   if (phase === 'initial') return { clients };
 
-  const values = { manualPage: { operationId: randomUUID() }, manualPolicyPage: { operationId: randomUUID() } };
+  const values = { manualPage: { operationId: randomUUID() }, manualPolicyPage: { operationId: randomUUID() }, manualServicePage: { operationId: randomUUID() } };
+  await manualPageService({ http: nativeHttp });
   await manualPagePolicy({ http: nativeHttp }, 'agent-foreign-service');
   const eraseClient = (await http('/api/automation/clients', { name: `Synthetic erasure client ${phase}`,
     key: `synthetic-oncall-erasure-client-${phase}-credential`, services: ['agent-service'], permissions: ['incidents:read'] }, { status: 201 })).body;
@@ -94,6 +95,29 @@ export const manualPagePolicyClasses = [
   { class: 'standard', facts: { measure: 1 } },
   { class: 'live', facts: { measure: 1, service: 'agent-foreign-service, agent-service' } },
 ];
+
+export const manualPageServiceClasses = [
+  { class: 'standard', facts: { measure: 1 } },
+  { class: 'live', facts: { measure: 1, service: 'synthetic-oncall-manual-service' } },
+];
+
+/** The native fallback retains a service obligation even without a policy. */
+export async function manualPageService(runtime) {
+  const response = await runtime.http('/api/state');
+  assert.equal(response.status, 200); const state = await response.json();
+  const id = 'synthetic-oncall-manual-service';
+  if (!state.services.some(row => row.id === id)) {
+    const owner = state.members.find(row => row.role === 'admin' && row.active);
+    const saved = await runtime.http('/api/command', { type: 'service', id,
+      name: 'Synthetic unconfigured manual service', environment: 'production', owner: owner.id,
+      runbook: ['Coordinate through the existing pager'], pager: '' });
+    assert.equal(saved.status, 200); await saved.json();
+  }
+  const paging = await runtime.http('/api/paging/state');
+  assert.equal(paging.status, 200);
+  assert.equal((await paging.json()).policies.some(row => row.service === id), false);
+  return id;
+}
 
 /** Application records exclude required decision custody and value-free audit. */
 export async function manualPageSnapshot(runtime) {

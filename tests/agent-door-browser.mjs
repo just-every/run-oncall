@@ -88,7 +88,8 @@ try{
   const once=await manualPageSnapshot(runtime),incident=once.application.incidents.find(row=>row.manualPage?.operation===args.operationId);
   assert.ok(incident);assert.equal(once.application.revision,before.application.revision+1);assert.equal(once.commits.length,before.commits.length+1);
   assert.equal(incident.manualPage.obligations.length,1);
-  assert.deepEqual(incident.manualPage.obligations[0].target,mode==='held'?{kind:'policy',id:'agent-foreign-service',policyRevision:1}:{kind:'user',id:responder.id});
+  const targetPolicy=(await (await http('/api/paging/state')).json()).policies.find(row=>row.service===args.policy);
+  assert.deepEqual(incident.manualPage.obligations[0].target,mode==='held'?{kind:'policy',id:args.policy,policyRevision:targetPolicy.revision}:{kind:'user',id:responder.id});
   assert.equal(incident.manualPage.obligations[0].state,'recorded');assert.equal(incident.manualPage.obligations[0].paging,'off');assert.equal(incident.manualPage.obligations[0].automatic,false);
   const entries=incident.timeline.filter(row=>row.kind==='manual-page');assert.equal(entries.length,1);
   assert.equal(entries[0].metadata.agent.agent.id,runtime.context.agentId);
