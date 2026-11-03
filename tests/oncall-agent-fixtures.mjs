@@ -210,8 +210,15 @@ export async function reviewAttribution(runtime, { approve } = {}) {
     // Sensitive reads under held policy also require the actual person.
     let mcpMaterial = fromMcp.result.structuredContent?.data;
     if (policy === 'held') {
+      assert.equal(fromMcp.result.resultType, 'input_required');
+      assert.equal(fromMcp.result.structuredContent, undefined, 'Pending protected read discloses no review material');
+      assert.deepEqual({ application: await state(), paging: await paging() }, { application: beforeProjection.application, paging: beforeProjection.paging }, 'Held protected read has no native effect before approval');
       const handle = fromMcp.result._meta['com.runeditrun/approval'];
-      await approvePending(handle);
+      const savedRead = await approvePending(handle);
+      const execution = (await agentAudit()).find(row => row.decision_id === fromMcp.decision.id);
+      assert.equal(execution.outcome, 'done');
+      assert.deepEqual(execution.classes, savedRead.classes);
+      assert.ok(execution.approval.by.includes(owner.id));
       const approvedRead = await runtime.mcp('tools/call', { name: 'oncall.reviews.read', arguments: { id: incident.id }, requestState: fromMcp.result.requestState });
       assert.equal(approvedRead.result.isError, false);
       mcpMaterial = approvedRead.result.structuredContent?.data;
