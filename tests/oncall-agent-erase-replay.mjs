@@ -99,6 +99,16 @@ export async function eraseClasses(runtime) {
    const incident=await json('/api/command',{type:'declare',service:type==='pending'?'agent-service':service,title:id,summary:'Retained local coordination',severity:'warning',alerts:[]});
    return {kind:'incident',id:incident.id,expected:[destructive,...(type==='pending'?[{class:'live',facts:{measure:1,service:'agent-service'}}]:[])]};
   }
+  if(type==='maintenance'||type==='workflow') {
+   // An unscheduled member whose only authority is a routing rule read at intake.
+   const member=await json('/api/members',{name:id,role:'responder',password:key},201);
+   const old=(await state()).policies.find(row=>row.service===service&&row.severity===(type==='workflow'?'critical':'info'));
+   const rule=type==='workflow'
+    ?{severity:'critical',action:'route',owner:owner.id,workflow:{version:(old?.workflow?.version??0)+1,approved:true,member:member.id,reason:'Synthetic approved steps '+id}}
+    :{severity:'info',action:'suppress',owner:member.id,suppressionWindow:{start:'2099-01-01T00:00:00.000Z',end:'2099-01-02T00:00:00.000Z'}};
+   await json('/api/command',{type:'policy',service,reason:'Synthetic rule '+id,baseVersion:old?.version??0,...rule});
+   return {kind:'member',id:member.id,expected:[destructive,access,live],identitiesReviewed:true,importedPeople:[],intake:type};
+  }
   if(type==='member'||type==='scheduled') {
    const member=await json('/api/members',{name:id,role:'responder',password:key},201);
    if(type==='scheduled') await json('/api/paging/schedules',{id,name:id,service,revision:0,timezone:'UTC',validFrom:'2026-01-01T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[member.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-01-01T00:00',periodDays:1,members:[],ambiguity:'earlier'},overrides:[]});
@@ -138,9 +148,9 @@ export async function eraseClasses(runtime) {
   if(type==='email') await json('/api/email/addresses',{id,name:id,service,owner:owner.id,localPart:'synthetic-oncall-'+sequence+++'-mailbox-credential',mode:'subject',fallback:'subject',rules:[]},201);
   return {kind:type==='inactive-intake'?'intake':type,id,expected:[destructive,...(type==='inactive-intake'?[]:[security,live])]};
  }
- for(const mode of ['autonomous','held']) for(const type of ['history','pending','member','scheduled','client','pending-client','native','intake','inactive-intake','change','email','imported-intake']) {
+ for(const mode of ['autonomous','held']) for(const type of ['history','pending','member','scheduled','maintenance','workflow','client','pending-client','native','intake','inactive-intake','change','email','imported-intake']) {
   assert.equal((await adopt()).status,200);
-  const {expected,...target}=await fixture(type);
+  const {expected,intake,...target}=await fixture(type);
   const args={...target,workspaceRevision:(await state()).revision,confirmation:'erase '+target.id,idempotency_key:fresh()};
   let before=await snapshot();
   // Every affected class independently stops the dangerous path, and the
@@ -200,6 +210,7 @@ export async function eraseClasses(runtime) {
   const once=await snapshot(),first=await tool('oncall.privacy.erase',args),again=await tool('oncall.privacy.erase',args);
   if(target.kind==='incident') assert.ok(!once.state.incidents.some(row=>row.id===target.id));
   if(target.kind==='member') assert.ok(once.state.members.some(row=>row.id===target.id&&row.erased&&!row.active));
+  if(intake==='workflow') assert.ok(!once.state.policies.some(row=>row.workflow),'Erasing the workflow responder removes the approved workflow');
   if(target.kind==='client') {
    assert.ok(!once.state.apiClients.some(row=>row.id===target.id));
    assert.ok(!once.state.apiEndpoints.some(row=>row.client===target.id));

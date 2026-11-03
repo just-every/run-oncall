@@ -25,7 +25,10 @@ export async function erasureClasses(env: Bindings, state: State, kind: string, 
   if (member?.active || clients.some(row => row.active)) classes.push({ class: 'access', facts: { measure: 1, direction: 'narrows' } })
   if (member?.active && ['admin', 'responder'].includes(member.role)) {
     for (const service of state.services) if (service.owner === id) services.add(service.id)
-    for (const policy of state.policies) if (policy.action === 'route' && policy.owner === id) services.add(policy.service)
+    // Routing reads the owner of routed, windowed-maintenance and grouping rules, and an
+    // approved workflow's approver and responder; erasure changes intake for each.
+    for (const policy of state.policies) if (policy.owner === id && (policy.action === 'route' || policy.suppressionWindow || policy.correlation)
+      || policy.workflow && (policy.workflow.by === id || policy.workflow.member === id)) services.add(policy.service)
     const [control, schedules] = await env.DB.batch([env.DB.prepare('SELECT revision FROM paging_control WHERE id=1'), env.DB.prepare('SELECT data FROM paging_schedules')])
     guard('EXISTS(SELECT 1 FROM paging_control WHERE id=1 AND revision=?)', (control.results[0] as { revision: number }).revision)
     for (const row of schedules.results as { data: string }[]) {
