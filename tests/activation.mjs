@@ -643,7 +643,20 @@ try {
 
  const refusedPagingBefore=ok(await req('/api/paging/state')),refusedWorkspaceBefore=ok(await req('/api/state')),beforeRefusedPaging=await auditExport(),priorPagingAuditIds=new Set(beforeRefusedPaging.map(row=>row.id))
  const pagingDoors=['/api/delivery','/api/paging/jobs','/api/paging/tick','/api/paging/callbacks','/api/paging/jobs/old/resume']
- for(const path of pagingDoors)ok(await req(path,{}),409)
+ assert.equal(ok(await req('/api/workspace')).demo,false,'normal installation is not a simulation')
+ assert.deepEqual(await w.outboundRequests(),[],'normal coordination has attempted no outbound request')
+ for(const path of pagingDoors){
+  const refusal=ok(await req(path,{}),409)
+  assert.match(refusal.error,/paging is off/i,`${path} explains that paging is OFF`)
+  assert.match(refusal.error,/keep your existing pager/i,`${path} retains the existing pager`)
+  assert.match(refusal.error,/requires an independent standby/i,`${path} names the standby prerequisite`)
+  assert.match(refusal.error,/passed drill with real phones/i,`${path} requires a passed real-phone drill`)
+  assert.deepEqual(ok(await req('/api/paging/state')),refusedPagingBefore,`${path} preserves paging records and revisions`)
+  assert.deepEqual(ok(await req('/api/state')),refusedWorkspaceBefore,`${path} preserves workspace records and revision`)
+  assert.equal(w.sql('SELECT COUNT(*) AS n FROM paging_receipts')[0].n,0,`${path} creates no receipt`)
+  assert.deepEqual(await w.outboundRequests(),[],`${path} attempts no outbound request`)
+  console.log(`PROBE OC-012 1: POST ${path} on a normal installation -> 409; paging OFF, existing pager, independent standby and passed real-phone drill explained; records and revisions unchanged, no receipt or outbound request`)
+ }
  assert.deepEqual(ok(await req('/api/paging/state')),refusedPagingBefore,'delivery refusals leave complete paging state unchanged')
  assert.deepEqual(ok(await req('/api/state')),refusedWorkspaceBefore,'delivery refusals leave complete workspace state unchanged')
  const pagingRefusals=(await auditExport()).filter(row=>!priorPagingAuditIds.has(row.id)&&row.outcome==='refused')
@@ -1360,7 +1373,7 @@ try {
 const {default:assert}=await import('node:assert/strict')
 const { localWorker }=await import('./worker.mjs')
 
-const worker = await localWorker({ RER_DEMO: '1' })
+const worker = await localWorker({ RER_DEMO: '1' }, { outboundLedger: true })
 const ok = (result, status = 200) => {
   assert.equal(result.status, status, JSON.stringify(result.value))
   return result.value
@@ -1369,6 +1382,11 @@ try {
   const owner = await worker.request('/auth/bootstrap', { token: worker.vars.SETUP_TOKEN, displayName: 'Alex Morgan' }, undefined, { 'CF-Connecting-IP': '127.0.0.1' })
   ok(owner, 303)
   const req = (path, input) => worker.request(path, input, owner.cookie, { 'CF-Connecting-IP': '127.0.0.1' })
+  const demoDocument = ok(await req('/'))
+  assert.equal(typeof demoDocument, 'string')
+  assert.match(demoDocument, /<style\b[^>]*data-rer-label="Demo"[^>]*>[^<]*content:\s*" Demo"/i, 'emitted HTML visibly decorates the product as Demo')
+  assert.match(demoDocument, /<title\b[^>]*>[^<]*\bDemo<\/title>/i, 'the emitted page title identifies the simulation')
+  assert.equal(ok(await req('/api/workspace')).demo, true, 'workspace identifies the simulated channel results as demo outcomes')
   const state = ok(await req('/api/state'))
   const incident = state.incidents.find(item => item.state !== 'resolved')
   ok(await req('/api/command', { type: 'transition', incident: incident.id, revision: incident.revision,
@@ -1379,6 +1397,10 @@ try {
   assert.ok(page.sends.every(send => send.status === 'sent'))
   for (const channel of ['sms', 'voice', 'push', 'email'])
     assert.equal(ok(await req('/api/delivery', { incident: incident.id, channel })).sends[0].status, 'sent')
+  assert.equal(ok(await req('/api/workspace')).demo, true, 'successful simulated sends never clear the demo boundary')
+  assert.equal(worker.sql('SELECT COUNT(*) AS n FROM paging_receipts')[0].n, 0, 'simulations create no production delivery receipt')
+  assert.deepEqual(await worker.outboundRequests(), [], 'simulated channels attempt no outbound request')
+  console.log('PROBE OC-012 2: emitted demo HTML and GET /api/workspace beside simulated SMS, voice, push and email -> Demo decoration and title, demo=true, four simulated sent outcomes, no production receipt or outbound request')
   const changed = ok(await req('/api/state')).incidents.find(item => item.id === incident.id)
   assert.equal(changed.state, 'acknowledged')
   ok(await req('/auth/magic-link', { email: worker.vars.OWNER_EMAIL }), 202)
