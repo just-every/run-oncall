@@ -9,9 +9,9 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Core | 15 | 45 | 24 | 84 |
-| Agent surface | 0 | 2 | 15 | 17 |
+| Agent surface | 0 | 3 | 14 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 15 | 47 | 39 | 101 |
+| Full target | 15 | 48 | 38 | 101 |
 
 Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f207859a` (30 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -1423,7 +1423,7 @@ Agent surface · target · **missing**
 
 #### BASE-AGENT-011 — Limits are policy, and Pause stops everything
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Business limits are rules in the company's policy: per-call and per-day thresholds on any class's measure, such as money moved, outside recipients or items destroyed; spend caps on provider cost (models, SMS, email) per seed, specialist or agent, which setup asks with the classes; "no cap" is an answer. Tools with provider cost declare an estimate before they run, and an exhausted cap returns `budget_exhausted` before any partial effect. The seed's capacity limits (request rate, body and byte sizes) protect the installation: they bound rate and size, never daily business volume, are documented and are not policy. A grant carries budgets only when the person granting it sets them. A **Pause agents** control in the seed, and Pause all agents in Business when paired, refuses every agent token within 60 seconds until a person resumes; browser sessions and devices keep working.
 
@@ -1436,8 +1436,8 @@ Agent surface · target · **missing**
 6. Pause and Pause all agents each stop the next call within 60 seconds, and resume restores access.
 7. An agent token cannot resume.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `tests/oncall-agent-flow.mjs` — independent Pause flags via `tests/agent-door-runtime.mjs` pauseMatrix: emitted Worker and D1, both company policies, valid next MCP read and coordination mutation refused within 60 seconds, independent flag clearing, bearer resume refused even with the owner cookie, unchanged native and paging state, zero outbound requests, attributed human coordination and policy-appropriate resume. `tests/agent-door-browser.mjs` — the same matrix through the signed-in Pause agents and Resume agents controls; local, Business-only and resumed screens at 1440 and 390; pending dispatch approval remains refused during local Pause.
+**Gap.** Acceptances 1 to 5 remain unproved: request-rate refusal, recipient caps, provider spend caps, no-cap spending and the complete usage view; paid AI spend caps are explicitly not enforced. Acceptance 6 proves only the native local control and signed fixture policy-adoption door, not actual Business UI propagation or device continuity. Model and provider spending and executor flows remain omitted under OC-045, OC-046, OC-048 and OC-049 authority holds. BASE-AGENT-006 and SURFACE-004 holds remain unchanged. Paging remains OFF; production delivery, independent standby and real-phone prerequisites remain.
 
 #### BASE-AGENT-012 — Writes are idempotent and conflict-safe
 
