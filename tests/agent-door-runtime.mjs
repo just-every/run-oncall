@@ -28,6 +28,10 @@ export async function agentRuntime(){
   async function http(path,input,method=input===undefined?'GET':'POST'){
    return request(runtime.origin+path,{method,redirect:'manual',headers:{Origin:runtime.origin,Cookie:cookie,'Content-Type':'application/json'},...(input===undefined?{}:{body:JSON.stringify(input)})});
   }
+  async function agentHttp(path,input,{withOwnerCookie=false}={}){
+   const token=await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'}});
+   return request(runtime.origin+path,{method:'POST',redirect:'manual',headers:{Origin:runtime.origin,Authorization:'Bearer '+token,'Content-Type':'application/json',...(withOwnerCookie?{Cookie:cookie}:{})},body:JSON.stringify(input)});
+  }
   async function settings(team=null,rev=1){
    const now=seconds(),settings=await signJws(pair.privateKey,kid,'rer-business-settings+jwt',{v:1,iss:issuer,aud:runtime.origin,sub:installationId,business:context.business,email,owner_id:sub,jti:randomUUID(),iat:now,exp:now+300,rev,values:{display_name:'Northline Operations'},logo:null,team});
    const response=await http('/api/rer/business-settings',{settings});assert.equal(response.status,200);return response.json();
@@ -43,7 +47,7 @@ export async function agentRuntime(){
   }
   const tool=(name,args,overrides)=>mcp('tools/call',{name,arguments:args},overrides);
   await settings();
-  return {...runtime,request,http,cookie,context,settings,adopt,mcp,tool,fixtures};
+  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,mcp,tool,fixtures};
  }catch(error){await runtime.close();throw error}
 }
 
