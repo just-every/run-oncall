@@ -4,7 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,pauseMatrix} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {recoveredResolutionTarget,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
@@ -156,6 +156,63 @@ try{
  });
  assert.equal((await runtime.adopt()).status,200);
  console.log('PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry');
+ // The real signed-in URL holds each recorded deadline effect for its sponsor.
+ for(const change of ['snooze','cancel-deadline','expire-deadline']){
+  await runtime.time(null);
+  assert.equal((await runtime.adopt()).status,200);
+  const {incident:target,deadline,args}=await deadlineTarget(runtime,change,'browser '+change);
+  if(change==='expire-deadline')await runtime.time(Date.parse(deadline.dueAt)+1);
+  const document=autonomousPolicy();document.rules.unshift({id:'deadline-live-approval',class:'live',do:'approval',approver:['sponsor'],wait:'PT1H'});
+  assert.equal((await runtime.adopt(document)).status,200);
+  const before=await native(),paging=await (await http('/api/paging/state')).json(),edge=await runtime.outboundRequests();
+  const answer=await tool('oncall.incidents.update',args);
+  assert.equal(answer.result?.resultType,'input_required');assert.equal(answer.decision.disposition,'approval');
+  assert.deepEqual(answer.decision.classes.map(({class:cls,do:action,facts})=>({class:cls,do:action,facts})),[
+   {class:'standard',do:'autonomous',facts:{measure:1}},
+   {class:'sensitive',do:'autonomous',facts:{measure:2,kind:'personal_or_incident_evidence'}},
+   {class:'live',do:'approval',facts:{measure:1,service:'agent-service'}},
+  ]);
+  assert.deepEqual(await native(),before);assert.deepEqual(await (await http('/api/paging/state')).json(),paging);
+  const handle=answer.result._meta['com.runeditrun/approval'],path=new URL(handle.url).pathname;
+  const saved=(await (await http('/agents/api/approvals/'+handle.id)).json()).approval;
+  assert.deepEqual(saved.summary.nativeTarget,{kind:'incident',id:target.id});
+  assert.ok(saved.summary.items.includes('Revision '+target.revision));
+  await capture('deadline-'+change+'-pending',path,async()=>{
+   await page.locator('[data-approval-state="pending"]').waitFor();
+   await page.locator('details').getByText('Details',{exact:true}).click();
+   await page.getByText(/running services/).first().waitFor();
+  });
+  await page.goto(runtime.origin+path);await page.getByRole('button',{name:'Approve',exact:true}).click();
+  await page.locator('[data-approval-state="executed"]').waitFor();
+  const after=await native(),current=after.incidents.find(row=>row.id===target.id);
+  assert.equal(after.revision,before.revision+1);
+  const added=current.timeline.filter(row=>!target.timeline.some(old=>old.id===row.id));
+  assert.ok(added.length>0);
+  const owner=(await (await http('/api/workspace')).json()).member;
+  for(const entry of added){
+   assert.equal(entry.metadata.agent.agent.id,runtime.context.agentId);
+   assert.ok(entry.metadata.agent.approvers.some(row=>row.id===owner.id));
+  }
+  if(change==='snooze')assert.equal(current.deadlines.filter(row=>row.state==='pending').length,1);
+  if(change==='cancel-deadline')assert.equal(current.deadlines.find(row=>row.id===deadline.id).state,'cancelled');
+  if(change==='expire-deadline'){
+   const fired=current.deadlines.find(row=>row.id===deadline.id);
+   assert.equal(fired.state,'fired');assert.equal(fired.obligation.state,'recorded');
+   assert.equal(fired.obligation.paging,'off');assert.equal(fired.obligation.automatic,false);
+   assert.equal(current.timeline.filter(row=>row.id==='deadline-fired:'+deadline.id).length,1);
+  }
+  const executed=(await (await http('/agents/api/approvals/'+handle.id)).json()).approval;
+  assert.equal(executed.revision,saved.revision);assert.equal(executed.summary_sha256,saved.summary_sha256);
+  const retry=await tool('oncall.incidents.update',args);assert.equal(retry.result?.isError,false,JSON.stringify(retry.body));
+  assert.deepEqual(retry.result.structuredContent,current);assert.deepEqual(await native(),after);
+  assert.deepEqual(await (await http('/api/paging/state')).json(),{...paging,workspaceRevision:before.revision+1});
+  assert.deepEqual(await runtime.outboundRequests(),edge);
+  await capture('deadline-'+change+'-executed',path,async()=>{await page.locator('[data-approval-state="executed"]').waitFor()});
+  console.log('PROBE SURFACE-002 acceptance 8 browser '+change+': signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests');
+ }
+ await runtime.time(null);
+ assert.equal((await runtime.adopt()).status,200);
+
  const receiver=await (await http('/api/automation/clients',{name:'Operations receiver',key:randomBytes(32).toString('hex'),services:['agent-service'],permissions:['incidents:read']})).json();
  const key=randomBytes(32).toString('hex');runtime.fixtures.set('https://8.8.8.8',{key});
  const endpoint=await (await http('/api/automation/endpoints',{name:'Operations receiver',client:receiver.id,services:['agent-service'],url:'https://8.8.8.8/oncall-agent',key,approve:true})).json();

@@ -7,7 +7,7 @@ import { pagingSnapshot } from '../paging-store'
 import { responseContext } from '../manual-pages/context'
 import { auditIdentity } from '../audit-store'
 import { incidentWithinServices } from '../incident-workflows/scope'
-import { expireAgentDeadline } from './deadlines'
+import { deadlineUpdateService, expireAgentDeadline } from './deadlines'
 
 const string = (maxLength = 3000): JsonSchema => ({ type: 'string', minLength: 1, maxLength })
 const revision: JsonSchema = { type: 'integer', minimum: 0 }
@@ -63,18 +63,23 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
     }
     return defineTool({
       name: `oncall.${operation.name}`, title: operation.title, description: operation.description,
-      scope: operation.scope, readOnly: false, classes: operation.name === 'incidents.resolve' ? ['commitment', 'sensitive'] : operation.name === 'incidents.declare' ? ['standard'] : ['standard', 'sensitive'], clauses: operation.clauses, untrusted: true,
+      scope: operation.scope, readOnly: false, classes: operation.name === 'incidents.resolve' ? ['commitment', 'sensitive'] : operation.name === 'incidents.declare' ? ['standard'] : operation.name === 'incidents.update' ? ['standard', 'sensitive', 'live'] : ['standard', 'sensitive'], clauses: operation.clauses, untrusted: true,
       inputSchema: { type: 'object', additionalProperties: false, properties: operation.properties, required: operation.required },
       outputSchema: { type: 'object', properties: { id: string(100), revision: { type: 'integer', minimum: 1 } }, required: ['id', 'revision'] },
-      classify: (args, ctx) => nativeCall(async () => {
+      classify: (args, ctx, completed) => nativeCall(async () => {
         const { incident } = await access(args, ctx)
+        const deadlineChange = operation.name === 'incidents.update' && ['snooze', 'cancel-deadline', 'expire-deadline'].includes(String(args.change))
+        // Base supplies completed facts only for this exact committed call.
+        // Current native sponsorship and service scope still gate its replay.
+        if (deadlineChange && completed) return [...completed]
+        const liveService = deadlineChange ? await deadlineUpdateService(env, args, ctx) : null
         const count = protectedRecords(incident) + Number(typeof args.evidence === 'string' && !!args.evidence)
         // Resolution is a binding coordination decision for one native incident.
         // It moves no money: XXX denotes no currency, never a caller's valuation.
         const primary = operation.name === 'incidents.resolve'
           ? { class: 'commitment' as const, facts: { measure: 0, currency: 'XXX', counterparty: 'internal' as const } }
           : { class: 'standard' as const, facts: { measure: 1 } }
-        return [primary, ...(count ? [{ class: 'sensitive' as const, facts: { measure: count, kind: 'personal_or_incident_evidence' } }] : [])]
+        return [primary, ...(count ? [{ class: 'sensitive' as const, facts: { measure: count, kind: 'personal_or_incident_evidence' } }] : []), ...(liveService ? [{ class: 'live' as const, facts: { measure: 1, service: liveService } }] : [])]
       }),
       target: (args, ctx) => nativeCall(async () => {
         const { current, incident } = await access(args, ctx)

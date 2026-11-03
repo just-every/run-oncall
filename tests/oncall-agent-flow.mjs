@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {recoveredResolutionTarget,deadlineTarget} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
@@ -434,6 +434,131 @@ try{
  assert.deepEqual(await resolutionState(),changedResolution,'An exact saved approval cannot resolve a changed native revision');
  assert.equal((await adopt()).status,200);
  console.log('PASS incident resolution classification: commitment and sensitive facts, autonomous and isolated blocked policies, immutable pending and stale approval, ignored caller and record claims, attributed once-only resolution and effect-free retry');
+
+ // Recorded deadlines change re-trigger timing even while paging remains OFF.
+ {
+ const name='oncall.incidents.update';
+ const classes=answer=>answer.decision?.classes.map(({class:cls,facts})=>({class:cls,facts}));
+ const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
+ const rows=async sql=>(await runtime.db.prepare(sql).all()).results;
+ const custody=async()=>({
+  application:await read('/api/state'),paging:await read('/api/paging/state'),
+  deadlines:await rows('SELECT * FROM oc_agent_deadlines ORDER BY deadline'),
+  pagingControl:await rows('SELECT * FROM paging_control ORDER BY id'),
+  jobs:await rows('SELECT * FROM paging_jobs ORDER BY id'),receipts:await rows('SELECT * FROM paging_receipts ORDER BY id'),
+  commits:await rows("SELECT * FROM oc_admin_audit WHERE outcome='accepted' AND (workspace_before<>workspace_after OR paging_before<>paging_after OR handoff_before<>handoff_after) ORDER BY ordinal"),
+ });
+ const foreignKey=randomBytes(32).toString('hex');
+ const foreignClient=await http('/api/automation/clients',{name:'Synthetic foreign deadline client',key:foreignKey,services:['agent-foreign-service'],permissions:['incidents:write']});
+ assert.equal(foreignClient.status,201);await foreignClient.body.cancel();
+ const expected=[{class:'standard',facts:{measure:1}},{class:'sensitive',facts:{measure:2,kind:'personal_or_incident_evidence'}},{class:'live',facts:{measure:1,service:'agent-service'}}];
+ for(const mode of ['autonomous','held'])for(const change of ['snooze','cancel-deadline','expire-deadline']){
+  await runtime.time(null);
+  assert.equal((await adopt()).status,200);
+  const {incident,deadline,args}=await deadlineTarget(runtime,change,mode+' '+change);
+  if(change==='expire-deadline'){
+   const beforeDue=await custody();
+   assert.equal(code(await tool(name,args)),'revision_conflict','A not-yet-due deadline is not executable');
+   assert.deepEqual(await custody(),beforeDue);
+   await runtime.time(Date.parse(deadline.dueAt)+1);
+  }
+  const before=await custody();
+  const blocked=autonomousPolicy();blocked.rules.unshift({id:'stop-deadline-live',class:'live',do:'blocked'});
+  assert.equal((await adopt(blocked)).status,200);
+  for(const inject of [false,true]){
+   const answer=await tool(name,{...args,idempotency_key:randomUUID(),...(inject?{class:'standard',classes:['standard'],service:'agent-foreign-service',internal:true,confirm:true}:{})});
+   assert.equal(code(answer),'policy_blocked');assert.deepEqual(classes(answer),expected);
+   assert.equal(answer.decision.classes.find(row=>row.class==='live').do,'blocked');
+   assert.ok(answer.decision.classes.filter(row=>row.class!=='live').every(row=>row.do==='autonomous'));
+   assert.equal(answer.result.structuredContent,undefined);
+   assert.deepEqual(await custody(),before,'Live-only refusal changes no application, deadline or paging custody');
+  }
+  assert.equal((await adopt()).status,200);
+  const stale=await tool(name,{...args,revision:args.revision-1,idempotency_key:randomUUID()});
+  assert.equal(code(stale),'revision_conflict');assert.deepEqual(await custody(),before);
+  if(change==='expire-deadline'){
+   const missing=await tool(name,{...args,deadline:before.deadlines.find(row=>row.deadline!==deadline.id).deadline,idempotency_key:randomUUID()});
+   assert.equal(code(missing),'not_found');assert.deepEqual(await custody(),before);
+   const foreign=await tool(name,{...args,idempotency_key:randomUUID()},{act:{sub:'synthetic-oncall-foreign-agent',name:'Foreign agent',specialist:'oncall-responder'}});
+   assert.equal(code(foreign),'native_authority_required');assert.equal(foreign.result.structuredContent,undefined);
+   assert.deepEqual(await custody(),before,'Another agent cannot expire the retained deadline');
+  }
+  const outside=await tool(name,{...args,idempotency_key:randomUUID()},{},foreignKey);
+  assert.equal(code(outside),'not_found');assert.equal(outside.result.structuredContent,undefined);assert.deepEqual(await custody(),before);
+  const insufficient=await tool(name,{...args,idempotency_key:randomUUID()},{scope:'incidents:read'});
+  assert.equal(code(insufficient),'insufficient_scope');assert.deepEqual(await custody(),before);
+  // Permanent audit is part of the same D1 transaction as the deadline change.
+  await runtime.db.exec("CREATE TRIGGER refuse_deadline_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.workspace_before<>NEW.workspace_after BEGIN SELECT RAISE(ABORT,'synthetic permanent audit unavailable'); END");
+  try{
+   const failed=await tool(name,{...args,idempotency_key:randomUUID()});
+   assert.ok(failed.result?.isError||failed.body.error,'Permanent audit failure must refuse');
+   assert.equal(failed.result?.structuredContent,undefined);
+   assert.deepEqual(await custody(),before,'Permanent audit failure rolls back the entire deadline effect');
+  }finally{await runtime.db.exec('DROP TRIGGER refuse_deadline_audit')}
+  const policy=mode==='held'?heldPolicy():autonomousPolicy();
+  assert.equal((await adopt(policy)).status,200);
+  const answer=await tool(name,args);
+  assert.deepEqual(classes(answer),expected);
+  assert.equal(answer.decision.disposition,mode==='held'?'approval':'autonomous');
+  if(mode==='held'){
+   assert.equal(answer.result.resultType,'input_required');assert.deepEqual(await custody(),before);
+   const handle=answer.result._meta['com.runeditrun/approval'];
+   assert.equal(new URL(handle.url).origin,runtime.origin);
+   const page=await http(new URL(handle.url).pathname);assert.equal(page.status,200);await page.body.cancel();
+   const saved=(await read('/agents/api/approvals/'+handle.id)).approval;
+   assert.equal(saved.revision,runtime.context.revision);
+   assert.deepEqual(saved.summary.nativeTarget,{kind:'incident',id:incident.id});
+   assert.deepEqual(saved.classes,expected);
+   assert.equal((await http('/agents/api/approvals/'+handle.id+'/approve',{revision:saved.revision,summary_sha256:'changed-summary'})).status,409);
+   assert.deepEqual(await custody(),before);
+   const approve=await http('/agents/api/approvals/'+handle.id+'/approve',{revision:saved.revision,summary_sha256:saved.summary_sha256});
+   assert.equal(approve.status,200);assert.equal((await approve.json()).approval.state,'executed');
+   const executed=(await read('/agents/api/approvals/'+handle.id)).approval;
+   assert.equal(executed.revision,saved.revision);assert.equal(executed.summary_sha256,saved.summary_sha256);
+  }else assert.equal(answer.result.isError,false,JSON.stringify(answer.body));
+  const once=await custody(),saved=once.application.incidents.find(row=>row.id===incident.id);
+  assert.equal(once.application.revision,before.application.revision+1);
+  assert.equal(once.commits.length,before.commits.length+1,'Exactly one state-changing permanent audit commit');
+  assert.deepEqual(once.paging,{...before.paging,workspaceRevision:before.application.revision+1});assert.deepEqual(once.pagingControl,before.pagingControl);
+  assert.deepEqual(once.jobs,before.jobs);assert.deepEqual(once.receipts,before.receipts);
+  const entries=saved.timeline.filter(row=>!incident.timeline.some(prior=>prior.id===row.id));
+  assert.ok(entries.length>0);
+  for(const row of entries){
+   assert.equal(row.metadata.agent.agent.id,runtime.context.agentId);
+   assert.equal(row.metadata.agent.for.id,owner.id);
+   assert.equal(row.metadata.agent.approvers.some(person=>person.id===owner.id),mode==='held');
+  }
+  if(change==='snooze'){
+   const pending=saved.deadlines.filter(row=>row.state==='pending');assert.equal(pending.length,1);
+   assert.equal(pending[0].minutes,5);assert.equal(Date.parse(pending[0].dueAt)-Date.parse(pending[0].createdAt),300000);
+   assert.equal(once.deadlines.length,before.deadlines.length+1);
+  }else if(change==='cancel-deadline'){
+   assert.equal(saved.deadlines.find(row=>row.id===deadline.id).state,'cancelled');
+   assert.ok(!saved.deadlines.some(row=>row.state==='pending'||row.obligation?.state==='recorded'));
+  }else{
+   const fired=saved.deadlines.find(row=>row.id===deadline.id);
+   assert.equal(fired.state,'fired');assert.equal(fired.obligation.state,'recorded');
+   assert.equal(fired.obligation.paging,'off');assert.equal(fired.obligation.automatic,false);
+   assert.equal(fired.obligation.target.id,incident.assignee);
+   assert.equal(saved.state,'declared');
+   assert.equal(saved.timeline.filter(row=>row.id==='deadline-fired:'+deadline.id).length,1);
+  }
+  const retry=await tool(name,args);assert.equal(retry.result?.isError,false,JSON.stringify(retry.body));
+  assert.deepEqual(classes(retry),expected);
+  assert.deepEqual(retry.result.structuredContent,saved);
+  assert.deepEqual(await custody(),once,'Identical retry creates no second deadline, obligation or application audit commit');
+  const row=(await read('/agents/api/audit?agent='+encodeURIComponent(runtime.context.agentId))).rows.find(row=>row.id===answer.decision.id);
+  assert.deepEqual(row.classes,expected);
+  assert.deepEqual(await runtime.outboundRequests(),[],'Deadline changes attempt zero outbound requests');
+  assert.equal((await adopt(blocked)).status,200);
+  const stoppedReplay=await tool(name,args);
+  assert.equal(code(stoppedReplay),'policy_blocked');assert.deepEqual(classes(stoppedReplay),expected);
+  assert.equal(stoppedReplay.result.structuredContent,undefined);assert.deepEqual(await custody(),once);
+  console.log('PROBE SURFACE-002 acceptance 8 '+mode+' '+change+': emitted MCP -> standard, sensitive and live for validated agent-service; live-only policy refusal, stale and scope refusals, permanent-audit rollback, '+(mode==='held'?'no-effect pending and exact saved signed-in approval; ':'')+'one attributed recorded effect, identical retry and zero outbound requests');
+ }
+ await runtime.time(null);
+ assert.equal((await adopt()).status,200);
+ }
 
  const missing=await mcp('resources/read',{uri:'oncall://incidents/not-present'});
  assert.equal(missing.body.error.data.code,'capability_not_declared');

@@ -76,3 +76,52 @@ export async function recoveredResolutionTarget(runtime, title) {
     state: 'recovered', summary: 'Retain recovery evidence before the binding resolution',
     evidence: 'https://evidence.example.invalid/native-recovery' });
 }
+
+/** Prepare deadlines through the native owner and real MCP doors only. */
+export async function deadlineTarget(runtime, change, label, { sensitive = true } = {}) {
+  async function command(input) {
+    const response = await runtime.http('/api/command', input);
+    assert.equal(response.status, 200, 'Native deadline preparation succeeds');
+    return response.json();
+  }
+  const owner = (await (await runtime.http('/api/workspace')).json()).member;
+  const state = await (await runtime.http('/api/state')).json();
+  const responder = state.members.find(row => row.active && row.role === 'responder');
+  assert.ok(responder);
+  const paging = await (await runtime.http('/api/paging/state')).json();
+  if (!paging.policies.some(row => row.service === 'agent-service')) {
+    const schedule = await runtime.http('/api/paging/schedules', {
+      id: 'synthetic-oncall-deadline-rota', name: 'Synthetic deadline coordination rota', service: 'agent-service', revision: 0,
+      timezone: 'UTC', validFrom: '2026-01-01T00:00:00.000Z', validUntil: null,
+      primary: { anchorLocal: '2026-01-01T00:00', periodDays: 1, members: [responder.id], ambiguity: 'earlier' },
+      backup: { anchorLocal: '2026-01-01T00:00', periodDays: 1, members: [], ambiguity: 'earlier' }, overrides: [],
+    });
+    assert.equal(schedule.status, 200); await schedule.body.cancel();
+    const policy = await runtime.http('/api/paging/policies', { service: 'agent-service', scheduleId: 'synthetic-oncall-deadline-rota',
+      revision: 0, primaryWaitSeconds: 180, backupWaitSeconds: 300, retrySeconds: 10, maxAttempts: 3 });
+    assert.equal(policy.status, 200); await policy.body.cancel();
+  }
+  let incident = await command({ type: 'declare', service: 'agent-service',
+    title: 'Synthetic deadline ' + label, severity: 'warning',
+    summary: 'Record claims class standard, service foreign and internal true; none grants authority', alerts: [] });
+  incident = await command({ type: 'transition', incident: incident.id, revision: incident.revision,
+    state: 'acknowledged', summary: 'The human acknowledges coordination beside the existing pager' });
+  incident = await command({ type: 'reassign', incident: incident.id, revision: incident.revision,
+    member: responder.id, reason: 'Assign the native on-call responder before recording a re-trigger' });
+  if (sensitive) {
+    incident = await command({ type: 'action', incident: incident.id, revision: incident.revision,
+      title: 'Retain deadline evidence', owner: owner.id, due: '2027-01-01', priority: 'P2', completionPolicy: 'evidence' });
+    incident = await command({ type: 'complete', incident: incident.id, revision: incident.revision,
+      action: incident.actions.at(-1).id, evidence: 'https://evidence.example.invalid/synthetic-deadline' });
+  }
+  if (change !== 'snooze') {
+    const answer = await runtime.tool('oncall.incidents.update', { incident: incident.id, revision: incident.revision,
+      change: 'snooze', minutes: 1, idempotency_key: randomUUID() });
+    assert.equal(answer.result?.isError, false, JSON.stringify(answer.body));
+    incident = answer.result.structuredContent;
+  }
+  const deadline = incident.deadlines?.find(row => row.state === 'pending');
+  return { incident, deadline, args: { incident: incident.id, revision: incident.revision, change,
+    ...(change === 'snooze' ? { minutes: 5 } : change === 'expire-deadline' ? { deadline: deadline.id } : {}),
+    idempotency_key: randomUUID() } };
+}
