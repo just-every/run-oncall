@@ -177,6 +177,7 @@ try{
   const saved=(await (await http('/agents/api/approvals/'+handle.id)).json()).approval;
   assert.deepEqual(saved.summary.nativeTarget,{kind:'incident',id:target.id});
   assert.ok(saved.summary.items.includes('Revision '+target.revision));
+   assert.ok(saved.summary.items.includes({snooze:'Record a snooze; paging OFF','cancel-deadline':'Cancel pending re-trigger deadlines; paging OFF','expire-deadline':'Record due re-trigger expiry; paging OFF'}[change]));
   await capture('deadline-'+change+'-pending',path,async()=>{
    await page.locator('[data-approval-state="pending"]').waitFor();
    await page.locator('details').getByText('Details',{exact:true}).click();

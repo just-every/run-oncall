@@ -508,6 +508,7 @@ try{
    const saved=(await read('/agents/api/approvals/'+handle.id)).approval;
    assert.equal(saved.revision,runtime.context.revision);
    assert.deepEqual(saved.summary.nativeTarget,{kind:'incident',id:incident.id});
+   assert.ok(saved.summary.items.includes({snooze:'Record a snooze; paging OFF','cancel-deadline':'Cancel pending re-trigger deadlines; paging OFF','expire-deadline':'Record due re-trigger expiry; paging OFF'}[change]));
    assert.deepEqual(saved.classes,expected);
    assert.equal((await http('/agents/api/approvals/'+handle.id+'/approve',{revision:saved.revision,summary_sha256:'changed-summary'})).status,409);
    assert.deepEqual(await custody(),before);
