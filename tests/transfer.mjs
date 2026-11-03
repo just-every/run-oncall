@@ -316,8 +316,8 @@ try{
  const createdClient=await req('/api/automation/clients',{name:'alice@example.test automation',key:apiKey,services:['transfer'],permissions:['incidents:read','incidents:write']});assert.equal(createdClient.status,201);const apiClient=createdClient.value
  const createdEndpoint=await req('/api/automation/endpoints',{name:'Portable receiver',client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true});assert.equal(createdEndpoint.status,201)
  await business.choosePolicy(cookie)
- const listedResponse=await fetch(m.origin+'/mcp',{method:'POST',headers:{origin:m.origin,authorization:'Bearer '+apiKey,'content-type':'application/json',accept:'application/json, text/event-stream','MCP-Protocol-Version':'2026-07-28','Mcp-Method':'tools/list'},body:JSON.stringify({jsonrpc:'2.0',id:randomUUID(),method:'tools/list',params:{}})});
- assert.equal(listedResponse.status,200);const listedTools=await listedResponse.json();assert.equal(listedTools.error,undefined);
+ const listedResponse=await fetch(m.origin+'/mcp',{method:'POST',headers:{origin:m.origin,authorization:'Bearer '+apiKey,'content-type':'application/json',accept:'application/json, text/event-stream','MCP-Protocol-Version':'2026-07-28','Mcp-Method':'tools/list'},body:JSON.stringify({jsonrpc:'2.0',id:randomUUID(),method:'tools/list',params:{_meta:{'io.modelcontextprotocol/protocolVersion':'2026-07-28'}}})});
+ const listedTools=await listedResponse.json();assert.equal(listedResponse.status,200,JSON.stringify(listedTools));assert.equal(listedTools.error,undefined);
  const surfaceBytes=await readFile('agent-surface.json'),surface=JSON.parse(surfaceBytes);
  const catalogTool=listedTools.result.tools.find(tool=>surface.tools.some(declared=>declared.name===tool.name));
  assert.ok(catalogTool,'The CLI probe must change a tool actually exposed by the emitted MCP door');
