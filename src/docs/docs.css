@@ -70,6 +70,8 @@
 .docs-article[data-doc="getting-started"] .docs-code pre { max-height: none; border: 0; border-radius: 0; background: transparent; }
 .docs-table { overflow-x: auto; }
 .docs-table table { border-collapse: collapse; font-size: 16px; }
+.docs-article[data-doc="agents"] .docs-table table:has(th:nth-child(4)) { min-width: 960px; }
+.docs-article[data-doc="agents"] .docs-table td:first-child code { white-space: nowrap; }
 .docs-table th, .docs-table td { padding: 8px 12px; border-bottom: 1px solid var(--oc-line); text-align: left; vertical-align: top; }
 
 .docs-pager { max-width: 680px; display: flex; justify-content: space-between; gap: 16px; margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--oc-line); }
