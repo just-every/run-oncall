@@ -45,8 +45,15 @@ export async function agentRuntime(){
    const body=await response.json();return {status:response.status,body,message:body,result:body.result,decision:body.result?._meta?.['com.runeditrun/decision']??body.error?.data?._meta?.['com.runeditrun/decision']};
   }
   const tool=(name,args,overrides)=>mcp('tools/call',{name,arguments:args},overrides);
+  // API projections omit retained custody. Compare the actual application rows
+  // as well, while allowing session bookkeeping and the required refusal audit.
+  async function nativeRecords(){
+   const tables=(await runtime.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND (name GLOB 'oc_*' OR name GLOB 'paging_*' OR name GLOB 'handoff_*' OR name='workspace_control') AND name NOT IN ('oc_current_sessions','oc_admin_audit','oc_audit_clock','oc_audit_identities') ORDER BY name").all()).results.map(row=>row.name);
+   const rows=await runtime.db.batch(tables.map(name=>runtime.db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'" ORDER BY rowid')));
+   return Object.fromEntries(tables.map((name,index)=>[name,rows[index].results]));
+  }
   await settings();
-  return {...runtime,request,http,cookie,context,settings,adopt,mcp,mcpWithToken,tool,fixtures};
+  return {...runtime,request,http,cookie,context,settings,adopt,mcp,mcpWithToken,tool,fixtures,nativeRecords};
  }catch(error){await runtime.close();throw error}
 }
 
