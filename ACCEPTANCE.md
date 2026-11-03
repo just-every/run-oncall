@@ -9,11 +9,11 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Core | 15 | 45 | 24 | 84 |
-| Agent surface | 0 | 4 | 13 | 17 |
+| Agent surface | 1 | 4 | 12 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 15 | 49 | 37 | 101 |
+| Full target | 16 | 49 | 36 | 101 |
 
-Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f207859a` (30 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `ac1ad202cf41ca868a4cf163d390fe61ca9c1773` (3 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -1248,7 +1248,7 @@ Core · push-further · **partial** · Rules D-1, D-4
 
 #### BASE-AGENT-001 — One MCP door per seed
 
-Agent surface · target · **missing**
+Agent surface · target · **done**
 
 **Requirement.** Every seed, hosted or self-hosted, serves one remote MCP endpoint at `/mcp` over Streamable HTTP. It speaks the current revision (2026-07-28) and accepts 2025-11-25 clients through the twelve-month deprecation window. It implements `server / discover` and the capabilities the seed declares in its agent-surface manifest: tools, policy, pause, audit and idempotency. A request for a capability the seed has not declared is refused with `capability_not_declared`. Resources, events and prompts are obligations a seed declares through its own Agent surface clause (here SURFACE-001), not a blanket Base requirement. Lists are deterministic and carry `ttlMs` and `cacheScope: "private"`. Roots, Sampling and Logging are not served.
 
@@ -1261,8 +1261,8 @@ Agent surface · target · **missing**
 6. An oversized body returns 413 with no effect.
 7. A request for a capability the seed has not declared returns `capability_not_declared` with no effect.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `tests/oncall-agent-flow.mjs` — nativeTransport in `tests/oncall-agent-transport.mjs`, through emitted Worker HTTP under autonomous and held company policies: points 1–5 reuse discoverDoor and listedDoor for discovery, modern stateless requests, legacy initialization parity, version refusal, deterministic private cached lists, Origin and HeaderMismatch refusals; point 6 sends an authenticated native resolution padded only with legal JSON whitespace beyond the advertised bound, observes 413 and identical retained tables including native revisions, timeline, permanent audit, replay, approval, review and paging custody, then completes the identical unpadded action through its ordinary policy; point 7 reuses refusalPhase for every undeclared capability, preserving native and decision custody with only capacity bookkeeping and its required refusal audit. All probes retain zero outbound requests.
+**Gap.** None.
 
 #### BASE-AGENT-002 — The seed's jobs are tools, through the UI's own actions
 
