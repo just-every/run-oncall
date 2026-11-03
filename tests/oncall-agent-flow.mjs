@@ -7,6 +7,7 @@ import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+import {AGENT_CLASSES} from '../src/modules/agent-door/conformance/surface.mjs';
 
 const runtime=await agentRuntime();
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
@@ -14,6 +15,16 @@ try{
  const {tool,mcp,http,adopt}=runtime;
  assert.equal(code(await tool('oncall.services.read',{id:'agent-service'})),'policy_unset');
  assert.equal((await adopt()).status,200);
+ const listing=await mcp('tools/list');
+ assert.equal(listing.status,200);assert.equal(listing.body.error,undefined);
+ assert.ok(listing.result.tools.length>0,'The adopted policy must expose real tools');
+ for(const listedTool of listing.result.tools){
+  const classes=listedTool._meta?.['com.runeditrun/classes'];
+  assert.ok(Array.isArray(classes)&&classes.length>0,`${listedTool.name} must declare its possible classes`);
+  for(const cls of classes)assert.ok(AGENT_CLASSES.includes(cls),`${listedTool.name} declares uncatalogued class ${cls}`);
+ }
+ assert.equal(listing.result.nextCursor,undefined,'The catalog probe must enumerate the complete emitted list');
+ console.log(`PROBE BASE-AGENT-006 point 5 listed tools: emitted Worker MCP -> all ${listing.result.tools.length} returned tools declare only fleet-catalog classes`);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
  const owner=(await (await http('/api/workspace')).json()).member;
@@ -48,6 +59,10 @@ try{
   const review=async()=>(await (await http('/agents/api/reviews')).json()).reviews.find(row=>row.id===reviewId);
   assert.equal((await review()).state,'open');
   assert.equal((await review()).marked_by,null);assert.equal((await review()).marked_at,null);
+  const token=await runtime.agentToken();
+  const admitted=await tool('oncall.services.read',{id:'agent-service'},{},{token});
+  assert.equal(admitted.status,200);assert.equal(admitted.result.isError,false);
+  assert.equal(admitted.result.structuredContent.data[0].id,'agent-service','The exact bearer used at the person doors first reads its real native target through MCP');
   const witness=async()=>({application:await native(),approval:(await (await http(approvalPath)).json()).approval,review:await review(),policy:await (await http('/agents/api/state')).json(),records:await records(),outbound:await runtime.outboundRequests()});
   const before=await witness();
   assert.deepEqual(before.outbound,[]);
@@ -56,7 +71,7 @@ try{
     ['approve',approvalPath+'/approve',actionBody],
     ['mark reviewed','/agents/api/reviews/'+reviewId+'/reviewed',{}],
    ]){
-    const refused=await runtime.agentHttp(path,body,{withOwnerCookie});
+    const refused=await runtime.agentHttp(path,body,{withOwnerCookie,token});
     assert.equal(refused.status,403,action+' requires a person even alongside an owner cookie');
     assert.deepEqual(await refused.json(),{code:'person_session_required'});
     assert.deepEqual(await witness(),before,action+' refusal preserves marks, policy, all durable records and outbound work');
@@ -67,6 +82,8 @@ try{
   assert.equal(marked.status,200);
   const humanReview=(await marked.json()).review;
   assert.equal(humanReview.state,'reviewed');assert.equal(humanReview.marked_by,owner.id);
+  assert.notEqual(humanReview.marked_by,runtime.context.agentId);
+  assert.equal((await (await http(approvalPath)).json()).approval.state,'pending','Reviewing the declaration cannot approve the separate resolution');
   assert.ok(Number.isFinite(Date.parse(humanReview.marked_at)));
   assert.equal(humanReview.prepared_by.agent,'Responder assistant');
   assert.equal(humanReview.prepared_by.for,owner.name);
@@ -81,6 +98,10 @@ try{
    assert.deepEqual(humanApproval.prepared_by,saved.prepared_by);
    assert.equal(humanApproval.approvals.length,1);
    assert.equal(humanApproval.approvals[0].person,owner.id);assert.equal(humanApproval.approvals[0].name,owner.name);
+   assert.equal(humanApproval.approvals[0].person,humanReview.marked_by);
+   assert.ok(Number.isFinite(Date.parse(humanApproval.approvals[0].at)));
+   assert.deepEqual((await (await http(approvalPath)).json()).approval,humanApproval);
+   assert.deepEqual(await review(),humanReview,'Approving the resolution retains the separate human review mark');
    const once=await native(),resolved=once.incidents.find(row=>row.id===target.id);
    assert.equal(resolved.state,'resolved');assert.equal(resolved.revision,target.revision+1);
    const entry=resolved.timeline.filter(row=>row.lifecycle?.to==='resolved');
