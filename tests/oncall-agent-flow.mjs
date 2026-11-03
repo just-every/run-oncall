@@ -212,7 +212,8 @@ try{
   const snapshot=async()=>({application:await read('/api/state'),paging:await read('/api/paging/state'),
    approvals:(await runtime.db.prepare('SELECT * FROM agent_door_approvals ORDER BY id').all()).results,
    pending:(await runtime.db.prepare("SELECT * FROM agent_door_calls WHERE state='pending' ORDER BY agent,key").all()).results,
-   operations:(await runtime.db.prepare('SELECT * FROM oc_agent_operations ORDER BY id').all()).results});
+   operations:(await runtime.db.prepare('SELECT * FROM oc_agent_operations ORDER BY id').all()).results,
+   sponsorLink:await runtime.db.prepare('SELECT business_id,business_role,operator_id,state FROM bs_team WHERE business_id=?').bind(businessId).first()});
   const note=async text=>({incident:target.id,revision:(await current()).revision,text,idempotency_key:randomUUID()});
   const edge=await runtime.outboundRequests(),args=await note('Admitted Business sponsor note '+label),before=await snapshot();
   assert.ok(before.pending.length>0,'Authority comparisons include real pending work');
@@ -234,6 +235,12 @@ try{
   const after=await current(),entry=after.timeline.at(-1);
   assert.equal(after.revision,args.revision+1);assert.equal(entry.text,args.text);
   assert.equal(entry.metadata?.agent?.agent.id,agent);assert.equal(entry.metadata?.agent?.for.id,sponsor.id);
+  const admittedReplay=await call('oncall.notes.add',args);
+  assert.equal(admittedReplay.result.isError,false);
+  assert.deepEqual(await current(),after,'The supported same-token retry retains one attributed note');
+  const retained=await runtime.db.prepare('SELECT state,outcome FROM agent_door_calls WHERE agent=? AND key=?').bind(agent,args.idempotency_key).first();
+  assert.equal(retained.state,'done');
+  assert.equal(JSON.parse(retained.outcome).outcome,'done','The later refusal must fence a populated successful receipt');
   const audit=async()=> (await read('/agents/api/audit?agent='+encodeURIComponent(agent))).rows;
   assert.ok((await audit()).some(row=>row.sponsor.id===sponsor.id&&row.outcome==='done'));
   assert.equal((await http('/api/command',{type:'member',id:sponsor.id,role:'viewer',active:true})).status,200);
@@ -247,19 +254,29 @@ try{
   assert.equal(refusalAudit.length,1);assert.equal(refusalAudit[0].code,'native_authority_required');
   assert.equal(refusalAudit[0].sponsor.id,sponsor.id);assert.equal(refusalAudit[0].role,'viewer');
   assert.deepEqual(refusalAudit[0].scopes,claims.scope.split(' '),'Native downgrade does not replace the signed token scopes');
+  assert.deepEqual(downgraded.sponsorLink,before.sponsorLink,'Only the native role changes; the signed Business roster and explicit link remain current');
+  const refusedReplay=await call('oncall.notes.add',args);
+  assert.equal(code(refusedReplay),'native_authority_required');
+  assert.equal(refusedReplay.result?.structuredContent,undefined,'A downgraded sponsor cannot disclose its earlier successful receipt');
+  assert.deepEqual(await snapshot(),downgraded,'Refused successful-call replay preserves native records and populated pending work');
+  assert.deepEqual(await runtime.db.prepare('SELECT state,outcome FROM agent_door_calls WHERE agent=? AND key=?').bind(agent,args.idempotency_key).first(),retained,'Authority refusal retains the original receipt');
   const permitted=await call('oncall.services.read',{id:'agent-service'});
   assert.equal(permitted.status,200);assert.equal(permitted.result.isError,false);assert.equal(permitted.result.structuredContent.data[0].id,'agent-service');
+  assert.deepEqual(await snapshot(),downgraded,'The viewer read preserves application, pending work, paging and Business linkage');
   assert.equal((await http('/api/command',{type:'member',id:sponsor.id,role:'viewer',active:false})).status,200);
   const suspended=await snapshot();
   assert.equal(suspended.application.members.find(row=>row.id===sponsor.id).active,false);
   assert.ok(claims.exp>seconds(),'The same token remains unexpired after suspension');
   const unavailable=await call('oncall.notes.add',await note('Inactive sponsor cannot append this valid note'));
   assert.equal(unavailable.status,401);assert.equal(unavailable.result,undefined);
+  const suspendedReplay=await call('oncall.notes.add',args);
+  assert.equal(suspendedReplay.status,401);assert.equal(suspendedReplay.result,undefined,'Suspension also fences the retained successful receipt');
   assert.equal((await call('oncall.services.read',{id:'agent-service'})).status,401);
   assert.deepEqual(await snapshot(),suspended,'Suspension refusal preserves native state and pending work');
+  assert.deepEqual(suspended.sponsorLink,before.sponsorLink,'Native suspension needs no Business roster change or token replacement');
   assert.deepEqual(await runtime.outboundRequests(),edge,'Sponsor transitions attempt zero outbound requests');
   assert.equal(edge.length,0,'This sponsor journey has no provider activity');
-  console.log(`PROBE BASE-AGENT-005 3 ${label}: linked native responder and preissued Business token -> attributed note ${label==='held'?'approved by its signed-in sponsor':'executed'}; owner downgrade -> native_authority_required with no effect and permitted read; owner suspension -> same unexpired token 401; pending work and paging unchanged; zero outbound requests`);
+  console.log(`PROBE BASE-AGENT-005 3 ${label}: linked native responder and preissued Business token -> attributed note ${label==='held'?'approved by its signed-in sponsor':'executed'} and once-only retry; owner downgrade -> fresh note and successful-call replay native_authority_required with no disclosure or effect and permitted read; owner suspension -> fresh call, replay and read with the same unexpired token 401; Business link, pending work and paging unchanged; zero outbound requests`);
  }
  assert.equal((await adopt()).status,200);
  // Native immutable service fields remain enforced; the conformance fixture
