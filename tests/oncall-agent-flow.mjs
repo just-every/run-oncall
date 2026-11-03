@@ -3,7 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
-import {agentRuntime,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
+import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
@@ -86,6 +86,79 @@ async function droppedDeclarationReplay(runtime){
  assert.equal((await adopt()).status,200);
 }
 
+/** Completed native writes refuse changed arguments without consuming custody. */
+async function changedArgumentConflicts(runtime){
+ const {db,http,tool,adopt,context}=runtime;
+ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
+ const snapshot=()=>agentEffectSnapshot(runtime);
+ const attempts=key=>rows("SELECT * FROM agent_door_audit WHERE agent=? AND json_extract(row,'$.idempotency_key')=? ORDER BY sequence",context.agentId,key);
+ for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
+  assert.equal((await adopt(policy)).status,200);
+  async function complete(name,args,field,changed){
+   const before=await snapshot(),first=await tool(name,args);
+   assert.equal(first.status,200);assert.equal(first.body.error,undefined);assert.equal(first.result.isError,false);
+   assert.deepEqual(first.decision.classes.map(row=>row.class),['standard']);
+   assert.equal(first.decision.disposition,disposition);
+   const once=await snapshot(),result=first.result.structuredContent;
+   assert.equal(once.application.revision,before.application.revision+1);
+   assert.deepEqual(once.application.incidents.find(row=>row.id===result.id),result);
+   assert.equal(once.records.oc_admin_audit.length,before.records.oc_admin_audit.length+1,'The supported write commits exactly one native state-changing audit');
+   assert.equal(once.records.agent_door_approvals.length,before.records.agent_door_approvals.length,'A standard-only write needs no approval');
+   assert.equal(once.records.agent_door_reviews.length,before.records.agent_door_reviews.length+Number(mode==='held'));
+   if(name==='oncall.incidents.declare'){
+    assert.equal(once.application.incidents.length,before.application.incidents.length+1);
+    assert.equal(result.title,args.title);assert.equal(result.revision,1);
+    assert.equal(result.timeline.filter(row=>row.kind==='declared').length,1);
+   }else{
+    const prior=before.application.incidents.find(row=>row.id===args.incident);
+    assert.equal(once.application.incidents.length,before.application.incidents.length);
+    assert.equal(result.revision,args.revision+1);assert.equal(result.timeline.length,prior.timeline.length+1);
+    assert.deepEqual(result.timeline.slice(0,-1),prior.timeline);
+    assert.equal(result.timeline.at(-1).text,args.text);
+   }
+   assert.equal(result.timeline.at(-1).metadata.agent.agent.id,context.agentId);
+   const calls=await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,args.idempotency_key);
+   assert.equal(calls.length,1);assert.equal(calls[0].state,'done');assert.equal(calls[0].decision_id,first.decision.id);
+   const stored=JSON.parse(calls[0].outcome);
+   assert.equal(stored.outcome,'done');assert.deepEqual(stored.result,result);
+   assert.deepEqual(stored.review,first.result._meta['com.runeditrun/review']);
+   if(mode==='held'){
+    const review=once.records.agent_door_reviews.find(row=>row.id===stored.review.id);
+    assert.ok(review);assert.equal(review.state,'open');assert.equal(JSON.parse(review.saved).decision_id,first.decision.id);
+   }else assert.equal(stored.review,undefined);
+   const original=await attempts(args.idempotency_key);
+   assert.equal(original.length,1);assert.equal(JSON.parse(original[0].row).outcome,'done');
+   const conflict=await tool(name,{...args,[field]:changed});
+   assert.equal(conflict.status,200);assert.equal(conflict.body.error,undefined);
+   assert.notEqual(conflict.body.id,first.body.id);assert.equal(conflict.result.isError,true);
+   assert.equal(conflict.result._meta['com.runeditrun/error'].code,'idempotency_conflict');
+   assert.equal(JSON.parse(conflict.result.content[0].text).code,'idempotency_conflict');
+   assert.equal(conflict.result.structuredContent,undefined);
+   assert.deepEqual(await snapshot(),once,'Changed arguments preserve all native records, revisions, timeline, state-changing audit, original calls and outcomes, approvals, reviews and paging');
+   const refused=await attempts(args.idempotency_key);
+   assert.deepEqual(refused.slice(0,-1),original,'Refusal preserves original outcome audit custody');assert.equal(refused.length,2);
+   const refusal=JSON.parse(refused.at(-1).row);
+   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'idempotency_conflict');
+   assert.equal(refusal.idempotency_key,args.idempotency_key);
+   const replay=await tool(name,args);
+   assert.equal(replay.status,200);assert.equal(replay.body.error,undefined);assert.equal(replay.result.isError,false);
+   assert.notEqual(replay.body.id,first.body.id);assert.notEqual(replay.body.id,conflict.body.id);
+   assert.deepEqual(replay.result.structuredContent,stored.result);assert.deepEqual(replay.result._meta['com.runeditrun/review'],stored.review);
+   assert.deepEqual(await snapshot(),once,'Exact retry returns the stored outcome without another native effect or held review');
+   const retried=await attempts(args.idempotency_key);
+   assert.deepEqual(retried.slice(0,-1),refused);assert.equal(retried.length,3);
+   const retry=JSON.parse(retried.at(-1).row);
+   assert.equal(retry.outcome,'replayed');assert.equal(retry.replay_of,first.decision.id);
+   assert.deepEqual(await runtime.outboundRequests(),[],'Supported write, conflict and exact retry make zero outbound requests');
+   console.log('PROBE BASE-AGENT-012 acceptance 3 '+mode+' '+name+': completed standard-only write; original key with changed '+field+' -> isError idempotency_conflict; native records, revisions, timeline, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; exact arguments with new RPC id -> stored outcome and no duplicate effect or held review; zero outbound requests');
+   return result;
+  }
+  const declared=await complete('oncall.incidents.declare',{service:'agent-service',title:'Synthetic coordination conflict '+mode,summary:'Native coordination without outside action',severity:'warning',idempotency_key:randomUUID()},'title','Changed synthetic coordination title');
+  await complete('oncall.notes.add',{incident:declared.id,revision:declared.revision,text:'Synthetic internal coordination note',idempotency_key:randomUUID()},'text','Changed synthetic internal coordination note');
+ }
+ assert.equal((await adopt()).status,200);
+}
+
 const runtime=await agentRuntime();
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
 try{
@@ -152,6 +225,7 @@ try{
  await policyAdoption(runtime);
  await pauseMatrix(runtime);
  await droppedDeclarationReplay(runtime);
+ await changedArgumentConflicts(runtime);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
  const owner=(await (await http('/api/workspace')).json()).member;

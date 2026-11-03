@@ -8,6 +8,21 @@ import edge from './oncall-provider-edge.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {signJws,seconds,accessToken,policyEnvelope,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
+/** Compare durable effects while permitting attempt audit and rate bookkeeping. */
+export async function agentEffectSnapshot({db,http}){
+ const response=await http('/api/state');assert.equal(response.status,200);
+ const application=await response.json();
+ const tables=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").all()).results.map(row=>row.name)
+  .filter(name=>!['agent_door_audit','agent_door_relay','oc_audit_clock'].includes(name));
+ const statements=tables.map(name=>db.prepare(name==='agent_door_agents'
+  ? 'SELECT id,name,specialist,sponsor,sponsor_name,revoked FROM agent_door_agents'
+  : name==='oc_admin_audit'
+   ? 'SELECT * FROM oc_admin_audit WHERE workspace_before<>workspace_after OR paging_before<>paging_after OR handoff_before<>handoff_after'
+   : 'SELECT * FROM "'+name.replaceAll('"','""')+'"'));
+ const records=Object.fromEntries((await db.batch(statements)).map((row,index)=>[tables[index],row.results.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]));
+ return {application,records};
+}
+
 /** Real emitted Worker, native D1 and native owner lifecycle; only paid egress is replaced. */
 export async function agentRuntime(){
  const pair=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);

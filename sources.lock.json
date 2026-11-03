@@ -6312,7 +6312,7 @@
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
-      "sha256": "2c117da436ec7b9c95f9370d70c140b16bbaeeed924cf17daa5ab768daf4d6f5",
+      "sha256": "6f687a785b451ff9decdc871b3c19efbe7e439483c67df71ff07c3954df2fc4f",
       "executable": false
     },
     "tests/agent-door.mjs": {
@@ -6480,7 +6480,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "9fbb5619b01d81157ac3532373b2c963cc8244d0415afa7d15395c9c36de11d5",
+      "sha256": "d3e5994a4f6138e9b4d8e2a2850b0c773f76817b6a547caaedcd8e0e69aae388",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {
