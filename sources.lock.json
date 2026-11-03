@@ -6504,11 +6504,11 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "befdc810cd0c4c9be00670ed5830ad5dd716d0e1305b026c9e315f03a73d444a",
+      "sha256": "bbcd509bc14e63e74bd0cfc80c41cfd3270cc1237ada19e93ede63e36e461146",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "5d8ac7a4dcdb46d8383a56a06439b688760707064f8299d958d7878eb73ceff4",
+      "sha256": "9dbfac24c6ba1106df4b55318cb8a4263856036e600bc4a3809861eea3773244",
       "executable": false
     },
     "tests/readiness.mjs": {
