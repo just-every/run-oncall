@@ -252,6 +252,11 @@ try{
   await page.getByRole('heading',{name:'Current resource templates',exact:true}).waitFor();
   await page.getByText('No resource templates are exposed.',{exact:false}).waitFor();
   await page.getByRole('heading',{name:'Target capabilities',exact:true}).waitFor();
+  const inventoryRegion=page.locator('.docs-table').filter({has:page.getByRole('columnheader',{name:'Computed class checks',exact:true})}).first();
+  await inventoryRegion.focus();
+  await inventoryRegion.press('ArrowRight');
+  await page.waitForFunction(region=>region.scrollLeft>0,await inventoryRegion.elementHandle());
+  assert.ok(await inventoryRegion.evaluate(region=>region.contains(document.activeElement)||region===document.activeElement),'The complete inventory remains keyboard scrollable');
   assert.deepEqual(await native(),before);assert.deepEqual(await (await http('/api/paging/state')).json(),paging);
   assert.deepEqual(await runtime.outboundRequests(),edge);
   console.log(`PROBE BASE-AGENT-013 rendered ${label}: /docs/agents -> complete ${rows.length}-tool class, scope and fixture inventory agrees with MCP; resources empty; native and paging unchanged; zero outbound requests`);
