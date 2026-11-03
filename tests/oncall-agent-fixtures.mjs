@@ -76,3 +76,187 @@ export async function recoveredResolutionTarget(runtime, title) {
     state: 'recovered', summary: 'Retain recovery evidence before the binding resolution',
     evidence: 'https://evidence.example.invalid/native-recovery' });
 }
+
+/** Review projection distinguishes native client custody from a Business agent. */
+export async function reviewAttribution(runtime, { approve } = {}) {
+  const { autonomousPolicy, heldPolicy } = await import('../src/modules/agent-door/conformance/crypto.mjs');
+  const { http, tool, request, origin } = runtime;
+  const read = async path => {
+    const response = await http(path);
+    assert.equal(response.status, 200);
+    return response.json();
+  };
+  const state = () => read('/api/state');
+  const paging = () => read('/api/paging/state');
+  const audit = async () => (await runtime.db.prepare('SELECT * FROM oc_admin_audit ORDER BY ordinal').all()).results;
+  const agentAudit = async () => {
+    const rows = []; let after = '';
+    while (true) {
+      const page = await read('/agents/api/audit?after=' + after);
+      assert.equal(page.differs_from_policy, 0);
+      rows.push(...page.rows);
+      if (!page.rows.length) return rows;
+      assert.notEqual(page.cursor, after, 'The native audit cursor must advance');
+      after = page.cursor;
+    }
+  };
+  const approvePending = async pending => {
+    const path = new URL(pending.url).pathname;
+    const saved = (await read('/agents/api/approvals/' + pending.id)).approval;
+    if (approve) await approve(path, saved);
+    else {
+      const response = await http('/agents/api/approvals/' + pending.id + '/approve', { revision: saved.revision, summary_sha256: saved.summary_sha256 });
+      assert.equal(response.status, 200);
+      assert.equal((await response.json()).approval.state, 'executed');
+    }
+    const executed = (await read('/agents/api/approvals/' + pending.id)).approval;
+    assert.equal(executed.state, 'executed');
+    assert.equal(executed.revision, saved.revision);
+    assert.equal(executed.summary_sha256, saved.summary_sha256);
+    return saved;
+  };
+  const cases = [];
+  assert.deepEqual(await runtime.outboundRequests(), [], 'Isolated review setup sends no receiver requests');
+  for (const [policy, document] of [['autonomous', autonomousPolicy()], ['held', heldPolicy()]]) {
+    assert.equal((await runtime.adopt(document)).status, 200);
+    const source = 'synthetic-oncall-review-' + policy, sourceKey = randomBytes(32).toString('hex');
+    assert.equal((await http('/api/sources', { id: source, key: sourceKey, scopes: ['agent-service'] })).status, 200);
+    const sourceEvent = await request(origin + '/api/ingress/' + source, { method: 'POST',
+      headers: { Origin: origin, Authorization: 'Bearer ' + sourceKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source, eventId: source, service: 'agent-service', environment: 'production',
+        key: source, generation: source, intent: 'trigger', severity: 'warning',
+        title: 'Retained monitor observation under ' + policy, observedAt: new Date().toISOString(),
+        evidence: 'https://monitoring.example.invalid/review-attribution' }) });
+    assert.equal(sourceEvent.status, 201); await sourceEvent.body.cancel();
+    let native = await state();
+    const owner = (await read('/api/workspace')).member;
+    const responder = native.members.find(row => row.active && row.role === 'responder');
+    const alert = native.alerts.find(row => row.source === source && row.generation === source);
+    assert.ok(responder && alert);
+    const declared = await http('/api/command', { type: 'declare', service: 'agent-service',
+      title: 'Review attribution under ' + policy + ' policy', severity: 'warning',
+      summary: 'Human-declared coordination beside the existing pager', alerts: [alert.id] });
+    assert.equal(declared.status, 200);
+    let incident = await declared.json();
+    const humanEntry = structuredClone(incident.timeline[0]);
+    assert.equal(humanEntry.actor, owner.id);
+    const token = randomBytes(32).toString('hex');
+    const response = await http('/api/automation/clients', { name: 'Coordination service account ' + policy,
+      key: token, services: ['agent-service'], permissions: ['incidents:read', 'incidents:write'] });
+    assert.equal(response.status, 201);
+    const client = await response.json();
+    const key = randomUUID();
+    const input = { type: 'transition', state: 'acknowledged', incident: incident.id, revision: incident.revision,
+      member: responder.id, summary: 'Service account assigns the named responder; no human response is claimed' };
+    const act = () => request(origin + '/api/v1/incidents', { method: 'POST',
+      headers: { Origin: origin, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', 'Idempotency-Key': key },
+      body: JSON.stringify(input) });
+    const { workspaceRevision: beforeWorkspaceRevision, ...pagingBefore } = await paging();
+    const first = await act(), firstBody = await first.json();
+    assert.equal(first.status, 201);
+    assert.equal(firstBody.client, client.id);
+    native = await state();
+    incident = native.incidents.find(row => row.id === incident.id);
+    assert.equal(incident.state, 'acknowledged');
+    assert.equal(incident.assignee, responder.id);
+    assert.equal(incident.commander, responder.id);
+    assert.equal(incident.revision, input.revision + 1);
+    const machineEntry = structuredClone(incident.timeline.at(-1));
+    assert.equal(machineEntry.actor, client.id);
+    assert.equal(machineEntry.lifecycle.member, responder.id);
+    assert.equal(machineEntry.metadata.agent.client, client.id);
+    assert.equal(machineEntry.metadata.agent.clientRevision, client.revision);
+    assert.equal(machineEntry.metadata.agent.agent.id, 'oncall-client:' + client.id);
+    assert.equal(machineEntry.metadata.agent.for.id, owner.id);
+    assert.deepEqual(machineEntry.metadata.agent.approvers.map(row => row.id), []);
+    const committed = native.apiOperations.filter(row => row.client === client.id);
+    assert.equal(committed.length, 1);
+    const acceptedAudit = (await audit()).filter(row => row.kind === 'automation.incidents' && row.outcome === 'accepted');
+    assert.ok(acceptedAudit.length);
+    const retry = await act();
+    assert.equal(retry.status, 200);
+    assert.deepEqual(await retry.json(), committed[0]);
+    native = await state();
+    assert.deepEqual(native.incidents.find(row => row.id === incident.id), incident, 'Identical retry cannot add another timeline effect');
+    assert.deepEqual(native.apiOperations.filter(row => row.client === client.id), committed);
+    assert.deepEqual((await audit()).filter(row => row.kind === 'automation.incidents' && row.outcome === 'accepted'), acceptedAudit);
+    const accountRows = (await agentAudit()).filter(row => row.agent.id === 'oncall-client:' + client.id);
+    const actionRow = accountRows.find(row => row.tool === 'oncall.incidents.acknowledge' && !row.decision_id);
+    assert.ok(actionRow);
+    assert.deepEqual(actionRow.classes.map(row => row.class), ['standard']);
+    assert.equal(actionRow.sponsor.id, owner.id);
+    assert.equal(actionRow.revision, runtime.context.revision);
+    assert.equal(actionRow.outcome, 'done');
+    assert.equal(actionRow.decision, policy === 'held' ? 'review' : 'autonomous');
+    const noteArgs = { incident: incident.id, revision: incident.revision,
+      text: 'Business agent retained coordination note under ' + policy, idempotency_key: randomUUID() };
+    const note = await tool('oncall.notes.add', noteArgs);
+    assert.equal(note.decision.disposition, policy === 'held' ? 'review' : 'autonomous');
+    assert.equal(note.result.isError, false);
+    incident = (await state()).incidents.find(row => row.id === incident.id);
+    const agentEntry = structuredClone(incident.timeline.at(-1));
+    assert.equal(agentEntry.metadata.agent.agent.id, runtime.context.agentId);
+    assert.equal(agentEntry.metadata.agent.client, undefined);
+    assert.equal(agentEntry.actor, runtime.context.agentId);
+    const beforeProjection = { application: await state(), paging: await paging(), audit: await audit() };
+    const material = await read('/api/reviews/' + incident.id + '/material');
+    assert.deepEqual({ application: await state(), paging: await paging(), audit: await audit() }, beforeProjection, 'Protected HTTP review changes no native record or audit');
+    const anonymous = await request(origin + '/api/reviews/' + incident.id + '/material');
+    assert.equal(anonymous.status, 401);
+    assert.equal((await anonymous.json()).assertions, undefined);
+    const fromMcp = await tool('oncall.reviews.read', { id: incident.id });
+    assert.equal(Boolean(fromMcp.result.isError), false);
+    assert.equal(fromMcp.decision.disposition, policy === 'held' ? 'approval' : 'autonomous');
+    // Sensitive reads under held policy also require the actual person.
+    let mcpMaterial = fromMcp.result.structuredContent?.data;
+    if (policy === 'held') {
+      const handle = fromMcp.result._meta['com.runeditrun/approval'];
+      await approvePending(handle);
+      const approvedRead = await runtime.mcp('tools/call', { name: 'oncall.reviews.read', arguments: { id: incident.id }, requestState: fromMcp.result.requestState });
+      assert.equal(approvedRead.result.isError, false);
+      mcpMaterial = approvedRead.result.structuredContent?.data;
+    }
+    assert.ok(mcpMaterial, 'The approved review read returns its protected native material');
+    assert.deepEqual(mcpMaterial.assertions, material.assertions);
+    assert.deepEqual(mcpMaterial.observations, material.observations);
+    const machine = material.assertions.find(row => row.id === machineEntry.id);
+    assert.equal(machine.actor, client.id);
+    assert.equal(machine.actorName, client.name);
+    assert.equal(machine.classification, 'service account coordination record');
+    assert.deepEqual(machine.metadata, machineEntry.metadata, 'Projection preserves retained internal policy attribution');
+    const human = material.assertions.find(row => row.id === humanEntry.id);
+    assert.equal(human.actorName, owner.name);
+    assert.equal(human.classification, 'human assertion');
+    const agent = material.assertions.find(row => row.id === agentEntry.id);
+    assert.equal(agent.actorName, agentEntry.metadata.agent.label);
+    assert.equal(agent.classification, 'agent coordination record');
+    assert.ok(material.observations.some(row => row.classification === 'reported source observation' && row.source === source));
+    assert.deepEqual({ application: await state(), paging: await paging() }, { application: beforeProjection.application, paging: beforeProjection.paging }, 'MCP review leaves native and paging records unchanged');
+    const afterAudit = await audit();
+    assert.deepEqual(afterAudit.slice(0, beforeProjection.audit.length), beforeProjection.audit, 'All existing permanent audit rows stay immutable');
+    for (const row of afterAudit.slice(beforeProjection.audit.length)) {
+      assert.equal(row.kind, 'agent-door.persistence', 'Only policy custody may append audit on a review read');
+      for (const area of ['workspace', 'paging', 'handoff']) assert.equal(row[area + '_before'], row[area + '_after']);
+    }
+    const { workspaceRevision: afterWorkspaceRevision, ...pagingAfter } = await paging();
+    assert.ok(afterWorkspaceRevision > beforeWorkspaceRevision, 'The account action retains its native workspace commit');
+    assert.deepEqual(pagingAfter, pagingBefore, 'Account action and review cannot deliver or change paging');
+    const rows = await agentAudit(), readRow = rows.find(row => row.id === fromMcp.decision.id);
+    assert.equal(readRow.sponsor.id, owner.id);
+    assert.equal(readRow.revision, runtime.context.revision);
+    assert.equal(readRow.decision, policy === 'held' ? 'approval' : 'autonomous');
+    const feed = await read('/agents/api/reviews');
+    const standard = accountRows.filter(row => row.tool === 'oncall.incidents.receipt');
+    assert.ok(standard.length);
+    for (const row of standard) {
+      assert.equal(row.decision, policy === 'held' ? 'review' : 'autonomous');
+      assert.equal(Boolean(row.review?.id), policy === 'held');
+      if (row.review) assert.ok(feed.reviews.some(item => item.id === row.review.id));
+    }
+    assert.deepEqual(await runtime.outboundRequests(), []);
+    cases.push({ policy, incident, material, client, human, agent, machine, beforeProjection });
+    console.log('PROBE SURFACE-003 3 ' + policy + ': scoped native account acknowledgment, identical retry and protected review API and MCP -> one named service-account act, distinct human, Business agent and source; expected policy custody; native and paging records unchanged on projection; zero outbound requests');
+  }
+  assert.equal((await runtime.adopt()).status, 200);
+  return cases;
+}

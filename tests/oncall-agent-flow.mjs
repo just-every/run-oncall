@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
 import {agentRuntime,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {recoveredResolutionTarget,reviewAttribution} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
@@ -421,6 +421,7 @@ try{
  await scheduleReplay(runtime);
  await eraseReplay(runtime);
  await eraseClasses(runtime);
+ await reviewAttribution(runtime);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const events=await tool('oncall.events.list',{limit:200});assert.equal(code(events),'capability_not_declared');assert.equal(events.result.structuredContent,undefined);
  assert.ok((await audit()).rows.some(row=>row.agent.id===runtime.context.agentId&&row.outcome==='done'));
