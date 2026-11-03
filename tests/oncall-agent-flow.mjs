@@ -310,6 +310,87 @@ try{
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
  const owner=(await (await http('/api/workspace')).json()).member;
+ // Create real coordination work under the held policy. Retained pending work
+ // must remain a person's decision even if the company later allows autonomy.
+ {
+ const native=async()=> (await (await http('/api/state')).json());
+ const tables=(await runtime.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").all()).results.map(row=>row.name);
+ const records=async()=>Object.fromEntries((await runtime.db.batch(tables.map(name=>runtime.db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"')))).map((row,index)=>[tables[index],row.results.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]));
+ for(const mode of ['autonomous','held']){
+  assert.equal((await adopt(heldPolicy())).status,200);
+  const reviewArgs={service:'agent-service',title:'Synthetic coordination review '+mode,summary:'Native coordination with no outside action',severity:'warning',idempotency_key:randomUUID()};
+  const prepared=await tool('oncall.incidents.declare',reviewArgs);
+  assert.equal(prepared.result.isError,false);
+  assert.equal(prepared.decision.disposition,'review');
+  const reviewId=prepared.result._meta['com.runeditrun/review'].id;
+  const target=await recoveredResolutionTarget(runtime,'Synthetic person-only approval '+mode);
+  const resolveArgs={incident:target.id,revision:target.revision,summary:'Retained recovery supports this coordination decision',idempotency_key:randomUUID()};
+  const pending=await tool('oncall.incidents.resolve',resolveArgs);
+  assert.equal(pending.decision.disposition,'approval');
+  const approvalId=pending.result._meta['com.runeditrun/approval'].id;
+  if(mode==='autonomous')assert.equal((await adopt()).status,200);
+  const approvalPath='/agents/api/approvals/'+approvalId;
+  const saved=(await (await http(approvalPath)).json()).approval;
+  assert.equal(saved.state,'pending');assert.deepEqual(saved.approvals,[]);
+  assert.deepEqual(saved.summary.nativeTarget,{kind:'incident',id:target.id});
+  assert.ok(saved.summary.items.includes('Revision '+target.revision));
+  assert.ok(Number.isInteger(saved.revision)&&saved.summary_sha256);
+  assert.equal(saved.prepared_by.agent.id,runtime.context.agentId);
+  assert.equal(saved.prepared_by.for.id,owner.id);
+  const actionBody={revision:saved.revision,summary_sha256:saved.summary_sha256};
+  const review=async()=>(await (await http('/agents/api/reviews')).json()).reviews.find(row=>row.id===reviewId);
+  assert.equal((await review()).state,'open');
+  assert.equal((await review()).marked_by,null);assert.equal((await review()).marked_at,null);
+  const witness=async()=>({application:await native(),approval:(await (await http(approvalPath)).json()).approval,review:await review(),policy:await (await http('/agents/api/state')).json(),records:await records(),outbound:await runtime.outboundRequests()});
+  const before=await witness();
+  assert.deepEqual(before.outbound,[]);
+  for(const withOwnerCookie of [false,true]){
+   for(const [action,path,body] of [
+    ['approve',approvalPath+'/approve',actionBody],
+    ['mark reviewed','/agents/api/reviews/'+reviewId+'/reviewed',{}],
+   ]){
+    const refused=await runtime.agentHttp(path,body,{withOwnerCookie});
+    assert.equal(refused.status,403,action+' requires a person even alongside an owner cookie');
+    assert.deepEqual(await refused.json(),{code:'person_session_required'});
+    assert.deepEqual(await witness(),before,action+' refusal preserves marks, policy, all durable records and outbound work');
+    console.log('PROBE BASE-AGENT-008 acceptance2 '+mode+' '+action+' agent'+(withOwnerCookie?' with owner cookie':' alone')+': valid native action -> 403 person_session_required; approval, review, policy, application and outbound unchanged');
+   }
+  }
+  const marked=await http('/agents/api/reviews/'+reviewId+'/reviewed',{});
+  assert.equal(marked.status,200);
+  const humanReview=(await marked.json()).review;
+  assert.equal(humanReview.state,'reviewed');assert.equal(humanReview.marked_by,owner.id);
+  assert.ok(Number.isFinite(Date.parse(humanReview.marked_at)));
+  assert.equal(humanReview.prepared_by.agent,'Responder assistant');
+  assert.equal(humanReview.prepared_by.for,owner.name);
+  assert.deepEqual(await review(),humanReview);
+  assert.deepEqual(await native(),before.application,'Mark reviewed does not repeat the native declaration');
+  if(mode==='held'){
+   const approved=await http(approvalPath+'/approve',actionBody);
+   assert.equal(approved.status,200);
+   const humanApproval=(await approved.json()).approval;
+   assert.equal(humanApproval.state,'executed');
+   assert.equal(humanApproval.revision,saved.revision);assert.equal(humanApproval.summary_sha256,saved.summary_sha256);
+   assert.deepEqual(humanApproval.prepared_by,saved.prepared_by);
+   assert.equal(humanApproval.approvals.length,1);
+   assert.equal(humanApproval.approvals[0].person,owner.id);assert.equal(humanApproval.approvals[0].name,owner.name);
+   const once=await native(),resolved=once.incidents.find(row=>row.id===target.id);
+   assert.equal(resolved.state,'resolved');assert.equal(resolved.revision,target.revision+1);
+   const entry=resolved.timeline.filter(row=>row.lifecycle?.to==='resolved');
+   assert.equal(entry.length,1);assert.equal(entry[0].metadata.agent.agent.id,runtime.context.agentId);
+   assert.equal(entry[0].metadata.agent.for.id,owner.id);
+   assert.deepEqual(entry[0].metadata.agent.approvers,[{id:owner.id,name:owner.name}]);
+   const retryApproval=await http(approvalPath+'/approve',actionBody);
+   assert.equal(retryApproval.status,200);assert.deepEqual((await retryApproval.json()).approval,humanApproval);
+   const retried=await tool('oncall.incidents.resolve',resolveArgs);
+   assert.equal(retried.result.isError,false);assert.equal(retried.result.structuredContent.state,'resolved');
+   assert.deepEqual(await native(),once,'Human approval and agent retry cannot duplicate the native resolution');
+  }
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  console.log('PASS person-only coordination '+mode+': native open review and pending approval; exact saved action bodies refused for agent alone and with owner cookie; actual human reviewer'+(mode==='held'?' and approver, agent preparer and once-only resolution':''));
+ }
+ assert.equal((await adopt()).status,200);
+ }
  const key=randomUUID();
  const args={service:'agent-service',title:'Replay admission proof',summary:'Internal coordination beside the existing pager',severity:'warning',idempotency_key:key};
  const created=await tool('oncall.incidents.declare',args);
