@@ -5,6 +5,7 @@ import { nativeAccess, nativeActor, nativeAudit, nativeCall, persistNative } fro
 import { protectedRecords } from './resources'
 import { pagingSnapshot } from '../paging-store'
 import { responseContext } from '../manual-pages/context'
+import { responseTargets } from '../manual-pages/model'
 import { auditIdentity } from '../audit-store'
 import { incidentWithinServices } from '../incident-workflows/scope'
 import { expireAgentDeadline } from './deadlines'
@@ -55,26 +56,35 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
   return operations.map(operation => {
     const access = async (args: Args, ctx: ToolContext) => {
       const current = await nativeAccess(env, ctx, operation.scope)
-      const incident = args.incident === undefined ? undefined : current.state.incidents.find(row => row.id === args.incident)
+      const manualPage = operation.name === 'incidents.update' && args.change === 'manual-page'
+      const incident = manualPage || args.incident === undefined ? undefined : current.state.incidents.find(row => row.id === args.incident)
       if(incident&&!incidentWithinServices(current.state,incident,current.services))fail('Record not found in this client scope',404)
-      const service = operation.name === 'incidents.declare'||args.change==='manual-page' ? args.service : incident?.service
+      const service = operation.name === 'incidents.declare' || manualPage ? args.service : incident?.service
       if (typeof service !== 'string' || !current.services.includes(service) || !current.state.services.some(row => row.id === service)) fail('Record not found in this client scope', 404)
-      return { current, incident }
+      let manual
+      if (manualPage) {
+        const snapshot = await pagingSnapshot(env.DB)
+        if (snapshot.workspace.revision !== current.state.revision) fail('Native revision changed; reload before applying', 409)
+        const targets = responseTargets(current.state, args, service, responseContext(snapshot, ctx.now()), false)
+        if (targets.some(target => target.kind !== 'user' && !current.services.includes(target.id))) fail('Record not found in this client scope', 404)
+        manual = { pagingRevision: snapshot.revision, services: [...new Set([service, ...targets.filter(target => target.kind !== 'user').map(target => target.id)])].sort() }
+      }
+      return { current, incident, manual }
     }
     return defineTool({
       name: `oncall.${operation.name}`, title: operation.title, description: operation.description,
-      scope: operation.scope, readOnly: false, classes: operation.name === 'incidents.resolve' ? ['commitment', 'sensitive'] : operation.name === 'incidents.declare' ? ['standard'] : ['standard', 'sensitive'], clauses: operation.clauses, untrusted: true,
+      scope: operation.scope, readOnly: false, classes: operation.name === 'incidents.resolve' ? ['commitment', 'sensitive'] : operation.name === 'incidents.declare' ? ['standard'] : operation.name === 'incidents.update' ? ['standard', 'sensitive', 'live'] : ['standard', 'sensitive'], clauses: operation.clauses, untrusted: true,
       inputSchema: { type: 'object', additionalProperties: false, properties: operation.properties, required: operation.required },
       outputSchema: { type: 'object', properties: { id: string(100), revision: { type: 'integer', minimum: 1 } }, required: ['id', 'revision'] },
       classify: (args, ctx) => nativeCall(async () => {
-        const { incident } = await access(args, ctx)
+        const { incident, manual } = await access(args, ctx)
         const count = protectedRecords(incident) + Number(typeof args.evidence === 'string' && !!args.evidence)
         // Resolution is a binding coordination decision for one native incident.
         // It moves no money: XXX denotes no currency, never a caller's valuation.
         const primary = operation.name === 'incidents.resolve'
           ? { class: 'commitment' as const, facts: { measure: 0, currency: 'XXX', counterparty: 'internal' as const } }
           : { class: 'standard' as const, facts: { measure: 1 } }
-        return [primary, ...(count ? [{ class: 'sensitive' as const, facts: { measure: count, kind: 'personal_or_incident_evidence' } }] : [])]
+        return [primary, ...(count ? [{ class: 'sensitive' as const, facts: { measure: count, kind: 'personal_or_incident_evidence' } }] : []), ...(manual ? [{ class: 'live' as const, facts: { measure: 1, service: manual.services.join(', ') } }] : [])]
       }),
       target: (args, ctx) => nativeCall(async () => {
         const { current, incident } = await access(args, ctx)
@@ -82,12 +92,12 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
         const service = current.state.services.find(row => row.id === args.service)!
         return { kind: 'service', id: service.id }
       }),
-      revision: (args, ctx) => nativeCall(async () => { const { current, incident } = await access(args, ctx); return incident?.revision ?? current.state.revision }),
+      revision: (args, ctx) => nativeCall(async () => { const { current, incident, manual } = await access(args, ctx); return manual ? `${current.state.revision}:${manual.pagingRevision}` : incident?.revision ?? current.state.revision }),
       summary: (args, ctx) => nativeCall(async () => {
-        const { current, incident } = await access(args, ctx)
+        const { current, incident, manual } = await access(args, ctx)
         const target = incident ?? current.state.services.find(row => row.id === args.service)!
         const action = incident?.actions.find(row => row.id === args.action)
-        return { target: { id: target.id, name: 'title' in target ? target.title : target.name }, items: [operation.title, `Revision ${args.revision}`, ...(action ? [action.title] : []), ...Object.entries(operation.input(args)).filter(([key, value]) => !['type', 'incident', 'revision'].includes(key) && value !== undefined).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`)] }
+        return { target: { id: target.id, name: 'title' in target ? target.title : target.name }, items: [operation.title, manual ? `Native revision ${current.state.revision}:${manual.pagingRevision}` : `Revision ${args.revision}`, ...(action ? [action.title] : []), ...Object.entries(operation.input(args)).filter(([key, value]) => !['type', 'incident', 'revision'].includes(key) && value !== undefined).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`)] }
       }),
       run: (args, ctx) => nativeCall(async () => {
         if(operation.name==='incidents.update'&&args.change==='expire-deadline')return expireAgentDeadline(env,args,ctx)

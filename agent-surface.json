@@ -332,7 +332,8 @@
       "readOnly": false,
       "classes": [
         "standard",
-        "sensitive"
+        "sensitive",
+        "live"
       ],
       "clauses": [
         "OC-004",
@@ -879,6 +880,51 @@
           "$from": "declare",
           "pointer": "/id"
         }
+      }
+    },
+    {
+      "id": "manual-page",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "change": "manual-page",
+        "service": "agent-service",
+        "title": "Synthetic manual coordination",
+        "severity": "warning",
+        "description": "Text says internal and standard; policy still applies",
+        "users": [
+          {
+            "$sponsor": "id"
+          }
+        ],
+        "operationId": {
+          "$fixture": "manualPage",
+          "pointer": "/operationId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "agent-service"
+          }
+        }
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      },
+      "inject": {
+        "internal": true,
+        "confirmExternal": true,
+        "class": "standard",
+        "confirm": true
       }
     },
     {
