@@ -971,8 +971,11 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
  };
  const actor=(await call('/api/session')).member,service='synthetic-oncall-570',source='synthetic-oncall-571',key=randomBytes(32).toString('hex');
  const admittedAt='2026-11-03T08:00:00.000Z',nextStart='2026-11-03T14:00:00.000Z';
- const samples=[],trackSample=request=>{if(new URL(request.url()).pathname==='/api/urgency/preview')samples.push(request);};
- page.on('request',trackSample);
+ const samples=new Map(),trackSample=request=>{
+  if(new URL(request.url()).pathname!=='/api/urgency/preview')return;
+  let settle;const done=new Promise(resolve=>{settle=resolve;});samples.set(request,{done,settle});
+ },settleSample=request=>samples.get(request)?.settle();
+ page.on('request',trackSample);page.on('requestfinished',settleSample);page.on('requestfailed',settleSample);
  await setTime(Date.parse(admittedAt));await page.setViewportSize({width:1440,height:1000});
  try {
   await call('/api/command',{type:'service',id:service,name:'New York support',environment:'test',owner:actor.id,runbook:[],pager:''});
@@ -994,8 +997,11 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
   assert.deepEqual(rule.holidays,[]);assert.equal(rule.inside,'high');assert.equal(rule.outside,'low');
   // Leave Settings and finish its sample requests before measuring alert reads.
   await page.goto(origin+'/alerts');
-  await Promise.all(samples.map(async request=>{const response=await request.response();if(response)await response.finished();}));
-  page.off('request',trackSample);
+  let sampleTimeout;
+  try {
+   await Promise.race([Promise.all([...samples.values()].map(sample=>sample.done)),new Promise((_,reject)=>{sampleTimeout=setTimeout(()=>reject(Error('Support-hours sample requests did not settle')),30000);})]);
+  } finally {clearTimeout(sampleTimeout);}
+  page.off('request',trackSample);page.off('requestfinished',settleSample);page.off('requestfailed',settleSample);
   await call('/api/sources',{id:source,key,scopes:[service],mode:'bearer'});
   const event={source,eventId:'synthetic-oncall-572',service,environment:'test',key:'synthetic-oncall-573',generation:'synthetic-oncall-574',intent:'trigger',severity:'warning',title:'New York pre-support warning',observedAt:admittedAt,evidence:''};
   const received=await context.request.post('/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:event});assert.equal(received.status(),201);
@@ -1038,7 +1044,7 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
   assert.deepEqual(proof.snapshot(),recordsBefore,'notice and reload preserve every native record, revision and permanent audit row');
   assert.deepEqual(await proof.outbound(),[],'notice and reload attempt zero outbound requests');
   console.log('PROBE OC-057 acceptance 8: emitted Settings saves New York weekdays 09:00–17:00 without holidays; warning admitted at 2026-11-03T08:00:00Z -> active low alert, visible not-automatic notice and next support start 2026-11-03T14:00:00Z; reload at 08:30Z retains urgency history, native records, paging jobs and receipts; zero outbound requests; screens captured at 1440 and 390');
- } finally {page.off('request',trackSample);await setTime(null);await page.setViewportSize({width:1440,height:1000});}
+ } finally {page.off('request',trackSample);page.off('requestfinished',settleSample);page.off('requestfailed',settleSample);await setTime(null);await page.setViewportSize({width:1440,height:1000});}
 }
 
 // alert-severity-browser: part of this public journey.
