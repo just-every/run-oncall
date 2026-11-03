@@ -7,8 +7,8 @@ import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {nativeTransport} from './oncall-agent-transport.mjs';
+import {accessToken,seconds,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {AGENT_CLASSES} from '../src/modules/agent-door/conformance/surface.mjs';
-import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Lose the real MCP response, establish its native commit, then recover by key. */
 async function droppedDeclarationReplay(runtime){
@@ -253,6 +253,90 @@ try{
  assert.equal((await http('/api/rer/people-link',{businessId:teammate,memberId:responder.id,revision:2})).status,303);
  const linked=await tool('oncall.services.read',{id:'agent-service'},{sub:teammate,email:'mira@example.invalid',act:{sub:'mira-agent',name:'Mira assistant'}});
  assert.equal(linked.status,200);assert.equal(linked.result.isError,false);
+ // A Business credential keeps its original scopes while current native
+ // membership, not the signed roster's role, decides each later call.
+ const roster=[{id:teammate,email:['mira','example.invalid'].join('@'),name:'Mira Patel',role:'member',invite:1}];
+ let rosterRevision=2;
+ // Keep real pending work populated so an authority refusal cannot silently
+ // clear another saved action while appearing to preserve an empty queue.
+ const pendingWitness=await recoveredResolutionTarget(runtime,'Pending work retained across sponsor transitions');
+ assert.equal((await adopt(heldPolicy())).status,200);
+ const pendingNote=await tool('oncall.notes.add',{incident:pendingWitness.id,revision:pendingWitness.revision,text:'Unrelated saved coordination remains pending',idempotency_key:randomUUID()});
+ assert.equal(pendingNote.result.resultType,'input_required');
+ for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+  assert.equal((await adopt(document)).status,200);
+  const password=randomBytes(32).toString('hex');
+  const memberResponse=await http('/api/members',{name:'Synthetic oncall sponsor '+label,role:'responder',password});
+  assert.equal(memberResponse.status,201);
+  const sponsor=await memberResponse.json();
+  const login=await runtime.request(runtime.origin+'/api/login',{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json'},body:JSON.stringify({name:sponsor.name,password})});
+  assert.equal(login.status,200);
+  const sponsorCookie=login.headers.getSetCookie().map(value=>value.split(';',1)[0]).join('; ');
+  assert.ok(sponsorCookie&&sponsorCookie!==runtime.cookie);await login.body?.cancel();
+  const businessId=randomUUID(),email=['synthetic-oncall-sponsor-'+label,'example.invalid'].join('@'),agent='synthetic-oncall-'+randomUUID();
+  roster.push({id:businessId,email,name:sponsor.name,role:'member',invite:1});
+  await runtime.settings(roster,++rosterRevision);
+  assert.equal((await http('/api/rer/people-link',{businessId,memberId:sponsor.id,revision:rosterRevision})).status,303);
+  const token=await accessToken(runtime.context,{sub:businessId,email,act:{sub:agent,name:'Synthetic sponsor assistant'},exp:seconds()+900});
+  const claims=JSON.parse(Buffer.from(token.split('.')[1],'base64url').toString());
+  assert.ok(claims.scope.split(' ').includes('incidents:write'));
+  const call=(name,args)=>runtime.mcpWithToken(token,'tools/call',{name,arguments:args});
+  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
+  const target=await recoveredResolutionTarget(runtime,'Current Business sponsor '+label);
+  const current=async()=> (await read('/api/state')).incidents.find(row=>row.id===target.id);
+  const snapshot=async()=>({application:await read('/api/state'),paging:await read('/api/paging/state'),
+   approvals:(await runtime.db.prepare('SELECT * FROM agent_door_approvals ORDER BY id').all()).results,
+   pending:(await runtime.db.prepare("SELECT * FROM agent_door_calls WHERE state='pending' ORDER BY agent,key").all()).results,
+   operations:(await runtime.db.prepare('SELECT * FROM oc_agent_operations ORDER BY id').all()).results});
+  const note=async text=>({incident:target.id,revision:(await current()).revision,text,idempotency_key:randomUUID()});
+  const edge=await runtime.outboundRequests(),args=await note('Admitted Business sponsor note '+label),before=await snapshot();
+  assert.ok(before.pending.length>0,'Authority comparisons include real pending work');
+  const admitted=await call('oncall.notes.add',args);
+  assert.equal(admitted.status,200);
+  assert.equal(admitted.decision.disposition,label==='held'?'approval':'autonomous');
+  if(label==='held'){
+   assert.equal(admitted.result.resultType,'input_required');
+   assert.deepEqual((await snapshot()).application,before.application,'Approval preparation changes no native records');
+   const pendingResponse=await runtime.request(runtime.origin+'/agents/api/approvals/'+admitted.result._meta['com.runeditrun/approval'].id,{headers:{Cookie:sponsorCookie}});
+   assert.equal(pendingResponse.status,200);
+   const saved=(await pendingResponse.json()).approval;
+   assert.equal(saved.prepared_by.for.id,sponsor.id);
+   const approval=await runtime.request(runtime.origin+'/agents/api/approvals/'+saved.id+'/approve',{method:'POST',headers:{Origin:runtime.origin,Cookie:sponsorCookie,'Content-Type':'application/json'},body:JSON.stringify({revision:saved.revision,summary_sha256:saved.summary_sha256})});
+   assert.equal(approval.status,200);
+   const executed=(await approval.json()).approval;
+   assert.equal(executed.state,'executed');assert.ok(executed.approvals.some(row=>row.person===sponsor.id));
+  }else assert.equal(admitted.result.isError,false);
+  const after=await current(),entry=after.timeline.at(-1);
+  assert.equal(after.revision,args.revision+1);assert.equal(entry.text,args.text);
+  assert.equal(entry.metadata?.agent?.agent.id,agent);assert.equal(entry.metadata?.agent?.for.id,sponsor.id);
+  const audit=async()=> (await read('/agents/api/audit?agent='+encodeURIComponent(agent))).rows;
+  assert.ok((await audit()).some(row=>row.sponsor.id===sponsor.id&&row.outcome==='done'));
+  assert.equal((await http('/api/command',{type:'member',id:sponsor.id,role:'viewer',active:true})).status,200);
+  const deniedArgs=await note('Viewer cannot append this valid note'),downgraded=await snapshot();
+  assert.equal((await read('/api/state')).members.find(row=>row.id===sponsor.id).role,'viewer');
+  assert.ok(claims.exp>seconds(),'The preissued token remains unexpired after downgrade');
+  const priorAudit=await audit(),denied=await call('oncall.notes.add',deniedArgs);
+  assert.equal(code(denied),'native_authority_required');assert.equal(denied.result?.structuredContent,undefined);
+  assert.deepEqual(await snapshot(),downgraded,'Role refusal changes no application record, revision, timeline, pending work or paging state');
+  const refusalAudit=(await audit()).filter(row=>!priorAudit.some(before=>before.id===row.id));
+  assert.equal(refusalAudit.length,1);assert.equal(refusalAudit[0].code,'native_authority_required');
+  assert.equal(refusalAudit[0].sponsor.id,sponsor.id);assert.equal(refusalAudit[0].role,'viewer');
+  assert.deepEqual(refusalAudit[0].scopes,claims.scope.split(' '),'Native downgrade does not replace the signed token scopes');
+  const permitted=await call('oncall.services.read',{id:'agent-service'});
+  assert.equal(permitted.status,200);assert.equal(permitted.result.isError,false);assert.equal(permitted.result.structuredContent.data[0].id,'agent-service');
+  assert.equal((await http('/api/command',{type:'member',id:sponsor.id,role:'viewer',active:false})).status,200);
+  const suspended=await snapshot();
+  assert.equal(suspended.application.members.find(row=>row.id===sponsor.id).active,false);
+  assert.ok(claims.exp>seconds(),'The same token remains unexpired after suspension');
+  const unavailable=await call('oncall.notes.add',await note('Inactive sponsor cannot append this valid note'));
+  assert.equal(unavailable.status,401);assert.equal(unavailable.result,undefined);
+  assert.equal((await call('oncall.services.read',{id:'agent-service'})).status,401);
+  assert.deepEqual(await snapshot(),suspended,'Suspension refusal preserves native state and pending work');
+  assert.deepEqual(await runtime.outboundRequests(),edge,'Sponsor transitions attempt zero outbound requests');
+  assert.equal(edge.length,0,'This sponsor journey has no provider activity');
+  console.log(`PROBE BASE-AGENT-005 3 ${label}: linked native responder and preissued Business token -> attributed note ${label==='held'?'approved by its signed-in sponsor':'executed'}; owner downgrade -> native_authority_required with no effect and permitted read; owner suspension -> same unexpired token 401; pending work and paging unchanged; zero outbound requests`);
+ }
+ assert.equal((await adopt()).status,200);
  // Native immutable service fields remain enforced; the conformance fixture
  // must preserve the current environment when exercising an allowed edit.
  const serviceRead=await tool('oncall.services.read',{id:'agent-service'});

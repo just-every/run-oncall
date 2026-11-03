@@ -66,9 +66,10 @@ export async function agentRuntime(){
     outgoing.end(init.body);
    });
   }
+  const mcpWithToken=(token,method,params={})=>mcp(method,params,{},token);
   const tool=(name,args,overrides,bearer)=>mcp('tools/call',{name,arguments:args},overrides,bearer);
   await settings();
-  return {...runtime,request,http,cookie,context,settings,adopt,mcp,tool,discardToolResponse,fixtures};
+  return {...runtime,request,http,cookie,context,settings,adopt,mcp,mcpWithToken,tool,discardToolResponse,fixtures};
  }catch(error){await runtime.close();throw error}
 }
 
