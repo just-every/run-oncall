@@ -3,7 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
-import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
+import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption,noteParity} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
@@ -222,6 +222,7 @@ try{
   console.log(`PROBE BASE-AGENT-013 2 ${label}: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs`);
  }
  assert.equal((await adopt()).status,200);
+ await noteParity(runtime);
  await policyAdoption(runtime);
  await pauseMatrix(runtime);
  await droppedDeclarationReplay(runtime);

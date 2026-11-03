@@ -3,7 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {agentRuntime,pauseMatrix} from './agent-door-runtime.mjs';
+import {agentRuntime,pauseMatrix,noteParity} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
@@ -15,10 +15,8 @@ try{
  await mkdir(directory,{recursive:true});
  const {http,tool}=runtime;
  assert.equal((await runtime.adopt()).status,200);
- await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const native=async()=> (await (await http('/api/state')).json());
  let state=await native();
- const incident=state.incidents.find(row=>row.title==='Payment authorization failures after deployment');
  const responder=state.members.find(row=>row.role==='responder'),admin=state.members.find(row=>row.name==='Jordan Davis');
  const team=[{id:randomUUID(),email:'mira@example.invalid',name:'Mira Patel',role:'member',invite:1},{id:randomUUID(),email:'jordan@example.invalid',name:'Jordan Davis',role:'admin',invite:1}];
  await runtime.settings(team,2);
@@ -52,6 +50,29 @@ try{
   await page.getByRole('button',{name:paused?'Resume agents':'Pause agents',exact:true}).waitFor();
   assert.equal((await (await http('/agents/api/state')).json()).paused.local,paused);
  }
+ await noteParity(runtime,{
+  async addHumanNote(incident,text){
+   await page.goto(runtime.origin+'/incidents/'+incident.id);
+   await page.getByLabel('Observation, decision or evidence',{exact:true}).fill(text);
+   const saved=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().postDataJSON()?.type==='note');
+   await page.getByRole('button',{name:'Add note',exact:true}).click();
+   const response=await saved;assert.equal(response.status(),200);assert.equal((await response.json()).id,incident.id);
+   await page.getByRole('region',{name:'Timeline',exact:true}).getByText(text,{exact:true}).waitFor();
+  },
+  async observe(label,{human,agent,text}){
+   for(const [kind,incident,actor] of [['human',human,'Alex Chen'],['agent',agent,'Responder assistant for Alex Chen']]){
+    await capture('note-'+label+'-'+kind,'/incidents/'+incident.id,async()=>{
+     const timeline=page.getByRole('region',{name:'Timeline',exact:true});
+     const entry=timeline.locator('li').filter({has:page.getByText(text,{exact:true})});
+     await entry.getByText(actor,{exact:true}).waitFor();
+     if((await page.viewportSize()).width===1440){assert.equal(await entry.locator('p').first().textContent(),text);assert.equal(await entry.locator('b').count(),0,'Note markup renders literally')}
+    });
+   }
+  },
+ });
+ await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
+ state=await native();
+ const specialistIncident=state.incidents.find(row=>row.title==='Payment authorization failures after deployment');
  await pauseMatrix(runtime,{
   setLocal,
   async observe(label,phase,flags){
@@ -87,13 +108,13 @@ try{
  const currentForm=page.locator('form').filter({has:page.locator(`input[value="${team[1].id}"]`)});
  await currentForm.locator('select').selectOption(admin.id);await currentForm.getByRole('button',{name:'Link this teammate',exact:true}).click();
  await page.getByText('Jordan Davis',{exact:true}).waitFor();
- await capture('incident','/incidents/'+incident.id,async()=>{
+ await capture('incident','/incidents/'+specialistIncident.id,async()=>{
   await page.getByRole('region',{name:'Timeline',exact:true}).waitFor();
   await page.getByRole('button',{name:/Earlier entries/}).click();
   await page.getByText('Responder assistant for Alex Chen',{exact:true}).first().waitFor();
  });
- await capture('review','/reviews/'+incident.id,async()=>{
-  await page.getByRole('dialog',{name:incident.title,exact:true}).waitFor();
+ await capture('review','/reviews/'+specialistIncident.id,async()=>{
+  await page.getByRole('dialog',{name:specialistIncident.title,exact:true}).waitFor();
   for(const label of [/^Timings$/,/^Evidence \(/,/^From the timeline \(/,/^Follow-ups \(/])await page.locator('.review-material-body summary').filter({hasText:label}).click();
   await page.getByText('Awaiting acceptance',{exact:false}).first().waitFor();
  });

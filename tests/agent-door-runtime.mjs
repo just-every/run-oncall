@@ -92,6 +92,121 @@ export async function agentRuntime(){
  }catch(error){await runtime.close();throw error}
 }
 
+/** Equivalent native notes retain the same effect and permanent event type. */
+export async function noteParity(runtime,{addHumanNote,observe=async()=>{}}={}){
+ const {http,tool,adopt,db,context}=runtime;
+ const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
+ const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
+ const owner=(await read('/api/workspace')).member;
+ const rows=async sql=>(await db.prepare(sql).all()).results;
+ const history=()=>rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+ const effects=()=>rows("SELECT * FROM oc_admin_audit WHERE workspace_after>workspace_before ORDER BY ordinal");
+ const pending=async()=>({approvals:await rows('SELECT * FROM agent_door_approvals ORDER BY id'),reviews:await rows('SELECT * FROM agent_door_reviews ORDER BY id')});
+ const snapshot=async()=>({application:await read('/api/state'),paging:await read('/api/paging/state'),pending:await pending()});
+ const error=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
+ const identity=async(kind,id)=>(await db.prepare('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?').bind(kind,id).first())?.label;
+ const fields=({id,createdAt,timeline,...record})=>record;
+ const baseline=incident=>({...fields(incident),timeline:incident.timeline.map(({id,at,...entry})=>entry)});
+ // A held installation's legacy event remains literal, rather than being relabeled.
+ const legacyId=randomUUID();
+ await db.prepare("INSERT INTO oc_admin_audit(id,kind,feature,actor,subject,source,at,before_revision,after_revision,outcome,workspace_before,workspace_after,paging_before,paging_after,handoff_before,handoff_after) SELECT ?,'notes.add',feature,actor,subject,source,at,before_revision,after_revision,outcome,workspace_before,workspace_after,paging_before,paging_after,handoff_before,handoff_after FROM oc_admin_audit ORDER BY ordinal LIMIT 1").bind(legacyId).run();
+ const retained=await history();assert.ok(retained.some(row=>row.id===legacyId&&row.kind==='notes.add'));
+ assert.equal((await adopt()).status,200);
+ const beforeDeclare=await effects();
+ const declaration=await tool('oncall.incidents.declare',{service:'agent-service',title:'Synthetic other operation audit',summary:'Existing declaration event type',severity:'warning',idempotency_key:randomUUID()});
+ assert.equal(declaration.result?.isError,false);
+ assert.deepEqual((await effects()).slice(beforeDeclare.length).map(row=>row.kind),['incidents.declare'],'Other coordination operations keep their native audit type');
+ for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+  assert.equal((await adopt(document)).status,200);
+  const fixtures=[];
+  for(let index=0;index<2;index++){
+   let incident=await command({type:'declare',service:'agent-service',title:'Synthetic native note parity '+label,severity:'warning',summary:'Retain the same native coordination fields',alerts:[]});
+   incident=await command({type:'runbook',incident:incident.id,revision:incident.revision,index:0,done:true});
+   incident=await command({type:'action',incident:incident.id,revision:incident.revision,title:'Retain the existing owned follow-up',owner:owner.id,due:'2026-12-01',priority:'P2',completionPolicy:'evidence'});
+   fixtures.push(incident);
+  }
+  const [human,machine]=fixtures;
+  // Action identities are native, but both fixtures have the same saved work.
+  const equivalent=incident=>({...baseline(incident),actions:incident.actions.map(({id,...action})=>action)});
+  assert.deepEqual(equivalent(human),equivalent(machine));
+  const text='synthetic-oncall-184 '+label+': <b>retain this literal note</b> and prior coordination.';
+  const before=await snapshot(),priorEffects=await effects();
+  if(addHumanNote)await addHumanNote(human,text);
+  else await command({type:'note',incident:human.id,revision:human.revision,text});
+  const personState=await read('/api/state'),person=personState.incidents.find(row=>row.id===human.id);
+  const args={incident:machine.id,revision:machine.revision,text,idempotency_key:randomUUID()};
+  const answer=await tool('oncall.notes.add',args);
+  assert.equal(answer.result?.isError,false,JSON.stringify(answer.body));
+  assert.deepEqual(answer.decision.classes.map(row=>row.class),['standard']);
+  assert.equal(answer.decision.disposition,label==='held'?'review':'autonomous');
+  const after=await snapshot(),agent=after.application.incidents.find(row=>row.id===machine.id);
+  assert.deepEqual(answer.result.structuredContent,agent);
+  for(const [original,saved] of [[human,person],[machine,agent]]){
+   assert.deepEqual(fields(saved),{...fields(original),revision:original.revision+1},'Only the note revision changes existing incident fields');
+   assert.deepEqual(saved.timeline.slice(0,-1),original.timeline,'Prior timeline entries remain immutable');
+   assert.equal(saved.timeline.length,original.timeline.length+1);
+   assert.equal(saved.timeline.at(-1).kind,'note');assert.equal(saved.timeline.at(-1).text,text);
+  }
+  const humanEntry=person.timeline.at(-1),agentEntry=agent.timeline.at(-1);
+  assert.equal(humanEntry.actor,owner.id);assert.equal(humanEntry.metadata?.agent,undefined);
+  assert.equal(agentEntry.actor,context.agentId);
+  assert.equal(agentEntry.metadata.agent.agent.id,context.agentId);
+  assert.deepEqual(agentEntry.metadata.agent.for,{id:owner.id,name:owner.name});
+  assert.equal(agentEntry.metadata.agent.sponsor,owner.id);
+  assert.deepEqual(agentEntry.metadata.agent.approvers,[],'A review note is prepared by the agent, without inventing a human approval');
+  assert.equal(agentEntry.metadata.agent.label,'Responder assistant for '+owner.name);
+  assert.deepEqual(after.application,{...before.application,revision:before.application.revision+2,incidents:before.application.incidents.map(row=>row.id===human.id?person:row.id===machine.id?agent:row)},'The two notes preserve unrelated application and pending delivery work');
+  assert.deepEqual(after.paging,{...before.paging,workspaceRevision:after.application.revision});
+  const changed=(await effects()).slice(priorEffects.length);
+  assert.equal(changed.length,2,'One permanent native effect per note');
+  const [humanAudit,agentAudit]=changed;
+  for(const row of changed){assert.equal(row.kind,'command.note');assert.equal(row.outcome,'accepted');assert.equal(row.workspace_after,row.workspace_before+1);assert.equal(row.paging_after,row.paging_before)}
+  assert.equal(humanAudit.subject,await identity('entity',human.id));assert.equal(humanAudit.actor,await identity('member',owner.id));
+  assert.equal(agentAudit.subject,await identity('entity',machine.id));assert.equal(agentAudit.actor,await identity('agent',context.agentId));assert.equal(agentAudit.source,await identity('member',owner.id));
+  const audit=(await read('/agents/api/audit?agent='+encodeURIComponent(context.agentId))).rows.find(row=>row.id===answer.decision.id);
+  assert.equal(audit.tool,'oncall.notes.add');assert.equal(audit.outcome,'done');assert.equal(audit.agent.id,context.agentId);assert.deepEqual(audit.sponsor,{id:owner.id,name:owner.name});
+  assert.deepEqual(audit.resource,{kind:'incident',id:machine.id});
+  assert.deepEqual(after.pending.approvals,before.pending.approvals);
+  if(label==='held'){
+   const handle=answer.result._meta['com.runeditrun/review'];assert.ok(handle?.id,'A held standard note enters review');
+   const review=(await read('/agents/api/reviews')).reviews.find(row=>row.id===handle.id);
+   assert.equal(review.state,'open');assert.equal(review.tool,'oncall.notes.add');assert.equal(review.decision_id,answer.decision.id);
+   assert.deepEqual(review.prepared_by,{agent:'Responder assistant',for:owner.name});
+   assert.deepEqual(after.pending.reviews.filter(row=>row.id!==handle.id),before.pending.reviews);
+   assert.equal(after.pending.reviews.length,before.pending.reviews.length+1);
+  }else assert.deepEqual(after.pending,before.pending);
+  const once=await snapshot(),onceEffects=await effects();
+  const retry=await tool('oncall.notes.add',args);
+  assert.equal(retry.result?.isError,false);assert.deepEqual(retry.result.structuredContent,answer.result.structuredContent);
+  assert.deepEqual(await snapshot(),once,'Completed retries add no note, revision, pending review or delivery work');
+  assert.deepEqual(await effects(),onceEffects,'Completed retries add no state-changing permanent event');
+  await observe(label,{human:person,agent,text});
+  console.log(`PROBE BASE-AGENT-002 5 ${label} note parity: signed-in native note and MCP note -> exact literal text, incident target, one revision, preserved fields and command.note; human and agent-for-person attribution; ${label==='held'?'open review':'autonomous'}; retry has no second effect`);
+
+  const safe=await snapshot(),safeEffects=await effects();
+  const stale={...args,idempotency_key:randomUUID()};
+  assert.equal(error(await tool('oncall.notes.add',stale)),'revision_conflict');
+  const humanStale=await http('/api/command',{type:'note',incident:human.id,revision:human.revision,text});assert.equal(humanStale.status,409);await humanStale.body?.cancel();
+  assert.equal(error(await tool('oncall.notes.add',{...args,revision:agent.revision,idempotency_key:randomUUID()},{scope:'incidents:read'})),'insufficient_scope');
+  assert.deepEqual(await snapshot(),safe,'Stale and unauthorized notes preserve application, timeline, pending work and paging');
+  assert.deepEqual(await effects(),safeEffects);
+  await db.exec("CREATE TRIGGER synthetic_oncall_note_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.workspace_after>NEW.workspace_before BEGIN SELECT RAISE(ABORT,'synthetic-oncall-note-audit'); END");
+  try{
+   const failed=await tool('oncall.notes.add',{...args,revision:agent.revision,idempotency_key:randomUUID()});
+   assert.equal(error(failed),'execution_failed');
+   const humanFailed=await http('/api/command',{type:'note',incident:human.id,revision:person.revision,text});assert.equal(humanFailed.status,503);await humanFailed.body?.cancel();
+  }finally{await db.exec('DROP TRIGGER synthetic_oncall_note_audit')}
+  assert.deepEqual(await snapshot(),safe,'A permanent audit failure rolls back each native note and opens no review');
+  assert.deepEqual(await effects(),safeEffects);
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  console.log(`PROBE BASE-AGENT-002 5 ${label} safety: stale note -> revision_conflict, scoped refusal -> insufficient_scope, injected permanent audit failure -> execution_failed and human 503; application, timeline, pending work and paging unchanged; zero outbound requests`);
+ }
+ const preserved=new Map((await history()).map(row=>[row.id,row]));
+ for(const row of retained)assert.deepEqual(preserved.get(row.id),row,'Existing immutable audit types and rows are preserved');
+ assert.equal((await adopt()).status,200);
+ console.log('PASS native incident note parity: common permanent event, distinct actual MCP tool and attribution, autonomous and held review, rollback and once-only replay; zero outbound requests');
+}
+
 /** Signed policy changes govern the next native calls and their retained audit. */
 export async function policyAdoption(runtime){
  const {http,tool,adopt,context}=runtime;
