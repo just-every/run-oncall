@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1af1e26fb818cb7582ada1f3f327c67660ae440981e9cbcdf17df98f2bf2bca7",
+      "sha256": "b7eb6306f8f680b768a060935643a11100730476c442af2c90a51a7eea1b2b4a",
       "executable": false
     },
     "agent-surface.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "76029ba10686725ab670dca5d9f2ce558023e38e2c154f6023e101a553e7e20c",
+      "sha256": "a18b4e7165016847840f0fd58c0129490ed51bdb8cda4a5ec97a549185c9944f",
       "executable": false
     },
     "DEMO.md": {
@@ -6308,11 +6308,11 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "18e1f184c068da0eb47ebec3d2996d87ca521d999a003383f941e038364ba398",
+      "sha256": "14a880839cc93f1a1036d94bb8d1c139ff3ca96e7382d6bf0a0669f3cac400f8",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
-      "sha256": "641a1f8f799825c80b3dd32ad3e5c097208b901ab925232beda81478eb108800",
+      "sha256": "73333474eb9bd20a365ef587fec63a244a1283295e8b968dca10b79f02d94960",
       "executable": false
     },
     "tests/agent-door.mjs": {
@@ -6480,7 +6480,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "d3e5994a4f6138e9b4d8e2a2850b0c773f76817b6a547caaedcd8e0e69aae388",
+      "sha256": "5f386f5269d0323f28d499a2cb37993bff997d148edf9f7aaf7e39c2a34e2938",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {
@@ -6504,11 +6504,11 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "befdc810cd0c4c9be00670ed5830ad5dd716d0e1305b026c9e315f03a73d444a",
+      "sha256": "8751656914019f74f803f968859e0ec0aa6f4491dff9f0091ae1f15f2a3e989e",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "5d8ac7a4dcdb46d8383a56a06439b688760707064f8299d958d7878eb73ceff4",
+      "sha256": "9dbfac24c6ba1106df4b55318cb8a4263856036e600bc4a3809861eea3773244",
       "executable": false
     },
     "tests/readiness.mjs": {
@@ -6544,7 +6544,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "74e4bce56eebe858a68ff4b1f280831b49ca69f11aedd743698a99169c25004d",
+      "sha256": "35232262cbaeda53598b6e4d35b5145a1e38740503d08bdf4ebe7e5f58ca6c7e",
       "executable": false
     },
     "tsconfig.json": {
