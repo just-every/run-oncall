@@ -29,9 +29,12 @@ Service-account clients remain bound to the active administrator who created the
 | Tool | Possible risk classes |
 | --- | --- |
 | `oncall.incidents.resolve` | `commitment`, `sensitive` |
+| `oncall.incidents.update` | `standard`, `sensitive`, `live` |
 <!-- native-resolution-classes:end -->
 
 Resolving a recovered incident is a `commitment`, including when company policy permits autonomous work. Its server-computed facts identify an internal decision with zero monetary value and currency `XXX` (no currency); the saved target and revision bind it to one incident. Retained recovery and personal evidence also carry `sensitive` with their record count. Both classes must pass company policy. Caller confirmation flags and instructions in incident text cannot downgrade either class. A held resolution leaves native coordination unchanged until the named person approves the exact saved revision. An identical completed retry returns the retained result without another resolution.
+
+Recording a manual page through `oncall.incidents.update` carries `standard` and `live`. The server validates the service, active named responders and any chosen policy, and computes the affected service IDs from those targets. The held operation binds both workspace and paging revisions and makes no application change before approval through the returned signed-in URL. Approval records one attributed operation; an identical retry has no second effect. Caller flags and description text cannot remove `live`. Existing sensitive evidence still adds `sensitive`. Paging remains OFF: these are recorded obligations, with no sender, automatic action or provider delivery. Other update kinds retain their existing classification; this proof covers only manual pages.
 
 Approvals show the saved target, proposed change, native revision and exact summary. A changed revision or coverage digest requires a fresh review. The actual approver is recorded separately from the agent preparer. An agent confirmation is never a person's decision. Review offers Undo only when a real native reversal exists.
 

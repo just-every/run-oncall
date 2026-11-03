@@ -49,9 +49,11 @@ export default {async fetch(request,env){
     const guide = await readFile(guidePath, 'utf8');
     const start = '<!-- native-resolution-classes:start -->', end = '<!-- native-resolution-classes:end -->';
     const resolution = declarations.tools.find(tool => tool.name === 'oncall.incidents.resolve');
+    const update = declarations.tools.find(tool => tool.name === 'oncall.incidents.update');
     if (!resolution) throw new Error('Native resolution declaration is missing');
     const section = [start, '| Tool | Possible risk classes |', '| --- | --- |',
-      '| ' + '\x60' + resolution.name + '\x60' + ' | ' + resolution.classes.map(cls => '\x60' + cls + '\x60').join(', ') + ' |', end].join('\n');
+      '| ' + '\x60' + resolution.name + '\x60' + ' | ' + resolution.classes.map(cls => '\x60' + cls + '\x60').join(', ') + ' |',
+      '| ' + '\x60' + update.name + '\x60' + ' | ' + update.classes.map(cls => '\x60' + cls + '\x60').join(', ') + ' |', end].join('\n');
     const before = guide.indexOf(start), after = guide.indexOf(end);
     if (before < 0 || after < before) throw new Error('Native resolution guide markers are missing');
     await writeFile(guidePath, guide.slice(0, before) + section + guide.slice(after + end.length));
