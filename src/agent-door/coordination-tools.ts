@@ -31,7 +31,7 @@ const operations: Operation[] = [
   { name: 'incidents.declare', title: 'Declare an incident', description: 'Declare native coordination with a copied runbook. Paging remains off. Revision is the current workspace revision.', scope: 'incidents:write', clauses: ['OC-004', 'OC-005'],
     properties: { service: string(100), revision, title: string(300), summary: string(), severity: { enum: ['critical', 'warning', 'info'] }, alerts: { type: 'array', items: string(100), maxItems: 200, uniqueItems: true } }, required: ['service', 'title', 'summary', 'severity'],
     input: a => ({ type: 'declare', service: a.service, title: a.title, summary: a.summary, severity: a.severity, alerts: a.alerts ?? [] }) },
-  { name: 'incidents.update', title: 'Update an incident', description: 'Reassign responsibility, change a coordination role, or record mitigation/recovery with native lifecycle rules and current revision.', scope: 'incidents:write', clauses: ['OC-004', 'OC-053'],
+  { name: 'incidents.update', title: 'Update an incident', description: 'Reassign responsibility, change a coordination role, record mitigation or recovery, snooze, cancel pending deadlines, or explicitly expire a due deadline at the current revision. Paging remains OFF.', scope: 'incidents:write', clauses: ['OC-004', 'OC-053'],
     properties: { incident: string(100), revision, change: { enum: ['reassign', 'assign-role', 'transition', 'manual-page', 'snooze', 'cancel-deadline', 'expire-deadline'] }, service: string(100),title:string(300),severity:{enum:['critical','warning','info']},urgency:{enum:['high','low']},priority:{enum:['P1','P2','P3','P4','P5']},policy:string(100),users:{type:'array',items:string(100),maxItems:100},description:string(3000),incidentType:string(100),operationId:string(100),deadline:string(100),minutes:{type:'integer',minimum:1},state: { enum: ['mitigating', 'recovered'] }, summary: string(), evidence: string(2000), member, role: { enum: ['commander', 'scribe', 'communications', 'assignee'] }, reason: string() }, required: ['change'],
     input: a => ({...Object.fromEntries((updateFields[String(a.change)]??[]).filter(key=>a[key]!==undefined).map(key=>[key,a[key]])),type:a.change}) },
   { name: 'incidents.acknowledge', title: 'Acknowledge for a named responder', description: 'Record the agent acknowledgment naming an active human responder. This is attributed to the agent, not a human attestation.', scope: 'incidents:write', clauses: ['OC-004', 'OC-053'],
@@ -92,7 +92,12 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
         const { current, incident } = await access(args, ctx)
         const target = incident ?? current.state.services.find(row => row.id === args.service)!
         const action = incident?.actions.find(row => row.id === args.action)
-        return { target: { id: target.id, name: 'title' in target ? target.title : target.name }, items: [operation.title, `Revision ${args.revision}`, ...(action ? [action.title] : []), ...Object.entries(operation.input(args)).filter(([key, value]) => !['type', 'incident', 'revision'].includes(key) && value !== undefined).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`)] }
+        const deadlineSummary = operation.name === 'incidents.update' ? ({
+          snooze: 'Record a snooze; paging OFF',
+          'cancel-deadline': 'Cancel pending re-trigger deadlines; paging OFF',
+          'expire-deadline': 'Record due re-trigger expiry; paging OFF',
+        } as Record<string, string>)[String(args.change)] : undefined
+        return { target: { id: target.id, name: 'title' in target ? target.title : target.name }, items: [operation.title, ...(deadlineSummary ? [deadlineSummary] : []), `Revision ${args.revision}`, ...(action ? [action.title] : []), ...Object.entries(operation.input(args)).filter(([key, value]) => !['type', 'incident', 'revision'].includes(key) && value !== undefined).map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`)] }
       }),
       run: (args, ctx) => nativeCall(async () => {
         if(operation.name==='incidents.update'&&args.change==='expire-deadline')return expireAgentDeadline(env,args,ctx)
