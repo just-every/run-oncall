@@ -1423,8 +1423,8 @@ Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f20785
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 11 | 0 | 22 |
-| Target and push further | 4 | 36 | 39 | 79 |
-| All | 15 | 47 | 39 | 101 |
+| Target and push further | 4 | 37 | 38 | 79 |
+| All | 15 | 48 | 38 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1523,7 +1523,7 @@ Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f20785
 | `BASE-AGENT-005` | An agent acts as a person in a role, never more | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-006` | Every action declares its risk class | target | partial | `tests/oncall-agent-flow.mjs` — incident resolution classification: emitted MCP declarations, server-computed commitment and sensitive facts, autonomous resolution, isolated commitment and sensitive refusals, pending and stale approval state preservation, caller and record claims, attributed effect-free retry and audit classes; `tests/agent-door-browser.mjs` — exact saved incident-resolution approval and attributed once-only resolution; `tests/agent-door.mjs` — generic conformance with the resolution fixture. | Only the native incident-resolution slice of points 1, 2, 3 and 6 is proved. Every other tool declaration and class combination, remaining per-class fixtures, injection checks, class facts, catalog enforcement and refused-call auditing remain unproved here. Model, investigation, ownership, remediation, recurrence and executor flows remain omitted; OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold. Paging stays OFF; provider delivery, independent standby and real-phone duties remain held. |
 | `BASE-AGENT-007` | The company's policy decides, at one chokepoint | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-008` | Truthful attribution | target | missing | | Not yet judged through this seed's own doors. |
+| `BASE-AGENT-008` | Truthful attribution | target | partial | `tests/oncall-agent-flow.mjs` — person-only coordination: real pending non-erasure resolution approvals and open declaration reviews; valid saved action bodies return person_session_required for agent bearer alone and with the owner cookie under held and autonomous policies, preserving all D1 records, marks, policy, native state and outbound work. Held preparation precedes the autonomous-policy observation. Separate human-session controls retain the actual reviewer and approver, the agent preparer and once-only resolution; existing distinct-responder acceptance remains. | Only acceptance 2's native agent-token approval and Mark reviewed observations are proved here. Acceptance 2's device-token and policy-question outcomes, acceptance 1's full confirmation and class matrix, acceptance 3's form-mode elicitation refusal, acceptances 4 to 6's complete record, activity, export and certificate attribution, and acceptance 7's outside-mail sender proof remain unproved. Device qualification, connected sends, model and executor flows retain their prerequisites; OC-045, OC-046, OC-048 and OC-049 still need agent and AI egress authority. BASE-AGENT-006 live classification and SURFACE-004's held Base replay dependency remain unchanged. Paging stays OFF; production delivery, independent standby and real-phone proof remain omitted. |
 | `BASE-AGENT-009` | Every agent action is audited with its class and decision | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-010` | Agents can follow changes | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-011` | Limits are policy, and Pause stops everything | target | missing | | Not yet judged through this seed's own doors. |
