@@ -27,10 +27,10 @@ try{
  const context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
  await context.addCookies(runtime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}}));
  page=await context.newPage();
- async function capture(label,path,prepare=async()=>{}){
+ async function capture(label,path,prepare=async()=>{},origin=runtime.origin){
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});
-   await page.goto(runtime.origin+path);await prepare();
+   await page.goto(origin+path);await prepare();
    const fits=await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
    const findings=(await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact));
    const controls=await page.locator('button,input:not([type=hidden]),select,textarea').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length).map(node=>({label:node.getAttribute('aria-label')??node.textContent?.trim().slice(0,60)??node.name,height:(node.matches('input[type=checkbox],input[type=radio]')?node.labels?.[0]??node:node).getBoundingClientRect().height})).filter(row=>row.height<44));
@@ -44,6 +44,111 @@ try{
   }
   await page.setViewportSize({width:1440,height:1000});
  }
+ // Isolate the frozen week from the existing journeys and their live sessions.
+ async function weeklyCounts(){
+  const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
+  const runtime=await agentRuntime({clock:weekStart-1}),normalPage=page;
+  let context;
+  try{
+   const {http,tool}=runtime;
+   context=await browser.newContext({baseURL:runtime.origin,viewport:{width:1440,height:1000}});
+   await context.addCookies(runtime.cookie.split('; ').map(pair=>{const at=pair.indexOf('=');return {name:pair.slice(0,at),value:pair.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}}));
+   page=await context.newPage();
+   // A known native week spans multiple audit cursor pages. Expected cohorts
+   // are fixed by the calls below, independently of the page's SQL aggregation.
+   const calls=[];
+   async function counted(name,args,classes,decision,outcome){
+    const response=await tool(name,args);
+    assert.equal(response.decision?.disposition,decision,JSON.stringify(response.body));
+    assert.deepEqual(response.decision.classes.map(row=>row.class).sort(),[...classes].sort());
+    if(outcome==='done')assert.equal(response.result?.isError,false,JSON.stringify(response.body));
+    calls.push({id:response.decision.id,at:new Date(runtime.context.now()).toISOString(),classes,decision,outcome});
+   }
+   const serviceRead=()=>counted('oncall.services.read',{id:'agent-service'},['standard'],'autonomous','done');
+   const scheduleRead=(decision,outcome)=>counted('oncall.schedules.read',{id:'agent-schedule'},['standard','sensitive'],decision,outcome);
+   assert.equal((await runtime.adopt()).status,200);
+   await serviceRead(); // Sunday is outside the UTC week.
+   await runtime.time(weekNow+1);assert.equal((await runtime.adopt()).status,200);
+   await scheduleRead('autonomous','done'); // Even one millisecond after now is outside.
+   await runtime.time(weekStart+7*86400000);assert.equal((await runtime.adopt()).status,200);
+   await serviceRead(); // The next Monday is also retained, but outside this period.
+   await runtime.time(weekStart);assert.equal((await runtime.adopt()).status,200);
+   await serviceRead(); // The exact UTC Monday boundary is included.
+   await runtime.time(weekNow-60000);assert.equal((await runtime.adopt()).status,200);
+   for(let index=0;index<201;index++)await serviceRead();
+   await scheduleRead('autonomous','done');
+   for(const [decision,outcome] of [['review','done'],['approval','pending'],['blocked','refused']]){
+    const policy=autonomousPolicy();
+    policy.rules.unshift({id:'fixture-sensitive',class:'sensitive',do:decision,...(decision==='approval'?{approver:['sponsor'],wait:'PT1H'}:{})});
+    if(decision==='review')policy.reviewers=['sponsor'];
+    assert.equal((await runtime.adopt(policy)).status,200);
+    await scheduleRead(decision,outcome);
+   }
+   await runtime.time(weekNow);assert.equal((await runtime.adopt()).status,200);
+   await serviceRead(); // The exact current instant is included.
+   const expected=[
+    {class:'sensitive',decision:'approval',count:1},
+    {class:'sensitive',decision:'autonomous',count:1},
+    {class:'sensitive',decision:'blocked',count:1},
+    {class:'sensitive',decision:'review',count:1},
+    {class:'standard',decision:'approval',count:1},
+    {class:'standard',decision:'autonomous',count:204},
+    {class:'standard',decision:'blocked',count:1},
+    {class:'standard',decision:'review',count:1},
+   ];
+   async function completeAudit(){
+    const rows=[];let cursor=null,pages=0;
+    for(;;){
+     const response=await http('/agents/api/audit'+(cursor?'?after='+encodeURIComponent(cursor):''));
+     assert.equal(response.status,200);
+     const page=await response.json();
+     assert.equal(page.differs_from_policy,0);
+     if(!page.rows.length){assert.equal(page.cursor,cursor);break;}
+     assert.ok(Number(page.cursor)>Number(cursor),'Audit cursor advances');
+     rows.push(...page.rows);cursor=page.cursor;pages++;
+    }
+    assert.ok(pages>1,'Fixture exercises the complete audit beyond its first cursor page');
+    assert.equal(new Set(rows.map(row=>row.id)).size,rows.length);
+    return rows;
+   }
+   async function retained(){
+    const tables=(await runtime.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name NOT LIKE 'd1_%' ORDER BY name").all()).results;
+    return Object.fromEntries(await Promise.all(tables.map(async({name})=>[name,(await runtime.db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"').all()).results.sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))])));
+   }
+   const beforeCounts=await retained();
+   assert.deepEqual(await runtime.outboundRequests(),[],'Native count fixture has zero outbound requests');
+   const audit=await completeAudit();
+   assert.equal(audit.length,210,'Every counted call, including excluded boundary calls, is retained');
+   assert.deepEqual(audit.map(row=>({id:row.id,at:row.at,classes:row.classes.map(item=>item.class),decision:row.decision,outcome:row.outcome})),calls);
+   const inWeek=audit.filter(row=>row.at>='2026-11-02T00:00:00.000Z'&&row.at<='2026-11-04T12:00:00.000Z');
+   assert.equal(inWeek.length,207);
+   const aggregation=new Map();
+   for(const row of inWeek)for(const {class:kind} of row.classes){
+    const key=kind+':'+row.decision;aggregation.set(key,(aggregation.get(key)??0)+1);
+   }
+   const sort=rows=>rows.sort((a,b)=>(a.class+':'+a.decision).localeCompare(b.class+':'+b.decision));
+   assert.deepEqual(sort([...aggregation].map(([key,count])=>{const [kind,decision]=key.split(':');return {class:kind,decision,count}})),expected,'Retained audit matches the independently frozen native cohorts');
+   async function assertCounts(){
+    await page.getByRole('heading',{name:'This week',exact:true}).waitFor();
+    const rows=await page.locator('table[aria-labelledby="week-title"] tbody tr').evaluateAll(rows=>rows.map(row=>{
+     const cell=row.querySelector('[data-agents-count]');
+     return {class:cell?.dataset.class,decision:cell?.dataset.decision,count:Number(cell?.textContent)};
+    }));
+    assert.deepEqual(sort(rows),expected,'Every rendered cohort equals retained audit, with no missing or extra cohorts');
+    assert.equal(await page.locator('section[aria-labelledby="week-title"] time').getAttribute('datetime'),'2026-11-02T00:00:00.000Z');
+   }
+   await capture('weekly-counts','/agents',assertCounts,runtime.origin);
+   // Reload both presentations against the same frozen audit and durable state.
+   for(const width of [1440,390]){
+    await page.setViewportSize({width,height:1000});await page.reload();await assertCounts();
+   }
+   assert.deepEqual(await completeAudit(),audit,'Page reloads retain every audit field');
+   assert.deepEqual(await retained(),beforeCounts,'Audit and Agents reads leave all durable records unchanged');
+   assert.deepEqual(await runtime.outboundRequests(),[],'Audit and Agents reads attempt zero outbound requests');
+   console.log('PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests');
+  }finally{try{await context?.close()}finally{page=normalPage;await runtime.close()}}
+ }
+ await weeklyCounts();
  async function setLocal(paused){
   await page.goto(runtime.origin+'/agents');
   const response=page.waitForResponse(answer=>new URL(answer.url()).pathname==='/agents/api/pause'&&answer.request().method()==='POST');
