@@ -9,9 +9,9 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Core | 15 | 45 | 24 | 84 |
-| Agent surface | 0 | 1 | 16 | 17 |
+| Agent surface | 0 | 2 | 15 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 15 | 46 | 40 | 101 |
+| Full target | 15 | 47 | 39 | 101 |
 
 Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f207859a` (30 October 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -1522,7 +1522,7 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-004, BASE
 
 #### SURFACE-004 — Configuration, restore and erasure carry every affected class
 
-Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
+Agent surface · target · **partial** · From new · Cites BASE-AGENT-006
 
 **Requirement.** Configuration, restore and erasure calls carry every class their effects meet under Oncall's class rules.
 
@@ -1536,8 +1536,8 @@ Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
 7. `oncall.actions.update` adds security when it changes an executor binding, second-person approval for runs by people or output redaction rules; a description-only edit remains standard.
 8. `oncall.followups.update` adds external when it creates or synchronizes a Jira, Linear, GitHub or GitLab issue or pull request, with the counterparty public for a public repository; an Oncall-only follow-up edit remains standard.
 
-**Evidence.** None.
-**Gap.** No implementing flow. No MCP door or server-side class computation exists for configuration, restore or erasure.
+**Evidence.** `tests/oncall-agent-erase-replay.mjs` — eraseClasses and eraseReplay through emitted Worker MCP; `tests/agent-door-browser.mjs` — native erasure approval and receiver removal.
+**Gap.** Acceptance 4: fresh native erasures compute destructive with conditional access, security and live (live also covers coverage, windowed maintenance, grouping and approved-workflow members, intake and pending deliveries), and retain witnessed facts atomically. Held member erasure redacts its own saved approval; Base returns subject_erased before completed-retry classification, so class-aware replay of that approval still needs a Base seam. Older receipts without facts refuse rather than infer history. Acceptances 1, 2, 3, 5, 6, 7 and 8 remain unproved: intake-key changes, service paging changes, member-update classification, archive restore, SSO, executor settings and remote follow-up synchronization. OC-040 still needs OC-028 standby reconciliation; external deletion, uncertain-send clearance and new erasure categories are omitted. OC-023 team privacy, identity, executor and agent egress authority holds remain; paging stays OFF and provider delivery, independent standby and real-phone proof remain unproved.
 
 ## Later
 
