@@ -9,6 +9,7 @@ import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
+import {nativeTransport} from './oncall-agent-transport.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {AGENT_CLASSES} from '../src/modules/agent-door/conformance/surface.mjs';
 import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
@@ -261,6 +262,7 @@ try{
  assert.equal(code(await tool('oncall.schedules.create',{...createRota,schedule:{...createRota.schedule,name:'Changed key content'}})),'idempotency_conflict');
  assert.equal((await adopt()).status,200);
  console.log('PASS native service immutable environment and approved schedule creation replay: allowed edit, no-effect environment refusal, one schedule, fresh-key conflict and changed-argument conflict');
+ await nativeTransport(runtime);
  await teamReplay(runtime);
  await scheduleReplay(runtime);
  await eraseReplay(runtime);
