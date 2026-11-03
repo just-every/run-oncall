@@ -2884,7 +2884,7 @@
       "executable": false
     },
     "src/modules/agent-door/conformance/discovery.mjs": {
-      "sha256": "027d17955e99c80072501a5d921bb44420383bfe0a351ccbae412e8a8ad9c70d",
+      "sha256": "7cf427564ab181d809011fdaed46a68865107992e2a826883817bb1b45318b35",
       "executable": false
     },
     "src/modules/agent-door/conformance/erasure.mjs": {
@@ -6312,7 +6312,7 @@
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
-      "sha256": "3b254c5ee0c67140ddf8def6b85b7b6b7db803fe43c39500d880ae577c0b4f1a",
+      "sha256": "b95f008de26db85d9c04719079ed15a847fc552f3edf67a9dd8d5b60639fdcde",
       "executable": false
     },
     "tests/agent-door.mjs": {
