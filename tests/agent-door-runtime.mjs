@@ -102,8 +102,18 @@ export async function consentRevocationMatrix(runtime){
    assert.equal(retained.consent,client.consent);assert.equal(retained.sponsor.id,owner.id);
    assert.deepEqual(await runtime.outboundRequests(),[]);
    console.log(`PROBE BASE-AGENT-004 6 ${label} ${phase}: retained bearer reads native service; note ${label==='held'?'held then human-approved':'executed'} with actual agent and sponsor attribution; zero outbound requests`);
+   return args;
   }
-  await available(revoked,'before revocation');
+  const completedNote=await available(revoked,'before revocation');
+  const completedState=await read('/api/state'),completedPaging=await read('/api/paging/state');
+  const replay=await tool('oncall.notes.add',completedNote,{token:revoked.token});
+  assert.equal(replay.status,200);assert.equal(replay.result?.isError,false);
+  assert.equal(replay.result.structuredContent.id,target.id);
+  assert.equal(replay.result.structuredContent.revision,completedNote.revision+1);
+  assert.equal(replay.result.structuredContent.timeline.at(-1).text,completedNote.text,'The retained key returns its private native note before revocation');
+  assert.deepEqual(await read('/api/state'),completedState,'An admitted completed retry cannot append the note again');
+  assert.deepEqual(await read('/api/paging/state'),completedPaging);
+  assert.equal((await audit()).map(row=>JSON.parse(row.row)).find(row=>row.id===replay.decision.id).outcome,'replayed');
   await available(control,'control before revocation');
   revokedConsents.push(revoked.consent);
   const started=performance.now();
@@ -115,7 +125,8 @@ export async function consentRevocationMatrix(runtime){
    assert.ok(before.tables.agent_door_approvals.some(row=>row.state==='executed'),'Approval custody is populated before refusal isolation');
    assert.ok(before.tables.agent_door_reviews.length>0,'Review custody is populated before refusal isolation');
   }
-  for(const [name,input] of [['oncall.services.read',{id:'agent-service'}],['oncall.notes.add',args]]){
+  const attempts=[['read','oncall.services.read',{id:'agent-service'}],['fresh mutation','oncall.notes.add',args],['completed retry','oncall.notes.add',completedNote]];
+  for(const [attempt,name,input] of attempts){
    assert.ok(seconds()<revoked.expires,'Expiration cannot substitute for consent revocation');
    const refused=await tool(name,input,{token:revoked.token}),elapsed=performance.now()-started;
    maximum=Math.max(maximum,elapsed);
@@ -130,15 +141,15 @@ export async function consentRevocationMatrix(runtime){
    assert.ok(isDeepStrictEqual(after.paging,before.paging),'Revoked consent preserves paging state');
    for(const table of tables)assert.ok(isDeepStrictEqual(after.tables[table],before.tables[table]),`Revoked consent preserves ${table}`);
    assert.deepEqual(await runtime.outboundRequests(),[]);
-   console.log(`PROBE BASE-AGENT-004 6 ${label} ${name}: exact still-unexpired bearer after signed consent revocation -> 401 in ${elapsed.toFixed(0)}ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged`);
+   console.log(`PROBE BASE-AGENT-004 6 ${label} ${attempt} ${name}: exact still-unexpired bearer after signed consent revocation -> 401 in ${elapsed.toFixed(0)}ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged`);
   }
   const auditAfter=await audit(),relayAfter=await relay();
   assert.deepEqual(auditAfter.slice(0,auditBefore.length),auditBefore,'Prior audit custody is immutable');
   const refusals=auditAfter.slice(auditBefore.length);
-  assert.equal(refusals.length,2,'Only one refusal audit per attempted call');
+  assert.equal(refusals.length,attempts.length,'Only one refusal audit per attempted call');
   for(const [index,record] of refusals.entries()){
    const row=JSON.parse(record.row);
-   assert.equal(row.tool,['oncall.services.read','oncall.notes.add'][index]);
+   assert.equal(row.tool,attempts[index][1]);
    assert.equal(row.agent.id,revoked.agentId);assert.equal(row.consent,revoked.consent);
    assert.equal(row.sponsor.id,owner.id);assert.equal(row.outcome,'refused');assert.equal(row.code,'unauthenticated');
    assert.equal(row.approval,null);assert.equal(row.review,null);
@@ -150,7 +161,7 @@ export async function consentRevocationMatrix(runtime){
   const persistence=nativeAfter.slice(nativeBefore.length);
   // Each refused tool first sweeps expired replay custody (no change here),
   // then stores its refusal audit. "accepted" records that audit insert only.
-  assert.equal(persistence.length,4);
+  assert.equal(persistence.length,attempts.length*2);
   for(const [index,row] of persistence.entries()){
    assert.equal(row.kind,'agent-door.persistence');assert.equal(row.feature,'workspace');
    assert.equal(row.outcome,index%2===0?'refused':'accepted');
@@ -161,11 +172,11 @@ export async function consentRevocationMatrix(runtime){
   }
   const [clockAfter]=await rows('oc_audit_clock'),last=persistence.at(-1);
   assert.ok(Number.isSafeInteger(clockAfter.changes_before)&&clockAfter.changes_before>clockBefore[0].changes_before);
-  assert.deepEqual(clockAfter,{...clockBefore[0],revision:clockBefore[0].revision+2,changed:1,changes_before:clockAfter.changes_before,actor_label:last.actor,subject_label:last.subject,source_label:last.source},'Only the refusal audit clock and attribution advance');
+  assert.deepEqual(clockAfter,{...clockBefore[0],revision:clockBefore[0].revision+attempts.length,changed:1,changes_before:clockAfter.changes_before,actor_label:last.actor,subject_label:last.subject,source_label:last.source},'Only the refusal audit clock and attribution advance');
   await available(control,'control after revocation');
  }
  assert.equal((await adopt()).status,200);
- console.log(`PASS Business consent receiving door: both company policies, same unexpired bearers, maximum refusal ${maximum.toFixed(0)}ms, exact native and approval and review and paging isolation, attributed refusal audit only, separately consented controls and zero outbound requests; no Business account propagation claim`);
+ console.log(`PASS Business consent receiving door: both company policies, same unexpired bearers, maximum refusal ${maximum.toFixed(0)}ms, fresh mutation and completed retry refused without cached content, exact native and approval and review and paging isolation, attributed refusal audit only, separately consented controls and zero outbound requests; no Business account propagation claim`);
 }
 
 /** Public-door Pause matrix; the browser supplies the real local control. */
