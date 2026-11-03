@@ -4,7 +4,7 @@ import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import {agentRuntime,pauseMatrix} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {recoveredResolutionTarget,reviewAttribution} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {openIncidentAction} from './keyboard.mjs';
@@ -15,10 +15,8 @@ try{
  await mkdir(directory,{recursive:true});
  const {http,tool}=runtime;
  assert.equal((await runtime.adopt()).status,200);
- await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const native=async()=> (await (await http('/api/state')).json());
  let state=await native();
- const incident=state.incidents.find(row=>row.title==='Payment authorization failures after deployment');
  const responder=state.members.find(row=>row.role==='responder'),admin=state.members.find(row=>row.name==='Jordan Davis');
  const team=[{id:randomUUID(),email:'mira@example.invalid',name:'Mira Patel',role:'member',invite:1},{id:randomUUID(),email:'jordan@example.invalid',name:'Jordan Davis',role:'admin',invite:1}];
  await runtime.settings(team,2);
@@ -44,6 +42,43 @@ try{
   }
   await page.setViewportSize({width:1440,height:1000});
  }
+ const attributionCases=await reviewAttribution(runtime,{async approve(path){
+  await page.goto(runtime.origin+path);
+  await page.locator('[data-approval-state="pending"]').waitFor();
+  await page.getByRole('button',{name:'Approve',exact:true}).click();
+  await page.locator('[data-approval-state="executed"]').waitFor();
+ }});
+ for(const item of attributionCases){
+  const before={application:await native(),paging:await (await http('/api/paging/state')).json(),
+   audit:(await runtime.db.prepare('SELECT * FROM oc_admin_audit ORDER BY ordinal').all()).results};
+  await capture('account-review-'+item.policy,'/reviews/'+item.incident.id,async()=>{
+   await page.getByRole('dialog',{name:item.incident.title,exact:true}).waitFor();
+   for(const label of [/^Evidence \(/,/^From the timeline \(/])await page.locator('.review-material-body summary').filter({hasText:label}).click();
+   await page.locator('.review-records li').filter({hasText:item.machine.text}).waitFor();
+   if(page.viewportSize().width===1440){
+    for(const assertion of [item.machine,item.human,item.agent]){
+     const row=page.locator('.review-records li').filter({hasText:assertion.text});
+     assert.ok((await row.locator('.review-meta').innerText()).startsWith(assertion.actorName+' · '+assertion.classification));
+    }
+    assert.ok(await page.getByText(item.material.observations[0].title,{exact:true}).isVisible());
+    const sizes=await page.locator('.review-material-body .review-meta').evaluateAll(nodes=>nodes.filter(node=>node.getClientRects().length).map(node=>parseFloat(getComputedStyle(node).fontSize)));
+    assert.ok(sizes.length&&sizes.every(size=>size>=13));
+    for(const label of ['Review actions','Close review']){
+     const control=page.getByRole('button',{name:label,exact:true});
+     await control.focus();await page.getByRole('tooltip',{name:label,exact:true}).waitFor();
+     await control.blur();await control.hover();await page.getByRole('tooltip',{name:label,exact:true}).waitFor();
+     await page.mouse.move(0,0);
+    }
+   }
+   await page.locator('.review-records li').filter({hasText:item.agent.text}).scrollIntoViewIfNeeded();
+  });
+  assert.deepEqual({application:await native(),paging:await (await http('/api/paging/state')).json(),
+   audit:(await runtime.db.prepare('SELECT * FROM oc_admin_audit ORDER BY ordinal').all()).results},before,'Review render and phone reload leave native custody unchanged');
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  console.log('PROBE SURFACE-003 3 '+item.policy+' rendered: protected review at 1440 and 390 -> same account, human, agent and source as API and MCP; native audit and paging unchanged; zero outbound requests');
+ }
+ await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
+ const incident=(await native()).incidents.find(row=>row.title==='Payment authorization failures after deployment');
  async function setLocal(paused){
   await page.goto(runtime.origin+'/agents');
   const response=page.waitForResponse(answer=>new URL(answer.url()).pathname==='/agents/api/pause'&&answer.request().method()==='POST');
