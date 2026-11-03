@@ -252,6 +252,8 @@ try{
   await page.getByRole('heading',{name:'Current resource templates',exact:true}).waitFor();
   await page.getByText('No resource templates are exposed.',{exact:false}).waitFor();
   await page.getByRole('heading',{name:'Target capabilities',exact:true}).waitFor();
+  const resourceTargets=page.getByRole('heading',{name:'Resource targets',exact:true}).locator('xpath=following-sibling::ul[1]');
+  assert.deepEqual(await resourceTargets.locator('code').allTextContents(),runtime.context.surface.resources);
   const inventoryRegion=page.locator('.docs-table').filter({has:page.getByRole('columnheader',{name:'Computed class checks',exact:true})}).first();
   await inventoryRegion.focus();
   await inventoryRegion.press('ArrowRight');

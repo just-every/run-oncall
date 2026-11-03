@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "682beb74d6c17e7be0ad3e1cbf732a4d472317d3d1cf7a414a58e547f614347c",
+      "sha256": "63a04bd6d388a3f6e4dded65592011254ac2765ccbac6727a94581541b9b9e67",
       "executable": false
     },
     "DEMO.md": {
@@ -192,7 +192,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "ffad284b3ab97490a73544e84f6fc627e523f8c18de248e4e17ab4c8b52a036b",
+      "sha256": "90004c18cb94518b224e64eabaad66238429cf13faeb7185b9f3109e52437f78",
       "executable": false
     },
     "docs/audit.md": {
@@ -1648,7 +1648,7 @@
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
-      "sha256": "48d96895e6c20cfb52f7a41b20e1e01b0ef9fdfd0320b1ef0a881c0c348576fc",
+      "sha256": "038c81ad1fafa36688ff783e47fb305c3a92b36ab012610a961391459ef59d0c",
       "executable": false
     },
     "SEED-COMMAND-CONTRACT.md": {
@@ -6308,7 +6308,7 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "891581e23e23c8b5bd8f8d8feb571aa71aa8dfc329a1e6816ae0fbc8fd2939d0",
+      "sha256": "4cbe4f5935f05a5598720749982acb90623df6fd82cc6e2a61ce53f5a5c61c60",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
@@ -6480,7 +6480,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "154a9ee63c37b1ff25b5f2d1940ba2fed904a58522a8ca2cf6bd73596b8e0af1",
+      "sha256": "cb027eef5ab8cdca9fbdf279a49dbcb07bdaba3e4aa1eb82531825efe778bc57",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {

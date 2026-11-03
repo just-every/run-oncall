@@ -163,6 +163,23 @@ No resource templates are exposed. The template listing is empty because resourc
 
 `oncall.events.list` is retained in the source manifest with scope `events:read` and possible classes `standard`, but is withheld from the current tool listing. Its target fixture is not current execution evidence.
 
+### Resource targets
+
+These targets remain in the source manifest. They are withheld from the template listing and grant no resource access.
+
+- `oncall://actions/{id}`
+- `oncall://automation/clients/{id}`
+- `oncall://automation/endpoints/{id}`
+- `oncall://automation/outbox/{id}`
+- `oncall://erasures/{id}`
+- `oncall://incidents/{id}`
+- `oncall://incidents/{id}/review-material`
+- `oncall://members/{id}`
+- `oncall://schedules/{id}/coverage`
+- `oncall://services/{id}`
+- `oncall://services/{id}/changes`
+- `oncall://teams/{id}`
+
 The source manifest retains native resource targets; they are not exposed templates. Events, resources, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.
 [native-tool-inventory-end]: #
 

@@ -28,6 +28,7 @@ function inventory(surface) {
     return [...heading, `| ${code(tool.name)} | ${code(tool.scope)} | ${tool.classes.map(code).join(', ')} | ${checks.join('; ')} |`];
   });
   const withheld = surface.tools.filter(tool => !exposed.tools.some(item => item.name === tool.name));
+  const resourceTargets = surface.resources.filter(uri => !exposed.resources.includes(uri));
   return [start, '## Current tool inventory', '',
     'This inventory is generated from the native registry with the current capability filter. Each row names the required scope and every possible class. Company policy still decides each call.', '',
     'The fixture IDs below belong to `agent-surface.json`. `tests/oncall-agent-flow.mjs` executes them through emitted Worker MCP under autonomous and held policies; `src/modules/agent-door/conformance/journey.mjs` checks the returned computed classes in `checkClasses`. The journey also checks that every documented fixture has passing computed-class and completion results under both policies, including the retained class identifiers and effect-free replay after erasure. A fixture reference describes coverage to run, not a passing receipt.', '',
@@ -36,6 +37,9 @@ function inventory(surface) {
     ...(exposed.resources.length ? exposed.resources.map(uri => `- ${code(uri)}`) : ['No resource templates are exposed. The template listing is empty because resources are undeclared.']), '',
     '## Target capabilities', '',
     ...withheld.map(tool => `${code(tool.name)} is retained in the source manifest with scope ${code(tool.scope)} and possible classes ${tool.classes.map(code).join(', ')}, but is withheld from the current tool listing. Its target fixture is not current execution evidence.`), '',
+    ...(resourceTargets.length ? ['### Resource targets', '',
+      'These targets remain in the source manifest. They are withheld from the template listing and grant no resource access.', '',
+      ...resourceTargets.map(uri => `- ${code(uri)}`), ''] : []),
     'The source manifest retains native resource targets; they are not exposed templates. Events, resources, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.', end].join('\n');
 }
 

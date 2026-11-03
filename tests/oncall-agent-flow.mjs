@@ -87,6 +87,10 @@ try{
    assert.deepEqual(ids,fixtures.map(step=>step.id),`${row.name} ${cls} references its complete maintained coverage`);
   }
  }
+ const tokens=lexer(guide),targetHeading=tokens.findIndex(token=>token.type==='heading'&&token.text==='Resource targets');
+ assert.ok(targetHeading>=0,'Withheld resource targets must be distinguished from the exposed listing');
+ const targetList=tokens.slice(targetHeading+1).find(token=>token.type==='list');
+ assert.deepEqual(targetList.items.flatMap(item=>codes(item.text)),runtime.context.surface.resources.filter(uri=>!surface.resources.includes(uri)));
  const inventoryState=async()=>({native:await (await http('/api/state')).json(),paging:await (await http('/api/paging/state')).json()});
  const permanentAudit=async()=>(await runtime.db.prepare('SELECT * FROM oc_admin_audit ORDER BY id').all()).results;
  for(const [label,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
@@ -100,6 +104,7 @@ try{
   assert.deepEqual(documented.map(({checks,...row})=>row),listed.result.tools.map(row=>({name:row.name,scope:row._meta['com.runeditrun/scope'],classes:row._meta['com.runeditrun/classes']})));
   assert.deepEqual(templates.result.resourceTemplates,surface.resources);
   assert.deepEqual(surface.resources,[]);
+  assert.ok(!listed.result.tools.some(row=>row.name==='oncall.events.list'),'The documented event target must remain withheld');
   // MCP retains its required protocol bookkeeping; the public guide itself
   // makes no permanent audit write or native effect.
   const beforeGuideAudit=await permanentAudit();
