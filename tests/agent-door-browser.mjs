@@ -3,7 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {mkdir} from 'node:fs/promises';
 import {chromium} from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import {agentRuntime} from './agent-door-runtime.mjs';
+import {agentRuntime,pauseMatrix} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
@@ -44,6 +44,28 @@ try{
   }
   await page.setViewportSize({width:1440,height:1000});
  }
+ async function setLocal(paused){
+  await page.goto(runtime.origin+'/agents');
+  const response=page.waitForResponse(answer=>new URL(answer.url()).pathname==='/agents/api/pause'&&answer.request().method()==='POST');
+  await page.getByRole('button',{name:paused?'Pause agents':'Resume agents',exact:true}).click();
+  assert.equal((await response).status(),200);
+  await page.getByRole('button',{name:paused?'Resume agents':'Pause agents',exact:true}).waitFor();
+  assert.equal((await (await http('/agents/api/state')).json()).paused.local,paused);
+ }
+ await pauseMatrix(runtime,{
+  setLocal,
+  async observe(label,phase,flags){
+   // Assertions run once at desktop width. The same changed states are shown
+   // at desktop and phone widths without repeating the policy matrix.
+   await page.goto(runtime.origin+'/agents');
+   await page.getByText(flags.business||flags.local?'Agents are paused.':'Agents are on.',{exact:true}).waitFor();
+   assert.equal(await page.getByText('Paused in Business.',{exact:true}).count(),Number(flags.business));
+   assert.ok(await page.getByRole('button',{name:flags.local?'Resume agents':'Pause agents',exact:true}).isVisible());
+   if(label==='autonomous'&&['local-only','Business-only after local resume','resumed'].includes(phase)){
+    await capture('pause-matrix-'+(flags.local?'local':flags.business?'business':'resumed'),'/agents');
+   }
+  },
+ });
  await capture('people-linked-pending','/agents/people',async()=>{await page.getByRole('heading',{name:'Business people',exact:true}).waitFor();await page.getByText('Mira Patel',{exact:true}).waitFor()});
  // A stale real form must report the conflict without moving either identity.
  await page.goto(runtime.origin+'/agents/people');
@@ -155,13 +177,14 @@ try{
  assert.equal((await native()).apiOutbox.find(row=>row.id===approved.item.id).status,'sent');
  await capture('approval-executed',approved.path,async()=>{await page.getByText('Alex Chen',{exact:false}).first().waitFor()});
  const paused=await pending('Inventory synchronization delay');
- assert.equal((await http('/agents/api/pause',{paused:true})).status,200);
+ await setLocal(true);
  await page.goto(runtime.origin+paused.path);await page.getByRole('button',{name:'Approve',exact:true}).click();
  await page.locator('[data-approval-state="refused"]').waitFor();
  assert.equal((await native()).apiOutbox.find(row=>row.id===paused.item.id).status,'queued');
  await capture('approval-paused',paused.path);
  await capture('agents-paused','/agents',async()=>{await page.getByText('Agents are paused.',{exact:true}).waitFor()});
- assert.equal((await http('/agents/api/pause',{paused:false})).status,200);
+ await setLocal(false);
+ await page.getByText('Agents are on.',{exact:true}).waitFor();
  const blocked=autonomousPolicy();blocked.rules.unshift({id:'stop-send',class:'external',do:'blocked'});assert.equal((await runtime.adopt(blocked)).status,200);
  state=await native();const queued=state.apiOutbox.find(row=>row.id===paused.item.id);
  const denied=await tool('oncall.automation.dispatch',{id:queued.id,revision:queued.revision,idempotency_key:randomUUID()});

@@ -1423,8 +1423,8 @@ Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f20785
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 11 | 0 | 22 |
-| Target and push further | 4 | 36 | 39 | 79 |
-| All | 15 | 47 | 39 | 101 |
+| Target and push further | 4 | 37 | 38 | 79 |
+| All | 15 | 48 | 38 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1526,6 +1526,6 @@ Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f20785
 | `BASE-AGENT-008` | Truthful attribution | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-009` | Every agent action is audited with its class and decision | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-010` | Agents can follow changes | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-011` | Limits are policy, and Pause stops everything | target | missing | | Not yet judged through this seed's own doors. |
+| `BASE-AGENT-011` | Limits are policy, and Pause stops everything | target | partial | `tests/oncall-agent-flow.mjs` — independent Pause flags via `tests/agent-door-runtime.mjs` pauseMatrix: emitted Worker and D1, both company policies, valid next MCP read and coordination mutation refused within 60 seconds, independent flag clearing, bearer resume refused even with the owner cookie, unchanged native and paging state, zero outbound requests, attributed human coordination and policy-appropriate resume. `tests/agent-door-browser.mjs` — the same matrix through the signed-in Pause agents and Resume agents controls; local, Business-only and resumed screens at 1440 and 390; pending dispatch approval remains refused during local Pause. | Acceptances 1 to 5 remain unproved: request-rate refusal, recipient caps, provider spend caps, no-cap spending and the complete usage view; paid AI spend caps are explicitly not enforced. Acceptance 6 proves only the native local control and signed fixture policy-adoption door, not actual Business UI propagation or device continuity. Model and provider spending and executor flows remain omitted under OC-045, OC-046, OC-048 and OC-049 authority holds. BASE-AGENT-006 and SURFACE-004 holds remain unchanged. Paging remains OFF; production delivery, independent standby and real-phone prerequisites remain. |
 | `BASE-AGENT-012` | Writes are idempotent and conflict-safe | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-013` | Manifest, docs and the conformance journey | target | missing | | Not yet judged through this seed's own doors. |
