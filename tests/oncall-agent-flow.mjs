@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
-import {agentRuntime,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
+import {agentRuntime,pauseMatrix,policyAdoption,noteParity} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
@@ -98,6 +98,7 @@ try{
  }
  assert.equal(listing.result.nextCursor,undefined,'The catalog probe must enumerate the complete emitted list');
  console.log(`PROBE BASE-AGENT-006 point 5 listed tools: emitted Worker MCP -> all ${listing.result.tools.length} returned tools declare only fleet-catalog classes`);
+ await noteParity(runtime);
  await policyAdoption(runtime);
  await pauseMatrix(runtime);
  await droppedDeclarationReplay(runtime);
