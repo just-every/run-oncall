@@ -1468,8 +1468,8 @@ Agent surface · target · **missing**
 4. Every acceptance point runs under both policies, every decision matches the policy in force, and under all autonomous no call waits for a person or is refused by policy.
 5. A stranger agent given only the seed URL completes the specialist journey through MCP.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `scripts/write-agent-surface.mjs` — native registry generation and freshness check; `tests/oncall-agent-flow.mjs` — complete generated and served guide inventory against emitted Worker discovery under autonomous and held policies, maintained computed-class fixture references, unchanged native and paging state with zero outbound requests; `tests/agent-door-browser.mjs` — rendered inventory agrees with live MCP under both policies, desktop assertions and guide proof at 1440 and 390; `tests/agent-door.mjs` — existing computed-class execution through the Base conformance journey.
+**Gap.** Main's missing judgment is retained; this bounded native inventory proof does not complete the clause. Acceptances 1 and 2 are proved only for the current native surface: all 39 exposed tools, their scopes, possible classes and maintained class-test fixture IDs; the source manifest retains 40 tools but withholds oncall.events.list, and no resource templates are exposed. Gap: unshipped tools and their class and test documentation; undeclared resources, events and prompts; complete discovery-instruction generation and judgment; acceptance 3 complete harness rejection matrix; acceptance 4 every-point coverage under both policies; acceptance 5 stranger-agent specialist completion. OC-045, OC-046, OC-048 and OC-049 retain the agent egress authority hold; model, investigation, ownership, remediation, recurrence and executor flows remain omitted. Existing BASE-AGENT-005 work and BASE-AGENT-006 and BASE-AGENT-008 holds, SURFACE-004 ambiguous hold and Base replay seam, and all release prerequisites remain unchanged. PARTIAL; paging OFF; no production delivery, independent standby, real-phone or publication authority.
 
 ### Agent surface
 
