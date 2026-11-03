@@ -1423,8 +1423,8 @@ Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f20785
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 11 | 0 | 22 |
-| Target and push further | 4 | 38 | 37 | 79 |
-| All | 15 | 49 | 37 | 101 |
+| Target and push further | 4 | 39 | 36 | 79 |
+| All | 15 | 50 | 36 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1517,7 +1517,7 @@ Judged from the code and tests at commit `8c32ec388756af1b2fb57bf8a6d4bb31f20785
 | `OC-048` | Bounded remediation with independent recovery evidence | push-further | missing |  | No implementing flow. No remediation planner, production executor or independent recovery integration exists. OC-041 audit and durable crash/lease outcomes for remediation agent grants and executor actions remain this clause's pre-shipping acceptance. |
 | `OC-049` | Close the loop on recurrence | push-further | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Owned evidenced follow-ups and retained reviews exist; recurrence comparison and follow-through agents are missing. OC-041 audit and durable crash/lease outcomes for recurrence agent grants and actions remain this clause's pre-shipping acceptance. |
 | `BASE-AGENT-001` | One MCP door per seed | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-002` | The seed's jobs are tools, through the UI's own actions | target | missing | | Not yet judged through this seed's own doors. |
+| `BASE-AGENT-002` | The seed's jobs are tools, through the UI's own actions | target | partial | `tests/oncall-agent-flow.mjs` — native incident note parity via noteParity in `tests/agent-door-runtime.mjs`: equivalent native fixtures, exact note text and target, one revision, preserved prior fields, canonical permanent command.note, separate human and agent-for-person attribution, actual MCP tool audit, held standard review, stale and scope refusals, audit-failure rollback, once-only retry and zero outbound requests; `tests/agent-door-browser.mjs` — actual signed-in Add note compared with MCP under autonomous and held policies, with literal selected notes and attribution shown at 1440 and 390; existing output-schema and annotation conformance in `tests/agent-door.mjs` is reused. | Only acceptance 5's native incident-note slice is proved. Acceptance 1's complete Core-job coverage and harness and real-CLI gap refusal, acceptances 2 and 3's complete seed judgment, acceptance 4's shared stable-error-code parity, acceptance 5's parity for every other job and acceptance 6's embedded-agent registry and audit proof remain unproved. OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold. OC-023 team privacy, BASE-AGENT-005 work, BASE-AGENT-006 and BASE-AGENT-008 holds, SURFACE-004's held replay seam and all release prerequisites remain unchanged. Paging remains OFF; production delivery, independent standby and real-phone obligations remain omitted. |
 | `BASE-AGENT-003` | Records are resources | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-004` | Business identity and short-lived, audience-bound tokens | target | missing | | Not yet judged through this seed's own doors. |
 | `BASE-AGENT-005` | An agent acts as a person in a role, never more | target | missing | | Not yet judged through this seed's own doors. |
