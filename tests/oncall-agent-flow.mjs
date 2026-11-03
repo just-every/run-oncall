@@ -3,7 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
-import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
+import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption,consentRevocationMatrix} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
@@ -226,6 +226,7 @@ try{
  await pauseMatrix(runtime);
  await droppedDeclarationReplay(runtime);
  await changedArgumentConflicts(runtime);
+ await consentRevocationMatrix(runtime);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
  const owner=(await (await http('/api/workspace')).json()).member;
