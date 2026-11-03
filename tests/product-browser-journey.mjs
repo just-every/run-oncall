@@ -961,6 +961,92 @@ export async function triageBulkBrowser(page,context,width){
 }
 
 
+// The support-start notice explains a pending human action, without executing it.
+export async function supportStartBrowser(page,context,{setTime,proof}) {
+ const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ await mkdir(directory,{recursive:true});
+ const call=async(path,data,status=200)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});
+  assert.equal(response.status(),status,path);return response.json();
+ };
+ const actor=(await call('/api/session')).member,service='synthetic-oncall-570',source='synthetic-oncall-571',key=randomBytes(32).toString('hex');
+ const admittedAt='2026-11-03T08:00:00.000Z',nextStart='2026-11-03T14:00:00.000Z';
+ const samples=new Map(),trackSample=request=>{
+  if(new URL(request.url()).pathname!=='/api/urgency/preview')return;
+  let settle;const done=new Promise(resolve=>{settle=resolve;});samples.set(request,{done,settle});
+ },settleSample=request=>samples.get(request)?.settle();
+ page.on('request',trackSample);page.on('requestfinished',settleSample);page.on('requestfailed',settleSample);
+ await setTime(Date.parse(admittedAt));await page.setViewportSize({width:1440,height:1000});
+ try {
+  await call('/api/command',{type:'service',id:service,name:'New York support',environment:'test',owner:actor.id,runbook:[],pager:''});
+  await page.goto(origin+'/settings/services/'+service);
+  const policy=page.locator('details.service-urgency');await policy.locator(':scope > summary').click();
+  await policy.getByLabel('Urgency decision mode',{exact:true}).selectOption('support-hours');
+  await policy.getByLabel('Time zone',{exact:true}).selectOption('America/New_York');
+  await policy.getByLabel('Inside support hours',{exact:true}).selectOption('high');
+  await policy.getByLabel('Outside support hours',{exact:true}).selectOption('low');
+  await policy.getByLabel('Holiday dates (one per line)',{exact:true}).fill('');
+  await policy.getByRole('button',{name:/^Publish version/}).click();
+  await policy.getByLabel('Reason',{exact:true}).fill('Staffed New York weekday support');
+  const publication=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/urgency/services/'+service&&response.request().method()==='POST');
+  await policy.getByRole('button',{name:/^Publish version/}).click();assert.equal((await publication).status(),201);
+  await policy.locator('.service-policy-confirm').waitFor({state:'detached'});
+  const rule=(await call('/api/state')).services.find(row=>row.id===service).urgencyRules.at(-1);
+  assert.equal(rule.mode,'support-hours');assert.equal(rule.timezone,'America/New_York');
+  assert.deepEqual(rule.weekly,[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})));
+  assert.deepEqual(rule.holidays,[]);assert.equal(rule.inside,'high');assert.equal(rule.outside,'low');
+  // Leave Settings and finish its sample requests before measuring alert reads.
+  await page.goto(origin+'/alerts');
+  let sampleTimeout;
+  try {
+   await Promise.race([Promise.all([...samples.values()].map(sample=>sample.done)),new Promise((_,reject)=>{sampleTimeout=setTimeout(()=>reject(Error('Support-hours sample requests did not settle')),30000);})]);
+  } finally {clearTimeout(sampleTimeout);}
+  page.off('request',trackSample);page.off('requestfinished',settleSample);page.off('requestfailed',settleSample);
+  await call('/api/sources',{id:source,key,scopes:[service],mode:'bearer'});
+  const event={source,eventId:'synthetic-oncall-572',service,environment:'test',key:'synthetic-oncall-573',generation:'synthetic-oncall-574',intent:'trigger',severity:'warning',title:'New York pre-support warning',observedAt:admittedAt,evidence:''};
+  const received=await context.request.post('/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:event});assert.equal(received.status(),201);
+  const receipt=await received.json(),state=await call('/api/state'),alert=state.alerts.find(row=>row.events.includes(receipt.id));
+  assert.ok(alert);assert.equal(alert.state,'active');assert.equal(alert.urgency,'low');
+  assert.equal(state.events.find(row=>row.id===receipt.id).urgency.evaluatedAt,admittedAt);
+  assert.ok(alert.urgencyHistory.length>0);assert.equal(alert.urgencyHistory.at(-1).ruleVersion,rule.version);
+  const recordsBefore=proof.snapshot(),pagingBefore=await call('/api/paging/state');
+  assert.deepEqual(await proof.outbound(),[],'no outbound request precedes support-start observation');
+  const card=page.getByRole('article',{name:'Alert details',exact:true}),notice=card.getByRole('note');
+  const observe=async()=>{
+   await card.getByRole('heading',{name:event.title,exact:true}).waitFor();
+   await notice.getByText(/Support-start raises are not automatic\./).waitFor();
+   assert.equal(await notice.locator('time').getAttribute('datetime'),nextStart,'the notice identifies the exact next New York support start');
+   assert.match(await notice.locator('time').innerText(),/09:00 AM EST/,'the visible time uses the service zone');
+   assert.equal(await card.getByLabel('Urgency',{exact:true}).inputValue(),'low','the notice does not claim an applied raise');
+  };
+  await page.goto(origin+'/alerts/'+encodeURIComponent(alert.id));await observe();
+  const history=card.locator('.alert-urgency > details');await history.locator(':scope > summary').click();
+  assert.equal(await history.locator('article').count(),alert.urgencyHistory.length);
+  await history.getByText('Policy version '+rule.version,{exact:false}).waitFor();
+  const visibleHistory=await history.innerText();
+  await setTime(Date.parse('2026-11-03T08:30:00.000Z'));await page.reload();await observe();
+  await history.locator(':scope > summary').click();
+  assert.equal(await history.innerText(),visibleHistory,'reload preserves the rendered urgency history without an automatic raise');
+  const retained=(await call('/api/state')).alerts.find(row=>row.id===alert.id);
+  assert.equal(retained.state,'active');assert.equal(retained.urgency,'low');
+  assert.deepEqual(retained.urgencyHistory,alert.urgencyHistory,'reload before support opens adds no urgency history');
+  assert.equal(retained.urgencyRevision,alert.urgencyRevision);
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});
+   assert.ok(await notice.isVisible(),'support-start guidance remains visible');
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`support-start screen fits ${width}`);
+   assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
+   await page.screenshot({path:`${directory}/oc057-support-start-${width}.png`,fullPage:true});
+  }
+  assert.deepEqual(await call('/api/paging/state'),pagingBefore,'notice and reload preserve paging jobs and receipts');
+  assert.deepEqual(proof.snapshot(),recordsBefore,'notice and reload preserve every native record, revision and permanent audit row');
+  assert.deepEqual(await proof.outbound(),[],'notice and reload attempt zero outbound requests');
+  console.log('PROBE OC-057 acceptance 8: emitted Settings saves New York weekdays 09:00–17:00 without holidays; warning admitted at 2026-11-03T08:00:00Z -> active low alert, visible not-automatic notice and next support start 2026-11-03T14:00:00Z; reload at 08:30Z retains urgency history, native records, paging jobs and receipts; zero outbound requests; screens captured at 1440 and 390');
+ } finally {page.off('request',trackSample);page.off('requestfinished',settleSample);page.off('requestfailed',settleSample);await setTime(null);await page.setViewportSize({width:1440,height:1000});}
+}
+
 // alert-severity-browser: part of this public journey.
 // One core flow: admitted monitoring events -> visible severity -> declared incident -> stored severity.
 export async function alertSeverity(page,context,width) {
@@ -1279,6 +1365,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
   await setTime(null)
   if(width===1440)await sharedIncidentLinks(page,context)
   await alertSeverity(page,context,width)
+  await supportStartBrowser(page,context,{setTime,proof:triageProof})
   if(width===1440)await productSchedule(page,context,width,session,{ownerLink,setTime})
   await triageFiltersBrowser(page,context,{setTime,proof:triageProof})
   await triageBulkBrowser(page,context,width)
