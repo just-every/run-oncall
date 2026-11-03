@@ -6,7 +6,79 @@ import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
-import {autonomousPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+
+/** Lose the real MCP response, establish its native commit, then recover by key. */
+async function droppedDeclarationReplay(runtime){
+ const {db,http,tool,adopt,discardToolResponse,context}=runtime;
+ const state=async()=> (await (await http('/api/state')).json());
+ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
+ const native=async()=>({
+  control:await rows('SELECT * FROM workspace_control ORDER BY id'),
+  incidents:await rows('SELECT * FROM oc_incidents ORDER BY id'),
+  audit:await rows('SELECT * FROM oc_audit ORDER BY id'),
+  commits:await rows("SELECT * FROM oc_admin_audit WHERE outcome='accepted' AND (workspace_before<>workspace_after OR paging_before<>paging_after OR handoff_before<>handoff_after) ORDER BY ordinal"),
+  paging:await rows('SELECT * FROM paging_control ORDER BY id'),
+  jobs:await rows('SELECT * FROM paging_jobs ORDER BY id'),
+  receipts:await rows('SELECT * FROM paging_receipts ORDER BY id'),
+ });
+ const calls=key=>rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,key);
+ const reviews=()=>rows('SELECT * FROM agent_door_reviews ORDER BY id');
+ for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
+  assert.equal((await adopt(policy)).status,200);
+  const before=await native(),beforeState=await state(),beforeReviews=await reviews();
+  const args={service:'agent-service',title:'Lost response under '+mode+' policy',summary:'Native coordination with no outbound work',severity:'warning',idempotency_key:randomUUID()};
+  const lost=await discardToolResponse('oncall.incidents.declare',args);
+  assert.equal(lost.status,200);
+  assert.equal(lost.discarded,true);assert.equal(lost.aborted,true);assert.equal(lost.bodyRead,false);
+  // The first outcome comes only from native D1, never from the discarded body.
+  const committedCalls=await calls(args.idempotency_key);
+  assert.equal(committedCalls.length,1);assert.equal(committedCalls[0].state,'done');
+  const call=committedCalls[0],saved=JSON.parse(call.outcome),once=await native(),onceState=await state(),onceReviews=await reviews();
+  assert.equal(saved.outcome,'done');assert.equal(saved.decision.id,call.decision_id);
+  assert.equal(saved.decision.disposition,disposition);
+  assert.equal(once.control[0].revision,before.control[0].revision+1);
+  assert.equal(once.incidents.length,before.incidents.length+1);
+  const incident=JSON.parse(once.incidents.find(row=>row.id===saved.result.id).data);
+  assert.deepEqual(incident,saved.result);
+  assert.equal(incident.title,args.title);assert.equal(incident.service,args.service);assert.equal(incident.revision,1);
+  const declarations=incident.timeline.filter(row=>row.kind==='declared');
+  assert.equal(declarations.length,1);assert.equal(declarations[0].metadata.agent.agent.id,context.agentId);
+  assert.equal(once.commits.length,before.commits.length+1,'The lost response follows exactly one native application audit commit');
+  assert.deepEqual(once.jobs,before.jobs);assert.deepEqual(once.receipts,before.receipts);assert.deepEqual(once.paging,before.paging);
+  assert.equal(onceState.revision,beforeState.revision+1);
+  assert.equal(onceReviews.length,beforeReviews.length+Number(mode==='held'));
+  if(mode==='held'){
+   const review=onceReviews.find(row=>row.id===saved.review.id);
+   assert.ok(review);assert.equal(review.state,'open');assert.equal(JSON.parse(review.saved).decision_id,call.decision_id);
+  }else assert.equal(saved.review,undefined);
+  const originalRows=await rows('SELECT * FROM agent_door_audit WHERE id=?',call.decision_id);
+  assert.equal(originalRows.length,1);
+  const original=JSON.parse(originalRows[0].row);
+  assert.equal(original.outcome,'done');assert.equal(original.replay_of,null);
+  assert.equal(original.idempotency_key,args.idempotency_key);
+  const attempts=await rows('SELECT * FROM agent_door_audit WHERE agent=? AND json_extract(row,\'$.idempotency_key\')=? ORDER BY sequence',context.agentId,args.idempotency_key);
+  assert.equal(attempts.length,1);
+  const replay=await tool('oncall.incidents.declare',args);
+  assert.equal(replay.status,200);assert.notEqual(replay.body.id,lost.id);
+  assert.equal(replay.result.isError,false);assert.deepEqual(replay.result.structuredContent,saved.result);
+  assert.deepEqual(replay.result._meta['com.runeditrun/review'],saved.review);
+  assert.deepEqual(await calls(args.idempotency_key),committedCalls,'Retry preserves the original call and stored outcome');
+  assert.deepEqual(await native(),once,'Retry creates no second incident, declaration timeline, application revision or state-changing audit commit');
+  assert.deepEqual(await state(),onceState);
+  assert.deepEqual(await reviews(),onceReviews,'Held replay keeps the one original review');
+  assert.deepEqual(await rows('SELECT * FROM agent_door_audit WHERE id=?',call.decision_id),originalRows);
+  const retried=await rows('SELECT * FROM agent_door_audit WHERE agent=? AND json_extract(row,\'$.idempotency_key\')=? ORDER BY sequence',context.agentId,args.idempotency_key);
+  assert.equal(retried.length,2);
+  const attempt=JSON.parse(retried[1].row);
+  assert.equal(attempt.id,replay.decision.id);assert.notEqual(attempt.id,original.id);
+  assert.equal(attempt.outcome,'replayed');assert.equal(attempt.replay_of,call.decision_id);
+  assert.equal(attempt.operation_id,original.operation_id);
+  assert.deepEqual(await runtime.outboundRequests(),[],'Declaration and lost-response replay attempt no outbound requests');
+  console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+': real MCP declaration response destroyed at headers with unread body; native D1 outcome replayed with new RPC id; one incident, declaration and application commit; '+(mode==='held'?'one original open review; ':'')+'separate linked replay audit; zero outbound requests');
+ }
+ assert.equal((await adopt()).status,200);
+}
 
 const runtime=await agentRuntime();
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
@@ -14,6 +86,7 @@ try{
  const {tool,mcp,http,adopt}=runtime;
  assert.equal(code(await tool('oncall.services.read',{id:'agent-service'})),'policy_unset');
  assert.equal((await adopt()).status,200);
+ await droppedDeclarationReplay(runtime);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
  const owner=(await (await http('/api/workspace')).json()).member;
