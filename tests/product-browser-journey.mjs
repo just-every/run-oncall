@@ -1014,7 +1014,13 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
    assert.equal(await card.getByLabel('Urgency',{exact:true}).inputValue(),'low','the notice does not claim an applied raise');
   };
   await page.goto(origin+'/alerts/'+encodeURIComponent(alert.id));await observe();
+  const history=card.locator('.alert-urgency > details');await history.locator(':scope > summary').click();
+  assert.equal(await history.locator('article').count(),alert.urgencyHistory.length);
+  await history.getByText('Policy version '+rule.version,{exact:false}).waitFor();
+  const visibleHistory=await history.innerText();
   await setTime(Date.parse('2026-11-03T08:30:00.000Z'));await page.reload();await observe();
+  await history.locator(':scope > summary').click();
+  assert.equal(await history.innerText(),visibleHistory,'reload preserves the rendered urgency history without an automatic raise');
   const retained=(await call('/api/state')).alerts.find(row=>row.id===alert.id);
   assert.equal(retained.state,'active');assert.equal(retained.urgency,'low');
   assert.deepEqual(retained.urgencyHistory,alert.urgencyHistory,'reload before support opens adds no urgency history');
