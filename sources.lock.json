@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "988f52fb669ff1955a592d7f4fb25fe7cca6af5e4deead2cf34c7cbf6911a580",
+      "sha256": "06e254a2d90e6ce168b44f83f4ebefa6d408386ac7ebccb2b4b70a937d24dc5c",
       "executable": false
     },
     "DEMO.md": {
@@ -6308,11 +6308,11 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "6fabe59256e2d9e61e7a47699df8df3e3087237a0f34418a48cc0bbad399e3f1",
+      "sha256": "45b43305c89cd3673bc81384d2e786d4625b5cdb3eea6febea7159cfc563ce76",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
-      "sha256": "b95f008de26db85d9c04719079ed15a847fc552f3edf67a9dd8d5b60639fdcde",
+      "sha256": "56e012e82c3bbe53ed6aa85629205d1e9a820c81c79d53aef385dde57e1b4b8d",
       "executable": false
     },
     "tests/agent-door.mjs": {
@@ -6540,7 +6540,7 @@
       "executable": false
     },
     "tests/worker.mjs": {
-      "sha256": "74e4bce56eebe858a68ff4b1f280831b49ca69f11aedd743698a99169c25004d",
+      "sha256": "35232262cbaeda53598b6e4d35b5145a1e38740503d08bdf4ebe7e5f58ca6c7e",
       "executable": false
     },
     "tsconfig.json": {
