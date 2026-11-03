@@ -6,6 +6,7 @@ import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
+import {AGENT_CLASSES} from '../src/modules/agent-door/conformance/surface.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Lose the real MCP response, establish its native commit, then recover by key. */
@@ -87,6 +88,16 @@ try{
  assert.equal(code(await tool('oncall.services.read',{id:'agent-service'})),'policy_unset');
  assert.equal((await adopt()).status,200);
  await droppedDeclarationReplay(runtime);
+ const listing=await mcp('tools/list');
+ assert.equal(listing.status,200);assert.equal(listing.body.error,undefined);
+ assert.ok(listing.result.tools.length>0,'The adopted policy must expose real tools');
+ for(const listedTool of listing.result.tools){
+  const classes=listedTool._meta?.['com.runeditrun/classes'];
+  assert.ok(Array.isArray(classes)&&classes.length>0,`${listedTool.name} must declare its possible classes`);
+  for(const cls of classes)assert.ok(AGENT_CLASSES.includes(cls),`${listedTool.name} declares uncatalogued class ${cls}`);
+ }
+ assert.equal(listing.result.nextCursor,undefined,'The catalog probe must enumerate the complete emitted list');
+ console.log(`PROBE BASE-AGENT-006 point 5 listed tools: emitted Worker MCP -> all ${listing.result.tools.length} returned tools declare only fleet-catalog classes`);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
  const owner=(await (await http('/api/workspace')).json()).member;
