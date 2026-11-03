@@ -9,13 +9,14 @@ import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {signJws,seconds,accessToken,policyEnvelope,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Real emitted Worker, native D1 and native owner lifecycle; only paid egress is replaced. */
-export async function agentRuntime(){
+export async function agentRuntime({clock}={}){
+ let platformTime=clock;
  const pair=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
  const kid=randomUUID(),publicKeys={[kid]:await webcrypto.subtle.exportKey('jwk',pair.publicKey)};
  const issuer='https://oncall-fixture.invalid',installationId=randomUUID(),sub=randomUUID(),email='alex@example.invalid',setupToken=randomBytes(32).toString('hex');
  let providerFixture=null;
  const fixtures={set(origin,value){assert.equal(origin,'https://8.8.8.8');providerFixture=value}};
- const runtime=await automationRuntime(request=>edge.fetch(request,{fixture:providerFixture}),{bindings:origin=>({
+ const runtime=await automationRuntime(request=>edge.fetch(request,{fixture:providerFixture}),{clock,bindings:origin=>({
   OWNER_EMAIL:email,SETUP_TOKEN:setupToken,INBOUND_EMAIL_DOMAIN:'inbound.example.test',RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify(publicKeys),
   RER_BUSINESS_TRUST:JSON.stringify({v:1,issuer,audience:origin,subject:installationId,email,keys:publicKeys}),
  })});
@@ -25,7 +26,7 @@ export async function agentRuntime(){
   const bootstrap=await initialize({request,origin:runtime.origin,email,sub,displayName:'Alex Chen',token:setupToken,returnTo:'/',fixtures});
   const cookie=bootstrap.headers.getSetCookie().map(value=>value.split(';',1)[0]).join('; ');await bootstrap.body?.cancel();
   const surface=JSON.parse(await readFile('agent-surface.json','utf8'));
-  const context={origin:runtime.origin,business:'northline-response',signer:{issuer,installationId,kid,privateKey:pair.privateKey},person:{email,sub},agentId:'responder-'+randomUUID(),consent:randomUUID(),surface,seq:0,revision:0};
+  const context={origin:runtime.origin,business:'northline-response',signer:{issuer,installationId,kid,privateKey:pair.privateKey},person:{email,sub},agentId:'responder-'+randomUUID(),consent:randomUUID(),surface,seq:0,revision:0,now:()=>platformTime??Date.now()};
   async function http(path,input,method=input===undefined?'GET':'POST'){
    return request(runtime.origin+path,{method,redirect:'manual',headers:{Origin:runtime.origin,Cookie:cookie,'Content-Type':'application/json'},...(input===undefined?{}:{body:JSON.stringify(input)})});
   }
@@ -34,7 +35,7 @@ export async function agentRuntime(){
    return request(runtime.origin+path,{method:'POST',redirect:'manual',headers:{Origin:runtime.origin,Authorization:'Bearer '+token,'Content-Type':'application/json',...(withOwnerCookie?{Cookie:cookie}:{})},body:JSON.stringify(input)});
   }
   async function settings(team=null,rev=1){
-   const now=seconds(),settings=await signJws(pair.privateKey,kid,'rer-business-settings+jwt',{v:1,iss:issuer,aud:runtime.origin,sub:installationId,business:context.business,email,owner_id:sub,jti:randomUUID(),iat:now,exp:now+300,rev,values:{display_name:'Northline Operations'},logo:null,team});
+   const now=seconds(context.now),settings=await signJws(pair.privateKey,kid,'rer-business-settings+jwt',{v:1,iss:issuer,aud:runtime.origin,sub:installationId,business:context.business,email,owner_id:sub,jti:randomUUID(),iat:now,exp:now+300,rev,values:{display_name:'Northline Operations'},logo:null,team});
    const response=await http('/api/rer/business-settings',{settings});assert.equal(response.status,200);return response.json();
   }
   async function adopt(document=autonomousPolicy(),options={}){
@@ -72,7 +73,7 @@ export async function agentRuntime(){
   }
   const tool=(name,args,overrides,bearer)=>mcp('tools/call',{name,arguments:args},overrides,bearer);
   await settings();
-  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,mcp,tool,discardToolResponse,fixtures};
+  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,mcp,tool,discardToolResponse,fixtures,async time(at){await runtime.time(at);platformTime=at}};
  }catch(error){await runtime.close();throw error}
 }
 
