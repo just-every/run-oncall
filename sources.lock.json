@@ -6480,7 +6480,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "b1f8ad5d6573cb1ac0d38a37c81992e198d9f7a4823e55c6c6450ee0ca87b7bb",
+      "sha256": "44c6292f690cdbcb77c31d9a52b9f74ce6da44a6a65994dcdc34674f4480fe69",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {
@@ -6524,7 +6524,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "08afaea8e12964b20c52d5528af110827b07dcb1a47cb15ee966005396040687",
+      "sha256": "b16d5131b91dc0d442c008fa52deaeaa14537397e53202a60e22e912fc7e23ee",
       "executable": false
     },
     "tests/triage.mjs": {

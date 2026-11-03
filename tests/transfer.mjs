@@ -316,6 +316,11 @@ try{
  const createdClient=await req('/api/automation/clients',{name:'alice@example.test automation',key:apiKey,services:['transfer'],permissions:['incidents:read','incidents:write']});assert.equal(createdClient.status,201);const apiClient=createdClient.value
  const createdEndpoint=await req('/api/automation/endpoints',{name:'Portable receiver',client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true});assert.equal(createdEndpoint.status,201)
  await business.choosePolicy(cookie)
+ const listedResponse=await fetch(m.origin+'/mcp',{method:'POST',headers:{origin:m.origin,authorization:'Bearer '+apiKey,'content-type':'application/json',accept:'application/json, text/event-stream','MCP-Protocol-Version':'2026-07-28','Mcp-Method':'tools/list'},body:JSON.stringify({jsonrpc:'2.0',id:randomUUID(),method:'tools/list',params:{}})});
+ assert.equal(listedResponse.status,200);const listedTools=await listedResponse.json();assert.equal(listedTools.error,undefined);
+ const surfaceBytes=await readFile('agent-surface.json'),surface=JSON.parse(surfaceBytes);
+ const catalogTool=listedTools.result.tools.find(tool=>surface.tools.some(declared=>declared.name===tool.name));
+ assert.ok(catalogTool,'The CLI probe must change a tool actually exposed by the emitted MCP door');
  const machine=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiKey,'idempotency-key':'synthetic-oncall-portable'},body:JSON.stringify({type:'declare',service:'transfer',title:'Portable machine incident',summary:'Retain operation and outbox identities',severity:'warning'})});assert.equal(machine.status,201)
  const machineOperation=await machine.json();
  const machineAck=await fetch(m.origin+'/api/v1/incidents',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+apiKey,'idempotency-key':'synthetic-oncall-portable-ack'},body:JSON.stringify({type:'transition',incident:machineOperation.entity,revision:1,state:'acknowledged',member:member.id,summary:'Retain permanent named responsibility'})});assert.equal(machineAck.status,201);const namedAudit=ok(await req('/api/audit/export')).rows.find(r=>r.kind==='automation.incidents'&&r.namedMember);assert.ok(namedAudit);assert.notEqual(namedAudit.actor,namedAudit.namedMember);
@@ -409,6 +414,34 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const legacyPrefix=prefixesBefore[0];
  sql(`UPDATE oc_intake_receipts SET data=json_set(data,'$.details.nativePrefix',json_object('encoding','base64','value','${legacyPrefix.prefix}')) WHERE id='${legacyPrefix.id}'`)
  await m.close()
+ // Observe the pinned CLI, including its own catalog diagnostic, in this
+ // disposable managed checkout. Never substitute a validator invocation.
+ const checkArgs=['check','--profile','first-party','--json','--non-interactive'];
+ const cleanCheck=async()=>{
+  const result=JSON.parse(await m.command(checkArgs));
+  assert.equal(result.ok,true);assert.equal(result.exitCode,0);
+  assert.ok(result.clauses.length>0&&result.clauses.every(clause=>clause.ok),'The clean CLI check must have no unrelated failures');
+ };
+ await cleanCheck();
+ const uncatalogued='synthetic-oncall-162',changedSurface=structuredClone(surface);
+ changedSurface.tools.find(tool=>tool.name===catalogTool.name).classes.push(uncatalogued);
+ try{
+  await writeFile('agent-surface.json',JSON.stringify(changedSurface,null,2)+'\n');
+  const refused=JSON.parse(await m.command(checkArgs,1));
+  assert.equal(refused.ok,false);assert.notEqual(refused.exitCode,0);
+  const prefix=`SC-14.agents.BASE-AGENT-013.surface.${catalogTool.name}`,failures=refused.clauses.filter(clause=>!clause.ok);
+  const diagnostic=failures.find(clause=>clause.id===prefix+'.classes');
+  assert.ok(diagnostic,'The CLI must refuse the offending tool class itself');
+  assert.match(diagnostic.message,/uncatalogued class/);
+  assert.ok(diagnostic.message.includes(catalogTool.name)&&diagnostic.message.includes(uncatalogued),'The diagnostic must identify both the exposed tool and the uncatalogued class');
+  assert.ok(failures.every(clause=>clause.id===prefix+'.classes'||clause.id===prefix+'.coverage.'+uncatalogued),'Source lock, fixture or schema failures cannot substitute for catalog refusal');
+  console.log(`PROBE BASE-AGENT-006 point 5 CLI refusal: pinned rer check -> exit ${refused.exitCode}; ${diagnostic.message}`);
+ }finally{
+  await writeFile('agent-surface.json',surfaceBytes);
+  assert.ok((await readFile('agent-surface.json')).equals(surfaceBytes),'Restore the exact declaration bytes even when the refusal assertion fails');
+  await cleanCheck();
+ }
+ console.log('PROBE BASE-AGENT-006 point 5 CLI restoration: exact original declaration restored -> pinned rer check exit 0');
  // Build through the pinned root command with real private fixture settings.
  // Removing prepared output makes setup's build or a copied build insufficient.
  const privateBuildValues=['synthetic-oncall-180','synthetic-oncall-181',await readDevKey(process.cwd())]
