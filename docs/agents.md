@@ -28,132 +28,132 @@ Service-account clients remain bound to the active administrator who created the
 
 This inventory is generated from the native registry with the current capability filter. Each row names the required scope and every possible class. Company policy still decides each call.
 
-The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` executes them through emitted Worker MCP under autonomous and held policies; `src/modules/agent-door/conformance/journey.mjs` checks the returned computed classes in `checkClasses`. A fixture reference describes coverage to run, not a passing receipt.
+The fixture IDs below belong to `agent-surface.json`. `tests/oncall-agent-flow.mjs` executes them through emitted Worker MCP under autonomous and held policies; `src/modules/agent-door/conformance/journey.mjs` checks the returned computed classes in `checkClasses`. The journey also checks that every documented fixture has passing computed-class and completion results under both policies, including the retained class identifiers and effect-free replay after erasure. A fixture reference describes coverage to run, not a passing receipt.
 
 
 ### Access
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.access.read` | `access:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`access-read`); `sensitive`: `tests/agent-door.mjs` (`access-read`) |
-| `oncall.access.update` | `access:write` | `access` | `access`: `tests/agent-door.mjs` (`access-widen`, `access-narrow`) |
+| `oncall.access.read` | `access:read` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`access-read`); `sensitive`: `tests/oncall-agent-flow.mjs` (`access-read`) |
+| `oncall.access.update` | `access:write` | `access` | `access`: `tests/oncall-agent-flow.mjs` (`access-widen`, `access-narrow`) |
 
 ### Actions
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.actions.create` | `actions:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`follow-up`, `sensitive-action`, `second-action`); `sensitive`: `tests/agent-door.mjs` (`sensitive-action`) |
-| `oncall.actions.list` | `actions:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`actions-list`); `sensitive`: `tests/agent-door.mjs` (`actions-list`) |
-| `oncall.actions.read` | `actions:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`action-read`); `sensitive`: `tests/agent-door.mjs` (`action-read`) |
-| `oncall.actions.receipt` | `actions:write` | `standard` | `standard`: `tests/agent-door.mjs` (`actions-receipt`) |
-| `oncall.actions.submit` | `actions:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`submit`, `second-submit`); `sensitive`: `tests/agent-door.mjs` (`submit`, `second-submit`) |
+| `oncall.actions.create` | `actions:write` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`follow-up`, `sensitive-action`, `second-action`); `sensitive`: `tests/oncall-agent-flow.mjs` (`sensitive-action`) |
+| `oncall.actions.list` | `actions:read` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`actions-list`); `sensitive`: `tests/oncall-agent-flow.mjs` (`actions-list`) |
+| `oncall.actions.read` | `actions:read` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`action-read`); `sensitive`: `tests/oncall-agent-flow.mjs` (`action-read`) |
+| `oncall.actions.receipt` | `actions:write` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`actions-receipt`) |
+| `oncall.actions.submit` | `actions:write` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`submit`, `second-submit`); `sensitive`: `tests/oncall-agent-flow.mjs` (`submit`, `second-submit`) |
 
 ### Analytics
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.analytics.read` | `analytics:read` | `standard` | `standard`: `tests/agent-door.mjs` (`analytics`) |
+| `oncall.analytics.read` | `analytics:read` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`analytics`) |
 
 ### Automation
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.automation.dispatch` | `automation:write` | `external` | `external`: `tests/agent-door.mjs` (`dispatch-retry`, `dispatch-accepted`) |
-| `oncall.automation.read` | `integrations:read` | `standard` | `standard`: `tests/agent-door.mjs` (`automation-list`, `outbox`) |
-| `oncall.automation.replay` | `automation:write` | `external` | `external`: `tests/agent-door.mjs` (`replay`) |
+| `oncall.automation.dispatch` | `automation:write` | `external` | `external`: `tests/oncall-agent-flow.mjs` (`dispatch-retry`, `dispatch-accepted`) |
+| `oncall.automation.read` | `integrations:read` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`automation-list`, `outbox`) |
+| `oncall.automation.replay` | `automation:write` | `external` | `external`: `tests/oncall-agent-flow.mjs` (`replay`) |
 
 ### Changes
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.changes.read` | `services:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`changes`); `sensitive`: `tests/agent-door.mjs` (`changes`) |
+| `oncall.changes.read` | `services:read` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`changes`); `sensitive`: `tests/oncall-agent-flow.mjs` (`changes`) |
 
 ### Clients
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.clients.update` | `clients:write` | `access` | `access`: `tests/agent-door.mjs` (`revoke-client`) |
+| `oncall.clients.update` | `clients:write` | `access` | `access`: `tests/oncall-agent-flow.mjs` (`revoke-client`) |
 
 ### Coordination
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.coordination.read` | `workspace:read` | `standard` | `standard`: `tests/agent-door.mjs` (`declare-state`, `second-declare-state`, `access-state`, `access-narrow-state`, `erase-state`, `erase-client-state`) |
+| `oncall.coordination.read` | `workspace:read` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`declare-state`, `second-declare-state`, `access-state`, `access-narrow-state`, `erase-state`, `erase-client-state`) |
 
 ### Endpoints
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.endpoints.update` | `endpoints:write` | `access` | `access`: `tests/agent-door.mjs` (`revoke-endpoint`) |
+| `oncall.endpoints.update` | `endpoints:write` | `access` | `access`: `tests/oncall-agent-flow.mjs` (`revoke-endpoint`) |
 
 ### Imports
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.imports.read` | `imports:read` | `standard` | `standard`: `tests/agent-door.mjs` (`imports`) |
+| `oncall.imports.read` | `imports:read` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`imports`) |
 
 ### Incidents
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.incidents.acknowledge` | `incidents:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`acknowledge`, `sensitive-acknowledge`); `sensitive`: `tests/agent-door.mjs` (`sensitive-acknowledge`) |
-| `oncall.incidents.declare` | `incidents:write` | `standard` | `standard`: `tests/agent-door.mjs` (`declare`, `second-declare`) |
-| `oncall.incidents.list` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`incidents-list`); `sensitive`: `tests/agent-door.mjs` (`incidents-list`) |
-| `oncall.incidents.read` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`incident-read`, `erase-read`); `sensitive`: `tests/agent-door.mjs` (`incident-read`, `erase-read`) |
-| `oncall.incidents.receipt` | `incidents:write` | `standard` | `standard`: `tests/agent-door.mjs` (`incidents-receipt`) |
-| `oncall.incidents.resolve` | `incidents:write` | `commitment`, `sensitive` | `commitment`: `tests/agent-door.mjs` (`resolve`); `sensitive`: `tests/agent-door.mjs` (`resolve`) |
-| `oncall.incidents.update` | `incidents:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`recover`); `sensitive`: `tests/agent-door.mjs` (`recover`) |
+| `oncall.incidents.acknowledge` | `incidents:write` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`acknowledge`, `sensitive-acknowledge`); `sensitive`: `tests/oncall-agent-flow.mjs` (`sensitive-acknowledge`) |
+| `oncall.incidents.declare` | `incidents:write` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`declare`, `second-declare`) |
+| `oncall.incidents.list` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`incidents-list`); `sensitive`: `tests/oncall-agent-flow.mjs` (`incidents-list`) |
+| `oncall.incidents.read` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`incident-read`, `erase-read`); `sensitive`: `tests/oncall-agent-flow.mjs` (`incident-read`, `erase-read`) |
+| `oncall.incidents.receipt` | `incidents:write` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`incidents-receipt`) |
+| `oncall.incidents.resolve` | `incidents:write` | `commitment`, `sensitive` | `commitment`: `tests/oncall-agent-flow.mjs` (`resolve`); `sensitive`: `tests/oncall-agent-flow.mjs` (`resolve`) |
+| `oncall.incidents.update` | `incidents:write` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`recover`); `sensitive`: `tests/oncall-agent-flow.mjs` (`recover`) |
 
 ### Integrations
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.integrations.read` | `integrations:read` | `standard` | `standard`: `tests/agent-door.mjs` (`integrations`) |
+| `oncall.integrations.read` | `integrations:read` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`integrations`) |
 
 ### Notes
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.notes.add` | `incidents:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`note`, `sensitive-note`); `sensitive`: `tests/agent-door.mjs` (`sensitive-note`) |
+| `oncall.notes.add` | `incidents:write` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`note`, `sensitive-note`); `sensitive`: `tests/oncall-agent-flow.mjs` (`sensitive-note`) |
 
 ### Privacy
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.privacy.erase` | `privacy:write` | `destructive`, `access`, `security`, `live` | `destructive`: `tests/agent-door.mjs` (`erase`, `erase-client`); `access`: `tests/agent-door.mjs` (`erase-client`); `security`: `tests/agent-door.mjs` (`erase-client`); `live`: `tests/agent-door.mjs` (`erase`) |
+| `oncall.privacy.erase` | `privacy:write` | `destructive`, `access`, `security`, `live` | `destructive`: `tests/oncall-agent-flow.mjs` (`erase`, `erase-client`); `access`: `tests/oncall-agent-flow.mjs` (`erase-client`); `security`: `tests/oncall-agent-flow.mjs` (`erase-client`); `live`: `tests/oncall-agent-flow.mjs` (`erase`) |
 
 ### Reviews
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.reviews.read` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`review-material`); `sensitive`: `tests/agent-door.mjs` (`review-material`) |
+| `oncall.reviews.read` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`review-material`); `sensitive`: `tests/oncall-agent-flow.mjs` (`review-material`) |
 
 ### Schedules
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.schedules.coverage` | `schedules:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`coverage`); `sensitive`: `tests/agent-door.mjs` (`coverage`) |
-| `oncall.schedules.create` | `schedules:write` | `standard`, `sensitive`, `live` | `standard`: `tests/agent-door.mjs` (`schedule-create`); `sensitive`: `tests/agent-door.mjs` (`schedule-create`); `live`: `tests/agent-door.mjs` (`schedule-create`) |
-| `oncall.schedules.override` | `schedules:write` | `standard`, `sensitive`, `live` | `standard`: `tests/agent-door.mjs` (`schedule-override`); `sensitive`: `tests/agent-door.mjs` (`schedule-override`); `live`: `tests/agent-door.mjs` (`schedule-override`) |
-| `oncall.schedules.read` | `schedules:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`schedule-read`); `sensitive`: `tests/agent-door.mjs` (`schedule-read`) |
-| `oncall.schedules.receipt` | `schedules:write` | `standard` | `standard`: `tests/agent-door.mjs` (`schedules-receipt`) |
-| `oncall.schedules.review` | `schedules:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`schedule-review`); `sensitive`: `tests/agent-door.mjs` (`schedule-review`) |
-| `oncall.schedules.update` | `schedules:write` | `standard`, `sensitive`, `live` | `standard`: `tests/agent-door.mjs` (`schedule-update`); `sensitive`: `tests/agent-door.mjs` (`schedule-update`); `live`: `tests/agent-door.mjs` (`schedule-update`) |
+| `oncall.schedules.coverage` | `schedules:read` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`coverage`); `sensitive`: `tests/oncall-agent-flow.mjs` (`coverage`) |
+| `oncall.schedules.create` | `schedules:write` | `standard`, `sensitive`, `live` | `standard`: `tests/oncall-agent-flow.mjs` (`schedule-create`); `sensitive`: `tests/oncall-agent-flow.mjs` (`schedule-create`); `live`: `tests/oncall-agent-flow.mjs` (`schedule-create`) |
+| `oncall.schedules.override` | `schedules:write` | `standard`, `sensitive`, `live` | `standard`: `tests/oncall-agent-flow.mjs` (`schedule-override`); `sensitive`: `tests/oncall-agent-flow.mjs` (`schedule-override`); `live`: `tests/oncall-agent-flow.mjs` (`schedule-override`) |
+| `oncall.schedules.read` | `schedules:read` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`schedule-read`); `sensitive`: `tests/oncall-agent-flow.mjs` (`schedule-read`) |
+| `oncall.schedules.receipt` | `schedules:write` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`schedules-receipt`) |
+| `oncall.schedules.review` | `schedules:write` | `standard`, `sensitive` | `standard`: `tests/oncall-agent-flow.mjs` (`schedule-review`); `sensitive`: `tests/oncall-agent-flow.mjs` (`schedule-review`) |
+| `oncall.schedules.update` | `schedules:write` | `standard`, `sensitive`, `live` | `standard`: `tests/oncall-agent-flow.mjs` (`schedule-update`); `sensitive`: `tests/oncall-agent-flow.mjs` (`schedule-update`); `live`: `tests/oncall-agent-flow.mjs` (`schedule-update`) |
 
 ### Services
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.services.list` | `services:read` | `standard` | `standard`: `tests/agent-door.mjs` (`service-list`) |
-| `oncall.services.read` | `services:read` | `standard` | `standard`: `tests/agent-door.mjs` (`service-read`) |
-| `oncall.services.receipt` | `services:write` | `standard` | `standard`: `tests/agent-door.mjs` (`services-receipt`) |
-| `oncall.services.update` | `services:write` | `standard` | `standard`: `tests/agent-door.mjs` (`service-update`) |
+| `oncall.services.list` | `services:read` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`service-list`) |
+| `oncall.services.read` | `services:read` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`service-read`) |
+| `oncall.services.receipt` | `services:write` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`services-receipt`) |
+| `oncall.services.update` | `services:write` | `standard` | `standard`: `tests/oncall-agent-flow.mjs` (`service-update`) |
 
 ### Teams
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.teams.update` | `teams:write` | `standard`, `access` | `standard`: `tests/agent-door.mjs` (`team-create`); `access`: `tests/agent-door.mjs` (`team-manager`) |
+| `oncall.teams.update` | `teams:write` | `standard`, `access` | `standard`: `tests/oncall-agent-flow.mjs` (`team-create`); `access`: `tests/oncall-agent-flow.mjs` (`team-manager`) |
 
 ## Current resource templates
 

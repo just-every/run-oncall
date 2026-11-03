@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
 import {agentRuntime,pauseMatrix,policyAdoption} from './agent-door-runtime.mjs';
-import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import prepare,{recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
@@ -13,6 +13,43 @@ import {nativeTransport} from './oncall-agent-transport.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {AGENT_CLASSES} from '../src/modules/agent-door/conformance/surface.mjs';
 import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
+import {createProtocol} from '../src/modules/agent-door/conformance/protocol.mjs';
+import {listedDoor} from '../src/modules/agent-door/conformance/discovery.mjs';
+import {runJourney} from '../src/modules/agent-door/conformance/journey.mjs';
+
+/** Back guide references with observed class checks in Verify's existing flow. */
+async function computedGuideEvidence(documented){
+ const fixture=await agentRuntime();
+ try{
+  const surface=scopedSurface(fixture.context.surface);
+  const context=createProtocol({...fixture.context,surface,fetch:fixture.request,
+   person:{...fixture.context.person,cookie:fixture.cookie},points:[],listed:new Map(),
+   prepare:input=>prepare({...input,request:fixture.request,origin:fixture.origin,cookie:fixture.cookie}),
+  });
+  context.sponsor.id=(await (await fixture.http('/api/workspace')).json()).member.id;
+  await context.adopt(autonomousPolicy());
+  for(const [phase,document] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
+   // Prepare the native records under the preceding autonomous policy, as
+   // the maintained Base journey does, then test them under this round's policy.
+   await context.prepare(phase);
+   if(phase==='held')await context.adopt(document);
+   await listedDoor(context);
+   await runJourney(context,phase,{held:phase==='held'});
+   const failed=context.points.filter(point=>!point.ok);
+   assert.deepEqual(failed,[],`${phase} native class execution must pass`);
+   const passed=new Set(context.points.filter(point=>point.ok).map(point=>point.id));
+   let references=0;
+   for(const row of documented)for(const [cls,,...ids] of row.checks)for(const id of ids){
+    const check=`BASE-AGENT-006.2.${phase}.${id}`;
+    assert.ok(passed.has(check)||passed.has(check+'.erased'),`${row.name} ${cls}: ${id} has no passing ${phase} computed-class execution`);
+    assert.ok(passed.has(`BASE-AGENT-013.4.${phase}.${id}`)
+     ||passed.has(`BASE-AGENT-012.1.${phase}.${id}.erased`),`${row.name} ${cls}: ${id} did not complete through the ${phase} public door`);
+    references++;
+   }
+   console.log(`PROBE BASE-AGENT-013 2 ${phase} executed: ${documented.length} documented tools -> ${references} class fixture references backed by passing computed-class and completion checks`);
+  }
+ }finally{await fixture.close()}
+}
 
 const runtime=await agentRuntime();
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
@@ -43,7 +80,7 @@ try{
  for(const row of documented){
   assert.deepEqual(row.checks.map(([cls])=>cls),row.classes,`${row.name} documents every possible computed class`);
   for(const [cls,test,...ids] of row.checks){
-   assert.equal(test,'tests/agent-door.mjs','Class evidence must name the maintained executable journey');
+   assert.equal(test,'tests/oncall-agent-flow.mjs','Class evidence must name the maintained executable journey');
    await access(test);
    const fixtures=surface.journey.filter(step=>step.tool===row.name&&step.expect.some(item=>item.class===cls));
    assert.ok(fixtures.length>0,`${row.name} ${cls} has executable class coverage`);
@@ -74,8 +111,9 @@ try{
   assert.deepEqual(await inventoryState(),before,'Guide and discovery reads preserve native data and paging');
   assert.deepEqual(await runtime.outboundRequests(),edge);
   console.log(`PROBE BASE-AGENT-013 1 ${label}: GET /docs/agents and MCP discovery -> ${documented.length} exact tools, scopes and class sets; no resource templates; event target withheld; native and paging unchanged; zero outbound requests`);
-  console.log(`PROBE BASE-AGENT-013 2 ${label}: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs`);
+  console.log(`PROBE BASE-AGENT-013 2 ${label}: generated class references -> every documented class names tests/oncall-agent-flow.mjs and all matching maintained fixture IDs`);
  }
+ await computedGuideEvidence(documented);
  assert.equal((await adopt()).status,200);
  await policyAdoption(runtime);
  await pauseMatrix(runtime);

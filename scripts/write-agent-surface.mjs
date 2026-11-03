@@ -13,7 +13,7 @@ function inventory(surface) {
   const exposed = scopedSurface(surface);
   const validation = validateAgentSurface(surface);
   if (!validation.ok) throw new Error(validation.points.filter(point => !point.ok).map(point => point.detail).join('\n'));
-  const test = 'tests/agent-door.mjs';
+  const test = 'tests/oncall-agent-flow.mjs';
   let previousJob;
   const rows = exposed.tools.flatMap(tool => {
     const job = tool.name.split('.')[1];
@@ -30,7 +30,7 @@ function inventory(surface) {
   const withheld = surface.tools.filter(tool => !exposed.tools.some(item => item.name === tool.name));
   return [start, '## Current tool inventory', '',
     'This inventory is generated from the native registry with the current capability filter. Each row names the required scope and every possible class. Company policy still decides each call.', '',
-    'The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` executes them through emitted Worker MCP under autonomous and held policies; `src/modules/agent-door/conformance/journey.mjs` checks the returned computed classes in `checkClasses`. A fixture reference describes coverage to run, not a passing receipt.', '',
+    'The fixture IDs below belong to `agent-surface.json`. `tests/oncall-agent-flow.mjs` executes them through emitted Worker MCP under autonomous and held policies; `src/modules/agent-door/conformance/journey.mjs` checks the returned computed classes in `checkClasses`. The journey also checks that every documented fixture has passing computed-class and completion results under both policies, including the retained class identifiers and effect-free replay after erasure. A fixture reference describes coverage to run, not a passing receipt.', '',
     ...rows, '',
     '## Current resource templates', '',
     ...(exposed.resources.length ? exposed.resources.map(uri => `- ${code(uri)}`) : ['No resource templates are exposed. The template listing is empty because resources are undeclared.']), '',

@@ -243,7 +243,7 @@ try{
   assert.equal(listing.result.nextCursor,undefined);
   assert.deepEqual(rows.map(([name,scope,classes])=>({name:name[0],scope:scope[0],classes})),listing.result.tools.map(tool=>({name:tool.name,scope:tool._meta['com.runeditrun/scope'],classes:tool._meta['com.runeditrun/classes']})));
   for(const [name,,classes,checks] of rows){
-   const expected=classes.flatMap(cls=>[cls,'tests/agent-door.mjs',...runtime.context.surface.journey.filter(step=>step.tool===name[0]&&step.expect.some(item=>item.class===cls)).map(step=>step.id)]);
+   const expected=classes.flatMap(cls=>[cls,'tests/oncall-agent-flow.mjs',...runtime.context.surface.journey.filter(step=>step.tool===name[0]&&step.expect.some(item=>item.class===cls)).map(step=>step.id)]);
    assert.deepEqual(checks,expected,`${name[0]} rendered class references match maintained coverage`);
   }
   assert.deepEqual(templates.result.resourceTemplates,[]);
@@ -263,6 +263,11 @@ try{
  }
  assert.equal((await runtime.adopt()).status,200);
  await capture('guide','/docs/agents',async()=>{await page.locator('.docs-article').waitFor()});
+ await capture('guide-class-checks','/docs/agents',async()=>{
+  await page.locator('.docs-article').waitFor();
+  await page.locator('.docs-table').filter({has:page.getByRole('columnheader',{name:'Computed class checks',exact:true})})
+   .evaluateAll(regions=>{for(const region of regions)region.scrollLeft=region.scrollWidth});
+ });
  await capture('erasure-data','/docs/data',async()=>{await page.locator('.docs-article').waitFor()});
  console.log('PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements');
 }catch(error){
