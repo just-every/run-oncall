@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID,webcrypto} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
+import {request as httpRequest} from 'node:http';
 import {automationRuntime} from './worker.mjs';
 import initialize from './initialize-agent-owner.mjs';
 import edge from './oncall-provider-edge.mjs';
@@ -37,14 +38,37 @@ export async function agentRuntime(){
    if(response.ok){context.seq=signed.payload.seq;context.revision=signed.payload.revision}
    return response;
   }
-  async function mcp(method,params={},overrides={},bearer,transport={}){
+  async function mcpRequest(method,params,overrides,bearer,transport={}){
    const version=transport.version??'2026-07-28';
-   const token=bearer??await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'},...overrides}),response=await request(runtime.origin+'/mcp',{method:'POST',headers:{Origin:runtime.origin,Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json, text/event-stream','MCP-Protocol-Version':version,'Mcp-Method':method,...(params.name||params.uri?{'Mcp-Name':params.name??params.uri}:{}),...transport.headers},body:JSON.stringify({jsonrpc:'2.0',id:randomUUID(),method,params:version==='2026-07-28'?{...params,_meta:{...params._meta,'io.modelcontextprotocol/protocolVersion':version}}:params})});
+   const token=bearer??await accessToken(context,{act:{sub:context.agentId,name:'Responder assistant',specialist:'oncall-responder'},...overrides}),id=randomUUID();
+   return {id,url:runtime.origin+'/mcp',init:{method:'POST',headers:{Origin:runtime.origin,Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json, text/event-stream','MCP-Protocol-Version':version,'Mcp-Method':method,...(params.name||params.uri?{'Mcp-Name':params.name??params.uri}:{}),...transport.headers},body:JSON.stringify({jsonrpc:'2.0',id,method,params:version==='2026-07-28'?{...params,_meta:{...params._meta,'io.modelcontextprotocol/protocolVersion':version}}:params})}};
+  }
+  async function mcp(method,params={},overrides={},bearer,transport={}){
+   const {url,init}=await mcpRequest(method,params,overrides,bearer,transport),response=await request(url,init);
    const body=await response.json();return {status:response.status,headers:response.headers,body,message:body,result:body.result,decision:body.result?._meta?.['com.runeditrun/decision']??body.error?.data?._meta?.['com.runeditrun/decision']};
+  }
+  async function discardToolResponse(name,args,overrides={}){
+   const {id,url,init}=await mcpRequest('tools/call',{name,arguments:args},overrides);
+   // Use the real HTTP socket, with no body consumer or JSON parser attached.
+   // Destroy at headers so the caller cannot learn the committed tool outcome.
+   return new Promise((resolve,reject)=>{
+    const outgoing=httpRequest(url,{method:init.method,headers:init.headers,agent:false},response=>{
+     try{
+      assert.equal(response.readableFlowing,null);
+      assert.equal(response.readableDidRead,false);
+      assert.equal(response.readableEnded,false);
+      response.once('close',()=>resolve({id,status:response.statusCode,discarded:response.destroyed,aborted:response.readableAborted,bodyRead:response.readableDidRead}));
+      response.destroy();
+     }catch(error){response.destroy();reject(error)}
+    });
+    outgoing.on('error',reject);
+    outgoing.setTimeout(30_000,()=>outgoing.destroy(new Error('MCP response-loss request timed out')));
+    outgoing.end(init.body);
+   });
   }
   const tool=(name,args,overrides,bearer)=>mcp('tools/call',{name,arguments:args},overrides,bearer);
   await settings();
-  return {...runtime,request,http,cookie,context,settings,adopt,mcp,tool,fixtures};
+  return {...runtime,request,http,cookie,context,settings,adopt,mcp,tool,discardToolResponse,fixtures};
  }catch(error){await runtime.close();throw error}
 }
 
