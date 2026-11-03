@@ -1452,8 +1452,8 @@ Agent surface · target · **missing**
 4. A stale revision returns a conflict naming the current revision.
 5. A job handle used by another person's token reads as not found.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `tests/oncall-agent-flow.mjs` — droppedDeclarationReplay, invoked by `tests/runtime.mjs`: real MCP declaration response destroyed at headers without reading its body under autonomous and held policies; native D1 confirms the original call and incident before a new JSON-RPC id replays the stored structured outcome, with one declaration, one application revision and state-changing audit commit, a separate linked replay-attempt audit, one original held review and zero outbound requests. `tests/agent-door-runtime.mjs` — discardToolResponse uses the real HTTP socket with no response-body consumer.
+**Gap.** Main's missing judgment is retained; this bounded acceptance-2 proof does not complete the clause. Acceptance 2 is proved only for the shipped oncall.incidents.declare tool. Acceptance 1's complete mutating-tool coverage, acceptance 3's conflicting-argument matrix, acceptance 4's current-revision diagnostics, acceptance 5's foreign-person job-handle refusal, the full 24-hour retention bar and long-work status independent of the Tasks extension remain unproved here. Erasure and approval replay, including SURFACE-004's ambiguous hold and Base seam, are outside this slice; BASE-AGENT-006's live campaign is not repeated. Model, investigation, ownership, remediation, recurrence and executor flows remain omitted; OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold. Paging stays OFF; production delivery, independent standby and real-phone duties remain held.
 
 #### BASE-AGENT-013 — Manifest, docs and the conformance journey
 
