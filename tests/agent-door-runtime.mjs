@@ -7,7 +7,7 @@ import {automationRuntime} from './worker.mjs';
 import initialize from './initialize-agent-owner.mjs';
 import edge from './oncall-provider-edge.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
-import {signJws,seconds,accessToken,policyEnvelope,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+import {signJws,seconds,accessToken,policyEnvelope,renewalEnvelope,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** Compare durable effects while permitting attempt audit and rate bookkeeping. */
 export async function agentEffectSnapshot({db,http}){
@@ -54,9 +54,17 @@ export async function agentRuntime({clock}={}){
    const now=seconds(context.now),settings=await signJws(pair.privateKey,kid,'rer-business-settings+jwt',{v:1,iss:issuer,aud:runtime.origin,sub:installationId,business:context.business,email,owner_id:sub,jti:randomUUID(),iat:now,exp:now+300,rev,values:{display_name:'Northline Operations'},logo:null,team});
    const response=await http('/api/rer/business-settings',{settings});assert.equal(response.status,200);return response.json();
   }
+  let adoptedPolicy;
   async function adopt(document=autonomousPolicy(),options={}){
    const signed=await policyEnvelope(context,document,options),response=await http('/api/rer/agent-policy',{policy:signed.policy});
-   if(response.ok){context.seq=signed.payload.seq;context.revision=signed.payload.revision}
+   if(response.ok){context.seq=signed.payload.seq;context.revision=signed.payload.revision;adoptedPolicy=signed.payload}
+   return response;
+  }
+  async function renewPolicy(){
+   assert.ok(adoptedPolicy,'Renew only a successfully adopted signed fixture policy');
+   const signed=await renewalEnvelope(context,adoptedPolicy);
+   const response=await http('/api/rer/agent-policy',{policy:signed.policy});
+   if(response.ok)adoptedPolicy=signed.payload;
    return response;
   }
   async function mcpRequest(method,params,overrides,bearer,transport={}){
@@ -90,7 +98,7 @@ export async function agentRuntime({clock}={}){
   const mcpWithToken=(token,method,params={})=>mcp(method,params,{},token);
   const tool=(name,args,overrides,bearer)=>mcp('tools/call',{name,arguments:args},overrides,bearer);
   await settings();
-  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,mcp,mcpWithToken,tool,discardToolResponse,fixtures,async time(at){await runtime.time(at);platformTime=at}};
+  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,renewPolicy,mcp,mcpWithToken,tool,discardToolResponse,fixtures,async time(at){await runtime.time(at);platformTime=at}};
  }catch(error){await runtime.close();throw error}
 }
 
