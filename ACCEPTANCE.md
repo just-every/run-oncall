@@ -9,9 +9,9 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Core | 16 | 44 | 24 | 84 |
-| Agent surface | 1 | 4 | 12 | 17 |
+| Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 17 | 48 | 36 | 101 |
+| Full target | 17 | 50 | 34 | 101 |
 
 Judged from the code and tests at commit `d189082d24ac1fdbf1b62272a73949e42e9a36da` (3 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -1370,7 +1370,7 @@ Agent surface · target · **partial**
 
 #### BASE-AGENT-008 — Truthful attribution
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Every agent act is recorded and shown as `"<agent> for <person>"`, and mail and messages an agent sends outside name it that way as their sender. An approval, a review mark, a confirmation (a warning dialog, a typed-field confirmation, a delivery confirmation), a decision or a signature attributed to a person comes only from that person's signed-in session. When an agent does the equivalent act, the record names the agent, and the act carries its own class; a binding decision or a signature is commitment. Agent doors ignore arguments that stand for a person's confirmation. No tool solves a bot check, or enters a person's own password or 2FA code at an outside service. A provider step that demands a person goes to a person, whatever the policy says; the gated class marks such steps before they run.
 
@@ -1383,12 +1383,12 @@ Agent surface · target · **missing**
 6. Activity and exports at 1440 and 390 show `"<agent> for <person>"` for every agent act.
 7. Mail an agent sends to an outside address names `"<agent> for <person>"` as its sender.
 
-**Evidence.** None.
-**Gap.** Not yet judged through this seed's own doors.
+**Evidence.** `tests/oncall-agent-flow.mjs` — person-only coordination: real pending non-erasure resolution approvals and open declaration reviews; valid saved action bodies return person_session_required for agent bearer alone and with the owner cookie under held and autonomous policies, preserving all D1 records, marks, policy, native state and outbound work. Held preparation precedes the autonomous-policy observation. Separate human-session controls retain the actual reviewer and approver, the agent preparer and once-only resolution; existing distinct-responder acceptance remains.
+**Gap.** Only acceptance 2's native agent-token approval and Mark reviewed observations are proved here. Acceptance 2's device-token and policy-question outcomes, acceptance 1's full confirmation and class matrix, acceptance 3's form-mode elicitation refusal, acceptances 4 to 6's complete record, activity, export and certificate attribution, and acceptance 7's outside-mail sender proof remain unproved. Device qualification, connected sends, model and executor flows retain their prerequisites; OC-045, OC-046, OC-048 and OC-049 still need agent and AI egress authority. BASE-AGENT-006 live classification and SURFACE-004's held Base replay dependency remain unchanged. Paging stays OFF; production delivery, independent standby and real-phone proof remain omitted.
 
 #### BASE-AGENT-009 — Every agent action is audited with its class and decision
 
-Agent surface · target · **missing**
+Agent surface · target · **partial**
 
 **Requirement.** Extending BASE-OPS-005, each call that reads private data or changes anything records the agent client, name and specialist, and the run or task id (`traceparent` when sent); the sponsoring person, the grant, the tool and the targets; the classes and their facts, and the policy revision and rule; the decision (autonomous, review, approval, blocked, unset or self_escalation) and the outcome (done, refused, pending or failed); the approval or review id and person, and the idempotency key. For a period, the seed's Agents page shows actions by class and decision with the notable ones, the review feed (Mark reviewed, Flag, and Undo where reversible), pending approvals, steps waiting for a person and setup questions. Business shows the same across seeds.
 
@@ -1402,7 +1402,7 @@ Agent surface · target · **missing**
 7. The Agents page works at 1440 and 390 with no serious or critical axe findings.
 
 **Evidence.** `tests/agent-door-browser.mjs` — weekly-counts: native MCP calls at controlled UTC week boundaries, the complete cursor-paginated audit, all rendered class and decision cohorts at 1440 and 390, each carried class counted once, unchanged durable records across reloads and zero outbound requests.
-**Gap.** Not yet judged through this seed's own doors. Main's missing judgment is retained pending acceptance of the added weekly-count proof. The candidate exercises acceptance 3 only. Acceptance 1's complete-write schema; acceptance 2's complete refused, pending, unset and self-escalation matrix; acceptance 4's exact review feed, attributed Mark reviewed and reversible Undo; acceptance 5's filters and full-field export; acceptance 6's removed-agent retention; and acceptance 7's whole-page accessibility remain unproved here beyond existing cited proof. Cross-seed Business reporting, model and executor activity and every unbuilt execution class retain their obligations. OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold; BASE-AGENT-006 and SURFACE-004 remain unchanged. Paging stays OFF; delivery, independent standby and real-phone duties remain held.
+**Gap.** Only acceptance 3 is proved. Acceptance 1's complete-write schema; acceptance 2's complete refused, pending, unset and self-escalation matrix; acceptance 4's exact review feed, attributed Mark reviewed and reversible Undo; acceptance 5's filters and full-field export; acceptance 6's removed-agent retention; and acceptance 7's whole-page accessibility remain unproved here beyond existing cited proof. Cross-seed Business reporting, model and executor activity and every unbuilt execution class retain their obligations. OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold; BASE-AGENT-006 and SURFACE-004 remain unchanged. Paging stays OFF; delivery, independent standby and real-phone duties remain held.
 
 #### BASE-AGENT-010 — Agents can follow changes
 
