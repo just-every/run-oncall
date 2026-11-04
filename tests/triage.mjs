@@ -1,7 +1,7 @@
 import {nightResponseScenario,assertNightResponse,responseCsvRows} from './response-report-fixture.mjs';
 import {autonomousCoordination} from './agent-policy-fixture.mjs';
 import assert from 'node:assert/strict'
-import {randomBytes} from 'node:crypto'
+import {randomBytes,createHash} from 'node:crypto'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
 // triage-bulk: part of this public journey.
@@ -183,7 +183,124 @@ export async function triageBulkCompletion(){
 }
 
 
+// Exercise the published alert-only bounds through real intake and protected HTTP.
+async function triageAlertResolveBounds(){
+ const w=await localWorker({}, {clock:true,outboundLedger:true});
+ const ok=(response,status=200)=>{assert.equal(response.status,status,JSON.stringify(response.value));return response.value;};
+ try{
+  const at=Date.parse('2030-10-01T12:00:00.000Z');await w.time(at);
+  const setup=await w.request('/api/setup',{name:'synthetic-oncall-790',password:'synthetic-oncall-790-password'});ok(setup);
+  const req=(path,input)=>w.request(path,input,setup.cookie),state=async()=>ok(await req('/api/state'));
+  const service=ok(await req('/api/command',{type:'service',name:'Synthetic bound service',environment:'test',owner:setup.value.member.id,runbook:[],pager:''}));
+  const responder=ok(await req('/api/members',{name:'synthetic-oncall-791',role:'responder',password:'synthetic-oncall-791-password'}),201);
+  const login=await w.request('/api/login',{name:responder.name,password:'synthetic-oncall-791-password'});ok(login);
+  const source='synthetic-oncall-790',key=randomBytes(32).toString('hex');
+  ok(await req('/api/sources',{id:source,key,scopes:[service.id]}));
+  const receipts=[];
+  for(let n=0;n<1500;n++){
+   // Cross ordinary rate windows without changing any request or storage limit.
+   if(n%100===0)await w.time(at+Math.floor(n/100)*61000);
+   const signal={source,eventId:'synthetic-oncall-'+(790000+n),service:service.id,environment:'test',key:'synthetic-oncall-'+(790000+n),generation:'synthetic-oncall-'+(790000+n),intent:'trigger',severity:'warning',title:'Synthetic bound alert',observedAt:new Date(at+n).toISOString(),evidence:''};
+   receipts.push(ok(await w.request('/api/ingress/'+source,signal,undefined,{authorization:'Bearer '+key}),201));
+  }
+  assert.equal(new Set(receipts.map(receipt=>receipt.id)).size,1500,'every authenticated intake creates distinct retained evidence');
+  const admitted=await state();assert.equal(admitted.alerts.length,1500);assert.equal(admitted.incidents.length,0);
+  assert.equal(new Set(admitted.alerts.map(alert=>alert.generation)).size,1500);
+  assert.deepEqual(admitted.events.map(event=>event.id).sort(),receipts.map(receipt=>receipt.id).sort());
+  const paging=ok(await req('/api/paging/state'));
+  const query={kind:'alerts',q:'Synthetic bound alert',status:'open'};
+  const list=async()=>{
+   const items=[],cursors=new Set();let cursor,revision,total,pages=0;
+   do{
+    const page=ok(await w.request('/api/triage?'+new URLSearchParams({...query,limit:'100',...(cursor?{cursor}:{})}),undefined,login.cookie));
+    revision??=page.workspaceRevision;total??=page.total;pages++;
+    assert.equal(page.workspaceRevision,revision,'every page belongs to the frozen workspace revision');assert.equal(page.total,total);
+    assert.ok(page.items.length>0);items.push(...page.items);cursor=page.nextCursor;
+    if(cursor){assert.ok(!cursors.has(cursor),'cursor traversal must progress');cursors.add(cursor);}
+    assert.ok(pages<=Math.ceil(total/100),'pagination must terminate within the selected cohort');
+   }while(cursor);
+   assert.equal(items.length,total);assert.equal(new Set(items.map(item=>item.id)).size,total,'no item is omitted or repeated across pages');
+   return {items,revision,pages};
+  };
+  const audit=()=>w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  // Compare custody without dumping installation-local credentials on failure.
+  const custody=snapshot=>Object.fromEntries(Object.entries(snapshot).filter(([table])=>!['oc_admin_audit','oc_audit_clock','oc_audit_identities'].includes(table)).map(([table,rows])=>[table,createHash('sha256').update(JSON.stringify(rows)).digest('hex')]));
+  const attemptOnly=(before,outcome,snapshot)=>{
+   const after=audit();assert.deepEqual(after.slice(0,before.length),before,'all prior immutable audit rows survive');
+   const added=after.slice(before.length);assert.equal(added.length,1,'only the required attempt audit is appended');
+   assert.equal(added[0].kind,'triage.resolve');assert.equal(added[0].outcome,outcome);assert.equal(added[0].detail,null);
+   for(const [from,to] of [['before_revision','after_revision'],['workspace_before','workspace_after'],['paging_before','paging_after'],['handoff_before','handoff_after']])assert.equal(added[0][from],added[0][to],'attempt audit records no state-changing commit');
+   const identities=w.sql('SELECT * FROM oc_audit_identities'),prior=snapshot.oc_audit_identities;
+   for(const row of prior)assert.deepEqual(identities.find(current=>current.kind===row.kind&&current.entity_id===row.entity_id),row,'existing permanent labels survive');
+   const newLabels=identities.filter(row=>!prior.some(old=>old.kind===row.kind&&old.entity_id===row.entity_id));
+   assert.equal(newLabels.length,prior.some(row=>row.kind==='door'&&row.entity_id==='triage')?0:1);
+   for(const row of newLabels){assert.equal(row.kind,'door');assert.equal(row.entity_id,'triage');assert.match(row.label,/^anon-/);}
+  };
+  const refuse=async(input,status,reason)=>{
+   const before=durableSnapshot(w),beforeAudit=audit();
+   assert.match(ok(await w.request('/api/triage/bulk',input,login.cookie),status).error,reason);
+   assert.deepEqual(custody(durableSnapshot(w)),custody(before),'refusal changes no application, receipt, credential or paging custody');
+   attemptOnly(beforeAudit,'refused',before);
+  };
+  const resolve=async(input,count)=>{
+   const before=await state(),payload=JSON.stringify(input);let result,previous=[],calls=0;
+   do{
+    assert.ok(calls<count,'bounded continuations must finish');assert.equal(JSON.stringify(input),payload);
+    result=ok(await w.request('/api/triage/bulk',input,login.cookie));calls++;
+    assert.equal(result.operationId,input.operationId);assert.equal(result.interrupted,false);
+    assert.deepEqual(result.results.slice(0,previous.length),previous,'continuations retain every saved per-item outcome');
+    assert.ok(result.results.length>previous.length);assert.equal(result.remaining,count-result.results.length);previous=result.results;
+   }while(result.remaining>0);
+   assert.ok(calls>1);assert.equal(new Set(result.results.map(item=>item.id)).size,count);
+   assert.deepEqual(result.results,input.items.map(item=>({id:item.id,ok:true,revision:item.revision+1,kind:'alert'})));
+   const after=await state(),selected=new Map(input.items.map(item=>[item.id,item]));
+   for(const alert of after.alerts){
+    const original=before.alerts.find(item=>item.id===alert.id),item=selected.get(alert.id);
+    if(!item){assert.deepEqual(alert,original,'unselected alerts retain their exact records');continue;}
+    assert.equal(alert.revision,item.revision+1);assert.equal(alert.coordination.state,'closed');
+    assert.equal(alert.coordination.assignee,original.owner);assert.equal(alert.coordination.snoozeDue,null);
+    const entries=alert.coordination.history;assert.equal(entries.length,1);assert.equal(entries[0].operationId,input.operationId);
+    assert.equal(entries[0].kind,'bulk-resolve');assert.equal(entries[0].actor,responder.id);assert.ok(Number.isFinite(Date.parse(entries[0].at)));
+    const {revision,coordination,obligation,...sourceIdentity}=alert;
+    const {revision:oldRevision,coordination:oldCoordination,obligation:oldObligation,...oldIdentity}=original;
+    assert.deepEqual(sourceIdentity,oldIdentity,'explicit closure preserves source lifecycle, generation, events and ownership');
+    assert.equal(alert.state,'active');
+    assert.deepEqual(obligation,{...oldObligation,state:'stopped',outcome:'stopped by human resolution',receipt:null});
+   }
+   assert.equal(after.incidents.length,0,'alert-only closure never declares an incident or invents its summary');
+   const {revision,alerts,triage,...other}=after,{revision:oldRevision,alerts:oldAlerts,triage:oldTriage,...oldOther}=before;
+   assert.deepEqual(other,oldOther,'bulk closure preserves every other workspace record');
+   assert.equal(revision,oldRevision+count+1,'only one reservation and one independent commit per selected item');
+   assert.deepEqual(triage.filter(record=>record.id!==input.operationId),oldTriage??[]);
+   const saved=triage.find(record=>record.id===input.operationId);assert.equal(saved.actor,responder.id);assert.deepEqual(saved.results,result.results);
+   const beforeRetry=durableSnapshot(w),beforeAudit=audit();
+   assert.deepEqual(ok(await w.request('/api/triage/bulk',input,login.cookie)),result,'completed retry returns the identical saved results');
+   assert.deepEqual(await state(),after,'completed retry preserves records, revisions, histories and operation receipts');
+   assert.deepEqual(custody(durableSnapshot(w)),custody(beforeRetry));attemptOnly(beforeAudit,'accepted',beforeRetry);
+   const {workspaceRevision,...pagingRecords}=ok(await req('/api/paging/state')),{workspaceRevision:oldWorkspaceRevision,...oldPagingRecords}=paging;
+   assert.deepEqual(pagingRecords,oldPagingRecords);assert.deepEqual(await w.outboundRequests(),[]);
+   console.log(`PROBE OC-079 ${input.allMatching?'1000 matching':'500 selected'}: protected bulk HTTP -> ${count} unique successful alert resolutions in ${calls} identical-payload continuations, expected revisions and responder history; completed retry preserves all records and results with one value-free attempt audit; source lifecycle and paging custody unchanged, no incident and zero outbound requests.`);
+  };
+  const frozen=await list();assert.equal(frozen.items.length,1500);assert.equal(frozen.pages,15);
+  assert.deepEqual(frozen.items.map(item=>item.id).sort(),admitted.alerts.map(alert=>alert.id).sort());
+  const item=row=>({id:row.id,revision:row.revision,kind:'alert'});
+  const selected={operationId:'synthetic-oncall-790-selected',action:'resolve',reason:'Responder explicitly closes selected alerts',items:frozen.items.slice(0,500).map(item),confirmedCount:500};
+  await refuse({...selected,confirmedCount:499},409,/Confirm the current selected item count/);
+  await refuse({...selected,items:frozen.items.slice(0,501).map(item),confirmedCount:501},400,/Choose 1–500 incidents, or confirm up to 1,000 matching incidents/);
+  await resolve(selected,500);
+  const matching=await list();assert.equal(matching.items.length,1000);assert.equal(matching.pages,10);
+  assert.deepEqual(matching.items.map(item=>item.id).sort(),frozen.items.slice(500).map(item=>item.id).sort());
+  const all={operationId:'synthetic-oncall-790-matching',action:'resolve',reason:'Responder explicitly closes the confirmed matching alerts',items:matching.items.map(item),allMatching:true,query,confirmedCount:1000,workspaceRevision:matching.revision};
+  await refuse({...all,confirmedCount:999},409,/Matching incidents changed\. Confirm the current count and selection/);
+  await refuse({...all,items:[...all.items,selected.items[0]],confirmedCount:1001},400,/Choose 1–500 incidents, or confirm up to 1,000 matching incidents/);
+  console.log('PROBE OC-079 refusal bounds: protected bulk HTTP -> selected count 499 and matching count 999 refuse 409 for confirmation; 501 selected and 1001 matching refuse 400 for the published bound; no application effects and only value-free refusal audit.');
+  await resolve(all,1000);
+  const empty=ok(await w.request('/api/triage?'+new URLSearchParams(query),undefined,login.cookie));assert.equal(empty.total,0);assert.deepEqual(empty.items,[]);
+ }finally{await w.close();}
+}
+
 await triageBulkCompletion();
+await triageAlertResolveBounds();
 
 // One storm journey through emitted Worker/D1 HTTP: query, coordinate and restore.
 const w = await localWorker({INBOUND_EMAIL_DOMAIN: 'inbound.example.test'}, {clock:true,outboundLedger:true});
