@@ -86,6 +86,78 @@ async function droppedDeclarationReplay(runtime){
  assert.equal((await adopt()).status,200);
 }
 
+/** A lost note response replays native custody without appending another note. */
+async function droppedNoteReplay(runtime){
+ const {db,http,tool,adopt,discardToolResponse,context}=runtime;
+ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
+ const snapshot=()=>agentEffectSnapshot(runtime);
+ const audit=()=>rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+ for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
+  assert.equal((await adopt(policy)).status,200);
+  const preparation=await http('/api/command',{type:'declare',service:'agent-service',title:'Synthetic lost note response '+mode,
+   summary:'Synthetic coordination without protected evidence',severity:'warning',alerts:[]});
+  assert.equal(preparation.status,200);
+  const incident=await preparation.json();
+  const args={incident:incident.id,revision:incident.revision,text:'Synthetic internal note with lost response '+mode,idempotency_key:randomUUID()};
+  const before=await snapshot(),priorAudit=await audit();
+  const lost=await discardToolResponse('oncall.notes.add',args);
+  assert.equal(lost.status,200);
+  assert.equal(lost.discarded,true);assert.equal(lost.aborted,true);assert.equal(lost.bodyRead,false);
+  // Establish the completed call and its effect from D1 before any retry.
+  const calls=await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,args.idempotency_key);
+  assert.equal(calls.length,1);assert.equal(calls[0].state,'done');
+  const call=calls[0],saved=JSON.parse(call.outcome),once=await snapshot();
+  assert.equal(saved.outcome,'done');assert.equal(saved.decision.id,call.decision_id);
+  assert.equal(saved.decision.disposition,disposition);
+  assert.deepEqual(saved.decision.classes.map(row=>row.class),['standard']);
+  const stored=once.application.incidents.find(row=>row.id===incident.id);
+  assert.deepEqual(saved.result,stored);
+  assert.deepEqual(JSON.parse(once.records.oc_incidents.find(row=>row.id===incident.id).data),stored);
+  assert.equal(once.application.incidents.length,before.application.incidents.length);
+  assert.equal(once.application.revision,before.application.revision+1);
+  assert.equal(stored.revision,incident.revision+1);
+  assert.equal(stored.timeline.length,incident.timeline.length+1);
+  assert.deepEqual(stored.timeline.slice(0,-1),incident.timeline);
+  const note=stored.timeline.at(-1);
+  assert.equal(note.kind,'note');assert.equal(note.text,args.text);
+  assert.equal(note.metadata.agent.agent.id,context.agentId);
+  assert.equal(stored.timeline.filter(row=>row.kind==='note'&&row.text===args.text).length,1);
+  assert.equal(once.records.oc_admin_audit.length,before.records.oc_admin_audit.length+1,'The lost note response follows one native state-changing audit commit');
+  for(const commit of before.records.oc_admin_audit)assert.deepEqual(once.records.oc_admin_audit.find(row=>row.id===commit.id),commit);
+  assert.deepEqual(once.records.agent_door_approvals,before.records.agent_door_approvals);
+  const reviews=once.records.agent_door_reviews;
+  assert.equal(reviews.length,before.records.agent_door_reviews.length+Number(mode==='held'));
+  for(const review of before.records.agent_door_reviews)assert.deepEqual(reviews.find(row=>row.id===review.id),review);
+  if(mode==='held'){
+   const review=reviews.find(row=>row.id===saved.review.id);
+   assert.ok(review);assert.equal(review.state,'open');assert.equal(JSON.parse(review.saved).decision_id,call.decision_id);
+  }else assert.equal(saved.review,undefined);
+  for(const name of Object.keys(once.records).filter(name=>name.startsWith('paging_')))assert.deepEqual(once.records[name],before.records[name]);
+  const committedAudit=await audit();
+  assert.deepEqual(committedAudit.slice(0,-1),priorAudit);assert.equal(committedAudit.length,priorAudit.length+1);
+  const original=JSON.parse(committedAudit.at(-1).row);
+  assert.equal(original.id,call.decision_id);assert.equal(original.tool,'oncall.notes.add');
+  assert.equal(original.outcome,'done');assert.equal(original.replay_of,null);
+  assert.equal(original.idempotency_key,args.idempotency_key);
+  assert.equal(original.agent.id,context.agentId);
+  const replay=await tool('oncall.notes.add',args);
+  assert.equal(replay.status,200);assert.equal(replay.body.error,undefined);assert.notEqual(replay.body.id,lost.id);
+  assert.equal(replay.result.isError,false);assert.deepEqual(replay.result.structuredContent,saved.result);
+  assert.deepEqual(replay.result._meta['com.runeditrun/review'],saved.review);
+  assert.deepEqual(await snapshot(),once,'Lost-response retry preserves application records, revisions, timeline, state-changing audit, original calls and outcomes, approvals, reviews and paging');
+  const retried=await audit();
+  assert.deepEqual(retried.slice(0,-1),committedAudit);assert.equal(retried.length,committedAudit.length+1);
+  const attempt=JSON.parse(retried.at(-1).row);
+  assert.equal(attempt.id,replay.decision.id);assert.notEqual(attempt.id,original.id);
+  assert.equal(attempt.tool,'oncall.notes.add');assert.equal(attempt.idempotency_key,args.idempotency_key);
+  assert.equal(attempt.outcome,'replayed');assert.equal(attempt.replay_of,call.decision_id);
+  assert.equal(attempt.operation_id,original.operation_id);
+  assert.deepEqual(await runtime.outboundRequests(),[],'Note and lost-response retry attempt no outbound requests');
+  console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+' note: real MCP response destroyed at headers with unread body; native D1 confirms one completed call, stored outcome and agent-attributed note before retry; new RPC id returns exact stored result; records, revisions, timeline, state-changing audit, call custody, approvals, reviews and paging unchanged; '+(mode==='held'?'one original open review; ':'')+'one linked replay audit; zero outbound requests');
+ }
+ assert.equal((await adopt()).status,200);
+}
+
 /** Completed native writes refuse changed arguments without consuming custody. */
 async function changedArgumentConflicts(runtime){
  const {db,http,tool,adopt,context}=runtime;
@@ -455,6 +527,7 @@ try{
  await policyAdoption(runtime);
  await pauseMatrix(runtime);
  await droppedDeclarationReplay(runtime);
+ await droppedNoteReplay(runtime);
  await changedArgumentConflicts(runtime);
  await consentRevocationMatrix(runtime);
  await staleNoteRevision(runtime);
