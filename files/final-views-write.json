@@ -1,0 +1,19 @@
+{
+  "name": "final-views-write",
+  "head": "50103221e786b4e90bd0ab2969937fb819f4089d",
+  "command": [
+    "node",
+    "src/base/contract-docs.mjs",
+    "write"
+  ],
+  "started_at": "2026-11-05T23:42:27.721187+00:00",
+  "duration_seconds": 0.118,
+  "exit": 0,
+  "sources_sha256": {
+    "src/agent-door/coordination-tools.ts": "50a6000dc092ef7334d55f51ac9d6c43d3cce2c66c2d8ea1e2b380846c289b0e",
+    "tests/oncall-agent-flow.mjs": "3f497edccd402ae54f3604b974ddcf4284c5c149fec614ef38ba99ce4ec2f421",
+    "tests/agent-door-runtime.mjs": "73333474eb9bd20a365ef587fec63a244a1283295e8b968dca10b79f02d94960"
+  },
+  "log": "final-views-write.log",
+  "log_sha256": "df91012bf66fb476e9cd1a30c002829398beb55f869e07cc7be477197fa5a276"
+}

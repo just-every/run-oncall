@@ -1,0 +1,44 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f202",
+  "head": "4fd06a85d0c45306bd87b14c23e0a51397e4e5e3",
+  "base": "1f0b7327773a3963f5fce611295ffc3a251af65a",
+  "counts_before": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "status_rows_before": 101,
+  "status_rows_after": 101,
+  "target_before": "missing",
+  "target_after": "missing",
+  "closed_diagnostics": [
+    "required native acknowledgment revision",
+    "required native follow-up creation revision"
+  ],
+  "policy_cases": 4,
+  "files": [
+    "CONTRACT.md",
+    "sources.lock.json",
+    "src/agent-door/coordination-tools.ts",
+    "tests/oncall-agent-flow.mjs"
+  ],
+  "generated_views_unchanged": {
+    "ACCEPTANCE.md": true,
+    "docs/CLAIMS.md": true
+  },
+  "new_email_literals": 0,
+  "unreviewed_slash_tokens": 0,
+  "new_test_registrations": 0,
+  "existing_assertions_removed_or_narrowed": false,
+  "all_parent_status_rows_preserved": true,
+  "all_candidate_identities_and_trailers": "pass",
+  "publication_scan": "not run in cloud; fleet lander must run complete full-history exact-SHA scan",
+  "main_unchanged": true,
+  "pr": null
+}

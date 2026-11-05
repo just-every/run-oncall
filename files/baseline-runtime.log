@@ -1,0 +1,93 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["1905","1904","MainThread"],["1914","1905","esbuild"],["1932","1905","workerd"],["1938","1905","ps"]]
+PROBE BASE-AGENT-006 point 5 listed tools: emitted Worker MCP -> all 39 returned tools declare only fleet-catalog classes
+Native agent manifest and complete exposed guide inventory are fresh
+PROBE BASE-AGENT-013 1 autonomous: GET /docs/agents and MCP discovery -> 39 exact tools, scopes and class sets; no resource templates; event target withheld; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-013 2 autonomous: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs
+PROBE BASE-AGENT-013 1 held: GET /docs/agents and MCP discovery -> 39 exact tools, scopes and class sets; no resource templates; event target withheld; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-013 2 held: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs
+PROBE BASE-AGENT-007 7 autonomous before adoption: same-bearer native MCP read served; note executed and retained audit at signed revision 5; zero outbound requests
+PROBE BASE-AGENT-007 7 autonomous oncall.services.read: next schema-valid MCP call with admitted bearer -> policy_blocked in 25ms; decision and retained audit rule stop-standard-autonomous, revision 6; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-007 7 autonomous oncall.notes.add: next schema-valid MCP call with admitted bearer -> policy_blocked in 69ms; decision and retained audit rule stop-standard-autonomous, revision 6; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-007 7 autonomous after restoration: same-bearer native MCP read served; note executed and retained audit at signed revision 7; zero outbound requests
+PROBE BASE-AGENT-007 7 held before adoption: same-bearer native MCP read served; note held then person-approved and retained audit at signed revision 8; zero outbound requests
+PROBE BASE-AGENT-007 7 held oncall.services.read: next schema-valid MCP call with admitted bearer -> policy_blocked in 22ms; decision and retained audit rule stop-standard-held, revision 9; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-007 7 held oncall.notes.add: next schema-valid MCP call with admitted bearer -> policy_blocked in 64ms; decision and retained audit rule stop-standard-held, revision 9; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-007 7 held after restoration: same-bearer native MCP read served; note held then person-approved and retained audit at signed revision 10; zero outbound requests
+PASS signed native policy adoption: same-bearer next read and coordination mutation blocked within 60 seconds under both policies; retained rule and revision survive restoration; policy-appropriate access restored; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous initially on: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous initially on: fresh bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 291ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both: retained and fresh bearer valid next MCP read and note -> agents_paused in 313ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+PROBE BASE-AGENT-011 6 autonomous Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 286ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 272ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 270ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: fresh bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 held initially on: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held initially on: fresh bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 319ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both: retained and fresh bearer valid next MCP read and note -> agents_paused in 287ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+PROBE BASE-AGENT-011 6 held Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 305ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 269ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 299ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: fresh bearer read served; note held then human-approved; zero outbound requests
+PASS independent Pause flags: both policies, valid next reads and mutations, maximum refusal 156ms, bearer resume 403 including owner cookie, human coordination and policy-appropriate resume; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 2 autonomous: real MCP declaration response destroyed at headers with unread body; native D1 outcome replayed with new RPC id; one incident, declaration and application commit; separate linked replay audit; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 2 held: real MCP declaration response destroyed at headers with unread body; native D1 outcome replayed with new RPC id; one incident, declaration and application commit; one original open review; separate linked replay audit; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 autonomous oncall.incidents.declare: completed standard-only write; original key with changed title -> isError idempotency_conflict; native records, revisions, timeline, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; exact arguments with new RPC id -> stored outcome and no duplicate effect or held review; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 autonomous oncall.notes.add: completed standard-only write; original key with changed text -> isError idempotency_conflict; native records, revisions, timeline, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; exact arguments with new RPC id -> stored outcome and no duplicate effect or held review; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 held oncall.incidents.declare: completed standard-only write; original key with changed title -> isError idempotency_conflict; native records, revisions, timeline, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; exact arguments with new RPC id -> stored outcome and no duplicate effect or held review; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 held oncall.notes.add: completed standard-only write; original key with changed text -> isError idempotency_conflict; native records, revisions, timeline, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; exact arguments with new RPC id -> stored outcome and no duplicate effect or held review; zero outbound requests
+PROBE BASE-AGENT-004 6 autonomous before revocation: retained bearer reads native service; note executed with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 autonomous control before revocation: retained bearer reads native service; note executed with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 autonomous oncall.services.read: exact still-unexpired bearer after signed consent revocation -> 401 in 564ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged
+PROBE BASE-AGENT-004 6 autonomous oncall.notes.add: exact still-unexpired bearer after signed consent revocation -> 401 in 1134ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged
+PROBE BASE-AGENT-004 6 autonomous control after revocation: retained bearer reads native service; note executed with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 held before revocation: retained bearer reads native service; note held then human-approved with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 held control before revocation: retained bearer reads native service; note held then human-approved with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 held oncall.services.read: exact still-unexpired bearer after signed consent revocation -> 401 in 516ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged
+PROBE BASE-AGENT-004 6 held oncall.notes.add: exact still-unexpired bearer after signed consent revocation -> 401 in 978ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged
+PROBE BASE-AGENT-004 6 held control after revocation: retained bearer reads native service; note held then human-approved with actual agent and sponsor attribution; zero outbound requests
+PASS Business consent receiving door: both company policies, same unexpired bearers, maximum refusal 1134ms, exact native and approval and review and paging isolation, attributed refusal audit only, separately consented controls and zero outbound requests; no Business account propagation claim
+PROBE BASE-AGENT-012 acceptance 4 autonomous: valid native note revision 1 with stale expected_revision -> isError revision_conflict, exact current_revision 1; durable state and custody unchanged; fresh key using returned revision -> autonomous, one note and application commit; retry unchanged; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 held: valid native note revision 1 with stale expected_revision -> isError revision_conflict, exact current_revision 1; durable state and custody unchanged; fresh key using returned revision -> review, one note and application commit; retry unchanged; zero outbound requests
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
+    code: 'revision_conflict',
+-   current_revision: 2
+  }
+
+    at staleCoordinationRevision (file:///home/agent/rer-consolidation/work/sd-oncall-c-f202/run-oncall/tests/oncall-agent-flow.mjs:269:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/agent/rer-consolidation/work/sd-oncall-c-f202/run-oncall/tests/oncall-agent-flow.mjs:411:2 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: { code: 'revision_conflict' },
+  expected: { code: 'revision_conflict', current_revision: 2 },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

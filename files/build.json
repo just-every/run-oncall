@@ -1,0 +1,15 @@
+{
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "build"
+  ],
+  "exit": 0,
+  "phase": "precommit build",
+  "base_head": "1f0b7327773a3963f5fce611295ffc3a251af65a",
+  "source_path": "src/agent-door/coordination-tools.ts",
+  "source_sha256": "50a6000dc092ef7334d55f51ac9d6c43d3cce2c66c2d8ea1e2b380846c289b0e",
+  "source_unchanged_through_final_head": "4fd06a85d0c45306bd87b14c23e0a51397e4e5e3",
+  "dist_entry_sha256": "0d0b439f51a9af447c00f5e7571c5d2c973f5817371417468018ab471e60286c"
+}

@@ -1,0 +1,19 @@
+{
+  "name": "typecheck",
+  "head": "1f0b7327773a3963f5fce611295ffc3a251af65a",
+  "command": [
+    "pnpm",
+    "run",
+    "typecheck"
+  ],
+  "started_at": "2026-11-05T23:37:56.550848+00:00",
+  "duration_seconds": 9.492,
+  "exit": 0,
+  "sources_sha256": {
+    "src/agent-door/coordination-tools.ts": "50a6000dc092ef7334d55f51ac9d6c43d3cce2c66c2d8ea1e2b380846c289b0e",
+    "tests/oncall-agent-flow.mjs": "bcd35afa22a4c97fe5e623f26f6e793a0a59e194d5949cc22fa7c318f9280d1e",
+    "tests/agent-door-runtime.mjs": "73333474eb9bd20a365ef587fec63a244a1283295e8b968dca10b79f02d94960"
+  },
+  "log": "typecheck.log",
+  "log_sha256": "be8a2a4202ae378091bd2c2030500123c0ead193c0dbf1b385e5c630f3390d26"
+}

@@ -1,0 +1,9 @@
+{
+  "command": "timeout 1200 node tests/oncall-agent-flow.mjs",
+  "implementation_base": "1f0b7327773a3963f5fce611295ffc3a251af65a",
+  "exit": 1,
+  "test": "staleCoordinationRevision",
+  "failure": "actual {code: revision_conflict}; expected {code: revision_conflict, current_revision: 2}",
+  "phase": "new test against main implementation before repair",
+  "ci_repair": false
+}
