@@ -114,6 +114,7 @@ async function droppedNoteReplay(runtime){
   assert.deepEqual(saved.result,stored);
   assert.deepEqual(JSON.parse(once.records.oc_incidents.find(row=>row.id===incident.id).data),stored);
   assert.equal(once.application.incidents.length,before.application.incidents.length);
+  assert.deepEqual(once.application.incidents.filter(row=>row.id!==incident.id),before.application.incidents.filter(row=>row.id!==incident.id));
   assert.equal(once.application.revision,before.application.revision+1);
   assert.equal(stored.revision,incident.revision+1);
   assert.equal(stored.timeline.length,incident.timeline.length+1);
@@ -125,6 +126,8 @@ async function droppedNoteReplay(runtime){
   assert.equal(once.records.oc_admin_audit.length,before.records.oc_admin_audit.length+1,'The lost note response follows one native state-changing audit commit');
   for(const commit of before.records.oc_admin_audit)assert.deepEqual(once.records.oc_admin_audit.find(row=>row.id===commit.id),commit);
   assert.deepEqual(once.records.agent_door_approvals,before.records.agent_door_approvals);
+  assert.equal(once.records.agent_door_calls.length,before.records.agent_door_calls.length+1);
+  for(const prior of before.records.agent_door_calls)assert.deepEqual(once.records.agent_door_calls.find(row=>row.agent===prior.agent&&row.key===prior.key),prior);
   const reviews=once.records.agent_door_reviews;
   assert.equal(reviews.length,before.records.agent_door_reviews.length+Number(mode==='held'));
   for(const review of before.records.agent_door_reviews)assert.deepEqual(reviews.find(row=>row.id===review.id),review);
