@@ -1,0 +1,5 @@
+Exact-head generated-view check output; no job environment selected.
+build	Check the generated contract documents	2026-11-05T21:37:27.6643191Z ##[group]Run node src/base/contract-docs.mjs check
+build	Check the generated contract documents	2026-11-05T21:37:27.7561554Z Contract prose: 0 errors, 0 warnings.
+build	Check the generated contract documents	2026-11-05T21:37:27.8255358Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+build	Check the generated contract documents	2026-11-05T21:37:27.8352258Z ##[error]Process completed with exit code 1.

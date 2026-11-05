@@ -1,0 +1,22 @@
+{
+  "attempts": 1,
+  "branch": "cloud/sd-oncall-c-f201",
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f201",
+  "exit": 0,
+  "head": "fed8139a87d396eb5b3caaea677776d1b46ac5c5",
+  "identity_audit": {
+    "all_authors_fleet": true,
+    "all_committers_fleet": true,
+    "candidate_commits": 1,
+    "trailers_present": false
+  },
+  "product_files": [
+    "CONTRACT.md",
+    "sources.lock.json",
+    "tests/oncall-agent-flow.mjs"
+  ],
+  "remote_head": "fed8139a87d396eb5b3caaea677776d1b46ac5c5",
+  "remote_ref": "refs/heads/cloud/sd-oncall-c-f201",
+  "repository": "just-every/run-oncall",
+  "verified_at": "2026-11-05T21:37:28.731880+00:00"
+}

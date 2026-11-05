@@ -1,0 +1,15 @@
+{
+  "acceptance_text_unchanged": true,
+  "candidate_table_lines": 268,
+  "existing_assertions_removed": 0,
+  "generated_views_committed": false,
+  "head": "fed8139a87d396eb5b3caaea677776d1b46ac5c5",
+  "mechanical": "lock=node scripts/edition-authoring/cli.mjs lock then check exit=0; views=node src/base/contract-docs.mjs write then check exit=0, restored afterward; ledger=none exit=0",
+  "migrations_changed": false,
+  "new_registrations": 0,
+  "parent_table_lines": 268,
+  "publication_scan": "fleet lander required; not run here",
+  "status_rows": 101,
+  "statuses_unchanged": true,
+  "ui_changed": false
+}

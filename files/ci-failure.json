@@ -1,0 +1,32 @@
+{
+  "archive_commands": [
+    {
+      "command": "gh run view 42113983133 --repo just-every/run-oncall --job 127548698445 --log-failed",
+      "exit": 0,
+      "sha256": "9189a166ff58ea33bfeac84629b48d1aa0948f0ac20109cac6ff24f3459a1b9e"
+    },
+    {
+      "command": "gh run view 42113983133 --repo just-every/run-oncall --job 127549791867 --log-failed",
+      "exit": 0,
+      "sha256": "8dd127d4028b4dd53a7004b16a5bdc96dc11b20a7c481566dea067b17b149229"
+    }
+  ],
+  "build_job": 127548698445,
+  "cause": "Only generated ACCEPTANCE.md freshness check; downstream proof guard fails because build failed and shards were skipped",
+  "command": "node src/base/contract-docs.mjs check",
+  "conclusion": "failure",
+  "event": "push",
+  "exit": 1,
+  "github_calls_total": 6,
+  "head": "fed8139a87d396eb5b3caaea677776d1b46ac5c5",
+  "permitted_cloud_generated_view_exception": true,
+  "repository": "just-every/run-oncall",
+  "reruns": 0,
+  "run_id": 42113983133,
+  "summary_job": 127549791867,
+  "test_output": [
+    "Contract prose: 0 errors, 0 warnings.",
+    "ACCEPTANCE.md: generated content differs; run contract-docs write."
+  ],
+  "workflow_dispatches": 0
+}

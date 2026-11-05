@@ -1,0 +1,9 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "1f0b7327773a3963f5fce611295ffc3a251af65a",
+  "discovery_command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=1f0b7327773a3963f5fce611295ffc3a251af65a&per_page=100",
+  "github_calls": 1,
+  "verify": [{"id": 42026429002, "event": "push", "status": "completed", "conclusion": "success"}, {"id": 42021999943, "event": "push", "status": "completed", "conclusion": "success"}, {"id": 42033597585, "event": "push", "status": "completed", "conclusion": "cancelled"}],
+  "run_site": {"id": 42026429004, "event": "push", "status": "completed", "conclusion": "success"},
+  "boundary": "The exact current main gates are green. The separate cancelled Verify is not counted. No unavailable fleet landing or publication receipt is inferred."
+}

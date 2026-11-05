@@ -1,0 +1,14 @@
+Product head: fed8139a87d396eb5b3caaea677776d1b46ac5c5
+Application scope: ONCALL_VERIFY_LANE=intake; CLI hosted-output, hydration and agent-door checks also ran.
+Journey completed: exec rer check --profile first-party (1.4s)
+Journey completed: run build (8.4s)
+Journey completed: run typecheck (2.7s)
+Runtime machines completed (257.7s)
+Journey completed: tests/runtime.mjs machines (259.0s)
+Journey completed: tests/intake.mjs (55.5s)
+Journey completed: tests/routing.mjs (113.8s)
+Journey completed: tests/import-door.mjs (92.9s)
+Oncall verification passed: intake
+Hydration check: 4 page(s), 23 load(s)
+Agent door conformance: 7761/7761 points passed.
+verify: complete (exit 0)

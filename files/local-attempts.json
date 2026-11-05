@@ -1,0 +1,28 @@
+{
+  "attempts": [
+    {
+      "cause": "New scoped-client fixture lacked services:read for its positive service-read warmup",
+      "command": "timeout 1200 env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 1,
+      "failure": "403 !== 200",
+      "location": "tests/oncall-agent-flow.mjs:259",
+      "resolution": "Grant only the existing services:read permission to this fixture client"
+    },
+    {
+      "cause": "New review readback used a nonexistent detail GET",
+      "command": "timeout 1200 node tests/oncall-agent-flow.mjs",
+      "exit": 1,
+      "failure": "405 !== 200",
+      "location": "tests/oncall-agent-flow.mjs:326",
+      "resolution": "Read the existing authenticated reviews collection and find the exact original review id"
+    },
+    {
+      "cause": "Temporary system-Chromium preload relied on a custom variable omitted from sanitized pnpm-probe environment",
+      "command": "ONCALL_VERIFY_LANE=intake npx -y @runeditrun/rer verify",
+      "exit": 3,
+      "failure": "ERR_INVALID_ARG_VALUE: Received undefined/package.json",
+      "resolution": "Resolve the checkout explicitly in the external preload; keep all product code and assertions unchanged"
+    }
+  ],
+  "scope": "Local fixture and toolchain development before completed proof; no CI repair or production-boundary change"
+}
