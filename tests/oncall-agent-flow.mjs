@@ -89,6 +89,10 @@ async function droppedDeclarationReplay(runtime){
 /** Completed native writes refuse changed arguments without consuming custody. */
 async function changedArgumentConflicts(runtime){
  const {db,http,tool,adopt,context}=runtime;
+ const ownerResponse=await http('/api/workspace');assert.equal(ownerResponse.status,200);
+ const owner=(await ownerResponse.json()).member;
+ const acknowledgeFixture=context.surface.journey.find(row=>row.id==='acknowledge');
+ const followUpFixture=context.surface.journey.find(row=>row.id==='follow-up');
  const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
  const snapshot=()=>agentEffectSnapshot(runtime);
  const attempts=key=>rows("SELECT * FROM agent_door_audit WHERE agent=? AND json_extract(row,'$.idempotency_key')=? ORDER BY sequence",context.agentId,key);
@@ -114,9 +118,31 @@ async function changedArgumentConflicts(runtime){
     assert.equal(once.application.incidents.length,before.application.incidents.length);
     assert.equal(result.revision,args.revision+1);assert.equal(result.timeline.length,prior.timeline.length+1);
     assert.deepEqual(result.timeline.slice(0,-1),prior.timeline);
-    assert.equal(result.timeline.at(-1).text,args.text);
+    const entry=result.timeline.at(-1);
+    if(name==='oncall.notes.add')assert.equal(entry.text,args.text);
+    if(name==='oncall.incidents.acknowledge'){
+     assert.equal(prior.state,'declared');assert.equal(result.state,'acknowledged');
+     assert.equal(result.commander,args.member);assert.equal(result.assignee,args.member);
+     assert.equal(entry.kind,'transition');
+     assert.deepEqual(entry.lifecycle,{from:'declared',to:'acknowledged',member:args.member});
+     assert.equal(entry.text,'declared → acknowledged: '+args.summary);
+     assert.deepEqual(result.actions,prior.actions);
+    }
+    if(name==='oncall.actions.create'){
+     assert.equal(result.state,prior.state);assert.equal(result.commander,prior.commander);
+     assert.equal(result.actions.length,prior.actions.length+1);
+     assert.deepEqual(result.actions.slice(0,-1),prior.actions);
+     const action=result.actions.at(-1);assert.ok(action.id);
+     assert.equal(action.title,args.title);assert.equal(action.owner,args.owner);assert.equal(action.due,args.due);
+     assert.equal(action.priority,args.priority);assert.equal(action.completionPolicy,args.completionPolicy);
+     assert.equal(action.done,false);assert.equal(action.evidence,'');
+     assert.equal(entry.kind,'action');
+     assert.ok(entry.text.includes(action.title));assert.ok(entry.text.includes(action.due));
+    }
    }
    assert.equal(result.timeline.at(-1).metadata.agent.agent.id,context.agentId);
+   assert.equal(result.timeline.at(-1).actor,context.agentId);
+   assert.equal(result.timeline.at(-1).metadata.agent.for.id,owner.id);
    const calls=await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,args.idempotency_key);
    assert.equal(calls.length,1);assert.equal(calls[0].state,'done');assert.equal(calls[0].decision_id,first.decision.id);
    const stored=JSON.parse(calls[0].outcome);
@@ -154,7 +180,9 @@ async function changedArgumentConflicts(runtime){
    return result;
   }
   const declared=await complete('oncall.incidents.declare',{service:'agent-service',title:'Synthetic coordination conflict '+mode,summary:'Native coordination without outside action',severity:'warning',idempotency_key:randomUUID()},'title','Changed synthetic coordination title');
-  await complete('oncall.notes.add',{incident:declared.id,revision:declared.revision,text:'Synthetic internal coordination note',idempotency_key:randomUUID()},'text','Changed synthetic internal coordination note');
+  const acknowledged=await complete(acknowledgeFixture.tool,{...acknowledgeFixture.args,incident:declared.id,revision:declared.revision,member:owner.id,idempotency_key:randomUUID()},'summary','Changed synthetic responsibility summary');
+  const noted=await complete('oncall.notes.add',{incident:declared.id,revision:acknowledged.revision,text:'Synthetic internal coordination note',idempotency_key:randomUUID()},'text','Changed synthetic internal coordination note');
+  await complete(followUpFixture.tool,{...followUpFixture.args,incident:declared.id,revision:noted.revision,owner:owner.id,idempotency_key:randomUUID()},'title','Changed synthetic follow-up title');
  }
  assert.equal((await adopt()).status,200);
 }
