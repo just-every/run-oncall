@@ -236,6 +236,131 @@ async function staleNoteRevision(runtime){
  assert.equal((await adopt()).status,200);
 }
 
+/** Ordinary coordination tools diagnose optional revision before any effect. */
+async function staleCoordinationRevision(runtime){
+ const {db,http,tool,adopt,context}=runtime;
+ const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
+ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
+ const snapshot=()=>agentEffectSnapshot(runtime);
+ const audits=()=>rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+ const responder=(await read('/api/state')).members.find(row=>row.active&&row.role==='responder');
+ assert.ok(responder,'The acknowledgment and follow-up name a real active responder');
+ const credential='synthetic-oncall-'+randomUUID();
+ const client=await http('/api/automation/clients',{name:'Synthetic revision scope',key:credential,
+  services:['agent-service'],permissions:['services:read','incidents:read','incidents:write','actions:write']});
+ assert.equal(client.status,201);await client.json();
+ async function declare(service,title){
+  const response=await http('/api/command',{type:'declare',service,title,summary:'Synthetic coordination without protected evidence',severity:'warning',alerts:[]});
+  assert.equal(response.status,200);return response.json();
+ }
+ for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
+  assert.equal((await adopt(policy)).status,200);
+  const scoped=await tool('oncall.services.read',{id:'agent-service'},{},credential);
+  assert.equal(scoped.status,200);assert.equal(scoped.result.isError,false);
+  assert.equal(scoped.result.structuredContent.data[0].id,'agent-service');
+  const foreign=await declare('agent-foreign-service','Synthetic private revision '+mode);
+  for(const name of ['oncall.incidents.acknowledge','oncall.actions.create']){
+   const incident=await declare('agent-service','Synthetic optional revision '+name+' '+mode);
+   assert.equal(incident.state,'declared');assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);
+   const input=name==='oncall.incidents.acknowledge'
+    ? {member:responder.id,summary:'Synthetic agent acknowledgment for the active responder'}
+    : {title:'Synthetic human-reviewed follow-up',owner:responder.id,due:'2026-12-01',priority:'P1',completionPolicy:'human-review'};
+   const args={...input,incident:incident.id,revision:incident.revision,expected_revision:incident.revision-1,idempotency_key:randomUUID()};
+   const before=await snapshot(),pagingBefore=await read('/api/paging/state'),priorAudit=await audits();
+   assert.ok(before.records.agent_door_calls.length>0,'Original replay custody is populated before refusal');
+   assert.ok(before.records.agent_door_reviews.length>0,'Existing review custody is populated before refusal');
+   const stale=await tool(name,args);
+   assert.equal(stale.status,200);assert.equal(stale.body.error,undefined);assert.equal(stale.result.isError,true);
+   const error={code:'revision_conflict',current_revision:incident.revision};
+   assert.deepEqual(stale.result._meta['com.runeditrun/error'],error);
+   assert.deepEqual(JSON.parse(stale.result.content[0].text),error);
+   assert.equal(stale.result.structuredContent,undefined);
+   assert.deepEqual(await snapshot(),before,'Stale optional revision preserves native records, revisions, timeline, state-changing audit, original replay outcomes, approvals, reviews and paging');
+   assert.deepEqual(await read('/api/paging/state'),pagingBefore);
+   const refusedAudit=await audits();
+   assert.deepEqual(refusedAudit.slice(0,-1),priorAudit);assert.equal(refusedAudit.length,priorAudit.length+1);
+   const refusal=JSON.parse(refusedAudit.at(-1).row);
+   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'revision_conflict');
+   assert.equal(refusal.idempotency_key,args.idempotency_key);assert.equal(refusal.agent.id,context.agentId);
+   assert.deepEqual(refusal.resource,{kind:'incident',id:incident.id});
+
+   const returned=stale.result._meta['com.runeditrun/error'].current_revision;
+   const freshArgs={...args,revision:returned,expected_revision:returned,idempotency_key:randomUUID()};
+   const fresh=await tool(name,freshArgs);
+   assert.equal(fresh.status,200);assert.equal(fresh.body.error,undefined);assert.equal(fresh.result.isError,false);
+   assert.deepEqual(fresh.decision.classes.map(row=>row.class),['standard']);
+   assert.equal(fresh.decision.disposition,disposition);
+   const once=await snapshot(),saved=once.application.incidents.find(row=>row.id===incident.id);
+   assert.deepEqual(fresh.result.structuredContent,saved);
+   assert.equal(once.application.revision,before.application.revision+1);assert.equal(saved.revision,returned+1);
+   assert.equal(once.application.incidents.length,before.application.incidents.length);
+   assert.equal(saved.timeline.length,incident.timeline.length+1);assert.deepEqual(saved.timeline.slice(0,-1),incident.timeline);
+   const entry=saved.timeline.at(-1);
+   assert.equal(entry.actor,context.agentId);assert.equal(entry.metadata.agent.agent.id,context.agentId);
+   assert.notEqual(entry.actor,responder.id,'An agent acknowledgment never becomes a human attestation');
+   if(name==='oncall.incidents.acknowledge'){
+    assert.equal(saved.state,'acknowledged');assert.equal(saved.commander,responder.id);assert.equal(saved.assignee,responder.id);
+    assert.deepEqual(entry.lifecycle,{from:'declared',to:'acknowledged',member:responder.id});
+    assert.ok(entry.text.includes(input.summary));
+    assert.equal(saved.timeline.filter(row=>row.lifecycle?.to==='acknowledged').length,1);
+    assert.deepEqual(saved.actions,incident.actions);
+   }else{
+    assert.equal(saved.state,incident.state);assert.equal(saved.actions.length,incident.actions.length+1);
+    const action=saved.actions.at(-1);assert.ok(action.id);assert.equal(action.title,input.title);
+    assert.equal(action.owner,responder.id);assert.equal(action.due,input.due);
+    assert.equal(action.priority,'P1');assert.equal(action.completionPolicy,'human-review');
+    assert.equal(action.done,false);assert.equal(action.evidence,'');
+    assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
+   }
+   assert.equal(once.records.oc_admin_audit.length,before.records.oc_admin_audit.length+1,'Exactly one native state-changing audit commit');
+   for(const record of before.records.oc_admin_audit)assert.deepEqual(once.records.oc_admin_audit.find(row=>row.id===record.id),record);
+   assert.deepEqual(once.records.agent_door_approvals,before.records.agent_door_approvals);
+   for(const table of Object.keys(before.records).filter(name=>name.startsWith('paging_')))assert.deepEqual(once.records[table],before.records[table]);
+   assert.deepEqual(await read('/api/paging/state'),{...pagingBefore,workspaceRevision:once.application.revision});
+   const reviews=once.records.agent_door_reviews;
+   assert.equal(reviews.length,before.records.agent_door_reviews.length+Number(mode==='held'));
+   for(const record of before.records.agent_door_reviews)assert.deepEqual(reviews.find(row=>row.id===record.id),record);
+   if(mode==='held'){
+    const review=reviews.find(row=>row.id===fresh.result._meta['com.runeditrun/review'].id);
+    assert.ok(review);assert.equal(review.state,'open');assert.equal(JSON.parse(review.saved).decision_id,fresh.decision.id);
+    assert.equal((await read('/agents/api/reviews')).reviews.find(row=>row.id===review.id).state,'open');
+   }else assert.equal(fresh.result._meta['com.runeditrun/review'],undefined);
+   const calls=await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,freshArgs.idempotency_key);
+   assert.equal(calls.length,1);assert.equal(calls[0].state,'done');assert.equal(calls[0].decision_id,fresh.decision.id);
+   const stored=JSON.parse(calls[0].outcome);
+   assert.equal(stored.outcome,'done');assert.deepEqual(stored.result,saved);
+   assert.deepEqual(stored.review,fresh.result._meta['com.runeditrun/review']);
+   const originalAudit=await rows('SELECT * FROM agent_door_audit WHERE id=?',fresh.decision.id);
+   const beforeRetry=await audits(),replay=await tool(name,freshArgs);
+   assert.equal(replay.status,200);assert.equal(replay.body.error,undefined);assert.equal(replay.result.isError,false);
+   assert.notEqual(replay.body.id,fresh.body.id);assert.notEqual(replay.body.id,stale.body.id);
+   assert.deepEqual(replay.result.structuredContent,stored.result);
+   assert.deepEqual(replay.result._meta['com.runeditrun/review'],stored.review);
+   assert.deepEqual(await snapshot(),once,'Identical retry preserves the original outcome, single native effect and single held review');
+   assert.deepEqual(await rows('SELECT * FROM agent_door_audit WHERE id=?',fresh.decision.id),originalAudit);
+   const retried=await audits();assert.deepEqual(retried.slice(0,-1),beforeRetry);assert.equal(retried.length,beforeRetry.length+1);
+   const attempt=JSON.parse(retried.at(-1).row);
+   assert.equal(attempt.outcome,'replayed');assert.equal(attempt.replay_of,fresh.decision.id);
+   assert.deepEqual(await runtime.outboundRequests(),[]);
+   console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' '+name+': current native revision '+incident.revision+' with stale expected_revision -> isError revision_conflict and exact parent current_revision '+returned+' in metadata and text; no private result or native effect; fresh returned revision and key -> one agent-attributed '+(name==='oncall.incidents.acknowledge'?'acknowledgment naming active responder':'owned due-dated P1 human-review follow-up still open')+', '+disposition+'; new RPC id retry -> stored result, no duplicate effect or review; zero outbound requests');
+
+   // Target authority is checked before revision disclosure, under both policies.
+   const privateBefore=await snapshot();
+   for(const target of [foreign,{id:'synthetic-oncall-'+randomUUID(),revision:foreign.revision}]){
+    const denied=await tool(name,{...input,incident:target.id,revision:target.revision,expected_revision:target.revision-1,idempotency_key:randomUUID()},{},credential);
+    assert.equal(denied.status,200);assert.equal(denied.body.error,undefined);assert.equal(denied.result.isError,true);
+    assert.deepEqual(denied.result._meta['com.runeditrun/error'],{code:'not_found'});
+    assert.deepEqual(JSON.parse(denied.result.content[0].text),{code:'not_found'});
+    assert.equal(denied.result.structuredContent,undefined);
+    assert.deepEqual(await snapshot(),privateBefore,'Missing and scoped-out targets expose no revision and change no native or replay custody');
+   }
+   assert.deepEqual(await runtime.outboundRequests(),[]);
+   console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' '+name+' non-disclosure: scoped client with valid current native revision and stale optional revision against foreign and missing incidents -> identical not_found, no revision or private result; native custody unchanged; zero outbound requests');
+  }
+ }
+ assert.equal((await adopt()).status,200);
+}
+
 const runtime=await agentRuntime();
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
 try{
@@ -305,6 +430,7 @@ try{
  await changedArgumentConflicts(runtime);
  await consentRevocationMatrix(runtime);
  await staleNoteRevision(runtime);
+ await staleCoordinationRevision(runtime);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
  const owner=(await (await http('/api/workspace')).json()).member;
