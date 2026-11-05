@@ -86,6 +86,96 @@ async function droppedDeclarationReplay(runtime){
  assert.equal((await adopt()).status,200);
 }
 
+/** Lost acknowledgment and follow-up responses recover the original native effect. */
+async function droppedCoordinationReplay(runtime){
+ const {db,http,tool,adopt,discardToolResponse,context}=runtime;
+ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
+ const snapshot=()=>agentEffectSnapshot(runtime);
+ const audit=()=>rows('SELECT * FROM agent_door_audit ORDER BY sequence');
+ const calls=key=>rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,key);
+ const fixtures=['acknowledge','follow-up'].map(id=>context.surface.journey.find(row=>row.id===id));
+ const initial=await snapshot(),responder=initial.application.members.find(row=>row.active&&row.role==='responder');
+ assert.ok(responder,'Lost-response coordination names a real active responder');
+ for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
+  assert.equal((await adopt(policy)).status,200);
+  const preparation=await http('/api/command',{type:'declare',service:'agent-service',title:'Synthetic lost coordination response '+mode,
+   summary:'Native coordination without protected evidence',severity:'warning',alerts:[]});
+  assert.equal(preparation.status,200);
+  let incident=await preparation.json();
+  for(const fixture of fixtures){
+   const args={...fixture.args,incident:incident.id,revision:incident.revision,idempotency_key:randomUUID(),
+    ...(fixture.id==='acknowledge'?{member:responder.id}:{owner:responder.id})};
+   const before=await snapshot(),priorAudit=await audit();
+   const lost=await discardToolResponse(fixture.tool,args);
+   assert.equal(lost.status,200);
+   assert.equal(lost.discarded,true);assert.equal(lost.aborted,true);assert.equal(lost.bodyRead,false);
+   // Establish the first result from D1 before retrying; the HTTP body was destroyed.
+   const committedCalls=await calls(args.idempotency_key);
+   assert.equal(committedCalls.length,1);assert.equal(committedCalls[0].state,'done');
+   const call=committedCalls[0],saved=JSON.parse(call.outcome),once=await snapshot(),onceAudit=await audit();
+   assert.equal(saved.outcome,'done');assert.equal(saved.decision.id,call.decision_id);
+   assert.deepEqual(saved.decision.classes.map(({class:cls})=>({class:cls})),fixture.expect);
+   assert.equal(saved.decision.disposition,disposition);
+   const native=JSON.parse(once.records.oc_incidents.find(row=>row.id===incident.id).data);
+   assert.deepEqual(native,saved.result);
+   assert.deepEqual(once.application.incidents.find(row=>row.id===incident.id),native);
+   assert.equal(native.revision,args.revision+1);
+   assert.equal(once.application.revision,before.application.revision+1);
+   assert.equal(once.records.workspace_control[0].revision,before.records.workspace_control[0].revision+1);
+   assert.equal(once.application.incidents.length,before.application.incidents.length);
+   assert.equal(native.timeline.length,incident.timeline.length+1);
+   assert.deepEqual(native.timeline.slice(0,-1),incident.timeline);
+   const entry=native.timeline.at(-1);
+   assert.equal(entry.metadata.agent.agent.id,context.agentId);
+   assert.notEqual(entry.actor,responder.id,'The agent does not impersonate the named human');
+   if(fixture.id==='acknowledge'){
+    assert.equal(native.state,'acknowledged');assert.equal(native.commander,responder.id);assert.equal(native.assignee,responder.id);
+    assert.deepEqual(entry.lifecycle,{from:'declared',to:'acknowledged',member:responder.id});
+    assert.equal(entry.kind,'transition');assert.ok(entry.text.endsWith(args.summary));
+    assert.deepEqual(native.actions,incident.actions);
+   }else{
+    assert.equal(native.state,incident.state);assert.equal(native.commander,responder.id);assert.equal(native.assignee,responder.id);
+    assert.equal(native.actions.length,incident.actions.length+1);assert.deepEqual(native.actions.slice(0,-1),incident.actions);
+    const action=native.actions.at(-1);
+    assert.ok(action.id);assert.equal(action.title,args.title);assert.equal(action.owner,responder.id);
+    assert.equal(action.due,args.due);assert.equal(action.priority,'P1');assert.equal(action.completionPolicy,'human-review');
+    assert.equal(action.done,false);assert.equal(action.evidence,'');assert.equal(action.submission,undefined);assert.equal(action.accepted,undefined);
+    assert.equal(entry.kind,'action');assert.ok(entry.text.includes(action.title));
+   }
+   assert.equal(once.records.oc_admin_audit.length,before.records.oc_admin_audit.length+1,'Exactly one state-changing native audit commits before retry');
+   assert.deepEqual(once.records.agent_door_approvals,before.records.agent_door_approvals,'Standard-only coordination creates no approval');
+   const reviews=once.records.agent_door_reviews;
+   assert.equal(reviews.length,before.records.agent_door_reviews.length+Number(mode==='held'));
+   for(const review of before.records.agent_door_reviews)assert.deepEqual(reviews.find(row=>row.id===review.id),review);
+   if(mode==='held'){
+    const review=reviews.find(row=>row.id===saved.review.id);
+    assert.ok(review);assert.equal(review.state,'open');assert.equal(JSON.parse(review.saved).decision_id,call.decision_id);
+   }else assert.equal(saved.review,undefined);
+   for(const name of Object.keys(once.records).filter(name=>name.startsWith('paging_')))assert.deepEqual(once.records[name],before.records[name]);
+   assert.deepEqual(onceAudit.slice(0,-1),priorAudit);assert.equal(onceAudit.length,priorAudit.length+1);
+   const original=JSON.parse(onceAudit.at(-1).row);
+   assert.equal(original.id,call.decision_id);assert.equal(original.tool,fixture.tool);
+   assert.equal(original.outcome,'done');assert.equal(original.replay_of,null);assert.equal(original.idempotency_key,args.idempotency_key);
+   const replay=await tool(fixture.tool,args);
+   assert.equal(replay.status,200);assert.equal(replay.body.error,undefined);assert.notEqual(replay.body.id,lost.id);
+   assert.equal(replay.result.isError,false);assert.deepEqual(replay.result.structuredContent,saved.result);
+   assert.deepEqual(replay.result._meta['com.runeditrun/review'],saved.review);
+   assert.deepEqual(await calls(args.idempotency_key),committedCalls);
+   assert.deepEqual(await snapshot(),once,'Retry preserves application records, revisions, timeline, state-changing audit, original call and outcome, approvals, reviews and paging');
+   const retried=await audit();
+   assert.deepEqual(retried.slice(0,-1),onceAudit);assert.equal(retried.length,onceAudit.length+1);
+   const attempt=JSON.parse(retried.at(-1).row);
+   assert.equal(attempt.id,replay.decision.id);assert.notEqual(attempt.id,original.id);
+   assert.equal(attempt.outcome,'replayed');assert.equal(attempt.replay_of,call.decision_id);assert.equal(attempt.operation_id,original.operation_id);
+   assert.equal(attempt.tool,fixture.tool);assert.equal(attempt.idempotency_key,args.idempotency_key);
+   assert.deepEqual(await runtime.outboundRequests(),[]);
+   console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+' '+fixture.tool+': real MCP response destroyed at headers with unread body; native D1 original call, outcome and one agent-attributed '+(fixture.id==='acknowledge'?'acknowledgment for '+responder.name:'open owned P1 human-review follow-up '+native.actions.at(-1).id)+' committed before retry; new RPC id returns exact stored result; all retained effects unchanged; '+(mode==='held'?'one original open review; ':'')+'one linked replay-attempt audit; zero outbound requests');
+   incident=native;
+  }
+ }
+ assert.equal((await adopt()).status,200);
+}
+
 /** Completed native writes refuse changed arguments without consuming custody. */
 async function changedArgumentConflicts(runtime){
  const {db,http,tool,adopt,context}=runtime;
@@ -302,6 +392,7 @@ try{
  await policyAdoption(runtime);
  await pauseMatrix(runtime);
  await droppedDeclarationReplay(runtime);
+ await droppedCoordinationReplay(runtime);
  await changedArgumentConflicts(runtime);
  await consentRevocationMatrix(runtime);
  await staleNoteRevision(runtime);
