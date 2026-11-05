@@ -2,22 +2,38 @@
   "repository": "just-every/run-oncall",
   "head": "4fd06a85d0c45306bd87b14c23e0a51397e4e5e3",
   "verify": {
-    "conclusion": null,
+    "conclusion": "failure",
     "event": "push",
     "head_sha": "4fd06a85d0c45306bd87b14c23e0a51397e4e5e3",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/42131666811",
     "id": 42131666811,
     "name": "Verify",
-    "status": "in_progress"
+    "status": "completed"
   },
-  "observed_at": "2026-11-05T23:45:50Z",
+  "observed_at": "2026-11-05T23:51:17Z",
   "main_verify": 42026429002,
   "main_run_site": 42026429004,
   "main_head": "1f0b7327773a3963f5fce611295ffc3a251af65a",
   "prior_candidate_run": 42131081257,
   "prior_candidate_head": "50103221e786b4e90bd0ab2969937fb819f4089d",
-  "github_calls_used": 3,
+  "github_calls_used": 7,
   "dispatches_or_reruns": 0,
   "publication_scan": "fleet lander required; not run in cloud",
-  "candidate_run_site": "main-only workflow; fleet checks after landing"
+  "candidate_run_site": "main-only workflow; fleet checks after landing",
+  "primary_failure": {
+    "job": 127609634840,
+    "step": "Check the generated contract documents",
+    "command": "node src/base/contract-docs.mjs check",
+    "exit": 1,
+    "error": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+  },
+  "aggregate_failure_job": 127610107583,
+  "runtime_shards": "skipped after generated-view build failure",
+  "expected_generated_view_only": true,
+  "ready_exception": "Explicit cloud contract-generated-view exception; lander must regenerate views and rerun Verify before landing",
+  "failed_job_logs_read_once": [
+    127609634840,
+    127610107583
+  ],
+  "repair_rounds": 0
 }

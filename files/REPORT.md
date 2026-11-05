@@ -1,5 +1,7 @@
 # sd-oncall-c-f202
 
+Selected result: both required native revision diagnostics are complete under both policies. BASE-AGENT-012 remains MISSING; counts remain 17 DONE, 50 PARTIAL and 34 MISSING. Product head is 4fd06a85d0c45306bd87b14c23e0a51397e4e5e3. Exact-head local runtime, typecheck, first-party, generator and source-lock checks passed. Verify 42131666811 failed only because ACCEPTANCE.md must be regenerated, with the aggregate job failing from that build failure and runtime shards skipped. This is the explicitly permitted generated-view exception; no green CI run is claimed. No product blocker was observed for the selected slice. The fleet still owns publication scanning, view regeneration, exact-SHA Verify after regeneration, predecessor gates, landing and Run site.
+
 Repository: just-every/run-oncall. Product branch: cloud/sd-oncall-c-f202.
 
 ## Plan
@@ -86,3 +88,11 @@ PROBE BASE-AGENT-012 acceptance 4 held oncall.actions.create: stale required rev
 Verify run 42131666811 was discovered on the exact final head, event push, status in_progress. No other SHA supplies green candidate proof. Initial candidate Verify 42131081257 belongs only to 50103221e786b4e90bd0ab2969937fb819f4089d. No workflow was dispatched or rerun. The observation and later terminal result, if available, are recorded in CI.json. The cloud runtime uses Node 24.19.0 with pnpm 10.12.4; CI selects the repository Node 22.20.0 pin. The configured toolchain retained the newer local runtime as specified.
 
 The exact final head runtime journey exited 0 in 86.653 seconds; typecheck exited 0; first-party check exited 0. All four selected required-revision probes passed. All other maintained agent flow checks also passed while retaining their documented external and Base seams. Final generator write and check and source lock write and check exited 0. Product checkout is clean. No known product failure or selected-point blocker remains. Whole-clause completion and landing remain unclaimed.
+
+The initial evidence packet was independently fetched and every manifest file hash and blob identity verified at evidence head a635d5ed872e573e19f82d50e5b7aaa848c77168, with product head 4fd06a85d0c45306bd87b14c23e0a51397e4e5e3. The actual transfer-verification.json receipt is retained. The final evidence publication may add the terminal CI observation while preserving this complete receipt. Product custody and report transfer remain separate.
+
+## Terminal CI observation
+
+Exact-head Verify 42131666811 completed with conclusion failure. Primary job 127609634840 failed only at `node src/base/contract-docs.mjs check`, reporting `ACCEPTANCE.md: generated content differs; run contract-docs write.` Contract prose had zero errors and warnings. The aggregate verification job 127610107583 failed because build=failure and shards=skipped. No runtime assertion failed in CI; runtime shards did not execute. Both failed-job archives were read exactly once with the prescribed gh run view command, and both archive reads succeeded. Seven GitHub calls were used, with no dispatch or rerun and no CI repair round.
+
+The generated-view exception applies explicitly. No view is committed or repaired to obtain green CI. Local generation and its check already passed before the views were restored from main, and the exact-candidate source lock is fresh. The fleet must regenerate the merged views and require Verify on its resulting commit before landing. The final report uses READY only under that explicit handoff exception and makes no publication, acceptance, release or Run site claim.
