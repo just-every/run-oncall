@@ -249,7 +249,9 @@ async function staleCoordinationRevision(runtime){
  const client=await http('/api/automation/clients',{name:'Synthetic revision scope',key:scopedKey,
   services:['agent-foreign-service'],permissions:['incidents:write','actions:write']});
  assert.equal(client.status,201);await client.body?.cancel();
- assert.equal((await runtime.mcpWithToken(scopedKey,'tools/list')).status,200);
+ const scopedProbe=await tool('oncall.incidents.acknowledge',{incident:'synthetic-oncall-missing-incident',revision:0,
+  member:responder.id,summary:'Initialize the scoped refusal probe',idempotency_key:randomUUID()},{},scopedKey);
+ assert.equal(scopedProbe.result._meta['com.runeditrun/error'].code,'not_found');
  for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
   assert.equal((await adopt(policy)).status,200);
   for(const name of ['oncall.incidents.acknowledge','oncall.actions.create']){
