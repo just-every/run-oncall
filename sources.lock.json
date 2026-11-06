@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+      "sha256": "dd1f3281fe780089d982f080cd2846076330e3a3a4ac9dbc75c679f77aff1b3e",
       "executable": false
     },
     "DEMO.md": {
@@ -1668,7 +1668,7 @@
       "executable": false
     },
     "src/agent-door/coordination-tools.ts": {
-      "sha256": "6bc34b311155216ead313335396ab1058d0c5b9e90eb6f7a5c150f544d1089b1",
+      "sha256": "3ddfde43f48bfee5a9fd78c2ef064b889ade7e8fad9cca0fb437612c64824b69",
       "executable": false
     },
     "src/agent-door/deadlines.ts": {
@@ -1728,7 +1728,7 @@
       "executable": false
     },
     "src/agent-door/service-tools.ts": {
-      "sha256": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
+      "sha256": "f7f6827e1a28b97ea39c8383618577f241cba44767b120dce0aa95ca1824df85",
       "executable": false
     },
     "src/agent-door/team-receipts.ts": {
@@ -6480,7 +6480,11 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "7af8a32f44e7d8f6d6aed3c693506e53608a1ac1dd91034c8a04938672776870",
+      "sha256": "237696e69f6cc3801b3581f883867be20d56abd7feb8c3abe2ed19ccf558e2eb",
+      "executable": false
+    },
+    "tests/oncall-agent-native-revisions.mjs": {
+      "sha256": "21de12821afc0a9ae6f95ba7d21d57a07d609759e20b382ed3d8e516336242d3",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {

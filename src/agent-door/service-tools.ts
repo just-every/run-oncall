@@ -22,7 +22,7 @@ export function serviceTools(env: Bindings): ToolDefinition[] {
     summary:(args,ctx)=>nativeCall(async()=>{const {old}=await get(args,ctx);return {target:{id:old.id,name:old.name},items:[`ETag ${args.etag}`,JSON.stringify(args)]}}),
     run:(args,ctx)=>nativeCall(async()=>{
       const {current,etag}=await get(args,ctx)
-      if(args.etag!==etag)throw new ToolRefusal('revision_conflict')
+      if(args.etag!==etag)throw new ToolRefusal('revision_conflict', undefined, { current_revision: etag })
       if(Array.isArray(args.dependencies)&&args.dependencies.some(id=>!current.services.includes(String(id))))throw new ToolRefusal('not_found')
       const result=command(current.state,nativeActor(current,ctx),{...args,type:'service'}) as {id:string;dependencies?:string[]}
       nativeAudit(env,ctx,'service.update',result.id);await persistNative(env,current)
