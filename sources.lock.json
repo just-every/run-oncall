@@ -1728,7 +1728,7 @@
       "executable": false
     },
     "src/agent-door/service-tools.ts": {
-      "sha256": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
+      "sha256": "9fe46825c849ef6de529aad71b4057a1b5ddce51e808411313b0e440a8600c92",
       "executable": false
     },
     "src/agent-door/team-receipts.ts": {
