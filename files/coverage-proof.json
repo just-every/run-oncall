@@ -1,0 +1,55 @@
+{
+  "push_jobs_before": 8,
+  "push_jobs_after": 7,
+  "entrypoint_invocations_before": 11,
+  "entrypoint_invocations_after": 14,
+  "expanded_existing_groups_before": [
+    "tests/activation.mjs:None",
+    "tests/changes.mjs:None",
+    "tests/import-door.mjs:None",
+    "tests/intake.mjs:None",
+    "tests/member-coordination-browser.mjs:None",
+    "tests/product-browser.mjs:None",
+    "tests/routing.mjs:None",
+    "tests/runtime.mjs:core",
+    "tests/runtime.mjs:machines",
+    "tests/transfer.mjs:None",
+    "tests/triage.mjs:bounds",
+    "tests/triage.mjs:bulk",
+    "tests/triage.mjs:reports",
+    "tests/triage.mjs:storm"
+  ],
+  "expanded_existing_groups_after": [
+    "tests/activation.mjs:None",
+    "tests/changes.mjs:None",
+    "tests/import-door.mjs:None",
+    "tests/intake.mjs:None",
+    "tests/member-coordination-browser.mjs:None",
+    "tests/product-browser.mjs:None",
+    "tests/routing.mjs:None",
+    "tests/runtime.mjs:core",
+    "tests/runtime.mjs:machines",
+    "tests/transfer.mjs:None",
+    "tests/triage.mjs:bounds",
+    "tests/triage.mjs:bulk",
+    "tests/triage.mjs:reports",
+    "tests/triage.mjs:storm"
+  ],
+  "expanded_group_count": 14,
+  "duplicate_or_missing_groups": 0,
+  "triage_original_bodies_byte_identical": true,
+  "unchanged_default_group_order": [
+    "bulk",
+    "bounds",
+    "storm",
+    "reports"
+  ],
+  "invalid_selector_refuses": true,
+  "browser_category_unchanged": true,
+  "flows_category_unchanged": true,
+  "hosted_command_once": true,
+  "runtime_parts": [
+    "core",
+    "machines"
+  ]
+}

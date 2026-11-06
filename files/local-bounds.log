@@ -1,0 +1,6 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE OC-079 500 selected: protected bulk HTTP -> 500 unique successful alert resolutions in 250 identical-payload continuations, expected revisions and responder history; completed retry preserves all records and results with one value-free attempt audit; source lifecycle and paging custody unchanged, no incident and zero outbound requests.
+PROBE OC-079 refusal bounds: protected bulk HTTP -> selected count 499 and matching count 999 refuse 409 for confirmation; 501 selected and 1001 matching refuse 400 for the published bound; no application effects and only value-free refusal audit.
+PROBE OC-079 1000 matching: protected bulk HTTP -> 1000 unique successful alert resolutions in 500 identical-payload continuations, expected revisions and responder history; completed retry preserves all records and results with one value-free attempt audit; source lifecycle and paging custody unchanged, no incident and zero outbound requests.

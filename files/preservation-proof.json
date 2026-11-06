@@ -1,0 +1,62 @@
+[
+  {
+    "path": "CONTRACT.md",
+    "sha256": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+    "unchanged": true
+  },
+  {
+    "path": "ACCEPTANCE.md",
+    "sha256": "3f378dfd597df0bf5575cf45fb5547f944ca1200d63fe6ff44b2d744eaa63c7e",
+    "unchanged": true
+  },
+  {
+    "path": "docs/CLAIMS.md",
+    "sha256": "e26ef886858d426a95d21c4ffa898189cf7df559811cc5ba0f6db37719652afa",
+    "unchanged": true
+  },
+  {
+    "path": "base-copies.json",
+    "sha256": "89ab6d574875e8dc79a7996f564baf812416cdcc7240d47d9b8b153ff4ab91d5",
+    "unchanged": true
+  },
+  {
+    "path": "edition.json",
+    "sha256": "39fb70dcaad16c656b6a17c813b1c4f1f9c0242dfb0787ddc242a296e53b68e5",
+    "unchanged": true
+  },
+  {
+    "path": "package.json",
+    "sha256": "dbf2237098b1fe9f93a6e7ff1517b44ea706750a853f98474177f543d8e08bff",
+    "unchanged": true
+  },
+  {
+    "path": "pnpm-lock.yaml",
+    "sha256": "1de165c05b251b13b9a8456c1c0c3c196dd69d04a49d4318d625cae874b0863d",
+    "unchanged": true
+  },
+  {
+    "path": ".github/workflows/verify.yml",
+    "sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
+    "unchanged": true
+  },
+  {
+    "path": ".github/workflows/verify-nightly.yml",
+    "sha256": "6106151071269ec353d79c622b66611eca504519aff53a5575b948209d62e791",
+    "unchanged": true
+  },
+  {
+    "path": ".github/workflows/run-site.yml",
+    "sha256": "f63166fb907bf7746113bb629324b891d0ace89b0e0255808d5095186d1a989b",
+    "unchanged": true
+  },
+  {
+    "path": ".github/workflows/run-demo.yml",
+    "sha256": "fcc90f33d454dbacf1f645a4b28ccfb9b2088a0b24d8c264c42fa1fe0c014d74",
+    "unchanged": true
+  },
+  {
+    "path": ".github/workflows/rer-managed.yml",
+    "sha256": "505e641e1ef3e8f41cb35657b4d4101cc80279bda55f78537ead0b7f5fa794c1",
+    "unchanged": true
+  }
+]

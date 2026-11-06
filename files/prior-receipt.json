@@ -1,0 +1,51 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-runtime-cishape-20261106-1",
+  "head": "d2535e40fefe03697aaa62c8ef9cd917cc250bc1",
+  "tree": "79b48ca823f462f0b4d766b88c1ed26ee6aba658",
+  "base": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "push_result": "PUSH_OK",
+  "attempts": 1,
+  "advertised_remote_head": "d2535e40fefe03697aaa62c8ef9cd917cc250bc1",
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-runtime-cishape-20261106-1",
+  "product_ref_only": true,
+  "pr_url": null,
+  "changed_files": [
+    "scripts/verify-shards.json",
+    "sources.lock.json"
+  ],
+  "local_checks": "passed",
+  "publication_scan": "PASS",
+  "ci_status": "in_progress",
+  "clause_changes": [],
+  "status_counts_before": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "status_counts_after": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "new_registration_count": 0,
+  "push_shards_before": 5,
+  "push_shards_after": 8,
+  "registrations_before": 11,
+  "registrations_after": 11,
+  "direct_assertion_sites_before": 5514,
+  "direct_assertion_sites_after": 5514,
+  "updated_at": "2026-11-06T08:34:44.325113+00:00",
+  "custody": "PUSHED",
+  "ci_conclusion": null,
+  "ci_run_id": 42187978821,
+  "ci_run_url": "https://github.com/just-every/run-oncall/actions/runs/42187978821",
+  "ci_exact_head_sha": "d2535e40fefe03697aaa62c8ef9cd917cc250bc1",
+  "candidate_timing_available": false,
+  "remaining_evidence": [
+    "exact-SHA Verify conclusion",
+    "candidate runtime and other shard durations",
+    "<=1.5x mean shard and <=10 minute Verify targets"
+  ],
+  "blockers": []
+}

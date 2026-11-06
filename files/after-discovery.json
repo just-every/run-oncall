@@ -1,0 +1,968 @@
+{
+  "plan": {
+    "lanes": {
+      "runtime": [
+        {
+          "file": "tests/runtime.mjs",
+          "part": "core"
+        },
+        {
+          "file": "tests/triage.mjs",
+          "env": {
+            "ONCALL_TRIAGE_PART": "bulk"
+          }
+        },
+        {
+          "file": "tests/triage.mjs",
+          "env": {
+            "ONCALL_TRIAGE_PART": "storm"
+          }
+        }
+      ],
+      "intake": [
+        {
+          "file": "tests/runtime.mjs",
+          "part": "machines"
+        },
+        "tests/intake.mjs",
+        "tests/routing.mjs"
+      ],
+      "browser": [
+        "tests/member-coordination-browser.mjs",
+        "tests/product-browser.mjs"
+      ],
+      "hosted": [],
+      "transfer": [
+        "tests/transfer.mjs"
+      ],
+      "changes": [
+        "tests/changes.mjs",
+        "tests/activation.mjs"
+      ],
+      "triage": [
+        {
+          "file": "tests/triage.mjs",
+          "env": {
+            "ONCALL_TRIAGE_PART": "bounds"
+          }
+        }
+      ],
+      "imports": [
+        "tests/import-door.mjs",
+        {
+          "file": "tests/triage.mjs",
+          "env": {
+            "ONCALL_TRIAGE_PART": "reports"
+          }
+        }
+      ]
+    },
+    "push": [
+      {
+        "name": "runtime",
+        "lanes": [
+          "runtime"
+        ],
+        "browser": false,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "intake",
+        "lanes": [
+          "intake"
+        ],
+        "browser": false,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "browser",
+        "lanes": [
+          "browser"
+        ],
+        "browser": true,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "hosted",
+        "lanes": [
+          "hosted"
+        ],
+        "browser": true,
+        "hosted": true,
+        "timeout": 15
+      },
+      {
+        "name": "transfer",
+        "lanes": [
+          "transfer"
+        ],
+        "browser": true,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "changes",
+        "lanes": [
+          "changes",
+          "imports"
+        ],
+        "browser": false,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "triage",
+        "lanes": [
+          "triage"
+        ],
+        "browser": false,
+        "hosted": false,
+        "timeout": 15
+      }
+    ],
+    "nightly": []
+  },
+  "selections": {
+    "all:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "core",
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "bulk",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "storm",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "machines",
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/intake.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/routing.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/member-coordination-browser.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/product-browser.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/transfer.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/changes.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/activation.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "bounds",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/import-door.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "reports",
+        "lane": null,
+        "prebuilt": null
+      }
+    ],
+    "all:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "core",
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "bulk",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "storm",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "machines",
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/intake.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/routing.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/changes.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/activation.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "bounds",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/import-door.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "reports",
+        "lane": null,
+        "prebuilt": null
+      }
+    ],
+    "all:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/member-coordination-browser.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/product-browser.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/transfer.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": null,
+        "prebuilt": null
+      }
+    ],
+    "runtime:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "core",
+        "triagePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "bulk",
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "storm",
+        "lane": "runtime",
+        "prebuilt": null
+      }
+    ],
+    "intake:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "machines",
+        "triagePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/intake.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/routing.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      }
+    ],
+    "browser:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/member-coordination-browser.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/product-browser.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      }
+    ],
+    "hosted:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      }
+    ],
+    "transfer:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/transfer.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      }
+    ],
+    "changes:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/changes.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/activation.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      }
+    ],
+    "triage:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "bounds",
+        "lane": "triage",
+        "prebuilt": null
+      }
+    ],
+    "imports:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/import-door.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "triagePart": "reports",
+        "lane": "imports",
+        "prebuilt": null
+      }
+    ]
+  }
+}

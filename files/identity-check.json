@@ -1,0 +1,24 @@
+{
+  "all_candidates_including_side_parents": true,
+  "passed": true,
+  "commits": [
+    {
+      "commit": "534709f51591399b4a050d652b2028fc3daceb05",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": ""
+    },
+    {
+      "commit": "653f6b77aadcc3e049f433bf1f907434cb3cb356",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": ""
+    },
+    {
+      "commit": "d2535e40fefe03697aaa62c8ef9cd917cc250bc1",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": ""
+    }
+  ]
+}

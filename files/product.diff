@@ -1,0 +1,180 @@
+diff --git a/scripts/verify-shards.json b/scripts/verify-shards.json
+index 71aff25..811277d 100644
+--- a/scripts/verify-shards.json
++++ b/scripts/verify-shards.json
+@@ -5,9 +5,18 @@
+         "file": "tests/runtime.mjs",
+         "part": "core"
+       },
+-      "tests/changes.mjs",
+-      "tests/triage.mjs",
+-      "tests/activation.mjs"
++      {
++        "file": "tests/triage.mjs",
++        "env": {
++          "ONCALL_TRIAGE_PART": "bulk"
++        }
++      },
++      {
++        "file": "tests/triage.mjs",
++        "env": {
++          "ONCALL_TRIAGE_PART": "storm"
++        }
++      }
+     ],
+     "intake": [
+       {
+@@ -15,8 +24,7 @@
+         "part": "machines"
+       },
+       "tests/intake.mjs",
+-      "tests/routing.mjs",
+-      "tests/import-door.mjs"
++      "tests/routing.mjs"
+     ],
+     "browser": [
+       "tests/member-coordination-browser.mjs",
+@@ -25,6 +33,27 @@
+     "hosted": [],
+     "transfer": [
+       "tests/transfer.mjs"
++    ],
++    "changes": [
++      "tests/changes.mjs",
++      "tests/activation.mjs"
++    ],
++    "triage": [
++      {
++        "file": "tests/triage.mjs",
++        "env": {
++          "ONCALL_TRIAGE_PART": "bounds"
++        }
++      }
++    ],
++    "imports": [
++      "tests/import-door.mjs",
++      {
++        "file": "tests/triage.mjs",
++        "env": {
++          "ONCALL_TRIAGE_PART": "reports"
++        }
++      }
+     ]
+   },
+   "push": [
+@@ -72,6 +101,25 @@
+       "browser": true,
+       "hosted": false,
+       "timeout": 15
++    },
++    {
++      "name": "changes",
++      "lanes": [
++        "changes",
++        "imports"
++      ],
++      "browser": false,
++      "hosted": false,
++      "timeout": 15
++    },
++    {
++      "name": "triage",
++      "lanes": [
++        "triage"
++      ],
++      "browser": false,
++      "hosted": false,
++      "timeout": 15
+     }
+   ],
+   "nightly": []
+diff --git a/sources.lock.json b/sources.lock.json
+index 4d8eeea..8b94566 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -1644,7 +1644,7 @@
+       "executable": false
+     },
+     "scripts/verify-shards.json": {
+-      "sha256": "970adcce3e2e973e5ebb4569c4a623c7f4582262be8830bb0504b23c0082fabd",
++      "sha256": "558e38aec3a7aa2ad7f43ee03d34a90f43b9c24104100daeedf290a907b6c0eb",
+       "executable": false
+     },
+     "scripts/write-agent-surface.mjs": {
+@@ -6532,11 +6532,11 @@
+       "executable": false
+     },
+     "tests/triage.mjs": {
+-      "sha256": "39c5d68db62b3f137f40b7c5f275d29aa80b30fa1cc4bbf40dc93bbd437c07de",
++      "sha256": "154c1b4372b488fa33eaed21e09265aec7fd2e5cc27ed7d702c52e613a778270",
+       "executable": false
+     },
+     "tests/verify.mjs": {
+-      "sha256": "869b5f2351981b1e3d50fca01062de2dcd6d8639758cd2d251063b19f91a099a",
++      "sha256": "b52d6b62398894847bfd9da8dd6bc7a93fcbe803548dc72ba9f61997e7844c7e",
+       "executable": false
+     },
+     "tests/worker-server.mjs": {
+diff --git a/tests/triage.mjs b/tests/triage.mjs
+index ab8aa16..9a52502 100644
+--- a/tests/triage.mjs
++++ b/tests/triage.mjs
+@@ -4,6 +4,10 @@ import assert from 'node:assert/strict'
+ import {randomBytes,createHash} from 'node:crypto'
+ import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
+ import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
++// Select whole independent journeys; the default still runs every group in order.
++const triagePart=process.env.ONCALL_TRIAGE_PART??'all';
++if(!['all','bulk','bounds','storm','reports'].includes(triagePart))throw Error(`Unknown triage journey: ${triagePart}`);
++const selected=part=>triagePart==='all'||triagePart===part;
+ // triage-bulk: part of this public journey.
+ export async function triageBulkCompletion(){
+  const ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value;};
+@@ -299,9 +303,10 @@ async function triageAlertResolveBounds(){
+  }finally{await w.close();}
+ }
+ 
+-await triageBulkCompletion();
+-await triageAlertResolveBounds();
++if(selected('bulk'))await triageBulkCompletion();
++if(selected('bounds'))await triageAlertResolveBounds();
+ 
++if(selected('storm')) {
+ // One storm journey through emitted Worker/D1 HTTP: query, coordinate and restore.
+ const w = await localWorker({INBOUND_EMAIL_DOMAIN: 'inbound.example.test'}, {clock:true,outboundLedger:true});
+ const passwords = {owner: randomBytes(24).toString('hex'), scribe: randomBytes(24).toString('hex'), viewer: randomBytes(24).toString('hex')};
+@@ -877,8 +882,10 @@ try {
+  }finally{await runtime.close();}
+ }
+ 
++}
++
+ // Coordinated incidents feed fair response reports, matching CSV and erasure-safe denominators.
+-{
++if(selected('reports')) {
+ const {default:assert}=await import('node:assert/strict')
+ const {randomBytes}=await import('node:crypto')
+ const {localWorker}=await import('./worker.mjs')
+diff --git a/tests/verify.mjs b/tests/verify.mjs
+index 9bbb934..224f620 100644
+--- a/tests/verify.mjs
++++ b/tests/verify.mjs
+@@ -15,8 +15,8 @@ const selected=Object.entries(suites).filter(([name])=>lane?name===lane:category
+ const commands=[
+  ...(prebuilt?[]:preparation.map(([cmd,args])=>({cmd,args}))),
+  ...selected.map(entry=>{
+-  const {file,part}=typeof entry==='string'?{file:entry}:entry
+-  return {cmd:process.execPath,args:[file],env:part?{ONCALL_RUNTIME_PART:part}:{}}
++  const {file,part,env}=typeof entry==='string'?{file:entry}:entry
++  return {cmd:process.execPath,args:[file],env:{...env,...(part?{ONCALL_RUNTIME_PART:part}:{})}}
+  }),
+ ]
+ for(const {cmd,args,env} of commands){
+@@ -24,6 +24,6 @@ for(const {cmd,args,env} of commands){
+  const result=spawnSync(cmd,args,{stdio:'inherit',env:{...process.env,WRANGLER_SEND_METRICS:'false',...env}})
+  if(result.error)throw result.error
+  if(result.status!==0)process.exit(result.status??1)
+- console.log(`Journey completed: ${args.join(' ')}${env?.ONCALL_RUNTIME_PART?' '+env.ONCALL_RUNTIME_PART:''} (${((performance.now()-started)/1000).toFixed(1)}s)`)
++ console.log(`Journey completed: ${args.join(' ')}${Object.keys(env??{}).length?' '+JSON.stringify(env):''} (${((performance.now()-started)/1000).toFixed(1)}s)`)
+ }
+ console.log(`Oncall verification passed: ${lane??'all public application, browser and installation journeys'}`)

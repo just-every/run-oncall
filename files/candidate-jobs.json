@@ -1,0 +1,1298 @@
+{
+  "jobs": [
+    {
+      "completed_at": "2026-11-06T11:55:11Z",
+      "conclusion": "success",
+      "id": 127878449573,
+      "name": "plan",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:55:03Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T11:55:05Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T11:55:04Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:55:07Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:55:05Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:55:07Z",
+          "conclusion": "success",
+          "name": "Check reusable workflow permissions",
+          "started_at": "2026-11-06T11:55:07Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:55:07Z",
+          "conclusion": "skipped",
+          "name": "Look up complete nightly marker",
+          "started_at": "2026-11-06T11:55:07Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:55:08Z",
+          "conclusion": "success",
+          "name": "Run node scripts/verify-oncall.mjs --plan",
+          "started_at": "2026-11-06T11:55:07Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:55:09Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:55:08Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:55:09Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T11:55:09Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T11:57:49Z",
+      "conclusion": "success",
+      "id": 127878517769,
+      "name": "build",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:55:13Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T11:55:16Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T11:55:14Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:55:18Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:55:16Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:56:57Z",
+          "conclusion": "success",
+          "name": "Free unused runner SDKs for the 15 GiB disk guard",
+          "started_at": "2026-11-06T11:55:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:02Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T11:56:57Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:03Z",
+          "conclusion": "success",
+          "name": "Run npm install --global pnpm@10.12.4",
+          "started_at": "2026-11-06T11:57:02Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:04Z",
+          "conclusion": "success",
+          "name": "Run pnpm config set store-dir \"$RUNNER_TEMP/pnpm-store\"",
+          "started_at": "2026-11-06T11:57:03Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:08Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-06T11:57:04Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:14Z",
+          "conclusion": "success",
+          "name": "Run pnpm install --frozen-lockfile",
+          "started_at": "2026-11-06T11:57:08Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:14Z",
+          "conclusion": "success",
+          "name": "Check the generated contract documents",
+          "started_at": "2026-11-06T11:57:14Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:15Z",
+          "conclusion": "success",
+          "name": "Check edition source lock with the installed package",
+          "started_at": "2026-11-06T11:57:14Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:20Z",
+          "conclusion": "success",
+          "name": "Run pnpm run deps",
+          "started_at": "2026-11-06T11:57:15Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:42Z",
+          "conclusion": "success",
+          "name": "Check, build and typecheck the exact checkout once",
+          "started_at": "2026-11-06T11:57:20Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:43Z",
+          "conclusion": "success",
+          "name": "Package the shared build and its exact-SHA receipt",
+          "started_at": "2026-11-06T11:57:42Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:45Z",
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v4",
+          "started_at": "2026-11-06T11:57:43Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:45Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-06T11:57:45Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:45Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T11:57:45Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:45Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:57:45Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:45Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T11:57:45Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T11:55:11Z",
+      "conclusion": "skipped",
+      "id": 127878519865,
+      "name": "light",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:55:11Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-06T12:09:15Z",
+      "conclusion": "success",
+      "id": 127879571776,
+      "name": "shards (transfer)",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:57:51Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T11:57:54Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T11:57:52Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:54Z",
+          "conclusion": "success",
+          "name": "Set runner-owned browser cache",
+          "started_at": "2026-11-06T11:57:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:35Z",
+          "conclusion": "success",
+          "name": "Free unused runner SDKs for the 15 GiB disk guard",
+          "started_at": "2026-11-06T11:57:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:37Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:59:35Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:42Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T11:59:37Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:43Z",
+          "conclusion": "success",
+          "name": "Run npm install --global pnpm@10.12.4",
+          "started_at": "2026-11-06T11:59:42Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:44Z",
+          "conclusion": "success",
+          "name": "Set runner-owned pnpm store",
+          "started_at": "2026-11-06T11:59:43Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:44Z",
+          "conclusion": "success",
+          "name": "Prepare runner-owned browser and apt caches",
+          "started_at": "2026-11-06T11:59:44Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:50Z",
+          "conclusion": "success",
+          "name": "Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T11:59:44Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:57Z",
+          "conclusion": "success",
+          "name": "Run pnpm install --frozen-lockfile",
+          "started_at": "2026-11-06T11:59:50Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:57Z",
+          "conclusion": "success",
+          "name": "Check the generated contract documents",
+          "started_at": "2026-11-06T11:59:57Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:57Z",
+          "conclusion": "success",
+          "name": "Check edition source lock with the installed package",
+          "started_at": "2026-11-06T11:59:57Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:03Z",
+          "conclusion": "success",
+          "name": "Run pnpm run deps",
+          "started_at": "2026-11-06T11:59:57Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:04Z",
+          "conclusion": "success",
+          "name": "Install and probe Chromium before system dependencies",
+          "started_at": "2026-11-06T12:00:03Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:04Z",
+          "conclusion": "success",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-06T12:00:04Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:06Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v4",
+          "started_at": "2026-11-06T12:00:04Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:06Z",
+          "conclusion": "success",
+          "name": "Restore the exact checkout's shared production build",
+          "started_at": "2026-11-06T12:00:06Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:09Z",
+          "conclusion": "success",
+          "name": "Run this shard",
+          "started_at": "2026-11-06T12:00:06Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:11Z",
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v4",
+          "started_at": "2026-11-06T12:09:09Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:11Z",
+          "conclusion": "success",
+          "name": "Post Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T12:09:11Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:11Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T12:09:11Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:11Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T12:09:11Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:11Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T12:09:11Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T12:03:46Z",
+      "conclusion": "success",
+      "id": 127879571806,
+      "name": "shards (hosted)",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:57:51Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T11:57:54Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T11:57:51Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:54Z",
+          "conclusion": "success",
+          "name": "Set runner-owned browser cache",
+          "started_at": "2026-11-06T11:57:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:11Z",
+          "conclusion": "success",
+          "name": "Free unused runner SDKs for the 15 GiB disk guard",
+          "started_at": "2026-11-06T11:57:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:13Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T12:01:11Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:17Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T12:01:13Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:18Z",
+          "conclusion": "success",
+          "name": "Run npm install --global pnpm@10.12.4",
+          "started_at": "2026-11-06T12:01:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:18Z",
+          "conclusion": "success",
+          "name": "Set runner-owned pnpm store",
+          "started_at": "2026-11-06T12:01:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:18Z",
+          "conclusion": "success",
+          "name": "Prepare runner-owned browser and apt caches",
+          "started_at": "2026-11-06T12:01:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:23Z",
+          "conclusion": "success",
+          "name": "Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T12:01:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:29Z",
+          "conclusion": "success",
+          "name": "Run pnpm install --frozen-lockfile",
+          "started_at": "2026-11-06T12:01:23Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:29Z",
+          "conclusion": "success",
+          "name": "Check the generated contract documents",
+          "started_at": "2026-11-06T12:01:29Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:29Z",
+          "conclusion": "success",
+          "name": "Check edition source lock with the installed package",
+          "started_at": "2026-11-06T12:01:29Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:34Z",
+          "conclusion": "success",
+          "name": "Run pnpm run deps",
+          "started_at": "2026-11-06T12:01:29Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:37Z",
+          "conclusion": "success",
+          "name": "Install and probe Chromium before system dependencies",
+          "started_at": "2026-11-06T12:01:34Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:37Z",
+          "conclusion": "success",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-06T12:01:37Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:38Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v4",
+          "started_at": "2026-11-06T12:01:37Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:01:38Z",
+          "conclusion": "success",
+          "name": "Restore the exact checkout's shared production build",
+          "started_at": "2026-11-06T12:01:38Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:03:43Z",
+          "conclusion": "success",
+          "name": "Run this shard",
+          "started_at": "2026-11-06T12:01:38Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:03:43Z",
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v4",
+          "started_at": "2026-11-06T12:03:43Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:03:43Z",
+          "conclusion": "success",
+          "name": "Post Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T12:03:43Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:03:43Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T12:03:43Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:03:43Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T12:03:43Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:03:43Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T12:03:43Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T12:08:34Z",
+      "conclusion": "success",
+      "id": 127879571877,
+      "name": "shards (intake)",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:57:51Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T11:57:53Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T11:57:51Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:53Z",
+          "conclusion": "success",
+          "name": "Set runner-owned browser cache",
+          "started_at": "2026-11-06T11:57:53Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:25Z",
+          "conclusion": "success",
+          "name": "Free unused runner SDKs for the 15 GiB disk guard",
+          "started_at": "2026-11-06T11:57:53Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:28Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:59:25Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:32Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T11:59:28Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:33Z",
+          "conclusion": "success",
+          "name": "Run npm install --global pnpm@10.12.4",
+          "started_at": "2026-11-06T11:59:32Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:34Z",
+          "conclusion": "success",
+          "name": "Set runner-owned pnpm store",
+          "started_at": "2026-11-06T11:59:33Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:34Z",
+          "conclusion": "skipped",
+          "name": "Prepare runner-owned browser and apt caches",
+          "started_at": "2026-11-06T11:59:34Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:36Z",
+          "conclusion": "success",
+          "name": "Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T11:59:34Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:42Z",
+          "conclusion": "success",
+          "name": "Run pnpm install --frozen-lockfile",
+          "started_at": "2026-11-06T11:59:36Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:42Z",
+          "conclusion": "success",
+          "name": "Check the generated contract documents",
+          "started_at": "2026-11-06T11:59:42Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:43Z",
+          "conclusion": "success",
+          "name": "Check edition source lock with the installed package",
+          "started_at": "2026-11-06T11:59:42Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:48Z",
+          "conclusion": "success",
+          "name": "Run pnpm run deps",
+          "started_at": "2026-11-06T11:59:43Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:48Z",
+          "conclusion": "skipped",
+          "name": "Install and probe Chromium before system dependencies",
+          "started_at": "2026-11-06T11:59:48Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:48Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-06T11:59:48Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:49Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v4",
+          "started_at": "2026-11-06T11:59:48Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:49Z",
+          "conclusion": "success",
+          "name": "Restore the exact checkout's shared production build",
+          "started_at": "2026-11-06T11:59:49Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:08:31Z",
+          "conclusion": "success",
+          "name": "Run this shard",
+          "started_at": "2026-11-06T11:59:49Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:08:32Z",
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v4",
+          "started_at": "2026-11-06T12:08:31Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:08:32Z",
+          "conclusion": "success",
+          "name": "Post Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T12:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:08:32Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T12:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:08:32Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T12:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:08:32Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T12:08:32Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T12:06:07Z",
+      "conclusion": "success",
+      "id": 127879571910,
+      "name": "shards (changes)",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:57:51Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T11:57:52Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T11:57:51Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:52Z",
+          "conclusion": "success",
+          "name": "Set runner-owned browser cache",
+          "started_at": "2026-11-06T11:57:52Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:37Z",
+          "conclusion": "success",
+          "name": "Free unused runner SDKs for the 15 GiB disk guard",
+          "started_at": "2026-11-06T11:57:52Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:40Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:58:37Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:44Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T11:58:40Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:45Z",
+          "conclusion": "success",
+          "name": "Run npm install --global pnpm@10.12.4",
+          "started_at": "2026-11-06T11:58:44Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:46Z",
+          "conclusion": "success",
+          "name": "Set runner-owned pnpm store",
+          "started_at": "2026-11-06T11:58:45Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:46Z",
+          "conclusion": "skipped",
+          "name": "Prepare runner-owned browser and apt caches",
+          "started_at": "2026-11-06T11:58:46Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:48Z",
+          "conclusion": "success",
+          "name": "Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T11:58:46Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:54Z",
+          "conclusion": "success",
+          "name": "Run pnpm install --frozen-lockfile",
+          "started_at": "2026-11-06T11:58:48Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:54Z",
+          "conclusion": "success",
+          "name": "Check the generated contract documents",
+          "started_at": "2026-11-06T11:58:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:55Z",
+          "conclusion": "success",
+          "name": "Check edition source lock with the installed package",
+          "started_at": "2026-11-06T11:58:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:00Z",
+          "conclusion": "success",
+          "name": "Run pnpm run deps",
+          "started_at": "2026-11-06T11:58:55Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:00Z",
+          "conclusion": "skipped",
+          "name": "Install and probe Chromium before system dependencies",
+          "started_at": "2026-11-06T11:59:00Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:00Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-06T11:59:00Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:01Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v4",
+          "started_at": "2026-11-06T11:59:00Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:01Z",
+          "conclusion": "success",
+          "name": "Restore the exact checkout's shared production build",
+          "started_at": "2026-11-06T11:59:01Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:06:05Z",
+          "conclusion": "success",
+          "name": "Run this shard",
+          "started_at": "2026-11-06T11:59:01Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:06:05Z",
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v4",
+          "started_at": "2026-11-06T12:06:05Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:06:05Z",
+          "conclusion": "success",
+          "name": "Post Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T12:06:05Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:06:05Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T12:06:05Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:06:05Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T12:06:05Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:06:05Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T12:06:05Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T12:07:40Z",
+      "conclusion": "success",
+      "id": 127879571912,
+      "name": "shards (browser)",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:57:51Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T11:57:53Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T11:57:51Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:53Z",
+          "conclusion": "success",
+          "name": "Set runner-owned browser cache",
+          "started_at": "2026-11-06T11:57:53Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:51Z",
+          "conclusion": "success",
+          "name": "Free unused runner SDKs for the 15 GiB disk guard",
+          "started_at": "2026-11-06T11:57:53Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:54Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:59:51Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:58Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T11:59:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:59Z",
+          "conclusion": "success",
+          "name": "Run npm install --global pnpm@10.12.4",
+          "started_at": "2026-11-06T11:59:58Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:00Z",
+          "conclusion": "success",
+          "name": "Set runner-owned pnpm store",
+          "started_at": "2026-11-06T11:59:59Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:00Z",
+          "conclusion": "success",
+          "name": "Prepare runner-owned browser and apt caches",
+          "started_at": "2026-11-06T12:00:00Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:04Z",
+          "conclusion": "success",
+          "name": "Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T12:00:00Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:11Z",
+          "conclusion": "success",
+          "name": "Run pnpm install --frozen-lockfile",
+          "started_at": "2026-11-06T12:00:04Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:11Z",
+          "conclusion": "success",
+          "name": "Check the generated contract documents",
+          "started_at": "2026-11-06T12:00:11Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:11Z",
+          "conclusion": "success",
+          "name": "Check edition source lock with the installed package",
+          "started_at": "2026-11-06T12:00:11Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:16Z",
+          "conclusion": "success",
+          "name": "Run pnpm run deps",
+          "started_at": "2026-11-06T12:00:11Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:17Z",
+          "conclusion": "success",
+          "name": "Install and probe Chromium before system dependencies",
+          "started_at": "2026-11-06T12:00:16Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:17Z",
+          "conclusion": "success",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-06T12:00:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:18Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v4",
+          "started_at": "2026-11-06T12:00:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:00:18Z",
+          "conclusion": "success",
+          "name": "Restore the exact checkout's shared production build",
+          "started_at": "2026-11-06T12:00:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:31Z",
+          "conclusion": "success",
+          "name": "Run this shard",
+          "started_at": "2026-11-06T12:00:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:37Z",
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v4",
+          "started_at": "2026-11-06T12:07:31Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:37Z",
+          "conclusion": "success",
+          "name": "Post Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T12:07:37Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:37Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T12:07:37Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:37Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T12:07:37Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:37Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T12:07:37Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T12:07:22Z",
+      "conclusion": "success",
+      "id": 127879571936,
+      "name": "shards (triage)",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:57:51Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T11:57:54Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T11:57:52Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:54Z",
+          "conclusion": "success",
+          "name": "Set runner-owned browser cache",
+          "started_at": "2026-11-06T11:57:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:41Z",
+          "conclusion": "success",
+          "name": "Free unused runner SDKs for the 15 GiB disk guard",
+          "started_at": "2026-11-06T11:57:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:44Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:58:41Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:49Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T11:58:44Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:50Z",
+          "conclusion": "success",
+          "name": "Run npm install --global pnpm@10.12.4",
+          "started_at": "2026-11-06T11:58:49Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:51Z",
+          "conclusion": "success",
+          "name": "Set runner-owned pnpm store",
+          "started_at": "2026-11-06T11:58:50Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:51Z",
+          "conclusion": "skipped",
+          "name": "Prepare runner-owned browser and apt caches",
+          "started_at": "2026-11-06T11:58:51Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:54Z",
+          "conclusion": "success",
+          "name": "Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T11:58:51Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:01Z",
+          "conclusion": "success",
+          "name": "Run pnpm install --frozen-lockfile",
+          "started_at": "2026-11-06T11:58:54Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:01Z",
+          "conclusion": "success",
+          "name": "Check the generated contract documents",
+          "started_at": "2026-11-06T11:59:01Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:02Z",
+          "conclusion": "success",
+          "name": "Check edition source lock with the installed package",
+          "started_at": "2026-11-06T11:59:01Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:07Z",
+          "conclusion": "success",
+          "name": "Run pnpm run deps",
+          "started_at": "2026-11-06T11:59:02Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:07Z",
+          "conclusion": "skipped",
+          "name": "Install and probe Chromium before system dependencies",
+          "started_at": "2026-11-06T11:59:07Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:07Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-06T11:59:07Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:09Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v4",
+          "started_at": "2026-11-06T11:59:07Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:09Z",
+          "conclusion": "success",
+          "name": "Restore the exact checkout's shared production build",
+          "started_at": "2026-11-06T11:59:09Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:17Z",
+          "conclusion": "success",
+          "name": "Run this shard",
+          "started_at": "2026-11-06T11:59:09Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:17Z",
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v4",
+          "started_at": "2026-11-06T12:07:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:17Z",
+          "conclusion": "success",
+          "name": "Post Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T12:07:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:18Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T12:07:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:18Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T12:07:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:07:18Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T12:07:18Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T12:02:21Z",
+      "conclusion": "success",
+      "id": 127879571976,
+      "name": "shards (runtime)",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T11:57:51Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T11:57:53Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T11:57:52Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:57:53Z",
+          "conclusion": "success",
+          "name": "Set runner-owned browser cache",
+          "started_at": "2026-11-06T11:57:53Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:53Z",
+          "conclusion": "success",
+          "name": "Free unused runner SDKs for the 15 GiB disk guard",
+          "started_at": "2026-11-06T11:57:53Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:58:55Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T11:58:53Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:00Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T11:58:55Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:01Z",
+          "conclusion": "success",
+          "name": "Run npm install --global pnpm@10.12.4",
+          "started_at": "2026-11-06T11:59:00Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:01Z",
+          "conclusion": "success",
+          "name": "Set runner-owned pnpm store",
+          "started_at": "2026-11-06T11:59:01Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:01Z",
+          "conclusion": "skipped",
+          "name": "Prepare runner-owned browser and apt caches",
+          "started_at": "2026-11-06T11:59:01Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:05Z",
+          "conclusion": "success",
+          "name": "Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T11:59:01Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:12Z",
+          "conclusion": "success",
+          "name": "Run pnpm install --frozen-lockfile",
+          "started_at": "2026-11-06T11:59:05Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:12Z",
+          "conclusion": "success",
+          "name": "Check the generated contract documents",
+          "started_at": "2026-11-06T11:59:12Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:12Z",
+          "conclusion": "success",
+          "name": "Check edition source lock with the installed package",
+          "started_at": "2026-11-06T11:59:12Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:18Z",
+          "conclusion": "success",
+          "name": "Run pnpm run deps",
+          "started_at": "2026-11-06T11:59:12Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:18Z",
+          "conclusion": "skipped",
+          "name": "Install and probe Chromium before system dependencies",
+          "started_at": "2026-11-06T11:59:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:18Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-06T11:59:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:19Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v4",
+          "started_at": "2026-11-06T11:59:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T11:59:19Z",
+          "conclusion": "success",
+          "name": "Restore the exact checkout's shared production build",
+          "started_at": "2026-11-06T11:59:19Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:02:17Z",
+          "conclusion": "success",
+          "name": "Run this shard",
+          "started_at": "2026-11-06T11:59:19Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:02:17Z",
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v4",
+          "started_at": "2026-11-06T12:02:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:02:17Z",
+          "conclusion": "success",
+          "name": "Post Cache frozen dependencies and Chromium",
+          "started_at": "2026-11-06T12:02:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:02:17Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "started_at": "2026-11-06T12:02:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:02:17Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "started_at": "2026-11-06T12:02:17Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:02:17Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T12:02:17Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T12:09:21Z",
+      "conclusion": "success",
+      "id": 127884315368,
+      "name": "full-push-proof",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T12:09:17Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T12:09:18Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T12:09:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:18Z",
+          "conclusion": "success",
+          "name": "Run test 'success' = success",
+          "started_at": "2026-11-06T12:09:18Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:18Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T12:09:18Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-06T12:09:15Z",
+      "conclusion": "skipped",
+      "id": 127884318434,
+      "name": "nightly-proof",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T12:09:16Z",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "completed_at": "2026-11-06T12:09:25Z",
+      "conclusion": "success",
+      "id": 127884353255,
+      "name": "verify",
+      "run_id": 42213733465,
+      "started_at": "2026-11-06T12:09:23Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-06T12:09:23Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-06T12:09:23Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:24Z",
+          "conclusion": "success",
+          "name": "Require the selected coverage and its proof",
+          "started_at": "2026-11-06T12:09:23Z"
+        },
+        {
+          "completed_at": "2026-11-06T12:09:24Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-06T12:09:24Z"
+        }
+      ]
+    }
+  ],
+  "total_count": 13
+}

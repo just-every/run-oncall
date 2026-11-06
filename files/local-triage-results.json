@@ -1,0 +1,17 @@
+[
+  {
+    "group": "bulk",
+    "seconds": 26.842,
+    "exit_code": 0
+  },
+  {
+    "group": "storm",
+    "seconds": 36.384,
+    "exit_code": 0
+  },
+  {
+    "group": "reports",
+    "seconds": 50.864,
+    "exit_code": 0
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "group": "bounds",
+  "seconds": 432.986,
+  "timing": "Linux process start ticks to pidfd exit readiness; includes process startup and worker cleanup"
+}

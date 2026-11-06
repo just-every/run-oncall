@@ -1,0 +1,13 @@
+{
+  "path": ".github/workflows/verify.yml",
+  "actual_sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
+  "recorded_pristine_sha256": "09fe6d2a0b274d4925950ef0ddde9c8c7099e15edb5333a601ead2bbcec73a86",
+  "acknowledged": {
+    "sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
+    "mode": "100644"
+  },
+  "origin_path": "export/verify.yml",
+  "revision": "8b925fa5ffaa577df9f2e4ebab6ede8af5155baa",
+  "unchanged": true,
+  "change": "seed-owned dynamic matrix and whole-journey selection only; Base workflow and its acknowledgment untouched"
+}

@@ -1,0 +1,111 @@
+{
+  "lanes": {
+    "runtime": [
+      {
+        "file": "tests/runtime.mjs",
+        "part": "core"
+      }
+    ],
+    "intake": [
+      {
+        "file": "tests/runtime.mjs",
+        "part": "machines"
+      },
+      "tests/intake.mjs",
+      "tests/routing.mjs"
+    ],
+    "browser": [
+      "tests/member-coordination-browser.mjs",
+      "tests/product-browser.mjs"
+    ],
+    "hosted": [],
+    "transfer": [
+      "tests/transfer.mjs"
+    ],
+    "changes": [
+      "tests/changes.mjs"
+    ],
+    "triage": [
+      "tests/triage.mjs",
+      "tests/activation.mjs"
+    ],
+    "imports": [
+      "tests/import-door.mjs"
+    ]
+  },
+  "push": [
+    {
+      "name": "runtime",
+      "lanes": [
+        "runtime"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "intake",
+      "lanes": [
+        "intake"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "browser",
+      "lanes": [
+        "browser"
+      ],
+      "browser": true,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "hosted",
+      "lanes": [
+        "hosted"
+      ],
+      "browser": true,
+      "hosted": true,
+      "timeout": 15
+    },
+    {
+      "name": "transfer",
+      "lanes": [
+        "transfer"
+      ],
+      "browser": true,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "changes",
+      "lanes": [
+        "changes"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "triage",
+      "lanes": [
+        "triage"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "imports",
+      "lanes": [
+        "imports"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    }
+  ],
+  "nightly": []
+}

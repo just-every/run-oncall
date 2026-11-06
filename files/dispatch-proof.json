@@ -1,0 +1,112 @@
+{
+  "executions": {
+    "runtime": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "runtime",
+        "prebuilt": "true"
+      }
+    ],
+    "intake": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "intake",
+        "prebuilt": "true"
+      }
+    ],
+    "browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "browser",
+        "prebuilt": "true"
+      }
+    ],
+    "hosted": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "verify",
+          "--non-interactive"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "hosted",
+        "prebuilt": "true"
+      }
+    ],
+    "transfer": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "transfer",
+        "prebuilt": "true"
+      }
+    ],
+    "changes": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "changes",
+        "prebuilt": "true"
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "imports",
+        "prebuilt": "true"
+      }
+    ],
+    "triage": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "triagePart": null,
+        "lane": "triage",
+        "prebuilt": "true"
+      }
+    ]
+  },
+  "exact_sha_build_refusal": true,
+  "prebuilt_lanes_do_not_prepare": true,
+  "changed_harness_requires_full_coverage": true,
+  "worker_counts_and_timeouts_unchanged": true
+}
