@@ -8,6 +8,7 @@ import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
+import {nativeRevisions} from './oncall-agent-native-revisions.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
 import {nativeTransport} from './oncall-agent-transport.mjs';
@@ -626,6 +627,7 @@ try{
  await consentRevocationMatrix(runtime);
  await staleNoteRevision(runtime);
  await staleCoordinationRevision(runtime);
+ await nativeRevisions(runtime);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
  const owner=(await (await http('/api/workspace')).json()).member;
