@@ -1,0 +1,10 @@
+{
+  "head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+  "command": [
+    "node",
+    "src/base/contract-docs.mjs",
+    "check"
+  ],
+  "exit": 1,
+  "expected": true
+}

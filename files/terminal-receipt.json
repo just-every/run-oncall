@@ -1,0 +1,40 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f203",
+  "head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+  "remote_head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+  "clean_checkout": true,
+  "full_history": true,
+  "verify": {
+    "name": "rer-verify",
+    "head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+    "command": [
+      "env",
+      "ONCALL_VERIFY_LANE=intake",
+      "pnpm",
+      "exec",
+      "rer",
+      "verify"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 906.0
+  },
+  "counts": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "clause_status": "missing",
+  "ci": {
+    "verify": 42152555340,
+    "event": "push",
+    "head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+    "status": "completed",
+    "conclusion": "failure",
+    "permitted_exception": "Only generated ACCEPTANCE.md freshness; dependent verify summary fails because build failed",
+    "failed_jobs": [
+      127679037486,
+      127679906603
+    ]
+  }
+}

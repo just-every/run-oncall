@@ -1,0 +1,155 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3060","3042","workerd"],["3066","3042","ps"]]
+PROBE OC-052 denied-AI: emitted Worker native lifecycle -> resolved with attributed note; outbound attempts=0
+PROBE OC-052 public-embed: anonymous incident and foreign-origin embed GET -> no incident disclosure; owner embed=404
+PROBE OC-052 arbitrary-upload: anonymous multipart POST refused and owner POST=404; all non-audit durable tables unchanged; outbound attempts=0
+{"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+{"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+{"witness":"automation-erasure-fence","path":"/api/restore","status":409,"labelReturned":false}
+PASS OC-053 erasure fence: legacy journal and native custody refuse stale archive/checkpoints atomically; current checkpoint restores and retains custody
+PASS OC-040 member recipient custody: local access revoked, queued work removed, named deletion open item and zero outbound calls without consent
+oncall request failure Error
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3067","3042","workerd"],["3073","3042","ps"]]
+oncall request failure Error
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3074","3042","workerd"],["3080","3042","ps"]]
+PASS OC-040 expired-lease clearance: live refusal, admin approval/revision, expired and uncertain leases, atomic audit rollback, clear/clear and clear/erase 200/409, restart before committed erasure and zero external calls
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3081","3042","workerd"],["3087","3042","ps"]]
+PASS OC-053 management denial: anonymous/token-only 401, viewer/responder 403 across read, create, rotate, revoke, dispatch and replay; token has no session/export/audit door
+PASS OC-053 permanent named responder: service-account acknowledgment names A; reassignment and new commander B and resolution preserve timeline and pseudonymous audit attribution
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3088","3042","workerd"],["3094","3042","ps"]]
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3095","3042","workerd"],["3101","3042","ps"]]
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3113","3042","workerd"],["3119","3042","ps"]]
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3128","3042","workerd"],["3134","3042","ps"]]
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3135","3042","workerd"],["3141","3042","ps"]]
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3142","3042","workerd"],["3148","3042","ps"]]
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3149","3042","workerd"],["3155","3042","ps"]]
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3156","3042","workerd"],["3162","3042","ps"]]
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3163","3042","workerd"],["3169","3042","ps"]]
+PASS OC-053 creator demotion/removal: next read/write and origin/endpoint/receiver dispatch refused, no authority transfer, restart, inactive responder acknowledgment refused
+PASS OC-053 named-responder erasure: timeline association scrubbed, permanent pseudonymous audit fact unchanged, no reassigned label
+PROBE OC-042 acceptance-1: protected setup and emitted Worker dispatch -> 25 POST requests only to https://8.8.8.8/events; all three redirect targets receive zero requests; authority refusals add zero requests; exact frozen seven-field payloads and archive credential exclusion pass
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3163","3042","workerd"],["3170","3042","workerd"],["3176","3042","ps"]]
+PASS OC-053 lifetime API receipts: full history refuses new machine mutation, identical authorized retry retains receipt, human coordination continues
+PASS OC-053 scoped API, atomic signed outbox, receipt uncertainty, replay, revocation and inactive native restore
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3177","3042","workerd"],["3183","3042","ps"]]
+{"witness":"human-capacity","request":"/api/command","type":"assign-role","status":200,"before":{"incidentRevision":1,"events":1001},"after":{"incidentRevision":2,"events":1002,"acceptedAuditFacts":1,"outcome":"queued","reason":"domain-commit"}}
+{"witness":"human-capacity","request":"/api/command","type":"transition","status":200,"before":{"incidentRevision":1002,"events":2002},"after":{"incidentRevision":1003,"events":2003,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"reassign","status":200,"before":{"incidentRevision":1003,"events":2003},"after":{"incidentRevision":1004,"events":2004,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"assign-role","status":200,"before":{"incidentRevision":1004,"events":2004},"after":{"incidentRevision":1005,"events":2005,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"action","status":200,"before":{"incidentRevision":1005,"events":2005},"after":{"incidentRevision":1006,"events":2006,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"complete","status":200,"before":{"incidentRevision":1006,"events":2006},"after":{"incidentRevision":1007,"events":2007,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"accept-action","status":200,"before":{"incidentRevision":1007,"events":2007},"after":{"incidentRevision":1008,"events":2008,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"transition","status":200,"before":{"incidentRevision":1009,"events":2008},"after":{"incidentRevision":1010,"events":2009,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+oncall request failure Error
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3299","3042","workerd"],["3305","3042","ps"]]
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3299","3042","workerd"],["3306","3042","workerd"],["3312","3042","ps"]]
+PASS OC-053 human capacity: retained history >1000, full unfinished backlog, all human event paths, multi-recipient boundary, storage rollback, restart, stable replay and inactive checkpoint restore
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3313","3042","workerd"],["3319","3042","ps"]]
+OC-068 API manual page: explicit incident-write scope, real policy override, repeated-key single incident, conflicting/cross-scope/read-only refusals and recorded-only obligation
+OC-058 scheduled snooze: absolute replacement, never-early boundary, restart and concurrent/double sweep produce one deterministic re-trigger obligation with paging OFF
+OC-058 timeout: each new acknowledgment starts a new versioned deadline and current level-one coverage is resolved only when it fires
+OC-058 snooze handoff: departed assignee is replaced by current on-call at the captured level, with no invented level or delivery
+OC-058 checkpoint receiving duty: pending snooze restored held and scheduled work never resumes it
+OC-058 OC-053 API incident door: scoped snooze and repeated idempotency key retain one pending absolute deadline
+OC-058 cancellation and gaps: resolution and explicit cancellation stop deadlines; missing current on-call is a retained operator-visible failure, never silence
+OC-058 scheduled source recovery: a source recovered mid-snooze remains acknowledged after the deadline with no re-trigger obligation
+OC-058 atomic deadline custody: failed permanent audit rolls back snooze and scheduled expiry together; the durable pending item remains visible and a later sweep commits exactly once
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3840","3042","workerd"],["3846","3042","ps"]]
+oncall request failure Error
+PASS OC-040 integration erasure: queued send prevented, in-flight public erasure 409, completion only after outcome, audit rollback, per-table credentials/outbox counts, concurrent 200/409, client unlink and native restore fence
+Owned runtime processes [["3042","3041","MainThread"],["3051","3042","esbuild"],["3880","3042","workerd"],["3897","3042","ps"]]
+PROBE BASE-AGENT-006 point 5 listed tools: emitted Worker MCP -> all 39 returned tools declare only fleet-catalog classes
+Native agent manifest and complete exposed guide inventory are fresh
+PROBE BASE-AGENT-013 1 autonomous: GET /docs/agents and MCP discovery -> 39 exact tools, scopes and class sets; no resource templates; event target withheld; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-013 2 autonomous: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs
+PROBE BASE-AGENT-013 1 held: GET /docs/agents and MCP discovery -> 39 exact tools, scopes and class sets; no resource templates; event target withheld; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-013 2 held: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs
+PROBE BASE-AGENT-007 7 autonomous before adoption: same-bearer native MCP read served; note executed and retained audit at signed revision 5; zero outbound requests
+PROBE BASE-AGENT-007 7 autonomous oncall.services.read: next schema-valid MCP call with admitted bearer -> policy_blocked in 45ms; decision and retained audit rule stop-standard-autonomous, revision 6; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-007 7 autonomous oncall.notes.add: next schema-valid MCP call with admitted bearer -> policy_blocked in 107ms; decision and retained audit rule stop-standard-autonomous, revision 6; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-007 7 autonomous after restoration: same-bearer native MCP read served; note executed and retained audit at signed revision 7; zero outbound requests
+PROBE BASE-AGENT-007 7 held before adoption: same-bearer native MCP read served; note held then person-approved and retained audit at signed revision 8; zero outbound requests
+PROBE BASE-AGENT-007 7 held oncall.services.read: next schema-valid MCP call with admitted bearer -> policy_blocked in 38ms; decision and retained audit rule stop-standard-held, revision 9; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-007 7 held oncall.notes.add: next schema-valid MCP call with admitted bearer -> policy_blocked in 101ms; decision and retained audit rule stop-standard-held, revision 9; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-007 7 held after restoration: same-bearer native MCP read served; note held then person-approved and retained audit at signed revision 10; zero outbound requests
+PASS signed native policy adoption: same-bearer next read and coordination mutation blocked within 60 seconds under both policies; retained rule and revision survive restoration; policy-appropriate access restored; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous initially on: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous initially on: fresh bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 494ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both: retained and fresh bearer valid next MCP read and note -> agents_paused in 606ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+PROBE BASE-AGENT-011 6 autonomous Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 734ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 623ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 591ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: fresh bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 held initially on: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held initially on: fresh bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 506ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both: retained and fresh bearer valid next MCP read and note -> agents_paused in 448ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+PROBE BASE-AGENT-011 6 held Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 459ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 462ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 637ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: fresh bearer read served; note held then human-approved; zero outbound requests
+PASS independent Pause flags: both policies, valid next reads and mutations, maximum refusal 384ms, bearer resume 403 including owner cookie, human coordination and policy-appropriate resume; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 2 autonomous: real MCP declaration response destroyed at headers with unread body; native D1 outcome replayed with new RPC id; one incident, declaration and application commit; separate linked replay audit; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 2 held: real MCP declaration response destroyed at headers with unread body; native D1 outcome replayed with new RPC id; one incident, declaration and application commit; one original open review; separate linked replay audit; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 autonomous oncall.incidents.declare: completed standard-only write; original key with changed title -> isError idempotency_conflict; native records, revisions, timeline, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; exact arguments with new RPC id -> stored outcome and no duplicate effect or held review; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 autonomous oncall.notes.add: completed standard-only write; original key with changed text -> isError idempotency_conflict; native records, revisions, timeline, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; exact arguments with new RPC id -> stored outcome and no duplicate effect or held review; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 held oncall.incidents.declare: completed standard-only write; original key with changed title -> isError idempotency_conflict; native records, revisions, timeline, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; exact arguments with new RPC id -> stored outcome and no duplicate effect or held review; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 held oncall.notes.add: completed standard-only write; original key with changed text -> isError idempotency_conflict; native records, revisions, timeline, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; exact arguments with new RPC id -> stored outcome and no duplicate effect or held review; zero outbound requests
+PROBE BASE-AGENT-004 6 autonomous before revocation: retained bearer reads native service; note executed with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 autonomous control before revocation: retained bearer reads native service; note executed with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 autonomous oncall.services.read: exact still-unexpired bearer after signed consent revocation -> 401 in 930ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged
+PROBE BASE-AGENT-004 6 autonomous oncall.notes.add: exact still-unexpired bearer after signed consent revocation -> 401 in 1785ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged
+PROBE BASE-AGENT-004 6 autonomous control after revocation: retained bearer reads native service; note executed with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 held before revocation: retained bearer reads native service; note held then human-approved with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 held control before revocation: retained bearer reads native service; note held then human-approved with actual agent and sponsor attribution; zero outbound requests
+PROBE BASE-AGENT-004 6 held oncall.services.read: exact still-unexpired bearer after signed consent revocation -> 401 in 870ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged
+PROBE BASE-AGENT-004 6 held oncall.notes.add: exact still-unexpired bearer after signed consent revocation -> 401 in 1779ms; no private outcome; all non-audit D1 rows and outbound ledger unchanged
+PROBE BASE-AGENT-004 6 held control after revocation: retained bearer reads native service; note held then human-approved with actual agent and sponsor attribution; zero outbound requests
+PASS Business consent receiving door: both company policies, same unexpired bearers, maximum refusal 1785ms, exact native and approval and review and paging isolation, attributed refusal audit only, separately consented controls and zero outbound requests; no Business account propagation claim
+PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.notes.add: stale expected_revision at incident revision 1 -> isError revision_conflict, exact current_revision in metadata and text; durable state and custody unchanged; fresh key using returned revision -> autonomous, one attributed note and application commit; new RPC id retry unchanged; zero outbound requests
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../tmp/oncall-flow-lGWaAB/local.env
+[stderr] oncall request failure Error
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ undefined
+- 'Synthetic internal coordination'
+
+    at staleOptionalRevision (file:///workspace/run-oncall-f203/tests/oncall-agent-flow.mjs:224:48)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///workspace/run-oncall-f203/tests/oncall-agent-flow.mjs:355:2 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: 'Synthetic internal coordination',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

@@ -1,0 +1,62 @@
+{
+  "repository": "just-every/run-oncall",
+  "tag": "sd-oncall-c-f203",
+  "branch": "cloud/sd-oncall-c-f203",
+  "head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+  "base": "1f0b7327773a3963f5fce611295ffc3a251af65a",
+  "before": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "after": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "status_rows": 101,
+  "clause": "BASE-AGENT-012",
+  "before_status": "missing",
+  "after_status": "missing",
+  "selected_point": "acceptance 4 optional declaration expected revision with native revision absent",
+  "product_push": "success",
+  "pr": null,
+  "github_calls_so_far": 3,
+  "main_ci": {
+    "verify": 42026429002,
+    "run_site": 42026429004
+  },
+  "publication_scan": "delegated to fleet lander; not run in cloud",
+  "landing": "not performed",
+  "candidate_ci": {
+    "verify": 42152555340,
+    "event": "push",
+    "head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+    "status": "completed",
+    "conclusion": "failure",
+    "permitted_exception": "Only generated ACCEPTANCE.md freshness; dependent verify summary fails because build failed",
+    "failed_jobs": [
+      127679037486,
+      127679906603
+    ]
+  },
+  "github_calls": 7,
+  "blockers": [],
+  "selected_point_result": "proved through exact-head emitted Worker and D1 runtime",
+  "local_verification": {
+    "name": "rer-verify",
+    "head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+    "command": [
+      "env",
+      "ONCALL_VERIFY_LANE=intake",
+      "pnpm",
+      "exec",
+      "rer",
+      "verify"
+    ],
+    "exit": 0,
+    "elapsed_seconds": 906.0
+  },
+  "evidence_transport": "selected explicit public packet files",
+  "ready_basis": "Local checks pass; CI fails only the permitted generated-view freshness check and dependent summary"
+}

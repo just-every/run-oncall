@@ -1,0 +1,11 @@
+{
+  "name": "final-typecheck",
+  "head": "1f0b7327773a3963f5fce611295ffc3a251af65a",
+  "command": [
+    "pnpm",
+    "run",
+    "typecheck"
+  ],
+  "exit": 0,
+  "elapsed_seconds": 3.23
+}

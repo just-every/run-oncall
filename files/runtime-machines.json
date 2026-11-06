@@ -1,0 +1,12 @@
+{
+  "name": "runtime-machines",
+  "head": "1f0b7327773a3963f5fce611295ffc3a251af65a",
+  "command": [
+    "env",
+    "ONCALL_RUNTIME_PART=machines",
+    "node",
+    "tests/runtime.mjs"
+  ],
+  "exit": 1,
+  "elapsed_seconds": 240.9
+}

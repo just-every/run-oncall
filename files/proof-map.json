@@ -1,0 +1,91 @@
+{
+  "head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+  "checks": [
+    {
+      "point": "native revision omitted",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        197
+      ]
+    },
+    {
+      "point": "current revision metadata",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        204
+      ]
+    },
+    {
+      "point": "current revision text",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        205
+      ]
+    },
+    {
+      "point": "no private result",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        206
+      ]
+    },
+    {
+      "point": "unchanged custody",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        208
+      ]
+    },
+    {
+      "point": "standard policy class",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        220
+      ]
+    },
+    {
+      "point": "copied runbook",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        225
+      ]
+    },
+    {
+      "point": "state-changing audit once",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        53,
+        239
+      ]
+    },
+    {
+      "point": "review count",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        107,
+        244
+      ]
+    },
+    {
+      "point": "stored replay outcome",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        260
+      ]
+    },
+    {
+      "point": "missing and scoped nondisclosure",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        277
+      ]
+    },
+    {
+      "point": "runtime invocation",
+      "path": "tests/oncall-agent-flow.mjs",
+      "lines": [
+        355
+      ]
+    }
+  ]
+}

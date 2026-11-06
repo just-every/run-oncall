@@ -1,0 +1,32 @@
+[
+  {
+    "command": [
+      "gh",
+      "run",
+      "view",
+      "42152555340",
+      "--repo",
+      "just-every/run-oncall",
+      "--job",
+      "127679037486",
+      "--log-failed"
+    ],
+    "job": 127679037486,
+    "exit": 0
+  },
+  {
+    "command": [
+      "gh",
+      "run",
+      "view",
+      "42152555340",
+      "--repo",
+      "just-every/run-oncall",
+      "--job",
+      "127679906603",
+      "--log-failed"
+    ],
+    "job": 127679906603,
+    "exit": 0
+  }
+]

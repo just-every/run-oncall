@@ -1,0 +1,8 @@
+{
+  "tests/oncall-agent-flow.mjs": "09453f4cc9053b8f7a7034274e3cb87d9ae0e353a5395bfb1cd2aa7a0e1ae1da",
+  "tests/agent-door-runtime.mjs": "73333474eb9bd20a365ef587fec63a244a1283295e8b968dca10b79f02d94960",
+  "tests/runtime.mjs": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3",
+  "src/agent-door/coordination-tools.ts": "6bc34b311155216ead313335396ab1058d0c5b9e90eb6f7a5c150f544d1089b1",
+  "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+  "src/modules/agent-door/wire.ts": "75c286c115901ff08a8f5b43236079eba953b1d56abc8bc7802df56591fad6c7"
+}
