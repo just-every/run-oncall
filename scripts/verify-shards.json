@@ -4,10 +4,7 @@
       {
         "file": "tests/runtime.mjs",
         "part": "core"
-      },
-      "tests/changes.mjs",
-      "tests/triage.mjs",
-      "tests/activation.mjs"
+      }
     ],
     "intake": [
       {
@@ -15,8 +12,7 @@
         "part": "machines"
       },
       "tests/intake.mjs",
-      "tests/routing.mjs",
-      "tests/import-door.mjs"
+      "tests/routing.mjs"
     ],
     "browser": [
       "tests/member-coordination-browser.mjs",
@@ -25,6 +21,16 @@
     "hosted": [],
     "transfer": [
       "tests/transfer.mjs"
+    ],
+    "changes": [
+      "tests/changes.mjs"
+    ],
+    "triage": [
+      "tests/triage.mjs",
+      "tests/activation.mjs"
+    ],
+    "imports": [
+      "tests/import-door.mjs"
     ]
   },
   "push": [
@@ -70,6 +76,33 @@
         "transfer"
       ],
       "browser": true,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "changes",
+      "lanes": [
+        "changes"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "triage",
+      "lanes": [
+        "triage"
+      ],
+      "browser": false,
+      "hosted": false,
+      "timeout": 15
+    },
+    {
+      "name": "imports",
+      "lanes": [
+        "imports"
+      ],
+      "browser": false,
       "hosted": false,
       "timeout": 15
     }
