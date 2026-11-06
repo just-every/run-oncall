@@ -1,10 +1,10 @@
 {
   "files": [
     {
-      "blob": "50cdab01b3dd851952aa2077384af0f6c17d900e",
-      "bytes": 12892,
+      "blob": "ce147837bc6b205a2ddc18155b5726e75744fd9a",
+      "bytes": 15132,
       "path": "REPORT.md",
-      "sha256": "ea7c85e17bd9973ec62322d5bb1982355e3534b8257cafb3291d6ecc295572a9"
+      "sha256": "e330230c2e0c8f2dee344215d82f4d82d9d592e2ff4d28c07db4cd84112b4360"
     },
     {
       "blob": "3aeb13d3842ec808dd795668e8b55e9b8289470b",
@@ -19,16 +19,40 @@
       "sha256": "67fa44b8adbfe8090a0f587df5b0ae22520ba9fde9a715c1c98a04ceb9a7f766"
     },
     {
+      "blob": "43075b4c476d10489452ddcc8f2687b11d50cae8",
+      "bytes": 812,
+      "path": "ci-build-failed.log",
+      "sha256": "ffc63f8adf3e3807baadf8d075d8817ecd49e3b95ee4738e9f8f88207f570afb"
+    },
+    {
       "blob": "09f5b8504c7c400de5af262975e92bb04fc7aa36",
       "bytes": 224,
       "path": "ci-discovery.jsonl",
       "sha256": "5b8f490963b47d76ce2e0b4829a1c0d419738d1160fc19481831c9c5412d5364"
     },
     {
-      "blob": "f17919b69e320b307dd35102f282124bc2865612",
-      "bytes": 5141,
+      "blob": "f9b564d23be8e06f08f470fda7ace723961c26c4",
+      "bytes": 196,
+      "path": "ci-final.json",
+      "sha256": "7e8afc5f58645a0eb1dac6bc8decf05ab2d8ac7ba0107a8403f5318675cb9705"
+    },
+    {
+      "blob": "a9c9e798d381da68db8b16ba3c4328e0e9c72c63",
+      "bytes": 1152,
+      "path": "ci-jobs.json",
+      "sha256": "5bc91532777a244ce14aa697c03345e013245a6f99385f4da657e96b97918b69"
+    },
+    {
+      "blob": "0c4df15d66f9849cce4cb6e8b6682a73ae9a323a",
+      "bytes": 2018,
+      "path": "ci-verify-failed.log",
+      "sha256": "2e376f352738455d9b8108b5f285bf2de9a36ec5f0be99afcb6ea8b3e442211d"
+    },
+    {
+      "blob": "08b6a7c5e88acd9c4cc263c327b000bf2b3e9472",
+      "bytes": 6343,
       "path": "receipts.json",
-      "sha256": "ebc6c48dee1c75a980fe0b674c6eb6d223e2ed5541e26ec1dbcafd52e09a12c1"
+      "sha256": "234f20601af079559326bd6eee46fc0f408dc1368a94e95409b1d29c59c92719"
     },
     {
       "blob": "f8fb7de399b357a41cd1de544d1d265113cf1483",

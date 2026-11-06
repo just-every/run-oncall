@@ -90,9 +90,9 @@
   "verify_run": 42211172652,
   "verify_status_at_discovery": "in_progress",
   "verify_event": "push",
-  "github_api_calls": 2,
+  "github_api_calls": 6,
   "migration_ledger": "not applicable",
-  "publication_scan": "fleet landing gate; not run in cloud",
+  "publication_scan": "NOT RUN in cloud; required fleet landing gate",
   "run_site": "fleet landing gate at resulting main SHA",
   "pr": null,
   "mechanical": "MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0 before main view restore; ledger=none exit=0",
@@ -106,7 +106,9 @@
     "runtime-core.log": "2f3cd5cc04473959b50a66a9ffb5dbc700472a132c0f9ba856fd8d9528ee852e",
     "service-probe-exact-head.log": "20331fe09992df46eedf26cbff006a0b7d1f8a20512a06d6d6fdfae3401f3d7f",
     "views.log": "c13b82a5e8c5eb726365d51a834d1ede37697c26e0828a2aa5d52274278a4f7a",
+    "ci-build-failed.log": "ffc63f8adf3e3807baadf8d075d8817ecd49e3b95ee4738e9f8f88207f570afb",
     "restored-views-check.log": "9cf3c390ca9f5f8c7bb13f4dd1f4058d66f2e74d194584038d85eaf0d4767d1e",
+    "ci-verify-failed.log": "2e376f352738455d9b8108b5f285bf2de9a36ec5f0be99afcb6ea8b3e442211d",
     "ci-discovery.jsonl": "5b8f490963b47d76ce2e0b4829a1c0d419738d1160fc19481831c9c5412d5364"
   },
   "exact_head_checks": {
@@ -134,5 +136,31 @@
     "added_credential_shaped_strings": 0,
     "bare_slash_tokens_in_added_prose": 0
   },
-  "updated_at": "2026-11-06T11:35:59.841517+00:00"
+  "updated_at": "2026-11-06T11:40:27.165985+00:00",
+  "verify_status": "completed",
+  "verify_conclusion": "failure",
+  "verify_failure_class": "expected generated view only",
+  "verify_failed_jobs": [
+    127869953459,
+    127870861929
+  ],
+  "verify_test_shards": "skipped after generated-view check",
+  "workflow_reruns": 0,
+  "workflow_dispatches": 0,
+  "repair_rounds": 0,
+  "ready_basis": "Explicit generated-view exception; fleet regenerates and reruns exact-head checks before landing",
+  "installed_rer": "0.2.96",
+  "installed_ci_lock_check": 0,
+  "landing": "not performed; main unchanged at terminal readback",
+  "ci_log_commands": [
+    {
+      "command": "gh run view 42211172652 --repo just-every/run-oncall --job 127869953459 --log-failed",
+      "exit": 0
+    },
+    {
+      "command": "gh run view 42211172652 --repo just-every/run-oncall --job 127870861929 --log-failed",
+      "exit": 0
+    }
+  ],
+  "ci_log_publication": "Actual failed-job output retained with environment blocks removed; raw logs outside packet are not selected."
 }
