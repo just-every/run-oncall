@@ -392,6 +392,10 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  // OC-040 native categories travel in the same held installation archive.
  const erasedNativeCreated=await req('/api/members',{name:'synthetic-oncall-415@example.test',password:'synthetic-oncall-415-password',role:'responder'});assert.equal(erasedNativeCreated.status,201);const erasedNative=erasedNativeCreated.value;
  const erasedNativeSource='synthetic-oncall-415';assert.equal((await req('/api/intake/sources',{id:erasedNativeSource,name:'Synthetic erasable integration',provider:'alertmanager',service:'transfer',key:randomBytes(32).toString('hex'),revision:0})).status,201);
+ const nativeLogin=await req('/api/login',{name:erasedNative.name,password:'synthetic-oncall-415-password'});ok(nativeLogin);
+ const nativeOriginalFact=ok(await req('/api/audit/export')).rows.filter(row=>row.kind==='login.request'&&row.outcome==='accepted').at(-1);assert.ok(nativeOriginalFact);
+ const nativeOriginalNote=ok(await m.request('/api/command',{type:'note',incident:erasedNativeIncident.id,revision:erasedNativeIncident.revision,text:'synthetic-oncall-415'},nativeLogin.cookie));
+ assert.equal(nativeOriginalNote.timeline.at(-1).actor,erasedNative.id,'the original responder owns real operational history before transfer');
  const groupedService='synthetic-oncall-437',groupedKeys=[randomBytes(32).toString('hex'),randomBytes(32).toString('hex')];
  ok(await req('/api/command',{type:'service',id:groupedService,name:groupedService,environment:'test',owner:member.id,runbook:[],pager:''}));
  ok(await req('/api/command',{type:'policy',service:groupedService,severity:'*',action:'route',owner:member.id,reason:'Synthetic portable grouping',baseVersion:0,correlation:{field:'key',windowSeconds:300,includeDependencies:false,flappingCount:0}}));
@@ -594,9 +598,40 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const erasedChange=ok(await req('/api/state')).changes.find(row=>row.eventId==='portable-deploy');assert.ok(erasedChange);
  cookie=await checkpointErasureCli(m,cookie,async()=>{const receipt=ok(await req('/api/changes/'+erasedChange.id+'/erase',{workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase '+erasedChange.id}));assert.equal(receipt.state,'complete');assert.deepEqual(receipt.stores.oc_changes,{deleted:1,updated:0});});
  assert.ok(!(ok(await req('/api/state')).changes??[]).some(row=>row.id===erasedChange.id));
+ assert.equal((await m.request('/api/state',undefined,nativeLogin.cookie)).status,401,'a portable responder session grants no current authority');
+ assert.equal((await req('/api/login',{name:erasedNative.name,password:'synthetic-oncall-415-password'})).status,401,'restored responder history grants no password authority');
+ ok(await req('/api/password',{member:erasedNative.id,password:'synthetic-oncall-416-password'}));
+ const receivingNativeLogin=await req('/api/login',{name:erasedNative.name,password:'synthetic-oncall-416-password'});ok(receivingNativeLogin);
+ const receivingNativeIncident=ok(await req('/api/state')).incidents.find(row=>row.id===machineOperation.entity);
+ const receivingNativeNote=ok(await m.request('/api/command',{type:'note',incident:receivingNativeIncident.id,revision:receivingNativeIncident.revision,text:'synthetic-oncall-416'},receivingNativeLogin.cookie));
+ assert.equal(receivingNativeNote.timeline.at(-1).actor,erasedNative.id);
+ const auditBeforeNativeErasure=ok(await req('/api/audit/export')).rows;
+ const receivingNativeFact=auditBeforeNativeErasure.filter(row=>row.kind==='command.note'&&row.outcome==='accepted').at(-1);assert.ok(receivingNativeFact);
+ assert.notEqual(receivingNativeFact.actor,nativeOriginalFact.actor,'explicitly recredentialing the restored responder never adopts its portable audit label');
+ assert.ok(!historicalLabels.has(receivingNativeFact.actor));
  for(const [kind,id] of [['incident',erasedNativeIncident.id],['intake',erasedNativeSource],['member',erasedNative.id]]){
   const receipt=ok(await req('/api/erasure/'+kind+'/'+id,{workspaceRevision:ok(await req('/api/state')).revision,confirmation:'erase '+id,...(kind==='member'?{identitiesReviewed:true,importedPeople:[]}:{})}));assert.equal(receipt.state,'complete');
  }
+ assert.equal(sql("SELECT COUNT(*) AS n FROM oc_audit_identities WHERE entity_id='"+erasedNative.id+"'")[0].n,0,'member erasure severs the receiving-installation audit association');
+ assert.equal((await m.request('/api/state',undefined,receivingNativeLogin.cookie)).status,401,'erasure revokes the explicitly recredentialed responder session');
+ assert.equal((await req('/api/login',{name:erasedNative.name,password:'synthetic-oncall-416-password'})).status,401,'erased responder credentials cannot authorize recreation');
+ const recreatedNativeResult=await req('/api/members',{name:erasedNative.name,password:'synthetic-oncall-417-password',role:'viewer'});assert.equal(recreatedNativeResult.status,201);const recreatedNative=recreatedNativeResult.value;
+ assert.notEqual(recreatedNative.id,erasedNative.id,'recreating the same name creates a distinct member');
+ const recreatedSubjectFact=ok(await req('/api/audit/export')).rows.filter(row=>row.kind==='members.request'&&row.outcome==='accepted').at(-1);assert.ok(recreatedSubjectFact);
+ const priorNativeLabels=new Set(auditBeforeNativeErasure.flatMap(row=>[row.actor,row.subject,row.source,row.namedMember]).filter(Boolean));
+ assert.ok(recreatedSubjectFact.subject&&!priorNativeLabels.has(recreatedSubjectFact.subject),'recreated membership never inherits any permanent historical label');
+ const recreatedNativeLogin=await req('/api/login',{name:erasedNative.name,password:'synthetic-oncall-417-password'});ok(recreatedNativeLogin);
+ assert.equal(ok(await m.request('/api/session',undefined,recreatedNativeLogin.cookie)).member.id,recreatedNative.id);
+ const beforeRecreatedAttempt=ok(await req('/api/state'));
+ const recreatedIncident=beforeRecreatedAttempt.incidents.find(row=>row.id===machineOperation.entity);
+ assert.equal((await m.request('/api/command',{type:'note',incident:recreatedIncident.id,revision:recreatedIncident.revision,text:'synthetic-oncall-417'},recreatedNativeLogin.cookie)).status,403,'same-name viewer recreation inherits none of the erased responder authority');
+ assert.deepEqual(ok(await req('/api/state')),beforeRecreatedAttempt,'refused recreated authority changes no operational history');
+ const auditAfterRecreation=ok(await req('/api/audit/export')).rows,recreatedAuditById=new Map(auditAfterRecreation.map(row=>[row.id,row]));
+ const recreatedRefusal=auditAfterRecreation.filter(row=>row.kind==='command.note'&&row.outcome==='refused').at(-1);assert.ok(recreatedRefusal);
+ assert.equal(recreatedRefusal.actor,recreatedSubjectFact.subject,'fresh activity uses only the recreated member label');
+ assert.equal(recreatedRefusal.beforeRevision,recreatedRefusal.afterRevision,'recreated viewer refusal retains equal audit revisions');
+ for(const row of auditBeforeNativeErasure)assert.deepEqual(recreatedAuditById.get(row.id),row,'erasure and same-name recreation never rewrite permanent audit history');
+ const recreationAuditSnapshot=sql('SELECT id,kind,actor,subject,source,named_member,at,outcome FROM oc_admin_audit ORDER BY ordinal');
  const groupedAfterErasure=ok(await req('/api/state')).events.filter(event=>event.service===groupedService);assert.deepEqual(groupedAfterErasure.map(event=>event.decision),groupedEvents.map(event=>event.decision),'explicit member erasure redacts copied identities without changing grouping decisions');
  const retainedReportCases=sql('SELECT id,data FROM oc_erased_report_cases ORDER BY id');assert.ok(retainedReportCases.length);for(const row of retainedReportCases)assert.deepEqual(Object.keys(JSON.parse(row.data)).sort(),['declaredAt','id','service']);
  const retainedErasureFences=sql('SELECT id,epoch FROM oc_erasure_fences ORDER BY id')
@@ -613,6 +648,10 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  await m.command(['import','--input',archive,'--journal',later,'--yes','--non-interactive'],4)
  assert.ok(Object.values(sql('SELECT (SELECT COUNT(*) FROM move_in_objects) AS imported,(SELECT COUNT(*) FROM ik_jobs) AS jobs,(SELECT COUNT(*) FROM oc_api_clients) AS clients,(SELECT COUNT(*) FROM oc_api_endpoints) AS endpoints,(SELECT COUNT(*) FROM oc_api_operations) AS operations,(SELECT COUNT(*) FROM oc_api_outbox) AS outbox')[0]).every(count=>count===0),'the refused older archive restores no import or automation record')
  await m.command(['import','--input',later,'--yes','--non-interactive'])
+ const receivedRecreationAudit=new Map(sql('SELECT id,kind,actor,subject,source,named_member,at,outcome FROM oc_admin_audit ORDER BY ordinal').map(row=>[row.id,row]));
+ for(const row of recreationAuditSnapshot)assert.deepEqual(receivedRecreationAudit.get(row.id),row,'portable restore after erasure and recreation preserves permanent labels, chronology and outcomes');
+ assert.equal(sql('SELECT COUNT(*) AS n FROM oc_audit_identities')[0].n,0,'restoring recreated history transfers no identity associations');
+ assert.equal(sql('SELECT COUNT(*) AS n FROM credentials UNION ALL SELECT COUNT(*) FROM sessions').every(row=>row.n===0),true,'restoring recreated history transfers no login or session authority');
  assert.equal(sql("SELECT COUNT(*) AS n FROM oc_incidents WHERE id='"+erasedNativeIncident.id+"'")[0].n,0);assert.equal(sql("SELECT COUNT(*) AS n FROM oc_intake_sources WHERE id='"+erasedNativeSource+"'")[0].n,0);assert.equal(JSON.parse(sql("SELECT data FROM oc_members WHERE id='"+erasedNative.id+"'")[0].data).name,'Erased member');
  assert.deepEqual(sql("SELECT data FROM oc_events WHERE json_extract(data,'$.service')='synthetic-oncall-437' ORDER BY ordinal").map(row=>JSON.parse(row.data)),groupedAfterErasure,'portable receiving preserves original grouping ids, versions and explanations without replay');
  assert.deepEqual(sql('SELECT id,data FROM oc_erased_report_cases ORDER BY id'),retainedReportCases,'portable restore retains anonymous erased declaration denominators exactly');
