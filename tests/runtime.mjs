@@ -11,6 +11,7 @@ import {tmpdir} from 'node:os'
 import {join,resolve} from 'node:path'
 import {createHmac,pbkdf2Sync,createHash,randomBytes} from 'node:crypto'
 import {createServer} from 'node:net'
+import {passwordAudit} from './password-audit.mjs'
 
 const runtimePart=process.env.ONCALL_RUNTIME_PART??'all'
 if(!['all','core','machines','delivery'].includes(runtimePart))throw Error(`Unknown runtime journey: ${runtimePart}`)
@@ -653,6 +654,7 @@ try {
   assert.equal(grantEntry.subject, withdrawEntry.subject, "the same subject keeps its random audit alias");
   assert.equal(grantEntry.actor, withdrawEntry.actor, "the same actor keeps its random audit alias");
   assert.notEqual(grantEntry.subject, viewer.id);assert.notEqual(grantEntry.actor, admin.id);
+  await passwordAudit({request,sql,rows,cookie,admin,viewerCookie:currentViewerCookie});
   const heldAudit = await auditExport(cookie), heldAuditId = heldAudit.rows.at(-1).id.replaceAll("'", "''");
   auditSqlRefused("UPDATE oc_admin_audit SET kind=kind WHERE id='" + heldAuditId + "'");
   auditSqlRefused("DELETE FROM oc_admin_audit WHERE id='" + heldAuditId + "'");

@@ -6503,6 +6503,10 @@
       "sha256": "d40b7970ea06f79c49981443fdb3c7f387c5eb76ab5c144005d6309ee132af1a",
       "executable": false
     },
+    "tests/password-audit.mjs": {
+      "sha256": "800328e395f5891f4ecfe61acda56e1d0df7e4405cce0781ea70c1d228bd9596",
+      "executable": false
+    },
     "tests/product-browser-journey.mjs": {
       "sha256": "8751656914019f74f803f968859e0ec0aa6f4491dff9f0091ae1f15f2a3e989e",
       "executable": false
@@ -6524,7 +6528,7 @@
       "executable": false
     },
     "tests/runtime.mjs": {
-      "sha256": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3",
+      "sha256": "d34087048f941f842102b93526fffc9e6735ae6fe959227c15606419586ba00d",
       "executable": false
     },
     "tests/transfer.mjs": {
