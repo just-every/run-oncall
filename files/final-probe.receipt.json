@@ -1,0 +1,21 @@
+{
+  "name": "final-probe",
+  "command": [
+    "timeout",
+    "300",
+    "node",
+    "../packet/dependency-probe.mjs",
+    "../packet/final-probe.json"
+  ],
+  "started": "2026-11-06T05:47:52.945451+00:00",
+  "seconds": 4.722,
+  "exit": 0,
+  "source_head": "75e47a564a641e16b29f607899424397cfbc901b",
+  "source_hashes": {
+    "src/agent-door/service-tools.ts": "9fe46825c849ef6de529aad71b4057a1b5ddce51e808411313b0e440a8600c92",
+    "src/agent-door/read-tools.ts": "88b6e44ff0dead6432bce83d8bf7bface56747c76d4b4ab3f5bb01f953e76453",
+    "CONTRACT.md": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+    "sources.lock.json": "d8c3c8299a2492c8ff278b64719862bdefa1535d9274f1ebf9ae563a768c9a29"
+  },
+  "log_sha256": "a2dda290413ebc42e236cb26a89fadfdcfd8cb0dd3a37df3dc1293e41d46f2ef"
+}

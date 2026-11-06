@@ -1,0 +1,48 @@
+{
+  "same_probe_sha256": "b6df24424d95018b4f1487dd33030ac121a539408aa18a1aa85c44341da16086",
+  "main_exit": 1,
+  "head_exit": 0,
+  "main_privacy_failures": 14,
+  "head_privacy_failures": 0,
+  "cases_before": 7,
+  "cases_after": 7,
+  "source_main": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "main_hashes": {
+    "src/agent-door/service-tools.ts": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
+    "src/agent-door/read-tools.ts": "88b6e44ff0dead6432bce83d8bf7bface56747c76d4b4ab3f5bb01f953e76453",
+    "CONTRACT.md": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+    "sources.lock.json": "da13de0ccdb41fe3f0778775061b9ced0980af0863b918f8411df90b2a5a81db",
+    "dist/server/index.js": "51cd2c427cb45b13605e2f1f20667e02c0e1f5904321c626325155cfbe3c4988"
+  },
+  "head_hashes": {
+    "src/agent-door/service-tools.ts": "9fe46825c849ef6de529aad71b4057a1b5ddce51e808411313b0e440a8600c92",
+    "src/agent-door/read-tools.ts": "88b6e44ff0dead6432bce83d8bf7bface56747c76d4b4ab3f5bb01f953e76453",
+    "CONTRACT.md": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+    "sources.lock.json": "da13de0ccdb41fe3f0778775061b9ced0980af0863b918f8411df90b2a5a81db",
+    "dist/server/index.js": "388459f35a7d47d02741dfc2790c200107611acc778b1e4ae122408efe562b73"
+  },
+  "clauses_before": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "clauses_after": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_status_changes": [],
+  "final_head": "75e47a564a641e16b29f607899424397cfbc901b",
+  "final_exit": 0,
+  "final_privacy_failures": 0,
+  "final_cases": 7,
+  "final_source_hashes": {
+    "src/agent-door/service-tools.ts": "9fe46825c849ef6de529aad71b4057a1b5ddce51e808411313b0e440a8600c92",
+    "src/agent-door/read-tools.ts": "88b6e44ff0dead6432bce83d8bf7bface56747c76d4b4ab3f5bb01f953e76453",
+    "CONTRACT.md": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+    "sources.lock.json": "d8c3c8299a2492c8ff278b64719862bdefa1535d9274f1ebf9ae563a768c9a29",
+    "dist/server/index.js": "388459f35a7d47d02741dfc2790c200107611acc778b1e4ae122408efe562b73"
+  }
+}

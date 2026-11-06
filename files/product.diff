@@ -1,0 +1,27 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index 2ff9c75..4d8eeea 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -1728,7 +1728,7 @@
+       "executable": false
+     },
+     "src/agent-door/service-tools.ts": {
+-      "sha256": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
++      "sha256": "9fe46825c849ef6de529aad71b4057a1b5ddce51e808411313b0e440a8600c92",
+       "executable": false
+     },
+     "src/agent-door/team-receipts.ts": {
+diff --git a/src/agent-door/service-tools.ts b/src/agent-door/service-tools.ts
+index 486a950..1dc00c2 100644
+--- a/src/agent-door/service-tools.ts
++++ b/src/agent-door/service-tools.ts
+@@ -27,7 +27,8 @@ export function serviceTools(env: Bindings): ToolDefinition[] {
+       const result=command(current.state,nativeActor(current,ctx),{...args,type:'service'}) as {id:string;dependencies?:string[]}
+       nativeAudit(env,ctx,'service.update',result.id);await persistNative(env,current)
+       const uri=`oncall://services/${encodeURIComponent(result.id)}`;ctx.emit('service.changed',uri)
+-      return {result:{...result,etag:await changeHash(JSON.stringify({...result,dependencies:(result.dependencies??[]).filter(id=>current.services.includes(id))}))},resources:[{uri,name:String(args.name)}]}
++      const projected={...result,dependencies:(result.dependencies??[]).filter(id=>current.services.includes(id))}
++      return {result:{...projected,etag:await changeHash(JSON.stringify(projected))},resources:[{uri,name:String(args.name)}]}
+     }),
+   }]
+ }

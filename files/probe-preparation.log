@@ -1,0 +1,25 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["1605","1604","MainThread"],["1614","1605","esbuild"],["1624","1605","workerd"],["1630","1605","ps"]]
+CASE {"label":"autonomous/scoped","read_dependencies":[],"success_dependencies":["agent-foreign-service"],"replay_dependencies":["agent-foreign-service"],"stored_dependencies":["agent-foreign-service"],"rename_only":true,"projected_etag_matches_read":true,"single_native_revision":true,"replay_no_effect":true,"attributed_audit":true,"foreign_missing_refused":true,"policy_disposition":"autonomous","approved":false}
+CASE {"label":"autonomous/authorized","read_dependencies":["agent-foreign-service"],"success_dependencies":["agent-foreign-service"],"replay_dependencies":["agent-foreign-service"],"stored_dependencies":["agent-foreign-service"],"rename_only":true,"projected_etag_matches_read":true,"single_native_revision":true,"replay_no_effect":true,"attributed_audit":true,"foreign_missing_refused":true,"policy_disposition":"autonomous","approved":false}
+CASE {"label":"held-review/scoped","read_dependencies":[],"success_dependencies":["agent-foreign-service"],"replay_dependencies":["agent-foreign-service"],"stored_dependencies":["agent-foreign-service"],"rename_only":true,"projected_etag_matches_read":true,"single_native_revision":true,"replay_no_effect":true,"attributed_audit":true,"foreign_missing_refused":true,"policy_disposition":"review","approved":false}
+CASE {"label":"held-review/authorized","read_dependencies":["agent-foreign-service"],"success_dependencies":["agent-foreign-service"],"replay_dependencies":["agent-foreign-service"],"stored_dependencies":["agent-foreign-service"],"rename_only":true,"projected_etag_matches_read":true,"single_native_revision":true,"replay_no_effect":true,"attributed_audit":true,"foreign_missing_refused":true,"policy_disposition":"review","approved":false}
+AssertionError [ERR_ASSERTION]: {"jsonrpc":"2.0","id":"697f48fe-3cb9-4881-b9e1-4d02d01dd8cf","result":{"resultType":"input_required","requestState":"587990b3-8342-4f1c-b7ff-61eabcedbb87","_meta":{"com.runeditrun/decision":{"id":"c351f43d-1119-4f99-8b19-7c743b8a6fd8","disposition":"approval","revision":3,"classes":[{"class":"standard","rule":"service-approval","do":"approval","facts":{"measure":1}}]},"com.runeditrun/approval":{"id":"86d326e9-51fd-4aa1-891d-6663f2530a54","url":"http://127.0.0.1:44301/agents/approvals/86d326e9-51fd-4aa1-891d-6663f2530a54","expires_at":"2026-11-06T06:41:05.893Z"}}}}
++ actual - expected
+
++ undefined
+- false
+
+    at content (file:///home/agent/rer-consolidation/work/sd-oncall-dependency-projection-1/packet/dependency-probe.mjs:18:63)
+    at service (file:///home/agent/rer-consolidation/work/sd-oncall-dependency-projection-1/packet/dependency-probe.mjs:19:32)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/agent/rer-consolidation/work/sd-oncall-dependency-projection-1/packet/dependency-probe.mjs:42:15 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: false,
+  operator: 'strictEqual',
+  diff: 'simple'
+}

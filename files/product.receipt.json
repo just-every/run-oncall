@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "at": "2026-11-06T05:48:43.312503+00:00",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-dependency-projection-1",
+  "main": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "head": "75e47a564a641e16b29f607899424397cfbc901b",
+  "changed_files": [
+    "sources.lock.json",
+    "src/agent-door/service-tools.ts"
+  ],
+  "pushed": true,
+  "push_exit": 0,
+  "push_log": "product-push.log",
+  "preserved_files": {
+    "CONTRACT.md": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+    "ACCEPTANCE.md": "3f378dfd597df0bf5575cf45fb5547f944ca1200d63fe6ff44b2d744eaa63c7e",
+    "docs/CLAIMS.md": "e26ef886858d426a95d21c4ffa898189cf7df559811cc5ba0f6db37719652afa"
+  },
+  "contract_status_changes": [],
+  "counts": {
+    "before": {
+      "done": 17,
+      "partial": 50,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 17,
+      "partial": 50,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "permanent_test_registration_delta": 0,
+  "pr": null,
+  "ci_run_ids": [
+    42170494933
+  ],
+  "ci_status": "completed",
+  "remote_product_ref_verified": "75e47a564a641e16b29f607899424397cfbc901b\trefs/heads/cloud/sd-oncall-dependency-projection-1",
+  "github_calls_used": 4,
+  "ci_conclusion": "success",
+  "ready": true,
+  "blockers": [],
+  "finished": "2026-11-06T06:03:26.496175+00:00"
+}

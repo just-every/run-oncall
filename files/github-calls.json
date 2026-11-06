@@ -1,0 +1,54 @@
+[
+  {
+    "call": 1,
+    "name": "ci-discovery",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=75e47a564a641e16b29f607899424397cfbc901b&per_page=100",
+      "--jq",
+      "{workflow_runs: [.workflow_runs[] | {id,name,status,conclusion,head_sha,html_url,event,head_branch}]}"
+    ],
+    "at": "2026-11-06T05:47:44.180888+00:00",
+    "exit": 0
+  },
+  {
+    "call": 2,
+    "name": "ci-status-2",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/42170494933",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "at": "2026-11-06T05:52:45.216634+00:00",
+    "exit": 0
+  },
+  {
+    "call": 3,
+    "name": "ci-status-3",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/42170494933",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "at": "2026-11-06T05:57:46.243897+00:00",
+    "exit": 0
+  },
+  {
+    "call": 4,
+    "name": "ci-status-4",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/42170494933",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "at": "2026-11-06T06:02:47.272841+00:00",
+    "exit": 0
+  }
+]

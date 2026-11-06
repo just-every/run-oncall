@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "main_reproduction": {
+    "command": "cloud_run timeout 300 node ../packet/dependency-probe.mjs ../packet/main-probe.json",
+    "exit": 1,
+    "receipt": "main-probe.json",
+    "log": "main-probe.log"
+  },
+  "initial_probe_preparation": {
+    "command": "cloud_run timeout 300 node ../packet/dependency-probe.mjs ../packet/main-probe.json",
+    "exit": 2,
+    "receipt": "probe-preparation.json",
+    "reason": "Explicit approval policy holds reads; external probe corrected to approve and use the native read continuation"
+  },
+  "corrected_build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0,
+    "log": "head-build.log"
+  },
+  "checks": ["head-probe.receipt.json", "typecheck.receipt.json", "native-agent.receipt.json", "native-core.receipt.json"]
+}

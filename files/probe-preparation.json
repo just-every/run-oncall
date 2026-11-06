@@ -1,0 +1,154 @@
+{
+  "schema": 1,
+  "command": "node ../packet/dependency-probe.mjs <receipt.json>",
+  "source_head": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "source_hashes": {
+    "src/agent-door/service-tools.ts": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
+    "src/agent-door/read-tools.ts": "88b6e44ff0dead6432bce83d8bf7bface56747c76d4b4ab3f5bb01f953e76453",
+    "CONTRACT.md": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+    "sources.lock.json": "da13de0ccdb41fe3f0778775061b9ced0980af0863b918f8411df90b2a5a81db",
+    "dist/server/index.js": "51cd2c427cb45b13605e2f1f20667e02c0e1f5904321c626325155cfbe3c4988"
+  },
+  "cases": [
+    {
+      "label": "autonomous/scoped",
+      "read_dependencies": [],
+      "success_dependencies": [
+        "agent-foreign-service"
+      ],
+      "replay_dependencies": [
+        "agent-foreign-service"
+      ],
+      "stored_dependencies": [
+        "agent-foreign-service"
+      ],
+      "rename_only": true,
+      "projected_etag_matches_read": true,
+      "single_native_revision": true,
+      "replay_no_effect": true,
+      "attributed_audit": true,
+      "foreign_missing_refused": true,
+      "policy_disposition": "autonomous",
+      "approved": false
+    },
+    {
+      "label": "autonomous/authorized",
+      "read_dependencies": [
+        "agent-foreign-service"
+      ],
+      "success_dependencies": [
+        "agent-foreign-service"
+      ],
+      "replay_dependencies": [
+        "agent-foreign-service"
+      ],
+      "stored_dependencies": [
+        "agent-foreign-service"
+      ],
+      "rename_only": true,
+      "projected_etag_matches_read": true,
+      "single_native_revision": true,
+      "replay_no_effect": true,
+      "attributed_audit": true,
+      "foreign_missing_refused": true,
+      "policy_disposition": "autonomous",
+      "approved": false
+    },
+    {
+      "label": "held-review/scoped",
+      "read_dependencies": [],
+      "success_dependencies": [
+        "agent-foreign-service"
+      ],
+      "replay_dependencies": [
+        "agent-foreign-service"
+      ],
+      "stored_dependencies": [
+        "agent-foreign-service"
+      ],
+      "rename_only": true,
+      "projected_etag_matches_read": true,
+      "single_native_revision": true,
+      "replay_no_effect": true,
+      "attributed_audit": true,
+      "foreign_missing_refused": true,
+      "policy_disposition": "review",
+      "approved": false
+    },
+    {
+      "label": "held-review/authorized",
+      "read_dependencies": [
+        "agent-foreign-service"
+      ],
+      "success_dependencies": [
+        "agent-foreign-service"
+      ],
+      "replay_dependencies": [
+        "agent-foreign-service"
+      ],
+      "stored_dependencies": [
+        "agent-foreign-service"
+      ],
+      "rename_only": true,
+      "projected_etag_matches_read": true,
+      "single_native_revision": true,
+      "replay_no_effect": true,
+      "attributed_audit": true,
+      "foreign_missing_refused": true,
+      "policy_disposition": "review",
+      "approved": false
+    }
+  ],
+  "privacy_failures": [
+    {
+      "label": "autonomous/scoped/success",
+      "expected": [],
+      "actual": [
+        "agent-foreign-service"
+      ]
+    },
+    {
+      "label": "autonomous/scoped/wire-success",
+      "foreign_identity": true
+    },
+    {
+      "label": "autonomous/scoped/replay",
+      "expected": [],
+      "actual": [
+        "agent-foreign-service"
+      ]
+    },
+    {
+      "label": "autonomous/scoped/wire-replay",
+      "foreign_identity": true
+    },
+    {
+      "label": "held-review/scoped/success",
+      "expected": [],
+      "actual": [
+        "agent-foreign-service"
+      ]
+    },
+    {
+      "label": "held-review/scoped/wire-success",
+      "foreign_identity": true
+    },
+    {
+      "label": "held-review/scoped/replay",
+      "expected": [],
+      "actual": [
+        "agent-foreign-service"
+      ]
+    },
+    {
+      "label": "held-review/scoped/wire-replay",
+      "foreign_identity": true
+    }
+  ],
+  "exit": 2,
+  "error": {
+    "name": "AssertionError",
+    "message": "{\"jsonrpc\":\"2.0\",\"id\":\"697f48fe-3cb9-4881-b9e1-4d02d01dd8cf\",\"result\":{\"resultType\":\"input_required\",\"requestState\":\"587990b3-8342-4f1c-b7ff-61eabcedbb87\",\"_meta\":{\"com.runeditrun/decision\":{\"id\":\"c351f43d-1119-4f99-8b19-7c743b8a6fd8\",\"disposition\":\"approval\",\"revision\":3,\"classes\":[{\"class\":\"standard\",\"rule\":\"service-approval\",\"do\":\"approval\",\"facts\":{\"measure\":1}}]},\"com.runeditrun/approval\":{\"id\":\"86d326e9-51fd-4aa1-891d-6663f2530a54\",\"url\":\"http://127.0.0.1:44301/agents/approvals/86d326e9-51fd-4aa1-891d-6663f2530a54\",\"expires_at\":\"2026-11-06T06:41:05.893Z\"}}}}\n+ actual - expected\n\n+ undefined\n- false\n",
+    "stack": "AssertionError [ERR_ASSERTION]: {\"jsonrpc\":\"2.0\",\"id\":\"697f48fe-3cb9-4881-b9e1-4d02d01dd8cf\",\"result\":{\"resultType\":\"input_required\",\"requestState\":\"587990b3-8342-4f1c-b7ff-61eabcedbb87\",\"_meta\":{\"com.runeditrun/decision\":{\"id\":\"c351f43d-1119-4f99-8b19-7c743b8a6fd8\",\"disposition\":\"approval\",\"revision\":3,\"classes\":[{\"class\":\"standard\",\"rule\":\"service-approval\",\"do\":\"approval\",\"facts\":{\"measure\":1}}]},\"com.runeditrun/approval\":{\"id\":\"86d326e9-51fd-4aa1-891d-6663f2530a54\",\"url\":\"http://127.0.0.1:44301/agents/approvals/86d326e9-51fd-4aa1-891d-6663f2530a54\",\"expires_at\":\"2026-11-06T06:41:05.893Z\"}}}}\n+ actual - expected\n\n+ undefined\n- false\n\n    at content (file:///home/agent/rer-consolidation/work/sd-oncall-dependency-projection-1/packet/dependency-probe.mjs:18:63)\n    at service (file:///home/agent/rer-consolidation/work/sd-oncall-dependency-projection-1/packet/dependency-probe.mjs:19:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///home/agent/rer-consolidation/work/sd-oncall-dependency-projection-1/packet/dependency-probe.mjs:42:15"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-06T05:44:21.393693+00:00",
+  "main": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "branch": "cloud/sd-oncall-dependency-projection-1",
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0,
+    "raw_log_excluded": "Setup output may contain local private owner-entry links"
+  },
+  "source_hashes": {
+    "CONTRACT.md": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+    "ACCEPTANCE.md": "3f378dfd597df0bf5575cf45fb5547f944ca1200d63fe6ff44b2d744eaa63c7e",
+    "docs/CLAIMS.md": "e26ef886858d426a95d21c4ffa898189cf7df559811cc5ba0f6db37719652afa",
+    "src/agent-door/service-tools.ts": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
+    "sources.lock.json": "da13de0ccdb41fe3f0778775061b9ced0980af0863b918f8411df90b2a5a81db"
+  },
+  "counts": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_status_changes": [],
+  "base_agent_012": "missing; entire Status/Gap/Evidence/provenance preserved",
+  "permanent_test_registrations_added": 0
+}

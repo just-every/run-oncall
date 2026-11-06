@@ -1,0 +1,19 @@
+{
+  "name": "lock-check",
+  "command": [
+    "node",
+    "scripts/edition-authoring/cli.mjs",
+    "check"
+  ],
+  "started": "2026-11-06T05:47:28.668467+00:00",
+  "seconds": 0.228,
+  "exit": 0,
+  "source_head": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "source_hashes": {
+    "src/agent-door/service-tools.ts": "9fe46825c849ef6de529aad71b4057a1b5ddce51e808411313b0e440a8600c92",
+    "src/agent-door/read-tools.ts": "88b6e44ff0dead6432bce83d8bf7bface56747c76d4b4ab3f5bb01f953e76453",
+    "CONTRACT.md": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+    "sources.lock.json": "d8c3c8299a2492c8ff278b64719862bdefa1535d9274f1ebf9ae563a768c9a29"
+  },
+  "log_sha256": "3ac2354208e1240fcaa322a7e0050d70d68d9ffcbac3232ffe2ff26a90e55472"
+}
