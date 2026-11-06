@@ -1,0 +1,13 @@
+commit 4f07968cdaa53d9cbf209f16d912a93342f0ae46
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Fri Nov 6 07:05:43 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Fri Nov 6 07:05:43 2026 +0000
+
+    Prove optional service ETag conflict diagnostics through MCP
+
+ CONTRACT.md                              |   2 +-
+ sources.lock.json                        |   8 +-
+ tests/oncall-agent-flow.mjs              |   2 +
+ tests/oncall-agent-service-revisions.mjs | 134 +++++++++++++++++++++++++++++++
+ 4 files changed, 143 insertions(+), 3 deletions(-)

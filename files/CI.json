@@ -1,0 +1,44 @@
+{
+  "observed_at": "2026-11-06T07:06:10.251617+00:00",
+  "github_calls_total": 6,
+  "observations": [
+    {
+      "observed_at": "2026-11-06T07:06:10.251617+00:00",
+      "runs": [
+        {
+          "id": 42178613345,
+          "name": "Verify",
+          "event": "push",
+          "status": "in_progress",
+          "conclusion": null,
+          "head_sha": "4f07968cdaa53d9cbf209f16d912a93342f0ae46",
+          "html_url": "https://github.com/just-every/run-oncall/actions/runs/42178613345"
+        }
+      ]
+    },
+    {
+      "observed_at": "2026-11-06T07:12:49.340943+00:00",
+      "run_id": 42178613345,
+      "conclusion": "failure",
+      "head_sha": "4f07968cdaa53d9cbf209f16d912a93342f0ae46",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42178613345",
+      "status": "completed"
+    }
+  ],
+  "assessment": "Permitted generated-view freshness exception only; not an ordinary green Verify. Lander must regenerate views and rerun its exact-SHA gates.",
+  "failed_jobs": [
+    {
+      "id": 127762823219,
+      "name": "build",
+      "step": "Check the generated contract documents",
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 1,
+      "failure": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "id": 127763434430,
+      "name": "verify",
+      "failure": "Dependent aggregate gate after build failure; shards skipped."
+    }
+  ]
+}

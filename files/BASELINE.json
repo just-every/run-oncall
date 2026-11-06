@@ -1,0 +1,31 @@
+{
+  "main": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "verify_runs": [
+    42153902730,
+    42151170333
+  ],
+  "verify": "success",
+  "run_site": 42153902508,
+  "run_site_conclusion": "success",
+  "github_calls": 1,
+  "counts": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "status_rows": 101,
+  "predecessors": [
+    {
+      "tag": "sd-oncall-c-f203",
+      "head": "6e382fa725b9ab7c2517e3a044faa0826b8d0a30",
+      "ancestor_of_main": false,
+      "gate": "retained, not waived"
+    },
+    {
+      "tag": "sd-oncall-c-f204",
+      "head": "32c0f370f6ebc8cf2a4b55da03901933f300950a",
+      "ancestor_of_main": false,
+      "gate": "retained, not waived"
+    }
+  ]
+}

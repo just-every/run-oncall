@@ -1,0 +1,171 @@
+diff --git a/CONTRACT.md b/CONTRACT.md
+index 2115b5a..474da71 100644
+--- a/CONTRACT.md
++++ b/CONTRACT.md
+@@ -1527,5 +1527,5 @@ Judged from the code and tests at commit `d189082d24ac1fdbf1b62272a73949e42e9a36
+ | `BASE-AGENT-009` | Every agent action is audited with its class and decision | target | partial | `tests/agent-door-browser.mjs` — weekly-counts: native MCP calls at controlled UTC week boundaries, the complete cursor-paginated audit, all rendered class and decision cohorts at 1440 and 390, each carried class counted once, unchanged durable records across reloads and zero outbound requests. | Only acceptance 3 is proved. Acceptance 1's complete-write schema; acceptance 2's complete refused, pending, unset and self-escalation matrix; acceptance 4's exact review feed, attributed Mark reviewed and reversible Undo; acceptance 5's filters and full-field export; acceptance 6's removed-agent retention; and acceptance 7's whole-page accessibility remain unproved here beyond existing cited proof. Cross-seed Business reporting, model and executor activity and every unbuilt execution class retain their obligations. OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold; BASE-AGENT-006 and SURFACE-004 remain unchanged. Paging stays OFF; delivery, independent standby and real-phone duties remain held. |
+ | `BASE-AGENT-010` | Agents can follow changes | target | missing | | Not yet judged through this seed's own doors. |
+ | `BASE-AGENT-011` | Limits are policy, and Pause stops everything | target | partial | `tests/oncall-agent-flow.mjs` — independent Pause flags via `tests/agent-door-runtime.mjs` pauseMatrix: emitted Worker and D1, both company policies, valid next MCP read and coordination mutation refused within 60 seconds, independent flag clearing, bearer resume refused even with the owner cookie, unchanged native and paging state, zero outbound requests, attributed human coordination and policy-appropriate resume. `tests/agent-door-browser.mjs` — the same matrix through the signed-in Pause agents and Resume agents controls; local, Business-only and resumed screens at 1440 and 390; pending dispatch approval remains refused during local Pause. | Acceptances 1 to 5 remain unproved: request-rate refusal, recipient caps, provider spend caps, no-cap spending and the complete usage view; paid AI spend caps are explicitly not enforced. Acceptance 6 proves only the native local control and signed fixture policy-adoption door, not actual Business UI propagation or device continuity. Model and provider spending and executor flows remain omitted under OC-045, OC-046, OC-048 and OC-049 authority holds. BASE-AGENT-006 and SURFACE-004 holds remain unchanged. Paging remains OFF; production delivery, independent standby and real-phone prerequisites remain. |
+-| `BASE-AGENT-012` | Writes are idempotent and conflict-safe | target | missing | `tests/oncall-agent-flow.mjs` — droppedDeclarationReplay, invoked by `tests/runtime.mjs`: real MCP declaration response destroyed at headers without reading its body under autonomous and held policies; native D1 confirms the original call and incident before a new JSON-RPC id replays the stored structured outcome, with one declaration, one application revision and state-changing audit commit, a separate linked replay-attempt audit, one original held review and zero outbound requests. `tests/agent-door-runtime.mjs` — discardToolResponse uses the real HTTP socket with no response-body consumer. `tests/oncall-agent-flow.mjs` — changedArgumentConflicts, invoked by `tests/runtime.mjs`: completed standard-only oncall.incidents.declare and oncall.notes.add under autonomous and held policies; changed title or note text with the original key returns isError and idempotency_conflict, preserving native records, revisions, timeline, state-changing audit, original call and outcome custody, approvals, reviews and paging; exact original arguments with a new JSON-RPC id return the stored outcome without another effect or held review, with zero outbound requests. `tests/agent-door-runtime.mjs` — agentEffectSnapshot compares retained effects, allowing attempt audit and capacity bookkeeping. `tests/oncall-agent-flow.mjs` — staleNoteRevision: autonomous and held MCP note calls carry the current required native revision and a stale optional expected revision; both return isError, revision_conflict and the exact current_revision in metadata and text, preserving native records, revisions, timeline, state-changing audit, replay, approval, review and paging custody apart from refusal audit and capacity bookkeeping. A fresh key using that returned revision adds one attributed note with the autonomous or open-review outcome; retry preserves that single effect and review, with zero outbound requests. `tests/oncall-agent-flow.mjs` — staleCoordinationRevision, invoked by `tests/runtime.mjs`: on separate ordinary incidents, oncall.incidents.acknowledge and oncall.actions.create carry the current required native revision and stale optional expected_revision under autonomous and held policies. Each refusal returns isError and revision_conflict with the exact authorized parent current_revision in metadata and text and no private structured result, preserving native records, revisions, timeline, state-changing permanent audit, original calls and outcomes, approvals, reviews and paging. A fresh key using the returned revision produces one agent-attributed acknowledgment naming an active responder or one owned, due-dated P1 human-review follow-up that remains open, with the autonomous or single open-review outcome. An identical-argument retry with a new JSON-RPC id returns the stored result without another effect or review; missing and scoped-out targets return not_found without a revision or private result, with zero outbound requests. | Main's missing judgment is retained; these bounded acceptance-2 and acceptance-3 observations do not complete the clause. Acceptance 2 is proved only for the shipped oncall.incidents.declare tool. Acceptance 1's complete mutating-tool coverage, acceptance 3's remaining tools and argument combinations, acceptance 4's remaining current-revision diagnostics, acceptance 5's foreign-person job-handle refusal, the full 24-hour retention bar and long-work status independent of the Tasks extension remain unproved here. Erasure and approval replay, including SURFACE-004's ambiguous hold and Base seam, are outside this slice; BASE-AGENT-006's live campaign is not repeated. Model, investigation, ownership, remediation, recurrence and executor flows remain omitted; OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold. Paging stays OFF; production delivery, independent standby and real-phone duties remain held. Acceptance 3 is proved here only for changed declaration title and standard-only note text under both company policies; its remaining tools and argument combinations remain unproved. Acceptance 4 is proved here only for a stale optional expected revision on oncall.notes.add, oncall.incidents.acknowledge and oncall.actions.create under both company policies; this bounded observation does not complete the clause, and acceptance 4's other tools and native required-revision diagnostics remain unproved. |
++| `BASE-AGENT-012` | Writes are idempotent and conflict-safe | target | missing | `tests/oncall-agent-flow.mjs` — droppedDeclarationReplay, invoked by `tests/runtime.mjs`: real MCP declaration response destroyed at headers without reading its body under autonomous and held policies; native D1 confirms the original call and incident before a new JSON-RPC id replays the stored structured outcome, with one declaration, one application revision and state-changing audit commit, a separate linked replay-attempt audit, one original held review and zero outbound requests. `tests/agent-door-runtime.mjs` — discardToolResponse uses the real HTTP socket with no response-body consumer. `tests/oncall-agent-flow.mjs` — changedArgumentConflicts, invoked by `tests/runtime.mjs`: completed standard-only oncall.incidents.declare and oncall.notes.add under autonomous and held policies; changed title or note text with the original key returns isError and idempotency_conflict, preserving native records, revisions, timeline, state-changing audit, original call and outcome custody, approvals, reviews and paging; exact original arguments with a new JSON-RPC id return the stored outcome without another effect or held review, with zero outbound requests. `tests/agent-door-runtime.mjs` — agentEffectSnapshot compares retained effects, allowing attempt audit and capacity bookkeeping. `tests/oncall-agent-flow.mjs` — staleNoteRevision: autonomous and held MCP note calls carry the current required native revision and a stale optional expected revision; both return isError, revision_conflict and the exact current_revision in metadata and text, preserving native records, revisions, timeline, state-changing audit, replay, approval, review and paging custody apart from refusal audit and capacity bookkeeping. A fresh key using that returned revision adds one attributed note with the autonomous or open-review outcome; retry preserves that single effect and review, with zero outbound requests. `tests/oncall-agent-flow.mjs` — staleCoordinationRevision, invoked by `tests/runtime.mjs`: on separate ordinary incidents, oncall.incidents.acknowledge and oncall.actions.create carry the current required native revision and stale optional expected_revision under autonomous and held policies. Each refusal returns isError and revision_conflict with the exact authorized parent current_revision in metadata and text and no private structured result, preserving native records, revisions, timeline, state-changing permanent audit, original calls and outcomes, approvals, reviews and paging. A fresh key using the returned revision produces one agent-attributed acknowledgment naming an active responder or one owned, due-dated P1 human-review follow-up that remains open, with the autonomous or single open-review outcome. An identical-argument retry with a new JSON-RPC id returns the stored result without another effect or review; missing and scoped-out targets return not_found without a revision or private result, with zero outbound requests. `tests/oncall-agent-service-revisions.mjs` — staleServiceRevision, invoked by `tests/oncall-agent-flow.mjs` through `tests/runtime.mjs`: under autonomous and held policies an otherwise-valid service-name edit carries the current native ETag and a stale optional string expected_revision; MCP returns isError and revision_conflict with the exact authorized current_revision in metadata and text, with no private structured result. Refusal preserves native records, revisions, timeline, state-changing audit, original replay and outcome custody, approvals, reviews and paging, allowing refusal audit and capacity bookkeeping. A fresh key using the returned ETag in both revision fields changes only the service name once with actual agent attribution and the autonomous or single open-review outcome; a new JSON-RPC id with identical arguments returns the stored result without another effect or review. Missing and scoped-out services return not_found without a revision or private result. With a private dependency the scoped diagnostic returns the projected ETag rather than the owner's full-record ETag. All cases make zero outbound requests. | Main's missing judgment is retained; these bounded acceptance-2 and acceptance-3 observations do not complete the clause. Acceptance 2 is proved only for the shipped oncall.incidents.declare tool. Acceptance 1's complete mutating-tool coverage, acceptance 3's remaining tools and argument combinations, acceptance 4's remaining current-revision diagnostics, acceptance 5's foreign-person job-handle refusal, the full 24-hour retention bar and long-work status independent of the Tasks extension remain unproved here. Erasure and approval replay, including SURFACE-004's ambiguous hold and Base seam, are outside this slice; BASE-AGENT-006's live campaign is not repeated. Model, investigation, ownership, remediation, recurrence and executor flows remain omitted; OC-045, OC-046, OC-048 and OC-049 retain their agent and AI egress authority hold. Paging stays OFF; production delivery, independent standby and real-phone duties remain held. Acceptance 3 is proved here only for changed declaration title and standard-only note text under both company policies; its remaining tools and argument combinations remain unproved. Acceptance 4 is proved here only for a stale optional expected revision on oncall.notes.add, oncall.incidents.acknowledge and oncall.actions.create and the optional string expected_revision diagnostic for oncall.services.update under both company policies; this bounded observation does not complete the clause, and acceptance 4's other tools and native required-revision diagnostics remain unproved. |
+ | `BASE-AGENT-013` | Manifest, docs and the conformance journey | target | missing | `scripts/write-agent-surface.mjs` — native registry generation and freshness check; `tests/oncall-agent-flow.mjs` — complete generated and served guide inventory against emitted Worker discovery under autonomous and held policies, maintained computed-class fixture references, unchanged native and paging state with zero outbound requests; `tests/agent-door-browser.mjs` — rendered inventory agrees with live MCP under both policies, desktop assertions and guide proof at 1440 and 390; `tests/agent-door.mjs` — existing computed-class execution through the Base conformance journey. | Main's missing judgment is retained; this bounded native inventory proof does not complete the clause. Acceptances 1 and 2 are proved only for the current native surface: all 39 exposed tools, their scopes, possible classes and maintained class-test fixture IDs; the source manifest retains 40 tools but withholds oncall.events.list, and no resource templates are exposed. Gap: unshipped tools and their class and test documentation; undeclared resources, events and prompts; complete discovery-instruction generation and judgment; acceptance 3 complete harness rejection matrix; acceptance 4 every-point coverage under both policies; acceptance 5 stranger-agent specialist completion. OC-045, OC-046, OC-048 and OC-049 retain the agent egress authority hold; model, investigation, ownership, remediation, recurrence and executor flows remain omitted. Existing BASE-AGENT-005 work and BASE-AGENT-006 and BASE-AGENT-008 holds, SURFACE-004 ambiguous hold and Base replay seam, and all release prerequisites remain unchanged. PARTIAL; paging OFF; no production delivery, independent standby, real-phone or publication authority. |
+diff --git a/tests/oncall-agent-flow.mjs b/tests/oncall-agent-flow.mjs
+index 472db1d..2a84d3c 100644
+--- a/tests/oncall-agent-flow.mjs
++++ b/tests/oncall-agent-flow.mjs
+@@ -9,6 +9,7 @@ import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
+ import specialist from './oncall-agent-native.mjs';
+ import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
+ import {teamReplay} from './oncall-agent-team-replay.mjs';
++import {staleServiceRevision} from './oncall-agent-service-revisions.mjs';
+ import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
+ import {nativeTransport} from './oncall-agent-transport.mjs';
+ import {accessToken,seconds,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+@@ -431,6 +432,7 @@ try{
+  await consentRevocationMatrix(runtime);
+  await staleNoteRevision(runtime);
+  await staleCoordinationRevision(runtime);
++ await staleServiceRevision(runtime);
+  // Resolve native targets before any policy disposition; cached outcomes
+  // still require current policy, scopes and live native record authority.
+  const owner=(await (await http('/api/workspace')).json()).member;
+diff --git a/tests/oncall-agent-service-revisions.mjs b/tests/oncall-agent-service-revisions.mjs
+new file mode 100644
+index 0000000..872472c
+--- /dev/null
++++ b/tests/oncall-agent-service-revisions.mjs
+@@ -0,0 +1,134 @@
++import assert from 'node:assert/strict';
++import {randomUUID} from 'node:crypto';
++import {agentEffectSnapshot} from './agent-door-runtime.mjs';
++import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
++
++/** Diagnose a stale optional string revision without consuming native custody. */
++export async function staleServiceRevision(runtime){
++ const {db,http,tool,adopt,context}=runtime;
++ const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
++ const rows=async(sql,...values)=>(await db.prepare(sql).bind(...values).all()).results;
++ const snapshot=()=>agentEffectSnapshot(runtime);
++ const audits=()=>rows('SELECT * FROM agent_door_audit ORDER BY sequence');
++ const owner=(await read('/api/workspace')).member;
++ const name='oncall.services.update';
++ for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
++  assert.equal((await adopt(policy)).status,200);
++  const id='synthetic-oncall-'+randomUUID();
++  const original={id,name:'Synthetic service before reload '+mode,environment:'test',owner:owner.id,
++   runbook:['Inspect retained coordination evidence'],pager:''};
++  const prepare=async input=>{const response=await http('/api/command',{...input,type:'service'});assert.equal(response.status,200);return response.json()};
++  await prepare(original);
++  const serviceRead=async bearer=>{
++   const response=await tool('oncall.services.read',{id},{},bearer);
++   assert.equal(response.status,200);assert.equal(response.result.isError,false);
++   return response.result.structuredContent.data[0];
++  };
++  const old=await serviceRead();
++  await prepare({...original,name:'Synthetic service after reload '+mode});
++  const current=await serviceRead();
++  assert.match(current.etag,/^[a-f0-9]{64}$/);assert.notEqual(current.etag,old.etag);
++  const credential='synthetic-oncall-'+randomUUID();
++  const response=await http('/api/automation/clients',{name:'Synthetic service revision scope '+mode,key:credential,
++   services:[id],permissions:['services:read','services:write']});
++  assert.equal(response.status,201);await response.json();
++  const scoped=await serviceRead(credential);
++  assert.equal(scoped.etag,current.etag,'The authorized service projection supplies the native ETag');
++  const args={...original,name:'Synthetic agent service edit '+mode,etag:current.etag,
++   expected_revision:old.etag,idempotency_key:randomUUID()};
++  const before=await snapshot(),pagingBefore=await read('/api/paging/state'),priorAudit=await audits();
++  assert.ok(before.records.agent_door_calls.length>0,'Refusal starts with populated original replay custody');
++  assert.ok(before.records.agent_door_reviews.length>0,'Refusal starts with populated review custody');
++  const stale=await tool(name,args);
++  assert.equal(stale.status,200);assert.equal(stale.body.error,undefined);assert.equal(stale.result.isError,true);
++  const error={code:'revision_conflict',current_revision:current.etag};
++  assert.deepEqual(stale.result._meta['com.runeditrun/error'],error);
++  assert.deepEqual(JSON.parse(stale.result.content[0].text),error);
++  assert.equal(stale.result.structuredContent,undefined);
++  assert.deepEqual(await snapshot(),before,'Optional revision refusal preserves records, revisions, timeline, state-changing audit, original outcomes, approvals, reviews and paging');
++  assert.deepEqual(await read('/api/paging/state'),pagingBefore);
++  const refusedAudit=await audits();
++  assert.deepEqual(refusedAudit.slice(0,-1),priorAudit);assert.equal(refusedAudit.length,priorAudit.length+1);
++  const refusal=JSON.parse(refusedAudit.at(-1).row);
++  assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'revision_conflict');
++  assert.equal(refusal.idempotency_key,args.idempotency_key);assert.equal(refusal.agent.id,context.agentId);
++  assert.deepEqual(refusal.resource,{kind:'service',id});
++
++  const returned=stale.result._meta['com.runeditrun/error'].current_revision;
++  const freshArgs={...args,etag:returned,expected_revision:returned,idempotency_key:randomUUID()};
++  const fresh=await tool(name,freshArgs);
++  assert.equal(fresh.status,200);assert.equal(fresh.body.error,undefined);assert.equal(fresh.result.isError,false);
++  assert.deepEqual(fresh.decision.classes.map(row=>row.class),['standard']);assert.equal(fresh.decision.disposition,disposition);
++  const once=await snapshot(),saved=once.application.services.find(row=>row.id===id);
++  const previous=before.application.services.find(row=>row.id===id);
++  assert.deepEqual(saved,{...previous,name:args.name},'The supported write changes only the service name');
++  assert.equal(once.application.audit.length,before.application.audit.length+1);
++  assert.deepEqual(once.application.audit.slice(0,-1),before.application.audit);
++  const entry=once.application.audit.at(-1);
++  assert.equal(entry.kind,'service');assert.equal(entry.actor,context.agentId);
++  assert.equal(entry.metadata.agent.agent.id,context.agentId);assert.equal(entry.metadata.agent.for.id,owner.id);
++  assert.ok(entry.text.includes(args.name));
++  assert.deepEqual(once.application,{...before.application,revision:before.application.revision+1,
++   services:before.application.services.map(row=>row.id===id?saved:row),audit:once.application.audit});
++  const savedEtag=fresh.result.structuredContent.etag;
++  assert.match(savedEtag,/^[a-f0-9]{64}$/);assert.notEqual(savedEtag,returned);
++  assert.deepEqual(fresh.result.structuredContent,{...saved,etag:savedEtag});
++  assert.equal(once.records.oc_admin_audit.length,before.records.oc_admin_audit.length+1);
++  for(const record of before.records.oc_admin_audit)assert.deepEqual(once.records.oc_admin_audit.find(row=>row.id===record.id),record);
++  const commit=once.records.oc_admin_audit.find(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
++  assert.equal(commit.kind,'service.update');assert.equal(commit.outcome,'accepted');
++  const actor=await rows('SELECT * FROM oc_audit_identities WHERE kind=? AND entity_id=?','agent',context.agentId);
++  assert.equal(actor.length,1);assert.equal(commit.actor,actor[0].label,'The native service edit retains the actual agent attribution');
++  assert.deepEqual(once.records.agent_door_approvals,before.records.agent_door_approvals);
++  for(const table of Object.keys(before.records).filter(value=>value.startsWith('paging_')))assert.deepEqual(once.records[table],before.records[table]);
++  assert.deepEqual(await read('/api/paging/state'),{...pagingBefore,workspaceRevision:once.application.revision});
++  const reviews=once.records.agent_door_reviews;
++  assert.equal(reviews.length,before.records.agent_door_reviews.length+Number(mode==='held'));
++  for(const record of before.records.agent_door_reviews)assert.deepEqual(reviews.find(row=>row.id===record.id),record);
++  if(mode==='held'){
++   const review=reviews.find(row=>row.id===fresh.result._meta['com.runeditrun/review'].id);
++   assert.ok(review);assert.equal(review.state,'open');assert.equal(JSON.parse(review.saved).decision_id,fresh.decision.id);
++   assert.equal((await read('/agents/api/reviews')).reviews.find(row=>row.id===review.id).state,'open');
++  }else assert.equal(fresh.result._meta['com.runeditrun/review'],undefined);
++  const calls=await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,freshArgs.idempotency_key);
++  assert.equal(calls.length,1);assert.equal(calls[0].state,'done');assert.equal(calls[0].decision_id,fresh.decision.id);
++  const stored=JSON.parse(calls[0].outcome);
++  assert.equal(stored.outcome,'done');assert.deepEqual(stored.result,fresh.result.structuredContent);
++  assert.deepEqual(stored.review,fresh.result._meta['com.runeditrun/review']);
++  const originalAudit=await rows('SELECT * FROM agent_door_audit WHERE id=?',fresh.decision.id),beforeRetry=await audits();
++  const replay=await tool(name,freshArgs);
++  assert.equal(replay.status,200);assert.equal(replay.body.error,undefined);assert.equal(replay.result.isError,false);
++  assert.notEqual(replay.body.id,fresh.body.id);assert.notEqual(replay.body.id,stale.body.id);
++  assert.deepEqual(replay.result.structuredContent,stored.result);assert.deepEqual(replay.result._meta['com.runeditrun/review'],stored.review);
++  assert.deepEqual(await snapshot(),once,'A new RPC id replays the original outcome without another effect, revision, state-changing audit or review');
++  assert.deepEqual(await rows('SELECT * FROM agent_door_audit WHERE id=?',fresh.decision.id),originalAudit);
++  const retried=await audits();assert.deepEqual(retried.slice(0,-1),beforeRetry);assert.equal(retried.length,beforeRetry.length+1);
++  const attempt=JSON.parse(retried.at(-1).row);assert.equal(attempt.outcome,'replayed');assert.equal(attempt.replay_of,fresh.decision.id);
++  const reread=await serviceRead();assert.equal(reread.etag,savedEtag);
++
++  const privateBefore=await snapshot();
++  for(const target of ['agent-foreign-service','synthetic-oncall-'+randomUUID()]){
++   const denied=await tool(name,{...args,id:target,idempotency_key:randomUUID()},{},credential);
++   assert.equal(denied.status,200);assert.equal(denied.body.error,undefined);assert.equal(denied.result.isError,true);
++   assert.deepEqual(denied.result._meta['com.runeditrun/error'],{code:'not_found'});
++   assert.deepEqual(JSON.parse(denied.result.content[0].text),{code:'not_found'});assert.equal(denied.result.structuredContent,undefined);
++   assert.deepEqual(await snapshot(),privateBefore,'Missing and scoped-out services disclose no revision or result and preserve custody');
++  }
++  // A retained private dependency makes the authorized ETag differ from the
++  // owner's full-record ETag; the refusal must reveal only the former.
++  await prepare({...saved,dependencies:['agent-foreign-service']});
++  const ownerView=await serviceRead(),scopedView=await serviceRead(credential);
++  assert.deepEqual(ownerView.dependencies,['agent-foreign-service']);assert.deepEqual(scopedView.dependencies,[]);
++  assert.notEqual(scopedView.etag,ownerView.etag);assert.notEqual(scopedView.etag,returned);
++  const projectedBefore=await snapshot();
++  const projected=await tool(name,{...args,etag:scopedView.etag,expected_revision:returned,idempotency_key:randomUUID()},{},credential);
++  assert.equal(projected.status,200);assert.equal(projected.body.error,undefined);assert.equal(projected.result.isError,true);
++  const projectedError={code:'revision_conflict',current_revision:scopedView.etag};
++  assert.deepEqual(projected.result._meta['com.runeditrun/error'],projectedError);
++  assert.deepEqual(JSON.parse(projected.result.content[0].text),projectedError);assert.equal(projected.result.structuredContent,undefined);
++  assert.deepEqual(await snapshot(),projectedBefore,'A scoped diagnostic preserves private dependencies and all retained custody');
++  assert.deepEqual(await runtime.outboundRequests(),[]);
++  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' '+name+': valid native ETag with stale string expected_revision -> isError revision_conflict with exact authorized current_revision in metadata and text, no private result or effect; fresh key and returned ETag in both revision fields -> one agent-attributed name-only edit, '+disposition+'; new RPC id retry -> stored result, no duplicate effect or review; missing and scoped-out services -> not_found without revision or private result; zero outbound requests');
++ }
++ assert.equal((await adopt()).status,200);
++}

@@ -1,0 +1,17 @@
+Exact-SHA Verify run 42178613345; expected generated-view freshness failure only.
+
+gh run view 42178613345 --repo just-every/run-oncall --job 127762823219 --log-failed (exit 0)
+gh run view 42178613345 --repo just-every/run-oncall --job 127763434430 --log-failed (exit 0)
+Both failed-job logs were read once. The aggregate gate failed because the build failed; runtime shards were skipped.
+
+Actual build log excerpt:
+build	Check the generated contract documents	﻿2026-11-06T07:07:44.1249615Z ##[group]Run node src/base/contract-docs.mjs check
+build	Check the generated contract documents	2026-11-06T07:07:44.2193193Z Contract prose: 0 errors, 0 warnings.
+build	Check the generated contract documents	2026-11-06T07:07:44.2839508Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+build	Check the generated contract documents	2026-11-06T07:07:44.2934163Z ##[error]Process completed with exit code 1.
+
+Actual local reproduction on the same candidate, node src/base/contract-docs.mjs check, exit 1:
+Contract prose: 0 errors, 0 warnings.
+ACCEPTANCE.md: generated content differs; run contract-docs write.
+
+No repair, rerun or workflow edit was performed.

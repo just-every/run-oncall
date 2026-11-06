@@ -1,0 +1,117 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f205",
+  "head": "4f07968cdaa53d9cbf209f16d912a93342f0ae46",
+  "product_push": "success",
+  "push_attempts": 1,
+  "push_command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f205",
+  "identity_check": "all candidate authors and committers Run Edit Run fleet; fleet address; no trailers",
+  "parent_status_rows": 101,
+  "candidate_status_rows": 101,
+  "new_email_shaped_strings": 0,
+  "existing_assertions_removed": 0,
+  "production_sources_changed": false,
+  "proof_files": [
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "sha256": "4ff362b2cb52e538feb7e0e6375e266ddd2c0ba769584476e3cf595cc2dfb68a"
+    },
+    {
+      "path": "tests/oncall-agent-service-revisions.mjs",
+      "sha256": "ab84f5a07dbcf68092f7c91b215663a60c7b6cc80702e432941ae8ed373cb687"
+    },
+    {
+      "path": "CONTRACT.md",
+      "sha256": "dee797bcf71a609ab1fa2959abe8872c3cc80bf2eeef62a645ddd3781acd985c"
+    },
+    {
+      "path": "sources.lock.json",
+      "sha256": "eedab15c175b42efcc6b0dba56faaae222fb1073b3b09666e0ee1d00563dfbd0"
+    }
+  ],
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "node tests/oncall-agent-flow.mjs",
+      "exit": 0,
+      "stage": "before commit; final helper bytes unchanged"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write; node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "generated_views_restored": true
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "head": "4f07968cdaa53d9cbf209f16d912a93342f0ae46"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "head": "4f07968cdaa53d9cbf209f16d912a93342f0ae46",
+      "timeout_seconds": 1200,
+      "transport": "cloud_run"
+    }
+  ],
+  "runtime_machines": "success",
+  "publication_scan": "not run in cloud; retained fleet gate",
+  "main_equality": "not landed; cloud branch only",
+  "predecessor_gate": "retained",
+  "working_tree_clean": true,
+  "logs": [
+    {
+      "file": "AGENT.log",
+      "sha256": "81e4524a26a803f5edb5b1f27cbc6cfbee50ab7510ab31c189f002f44f77b80c",
+      "bytes": 26888
+    },
+    {
+      "file": "RUNTIME-MACHINES.log",
+      "sha256": "09f1ccc7d25c9ccdab73aacfe85ad2e849b1ac1d4c5e8bf6937fec2f1675bef2",
+      "bytes": 37101
+    }
+  ],
+  "mechanical": {
+    "views_write_exit": 0,
+    "views_check_exit": 0,
+    "views_restored": true,
+    "source_lock_write_exit": 0,
+    "source_lock_check_exit": 0,
+    "ledger": "none; no migration changes",
+    "helper_locked": true
+  },
+  "ci": {
+    "run": 42178613345,
+    "head": "4f07968cdaa53d9cbf209f16d912a93342f0ae46",
+    "status": "completed",
+    "conclusion": "failure",
+    "expected_generated_view_exception": true,
+    "product_failure_observed": false,
+    "github_calls": 6
+  },
+  "reproduced_expected_check": {
+    "head": "4f07968cdaa53d9cbf209f16d912a93342f0ae46",
+    "job": 127762823219,
+    "command": "node src/base/contract-docs.mjs check",
+    "test": "generated contract document freshness",
+    "exit": 1,
+    "failure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+    "repair_rounds": 0
+  },
+  "custody": "READY under explicit generated-view exception; guarded landing and predecessor gates retained"
+}
