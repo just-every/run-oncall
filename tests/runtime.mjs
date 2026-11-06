@@ -11,7 +11,6 @@ import {tmpdir} from 'node:os'
 import {join,resolve} from 'node:path'
 import {createHmac,pbkdf2Sync,createHash,randomBytes} from 'node:crypto'
 import {createServer} from 'node:net'
-import {passwordAudit} from './password-audit.mjs'
 
 const runtimePart=process.env.ONCALL_RUNTIME_PART??'all'
 if(!['all','core','machines','delivery'].includes(runtimePart))throw Error(`Unknown runtime journey: ${runtimePart}`)
@@ -654,7 +653,6 @@ try {
   assert.equal(grantEntry.subject, withdrawEntry.subject, "the same subject keeps its random audit alias");
   assert.equal(grantEntry.actor, withdrawEntry.actor, "the same actor keeps its random audit alias");
   assert.notEqual(grantEntry.subject, viewer.id);assert.notEqual(grantEntry.actor, admin.id);
-  await passwordAudit({request,sql,rows,cookie,admin,viewerCookie:currentViewerCookie});
   const heldAudit = await auditExport(cookie), heldAuditId = heldAudit.rows.at(-1).id.replaceAll("'", "''");
   auditSqlRefused("UPDATE oc_admin_audit SET kind=kind WHERE id='" + heldAuditId + "'");
   auditSqlRefused("DELETE FROM oc_admin_audit WHERE id='" + heldAuditId + "'");
@@ -1476,12 +1474,22 @@ try {
   const passwordState = ok(await request('/api/state', undefined, mapped.cookie));
   const passwordCustody = () => [rows('SELECT * FROM credentials ORDER BY member'), rows('SELECT * FROM sessions ORDER BY token')];
   const passwordBefore = passwordCustody(), passwordHistory = rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  const refusalIds = new Set(passwordHistory.map(row => row.id));
+  ok(await request('/api/password', {member:viewer.id,password:'synthetic-oncall-416-password'}, passwordSession.cookie), 403);
+  ok(await request('/api/password', {member:viewer.id,password:'synthetic-oncall-416-password'}), 401);
+  assert.deepEqual(passwordCustody(), passwordBefore, 'refused password changes preserve credentials and active sessions');
+  assert.deepEqual(ok(await request('/api/state', undefined, mapped.cookie)), passwordState);
+  const passwordRefusals = rows("SELECT * FROM oc_admin_audit WHERE kind='password.request'").filter(row => !refusalIds.has(row.id));
+  assert.equal(passwordRefusals.length, 1);assert.equal(passwordRefusals[0].outcome, 'refused');
+  for (const [before,after] of [['before_revision','after_revision'],['workspace_before','workspace_after'],['paging_before','paging_after'],['handoff_before','handoff_after']])
+    assert.equal(passwordRefusals[0][before], passwordRefusals[0][after], 'refused password authority records equal revisions');
+  const passwordHistoryAfterRefusals = rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
   sql("CREATE TRIGGER synthetic_oncall_password_audit BEFORE INSERT ON oc_admin_audit WHEN NEW.kind='password.request' BEGIN SELECT RAISE(ABORT,'synthetic-oncall-password-audit'); END");
   try {
     ok(await request('/api/password', {member:viewer.id,password:'synthetic-oncall-416-password'}, mapped.cookie), 503);
   } finally { sql('DROP TRIGGER synthetic_oncall_password_audit'); }
   assert.deepEqual(passwordCustody(), passwordBefore, 'audit failure rolls back password custody and session revocation');
-  assert.deepEqual(rows('SELECT * FROM oc_admin_audit ORDER BY ordinal'), passwordHistory, 'password audit failure preserves prior immutable history');
+  assert.deepEqual(rows('SELECT * FROM oc_admin_audit ORDER BY ordinal'), passwordHistoryAfterRefusals, 'password audit failure preserves prior immutable history');
   assert.deepEqual(ok(await request('/api/state', undefined, mapped.cookie)), passwordState);
   ok(await request('/api/state', undefined, passwordSession.cookie));
   ok(await request('/api/login', {name:'Viewer',password:'synthetic-oncall-416-password'}), 401);
