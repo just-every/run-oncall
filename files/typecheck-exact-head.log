@@ -1,0 +1,4 @@
+
+> @just-every/oncall@0.5.5 typecheck /home/agent/rer-consolidation/work/sd-oncall-c-f207/run-oncall
+> tsc --noEmit
+

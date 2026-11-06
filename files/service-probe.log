@@ -1,0 +1,8 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:2355) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["2355","2354","node"],["2363","2355","esbuild"],["2372","2355","workerd"],["2378","2355","ps"]]
+PROBE BASE-AGENT-012 acceptance 2 autonomous oncall.services.update: authorized service name edit with current projected ETag; real response destroyed at headers with unread body; D1 confirms committed service and original outcome; identical arguments and original ETag with new RPC id -> exact saved result and resulting ETag; one workspace revision and agent-attributed native audit commit; no review; retry preserves all native effects and custody; one linked replay-attempt audit; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 2 held oncall.services.update: authorized service name edit with current projected ETag; real response destroyed at headers with unread body; D1 confirms committed service and original outcome; identical arguments and original ETag with new RPC id -> exact saved result and resulting ETag; one workspace revision and agent-attributed native audit commit; one original open review; retry preserves all native effects and custody; one linked replay-attempt audit; zero outbound requests

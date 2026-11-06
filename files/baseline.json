@@ -1,0 +1,17 @@
+{
+  "tag": "sd-oncall-c-f207",
+  "repository": "just-every/run-oncall",
+  "base": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "counts": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "main_verify": [
+    42153902730,
+    42151170333
+  ],
+  "main_site": 42153902508,
+  "checked_at": "2026-11-06T11:20:53.325518+00:00"
+}

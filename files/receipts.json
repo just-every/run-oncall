@@ -1,0 +1,138 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f207",
+  "base": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "proof_sources": {
+    "tests/oncall-agent-service-replay.mjs": "9b53db1b2404b3a1dbf4cc33ef61ffaa45136d66a3906061571bc0a8e28d2a79",
+    "tests/oncall-agent-flow.mjs": "f509b1dabe8f75d49fb6d6c0253cd83e23cfda38c38508d5e8ffa47dc962966d",
+    "tests/agent-door-runtime.mjs": "73333474eb9bd20a365ef587fec63a244a1283295e8b968dca10b79f02d94960",
+    "src/agent-door/service-tools.ts": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
+    "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+    "src/modules/agent-door/execution.ts": "f778856e47b569f5a0f51dededd0beef0678c7f9f384a0cd12b99b3ad88c2be6"
+  },
+  "checks_completed": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node /tmp/sd-oncall-f207-service-probe.mjs",
+      "exit": 0
+    },
+    {
+      "command": "env ONCALL_RUNTIME_PART=core node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check (before restoring generated views)",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock (with new helper staged)",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "seconds": 291.2,
+      "selected_helper_lines_in_log": [
+        113,
+        114
+      ]
+    }
+  ],
+  "startup_diagnostics": {
+    "interrupted_attempts": 2,
+    "cause": "The ad hoc stdin runner passed --input-type=module to Miniflare synchronous worker evaluation; normal .mjs runner succeeds. No product assertion failed.",
+    "final_runtime_node": "22.20.0"
+  },
+  "generated_views_committed": false,
+  "ui_changed": false,
+  "test_registrations_added": 0,
+  "existing_assertions_removed_or_narrowed": false,
+  "head": "a41c45d447efbbb0b3fbc1ce345b96538ddbd87f",
+  "product_pushed": true,
+  "product_push_attempts": 1,
+  "counts_before": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_before": "missing",
+  "clause_after": "missing",
+  "verify_run": 42211172652,
+  "verify_status_at_discovery": "in_progress",
+  "verify_event": "push",
+  "github_api_calls": 2,
+  "migration_ledger": "not applicable",
+  "publication_scan": "fleet landing gate; not run in cloud",
+  "run_site": "fleet landing gate at resulting main SHA",
+  "pr": null,
+  "mechanical": "MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0 before main view restore; ledger=none exit=0",
+  "candidate_ref": "refs/heads/cloud/sd-oncall-c-f207",
+  "recorded_at": "2026-11-06T11:34:40.004871+00:00",
+  "log_hashes": {
+    "typecheck-exact-head.log": "2b84b2758b0d6b6501f998c74082d05b6d0c002581fbd7af2d1305d09284389c",
+    "build-exact-head.log": "67fa44b8adbfe8090a0f587df5b0ae22520ba9fde9a715c1c98a04ceb9a7f766",
+    "runtime-machines.log": "1bcd51e637da50c9c29aa2514a0b7189d9ae07bf51d0ce5d1d18cd91a564549b",
+    "service-probe.log": "ef7db981c8623596b738179bb24c9b39910fbf2a0e0bd118dc7fb3e15c0e11c2",
+    "runtime-core.log": "2f3cd5cc04473959b50a66a9ffb5dbc700472a132c0f9ba856fd8d9528ee852e",
+    "service-probe-exact-head.log": "20331fe09992df46eedf26cbff006a0b7d1f8a20512a06d6d6fdfae3401f3d7f",
+    "views.log": "c13b82a5e8c5eb726365d51a834d1ede37697c26e0828a2aa5d52274278a4f7a",
+    "restored-views-check.log": "9cf3c390ca9f5f8c7bb13f4dd1f4058d66f2e74d194584038d85eaf0d4767d1e",
+    "ci-discovery.jsonl": "5b8f490963b47d76ce2e0b4829a1c0d419738d1160fc19481831c9c5412d5364"
+  },
+  "exact_head_checks": {
+    "head": "a41c45d447efbbb0b3fbc1ce345b96538ddbd87f",
+    "node": "22.20.0",
+    "build": 0,
+    "typecheck": 0,
+    "service_replay_probe": 0,
+    "lock_generation": 0,
+    "lock_check": 0,
+    "clean_worktree": true,
+    "proof_sources_unchanged_from_integrated_run": true
+  },
+  "terminal_refs": {
+    "refs/heads/cloud/sd-oncall-c-f207": "a41c45d447efbbb0b3fbc1ce345b96538ddbd87f",
+    "refs/heads/main": "8e02f6674fad992d1a972cfd567a47144296e5a0"
+  },
+  "scope_checks": {
+    "full_history": true,
+    "parent_status_rows_retained": 101,
+    "status_rows_after": 101,
+    "dropped_status_rows": 0,
+    "generated_views_committed": false,
+    "added_email_shaped_strings": 0,
+    "added_credential_shaped_strings": 0,
+    "bare_slash_tokens_in_added_prose": 0
+  },
+  "updated_at": "2026-11-06T11:35:59.841517+00:00"
+}
