@@ -1,0 +1,1618 @@
+{
+  "plan": {
+    "lanes": {
+      "runtime": [
+        {
+          "file": "tests/runtime.mjs",
+          "part": "core"
+        }
+      ],
+      "intake": [
+        {
+          "file": "tests/runtime.mjs",
+          "part": "machines"
+        },
+        "tests/intake.mjs",
+        "tests/routing.mjs"
+      ],
+      "browser": [
+        "tests/member-coordination-browser.mjs",
+        "tests/product-browser.mjs"
+      ],
+      "hosted": [],
+      "transfer": [
+        "tests/transfer.mjs"
+      ],
+      "changes": [
+        "tests/changes.mjs"
+      ],
+      "triage": [
+        "tests/triage.mjs",
+        "tests/activation.mjs"
+      ],
+      "imports": [
+        "tests/import-door.mjs"
+      ]
+    },
+    "push": [
+      {
+        "name": "runtime",
+        "lanes": [
+          "runtime"
+        ],
+        "browser": false,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "intake",
+        "lanes": [
+          "intake"
+        ],
+        "browser": false,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "browser",
+        "lanes": [
+          "browser"
+        ],
+        "browser": true,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "hosted",
+        "lanes": [
+          "hosted"
+        ],
+        "browser": true,
+        "hosted": true,
+        "timeout": 15
+      },
+      {
+        "name": "transfer",
+        "lanes": [
+          "transfer"
+        ],
+        "browser": true,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "changes",
+        "lanes": [
+          "changes"
+        ],
+        "browser": false,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "triage",
+        "lanes": [
+          "triage"
+        ],
+        "browser": false,
+        "hosted": false,
+        "timeout": 15
+      },
+      {
+        "name": "imports",
+        "lanes": [
+          "imports"
+        ],
+        "browser": false,
+        "hosted": false,
+        "timeout": 15
+      }
+    ],
+    "nightly": []
+  },
+  "selections": {
+    "all:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "core",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "machines",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/intake.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/routing.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/member-coordination-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/product-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/transfer.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/changes.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/activation.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/import-door.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      }
+    ],
+    "all:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "core",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "machines",
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/intake.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/routing.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/changes.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/activation.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/import-door.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      }
+    ],
+    "all:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/member-coordination-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/product-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/transfer.mjs"
+        ],
+        "runtimePart": null,
+        "lane": null,
+        "prebuilt": null
+      }
+    ],
+    "runtime:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "core",
+        "lane": "runtime",
+        "prebuilt": null
+      }
+    ],
+    "runtime:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "core",
+        "lane": "runtime",
+        "prebuilt": null
+      }
+    ],
+    "runtime:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "core",
+        "lane": "runtime",
+        "prebuilt": null
+      }
+    ],
+    "intake:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "machines",
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/intake.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/routing.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      }
+    ],
+    "intake:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "machines",
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/intake.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/routing.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      }
+    ],
+    "intake:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/runtime.mjs"
+        ],
+        "runtimePart": "machines",
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/intake.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/routing.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": null
+      }
+    ],
+    "browser:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/member-coordination-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/product-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      }
+    ],
+    "browser:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/member-coordination-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/product-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      }
+    ],
+    "browser:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/member-coordination-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/product-browser.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": null
+      }
+    ],
+    "hosted:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      }
+    ],
+    "hosted:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      }
+    ],
+    "hosted:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": null
+      }
+    ],
+    "transfer:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/transfer.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      }
+    ],
+    "transfer:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/transfer.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      }
+    ],
+    "transfer:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/transfer.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": null
+      }
+    ],
+    "changes:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/changes.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      }
+    ],
+    "changes:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/changes.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      }
+    ],
+    "changes:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/changes.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": null
+      }
+    ],
+    "triage:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/activation.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      }
+    ],
+    "triage:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/activation.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      }
+    ],
+    "triage:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/triage.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/activation.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": null
+      }
+    ],
+    "imports:default": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/import-door.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      }
+    ],
+    "imports:--flows": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/import-door.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      }
+    ],
+    "imports:--browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "check",
+          "--profile",
+          "first-party"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "build"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "typecheck"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      },
+      {
+        "command": "node",
+        "args": [
+          "tests/import-door.mjs"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": null
+      }
+    ]
+  },
+  "test_sources": {
+    "tests/changes.mjs": "e651180d5688ef657b850c8c594ea75eb0093c94f5491b16ecc54f08134b19a5",
+    "tests/triage.mjs": "39c5d68db62b3f137f40b7c5f275d29aa80b30fa1cc4bbf40dc93bbd437c07de",
+    "tests/agent-door.mjs": "af1514b628ad264ea36c4c7cbcd2d0d104ec49b27e01a3b37142668dd8fb49da",
+    "tests/product-browser-journey.mjs": "8751656914019f74f803f968859e0ec0aa6f4491dff9f0091ae1f15f2a3e989e",
+    "tests/product-browser.mjs": "9dbfac24c6ba1106df4b55318cb8a4263856036e600bc4a3809861eea3773244",
+    "tests/worker-server.mjs": "9f0e31fb2060544caa2fd7a5133b8ed9200224fd16072feeda8dbcca9136a604",
+    "tests/intake.mjs": "caeab0d3faef8850a01c71a4dab1e4c38a58563f710cd57fdd75c5619238fdeb",
+    "tests/initialize-agent-reviewer.mjs": "01129c44d1cfa757f77125786aa87aa0734477a1855c38e06242a253e9f0b2ea",
+    "tests/oncall-agent-erase-replay.mjs": "3009d353b76e7866568e531e1469bfe017338e4378488be187f14e430f3898d5",
+    "tests/oncall-agent-native.mjs": "5ff5fb71d8290a4c85c34b7608d17ac6050cf983e68a33e8c4b506cb89b2d3ac",
+    "tests/initialize-agent-owner.mjs": "892e15dd54917f80973fd8d79033ede2577fbc3aa9abc46569cc8ef696ba9ccc",
+    "tests/response-report-fixture.mjs": "c509cefdf83770573fa6b2e4291bf993c79b6b0db0c1a5c8c2ef3f2728f43318",
+    "tests/email-fixtures.mjs": "2e3b6abd8ce5af1b02a2c38107289362b849d9ce78ebe1025badc010290fefd7",
+    "tests/import-door.mjs": "c29eab3a44315de7b40e2e879f0fa7e0e1ea365e593f9532263dd36adc575409",
+    "tests/worker.mjs": "35232262cbaeda53598b6e4d35b5145a1e38740503d08bdf4ebe7e5f58ca6c7e",
+    "tests/checkpoint-cli.mjs": "3c3d13506a3ccae21846a86d8847cd7e97336b90817595ac53cb7c8badfb0c12",
+    "tests/agent-door-browser.mjs": "14a880839cc93f1a1036d94bb8d1c139ff3ca96e7382d6bf0a0669f3cac400f8",
+    "tests/runtime.mjs": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3",
+    "tests/oncall-agent-flow.mjs": "7af8a32f44e7d8f6d6aed3c693506e53608a1ac1dd91034c8a04938672776870",
+    "tests/health-outcomes.mjs": "87b44540c09d94ff450b26c835d8adc1205635577484da111e7395d164dcf063",
+    "tests/oncall-agent-team-replay.mjs": "63b3da5e943350b4439ea7d2fb2a00178fca0e7f7444dbe36e3c30a4180e2fe0",
+    "tests/oncall-agent-fixtures.mjs": "ad5f4649650702c5d74d62b84999daa259c13aa665becd8927e4f4c3e0e92674",
+    "tests/oncall-provider-edge.mjs": "d40b7970ea06f79c49981443fdb3c7f387c5eb76ab5c144005d6309ee132af1a",
+    "tests/verify.mjs": "869b5f2351981b1e3d50fca01062de2dcd6d8639758cd2d251063b19f91a099a",
+    "tests/oncall-agent-schedule-replay.mjs": "3edaf7e1d6f5b7d23ea4117862d36b3df6d8e173f8f5a5e96ff252f91f336960",
+    "tests/diagnostics.mjs": "7203e9b0655bf527968a0c8cccb9729f93cc76cf497b0be4f491c8ba69fa1ad7",
+    "tests/oncall-agent-transport.mjs": "65ddfda2a4614fdd19a534e52f5147436af9c4542ea3b8c90b9d6aa4ce3e96f8",
+    "tests/routing.mjs": "a8940a2a8d521265e0c977e14c1edd23b2ed01b6bb4bc27c30a5602b81c08f45",
+    "tests/transfer.mjs": "603e5a95560d9a8db8a009dc261eaa9fb81ced2da8229ebca54a91d0bc9a3484",
+    "tests/keyboard.mjs": "e0650897a16f81ca2d6354094f729fea589377524848c584a1bb67727ea3f1ff",
+    "tests/agent-door-runtime.mjs": "73333474eb9bd20a365ef587fec63a244a1283295e8b968dca10b79f02d94960",
+    "tests/activation.mjs": "692da1fdc94c1aabc5290631c51fb68997fe76230cfce6585128e7bce80f8791",
+    "tests/member-coordination-browser.mjs": "a2072d8e119ef4d99725238ad30096e8b5e359c8cd055160148cd68f10499253",
+    "tests/agent-policy-fixture.mjs": "7b220cbc27a9e3ef86b3fce75c2046ffafbe0c18951b2eae0bd56e155c148653",
+    "tests/readiness.mjs": "f1086f34b86c1d10efe9eabb2cd467799b1a2c14022fcc8b685947df519b88e2",
+    "tests/fixture-database.mjs": "048d6c8710fe34968dcac95fd5c06f9d1d32b5b9374bb8eee5c3a2fedc3e22b2",
+    "tests/fixtures/synthetic-oncall-splunk.json": "6a71f10eff418b3b1e957de0559853f30502ff6dc9bb6914ca5b08c32a2cb1cf",
+    "tests/fixtures/pagerduty-saved.json": "d68d9826e0430290ff725643b4a54122ed54c2e94cfbe13ade80791fae191e74",
+    "tests/fixtures/opsgenie-override-detail.json": "e3b313659d6a2570a7fba1158e9d9df02fd65dba24209a1ff9820656a8a4bc2d",
+    "tests/fixtures/pagerduty-unsupported.json": "d3783527f946b0c878e4c84bd5f543a12c53836e45be7ee6a6a39cd9d6c93d70",
+    "tests/fixtures/opsgenie.json": "76157cfa59f833d0f8ba978d71f3c327ef15dbbdb1841710d671b8790e0bbc5f",
+    "tests/fixtures/opsgenie-saved.json": "00d4175da832a6460b923c519ed90f0150190ca8a570149e65a5e57d99f02d1b",
+    "tests/fixtures/pagerduty-user-details.json": "389963d55d6c5035c19b97ac0b6b16d4ed3e7f5ba9427c79b75c1d525a67050a",
+    "tests/fixtures/change-sources.md": "c9bd34b6abc4f4f14e6f599df0f55598f844c0c4e43e47209b13e582fcbae3b3",
+    "tests/fixtures/credential-pagerduty.json": "81c467f38763419dc047b5a56e338f90a901274c21e259d0982e32b42dce3883",
+    "tests/fixtures/synthetic-oncall-betterstack.json": "7123491b65d27c0be53994e844ec4521fa236d13578ab6e6ca7c4a89d6a59c85",
+    "tests/fixtures/pagerduty-account.json": "eff9cab85ef78e88609dd827b55e7c6f879ffd816e7dd6b1a36bccc3fe5f99fc",
+    "tests/fixtures/gitlab-deployment.json": "bf1d8893de3c03ece91d69ad14f9a75414b1f8f8a658af48be3e7bd30862870a",
+    "tests/fixtures/github-release.json": "16a058f65fc5b9f375e255db89408cce8f659ba327c2da812f4474374ae7ea27",
+    "tests/fixtures/pagerduty.json": "3a79bf8ad1a1a4149be2628c04e51c26a467bf9b93911140d9a48dc461e796d5",
+    "tests/fixtures/pagerduty-layers.json": "9751f9b7644a4edbd4a34ce6a05005711197df7ade41fab0c5a03bc0bbb48cad",
+    "tests/fixtures/octokit-LICENSE.txt": "e68f8081cee4fcf84619364e6cbf0eb3b2e4100907a56d6c5912a6f090bb09ae",
+    "tests/fixtures/credential-opsgenie.json": "86591a2be76ca2ad903d297ecf14ca215a15d9be692ab3b2f0698a576a6c3198",
+    "tests/fixtures/github-deployment.json": "5922e51180a384f72183e628ff4f3484a567b35454226cca9db33f355e258be5",
+    "tests/fixtures/backstage-catalog.json": "84df155a6eb0615d262c49fdd456639448920b7ac6da5e4541b8e370fb9b51b0",
+    "tests/fixtures/opsgenie-unsupported.json": "ce052c2984e5ca1b471768dc9c70eaf60e7172524f6e63e796c6bc2590ed718a",
+    "tests/fixtures/pagerduty-lists.json": "89a96de5d39bebd3ae776aa37d06206bb8467dd8e18823e7f7edf1efaa6c1751",
+    "tests/fixtures/gitlab-LICENSE.txt": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+    "tests/fixtures/github-unmerged-pr.json": "938c4ee2271312ff3ce6821bb485a46e414e6ba3c202ca2d8611dd8ebc3128f9",
+    "tests/fixtures/pto-calendar.ics": "d93db17c5b0cb674a3ca2868ead4d869e176f6c821187f3e7bba4bcec34009e5",
+    "tests/fixtures/synthetic-oncall-jsm.json": "7be4904c1f5ad30e31d2b2c8e9ded86058c894c4bf3c1e08607ac5330ab985fc"
+  }
+}

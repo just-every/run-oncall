@@ -1,0 +1,90 @@
+diff --git a/scripts/verify-shards.json b/scripts/verify-shards.json
+index 71aff25..77e0dab 100644
+--- a/scripts/verify-shards.json
++++ b/scripts/verify-shards.json
+@@ -4,10 +4,7 @@
+       {
+         "file": "tests/runtime.mjs",
+         "part": "core"
+-      },
+-      "tests/changes.mjs",
+-      "tests/triage.mjs",
+-      "tests/activation.mjs"
++      }
+     ],
+     "intake": [
+       {
+@@ -15,8 +12,7 @@
+         "part": "machines"
+       },
+       "tests/intake.mjs",
+-      "tests/routing.mjs",
+-      "tests/import-door.mjs"
++      "tests/routing.mjs"
+     ],
+     "browser": [
+       "tests/member-coordination-browser.mjs",
+@@ -25,6 +21,16 @@
+     "hosted": [],
+     "transfer": [
+       "tests/transfer.mjs"
++    ],
++    "changes": [
++      "tests/changes.mjs"
++    ],
++    "triage": [
++      "tests/triage.mjs",
++      "tests/activation.mjs"
++    ],
++    "imports": [
++      "tests/import-door.mjs"
+     ]
+   },
+   "push": [
+@@ -72,6 +78,33 @@
+       "browser": true,
+       "hosted": false,
+       "timeout": 15
++    },
++    {
++      "name": "changes",
++      "lanes": [
++        "changes"
++      ],
++      "browser": false,
++      "hosted": false,
++      "timeout": 15
++    },
++    {
++      "name": "triage",
++      "lanes": [
++        "triage"
++      ],
++      "browser": false,
++      "hosted": false,
++      "timeout": 15
++    },
++    {
++      "name": "imports",
++      "lanes": [
++        "imports"
++      ],
++      "browser": false,
++      "hosted": false,
++      "timeout": 15
+     }
+   ],
+   "nightly": []
+diff --git a/sources.lock.json b/sources.lock.json
+index 2ff9c75..2dcfee9 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -1644,7 +1644,7 @@
+       "executable": false
+     },
+     "scripts/verify-shards.json": {
+-      "sha256": "970adcce3e2e973e5ebb4569c4a623c7f4582262be8830bb0504b23c0082fabd",
++      "sha256": "d3c665ad456dc8fa1f76f74aeae83359aa9efe35a80ec9d51d84266364c6c029",
+       "executable": false
+     },
+     "scripts/write-agent-surface.mjs": {

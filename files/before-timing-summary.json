@@ -1,0 +1,43 @@
+{
+  "run_id": 42170494933,
+  "runtime_job_id": 127737691006,
+  "jobs": [
+    {
+      "job_id": 127737690863,
+      "name": "shards (browser)",
+      "duration_seconds": 544.0,
+      "conclusion": "success",
+      "ratio_to_mean": 0.9264305177111716
+    },
+    {
+      "job_id": 127737690868,
+      "name": "shards (intake)",
+      "duration_seconds": 718.0,
+      "conclusion": "success",
+      "ratio_to_mean": 1.22275204359673
+    },
+    {
+      "job_id": 127737690896,
+      "name": "shards (transfer)",
+      "duration_seconds": 663.0,
+      "conclusion": "success",
+      "ratio_to_mean": 1.1290871934604905
+    },
+    {
+      "job_id": 127737690938,
+      "name": "shards (hosted)",
+      "duration_seconds": 279.0,
+      "conclusion": "success",
+      "ratio_to_mean": 0.4751362397820163
+    },
+    {
+      "job_id": 127737691006,
+      "name": "shards (runtime)",
+      "duration_seconds": 732.0,
+      "conclusion": "success",
+      "ratio_to_mean": 1.2465940054495912
+    }
+  ],
+  "mean_shard_seconds": 587.2,
+  "after_timing_available": false
+}

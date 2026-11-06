@@ -1,0 +1,54 @@
+{
+  "files": {
+    "CONTRACT.md": {
+      "before_sha256": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+      "after_sha256": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
+      "byte_identical": true
+    },
+    "ACCEPTANCE.md": {
+      "before_sha256": "3f378dfd597df0bf5575cf45fb5547f944ca1200d63fe6ff44b2d744eaa63c7e",
+      "after_sha256": "3f378dfd597df0bf5575cf45fb5547f944ca1200d63fe6ff44b2d744eaa63c7e",
+      "byte_identical": true
+    },
+    "docs/CLAIMS.md": {
+      "before_sha256": "e26ef886858d426a95d21c4ffa898189cf7df559811cc5ba0f6db37719652afa",
+      "after_sha256": "e26ef886858d426a95d21c4ffa898189cf7df559811cc5ba0f6db37719652afa",
+      "byte_identical": true
+    },
+    ".github/workflows/verify.yml": {
+      "before_sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
+      "after_sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
+      "byte_identical": true
+    },
+    ".github/workflows/verify-nightly.yml": {
+      "before_sha256": "6106151071269ec353d79c622b66611eca504519aff53a5575b948209d62e791",
+      "after_sha256": "6106151071269ec353d79c622b66611eca504519aff53a5575b948209d62e791",
+      "byte_identical": true
+    },
+    "base-copies.json": {
+      "before_sha256": "89ab6d574875e8dc79a7996f564baf812416cdcc7240d47d9b8b153ff4ab91d5",
+      "after_sha256": "89ab6d574875e8dc79a7996f564baf812416cdcc7240d47d9b8b153ff4ab91d5",
+      "byte_identical": true
+    },
+    "package.json": {
+      "before_sha256": "dbf2237098b1fe9f93a6e7ff1517b44ea706750a853f98474177f543d8e08bff",
+      "after_sha256": "dbf2237098b1fe9f93a6e7ff1517b44ea706750a853f98474177f543d8e08bff",
+      "byte_identical": true
+    }
+  },
+  "clause_rows_before": 101,
+  "clause_rows_after": 101,
+  "status_counts_before": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "status_counts_after": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "status_changes": [],
+  "judgment_rows_before": 101,
+  "judgment_rows_after": 101
+}

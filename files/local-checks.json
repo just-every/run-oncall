@@ -1,0 +1,174 @@
+{
+  "coverage": {
+    "beforeShards": 5,
+    "afterShards": 8,
+    "registrationsBefore": 11,
+    "registrationsAfter": 11,
+    "duplicateRegistrations": 0,
+    "testFilesByteIdentical": 61,
+    "executions": {
+      "runtime": [
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "verify:app"
+          ],
+          "runtimePart": null,
+          "lane": "runtime",
+          "prebuilt": "true"
+        }
+      ],
+      "intake": [
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "verify:app"
+          ],
+          "runtimePart": null,
+          "lane": "intake",
+          "prebuilt": "true"
+        }
+      ],
+      "browser": [
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "verify:app"
+          ],
+          "runtimePart": null,
+          "lane": "browser",
+          "prebuilt": "true"
+        }
+      ],
+      "hosted": [
+        {
+          "command": "pnpm",
+          "args": [
+            "exec",
+            "rer",
+            "verify",
+            "--non-interactive"
+          ],
+          "runtimePart": null,
+          "lane": "hosted",
+          "prebuilt": "true"
+        }
+      ],
+      "transfer": [
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "verify:app"
+          ],
+          "runtimePart": null,
+          "lane": "transfer",
+          "prebuilt": "true"
+        }
+      ],
+      "changes": [
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "verify:app"
+          ],
+          "runtimePart": null,
+          "lane": "changes",
+          "prebuilt": "true"
+        }
+      ],
+      "triage": [
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "verify:app"
+          ],
+          "runtimePart": null,
+          "lane": "triage",
+          "prebuilt": "true"
+        }
+      ],
+      "imports": [
+        {
+          "command": "pnpm",
+          "args": [
+            "run",
+            "verify:app"
+          ],
+          "runtimePart": null,
+          "lane": "imports",
+          "prebuilt": "true"
+        }
+      ]
+    },
+    "runtimeParts": [
+      "core",
+      "machines"
+    ],
+    "hostedLinkedPages": "unchanged runtime core guard executes exactly once; machines excludes the hosted-page block",
+    "otherChecks": [
+      "default, --flows and --browser multisets unchanged",
+      "every push lane invoked once with shared exact-SHA production build",
+      "hosted rer verify remains exactly once",
+      "browser flags unchanged",
+      "nightly empty tier unchanged; all tier retains all push lanes",
+      "unknown lane fails closed; shard JSON remains code change/full coverage"
+    ]
+  },
+  "syntax": {
+    "commands": [
+      "node --check tests/verify.mjs",
+      "node --check scripts/verify-oncall.mjs",
+      "node --check scripts/verify-oncall-plan.mjs"
+    ],
+    "result": "passed"
+  },
+  "yaml": {
+    "files": [
+      ".github/workflows/verify.yml",
+      ".github/workflows/verify-nightly.yml"
+    ],
+    "parser": "scripts/edition-authoring/vendor/yaml/index.mjs",
+    "result": "passed"
+  },
+  "workflow_permissions": {
+    "command": "node scripts/verify-ci.mjs --check-workflows",
+    "output": "Workflow permissions and shared artifact names are valid.",
+    "result": "passed"
+  },
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "output_sha256": "0696661b1e37cb7bebb4c880ba43f9156f69b4587336be92c86d62e8b8392e94",
+    "result": "passed"
+  },
+  "first_party_check": {
+    "command": "npx -y @runeditrun/rer check --profile first-party --json",
+    "ok": true
+  },
+  "source_lock": {
+    "generator": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "ok": true
+  },
+  "contract_documents": {
+    "command": "node src/base/contract-docs.mjs check",
+    "output": "Contract prose: 0 errors, 0 warnings.\nContract documents are current.",
+    "result": "passed"
+  },
+  "actionlint": {
+    "result": "not installed"
+  },
+  "full_local_verify": {
+    "result": "not run per brief"
+  },
+  "baseline_suite": {
+    "result": "not run per brief"
+  },
+  "tree": "79b48ca823f462f0b4d766b88c1ed26ee6aba658",
+  "head": "d2535e40fefe03697aaa62c8ef9cd917cc250bc1"
+}

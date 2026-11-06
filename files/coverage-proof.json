@@ -1,0 +1,121 @@
+{
+  "beforeShards": 5,
+  "afterShards": 8,
+  "registrationsBefore": 11,
+  "registrationsAfter": 11,
+  "duplicateRegistrations": 0,
+  "testFilesByteIdentical": 61,
+  "executions": {
+    "runtime": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "lane": "runtime",
+        "prebuilt": "true"
+      }
+    ],
+    "intake": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "lane": "intake",
+        "prebuilt": "true"
+      }
+    ],
+    "browser": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "lane": "browser",
+        "prebuilt": "true"
+      }
+    ],
+    "hosted": [
+      {
+        "command": "pnpm",
+        "args": [
+          "exec",
+          "rer",
+          "verify",
+          "--non-interactive"
+        ],
+        "runtimePart": null,
+        "lane": "hosted",
+        "prebuilt": "true"
+      }
+    ],
+    "transfer": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "lane": "transfer",
+        "prebuilt": "true"
+      }
+    ],
+    "changes": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "lane": "changes",
+        "prebuilt": "true"
+      }
+    ],
+    "triage": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "lane": "triage",
+        "prebuilt": "true"
+      }
+    ],
+    "imports": [
+      {
+        "command": "pnpm",
+        "args": [
+          "run",
+          "verify:app"
+        ],
+        "runtimePart": null,
+        "lane": "imports",
+        "prebuilt": "true"
+      }
+    ]
+  },
+  "runtimeParts": [
+    "core",
+    "machines"
+  ],
+  "hostedLinkedPages": "unchanged runtime core guard executes exactly once; machines excludes the hosted-page block",
+  "otherChecks": [
+    "default, --flows and --browser multisets unchanged",
+    "every push lane invoked once with shared exact-SHA production build",
+    "hosted rer verify remains exactly once",
+    "browser flags unchanged",
+    "nightly empty tier unchanged; all tier retains all push lanes",
+    "unknown lane fails closed; shard JSON remains code change/full coverage"
+  ]
+}
