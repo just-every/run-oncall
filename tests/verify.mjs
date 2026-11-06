@@ -15,8 +15,8 @@ const selected=Object.entries(suites).filter(([name])=>lane?name===lane:category
 const commands=[
  ...(prebuilt?[]:preparation.map(([cmd,args])=>({cmd,args}))),
  ...selected.map(entry=>{
-  const {file,part}=typeof entry==='string'?{file:entry}:entry
-  return {cmd:process.execPath,args:[file],env:part?{ONCALL_RUNTIME_PART:part}:{}}
+  const {file,part,env}=typeof entry==='string'?{file:entry}:entry
+  return {cmd:process.execPath,args:[file],env:{...env,...(part?{ONCALL_RUNTIME_PART:part}:{})}}
  }),
 ]
 for(const {cmd,args,env} of commands){
@@ -24,6 +24,6 @@ for(const {cmd,args,env} of commands){
  const result=spawnSync(cmd,args,{stdio:'inherit',env:{...process.env,WRANGLER_SEND_METRICS:'false',...env}})
  if(result.error)throw result.error
  if(result.status!==0)process.exit(result.status??1)
- console.log(`Journey completed: ${args.join(' ')}${env?.ONCALL_RUNTIME_PART?' '+env.ONCALL_RUNTIME_PART:''} (${((performance.now()-started)/1000).toFixed(1)}s)`)
+ console.log(`Journey completed: ${args.join(' ')}${Object.keys(env??{}).length?' '+JSON.stringify(env):''} (${((performance.now()-started)/1000).toFixed(1)}s)`)
 }
 console.log(`Oncall verification passed: ${lane??'all public application, browser and installation journeys'}`)
