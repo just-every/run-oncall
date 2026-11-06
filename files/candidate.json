@@ -1,0 +1,116 @@
+{
+  "tag": "sd-oncall-c-f204",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f204",
+  "head": "32c0f370f6ebc8cf2a4b55da03901933f300950a",
+  "recorded_at": "2026-11-06T05:09:07.661169+00:00",
+  "product_push": {
+    "exit": 0,
+    "attempts": 1
+  },
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=core node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "node tests/oncall-agent-flow.mjs",
+      "exit": 0
+    },
+    {
+      "command": "git diff --exit-code",
+      "exit": 0
+    }
+  ],
+  "exact_head_checks": [
+    "npx -y @runeditrun/rer build",
+    "node tests/oncall-agent-flow.mjs",
+    "node scripts/edition-authoring/cli.mjs check",
+    "git diff --exit-code"
+  ],
+  "precommit_checks_same_code": true,
+  "counts_before": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "status_before": "missing",
+  "status_after": "missing",
+  "generated_views_committed": false,
+  "migrations": false,
+  "publication_scan": "fleet lander required; not run in cloud",
+  "sha256": {
+    "CONTRACT.md": "dd1f3281fe780089d982f080cd2846076330e3a3a4ac9dbc75c679f77aff1b3e",
+    "sources.lock.json": "11edd9c82c3ee5039b1c1296ba39a12a141fc5cf170257c63d2519b13f175000",
+    "src/agent-door/coordination-tools.ts": "3ddfde43f48bfee5a9fd78c2ef064b889ade7e8fad9cca0fb437612c64824b69",
+    "src/agent-door/service-tools.ts": "f7f6827e1a28b97ea39c8383618577f241cba44767b120dce0aa95ca1824df85",
+    "tests/oncall-agent-flow.mjs": "237696e69f6cc3801b3581f883867be20d56abd7feb8c3abe2ed19ccf558e2eb",
+    "tests/oncall-agent-native-revisions.mjs": "21de12821afc0a9ae6f95ba7d21d57a07d609759e20b382ed3d8e516336242d3"
+  },
+  "product_remote_verified": true,
+  "verify": {
+    "id": 42166503634,
+    "event": "push",
+    "head": "32c0f370f6ebc8cf2a4b55da03901933f300950a",
+    "conclusion": "failure",
+    "root_job": 127724169943,
+    "aggregate_job": 127724605533,
+    "root_failure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+    "permitted_generated_view_exception": true,
+    "runtime_shards": "skipped after generated-view check"
+  },
+  "expected_stale_views_check": {
+    "command": "node src/base/contract-docs.mjs check",
+    "exit": 1,
+    "output": "Contract prose: 0 errors, 0 warnings.\nACCEPTANCE.md: generated content differs; run contract-docs write.\n"
+  },
+  "github_calls": 5,
+  "pr": null
+}

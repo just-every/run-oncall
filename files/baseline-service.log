@@ -1,0 +1,32 @@
+PROBE BASE-AGENT-012 acceptance 4 held oncall.incidents.acknowledge non-disclosure: scoped client with valid current native revision and stale optional revision against foreign and missing incidents -> identical not_found, no revision or private result; native custody unchanged; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 held oncall.actions.create: current native revision 1 with stale expected_revision -> isError revision_conflict and exact parent current_revision 1 in metadata and text; no private result or native effect; fresh returned revision and key -> one agent-attributed owned due-dated P1 human-review follow-up still open, review; new RPC id retry -> stored result, no duplicate effect or review; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 held oncall.actions.create non-disclosure: scoped client with valid current native revision and stale optional revision against foreign and missing incidents -> identical not_found, no revision or private result; native custody unchanged; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.incidents.declare: stale native revision without expected_revision -> revision_conflict with exact authorized current_revision 71 in metadata and text, no private result, custody unchanged; fresh key and returned revision -> one attributed declaration with copied runbook, autonomous; new RPC id retry -> stored outcome, no duplicate effect or review; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.incidents.declare non-disclosure: scoped-out and missing service -> not_found without revision or private result; custody unchanged; zero outbound requests
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
+    code: 'revision_conflict',
+-   current_revision: '1d572cf89286de16531dfbabf2a1a48fda3874ba0ede37608e43d09ff9c5eb89'
+  }
+
+    at nativeRevisions (file:///workspace/run-oncall/tests/oncall-agent-native-revisions.mjs:48:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///workspace/run-oncall/tests/oncall-agent-flow.mjs:435:2 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: { code: 'revision_conflict' },
+  expected: {
+    code: 'revision_conflict',
+    current_revision: '1d572cf89286de16531dfbabf2a1a48fda3874ba0ede37608e43d09ff9c5eb89'
+  },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

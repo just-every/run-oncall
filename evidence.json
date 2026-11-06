@@ -1,0 +1,118 @@
+{
+  "files": [
+    {
+      "blob": "3e46baf6d6b98f620aa00c91c8d915de519574f5",
+      "bytes": 11662,
+      "path": "REPORT.md",
+      "sha256": "1ecf24ae2622e29bcfafb22c000f4975e25ca93edf7f8ad55ed2e72b45e73b07"
+    },
+    {
+      "blob": "3cbff031b945b851d091e381809845aeaf26bd91",
+      "bytes": 28962,
+      "path": "agent-flow.log",
+      "sha256": "a1da3094e08eadad27c07d4bb1e83919163d45857df72fffa646a428491702f8"
+    },
+    {
+      "blob": "804d17adff3edba331e2fb4cb63d846db8ad5b28",
+      "bytes": 3723,
+      "path": "baseline-declaration.log",
+      "sha256": "427dde6be368f37f6fcdb34dc85cd95ed7547c8aa6b2ff4ecbca6c335fe86f1e"
+    },
+    {
+      "blob": "08cb6581c6ebfec5290ef530887b8f01ec950565",
+      "bytes": 2538,
+      "path": "baseline-service.log",
+      "sha256": "ad37b8a2285a90afcb4d8b811b1d26357c333636f3a78b315c0a0602d7bee323"
+    },
+    {
+      "blob": "d9fd4b3a72a9992d4097c90605dad626abe9811a",
+      "bytes": 568,
+      "path": "baseline.json",
+      "sha256": "863740d26e91d8bfa16a19424310ebb01e06f0c97792d2d4092eb6a88d3febeb"
+    },
+    {
+      "blob": "192b24ca4a302a30cd80e298392271c479e92592",
+      "bytes": 3447,
+      "path": "candidate.json",
+      "sha256": "2ba6731ea22cc728137f0432dc53d6d630075b03c636f90db2b9cb6e009bcfb6"
+    },
+    {
+      "blob": "ce89ea6f1b5d1051166685a1028ea1ea25a9e29e",
+      "bytes": 2988,
+      "path": "ci-aggregate-failure.log",
+      "sha256": "6a1d7b55363c95fb72b0caad911313b33babd49880782a7eae5ca5e45c73ffa7"
+    },
+    {
+      "blob": "ac04a5e84c47a6bbc88db33ebad01a62dd6010a3",
+      "bytes": 1081,
+      "path": "ci-build-failure.log",
+      "sha256": "bf0db31162ad698387308537d32ea759be2a080df4c27a40cceb786feb97b699"
+    },
+    {
+      "blob": "1133b6f6772ee1c5c11ec4d71578e33c0ac070bb",
+      "bytes": 2794,
+      "path": "ci-jobs.json",
+      "sha256": "ed8ec804244cfb4c5bd37e632621ff710fd0439d625b56255ce91758b6bc4dfb"
+    },
+    {
+      "blob": "787fc62930f640748aa245e388821884f3b8167d",
+      "bytes": 247,
+      "path": "ci.json",
+      "sha256": "d3d40abc127b9e356c31dd0737679df9e8e5c7e381aa9e286c02d394f5d1b039"
+    },
+    {
+      "blob": "f8fb7de399b357a41cd1de544d1d265113cf1483",
+      "bytes": 105,
+      "path": "exact-view-check.log",
+      "sha256": "9cf3c390ca9f5f8c7bb13f4dd1f4058d66f2e74d194584038d85eaf0d4767d1e"
+    },
+    {
+      "blob": "21ba19649ba1d060be21bc9be2cb5d62cc298a57",
+      "bytes": 1284,
+      "path": "github-calls.json",
+      "sha256": "9312b952761f9f96080e5240a442a982100e4e7ae363ceb3323329c249573694"
+    },
+    {
+      "blob": "46f8955985fbd4d2d0919261c2cbd2cbcab17451",
+      "bytes": 286,
+      "path": "mechanical.log",
+      "sha256": "e9f5220c651f8aa20e26c669df64f2816f6d11c78909fb342b06dfa125051e78"
+    },
+    {
+      "blob": "3d9dfc89e680ba6bc888d23c0fccf693349e5482",
+      "bytes": 1493,
+      "path": "pre-existing-projection.log",
+      "sha256": "232b3f1a3596409c3cf18fc70be1be7adc96941cadd21440661c533990543612"
+    },
+    {
+      "blob": "32f14bbe2d87efcd9e61c9d45c78a326b1246be8",
+      "bytes": 1217,
+      "path": "pre-existing-service-projection.md",
+      "sha256": "301cb72980a9fd62e6a3a6688478b3ef85d32fa2b13ab06b3512671eda549bf2"
+    },
+    {
+      "blob": "cc0a6454c2b1025de26f48e91c2ff6eb61a454d0",
+      "bytes": 7064,
+      "path": "probes.log",
+      "sha256": "699387f64fda07b5dfa2158e39f878d10658c476321b93d065b24ff700069422"
+    },
+    {
+      "blob": "0e92167944b59d8ffe2aca954df9d035b705363f",
+      "bytes": 67,
+      "path": "runtime-summary.log",
+      "sha256": "6a573c8a9e451a0b36c070430e3779c9b9f9aa446c4f65bd10a10e6aebd4ecbf"
+    },
+    {
+      "blob": "5293a84f1752b80a5318954c724b653ce4bde795",
+      "bytes": 182,
+      "path": "typecheck.log",
+      "sha256": "42803b1da9e167a313537e7a3c1e9896c30b5e70fd6e83e1bc20fbf8965f8288"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f204",
+  "product_head": "32c0f370f6ebc8cf2a4b55da03901933f300950a",
+  "ref": "refs/heads/evidence/sd-oncall-c-f204",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f204"
+}

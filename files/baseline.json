@@ -1,0 +1,28 @@
+{
+  "main": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+  "counts": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "declaration": {
+    "exit": 1,
+    "expected": {
+      "code": "revision_conflict",
+      "current_revision": 71
+    },
+    "actual": {
+      "code": "revision_conflict"
+    }
+  },
+  "service": {
+    "exit": 1,
+    "expected": "revision_conflict and authorized projected current_revision ETag",
+    "actual": {
+      "code": "revision_conflict"
+    }
+  },
+  "main_verify": 42153902730,
+  "main_run_site": 42153902508
+}

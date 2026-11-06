@@ -1,0 +1,63 @@
+[
+  {
+    "call": 1,
+    "purpose": "initial exact-main workflow discovery",
+    "head": "8e02f6674fad992d1a972cfd567a47144296e5a0"
+  },
+  {
+    "call": 2,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=32c0f370f6ebc8cf2a4b55da03901933f300950a&per_page=100",
+      "--jq",
+      "{workflow_runs:[.workflow_runs[]|{id,name,event,status,conclusion,head_sha,html_url}]}"
+    ],
+    "time": 1793941760.6684177,
+    "exit": 0
+  },
+  {
+    "call": 3,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/42166503634/jobs",
+      "--jq",
+      "{jobs:[.jobs[]|{id,name,status,conclusion,steps:[.steps[]|{name,conclusion}]}]}"
+    ],
+    "time": 1793941802.851174,
+    "exit": 0
+  },
+  {
+    "call": 4,
+    "command": [
+      "gh",
+      "run",
+      "view",
+      "42166503634",
+      "--repo",
+      "just-every/run-oncall",
+      "--job",
+      "127724169943",
+      "--log-failed"
+    ],
+    "time": 1793941837.1090136,
+    "exit": 0
+  },
+  {
+    "call": 5,
+    "command": [
+      "gh",
+      "run",
+      "view",
+      "42166503634",
+      "--repo",
+      "just-every/run-oncall",
+      "--job",
+      "127724605533",
+      "--log-failed"
+    ],
+    "time": 1793941840.4449093,
+    "exit": 0
+  }
+]

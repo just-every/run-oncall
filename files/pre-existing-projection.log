@@ -1,0 +1,48 @@
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
++   dependencies: [
++     'agent-foreign-service'
++   ],
+-   dependencies: [],
+    environment: 'test',
+    id: 'synthetic-oncall-6bfe1c67-3d69-4b2e-8dfb-9b033710bcfd',
+    name: 'Synthetic renamed service autonomous',
+    owner: 'db075afe-da38-4d9c-8d34-a1ef84a14009',
+    pager: '',
+
+    at nativeRevisions (file:///workspace/run-oncall/tests/oncall-agent-native-revisions.mjs:83:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///workspace/run-oncall/tests/oncall-agent-flow.mjs:435:2 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: {
+    id: 'synthetic-oncall-6bfe1c67-3d69-4b2e-8dfb-9b033710bcfd',
+    name: 'Synthetic renamed service autonomous',
+    environment: 'test',
+    owner: 'db075afe-da38-4d9c-8d34-a1ef84a14009',
+    runbook: [
+      'Synthetic copied coordination step',
+      'Synthetic human recovery review'
+    ],
+    pager: '',
+    dependencies: [ 'agent-foreign-service' ]
+  },
+  expected: {
+    id: 'synthetic-oncall-6bfe1c67-3d69-4b2e-8dfb-9b033710bcfd',
+    name: 'Synthetic renamed service autonomous',
+    environment: 'test',
+    owner: 'db075afe-da38-4d9c-8d34-a1ef84a14009',
+    runbook: [
+      'Synthetic copied coordination step',
+      'Synthetic human recovery review'
+    ],
+    pager: '',
+    dependencies: []
+  },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

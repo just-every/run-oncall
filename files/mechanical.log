@@ -1,0 +1,4 @@
+MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock then check exit=0; views=node src/base/contract-docs.mjs write then check exit=0, restored from origin/main; ledger=none exit=0
+Wrote 1 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
