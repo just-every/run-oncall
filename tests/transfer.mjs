@@ -620,6 +620,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  const recreatedSubjectFact=ok(await req('/api/audit/export')).rows.filter(row=>row.kind==='members.request'&&row.outcome==='accepted').at(-1);assert.ok(recreatedSubjectFact);
  const priorNativeLabels=new Set(auditBeforeNativeErasure.flatMap(row=>[row.actor,row.subject,row.source,row.namedMember]).filter(Boolean));
  assert.ok(recreatedSubjectFact.subject&&!priorNativeLabels.has(recreatedSubjectFact.subject),'recreated membership never inherits any permanent historical label');
+ for(const password of ['synthetic-oncall-415-password','synthetic-oncall-416-password'])assert.equal((await req('/api/login',{name:recreatedNative.name,password})).status,401,'same-name recreation never accepts credentials from either prior installation');
  const recreatedNativeLogin=await req('/api/login',{name:erasedNative.name,password:'synthetic-oncall-417-password'});ok(recreatedNativeLogin);
  assert.equal(ok(await m.request('/api/session',undefined,recreatedNativeLogin.cookie)).member.id,recreatedNative.id);
  const beforeRecreatedAttempt=ok(await req('/api/state'));
@@ -627,6 +628,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.equal((await m.request('/api/command',{type:'note',incident:recreatedIncident.id,revision:recreatedIncident.revision,text:'synthetic-oncall-417'},recreatedNativeLogin.cookie)).status,403,'same-name viewer recreation inherits none of the erased responder authority');
  assert.deepEqual(ok(await req('/api/state')),beforeRecreatedAttempt,'refused recreated authority changes no operational history');
  const auditAfterRecreation=ok(await req('/api/audit/export')).rows,recreatedAuditById=new Map(auditAfterRecreation.map(row=>[row.id,row]));
+ assert.ok(!JSON.stringify(auditAfterRecreation).includes(recreatedNative.name),'recreated identity never enters permanent audit content');
  const recreatedRefusal=auditAfterRecreation.filter(row=>row.kind==='command.note'&&row.outcome==='refused').at(-1);assert.ok(recreatedRefusal);
  assert.equal(recreatedRefusal.actor,recreatedSubjectFact.subject,'fresh activity uses only the recreated member label');
  assert.equal(recreatedRefusal.beforeRevision,recreatedRefusal.afterRevision,'recreated viewer refusal retains equal audit revisions');
