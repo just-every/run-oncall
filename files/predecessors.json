@@ -1,0 +1,13 @@
+{
+  "main": {
+    "head": "8e02f6674fad992d1a972cfd567a47144296e5a0",
+    "verify": [{"id":42153902730,"status":"completed","conclusion":"success"},{"id":42151170333,"status":"completed","conclusion":"success"}],
+    "run_site":{"id":42153902508,"status":"completed","conclusion":"success"}
+  },
+  "predecessors": [
+    {"tag":"sd-oncall-c-f204","head":"32c0f370f6ebc8cf2a4b55da03901933f300950a","ancestor_of_main":false,"verify":{"id":42166503634,"status":"completed","conclusion":"failure"}},
+    {"tag":"sd-oncall-c-f205","head":"4f07968cdaa53d9cbf209f16d912a93342f0ae46","ancestor_of_main":false,"verify":{"id":42178613345,"status":"completed","conclusion":"failure"}}
+  ],
+  "github_calls":3,
+  "interpretation":"Predecessor and independent publication gates remain pending with the fleet. No diagnostic fixture from those unlanded branches was imported or repeated."
+}

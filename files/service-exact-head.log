@@ -1,0 +1,6 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["3933","3932","MainThread"],["3942","3933","esbuild"],["3965","3933","workerd"],["3971","3933","ps"]]
+PROBE BASE-AGENT-012 acceptance 3 autonomous oncall.services.update: name-only edit -> one workspace revision and agent-attributed native service audit; original key and projected ETag with different schema-valid name -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> stored result and original review; native records, revisions, timelines, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 held oncall.services.update: name-only edit -> one workspace revision and agent-attributed native service audit; original key and projected ETag with different schema-valid name -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> stored result and original review; native records, revisions, timelines, state-changing audit, call and outcome custody, approvals, reviews and paging unchanged; zero outbound requests
