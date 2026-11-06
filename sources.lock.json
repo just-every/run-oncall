@@ -1644,7 +1644,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "970adcce3e2e973e5ebb4569c4a623c7f4582262be8830bb0504b23c0082fabd",
+      "sha256": "d3c665ad456dc8fa1f76f74aeae83359aa9efe35a80ec9d51d84266364c6c029",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
