@@ -4,6 +4,18 @@
       {
         "file": "tests/runtime.mjs",
         "part": "core"
+      },
+      {
+        "file": "tests/triage.mjs",
+        "env": {
+          "ONCALL_TRIAGE_PART": "bulk"
+        }
+      },
+      {
+        "file": "tests/triage.mjs",
+        "env": {
+          "ONCALL_TRIAGE_PART": "storm"
+        }
       }
     ],
     "intake": [
@@ -23,14 +35,25 @@
       "tests/transfer.mjs"
     ],
     "changes": [
-      "tests/changes.mjs"
-    ],
-    "triage": [
-      "tests/triage.mjs",
+      "tests/changes.mjs",
       "tests/activation.mjs"
     ],
+    "triage": [
+      {
+        "file": "tests/triage.mjs",
+        "env": {
+          "ONCALL_TRIAGE_PART": "bounds"
+        }
+      }
+    ],
     "imports": [
-      "tests/import-door.mjs"
+      "tests/import-door.mjs",
+      {
+        "file": "tests/triage.mjs",
+        "env": {
+          "ONCALL_TRIAGE_PART": "reports"
+        }
+      }
     ]
   },
   "push": [
@@ -82,7 +105,8 @@
     {
       "name": "changes",
       "lanes": [
-        "changes"
+        "changes",
+        "imports"
       ],
       "browser": false,
       "hosted": false,
@@ -92,15 +116,6 @@
       "name": "triage",
       "lanes": [
         "triage"
-      ],
-      "browser": false,
-      "hosted": false,
-      "timeout": 15
-    },
-    {
-      "name": "imports",
-      "lanes": [
-        "imports"
       ],
       "browser": false,
       "hosted": false,

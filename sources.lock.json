@@ -1644,7 +1644,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "d3c665ad456dc8fa1f76f74aeae83359aa9efe35a80ec9d51d84266364c6c029",
+      "sha256": "558e38aec3a7aa2ad7f43ee03d34a90f43b9c24104100daeedf290a907b6c0eb",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
@@ -6532,11 +6532,11 @@
       "executable": false
     },
     "tests/triage.mjs": {
-      "sha256": "39c5d68db62b3f137f40b7c5f275d29aa80b30fa1cc4bbf40dc93bbd437c07de",
+      "sha256": "154c1b4372b488fa33eaed21e09265aec7fd2e5cc27ed7d702c52e613a778270",
       "executable": false
     },
     "tests/verify.mjs": {
-      "sha256": "869b5f2351981b1e3d50fca01062de2dcd6d8639758cd2d251063b19f91a099a",
+      "sha256": "b52d6b62398894847bfd9da8dd6bc7a93fcbe803548dc72ba9f61997e7844c7e",
       "executable": false
     },
     "tests/worker-server.mjs": {
