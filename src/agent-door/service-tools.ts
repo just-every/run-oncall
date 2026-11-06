@@ -27,7 +27,8 @@ export function serviceTools(env: Bindings): ToolDefinition[] {
       const result=command(current.state,nativeActor(current,ctx),{...args,type:'service'}) as {id:string;dependencies?:string[]}
       nativeAudit(env,ctx,'service.update',result.id);await persistNative(env,current)
       const uri=`oncall://services/${encodeURIComponent(result.id)}`;ctx.emit('service.changed',uri)
-      return {result:{...result,etag:await changeHash(JSON.stringify({...result,dependencies:(result.dependencies??[]).filter(id=>current.services.includes(id))}))},resources:[{uri,name:String(args.name)}]}
+      const projected={...result,dependencies:(result.dependencies??[]).filter(id=>current.services.includes(id))}
+      return {result:{...projected,etag:await changeHash(JSON.stringify(projected))},resources:[{uri,name:String(args.name)}]}
     }),
   }]
 }
