@@ -52,7 +52,7 @@ Counts stay 17 DONE, 50 PARTIAL, 34 MISSING, total 101. BASE-AGENT-012 stays MIS
 
 ## Local startup diagnosis
 
-The first ad hoc Node eval invocation stalled at Miniflare's synchronous D1 proxy acquisition. Switching from VM Node 24 to pinned Node 22 alone did not fix the eval invocation. A minimal normal script proved Worker and D1 availability. The Miniflare synchronous fetcher creates an eval worker inheriting Node execution arguments; the diagnostic preload also interfered with that startup. Running the focused probe from a normal .mjs file passed both policies without any product change. The stalled owned process groups were terminated; their exit status was 247 as returned by the subreaper. They are not passing test receipts. The successful focused probe and maintained agent-flow logs are retained separately.
+The first ad hoc Node eval invocation stalled at Miniflare's synchronous D1 proxy acquisition. Switching from VM Node 24 to pinned Node 22 alone did not fix the eval invocation. A minimal normal script proved Worker and D1 availability. The Miniflare synchronous fetcher creates an eval worker inheriting Node execution arguments. The diagnostic preload attempt still used the same eval invocation and also stalled. Running the focused probe from a normal .mjs file passed both policies without any product change. The stalled owned process groups were terminated; their exit status was 247 as returned by the subreaper. They are not passing test receipts. The successful focused probe and maintained agent-flow logs are retained separately.
 
 ## Candidate and verification
 
@@ -63,3 +63,31 @@ Local commands passed: setup, build, pnpm run typecheck under pinned Node 22.20.
 The first lock generation preceded staging the new helper, so its after-commit check correctly reported a stale lock. Regeneration with the helper tracked, followed by check, fixed it before the first push. Both the original mechanical log and final passing log are retained. No lock hash was edited by hand.
 
 MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0, restored from origin/main; ledger=none exit=0.
+
+## Claim and public-door probes
+
+CLAIM BASE-AGENT-012 PARTIAL points=none tests=tests/oncall-agent-incident-replay.mjs#droppedReassignmentReplay
+
+The claim uses points=none because this round proves the selected reassignment observation within acceptance 2, not that entire acceptance point. Main retains the MISSING judgment.
+
+GAP BASE-AGENT-012: Other dropped responses, remaining mutating tools, complete 24-hour retention, changed-argument combinations, revision diagnostics and foreign-person long-work job custody remain unproved; existing authority and provider holds remain.
+
+PROBE BASE-AGENT-012 acceptance 2 autonomous reassign: real MCP response destroyed at headers with unread body; D1 confirms completed call, saved outcome and one attributed reassignment before retry; original revision and key with new RPC id return exact result; one incident and workspace revision increment, one native audit commit; retained effects unchanged; one linked replay-attempt audit; zero outbound requests
+
+PROBE BASE-AGENT-012 acceptance 2 held reassign: real MCP response destroyed at headers with unread body; D1 confirms completed call, saved outcome and one attributed reassignment before retry; original revision and key with new RPC id return exact result; one incident and workspace revision increment, one native audit commit; one original open review; retained effects unchanged; one linked replay-attempt audit; zero outbound requests
+
+Exact successful probe command: cloud_run timeout -k 5s 300s node /tmp/f209-reassignment-probe.mjs. The actual normal-file runner is retained as reassignment-runner.mjs. Maintained touched coverage: cloud_run timeout -k 10s 1200s node tests/oncall-agent-flow.mjs, exit 0.
+
+## Predecessor integration note
+
+The unlanded f208 predecessor and this candidate both add ./tests/oncall-agent-incident-replay.mjs and touch ./tests/oncall-agent-flow.mjs and ./sources.lock.json. If the predecessor lands first, keep its complete changed-reassignment-reason helper and existing call, add this candidate’s droppedReassignmentReplay export and call, and regenerate the source lock. Do not resolve an add conflict by taking either helper file whole and dropping the other scope. No predecessor source is imported into this candidate, and no predecessor judgment or gate is bypassed.
+
+The initial failed eval startup logs, the diagnostic trace and the successful minimal Worker diagnostic are retained as separate actual files. Only reassignment-probe-file.log and agent-flow.log are passing runtime receipts. The failed diagnostic logs do not establish product failure or success.
+
+## Terminal result
+
+Exact-SHA Verify run 42352260853, event push, completed with conclusion success on 9d5d500c0cf68bcc3f0a3caed08c38d253c615e2. URL: https://github.com/just-every/run-oncall/actions/runs/42352260853 . Five GitHub REST calls were used: initial main and predecessor discovery, candidate discovery, and three polls at intervals of at least 300 seconds. No dispatch or rerun.
+
+Product is pushed and ready for guarded landing. Publication scan, predecessor integration and main-only Run site remain fleet gates. No scan completion, main equality, landed count increase or whole-clause DONE is claimed. No known product blocker remains. The product clone will be removed after this final evidence publication; the packet remains outside the clone.
+
+POST lanes/sd/INBOX.md: sd-oncall-c-f209 proved only BASE-AGENT-012 acceptance-2 dropped reassignment response under autonomous and held policies; contract MISSING and counts 17 DONE, 50 PARTIAL, 34 MISSING unchanged. Head 9d5d500c0cf68bcc3f0a3caed08c38d253c615e2; Verify 42352260853 push success. Preserve f208 changedReassignmentReasonConflict and both helper calls when integrating shared files; publication and landing gates remain with fleet.

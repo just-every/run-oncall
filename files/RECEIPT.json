@@ -82,9 +82,44 @@
       "status": "in_progress"
     }
   ],
-  "ciLastReadUTC": "2026-11-07T07:41:04.100702+00:00",
-  "githubCalls": 2,
+  "ciLastReadUTC": "2026-11-07T07:56:05.663608+00:00",
+  "githubCalls": 5,
   "identityAndTrailers": "all candidate authors and committers are fleet; no trailers; every candidate message inspected including side parents",
   "localProofByteIdentity": "No test or application source changed after the successful focused probe and maintained agent-flow run; only generated source lock changed.",
-  "planRowChange": "replan-40 selected dropped reassignment response observation proved; no whole-clause promotion"
+  "planRowChange": "replan-40 selected dropped reassignment response observation proved; no whole-clause promotion",
+  "claim": {
+    "clause": "BASE-AGENT-012",
+    "claim": "PARTIAL",
+    "points": "none",
+    "observation": "selected acceptance 2 reassignment case proved",
+    "test": "tests/oncall-agent-incident-replay.mjs#droppedReassignmentReplay",
+    "contractJudgment": "MISSING retained"
+  },
+  "localCommands": {
+    "focused": "cloud_run timeout -k 5s 300s node /tmp/f209-reassignment-probe.mjs",
+    "agentFlow": "cloud_run timeout -k 10s 1200s node tests/oncall-agent-flow.mjs",
+    "typecheck": "pnpm run typecheck",
+    "firstParty": "pnpm exec rer check --profile first-party"
+  },
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "9d5d500c0cf68bcc3f0a3caed08c38d253c615e2",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/42352260853",
+    "status": "completed",
+    "id": 42352260853,
+    "event": "push",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/42352260853"
+  },
+  "cleanup": {
+    "ownedWorkerAndServerProcesses": "stopped; successful runtimes disposed",
+    "failedStartupScratch": "three owned persistence directories removed",
+    "productClone": "scheduled for removal after final evidence publication"
+  },
+  "terminalCustody": "READY; product pushed and exact-SHA Verify success; guarded landing remains separate",
+  "codeBlobs": {
+    "tests/oncall-agent-incident-replay.mjs": "bb1774963e2e8eed65b472a9d3701a9c9e9fdefd",
+    "tests/oncall-agent-flow.mjs": "3901c8e334c954140121e69b1bb4a721d707d028",
+    "sources.lock.json": "78be913bce05e11f384d8e82c2f4de925179c0a3"
+  },
+  "productTree": "387a57d442ffb04f923e29630db6d1406db00bd7"
 }
