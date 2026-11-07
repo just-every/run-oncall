@@ -9,6 +9,7 @@ import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
+import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
 import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
 import {nativeTransport} from './oncall-agent-transport.mjs';
 import {accessToken,seconds,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
@@ -623,6 +624,7 @@ try{
  await droppedCoordinationReplay(runtime);
  await droppedNoteReplay(runtime);
  await changedArgumentConflicts(runtime);
+ await changedReassignmentReasonConflict(runtime);
  await consentRevocationMatrix(runtime);
  await staleNoteRevision(runtime);
  await staleCoordinationRevision(runtime);
@@ -915,7 +917,17 @@ try{
   const after=await current(),entry=after.timeline.at(-1);
   assert.equal(after.revision,args.revision+1);assert.equal(entry.text,args.text);
   assert.equal(entry.metadata?.agent?.agent.id,agent);assert.equal(entry.metadata?.agent?.for.id,sponsor.id);
-  const audit=async()=> (await read('/agents/api/audit?agent='+encodeURIComponent(agent))).rows;
+  const audit=async()=>{
+   const rows=[];let after=0;
+   while(true){
+    const page=await read('/agents/api/audit?agent='+encodeURIComponent(agent)+'&after='+after);
+    rows.push(...page.rows);
+    if(page.cursor===null||page.cursor===after)break;
+    assert.ok(page.cursor>after,'Audit pagination must advance through all retained decisions');
+    after=page.cursor;
+   }
+   return rows;
+  };
   assert.ok((await audit()).some(row=>row.sponsor.id===sponsor.id&&row.outcome==='done'));
   assert.equal((await http('/api/command',{type:'member',id:sponsor.id,role:'viewer',active:true})).status,200);
   const deniedArgs=await note('Viewer cannot append this valid note'),downgraded=await snapshot();
