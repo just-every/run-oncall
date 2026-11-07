@@ -271,6 +271,36 @@ async function savedRotationCoverage(){
    assert.deepEqual(durableSnapshot(w),retained,'preview and now-next preserve every durable row, revision, audit and outbound work item');
    assert.deepEqual(await w.outboundRequests(),[],'coverage reads make no outbound requests');
   };
+  const spring=await save(1121,'America/New_York','2026-03-07T09:00');
+  await observe(spring,'2026-03-07T14:00:00Z','2026-03-09T14:00:00Z',[
+   ['2026-03-07T14:00:00.000Z',a.id,b.id,'2026-03-07T14:00:00.000Z','2026-03-08T13:00:00.000Z'],
+   ['2026-03-08T13:00:00.000Z',b.id,a.id,'2026-03-08T13:00:00.000Z','2026-03-09T13:00:00.000Z'],
+   ['2026-03-09T13:00:00.000Z',a.id,b.id,'2026-03-09T13:00:00.000Z','2026-03-10T13:00:00.000Z'],
+  ]);
+  console.log('PROBE OC-011 spring handoff: saved New York 09:00 primary and backup -> 14:00Z then 13:00Z, a 23-hour civil day');
+  // Exercise both roles at each override edge, including adjacent intervals.
+  let covered=spring;
+  for(const role of ['primary','backup']){
+   const override={id:'synthetic-oncall-1121-'+role,role,start:'2026-03-08T14:00:00.000Z',end:'2026-03-08T15:00:00.000Z',member:owner.value.member.id};
+   covered=ok(await req('/api/schedules/'+spring.id+'/overrides',{revision:covered.revision,override}));
+   const pagingBefore=ok(await req('/api/paging/state'));
+   ok(await req('/api/schedules/'+spring.id+'/overrides',{revision:covered.revision,override:{...override,id:override.id+'-overlap',start:'2026-03-08T14:30:00.000Z'}}),400);
+   assert.deepEqual(ok(await req('/api/paging/state')),pagingBefore,'overlap refusal preserves the complete saved schedules and paging records');
+   covered=ok(await req('/api/schedules/'+spring.id+'/overrides',{revision:covered.revision,override:{...override,id:override.id+'-adjacent',start:override.end,end:'2026-03-08T16:00:00.000Z',member:null}}));
+  }
+  const overrideRecords=durableSnapshot(w);
+  const edges=ok(await req('/api/paging/preview',{scheduleId:spring.id,from:Date.parse('2026-03-08T13:59:59.999Z'),to:Date.parse('2026-03-08T16:00:00.001Z')}));
+  assert.deepEqual(edges.map(value=>[iso(value.at),value.primary,value.backup]),[
+   ['2026-03-08T13:59:59.999Z',b.id,a.id],
+   ['2026-03-08T14:00:00.000Z',owner.value.member.id,null],
+   ['2026-03-08T15:00:00.000Z',null,null],
+   ['2026-03-08T16:00:00.000Z',b.id,a.id],
+  ],'both overrides include their start, exclude their end and allow an adjacent interval');
+  assert.ok(edges[1].windows.every(window=>window.end==='2026-03-08T15:00:00.000Z'));
+  assert.match(edges[1].warnings.join('; '),/backup: same member .* as primary; backup is unavailable/);
+  for(const value of edges)assert.deepEqual(ok(await req('/api/schedules/'+spring.id+'/now-next?at='+iso(value.at))).now,value);
+  assert.deepEqual(durableSnapshot(w),overrideRecords,'override previews and now-next remain read-only');
+  console.log('PROBE OC-011 override edges: saved primary and backup overrides -> exact half-open edges, adjacent gaps accepted, overlapping intervals refused without changes');
   const fall=await save(1110,'America/New_York','2026-10-31T09:00');
   await observe(fall,'2026-10-31T13:00:00Z','2026-11-02T15:00:00Z',[
    ['2026-10-31T13:00:00.000Z',a.id,b.id,'2026-10-31T13:00:00.000Z','2026-11-01T14:00:00.000Z'],
@@ -313,6 +343,11 @@ async function savedRotationCoverage(){
   const withViewer=await save(1117,'UTC','2026-01-01T00:00','earlier',[a.id,viewer.id,b.id],[b.id,a.id,viewer.id]);
   await observe(withViewer,'2026-01-01T00:00:00Z','2026-01-04T01:00:00Z',slotRows('not an authorized responder'));
   console.log('PROBE OC-011 viewer slots: saved three-slot primary and backup -> viewer turns remain explained gaps and all subsequent responders keep their turns');
+  const inactive=await member(1105,'responder');
+  const withInactive=await save(1122,'UTC','2026-01-01T00:00','earlier',[a.id,inactive.id,b.id],[b.id,a.id,inactive.id]);
+  ok(await req('/api/command',{type:'member',id:inactive.id,active:false,role:'responder'}));
+  await observe(withInactive,'2026-01-01T00:00:00Z','2026-01-04T01:00:00Z',slotRows('inactive'));
+  console.log('PROBE OC-011 inactive slots: saved responder deactivated through HTTP -> both roles retain the original turns as gaps, later turns unchanged');
   const duplicate=await save(1118,'UTC','2026-01-01T00:00','earlier',[a.id,b.id],[a.id,b.id]);
   await observe(duplicate,'2026-01-01T00:00:00Z','2026-01-02T01:00:00Z',[
    ['2026-01-01T00:00:00.000Z',a.id,null,'2026-01-01T00:00:00.000Z','2026-01-02T00:00:00.000Z',/backup: same member .* as primary; backup is unavailable/],
