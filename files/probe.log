@@ -1,0 +1,8 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+(node:6901) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["6901","6900","node"],["6917","6901","esbuild"],["6926","6901","workerd"],["6932","6901","ps"]]
+PROBE BASE-AGENT-012 acceptance 3 autonomous reassignment: one standard-only agent-attributed assignment to a distinct active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 held reassignment: one standard-only agent-attributed assignment to a distinct active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests

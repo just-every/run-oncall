@@ -1,0 +1,44 @@
+COMMAND pnpm run typecheck
+EXIT 0
+OUTPUT_BYTES 76
+OUTPUT_SHA256 e812e405765c7a36b3bd952481384c3147f530f5aaa82f73e6fedea3e6a945f9
+
+> @just-every/oncall@0.5.5 typecheck /workspace/run-oncall
+> tsc --noEmit
+
+
+COMMAND pnpm exec rer check --profile first-party
+EXIT 0
+OUTPUT_BYTES 0
+OUTPUT_SHA256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+COMMAND node src/base/contract-docs.mjs write
+EXIT 0
+OUTPUT_BYTES 28
+OUTPUT_SHA256 14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2
+Wrote 0 contract documents.
+
+COMMAND node src/base/contract-docs.mjs check
+EXIT 0
+OUTPUT_BYTES 70
+OUTPUT_SHA256 b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+
+COMMAND node scripts/edition-authoring/cli.mjs lock
+EXIT 0
+OUTPUT_BYTES 268544
+OUTPUT_SHA256 59de9dac568c37d9dc675f0285055ddf3030897ce84cb4ac41f8997c1dece8f9
+COMMAND node scripts/edition-authoring/cli.mjs check
+EXIT 0
+OUTPUT_BYTES 268558
+OUTPUT_SHA256 07943a6c461c1ab4218140e5281e4dd221de9fc97476e1c918584631cf46d9df
+COMMAND node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check
+EXIT 0
+OUTPUT_BYTES 268558
+OUTPUT_SHA256 07943a6c461c1ab4218140e5281e4dd221de9fc97476e1c918584631cf46d9df
+COMMAND node scripts/edition-authoring/cli.mjs check after rebase
+EXIT 0
+OUTPUT_BYTES 268558
+OUTPUT_SHA256 07943a6c461c1ab4218140e5281e4dd221de9fc97476e1c918584631cf46d9df
+MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0; ledger=none exit=0

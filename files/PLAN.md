@@ -1,0 +1,12 @@
+# sd-oncall-c-f208 plan
+
+Scope: only BASE-AGENT-012 acceptance 3's changed reassignment reason on the shipped incident update tool. Retain main's MISSING judgment and all existing holds.
+
+1. Read current main's full clause, Status row, emitted Worker helpers, coordination boundary and Base replay pipeline. Establish predecessor main Verify and Run site status. Map unproved acceptance outcomes without changing classifications or authority.
+2. Extend the existing runtime journey with a focused incident replay helper. In autonomous and held policies prepare a fresh ordinary incident, acknowledge it to a current assignee, select a distinct existing active responder, and make a standard-only MCP reassignment with a literal reason, current native revision and fresh key.
+3. Prove the single native assignment, attribution, timeline, incident and workspace revisions, permanent state-changing audit commit, saved call and outcome, and single open held review. Reuse the original key and revision changing only reason; require idempotency_conflict in error metadata and text without private structured content. Replay the exact original arguments with a new RPC id and compare original result and review custody.
+4. Compare all native D1 effect records through agentEffectSnapshot after conflict and retry, plus paging state and attributed refusal and linked replay audit. Require no outbound requests. Run touched emitted Worker journey and runtime coverage, typecheck and first-party check. Add no standalone test registration and weaken no assertions.
+5. Generate contract views and check, restore generated files from main, regenerate source lock last and check. Leave Status, Gap and Evidence cells unchanged. Merge fresh main after published saves. Inspect every candidate identity and trailer before each guarded branch push.
+6. Discover exact candidate Verify using REST and record actual state. Publish full non-secret report and receipts separately to the task evidence ref. Hand off the product branch for fleet scanning and landing; do not claim whole-clause completion.
+
+Remaining clause outcomes: complete mutating-tool and retention coverage, other dropped streams including reassignment, remaining changed-argument combinations, native diagnostics, foreign-person job handles and extension-independent long work. Existing erasure and approval replay seams and external authority holds are unchanged.

@@ -1,0 +1,23 @@
+{
+  "head": "da68efdaef7a90b568122189f3c4a554eda27171",
+  "gh_calls_total": 3,
+  "observations": [
+    {
+      "observed_at": "2026-11-07T06:49:02.433559+00:00",
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "da68efdaef7a90b568122189f3c4a554eda27171",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42348639796",
+      "id": 42348639796,
+      "name": "Verify",
+      "status": "queued"
+    },
+    {
+      "observed_at": "2026-11-07T06:54:02.969562+00:00",
+      "conclusion": null,
+      "head_sha": "da68efdaef7a90b568122189f3c4a554eda27171",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42348639796",
+      "status": "in_progress"
+    }
+  ]
+}

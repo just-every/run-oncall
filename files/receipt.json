@@ -1,0 +1,93 @@
+{
+  "tag": "sd-oncall-c-f208",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f208",
+  "base_head": "59016bf47bd17f7347d54d86cc722227f2bbca2d",
+  "test_files": {
+    "tests/oncall-agent-flow.mjs": "f26b24ef0aac74b8c9d57a6a42ac25cdf6137fa4d07a196e81d5ce804dc56642",
+    "tests/oncall-agent-incident-replay.mjs": "cd2bc180a81e7366b0fbe4613f48baf053b072cdd47255f29d7d49a611a9bcc5",
+    "sources.lock.json": "7c56b3e1d0283a29d4615f33c540ac51793725ec12f3a385b02c358cef9ae8b4"
+  },
+  "counts_before": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34
+  },
+  "status_rows_before": 101,
+  "status_rows_after": 101,
+  "clause_status_before": "missing",
+  "clause_status_after": "missing",
+  "registered_tests_added": 0,
+  "registered_tests_removed": 0,
+  "production_changes": false,
+  "ui_changes": false,
+  "external_requests_new_probe": 0,
+  "checks": {
+    "setup": 0,
+    "build": 0,
+    "focused_script_probe": 0,
+    "runtime_core": 0,
+    "typecheck": 0,
+    "first_party_check": 0,
+    "views_write": 0,
+    "views_check": 0,
+    "lock": 0,
+    "vendored_lock_check": 0,
+    "installed_lock_check": 0,
+    "runtime_machines": 0,
+    "runtime_machines_initial": 1,
+    "typecheck_final": 0,
+    "first_party_final": 0,
+    "lock_after_rebase": 0,
+    "focused_exact_head": 0
+  },
+  "main_ci": [
+    42345281364,
+    42344084427,
+    42345281376
+  ],
+  "publication_scan": {
+    "status": "not_run_in_cloud",
+    "owner": "fleet lander",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "candidate_ci": {
+    "status": "watching",
+    "observations_file": "candidate-ci.json"
+  },
+  "blocking_product_failures": [],
+  "head": "da68efdaef7a90b568122189f3c4a554eda27171",
+  "final_base_head": "59016bf47bd17f7347d54d86cc722227f2bbca2d",
+  "product_push": "success",
+  "product_push_attempts": 1,
+  "product_push_guard": true,
+  "commit_identity_check": {
+    "candidate_commits": 1,
+    "valid": true,
+    "side_parents_included": true,
+    "trailers": []
+  },
+  "pr": null,
+  "views_committed": false,
+  "contract_changed": false,
+  "local_integration_failure": {
+    "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+    "test": "tests/oncall-agent-flow.mjs sponsor refusal audit",
+    "initial_exit": 1,
+    "failure": "refusalAudit.length: 0 !== 1 at tests/oncall-agent-flow.mjs:930:10",
+    "correction": "Follow the actual public audit cursor in the existing test reader; keep every authority assertion",
+    "final_exit": 0
+  },
+  "local_execution_head": "59016bf47bd17f7347d54d86cc722227f2bbca2d",
+  "binding": "Final test and production bytes match the passing working-tree runtime run. Only tests and source lock differ from the source build; no production code changed.",
+  "focused_probe_head": "da68efdaef7a90b568122189f3c4a554eda27171",
+  "source_code_diff_against_main": [],
+  "tracked_checkout_clean": true
+}
