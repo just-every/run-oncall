@@ -128,7 +128,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
+      "sha256": "3ccb48f231bd0a9a4296b5e1509c73bb24bf586edcbc1937f5a89577c59af21e",
       "executable": false
     },
     ".gitignore": {
@@ -1644,7 +1644,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "558e38aec3a7aa2ad7f43ee03d34a90f43b9c24104100daeedf290a907b6c0eb",
+      "sha256": "abc6f54c6b7c988a3b21c7fa3f6320224f2134f01b70ce4654082f3a378c5561",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
@@ -1728,7 +1728,7 @@
       "executable": false
     },
     "src/agent-door/service-tools.ts": {
-      "sha256": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
+      "sha256": "9fe46825c849ef6de529aad71b4057a1b5ddce51e808411313b0e440a8600c92",
       "executable": false
     },
     "src/agent-door/team-receipts.ts": {
@@ -6480,7 +6480,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "7af8a32f44e7d8f6d6aed3c693506e53608a1ac1dd91034c8a04938672776870",
+      "sha256": "5520f98d04929833106bd9a67e55992ce3b2ac7d6026bcf4cdb8befed3540e9e",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {
