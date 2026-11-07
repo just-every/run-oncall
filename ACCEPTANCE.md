@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 16 | 44 | 24 | 84 |
+| Core | 19 | 41 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 17 | 50 | 34 | 101 |
+| Full target | 20 | 47 | 34 | 101 |
 
-Judged from the code and tests at commit `d189082d24ac1fdbf1b62272a73949e42e9a36da` (3 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `b1acb1fb0ed0be8603dda6a560fd8c3e0653dd91` (6 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -71,15 +71,15 @@ Core · published · **done**
 
 #### OC-005 — Copied runbooks
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Runbooks are copied into the incident at declaration; future service edits never silently rewrite incident instructions. Follow-ups carry owner, due date, open or completed state and completion evidence. Resolved incidents retain open work and editable review.
 
 **Acceptance.**
 1. Declare an incident and edit its service runbook, and the copied incident steps remain unchanged; an owned, due-dated action requires completion evidence; unfinished work and the review are retained after resolution.
 
-**Evidence.** `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
-**Gap.** The copied steps after a service runbook edit, creation of an owned, due-dated action, the refusal to complete an action without evidence and unfinished work kept after resolution are not asserted in the cited test; a review written after resolution is asserted to persist. Alert-level runbook access and follow-up policies are targets in OC-023/036.
+**Evidence.** `tests/runtime.mjs` — coordinationJourney: declaration copies every service step; an accepted service runbook edit reads back while the declared incident, its copied steps and revision stay unchanged; an owned, due-dated action reads back open with no evidence; completion without a URL is refused with every record unchanged; an evidenced submission awaits human acceptance and is accepted; the unfinished action, copied steps with checklist progress and an editable review are retained after resolution.; `tests/runtime.mjs` (coordinationJourney)
+**Gap.** None.
 
 #### OC-006 — Bounded outbound incident effects
 
@@ -151,15 +151,15 @@ Core · published · **done** · Cites BASE-OPS-001 · Rules D-1
 
 #### OC-011 — Calendar-day rotations
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Named-zone calendar-day rotations retain fixed primary and backup member slots. Hand-offs use the wall minute plus integer civil days, not fixed elapsed seconds. Repeated minutes explicitly choose earlier, later or reject; nonexistent or rejected boundaries produce visible gaps. Override intervals include their start and exclude their end; an overlap in the same role is rejected. Inactive, viewer and missing members do not shift slots. A duplicated primary and backup assignment leaves the backup unavailable.
 
 **Acceptance.**
 1. Save primary and backup schedules and query the HTTP preview across spring and fall DST, ambiguous and nonexistent minutes, override edges and an overlap refusal; inactive, viewer and missing slots are retained as gaps, and duplicate primary and backup responders are detected.
 
-**Evidence.** `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs`
-**Gap.** Fall-DST hand-offs, ambiguous and nonexistent minutes, viewer and missing slots kept as gaps and duplicate primary/backup detection are not asserted in the cited test; spring DST, override edges, overlap refusal and an inactive member's gap are asserted.
+**Evidence.** `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs` — savedRotationCoverage (run by scheduleCoordination in the changes shard): saves primary and backup rotations over HTTP and reads the HTTP preview and now-next for the fall New York 09:00 hand-off (a 25-hour civil day), a repeated 01:30 and a nonexistent 02:30 under earlier, later and reject with explained gaps, primary and backup override edges (start included, end excluded, a different role may share an interval, a same-role overlap refused with no write, a touching interval accepted), viewer and missing member slots retained as explained gaps with later turns unmoved, and identical primary and backup rotations leaving the backup unavailable; every read leaves all durable rows and outbound requests unchanged.
+**Gap.** None.
 
 #### OC-012 — Paging off
 
@@ -624,7 +624,7 @@ Core · target · **partial** · Cites BASE-DATA-002, BASE-DATA-003, BASE-DATA-0
 
 #### OC-041 — Durable operational audit
 
-Core · target · **partial** · Cites BASE-AUDIT-001, BASE-OPS-005, BASE-OPS-004 · Rules D-1, D-2
+Core · target · **done** · Cites BASE-AUDIT-001, BASE-OPS-005, BASE-OPS-004 · Rules D-1, D-2
 
 **Requirement.** Keep a structured, append-only permanent audit separate from the unchanged held operational history, incident timelines and reviewed handoff copy. Each permanent entry records the actor or feature, subject and source as permanent random pseudonyms, operation kind, time, before and after revision where applicable and an allowlisted outcome. Identity associations are separate and erasable: erasure deletes those associations while immutable kind, time and outcome and unlinkable labels survive. Labels are never reassigned, including after erase, restore or recreation; old chronology never becomes a new actor's. No raw identities, hashes, credential labels, tokens, telephone or message content, payload content or telemetry secrets enter this audit. Operational payload history retains its own access, retention and erasure policy under OC-040; keeping both records does not rewrite it into anonymous history. Every current mutation path commits its accepted state and permanent audit entry in the same D1 batch: workspace commands and native member and access changes, password changes, native source, intake and change keys and admission, schedules, paging refusals and historical acknowledgment and cancellation, triage bulk actions, handoffs, routing publication, move-in, the import door and erasure. Audit-write failure rolls back the state change. Committed mutations and decision receipts advance a global revision and retain workspace, paging and handoff revision snapshots. Under OC-050, an authorized human command whose every submitted value equals its stored value is a pure comparison no-op and writes no timeline, audit or revision entry. Denials, failed authorization, stale-revision conflicts and any no-op touching permission, credential, notification-routing or retention surfaces still write an audit fact, retaining equal before and after revisions when no state changes. The Response API retains its audited 201 receipt for a new operation and 200 replay; bulk operations retain durable receipts. Import apply and resume have a durable lease and retain a failed, interrupted or uncertain outcome on interruption or lease expiry; a vanished process cannot silently erase its operation. The protected audit export serves permanent audit to the current administrator; the installation owner acts as administrator until OC-023 introduces team-scoped export. The permanent audit is included in OC-052's durable transfer and erasure policy without transferring identity or execution authority. Future execution classes inherit their own atomic audit and crash and lease outcomes under door rule D-1 before shipping; those unbuilt flows remain requirements of their own clauses, and current audit completion does not establish their delivery, execution or crash proof.
 
@@ -634,8 +634,8 @@ Core · target · **partial** · Cites BASE-AUDIT-001, BASE-OPS-005, BASE-OPS-00
 3. Interrupt import apply/resume and expire its lease; inspect durable outcomes and safe resume.
 4. Restore held data without rewriting operational history, compare portable permanent audit, and prove restored history never grants authority or reassigns labels.
 
-**Evidence.** `src/audit-store.ts`; `src/audit-database.ts`; `src/audit-request.ts`; `migrations/core/0129_admin_audit.sql`; `migrations/core/0130_import_audit_lifecycle.sql`; `tests/runtime.mjs`; `tests/transfer.mjs`; `tests/activation.mjs`; `tests/triage.mjs`; `docs/audit.md`; `tests/routing.mjs` — attributed revision-bound publication and audit rollback
-**Gap.** Audit commits for password changes, handoff actions and routing publication, and no label reassignment after restore, are not asserted in the cited tests; workspace commands, member and access changes, source keys and admission, schedules, paging refusals, triage bulk actions, move-in, the import door and erasure commit with their audit, audit-write failures roll back, and export authority, erasure-safe labels and lease interruption are asserted. Restore is asserted to keep history and audit unchanged and grant no intake authority.
+**Evidence.** `src/audit-store.ts`; `src/audit-database.ts`; `src/audit-request.ts`; `migrations/core/0129_admin_audit.sql`; `migrations/core/0130_import_audit_lifecycle.sql`; `tests/runtime.mjs`; `tests/transfer.mjs`; `tests/activation.mjs`; `tests/triage.mjs`; `docs/audit.md`; `tests/routing.mjs` — journey OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets across: (1) `tests/runtime.mjs` workspace-command and member and access changes under injected audit failure (injected_audit_failure, synthetic_oncall_437_audit), password change (synthetic_oncall_password_audit: credential and session custody roll back, retry commits one revision-bound fact); `tests/activation.mjs` schedule accept, every handoff action (handoffMutation, one accepted fact at the committed handoff revision), paging refusals, historical acknowledgment and cancellation, erasure kinds and the import door (injected_import_failure); `tests/routing.mjs` routing publication (synthetic_oncall_publication_audit) and source and intake key admission; `tests/changes.mjs` change keys; `tests/intake.mjs` email and monitoring admission; `tests/triage.mjs` bulk actions (synthetic_bulk_audit). (2) `tests/runtime.mjs` viewer 403, anonymous 401, revoked-session 401 and bearer 401 on the audit export, administrator export secret-free; member erasure keeps the permanent label with no association and no reassignment (PASS OC-053 named-responder erasure); `tests/activation.mjs` erased subjects. (3) `tests/activation.mjs` import apply with injected_import_exit, expired lease (import_interrupted_lease), durable interrupted audit across a Worker restart and refused retry; `tests/transfer.mjs` restored pending import work interrupted. (4) `tests/transfer.mjs` portable restore keeps every audit row unchanged, grants no session or Business authority, and PROBE OC-041 portable labels: restored identity associations absent, fresh actor, subject and source labels never adopt retained history.
+**Gap.** None.
 
 #### OC-042 — Credential custody and declared external flows
 
