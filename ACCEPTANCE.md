@@ -8,10 +8,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 18 | 42 | 24 | 84 |
+| Core | 19 | 41 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 19 | 48 | 34 | 101 |
+| Full target | 20 | 47 | 34 | 101 |
 
 Judged from the code and tests at commit `b1acb1fb0ed0be8603dda6a560fd8c3e0653dd91` (6 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -71,15 +71,15 @@ Core · published · **done**
 
 #### OC-005 — Copied runbooks
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Runbooks are copied into the incident at declaration; future service edits never silently rewrite incident instructions. Follow-ups carry owner, due date, open or completed state and completion evidence. Resolved incidents retain open work and editable review.
 
 **Acceptance.**
 1. Declare an incident and edit its service runbook, and the copied incident steps remain unchanged; an owned, due-dated action requires completion evidence; unfinished work and the review are retained after resolution.
 
-**Evidence.** `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
-**Gap.** The copied steps after a service runbook edit, creation of an owned, due-dated action, the refusal to complete an action without evidence and unfinished work kept after resolution are not asserted in the cited test; a review written after resolution is asserted to persist. Alert-level runbook access and follow-up policies are targets in OC-023/036.
+**Evidence.** `tests/runtime.mjs` — coordinationJourney: declaration copies every service step; an accepted service runbook edit reads back while the declared incident, its copied steps and revision stay unchanged; an owned, due-dated action reads back open with no evidence; completion without a URL is refused with every record unchanged; an evidenced submission awaits human acceptance and is accepted; the unfinished action, copied steps with checklist progress and an editable review are retained after resolution.
+**Gap.** None.
 
 #### OC-006 — Bounded outbound incident effects
 

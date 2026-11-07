@@ -1422,9 +1422,9 @@ Judged from the code and tests at commit `b1acb1fb0ed0be8603dda6a560fd8c3e0653dd
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 13 | 9 | 0 | 22 |
+| Published | 14 | 8 | 0 | 22 |
 | Target and push further | 6 | 39 | 34 | 79 |
-| All | 19 | 48 | 34 | 101 |
+| All | 20 | 47 | 34 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
