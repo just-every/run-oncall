@@ -1422,9 +1422,9 @@ Judged from the code and tests at commit `8e02f6674fad992d1a972cfd567a47144296e5
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 12 | 10 | 0 | 22 |
+| Published | 13 | 9 | 0 | 22 |
 | Target and push further | 6 | 39 | 34 | 79 |
-| All | 18 | 49 | 34 | 101 |
+| All | 19 | 48 | 34 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1432,7 +1432,7 @@ Judged from the code and tests at commit `8e02f6674fad992d1a972cfd567a47144296e5
 | `OC-002` | Routing replay | published | partial | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Replay after a policy change, returning the immutable admission explanation of a severity-routed event beside the proposed decision, is not asserted in the cited test (`tests/routing.mjs` holds such a comparison); zero writes and submitted order are asserted. |
 | `OC-003` | Roles and authority | published | done | `tests/runtime.mjs` — coordinationJourney: session roles, responder workspace reads, attributed acknowledgment and note, administrator refusals, held downgrade and revoke mutations, minimal bearer and signed intake receipts; `tests/member-coordination-browser.mjs` — responder coordinates and reloads attributed history. |  |
 | `OC-004` | Incident state transitions | published | done | `tests/runtime.mjs` — coordinationJourney: exact admitted alert links, responder commander, stale and concurrent refusal, source recovery independence, unchanged state after recovery without evidence and resolution without a summary, evidenced recovery, resolved state and human-attributed lifecycle history; `tests/triage.mjs` — bulk resolution refuses missing recovery evidence. |  |
-| `OC-005` | Copied runbooks | published | partial | `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | The copied steps after a service runbook edit, creation of an owned, due-dated action, the refusal to complete an action without evidence and unfinished work kept after resolution are not asserted in the cited test; a review written after resolution is asserted to persist. Alert-level runbook access and follow-up policies are targets in OC-023/036. |
+| `OC-005` | Copied runbooks | published | done | `tests/runtime.mjs` — coordinationJourney: copied steps after service edits, owned dated open actions, unchanged state after completion without evidence, retained unfinished work after resolution, evidenced human completion and editable resolved review; `tests/copied-runbooks-browser.mjs` — copiedRunbooksBrowser (invoked by `tests/product-browser.mjs`): service edit, copied checklist, assigned due-dated work, resolution retention, evidence and acceptance, review editing and reload at 1440 with 390 screen proof. |  |
 | `OC-006` | Bounded outbound incident effects | published | partial | `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs` | No cited test asserts the absence of an AI call, that an exported draft stays marked unreviewed, or that a source link grants no access; no paging receipt, no production action and no Lamp publication are asserted. This is the current-release safety boundary, not the final product boundary. |
 | `OC-007` | Native archive | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` |  |
 | `OC-008` | User-authored records kept | published | done | `src/api.ts`; `src/native-incomplete.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/product-browser-journey.mjs`; `tests/product-browser.mjs` |  |

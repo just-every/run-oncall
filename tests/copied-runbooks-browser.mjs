@@ -23,6 +23,9 @@ export async function copiedRunbooksBrowser(page, context) {
     await page.setViewportSize({width:1440, height:1000});
   };
   const {member} = await api('/api/session');
+  const responder = await api('/api/members', {
+    name:'Payment responder', role:'responder', password:'synthetic-oncall-506',
+  }, 201);
   const original = 'Check payment authorization against the gateway dashboard.';
   const revised = 'Check the replacement payment gateway.';
   const service = await api('/api/command', {
@@ -58,18 +61,17 @@ export async function copiedRunbooksBrowser(page, context) {
   const followups = page.getByRole('dialog', {name:'Follow-ups', exact:true});
   const title = 'Verify authorization recovery for existing customer accounts';
   await followups.getByLabel('Improvement action', {exact:true}).fill(title);
-  if (await followups.getByLabel('Owner', {exact:true}).count())
-    await followups.getByLabel('Owner', {exact:true}).selectOption(member.id);
+  await followups.getByLabel('Owner', {exact:true}).selectOption(responder.id);
   await followups.getByLabel('Due date (UTC)', {exact:true}).fill('2026-12-04');
   await followups.getByRole('button', {name:'Add follow-up', exact:true}).click();
   const item = followups.locator('.followup-item').filter({hasText:title});
   await expect(item.getByText('Open', {exact:true})).toBeVisible();
   const unfinished = (await retained()).actions.find(action => action.title === title);
-  assert.equal(unfinished.owner, member.id);
+  assert.equal(unfinished.owner, responder.id);
   assert.equal(unfinished.due, '2026-12-04');
   assert.equal(unfinished.done, false);
   assert.equal(unfinished.evidence, '');
-  await expect(item).toContainText(member.name);
+  await expect(item).toContainText(responder.name);
   await capture('open-work');
   await followups.getByRole('button', {name:'Close', exact:true}).click();
 
@@ -93,8 +95,7 @@ export async function copiedRunbooksBrowser(page, context) {
   // Finish a different action; the unresolved customer-account check stays open.
   await followups.getByText('Add a follow-up', {exact:true}).click();
   await followups.getByLabel('Improvement action', {exact:true}).fill('Record the verified rollback');
-  if (await followups.getByLabel('Owner', {exact:true}).count())
-    await followups.getByLabel('Owner', {exact:true}).selectOption(member.id);
+  await followups.getByLabel('Owner', {exact:true}).selectOption(member.id);
   await followups.getByLabel('Due date (UTC)', {exact:true}).fill('2026-12-05');
   await followups.getByRole('button', {name:'Add follow-up', exact:true}).click();
   const completed = followups.locator('.followup-item').filter({hasText:'Record the verified rollback'});
