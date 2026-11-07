@@ -58,6 +58,8 @@ export async function copiedRunbooksBrowser(page, context) {
   const followups = page.getByRole('dialog', {name:'Follow-ups', exact:true});
   const title = 'Verify authorization recovery for existing customer accounts';
   await followups.getByLabel('Improvement action', {exact:true}).fill(title);
+  if (await followups.getByLabel('Owner', {exact:true}).count())
+    await followups.getByLabel('Owner', {exact:true}).selectOption(member.id);
   await followups.getByLabel('Due date (UTC)', {exact:true}).fill('2026-12-04');
   await followups.getByRole('button', {name:'Add follow-up', exact:true}).click();
   const item = followups.locator('.followup-item').filter({hasText:title});
@@ -91,6 +93,8 @@ export async function copiedRunbooksBrowser(page, context) {
   // Finish a different action; the unresolved customer-account check stays open.
   await followups.getByText('Add a follow-up', {exact:true}).click();
   await followups.getByLabel('Improvement action', {exact:true}).fill('Record the verified rollback');
+  if (await followups.getByLabel('Owner', {exact:true}).count())
+    await followups.getByLabel('Owner', {exact:true}).selectOption(member.id);
   await followups.getByLabel('Due date (UTC)', {exact:true}).fill('2026-12-05');
   await followups.getByRole('button', {name:'Add follow-up', exact:true}).click();
   const completed = followups.locator('.followup-item').filter({hasText:'Record the verified rollback'});

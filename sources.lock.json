@@ -6331,6 +6331,10 @@
       "sha256": "3c3d13506a3ccae21846a86d8847cd7e97336b90817595ac53cb7c8badfb0c12",
       "executable": false
     },
+    "tests/copied-runbooks-browser.mjs": {
+      "sha256": "e50498e7c5b21bab2df76f2d454d7a3bff623340ef4f0914e409cbf42c1f6aff",
+      "executable": false
+    },
     "tests/diagnostics.mjs": {
       "sha256": "7203e9b0655bf527968a0c8cccb9729f93cc76cf497b0be4f491c8ba69fa1ad7",
       "executable": false
@@ -6512,7 +6516,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "ec050f18bc15254d45aae95767c39458d65607583d4cb0e1c0fd287d3987460a",
+      "sha256": "592dfcc889404e6b7efdadc44fb46c31901c68ad279089935ed36c5cdfc3ad2a",
       "executable": false
     },
     "tests/readiness.mjs": {
