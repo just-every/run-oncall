@@ -14,6 +14,20 @@ import {nativeTransport} from './oncall-agent-transport.mjs';
 import {accessToken,seconds,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {AGENT_CLASSES} from '../src/modules/agent-door/conformance/surface.mjs';
 
+async function readAgentAudit(http,agent){
+  const rows=[];let cursor=null,differs=0;
+  for(;;){
+   const response=await http('/agents/api/audit?agent='+encodeURIComponent(agent)+(cursor?'&after='+encodeURIComponent(cursor):''));
+   assert.equal(response.status,200);
+   const page=await response.json();
+   rows.push(...page.rows);differs+=page.differs_from_policy;
+   if(page.cursor===cursor)break;
+   assert.ok(Number(page.cursor)>Number(cursor),'Audit cursor advances across the combined revision journeys');
+   cursor=page.cursor;
+  }
+  return {rows,cursor,differs_from_policy:differs};
+}
+
 /** Lose the real MCP response, establish its native commit, then recover by key. */
 async function droppedDeclarationReplay(runtime){
  const {db,http,tool,adopt,discardToolResponse,context}=runtime;
@@ -825,19 +839,7 @@ try{
  assert.deepEqual(replay.result.structuredContent,created.result.structuredContent);
  const snapshot=async()=>JSON.stringify((await (await http('/api/state')).json()).incidents);
  const once=await snapshot();
- const audit=async()=>{
-  const rows=[];let cursor=null,differs=0;
-  for(;;){
-   const response=await http('/agents/api/audit?agent='+encodeURIComponent(runtime.context.agentId)+(cursor?'&after='+encodeURIComponent(cursor):''));
-   assert.equal(response.status,200);
-   const page=await response.json();
-   rows.push(...page.rows);differs+=page.differs_from_policy;
-   if(page.cursor===cursor)break;
-   assert.ok(Number(page.cursor)>Number(cursor),'Audit cursor advances across the combined revision journeys');
-   cursor=page.cursor;
-  }
-  return {rows,cursor,differs_from_policy:differs};
- };
+ const audit=()=>readAgentAudit(http,runtime.context.agentId);
  const original=(await audit()).rows.find(row=>row.id===created.decision.id);
  assert.deepEqual(original.resource,{kind:'service',id:'agent-service'});
  assert.equal(original.sponsor.id,owner.id);
@@ -1034,7 +1036,7 @@ try{
   const after=await current(),entry=after.timeline.at(-1);
   assert.equal(after.revision,args.revision+1);assert.equal(entry.text,args.text);
   assert.equal(entry.metadata?.agent?.agent.id,agent);assert.equal(entry.metadata?.agent?.for.id,sponsor.id);
-  const audit=async()=> (await read('/agents/api/audit?agent='+encodeURIComponent(agent))).rows;
+  const audit=async()=> (await readAgentAudit(http,agent)).rows;
   assert.ok((await audit()).some(row=>row.sponsor.id===sponsor.id&&row.outcome==='done'));
   assert.equal((await http('/api/command',{type:'member',id:sponsor.id,role:'viewer',active:true})).status,200);
   const deniedArgs=await note('Viewer cannot append this valid note'),downgraded=await snapshot();
@@ -1140,7 +1142,7 @@ try{
  const mira={sub:teammate,email:'mira@example.invalid',act:{sub:'mira-agent',name:'Mira assistant'}};
  const miraNote=await tool('oncall.notes.add',{incident:incident.id,revision:currentIncident.revision,text:'Independent coordination observation',idempotency_key:randomUUID()},mira);
  assert.equal(miraNote.result.isError,false);
- const miraAudit=async()=>(await (await http('/agents/api/audit?agent=mira-agent')).json()).rows;
+ const miraAudit=async()=> (await readAgentAudit(http,'mira-agent')).rows;
  const beforeActorEvents=(await miraAudit()).filter(row=>row.sponsor.id===responder.id);
  assert.ok(beforeActorEvents.length>0);
  const eraseState=await (await http('/api/state')).json();
