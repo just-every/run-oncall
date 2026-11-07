@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 17 | 43 | 24 | 84 |
+| Core | 18 | 42 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 18 | 49 | 34 | 101 |
+| Full target | 19 | 48 | 34 | 101 |
 
-Judged from the code and tests at commit `8e02f6674fad992d1a972cfd567a47144296e5a0` (6 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `b1acb1fb0ed0be8603dda6a560fd8c3e0653dd91` (6 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -151,15 +151,15 @@ Core · published · **done** · Cites BASE-OPS-001 · Rules D-1
 
 #### OC-011 — Calendar-day rotations
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Named-zone calendar-day rotations retain fixed primary and backup member slots. Hand-offs use the wall minute plus integer civil days, not fixed elapsed seconds. Repeated minutes explicitly choose earlier, later or reject; nonexistent or rejected boundaries produce visible gaps. Override intervals include their start and exclude their end; an overlap in the same role is rejected. Inactive, viewer and missing members do not shift slots. A duplicated primary and backup assignment leaves the backup unavailable.
 
 **Acceptance.**
 1. Save primary and backup schedules and query the HTTP preview across spring and fall DST, ambiguous and nonexistent minutes, override edges and an overlap refusal; inactive, viewer and missing slots are retained as gaps, and duplicate primary and backup responders are detected.
 
-**Evidence.** `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `tests/activation.mjs`
-**Gap.** Fall-DST hand-offs, ambiguous and nonexistent minutes, viewer and missing slots kept as gaps and duplicate primary/backup detection are not asserted in the cited test; spring DST, override edges, overlap refusal and an inactive member's gap are asserted.
+**Evidence.** `src/family/response-operations/schedules.ts`; `src/paging-api.ts`; `src/schedule-api.ts`; `tests/activation.mjs` — savedRotationCoverage (run by scheduleCoordination in the changes shard): saves primary and backup rotations over HTTP and reads the HTTP preview and now-next for the fall New York 09:00 hand-off (a 25-hour civil day), a repeated 01:30 and a nonexistent 02:30 under earlier, later and reject with explained gaps, primary and backup override edges (start included, end excluded, a different role may share an interval, a same-role overlap refused with no write, a touching interval accepted), viewer and missing member slots retained as explained gaps with later turns unmoved, and identical primary and backup rotations leaving the backup unavailable; every read leaves all durable rows and outbound requests unchanged.
+**Gap.** None.
 
 #### OC-012 — Paging off
 
