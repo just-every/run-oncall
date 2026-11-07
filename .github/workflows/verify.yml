@@ -102,6 +102,8 @@ jobs:
     needs: [plan, build]
     if: ${{ needs.plan.outputs.has_shards == 'true' }}
     runs-on: ubuntu-24.04
+    # Runtime: green Verify 42331781621 took 14m46s; 42215652178 and
+    # 42198236844 hit 15m18s. Its 22m matrix budget leaves about 30% headroom.
     timeout-minutes: ${{ matrix.timeout }}
     strategy:
       fail-fast: false

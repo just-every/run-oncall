@@ -128,7 +128,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
+      "sha256": "3ccb48f231bd0a9a4296b5e1509c73bb24bf586edcbc1937f5a89577c59af21e",
       "executable": false
     },
     ".gitignore": {
@@ -1644,7 +1644,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "970adcce3e2e973e5ebb4569c4a623c7f4582262be8830bb0504b23c0082fabd",
+      "sha256": "67b83e3f890c9dcc56308527d55919eb1bef1ce298d9185920e44f52a1536864",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
