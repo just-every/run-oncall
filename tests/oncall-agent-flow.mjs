@@ -9,6 +9,7 @@ import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
+import {droppedReassignmentReplay} from './oncall-agent-incident-replay.mjs';
 import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
 import {nativeTransport} from './oncall-agent-transport.mjs';
 import {accessToken,seconds,autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
@@ -622,6 +623,7 @@ try{
  await droppedDeclarationReplay(runtime);
  await droppedCoordinationReplay(runtime);
  await droppedNoteReplay(runtime);
+ await droppedReassignmentReplay(runtime);
  await changedArgumentConflicts(runtime);
  await consentRevocationMatrix(runtime);
  await staleNoteRevision(runtime);
