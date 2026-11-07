@@ -1,0 +1,94 @@
+{
+  "files": [
+    {
+      "blob": "2450a8ecdb10d5b540f876140b71a5fc6f530d83",
+      "bytes": 2100,
+      "path": "PLAN.md",
+      "sha256": "e596138a7646799d33b03cd65fe75e659512d05fe80be7055f9dca89c5ae006f"
+    },
+    {
+      "blob": "57ca5fa345fa198a24498210a30f7fb529e9fef8",
+      "bytes": 2999,
+      "path": "RECEIPT.json",
+      "sha256": "7df0b289db4bf3a7e458670ba1f74ff2f2abe10ec1c9ad9e12fc8a3c14b3ebff"
+    },
+    {
+      "blob": "fe6cb4c8cca68ec0c49b3e9201994e39d997e205",
+      "bytes": 9120,
+      "path": "REPORT.md",
+      "sha256": "b0f4f08758120ada4bab69db24fce2043fd18a7f4336c1e25dd4e4ba823e1994"
+    },
+    {
+      "blob": "279feeee3991bdf0adc936b84aeface44ca5091c",
+      "bytes": 30920,
+      "path": "agent-flow.log",
+      "sha256": "f79514d960103fb4ed3219256ff1fe15e986992371a761951a7909e78b28e3cb"
+    },
+    {
+      "blob": "293f25a5433841ea37e95c7484a96373bd4bae92",
+      "bytes": 16063,
+      "path": "build.log",
+      "sha256": "0007e0a5033f187def9b5f4b063bf2c66a05239a91ae3649821d48620e1cb553"
+    },
+    {
+      "blob": "dd1dc5ebf04cd13516815a228fc3fea90d9a0122",
+      "bytes": 265,
+      "path": "ci-discovery.json",
+      "sha256": "55642d2915258b8d10e1fa04f0ba15a5781edb38c06e82c9d551877eea35c163"
+    },
+    {
+      "blob": "216894344af569510e86efa1f99e5cba74708575",
+      "bytes": 805758,
+      "path": "final-mechanical.log",
+      "sha256": "20657f8215f74f524ab881a91ed6fbf61898681d75801a58371cff48692372df"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "first-party.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "d65d17b281d0376e52e18b124a1040901021277d",
+      "bytes": 536969,
+      "path": "mechanical.log",
+      "sha256": "7dceb2363a47ea1cee4d910a01eb74cc88bdc5a324eaa544bf2aea2db8600911"
+    },
+    {
+      "blob": "ae30cc5892693dea907ab78d016d029592474f12",
+      "bytes": 112,
+      "path": "minimal-worker-diagnostic.log",
+      "sha256": "42d309acf3289039c84c5d8dc2fe69c0635236c523012e8f45d40513e41e7cad"
+    },
+    {
+      "blob": "55d6f63652e5c50daed53638c7876fb1c49d329c",
+      "bytes": 907,
+      "path": "product-push.log",
+      "sha256": "91247a0fb1c92e52de942bb55bbde7519260e89dabc58557d3b169c8f730ea6e"
+    },
+    {
+      "blob": "733c392c9074ab3d05bbaea6f9279eded7d2fdb4",
+      "bytes": 1284,
+      "path": "reassignment-probe-file.log",
+      "sha256": "e9675e3b5f20f284df6a73e02451796a7ebd9fa4b9cfe8a327255cb1f7adf100"
+    },
+    {
+      "blob": "8ba9a4dc7e1bf5931cfc05c95f6f512f5e0bb82a",
+      "bytes": 302,
+      "path": "reassignment-runner.mjs",
+      "sha256": "677191f99a74c4bda21b157b84402a622f069c5b0d25f2f1deb1b06144e5a511"
+    },
+    {
+      "blob": "a71e78330e532d2707d3469607bb8e8e625f9479",
+      "bytes": 77,
+      "path": "typecheck.log",
+      "sha256": "319287e8ada82a4cb44c8ce0b75bfedd224b38a863b423b4f3c085665c1aa309"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f209",
+  "product_head": "9d5d500c0cf68bcc3f0a3caed08c38d253c615e2",
+  "ref": "refs/heads/evidence/sd-oncall-c-f209",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f209"
+}

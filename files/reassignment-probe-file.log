@@ -1,0 +1,8 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:2677) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["2677","2676","node"],["2685","2677","esbuild"],["2694","2677","workerd"],["2700","2677","ps"]]
+PROBE BASE-AGENT-012 acceptance 2 autonomous reassign: real MCP response destroyed at headers with unread body; D1 confirms completed call, saved outcome and one attributed reassignment before retry; original revision and key with new RPC id return exact result; one incident and workspace revision increment, one native audit commit; retained effects unchanged; one linked replay-attempt audit; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 2 held reassign: real MCP response destroyed at headers with unread body; D1 confirms completed call, saved outcome and one attributed reassignment before retry; original revision and key with new RPC id return exact result; one incident and workspace revision increment, one native audit commit; one original open review; retained effects unchanged; one linked replay-attempt audit; zero outbound requests

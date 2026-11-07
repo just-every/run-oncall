@@ -1,0 +1,90 @@
+{
+  "tag": "sd-oncall-c-f209",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f209",
+  "base": "59016bf47bd17f7347d54d86cc722227f2bbca2d",
+  "target": "BASE-AGENT-012",
+  "slice": "acceptance 2, dropped response for oncall.incidents.update with change=reassign",
+  "contractStatusBefore": "missing",
+  "contractStatusAfter": "missing",
+  "countsBefore": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "countsAfter": {
+    "done": 17,
+    "partial": 50,
+    "missing": 34,
+    "total": 101
+  },
+  "checks": {
+    "setup": 0,
+    "build": 0,
+    "typecheck": 0,
+    "firstParty": 0,
+    "focusedReassignmentProbe": 0,
+    "agentFlow": 0,
+    "contractViewsWrite": 0,
+    "contractViewsCheck": 0,
+    "sourceLock": 0,
+    "sourceLockCheck": 0,
+    "productPush": 0
+  },
+  "predecessor": {
+    "branch": "cloud/sd-oncall-c-f208",
+    "head": "da68efdaef7a90b568122189f3c4a554eda27171",
+    "verify": 42348639796,
+    "conclusion": "success",
+    "landedAtStart": false
+  },
+  "mainGatesAtStart": {
+    "verify": 42345281364,
+    "runSite": 42345281376,
+    "conclusion": "success"
+  },
+  "providerOperations": "none",
+  "screens": "not applicable; no UI changes",
+  "scan": {
+    "status": "deferred to guarded Mac lander",
+    "complete": false,
+    "historyScanned": "not claimed",
+    "findings": "not claimed"
+  },
+  "localStartupDiagnostic": {
+    "attempts": "Ad hoc eval and inherited preload modes stalled during Miniflare synchronous D1 acquisition; a normal mjs file passed without product changes.",
+    "ended": true,
+    "exit": 247,
+    "resolution": "Run normal script files with the pinned Node 22.20.0."
+  },
+  "head": "9d5d500c0cf68bcc3f0a3caed08c38d253c615e2",
+  "mechanical": {
+    "views": [
+      "node src/base/contract-docs.mjs write",
+      "node src/base/contract-docs.mjs check"
+    ],
+    "viewRestoration": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+    "lock": "node scripts/edition-authoring/cli.mjs lock",
+    "lockCheck": "node scripts/edition-authoring/cli.mjs check",
+    "ledger": "none; no migration",
+    "exit": 0
+  },
+  "ciDiscovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_branch": "cloud/sd-oncall-c-f209",
+      "head_sha": "9d5d500c0cf68bcc3f0a3caed08c38d253c615e2",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42352260853",
+      "id": 42352260853,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "ciLastReadUTC": "2026-11-07T07:41:04.100702+00:00",
+  "githubCalls": 2,
+  "identityAndTrailers": "all candidate authors and committers are fleet; no trailers; every candidate message inspected including side parents",
+  "localProofByteIdentity": "No test or application source changed after the successful focused probe and maintained agent-flow run; only generated source lock changed.",
+  "planRowChange": "replan-40 selected dropped reassignment response observation proved; no whole-clause promotion"
+}
