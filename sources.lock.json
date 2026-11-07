@@ -128,7 +128,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "f53668b527704b4e9f9e0823e6d073ea4350a9055a9b665d9d92554828c77c82",
+      "sha256": "3ccb48f231bd0a9a4296b5e1509c73bb24bf586edcbc1937f5a89577c59af21e",
       "executable": false
     },
     ".gitignore": {
@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a4d42eb0b9d1e52378ca167939878650fa98726261bbbaed778e064a5fa1e012",
+      "sha256": "3f378dfd597df0bf5575cf45fb5547f944ca1200d63fe6ff44b2d744eaa63c7e",
       "executable": false
     },
     "agent-surface.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "b80ba2b1c9b6a3ec7a79da7d7e4a1226ac0280f50226a20fc0c7de4c32dd37e1",
+      "sha256": "f69dda6adf58bea4034edc9cc97183a3d21eb324b9eee16cc5014a2400a9df40",
       "executable": false
     },
     "DEMO.md": {
@@ -1644,7 +1644,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "970adcce3e2e973e5ebb4569c4a623c7f4582262be8830bb0504b23c0082fabd",
+      "sha256": "67b83e3f890c9dcc56308527d55919eb1bef1ce298d9185920e44f52a1536864",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
@@ -1728,7 +1728,7 @@
       "executable": false
     },
     "src/agent-door/service-tools.ts": {
-      "sha256": "6ea16205e8af160b6d0d0eca31c77ba47292d82b75e9a9fa4646d20bedfb83a1",
+      "sha256": "9fe46825c849ef6de529aad71b4057a1b5ddce51e808411313b0e440a8600c92",
       "executable": false
     },
     "src/agent-door/team-receipts.ts": {
@@ -6480,7 +6480,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "3f497edccd402ae54f3604b974ddcf4284c5c149fec614ef38ba99ce4ec2f421",
+      "sha256": "3577e6f88c9a4e484cfd7229c664fdfdcc712c76f32a718cf5180a32fb8cf3ce",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {

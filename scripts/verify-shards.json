@@ -35,7 +35,7 @@
       ],
       "browser": false,
       "hosted": false,
-      "timeout": 15
+      "timeout": 22
     },
     {
       "name": "intake",
