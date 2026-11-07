@@ -1,0 +1,85 @@
+{
+  "destination": "/tmp/sd-f208-evidence-recovery-check/work/sd-oncall-c-f208/reports/just-every/run-oncall",
+  "files": [
+    {
+      "blob": "7a970f213d11cff851a56800d98452da20402864",
+      "bytes": 2418,
+      "path": "PLAN.md",
+      "sha256": "41bab3903306358d9d177618104deb2fe91a4ec12bacca021d296430d31393e5"
+    },
+    {
+      "blob": "516b528af77b972105b12b5832609675ef507087",
+      "bytes": 11451,
+      "path": "REPORT.md",
+      "sha256": "19e2d9fd935154eb330e174368d8af770014f1a8e753c03369933bfeb54f931d"
+    },
+    {
+      "blob": "72d36759445ae7bb13e84badfe9a694a6bb42f75",
+      "bytes": 721,
+      "path": "candidate-ci.json",
+      "sha256": "d11df7a6516c04a9258424976274f03c7432c56355c892e092f7a052392f8b88"
+    },
+    {
+      "blob": "b83354eb9c685af11c09554d4bcd0410ccfee77c",
+      "bytes": 1582,
+      "path": "checks.log",
+      "sha256": "b978f35301cc7c73193d36bdefde1bb607eec60b7912d9ef0a12d73670226032"
+    },
+    {
+      "blob": "49792cba295e1bbf1d96755456e04d6ef9c3e8e1",
+      "bytes": 181,
+      "path": "identity.log",
+      "sha256": "5454f3d20e6d43b15a530ea1036a7cb12199aaa375aaf64bcf49027ed20bcd07"
+    },
+    {
+      "blob": "0932003334c5415376b2f9abfd8853a58e19a5ed",
+      "bytes": 1148,
+      "path": "main-ci.jsonl",
+      "sha256": "7c9415bbae84649d22d72a8f9eb5a25612380100360063e750b6dbe116a448e8"
+    },
+    {
+      "blob": "1533797fd0e2247fd3e16d1b33cbf4570f062a03",
+      "bytes": 1401,
+      "path": "probe.log",
+      "sha256": "cb357e026b6c47d51f3df2ae061b1f39f012f0f516d5284ccba4b0fda806182d"
+    },
+    {
+      "blob": "73805bce2ae2d5f7ca5cad632dc9a4e6cc76b546",
+      "bytes": 908,
+      "path": "push.log",
+      "sha256": "3dfdbbb08291ab9a3b38bbb1265a3776766a07ebf1814314be7c860330638af9"
+    },
+    {
+      "blob": "74647352a8dbaf7da7968a1ecb4b0d62ec643a7a",
+      "bytes": 2974,
+      "path": "receipt.json",
+      "sha256": "701171434cebc860c805bc56e96adb62f9da27a97f9c8dbbc94e86d86ebfdef3"
+    },
+    {
+      "blob": "f2b9f0a52e3b805e513306131bcd51dd628175ba",
+      "bytes": 17816,
+      "path": "runtime-core.log",
+      "sha256": "9df37edcb4e1459414c8432aca25a7f8dd049df18377dae6c048716bac2c7c88"
+    },
+    {
+      "blob": "0aebd02262ece2c72df005248b3656f6362134a5",
+      "bytes": 33646,
+      "path": "runtime-machines-initial.log",
+      "sha256": "ffc996072b2816c3924e2e7b7a57801036e2077859f795d1a7ab8a86e2f68dd3"
+    },
+    {
+      "blob": "b5f60acfdc5218f8a05379c51d4d8c96477e381c",
+      "bytes": 41352,
+      "path": "runtime-machines.log",
+      "sha256": "814e3cc656814613da3360e472b5bfd0f7e8b2bd41f1ea17dba924e08b90db1b"
+    }
+  ],
+  "head": "082d87e857c7f7fe98537f46525f6fb7ef3ec83b",
+  "manifest_sha256": "fa58a1ce47fad09c9401b5433aa023553e43ce45ef73ec521b0d5c0673b94f8d",
+  "product_branch": "cloud/sd-oncall-c-f208",
+  "product_head": "da68efdaef7a90b568122189f3c4a554eda27171",
+  "ref": "refs/heads/evidence/sd-oncall-c-f208",
+  "repository": "just-every/run-oncall",
+  "status": "restored",
+  "scope": "Initial packet transport validation before final CI observation; not a product readiness or landing receipt"
+}

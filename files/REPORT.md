@@ -17,7 +17,7 @@ The original argument object, native call row, stored outcome, decision and revi
 - R3: Original call, saved structured result and held-only original open review retained: PASS, lines 57–77.
 - R4: Same key and original revision, only changed reason, isError with conflict in metadata and text, no private result and no effect: PASS, lines 79–91.
 - R5: Exact original arguments, different RPC id, exact stored result and review, no second effect, retained original custody and attributed linked replay attempt: PASS, lines 92–110.
-- R6: Both company policies, zero outbound ledger, existing runtime CI invocation: local PASS; exact candidate Verify recorded separately.
+- R6: Both company policies, zero outbound ledger, existing machine-runtime CI invocation: PASS locally and in exact-SHA push Verify 42348639796, completed success.
 
 ## Acceptance coverage and retained gaps
 
@@ -33,7 +33,7 @@ Erasure and approval replay, SURFACE-004's ambiguous hold and Base seam, BASE-AG
 
 1. Whole-clause coverage: FAIL for full clause, honestly retained MISSING; selected observation PASS through native public doors.
 2. Real populated data and allowed plus refused effects: PASS for selected observation; whole-clause breadth not claimed.
-3. Push Verify invocation: INSPECTED in existing intake shard; exact candidate run state is in CI receipt. No early green claim.
+3. Push Verify invocation: PASS for the selected observation in the existing intake shard; exact-SHA push Verify 42348639796 completed success.
 4. Local proof uses the final test bytes; source and build bytes do not change after proof. Exact head and relevant hashes are in receipt.
 5. Inherited duties and citations: unchanged; no new receiving clause or inheritance claim.
 6. Status, Gap and Evidence cells and all 101 rows preserved; generated views are checked and restored. Counts remain 17 DONE, 50 PARTIAL, 34 MISSING.
@@ -76,3 +76,15 @@ The focused probe was also repeated successfully on the exact committed head da6
 CLAIM BASE-AGENT-012 PARTIAL points=3 tests=tests/oncall-agent-incident-replay.mjs#changedReassignmentReasonConflict
 
 GAP BASE-AGENT-012: Only the selected changed-reassignment-reason case is closed. Main's MISSING judgment remains; complete tool and 24-hour coverage, other dropped responses and changed arguments, remaining diagnostics and foreign-person job handles remain unproved. All named authority, erasure, approval, provider and release holds are unchanged.
+
+Initial evidence transport was published to the separate evidence ref and fetched back at exact head 082d87e857c7f7fe98537f46525f6fb7ef3ec83b. The maintained fetch entrypoint restored all 12 selected files after validating the manifest, regular-file modes and byte hashes. This transport check did not alter product HEAD or index and conveys no product acceptance. Its actual receipt is transport-check.json. The final evidence publication will also include this check and the final CI observation.
+
+## Final CI and handoff
+
+Exact candidate da68efdaef7a90b568122189f3c4a554eda27171: push Verify 42348639796 completed success, URL https://github.com/just-every/run-oncall/actions/runs/42348639796. Total GitHub API calls: 5. One watcher, discovery followed by polls at least 300 seconds apart; no dispatch, rerun, PR or failed-job log call was needed. The complete actual observations and watcher log are included in the packet.
+
+All required touched checks and the selected point's public-door probes pass. There are no unresolved product blockers. Main remains untouched by this cloud; whole-clause coverage and the named external holds remain unproved. Pre-handoff authority, erasure and replay journeys pass in the unchanged existing runtime, all existing assertions remain, and the test reader now includes later audit pages. No UI or provider proof is claimed. The source lock is fresh and no generated view is committed. Full-history publication scan, main equality and resulting-main Run site remain pending the fleet lander.
+
+The only plan change is closure of the selected changed-reassignment-reason observation under acceptance 3. No clause status or count changes are requested. The source judgment stays MISSING; the PARTIAL claim reports this bounded proof only.
+
+READY branch=cloud/sd-oncall-c-f208 head=da68efdaef7a90b568122189f3c4a554eda27171

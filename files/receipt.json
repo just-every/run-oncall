@@ -44,7 +44,9 @@
     "typecheck_final": 0,
     "first_party_final": 0,
     "lock_after_rebase": 0,
-    "focused_exact_head": 0
+    "focused_exact_head": 0,
+    "exact_sha_verify": "success",
+    "git_diff_check": 0
   },
   "main_ci": [
     42345281364,
@@ -59,8 +61,14 @@
     "findings": null
   },
   "candidate_ci": {
-    "status": "watching",
-    "observations_file": "candidate-ci.json"
+    "id": 42348639796,
+    "name": "Verify",
+    "event": "push",
+    "head_sha": "da68efdaef7a90b568122189f3c4a554eda27171",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/42348639796",
+    "gh_calls_total": 5
   },
   "blocking_product_failures": [],
   "head": "da68efdaef7a90b568122189f3c4a554eda27171",
@@ -89,5 +97,14 @@
   "binding": "Final test and production bytes match the passing working-tree runtime run. Only tests and source lock differ from the source build; no production code changed.",
   "focused_probe_head": "da68efdaef7a90b568122189f3c4a554eda27171",
   "source_code_diff_against_main": [],
-  "tracked_checkout_clean": true
+  "tracked_checkout_clean": true,
+  "initial_evidence_transport_check": {
+    "ref": "refs/heads/evidence/sd-oncall-c-f208",
+    "head": "082d87e857c7f7fe98537f46525f6fb7ef3ec83b",
+    "status": "restored",
+    "files": 12,
+    "product_head": "da68efdaef7a90b568122189f3c4a554eda27171"
+  },
+  "handoff": "READY candidate; MISSING clause judgment retained; publication scan and landing owned by fleet",
+  "full_runtime_test_bytes_match_candidate": true
 }

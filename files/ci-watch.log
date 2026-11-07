@@ -1,0 +1,5 @@
+CI run=42348639796 head=da68efdaef7a90b568122189f3c4a554eda27171 status=queued conclusion=None GH_CALLS=2
+CI run=42348639796 head=da68efdaef7a90b568122189f3c4a554eda27171 status=in_progress conclusion=None GH_CALLS=3
+CI run=42348639796 head=da68efdaef7a90b568122189f3c4a554eda27171 status=in_progress conclusion=None GH_CALLS=4
+CI run=42348639796 head=da68efdaef7a90b568122189f3c4a554eda27171 status=completed conclusion=success GH_CALLS=5
+CI_WATCH_DONE GH_CALLS=5

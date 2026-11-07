@@ -7,22 +7,28 @@
       "sha256": "41bab3903306358d9d177618104deb2fe91a4ec12bacca021d296430d31393e5"
     },
     {
-      "blob": "516b528af77b972105b12b5832609675ef507087",
-      "bytes": 11451,
+      "blob": "c47ec1551c1451d13b31daef110d94dd0219a49c",
+      "bytes": 13353,
       "path": "REPORT.md",
-      "sha256": "19e2d9fd935154eb330e174368d8af770014f1a8e753c03369933bfeb54f931d"
+      "sha256": "70092ec5c76dbb458bac0d1fd611a02b1d6d2552181515f6f0f51e9da9386559"
     },
     {
-      "blob": "72d36759445ae7bb13e84badfe9a694a6bb42f75",
-      "bytes": 721,
+      "blob": "5ee156ade0b147315331e6e33c1021f90bd90cff",
+      "bytes": 1274,
       "path": "candidate-ci.json",
-      "sha256": "d11df7a6516c04a9258424976274f03c7432c56355c892e092f7a052392f8b88"
+      "sha256": "b7a016d549578b56101e712d0cdf557399e34f34e46b04a3b8ed4bfc34dd6248"
     },
     {
       "blob": "b83354eb9c685af11c09554d4bcd0410ccfee77c",
       "bytes": 1582,
       "path": "checks.log",
       "sha256": "b978f35301cc7c73193d36bdefde1bb607eec60b7912d9ef0a12d73670226032"
+    },
+    {
+      "blob": "66d9bac32b94ea998afd10fd90c00e9fa8af9d45",
+      "bytes": 465,
+      "path": "ci-watch.log",
+      "sha256": "0ec2c3a1cbc11f804b8037ead63d32ad18eb0103286e5889155888e8374dc0d0"
     },
     {
       "blob": "49792cba295e1bbf1d96755456e04d6ef9c3e8e1",
@@ -49,10 +55,10 @@
       "sha256": "3dfdbbb08291ab9a3b38bbb1265a3776766a07ebf1814314be7c860330638af9"
     },
     {
-      "blob": "74647352a8dbaf7da7968a1ecb4b0d62ec643a7a",
-      "bytes": 2974,
+      "blob": "1717aa676edfaad0cc1bb7fef203a447b89150d7",
+      "bytes": 3674,
       "path": "receipt.json",
-      "sha256": "701171434cebc860c805bc56e96adb62f9da27a97f9c8dbbc94e86d86ebfdef3"
+      "sha256": "b1dbe7693e828f1ed3abc319355e8b801c3c27ef54de97069c5d81a886046005"
     },
     {
       "blob": "f2b9f0a52e3b805e513306131bcd51dd628175ba",
@@ -71,6 +77,12 @@
       "bytes": 41352,
       "path": "runtime-machines.log",
       "sha256": "814e3cc656814613da3360e472b5bfd0f7e8b2bd41f1ea17dba924e08b90db1b"
+    },
+    {
+      "blob": "b9532f5f83b1cf225ba4a49d15c7beea55e9dbd5",
+      "bytes": 3094,
+      "path": "transport-check.json",
+      "sha256": "c0a87015c5ddc2e118821c6be13a5d1e1046ab9fef84a24d55e6e800377adddf"
     }
   ],
   "product_branch": "cloud/sd-oncall-c-f208",
