@@ -825,7 +825,19 @@ try{
  assert.deepEqual(replay.result.structuredContent,created.result.structuredContent);
  const snapshot=async()=>JSON.stringify((await (await http('/api/state')).json()).incidents);
  const once=await snapshot();
- const audit=async()=> (await (await http('/agents/api/audit?agent='+encodeURIComponent(runtime.context.agentId))).json());
+ const audit=async()=>{
+  const rows=[];let cursor=null,differs=0;
+  for(;;){
+   const response=await http('/agents/api/audit?agent='+encodeURIComponent(runtime.context.agentId)+(cursor?'&after='+encodeURIComponent(cursor):''));
+   assert.equal(response.status,200);
+   const page=await response.json();
+   rows.push(...page.rows);differs+=page.differs_from_policy;
+   if(page.cursor===cursor)break;
+   assert.ok(Number(page.cursor)>Number(cursor),'Audit cursor advances across the combined revision journeys');
+   cursor=page.cursor;
+  }
+  return {rows,cursor,differs_from_policy:differs};
+ };
  const original=(await audit()).rows.find(row=>row.id===created.decision.id);
  assert.deepEqual(original.resource,{kind:'service',id:'agent-service'});
  assert.equal(original.sponsor.id,owner.id);
