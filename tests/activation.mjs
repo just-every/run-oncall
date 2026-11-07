@@ -278,6 +278,36 @@ async function savedRotationCoverage(){
    ['2026-11-02T14:00:00.000Z',a.id,b.id,'2026-11-02T14:00:00.000Z','2026-11-03T14:00:00.000Z'],
   ]);
   console.log('PROBE OC-011 fall handoff: saved New York 09:00 primary and backup -> 13:00Z then 14:00Z, a 25-hour civil day');
+  // Override intervals include their start and exclude their end; a same-role overlap is refused and changes nothing.
+  const addOverride=async(revision,id,role,start,end,member)=>req('/api/schedules/'+fall.id+'/overrides',{revision,override:{id,role,start,end,member}});
+  const first=ok(await addOverride(1,'synthetic-oncall-1121','backup','2026-11-01T05:00:00.000Z','2026-11-01T07:00:00.000Z',null));
+  const second=ok(await addOverride(first.revision,'synthetic-oncall-1122','primary','2026-11-01T05:00:00.000Z','2026-11-01T07:00:00.000Z',b.id));
+  assert.deepEqual([first.revision,second.revision],[2,3],'a different role may cover the same interval');
+  const beforeOverlap=ok(await req('/api/paging/state')).schedules.find(row=>row.id===fall.id);
+  for(const [start,end] of [['2026-11-01T06:00:00.000Z','2026-11-01T08:00:00.000Z'],['2026-11-01T05:30:00.000Z','2026-11-01T06:30:00.000Z'],['2026-11-01T04:00:00.000Z','2026-11-01T05:00:00.001Z']]){
+   const refused=await addOverride(second.revision,'synthetic-oncall-1123','backup',start,end,a.id);
+   assert.match(JSON.stringify(ok(refused,400)),/Overlapping backup overrides/);
+  }
+  assert.deepEqual(ok(await req('/api/paging/state')).schedules.find(row=>row.id===fall.id),beforeOverlap,'refused overlaps leave the schedule, revision and overrides unchanged');
+  const touching=ok(await addOverride(second.revision,'synthetic-oncall-1124','backup','2026-11-01T07:00:00.000Z','2026-11-01T09:00:00.000Z',viewer.id));
+  assert.equal(touching.revision,4,'an override starting exactly where another ends is accepted');
+  const slots=async at=>{const value=ok(await req('/api/schedules/'+fall.id+'/now-next?at='+at)).now;return [value.primary,value.backup,value.windows.map(window=>window.origin).join(),value.warnings.join('; ')]};
+  const unauthorized=/backup: member .* is not an authorized responder; slot is retained/;
+  for(const [at,primary,backup,origins,warning] of [
+   ['2026-11-01T04:59:59.999Z',a.id,b.id,'rotation,rotation',''],
+   ['2026-11-01T05:00:00.000Z',b.id,null,'override,override',/backup: override explicitly leaves coverage empty/],
+   ['2026-11-01T06:59:59.999Z',b.id,null,'override,override',/backup: override explicitly leaves coverage empty/],
+   ['2026-11-01T07:00:00.000Z',a.id,null,'rotation,gap',unauthorized],
+   ['2026-11-01T08:59:59.999Z',a.id,null,'rotation,gap',unauthorized],
+   ['2026-11-01T09:00:00.000Z',a.id,b.id,'rotation,rotation',''],
+  ]){
+   const value=await slots(at);
+   assert.deepEqual(value.slice(0,3),[primary,backup,origins],'override edge '+at);
+   if(warning)assert.match(value[3],warning);else assert.equal(value[3],'');
+  }
+  const edges=ok(await req('/api/paging/preview',{scheduleId:fall.id,from:Date.parse('2026-11-01T04:00:00Z'),to:Date.parse('2026-11-01T10:00:00Z')}));
+  assert.deepEqual(edges.map(value=>[iso(value.at),value.primary,value.backup]),[['2026-11-01T04:00:00.000Z',a.id,b.id],['2026-11-01T05:00:00.000Z',b.id,null],['2026-11-01T07:00:00.000Z',a.id,null],['2026-11-01T09:00:00.000Z',a.id,b.id]],'the preview steps exactly at inclusive starts and exclusive ends, across the repeated hour');
+  console.log('PROBE OC-011 override edges: saved New York schedule with backup and primary overrides -> start included, end excluded, same-role overlaps refused with no write, touching intervals and other-role overlap accepted');
   for(const [n,choice,boundary] of [[1111,'earlier','2026-11-01T05:30:00.000Z'],[1112,'later','2026-11-01T06:30:00.000Z'],[1113,'reject',null]]){
    const saved=await save(n,'America/New_York','2026-10-31T01:30',choice);
    const expected=[['2026-10-30T05:30:00.000Z',b.id,a.id,'2026-10-30T05:30:00.000Z','2026-10-31T05:30:00.000Z'],

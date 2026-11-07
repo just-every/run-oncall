@@ -32,7 +32,7 @@ export async function changedServiceNameReplay(runtime){
   const savedService=once.application.services.find(row=>row.id===service.id);
   assert.deepEqual(savedService,{...originalService,name:args.name},'Only the authorized service name changes');
   assert.deepEqual(once.application.services.filter(row=>row.id!==service.id),before.application.services.filter(row=>row.id!==service.id));
-  assert.deepEqual(result,{...savedService,etag:result.etag});
+  assert.deepEqual(result,{...savedService,dependencies:service.dependencies,etag:result.etag});
   assert.match(result.etag,/^[a-f0-9]{64}$/);assert.notEqual(result.etag,args.etag,'Keep the original projected ETag after the write changes it');
   assert.deepEqual(once.application.incidents,before.application.incidents,'Service edits preserve incident records and timelines');
   assert.deepEqual(pagingOnce,{...pagingBefore,workspaceRevision:once.application.revision});

@@ -4,6 +4,10 @@ import assert from 'node:assert/strict'
 import {randomBytes,createHash} from 'node:crypto'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
 import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
+// Select whole independent journeys; the default still runs every group in order.
+const triagePart=process.env.ONCALL_TRIAGE_PART??'all';
+if(!['all','bulk','bounds','storm','reports'].includes(triagePart))throw Error(`Unknown triage journey: ${triagePart}`);
+const selected=part=>triagePart==='all'||triagePart===part;
 // triage-bulk: part of this public journey.
 export async function triageBulkCompletion(){
  const ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value;};
@@ -299,9 +303,10 @@ async function triageAlertResolveBounds(){
  }finally{await w.close();}
 }
 
-await triageBulkCompletion();
-await triageAlertResolveBounds();
+if(selected('bulk'))await triageBulkCompletion();
+if(selected('bounds'))await triageAlertResolveBounds();
 
+if(selected('storm')) {
 // One storm journey through emitted Worker/D1 HTTP: query, coordinate and restore.
 const w = await localWorker({INBOUND_EMAIL_DOMAIN: 'inbound.example.test'}, {clock:true,outboundLedger:true});
 const passwords = {owner: randomBytes(24).toString('hex'), scribe: randomBytes(24).toString('hex'), viewer: randomBytes(24).toString('hex')};
@@ -877,8 +882,10 @@ try {
  }finally{await runtime.close();}
 }
 
+}
+
 // Coordinated incidents feed fair response reports, matching CSV and erasure-safe denominators.
-{
+if(selected('reports')) {
 const {default:assert}=await import('node:assert/strict')
 const {randomBytes}=await import('node:crypto')
 const {localWorker}=await import('./worker.mjs')
