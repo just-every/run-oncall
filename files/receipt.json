@@ -1,0 +1,104 @@
+{
+  "tag": "sd-oncall-c-f211",
+  "repository": "just-every/run-oncall",
+  "baseline": "6858a3c3b5fa01f7f4a90d40bdce1f2f09e60bb9",
+  "branch": "cloud/sd-oncall-c-f211",
+  "status_before": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34
+  },
+  "status_after": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34
+  },
+  "clause": "BASE-AGENT-012",
+  "stored_clause_status": "missing",
+  "claim": "PARTIAL",
+  "selected_acceptance": 4,
+  "complete_acceptance_4": false,
+  "files": {
+    "src/agent-door/coordination-tools.ts": "bc5d1d58d08e64f0aadf6d58a3b3df3897c51df8b1c5f5d038e283417fdb796f",
+    "tests/oncall-agent-flow.mjs": "deb0368c5adbb3221dd97e7df57cf9bce23c4f51f1f3345a3b8cf1f9ed3f1486",
+    "tests/oncall-agent-incident-revisions.mjs": "e3f42a8f4e0bd19e08884493cbd81a07fb00f5d8af4e65c07ca4546cc6d3d7d0"
+  },
+  "checks": [
+    {
+      "command": "cloud_run node tests/oncall-agent-flow.mjs (baseline production source)",
+      "exit": 1,
+      "failure": "revision_conflict error omits current_revision: 2"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock (with new focused test staged)",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs (initial invocation placement)",
+      "exit": 1,
+      "failure": "Later resolutionAudit expected row absent from first audit page; new native diagnostic itself passed under both policies"
+    },
+    {
+      "command": "cloud_run env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs (final placement)",
+      "exit": 0,
+      "duration_seconds": 443.8
+    },
+    {
+      "command": "candidate contract generator write and check, restore views, regenerate and check lock after rebase",
+      "exit": 0
+    }
+  ],
+  "runtime": "passed",
+  "ci": {
+    "total_count": 1,
+    "workflow_runs": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_branch": "cloud/sd-oncall-c-f211",
+        "head_sha": "9af4af4a353932948029d768a29b9a34d48c2de3",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/42428938884",
+        "id": 42428938884,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ]
+  },
+  "publication_scan": "fleet gate, not run in cloud",
+  "outbound_authority": false,
+  "integration_correction": "New helper runs after existing resolution-audit checks, before intentional synthetic outbound specialist; existing assertions unchanged.",
+  "product_head": "9af4af4a353932948029d768a29b9a34d48c2de3",
+  "candidate_base": "6858a3c3b5fa01f7f4a90d40bdce1f2f09e60bb9",
+  "identity_and_trailers": "all candidate commits author and committer fleet; no co-author trailers",
+  "gh_calls": 3,
+  "ci_discovery_at": "2026-11-08T00:15:57.882677+00:00",
+  "push": "PUSH_OK branch=cloud/sd-oncall-c-f211"
+}

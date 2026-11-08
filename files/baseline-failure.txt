@@ -1,0 +1,24 @@
+Command: cloud_run node tests/oncall-agent-flow.mjs
+Exit: 1
+Unmodified baseline production source with added focused journey.
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
+    code: 'revision_conflict',
+-   current_revision: 2
+  }
+
+    at staleReassignmentNativeRevision (file:///home/agent/rer-consolidation/work/sd-oncall-c-f211/run-oncall/tests/oncall-agent-incident-revisions.mjs:39:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/agent/rer-consolidation/work/sd-oncall-c-f211/run-oncall/tests/oncall-agent-flow.mjs:738:2 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: { code: 'revision_conflict' },
+  expected: { code: 'revision_conflict', current_revision: 2 },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

@@ -1,0 +1,14 @@
+Command: cloud_run env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs
+Exit: 1
+All selected diagnostic probes passed before the later audit-page integration failure.
+
+file:///home/agent/rer-consolidation/work/sd-oncall-c-f211/run-oncall/tests/oncall-agent-flow.mjs:883
+  assert.equal(row.tool,resolveName);assert.equal(row.outcome,outcome);
+                   ^
+
+TypeError: Cannot read properties of undefined (reading 'tool')
+    at resolutionAudit (file:///home/agent/rer-consolidation/work/sd-oncall-c-f211/run-oncall/tests/oncall-agent-flow.mjs:883:20)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/agent/rer-consolidation/work/sd-oncall-c-f211/run-oncall/tests/oncall-agent-flow.mjs:919:3
+
+Node.js v24.19.0
