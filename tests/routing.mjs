@@ -408,8 +408,9 @@ try {
  ok(await pd('resolve','shared',{team:'payments'}),202);assert.match(ok(await req('/api/state')).intakeReceipts.at(-1).routing.diagnostics.join(' '),/search/);
  const replayAudit=()=>w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal');
  const beforePreview=ok(await req('/api/archive')),changedRules=rules.map(r=>r.id==='search'?{...r,target:{service:'payments'}}:r);
- const auditBeforePreview=replayAudit();
+ const auditBeforePreview=replayAudit(),recordsBeforePreview=durableSnapshot(w);
  const preview=ok(await req('/api/routing/keys/pd/preview',{baseVersion:2,rules:changedRules,catchAll:'payments',receiptIds:receipts.map(r=>r.id)}));
+ assert.deepEqual(durableSnapshot(w),recordsBeforePreview,'OC-014 routing-key preview preserves every durable row, receipt count and outbound work item');
  assert.equal(preview.decisions.length,receipts.length);assert.ok(preview.decisions.some(r=>r.changed));assert.ok(preview.warnings.length>0);
  assert.deepEqual(replayAudit(),auditBeforePreview,'OC-043 routed replay writes no permanent audit');assert.deepEqual(ok(await req('/api/archive')),beforePreview);
  assert.deepEqual(preview.decisions.map(row=>row.receipt),[...receipts].sort((a,b)=>a.acceptedAt.localeCompare(b.acceptedAt)||a.id.localeCompare(b.id)).map(row=>row.id),'OC-043 replay order is stable by admission time and receipt identity');
@@ -634,7 +635,12 @@ try {
   assert.deepEqual(ok(await req('/api/paging/state')),pagingBeforeReplay,'service replay retains the synthetic label and populated delivery history');
   assert.deepEqual(await w.outboundRequests(),[],'ordered proposed routing decisions issue zero outbound requests');
   assert.deepEqual(unordered.decisions.map(row=>row.eventId),['synthetic-oncall-43-z','synthetic-oncall-43-b','synthetic-oncall-43-a']);assert.deepEqual(w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),replayAuditBefore);assert.deepEqual(await archive(),beforeReplay);
-  console.log('PASS OC-014 service routing preview isolation: retained and proposed decisions preserve all durable rows, synthetic receipts, jobs, deadlines and outbound work; zero outbound network requests');
+  const recordsBeforeUrgency=durableSnapshot(w),auditOrdinal=w.sql('SELECT MAX(ordinal) AS n FROM oc_admin_audit')[0].n,withoutAccessAudit=({oc_admin_audit,oc_audit_identities,oc_audit_clock,...rest})=>rest;
+  for(const input of [{service:'checkout',severity:'critical',at:'2026-11-02T14:00:00Z'},{service:'checkout',severity:'info',at:'2026-11-02T14:00:00Z',rule:draft('high')}])ok(await req('/api/urgency/preview',input));
+  assert.deepEqual(withoutAccessAudit(durableSnapshot(w)),withoutAccessAudit(recordsBeforeUrgency),'OC-014 saved and draft urgency previews preserve every durable record, receipt, pending job and deadline');
+  assert.ok(w.sql('SELECT * FROM oc_admin_audit WHERE ordinal>'+auditOrdinal).every(row=>row.outcome==='accepted'&&row.workspace_before===row.workspace_after&&row.paging_before===row.paging_after),'the only trace of a preview is an access audit row that leaves every revision unchanged');
+  assert.deepEqual(await w.outboundRequests(),[],'urgency previews issue zero outbound network requests');
+  console.log('PASS OC-014 service routing preview isolation: retained and proposed decisions, saved and draft urgency previews preserve all durable rows, synthetic receipts, jobs, deadlines and outbound work; zero outbound network requests');
   const edited=ok(await req('/api/command',{type:'service',id:'checkout',name:'Checkout renamed',environment:'production',owner:actor.id,runbook:['Inspect the updated dashboard'],pager:''}));
   assert.deepEqual(edited.urgencyRules,[constant,severity],'ordinary service edits preserve published policy history');
   assert.deepEqual((await state()).events.find(e=>e.id===firstReceipt.id),initial);
