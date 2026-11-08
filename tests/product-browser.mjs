@@ -640,7 +640,6 @@ try {
  if(focused&&!['readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','previews'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
- if(!focused||focused==='previews')await previewIsolationBrowser(page,context,triageProof);
  if(focused==='support-start')await supportStartBrowser(page,context,{setTime,proof:triageProof});
  if(focused==='roles'){
   const member=(await (await context.request.get('/api/session')).json()).member;
@@ -663,8 +662,9 @@ try {
  }
  if(!['accessibility','triage','limitations','roles','move-in-guide','support-start','previews'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
+ if(!focused||focused==='previews'){await setTime(null);await previewIsolationBrowser(page,context,triageProof);}
  assert.deepEqual(errors,[],'no browser application errors')
- console.log(focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='previews'?'Emitted Worker preview isolation browser passed at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})

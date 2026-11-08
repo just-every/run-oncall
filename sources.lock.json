@@ -6516,7 +6516,7 @@
       "executable": false
     },
     "tests/preview-browser.mjs": {
-      "sha256": "9906ee5131f5d26475cf52e52dd36cb562de90a6771c81fbefc4d979c58776e3",
+      "sha256": "5596ea0891f4d10be0c37fdb069a530af5ed4c9f9a69cb799a01ac33862ed7a3",
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
@@ -6524,7 +6524,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "2987b4816b17922634ef016cc0b673e8677bba5a9cc97680077483f17a559886",
+      "sha256": "468a24ae3fca342cc9360c9da3e26e02c93f49b71cfe166c4385a258dac971e7",
       "executable": false
     },
     "tests/readiness.mjs": {
