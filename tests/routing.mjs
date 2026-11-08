@@ -310,7 +310,7 @@ const platformFetch=globalThis.fetch;
 globalThis.fetch=(input,init={})=>{const headers=new Headers(init.headers??(input instanceof Request?input.headers:undefined));headers.set('connection','close');return platformFetch(input,{...init,headers});};
 
 // One public Worker journey: real admission, replay, authority and archive doors.
-const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true,outboundLedger:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const secret=()=>randomBytes(32).toString('hex'),keys={pd:secret(),og:secret(),sp:secret()};
 let cookie;
 const req=(path,data)=>w.request(path,data,cookie);
@@ -357,8 +357,11 @@ try {
  await mail(w,second,'FAILED: nightly-db');assert.notEqual(ok(await req('/api/email')).receipts.at(-1).generation,db.generation);
  await mail(w,local,'Unmatched failure');assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');
  const draft={revision:1,mode:'custom',fallback:'quarantine',rules:recoveryRules()};
+ const emailRowsBefore=durableSnapshot(w);
  const beforeWorkspace=ok(await req('/api/archive')),beforeReplay=w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n;
  const replay=ok(await req('/api/email/addresses/nightly/preview',{...draft,samples:email.samples.filter(s=>s.address==='nightly').map(s=>s.id)}));assert.equal(replay.sideEffects,false);assert.equal(replay.decisions.length,4);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n,beforeReplay);assert.deepEqual(ok(await req('/api/archive')),beforeWorkspace);
+ assert.deepEqual(durableSnapshot(w),emailRowsBefore,'email routing preview preserves every durable row and receipt');
+ assert.deepEqual(await w.outboundRequests(),[],'email routing preview creates no provider action');
  ok(await req('/api/email/addresses/nightly/publish',draft));await mail(w,local,'Unmatched quarantine');assert.equal(ok(await req('/api/email')).receipts.at(-1).diagnostic,'no_rule_matched');
  const pathological={id:'linear',action:'trigger',match:'all',conditions:[{field:'text',op:'matches',value:'^(a+)+$'}],key:{field:'subject',kind:'markers',start:'[',end:']'}};
  ok(await req('/api/email/addresses/nightly/publish',{revision:2,mode:'custom',fallback:'subject',rules:[pathological]}));await mail(w,local,'Pathological input',{body:'a'.repeat(128*1024)+'!'});assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');
@@ -620,6 +623,20 @@ try {
   assert.equal(pagingBeforeReplay.mode,'synthetic-only');assert.ok(pagingBeforeReplay.receipts.length>0);
   const pending=pagingBeforeReplay.jobs.find(job=>job.id===heldPaging.pending);
   assert.equal(pending.status,'pending');assert.equal(pending.nextDue,pending.steps[0].deadline);
+  const routedId='synthetic-oncall-14',routedSecret=randomBytes(32).toString('hex');
+  ok(await req('/api/routing/keys',{id:routedId,name:'Synthetic preview monitor',provider:'native',authentication:'bearer',scope:['checkout','checkpoint-cli'],owner:actor.id,key:routedSecret,revision:0,rules:[],catchAll:'checkout'}),201);
+  const routedSignal={...firstSignal,source:'intake:'+routedId,eventId:'synthetic-oncall-14',key:'synthetic-oncall-14',generation:'synthetic-oncall-14'};
+  const routedReceipt=ok(await w.request('/api/ingress/'+routedSignal.source,routedSignal,undefined,{authorization:'Bearer '+routedSecret}),201);
+  const keyRowsBefore=durableSnapshot(w),keyPagingBefore=ok(await req('/api/paging/state'));
+  const keyPreview=ok(await req('/api/routing/keys/'+routedId+'/preview',{baseVersion:1,rules:[],catchAll:'checkpoint-cli',receiptIds:[routedReceipt.id]}));
+  assert.equal(keyPreview.decisions.length,1,'preview reaches the retained intake receipt');
+  assert.equal(keyPreview.decisions[0].historical.service,'checkout');
+  assert.equal(keyPreview.decisions[0].proposed.service,'checkpoint-cli');
+  assert.equal(keyPreview.decisions[0].changed,true,'the draft computes a different route without publishing it');
+  assert.deepEqual(durableSnapshot(w),keyRowsBefore,'key routing preview preserves every durable row, receipt, job and pending deadline');
+  assert.deepEqual(ok(await req('/api/paging/state')),keyPagingBefore,'key preview retains labeled synthetic history and its receipt counts');
+  assert.deepEqual(await w.outboundRequests(),[],'key routing preview creates no provider action');
+  console.log('PROBE OC-014 1: populated key routing preview -> changed hypothetical service, unchanged durable rows, receipts and pending timers, synthetic-only history, zero outbound requests');
   const beforeReplay=await archive(),replayAuditBefore=w.sql('SELECT * FROM oc_admin_audit ORDER BY ordinal'),recordsBeforeReplay=durableSnapshot(w),replay=ok(await req('/api/replay',{events:[firstSignal]}));
   assert.deepEqual(replay.decisions[0].historical,initial.decision);
   assert.deepEqual(replay.decisions[0].historicalEvaluation,initial.routingSnapshot);
