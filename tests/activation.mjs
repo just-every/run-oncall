@@ -546,7 +546,7 @@ try {
  const ics=await req('/api/schedules/daily/calendar.ics?from=2026-03-07T14:00:00Z&to=2026-03-09T13:00:00Z');ok(ics);assert.match(ics.headers.get('content-type'),/text\/calendar/);assert.match(ics.value,/DTEND:20260308T130000Z/);assert.match(ics.value,/DTSTART:20260308T150000Z/)
  ok(await w.request('/api/schedules/daily/calendar.ics'),401)
  // OC-020: a primary-only cover can change backup availability before its own rotation turns.
- const staggered=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-200',name:'Staggered coverage',backup:{...schedule.backup,periodDays:2},overrides:[{id:'synthetic-oncall-202',role:'primary',start:'2026-03-08T11:00:00.000Z',end:'2026-03-08T12:00:00.000Z',member:null},{id:'synthetic-oncall-201',role:'primary',start:'2026-03-08T12:00:00.000Z',end:'2026-03-08T15:00:00.000Z',member:b.id}]}))
+ const staggered=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-200',name:'Staggered coverage',primary:{...schedule.primary,members:[a.id]},backup:{...schedule.backup,periodDays:2},overrides:[{id:'synthetic-oncall-202',role:'primary',start:'2026-03-08T11:00:00.000Z',end:'2026-03-08T12:00:00.000Z',member:null},{id:'synthetic-oncall-201',role:'primary',start:'2026-03-08T12:00:00.000Z',end:'2026-03-08T15:00:00.000Z',member:b.id}]}))
  const staggeredPath='/api/schedules/'+staggered.id
  const approaching=ok(await req(staggeredPath+'/now-next?at=2026-03-08T10:00:00Z'))
  assert.equal(approaching.now.primary,a.id);assert.equal(approaching.now.backup,b.id)
@@ -636,6 +636,8 @@ try {
  assert.deepEqual(ok(await req('/api/paging/state')),{...pagingBeforeAdmission,workspaceRevision:admittedState.revision},'admission with a saved paging policy creates no jobs, deadlines or receipts')
  const duplicate=ok(await w.request('/api/ingress/'+calendarSource,signal,undefined,{authorization:'Bearer '+calendarKey}))
  assert.equal(duplicate.id,admitted.id);assert.deepEqual(ok(await req('/api/state')),admittedState,'repeated capture preserves immutable event and alert records')
+ ok(await w.request('/api/ingress/'+calendarSource,{...signal,title:'Changed capture'},undefined,{authorization:'Bearer '+calendarKey}),409)
+ assert.deepEqual(ok(await req('/api/state')),admittedState,'a conflicting replay cannot rewrite the immutable capture')
  ok(await req('/api/sources/'+calendarSource+'/revoke',{}))
  ok(await w.request('/api/ingress/'+calendarSource,{...signal,eventId:'synthetic-oncall-20-refused'},undefined,{authorization:'Bearer '+calendarKey}),401)
  assert.deepEqual(ok(await req('/api/state')),admittedState,'revoked source cannot admit another capture')
