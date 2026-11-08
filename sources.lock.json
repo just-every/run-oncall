@@ -6515,12 +6515,16 @@
       "sha256": "d40b7970ea06f79c49981443fdb3c7f387c5eb76ab5c144005d6309ee132af1a",
       "executable": false
     },
+    "tests/preview-browser.mjs": {
+      "sha256": "9906ee5131f5d26475cf52e52dd36cb562de90a6771c81fbefc4d979c58776e3",
+      "executable": false
+    },
     "tests/product-browser-journey.mjs": {
       "sha256": "8751656914019f74f803f968859e0ec0aa6f4491dff9f0091ae1f15f2a3e989e",
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "9dbfac24c6ba1106df4b55318cb8a4263856036e600bc4a3809861eea3773244",
+      "sha256": "2987b4816b17922634ef016cc0b673e8677bba5a9cc97680077483f17a559886",
       "executable": false
     },
     "tests/readiness.mjs": {
@@ -6532,7 +6536,7 @@
       "executable": false
     },
     "tests/routing.mjs": {
-      "sha256": "a8940a2a8d521265e0c977e14c1edd23b2ed01b6bb4bc27c30a5602b81c08f45",
+      "sha256": "e90bb159fcd235d5fe96619eed1008327fbb31415a4c7080abdb3f14180796a4",
       "executable": false
     },
     "tests/runtime.mjs": {
