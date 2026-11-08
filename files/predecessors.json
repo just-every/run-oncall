@@ -1,0 +1,25 @@
+{
+  "tag": "sd-oncall-c-f212",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f212",
+  "baseline": "f4f0bdb097de881accfb709543d551c71e674d7a",
+  "predecessors": {
+    "cloud/sd-oncall-c-f208": {
+      "head": "da68efdaef7a90b568122189f3c4a554eda27171",
+      "ancestorOfMain": false,
+      "helperRetainedOnMain": true
+    },
+    "cloud/sd-oncall-c-f209": {
+      "head": "9d5d500c0cf68bcc3f0a3caed08c38d253c615e2",
+      "ancestorOfMain": true
+    },
+    "cloud/sd-oncall-c-f210": {
+      "remoteRefPresent": false,
+      "note": "No advertised branch; the accepted changed-reason helper is on main in 7d2fb0b418c3247678bf49ed650367776ce50034 and its merge 6858a3c3b5fa01f7f4a90d40bdce1f2f09e60bb9."
+    },
+    "cloud/sd-oncall-c-f211": {
+      "head": "9af4af4a353932948029d768a29b9a34d48c2de3",
+      "ancestorOfMain": true
+    }
+  }
+}

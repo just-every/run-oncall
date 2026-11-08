@@ -1,0 +1,147 @@
+{
+  "tag": "sd-oncall-c-f212",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f212",
+  "head": "130a8e814ca96d9520b5ec3b061342c30cb8587d",
+  "baseline": "f4f0bdb097de881accfb709543d551c71e674d7a",
+  "recorded_at": "2026-11-08T21:11:59.064779+00:00",
+  "product_push": {
+    "status": "success",
+    "attempts": 1
+  },
+  "identity_scan": {
+    "candidate_commits": 1,
+    "all_side_parents": true,
+    "author": "Run Edit Run fleet",
+    "committer": "Run Edit Run fleet",
+    "trailers": "absent",
+    "status": "pass"
+  },
+  "contract": {
+    "baseline_status": "missing",
+    "candidate_status": "missing",
+    "claim": "PARTIAL",
+    "selected_point": 3,
+    "subscope": "Changed Scribe assignment reason conflict",
+    "status_rows": 101,
+    "before": {
+      "done": 20,
+      "partial": 47,
+      "missing": 34
+    },
+    "after": {
+      "done": 20,
+      "partial": 47,
+      "missing": 34
+    },
+    "changed_contract_lines": 0
+  },
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run env ONCALL_RUNTIME_PART=machines timeout 1200 node tests/runtime.mjs",
+      "exit": 0,
+      "duration_seconds": 324.3,
+      "log": "runtime-machines.log",
+      "scribe_modes": [
+        "autonomous",
+        "held"
+      ],
+      "proof_inputs_equal_candidate": true
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write && node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "generated_files_committed": false
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "repeated_after_final_rebase": true
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0
+    }
+  ],
+  "local_draft_failure": {
+    "exit": 1,
+    "log": "runtime-machines-initial.log",
+    "error": "TypeError: Cannot read properties of undefined (reading 'id')",
+    "correction": "Early refusal has no decision metadata; inspect retained audit directly.",
+    "final_rerun_exit": 0
+  },
+  "mechanical": {
+    "lock_exit": 0,
+    "views_exit": 0,
+    "ledger": "none; no migration change"
+  },
+  "publication_scan": {
+    "status": "not run in cloud",
+    "owner": "fleet lander",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "main_landing": {
+    "status": "not performed in cloud"
+  },
+  "pr": null,
+  "proof_inputs": {
+    "tests/oncall-agent-role-replay.mjs": "b0c1a411cb51f67bd14ac8fb3e44a57bc7d2a99c3de91edb2fee46fa73572951",
+    "tests/oncall-agent-flow.mjs": "1d8588d7e811166b243ab9eac0cb7f20342f4f2a72b28753c51688e110585b3d",
+    "tests/runtime.mjs": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3",
+    "src/agent-door/coordination-tools.ts": "bc5d1d58d08e64f0aadf6d58a3b3df3897c51df8b1c5f5d038e283417fdb796f",
+    "src/family/response-operations/incident-controls.ts": "0cd964c534a5848cf783049be11dc2a525b81c5146782e29d073447acc601cf4",
+    "src/agent-door/native.ts": "5434e6a956e1d3f15a1ca02b47eac19ba21c706ed2201a0096733e46aff5d53c",
+    "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+    "src/modules/agent-door/execution.ts": "f778856e47b569f5a0f51dededd0beef0678c7f9f384a0cd12b99b3ad88c2be6"
+  },
+  "github_api_calls": 3,
+  "ci": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "130a8e814ca96d9520b5ec3b061342c30cb8587d",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42523954688",
+      "id": 42523954688,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "product_tree": "a0b903e1f7ad614ef8320e8a487c4c65f7d8146c",
+  "git_history_shallow": false,
+  "product_files": [
+    "sources.lock.json",
+    "tests/oncall-agent-flow.mjs",
+    "tests/oncall-agent-role-replay.mjs"
+  ],
+  "main_sha_at_last_fetch": "f4f0bdb097de881accfb709543d551c71e674d7a",
+  "pre_push_main_drift": false,
+  "clean_product_checkout": true,
+  "registration_change": "Existing machines runtime registration extended; no new standalone journey registration",
+  "ci_discovered_at": "2026-11-08T21:12:08Z",
+  "ci_next_poll_not_before": "2026-11-08T21:22:17Z",
+  "ci_latest": {
+    "conclusion": null,
+    "head_sha": "130a8e814ca96d9520b5ec3b061342c30cb8587d",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/42523954688",
+    "status": "in_progress"
+  },
+  "ci_latest_observed_at": "2026-11-08T21:17:30.227908+00:00"
+}

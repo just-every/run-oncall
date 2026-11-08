@@ -1,0 +1,7 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Candidate SHA 78a93cbe49482d2ebbe41fc1c0f79b9df88ceb89
+Owned runtime processes [["11490","11489","MainThread"],["11499","11490","esbuild"],["11509","11490","workerd"],["11515","11490","ps"]]
+PROBE BASE-AGENT-012 acceptance 3 autonomous Scribe assignment: one standard-only agent-attributed assign-role from unassigned to an existing active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests
+PROBE BASE-AGENT-012 acceptance 3 held Scribe assignment: one standard-only agent-attributed assign-role from unassigned to an existing active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests

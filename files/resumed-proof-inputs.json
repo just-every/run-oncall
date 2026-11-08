@@ -1,0 +1,15 @@
+{
+  "head": "78a93cbe49482d2ebbe41fc1c0f79b9df88ceb89",
+  "recorded_at": "2026-11-08T21:30:16.858586+00:00",
+  "sha256": {
+    "tests/oncall-agent-role-replay.mjs": "5af71f1370816b219965225d6b663988237b6c14a2971d2273144e2ede612315",
+    "tests/oncall-agent-flow.mjs": "c9669af3e71bae683a7af4caa8d2aafdb284fb151dcedb9e19d0f95a598c4dea",
+    "tests/runtime.mjs": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3",
+    "tests/agent-door-runtime.mjs": "bf53cb3a0ba1513189d5a93695987be5453d38032aec9b9ceba2973c5b7dbea6",
+    "src/agent-door/coordination-tools.ts": "bc5d1d58d08e64f0aadf6d58a3b3df3897c51df8b1c5f5d038e283417fdb796f",
+    "src/family/response-operations/incident-controls.ts": "0cd964c534a5848cf783049be11dc2a525b81c5146782e29d073447acc601cf4",
+    "src/agent-door/native.ts": "5434e6a956e1d3f15a1ca02b47eac19ba21c706ed2201a0096733e46aff5d53c",
+    "src/modules/agent-door/pipeline.ts": "7647b1f8e8ab591423b645e37ac09bcddc88d99c269b1f136a69aa8db725fab3",
+    "src/modules/agent-door/execution.ts": "f778856e47b569f5a0f51dededd0beef0678c7f9f384a0cd12b99b3ad88c2be6"
+  }
+}

@@ -1,0 +1,3 @@
+node scripts/edition-authoring/cli.mjs lock: exit 0; focused Scribe helper tracked
+node scripts/edition-authoring/cli.mjs check: exit 0
+node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check: exit 0

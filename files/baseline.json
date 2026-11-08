@@ -1,0 +1,12 @@
+{
+  "main": "f4f0bdb097de881accfb709543d551c71e674d7a",
+  "statusCounts": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34
+  },
+  "statusRows": 101,
+  "targetStatus": "missing",
+  "targetSlice": "acceptance 3 Scribe changed reason",
+  "githubCalls": 1
+}
