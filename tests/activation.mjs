@@ -1417,6 +1417,10 @@ try {
  ok(await erasureReq('/api/command',{type:'member',id:erasedMember.id,active:true,role:'responder'}),410);
  assert.equal(ok(await erasureReq('/api/schedules/synthetic-oncall-413/now-next?at=2026-03-07T12:00:00Z')).now.primary,null);
  assert.equal(ok(await erasureReq('/api/schedules/synthetic-oncall-413/now-next?at=2026-03-08T12:00:00Z')).now.primary,keptMember.id);
+ const erasedCalendar=ok(await erasureReq('/api/schedules/synthetic-oncall-413/calendar.ics?from=2026-03-07T12:00:00Z&to=2026-03-08T12:00:00Z')).replace(/\r\n[ \t]/g,'');
+ assert.ok(!erasedCalendar.includes(erasedName),'the private calendar cannot disclose an erased person');
+ assert.ok(erasedCalendar.includes('primary: Coverage gap'));assert.ok(erasedCalendar.includes('primary: '+keptName),'erasure preserves the next retained responder’s calendar turn');
+ record('PROBE OC-020 erased responder: private calendar -> erased slot is an anonymous gap, erased name absent, next retained responder unchanged');
  assert.equal(ok(await erasureReq('/api/move-in/coverage',{vendor:'opsgenie',id:'opsgenie:synthetic-oncall-413',at:'2026-03-07T12:00:00Z'})).coverage.primary,null);
  assert.equal(ok(await erasureReq('/api/move-in/coverage',{vendor:'opsgenie',id:'opsgenie:synthetic-oncall-413',at:'2026-03-08T12:00:00Z'})).coverage.primary,keptName);
  for(const archive of [memberBefore,{...memberBefore,erasureFences:memberAfter.erasureFences}])ok(await erasureReq('/api/restore',{mode:'replace',archive}),409);
