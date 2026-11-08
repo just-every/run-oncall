@@ -1418,18 +1418,18 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 ## Status
 
-Judged from the code and tests at commit `b1acb1fb0ed0be8603dda6a560fd8c3e0653dd91` (6 November 2026).
+Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d7a` (8 November 2026).
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 14 | 8 | 0 | 22 |
+| Published | 15 | 7 | 0 | 22 |
 | Target and push further | 6 | 39 | 34 | 79 |
-| All | 20 | 47 | 34 | 101 |
+| All | 21 | 46 | 34 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
 | `OC-001` | Event identity and alerts | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `src/intake/lifecycle.ts`; `tests/runtime.mjs`; `tests/intake.mjs` |  |
-| `OC-002` | Routing replay | published | partial | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` | Replay after a policy change, returning the immutable admission explanation of a severity-routed event beside the proposed decision, is not asserted in the cited test (`tests/routing.mjs` holds such a comparison); zero writes and submitted order are asserted. |
+| `OC-002` | Routing replay | published | done | `src/api.ts`; `src/orchestration/replay.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` — coordinationJourney (the OC-002 native replay block): a severity-routed event is admitted under a policy, the policy is changed by an attributed command, and the authorized replay request for a newer-generation event then the original returns decisions in submitted order, each historical decision, owner, policy version and evaluation snapshot equal to the immutable admission record beside the proposed decision under the changed policy, with unchanged application state, workspace revision and permanent audit rows before and after (zero writes), and anonymous and revoked sessions refused with no comparison. |  |
 | `OC-003` | Roles and authority | published | done | `tests/runtime.mjs` — coordinationJourney: session roles, responder workspace reads, attributed acknowledgment and note, administrator refusals, held downgrade and revoke mutations, minimal bearer and signed intake receipts; `tests/member-coordination-browser.mjs` — responder coordinates and reloads attributed history. |  |
 | `OC-004` | Incident state transitions | published | done | `tests/runtime.mjs` — coordinationJourney: exact admitted alert links, responder commander, stale and concurrent refusal, source recovery independence, unchanged state after recovery without evidence and resolution without a summary, evidenced recovery, resolved state and human-attributed lifecycle history; `tests/triage.mjs` — bulk resolution refuses missing recovery evidence. |  |
 | `OC-005` | Copied runbooks | published | done | `tests/runtime.mjs` — coordinationJourney: declaration copies every service step; an accepted service runbook edit reads back while the declared incident, its copied steps and revision stay unchanged; an owned, due-dated action reads back open with no evidence; completion without a URL is refused with every record unchanged; an evidenced submission awaits human acceptance and is accepted; the unfinished action, copied steps with checklist progress and an editable review are retained after resolution.; `tests/runtime.mjs` (coordinationJourney) | |
