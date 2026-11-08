@@ -357,11 +357,11 @@ try {
  await mail(w,second,'FAILED: nightly-db');assert.notEqual(ok(await req('/api/email')).receipts.at(-1).generation,db.generation);
  await mail(w,local,'Unmatched failure');assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');
  const draft={revision:1,mode:'custom',fallback:'quarantine',rules:recoveryRules()};
- const emailRowsBefore=durableSnapshot(w);
- const beforeWorkspace=ok(await req('/api/archive')),beforeReplay=w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n;
- const replay=ok(await req('/api/email/addresses/nightly/preview',{...draft,samples:email.samples.filter(s=>s.address==='nightly').map(s=>s.id)}));assert.equal(replay.sideEffects,false);assert.equal(replay.decisions.length,4);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n,beforeReplay);assert.deepEqual(ok(await req('/api/archive')),beforeWorkspace);
+ const beforeWorkspace=ok(await req('/api/archive')),beforeReplay=w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n,emailRowsBefore=durableSnapshot(w);
+ const replay=ok(await req('/api/email/addresses/nightly/preview',{...draft,samples:email.samples.filter(s=>s.address==='nightly').map(s=>s.id)}));assert.equal(replay.sideEffects,false);assert.equal(replay.decisions.length,4);assert.equal(w.sql('SELECT COUNT(*) AS n FROM oc_admin_audit')[0].n,beforeReplay);
  assert.deepEqual(durableSnapshot(w),emailRowsBefore,'email routing preview preserves every durable row and receipt');
  assert.deepEqual(await w.outboundRequests(),[],'email routing preview creates no provider action');
+ assert.deepEqual(ok(await req('/api/archive')),beforeWorkspace);
  ok(await req('/api/email/addresses/nightly/publish',draft));await mail(w,local,'Unmatched quarantine');assert.equal(ok(await req('/api/email')).receipts.at(-1).diagnostic,'no_rule_matched');
  const pathological={id:'linear',action:'trigger',match:'all',conditions:[{field:'text',op:'matches',value:'^(a+)+$'}],key:{field:'subject',kind:'markers',start:'[',end:']'}};
  ok(await req('/api/email/addresses/nightly/publish',{revision:2,mode:'custom',fallback:'subject',rules:[pathological]}));await mail(w,local,'Pathological input',{body:'a'.repeat(128*1024)+'!'});assert.equal(ok(await req('/api/email')).receipts.at(-1).outcome,'opened');

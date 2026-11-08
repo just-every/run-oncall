@@ -6536,7 +6536,7 @@
       "executable": false
     },
     "tests/routing.mjs": {
-      "sha256": "e90bb159fcd235d5fe96619eed1008327fbb31415a4c7080abdb3f14180796a4",
+      "sha256": "879b2add49b4f65607c0dea117539ebe97efa21442f3d620b68ce8fad4949fba",
       "executable": false
     },
     "tests/runtime.mjs": {
