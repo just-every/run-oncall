@@ -6516,7 +6516,7 @@
       "executable": false
     },
     "tests/preview-browser.mjs": {
-      "sha256": "5596ea0891f4d10be0c37fdb069a530af5ed4c9f9a69cb799a01ac33862ed7a3",
+      "sha256": "c862bf7f118babedb7ad0db80425f82908f4155e88f72807fb8b0282f1789112",
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
