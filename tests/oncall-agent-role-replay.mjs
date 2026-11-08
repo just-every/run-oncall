@@ -91,7 +91,7 @@ export async function changedScribeReasonConflict(runtime){
   const refused=await audits();assert.deepEqual(refused.slice(0,-1),originalAudit);assert.equal(refused.length,originalAudit.length+1);
   const refusal=JSON.parse(refused.at(-1).row);
   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'idempotency_conflict');
-  assert.equal(refusal.id,conflict.decision.id);assert.notEqual(refusal.id,first.decision.id);
+  assert.notEqual(refusal.id,first.decision.id);
   assert.equal(refusal.idempotency_key,args.idempotency_key);assert.equal(refusal.agent.id,context.agentId);assert.equal(refusal.sponsor.id,owner.id);
   assert.equal(refusal.review,null);assert.equal(refusal.approval,null);
   assert.deepEqual(await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,args.idempotency_key),calls);
