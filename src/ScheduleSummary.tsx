@@ -3,7 +3,8 @@ import {SavedState,SaveFeedback} from './app/autosave/SavedState'
 import {useViewAnchor} from './app/useViewAnchor'
 import {FailureLine,useActionFailure} from './app/FailureLine'
 import { useEffect,useState } from 'react'
-import {coverage, type Coverage, type Schedule} from './family/response-operations/schedules'
+import {type Coverage, type Schedule} from './family/response-operations/schedules'
+import {nowNext} from './schedule-coverage/now-next'
 import type { State } from './family/response-operations/domain'
 
 // Keep the schedule's named clock and the offset at this hand-over visible.
@@ -17,7 +18,7 @@ type ReadProps = {schedule:Schedule;state:State;request:(path:string,data?:unkno
 type NowNext = {now:Coverage;next:Record<'primary'|'backup',Coverage|null>}
 
 export function ScheduleNowNext({schedule,state,request}:ReadProps) {
- const [value,setValue]=useState<NowNext>(()=>{const now=coverage(schedule,state.members,Date.now());return {now,next:Object.fromEntries(now.windows.map(window=>[window.role,window.end?coverage(schedule,state.members,Date.parse(window.end)):null])) as NowNext['next']};})
+ const [value,setValue]=useState<NowNext>(()=>nowNext(schedule,state.members,Date.now()))
  const failures=useActionFailure()
  const preserveView=useViewAnchor()
  useEffect(()=>{

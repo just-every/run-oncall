@@ -2,7 +2,8 @@ import {parsePTO} from './schedule-coverage/pto-ics'
 import {requireTeamCoverage,requireMemberPTO} from './teams/model';
 import { reviewSchedule } from './schedule-coverage/review'
 import { pagingSnapshot, commitPaging, putSchedule } from './paging-store'
-import { coverage, validateSchedule } from './family/response-operations/schedules'
+import { validateSchedule } from './family/response-operations/schedules'
+import { nowNext } from './schedule-coverage/now-next'
 import { fail } from './family/response-operations/domain'
 import { calendar } from './calendar'
 import { demoEffect } from './modules/demo/index.mjs'
@@ -19,9 +20,7 @@ export function installSchedules(api:any,body:(c:any)=>Promise<any>) {
  api.get('/api/schedules/:id/now-next',async(c:any)=>{
   const s=await pagingSnapshot(c.env.DB),schedule=s.archive.schedules.find(v=>v.id===c.req.param('id'))
   if(!schedule) fail('Unknown schedule',404)
-  const at=clock(c.req.query('at')),now=coverage(schedule,s.workspace.members,at)
-  const next=Object.fromEntries(now.windows.map(w=>[w.role,w.end?coverage(schedule,s.workspace.members,Date.parse(w.end)):null]))
-  return c.json({paging:'OFF',now,next})
+  return c.json({paging:'OFF',...nowNext(schedule,s.workspace.members,clock(c.req.query('at')))})
  })
  api.get('/api/schedules/:id/calendar.ics',async(c:any)=>{
   const s=await pagingSnapshot(c.env.DB),schedule=s.archive.schedules.find(v=>v.id===c.req.param('id'))

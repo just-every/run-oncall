@@ -1,3 +1,4 @@
+import {expect} from '@playwright/test'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
@@ -463,6 +464,51 @@ async function accessibleState(page,name,width,focus) {
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${name} has no horizontal overflow`)
  const axe=await new AxeBuilder({page}).analyze()
  assert.deepEqual(axe.violations.filter(violation=>['serious','critical'].includes(violation.impact)),[],`${name} has no serious or critical axe findings`)
+}
+
+// One private calendar journey covers the displayed per-role hand-overs and downloaded gaps.
+export async function calendarCoverageBrowser(page,context,{setTime=async()=>{}}={}) {
+ const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
+ await mkdir(directory,{recursive:true})
+ const api=async(path,data,status=200)=>{const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});assert.equal(response.status(),status);return response.json()}
+ const {member}=await api('/api/session'),state=await api('/api/state')
+ const backup=await api('/api/members',{name:'Calendar backup responder',role:'responder',password:'synthetic-oncall-204-password'},201)
+ const id='synthetic-oncall-204',day='2026-10-30T',at=Date.parse(day+'10:00:00Z')
+ const schedule=await api('/api/paging/schedules',{id,name:'Payments daytime rota',service:state.services[0].id,revision:0,timezone:'UTC',validFrom:'2026-10-29T00:00:00.000Z',validUntil:null,primary:{anchorLocal:'2026-10-29T09:00',periodDays:1,members:[member.id],ambiguity:'earlier'},backup:{anchorLocal:'2026-10-29T09:00',periodDays:2,members:[backup.id,member.id],ambiguity:'earlier'},overrides:[{id:'synthetic-oncall-205',role:'primary',start:day+'11:00:00.000Z',end:day+'12:00:00.000Z',member:null},{id:'synthetic-oncall-206',role:'primary',start:day+'12:00:00.000Z',end:day+'15:00:00.000Z',member:backup.id}]})
+ const before=await api('/api/paging/state'),native=await api('/api/state')
+ const primary=page.locator('.scheduling-now-role').filter({has:page.getByRole('heading',{name:'primary',exact:true})}),secondary=page.locator('.scheduling-now-role').filter({has:page.getByRole('heading',{name:'backup',exact:true})})
+ for(const width of [1440,390]) {
+  await page.setViewportSize({width,height:1000});await setTime(at)
+  await page.goto(origin+'/on-call/'+schedule.id)
+  await primary.getByText('Now: '+member.name,{exact:true}).waitFor();await primary.getByText('Next: Nobody on call',{exact:true}).waitFor()
+  await secondary.getByText('Now: '+backup.name,{exact:true}).waitFor();await secondary.getByText('Next: Nobody on call',{exact:true}).waitFor()
+  await expect(primary.locator('.handoff')).toContainText('11:00 UTC');await expect(secondary.locator('.handoff')).toContainText('12:00 UTC')
+  const remove=page.getByRole('button',{name:'Remove cover',exact:true}).first()
+  await remove.hover();await page.getByRole('tooltip',{name:'Remove cover',exact:true}).waitFor();await page.mouse.move(0,0);await remove.focus();await page.getByRole('tooltip',{name:'Remove cover',exact:true}).waitFor();await remove.blur()
+  await page.getByText('Calendar feed',{exact:true}).click()
+  const link=page.getByRole('link',{name:'Open private ICS feed',exact:true}),url=await link.getAttribute('href'),feed=await context.request.get(url)
+  assert.equal(feed.status(),200);assert.equal(feed.headers()['cache-control'],'private, no-store')
+  const text=(await feed.text()).replace(/\r\n[ \t]/g,'')
+  assert.match(text,/DTSTART:20261030T100000Z/);assert.match(text,/DTEND:20261106T100000Z/)
+  const events=text.split('BEGIN:VEVENT').slice(1)
+  assert.ok(events.some(event=>event.includes('DTSTART:20261030T120000Z')&&event.includes('DTEND:20261030T150000Z')&&event.includes('backup: Coverage gap')))
+  assert.ok(events.some(event=>event.includes('primary: '+backup.name)))
+  const anonymous=await context.browser().newContext({baseURL:origin})
+  try{assert.equal((await anonymous.request.get(url)).status(),401)}finally{await anonymous.close()}
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+  await page.screenshot({path:`${directory}/oc020-calendar-current-${width}.png`,fullPage:true})
+  for(const [hour,current,next,time,label] of [[12,'Nobody on call',backup.name,'15:00 UTC','gap'],[15,backup.name,'Nobody on call','09:00 UTC','recovered']]) {
+   await setTime(Date.parse(day+String(hour)+':00:00Z'));await page.reload()
+   await secondary.getByText('Now: '+current,{exact:true}).waitFor();await secondary.getByText('Next: '+next,{exact:true}).waitFor();await expect(secondary.locator('.handoff')).toContainText(time)
+   if(hour===12)await secondary.getByText(/same member/).first().waitFor()
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+   await page.screenshot({path:`${directory}/oc020-calendar-${label}-${width}.png`,fullPage:true})
+  }
+ }
+ assert.deepEqual(await api('/api/paging/state'),before,'calendar and now-next browsing creates no scheduling or paging work')
+ assert.deepEqual(await api('/api/state'),native,'private calendar reads preserve coordination records')
+ await setTime(null);await page.setViewportSize({width:1440,height:1000})
+ console.log('PROBE OC-020 acceptance 1 browser: current coverage -> distinct primary 11:00 and backup 12:00 hand-overs -> backup gap -> 15:00 return; private seven-day ICS with separate roles and the same gap, copied URL denied; screens at 1440 and 390, tooltips, no overflow and unchanged native and paging records')
 }
 
 const keyboardInstant=Date.parse('2026-10-30T12:00:00.000Z')
@@ -1350,6 +1396,7 @@ export async function productBrowserJourney(page,context,{ownerLink,openSession,
  const session=await page.evaluate(async()=>await (await fetch('/api/session')).json())
  assert.equal(session.member.role,'admin');assert.ok(!page.url().includes('rer-dev'))
  await openWorkspaceSection(page,'services',{keyboard:true});await key.text(page.getByLabel('Service name',{exact:true}),'Checkout');await key.activate(page.getByRole('button',{name:'Create service',exact:true}));await page.getByRole('heading',{name:'Checkout',exact:true}).waitFor();await key.text(page.getByLabel('Runbook steps (one per line)',{exact:true}),'Verify recovery')
+ if(!accessibilityOnly)await calendarCoverageBrowser(page,context,{setTime})
  if(accessibilityOnly){
   for(const width of [1440,390]){
    await page.setViewportSize({width,height:1000});await setTime(keyboardInstant);

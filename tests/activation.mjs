@@ -546,10 +546,11 @@ try {
  const ics=await req('/api/schedules/daily/calendar.ics?from=2026-03-07T14:00:00Z&to=2026-03-09T13:00:00Z');ok(ics);assert.match(ics.headers.get('content-type'),/text\/calendar/);assert.match(ics.value,/DTEND:20260308T130000Z/);assert.match(ics.value,/DTSTART:20260308T150000Z/)
  ok(await w.request('/api/schedules/daily/calendar.ics'),401)
  // OC-020: a primary-only cover can change backup availability before its own rotation turns.
- const staggered=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-200',name:'Staggered coverage',backup:{...schedule.backup,periodDays:2},overrides:[{id:'synthetic-oncall-201',role:'primary',start:'2026-03-08T12:00:00.000Z',end:'2026-03-08T15:00:00.000Z',member:b.id}]}))
+ const staggered=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-200',name:'Staggered coverage',backup:{...schedule.backup,periodDays:2},overrides:[{id:'synthetic-oncall-202',role:'primary',start:'2026-03-08T11:00:00.000Z',end:'2026-03-08T12:00:00.000Z',member:null},{id:'synthetic-oncall-201',role:'primary',start:'2026-03-08T12:00:00.000Z',end:'2026-03-08T15:00:00.000Z',member:b.id}]}))
  const staggeredPath='/api/schedules/'+staggered.id
  const approaching=ok(await req(staggeredPath+'/now-next?at=2026-03-08T10:00:00Z'))
  assert.equal(approaching.now.primary,a.id);assert.equal(approaching.now.backup,b.id)
+ assert.equal(approaching.next.primary.at,Date.parse('2026-03-08T11:00:00Z'));assert.equal(approaching.next.primary.primary,null)
  assert.equal(approaching.now.windows.find(window=>window.role==='backup').end,'2026-03-08T12:00:00.000Z','backup becomes unavailable at the earlier primary cover boundary')
  assert.equal(approaching.next.backup.at,Date.parse('2026-03-08T12:00:00Z'));assert.equal(approaching.next.backup.backup,null)
  const duringCover=ok(await req(staggeredPath+'/now-next?at=2026-03-08T12:00:00Z'))
@@ -557,6 +558,18 @@ try {
  assert.equal(duringCover.now.windows.find(window=>window.role==='backup').end,'2026-03-08T15:00:00.000Z')
  assert.equal(duringCover.next.backup.at,Date.parse('2026-03-08T15:00:00Z'));assert.equal(duringCover.next.backup.backup,b.id)
  record('PROBE OC-020 per-role hand-off: now-next before primary cover -> backup gap at 12:00 UTC; during cover -> backup returns at 15:00 UTC before its own two-day rotation')
+ // A download URL grants no authority of its own; both reads need a current session.
+ const calendarReader=await w.request('/api/login',{name:'Viewer',password:'synthetic-local-testing-password'});ok(calendarReader)
+ const privateReads=['/api/schedules/daily/now-next?at=2026-03-08T10:00:00Z','/api/schedules/daily/calendar.ics?from=2026-03-08T10:00:00Z']
+ for(const path of privateReads){ok(await w.request(path,undefined,calendarReader.cookie));ok(await w.request(path),401)}
+ await w.time(Date.now()+13*3600000)
+ for(const path of privateReads)ok(await w.request(path,undefined,calendarReader.cookie),401)
+ await w.time(null)
+ ok(await w.request('/api/logout',{},calendarReader.cookie))
+ const privateBefore=ok(await req('/api/paging/state')),privateWorkspace=ok(await req('/api/state'))
+ for(const path of privateReads)ok(await w.request(path,undefined,calendarReader.cookie),401)
+ assert.deepEqual(ok(await req('/api/paging/state')),privateBefore);assert.deepEqual(ok(await req('/api/state')),privateWorkspace)
+ record('PROBE OC-020 session privacy: current viewer reads now-next and ICS; anonymous, expired and logged-out sessions -> 401 with workspace and paging unchanged')
  // OC-020: compare the downloaded events to resolved coverage, with an independent DST and override oracle.
  const calendarFrom=Date.parse('2026-03-07T14:00:00Z'),calendarTo=Date.parse('2026-03-09T13:00:00Z'),calendarPath='/api/schedules/daily/calendar.ics'
  const calendarDate=at=>new Date(at).toISOString().replace(/[-:]/g,'').replace('.000','')
@@ -607,7 +620,15 @@ try {
  ok(await req('/api/paging/policies',{service:'checkout',scheduleId:'daily',revision:0,primaryWaitSeconds:180,backupWaitSeconds:300,retrySeconds:10,maxAttempts:3}))
  const calendarSource='synthetic-oncall-20',calendarKey='synthetic-oncall-20-native-credential'
  ok(await req('/api/sources',{id:calendarSource,key:calendarKey,scopes:['checkout']}))
+ for(const path of privateReads){
+  ok(await w.request(path,undefined,undefined,{authorization:'Bearer '+calendarKey}),401)
+  ok(await w.request(path+'&token='+calendarKey),401)
+ }
+ ok(await req('/api/command',{type:'service',id:'synthetic-oncall-203',name:'Unrelated service',environment:'test',owner:admin.id,runbook:[],pager:''}))
  const pagingBeforeAdmission=ok(await req('/api/paging/state')),signal={source:calendarSource,eventId:'synthetic-oncall-20-event',service:'checkout',environment:'production',key:'synthetic-oncall-20-alert',generation:'synthetic-oncall-20-generation',intent:'trigger',severity:'warning',title:'Synthetic calendar intake',observedAt:'2026-03-07T14:00:00Z',evidence:''}
+ const beforeScopeRefusal=ok(await req('/api/state'))
+ ok(await w.request('/api/ingress/'+calendarSource,{...signal,service:'synthetic-oncall-203'},undefined,{authorization:'Bearer '+calendarKey}),403)
+ assert.deepEqual(ok(await req('/api/state')),beforeScopeRefusal,'a scoped source cannot admit another service’s event')
  const admitted=ok(await w.request('/api/ingress/'+calendarSource,signal,undefined,{authorization:'Bearer '+calendarKey}),201)
  const admittedState=ok(await req('/api/state')),admittedEvent=admittedState.events.find(event=>event.id===admitted.id)
  assert.ok(admittedEvent);assert.equal(admittedEvent.source,calendarSource);assert.equal(admittedEvent.eventId,signal.eventId)
