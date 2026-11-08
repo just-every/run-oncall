@@ -1,10 +1,10 @@
 {
   "files": [
     {
-      "blob": "96517e5aa5a83ea71912371399a21a7d9a3ea3b7",
-      "bytes": 14047,
+      "blob": "b659793c44f3c48ff50f79203dd7616dbefda4c1",
+      "bytes": 17004,
       "path": "REPORT.md",
-      "sha256": "3c7f9dd12283daf0d2162affe21ca254fa20a85adf31f20de004a374cc8d062b"
+      "sha256": "4d9822ed0655be429b1ac23950e0b0fd9eb38bfd2641dc0566cb8c2abb37b818"
     },
     {
       "blob": "738b31eda1c89e5e7549cd0ca11fa9f3dde74483",
@@ -19,10 +19,22 @@
       "sha256": "4de86ccc2b7fa9098df0328c5433f5bbef89e28cc9fa76858d2f221a8db5241d"
     },
     {
+      "blob": "48838091bda5615ad4c419db4e86f27061de9ce8",
+      "bytes": 196,
+      "path": "ci-state.json",
+      "sha256": "731241eba6fca4275ce52aa5ab64594eb75787453e2b523aa927d3112b61fb35"
+    },
+    {
       "blob": "3c86266104500be8fe132938ed7c2e589cfed5de",
       "bytes": 98,
       "path": "contract-check.txt",
       "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    },
+    {
+      "blob": "49ef7e4fb45296bd0ad1c22c560617320bcc52a4",
+      "bytes": 990,
+      "path": "handoff.txt",
+      "sha256": "829445890de013e9d55f1dc31eed7db5cd9fb742527943e1bfb73c6ef21f4529"
     },
     {
       "blob": "ab98484135c975f6dc01d35dfc71441398afbdf8",
@@ -37,10 +49,16 @@
       "sha256": "cc6a1b4bc3909c12c725f64af6073fb4d930ab87cab8e535e34d4f049ee4699d"
     },
     {
-      "blob": "d5324fdab4a02d93f70fde9357fb4494f2f2b30f",
-      "bytes": 3452,
+      "blob": "ea57959ba610b86957543a0ba775ee5e766e3f74",
+      "bytes": 1443,
+      "path": "predecessor-ci.json",
+      "sha256": "75288aa3df71d8fca624fa35e2d06c036447406e23548466c83924c3acde5780"
+    },
+    {
+      "blob": "799a4bce728520e21558cf5fb7402579ac97ff2e",
+      "bytes": 3850,
       "path": "receipt.json",
-      "sha256": "bbfb79a104022b10d57ff8f107df1c40bc9e70659fee68ed6cb904ef122b9c9a"
+      "sha256": "bf0425eec4a403eb0d055dac3319da66753d48970688220c0d2c9696318818b8"
     },
     {
       "blob": "80856f289136ed1baf92080adf7ababcfd5b166f",

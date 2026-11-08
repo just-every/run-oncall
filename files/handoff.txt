@@ -1,0 +1,11 @@
+Product repository: just-every/run-oncall
+Product branch: cloud/sd-oncall-c-f211
+Product head: 9af4af4a353932948029d768a29b9a34d48c2de3
+Verify: 42428938884, event push, completed success on exact product head
+PR: none; push workflow is the branch entry point
+Counts: 20 DONE, 47 PARTIAL, 34 MISSING before and after
+Stored clause status: BASE-AGENT-012 MISSING before and after
+CLAIM BASE-AGENT-012 PARTIAL points=4 tests=tests/oncall-agent-incident-revisions.mjs#staleReassignmentNativeRevision
+GAP BASE-AGENT-012: only the selected native reassignment revision diagnostic is complete. Broader acceptance and all authority, provider and release holds remain.
+POST lanes/sd/INBOX.md: sd-oncall-c-f211 native reassignment diagnostic complete; BASE-AGENT-012 MISSING unchanged; head=9af4af4a353932948029d768a29b9a34d48c2de3; Verify 42428938884 push success; counts 20 DONE / 47 PARTIAL / 34 MISSING unchanged.
+READY branch=cloud/sd-oncall-c-f211 head=9af4af4a353932948029d768a29b9a34d48c2de3

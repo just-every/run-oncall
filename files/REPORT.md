@@ -51,9 +51,9 @@ All selected rubric rows run in tests/oncall-agent-incident-revisions.mjs#staleR
 DONE riders and pre-handoff self-check
 
 1. Whole clause FAIL: acceptance remainder above is unproved; no DONE claim. Selected public-door outcomes covered by R1 to R5.
-2. Selected slice PASS when its runtime succeeds: populated records and real allowed and refused native paths; the unchanged-build baseline failed on the missing current_revision.
-3. Exact-SHA Verify PENDING until final CI discovery. The helper is loaded by the existing push Verify machines path, not a new workflow or opt-in flag.
-4. Relevant source and test hashes are recorded in receipt.json; final head must preserve those bytes. Runtime outcome and CI bind final provenance below.
+2. Selected slice PASS locally: populated records and real allowed and refused native paths; the unchanged-build baseline failed on the missing current_revision.
+3. PASS for selected proof: push Verify 42428938884 completed successfully on exact candidate 9af4af4a353932948029d768a29b9a34d48c2de3. The helper is loaded by the existing machines path, not a new workflow or opt-in flag. Whole-clause coverage remains unproved.
+4. PASS local provenance: relevant source and test hashes in receipt.json match the final committed blobs. No relevant byte changed after the passing runtime. Exact-SHA CI provenance follows below.
 5. No receiving-clause inheritance edit; existing obligations remain intact.
 6. PASS mechanical generation and all main Status cells retained. The builder makes no stale-view repair.
 7. PASS no acceptance sentence, ruling, coverage map or Status cell changed.
@@ -90,4 +90,21 @@ GAP BASE-AGENT-012: Only the selected acceptance-4 native reassignment diagnosti
 
 CI discovery
 
-Verify run 42428938884, event push, is in progress on the exact product SHA 9af4af4a353932948029d768a29b9a34d48c2de3. No other SHA supplies its CI proof. The cloud has made 3 GitHub API calls so far. The next query for this run is no earlier than 300 seconds after discovery. Publication scan, main equality and Run site on the candidate remain fleet gates, and no release or landing is claimed.
+Verify run 42428938884, event push, is in progress on the exact product SHA 9af4af4a353932948029d768a29b9a34d48c2de3. No other SHA supplies its CI proof. The task has made 3 explicit GitHub API calls so far, plus the launcher authentication probe. The next query for this run is no earlier than 300 seconds after discovery. Publication scan, main equality and Run site on the candidate remain fleet gates, and no release or landing is claimed.
+
+CI sample at 2026-11-08 00:21:06 UTC: Verify 42428938884 remains in_progress on the exact candidate; conclusion is null. Explicit task GitHub API calls: 4, plus the launcher authentication probe. No rerun, dispatch or speculative repair was performed.
+
+CI sample at 2026-11-08 00:26:19 UTC: Verify 42428938884 remains in_progress on the exact candidate, with conclusion null. Explicit task GitHub API calls: 5, plus the launcher authentication probe. No workflow has been dispatched or rerun.
+
+Final CI and handoff
+
+At 2026-11-08 00:31:25 UTC, Verify 42428938884 completed with conclusion success on product head 9af4af4a353932948029d768a29b9a34d48c2de3. Event: push. URL: https://github.com/just-every/run-oncall/actions/runs/42428938884. The task made 6 explicit GitHub API calls, plus the launcher authentication probe, within the ten-call budget. No dispatch or rerun was used. Selected rubric rows R1 to R5 are MET by the complete local machines journey and exact-SHA green Verify. No known product blocker remains for this selected diagnostic. Whole-clause acceptance and release holds remain unclaimed.
+
+Final before and after counts: 20 DONE, 47 PARTIAL, 34 MISSING, total 101. BASE-AGENT-012 stored status: MISSING to MISSING. Plan row outcome: selected acceptance-4 native reassignment revision diagnostic complete; no other queue, hold or plan row changed. No policy default was introduced and no ct ruling was needed.
+
+Rider 11 remains the guarded lander's responsibility: this cloud did not change main, run a publication scan or claim Run site success on the product candidate. Baseline main Verify and Run site are recorded separately. No deployment, provider authorization, paging activation, release or publication authority is inferred from the native test or from evidence transfer.
+
+The final packet contains the full plan and results, actual local failure excerpts, both initial and final probes, relevant source hashes, actual mechanical outputs, predecessor run records, exact-SHA CI discovery and final state, and the product handoff. Evidence commits are separate report-only trees and confer no product READY or acceptance by themselves. The scratch product clone will be removed only after final evidence publication and exact-ref restoration verification; packet files stay under the fleet work directory.
+
+POST lanes/sd/INBOX.md: sd-oncall-c-f211 BASE-AGENT-012 selected acceptance-4 native reassignment diagnostic complete; stored MISSING retained, counts 20 DONE / 47 PARTIAL / 34 MISSING unchanged; cloud/sd-oncall-c-f211 head=9af4af4a353932948029d768a29b9a34d48c2de3; Verify 42428938884 push success; all predecessor, publication and release holds retained.
+READY branch=cloud/sd-oncall-c-f211 head=9af4af4a353932948029d768a29b9a34d48c2de3

@@ -98,7 +98,18 @@
   "product_head": "9af4af4a353932948029d768a29b9a34d48c2de3",
   "candidate_base": "6858a3c3b5fa01f7f4a90d40bdce1f2f09e60bb9",
   "identity_and_trailers": "all candidate commits author and committer fleet; no co-author trailers",
-  "gh_calls": 3,
+  "gh_calls": 6,
   "ci_discovery_at": "2026-11-08T00:15:57.882677+00:00",
-  "push": "PUSH_OK branch=cloud/sd-oncall-c-f211"
+  "push": "PUSH_OK branch=cloud/sd-oncall-c-f211",
+  "ci_latest": {
+    "conclusion": "success",
+    "head_sha": "9af4af4a353932948029d768a29b9a34d48c2de3",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/42428938884",
+    "status": "completed"
+  },
+  "ci_polled_at": "2026-11-08T00:31:25Z",
+  "launcher_auth_probe": 1,
+  "budget_calls_including_launcher_probe": 7,
+  "final_custody": "READY",
+  "known_product_blockers": []
 }
