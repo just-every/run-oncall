@@ -3,7 +3,7 @@ import {randomUUID} from 'node:crypto';
 import {agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
-/** A Scribe assignment keeps its first outcome when only the reason changes. */
+/** A completed Scribe assignment rejects a changed reason and retains its first outcome. */
 export async function changedScribeReasonConflict(runtime){
  const {db,http,tool,adopt,context}=runtime;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
@@ -19,22 +19,21 @@ export async function changedScribeReasonConflict(runtime){
   const incident=await command({type:'declare',service:'agent-service',title:'Synthetic Scribe reason conflict '+mode,
    summary:'Native coordination without protected evidence',severity:'warning',alerts:[]});
   const before=await snapshot(),pagingBefore=await read('/api/paging/state'),priorAudit=await audits();
-  assert.equal(incident.scribe??null,null,'A fresh ordinary incident has no Scribe');
+  assert.equal(incident.scribe??null,null,'A fresh incident has no Scribe');
   assert.equal(incident.state,'declared');
   const responder=before.application.members.find(row=>row.active&&row.role==='responder');
   assert.ok(responder,'Scribe assignment must name an existing active responder');
   assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);assert.equal(incident.recovery,'');
   const args=Object.freeze({change:'assign-role',role:'scribe',incident:incident.id,revision:incident.revision,member:responder.id,
-   reason:'Synthetic literal Scribe reason <keep this text>',idempotency_key:randomUUID()});
+   reason:'Synthetic literal Scribe reason <keep this text> & retain it',idempotency_key:randomUUID()});
   const first=await tool(name,args);
   assert.equal(first.status,200);assert.equal(first.body.error,undefined);assert.equal(first.result.isError,false);
   assert.deepEqual(first.decision.classes.map(row=>row.class),['standard']);assert.equal(first.decision.disposition,disposition);
   const once=await snapshot(),result=first.result.structuredContent,pagingOnce=await read('/api/paging/state');
   const native=JSON.parse(once.records.oc_incidents.find(row=>row.id===incident.id).data);
   assert.deepEqual(result,native);assert.deepEqual(once.application.incidents.find(row=>row.id===incident.id),native);
-  assert.equal(result.scribe,responder.id);assert.notEqual(result.scribe,incident.scribe);
-  assert.equal(result.assignee,incident.assignee);
-  assert.equal(result.commander,incident.commander);assert.equal(result.state,incident.state);
+  assert.equal(result.scribe,responder.id);
+  assert.deepEqual(result,{...incident,scribe:responder.id,revision:incident.revision+1,timeline:result.timeline},'Only Scribe, revision and the appended timeline entry change');
   assert.equal(result.revision,args.revision+1);assert.equal(once.application.revision,before.application.revision+1);
   assert.equal(once.records.workspace_control[0].revision,before.records.workspace_control[0].revision+1);
   assert.equal(once.application.incidents.length,before.application.incidents.length);
@@ -53,7 +52,7 @@ export async function changedScribeReasonConflict(runtime){
   assert.equal(commit.paging_before,commit.paging_after);assert.equal(commit.handoff_before,commit.handoff_after);
   for(const [field,kind,id] of [['actor','agent',context.agentId],['subject','entity',incident.id],['source','member',owner.id]]){
    const identity=await db.prepare('SELECT label FROM oc_audit_identities WHERE kind=? AND entity_id=?').bind(kind,id).first();
-   assert.equal(commit[field],identity.label,'Native audit retains its '+field+' attribution');
+   assert.equal(commit[field],identity.label,'The native commit retains its '+field+' attribution');
   }
   for(const prior of before.records.oc_admin_audit)assert.deepEqual(once.records.oc_admin_audit.find(row=>row.id===prior.id),prior);
   assert.deepEqual(once.records.agent_door_approvals,before.records.agent_door_approvals);
@@ -91,10 +90,11 @@ export async function changedScribeReasonConflict(runtime){
   assert.deepEqual(await read('/api/paging/state'),pagingOnce);
   const refused=await audits();assert.deepEqual(refused.slice(0,-1),originalAudit);assert.equal(refused.length,originalAudit.length+1);
   const refusal=JSON.parse(refused.at(-1).row);
-  assert.equal(refusal.id,conflict.decision.id);assert.notEqual(refusal.id,first.decision.id);
-  assert.equal(refusal.approval,null);assert.equal(refusal.review,null);
   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'idempotency_conflict');
+  assert.equal(refusal.id,conflict.decision.id);assert.notEqual(refusal.id,first.decision.id);
   assert.equal(refusal.idempotency_key,args.idempotency_key);assert.equal(refusal.agent.id,context.agentId);assert.equal(refusal.sponsor.id,owner.id);
+  assert.equal(refusal.review,null);assert.equal(refusal.approval,null);
+  assert.deepEqual(await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,args.idempotency_key),calls);
   const replay=await tool(name,args);
   assert.equal(replay.status,200);assert.equal(replay.body.error,undefined);assert.equal(replay.result.isError,false);
   assert.notEqual(replay.body.id,first.body.id);assert.notEqual(replay.body.id,conflict.body.id);
@@ -121,8 +121,7 @@ export async function changedScribeReasonConflict(runtime){
    for(const family of ['workspace','paging','handoff'])assert.equal(record[family+'_before'],record[family+'_after'],'Attempt audit never commits another application effect');
   }
   assert.deepEqual(await runtime.outboundRequests(),[],'Scribe assignment, changed reason and exact retry attempt zero outbound requests');
-  console.log('PROBE BASE-AGENT-012 acceptance 3 '+mode+' Scribe: one standard-only agent-attributed assign-role from Unassigned to an existing active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests');
+  console.log('PROBE BASE-AGENT-012 acceptance 3 '+mode+' Scribe assignment: one standard-only agent-attributed assign-role from unassigned to an existing active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests');
  }
  assert.equal((await adopt()).status,200);
 }
-

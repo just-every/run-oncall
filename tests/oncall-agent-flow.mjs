@@ -11,6 +11,7 @@ import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {staleReassignmentNativeRevision} from './oncall-agent-incident-revisions.mjs';
 import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
+import {changedScribeReasonConflict} from './oncall-agent-role-replay.mjs';
 import {auditRows} from '../src/modules/agent-door/conformance/audit-pages.mjs';
 import {droppedReassignmentReplay} from './oncall-agent-incident-replay.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
