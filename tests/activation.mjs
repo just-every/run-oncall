@@ -545,6 +545,18 @@ try {
  ok(await req('/api/schedules/daily/overrides',{revision:changed.revision,override:{...override,id:'overlap'}}),400)
  const ics=await req('/api/schedules/daily/calendar.ics?from=2026-03-07T14:00:00Z&to=2026-03-09T13:00:00Z');ok(ics);assert.match(ics.headers.get('content-type'),/text\/calendar/);assert.match(ics.value,/DTEND:20260308T130000Z/);assert.match(ics.value,/DTSTART:20260308T150000Z/)
  ok(await w.request('/api/schedules/daily/calendar.ics'),401)
+ // OC-020: a primary-only cover can change backup availability before its own rotation turns.
+ const staggered=ok(await req('/api/paging/schedules',{...schedule,id:'synthetic-oncall-200',name:'Staggered coverage',backup:{...schedule.backup,periodDays:2},overrides:[{id:'synthetic-oncall-201',role:'primary',start:'2026-03-08T12:00:00.000Z',end:'2026-03-08T15:00:00.000Z',member:b.id}]}))
+ const staggeredPath='/api/schedules/'+staggered.id
+ const approaching=ok(await req(staggeredPath+'/now-next?at=2026-03-08T10:00:00Z'))
+ assert.equal(approaching.now.primary,a.id);assert.equal(approaching.now.backup,b.id)
+ assert.equal(approaching.now.windows.find(window=>window.role==='backup').end,'2026-03-08T12:00:00.000Z','backup becomes unavailable at the earlier primary cover boundary')
+ assert.equal(approaching.next.backup.at,Date.parse('2026-03-08T12:00:00Z'));assert.equal(approaching.next.backup.backup,null)
+ const duringCover=ok(await req(staggeredPath+'/now-next?at=2026-03-08T12:00:00Z'))
+ assert.equal(duringCover.now.primary,b.id);assert.equal(duringCover.now.backup,null)
+ assert.equal(duringCover.now.windows.find(window=>window.role==='backup').end,'2026-03-08T15:00:00.000Z')
+ assert.equal(duringCover.next.backup.at,Date.parse('2026-03-08T15:00:00Z'));assert.equal(duringCover.next.backup.backup,b.id)
+ record('PROBE OC-020 per-role hand-off: now-next before primary cover -> backup gap at 12:00 UTC; during cover -> backup returns at 15:00 UTC before its own two-day rotation')
  // OC-020: compare the downloaded events to resolved coverage, with an independent DST and override oracle.
  const calendarFrom=Date.parse('2026-03-07T14:00:00Z'),calendarTo=Date.parse('2026-03-09T13:00:00Z'),calendarPath='/api/schedules/daily/calendar.ics'
  const calendarDate=at=>new Date(at).toISOString().replace(/[-:]/g,'').replace('.000','')
