@@ -154,6 +154,16 @@
       "bytes": 41,
       "file": "head.txt",
       "sha256": "9ecea722049a21ae4e2197bdb8a5ff6df9609d557df7e416e88289024994607e"
+    },
+    {
+      "bytes": 393,
+      "file": "transfer-receipt.json",
+      "sha256": "01c28694f588c9d22a3556e4f28c686bef3b56f21b3341dca62850449371ccfb"
+    },
+    {
+      "bytes": 5982,
+      "file": "evidence-publish.log",
+      "sha256": "02d9fbd1ae4b7655dcc99ec03f47d867af3aaefad0a4123b454116d341bfe564"
     }
   ],
   "noSymlinks": true,

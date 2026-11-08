@@ -1,0 +1,9 @@
+{
+  "evidenceHead": "a397b6306380e3c5c6bd1912cf1fff9ae0c26757",
+  "evidenceRef": "refs/heads/evidence/sd-oncall-c-f213",
+  "files": 32,
+  "productHead": "b59f29479feeaeb975f53c044a65eab888fb68be",
+  "published": true,
+  "remoteRefsVerified": true,
+  "terminalLine": "EVIDENCE repo=just-every/run-oncall ref=refs/heads/evidence/sd-oncall-c-f213 head=a397b6306380e3c5c6bd1912cf1fff9ae0c26757"
+}
