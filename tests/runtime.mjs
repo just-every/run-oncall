@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url'
 import http from 'node:http'
 import {fixtureDatabase} from './fixture-database.mjs'
 import assert from 'node:assert/strict'
-import {heldWorkspace} from './worker.mjs'
+import {heldWorkspace,durableSnapshot} from './worker.mjs'
 import {spawn,spawnSync,execFileSync} from 'node:child_process'
 import {mkdtemp,rm,mkdir,readdir,copyFile,writeFile,readFile} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
@@ -1180,6 +1180,8 @@ try {
   }
   const before = ok(await request("/api/state", undefined, cookie));
   const replayAudit = rows('SELECT * FROM oc_admin_audit ORDER BY ordinal');
+  const replayStorage = {sql: rows, statements: command => fixtureDatabase(persist, command)};
+  const replayDurable = durableSnapshot(replayStorage);
   const replay = ok(await request('/api/replay', replayInput, cookie));
   assert.equal(replay.sideEffects, false);
   assert.equal(replay.workspaceRevision, before.revision);
@@ -1197,7 +1199,10 @@ try {
     'a changed policy never rewrites the frozen admission decision or evaluation snapshot');
   assert.deepEqual(ok(await request("/api/state", undefined, cookie)), before);
   assert.deepEqual(rows('SELECT * FROM oc_admin_audit ORDER BY ordinal'), replayAudit);
+  assert.deepEqual(durableSnapshot(replayStorage), replayDurable,
+    'replay preserves every durable row, including credentials, audit, alerts and incidents');
   console.log('PASS OC-002 native replay: frozen severity decision, owner, version and evaluation beside changed ownership in submitted order; no state or permanent-audit writes');
+  console.log('PROBE OC-002 1: protected POST replay after critical-policy ownership change -> frozen admission beside current owner, submitted order, every durable row unchanged');
   const rotatedNativeKey = randomBytes(32).toString("hex");
   const rotation = await auditedMutation(cookie, () => request("/api/sources", {
     id: "monitor", key: rotatedNativeKey, scopes: [service.id, stagingService.id],
