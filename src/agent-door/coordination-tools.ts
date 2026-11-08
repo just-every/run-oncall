@@ -1,6 +1,6 @@
 import type { Bindings } from '../auth.server'
 import { command, fail, type Incident } from '../family/response-operations/domain'
-import { defineTool, type JsonSchema, type ToolContext, type ToolDefinition } from '../modules/agent-door/index.ts'
+import { defineTool, ToolRefusal, type JsonSchema, type ToolContext, type ToolDefinition } from '../modules/agent-door/index.ts'
 import { nativeAccess, nativeActor, nativeAudit, nativeCall, persistNative } from './native'
 import { protectedRecords } from './resources'
 import { pagingSnapshot } from '../paging-store'
@@ -92,7 +92,8 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
       run: (args, ctx) => nativeCall(async () => {
         if(operation.name==='incidents.update'&&args.change==='expire-deadline')return expireAgentDeadline(env,args,ctx)
         const { current, incident } = await access(args, ctx)
-        if ((incident||args.revision!==undefined)&&args.revision !== (incident?.revision ?? current.state.revision)) fail('Native revision changed; reload before applying', 409)
+        const currentRevision = incident?.revision ?? current.state.revision
+        if ((incident||args.revision!==undefined)&&args.revision !== currentRevision) throw new ToolRefusal('revision_conflict', 'Native revision changed; reload before applying', { current_revision: currentRevision })
         const actor = nativeActor(current, ctx)
         actor.agent = { ...actor.agent!, approvers: ctx.approvers.map(({ id, name }) => ({ id, name })) }
         const nativeInput=operation.input(args)
