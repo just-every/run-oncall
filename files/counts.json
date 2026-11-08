@@ -1,0 +1,14 @@
+{
+  "before": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34
+  },
+  "after": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34
+  },
+  "statusChange": "BASE-AGENT-012 missing -> missing",
+  "contractChanged": false
+}

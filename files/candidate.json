@@ -1,0 +1,46 @@
+{
+  "base": "78a93cbe49482d2ebbe41fc1c0f79b9df88ceb89",
+  "branch": "cloud/sd-oncall-c-f213",
+  "contractChanged": false,
+  "files": {
+    "tests/agent-door-runtime.mjs": "bf53cb3a0ba1513189d5a93695987be5453d38032aec9b9ceba2973c5b7dbea6",
+    "tests/oncall-agent-flow.mjs": "523e7bfc169c26db2ee90d52aa94d48b1ef92ed7d7e7c87c756260f9138eb50a",
+    "tests/oncall-agent-role-replay.mjs": "bbc728634f52c2f0332881c9c9d80cb5827dd334da2b4107a7a02ed5839ec6cc",
+    "tests/runtime.mjs": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3"
+  },
+  "generatedViewsCommitted": false,
+  "head": "b59f29479feeaeb975f53c044a65eab888fb68be",
+  "productionChanged": false,
+  "repository": "just-every/run-oncall",
+  "runtime": {
+    "command": [
+      "env",
+      "ONCALL_RUNTIME_PART=machines",
+      "timeout",
+      "1200",
+      "node",
+      "tests/runtime.mjs"
+    ],
+    "exit": 0,
+    "head": "78a93cbe49482d2ebbe41fc1c0f79b9df88ceb89",
+    "label": "runtime-machines",
+    "seconds": 302.97,
+    "started": "2026-11-08T23:12:48.646088+00:00"
+  },
+  "selectedObservation": "BASE-AGENT-012 acceptance 2 Scribe response-loss replay under autonomous and held policies",
+  "statusAfter": "missing",
+  "statusBefore": "missing",
+  "testedBytesMatchCandidate": true,
+  "typecheck": {
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "head": "78a93cbe49482d2ebbe41fc1c0f79b9df88ceb89",
+    "label": "typecheck",
+    "seconds": 10.4,
+    "started": "2026-11-08T23:12:31.983724+00:00"
+  }
+}

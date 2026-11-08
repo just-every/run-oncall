@@ -1,0 +1,7 @@
+{
+  "command": "cloud_run npx -y @runeditrun/rer build",
+  "exit": 0,
+  "log_sha256": "f8054d96abc13c482cd0bfbad29e3a4af0ef335bac0e6b093dee1d27ed55257e",
+  "productionWorker": "dist/server/index.js",
+  "sourceUnchanged": true
+}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "scripts/edition-authoring/cli.mjs",
+    "check"
+  ],
+  "exit": 0,
+  "head": "b59f29479feeaeb975f53c044a65eab888fb68be",
+  "label": "final-source-check",
+  "seconds": 0.35,
+  "started": "2026-11-08T23:18:09.178194+00:00"
+}

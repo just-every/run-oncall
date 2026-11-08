@@ -1,0 +1,15 @@
+{
+  "command": [
+    "env",
+    "ONCALL_RUNTIME_PART=machines",
+    "timeout",
+    "1200",
+    "node",
+    "tests/runtime.mjs"
+  ],
+  "exit": 0,
+  "head": "78a93cbe49482d2ebbe41fc1c0f79b9df88ceb89",
+  "label": "runtime-machines",
+  "seconds": 302.97,
+  "started": "2026-11-08T23:12:48.646088+00:00"
+}
