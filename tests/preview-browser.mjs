@@ -56,8 +56,8 @@ export async function previewIsolationBrowser(page,context,proof) {
   await openHistoryComparison(page)
   const replay=page.getByRole('region',{name:'Replay comparison',exact:true})
   await replay.getByRole('heading',{name:signal.title,exact:true}).waitFor()
-  await replay.getByRole('heading',{name:'Historical decision',exact:true}).waitFor()
-  await replay.getByRole('heading',{name:'Proposed decision',exact:true}).waitFor()
+  await replay.getByRole('heading',{name:'Historical decision',exact:true}).first().waitFor()
+  await replay.getByRole('heading',{name:'Proposed decision',exact:true}).first().waitFor()
   await screen('history-replay',width);await unchanged()
   await page.getByRole('button',{name:'Close comparison',exact:true}).click()
  }
