@@ -10,6 +10,8 @@ import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {staleReassignmentNativeRevision} from './oncall-agent-incident-revisions.mjs';
+import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
+import {auditRows} from '../src/modules/agent-door/conformance/audit-pages.mjs';
 import {droppedReassignmentReplay} from './oncall-agent-incident-replay.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
 import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
@@ -731,6 +733,7 @@ try{
  await droppedNoteReplay(runtime);
  await droppedReassignmentReplay(runtime);
  await changedArgumentConflicts(runtime);
+ await changedServiceNameReplay(runtime);
  await changedReassignmentReasonConflict(runtime);
  await consentRevocationMatrix(runtime);
  await staleNoteRevision(runtime);
@@ -827,7 +830,12 @@ try{
  assert.deepEqual(replay.result.structuredContent,created.result.structuredContent);
  const snapshot=async()=>JSON.stringify((await (await http('/api/state')).json()).incidents);
  const once=await snapshot();
- const audit=async()=> (await (await http('/agents/api/audit?agent='+encodeURIComponent(runtime.context.agentId))).json());
+ const audit=async(agentId=runtime.context.agentId)=>{
+  const result=await auditRows({agentId,personJson:async path=>{
+   const response=await http(path);assert.equal(response.status,200);return response.json();
+  }});
+  return {rows:result.rows,differs_from_policy:result.differs};
+ };
  const original=(await audit()).rows.find(row=>row.id===created.decision.id);
  assert.deepEqual(original.resource,{kind:'service',id:'agent-service'});
  assert.equal(original.sponsor.id,owner.id);
@@ -1141,7 +1149,7 @@ try{
  const mira={sub:teammate,email:'mira@example.invalid',act:{sub:'mira-agent',name:'Mira assistant'}};
  const miraNote=await tool('oncall.notes.add',{incident:incident.id,revision:currentIncident.revision,text:'Independent coordination observation',idempotency_key:randomUUID()},mira);
  assert.equal(miraNote.result.isError,false);
- const miraAudit=async()=>(await (await http('/agents/api/audit?agent=mira-agent')).json()).rows;
+ const miraAudit=async()=>(await audit('mira-agent')).rows;
  const beforeActorEvents=(await miraAudit()).filter(row=>row.sponsor.id===responder.id);
  assert.ok(beforeActorEvents.length>0);
  const eraseState=await (await http('/api/state')).json();
