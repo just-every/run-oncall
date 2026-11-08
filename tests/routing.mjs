@@ -619,14 +619,15 @@ try {
   ok(await send({...firstSignal,severity:'warning'}),409);assert.deepEqual(await archive(),beforeDuplicate);
 
   // Retain real historical receipts and a held pending deadline while service rules replay.
-  const heldPaging=await checkpointFixtures(w,cookie),pagingBeforeReplay=ok(await req('/api/paging/state'));
-  assert.equal(pagingBeforeReplay.mode,'synthetic-only');assert.ok(pagingBeforeReplay.receipts.length>0);
-  const pending=pagingBeforeReplay.jobs.find(job=>job.id===heldPaging.pending);
-  assert.equal(pending.status,'pending');assert.equal(pending.nextDue,pending.steps[0].deadline);
+  const heldPaging=await checkpointFixtures(w,cookie);
   const routedId='synthetic-oncall-14',routedSecret=randomBytes(32).toString('hex');
   ok(await req('/api/routing/keys',{id:routedId,name:'Synthetic preview monitor',provider:'native',authentication:'bearer',scope:['checkout','checkpoint-cli'],owner:actor.id,key:routedSecret,revision:0,rules:[],catchAll:'checkout'}),201);
   const routedSignal={...firstSignal,source:'intake:'+routedId,eventId:'synthetic-oncall-14',key:'synthetic-oncall-14',generation:'synthetic-oncall-14'};
   const routedReceipt=ok(await w.request('/api/ingress/'+routedSignal.source,routedSignal,undefined,{authorization:'Bearer '+routedSecret}),201);
+  const pagingBeforeReplay=ok(await req('/api/paging/state'));
+  assert.equal(pagingBeforeReplay.mode,'synthetic-only');assert.ok(pagingBeforeReplay.receipts.length>0);
+  const pending=pagingBeforeReplay.jobs.find(job=>job.id===heldPaging.pending);
+  assert.equal(pending.status,'pending');assert.equal(pending.nextDue,pending.steps[0].deadline);
   const keyRowsBefore=durableSnapshot(w),keyPagingBefore=ok(await req('/api/paging/state'));
   const keyPreview=ok(await req('/api/routing/keys/'+routedId+'/preview',{baseVersion:1,rules:[],catchAll:'checkpoint-cli',receiptIds:[routedReceipt.id]}));
   assert.equal(keyPreview.decisions.length,1,'preview reaches the retained intake receipt');
