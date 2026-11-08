@@ -38,7 +38,7 @@ export async function previewIsolationBrowser(page,context,proof) {
   await screen('now-next',width);await unchanged()
   await page.goto(origin+'/on-call/'+schedule.id)
   await page.getByRole('heading',{name:'On call now and next',exact:true}).waitFor()
-  await page.getByRole('heading',{name:'Checkout response rota',exact:true}).waitFor()
+  await page.getByRole('heading',{name:'Checkout response rota',exact:true,level:1}).waitFor()
   await screen('saved-preview',width);await unchanged()
   await page.goto(origin+'/on-call/'+schedule.id+'/edit')
   const disclosure=page.locator('.oc-preview > summary')
