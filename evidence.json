@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "3827feca360fb856b6b83644cdef660810a3a97c",
+      "bytes": 7039,
+      "path": "REPORT.md",
+      "sha256": "aaf35ee1c047d3f2d6b47f4070b1072498ca847df780ff9edbf1d54a54525a9c"
+    },
+    {
+      "blob": "f8c7906a8f4df69478d1d8d72a32a77f4ba88ea5",
+      "bytes": 1682,
+      "path": "execution-receipt.json",
+      "sha256": "a9553453d940b4c037cfafedc00905f4f7b5170a4ff1d228774594dec9ffdb91"
+    },
+    {
+      "blob": "254152eabab52c75bbc847cf771e528536218f63",
+      "bytes": 1184,
+      "path": "main-ci.json",
+      "sha256": "d2ca7a7ad34f8aaf95f0b72562b247a9c84ba7addf7859aef364f86962d837b8"
+    },
+    {
+      "blob": "79b0f92e0f78fc805c4a1084ba5b9fc66facd7bd",
+      "bytes": 263,
+      "path": "predecessor-ci.json",
+      "sha256": "b7736ae6c3641968d4a7ba71921fc7de7d8f652e0de4222f67c484c5fb4ff991"
+    },
+    {
+      "blob": "5baf6f232c6a0dc8fe5608ad889f9a009b7c4ee1",
+      "bytes": 481,
+      "path": "predecessor.json",
+      "sha256": "28ca877e3daad398e9ea4bf3407f829a34f096bf02840766be71fe3b3e5399ff"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f217",
+  "product_head": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+  "ref": "refs/heads/evidence/sd-oncall-c-f217",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f217"
+}
