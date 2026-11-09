@@ -1,0 +1,11 @@
+Frozen scope rubric for BASE-AGENT-012 acceptance 4, optional Scribe expected revision only.
+
+R1. Under autonomous and held policies, a fresh ordinary incident has no Scribe or protected evidence; an existing active responder is selected. The required native revision is current while optional expected_revision is stale. Public MCP returns isError revision_conflict with the exact authorized incident revision in metadata and text, no private structuredContent, and a revision distinct from the workspace. Proof: tests/oncall-agent-role-revisions.mjs, staleScribeExpectedRevision, lines 31–61.
+R2. Refusal preserves native records, revisions, timeline, permanent state-changing audit, saved calls and outcomes, approvals, reviews and paging; only attempt audit and capacity bookkeeping may change. Proof: the same journey, lines 7–24 and 53–63, using agentEffectSnapshot.
+R3. A fresh key with the returned parent revision in both fields completes a standard-only assignment, one agent-attributed assign-role timeline entry, one parent and workspace increment, one attributable native audit commit, and either autonomous completion or one original open review. Proof: the same journey, lines 64–113.
+R4. Identical arguments and key with another JSON-RPC id return saved result and original review identity without another effect or review; only linked replay-attempt audit and capacity bookkeeping change. Proof: the same journey, lines 114–132.
+R5. Missing and scoped-out incidents produce identical not_found without revision or private result. Proof: the same journey, lines 133–152.
+R6. Every selected path attempts zero outbound requests and keeps paging unchanged. Proof: the same journey, lines 54, 108–109, 121, 131, 136–151.
+R7. The existing changed-Scribe-reason and dropped-response proofs remain invoked and unchanged. Proof: tests/oncall-agent-flow.mjs, changedScribeReasonConflict, droppedScribeAssignmentReplay and staleScribeExpectedRevision; tests/runtime.mjs imports the maintained flow.
+
+Whole-clause DONE riders remain unmet: full mutating-tool and argument coverage, full retention guarantee, remaining revision diagnostics, foreign-person job handles and independent long-work status. This round claims only the bounded observation and retains main's missing judgment.

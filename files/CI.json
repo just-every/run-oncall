@@ -1,0 +1,14 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+  "api_calls_total": 9,
+  "run": {
+    "id": 42562096048,
+    "name": "Verify",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/42562096048"
+  }
+}

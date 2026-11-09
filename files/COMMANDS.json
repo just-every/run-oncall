@@ -1,0 +1,24 @@
+{
+  "github_calls_used": 9,
+  "github_budget": 10,
+  "original_head": "bd2df3c6a66861a06b6096d3466988db41e95e9b",
+  "original_run": 42545538043,
+  "browser_job": 128930069076,
+  "aggregate_job": 128933120252,
+  "initial_typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0
+  },
+  "initial_check": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  "setup": {
+    "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0
+  },
+  "build": {
+    "command": "npx -y @runeditrun/rer build",
+    "exit": 0
+  }
+}

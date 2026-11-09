@@ -1,0 +1,4 @@
+CI watcher: discovery delayed 720 seconds while local exact-candidate checks run; three API calls remain.
+[{"id": 42562096048, "name": "Verify", "event": "push", "status": "in_progress", "conclusion": null, "head_sha": "ac3de592ab113c9c99178414e67760ce63a72ca8", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42562096048"}]
+CI {"id": 42562096048, "name": "Verify", "event": "push", "status": "in_progress", "conclusion": null, "head_sha": "ac3de592ab113c9c99178414e67760ce63a72ca8", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42562096048"}
+CI {"id": 42562096048, "name": "Verify", "event": "push", "status": "completed", "conclusion": "success", "head_sha": "ac3de592ab113c9c99178414e67760ce63a72ca8", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42562096048"}

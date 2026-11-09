@@ -1,0 +1,18 @@
+[
+  {
+    "path": "tests/oncall-agent-role-revisions.mjs",
+    "sha256": "8dd8f461fcae58e5bd73fb1046c4df1f4951a8e4bf0416cb24a2298cca95feba"
+  },
+  {
+    "path": "tests/oncall-agent-flow.mjs",
+    "sha256": "f50e54dc689dcdc6fae1cc03e85ed06d163f789337f5d6b03e4986433f3e9ef6"
+  },
+  {
+    "path": "tests/oncall-agent-role-replay.mjs",
+    "sha256": "bbc728634f52c2f0332881c9c9d80cb5827dd334da2b4107a7a02ed5839ec6cc"
+  },
+  {
+    "path": "tests/agent-door-runtime.mjs",
+    "sha256": "bf53cb3a0ba1513189d5a93695987be5453d38032aec9b9ceba2973c5b7dbea6"
+  }
+]

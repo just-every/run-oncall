@@ -1,0 +1,23 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f214-pc1",
+  "head": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+  "preserved_head": "bd2df3c6a66861a06b6096d3466988db41e95e9b",
+  "main_at_push": "b59f29479feeaeb975f53c044a65eab888fb68be",
+  "push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f214-pc1",
+    "exit": 0,
+    "attempt": 1
+  },
+  "rewritten_published_commits": false,
+  "main_pushed": false,
+  "pr": null,
+  "product_delta": [
+    "tests/oncall-agent-flow.mjs",
+    "tests/oncall-agent-role-revisions.mjs",
+    "tests/agent-door-browser.mjs",
+    "sources.lock.json"
+  ],
+  "contract_changed": false,
+  "runtime_build_note": "Machines journey began before the repair commit; its entire production source and runtime test inputs are unchanged between saved head and candidate. Only the separate browser clock fixture and generated lock changed."
+}

@@ -1,0 +1,62 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+  "runtime": {
+    "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+    "exit": 0,
+    "note": "Runtime and production input bytes unchanged across repair commit"
+  },
+  "browser_component": {
+    "command": "node tests/agent-door-browser.mjs",
+    "exit": 0,
+    "changed_assertions": 0
+  },
+  "rubric_results": {
+    "R1": "PASS",
+    "R2": "PASS",
+    "R3": "PASS",
+    "R4": "PASS",
+    "R5": "PASS",
+    "R6": "PASS",
+    "R7": "PASS"
+  },
+  "probes": [
+    "PROBE BASE-AGENT-012 acceptance 4 autonomous Scribe optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only autonomous, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 autonomous Scribe non-disclosure: valid scoped client with current native revision and stale optional revision against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 held Scribe optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only review, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 held Scribe non-disclosure: valid scoped client with current native revision and stale optional revision against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests"
+  ],
+  "browser_shard": {
+    "command": "CI=true WRANGLER_SEND_METRICS=false PLAYWRIGHT_SKIP_BROWSER_GC=1 SHARD=browser node scripts/verify-oncall.mjs browser",
+    "exit": 0,
+    "head": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+    "build_receipt": {
+      "sha": "ac3de592ab113c9c99178414e67760ce63a72ca8"
+    },
+    "node": "22.20.0",
+    "chromium": "/usr/bin/chromium"
+  },
+  "build_sha256": "3a498b2c3dee06d589faf6905c4c2e1c555245852fd10baaeb286db7ae710f00",
+  "ci": {
+    "repository": "just-every/run-oncall",
+    "head": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+    "api_calls_total": 9,
+    "run": {
+      "id": 42562096048,
+      "name": "Verify",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42562096048"
+    }
+  },
+  "product_remote_verified": true,
+  "publication_scan": {
+    "runner": "guarded Mac lander",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Cloud branch does not run the fleet publication scan"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "lock": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "views": {
+    "write": "node src/base/contract-docs.mjs write",
+    "check": "node src/base/contract-docs.mjs check",
+    "exit": 0,
+    "written": 0,
+    "restored": [
+      "ACCEPTANCE.md",
+      "docs/CLAIMS.md"
+    ]
+  },
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0
+  },
+  "first_party": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration changes"
+  },
+  "contract_status_changes": 0,
+  "counts_before": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34
+  },
+  "registrations_added": 0,
+  "assertions_removed_or_narrowed": 0,
+  "ci_installed_lock_check": {
+    "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+    "exit": 0
+  }
+}

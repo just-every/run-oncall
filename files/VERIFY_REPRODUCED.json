@@ -1,0 +1,15 @@
+{
+  "head": "bd2df3c6a66861a06b6096d3466988db41e95e9b",
+  "job": "128930069076",
+  "command": "CI=true WRANGLER_SEND_METRICS=false PLAYWRIGHT_SKIP_BROWSER_GC=1 SHARD=browser node scripts/verify-oncall.mjs browser",
+  "test": "tests/agent-door-browser.mjs initialization through tests/initialize-agent-owner.mjs",
+  "exit": 1,
+  "failure": "Native fixture request failed: /api/members; 409 !== 201",
+  "runner": "dedicated cloud VM; Node 22.20.0; Chromium /usr/bin/chromium",
+  "main": {
+    "head": "b59f29479feeaeb975f53c044a65eab888fb68be",
+    "command": "node tests/agent-door-browser.mjs",
+    "exit": 1,
+    "failure": "Native fixture request failed: /api/members; 409 !== 201"
+  }
+}
