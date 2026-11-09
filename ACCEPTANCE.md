@@ -8,10 +8,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 19 | 41 | 24 | 84 |
+| Core | 20 | 40 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 20 | 47 | 34 | 101 |
+| Full target | 21 | 46 | 34 | 101 |
 
 Judged from the code and tests at commit `b1acb1fb0ed0be8603dda6a560fd8c3e0653dd91` (6 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -268,15 +268,15 @@ Core · published · **done** · Cites BASE-OPS-002
 
 #### OC-020 — Now/next and calendar feed
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Now/next explains current coverage and each role's next effective hand-off. The private ICS feed uses the same resolved UTC boundaries, including overrides and gaps, and exports primary and backup separately. It requires a current session; the default window is seven days, and explicit windows are bounded to 31 elapsed days. Calendar downloads carry no public bearer access. Alert intake records immutable events with scoped source credentials; intake never starts paging.
 
 **Acceptance.**
 1. Read now/next and the authenticated ICS feed for the seven-day default and bounded explicit windows: primary and backup UTC boundaries, overrides and gaps are correct, unauthenticated access is denied, and admission starts no paging.
 
-**Evidence.** `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs`; `tests/product-browser-journey.mjs`
-**Gap.** The seven-day default, the 31-day bound on explicit windows, the separate backup feed, gaps in the feed and paging-free admission are not asserted in the cited tests; now/next, an authenticated explicit-window feed with override boundaries and unauthenticated refusal are asserted. Private ICS downloads support Google Calendar/Outlook import; persistent subscription credentials are OC-025.
+**Evidence.** `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs` — the main HTTP journey (run in the changes shard after scheduleCoordination): now/next at the 13:00 UTC hand-off and with an override (primary, backup and next hand-off); the ICS feed with no session refused 401; the seven-day default window, an explicit override window and the 31-day limit each compare every primary and backup event to the resolved UTC preview intervals (distinct UIDs, DST-day boundaries, override start and end); 31 days plus one second, a zero and a reverse window refused 400 with only the refusal audit written; an inactive responder shows primary and backup Coverage gap events with exact intervals and explanations; a scoped source credential admits an immutable event and active alert with the saved paging policy unchanged, a retry returns the original event, a revoked key is refused 401, and zero outbound requests are made.
+**Gap.** None.
 
 #### OC-021 — Move-in preview
 
