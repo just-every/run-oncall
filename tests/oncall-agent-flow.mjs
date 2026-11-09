@@ -11,6 +11,7 @@ import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
 import {teamReplay} from './oncall-agent-team-replay.mjs';
 import {staleReassignmentNativeRevision} from './oncall-agent-incident-revisions.mjs';
 import {staleScribeExpectedRevision} from './oncall-agent-role-revisions.mjs';
+import {staleCommunicationsExpectedRevision} from './oncall-agent-communications-revisions.mjs';
 import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
 import {auditRows} from '../src/modules/agent-door/conformance/audit-pages.mjs';
 import {droppedReassignmentReplay} from './oncall-agent-incident-replay.mjs';
@@ -1115,6 +1116,7 @@ try{
  await eraseClasses(runtime);
  await staleReassignmentNativeRevision(runtime);
  await staleScribeExpectedRevision(runtime);
+ await staleCommunicationsExpectedRevision(runtime);
  await specialist({request:runtime.request,origin:runtime.origin,cookie:runtime.cookie,fixtures:runtime.fixtures,tool});
  const events=await tool('oncall.events.list',{limit:200});assert.equal(code(events),'capability_not_declared');assert.equal(events.result.structuredContent,undefined);
  assert.ok((await audit()).rows.some(row=>row.agent.id===runtime.context.agentId&&row.outcome==='done'));

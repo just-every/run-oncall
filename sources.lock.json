@@ -6484,7 +6484,7 @@
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "50d3163a43d39fc949c274e989a59203cc5588cac254b33d63f82a0f6add03aa",
+      "sha256": "adcf79cf8f24b34a04dfb564822f753ac401cda06196dd17ec6c164273de831c",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {
@@ -6504,7 +6504,7 @@
       "executable": false
     },
     "tests/oncall-agent-role-revisions.mjs": {
-      "sha256": "8dd8f461fcae58e5bd73fb1046c4df1f4951a8e4bf0416cb24a2298cca95feba",
+      "sha256": "202cda030d43c94e9de49dac306068ff086f0f0a766f18c20d34bbd47aa09903",
       "executable": false
     },
     "tests/oncall-agent-schedule-replay.mjs": {

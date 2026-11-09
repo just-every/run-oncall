@@ -3,8 +3,8 @@ import {randomUUID} from 'node:crypto';
 import {agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
-/** A stale optional Scribe revision diagnoses only an authorized parent. */
-export async function staleScribeExpectedRevision(runtime){
+/** A stale optional role revision diagnoses only an authorized parent. */
+export async function staleRoleExpectedRevision(runtime,role,label){
  const {db,http,tool,adopt,context}=runtime;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
@@ -23,24 +23,24 @@ export async function staleScribeExpectedRevision(runtime){
  const owner=(await read('/api/workspace')).member;
  const name='oncall.incidents.update';
  const credential='synthetic-oncall-'+randomUUID();
- const client=await http('/api/automation/clients',{name:'Synthetic Scribe revision scope',key:credential,
+ const client=await http('/api/automation/clients',{name:`Synthetic ${label} revision scope`,key:credential,
   services:['agent-service'],permissions:['services:read','incidents:read','incidents:write']});
  assert.equal(client.status,201);await client.json();
  for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
   assert.equal((await adopt(policy)).status,200);
-  const incident=await command({type:'declare',service:'agent-service',title:'Synthetic optional Scribe revision '+mode,
+  const incident=await command({type:'declare',service:'agent-service',title:`Synthetic optional ${label} revision `+mode,
    summary:'Native coordination without protected evidence',severity:'warning',alerts:[]});
   const before=await snapshot(),pagingBefore=await read('/api/paging/state'),priorAudit=await audits(),permanentBefore=await permanent();
   assert.ok(before.records.agent_door_calls.some(row=>row.outcome),'Refusal preserves populated original outcome custody');
   assert.ok(before.records.agent_door_approvals.length>0,'Refusal preserves existing approval custody');
   assert.ok(before.records.agent_door_reviews.length>0,'Refusal preserves existing review custody');
   assert.notEqual(before.application.revision,incident.revision,'The diagnostic names the parent incident revision, not the workspace revision');
-  assert.equal(incident.scribe??null,null);assert.equal(incident.state,'declared');
+  assert.equal(incident[role]??null,null);assert.equal(incident.state,'declared');
   const responder=before.application.members.find(row=>row.active&&row.role==='responder');
-  assert.ok(responder,'Scribe assignment names an existing active responder');
+  assert.ok(responder,`${label} assignment names an existing active responder`);
   assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);assert.equal(incident.recovery,'');
-  const args={change:'assign-role',role:'scribe',incident:incident.id,revision:incident.revision,member:responder.id,
-   reason:'Synthetic literal Scribe reason <keep this text> & retain it',idempotency_key:randomUUID()};
+  const args={change:'assign-role',role,incident:incident.id,revision:incident.revision,member:responder.id,
+   reason:`Synthetic literal ${label} reason <keep this text> & retain it`,idempotency_key:randomUUID()};
   const staleArgs={...args,expected_revision:incident.revision-1};
   assert.equal(staleArgs.revision,incident.revision,'The required native revision is current');
   assert.notEqual(staleArgs.expected_revision,staleArgs.revision);
@@ -66,20 +66,20 @@ export async function staleScribeExpectedRevision(runtime){
   const once=await snapshot(),result=first.result.structuredContent,pagingOnce=await read('/api/paging/state');
   const native=JSON.parse(once.records.oc_incidents.find(row=>row.id===incident.id).data);
   assert.deepEqual(result,native);assert.deepEqual(once.application.incidents.find(row=>row.id===incident.id),native);
-  assert.deepEqual(result,{...incident,scribe:responder.id,revision:returned+1,timeline:result.timeline},'Only Scribe, revision and the appended timeline entry change');
+  assert.deepEqual(result,{...incident,[role]:responder.id,revision:returned+1,timeline:result.timeline},`Only ${label}, revision and the appended timeline entry change`);
   assert.equal(result.revision,args.revision+1);assert.equal(once.application.revision,before.application.revision+1);
   assert.equal(once.records.workspace_control[0].revision,before.records.workspace_control[0].revision+1);
   assert.equal(once.application.incidents.length,before.application.incidents.length);
   assert.deepEqual(once.application.incidents.filter(row=>row.id!==incident.id),before.application.incidents.filter(row=>row.id!==incident.id));
   assert.deepEqual(result.timeline.slice(0,-1),incident.timeline);assert.equal(result.timeline.length,incident.timeline.length+1);
   const entry=result.timeline.at(-1);
-  assert.equal(entry.kind,'assign-role');assert.equal(entry.text,'scribe: Unassigned → '+responder.name+': '+args.reason);
+  assert.equal(entry.kind,'assign-role');assert.equal(entry.text,role+': Unassigned → '+responder.name+': '+args.reason);
   assert.equal(entry.actor,context.agentId);assert.notEqual(entry.actor,responder.id);
   assert.equal(entry.metadata.agent.agent.id,context.agentId);assert.equal(entry.metadata.agent.for.id,owner.id);
   assert.equal(result.timeline.filter(row=>row.kind==='assign-role').length,1);
   assert.deepEqual(result.actions,incident.actions);assert.deepEqual(result.alerts,incident.alerts);
   const commits=once.records.oc_admin_audit.filter(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
-  assert.equal(commits.length,1,'Exactly one native state-changing audit commits the Scribe assignment');
+  assert.equal(commits.length,1,`Exactly one native state-changing audit commits the ${label} assignment`);
   const commit=commits[0];assert.equal(commit.kind,'incidents.update');assert.equal(commit.outcome,'accepted');
   assert.equal(commit.workspace_before,before.application.revision);assert.equal(commit.workspace_after,once.application.revision);
   assert.equal(commit.paging_before,commit.paging_after);assert.equal(commit.handoff_before,commit.handoff_after);
@@ -116,7 +116,7 @@ export async function staleScribeExpectedRevision(runtime){
   assert.equal(replay.status,200);assert.equal(replay.body.error,undefined);assert.equal(replay.result.isError,false);
   assert.notEqual(replay.body.id,first.body.id);assert.notEqual(replay.body.id,stale.body.id);
   assert.deepEqual(replay.result.structuredContent,stored.result);assert.deepEqual(replay.result._meta['com.runeditrun/review'],stored.review);
-  assert.deepEqual(await snapshot(),once,'Exact original arguments return the saved outcome with no second Scribe assignment, revision, state-changing audit or held review');
+  assert.deepEqual(await snapshot(),once,`Exact original arguments return the saved outcome with no second ${label} assignment, revision, state-changing audit or held review`);
   assert.deepEqual(await read('/api/paging/state'),pagingOnce);
   assert.deepEqual(await rows('SELECT * FROM agent_door_calls WHERE agent=? AND key=?',context.agentId,args.idempotency_key),calls);
   const retried=await audits();assert.deepEqual(retried.slice(0,-1),originalAudit);assert.equal(retried.length,originalAudit.length+1);
@@ -125,12 +125,12 @@ export async function staleScribeExpectedRevision(runtime){
   assert.equal(retry.replay_of,first.decision.id);assert.equal(retry.operation_id,original.operation_id);
   assert.equal(retry.idempotency_key,args.idempotency_key);assert.equal(retry.agent.id,context.agentId);assert.equal(retry.sponsor.id,owner.id);
   await bookkeeping(permanentOnce);
-  assert.deepEqual(await runtime.outboundRequests(),[],'Scribe optional revision refusal, recovery and exact retry attempt zero outbound requests');
-  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' Scribe optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision '+error.current_revision+' in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only '+disposition+', one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests');
+  assert.deepEqual(await runtime.outboundRequests(),[],`${label} optional revision refusal, recovery and exact retry attempt zero outbound requests`);
+  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+` ${label} optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision `+error.current_revision+' in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only '+disposition+', one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests');
 
   const scoped=await tool('oncall.services.read',{id:'agent-service'},{},credential);
   assert.equal(scoped.result.isError,false);assert.equal(scoped.result.structuredContent.data[0].id,'agent-service');
-  const foreign=await command({type:'declare',service:'agent-foreign-service',title:'Synthetic private Scribe revision '+mode,
+  const foreign=await command({type:'declare',service:'agent-foreign-service',title:`Synthetic private ${label} revision `+mode,
    summary:'Ordinary private coordination',severity:'warning',alerts:[]});
   const privateBefore=await snapshot(),privatePaging=await read('/api/paging/state'),denials=[];
   for(const target of [foreign,{id:'synthetic-oncall-'+randomUUID(),revision:foreign.revision}]){
@@ -149,7 +149,11 @@ export async function staleScribeExpectedRevision(runtime){
   }
   assert.deepEqual(denials[0],denials[1],'Missing and scoped-out incidents have identical public errors');
   assert.deepEqual(await runtime.outboundRequests(),[]);
-  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' Scribe non-disclosure: valid scoped client with current native revision and stale optional revision against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests');
+  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+` ${label} non-disclosure: valid scoped client with current native revision and stale optional revision against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests`);
  }
  assert.equal((await adopt()).status,200);
+}
+
+export async function staleScribeExpectedRevision(runtime){
+ await staleRoleExpectedRevision(runtime,'scribe','Scribe');
 }
