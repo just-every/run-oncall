@@ -1,0 +1,116 @@
+{
+  "tag": "sd-oncall-c-f216",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f216",
+  "head": "d9435b82a926c271c978c0cd198c881d9a685a6b",
+  "main_at_final_reconciliation": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+  "product_push": "success",
+  "remote_head_verified": "d9435b82a926c271c978c0cd198c881d9a685a6b",
+  "pr": null,
+  "clause": "BASE-AGENT-012",
+  "status_before": "MISSING",
+  "status_after": "MISSING",
+  "claim": "PARTIAL",
+  "observation": "acceptance 3 Communications changed-reason conflict under autonomous and held policies",
+  "counts_before": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34,
+    "total": 101
+  },
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=machines WRANGLER_SEND_METRICS=false node tests/runtime.mjs",
+      "exit": 0,
+      "seconds": 476.5,
+      "log": "runtime-machines.log",
+      "tree_sha256": {
+        "tests/oncall-agent-communications-replay.mjs": "b6598d94a07791143b45ef8059826aa4fa825635ad6f52e86d283b2586c376db",
+        "tests/oncall-agent-flow.mjs": "97dade1b0d880c167b011249e23b2bcaf291cebb874a52259369803e35b53dcc",
+        "sources.lock.json": "840ba084ba9e69bfee3c9f53c9306ff832a725a739e0a2c7b45a0eb1aab4996f"
+      }
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party-check.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "log": "views-write.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "views-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "lock-write.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "lock-check.log"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "installed-lock-check.log"
+    }
+  ],
+  "generated_views": "restored whole from origin/main, uncommitted",
+  "contract_status_diff": "empty",
+  "existing_assertions_removed": false,
+  "screens_touched": false,
+  "migration_ledger": "not applicable; no migration changed",
+  "identities": "all candidate authors and committers fleet; no co-author trailers",
+  "ci_run_id": 42569384060,
+  "ci_status": "in_progress",
+  "publication_scan": {
+    "commit": "d9435b82a926c271c978c0cd198c881d9a685a6b",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "status": "fleet lander required, not run in cloud"
+  },
+  "main_equality": false,
+  "landing": "pending guarded fleet lander",
+  "source_sha256": {
+    "tests/oncall-agent-communications-replay.mjs": "b6598d94a07791143b45ef8059826aa4fa825635ad6f52e86d283b2586c376db",
+    "tests/oncall-agent-flow.mjs": "97dade1b0d880c167b011249e23b2bcaf291cebb874a52259369803e35b53dcc",
+    "sources.lock.json": "840ba084ba9e69bfee3c9f53c9306ff832a725a739e0a2c7b45a0eb1aab4996f"
+  },
+  "recorded_at": "2026-11-09T05:53:43.982943+00:00",
+  "terminal": "BLOCKED for landing; selected observation passed and product pushed",
+  "blocker": "Explicit shared-file predecessor f215 requires reconciliation and accepted landing first",
+  "predecessor": {
+    "tag": "sd-oncall-c-f215",
+    "head": "627dffb01616417cf70e68951cfc37a64fb4e24d",
+    "ancestor_of_main": false,
+    "actions_runs": [],
+    "evidence_head": "b09cc92427d4f511a8fdf255d114721613bf39e4",
+    "report_sha256": "3eadc841fd0c494970eb79c623529db399b9a3ce6f87095736fada835ed4f323",
+    "old_f214_prerequisite_now_landed": true
+  },
+  "ci_watcher": "stopped after binding predecessor hold identified; no green claim",
+  "api_calls": 4
+}
