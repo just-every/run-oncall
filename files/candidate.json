@@ -13,12 +13,14 @@
   "pr_reason": "Existing Verify workflow runs on push to all branches.",
   "verify": {
     "conclusion": null,
-    "event": "push",
     "head_sha": "bd2df3c6a66861a06b6096d3466988db41e95e9b",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/42545538043",
+    "status": "in_progress",
     "id": 42545538043,
     "name": "Verify",
-    "status": "in_progress"
+    "event": "push",
+    "observed_at": "2026-11-09T01:31:11.724983+00:00",
+    "api_calls": 3
   },
   "main_verify_ids": [
     42538139569,
@@ -84,14 +86,15 @@
     "status": "not run in cloud; fleet gate",
     "complete": null,
     "historyScanned": null,
-    "findings": null
+    "findings": null,
+    "commit": "bd2df3c6a66861a06b6096d3466988db41e95e9b"
   },
   "landing": {
     "status": "branch only; fleet gate",
     "main_equals_candidate": false
   },
   "blockers": [],
-  "github_api_calls": 2,
+  "github_api_calls": 3,
   "receipts": [
     "local-checks.json",
     "scribe-probes.txt",
@@ -99,5 +102,7 @@
     "identities.txt",
     "main-runs.jsonl",
     "candidate-runs.jsonl"
-  ]
+  ],
+  "handoff": "PUSHED",
+  "ci_observation_note": "Run remains in progress after the scheduled five-minute observation. Cloud wait allowance ended; fleet must require exact-SHA green before landing."
 }

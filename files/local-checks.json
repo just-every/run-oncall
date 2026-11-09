@@ -86,7 +86,7 @@
     "exit": 0,
     "reason": "No migrations changed."
   },
-  "github_api_calls_so_far": 2,
+  "github_api_calls_so_far": 3,
   "whole_clause_status": "missing",
   "slice_claim": "PARTIAL",
   "points": [

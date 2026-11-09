@@ -7,10 +7,10 @@
       "sha256": "1b6e7fccf947d082f4aa6047211c95c59ad70f1f11ca6fe1ac452b832426efbf"
     },
     {
-      "blob": "a07718ec6bf2e992e3becc4c6f0c092708fb24ab",
-      "bytes": 9329,
+      "blob": "30a5243d6c8d3fdb73ca8187ef556a8d3d6c132d",
+      "bytes": 10709,
       "path": "REPORT.md",
-      "sha256": "58bfa91ccdc976aef432d37def5f9fd714ba6b1f2f10809a7208e06726dee06d"
+      "sha256": "efe69c24482c6b4cf424a3a093cd7b468bdaf40a293f29e7dbf868f8a070a427"
     },
     {
       "blob": "44ec9012e250856afd0aa0f53133efcc67474f0c",
@@ -19,10 +19,16 @@
       "sha256": "1e2b53e19883d50189a57ff542d346854223d324be559bece0706b800b8b7a86"
     },
     {
-      "blob": "4f1bef4cc5aab3ffc61ca6e23b5f1be98c82c2aa",
-      "bytes": 2943,
+      "blob": "0f752e4e68c6b897c8b4035f6c4a384035ad1f82",
+      "bytes": 3275,
       "path": "candidate.json",
-      "sha256": "741007d3cdf50e230663653a0c5ce7facf918ea41b90d9b96a9584bac586aa2b"
+      "sha256": "3e1ac37650b2b6c84323557da0da0b9c8ba49df3e3bacaf12aef2e13770ef22d"
+    },
+    {
+      "blob": "9543125f71332cb07b6d78c65e0b75b08b92ca7a",
+      "bytes": 304,
+      "path": "ci-polls.jsonl",
+      "sha256": "e4772fb3f3ed71053e31f7ab8bddec5f4b34b3d477ea6461cece749eb737890e"
     },
     {
       "blob": "5c59c5dd2b9c20bdcd5fc8cb9faf453d7727c345",
@@ -31,10 +37,16 @@
       "sha256": "2207e4dc72ee74da18dcbb0255000019da805815422543960674cf23abc0af3e"
     },
     {
-      "blob": "7f6cf00835c4e412a6ec0b053e04bda52114fd31",
+      "blob": "379ca79ffba357446bf403d918a4de28e25e0017",
+      "bytes": 324,
+      "path": "latest-ci.json",
+      "sha256": "5b0f1d73080583b4ab466bea4fff692b89c72fc4498ae0688fe93127ef924372"
+    },
+    {
+      "blob": "44561f1038b86c8c327e0087b7cea311dd5e94c5",
       "bytes": 3126,
       "path": "local-checks.json",
-      "sha256": "359e03a1014a66a74b030f9bf34a5e37bb822596352e0e73740a54416f4be541"
+      "sha256": "41d941d33a19eae068a3ffbd66628e7f02e42ce744e9500accc6870a80cd464f"
     },
     {
       "blob": "472d4da55f615af125b933575b476d17fbf7bdb3",

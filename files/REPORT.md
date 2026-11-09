@@ -66,3 +66,9 @@ Exact-SHA Verify push run 42545538043 was discovered in progress. No success is 
 
 CLAIM BASE-AGENT-012 PARTIAL points=4 tests=tests/oncall-agent-role-revisions.mjs#staleScribeExpectedRevision
 GAP BASE-AGENT-012: only the selected optional Scribe expected_revision diagnostic is closed; complete mutating-tool and retention coverage, other dropped responses and argument conflicts, remaining optional and required-native diagnostics, foreign-person job handles and independent long-work status remain unproved. All authority and paging holds above are unchanged.
+
+Terminal CI observation: Verify push run 42545538043 remains in progress on bd2df3c6a66861a06b6096d3466988db41e95e9b at 2026-11-09T01:31:11.724983+00:00. Exactly 3 GitHub REST calls were used: baseline discovery, candidate discovery and the scheduled five-minute run observation. No workflow dispatch, rerun, failed-job log read or second watcher. The owned watcher was stopped after this cloud wait allowance. The terminal handoff is PUSHED; no exact-SHA green, READY, publication-scan completeness or landing is claimed. There is no reproduced red check and no product blocker. Independent fleet gates retain their ordinary authority.
+
+Rider 3 remains PENDING exact-SHA Verify success; rider 11 remains PENDING fleet scan and landing. The frozen selected runtime rubric R1–R6 is MET locally. Whole-clause rider 1 remains FAIL because the expressly retained broader acceptance gaps are not closed. This is bounded PARTIAL evidence with MISSING retained, never whole-clause promotion.
+
+Full relevant non-secret packet: REPORT.md, PLAN.md, candidate.json, local-checks.json, scribe-probes.txt, source-hashes.json, identities.txt, main-runs.jsonl, candidate-runs.jsonl, latest-ci.json and ci-polls.jsonl. Product custody is separate from report publication. The disposable clone is removed only after successful final evidence transfer; these external report files are retained.
