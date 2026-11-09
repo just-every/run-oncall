@@ -1,0 +1,103 @@
+{
+  "tag": "sd-oncall-c-f214",
+  "repository": "just-every/run-oncall",
+  "product_branch": "cloud/sd-oncall-c-f214",
+  "product_head": "bd2df3c6a66861a06b6096d3466988db41e95e9b",
+  "baseline_main": "b59f29479feeaeb975f53c044a65eab888fb68be",
+  "product_push": {
+    "status": "pushed",
+    "attempts": 1,
+    "force": false
+  },
+  "pr": null,
+  "pr_reason": "Existing Verify workflow runs on push to all branches.",
+  "verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "bd2df3c6a66861a06b6096d3466988db41e95e9b",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/42545538043",
+    "id": 42545538043,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "main_verify_ids": [
+    42538139569,
+    42534513386
+  ],
+  "main_run_site_id": 42538139458,
+  "claim": {
+    "clause": "BASE-AGENT-012",
+    "status": "PARTIAL",
+    "points": [
+      4
+    ],
+    "test": "tests/oncall-agent-role-revisions.mjs#staleScribeExpectedRevision",
+    "scope": "Only selected optional expected_revision Scribe diagnostic; whole clause remains MISSING."
+  },
+  "counts_before": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_diff": "empty",
+  "generated_view_diff": "empty",
+  "rubric": [
+    {
+      "id": "R1",
+      "result": "MET",
+      "evidence": "tests/oncall-agent-role-revisions.mjs#staleScribeExpectedRevision; scribe-probes.txt; successful machines journey"
+    },
+    {
+      "id": "R2",
+      "result": "MET",
+      "evidence": "tests/oncall-agent-role-revisions.mjs#staleScribeExpectedRevision; scribe-probes.txt; successful machines journey"
+    },
+    {
+      "id": "R3",
+      "result": "MET",
+      "evidence": "tests/oncall-agent-role-revisions.mjs#staleScribeExpectedRevision; scribe-probes.txt; successful machines journey"
+    },
+    {
+      "id": "R4",
+      "result": "MET",
+      "evidence": "tests/oncall-agent-role-revisions.mjs#staleScribeExpectedRevision; scribe-probes.txt; successful machines journey"
+    },
+    {
+      "id": "R5",
+      "result": "MET",
+      "evidence": "tests/oncall-agent-role-revisions.mjs#staleScribeExpectedRevision; scribe-probes.txt; successful machines journey"
+    },
+    {
+      "id": "R6",
+      "result": "MET",
+      "evidence": "tests/oncall-agent-role-revisions.mjs#staleScribeExpectedRevision; scribe-probes.txt; successful machines journey"
+    }
+  ],
+  "publication_scan": {
+    "status": "not run in cloud; fleet gate",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "landing": {
+    "status": "branch only; fleet gate",
+    "main_equals_candidate": false
+  },
+  "blockers": [],
+  "github_api_calls": 2,
+  "receipts": [
+    "local-checks.json",
+    "scribe-probes.txt",
+    "source-hashes.json",
+    "identities.txt",
+    "main-runs.jsonl",
+    "candidate-runs.jsonl"
+  ]
+}

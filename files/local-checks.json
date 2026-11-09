@@ -1,0 +1,97 @@
+{
+  "tag": "sd-oncall-c-f214",
+  "repository": "just-every/run-oncall",
+  "baseline": "b59f29479feeaeb975f53c044a65eab888fb68be",
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email <fleet-address> --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "note": "Production source bytes unchanged; new tests execute emitted build."
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run env ONCALL_RUNTIME_PART=core WRANGLER_SEND_METRICS=false timeout 1500 node tests/runtime.mjs",
+      "exit": 0,
+      "note": "Core regression coverage; selected agent flow is in machines, recorded separately."
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "output": "Wrote 0 contract documents."
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "output": "Contract prose: 0 errors, 0 warnings. Contract documents are current."
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node --check tests/oncall-agent-role-revisions.mjs; node --check tests/oncall-agent-flow.mjs; git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run env ONCALL_RUNTIME_PART=machines WRANGLER_SEND_METRICS=false timeout 1500 node tests/runtime.mjs",
+      "exit": 0,
+      "duration_seconds": 320.9
+    },
+    {
+      "command": "git fetch origin main; git rebase origin/main; generator write and check; restore views; lock and check; git diff --exit-code",
+      "exit": 0,
+      "output": "Current branch cloud/sd-oncall-c-f214 is up to date. No generated changes."
+    }
+  ],
+  "tested_tree": {
+    "tests/oncall-agent-flow.mjs": "f50e54dc689dcdc6fae1cc03e85ed06d163f789337f5d6b03e4986433f3e9ef6",
+    "tests/oncall-agent-role-revisions.mjs": "8dd8f461fcae58e5bd73fb1046c4df1f4951a8e4bf0416cb24a2298cca95feba",
+    "sources.lock.json": "0c976ae20d4da9b9f33751e5628de7f6508097b2d2b9bc71564e346ba66c0f0c"
+  },
+  "counts": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_source_unchanged": true,
+  "generated_views_committed": false,
+  "new_email_shaped_test_strings": 0,
+  "new_test_registrations": 0,
+  "migration_ledger": {
+    "command": "none",
+    "exit": 0,
+    "reason": "No migrations changed."
+  },
+  "github_api_calls_so_far": 2,
+  "whole_clause_status": "missing",
+  "slice_claim": "PARTIAL",
+  "points": [
+    4
+  ],
+  "candidate": "bd2df3c6a66861a06b6096d3466988db41e95e9b",
+  "tested_bytes_equal_committed_candidate": true
+}
