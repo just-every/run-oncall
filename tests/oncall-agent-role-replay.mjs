@@ -5,6 +5,11 @@ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance
 
 /** Recover the original Scribe assignment after losing the real MCP response. */
 export async function droppedScribeAssignmentReplay(runtime){
+ await droppedRoleAssignmentReplay(runtime,'scribe','Scribe');
+}
+
+/** Shared native role recovery journey, including D1 custody before retry. */
+export async function droppedRoleAssignmentReplay(runtime,role,label){
  const {db,http,tool,adopt,discardToolResponse,context}=runtime;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
@@ -16,15 +21,15 @@ export async function droppedScribeAssignmentReplay(runtime){
  const owner=(await read('/api/workspace')).member,name='oncall.incidents.update';
  for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
   assert.equal((await adopt(policy)).status,200);
-  const incident=await command({type:'declare',service:'agent-service',title:'Synthetic lost Scribe response '+mode,
+  const incident=await command({type:'declare',service:'agent-service',title:'Synthetic lost '+label+' response '+mode,
    summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
   const before=await snapshot(),pagingBefore=await read('/api/paging/state'),priorAudit=await audits();
-  assert.equal(incident.scribe??null,null);assert.equal(incident.state,'declared');
+  assert.equal(incident[role]??null,null);assert.equal(incident.state,'declared');
   assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);assert.equal(incident.recovery,'');
   const responder=before.application.members.find(row=>row.active&&row.role==='responder');
-  assert.ok(responder,'Scribe assignment names an existing active responder');
-  const args=Object.freeze({change:'assign-role',role:'scribe',incident:incident.id,revision:incident.revision,member:responder.id,
-   reason:'Synthetic literal Scribe reason <keep this text> & retain it',idempotency_key:randomUUID()});
+  assert.ok(responder,label+' assignment names an existing active responder');
+  const args=Object.freeze({change:'assign-role',role,incident:incident.id,revision:incident.revision,member:responder.id,
+   reason:'Synthetic literal '+label+' reason <keep this text> & retain it',idempotency_key:randomUUID()});
   const lost=await discardToolResponse(name,args);
   assert.equal(lost.status,200);assert.equal(lost.discarded,true);assert.equal(lost.aborted,true);assert.equal(lost.bodyRead,false);
   // The lost body is never parsed: D1 establishes the completed call and result before retry.
@@ -35,7 +40,7 @@ export async function droppedScribeAssignmentReplay(runtime){
   assert.deepEqual(saved.decision.classes.map(row=>row.class),['standard']);assert.equal(saved.decision.disposition,disposition);
   const stored=JSON.parse(once.records.oc_incidents.find(row=>row.id===incident.id).data);
   assert.deepEqual(saved.result,stored);assert.deepEqual(once.application.incidents.find(row=>row.id===incident.id),stored);
-  assert.deepEqual(stored,{...incident,scribe:responder.id,revision:incident.revision+1,timeline:stored.timeline},'Only Scribe, revision and the appended timeline entry change');
+  assert.deepEqual(stored,{...incident,[role]:responder.id,revision:incident.revision+1,timeline:stored.timeline},'Only '+label+', revision and the appended timeline entry change');
   assert.equal(stored.revision,args.revision+1);assert.equal(once.application.revision,before.application.revision+1);
   assert.equal(once.records.workspace_control[0].revision,before.records.workspace_control[0].revision+1);
   assert.equal(once.application.incidents.length,before.application.incidents.length);
@@ -43,7 +48,7 @@ export async function droppedScribeAssignmentReplay(runtime){
   assert.equal(stored.timeline.length,incident.timeline.length+1);assert.deepEqual(stored.timeline.slice(0,-1),incident.timeline);
   const entry=stored.timeline.at(-1);
   assert.equal(entry.kind,'assign-role');assert.equal(stored.timeline.filter(row=>row.kind==='assign-role').length,1);
-  assert.equal(entry.text,'scribe: Unassigned → '+responder.name+': '+args.reason);
+  assert.equal(entry.text,role+': Unassigned → '+responder.name+': '+args.reason);
   assert.equal(entry.actor,context.agentId);assert.notEqual(entry.actor,responder.id);
   assert.equal(entry.metadata.agent.agent.id,context.agentId);assert.equal(entry.metadata.agent.for.id,owner.id);
   const commits=once.records.oc_admin_audit,priorCommits=before.records.oc_admin_audit;
@@ -103,8 +108,8 @@ export async function droppedScribeAssignmentReplay(runtime){
    assert.equal(record.kind,'agent-door.persistence');assert.ok(['accepted','refused'].includes(record.outcome));
    for(const family of ['workspace','paging','handoff'])assert.equal(record[family+'_before'],record[family+'_after'],'Replay audit never commits another application effect');
   }
-  assert.deepEqual(await runtime.outboundRequests(),[],'Scribe assignment and lost-response retry attempt zero outbound requests');
-  console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+' Scribe assignment: real MCP response destroyed at headers with unread body; D1 confirms completed standard-only call, saved outcome and one agent-attributed assign-role before retry; original revision and key with new RPC id return exact result and original review identity; one incident and workspace revision increment and native audit commit; '+(mode==='held'?'one original open review; ':'')+'native custody and paging unchanged; one linked replay-attempt audit and capacity bookkeeping only; zero outbound requests');
+  assert.deepEqual(await runtime.outboundRequests(),[],label+' assignment and lost-response retry attempt zero outbound requests');
+  console.log('PROBE BASE-AGENT-012 acceptance 2 '+mode+' '+label+' assignment: real MCP response destroyed at headers with unread body; D1 confirms completed standard-only call, saved outcome and one agent-attributed assign-role before retry; original revision and key with new RPC id return exact result and original review identity; one incident and workspace revision increment and native audit commit; '+(mode==='held'?'one original open review; ':'')+'native custody and paging unchanged; one linked replay-attempt audit and capacity bookkeeping only; zero outbound requests');
  }
  assert.equal((await adopt()).status,200);
 }

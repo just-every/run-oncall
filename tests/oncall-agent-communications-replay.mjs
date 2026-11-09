@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {agentEffectSnapshot} from './agent-door-runtime.mjs';
+import {droppedRoleAssignmentReplay} from './oncall-agent-role-replay.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
+
+/** Recover Communications from D1 after discarding the real MCP response. */
+export async function droppedCommunicationsAssignmentReplay(runtime){
+ await droppedRoleAssignmentReplay(runtime,'communications','Communications');
+}
 
 /** A completed Communications assignment rejects a changed reason and retains its first outcome. */
 export async function changedCommunicationsReasonConflict(runtime){
