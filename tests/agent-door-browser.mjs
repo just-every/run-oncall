@@ -10,7 +10,7 @@ import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance
 import {openIncidentAction} from './keyboard.mjs';
 
 const weekStart=Date.parse('2026-11-02T00:00:00.000Z'),weekNow=Date.parse('2026-11-04T12:00:00.000Z');
-const runtime=await agentRuntime({clock:weekStart-1}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+const runtime=await agentRuntime({clock:null}),directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
 let browser,page;
 try{
  await mkdir(directory,{recursive:true});
@@ -38,6 +38,9 @@ try{
  }
  // A known native week spans multiple audit cursor pages. Expected cohorts
  // are fixed by the calls below, independently of the page's SQL aggregation.
+ // Issue native sessions at real time: SQLite also checks their expiry against
+ // its own clock. Freeze only the measured calls, retaining every week boundary.
+ await runtime.time(weekStart-1);
  const calls=[];
  async function counted(name,args,classes,decision,outcome){
   const response=await tool(name,args);
