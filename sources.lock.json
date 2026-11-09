@@ -6475,6 +6475,10 @@
       "sha256": "837d4c3b26fa2deedf0678d1ff4006feefddcce25d940dd0b3810a6337583fc2",
       "executable": false
     },
+    "tests/oncall-agent-communications-revisions.mjs": {
+      "sha256": "7cf5525870a555ad6360a04dacbd20c3a8c6ad2e88d7937c1cc98bd5ad2a2169",
+      "executable": false
+    },
     "tests/oncall-agent-erase-replay.mjs": {
       "sha256": "3009d353b76e7866568e531e1469bfe017338e4378488be187f14e430f3898d5",
       "executable": false
