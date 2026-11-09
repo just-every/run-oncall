@@ -1,0 +1,23 @@
+{
+  "verified_at": "2026-11-09T14:24:12.263696+00:00",
+  "head": "e7b16e27b8b9f447854346bae09cc5d00dc96a56",
+  "remote_product_head": "e7b16e27b8b9f447854346bae09cc5d00dc96a56",
+  "remote_main": "bb10d730aa705821ae9311fc112216d91c295637",
+  "clean_checkout": true,
+  "source_hashes_match_recorded_checks": true,
+  "source_lock_check_exit": 0,
+  "source_lock_ok": true,
+  "contract_diff_empty": true,
+  "running_local_commands": false,
+  "ci_latest": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "e7b16e27b8b9f447854346bae09cc5d00dc96a56",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/42632551344",
+    "id": 42632551344,
+    "name": "Verify",
+    "status": "in_progress",
+    "observed_at": "2026-11-09T14:23:03.309761+00:00"
+  },
+  "runtime_log_sha256": "9fddb90e707fb876e6b135094abba7915cda8c8e48d2e1d358f0c629db574489"
+}

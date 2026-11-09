@@ -1,0 +1,113 @@
+{
+  "tag": "sd-oncall-c-f219-r1",
+  "repository": "just-every/run-oncall",
+  "predecessor": "bb10d730aa705821ae9311fc112216d91c295637",
+  "predecessor_ci": {
+    "Verify": [
+      42629070667,
+      42624833253
+    ],
+    "Run site": 42629070809,
+    "conclusion": "success"
+  },
+  "counts_before": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_status": "missing",
+  "claim": "PARTIAL",
+  "selected_acceptance": 4,
+  "new_registrations": 0,
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "documents_written": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=machines timeout 1200 node tests/runtime.mjs",
+      "exit": 0,
+      "duration_seconds": 385.5,
+      "includes_selected_probes": true
+    }
+  ],
+  "files": {
+    "tests/oncall-agent-communications-revisions.mjs": "03bae2e1cc69f19159fe851f69380b6fa85d8608829e4599f65449798c0a8fce",
+    "tests/oncall-agent-flow.mjs": "46ac91cbd9891f250369488666ed461389c2fe95cdca94c2fc21b348cb99ce25",
+    "sources.lock.json": "453f8f7911e18b6220caced0e718a698b719bb368ed9ae3ec1c553e6c10470fe",
+    "CONTRACT.md": "b7c71dd3acff7c6c5915d0b8b6ee57611c09f43b0c5188778f128ca9a0dd2c5e"
+  },
+  "publication_scan": {
+    "status": "not run in cloud; fleet lander required"
+  },
+  "ui": "no UI changes; browser proof not applicable",
+  "runtime_versions": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "repository_node_pin": "22.20.0",
+    "note": "User toolchain setup retains a newer installed Node; typecheck emitted the engine warning and passed."
+  },
+  "proof_invocation": {
+    "file": "tests/runtime.mjs",
+    "part": "machines",
+    "imports": "tests/oncall-agent-flow.mjs",
+    "function": "staleCommunicationsNativeRevision",
+    "ci_shard": "intake"
+  },
+  "candidate_head": "e7b16e27b8b9f447854346bae09cc5d00dc96a56",
+  "product_branch": "cloud/sd-oncall-c-f219-r1",
+  "integration": "Fetched main and rebased before first push; main remained bb10d730aa705821ae9311fc112216d91c295637. No relevant file byte changed after local verification.",
+  "mechanical_final": {
+    "views_write": 0,
+    "views_check": 0,
+    "generated_views_restored": true,
+    "lock": 0,
+    "lock_check": 0,
+    "contract_diff_empty": true,
+    "clean_checkout": true,
+    "migration_ledger": "not applicable"
+  },
+  "candidate_identity_inspection": {
+    "candidate_count": 1,
+    "all_parents_included": true,
+    "author_and_committer": "Run Edit Run fleet",
+    "trailers": "absent",
+    "result": "pass"
+  }
+}

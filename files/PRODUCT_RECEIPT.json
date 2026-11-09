@@ -1,0 +1,14 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f219-r1",
+  "head": "e7b16e27b8b9f447854346bae09cc5d00dc96a56",
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f219-r1",
+  "result": "PUSH_OK",
+  "attempts": 1,
+  "http_rejection": null,
+  "main_changed": false,
+  "pr": null,
+  "full_history": true,
+  "source_lock_check": 0,
+  "working_tree": "clean"
+}
