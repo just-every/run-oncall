@@ -1,0 +1,52 @@
+{
+  "api_calls": 3,
+  "blocker": "The brief requires sd-oncall-c-f216 to land before extending the shared Communications replay file; its sole commit is not on main.",
+  "branch": "cloud/sd-oncall-c-f217",
+  "ci": {
+    "main_run_site": 42566290274,
+    "main_run_site_conclusion": "success",
+    "main_verify": 42566290422,
+    "main_verify_conclusion": "success",
+    "predecessor_verify": 42569384060,
+    "predecessor_verify_conclusion": "success"
+  },
+  "communications_helper_present_on_main": false,
+  "counts_after": {
+    "done": 20,
+    "missing": 34,
+    "partial": 47,
+    "total": 101
+  },
+  "counts_before": {
+    "done": 20,
+    "missing": 34,
+    "partial": 47,
+    "total": 101
+  },
+  "head": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+  "mechanical": {
+    "ledger": "not applicable: no migration",
+    "lock": "not run: no edits",
+    "views": "not run: CONTRACT.md unchanged"
+  },
+  "observed_at": "2026-11-09T07:52:20.102700+00:00",
+  "origin_main": "ac3de592ab113c9c99178414e67760ce63a72ca8",
+  "outcome": "BLOCKED",
+  "pr": null,
+  "predecessor": "d9435b82a926c271c978c0cd198c881d9a685a6b",
+  "predecessor_ancestor_check": {
+    "command": "git merge-base --is-ancestor d9435b82a926c271c978c0cd198c881d9a685a6b origin/main",
+    "exit": 1
+  },
+  "product_changes": false,
+  "product_commits": [],
+  "product_push": "not attempted: required predecessor unlanded",
+  "repository": "just-every/run-oncall",
+  "runtime_tests": "not run: implementation gated before edits",
+  "schema": 1,
+  "tag": "sd-oncall-c-f217",
+  "target_status_after": "missing",
+  "target_status_before": "missing",
+  "typecheck": "not run: no source changes",
+  "worktree_clean": true
+}

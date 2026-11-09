@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f218",
+  "repository": "just-every/run-oncall",
+  "outcome": "BLOCKED",
+  "observed_at": "2026-11-09T10:00:03.647509+00:00",
+  "blocker": "Explicit prerequisite sd-oncall-c-f217 has no product commit or advertised product branch; its dropped-response proof is absent from current main.",
+  "branch": "cloud/sd-oncall-c-f218",
+  "head": "d9435b82a926c271c978c0cd198c881d9a685a6b",
+  "origin_main": "d9435b82a926c271c978c0cd198c881d9a685a6b",
+  "product_changes": false,
+  "product_commits": [],
+  "product_push": "not attempted: explicit predecessor landing gate unmet",
+  "pr": null,
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email [fleet address] --non-interactive",
+    "exit": 0,
+    "temporary_server": "stopped on command exit"
+  },
+  "worktree_clean": true,
+  "candidate_range_empty": true,
+  "counts_before": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34,
+    "total": 101
+  },
+  "target_status_before": "missing",
+  "target_status_after": "missing",
+  "api_calls": 1,
+  "ci": {
+    "main_verify": 42585693972,
+    "main_verify_conclusion": "success",
+    "main_run_site": 42585693976,
+    "main_run_site_conclusion": "success",
+    "candidate_verify": null
+  },
+  "runtime_tests": "not run: implementation gated before edits",
+  "typecheck": "not run: no product edits",
+  "first_party_check": "not run: no product edits",
+  "mechanical": {
+    "lock": "not run: no source edits",
+    "views": "not run: contract unchanged",
+    "ledger": "not applicable: no migration"
+  },
+  "publication_scan": "not run: no new product candidate",
+  "predecessor_evidence": {
+    "ref": "refs/heads/evidence/sd-oncall-c-f217",
+    "head": "d2506640093ea0a87320cc22a548e6cf1d2c9f49",
+    "outcome": "BLOCKED with no product commit"
+  },
+  "clone_cleanup": "Delete clean clone after successful evidence transfer; no unpushed product work exists"
+}

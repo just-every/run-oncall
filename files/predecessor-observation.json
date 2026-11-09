@@ -1,0 +1,12 @@
+{
+  "observed_at": "2026-11-09T09:58:45.425678+00:00",
+  "command": "git ls-remote --heads origin refs/heads/cloud/sd-oncall-c-f217 refs/heads/evidence/sd-oncall-c-f217",
+  "exit": 0,
+  "refs": [
+    "d2506640093ea0a87320cc22a548e6cf1d2c9f49\trefs/heads/evidence/sd-oncall-c-f217"
+  ],
+  "main": "d9435b82a926c271c978c0cd198c881d9a685a6b",
+  "local_head": "d9435b82a926c271c978c0cd198c881d9a685a6b",
+  "communications_dropped_response_present": false,
+  "predecessor_report_outcome": "BLOCKED with no product changes or commits"
+}
