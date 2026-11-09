@@ -1,0 +1,32 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f215",
+  "head": "627dffb01616417cf70e68951cfc37a64fb4e24d",
+  "remote_head": "627dffb01616417cf70e68951cfc37a64fb4e24d",
+  "pushed": true,
+  "save_skip_ci": true,
+  "ready": false,
+  "pr": null,
+  "verify_runs": [],
+  "ci_discovery_calls_total": 6,
+  "blocker": "Explicit replan-46 predecessor landing gate: cloud/sd-oncall-c-f214 at bd2df3c6a66861a06b6096d3466988db41e95e9b is unlanded with failed Verify 42545538043. Reconcile the shared role helper after accepted predecessor main.",
+  "counts_before": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34
+  },
+  "counts_after": {
+    "done": 20,
+    "partial": 47,
+    "missing": 34
+  },
+  "clause_status_before": "MISSING",
+  "clause_status_after": "MISSING",
+  "source_lock_fresh": true,
+  "contract_status_unchanged": true,
+  "generated_views_committed": false,
+  "push_guard_exit": 0,
+  "push_attempts": 1,
+  "publication_scan": "deferred to fleet; not run in cloud",
+  "run_site": "deferred to landing; not claimed"
+}

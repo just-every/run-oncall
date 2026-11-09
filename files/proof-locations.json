@@ -1,0 +1,77 @@
+[
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "line": 13,
+    "text": "import {staleScribeNativeRevision} from './oncall-agent-role-revisions.mjs';"
+  },
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "line": 75,
+    "text": "const replay=await tool('oncall.incidents.declare',args);"
+  },
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "line": 166,
+    "text": "const replay=await tool(fixture.tool,args);"
+  },
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "line": 243,
+    "text": "const replay=await tool('oncall.notes.add',args);"
+  },
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "line": 341,
+    "text": "const replay=await tool(name,args);"
+  },
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "line": 531,
+    "text": "const replay=await tool('oncall.notes.add',freshArgs);"
+  },
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "line": 651,
+    "text": "const privateBefore=await snapshot();"
+  },
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "line": 833,
+    "text": "const replay=await tool('oncall.incidents.declare',args);"
+  },
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "line": 1114,
+    "text": "await staleScribeNativeRevision(runtime);"
+  },
+  {
+    "file": "tests/oncall-agent-role-revisions.mjs",
+    "line": 7,
+    "text": "export async function staleScribeNativeRevision(runtime){"
+  },
+  {
+    "file": "tests/oncall-agent-role-revisions.mjs",
+    "line": 15,
+    "text": "const bookkeeping=async prior=>{"
+  },
+  {
+    "file": "tests/oncall-agent-role-revisions.mjs",
+    "line": 44,
+    "text": "const staleArgs={...args,revision:incident.revision-1};"
+  },
+  {
+    "file": "tests/oncall-agent-role-revisions.mjs",
+    "line": 64,
+    "text": "const first=await tool(name,args);"
+  },
+  {
+    "file": "tests/oncall-agent-role-revisions.mjs",
+    "line": 116,
+    "text": "const replay=await tool(name,args);"
+  },
+  {
+    "file": "tests/oncall-agent-role-revisions.mjs",
+    "line": 136,
+    "text": "const privateBefore=await snapshot(),privatePaging=await read('/api/paging/state'),denials=[];"
+  }
+]

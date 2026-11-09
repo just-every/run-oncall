@@ -1,0 +1,19 @@
+{
+  "command": "ONCALL_RUNTIME_PART=machines timeout 1200 node tests/runtime.mjs",
+  "pid": 2024,
+  "status": "completed",
+  "head_at_start": "b59f29479feeaeb975f53c044a65eab888fb68be",
+  "started_with_uncommitted_tests": true,
+  "process_state": "Z",
+  "exit": 0,
+  "machines_completion_marker": true,
+  "selected_probe_lines": [
+    "PROBE BASE-AGENT-012 acceptance 4 autonomous Scribe native revision: stale required revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned native revision -> standard-only autonomous, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 autonomous Scribe native non-disclosure: valid scoped client with stale required revision and expected_revision omitted against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 held Scribe native revision: stale required revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned native revision -> standard-only review, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+    "PROBE BASE-AGENT-012 acceptance 4 held Scribe native non-disclosure: valid scoped client with stale required revision and expected_revision omitted against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests"
+  ],
+  "observed_assertion_error": false,
+  "candidate_head": "627dffb01616417cf70e68951cfc37a64fb4e24d",
+  "tested_sources_match_candidate": true
+}

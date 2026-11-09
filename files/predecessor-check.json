@@ -1,0 +1,29 @@
+{
+  "main": "b59f29479feeaeb975f53c044a65eab888fb68be",
+  "main_verify": [
+    42538139569,
+    42534513386
+  ],
+  "main_run_site": 42538139458,
+  "main_nightly": 42551773378,
+  "predecessor": "bd2df3c6a66861a06b6096d3466988db41e95e9b",
+  "predecessor_branch": "cloud/sd-oncall-c-f214",
+  "predecessor_landed": false,
+  "predecessor_verify": 42545538043,
+  "conclusion": "failure",
+  "failed_browser_job": 128930069076,
+  "runtime_job": 128930069075,
+  "runtime_conclusion": "success",
+  "archive_command": "gh run view 42545538043 --repo just-every/run-oncall --job 128930069076 --log-failed",
+  "archive_exit": 0,
+  "archive_bytes": 0,
+  "error": "No failure text or HTTP error returned; no flake inference, no retry, no repair, no rerun.",
+  "github_calls_so_far": 5,
+  "current_recheck": {
+    "conclusion": "failure",
+    "head_sha": "bd2df3c6a66861a06b6096d3466988db41e95e9b",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/42545538043",
+    "id": 42545538043,
+    "status": "completed"
+  }
+}

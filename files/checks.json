@@ -1,0 +1,72 @@
+[
+  {
+    "check": "typecheck",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 5.17
+  },
+  {
+    "check": "first-party",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "exit": 0,
+    "seconds": 2.3
+  },
+  {
+    "check": "views-write",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "write"
+    ],
+    "exit": 0,
+    "seconds": 0.36
+  },
+  {
+    "check": "views-check",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "check"
+    ],
+    "exit": 0,
+    "seconds": 0.41
+  },
+  {
+    "check": "lock",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "lock"
+    ],
+    "exit": 0
+  },
+  {
+    "check": "lock-check",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "exit": 0
+  },
+  {
+    "check": "installed-lock-check",
+    "command": [
+      "node",
+      "node_modules/@runeditrun/rer/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "exit": 0
+  }
+]

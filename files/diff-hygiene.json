@@ -1,0 +1,16 @@
+[
+  {
+    "file": "tests/oncall-agent-flow.mjs",
+    "added_email_shaped_values": 0,
+    "added_provider_shaped_values": 0,
+    "slash_tokens": []
+  },
+  {
+    "file": "tests/oncall-agent-role-revisions.mjs",
+    "added_email_shaped_values": 0,
+    "added_provider_shaped_values": 0,
+    "slash_tokens": [
+      "assert/strict"
+    ]
+  }
+]
