@@ -1,0 +1,33 @@
+{
+  "tag": "sd-oncall-c-f219",
+  "repository": "just-every/run-oncall",
+  "observed_at": "2026-11-09T12:58:48.739128+00:00",
+  "branch": "cloud/sd-oncall-c-f219",
+  "head": "4a5579edce5058dc7ace3635c14c518aadea9568",
+  "origin_main": "4a5579edce5058dc7ace3635c14c518aadea9568",
+  "remote_heads_output": "4a5579edce5058dc7ace3635c14c518aadea9568\trefs/heads/main",
+  "predecessor": "sd-oncall-c-f218",
+  "predecessor_ref_present": false,
+  "predecessor_revision_test_present": false,
+  "status_before_after": "MISSING -> MISSING",
+  "counts_before_after": {
+    "DONE": 20,
+    "PARTIAL": 47,
+    "MISSING": 34
+  },
+  "product_status": "",
+  "candidate_commits": "0",
+  "product_push": "not attempted; mandatory predecessor has not landed",
+  "tests": "not run; edit prohibited before predecessor landing",
+  "pr": null,
+  "github_calls_so_far": 4,
+  "blocker": "Required f218 optional Communications revision predecessor is absent from main and has no published branch; selected shared-file extension is explicitly gated on its landing.",
+  "setup": {
+    "command": "npx -y @runeditrun/rer setup --owner-email [fleet identity] --non-interactive",
+    "wrapper": "cloud_run",
+    "exit": 0
+  },
+  "build": "setup built the emitted Worker successfully; no separate build required for the blocked edit",
+  "checks": "No product edit; touched runtime, typecheck, generator and lock checks not run",
+  "publication_scan": "not run in cloud; no product candidate"
+}

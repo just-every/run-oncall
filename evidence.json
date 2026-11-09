@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "86cc177bc4d6a7f4204665e4391b31b27f813a67",
+      "bytes": 9543,
+      "path": "REPORT.md",
+      "sha256": "aae390bf10d96fc0ade0ce6dd8aa297d885bbeb99a8259ee328b61616f4899ab"
+    },
+    {
+      "blob": "a86f2c0f88117ba792ba9a8c64f9ba30199f833d",
+      "bytes": 1150,
+      "path": "main-ci.json",
+      "sha256": "61eb96c2c0adb4355e8aaa241cd16283715da8db9b4286c611e5de7e342a5527"
+    },
+    {
+      "blob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c",
+      "bytes": 3,
+      "path": "predecessor-ci.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "blob": "70b19f7b7a0cc0f158eefe76179d704cce3786b0",
+      "bytes": 1461,
+      "path": "predecessor-receipt.json",
+      "sha256": "cafa79f8e2493d17715fc07dc88101d9f2c64b34a391e17e9f3749e770cc1542"
+    },
+    {
+      "blob": "4691f79e50075955369ec6735ceb9ebeb7418e71",
+      "bytes": 57,
+      "path": "remote-heads.txt",
+      "sha256": "b05d0201acefcfba712de6c73d07907d80a403fcc53dbced51f294c089161026"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f219",
+  "product_head": "4a5579edce5058dc7ace3635c14c518aadea9568",
+  "ref": "refs/heads/evidence/sd-oncall-c-f219",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f219"
+}
