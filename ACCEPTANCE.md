@@ -8,12 +8,12 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 20 | 40 | 24 | 84 |
+| Core | 21 | 39 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 21 | 46 | 34 | 101 |
+| Full target | 22 | 45 | 34 | 101 |
 
-Judged from the code and tests at commit `b1acb1fb0ed0be8603dda6a560fd8c3e0653dd91` (6 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
+Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d7a` (8 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
 ## Core
 
@@ -34,15 +34,15 @@ Core · published · **done** · Cites BASE-OPS-003
 
 #### OC-002 — Routing replay
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Retain the routing policy version and explanation at admission. Release 1 routes coordination ownership, with no timed escalation or paging. Replay is read-only: it returns the historical decision, ownership, policy and evaluation snapshot beside the proposed current decision, in submitted order, and produces no alert, incident or external effect; it does not claim schedule replay. Unmatched signals remain visible and unowned; suppression reasons remain inspectable.
 
 **Acceptance.**
 1. Admit a severity-routed event, change the policy and replay it: the immutable admission explanation is compared with the proposed decision in submitted order, and durable state is unchanged before and after (zero writes).
 
-**Evidence.** `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`
-**Gap.** Replay after a policy change, returning the immutable admission explanation of a severity-routed event beside the proposed decision, is not asserted in the cited test (`tests/routing.mjs` holds such a comparison); zero writes and submitted order are asserted.
+**Evidence.** `src/api.ts`; `src/orchestration/replay.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` — coordinationJourney (the OC-002 native replay block): a severity-routed event is admitted under a policy, the policy is changed by an attributed command, and the authorized replay request for a newer-generation event then the original returns decisions in submitted order, each historical decision, owner, policy version and evaluation snapshot equal to the immutable admission record beside the proposed decision under the changed policy, with unchanged application state, workspace revision and permanent audit rows before and after (zero writes), and anonymous and revoked sessions refused with no comparison.
+**Gap.** None.
 
 #### OC-003 — Roles and authority
 
