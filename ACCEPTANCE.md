@@ -8,10 +8,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 21 | 39 | 24 | 84 |
+| Core | 22 | 38 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 22 | 45 | 34 | 101 |
+| Full target | 23 | 44 | 34 | 101 |
 
 Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d7a` (8 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -188,15 +188,15 @@ Core · published · **done**
 
 #### OC-014 — Side-effect-free previews
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Schedule preview, now/next and replay are side-effect-free; actual historical delivery claims remain labeled synthetic. Nothing in this release certifies production delivery.
 
 **Acceptance.**
 1. Read now/next and the schedule and routing previews: durable state and receipt counts are unchanged, no timers or provider actions are created, and historical synthetic data stays labeled.
 
-**Evidence.** `src/schedule-api.ts`; `src/paging-api.ts`; `src/family/response-operations/paging-archive.ts`; `tests/activation.mjs` — **scheduleCoordination** and **pagingHistory** (preview isolation); `tests/routing.mjs` — **OC-014 service routing preview isolation**
-**Gap.** No cited test compares durable state, receipt counts, timers or provider actions before and after a now/next, schedule or routing preview, or reads the synthetic label on historical delivery data.
+**Evidence.** `tests/activation.mjs` — pagingHistory: populated synthetic receipts and callbacks, saved and draft schedule previews, draft review, individual now and next and historical job replay preserve every durable row and deadline, receipt counts and synthetic-only labels with zero outbound requests; scheduleCoordination: repeated aggregate now and next preserve every durable row and both revisions. `tests/routing.mjs` — OC-014 service routing preview isolation: changed key routing preview and retained and proposed service replay preserve populated synthetic receipts, pending jobs and deadlines, all durable rows and zero provider actions; email routing preview also preserves every durable row and issues zero outbound requests. `tests/preview-browser.mjs` — previewIsolationBrowser (invoked by `tests/product-browser.mjs`): aggregate and individual now and next, saved and draft coverage, changed key routing preview and retained-event replay render populated results at 1440 and 390 while preserving durable rows, paging state and outbound requests.
+**Gap.** None.
 
 #### OC-015 — Strict module archives
 
