@@ -56,11 +56,20 @@ async function adoption() {
   await db.prepare('INSERT INTO agent_door_audit(id,at,agent,classes,row) VALUES(?,?,?,?,?)')
    .bind('held-decision',new Date(started).toISOString(),'held-agent','[]',JSON.stringify({door:'mcp',consent:'held-consent',classes:[],tool:'oncall.incidents.read',agent:{id:'held-agent'},sponsor:{id:'native-owner'},outcome:'executed'})).run();
   await apply(adoptionMigration);await apply(relayMigration);
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM agent_door_relay').first()).n,1,'Existing consented audit is backfilled');
+  // The 0159 triggers assign an old Business's approval execution to a newly paired Business.
+  await db.prepare("UPDATE agent_door_state SET envelope=? WHERE id=1").bind(JSON.stringify({business:'new-business'})).run();
+  await db.prepare('INSERT INTO agent_door_audit(id,at,agent,classes,row) VALUES(?,?,?,?,?)')
+   .bind('held-execution',new Date(started).toISOString(),'held-agent','[]',JSON.stringify({door:'mcp',consent:'new-consent',decision_id:'held-decision',classes:[],tool:'oncall.incidents.read',agent:{id:'held-agent'},sponsor:{id:'native-owner'},outcome:'executed'})).run();
+  assert.deepEqual((await db.prepare('SELECT decision_id,business FROM agent_door_relay ORDER BY sequence').all()).results.map(row=>row.business),['held-business','new-business'],'The old trigger leaks the execution into the new feed');
+  for (const name of ledger.filter(name=>name>relayMigration)) await apply(name);
+  assert.deepEqual((await db.prepare('SELECT decision_id,business FROM agent_door_relay ORDER BY sequence').all()).results,[{decision_id:'held-decision',business:'held-business'}],'Relay privacy migration removes only the cross-Business membership');
+  assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM agent_door_audit WHERE id IN ('held-decision','held-execution')").first()).n,2,'Every audit is preserved');
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM agent_door_retired_refs').first()).n,0,'Retired-reference custody exists after the upgrade');
   await checkAgentArtifacts(db,oncallAgentArtifacts);
   const horizon = started+REPLAY_WINDOW_MS;
   assert.equal((await db.prepare("SELECT expires_at FROM agent_door_calls WHERE decision_id='held-decision'").first()).expires_at,horizon,'Upgrade uses original created_at, never upgrade time');
   assert.deepEqual((await db.prepare("SELECT expires_at FROM agent_door_calls WHERE state IN ('running','pending')").all()).results.map(row=>row.expires_at),[null,null]);
-  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM agent_door_relay').first()).n,1,'Existing consented audit is backfilled');
   const marker = {erasure_id:'synthetic-native-operation',at:new Date().toISOString()};
   await db.batch(await eraseOncallAgentArtifacts(db,secret,['held-subject'],marker));
   assert.equal((await db.prepare("SELECT expires_at FROM agent_door_calls WHERE decision_id='held-decision'").first()).expires_at,horizon,'Erasure preserves the completed call horizon');
@@ -99,4 +108,33 @@ async function adoption() {
   assert.equal((await runtime.adopt()).status,200,'Signed policy still resolves the stopped Business sponsor');
   console.log('PASS adoption fresh/public doors: complete artifact map; signed relay 200, unauthorized 401, stopped 404; Business token refused, owner works, signed policy still adopts');
  } finally { await runtime.close(); }
+ // A held Business approval, including one saved before principals carried `source`, cannot execute after detachment.
+ const {autonomousPolicy} = await import('../src/modules/agent-door/conformance/crypto.mjs');
+ const held = await agentRuntime();
+ try {
+  const c=held.context;
+  assert.equal((await held.adopt({...autonomousPolicy(),rules:[{id:'hold',class:'*',do:'approval',approver:['sponsor'],wait:'PT1H'}]})).status,200);
+  const hold=async()=>{
+   const call=await held.tool('oncall.coordination.read',{});
+   const handle=call.result?._meta?.['com.runeditrun/approval'];assert.ok(handle,'A running Business holds the call for approval');
+   const {approval}=await (await held.http('/agents/api/approvals/'+handle.id)).json();
+   return {path:'/agents/api/approvals/'+handle.id,choice:{revision:approval.revision,summary_sha256:approval.summary_sha256},id:handle.id};
+  };
+  const running=await hold(),tagged=await hold(),legacy=await hold();
+  const principal=async id=>JSON.parse((await held.db.prepare('SELECT saved FROM agent_door_approvals WHERE id=?').bind(id).first()).saved).principal;
+  assert.equal((await principal(tagged.id)).source,'business');
+  await held.db.prepare("UPDATE agent_door_approvals SET saved=json_remove(saved,'$.principal.source') WHERE id=?").bind(legacy.id).run();
+  assert.equal((await principal(legacy.id)).source,undefined,'The legacy approval has an untagged principal');
+  const executed=await held.http(running.path+'/approve',running.choice);
+  assert.equal(executed.status,200);assert.equal((await executed.json()).approval.state,'executed','A running Business approval executes');
+  const now=seconds();
+  const detach=await signJws(c.signer.privateKey,c.signer.kid,'rer-business-settings+jwt',{v:1,iss:c.signer.issuer,aud:c.origin,sub:c.signer.installationId,business:c.business,email:c.person.email,owner_id:c.person.sub,jti:randomUUID(),iat:now,exp:now+300,rev:2,values:{},logo:null,team:null,detached:true});
+  assert.equal((await held.http('/api/rer/business-settings',{settings:detach})).status,200);
+  for(const [label,item] of [['tagged',tagged],['legacy untagged',legacy]]){
+   const refused=await held.http(item.path+'/approve',item.choice),body=await refused.json();
+   assert.equal(body.approval?.state,'refused',label+' approval is refused after detachment');
+   assert.equal(body.approval?.code,'sponsor_unavailable',label+' approval names sponsor_unavailable');
+  }
+  console.log('PASS Business stop approvals: running Business approval executed; after signed detachment both a tagged and a legacy untagged pending Business approval are refused sponsor_unavailable');
+ } finally { await held.close(); }
 }

@@ -74,8 +74,11 @@ export function oncallPeople(env: Bindings): PeopleAdapter {
 
   return {
     person,
+    // Fail closed: only a paired Business that is positively running returns false.
     async businessStopped() {
-      return !!await env.DB.prepare('SELECT 1 FROM bs_settings WHERE singleton=1 AND stopped=1').first()
+      const state = await env.DB.prepare('SELECT stopped,owner_id FROM bs_settings WHERE singleton=1')
+        .first<{ stopped: number; owner_id: string | null }>()
+      return !(state?.stopped === 0 && typeof state.owner_id === 'string' && state.owner_id.length > 0)
     },
     // A native administrator is not implicitly a Business policy editor.
     businessRole: current => rolesById.get(current.id)??null,

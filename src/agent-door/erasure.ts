@@ -39,6 +39,7 @@ const match = (sql: string) => ({ sql, params: ['values'] })
 const ownEvent = `EXISTS(SELECT 1 FROM json_each(?2) member WHERE json_extract(agent_door_events.event,'$.actor.kind')='person'
   AND json_extract(agent_door_events.event,'$.actor.person.id')=member.value)`
 export const oncallAgentArtifacts: AgentArtifactMap = { artifacts: [
+  { table: 'agent_door_retired_refs', columns: ['digest','marker'], unrelated: 'Value-free suppression digests and erasure markers; they travel in installation archives so retirement holds across restore.' },
   { table: 'agent_door_relay', columns: ['sequence','decision_id','business'], unrelated: 'Installation-private decision ids and Business id only. External Business projections are purged by tombstone pulls, stop and unreachable rules; remote deletion is not claimed.' },
   { table: 'agent_door_replay_aliases', columns: ['agent','alias','call_id','tombstone'], unrelated: 'Installation-private HMAC replay associations, excluded from exports and removed with the original call horizon.' },
   { table: 'agent_door_state', columns: ['id','envelope','local_document','local_revision','local_paused','decision_lock','decision_until'], unrelated: 'Retained installation policy and admission custody. Opaque policy principal refs are authority history, not personal payload; no export of relay or replay custody.' },
