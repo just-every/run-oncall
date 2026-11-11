@@ -1,0 +1,55 @@
+{
+  "before": {
+    "state": "declared",
+    "lead": "Priya Shah",
+    "assignee": null,
+    "timeline": [
+      {
+        "kind": "declared",
+        "text": "Investigate checkout errors"
+      },
+      {
+        "kind": "assign-role",
+        "text": "commander: Unassigned → Priya Shah"
+      }
+    ]
+  },
+  "after": {
+    "state": "acknowledged",
+    "lead": "Dana Whitfield",
+    "assignee": "Dana Whitfield",
+    "timeline": [
+      {
+        "kind": "declared",
+        "text": "Investigate checkout errors"
+      },
+      {
+        "kind": "assign-role",
+        "text": "commander: Unassigned → Priya Shah"
+      },
+      {
+        "kind": "transition",
+        "text": "declared → acknowledged: Acknowledge"
+      }
+    ]
+  },
+  "afterReload": {
+    "state": "acknowledged",
+    "lead": "Dana Whitfield",
+    "assignee": "Dana Whitfield",
+    "timeline": [
+      {
+        "kind": "declared",
+        "text": "Investigate checkout errors"
+      },
+      {
+        "kind": "assign-role",
+        "text": "commander: Unassigned → Priya Shah"
+      },
+      {
+        "kind": "transition",
+        "text": "declared → acknowledged: Acknowledge"
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "registered_ci_journey_entries_before": 16,
+  "registered_ci_journey_entries_after": 16,
+  "new_test_registrations": 0,
+  "extended_journey": "tests/product-browser-journey.mjs#incidentRolesBrowser",
+  "cap": 200,
+  "note": "Extended the existing incident role journey; no new registration or independent behavior journey introduced. Repository has no test-budget.json or comprehensive registration counter."
+}

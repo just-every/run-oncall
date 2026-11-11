@@ -1,0 +1,3 @@
+{"conclusion": null, "head_sha": "d5ab53018edde5a2a10b3d93473c80966eecf303", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42982950595", "status": "in_progress", "run_id": 42982950595, "observed_at": "2026-11-11T07:59:56.985089+00:00"}
+{"conclusion": null, "head_sha": "d5ab53018edde5a2a10b3d93473c80966eecf303", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42982950595", "status": "in_progress", "run_id": 42982950595, "observed_at": "2026-11-11T08:05:00.636282+00:00"}
+{"conclusion": "success", "head_sha": "d5ab53018edde5a2a10b3d93473c80966eecf303", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42982950595", "status": "completed", "run_id": 42982950595, "observed_at": "2026-11-11T08:10:01.209720+00:00"}

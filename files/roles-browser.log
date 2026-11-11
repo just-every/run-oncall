@@ -1,0 +1,14 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE OC-050 acceptance 1 commander: native choice Unassigned → Synthetic role responder -> HTTP and reloaded control agree, revision 1 → 2, one human-attributed old and new role timeline entry
+PROBE OC-004 acknowledgment: choose another responder as lead, acknowledge as owner, reload -> selected lead retained and acknowledger shown separately as Assignee, one attributed transition and exact HTTP readback
+PROBE OC-050 acceptance 1 scribe: native choice Unassigned → Product browser owner -> HTTP and reloaded control agree, revision 3 → 4, one human-attributed old and new role timeline entry
+PROBE OC-050 acceptance 1 scribe: native choice Product browser owner → Synthetic role responder -> HTTP and reloaded control agree, revision 4 → 5, one human-attributed old and new role timeline entry
+PROBE OC-050 acceptance 1 communications: native choice Unassigned → Product browser owner -> HTTP and reloaded control agree, revision 5 → 6, one human-attributed old and new role timeline entry
+PROBE OC-050 acceptance 1 communications: native choice Product browser owner → Synthetic role responder -> HTTP and reloaded control agree, revision 6 → 7, one human-attributed old and new role timeline entry
+PROBE OC-050 acceptance 1 commander: native choice Synthetic role responder → Product browser owner -> HTTP and reloaded control agree, revision 7 → 8, one human-attributed old and new role timeline entry
+PROBE OC-050 authority: responder holding all command roles -> service and member mutations and source reads refused with 403, exact application state unchanged; paging unchanged and outbound ledger empty
+PASS OC-050 native role controls: Lead transfer, Scribe and Communications assignment and transfer, exact revisions and attributed history after reload at 1440; selected controls captured at 1440 and 390 with labels, tooltips, overflow, hydration and serious or critical axe checks
+PASS OC-050 incident workflows browser: service template publication and typed declaration, commander checklist, merge/source history, alias redirect and split without lifecycle change at 1440; overflow, axe and hydration checked
+Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390

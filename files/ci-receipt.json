@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "d5ab53018edde5a2a10b3d93473c80966eecf303",
+  "run_id": 42982950595,
+  "status": "completed",
+  "conclusion": "success",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/42982950595",
+  "api_calls": 4,
+  "poll_interval_seconds": 300,
+  "failure_logs_requested": 0,
+  "status_command": "gh api repos/just-every/run-oncall/actions/runs/42982950595 --jq {status,conclusion,head_sha,html_url}",
+  "result": "exact-SHA Verify green"
+}

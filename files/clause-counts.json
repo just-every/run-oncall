@@ -1,0 +1,14 @@
+{
+  "before": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34
+  },
+  "after": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34
+  },
+  "status_changes": [],
+  "contract_source_changed": false
+}

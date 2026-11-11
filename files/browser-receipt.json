@@ -1,0 +1,81 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "d5ab53018edde5a2a10b3d93473c80966eecf303",
+  "production_build": "npx -y @runeditrun/rer build",
+  "test_command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=roles ONCALL_BROWSER_EVIDENCE=../packet node tests/product-browser.mjs",
+  "result": "passed",
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "public_doors": [
+    "/api/setup",
+    "/api/members",
+    "/incidents/:id",
+    "/api/command",
+    "/api/state"
+  ],
+  "runtime": "emitted production Worker with real local D1 and headless /usr/bin/chromium --no-sandbox",
+  "candidate_source_files": {
+    "src/family/response-operations/domain.ts": {
+      "sha256": "f624d9e5e462e6be7e7fd2c3b453fad130ccffc3c141898caff4c1efb22a299e",
+      "git_blob": "d0a5d62b331641fee20b59b5af1698a18bdfb713"
+    },
+    "src/incident/types.ts": {
+      "sha256": "bfd89993d735385428503177001625508d53ef1384bb5adf88b06fe157cf1caf",
+      "git_blob": "8bd8e507f553713c2b91f76a13060854f2d62448"
+    },
+    "src/incident/Timeline.tsx": {
+      "sha256": "fa9156c61f5726b31c5f54587eb093c8d311d0698fd02afaa81377de960e70b0",
+      "git_blob": "192a02dbab4c602cde399925e36c0d955276084d"
+    },
+    "src/incident/PeoplePicker.tsx": {
+      "sha256": "f4bedff18228039324c8f6cbf0cf4468effa5713055f380c09dcf51bcb796e12",
+      "git_blob": "bcec195015c2c1043c00fd8802b673a9b6deefa6"
+    },
+    "tests/product-browser-journey.mjs": {
+      "sha256": "b3e9c12bf71d8df2407228b724c59e886cd4e1a21d272a3a3f588493d3a986b6",
+      "git_blob": "450aef75a193ab8d30d5437c46f60ebfbbb87639"
+    },
+    "tests/product-browser.mjs": {
+      "sha256": "d30ce84467db9bfedefeac6c2cac867b822e4ea25c5ee02ef8edc713d1bf9db1",
+      "git_blob": "f748b7a96a7e92158218136f943913f4a2ff166c"
+    }
+  },
+  "proof_files": {
+    "before-390.png": {
+      "bytes": 77661,
+      "sha256": "016dde7c5baff7abe23caa48f713ee5b9f7fc15ac9df8dc3dd2602aa188144c1"
+    },
+    "lead-after-acknowledge-390.png": {
+      "bytes": 100146,
+      "sha256": "ddb2332a2320fc58371c9b971bd5c6bfe27739036dbfedcab965a617b128af8e"
+    },
+    "lead-after-acknowledge-1440.png": {
+      "bytes": 157291,
+      "sha256": "d9821dbb9e85c9e9eb848e85175c5edaf9337b95606f736d0ed6866deab7a8ef"
+    },
+    "before-1440.png": {
+      "bytes": 130345,
+      "sha256": "2621a732d682e3e0be5d9ff1d56cad6d6b16125542d1cbc6e5943ba2bc21acc1"
+    },
+    "oc050-lead-transfer-390.png": {
+      "bytes": 95165,
+      "sha256": "23a4e8ca7214221a6ff81dd8ae5a641bfe78e1454020a3d24b36ca4214751b64"
+    },
+    "oc050-response-roles-390.png": {
+      "bytes": 72529,
+      "sha256": "885544b4c327073387cbe95e742102645401a54a589af306d943df7cb9f991ab"
+    },
+    "oc050-response-roles-1440.png": {
+      "bytes": 157171,
+      "sha256": "3fad7f2f41890b36238790ba6da810b0c00f3a6f2dcbe724dde73fd0063d5d12"
+    },
+    "oc050-lead-transfer-1440.png": {
+      "bytes": 158573,
+      "sha256": "3b78399558a9b57936cd4806295e5d7ae7e1d64894ee2c437fdb3069cd0e332b"
+    }
+  },
+  "proof_review": "Viewed desktop and phone screenshots: selected lead, separate assignee and plain role history visible; no horizontal clipping observed."
+}

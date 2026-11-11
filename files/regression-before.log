@@ -1,0 +1,90 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Product browser failure at /incidents/94a5eba1-f0af-4a92-a82f-fab1ce5efd38
+Skip to content
+Oncall
+On call
+Incidents
+1
+Alerts
+0
+Reviews
+Status
+Settings
+PR
+Product browser owner
+admin
+⌄
+Existing pager authoritative · paging OFF · schedules and coordination
+Incidents
+Declare
+Items
+Declared incidents
+Alert-only items
+Search
+Filter and sort incidents
+Saved views
+1 matching incidents
+Checkout customer impact 1440
+
+Checkout incident workflow 1440WarningTriggeredNov 11, 2026, 07:50 AMSynthetic role responder
+
+Checkout customer impact 1440
+⋯
+
+Declared · Checkout incident workflow 1440 · production · Warning · Nov 11, 2026, 07:50 AM
+
+Lead Synthetic role responder ▾
+Assignee Synthetic role responder ▾
+Acknowledge
+Runbook
+0/2
+Check replica health before changing customer traffic.
+Confirm customer checkout recovery
+Timeline
+declared
+Nov 11, 2026, 07:50 AM
+
+Customers observe slower checkout; response team is investigating.
+
+Product browser owner
+manual page
+Nov 11, 2026, 07:50 AM
+
+Incident declared for coordination with Checkout incident workflow 1440. Paging is off; contact responders through your existing pager.
+
+Product browser owner
+assign role
+Nov 11, 2026, 07:50 AM
+
+commander: Unassigned → Synthetic role responder
+
+Product browser owner
+Observation, decision or evidence
+Add note
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-P4IZ5G/local.env
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('region', { name: 'Timeline', exact: true }).getByRole('listitem').filter({ hasText: 'Synthetic role responder is now lead. Previously Unassigned.' }).getByText('Synthetic role responder is now lead. Previously Unassigned.', { exact: true }) to be visible[22m
+
+    at checkChoice (/home/agent/rer-consolidation/work/main-oncall-lead-header-1/run-oncall/tests/product-browser-journey.mjs:1292:50)
+    at async incidentRolesBrowser (/home/agent/rer-consolidation/work/main-oncall-lead-header-1/run-oncall/tests/product-browser-journey.mjs:1300:2)
+    at async incidentWorkflowBrowser (/home/agent/rer-consolidation/work/main-oncall-lead-header-1/run-oncall/tests/product-browser.mjs:254:3)
+    at async file:///home/agent/rer-consolidation/work/main-oncall-lead-header-1/run-oncall/tests/product-browser.mjs:645:3 {
+  log: [
+    "  - waiting for getByRole('region', { name: 'Timeline', exact: true }).getByRole('listitem').filter({ hasText: 'Synthetic role responder is now lead. Previously Unassigned.' }).getByText('Synthetic role responder is now lead. Previously Unassigned.', { exact: true }) to be visible"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.19.0

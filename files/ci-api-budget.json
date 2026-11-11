@@ -1,0 +1,6 @@
+{
+  "calls": 4,
+  "limit": 10,
+  "last_run_query_at": "2026-11-11T08:10:01.209720+00:00",
+  "minimum_poll_seconds": 300
+}
