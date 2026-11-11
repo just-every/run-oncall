@@ -1,0 +1,29 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1
+PROBE OC-023 browser: Backstage dependency review, conflict choice, apply, lost-response Retry and reload -> rendered and HTTP state agree; screens captured at 1440 and 390
+Member coordination derived-status at 1440: overflow, hydration and accessibility passed
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-DEMqkf/local.env
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('region', { name: 'Internal business status' }).getByRole('button', { name: 'Create business service', exact: true })[22m
+
+    at captureRefusal (/home/agent/rer-consolidation/work/main-oncall-explain-refusals-1-fix1/run-oncall/tests/member-coordination-browser.mjs:310:142)
+    at async file:///home/agent/rer-consolidation/work/main-oncall-explain-refusals-1-fix1/run-oncall/tests/member-coordination-browser.mjs:346:2 {
+  log: [
+    "  - waiting for getByRole('region', { name: 'Internal business status' }).getByRole('button', { name: 'Create business service', exact: true })"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.19.0

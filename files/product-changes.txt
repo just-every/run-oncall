@@ -1,0 +1,11 @@
+M	sources.lock.json
+M	src/app/autosave/InlineConfirm.tsx
+M	src/business-status/StatusPanel.tsx
+A	src/form-validation.tsx
+M	src/forms.tsx
+M	src/on-call/Field.tsx
+M	src/on-call/RotaPage.tsx
+M	src/on-call/rota-steps/RotaSteps.tsx
+M	src/schedule-coverage/ReviewedChange.tsx
+M	tests/member-coordination-browser.mjs
+M	tests/product-browser-journey.mjs

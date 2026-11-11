@@ -1,0 +1,22 @@
+diff --git a/tests/member-coordination-browser.mjs b/tests/member-coordination-browser.mjs
+index c714429..b76b04d 100644
+--- a/tests/member-coordination-browser.mjs
++++ b/tests/member-coordination-browser.mjs
+@@ -307,7 +307,7 @@ try {
+  assert.equal(await supporting.getAttribute('aria-describedby'),await fieldError.getAttribute('id'),'the adjacent error describes the supporting-services field');
+  assert.ok((await fieldError.innerText()).includes(await supporting.evaluate(e=>document.getElementById(e.getAttribute('aria-labelledby')).textContent)),'the error names its field');
+  assert.equal(createRequests.length,0,'invalid create never reaches the write door');assert.deepEqual(ok(await call(owner.page,'/api/status')),statusBefore,'invalid create saves no business service');
+- const captureRefusal=async (name,target=createBusiness)=>{for(const width of [1440,390]){await owner.page.setViewportSize({width,height:1000});await target.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/refusal-${name}-${width}.png`});}await owner.page.setViewportSize({width:1440,height:1000});};
++ const captureRefusal=async name=>{for(const width of [1440,390]){await owner.page.setViewportSize({width,height:1000});await createBusiness.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/refusal-${name}-${width}.png`});}await owner.page.setViewportSize({width:1440,height:1000});};
+  await captureRefusal('supporting-service');
+  await supporting.selectOption('synthetic-oncall-61');await expect(fieldError).toHaveCount(0);
+  // A real server-side length refusal is also visible beside the initiating action.
+@@ -343,7 +343,7 @@ try {
+  await checkout.getByLabel('Status set by hand',{exact:true}).selectOption('operational')
+  const setStatus=checkout.getByRole('button',{name:'Set status',exact:true});await expect(setStatus).toBeDisabled();
+  const reasonHint=await setStatus.getAttribute('aria-describedby');assert.ok(reasonHint);await expect(checkout.locator(`[id="${reasonHint}"]`)).toBeVisible();
+- await captureRefusal('status-reason',setStatus);
++ await captureRefusal('status-reason');
+  await checkout.getByLabel('Reason',{exact:true}).fill('Alternate gateway is processing payments')
+  await checkout.getByRole('button',{name:'Set status',exact:true}).click()
+  await checkout.getByText(/Manual override: operational/).waitFor()

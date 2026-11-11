@@ -1,0 +1,35 @@
+[Workflow command/environment header omitted. Complete test output follows.]
+shards (browser)	Run this shard	2026-11-11T10:59:15.8143878Z > pnpm run verify:app
+shards (browser)	Run this shard	2026-11-11T10:59:16.0220763Z 
+shards (browser)	Run this shard	2026-11-11T10:59:16.0221697Z > @just-every/oncall@0.5.7 verify:app /home/runner/work/run-oncall/run-oncall
+shards (browser)	Run this shard	2026-11-11T10:59:16.0222116Z > node tests/verify.mjs
+shards (browser)	Run this shard	2026-11-11T10:59:16.0222260Z 
+shards (browser)	Run this shard	2026-11-11T10:59:17.0933591Z (node:2602) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (browser)	Run this shard	2026-11-11T10:59:17.0934614Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (browser)	Run this shard	2026-11-11T10:59:40.4926125Z OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1
+shards (browser)	Run this shard	2026-11-11T10:59:48.5178127Z PROBE OC-023 browser: Backstage dependency review, conflict choice, apply, lost-response Retry and reload -> rendered and HTTP state agree; screens captured at 1440 and 390
+shards (browser)	Run this shard	2026-11-11T10:59:53.7325841Z Member coordination derived-status at 1440: overflow, hydration and accessibility passed
+shards (browser)	Run this shard	2026-11-11T11:00:23.8919592Z Worker diagnostics (test failure):
+shards (browser)	Run this shard	2026-11-11T11:00:23.8920322Z [stdout] Using secrets defined in ../../../../../tmp/oncall-flow-z6UUY5/local.env
+shards (browser)	Run this shard	2026-11-11T11:00:23.8921229Z [stderr] (node:2978) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (browser)	Run this shard	2026-11-11T11:00:23.8922058Z [stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+shards (browser)	Run this shard	2026-11-11T11:00:23.8922823Z 
+shards (browser)	Run this shard	2026-11-11T11:00:23.8933962Z node:internal/modules/run_main:123
+shards (browser)	Run this shard	2026-11-11T11:00:23.8934373Z     triggerUncaughtException(
+shards (browser)	Run this shard	2026-11-11T11:00:23.8934703Z     ^
+shards (browser)	Run this shard	2026-11-11T11:00:23.8934829Z 
+shards (browser)	Run this shard	2026-11-11T11:00:23.8935147Z locator.scrollIntoViewIfNeeded: Timeout 30000ms exceeded.
+shards (browser)	Run this shard	2026-11-11T11:00:23.8935593Z Call log:
+shards (browser)	Run this shard	2026-11-11T11:00:23.8936325Z   - waiting for getByRole('region', { name: 'Internal business status' }).getByRole('button', { name: 'Create business service', exact: true })
+shards (browser)	Run this shard	2026-11-11T11:00:23.8936865Z 
+shards (browser)	Run this shard	2026-11-11T11:00:23.8937196Z     at captureRefusal (/home/runner/work/run-oncall/run-oncall/tests/member-coordination-browser.mjs:310:142)
+shards (browser)	Run this shard	2026-11-11T11:00:23.8937808Z     at async file:///home/runner/work/run-oncall/run-oncall/tests/member-coordination-browser.mjs:346:2 {
+shards (browser)	Run this shard	2026-11-11T11:00:23.8938458Z   log: [
+shards (browser)	Run this shard	2026-11-11T11:00:23.8938938Z     "  - waiting for getByRole('region', { name: 'Internal business status' }).getByRole('button', { name: 'Create business service', exact: true })"
+shards (browser)	Run this shard	2026-11-11T11:00:23.8939456Z   ],
+shards (browser)	Run this shard	2026-11-11T11:00:23.8939628Z   name: 'TimeoutError'
+shards (browser)	Run this shard	2026-11-11T11:00:23.8939831Z }
+shards (browser)	Run this shard	2026-11-11T11:00:23.8939921Z 
+shards (browser)	Run this shard	2026-11-11T11:00:23.8939995Z Node.js v22.20.0
+shards (browser)	Run this shard	2026-11-11T11:00:23.9288137Z  ELIFECYCLE  Command failed with exit code 1.
+shards (browser)	Run this shard	2026-11-11T11:00:23.9561925Z ##[error]Process completed with exit code 1.

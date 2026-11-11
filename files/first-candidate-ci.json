@@ -1,0 +1,51 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "4ead7411f829af788364c234f171d4719776c796",
+  "api_calls_before_watcher": 2,
+  "calls": [
+    {
+      "at": "2026-11-11T11:34:57.614869+00:00",
+      "command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=4ead7411f829af788364c234f171d4719776c796&per_page=100",
+      "exit": 0,
+      "id": 43013110955,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "4ead7411f829af788364c234f171d4719776c796",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43013110955"
+    },
+    {
+      "at": "2026-11-11T11:39:57.676695+00:00",
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43013110955 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0,
+      "id": 43013110955,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "4ead7411f829af788364c234f171d4719776c796",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43013110955"
+    },
+    {
+      "at": "2026-11-11T11:44:57.654171+00:00",
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43013110955 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0,
+      "id": 43013110955,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "4ead7411f829af788364c234f171d4719776c796",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43013110955"
+    },
+    {
+      "at": "2026-11-11T11:49:57.756287+00:00",
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43013110955 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0,
+      "id": 43013110955,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "4ead7411f829af788364c234f171d4719776c796",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43013110955"
+    }
+  ],
+  "status": "completed",
+  "run_id": 43013110955,
+  "conclusion": "failure",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43013110955"
+}

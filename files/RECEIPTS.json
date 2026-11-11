@@ -1,0 +1,174 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-explain-refusals-1-fix1",
+  "initial_merge": "43461e2036143eab5971bdfff313f815c963889f",
+  "merged_main": "0dac089dba93dc1209c3a2317d5e7a4392d44c4e",
+  "candidate": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+  "checks": [
+    {
+      "name": "original candidate merged member coordination",
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/member-coordination-browser.mjs",
+      "head": "43461e2036143eab5971bdfff313f815c963889f",
+      "exit": 0,
+      "log": "original-merged-member.log"
+    },
+    {
+      "name": "negative control of refused integration test",
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/member-coordination-browser.mjs",
+      "product_head": "43461e2036143eab5971bdfff313f815c963889f",
+      "test_source": "978a067f59d7aa113478787e58f88db814d6dc8c:tests/member-coordination-browser.mjs",
+      "exit": 1,
+      "expected_failure": "captureRefusal waits 30000ms for Create business service at the manual-status refusal",
+      "log": "landed-reproduction.log"
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "head": "4ead7411f829af788364c234f171d4719776c796",
+      "exit": 0,
+      "started": "2026-11-11T11:21:08.379343+00:00",
+      "finished": "2026-11-11T11:21:33.974912+00:00",
+      "log": "candidate-typecheck.log"
+    },
+    {
+      "name": "member-coordination",
+      "command": "node tests/member-coordination-browser.mjs",
+      "head": "4ead7411f829af788364c234f171d4719776c796",
+      "exit": 0,
+      "started": "2026-11-11T11:21:33.975295+00:00",
+      "finished": "2026-11-11T11:24:08.663568+00:00",
+      "log": "candidate-member.log"
+    },
+    {
+      "name": "product-browser",
+      "command": "node tests/product-browser.mjs",
+      "head": "4ead7411f829af788364c234f171d4719776c796",
+      "exit": 1,
+      "started": "2026-11-11T11:24:08.665776+00:00",
+      "finished": "2026-11-11T11:25:30.863504+00:00",
+      "log": "candidate-product.log"
+    },
+    {
+      "name": "product-browser pinned Node 22.20.0",
+      "command": "node-v22.20.0 tests/product-browser.mjs",
+      "head": "4ead7411f829af788364c234f171d4719776c796",
+      "exit": 0,
+      "started": "2026-11-11T11:26:18.234088+00:00",
+      "finished": "2026-11-11T11:34:32.889197+00:00",
+      "log": "candidate-product-node22.log"
+    },
+    {
+      "name": "focused keyboard and schedule accessibility after native Tab repair",
+      "head": "4ead7411f829af788364c234f171d4719776c796",
+      "working_test": "same explicit Tab code committed as 6db7f98e020f55e12ed4b2362cf30d93970275a4",
+      "exit": 0,
+      "log": "focus-repair-accessibility.log",
+      "note": "preliminary focused run; production build preceded the release-metadata merge"
+    },
+    {
+      "name": "final-build",
+      "command": "npx -y @runeditrun/rer build",
+      "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+      "exit": 0,
+      "started": "2026-11-11T11:55:14.750710+00:00",
+      "finished": "2026-11-11T11:55:25.386860+00:00",
+      "log": "final-build.log"
+    },
+    {
+      "name": "final-typecheck",
+      "command": "pnpm run typecheck",
+      "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+      "exit": 0,
+      "started": "2026-11-11T11:55:25.387475+00:00",
+      "finished": "2026-11-11T11:55:29.164350+00:00",
+      "log": "final-typecheck.log"
+    },
+    {
+      "name": "final-member",
+      "command": "node tests/member-coordination-browser.mjs",
+      "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+      "exit": 0,
+      "started": "2026-11-11T11:55:29.164777+00:00",
+      "finished": "2026-11-11T11:58:06.090716+00:00",
+      "log": "final-member.log"
+    },
+    {
+      "name": "final-product",
+      "command": "node tests/product-browser.mjs",
+      "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+      "exit": 0,
+      "started": "2026-11-11T11:58:06.092436+00:00",
+      "finished": "2026-11-11T12:06:08.714475+00:00",
+      "log": "final-product.log"
+    }
+  ],
+  "prior_ci": {
+    "run": 43002724700,
+    "failed_browser_job": 130479367396,
+    "calls": 2
+  },
+  "candidate_checks": "passed: final build, typecheck, complete member and complete product scripts on pinned Node 22.20.0",
+  "build": {
+    "command": "npx -y @runeditrun/rer build",
+    "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+    "exit": 0,
+    "log": "final-build.log"
+  },
+  "source_lock": {
+    "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+    "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+    "exit": 0
+  },
+  "contract_check": {
+    "command": "node src/base/contract-docs.mjs check",
+    "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+    "exit": 0
+  },
+  "counts": {
+    "before": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34
+    },
+    "after": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34
+    },
+    "new_test_registrations": 0,
+    "targeted_scripts_before": 2,
+    "targeted_scripts_after": 2
+  },
+  "publication_scan": "Full Base publication scan unavailable in cloud; fleet performs it before landing.",
+  "product_push": {
+    "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+    "branch": "cloud/main-oncall-explain-refusals-1-fix1",
+    "success": true,
+    "attempts": 1,
+    "log": "product-push.log"
+  },
+  "pr": null,
+  "ci_receipt": "CI-RECEIPT.json",
+  "candidate_verify_run": 43017534949,
+  "browser_receipt": "BROWSER-RECEIPT.json",
+  "ci_observed_status": "in_progress",
+  "github_calls_used": 9,
+  "prior_candidate": "4ead7411f829af788364c234f171d4719776c796",
+  "first_candidate_ci": {
+    "head": "4ead7411f829af788364c234f171d4719776c796",
+    "run_id": 43013110955,
+    "conclusion": "failure",
+    "failed_job": 130498357472,
+    "failure": "phone keyboard leg enters with pointer-restored focus; visibleFocus assertion at Add service",
+    "receipt": "first-candidate-ci.json",
+    "jobs": "candidate-ci-jobs.json",
+    "log": "candidate-ci-browser-failure.log"
+  },
+  "prior_product_push": {
+    "branch": "cloud/main-oncall-explain-refusals-1-fix1",
+    "head": "4ead7411f829af788364c234f171d4719776c796",
+    "success": true,
+    "attempts": 1,
+    "log": "product-push.log"
+  }
+}

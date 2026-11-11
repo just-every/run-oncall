@@ -1,0 +1,86 @@
+{
+  "product_head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+  "proof": "five refusal states reviewed on final build at 1440 and 390",
+  "screens": [
+    {
+      "path": "final-screens/refusal-supporting-service-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 89539,
+      "sha256": "1f061f22b859b6dccb358e999e13a426b0382a14a687578246c105bfb8637bfd",
+      "reviewed": true
+    },
+    {
+      "path": "final-screens/refusal-supporting-service-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 59910,
+      "sha256": "b42a9b1e1601685509a38e1a5add3ba466a168b4be3db75ee50cfb4d5c1c2223",
+      "reviewed": true
+    },
+    {
+      "path": "final-screens/refusal-server-create-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 95608,
+      "sha256": "49b9e465e8af189e16d82f5bd5f291bebd6daa461b7c9fcaf7da706d5383a1d6",
+      "reviewed": true
+    },
+    {
+      "path": "final-screens/refusal-server-create-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 67024,
+      "sha256": "925791c2ee114c041d9cee20bdc95240210636bb99c7f7d4ea0e153d276dcee4",
+      "reviewed": true
+    },
+    {
+      "path": "final-screens/refusal-status-reason-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 79714,
+      "sha256": "374bd2650f7dc5f370d38a2f1659fe04a8b403ae6dbcd49c1154cedc63c11932",
+      "reviewed": true
+    },
+    {
+      "path": "final-screens/refusal-status-reason-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 54330,
+      "sha256": "7201fa4ca2e221338ce1d9f2316d36c38c969a69c72fe2b980ff1f1e3c22230c",
+      "reviewed": true
+    },
+    {
+      "path": "final-screens/refusal-cover-review-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 130541,
+      "sha256": "c7552f85409feacafbe92fae9b7c48a2437eb81fd28991134234f11e2ad2e23c",
+      "reviewed": true
+    },
+    {
+      "path": "final-screens/refusal-cover-review-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 64965,
+      "sha256": "9e5f094226b5e37b5c61c7bed7a1c0472479e6a99f2539e883ab18c972b98ebc",
+      "reviewed": true
+    },
+    {
+      "path": "final-screens/refusal-swap-substitute-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 139021,
+      "sha256": "d2e848f4d09dae76d6b0c49fdf3b49795a0e535419eaab46ff2eef04d0cc3512",
+      "reviewed": true
+    },
+    {
+      "path": "final-screens/refusal-swap-substitute-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 61015,
+      "sha256": "9b6395b45a16cc4705266616b27d48fe03e5671a38bee5697a5619ba2ba3fead",
+      "reviewed": true
+    }
+  ]
+}

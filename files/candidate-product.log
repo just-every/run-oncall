@@ -1,0 +1,70 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+OC-068 keyboard manual page: urgency, priority, replay-safe operation and recorded target obligation persisted
+PROBE OC-009 declaration, acknowledgment and notes 1440: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed
+PROBE OC-009 stale write 1440: second authenticated HTTP session wins -> real 409, alert announcement, editable losing draft and no saved claim; winning data unchanged
+Workspace path / 200 /on-call hops 1
+Workspace path /#incidents 200 /incidents hops 1
+Workspace path /#alerts 200 /alerts hops 1
+Workspace path /#services 200 /settings/services hops 1
+Workspace path /#status 200 /status hops 1
+Workspace path /#routing 200 /settings/routing hops 1
+Workspace path /#schedules 200 /on-call hops 1
+Workspace path /#move-in 200 /settings/move-in hops 1
+Workspace path /#reviews 200 /reviews hops 1
+Workspace path /#team 200 /settings/team hops 1
+Workspace path /#archive 200 /settings/archive hops 1
+Workspace path /services 200 /settings/services hops 1
+Workspace path /routing 200 /settings/routing hops 1
+Workspace path /schedules 200 /on-call hops 1
+Workspace path /team 200 /settings/team hops 1
+Workspace path /move-in 200 /settings/move-in hops 1
+Workspace path /archive 200 /settings/archive hops 1
+Workspace path /settings 200 /settings/services hops 1
+Workspace path /?incident=49ac6f9e-65ca-43b2-b0ed-0253cb3bacf5#incidents 200 /incidents/49ac6f9e-65ca-43b2-b0ed-0253cb3bacf5 hops 1
+Product browser failure at /alerts
+Skip to content
+Oncall
+On call
+Incidents
+5
+Alerts
+3
+Reviews
+Status
+Settings
+PR
+Product browser owner
+admin
+⌄
+Alerts
+Existing pager authoritative · paging OFF · schedules and coordination
+Search alerts
+Filter
+Active
+Checkout warning 1440
+Checkout · warning · in an incident
+Checkout info 1440
+Checkout · info · in an incident
+Checkout elevated error rate 1440
+Checkout · critical · in an incident
+Recovered
+Checkout critical 1440
+Checkout · critical · in an incident
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-kGAqIv/local.env
+
+file:///home/agent/rer-consolidation/work/main-oncall-explain-refusals-1-fix1/run-oncall/tests/product-browser-journey.mjs:1071
+   await Promise.race([Promise.all([...samples.values()].map(sample=>sample.done)),new Promise((_,reject)=>{sampleTimeout=setTimeout(()=>reject(Error('Support-hours sample requests did not settle')),30000);})]);
+                                                                                                                                                ^
+
+Error: Support-hours sample requests did not settle
+    at Timeout.<anonymous> (file:///home/agent/rer-consolidation/work/main-oncall-explain-refusals-1-fix1/run-oncall/tests/product-browser-journey.mjs:1071:145)
+    at listOnTimeout (node:internal/timers:635:17)
+    at process.processTimers (node:internal/timers:571:7)
+
+Node.js v24.19.0

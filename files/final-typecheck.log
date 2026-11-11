@@ -1,0 +1,4 @@
+
+> @just-every/oncall@0.5.8 typecheck /home/agent/rer-consolidation/work/main-oncall-explain-refusals-1-fix1/run-oncall
+> tsc --noEmit
+

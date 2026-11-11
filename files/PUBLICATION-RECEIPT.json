@@ -1,0 +1,138 @@
+{
+  "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+  "changed_product_content": "no injected credential values or GitHub/private-key patterns found",
+  "selected_packet_texts": "same local check passed",
+  "files": [
+    {
+      "path": "first-candidate-ci.json",
+      "bytes": 2043,
+      "sha256": "7d14481b5080709d7fa576f41ff301cb589dcbb97ff2536678ab0ffc90fbfcd4"
+    },
+    {
+      "path": "candidate-ci-jobs.json",
+      "bytes": 1117,
+      "sha256": "34bc7d8491d2311bf2f1231cde2efa0fc84ee28647e8f3f9cbc174affabac7b2"
+    },
+    {
+      "path": "candidate-ci-browser-failure.log",
+      "bytes": 20141,
+      "sha256": "5c04c2147e1ec1574161ef89337a8db5688598ad18e8f24f412c7cfed48af013"
+    },
+    {
+      "path": "focus-repair-accessibility.log",
+      "bytes": 1786,
+      "sha256": "ec66dab5af811b938a4e23e920536d3a555b257a3ad0d5626549def9b84defc7"
+    },
+    {
+      "path": "final-build.log",
+      "bytes": 16012,
+      "sha256": "ed70afe342a4016a70770338b9b1513055cbcaf69d1cd8f23c03a1fac52b54e5"
+    },
+    {
+      "path": "final-typecheck.log",
+      "bytes": 136,
+      "sha256": "5afbe5f8cfd1ee100d79449ede6d041dfd9856133ea48f8d590b6d1fd1ad59f9"
+    },
+    {
+      "path": "final-member.log",
+      "bytes": 4488,
+      "sha256": "8e89328f30ee7013a0daf3b0d8ca7c58de22471cb63f3f4b71a9632142ae8916"
+    },
+    {
+      "path": "final-product.log",
+      "bytes": 20421,
+      "sha256": "bcf7e3dd74cb63acf48029784c6e942125ed729fe010cf648b51f7e6752b547d"
+    },
+    {
+      "path": "candidate-build.log",
+      "bytes": 16063,
+      "sha256": "8bacd3944d73e6dab041574bb5a573c4e6c3682f23d176c82ba1edad398e9f57"
+    },
+    {
+      "path": "REPORT.md",
+      "bytes": 10129,
+      "sha256": "50b2559714bbece22b60986f92869a0391798da2c2d89ca65681a2632e639775"
+    },
+    {
+      "path": "RECEIPTS.json",
+      "bytes": 6300,
+      "sha256": "6635d3a16e3ccc5331eee2b87dde10fcc330b0b8612d6e3edf5cc59785bc2381"
+    },
+    {
+      "path": "prior-ci-failure.txt",
+      "bytes": 3909,
+      "sha256": "385d8b1a1f2b602c3a7438fa1e373711399d47ef9119a8518f969968dbf38202"
+    },
+    {
+      "path": "prior-ci-jobs.json",
+      "bytes": 1117,
+      "sha256": "8fabeab59420e64df23fb560ae0c9d42fcc30fa1fb8c91858e1e72c63558701e"
+    },
+    {
+      "path": "landed-journey-difference.patch",
+      "bytes": 2394,
+      "sha256": "c68f8bdcd7dffb2cb5266e5a2e97beed79c53989c2365cd7577fbc538eabd325"
+    },
+    {
+      "path": "original-merged-member.log",
+      "bytes": 4302,
+      "sha256": "b984cffd4b218a5795aca48dcd70d858ced33cbb4a4afa4a5c41dc899d38e360"
+    },
+    {
+      "path": "landed-reproduction.log",
+      "bytes": 1578,
+      "sha256": "734b64247a834ea0e573307ea2deda13b6f9969f96575b8a705f52a3c60c29d7"
+    },
+    {
+      "path": "candidate-typecheck.log",
+      "bytes": 242,
+      "sha256": "4e99490161fc56eb1833efe26f7cc0afa3036a3f2a53984821437c35f9623be4"
+    },
+    {
+      "path": "candidate-member.log",
+      "bytes": 4302,
+      "sha256": "a568e676dbbb478303672a45b11fc3933dafba46e831ae84b07c6b8b52dd76b5"
+    },
+    {
+      "path": "identity-audit.json",
+      "bytes": 1028,
+      "sha256": "1df38e3bc089311e2ec6c8fc350e078d0a41c1fccddfd3770d09a320f2bb42e8"
+    },
+    {
+      "path": "product-changes.txt",
+      "bytes": 346,
+      "sha256": "da2e8bd8c973d0076abdd17d93b91caaae1137988ea9936c9c1feeb3bf2cd9ca"
+    },
+    {
+      "path": "source-lock-check.txt",
+      "bytes": 106,
+      "sha256": "d76cf8497873d8c72917c737747a7f0a22915730ab313b05b7c3b4982bc7e7a4"
+    },
+    {
+      "path": "contract-check.txt",
+      "bytes": 70,
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "path": "candidate-product.log",
+      "bytes": 3305,
+      "sha256": "7f548690b9c26a3cbd69de584d3bf1778d8f3abc432f3352b921477bd69b5835"
+    },
+    {
+      "path": "candidate-product-node22.log",
+      "bytes": 20414,
+      "sha256": "2c03662d280d196cfb89e275269a95f545da72a619b9afc45d415aca9849ab69"
+    },
+    {
+      "path": "CI-RECEIPT.json",
+      "bytes": 744,
+      "sha256": "9feaadb09d387969f5d483ae7a93f4bd823b5dbcb19aa75167818af02d176668"
+    },
+    {
+      "path": "product-push.log",
+      "bytes": 1552,
+      "sha256": "7da4fe0671f7e90d455d027c8e3e66e03c1d75a23762e02af792153c1a189434"
+    }
+  ],
+  "base_publication_scan": "not available in cloud; retained as fleet landing gate, not represented as completed"
+}
