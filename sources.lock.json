@@ -192,7 +192,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "61ce45b850537f39f25237742814a25a4dae30dfddc5dd708e4ab6ccd702397f",
+      "sha256": "7f5a1a710e5897de353b2a451cb297e6f6e005ad9900b7a2120fdc3135946668",
       "executable": false
     },
     "docs/audit.md": {
@@ -240,7 +240,7 @@
       "executable": false
     },
     "docs/data.md": {
-      "sha256": "4010a262791d079d193785e7d97b2c184f3b24b90c8bf4bb5f4f83fb43fd6624",
+      "sha256": "78555ff8360d06229f11c9b2c1db0008084b92d01933fa0847c79e2ba7b3311a",
       "executable": false
     },
     "docs/getting-started.md": {
@@ -1592,7 +1592,7 @@
       "executable": false
     },
     "scripts/installer/archive-policy.mjs": {
-      "sha256": "f92049b5df001b416edb96f02a8c7598aab406a08d9fd809a1fa620126f7c977",
+      "sha256": "1d2045cb3f4c396e3426911f41efc1f38d3d5645632ffa186144ed872933e89c",
       "executable": false
     },
     "scripts/installer/audit-archive.mjs": {
@@ -6628,7 +6628,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "603e5a95560d9a8db8a009dc261eaa9fb81ced2da8229ebca54a91d0bc9a3484",
+      "sha256": "01704f729a84f0677b7a47927d9837c3e8cd32cf2761ff6c65ccf0028ba5c3ef",
       "executable": false
     },
     "tests/triage.mjs": {
