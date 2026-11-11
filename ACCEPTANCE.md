@@ -8,10 +8,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 21 | 39 | 24 | 84 |
+| Core | 25 | 35 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 22 | 45 | 34 | 101 |
+| Full target | 26 | 41 | 34 | 101 |
 
 Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d7a` (8 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -83,7 +83,7 @@ Core · published · **done**
 
 #### OC-006 — Bounded outbound incident effects
 
-Core · published · **partial** · Cites BASE-DATA-004
+Core · published · **done** · Cites BASE-DATA-004
 
 **Requirement.** In release 1, only signed OC-053 response events to an endpoint a current administrator explicitly approved may leave the incident workspace (RL-2). No paging provider notification, AI call, production action or Lamp publication occurs in release 1. Configured remote mail sends sign-in links only. Handoffs are minimum summaries with stable identity and visibility; an exported draft is explicitly unreviewed. Source links grant no access. External acceptance, delivery and acknowledgment are distinct later records. Approved OC-053 events are proved under OC-053.
 
@@ -91,8 +91,8 @@ Core · published · **partial** · Cites BASE-DATA-004
 1. Coordination and handoff preparation and export create no paging receipt, production action, AI call or external publication.
 2. Draft exports remain unreviewed, and source links confer no access.
 
-**Evidence.** `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs`
-**Gap.** No cited test asserts the absence of an AI call, that an exported draft stays marked unreviewed, or that a source link grants no access; no paging receipt, no production action and no Lamp publication are asserted. This is the current-release safety boundary, not the final product boundary.
+**Evidence.** `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs`; `tests/activation.mjs` (PROBE OC-006 1); `tests/activation.mjs` (PROBE OC-006 2); `tests/runtime.mjs` (coordinationJourney)
+**Gap.** None.
 
 #### OC-007 — Native archive
 
@@ -229,7 +229,7 @@ Core · published · **done** · Cites BASE-DATA-001
 
 #### OC-017 — Reviewed handoffs
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Persist explicitly authored, unsent handoff copy with an explicit intended audience, immutable incident and service snapshots and canonical content hashes. Preparation and review actions have stable identities that conflict on changed content. Only current active responders and admins prepare, review or withdraw; viewers inspect permitted internal records and admins restore. A review binds exact copy and source versions, becomes ineligible on source drift or a recovery hold, and never grants sending, publication, recovery verification or independent-review authority. Withdrawal is terminal and preserves attributed append-only history. OC-006 and historical unreviewed envelopes stay unchanged. Separate additive handoff storage and archive are bounded to 64 records, 128 history entries per record, 128 KiB per record and 1 MiB aggregate. Explicit checkpoint version 2 includes handoffs; version 1 remains supported. Restore retains historical identities and holds active approvals atomically alongside existing recovery and credential and session safeguards. Invalid input, capacity or storage failure or losing concurrent writes preserve the complete prior state. HANDOFF-STAGE.md defines retained snapshots, eligibility and permissions. No provider send, remote fetch or Lamp publication is authorized.
 
@@ -237,8 +237,8 @@ Core · published · **partial**
 1. Prepare, review, inspect and export exact handoff copy over protected HTTP; change the source or revision, withdraw, restore versions 1 and 2 and race writes.
 2. Eligibility and holds, stable action identities, append-only attribution and every storage bound hold, with no send authority.
 
-**Evidence.** `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs`
-**Gap.** The exported packet's copy is not compared with the reviewed copy in the cited test (`tests/checkpoint-cli.mjs` holds that comparison); preparation, review, inspection, eligibility, holds, identities, attribution, every bound and the unsent export are asserted. Connected communication is a separate target in OC-034/051.
+**Evidence.** `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs`; `tests/activation.mjs` (HTTP export preserves the exact reviewed payload, source snapshots, hashes, revision and attributed history); `tests/activation.mjs` (OC-016/017: checkpoint consistency); `tests/checkpoint-cli.mjs` (checkpointCli)
+**Gap.** None.
 
 ### Activated installation and move-in
 
@@ -292,15 +292,17 @@ Core · published · **done**
 
 #### OC-022 — Resume and undo
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Journaled imports support bounded resume after restart and explicit undo. SQL checks current actor, session and admin authority inside publication and reversal. Changed source identities require a reviewed catch-up through the shared door; outside that lifecycle they conflict. Duplicate unchanged sources are idempotent. Undo removes only unchanged attributed native objects; edits are preserved with an explicit conflict. Invalid input or failed publication leaves prior committed state unchanged; partial progress remains visible and resumable.
+
+**Native proof.** In `tests/activation.mjs`, the per-vendor “unfinished checkpoint” journey applies one bounded batch of a PagerDuty or Opsgenie saved file, proves its checkpoint is strictly inside the reviewed total, restarts the Worker, and completes the same job and fingerprint. It compares the committed prefix unchanged, checks each remaining object exists once, retries the completed job without new effects, and undoes exactly that import while native membership and paging state remain unchanged. The injected native SQL failure and expired publication lease legs distinguish rolled-back publication from retained partial effects that require explicit rollback. The same file's saved-response journeys cover unchanged replay, and its native-edit and later-import journeys preserve records under `NATIVE_EDIT_CONFLICT` and `IMPORT_SUPERSEDED`, including revoked-session refusal. In `tests/import-door.mjs`, the PagerDuty account HTTP journey revokes Business import authority inside the committing batch, injects publication failure, and checks unchanged native records; its identical-byte and reviewed catch-up journeys cover unchanged and changed identities. These are synthetic saved-file proofs with imported objects inactive and paging OFF; live account conversion and cutover remain with OC-038 and OC-074.
 
 **Acceptance.**
 1. Apply, interrupt and restart, resume and undo both vendor imports over HTTP; revoke authority at publication, inject an SQL failure, replay unchanged and changed identities, and preserve native edits as named undo conflicts.
 
-**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`
-**Gap.** Synthetic signed standing replacement/addition, restart/reconcile and newest-first undo are exercised; gone/over-allowance/native-edit refusals preserve records and paging stays OFF. No cited test resumes an interrupted import to completion: the restart in the shape journey falls between apply calls without asserting the job was unfinished, and the lease-expired import is refused and rolled back. Apply, interruption, restart, undo, revoked authority, SQL rollback, idempotent and conflicting replays and named undo conflicts are asserted.
+**Evidence.** `src/move-in/owner-door.ts`; `src/move-in/api.ts`; `src/move-in/journal.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/import-door.mjs`; `tests/activation.mjs` (OC-022 pagerduty: unfinished checkpoint); `tests/activation.mjs` (OC-022 opsgenie: unfinished checkpoint); `tests/import-door.mjs` (OC-038 PagerDuty account HTTP)
+**Gap.** None.
 
 ### Complete category job
 
@@ -708,7 +710,7 @@ Core · target · **partial** · Rules D-1, D-3, D-4 · Register R-12
 
 #### OC-052 — Complete portable target archive and Base replacements
 
-Core · target · **partial** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT-003, BASE-PUBLIC-002, BASE-DATA-005 · Rules D-2
+Core · target · **done** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT-003, BASE-PUBLIC-002, BASE-DATA-005 · Rules D-2
 
 **Requirement.** Extend the OC-007, OC-015 and OC-016 archives to every new durable product record: teams and services, complete coverage, policies, responder destination definitions and verification history, alert and incident identities, delivery, escalation and call histories, reviews and actions, connector definitions, investigations, plans and grants as inactive history, audit, import provenance and erasure journals. Exclude sessions, passwords, provider keys, device and acknowledgment capabilities and execution credentials as installation-local authority; declare these exclusions as the product's explicit BASE-DATA-001 replacement rather than claiming credential portability. Restore atomically into the documented receiving state with all sends, schedules needing reauthorization, agent actions and publication paused; preserved history cannot satisfy live readiness or replay effects. BASE-INPUT-002 uses literal structured text and no arbitrary supplied HTML; BASE-INPUT-003 treats current JSON imports as bounded structured data with no arbitrary attachment upload (any future recording or upload must add validated scoped custody); BASE-PUBLIC-002 has no public incident embed. Native coordination has no AI dependency, and any optional management connector is explicit and revocable. These replacements preserve security, erasure and operating obligations; they do not claim untested baseline equivalence. Every new durable category keeps door rule D-2.
 
@@ -717,8 +719,8 @@ Core · target · **partial** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT
 2. Supply malformed/over-limit/erased/unknown records and inject storage/concurrency faults; preserve the full prior state.
 3. Deny optional AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.
 
-**Evidence.** `scripts/installer/archive-policy.mjs`; `src/portability-policy.mjs`; `tests/transfer.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`
-**Gap.** No cited test denies optional AI network access while native coordination runs, verifies literal input, or checks for the absence of an undeclared public embed or upload door; populated HTTP and CLI export, inactive restore with local reauthorization, refusal of malformed, over-limit, erased and unknown records and rollback under storage and concurrency faults are asserted. All current durable categories restore inactive without authority or replay.
+**Evidence.** `scripts/installer/archive-policy.mjs`; `src/portability-policy.mjs`; `tests/transfer.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`; `tests/transfer.mjs` (managed installation transfer); `tests/checkpoint-cli.mjs` (checkpointCli); `tests/activation.mjs` (checkpoint consistency); `tests/runtime.mjs` (automationJourney); `tests/product-browser-journey.mjs` (keyboardCoordination)
+**Gap.** None.
 
 #### OC-053 — Public API, outbound events and reliable automation
 

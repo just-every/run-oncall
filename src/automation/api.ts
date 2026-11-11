@@ -1,4 +1,4 @@
-import { invokeRestMutation, invokeRestRead, invokeRestReceipt, restRefusal } from '../agent-door/rest';
+import { clientPolicyStatus, invokeRestMutation, invokeRestRead, invokeRestReceipt, restRefusal } from '../agent-door/rest';
 import { resolveIncidentAlias } from '../incident-workflows/relations.ts';
 import { incidentWithinServices } from '../incident-workflows/scope.ts';
 import { fail, Fault, text, type State } from '../family/response-operations/domain';
@@ -26,7 +26,7 @@ function scopes(state:State,input:any) {
 }
 export function installAutomationManagement(api:any,deps:Deps) {
  const owner=async(c:any)=>{const state=await deps.state(c,true);if(!activeOwner(state,c.get('actor').id))fail('Current administrator required',403);return state;};
- api.get('/api/automation',async(c:any)=>{const state=await owner(c);return c.json({clients:state.apiClients??[],endpoints:state.apiEndpoints??[],outbox:state.apiOutbox??[],paging:'OFF'});});
+ api.get('/api/automation',async(c:any)=>{const state=await owner(c);return c.json({clients:state.apiClients??[],endpoints:state.apiEndpoints??[],outbox:state.apiOutbox??[],paging:'OFF',policy:await clientPolicyStatus(c.env,c.req.raw)});});
  api.post('/api/automation/clients',async(c:any)=>{
   const state=await owner(c),input=await deps.body(c),key=secret(input.key),allowed=scopes(state,input.services);
   if(!Array.isArray(input.permissions)||!input.permissions.length||new Set(input.permissions).size!==input.permissions.length||input.permissions.some((p:any)=>!permissions.includes(p)))fail('Choose documented API permissions');

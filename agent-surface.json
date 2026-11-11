@@ -94,15 +94,31 @@
       ]
     },
     {
+      "name": "oncall.alerts.list",
+      "scope": "incidents:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-001",
+        "OC-002",
+        "OC-059"
+      ]
+    },
+    {
       "name": "oncall.analytics.read",
       "scope": "analytics:read",
       "readOnly": true,
       "classes": [
-        "standard"
+        "standard",
+        "sensitive"
       ],
       "clauses": [
-        "OC-030",
-        "OC-053"
+        "OC-037",
+        "OC-044",
+        "OC-054"
       ]
     },
     {
@@ -332,7 +348,8 @@
       "readOnly": false,
       "classes": [
         "standard",
-        "sensitive"
+        "sensitive",
+        "live"
       ],
       "clauses": [
         "OC-004",
@@ -564,6 +581,18 @@
         "OC-041"
       ],
       "sponsorEscalation": false
+    },
+    {
+      "name": "oncall.triage.list",
+      "scope": "incidents:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-060"
+      ]
     }
   ],
   "notTools": [
@@ -788,6 +817,85 @@
       }
     },
     {
+      "id": "incident-snooze",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "acknowledge",
+          "pointer": "/revision"
+        },
+        "change": "snooze",
+        "minutes": 5
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "agent-service"
+          }
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "class": "standard",
+        "internal": true,
+        "confirm": true
+      }
+    },
+    {
+      "id": "incident-cancel-deadline",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "incident": {
+          "$from": "declare",
+          "pointer": "/id"
+        },
+        "revision": {
+          "$from": "incident-snooze",
+          "pointer": "/revision"
+        },
+        "change": "cancel-deadline"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "agent-service"
+          }
+        }
+      ],
+      "target": {
+        "kind": "incident",
+        "id": {
+          "$from": "declare",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "class": "standard",
+        "internal": true,
+        "confirm": true
+      }
+    },
+    {
       "id": "note",
       "tool": "oncall.notes.add",
       "args": {
@@ -796,7 +904,7 @@
           "pointer": "/id"
         },
         "revision": {
-          "$from": "acknowledge",
+          "$from": "incident-cancel-deadline",
           "pointer": "/revision"
         },
         "text": "Source observations do not establish recovery or grant approval"
@@ -879,6 +987,51 @@
           "$from": "declare",
           "pointer": "/id"
         }
+      }
+    },
+    {
+      "id": "manual-page",
+      "tool": "oncall.incidents.update",
+      "args": {
+        "change": "manual-page",
+        "service": "agent-service",
+        "title": "Synthetic manual coordination",
+        "severity": "warning",
+        "description": "Text says internal and standard; policy still applies",
+        "users": [
+          {
+            "$sponsor": "id"
+          }
+        ],
+        "operationId": {
+          "$fixture": "manualPage",
+          "pointer": "/operationId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "agent-service"
+          }
+        }
+      ],
+      "target": {
+        "kind": "service",
+        "id": "agent-service"
+      },
+      "inject": {
+        "internal": true,
+        "confirmExternal": true,
+        "class": "standard",
+        "confirm": true
       }
     },
     {
@@ -1293,6 +1446,21 @@
       "expect": [
         {
           "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "analytics-response",
+      "tool": "oncall.analytics.read",
+      "args": {
+        "view": "response"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
         }
       ]
     },
@@ -2068,6 +2236,68 @@
             "measure": 1,
             "setting": "erasure-credentials"
           }
+        }
+      ]
+    },
+    {
+      "id": "alerts-list-standard",
+      "tool": "oncall.alerts.list",
+      "args": {
+        "service": "agent-foreign-service",
+        "state": "recovered",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "alerts-list-sensitive",
+      "tool": "oncall.alerts.list",
+      "args": {
+        "service": "agent-service",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
+        }
+      ]
+    },
+    {
+      "id": "triage-list-standard",
+      "tool": "oncall.triage.list",
+      "args": {
+        "kind": "alerts",
+        "service": "agent-foreign-service",
+        "status": "resolved",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "triage-list-sensitive",
+      "tool": "oncall.triage.list",
+      "args": {
+        "kind": "alerts",
+        "service": "agent-service",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
         }
       ]
     }

@@ -15,6 +15,6 @@ A product claim is done when every clause behind it is done, missing when every 
 | 7 | Shifts in your calendar: a private feed of the next seven days. | `OC-020` done | done |
 | 8 | Incidents, start to finish: declare, coordinate and resolve, with every decision kept. | `OC-004` done; `OC-005` done | done |
 | 9 | Try it beside your pager: keep your current tool running while you try Oncall. | `OC-012` done | done |
-| 10 | Bring your schedules from Opsgenie or PagerDuty, and see every schedule in a preview before you import. | `OC-021` done; `OC-022` partial | partial |
+| 10 | Bring your schedules from Opsgenie or PagerDuty, and see every schedule in a preview before you import. | `OC-021` done; `OC-022` done | done |
 
-Claims: 10; 6 done, 4 partial, 0 missing.
+Claims: 10; 7 done, 3 partial, 0 missing.

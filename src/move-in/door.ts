@@ -5,7 +5,7 @@ import { Refusal } from './refusals'
 import { createImportDoorHandler, type ImportDoorSource } from '../modules/import-kit/src/door/index'
 import type { ImportMapping, ParsedRecord } from '../modules/import-kit/src/types'
 import { ownerClaimConfig, type Bindings } from '../auth.server'
-import { mapping } from './mapping'
+import { mapping, MOVE_IN_MAPPING_VERSION } from './mapping'
 import { savedExportRecords, type Vendor } from './source'
 import { targets } from './target'
 import { IMPORT_DOOR_KEY } from './door-key'
@@ -31,7 +31,7 @@ export function importSource(name: string): ImportDoorSource | null {
    parsed.push(...records)
    return records
   },
-  mapping: { version: 'oncall-move-in-1', map(record) {
+  mapping: { version: MOVE_IN_MAPPING_VERSION, map(record) {
    prepared ??= mapping(vendor, { records: parsed.map(item => ({ ...item, location: { artifact: 'saved-export', pointer: item.pointer } })) }, now)
    return prepared.map(record)
   } },

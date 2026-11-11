@@ -15,6 +15,7 @@ import {InlineConfirm} from '../app/autosave/InlineConfirm';
 import {OneTimeSecret} from '../integrations/OneTimeSecret';
 import {privateKey,shortTime} from '../integrations/catalog';
 import { RoutingDiagnostics } from './RoutingDiagnostics';
+import { RoutedSenderSetup } from './RoutedSenderSetup';
 import './routing.css';
 
 type Props={state:State;admin:boolean;busy:boolean;run:IntakeRun};
@@ -47,6 +48,7 @@ function RoutingKey({state,admin,busy,run,source}:Props&{source:IntakeSource}) {
       {error&&<p role="alert" className="error">{error}</p>}
       {base!==current.version&&<p role="alert">This draft is based on v{base}; v{current.version} is now published. Publishing this stale draft will be refused. <button type="button" onClick={()=>{draft.useMine();changed();}}>Use mine</button></p>}
 
+      {services[0]&&<RoutedSenderSetup key={source.id} sender={{id:source.id,name:source.name,provider:source.provider,authentication:source.authentication,service:services[0]}}/>}
       <AllowanceForm state={state} id={'intake:'+source.id} admin={admin} busy={busy} run={run}/><ul aria-label="Throttle notices">{state.audit.filter(a=>a.kind==='intake-throttled'&&a.actor==='source:intake:'+source.id).slice(-5).map(a=><li key={a.id}>{a.text}</li>)}</ul>
       <h3>Routing rules</h3><p>Draft based on version {base}. Changes below take effect only after publication.</p>
       {!rules.length&&<p>No rules. Every event takes the catch-all decision.</p>}
