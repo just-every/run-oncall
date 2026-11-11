@@ -486,6 +486,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  page.on('response',observe);
  await key.activate(page.locator('.oc-page-head').getByRole('link',{name:'New rota',exact:true}));
  if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
+ if(width===1440){
+  const name=page.getByLabel('Rota name',{exact:true});await name.fill('');await page.getByRole('button',{name:'Continue',exact:true}).click();
+  const error=name.locator('..').getByRole('alert');await error.waitFor();assert.equal(await name.evaluate(e=>e===document.activeElement),true);assert.equal(await name.getAttribute('aria-describedby'),await error.getAttribute('id'));
+ }
  await key.text(page.getByLabel('Rota name',{exact:true}),'Checkout rota '+width);
  await accessibleState(page,'rota-name',width,page.getByLabel('Rota name',{exact:true}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();
@@ -538,6 +542,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  assert.deepEqual(await api('/api/paging/state'),beforeDismiss,'Escape dismisses cover preparation without saving');
  await key.activate(coverOpener);
  await key.option(cover.getByLabel('Who',{exact:true}),'');await key.option(cover.getByLabel('Role',{exact:true}),'primary');await key.calendar(cover.getByLabel('From',{exact:true}),future.overrideStart);await key.calendar(cover.getByLabel('To',{exact:true}),future.overrideEnd);
+ if(width===1440){
+  const end=cover.getByLabel('To',{exact:true}),value=await end.inputValue();await end.fill('');await cover.getByRole('button',{name:'Review change',exact:true}).click();
+  const error=end.locator('..').getByRole('alert');await error.waitFor();assert.equal(await end.evaluate(e=>e===document.activeElement),true);assert.equal(await end.getAttribute('aria-describedby'),await error.getAttribute('id'));await end.fill(value);
+ }
  await accessibleState(page,'cover-preparation',width,cover.getByRole('button',{name:'Review change',exact:true}));
  const coverBefore=await api('/api/paging/state'),coverReviewResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/schedules/'+id+'/review'&&r.request().method()==='POST');
  await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
@@ -545,6 +553,12 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  const reviewedNames=await cover.getByRole('region',{name:'Coverage change intervals',exact:true}).locator('.scheduling-window > p > strong').allTextContents(),reviewName=id=>id===null?'Coverage gap':coverReview.members.find(member=>member.id===id)?.name??'Unavailable member';
  assert.deepEqual(reviewedNames,[...coverReview.intervals].sort((a,b)=>Number(b.after===null)-Number(a.after===null)||a.start-b.start||a.role.localeCompare(b.role)).slice(0,80).map(interval=>interval.role+': '+reviewName(interval.before)+' → '+reviewName(interval.after)),'the cover review renders every protected before and after assignment');
  assert.deepEqual(await api('/api/paging/state'),coverBefore,'cover review writes nothing');assert.equal(await cover.getByRole('button',{name:'Apply reviewed change',exact:true}).isDisabled(),true);
+ if(width===1440){
+  const apply=cover.getByRole('button',{name:'Apply reviewed change',exact:true}),hint=await apply.getAttribute('aria-describedby');assert.ok(hint);
+  const explanation=cover.locator(`[id="${hint}"]`);await explanation.waitFor();assert.ok((await explanation.innerText()).includes(await cover.getByRole('checkbox').locator('..').innerText()),'Apply names the review checkbox that enables it');
+  assert.equal(await explanation.evaluate((e,id)=>e.previousElementSibling?.getAttribute('aria-describedby')===id,hint),true,'the explanation sits immediately beside Apply');
+  for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await apply.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-cover-review-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ }
  await key.dialog(cover);await accessibleState(page,'cover-review',width,cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}));
  await key.dismiss(cover,coverOpener);assert.deepEqual(await api('/api/paging/state'),coverBefore,'Escape from the review writes nothing');
  await key.activate(coverOpener);await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();

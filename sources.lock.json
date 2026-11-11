@@ -1784,7 +1784,7 @@
       "executable": false
     },
     "src/app/autosave/InlineConfirm.tsx": {
-      "sha256": "f7dce56123e616a20d008eab2243a4b81ccbed9cd37a06827d7a2262b08b2bf5",
+      "sha256": "bde1623399dfbacd750c77c96b78011b2dcfcd2755d8255984c0632dd6114f46",
       "executable": false
     },
     "src/app/autosave/leaveGuard.ts": {
@@ -2152,7 +2152,7 @@
       "executable": false
     },
     "src/business-status/StatusPanel.tsx": {
-      "sha256": "d475662a1d1b4d3e2dde1e7a85a81e964de7cf61d0b6380afc5af778427a309f",
+      "sha256": "829c31e7f28a5de65d786e43da0bdfd5478e6a0a0ddf1bfdc0da05a9b42c3ff8",
       "executable": false
     },
     "src/business-status/types.ts": {
@@ -2392,7 +2392,7 @@
       "executable": false
     },
     "src/forms.tsx": {
-      "sha256": "f452cb72d16ec79e9b71bd0896ec9932dce93c096d31d94af2fa8d6cbce29689",
+      "sha256": "e449a2c7f55d0fed995af58e8b2a5fc68291ccb06988c9e46b248c7f9ee98206",
       "executable": false
     },
     "src/foundation/runtime/icon-head.ts": {
@@ -5556,7 +5556,7 @@
       "executable": false
     },
     "src/on-call/Field.tsx": {
-      "sha256": "3f5715cbfcaad206df7f539f47e0c0d85309595d1ccb4ba7be97f7a3059994ab",
+      "sha256": "397a1d8c32376c1865164cf48048829ef8a4460431f2803cfc1c2062e2ace0b2",
       "executable": false
     },
     "src/on-call/on-call.css": {
@@ -5588,7 +5588,7 @@
       "executable": false
     },
     "src/on-call/rota-steps/RotaSteps.tsx": {
-      "sha256": "48ba39439335d1f0e2abc2ef08f3cd6e114107fd59f7bb2633910c7d1f630496",
+      "sha256": "664a257dcb6e4cb3859e76f2e5907a65915620f417415a3deedaa99869660f05",
       "executable": false
     },
     "src/on-call/rota-steps/StepCheck.tsx": {
@@ -5608,7 +5608,7 @@
       "executable": false
     },
     "src/on-call/RotaPage.tsx": {
-      "sha256": "3613b17d6f551f6964a18160500a996c8e23f35b3096b42af75e6a805ea78b6e",
+      "sha256": "5f3cf0207dc57e24d5731770ea2f41bf537dd45e74e01d3ec29b2cf7e20dd1d3",
       "executable": false
     },
     "src/on-call/RotaRow.tsx": {
@@ -6096,7 +6096,7 @@
       "executable": false
     },
     "src/schedule-coverage/ReviewedChange.tsx": {
-      "sha256": "2a164a2786e4a0a6a49f3870edb9ab475e8ac47383067ee6cad0a7139b558eac",
+      "sha256": "06efcd123800354f61914bcc2c7cbb460f22404bcb3b87a917a842a6fbef17f0",
       "executable": false
     },
     "src/ScheduleSummary.tsx": {
@@ -6520,7 +6520,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "a2072d8e119ef4d99725238ad30096e8b5e359c8cd055160148cd68f10499253",
+      "sha256": "12bc5330f6a1a4c44891b32c12f2717f40ac31bf56967893c9e094e23d4d89a4",
       "executable": false
     },
     "tests/oncall-agent-communications-replay.mjs": {
@@ -6592,7 +6592,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "8751656914019f74f803f968859e0ec0aa6f4491dff9f0091ae1f15f2a3e989e",
+      "sha256": "b5fda4d42717dfa34f086c6a06ab85f47ef3a2812e877d0230c356b578137e8d",
       "executable": false
     },
     "tests/product-browser.mjs": {

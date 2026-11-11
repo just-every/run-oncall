@@ -295,7 +295,32 @@ try {
   await expect(statusPanel.getByText('Owning team: '+teams[0].name,{exact:true})).toBeVisible()
   console.log('OC-061 one-team branch: the form names its sole created team',teams[0].name)
  }
- await statusPanel.getByLabel('Supporting technical services',{exact:true}).selectOption('synthetic-oncall-61')
+ // Refused creates retain their draft and name the invalid field beside it.
+ const supporting=statusPanel.getByLabel('Supporting technical services',{exact:true}),createBusiness=statusPanel.getByRole('button',{name:'Create business service',exact:true});
+ await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id);
+ const statusBefore=ok(await call(owner.page,'/api/status')),createRequests=[];
+ const observeCreate=request=>{if(new URL(request.url()).pathname==='/api/status'&&request.method()==='POST')createRequests.push(request);};
+ owner.page.on('request',observeCreate);
+ await supporting.selectOption([]);await createBusiness.click();
+ const fieldError=supporting.locator('..').getByRole('alert');
+ await expect(fieldError).toBeVisible();await expect(supporting).toBeFocused();await expect(supporting).toHaveAttribute('aria-invalid','true');
+ assert.equal(await supporting.getAttribute('aria-describedby'),await fieldError.getAttribute('id'),'the adjacent error describes the supporting-services field');
+ assert.ok((await fieldError.innerText()).includes(await supporting.evaluate(e=>document.getElementById(e.getAttribute('aria-labelledby')).textContent)),'the error names its field');
+ assert.equal(createRequests.length,0,'invalid create never reaches the write door');assert.deepEqual(ok(await call(owner.page,'/api/status')),statusBefore,'invalid create saves no business service');
+ const captureRefusal=async name=>{for(const width of [1440,390]){await owner.page.setViewportSize({width,height:1000});await createBusiness.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/refusal-${name}-${width}.png`});}await owner.page.setViewportSize({width:1440,height:1000});};
+ await captureRefusal('supporting-service');
+ await supporting.selectOption('synthetic-oncall-61');await expect(fieldError).toHaveCount(0);
+ // A real server-side length refusal is also visible beside the initiating action.
+ await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout '.repeat(15));
+ const refused=owner.page.waitForResponse(response=>new URL(response.url()).pathname==='/api/status'&&response.request().method()==='POST');
+ await createBusiness.click();const refusedReply=await refused;assert.equal(refusedReply.status(),400);
+ const reason=(await refusedReply.json()).error;assert.ok(reason,'the server returns its reason');
+ const createForm=createBusiness.locator('xpath=ancestor::form');await expect(createForm.getByRole('alert')).toBeVisible();
+ assert.ok((await createForm.getByRole('alert').innerText()).includes(reason),'the page shows the server refusal reason');
+ assert.equal(await statusPanel.getByText('Saved',{exact:true}).count(),0);assert.deepEqual(ok(await call(owner.page,'/api/status')),statusBefore);
+ await expect(statusPanel.getByLabel('Business-service name',{exact:true})).toHaveValue('Checkout '.repeat(15));
+ await captureRefusal('server-create');owner.page.off('request',observeCreate);
+ await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
  await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id)
  await statusPanel.getByRole('group',{name:'Stakeholder audience',exact:true}).getByRole('checkbox',{name:sam.name,exact:true}).check()
  await statusPanel.getByRole('button',{name:'Create business service',exact:true}).click()
@@ -316,6 +341,9 @@ try {
  for(const width of [1440])await statusCapture(owner.page,'derived-status',width)
  await checkout.getByText('Manage internal status',{exact:true}).click()
  await checkout.getByLabel('Status set by hand',{exact:true}).selectOption('operational')
+ const setStatus=checkout.getByRole('button',{name:'Set status',exact:true});await expect(setStatus).toBeDisabled();
+ const reasonHint=await setStatus.getAttribute('aria-describedby');assert.ok(reasonHint);await expect(checkout.locator(`[id="${reasonHint}"]`)).toBeVisible();
+ await captureRefusal('status-reason');
  await checkout.getByLabel('Reason',{exact:true}).fill('Alternate gateway is processing payments')
  await checkout.getByRole('button',{name:'Set status',exact:true}).click()
  await checkout.getByText(/Manual override: operational/).waitFor()
