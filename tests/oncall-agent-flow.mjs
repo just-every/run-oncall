@@ -363,7 +363,9 @@ async function changedArgumentConflicts(runtime){
 
 /** Aged native MCP outcomes survive short-lived credential and policy renewal. */
 async function agedReplayRetention(){
- const started=Date.UTC(2026,10,4,12),day=24*60*60*1000;
+ // Keep bootstrap sessions current for D1's wall-clock expiry checks while
+ // retaining whole-second claims and advancing the platform clock to age calls.
+ const started=Math.floor(Date.now()/3600000)*3600000,day=24*60*60*1000;
  for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
   // Each policy has an isolated emitted Worker and actual D1 custody. Advancing
   // this platform clock ages real calls, rather than inserting synthetic rows.
