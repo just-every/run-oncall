@@ -430,17 +430,31 @@ async function retainPreview(page, change, submit) {
   window.stopRotaPreviewProbe=()=>{sample();active=false;observer.disconnect();return probe;};
  });
  let release,latest;const gate=new Promise(resolve=>{release=resolve;}),pending=[];
- const hold=route=>{latest=route.request();const task=(async()=>{const response=await route.fetch();await gate;await route.fulfill({response});})();pending.push(task);return task;};
+ const hold=route=>{
+  // The parent rota also refreshes saved coverage on this endpoint. Only draft
+  // requests feed this editor preview; a saved read must not replace its oracle.
+  if(!route.request().postDataJSON()?.schedule)return route.continue();
+  latest=route.request();const task=(async()=>{const response=await route.fetch();await gate;await route.fulfill({response});})();pending.push(task);return task;
+ };
  await page.route('**/api/paging/preview',hold);
  try{
   await change();await page.waitForTimeout(2000);
+  // Exercise the background reader while the editor's draft response is held.
+  // Its different saved window must remain readable without becoming the draft oracle.
+  const saved=/^\/on-call\/([^/]+)\/edit$/.exec(new URL(page.url()).pathname);
+  if(saved){
+   const status=await page.evaluate(async id=>{const from=Date.now();return (await fetch('/api/paging/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scheduleId:id,from,to:from+14*86400000})})).status;},decodeURIComponent(saved[1]));
+   assert.equal(status,200,'saved coverage remains readable while a draft preview is pending');
+  }
   assert.ok(latest,'the valid change requests a new preview');
   assert.equal(await preview.innerText(),before,'the last coverage stays visible for the entire delayed answer');
   const probe=await page.evaluate(()=>window.stopRotaPreviewProbe());
   assert.equal(probe.minWeeks,probe.weeks,'typing and valid changes never blank the weeks');
   assert.equal(probe.minHeight,probe.height,'the pending preview never collapses');
   if(submit)assert.equal(await submit.isDisabled(),true,'visible old weeks never authorize saving a new draft');
-  const answered=page.waitForResponse(response=>response.request()===latest);release();const response=await answered;await response.finished();
+  // Finish the delayed draft requests before comparing the final draft's result.
+  release();await Promise.all(pending);await page.waitForLoadState('networkidle');
+  const response=await latest.response();assert.ok(response?.ok(),'the final valid draft preview succeeds');await response.finished();
   const windows=await response.json();
   await page.waitForFunction(times=>JSON.stringify([...document.querySelectorAll('.oc-preview time')].map(time=>time.dateTime))===JSON.stringify(times),windows.map(window=>new Date(window.at).toISOString()));
  }finally{release();await Promise.all(pending);await page.unroute('**/api/paging/preview',hold);await page.evaluate(()=>window.stopRotaPreviewProbe());}

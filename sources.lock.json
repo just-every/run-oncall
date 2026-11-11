@@ -6592,7 +6592,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "4d084e750cdd967c5033d93a70de3ebd3b2d87c5b8fc47c8d89304eae811d33e",
+      "sha256": "fa1337e88de82aac0b2bba3d5e92fa5e753682a6702b4c8d61672ad79559cb8d",
       "executable": false
     },
     "tests/product-browser.mjs": {
