@@ -1,0 +1,285 @@
+Journey completed: exec rer check --profile first-party (1.8s)
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> @just-every/oncall@0.5.8 build /workspace/run-oncall-f221
+> rer build
+
+Using project Node 22.20.0 (current Node 24.19.0).
+Heavy job admitted: Oncall build:workflow [3700fde3c6cc]
+Checking pinned pnpm
+10.12.4
+Building your application
+build:app
+Generated the standalone exporter from the app collection module.
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../base/run-site" without a file extension (src/docs/build/run-recipe.ts:1:34). Add the file extension
+  - import "../../site/run" without a file extension (src/docs/build/run-recipe.ts:2:21). Add the file extension
+  - import "./icon-head" without a file extension (src/base/run-site.ts:1:26). Add the file extension
+  - import "./run-chooser-style" without a file extension (src/base/run-site.ts:2:29). Add the file extension
+  - import "../base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
+  - import "./identity" without a file extension (src/base/run-site.ts:11:53). Add the file extension
+  - import "../base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
+  - import "./theme-frame" without a file extension (src/base/run-site.ts:12:21). Add the file extension
+  - import "./hosting-page" without a file extension (src/base/run-site.ts:13:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../base/run-site" without a file extension (src/docs/build/run-recipe.ts:1:34). Add the file extension
+  - import "../../site/run" without a file extension (src/docs/build/run-recipe.ts:2:21). Add the file extension
+  - import "./icon-head" without a file extension (src/base/run-site.ts:1:26). Add the file extension
+  - import "../base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
+  - import "./run-chooser-style" without a file extension (src/base/run-site.ts:2:29). Add the file extension
+  - import "../base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
+  - import "./identity" without a file extension (src/base/run-site.ts:11:53). Add the file extension
+  - import "./theme-frame" without a file extension (src/base/run-site.ts:12:21). Add the file extension
+  - import "./hosting-page" without a file extension (src/base/run-site.ts:13:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../base/run-site" without a file extension (src/docs/build/run-recipe.ts:1:34). Add the file extension
+  - import "../../site/run" without a file extension (src/docs/build/run-recipe.ts:2:21). Add the file extension
+  - import "../base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
+  - import "./icon-head" without a file extension (src/base/run-site.ts:1:26). Add the file extension
+  - import "../base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
+  - import "./run-chooser-style" without a file extension (src/base/run-site.ts:2:29). Add the file extension
+  - import "./identity" without a file extension (src/base/run-site.ts:11:53). Add the file extension
+  - import "./theme-frame" without a file extension (src/base/run-site.ts:12:21). Add the file extension
+  - import "./hosting-page" without a file extension (src/base/run-site.ts:13:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 475 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                                           0.02 kB
+dist/client/assets/ibm-plex-mono-latin-400-normal-CvHOgSBP.woff    13.14 kB
+dist/client/assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2   14.70 kB
+dist/client/assets/forms-Dox6oL3b.css                               0.60 kB │ gzip:   0.38 kB
+dist/client/assets/signin-Cs8WhTTz.css                              4.90 kB │ gzip:   1.53 kB
+dist/client/assets/DocsLayout-CBXTVfp8.css                          7.56 kB │ gzip:   2.13 kB
+dist/client/assets/Site-3qtD2DfN.css                               17.87 kB │ gzip:   4.49 kB
+dist/client/assets/OnCallScreen-z4aT_Om7.css                       24.91 kB │ gzip:   5.15 kB
+dist/client/assets/index-BXS75IwT.css                              69.33 kB │ gzip:  12.88 kB
+dist/client/assets/root-DLTE-HSj.js                                 0.03 kB │ gzip:   0.05 kB
+dist/client/assets/_-DJ7LAi8J.js                                    0.03 kB │ gzip:   0.05 kB
+dist/client/assets/alerts-DJ7LAi8J.js                               0.03 kB │ gzip:   0.05 kB
+dist/client/assets/alerts._alertId-DJ7LAi8J.js                      0.03 kB │ gzip:   0.05 kB
+dist/client/assets/incidents-DJ7LAi8J.js                            0.03 kB │ gzip:   0.05 kB
+dist/client/assets/incidents._id-DJ7LAi8J.js                        0.03 kB │ gzip:   0.05 kB
+dist/client/assets/on-call._rota-DJ7LAi8J.js                        0.03 kB │ gzip:   0.05 kB
+dist/client/assets/on-call._rota.edit-DJ7LAi8J.js                   0.03 kB │ gzip:   0.05 kB
+dist/client/assets/on-call.new-DJ7LAi8J.js                          0.03 kB │ gzip:   0.05 kB
+dist/client/assets/reviews-DJ7LAi8J.js                              0.03 kB │ gzip:   0.05 kB
+dist/client/assets/reviews._incidentId-DJ7LAi8J.js                  0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.archive-DJ7LAi8J.js                     0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.integrations-DJ7LAi8J.js                0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.integrations._id-DJ7LAi8J.js            0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.integrations.new-DJ7LAi8J.js            0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.integrations.new._kind-DJ7LAi8J.js      0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.move-in-DJ7LAi8J.js                     0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.readiness-DJ7LAi8J.js                   0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.routing-DJ7LAi8J.js                     0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.services-DJ7LAi8J.js                    0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.services._serviceId-DJ7LAi8J.js         0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.team-DJ7LAi8J.js                        0.03 kB │ gzip:   0.05 kB
+dist/client/assets/status-DJ7LAi8J.js                               0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings-m9o5r8U5.js                             0.07 kB │ gzip:   0.08 kB
+dist/client/assets/routes-CvdTIfC4.js                               0.09 kB │ gzip:   0.10 kB
+dist/client/assets/not-found-i5RsCZif.js                            0.11 kB │ gzip:   0.11 kB
+dist/client/assets/on-call.index-BS01ix1A.js                        0.23 kB │ gzip:   0.19 kB
+dist/client/assets/docs.index-BSx6stmC.js                           0.96 kB │ gzip:   0.46 kB
+dist/client/assets/DocsLayout-B-Zr_ZlZ.js                           1.45 kB │ gzip:   0.53 kB
+dist/client/assets/docs._slug-BgmQMxZe.js                           1.57 kB │ gzip:   0.69 kB
+dist/client/assets/useSelector-q0GRC6W3.js                          2.25 kB │ gzip:   0.96 kB
+dist/client/assets/Site-S9-qrtVp.js                                 3.52 kB │ gzip:   1.35 kB
+dist/client/assets/preload-helper-DDDGGMoO.js                       5.15 kB │ gzip:   2.01 kB
+dist/client/assets/signin.local-Du7lyOdz.js                         5.35 kB │ gzip:   2.01 kB
+dist/client/assets/jsx-runtime-Cltr0gcK.js                          8.43 kB │ gzip:   3.21 kB
+dist/client/assets/link-BG1kiwOw.js                                 9.76 kB │ gzip:   4.47 kB
+dist/client/assets/forms-DH4tZV_N.js                               15.58 kB │ gzip:   6.03 kB
+dist/client/assets/OnCallScreen-CWrbSuzA.js                        95.18 kB │ gzip:  27.65 kB
+dist/client/assets/pages-B4KmoGF2.js                              334.53 kB │ gzip:  94.36 kB
+dist/client/assets/index-BfVpYdK7.js                              641.33 kB │ gzip: 184.93 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.11s
+vite v8.2.2 building ssr environment for production...
+transforming...
+✓ 1151 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/server/wrangler.json                                             1.49 kB │ gzip:   0.76 kB
+dist/server/assets/ibm-plex-mono-latin-400-normal-CvHOgSBP.woff      13.14 kB
+dist/server/assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2     14.70 kB
+dist/server/.vite/manifest.json                                      17.37 kB │ gzip:   2.39 kB
+dist/server/assets/forms-Dox6oL3b.css                                 0.60 kB │ gzip:   0.38 kB
+dist/server/assets/signin-Cs8WhTTz.css                                4.90 kB │ gzip:   1.53 kB
+dist/server/assets/DocsLayout-CBXTVfp8.css                            7.56 kB │ gzip:   2.13 kB
+dist/server/assets/Site-3qtD2DfN.css                                 17.87 kB │ gzip:   4.49 kB
+dist/server/assets/OnCallScreen-z4aT_Om7.css                         24.91 kB │ gzip:   5.15 kB
+dist/server/assets/router-BXS75IwT.css                               69.33 kB │ gzip:  12.88 kB
+dist/server/assets/_-CA6m1_xF.js                                      0.13 kB │ gzip:   0.12 kB
+dist/server/assets/alerts-COGpMHoJ.js                                 0.13 kB │ gzip:   0.12 kB
+dist/server/assets/status-BVtVVuls.js                                 0.13 kB │ gzip:   0.12 kB
+dist/server/assets/reviews-DAgDkkei.js                                0.13 kB │ gzip:   0.12 kB
+dist/server/assets/incidents-6qv6bJ-h.js                              0.14 kB │ gzip:   0.12 kB
+dist/server/assets/on-call.new-DGHI1ag_.js                            0.14 kB │ gzip:   0.12 kB
+dist/server/assets/incidents._id-eLAWidqe.js                          0.14 kB │ gzip:   0.12 kB
+dist/server/assets/on-call._rota-Dk6G7Afw.js                          0.14 kB │ gzip:   0.12 kB
+dist/server/assets/settings.team-BTW-HdmY.js                          0.14 kB │ gzip:   0.12 kB
+dist/server/assets/alerts._alertId-CfQB4aY2.js                        0.14 kB │ gzip:   0.13 kB
+dist/server/assets/settings.archive-CnfbHPdz.js                       0.14 kB │ gzip:   0.13 kB
+dist/server/assets/settings.move-in-tYmFlR8z.js                       0.14 kB │ gzip:   0.13 kB
+dist/server/assets/settings.routing-DdHuudig.js                       0.14 kB │ gzip:   0.13 kB
+dist/server/assets/settings.services-CivJLk5l.js                      0.14 kB │ gzip:   0.13 kB
+dist/server/assets/on-call._rota.edit-DDJyFu9H.js                     0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.readiness-mW4IF-XB.js                     0.15 kB │ gzip:   0.13 kB
+dist/server/assets/reviews._incidentId-DzR3ILO5.js                    0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.integrations-DPe3-Mjj.js                  0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.integrations._id-1lulqrFg.js              0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.integrations.new-CJj_Rfg9.js              0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.services._serviceId-DMzJvGAw.js           0.16 kB │ gzip:   0.13 kB
+dist/server/assets/settings.integrations.new._kind-CBdFDmyf.js        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/settings-CuAwYjN-.js                               0.18 kB │ gzip:   0.15 kB
+dist/server/assets/routes-7_dwFpiU.js                                 0.21 kB │ gzip:   0.16 kB
+dist/server/assets/root-BkKgunb-.js                                   0.25 kB │ gzip:   0.18 kB
+dist/server/assets/empty-plugin-adapters-D_0twvAa.js                  0.28 kB │ gzip:   0.18 kB
+dist/server/assets/start-D8qDT34V.js                                  0.28 kB │ gzip:   0.21 kB
+dist/server/assets/on-call.index-DVOPgJ_6.js                          0.53 kB │ gzip:   0.32 kB
+dist/server/assets/not-found-DhdZhR3a.js                              0.94 kB │ gzip:   0.51 kB
+dist/server/assets/docs.index-DQOw6lW-.js                             2.03 kB │ gzip:   0.68 kB
+dist/server/assets/utils-DymZgJKv.js                                  2.10 kB │ gzip:   1.03 kB
+dist/server/assets/vendor-formats-DcBdI7pG.js                         2.18 kB │ gzip:   0.99 kB
+dist/server/assets/paths-BPULKZYQ.js                                  2.77 kB │ gzip:   0.96 kB
+dist/server/assets/DocsLayout-BCvm1juO.js                             2.95 kB │ gzip:   0.77 kB
+dist/server/assets/docs._slug-B3Mt-nqV.js                             3.18 kB │ gzip:   0.99 kB
+dist/server/assets/hash-BooP9kEe.js                                   4.63 kB │ gzip:   2.12 kB
+dist/server/assets/storage-aKsXkEwx.js                                5.10 kB │ gzip:   2.04 kB
+dist/server/assets/_tanstack-start-manifest_v-BAYfKXLV.js             6.60 kB │ gzip:   1.25 kB
+dist/server/assets/react-dom-N3pJMQfH.js                              6.62 kB │ gzip:   1.95 kB
+dist/server/assets/Site-Dd9ggxnf.js                                   6.94 kB │ gzip:   1.79 kB
+dist/server/assets/link-B6rQmuIu.js                                   8.13 kB │ gzip:   2.88 kB
+dist/server/assets/useSelector-ogis1AWg.js                            9.10 kB │ gzip:   2.56 kB
+dist/server/assets/signin.local-BEprEnxr.js                          10.16 kB │ gzip:   2.68 kB
+dist/server/assets/Match-DmqlTN6G.js                                 11.73 kB │ gzip:   3.06 kB
+dist/server/assets/lazyRouteComponent-CZMv007S.js                    12.31 kB │ gzip:   3.00 kB
+dist/server/assets/invariant-D5nbN2bk.js                             13.25 kB │ gzip:   5.06 kB
+dist/server/assets/jsx-runtime-zPeYIBpK.js                           18.51 kB │ gzip:   4.98 kB
+dist/server/assets/forms-uhAgIQNm.js                                 21.40 kB │ gzip:   6.31 kB
+dist/server/assets/bundle-CqfKT2ix.js                                23.39 kB │ gzip:   7.30 kB
+dist/server/assets/manifest-BSDTaOnK.js                             109.78 kB │ gzip:  26.68 kB
+dist/server/assets/OnCallScreen-EYFJa0h3.js                         147.64 kB │ gzip:  31.57 kB
+dist/server/assets/pages-CoNJ2r8y.js                                345.72 kB │ gzip:  95.48 kB
+dist/server/assets/undo-snapshot-Dt_f9V69.js                        438.29 kB │ gzip: 110.85 kB
+dist/server/assets/domain-DK7F1fdt.js                               568.18 kB │ gzip: 140.33 kB
+dist/server/assets/router-Ck2vCJAW.js                               671.18 kB │ gzip: 131.95 kB
+dist/server/index.js                                              2,626.08 kB │ gzip: 638.62 kB
+
+[INEFFECTIVE_DYNAMIC_IMPORT] src/agent-door/index.server.ts is dynamically imported by src/agent-door/rest.ts, src/automation/dispatch.ts but also statically imported by src/server.ts, dynamic import will not move module into another chunk.
+
+✓ built in 1.62s
+Generated management/integration/deployment-spec.json from the built Worker and source policy.
+Your application is built
+build: complete (exit 0)
+Journey completed: run build (11.9s)
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> @just-every/oncall@0.5.8 typecheck /workspace/run-oncall-f221
+> tsc --noEmit
+
+Journey completed: run typecheck (18.8s)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE OC-023 dependency import: protected Preview and Apply -> additions, removals, retained unresolved references, conflict choices, stale and concurrent refusals, atomic rollback and effect-free retries passed
+PASS OC-023 public teams and Backstage ownership: manager coverage, zero-write preview/refusals, atomic provenance, explicit conflict choice with history, manual ownership and repeat safety
+PASS OC-023 ownerless services: visibility, unmatched ownership, copied runbook, audit rollback and archive/handoff restore
+PASS OC-065 retention: populated 1,000-record cap, deterministic oldest-first eviction, incident protection, refusal and audit rollback
+PASS OC-065 Argo CD/Terraform signatures, scope, replay, no obligations, audit rollback
+Change context: authenticated native/PD/GitHub/GitLab intake, replay, scope, dependencies, privacy, rotation/revoke, archive pause and restart passed
+Journey completed: tests/changes.mjs (41.2s)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PASS populated migration CLI upgrade: main 0143 to candidate, held member/service/runbook bytes and workspace revision preserved
+PASS OC-024 member PTO: ordinary self review/apply 200, self ICS 200, revisions 1→2→3, preview gap and retained slots; other member/team 403, spoofed entry 400, general edit 404, revoked team 403/session 401, stale 409 with no writes; manager own PTO and general editing 200; administrator PTO preserved
+PASS OC-024 public layers: three-zone handoffs, overlap decisions, federal and company selections, PTO next and gap, rotation kinds, 366-day review, both DST transitions, stale review, atomic rollback, equality, ICS review and refusal, consecutive writes, archive strictness and non-attributing erasure
+PROBE OC-011 fall handoff: saved New York 09:00 primary and backup -> 13:00Z then 14:00Z, a 25-hour civil day
+PROBE OC-011 override edges: saved New York schedule with backup and primary overrides -> start included, end excluded, same-role overlaps refused with no write, touching intervals and other-role overlap accepted
+PROBE OC-011 repeated minute earlier: saved New York 01:30 -> 2026-11-01T05:30:00.000Z
+PROBE OC-011 repeated minute later: saved New York 01:30 -> 2026-11-01T06:30:00.000Z
+PROBE OC-011 repeated minute reject: saved New York 01:30 -> both roles visibly unavailable until 2026-11-02T06:30:00.000Z
+PROBE OC-011 nonexistent minute earlier: saved New York 02:30 -> both roles have an explained gap from 2026-03-07T07:30Z to 2026-03-09T06:30Z, then original slot order resumes
+PROBE OC-011 nonexistent minute later: saved New York 02:30 -> both roles have an explained gap from 2026-03-07T07:30Z to 2026-03-09T06:30Z, then original slot order resumes
+PROBE OC-011 nonexistent minute reject: saved New York 02:30 -> both roles have an explained gap from 2026-03-07T07:30Z to 2026-03-09T06:30Z, then original slot order resumes
+PROBE OC-011 viewer slots: saved three-slot primary and backup -> viewer turns remain explained gaps and all subsequent responders keep their turns
+PROBE OC-011 duplicate responder: saved identical role rotations -> primary retained, backup unavailable with explanation on both turns
+PROBE OC-011 missing slots: older membership and saved module custody restored over protected HTTP -> missing turns remain explained gaps, later turns unchanged, old session refused, no membership recreated
+PROBE OC-011 preview effects: all saved previews and now-next reads -> every durable row unchanged, zero jobs, receipts, callbacks and outbound requests
+{"onCallReads":20,"countsBefore":[{"table":"agent_door_agents","count":0},{"table":"agent_door_approvals","count":0},{"table":"agent_door_audit","count":0},{"table":"agent_door_calls","count":0},{"table":"agent_door_events","count":7},{"table":"agent_door_relay","count":0},{"table":"agent_door_replay_aliases","count":0},{"table":"agent_door_retired_refs","count":0},{"table":"agent_door_reviews","count":0},{"table":"agent_door_state","count":0},{"table":"agent_door_usage","count":0},{"table":"bs_assert","count":0},{"table":"bs_audit","count":0},{"table":"bs_logo","count":0},{"table":"bs_overrides","count":0},{"table":"bs_retired","count":0},{"table":"bs_settings","count":0},{"table":"bs_team","count":0},{"table":"credentials","count":4},{"table":"handoff_state","count":1},{"table":"ik_batches","count":0},{"table":"ik_d1_assertions","count":0},{"table":"ik_d1_creation_plans","count":0},{"table":"ik_d1_custody_revisions","count":0},{"table":"ik_d1_custody_states","count":0},{"table":"ik_d1_entries","count":0},{"table":"ik_d1_erased_sources","count":0},{"table":"ik_d1_erased_targets","count":0},{"table":"ik_d1_erasure_journal","count":0},{"table":"ik_d1_erasure_progress","count":0},{"table":"ik_d1_erasure_tally","count":0},{"table":"ik_d1_history","count":0},{"table":"ik_d1_indexed_jobs","count":0},{"table":"ik_d1_native_staging","count":0},{"table":"ik_d1_native_staging_index","count":0},{"table":"ik_d1_native_staging_values","count":0},{"table":"ik_d1_original_chunks","count":0},{"table":"ik_d1_plan_chunks","count":0},{"table":"ik_d1_plan_index","count":0},{"table":"ik_d1_preparation_receipts","count":0},{"table":"ik_d1_preparation_steps","count":0},{"table":"ik_d1_publication_fences","count":0},{"table":"ik_d1_retirements","count":0},{"table":"ik_d1_reversal_fences","count":0},{"table":"ik_d1_reversal_reports","count":0},{"table":"ik_d1_staging","count":0},{"table":"ik_d1_staging_chunks","count":0},{"table":"ik_d1_staging_headers","count":0},{"table":"ik_d1_staging_index","count":0},{"table":"ik_d1_staging_originals","count":0},{"table":"ik_d1_staging_pages","count":0},{"table":"ik_d1_stream_origins","count":0},{"table":"ik_d1_stream_pages","count":0},{"table":"ik_d1_stream_revisions","count":0},{"table":"ik_d1_stream_sources","count":0},{"table":"ik_d1_streams","count":0},{"table":"ik_door_apply_failures","count":0},{"table":"ik_door_approvals","count":0},{"table":"ik_door_archive_chunks","count":0},{"table":"ik_door_archives","count":0},{"table":"ik_door_chunks","count":0},{"table":"ik_door_grants","count":0},{"table":"ik_door_namespaces","count":0},{"table":"ik_door_plan_chunks","count":0},{"table":"ik_door_plans","count":0},{"table":"ik_door_revoked_keys","count":0},{"table":"ik_door_scopes","count":0},{"table":"ik_door_settings","count":0},{"table":"ik_door_uploads","count":0},{"table":"ik_jobs","count":0},{"table":"ik_original_sets","count":0},{"table":"ik_originals","count":0},{"table":"ik_provenance","count":0},{"table":"ik_sources","count":0},{"table":"ik_stages","count":0},{"table":"ik_targets","count":0},{"table":"login_attempts","count":3},{"table":"move_in_objects","count":0},{"table":"move_in_previews","count":0},{"table":"oa_auth_audit","count":0},{"table":"oa_auth_settings","count":0},{"table":"oa_bootstrap","count":0},{"table":"oa_credentials","count":0},{"table":"oa_dev_credentials","count":0},{"table":"oa_domain_rules","count":0},{"table":"oa_external_identities","count":0},{"table":"oa_first_run","count":0},{"table":"oa_identity_provider_health","count":0},{"table":"oa_identity_providers","count":0},{"table":"oa_invitation_cancellations","count":0},{"table":"oa_limits","count":0},{"table":"oa_logout_events","count":0},{"table":"oa_oidc_limits","count":0},{"table":"oa_oidc_transactions","count":0},{"table":"oa_operators","count":0},{"table":"oa_owner_signins","count":0},{"table":"oa_provider_session_pins","count":0},{"table":"oa_provider_sessions","count":0},{"table":"oa_sessions","count":0},{"table":"oa_setup_links","count":0},{"table":"oa_step_up_challenges","count":0},{"table":"oa_tokens","count":0},{"table":"oc_admin_audit","count":14},{"table":"oc_agent_deadlines","count":0},{"table":"oc_agent_erasure_receipts","count":0},{"table":"oc_agent_operations","count":0},{"table":"oc_agent_outbox","count":0},{"table":"oc_agent_schedule_receipts","count":0},{"table":"oc_agent_team_receipts","count":0},{"table":"oc_alerts","count":0},{"table":"oc_api_clients","count":0},{"table":"oc_api_credentials","count":0},{"table":"oc_api_endpoints","count":0},{"table":"oc_api_operations","count":0},{"table":"oc_api_outbox","count":0},{"table":"oc_audit","count":1},{"table":"oc_audit_clock","count":1},{"table":"oc_audit_identities","count":12},{"table":"oc_business_services","count":0},{"table":"oc_change_credentials","count":0},{"table":"oc_change_sources","count":0},{"table":"oc_changes","count":0},{"table":"oc_email_addresses","count":0},{"table":"oc_email_credentials","count":0},{"table":"oc_email_erased_samples","count":0},{"table":"oc_email_quarantine","count":0},{"table":"oc_email_receipts","count":0},{"table":"oc_email_rules","count":0},{"table":"oc_email_samples","count":0},{"table":"oc_endpoint_credentials","count":0},{"table":"oc_erased_report_cases","count":0},{"table":"oc_erasure_fences","count":0},{"table":"oc_events","count":0},{"table":"oc_import_lifecycle","count":0},{"table":"oc_incidents","count":0},{"table":"oc_incumbent_credentials","count":0},{"table":"oc_intake_credentials","count":0},{"table":"oc_intake_receipts","count":0},{"table":"oc_intake_sources","count":0},{"table":"oc_key_allowances","count":0},{"table":"oc_key_rate_notified","count":0},{"table":"oc_key_rate_usage","count":0},{"table":"oc_members","count":4},{"table":"oc_move_in_consent","count":0},{"table":"oc_native_prefixes","count":0},{"table":"oc_owner_claims","count":0},{"table":"oc_policies","count":0},{"table":"oc_schedule_records","count":5},{"table":"oc_services","count":1},{"table":"oc_teams","count":0},{"table":"oc_triage","count":0},{"table":"operator_members","count":0},{"table":"paging_callbacks","count":0},{"table":"paging_control","count":1},{"table":"paging_jobs","count":0},{"table":"paging_policies","count":0},{"table":"paging_receipts","count":0},{"table":"paging_schedules","count":2},{"table":"rer_command_receipts","count":0},{"table":"rer_erasure_blobs","count":0},{"table":"rer_erasure_guard","count":0},{"table":"rer_erasure_operations","count":0},{"table":"rer_erasure_scope","count":0},{"table":"rer_portability_epochs","count":0},{"table":"rer_portability_guard","count":0},{"table":"rer_portability_jobs","count":0},{"table":"rer_portability_journal","count":0},{"table":"rer_portability_owned","count":0},{"table":"rer_portability_parts","count":0},{"table":"rer_portability_segments","count":0},{"table":"rer_portability_state","count":0},{"table":"sessions","count":4},{"table":"sources","count":0},{"table":"workspace_control","count":1}],"countsAfter":[{"table":"agent_door_agents","count":0},{"table":"agent_door_approvals","count":0},{"table":"agent_door_audit","count":0},{"table":"agent_door_calls","count":0},{"table":"agent_door_events","count":7},{"table":"agent_door_relay","count":0},{"table":"agent_door_replay_aliases","count":0},{"table":"agent_door_retired_refs","count":0},{"table":"agent_door_reviews","count":0},{"table":"agent_door_state","count":0},{"table":"agent_door_usage","count":0},{"table":"bs_assert","count":0},{"table":"bs_audit","count":0},{"table":"bs_logo","count":0},{"table":"bs_overrides","count":0},{"table":"bs_retired","count":0},{"table":"bs_settings","count":0},{"table":"bs_team","count":0},{"table":"credentials","count":4},{"table":"handoff_state","count":1},{"table":"ik_batches","count":0},{"table":"ik_d1_assertions","count":0},{"table":"ik_d1_creation_plans","count":0},{"table":"ik_d1_custody_revisions","count":0},{"table":"ik_d1_custody_states","count":0},{"table":"ik_d1_entries","count":0},{"table":"ik_d1_erased_sources","count":0},{"table":"ik_d1_erased_targets","count":0},{"table":"ik_d1_erasure_journal","count":0},{"table":"ik_d1_erasure_progress","count":0},{"table":"ik_d1_erasure_tally","count":0},{"table":"ik_d1_history","count":0},{"table":"ik_d1_indexed_jobs","count":0},{"table":"ik_d1_native_staging","count":0},{"table":"ik_d1_native_staging_index","count":0},{"table":"ik_d1_native_staging_values","count":0},{"table":"ik_d1_original_chunks","count":0},{"table":"ik_d1_plan_chunks","count":0},{"table":"ik_d1_plan_index","count":0},{"table":"ik_d1_preparation_receipts","count":0},{"table":"ik_d1_preparation_steps","count":0},{"table":"ik_d1_publication_fences","count":0},{"table":"ik_d1_retirements","count":0},{"table":"ik_d1_reversal_fences","count":0},{"table":"ik_d1_reversal_reports","count":0},{"table":"ik_d1_staging","count":0},{"table":"ik_d1_staging_chunks","count":0},{"table":"ik_d1_staging_headers","count":0},{"table":"ik_d1_staging_index","count":0},{"table":"ik_d1_staging_originals","count":0},{"table":"ik_d1_staging_pages","count":0},{"table":"ik_d1_stream_origins","count":0},{"table":"ik_d1_stream_pages","count":0},{"table":"ik_d1_stream_revisions","count":0},{"table":"ik_d1_stream_sources","count":0},{"table":"ik_d1_streams","count":0},{"table":"ik_door_apply_failures","count":0},{"table":"ik_door_approvals","count":0},{"table":"ik_door_archive_chunks","count":0},{"table":"ik_door_archives","count":0},{"table":"ik_door_chunks","count":0},{"table":"ik_door_grants","count":0},{"table":"ik_door_namespaces","count":0},{"table":"ik_door_plan_chunks","count":0},{"table":"ik_door_plans","count":0},{"table":"ik_door_revoked_keys","count":0},{"table":"ik_door_scopes","count":0},{"table":"ik_door_settings","count":0},{"table":"ik_door_uploads","count":0},{"table":"ik_jobs","count":0},{"table":"ik_original_sets","count":0},{"table":"ik_originals","count":0},{"table":"ik_provenance","count":0},{"table":"ik_sources","count":0},{"table":"ik_stages","count":0},{"table":"ik_targets","count":0},{"table":"login_attempts","count":3},{"table":"move_in_objects","count":0},{"table":"move_in_previews","count":0},{"table":"oa_auth_audit","count":0},{"table":"oa_auth_settings","count":0},{"table":"oa_bootstrap","count":0},{"table":"oa_credentials","count":0},{"table":"oa_dev_credentials","count":0},{"table":"oa_domain_rules","count":0},{"table":"oa_external_identities","count":0},{"table":"oa_first_run","count":0},{"table":"oa_identity_provider_health","count":0},{"table":"oa_identity_providers","count":0},{"table":"oa_invitation_cancellations","count":0},{"table":"oa_limits","count":0},{"table":"oa_logout_events","count":0},{"table":"oa_oidc_limits","count":0},{"table":"oa_oidc_transactions","count":0},{"table":"oa_operators","count":0},{"table":"oa_owner_signins","count":0},{"table":"oa_provider_session_pins","count":0},{"table":"oa_provider_sessions","count":0},{"table":"oa_sessions","count":0},{"table":"oa_setup_links","count":0},{"table":"oa_step_up_challenges","count":0},{"table":"oa_tokens","count":0},{"table":"oc_admin_audit","count":14},{"table":"oc_agent_deadlines","count":0},{"table":"oc_agent_erasure_receipts","count":0},{"table":"oc_agent_operations","count":0},{"table":"oc_agent_outbox","count":0},{"table":"oc_agent_schedule_receipts","count":0},{"table":"oc_agent_team_receipts","count":0},{"table":"oc_alerts","count":0},{"table":"oc_api_clients","count":0},{"table":"oc_api_credentials","count":0},{"table":"oc_api_endpoints","count":0},{"table":"oc_api_operations","count":0},{"table":"oc_api_outbox","count":0},{"table":"oc_audit","count":1},{"table":"oc_audit_clock","count":1},{"table":"oc_audit_identities","count":12},{"table":"oc_business_services","count":0},{"table":"oc_change_credentials","count":0},{"table":"oc_change_sources","count":0},{"table":"oc_changes","count":0},{"table":"oc_email_addresses","count":0},{"table":"oc_email_credentials","count":0},{"table":"oc_email_erased_samples","count":0},{"table":"oc_email_quarantine","count":0},{"table":"oc_email_receipts","count":0},{"table":"oc_email_rules","count":0},{"table":"oc_email_samples","count":0},{"table":"oc_endpoint_credentials","count":0},{"table":"oc_erased_report_cases","count":0},{"table":"oc_erasure_fences","count":0},{"table":"oc_events","count":0},{"table":"oc_import_lifecycle","count":0},{"table":"oc_incidents","count":0},{"table":"oc_incumbent_credentials","count":0},{"table":"oc_intake_credentials","count":0},{"table":"oc_intake_receipts","count":0},{"table":"oc_intake_sources","count":0},{"table":"oc_key_allowances","count":0},{"table":"oc_key_rate_notified","count":0},{"table":"oc_key_rate_usage","count":0},{"table":"oc_members","count":4},{"table":"oc_move_in_consent","count":0},{"table":"oc_native_prefixes","count":0},{"table":"oc_owner_claims","count":0},{"table":"oc_policies","count":0},{"table":"oc_schedule_records","count":5},{"table":"oc_services","count":1},{"table":"oc_teams","count":0},{"table":"oc_triage","count":0},{"table":"operator_members","count":0},{"table":"paging_callbacks","count":0},{"table":"paging_control","count":1},{"table":"paging_jobs","count":0},{"table":"paging_policies","count":0},{"table":"paging_receipts","count":0},{"table":"paging_schedules","count":2},{"table":"rer_command_receipts","count":0},{"table":"rer_erasure_blobs","count":0},{"table":"rer_erasure_guard","count":0},{"table":"rer_erasure_operations","count":0},{"table":"rer_erasure_scope","count":0},{"table":"rer_portability_epochs","count":0},{"table":"rer_portability_guard","count":0},{"table":"rer_portability_jobs","count":0},{"table":"rer_portability_journal","count":0},{"table":"rer_portability_owned","count":0},{"table":"rer_portability_parts","count":0},{"table":"rer_portability_segments","count":0},{"table":"rer_portability_state","count":0},{"table":"sessions","count":4},{"table":"sources","count":0},{"table":"workspace_control","count":1}],"workspaceRevision":6,"pagingRevision":2}
+PASS OC-020 / OC-014 aggregate on-call: all rotas match now/next, empty slot is a gap, 20 reads preserve every table and both revisions, workspace snapshot carries coverage, viewer/responder reads and anonymous/stakeholder/revoked refusals
+PASS OC-025 public schedule coordination: holder/substitute authority, default admin and none approval, racing acceptance, one effective override, audit rollback, recorded not-deliverable notices, durable reminder settings/due label, three digest-only feed scopes, 20 cap, immediate revocation and unchanged history, strict inactive recovery and overdue cancellation. Paging OFF.
+PROBE OC-020 seven-day default: authenticated calendar.ics at 2026-03-07T14:00:00Z -> exact seven-day UTC window across DST
+PROBE OC-020 elapsed bound: calendar.ics with 31 days -> 200; 31 days plus one second, zero and reverse windows -> 400
+PROBE OC-020 separate roles: calendar.ics -> distinct primary and backup events match resolved coverage and exact DST override boundaries
+PROBE OC-020 explicit gaps: calendar.ics with inactive responder -> primary and backup Coverage gap events with exact UTC intervals and explanations
+PROBE OC-020 paging-free admission: scoped native ingress -> immutable event and active alert; retry returns original event; revoked key -> 401; paging snapshot unchanged and zero outbound requests
+OC-024 reviewed schedule changes: New York/London/Los Angeles DST, new gap, retained slots, denied viewer/anonymous, confirmation and stale-digest refusal, audit rollback, race and exact apply/preview equality passed
+OC-011/014/020: calendar-day DST hand-off, overrides, now/next, protected ICS and escalation data passed
+OC-068 manual pages: creator, urgency default/override, optional priority/description, real policy snapshot, per-user obligations, versioned assignment setting and repeated/conflicting operation keys
+OC-068 atomic custody: failed permanent audit rolls back incident, obligations and creator state
+OC-068 responder requests: independent accept/decline and timeline acknowledgment; accepted responder never acknowledges primary; primary acknowledgment preserves pending requests; requester notice, cancellation and resolution stop only their own work
+OC-068 permissions: viewer and stakeholder create/request attempts explain refusal and create nothing; paging remains OFF
+PROBE OC-012 1: POST /api/delivery on a normal installation -> 409; paging OFF, existing pager, independent standby and passed real-phone drill explained; records and revisions unchanged, no receipt or outbound request
+PROBE OC-012 1: POST /api/paging/jobs on a normal installation -> 409; paging OFF, existing pager, independent standby and passed real-phone drill explained; records and revisions unchanged, no receipt or outbound request
+PROBE OC-012 1: POST /api/paging/tick on a normal installation -> 409; paging OFF, existing pager, independent standby and passed real-phone drill explained; records and revisions unchanged, no receipt or outbound request
+PROBE OC-012 1: POST /api/paging/callbacks on a normal installation -> 409; paging OFF, existing pager, independent standby and passed real-phone drill explained; records and revisions unchanged, no receipt or outbound request
+PROBE OC-012 1: POST /api/paging/jobs/old/resume on a normal installation -> 409; paging OFF, existing pager, independent standby and passed real-phone drill explained; records and revisions unchanged, no receipt or outbound request
+OC-012/013/041: every delivery/timer door refused, its audit retained unchanged revisions and no receipt was created
+OC-022: injected native SQL failure rolled back the complete batch and journal; the failed apply stayed refused and an authorized new preview of the same file applied and undid it
+OC-022/041: a lost response after an accepted import batch became durably interrupted with its audit, refused retry after restart, and retained its partial effects until explicit rollback
+OC-022 pagerduty: unfinished checkpoint 20 of 30 survived Worker restart; the same reviewed job completed once, retried without changes and undid exactly
+OC-022 opsgenie: unfinished checkpoint 20 of 34 survived Worker restart; the same reviewed job completed once, retried without changes and undid exactly
+OC-021/022 opsgenie: zero-write review, named rejections, paused apply, restart/resume, journal, idempotence, equivalence point and undo passed
+OC-021/022 opsgenie-saved: zero-write review, named rejections, paused apply, restart/resume, journal, idempotence, equivalence point and undo passed
+OC-021/022 opsgenie-override-detail: zero-write review, named rejections, paused apply, restart/resume, journal, idempotence, equivalence point and undo passed
+OC-021/022 pagerduty: zero-write review, named rejections, paused apply, restart/resume, journal, idempotence, equivalence point and undo passed
+OC-021/022 pagerduty-saved: zero-write review, named rejections, paused apply, restart/resume, journal, idempotence, equivalence point and undo passed
+OC-021/022 pagerduty-lists: zero-write review, named rejections, paused apply, restart/resume, journal, idempotence, equivalence point and undo passed
+OC-021/022 pagerduty-user-details: zero-write review, named rejections, paused apply, restart/resume, journal, idempotence, equivalence point and undo passed
+OC-021/022 pagerduty-layers: zero-write review, named rejections, paused apply, restart/resume, journal, idempotence, equivalence point and undo passed
+OC-038 PagerDuty account refusal matrix: named credential field/pointer, malformed JSON, wrong vendor, byte/count bounds, duplicate source IDs and dangling policy/team references; no truncation, rows or retained upload bytes
+OC-021: every shape Oncall cannot hold exactly was rejected by name with no effect; ended layers kept as history; credential-bearing keys refused and not kept
+OC-021: active layers, override lists without a schedule id, disabled schedules and unexported override users are matched or refused by name through apply, coverage and undo; case-only duplicate emails are named
+OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; OC-022 erasing a person by exact email retained audit history, left a person whose email contains theirs scheduled, covered and undoable, and left no value of theirs behind
+OC-022: a person named only through an override, notification rules, a direct-user policy, a schedule description (beside punctuation, in URLs and mailto: links, percent-encoded or in other letter case) or a contact record (PagerDuty and Opsgenie) left no value in any table or plan; an address containing theirs stayed; coverage for others was unchanged and the rest of the import undid
+OC-022: malformed/credential-bearing source refused; undo preserved a native edit; undo under a later import named it and undid nothing
+OC-016: paired checkpoint invalid rollback and complete replacement preserved both datasets and revoked the old session
+PROBE OC-041 /api/handoffs/prepare: protected HTTP and targeted audit failure -> complete rollback, then one accepted audit fact at the committed handoff revision
+PROBE OC-041 /api/handoffs/h1/review: protected HTTP and targeted audit failure -> complete rollback, then one accepted audit fact at the committed handoff revision
+PROBE OC-006 1: emitted Worker coordination, legacy draft export, preparation, refused unreviewed export and reviewed export without an approved endpoint -> empty outbound ledger, unchanged paging state, no provider action or Lamp publication
+PROBE OC-006 2: exported legacy review-required draft and reviewed copy source links -> draft still unreviewed, prepared export refused, authorized sources populated, anonymous source reads 401 with error only
+PROBE OC-041 /api/handoffs/h1/withdraw: protected HTTP and targeted audit failure -> complete rollback, then one accepted audit fact at the committed handoff revision
+PROBE OC-041 /api/handoffs/restore: protected HTTP and targeted audit failure -> complete rollback, then one accepted audit fact at the committed handoff revision
+OC-016/017: checkpoint consistency, auth exclusion, atomic refusal under invalid/capacity/storage/concurrent writes, winner session, paused jobs and orphans, version 1, empty-target mapping, the 1 MiB aggregate, review identity/eligibility/hold/withdrawal and the private CLI passed
+PASS OC-014 preview isolation: populated synthetic-only history, saved and draft schedules, draft review, now and next, historical replay, every durable row and deadline unchanged, zero outbound network requests
+OC-013 and OC-015: restored historical acknowledgement and cancellation append attribution without recovery; populated module archive refuses anonymous, viewer and responder access without disclosure or product writes; strict references, retained callbacks and SQL rollback passed
+{"witness":"CLI-erasure-fence","exit":1,"labelReturned":false}
+PASS OC-053 CLI erasure fence: older checkpoint refuses without dataset/session changes; current checkpoint restores
+OC-040 imported integration erasure: incumbent and native keys, source target, original/plan retirement and count-only receipt share audit-failure rollback and one commit
+OC-040 integration erasure: native and routed keys, routed receipts/events/alerts, per-table counts, rejected old key and forged-journal archive refusal passed
+OC-040 incident erasure: notes/follow-ups/runbook custody, admin authority, confirmation, audit rollback, committed per-table receipt, stale and forged-journal restore refusal, merged-source unlink and valid current checkpoint passed
+{"witness":"CLI-erasure-fence","exit":1,"labelReturned":false}
+PASS OC-053 CLI erasure fence: older checkpoint refuses without dataset/session changes; current checkpoint restores
+OC-040 member erasure: native business audience/subscriptions and calendar/reminder custody, linked Auth owner refusal/non-owner preservation, reviewed imported identity, native credentials/session, audit-failure rollback, anonymous tombstone, immutable slot gaps without reassignment, unrelated member retention and CLI/native restore fences passed
+OC-040 change-event erasure: admin-only confirmation, stale refusal, atomic audit-failure rollback, per-table local receipt, last receipt unlink, immutable pseudonymous audit, CLI/native restore fence, restart and provider retry refusal passed
+Activation passed: 40 requirement flow groups
+PROBE OC-012 2: emitted demo HTML and GET /api/workspace beside simulated SMS, voice, push and email -> Demo decoration and title, demo=true, four simulated sent outcomes, no production receipt or outbound request
+Demo HTTP flow passed: acknowledgment, simulated SMS/voice/push/email and suppressed mail; auth and invalid incident checks remain real.
+Journey completed: tests/activation.mjs (345.6s)
+Oncall verification passed: changes

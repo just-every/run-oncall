@@ -1,0 +1,25 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f221",
+  "head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+  "tree": "d90e44e4e90a7804dc46a93bcc18943a9839668d",
+  "working_tree_clean": true,
+  "remote_product_head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+  "remote_main_head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "main_equals_candidate": false,
+  "lock_check": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0,
+    "stdout_sha256": "5c2d5170584c86ace77e9975754ab634e87bb379794d4ebe10340833f0248830"
+  },
+  "product_status_cells_changed": false,
+  "generated_views_committed": false,
+  "ci_run": 43099560050,
+  "ci_conclusion": "failure",
+  "ci_failure": "ACCEPTANCE.md freshness only, permitted exception; dependent guard failed",
+  "local_candidate_verification_exits": [
+    0,
+    0
+  ],
+  "verified_at": "2026-11-11T21:20:45.555676+00:00"
+}

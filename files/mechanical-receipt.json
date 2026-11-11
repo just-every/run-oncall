@@ -1,0 +1,29 @@
+{
+  "base": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "receipts": [
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "views_restored_from_main": true,
+  "migration_ledger": "not applicable: no migration changed",
+  "candidate_head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+  "tree": "d90e44e4e90a7804dc46a93bcc18943a9839668d",
+  "candidate_files": {
+    "CONTRACT.md": "d42c516ecd2fa5761c7f51cc34e83760f3e72767114ca92f4f5b539298892abd",
+    "sources.lock.json": "398870c7806efba96d7943d5ae77b6f0e6fec8435fc98f36093340b7610c18ae"
+  }
+}

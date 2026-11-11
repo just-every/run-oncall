@@ -1,0 +1,7 @@
+{
+  "head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+  "command": "node src/base/contract-docs.mjs check",
+  "exit": 1,
+  "views_restored_from_main": true,
+  "reason": "Required generated-view custody: generation and check passed before restoring main views"
+}

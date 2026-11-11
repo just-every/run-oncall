@@ -1,0 +1,18 @@
+{
+  "receipts": [
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    }
+  ],
+  "changes": [
+    "CONTRACT.md",
+    "sources.lock.json"
+  ],
+  "candidate_head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+  "relevant_source_and_test_bytes_unchanged_since_checks": true
+}

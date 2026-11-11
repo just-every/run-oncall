@@ -1,0 +1,14 @@
+{
+  "head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+  "reads": [
+    {
+      "command": "gh run view 43099560050 --repo just-every/run-oncall --job 130786432278 --log-failed",
+      "exit": 0
+    },
+    {
+      "command": "gh run view 43099560050 --repo just-every/run-oncall --job 130787284740 --log-failed",
+      "exit": 0
+    }
+  ],
+  "github_cli_invocations_used": 6
+}

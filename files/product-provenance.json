@@ -1,0 +1,80 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f221",
+  "head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+  "base": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "product_files": [
+    "CONTRACT.md",
+    "sources.lock.json"
+  ],
+  "runtime_diff": [],
+  "candidate_verify_run": 43099560050,
+  "candidate_verify_event": "push",
+  "candidate_verify_observed_status": "completed",
+  "github_api_calls_used": 6,
+  "publication_scan": {
+    "commit": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+    "result": "NOT RUN in cloud; guarded lander required",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "observed_at": "2026-11-11T21:02:36.984992+00:00",
+  "candidate_verify_conclusion": "failure",
+  "candidate_verify_disposition": "permitted generated-view freshness exception: ACCEPTANCE.md only; dependent verification guard failed and shards skipped",
+  "candidate_runtime_commands": [
+    {
+      "head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+      "command": "ONCALL_VERIFY_LANE=changes npx -y @runeditrun/rer verify --non-interactive",
+      "timeout_seconds": 1200,
+      "started": "2026-11-11T21:02:04Z",
+      "completed": "2026-11-11T21:12:48.652133+00:00",
+      "exit": 0
+    },
+    {
+      "head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+      "command": "ONCALL_VERIFY_LANE=imports npx -y @runeditrun/rer verify --non-interactive",
+      "timeout_seconds": 1200,
+      "started": "2026-11-11T21:12:48Z",
+      "completed": "2026-11-11T21:19:58.391040+00:00",
+      "exit": 0
+    }
+  ],
+  "main_lane_commands": [
+    {
+      "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+      "command": "ONCALL_VERIFY_LANE=changes node tests/verify.mjs",
+      "timeout_seconds": 1200,
+      "exit": 0
+    },
+    {
+      "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+      "command": "ONCALL_VERIFY_LANE=imports node tests/verify.mjs",
+      "timeout_seconds": 1200,
+      "exit": 0
+    }
+  ],
+  "ready_disposition": "native point proven, generated-view-only CI exception, guarded landing required",
+  "claimed_clause": "OC-022",
+  "claimed_status": "DONE",
+  "claimed_points": [
+    1
+  ],
+  "status_cells_changed": false,
+  "generated_views_committed": false,
+  "counts_before": [
+    22,
+    45,
+    34
+  ],
+  "counts_candidate": [
+    22,
+    45,
+    34
+  ],
+  "counts_requested_after_gate": [
+    23,
+    44,
+    34
+  ]
+}

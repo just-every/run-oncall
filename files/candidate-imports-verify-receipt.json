@@ -1,0 +1,8 @@
+{
+  "head": "e50345569adb756f5e3b3b9300a38e24a55a2e8a",
+  "command": "ONCALL_VERIFY_LANE=imports npx -y @runeditrun/rer verify --non-interactive",
+  "timeout_seconds": 1200,
+  "started": "2026-11-11T21:12:48Z",
+  "completed": "2026-11-11T21:19:58.391040+00:00",
+  "exit": 0
+}

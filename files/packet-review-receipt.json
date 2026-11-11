@@ -1,0 +1,193 @@
+{
+  "selected_files": [
+    "REPORT.md",
+    "product-provenance.json",
+    "mechanical-receipt.json",
+    "contract-generation.log",
+    "candidate-precommit-receipt.json",
+    "candidate-first-party.log",
+    "candidate-typecheck.log",
+    "changes-main-receipt.json",
+    "imports-main-receipt.json",
+    "changes-main.log",
+    "imports-main.log",
+    "candidate-changes-verify-receipt.json",
+    "candidate-imports-verify-receipt.json",
+    "candidate-changes-verify.log",
+    "candidate-imports-verify.log",
+    "base-ci.jsonl",
+    "candidate-ci-discovery.jsonl",
+    "candidate-ci-status.json",
+    "candidate-ci-jobs.jsonl",
+    "ci-log-receipt.json",
+    "ci-build-failed-excerpt.txt",
+    "ci-verify-failed-excerpt.txt",
+    "candidate-restored-views-check.log",
+    "candidate-restored-views-receipt.json",
+    "candidate-identities.txt",
+    "candidate-audit.txt",
+    "contract-cached.diff",
+    "product-push.log",
+    "remote-refs.txt",
+    "final-custody-receipt.json",
+    "packet-review-receipt.json"
+  ],
+  "reviewed_regular_files": 30,
+  "injected_sensitive_value_hits": 0,
+  "credential_pattern_hits": 0,
+  "symlinks": 0,
+  "private_environment_or_held_out_gate_files_selected": false,
+  "public_metadata_exception": "fleet identity and user-provided public account identifier only",
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 19963,
+      "sha256": "26b126e3d44ec95706ca13810e0b7549ba8d726aa9b2cd67fbb936b797841084"
+    },
+    {
+      "path": "product-provenance.json",
+      "bytes": 2401,
+      "sha256": "2073c0002be3b6ab078cbff290dbe16124fbe01f9d5d8ed27cc4860e215a8f0c"
+    },
+    {
+      "path": "mechanical-receipt.json",
+      "bytes": 861,
+      "sha256": "0038e7260ebd2c6bf7732f3cc71d268ae86b8cf658018e6c5275ece15014cbf7"
+    },
+    {
+      "path": "contract-generation.log",
+      "bytes": 98,
+      "sha256": "c13b82a5e8c5eb726365d51a834d1ede37697c26e0828a2aa5d52274278a4f7a"
+    },
+    {
+      "path": "candidate-precommit-receipt.json",
+      "bytes": 383,
+      "sha256": "f2f17ed7599edaa6219675af46e32ee20f2e5edd155823ff577828b0246cedd2"
+    },
+    {
+      "path": "candidate-first-party.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "candidate-typecheck.log",
+      "bytes": 187,
+      "sha256": "e8fdcc45c566df15c3b91ad8e6938a2538e301cc09dd595f10468cbd9309f776"
+    },
+    {
+      "path": "changes-main-receipt.json",
+      "bytes": 162,
+      "sha256": "5b86251dccc96277c31ade2777f179eec943a93e46389520452003945258bafe"
+    },
+    {
+      "path": "imports-main-receipt.json",
+      "bytes": 162,
+      "sha256": "412e87ac1665ef2b606ddd8361368152bf5a58d7c84f39bb7adeb24048827cd2"
+    },
+    {
+      "path": "changes-main.log",
+      "bytes": 45163,
+      "sha256": "b3eeaf64bfa88419c69a90bad2258195537beb35cb734922f5039c04cbfe63d8"
+    },
+    {
+      "path": "imports-main.log",
+      "bytes": 24646,
+      "sha256": "5a8bc81b43b0398fefd92e6d77e8ef80fb6d637006ac2b4e535349dfc459c5e7"
+    },
+    {
+      "path": "candidate-changes-verify-receipt.json",
+      "bytes": 276,
+      "sha256": "51c99cc52540d4d046492c260c39053ae5f38e840e9cbc2892b4b677e0efc08c"
+    },
+    {
+      "path": "candidate-imports-verify-receipt.json",
+      "bytes": 276,
+      "sha256": "b8be798fc0b1417cab94ac997232a9c326687622bee40f53b9d99405f3259b1b"
+    },
+    {
+      "path": "candidate-changes-verify.log",
+      "bytes": 466165,
+      "sha256": "cdbaa2f1d004f7a959de71d149da71a8c3f7550502bec54dc153a202c2e15770"
+    },
+    {
+      "path": "candidate-imports-verify.log",
+      "bytes": 438728,
+      "sha256": "b9b637b2c75d11a63465c2611c6ef7caa3cd344a0286cb141a5e8cd69928c004"
+    },
+    {
+      "path": "base-ci.jsonl",
+      "bytes": 1148,
+      "sha256": "e633187f111f69583da8d89b58f1b210a4674a1624d6a36753790b347e08d9a3"
+    },
+    {
+      "path": "candidate-ci-discovery.jsonl",
+      "bytes": 219,
+      "sha256": "2b70244ff7341023ccbac280ad25a5e746b5300387d37dc323485e58914dde43"
+    },
+    {
+      "path": "candidate-ci-status.json",
+      "bytes": 179,
+      "sha256": "02f71b6259258e9955df70dbcd5bacdf1c468d90cdf21f18ad8efe08aef03798"
+    },
+    {
+      "path": "candidate-ci-jobs.jsonl",
+      "bytes": 3749,
+      "sha256": "de2a2015f041186fb1ee15f4bf48ad944b4da1d936a1ad5e55672789839c2d9a"
+    },
+    {
+      "path": "ci-log-receipt.json",
+      "bytes": 378,
+      "sha256": "534d1e7837cadcaffcb546ec752a24254e9ea2d04404ca063236ba4e6b50fa55"
+    },
+    {
+      "path": "ci-build-failed-excerpt.txt",
+      "bytes": 500,
+      "sha256": "242581b3852c920d2cfdf84a58f4fbddb6e414455c031f99166bc2e6299ac3fe"
+    },
+    {
+      "path": "ci-verify-failed-excerpt.txt",
+      "bytes": 417,
+      "sha256": "7400302e1ff031deaeea655347c37cceb9f6489aa1f7cc9938abb9df0fd0a462"
+    },
+    {
+      "path": "candidate-restored-views-check.log",
+      "bytes": 105,
+      "sha256": "9cf3c390ca9f5f8c7bb13f4dd1f4058d66f2e74d194584038d85eaf0d4767d1e"
+    },
+    {
+      "path": "candidate-restored-views-receipt.json",
+      "bytes": 264,
+      "sha256": "77f0b201c5a4016fb183c1223024ae3d69b95323651922bed516dcd47c77b7d4"
+    },
+    {
+      "path": "candidate-identities.txt",
+      "bytes": 85,
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "path": "candidate-audit.txt",
+      "bytes": 145,
+      "sha256": "9f2fbfbcbacde61179bf213eaa4fe2395e90ca342d494f24b10daaacbc531add"
+    },
+    {
+      "path": "contract-cached.diff",
+      "bytes": 2352,
+      "sha256": "9e5176d20ba613197f06e12d3ac1994940752c7f4dcc90be594a98ca50e81c24"
+    },
+    {
+      "path": "product-push.log",
+      "bytes": 908,
+      "sha256": "89fe9f1b777daf2ea078eb06f9edf22d97fe103d7a6f43d05667cbd0d76ac801"
+    },
+    {
+      "path": "remote-refs.txt",
+      "bytes": 132,
+      "sha256": "e7c6ab1b2d7ef733a73d40b4abae70ea769c40b990def26b84efe9e96678dfa2"
+    },
+    {
+      "path": "final-custody-receipt.json",
+      "bytes": 918,
+      "sha256": "c49dd657cdc904920595680d988c7f2bd9828d917ac0ecc26eea36ca800a10e0"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+verify	Require the selected coverage and its proof	2026-11-11T21:03:26.4508458Z   BUILD: failure
+verify	Require the selected coverage and its proof	2026-11-11T21:03:26.4508998Z   SHARDS: skipped
+verify	Require the selected coverage and its proof	2026-11-11T21:03:26.4511604Z   COVERAGE: full
+verify	Require the selected coverage and its proof	2026-11-11T21:03:26.4777717Z ##[error]Process completed with exit code 1.
