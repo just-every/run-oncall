@@ -1,0 +1,28 @@
+{
+  "build": {
+    "exit": 0,
+    "log": "build.log"
+  },
+  "diff_check_exit": 0,
+  "head": "46054a9e371e97591213c9625ab939770fdea1bd",
+  "source_lock": {
+    "check_exit": 0,
+    "lock_exit": 0,
+    "sha256": "1be22de8e4f363239813c518c3579cc65e5c1e59959cb1c56b38029228728f49"
+  },
+  "touched_browser_journeys": {
+    "assertion_width": 1440,
+    "browser_zone": "Australia/Brisbane",
+    "exit": 0,
+    "log": "browser-test.log",
+    "proof_widths": [
+      1440,
+      390
+    ],
+    "rota_zone": "America/New_York"
+  },
+  "typecheck": {
+    "exit": 0,
+    "log": "typecheck.log"
+  }
+}

@@ -1,11 +1,17 @@
 {
   "branch": "cloud/main-oncall-readable-times-1",
+  "candidate_commits": [
+    "669b0c877ca659e5475e4ed2016fe584ac3d859d",
+    "5fbd281866c12d3a082369b19299ef4f5c5fabcc",
+    "46054a9e371e97591213c9625ab939770fdea1bd"
+  ],
   "commit_author": "Run Edit Run fleet <fleet@runeditrun.com>",
   "commit_committer": "Run Edit Run fleet <fleet@runeditrun.com>",
   "commit_trailers": "",
   "contract_changes": [],
   "generated_view_changes": [],
-  "head": "46054a9e371e97591213c9625ab939770fdea1bd",
+  "head": "669b0c877ca659e5475e4ed2016fe584ac3d859d",
+  "integrated_main": "b2464679c558a7c6628e90eb98478f7a335409b7",
   "local_commands": {
     "browser": "ONCALL_PRODUCT_JOURNEY=readable-times ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
     "build": "cloud_run npx -y @runeditrun/rer build",
@@ -14,9 +20,9 @@
     "setup": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
     "typecheck": "cloud_run pnpm typecheck"
   },
-  "lock_sha256": "1be22de8e4f363239813c518c3579cc65e5c1e59959cb1c56b38029228728f49",
+  "lock_sha256": "56ba57d68f3e93b0038ff266fe0aa6dece1b73e0dbac8e47ba6cc4035017c484",
   "new_registrations": 0,
-  "parent": "bb04c4bb7bb5ed8f0962325daf8a5d79d440452c",
+  "parent": "5fbd281866c12d3a082369b19299ef4f5c5fabcc",
   "product_files": [
     "sources.lock.json",
     "src/incident-deadlines/Controls.tsx",

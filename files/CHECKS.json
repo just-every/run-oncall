@@ -4,17 +4,25 @@
     "log": "build.log"
   },
   "diff_check_exit": 0,
-  "head": "46054a9e371e97591213c9625ab939770fdea1bd",
+  "head": "669b0c877ca659e5475e4ed2016fe584ac3d859d",
+  "retained_preview_regression": {
+    "exit": 0,
+    "log": "schedule-probe-fixed.log",
+    "saved_read_during_held_draft": true,
+    "test_source_matches_commit": true,
+    "test_source_sha256": "fa1337e88de82aac0b2bba3d5e92fa5e753682a6702b4c8d61672ad79559cb8d"
+  },
   "source_lock": {
     "check_exit": 0,
     "lock_exit": 0,
-    "sha256": "1be22de8e4f363239813c518c3579cc65e5c1e59959cb1c56b38029228728f49"
+    "sha256": "56ba57d68f3e93b0038ff266fe0aa6dece1b73e0dbac8e47ba6cc4035017c484"
   },
   "touched_browser_journeys": {
     "assertion_width": 1440,
     "browser_zone": "Australia/Brisbane",
     "exit": 0,
     "log": "browser-test.log",
+    "node": "22.20.0",
     "proof_widths": [
       1440,
       390
@@ -23,6 +31,7 @@
   },
   "typecheck": {
     "exit": 0,
-    "log": "typecheck.log"
+    "log": "typecheck.log",
+    "node": "22.20.0"
   }
 }

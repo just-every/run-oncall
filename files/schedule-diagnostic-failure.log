@@ -1,0 +1,28 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:10082) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PREVIEW_TIMEOUT_DIAGNOSTIC {"expected":["2026-10-30T12:00:00.000Z","2026-10-31T10:30:00.000Z","2026-10-31T14:30:00.000Z","2026-11-07T15:30:00.000Z"],"actual":["2027-03-13T09:00:00.000Z","2027-03-14T09:00:00.000Z","2027-03-14T12:00:00.000Z","2027-03-20T09:00:00.000Z","2027-03-27T09:00:00.000Z","2027-04-03T08:00:00.000Z","2027-04-10T08:00:00.000Z"],"body":"Preview coverage\n\nTimes shown in Europe/London\n\nMar 13, 2027, 09:00 AM Europe/London (GMT+0) · 31 elapsed days\n\n7 resolved spans. Showing the first 7; gaps are listed first below.\n\nAll gaps\nMar 13, 2027, 09:00 AM Europe/London (GMT+0)\n\nSchedule colleague 1440\n\nBackup · Synthetic schedule owner\n\nMar 14, 2027, 09:00 AM Europe/London (GMT+0)\n\nNobody on call\n\nBackup · Synthetic schedule owner\n\nprimary: override explicitly leaves coverage empty\n\n⚠ Coverage gap\n\nMar 14, 2027, 12:00 PM Europe/London (GMT+0)\n\nSchedule colleague 1440\n\nBackup · Synthetic schedule owner\n\nMar 20, 2027, 09:00 AM Europe/London (GMT+0)\n\nSynthetic schedule owner\n\nBackup · Schedule colleague 1440\n\nMar 27, 2027, 09:00 AM Europe/London (GMT+0)\n\nSchedule colleague 1440\n\nBackup · Synthetic schedule owner\n\nApr 3, 2027, 09:00 AM Europe/London (GMT+1)\n\nSynthetic schedule owner\n\nBackup · Schedule colleague 1440\n\nApr 10, 2027, 09:00 AM Europe/London (GMT+1)\n\nSchedule colleague 1440\n\nBackup · Synthetic schedule owner"}
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../tmp/oncall-flow-1FRs5p/local.env
+[stderr] (node:10547) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+[stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 30000ms exceeded.
+    at page.waitForFunction (/tmp/oncall-schedule-slow.mjs:15:107)
+    at retainPreview (/workspace/run-oncall/tests/product-browser-journey.mjs:449:14)
+    at async productSchedule (/workspace/run-oncall/tests/product-browser-journey.mjs:575:3)
+    at async file:///tmp/oncall-schedule-slow.mjs:17:2 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v22.20.0

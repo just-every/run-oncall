@@ -2,14 +2,14 @@
 
 Repository: just-every/run-oncall
 Product branch: cloud/main-oncall-readable-times-1
-Product head: 46054a9e371e97591213c9625ab939770fdea1bd
-Integrated main: bb04c4b (the incident-lead preservation change). No PR is required by this repository's branch landing rules, and none was opened. Product publication used only the named cloud branch. The fleet owns landing and the publication scan.
+Product head: 669b0c877ca659e5475e4ed2016fe584ac3d859d
+Integrated main: b246467 (rer 0.2.108), retaining bb04c4b (incident-lead preservation). No PR is required by this repository's branch landing rules, and none was opened. Product publication used only the named cloud branch. The fleet owns landing and the publication scan.
 
 ## Plan and scope
 
 The complete execution plan is in PLAN.md. The work reproduced the reported screens through native setup, protected HTTP and the emitted Worker browser, using Australia/Brisbane as the browser zone and America/New_York as the rota zone. It then changed presentation, extended existing public journeys, checked the touched code, refreshed main before committing, regenerated and checked the source lock last, and published the candidate with fleet identity and the task-side push guard. Reports, receipts and screenshots are kept outside the product checkout and published separately through the evidence ref.
 
-Scheduling algorithms, stored instants, identity and paging authority were not changed by this candidate. The newly landed main incident-lead code and assertions were retained. CONTRACT.md, ACCEPTANCE.md and docs/CLAIMS.md have no candidate diff. No clause Status, Gap or Evidence was edited; no DONE claim is made.
+Scheduling algorithms, stored instants, identity and paging authority were not changed by this candidate. The newly landed main incident-lead code and assertions and rer 0.2.108 update were retained. CONTRACT.md, ACCEPTANCE.md and docs/CLAIMS.md have no candidate diff. No clause Status, Gap or Evidence was edited; no DONE claim is made.
 
 ## Results
 
@@ -29,7 +29,7 @@ Test registrations added: 0. Existing verification-plan invocations remain 16 to
 
 ## Local verification and proof
 
-CHECKS.json and PRODUCT.json are actual receipts for the committed candidate. Setup used the fleet owner address. The production build, TypeScript check, focused emitted-Worker browser journeys, source-lock generation/check and git diff whitespace check passed. The final focused browser run was repeated after integration with bb04c4b and on the exact pushed product SHA.
+CHECKS.json and PRODUCT.json are actual receipts for the committed candidate. Setup used the fleet owner address. The production build, TypeScript check, focused emitted-Worker browser journeys, source-lock generation/check and git diff whitespace check passed. The focused browser run was repeated after main integration on each pushed candidate; the final run uses the pinned Node 22.20.0 and the exact final product SHA. The retained-preview regression also passes with the committed test source, with all original retention, no-save and timestamp assertions preserved.
 
 The focused run selects existing keyboardCoordination, scheduleCoordinationBrowser, coverageRulesBrowser and readinessBrowser flows. Assertions run at 1440. It covers native incident declaration and attributed timeline dates, a real stale-write refusal, native rota creation with a different browser zone, preview/gap clock labels and retained instants, substitute password sign-in and swap acceptance, effective coverage, history, calendar revocation, self-PTO and ICS reviews, stale proposal refusal and readiness refresh. Existing accessibility, hydration, protected-readback and zero-write assertions remain. It asserts date shapes and zone/instant agreement rather than fixed UI prose.
 
@@ -50,6 +50,12 @@ GAP OC-054: Live operational readiness, load, independent missed-deadline alarms
 
 ## Custody and CI
 
-The candidate author and committer are Run Edit Run fleet <fleet@runeditrun.com>. All candidate messages and identities were inspected before the guarded push, including side parents; there are no trailers. The product push succeeded on its first attempt. The product tree contains only requested source/test changes and sources.lock.json; evidence is published separately.
+The candidate author and committer are Run Edit Run fleet <fleet@runeditrun.com>. All candidate messages and identities were inspected before the guarded push, including side parents; there are no trailers. Both product pushes succeeded on their first attempts. The first product head was 46054a9e371e97591213c9625ab939770fdea1bd; the final push adds main integration merge 5fbd281866c12d3a082369b19299ef4f5c5fabcc and test correction 669b0c877ca659e5475e4ed2016fe584ac3d859d. No published history was rewritten. The product tree contains only requested source/test changes and sources.lock.json; evidence is published separately.
 
-Exact-SHA Verify: 42996167998, https://github.com/just-every/run-oncall/actions/runs/42996167998 . CI.json records actual REST observations and the API call count. CI outcome and terminal custody are finalized below once the watcher finishes.
+Initial exact-SHA Verify 42996167998 on 46054a9e371e97591213c9625ab939770fdea1bd failed in browser job 130441870194; plan, build and every other executing shard passed. The final aggregate failed because the browser shard failed. CI-initial.json, failed-jobs.json and the once-read failed-browser.log preserve the actual result.
+
+The failing existing retainPreview helper intercepted both draft requests and a background saved-rota read on /api/paging/preview. A local diagnostic reproduced its mismatch: expected October 2026 saved coverage, while the editor correctly showed the March 2027 London draft. PREVIEW-DIAGNOSTIC.json and schedule-diagnostic-failure.log preserve that observation. The helper now delays only draft requests, waits for those requests to settle, requires a successful final draft response, and compares the same rendered timestamp array. It also performs an explicit saved-rota HTTP read while the draft answer is held, to exercise the formerly ambiguous case deterministically. No assertion was removed or relaxed. The corrected journey passed, including a browser-only CPU-throttled run; schedule-probe-fixed.log records the passing deterministic regression.
+
+Final exact-SHA Verify: pending discovery on 669b0c877ca659e5475e4ed2016fe584ac3d859d. CI.json and ci-watch.log record the final candidate's actual REST observations. Six calls were used for the first run and its diagnostics, leaving four for the final candidate. The final watcher delays its first read, then polls no more often than every 300 seconds.
+
+The interim report-only evidence commit 6db48de3445446660aa45d778770d9a232db62a9 was fetched back and its 29-file manifest and hashes were verified, tied to the initial product head. EVIDENCE-initial-check.json preserves that actual transfer receipt. A final evidence publication carries this updated report and both runs' receipts; evidence publication is separate from product READY and landing.

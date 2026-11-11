@@ -1,33 +1,6 @@
 {
-  "head": "46054a9e371e97591213c9625ab939770fdea1bd",
-  "calls": 3,
-  "observations": [
-    {
-      "at": "2026-11-11T09:33:39.303519+00:00",
-      "id": 42996167998,
-      "name": "Verify",
-      "status": "queued",
-      "conclusion": null,
-      "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd",
-      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998"
-    },
-    {
-      "at": "2026-11-11T09:38:40.052179+00:00",
-      "id": 42996167998,
-      "name": "Verify",
-      "status": "in_progress",
-      "conclusion": null,
-      "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd",
-      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998"
-    },
-    {
-      "at": "2026-11-11T09:43:40.625775+00:00",
-      "id": 42996167998,
-      "name": "Verify",
-      "status": "in_progress",
-      "conclusion": null,
-      "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd",
-      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998"
-    }
-  ]
+  "head": "669b0c877ca659e5475e4ed2016fe584ac3d859d",
+  "calls": 0,
+  "total_task_calls_before_this_run": 6,
+  "observations": []
 }

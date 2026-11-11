@@ -12,8 +12,8 @@ Generated the standalone exporter from the app collection module.
   - import "../../base/run-site" without a file extension (src/docs/build/run-recipe.ts:1:34). Add the file extension
   - import "../../site/run" without a file extension (src/docs/build/run-recipe.ts:2:21). Add the file extension
   - import "../base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
-  - import "../base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
   - import "./icon-head" without a file extension (src/base/run-site.ts:1:26). Add the file extension
+  - import "../base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
   - import "./run-chooser-style" without a file extension (src/base/run-site.ts:2:29). Add the file extension
   - import "./identity" without a file extension (src/base/run-site.ts:11:53). Add the file extension
   - import "./theme-frame" without a file extension (src/base/run-site.ts:12:21). Add the file extension
@@ -78,30 +78,30 @@ dist/client/assets/settings.services-DJ7LAi8J.js                    0.03 kB │ 
 dist/client/assets/settings.services._serviceId-DJ7LAi8J.js         0.03 kB │ gzip:   0.05 kB
 dist/client/assets/settings.team-DJ7LAi8J.js                        0.03 kB │ gzip:   0.05 kB
 dist/client/assets/status-DJ7LAi8J.js                               0.03 kB │ gzip:   0.05 kB
-dist/client/assets/settings-BWNbZQ7O.js                             0.07 kB │ gzip:   0.08 kB
-dist/client/assets/routes-gcYbEUsK.js                               0.09 kB │ gzip:   0.10 kB
+dist/client/assets/settings-PhiNaxp-.js                             0.07 kB │ gzip:   0.08 kB
+dist/client/assets/routes-CT_uIY6d.js                               0.09 kB │ gzip:   0.10 kB
 dist/client/assets/not-found-i5RsCZif.js                            0.11 kB │ gzip:   0.11 kB
 dist/client/assets/on-call.index-BS01ix1A.js                        0.23 kB │ gzip:   0.19 kB
-dist/client/assets/docs.index-Bsu5QDa5.js                           0.96 kB │ gzip:   0.46 kB
-dist/client/assets/DocsLayout-BX-SEvDr.js                           1.45 kB │ gzip:   0.53 kB
-dist/client/assets/docs._slug-DpOrKeNk.js                           1.57 kB │ gzip:   0.69 kB
+dist/client/assets/docs.index-C7qo0hdp.js                           0.96 kB │ gzip:   0.46 kB
+dist/client/assets/DocsLayout-HicJas5W.js                           1.45 kB │ gzip:   0.53 kB
+dist/client/assets/docs._slug-o7FY2X1b.js                           1.57 kB │ gzip:   0.69 kB
 dist/client/assets/useSelector-q0GRC6W3.js                          2.25 kB │ gzip:   0.96 kB
-dist/client/assets/Site-Dd7Hn11S.js                                 3.52 kB │ gzip:   1.35 kB
+dist/client/assets/Site-C7egHQnT.js                                 3.52 kB │ gzip:   1.35 kB
 dist/client/assets/preload-helper-DDDGGMoO.js                       5.15 kB │ gzip:   2.01 kB
-dist/client/assets/signin.local-BIJvqp5U.js                         5.35 kB │ gzip:   2.01 kB
+dist/client/assets/signin.local-Cq9TD2zq.js                         5.35 kB │ gzip:   2.01 kB
 dist/client/assets/jsx-runtime-Cltr0gcK.js                          8.43 kB │ gzip:   3.21 kB
 dist/client/assets/link-BG1kiwOw.js                                 9.76 kB │ gzip:   4.47 kB
 dist/client/assets/forms-DH4tZV_N.js                               15.58 kB │ gzip:   6.03 kB
 dist/client/assets/OnCallScreen-CWrbSuzA.js                        95.18 kB │ gzip:  27.65 kB
-dist/client/assets/pages-DXmCIbE1.js                              333.03 kB │ gzip:  93.84 kB
-dist/client/assets/index-BUn-cCox.js                              641.33 kB │ gzip: 184.94 kB
+dist/client/assets/pages-Cn0cW37z.js                              333.40 kB │ gzip:  93.98 kB
+dist/client/assets/index-tmK5Mk88.js                              641.33 kB │ gzip: 184.93 kB
 
 [plugin builtin:vite-reporter] 
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 931ms
+✓ built in 957ms
 vite v8.2.2 building ssr environment for production...
 transforming...
 ✓ 1151 modules transformed.
@@ -140,26 +140,26 @@ dist/server/assets/settings.integrations.new-CJj_Rfg9.js              0.15 kB �
 dist/server/assets/settings.services._serviceId-DMzJvGAw.js           0.16 kB │ gzip:   0.13 kB
 dist/server/assets/settings.integrations.new._kind-CBdFDmyf.js        0.16 kB │ gzip:   0.14 kB
 dist/server/assets/settings-CuAwYjN-.js                               0.18 kB │ gzip:   0.15 kB
-dist/server/assets/routes-CI_5V1sy.js                                 0.21 kB │ gzip:   0.17 kB
+dist/server/assets/routes--fajGVe4.js                                 0.21 kB │ gzip:   0.17 kB
 dist/server/assets/root-BkKgunb-.js                                   0.25 kB │ gzip:   0.18 kB
 dist/server/assets/empty-plugin-adapters-D_0twvAa.js                  0.28 kB │ gzip:   0.18 kB
 dist/server/assets/start-D8qDT34V.js                                  0.28 kB │ gzip:   0.21 kB
 dist/server/assets/on-call.index-DVOPgJ_6.js                          0.53 kB │ gzip:   0.32 kB
 dist/server/assets/not-found-DhdZhR3a.js                              0.94 kB │ gzip:   0.51 kB
-dist/server/assets/docs.index-dTdt57No.js                             2.03 kB │ gzip:   0.69 kB
+dist/server/assets/docs.index-CaEZBCwB.js                             2.03 kB │ gzip:   0.69 kB
 dist/server/assets/utils-DymZgJKv.js                                  2.10 kB │ gzip:   1.03 kB
 dist/server/assets/vendor-formats-DcBdI7pG.js                         2.18 kB │ gzip:   0.99 kB
 dist/server/assets/paths-BPULKZYQ.js                                  2.77 kB │ gzip:   0.96 kB
-dist/server/assets/DocsLayout-Bsf7VMLh.js                             2.95 kB │ gzip:   0.77 kB
-dist/server/assets/docs._slug-CcUi-1qX.js                             3.18 kB │ gzip:   0.99 kB
+dist/server/assets/DocsLayout-CaI8biJn.js                             2.95 kB │ gzip:   0.77 kB
+dist/server/assets/docs._slug-CW-tQtdJ.js                             3.18 kB │ gzip:   0.99 kB
 dist/server/assets/hash-BooP9kEe.js                                   4.63 kB │ gzip:   2.12 kB
 dist/server/assets/storage-aKsXkEwx.js                                5.10 kB │ gzip:   2.04 kB
-dist/server/assets/_tanstack-start-manifest_v-BZKppmhR.js             6.45 kB │ gzip:   1.24 kB
+dist/server/assets/_tanstack-start-manifest_v-BAOEZEuY.js             6.45 kB │ gzip:   1.25 kB
 dist/server/assets/react-dom-N3pJMQfH.js                              6.62 kB │ gzip:   1.95 kB
-dist/server/assets/Site-DsGF1g_K.js                                   6.94 kB │ gzip:   1.79 kB
+dist/server/assets/Site-Clbp4bu9.js                                   6.94 kB │ gzip:   1.79 kB
 dist/server/assets/link-B6rQmuIu.js                                   8.13 kB │ gzip:   2.88 kB
 dist/server/assets/useSelector-ogis1AWg.js                            9.10 kB │ gzip:   2.56 kB
-dist/server/assets/signin.local-Clrw9wQB.js                          10.16 kB │ gzip:   2.68 kB
+dist/server/assets/signin.local-CDx4vuWk.js                          10.16 kB │ gzip:   2.69 kB
 dist/server/assets/Match-DmqlTN6G.js                                 11.73 kB │ gzip:   3.06 kB
 dist/server/assets/lazyRouteComponent-CZMv007S.js                    12.31 kB │ gzip:   3.00 kB
 dist/server/assets/invariant-D5nbN2bk.js                             13.25 kB │ gzip:   5.06 kB
@@ -168,15 +168,15 @@ dist/server/assets/forms-uhAgIQNm.js                                 21.40 kB �
 dist/server/assets/bundle-CqfKT2ix.js                                23.39 kB │ gzip:   7.30 kB
 dist/server/assets/manifest-BSDTaOnK.js                             109.78 kB │ gzip:  26.68 kB
 dist/server/assets/OnCallScreen-EYFJa0h3.js                         147.64 kB │ gzip:  31.57 kB
-dist/server/assets/pages-CgtBAHkT.js                                344.20 kB │ gzip:  94.96 kB
+dist/server/assets/pages-C4a5NjEG.js                                344.58 kB │ gzip:  95.09 kB
 dist/server/assets/undo-snapshot-Dt_f9V69.js                        438.29 kB │ gzip: 110.85 kB
 dist/server/assets/domain-DK7F1fdt.js                               568.18 kB │ gzip: 140.33 kB
-dist/server/assets/router-BtyEM7mz.js                               671.18 kB │ gzip: 131.95 kB
+dist/server/assets/router--uzh422R.js                               671.18 kB │ gzip: 131.95 kB
 dist/server/index.js                                              2,626.08 kB │ gzip: 638.62 kB
 
 [INEFFECTIVE_DYNAMIC_IMPORT] src/agent-door/index.server.ts is dynamically imported by src/agent-door/rest.ts, src/automation/dispatch.ts but also statically imported by src/server.ts, dynamic import will not move module into another chunk.
 
-✓ built in 1.34s
+✓ built in 1.32s
 Generated management/integration/deployment-spec.json from the built Worker and source policy.
 Your application is built
 build: complete (exit 0)

@@ -9,3 +9,5 @@
 7. Save actual non-secret reports/receipts in this packet, publish an explicit report-only evidence tree, and return product provenance, claims, CI IDs, and POST lines. Delete the clone only after custody is secured; retain bundles if any publication is blocked.
 
 Defaults: retain UTC interpretation of existing review/PTO inputs; labels explain the clock. No scheduling-logic changes or clause promotions. Timeline layout at 390 remains outside scope.
+
+CI recovery executed: read the completed failed run's job inventory and browser log once; reproduce the preview mismatch through the emitted Worker; retain all existing assertions while excluding the independent saved-rota reader from the draft oracle; add a deterministic saved read during the held draft; merge updated main without rebasing published history; regenerate/check the source lock, commit and guard-push the corrected candidate; reserve the remaining four REST calls for its exact-SHA Verify.

@@ -1,0 +1,10 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:8301) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS OC-024 ordinary-member browser 1440: password sign-in, own-only picker, self-PTO and self-ICS review/apply, current consecutive revisions, effective gap, retained slots, visible stale refusal, axe; PTO screen captured at 1440
+PASS OC-024 browser coverage rules 1440: long review, focused PTO and ICS outcomes, consecutive reviewed writes, visible stale refusal and no visible internal identifiers
+PASS OC-025 browser 1440: band-selected swap, independent substitute acceptance after approval, effective override, autosaved approval/reminder, no-timer label, one-time feed dismissal, immediate revoke, recorded obligations, axe and overflow
+PROBE OC-009 schedules, overrides and preview 1440: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed
+Existing productSchedule passed unchanged on the candidate

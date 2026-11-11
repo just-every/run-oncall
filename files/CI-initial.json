@@ -1,0 +1,42 @@
+{
+  "head": "46054a9e371e97591213c9625ab939770fdea1bd",
+  "calls": 4,
+  "observations": [
+    {
+      "at": "2026-11-11T09:33:39.303519+00:00",
+      "id": 42996167998,
+      "name": "Verify",
+      "status": "queued",
+      "conclusion": null,
+      "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998"
+    },
+    {
+      "at": "2026-11-11T09:38:40.052179+00:00",
+      "id": 42996167998,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998"
+    },
+    {
+      "at": "2026-11-11T09:43:40.625775+00:00",
+      "id": 42996167998,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998"
+    },
+    {
+      "at": "2026-11-11T09:48:41.175669+00:00",
+      "id": 42996167998,
+      "name": "Verify",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998"
+    }
+  ]
+}

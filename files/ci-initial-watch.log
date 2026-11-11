@@ -1,0 +1,4 @@
+CI {"conclusion": null, "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998", "id": 42996167998, "name": "Verify", "status": "queued"} calls=1
+CI {"conclusion": null, "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998", "id": 42996167998, "name": "Verify", "status": "in_progress"} calls=2
+CI {"conclusion": null, "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998", "id": 42996167998, "name": "Verify", "status": "in_progress"} calls=3
+CI {"conclusion": "failure", "head_sha": "46054a9e371e97591213c9625ab939770fdea1bd", "html_url": "https://github.com/just-every/run-oncall/actions/runs/42996167998", "id": 42996167998, "name": "Verify", "status": "completed"} calls=4
