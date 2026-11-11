@@ -9,14 +9,15 @@ export const ValidationForm = forwardRef<HTMLFormElement, ComponentPropsWithoutR
   return <Errors.Provider value={errors}><form {...props} ref={ref} noValidate
     onInvalidCapture={event => {
       event.preventDefault();
-      const field = event.target as Control;
+      const field = event.target as unknown as Control;
       const label = field.getAttribute('aria-labelledby')?.split(' ').map(id => document.getElementById(id)?.textContent).join(' ') || field.getAttribute('aria-label') || field.name;
       const message = field.validity.valueMissing ? `${label} is required.` : `${label}: ${field.validationMessage}`;
       setErrors(current => ({...current, [field.id]: message}));
     }}
-    onInputCapture={event => {
-      const field = event.target as Control;
-      if (field.validity?.valid) setErrors(current => {const next = {...current};delete next[field.id];return next;});
+    onChange={event => {
+      props.onChange?.(event);
+      const field = event.target as unknown as Control;
+      if (errors[field.id] && field.validity?.valid) setErrors(current => {const next = {...current};delete next[field.id];return next;});
     }}
     onSubmit={event => {
       setErrors({});

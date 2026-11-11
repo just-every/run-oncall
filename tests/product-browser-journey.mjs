@@ -704,7 +704,11 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  await page.goto(origin+'/on-call/'+schedule.id);await focusWorkspace(page);
  const coordination=page.getByRole('region',{name:'Shift coordination',exact:true});await coordination.getByRole('heading',{name:'Shift coordination',exact:true}).waitFor();
  await page.getByRole('button',{name:'Request a swap',exact:true}).click();const swapSheet=page.getByRole('dialog',{name:'Request a swap',exact:true});await swapSheet.getByLabel('Shift to swap',{exact:true}).waitFor();
- await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
+ const requestSwap=swapSheet.getByRole('button',{name:'Request',exact:true});
+ assert.equal(await requestSwap.isDisabled(),true);const substituteHint=await requestSwap.getAttribute('aria-describedby');assert.ok(substituteHint);await swapSheet.locator(`[id="${substituteHint}"]`).waitFor();
+ const beforeSelection=await api('/api/schedule-coordination');assert.equal(beforeSelection.records.some(row=>row.kind==='swap'&&row.data.schedule===schedule.id),false,'no request is saved without a substitute');
+ for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await requestSwap.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-swap-substitute-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);assert.equal(await requestSwap.isEnabled(),true);assert.equal(await requestSwap.getAttribute('aria-describedby'),null);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
  const swap=(await api('/api/schedule-coordination')).records.find(row=>row.kind==='swap'&&row.data.schedule===schedule.id&&row.data.status==='pending');assert.ok(swap);
  await coordination.getByRole('button',{name:'Approve swap',exact:true}).click();await coordination.getByText(/approval recorded/).waitFor();
  const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:900}});
@@ -1300,16 +1304,38 @@ export async function incidentRolesBrowser(page,context,incident,{proof}={}) {
    assert.equal(await people.getByLabel(role==='scribe'?'Scribe':'Communications',{exact:true}).inputValue(),person.id);
    await people.getByRole('button',{name:'Close',exact:true}).click();
   }
-  const visible=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:entry.text});
-  await visible.getByText(entry.text,{exact:true}).waitFor();await visible.getByText(actor.name,{exact:true}).waitFor();
+  const label={commander:'lead',scribe:'scribe',communications:'communications lead'}[role];
+  const readable=`${person.name} is now ${label}. Previously ${old}.`;
+  const visible=page.getByRole('region',{name:'Timeline',exact:true}).getByRole('listitem').filter({hasText:readable});
+  await visible.getByText(readable,{exact:true}).waitFor();await visible.getByText(actor.name,{exact:true}).waitFor();
   console.log(`PROBE OC-050 acceptance 1 ${role}: native choice ${old} → ${person.name} -> HTTP and reloaded control agree, revision ${previous.revision} → ${current.revision}, one human-attributed old and new role timeline entry`);
  };
  const lead=person=>async()=>{
   await page.getByRole('button',{name:/^Lead:/}).click();
   await page.getByRole('listbox',{name:'Lead',exact:true}).getByRole('option',{name:person.id===actor.id?'Me · '+actor.name:person.name,exact:true}).click();
  };
- await open();assert.equal((await stored()).commander,actor.id,'existing acknowledgment supplies the initial Lead');
+ await open();assert.equal((await stored()).commander,null,'declaration starts with an unassigned lead');
  await checkChoice('commander',responder,lead(responder));
+ const assigned=await stored();
+ const acknowledgment=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/command'&&response.request().postDataJSON()?.state==='acknowledged');
+ await page.getByRole('button',{name:'Acknowledge',exact:true}).click();
+ const accepted=await acknowledgment;assert.equal(accepted.status(),200);
+ const acknowledged=await accepted.json();
+ assert.equal(acknowledged.state,'acknowledged');assert.equal(acknowledged.commander,responder.id,'acknowledging preserves the explicitly chosen lead');
+ assert.equal(acknowledged.assignee,actor.id,'the acknowledger takes the incident work separately from its lead');
+ assert.equal(acknowledged.revision,assigned.revision+1);
+ assert.deepEqual(acknowledged.timeline.slice(0,-1),assigned.timeline,'acknowledgment retains role assignment history');
+ assert.equal(acknowledged.timeline.at(-1).actor,actor.id);
+ await open();
+ assert.deepEqual(await stored(),acknowledged,'protected readback after reload retains the assigned lead and acknowledgment');
+ await page.getByRole('button',{name:'Lead: '+responder.name,exact:true}).waitFor();
+ await page.getByRole('button',{name:'Assignee: '+actor.name,exact:true}).waitFor();
+ for(const width of [1440,390]) {
+  await page.setViewportSize({width,height:1000});
+  await page.screenshot({path:`${directory}/lead-after-acknowledge-${width}.png`,fullPage:true});
+ }
+ await page.setViewportSize({width:1440,height:1000});
+ console.log('PROBE OC-004 acknowledgment: choose another responder as lead, acknowledge as owner, reload -> selected lead retained and acknowledger shown separately as Assignee, one attributed transition and exact HTTP readback');
  for(const role of ['scribe','communications']) {
   assert.equal((await stored())[role]??null,null,'the selected role starts unassigned');
   for(const person of [actor,responder])await checkChoice(role,person,async()=>{

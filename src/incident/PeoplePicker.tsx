@@ -37,6 +37,7 @@ export function PeoplePicker(props: IncidentProps & {field: 'commander' | 'assig
     {answer && <p role="status">{answer}</p>}
     {open && createPortal(<dialog ref={dialog} className="incident-people-dialog" aria-label={`Choose ${label.toLowerCase()}`} style={{left: position.left, top: position.top}} onClick={event => {if (event.target === event.currentTarget) close();}}>
       <div className="incident-sheet-head"><h2>{label}</h2><Tooltip label="Close picker" dismissOnEscape><button type="button" className="incident-icon" aria-label="Close picker" onClick={close}>×</button></Tooltip></div>
+      <p>{field === 'commander' ? 'Leads the response team. Acknowledging keeps this lead.' : 'Owns the incident work. Acknowledge assigns this to you.'}</p>
       <div role="listbox" aria-label={label} onKeyDown={event => {
         const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role=option]'));
         const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
