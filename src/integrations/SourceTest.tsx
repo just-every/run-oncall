@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Form } from '../forms';
 import { RequestExample } from './RequestExample';
-import type { Service } from '../family/response-operations/domain';
+import type { Event, Service } from '../family/response-operations/domain';
 import type { IntakeRun } from '../intake/CompatibleTest';
 import { newIdentity, type SourceRecord } from './catalog';
 
 type Sender = { path: string; headers: Record<string, string>; body: unknown };
-function sender(source: SourceRecord, service: Service, secret: string, title: string, severity: string, intent: string, identity: string, startedAt = new Date().toISOString()): Sender {
+function sender(source: SourceRecord, service: Service, secret: string, title: string, severity: string, intent: string, identity: string, startedAt = new Date().toISOString(), generation = identity): Sender {
   const id = source.id.slice(source.id.indexOf(':') + 1), headers: Record<string, string> = { 'content-type': 'application/json' };
-  if (source.kind === 'events') return { path: '/api/ingress/' + encodeURIComponent(id), headers, body: { source: id, eventId: newIdentity('event'), service: service.id, environment: service.environment, key: identity, generation: identity, title, severity, intent, observedAt: new Date().toISOString(), evidence: '' } };
+  if (source.kind === 'events') return { path: '/api/ingress/' + encodeURIComponent(id), headers, body: { source: id, eventId: newIdentity('event'), service: service.id, environment: service.environment, key: identity, generation, title, severity, intent, observedAt: new Date().toISOString(), evidence: '' } };
   if (source.kind === 'pagerduty') return { path: '/v2/enqueue', headers, body: { routing_key: secret, event_action: intent === 'recover' ? 'resolve' : 'trigger', dedup_key: identity, payload: { summary: title, source: 'Oncall receiver check', severity } } };
   if (source.kind === 'opsgenie') {
     headers.Authorization = 'GenieKey ' + secret;
@@ -23,18 +23,26 @@ async function signature(key: string, input: string) {
   const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return Array.from(new Uint8Array(await crypto.subtle.sign('HMAC', material, new TextEncoder().encode(input))), b => b.toString(16).padStart(2, '0')).join('');
 }
-export function SourceTest({ source, service, busy, run }: { source: SourceRecord; service: Service; busy: boolean; run: IntakeRun }) {
-  const [secret, setSecret] = useState(''), [signing, setSigning] = useState(''), [title, setTitle] = useState('Service latency is above normal');
-  const [severity, setSeverity] = useState('warning'), [intent, setIntent] = useState('trigger'), [cycle,setCycle] = useState(() => ({identity:newIdentity('check'),startedAt:new Date().toISOString(),lastIntent:''}));
+export function SourceTest({ source, service, busy, run, events = [] }: { source: SourceRecord; service: Service; busy: boolean; run: IntakeRun; events?: Event[] }) {
+  // The last accepted Trigger is durable workspace state. Component-only identity
+  // is lost when a sender visits Alerts or reloads before sending Recover.
+  const latest = events.find(e => e.intent === 'trigger' && e.service === service.id && e.environment === service.environment);
+  const last = latest && events.find(e => e.key === latest.key && e.generation === latest.generation);
+  const [secret, setSecret] = useState(''), [signing, setSigning] = useState(''), [title, setTitle] = useState(latest?.title ?? 'Service latency is above normal');
+  const [severity, setSeverity] = useState('warning'), [intent, setIntent] = useState(source.kind === 'events' && latest ? 'recover' : 'trigger'), [cycle,setCycle] = useState(() => {
+    const identity = newIdentity('check');
+    return {identity:latest?.key ?? identity,generation:latest?.generation ?? identity,startedAt:latest?.observedAt ?? new Date().toISOString(),lastIntent:last?.intent ?? ''};
+  });
   const [copied, setCopied] = useState(false);
   const [example] = useState(() => sender(source, service, 'YOUR_PRIVATE_KEY', 'Service latency is above normal', 'warning', 'trigger', 'receiver-check'));
   if (source.kind === 'email' || source.kind === 'changes') return null;
   const sample = `POST ${example.path}\n${JSON.stringify({ ...example.headers, ...(source.kind === 'events' ? { authorization: 'Bearer YOUR_PRIVATE_KEY' } : {}) }, null, 2)}\n\n${JSON.stringify(example.body, null, 2)}`;
   return <>
     <details><summary>Send a test event</summary><Form busy={busy} disabled={!source.active} label="Send test event" onSubmit={async () => {
-      const next=intent==='trigger'&&cycle.lastIntent==='recover'?{identity:newIdentity('check'),startedAt:new Date().toISOString(),lastIntent:intent}:{...cycle,lastIntent:intent};
+      const identity = newIdentity('check');
+      const next=source.kind!=='events'&&intent==='trigger'&&cycle.lastIntent==='recover'?{identity,generation:identity,startedAt:new Date().toISOString(),lastIntent:intent}:{...cycle,lastIntent:intent};
       const result = await run(async () => {
-        const value = sender(source, service, secret, title, severity, intent, next.identity, next.startedAt), body = JSON.stringify(value.body);
+        const value = sender(source, service, secret, title, severity, intent, next.identity, next.startedAt, next.generation), body = JSON.stringify(value.body);
         if (source.kind === 'events') {
           if (source.native?.authentication === 'signed') {
             const timestamp = String(Math.floor(Date.now() / 1000)); value.headers['x-oncall-timestamp'] = timestamp;
@@ -55,9 +63,18 @@ export function SourceTest({ source, service, busy, run }: { source: SourceRecor
       <label className="field">Private key<input type="password" autoComplete="off" required value={secret} onChange={e => setSecret(e.target.value)} /></label>
       <label className="field">Title<input required maxLength={300} value={title} onChange={e => setTitle(e.target.value)} /></label>
       <label className="field">Severity<select aria-label="Severity" value={severity} onChange={e => setSeverity(e.target.value)}><option value="warning">Warning</option><option value="critical">Critical</option><option value="info">Information</option></select></label>
-      <label className="field">Intent<select aria-label="Intent" value={intent} onChange={e => setIntent(e.target.value)}><option value="trigger">Trigger</option><option value="recover">Recover</option></select></label>
+      <label className="field">Intent<select aria-label="Intent" value={intent} onChange={e => {
+        const value = e.target.value;
+        if (source.kind === 'events' && value === 'trigger' && cycle.lastIntent === 'recover') setCycle({...cycle,generation:newIdentity('check'),lastIntent:'',startedAt:new Date().toISOString()});
+        setIntent(value);
+      }}><option value="trigger">Trigger</option><option value="recover">Recover</option></select></label>
+      {source.kind === 'events' && <>
+        <label className="field">Alert key (dedup key)<input required maxLength={200} value={cycle.identity} onChange={e => setCycle({...cycle,identity:e.target.value})} /></label>
+        <label className="field">Lifecycle generation<input required maxLength={100} value={cycle.generation} onChange={e => setCycle({...cycle,generation:e.target.value})} /></label>
+        <p>Recover closes the alert with this key and generation, regardless of severity; a declared incident stays open.</p>
+      </>}
       {source.kind === 'grafana' && <label className="field">Signing secret, if enabled<input type="password" autoComplete="off" value={signing} onChange={e => setSigning(e.target.value)} /></label>}
     </Form></details>
-    {source.kind === 'events' ? <RequestExample source={source.id.slice(source.id.indexOf(':') + 1)} service={service} mode={source.native?.authentication || 'bearer'} /> : <details><summary>Sample request</summary><pre tabIndex={0}>{sample}</pre><button type="button" onClick={async () => { try { await navigator.clipboard.writeText(sample); setCopied(true); } catch { setCopied(false); } }}>Copy sample request</button>{copied && <p role="status">Copied</p>}</details>}
+    {source.kind === 'events' ? <RequestExample source={source.id.slice(source.id.indexOf(':') + 1)} service={service} mode={source.native?.authentication || 'bearer'} defaultOpen={!events.length} /> : <details><summary>Sample request</summary><pre tabIndex={0}>{sample}</pre><button type="button" onClick={async () => { try { await navigator.clipboard.writeText(sample); setCopied(true); } catch { setCopied(false); } }}>Copy sample request</button>{copied && <p role="status">Copied</p>}</details>}
   </>;
 }

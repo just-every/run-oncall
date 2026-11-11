@@ -602,6 +602,69 @@ async function readinessBrowser(page,context) {
  console.log('PASS OC-054 Readiness Settings navigation, real matrix/signal rendering, pager refusal, refresh, axe/overflow/hydration at 1440; Readiness visual proof once at 1440/390');
 }
 
+// OC-001: a sender can leave for Alerts and return to recover the same generation.
+async function eventsSourceBrowser(page,context) {
+ const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ await mkdir(directory,{recursive:true});await context.grantPermissions(['clipboard-read','clipboard-write']);
+ const request=async(path,data,status=200)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});
+  assert.equal(response.status(),status,`Events source ${path}`);return response.json();
+ };
+ const member=(await request('/api/session')).member,service='synthetic-oncall-238';
+ await request('/api/command',{type:'service',id:service,name:'Checkout events',environment:'production',owner:member.id,runbook:[],pager:''});
+ const proof=async(name)=>{
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),name+' fits desktop');
+  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/events-${name}-${width}.png`,fullPage:true,mask:[page.locator('.one-time-secret input'),page.locator('input[type="password"]')]});}
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ const create=async(mode)=>{
+  await page.goto(origin+'/settings/integrations/new/events');
+  await page.getByLabel('Name',{exact:true}).fill('Synthetic events '+mode);
+  const select=page.getByLabel('Service',{exact:true});if(await select.count())await select.selectOption(service);
+  await page.getByLabel('Authentication',{exact:true}).selectOption(mode);
+  await page.getByRole('button',{name:'Create source',exact:true}).click();
+  const key=await page.getByLabel('Private key',{exact:true}).inputValue();assert.ok(key);
+  const url=await page.getByLabel('Ingress URL',{exact:true}).inputValue();
+  assert.equal(new URL(url).origin,origin);assert.ok(new URL(url).pathname.startsWith('/api/ingress/'));
+  await page.getByRole('button',{name:'Copy ingress URL',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),url);
+  const example=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!example.includes(key),'sample never embeds the secret');
+  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
+  if(mode==='bearer')await proof('created');
+  const path=new URL(await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href'),origin).pathname;
+  return {key,url,example,path,source:decodeURIComponent(new URL(url).pathname.split('/').at(-1))};
+ };
+ const source=await create('bearer');await page.getByRole('link',{name:'Open source',exact:true}).click();
+ await page.getByLabel('Ingress URL',{exact:true}).waitFor();assert.equal(await page.locator('.ingress-example').getAttribute('open'),'','empty source opens its sample');
+ await proof('empty-source');await page.getByText('Send a test event',{exact:true}).click();
+ await page.getByLabel('Private key',{exact:true}).fill(source.key);await page.getByLabel('Title',{exact:true}).fill('Checkout API latency above 2 seconds');
+ await page.getByLabel('Severity',{exact:true}).selectOption('critical');
+ const key=await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),generation=await page.getByLabel('Lifecycle generation',{exact:true}).inputValue();
+ const send=async()=>{const pending=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();assert.equal((await pending).status(),201);await page.getByRole('button',{name:'Send test event',exact:true}).waitFor();};
+ await send();await page.goto(origin+'/alerts');
+ let state=await request('/api/state'),alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].state,'active');
+ const alert=alerts[0],nav=()=>page.locator('a[href="/alerts"] .nav-count').first();assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active').length));
+ const row=page.locator('.alert-row').filter({hasText:'Checkout API latency above 2 seconds'});assert.equal(await row.count(),1);assert.match(await row.innerText(),/critical/);
+ const incident=await request('/api/command',{type:'declare',service,title:'Synthetic checkout investigation',severity:'critical',summary:'Investigating',alerts:[alert.id]});
+ await page.goto(origin+source.path);await page.getByText('Send a test event',{exact:true}).click();
+ assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),key);assert.equal(await page.getByLabel('Lifecycle generation',{exact:true}).inputValue(),generation);
+ assert.equal(await page.getByLabel('Title',{exact:true}).inputValue(),'Checkout API latency above 2 seconds');
+ await page.getByLabel('Intent',{exact:true}).selectOption('recover');assert.equal(await page.getByLabel('Severity',{exact:true}).inputValue(),'warning');
+ await proof('recover-form');await page.getByLabel('Private key',{exact:true}).fill(source.key);await send();
+ state=await request('/api/state');alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].id,alert.id);assert.equal(alerts[0].state,'recovered');assert.equal(alerts[0].events.length,2);
+ assert.equal(state.incidents.find(i=>i.id===incident.id).state,'declared','source recovery keeps the declared incident open');
+ const events=state.events.filter(e=>e.source===source.source);assert.deepEqual(events.map(e=>[e.intent,e.key,e.generation,e.severity]),[['trigger',key,generation,'critical'],['recover',key,generation,'warning']]);
+ await page.goto(origin+'/alerts');assert.equal(await row.count(),1);assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
+ assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active').length));await proof('recovered-list');
+ await row.click();await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();assert.match(await page.locator('.alert-meta').innerText(),/critical.*recovered/);await proof('recovered-alert');
+ // Executing the copied commands proves the setup page is sufficient, including HMAC.
+ for(const sample of [source,await create('signed')]){
+  const {spawn}=await import('node:child_process');
+  const output=await new Promise((resolve,reject)=>{const child=spawn('bash',['-e','-o','pipefail','-c',sample.example],{env:{...process.env,ONCALL_SOURCE_KEY:sample.key}});let text='';child.stdout.on('data',data=>text+=data);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(text):reject(Error('Copied Events API command failed: '+code)));});
+  const receipt=JSON.parse(output);assert.equal(receipt.service,service);assert.ok(receipt.id);
+ }
+ console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Creation copy URL/curl executed for bearer and signed; changed screens captured once at 1440/390.');
+}
+
 // Production Worker + real local D1, without starting a managed rer dev server.
 const worker=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true,outboundLedger:true})
 const credentials={name:'Product browser owner',password:randomBytes(32).toString('hex')}
@@ -636,9 +699,10 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['readiness','accessibility','triage','limitations','roles','move-in-guide','support-start'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
+ if(focused==='events-source')await eventsSourceBrowser(page,context);
  if(focused==='support-start')await supportStartBrowser(page,context,{setTime,proof:triageProof});
  if(focused==='roles'){
   const member=(await (await context.request.get('/api/session')).json()).member;
@@ -648,7 +712,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(focused==='limitations')await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['readiness','triage','limitations','roles','move-in-guide','support-start'].includes(focused)){
+ if(!['events-source','readiness','triage','limitations','roles','move-in-guide','support-start'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -659,10 +723,11 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['accessibility','triage','limitations','roles','move-in-guide','support-start'].includes(focused))await readinessBrowser(page,context)
+ if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
+ if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log(focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -673,4 +738,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['accessibility','triage','limitations','roles','move-in-guide','support-start'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
