@@ -1196,6 +1196,9 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  const external=[];const observe=request=>{if(request.url().startsWith('https://hostile.invalid/'))external.push(request.url())};page.on('request',observe)
  // OC-008: author a runbook containing a link and HTML, then use its copied incident step.
  const runbookText=`https://hostile.invalid/runbook ${hostile}`
+ // Begin this keyboard leg with a real key even when a preceding pointer flow
+ // left focus on the menu's return target. Keep visible-focus assertions intact.
+ await page.keyboard.press('Tab')
  await openWorkspaceSection(page,'services',{keyboard:true})
  await key.activate(page.getByRole('button',{name:'Add service',exact:true}))
  await key.text(page.getByLabel('Service name',{exact:true}),`Literal runbook ${width}`)
