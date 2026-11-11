@@ -1,0 +1,26 @@
+{
+  "blockers": [],
+  "branch": "cloud/main-oncall-readable-times-1",
+  "clause_status_changes": [],
+  "evidence_ref": "refs/heads/evidence/main-oncall-readable-times-1",
+  "head": "669b0c877ca659e5475e4ed2016fe584ac3d859d",
+  "local_checks": "passed",
+  "new_test_registrations": 0,
+  "pr": null,
+  "product_custody": "READY",
+  "product_push": "succeeded",
+  "publication_scan": "fleet lander responsibility; not run in cloud",
+  "remote_head_verified": true,
+  "repository": "just-every/run-oncall",
+  "total_task_github_calls": 8,
+  "verify": {
+    "at": "2026-11-11T10:17:35.242587+00:00",
+    "conclusion": "success",
+    "head_sha": "669b0c877ca659e5475e4ed2016fe584ac3d859d",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43000194439",
+    "id": 43000194439,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "worktree_clean": true
+}

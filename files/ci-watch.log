@@ -1,1 +1,3 @@
 CI first REST read in 600 seconds; four calls reserved for this candidate
+CI {"conclusion": null, "head_sha": "669b0c877ca659e5475e4ed2016fe584ac3d859d", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43000194439", "id": 43000194439, "name": "Verify", "status": "in_progress"} calls=1
+CI {"conclusion": "success", "head_sha": "669b0c877ca659e5475e4ed2016fe584ac3d859d", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43000194439", "id": 43000194439, "name": "Verify", "status": "completed"} calls=2
