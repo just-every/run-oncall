@@ -1,0 +1,227 @@
+{
+  "tag": "sd-oncall-c-f223",
+  "base": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email <fleet address> --non-interactive",
+    "exit": 0
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  "typecheck": {
+    "command": "cloud_run pnpm run typecheck",
+    "exit": 0
+  },
+  "first_party": {
+    "command": "cloud_run pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  "views": {
+    "write": "node src/base/contract-docs.mjs write",
+    "check": "node src/base/contract-docs.mjs check",
+    "exit": 0,
+    "restored": [
+      "ACCEPTANCE.md",
+      "docs/CLAIMS.md"
+    ]
+  },
+  "changes": {
+    "command": "cloud_run env ONCALL_VERIFY_LANE=changes perl -e 'alarm 1200; exec @ARGV' -- node tests/verify.mjs",
+    "status": "completed",
+    "exit": 0,
+    "activation_flow_groups": 40,
+    "oc006_probes": [
+      1,
+      2
+    ],
+    "demo": "passed"
+  },
+  "lock": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0,
+    "ok": true
+  },
+  "chromium": {
+    "executable": "/usr/bin/chromium",
+    "args": [
+      "--no-sandbox"
+    ],
+    "launch_probe": "passed"
+  },
+  "candidate": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+  "branch": "cloud/sd-oncall-c-f223",
+  "repository": "just-every/run-oncall",
+  "push": {
+    "exit": 0,
+    "attempts": 1,
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f223"
+  },
+  "verify": {
+    "command": "cloud_run timeout --signal=TERM --kill-after=30s 5400 npx -y @runeditrun/rer verify --non-interactive",
+    "status": "completed",
+    "head": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+    "exit": 0,
+    "start": "2026-11-11T20:57:04Z",
+    "end": "2026-11-11T22:05:22Z"
+  },
+  "ci": {
+    "run": 43098968229,
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+    "github_calls": 7,
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43098968229",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130784176813,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130784268802,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130785549978,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130785550060,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130785550069,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130785550107,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130785550118,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130785550483,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130785550567,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130786452758,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130792750510,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130792775338,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+        "id": 130792786008,
+        "name": "verify",
+        "status": "completed"
+      }
+    ]
+  },
+  "reconciliation": {
+    "base": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+    "command": "git fetch origin main; git rebase origin/main",
+    "outcome": "up to date; no replay or source changes",
+    "contract_status_diff": "empty"
+  },
+  "publication_scan": {
+    "commit": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "status": "not run in cloud; independent guarded lander required",
+    "full_history_checkout": true
+  },
+  "counts": {
+    "actual_before": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34,
+      "total": 101
+    },
+    "actual_after": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34,
+      "total": 101
+    },
+    "proposed_after_lander": {
+      "done": 23,
+      "partial": 44,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "changes_summary": {
+    "files": [
+      "docs/limits.md",
+      "sources.lock.json"
+    ],
+    "implementation_changed": false,
+    "assertions_changed": false,
+    "test_registrations_added": 0,
+    "test_registrations_removed": 0,
+    "acceptance_changed": false,
+    "status_cells_changed": false,
+    "generated_views_committed": false
+  },
+  "mechanical_final": {
+    "views_write_exit": 0,
+    "views_check_exit": 0,
+    "views_restored_from": "origin/main",
+    "lock_write_exit": 0,
+    "lock_check_exit": 0,
+    "tracked_diff_exit": 0,
+    "migration_ledger": "not applicable; no migration changed"
+  }
+}

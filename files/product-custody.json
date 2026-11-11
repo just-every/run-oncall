@@ -1,0 +1,14 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+  "branch": "cloud/sd-oncall-c-f223",
+  "remote_refs": {
+    "refs/heads/cloud/sd-oncall-c-f223": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+    "refs/heads/main": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9"
+  },
+  "worktree_clean": true,
+  "index_clean": true,
+  "full_history": true,
+  "publication_scan": "guarded lander required",
+  "pr": null
+}

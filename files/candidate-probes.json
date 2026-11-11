@@ -1,0 +1,20 @@
+{
+  "head": "5d7364435e696b4ce1ca35d06c3f02372e8b69b4",
+  "probes": [
+    {
+      "log": "verify.log",
+      "line": 259,
+      "text": "PROBE OC-006 2: protected legacy draft export and its actual source references -> review required, stable internal identity; authorized populated reads succeed, anonymous and revoked reads return 401 with error only"
+    },
+    {
+      "log": "verify.log",
+      "line": 890,
+      "text": "PROBE OC-006 1: emitted Worker coordination, legacy draft export, preparation, refused unreviewed export and reviewed export without an approved endpoint -> empty outbound ledger, unchanged paging state, no provider action or Lamp publication"
+    },
+    {
+      "log": "verify.log",
+      "line": 891,
+      "text": "PROBE OC-006 2: exported legacy review-required draft and reviewed copy source links -> draft still unreviewed, prepared export refused, authorized sources populated, anonymous source reads 401 with error only"
+    }
+  ]
+}

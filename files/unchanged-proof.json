@@ -1,0 +1,62 @@
+[
+  {
+    "path": "tests/activation.mjs",
+    "sha256": "b71b38c99ebfce4ea2386e7b46442a919e4892627a610fff86878d5f1b600d42",
+    "equals_main": true
+  },
+  {
+    "path": "tests/worker.mjs",
+    "sha256": "35232262cbaeda53598b6e4d35b5145a1e38740503d08bdf4ebe7e5f58ca6c7e",
+    "equals_main": true
+  },
+  {
+    "path": "tests/worker-server.mjs",
+    "sha256": "9f0e31fb2060544caa2fd7a5133b8ed9200224fd16072feeda8dbcca9136a604",
+    "equals_main": true
+  },
+  {
+    "path": "src/delivery.ts",
+    "sha256": "4d94a3d94ddf5ef7bffcf9d2d687e00a2a509c9a2f1d26e4e206cc3d7fcf7a77",
+    "equals_main": true
+  },
+  {
+    "path": "src/handoff-api.ts",
+    "sha256": "a9807a15e50c9f3535c56a8de2f52628107fb164f317f71085def728afe180a1",
+    "equals_main": true
+  },
+  {
+    "path": "src/mail.server.mjs",
+    "sha256": "d8ef29f1989ffa22b0fec85f606cfad15cc149592d376798458186c0b25e3e50",
+    "equals_main": true
+  },
+  {
+    "path": "CONTRACT.md",
+    "sha256": "18eeac1c52740d240c9c82de27ff3ef90f22e2fd82749c256367781a15731e79",
+    "equals_main": true
+  },
+  {
+    "path": "ACCEPTANCE.md",
+    "sha256": "51eade3fb94518c782e666cb370df0335c515f7e93ba4a971948632b487e6482",
+    "equals_main": true
+  },
+  {
+    "path": "docs/CLAIMS.md",
+    "sha256": "470e447a3c922b6af00a94e1a45ea54981851280ec65672b13777ed1f2317f3e",
+    "equals_main": true
+  },
+  {
+    "path": "tests/runtime.mjs",
+    "sha256": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3",
+    "equals_main": true
+  },
+  {
+    "path": "src/family/response-operations/handoffs.ts",
+    "sha256": "a8cf00e386e211f257f6afe0a3fdfff59f888bc7703e4c6376e2316d2f6346af",
+    "equals_main": true
+  },
+  {
+    "path": "src/family/response-operations/integrations.ts",
+    "sha256": "41401834156f9e610942f6388bfefededfe541f0c6a15d1f440addf7c3e2a7be",
+    "equals_main": true
+  }
+]

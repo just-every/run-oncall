@@ -1,0 +1,13 @@
+{
+  "source": "changes.log",
+  "probes": [
+    {
+      "log_line": 265,
+      "text": "PROBE OC-006 1: emitted Worker coordination, legacy draft export, preparation, refused unreviewed export and reviewed export without an approved endpoint -> empty outbound ledger, unchanged paging state, no provider action or Lamp publication"
+    },
+    {
+      "log_line": 266,
+      "text": "PROBE OC-006 2: exported legacy review-required draft and reviewed copy source links -> draft still unreviewed, prepared export refused, authorized sources populated, anonymous source reads 401 with error only"
+    }
+  ]
+}
