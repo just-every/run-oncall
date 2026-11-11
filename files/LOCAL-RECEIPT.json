@@ -1,0 +1,86 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-events-sample-1",
+  "product_head": "5c3fcdae807d6cbd08fbe5521f9ba89ca1a5222d",
+  "baseline_head": "669b0c877ca659e5475e4ed2016fe584ac3d859d",
+  "baseline_browser": {
+    "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
+    "exit": 0,
+    "receipt": "baseline-browser.log"
+  },
+  "candidate_browser": {
+    "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
+    "exit": 0,
+    "receipt": "candidate-browser.log",
+    "assertion_width": 1440,
+    "screenshots": [
+      1440,
+      390
+    ],
+    "note": "Build made from the same product source tree; final commit adds docs, the corrected source-panel locator and source lock. Browser ran the corrected locator."
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0,
+    "receipt": "build.log"
+  },
+  "typecheck": {
+    "command": "cloud_run pnpm run typecheck",
+    "exit": 0,
+    "receipt": "typecheck.log"
+  },
+  "source_lock": {
+    "generate": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "contract_documents": {
+    "command": "node src/base/contract-docs.mjs check",
+    "exit": 0,
+    "receipt": "contract-check.log"
+  },
+  "counts": {
+    "verify_lane_script_entries_before": 16,
+    "verify_lane_script_entries_after": 16,
+    "events_source_journeys_before": 1,
+    "events_source_journeys_after": 1,
+    "added_registrations": 0,
+    "status_changes": 0,
+    "contract_judgments": {
+      "origin/main": {
+        "done": 22,
+        "partial": 45,
+        "missing": 34
+      },
+      "HEAD": {
+        "done": 22,
+        "partial": 45,
+        "missing": 34
+      }
+    }
+  },
+  "product_pushes": [
+    {
+      "head": "3e696d8511db6218c52a394542f74a6d4e2e29d6",
+      "result": "PUSH_OK",
+      "skip_ci": true
+    },
+    {
+      "head": "5c3fcdae807d6cbd08fbe5521f9ba89ca1a5222d",
+      "result": "PUSH_OK",
+      "skip_ci": false
+    }
+  ],
+  "identity": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "trailers": "none; all candidate authors, committers and complete messages inspected before both pushes",
+  "publication_scan": "Mac fleet publication scan required at landing; unavailable in this cloud as stated in task",
+  "ci": {
+    "run_id": 43011729603,
+    "conclusion": "success",
+    "head_sha": "5c3fcdae807d6cbd08fbe5521f9ba89ca1a5222d",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43011729603",
+    "status": "completed"
+  },
+  "github_calls_used": 4,
+  "blockers": []
+}

@@ -1,0 +1,18 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-events-sample-1",
+  "head": "5c3fcdae807d6cbd08fbe5521f9ba89ca1a5222d",
+  "working_tree_clean": true,
+  "changed_files_numstat": [
+    "1\t1\tdocs/incidents.md",
+    "9\t5\tsources.lock.json",
+    "6\t1\tsrc/api.ts",
+    "4\t2\tsrc/integrations/RequestExample.tsx",
+    "2\t1\tsrc/integrations/catalog.ts",
+    "1\t0\tsrc/integrations/native-name.ts",
+    "39\t6\ttests/product-browser.mjs"
+  ],
+  "contract_and_generated_views_changed": false,
+  "publication_scan": "deferred to Mac fleet as specified by cloud adaptation",
+  "pr_url": null
+}

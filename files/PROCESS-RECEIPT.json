@@ -1,0 +1,5 @@
+{
+  "remaining_browser_worker_process_count": 0,
+  "processes": [],
+  "note": "Production Worker journeys close their own browser and Worker in finally blocks; no broad process stop command used."
+}

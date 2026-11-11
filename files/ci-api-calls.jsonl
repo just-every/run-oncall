@@ -1,0 +1,4 @@
+{"call": 1, "time": 1794396302.4290154, "args": ["api", "repos/just-every/run-oncall/actions/runs?head_sha=5c3fcdae807d6cbd08fbe5521f9ba89ca1a5222d&per_page=100", "--jq", ".workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}"]}
+{"call": 2, "time": 1794396602.5033112, "args": ["api", "repos/just-every/run-oncall/actions/runs/43011729603", "--jq", "{status,conclusion,head_sha,html_url}"]}
+{"call": 3, "time": 1794396902.5427215, "args": ["api", "repos/just-every/run-oncall/actions/runs/43011729603", "--jq", "{status,conclusion,head_sha,html_url}"]}
+{"call": 4, "time": 1794397202.590193, "args": ["api", "repos/just-every/run-oncall/actions/runs/43011729603", "--jq", "{status,conclusion,head_sha,html_url}"]}
