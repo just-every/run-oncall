@@ -66,3 +66,9 @@ Both author and committer are Run Edit Run fleet <fleet@runeditrun.com>. The can
 Exact-SHA Verify: https://github.com/just-every/run-oncall/actions/runs/43012054710
 
 Run ID 43012054710, push event, head cf4615eae88e98457dcb118ddfcadd8363f379c4. The second REST discovery found it in progress. One watcher retains its observations and call count in ci-receipt.json; no run is polled more often than every 300 seconds.
+
+Final result: **completed / success** on that exact SHA. The watcher used 4 REST calls in total, including the initial empty discovery and the successful discovery, with at least 300 seconds between them. No workflow was dispatched or rerun. There is no remaining product blocker.
+
+The complete relevant packet is published only on refs/heads/evidence/main-oncall-incident-saves-1, separately from product custody. Its 26 explicitly selected regular files include this full plan/report, local-receipt.json, ci-receipt.json, actual check and push logs, the original reproduction, and all relevant changed-screen captures. The evidence publisher verified that the product HEAD, index and working-tree status were unchanged by transfer. The fleet still owns publication scan, guarded integration and landing; no main or default branch was pushed.
+
+READY branch=cloud/main-oncall-incident-saves-1 head=cf4615eae88e98457dcb118ddfcadd8363f379c4

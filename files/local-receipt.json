@@ -126,5 +126,13 @@
     "head": "cf4615eae88e98457dcb118ddfcadd8363f379c4",
     "ref": "refs/heads/cloud/main-oncall-incident-saves-1",
     "matches": true
-  }
+  },
+  "exact_sha_verify": {
+    "run_id": 43012054710,
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43012054710",
+    "head": "cf4615eae88e98457dcb118ddfcadd8363f379c4",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "terminal_status": "READY"
 }

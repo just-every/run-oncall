@@ -1,6 +1,6 @@
 {
   "repository": "just-every/run-oncall",
-  "calls": 3,
+  "calls": 4,
   "observations": [
     {
       "at": 1794396430.3083344,
@@ -36,10 +36,24 @@
         "id": 43012054710,
         "status": "in_progress"
       }
+    },
+    {
+      "at": 1794397345.6256895,
+      "action": "poll",
+      "response": {
+        "conclusion": "success",
+        "head_sha": "cf4615eae88e98457dcb118ddfcadd8363f379c4",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43012054710",
+        "id": 43012054710,
+        "status": "completed"
+      }
     }
   ],
-  "last_call": 1794397044.589875,
+  "last_call": 1794397345.6256895,
   "run_id": 43012054710,
   "url": "https://github.com/just-every/run-oncall/actions/runs/43012054710",
-  "head_sha": "cf4615eae88e98457dcb118ddfcadd8363f379c4"
+  "head_sha": "cf4615eae88e98457dcb118ddfcadd8363f379c4",
+  "terminal_status": "READY",
+  "completed": true,
+  "conclusion": "success"
 }
