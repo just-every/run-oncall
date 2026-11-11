@@ -1,3 +1,4 @@
+import { nativeName } from './integrations/native-name';
 import {installReadiness} from './readiness/api';
 import {installTeams} from './teams/api';
 import {auditRefusalCommitted} from './audit-store';
@@ -392,8 +393,12 @@ api.post("/api/ingress/:source", async (c) => {
     return c.json({duplicate:result.duplicate,id:result.receipt.id,service:result.receipt.service,acceptedAt:result.receipt.acceptedAt,truncation:true,incomplete:{receipt:result.receipt.id}},202);
   }
   const {signal} = parsed;
-  if (signal.source !== c.req.param("source")) fail('"source" must match the source ID in the URL',403);
+  if (signal.source !== c.req.param("source") && signal.source !== nativeName(c.req.param("source")))
+    fail('"source" must match the source ID or displayed name for the URL',403);
   refuseKeyEcho(Object.values(signal), key);
+  // Names are input aliases only. Retain the established source identity so old
+  // senders, retry receipts and alert generations keep sharing the same custody.
+  signal.source = c.req.param("source");
   if (!JSON.parse(source.scopes).includes(signal.service))
     fail('"service" must be an internal service ID authorized for this source', 403);
   const revision = state.revision;
