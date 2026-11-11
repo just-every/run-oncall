@@ -1592,7 +1592,7 @@
       "executable": false
     },
     "scripts/installer/archive-policy.mjs": {
-      "sha256": "1d2045cb3f4c396e3426911f41efc1f38d3d5645632ffa186144ed872933e89c",
+      "sha256": "9ce6980353ab2d81e2a5836dd13f3265a21f3bce0a9446e000d25411f99062bf",
       "executable": false
     },
     "scripts/installer/audit-archive.mjs": {
