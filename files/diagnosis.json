@@ -1,0 +1,32 @@
+{
+  "fixtureClock": "2026-11-04T12:00:00.000Z",
+  "requests": [
+    {
+      "path": "/api/members",
+      "status": 409,
+      "body": {
+        "error": "Workspace changed; reload"
+      }
+    }
+  ],
+  "sessions": [
+    {
+      "created_at": 1793793600000,
+      "expires_at": 1794398400000,
+      "sqlite_now": 1794406252077,
+      "revoked_at": null
+    }
+  ],
+  "native": [
+    {
+      "expires": 1794398400000,
+      "sqlite_now": 1794406252083
+    }
+  ],
+  "current": [
+    {
+      "n": 0
+    }
+  ],
+  "error": "Native fixture request failed: /api/members\n\n409 !== 201\n"
+}

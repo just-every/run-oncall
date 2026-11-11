@@ -1,0 +1,17 @@
+{
+  "assertion_call_sites_changed_file": {
+    "before": 743,
+    "after": 743
+  },
+  "assertion_call_sites_agedReplayRetention": {
+    "before": 66,
+    "after": 66
+  },
+  "tests_mjs_files": {
+    "before": 45,
+    "after": 45
+  },
+  "new_registrations": 0,
+  "removed_registrations": 0,
+  "clause_status_changes": 0
+}

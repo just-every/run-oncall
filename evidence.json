@@ -1,0 +1,136 @@
+{
+  "files": [
+    {
+      "blob": "2c97479688c6098e9b22c3098140da9d62f1eab5",
+      "bytes": 2020,
+      "path": "PLAN.md",
+      "sha256": "057aa670200bc02678065184607076996cb696caf9d8a88691398f554c5b6713"
+    },
+    {
+      "blob": "876c38507e6bf9e9659808eb07e224658e45a03f",
+      "bytes": 9502,
+      "path": "REPORT.md",
+      "sha256": "3094c120bcc6e0431bf449042647eb0832c3be54519a43023d5d7cbab91072ea"
+    },
+    {
+      "blob": "76b13517cfe305eaf7e90fb750ba87e9dd23e92c",
+      "bytes": 46494,
+      "path": "after.log",
+      "sha256": "cdfe6751e95ea3f7dc22aca9723bb846077722cd8717579b702efc41d3d2e510"
+    },
+    {
+      "blob": "bf88444436cdbaba53d11fc3ea4617ec82c4e8b9",
+      "bytes": 267,
+      "path": "assertion-preservation.json",
+      "sha256": "c5641386f72fbccb77b738acacb647c60b885af3e4b93c1918736603e6d23769"
+    },
+    {
+      "blob": "40ec54850b3d21b389127982e3934a4c5a358305",
+      "bytes": 1102,
+      "path": "baseline.log",
+      "sha256": "cae5e8f9bb90fd812207dc220d9457f585df5f4da4fd7d595411e71e4b8e4cad"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "candidate-identities.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "e98122505bdfa1336f25ab025377dc6ccd9614a2",
+      "bytes": 260,
+      "path": "ci-result.json",
+      "sha256": "a2eb65033d168d3a4c0c41922eb9f47daf6e0362d68604aa35f53c109baa53b6"
+    },
+    {
+      "blob": "656c9bc631ad8bba1266df501f2541828dfe30ad",
+      "bytes": 3996,
+      "path": "clock-search.txt",
+      "sha256": "d104ab7a5907e47f2dfb71702ab02b1fa9c5ba3ea10f23bfb6d9561f0d4b4b40"
+    },
+    {
+      "blob": "5c81e0222ba26c124ec8b638ab4df8d6625c5936",
+      "bytes": 320,
+      "path": "counts.json",
+      "sha256": "563f652e5f6303de3f3ad207695f2cb5b148d723a11d85b7487d59801371ec4f"
+    },
+    {
+      "blob": "63052a7cf4cf9a162abbe211f2abad8a062b2cc6",
+      "bytes": 582,
+      "path": "diagnosis.json",
+      "sha256": "7b232c4de0f8438d9831a24a4ed4980e088b58b6775a11496d41be2d5feb687d"
+    },
+    {
+      "blob": "1c23e96db5e6a26db9c71e2af2598157c03afaa1",
+      "bytes": 3340,
+      "path": "future-30-days.log",
+      "sha256": "9f05027af335a11328c2266c17dbb3d21494928fddb72ca4f58e02f500da0cad"
+    },
+    {
+      "blob": "ea310eaf51857e43a7d338001b05a18cdd2301bb",
+      "bytes": 874,
+      "path": "future-clock-harness.mjs",
+      "sha256": "b1141e00e561e1fabbeef6f86b5335114196c8962af368eb1b0c02112be19f42"
+    },
+    {
+      "blob": "9ccfc22a96ef623c0a8633081457676cd0425435",
+      "bytes": 1665,
+      "path": "github-calls.jsonl",
+      "sha256": "23ed30f4b086a07346f064b151f07c10ab770235be7afa58276e5a5cad8ac97e"
+    },
+    {
+      "blob": "df07b2b7d47206d6e21bfbced0639a747c20f1d6",
+      "bytes": 1686,
+      "path": "local-receipt.json",
+      "sha256": "36fe4f9762bc80c4554cc67fbd86d2ef6738282f1196447d78f7a8aa567904a4"
+    },
+    {
+      "blob": "eedea416ba5bd6461ece1d807c937f78fc0871d9",
+      "bytes": 459,
+      "path": "lock-check-receipt.json",
+      "sha256": "7f0ee7f64fa4e38650009a948afe1fa2da8cfdaaca9973bde49f39d604551b8c"
+    },
+    {
+      "blob": "256ac9468377516e41b7f842debe8ff241bca4c1",
+      "bytes": 445,
+      "path": "lock-regeneration-receipt.json",
+      "sha256": "08b59a54dfa9ae7e99944bc028d181bb67f27d56f72bffc572005c3226f90b7d"
+    },
+    {
+      "blob": "0e0e94fa8760cc26cd0d391c6c5aee97b21b122c",
+      "bytes": 778,
+      "path": "packet-review.json",
+      "sha256": "7f45c8568b99a69b0ed80c666c9d10ac946380ad70c205108086f04142ebe0b9"
+    },
+    {
+      "blob": "71b109423fbc29b5880f47dd46226b253e6e8cab",
+      "bytes": 432,
+      "path": "product-commit.txt",
+      "sha256": "a34c28f2bb685e064c3369e73e432690018edee5f62bd9ae9f893d3b4cf035e6"
+    },
+    {
+      "blob": "b1868628b3bb1b9723438b298c3ed00568947e3b",
+      "bytes": 947,
+      "path": "product-push.log",
+      "sha256": "594645007de675fb331aa7926fded7b7eaee9876951d04ba8ef1b940e314a9d4"
+    },
+    {
+      "blob": "4aacff2c15709a8ecd7b26436798a40f36bd80dd",
+      "bytes": 1419,
+      "path": "product.diff",
+      "sha256": "429200d854adc8d53d3f8356bdee134ac692815755f95c0cf741861b7765dc36"
+    },
+    {
+      "blob": "465833a78e1c3815ca6ee31262d902c7385affa9",
+      "bytes": 182,
+      "path": "typecheck.log",
+      "sha256": "9b0b3594186bafc8dab911d0c747824f1d6b96686af29dd61cb9871a699c6700"
+    }
+  ],
+  "product_branch": "cloud/main-oncall-aged-clock-1",
+  "product_head": "051a993687882c63b472c8397946d52157ec4c0f",
+  "ref": "refs/heads/evidence/main-oncall-aged-clock-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "main-oncall-aged-clock-1"
+}

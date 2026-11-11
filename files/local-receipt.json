@@ -1,0 +1,52 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-aged-clock-1",
+  "head": "051a993687882c63b472c8397946d52157ec4c0f",
+  "base": "0dac089dba93dc1209c3a2317d5e7a4392d44c4e",
+  "product_push": "success attempt 1",
+  "checks": [
+    {
+      "command": "cloud_run node tests/oncall-agent-flow.mjs",
+      "phase": "baseline untouched main",
+      "exit": 1,
+      "log": "baseline.log",
+      "expected_failure": "/api/members 409 != 201 in agedReplayRetention bootstrap"
+    },
+    {
+      "command": "cloud_run node tests/oncall-agent-flow.mjs",
+      "phase": "after fix",
+      "exit": 0,
+      "log": "after.log"
+    },
+    {
+      "command": "cloud_run node --import /tmp/oncall-plus-30-days.mjs tests/oncall-agent-flow.mjs",
+      "phase": "existing agedReplayRetention only, Date.now +30 days",
+      "exit": 0,
+      "log": "future-30-days.log",
+      "harness": "future-clock-harness.mjs"
+    },
+    {
+      "command": "cloud_run pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "last_regeneration": "after fetch/rebase; tracked tree unchanged"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    }
+  ],
+  "toolchain": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "node_minimum": "22.20.0",
+    "note": "Supplied toolchain keeps a newer VM Node; pnpm emits an engine warning, all touched checks pass."
+  },
+  "publication_scan": "fleet Mac lander required; unavailable in cloud; not claimed complete",
+  "pr": null,
+  "contract_changed": false
+}

@@ -1,0 +1,28 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index 932c056..81eebe2 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -6548,7 +6548,7 @@
+       "executable": false
+     },
+     "tests/oncall-agent-flow.mjs": {
+-      "sha256": "46ac91cbd9891f250369488666ed461389c2fe95cdca94c2fc21b348cb99ce25",
++      "sha256": "3e3ea33e2e0e5f37a5f252c0ea75b3e02f8a80a3b1afc485cf0d0351b4df8540",
+       "executable": false
+     },
+     "tests/oncall-agent-incident-replay.mjs": {
+diff --git a/tests/oncall-agent-flow.mjs b/tests/oncall-agent-flow.mjs
+index 21119a8..2dc6cad 100644
+--- a/tests/oncall-agent-flow.mjs
++++ b/tests/oncall-agent-flow.mjs
+@@ -363,7 +363,9 @@ async function changedArgumentConflicts(runtime){
+ 
+ /** Aged native MCP outcomes survive short-lived credential and policy renewal. */
+ async function agedReplayRetention(){
+- const started=Date.UTC(2026,10,4,12),day=24*60*60*1000;
++ // Keep bootstrap sessions current for D1's wall-clock expiry checks while
++ // retaining whole-second claims and advancing the platform clock to age calls.
++ const started=Math.floor(Date.now()/3600000)*3600000,day=24*60*60*1000;
+  for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
+   // Each policy has an isolated emitted Worker and actual D1 custody. Advancing
+   // this platform clock ages real calls, rather than inserting synthetic rows.

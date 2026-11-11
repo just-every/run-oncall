@@ -1,0 +1,6 @@
+{
+  "method": "Reverse only the start-clock expression and its two explanatory comments, then compare the complete file to origin/main",
+  "complete_file_identical_after_reversing_clock_change": true,
+  "assertion_bodies_modified": 0,
+  "registrations_modified": 0
+}

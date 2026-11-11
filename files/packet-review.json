@@ -1,0 +1,29 @@
+{
+  "selected_regular_files": [
+    "PLAN.md",
+    "REPORT.md",
+    "after.log",
+    "assertion-preservation.json",
+    "baseline.log",
+    "candidate-identities.txt",
+    "ci-result.json",
+    "clock-search.txt",
+    "counts.json",
+    "diagnosis.json",
+    "future-30-days.log",
+    "future-clock-harness.mjs",
+    "github-calls.jsonl",
+    "local-receipt.json",
+    "lock-check-receipt.json",
+    "lock-regeneration-receipt.json",
+    "packet-review.json",
+    "product-commit.txt",
+    "product-push.log",
+    "product.diff",
+    "typecheck.log"
+  ],
+  "pattern_findings": [],
+  "ci_exact_sha": "051a993687882c63b472c8397946d52157ec4c0f",
+  "ci_conclusion": "success",
+  "note": "Bounded review of explicitly selected non-secret evidence; not the fleet publication scan."
+}

@@ -1,0 +1,11 @@
+commit 051a993687882c63b472c8397946d52157ec4c0f
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Wed Nov 11 14:15:18 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Wed Nov 11 14:15:18 2026 +0000
+
+    Keep aged replay fixture clock relative to the current hour
+
+ sources.lock.json           | 2 +-
+ tests/oncall-agent-flow.mjs | 4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)

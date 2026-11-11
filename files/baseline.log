@@ -1,0 +1,27 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["1581","1580","MainThread"],["1606","1581","esbuild"],["1616","1581","workerd"],["1622","1581","ps"]]
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Native fixture request failed: /api/members
+
+409 !== 201
+
+    at json (file:///workspace/run-oncall/tests/initialize-agent-owner.mjs:25:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async initialize (file:///workspace/run-oncall/tests/initialize-agent-owner.mjs:34:21)
+    at async agentRuntime (file:///workspace/run-oncall/tests/agent-door-runtime.mjs:42:19)
+    at async agedReplayRetention (file:///workspace/run-oncall/tests/oncall-agent-flow.mjs:370:17)
+    at async file:///workspace/run-oncall/tests/oncall-agent-flow.mjs:668:1 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 409,
+  expected: 201,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
