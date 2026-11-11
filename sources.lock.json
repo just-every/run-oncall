@@ -724,7 +724,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "7fb5c4a297f2c9492ef171d0c4877885d30876b4628c24d1c8628e5ed6219ff1",
+      "sha256": "9cb9b2d7c4979aa08dd535d826b66661ef981eb0247aab3f68390ef80b63f220",
       "executable": false
     },
     "package.json": {
@@ -6616,7 +6616,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "5c91337165b939dd0d8a30df1eee120ac6dbba0ccbc510d1545fe8ec2c39b254",
+      "sha256": "28c9c9983db3366fce83740382e23bed9bcb4f3021fcc4441f04d703e43321a0",
       "executable": false
     },
     "tests/triage.mjs": {

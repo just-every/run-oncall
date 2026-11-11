@@ -475,10 +475,16 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  Object.assign(offlineDeployEnv,{CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false'})
  delete offlineDeployEnv.RER_LOCAL_OPERATION
  await assert.rejects(lstat('.rer/deploy'),{code:'ENOENT'},'the disposable installation has no deployment record before planning')
+ const deploySecretNames=new Set(JSON.parse(await readFile('deploy.json','utf8')).secrets.flatMap(({binding,environment})=>[binding,environment]))
+ const privateDeployValues=[...privateBuildValues,...privateBuildBefore.flatMap(({bytes})=>bytes.toString('utf8').split('\n').flatMap(line=>{
+  const match=/^([A-Z_][A-Z0-9_]*)=(.*)$/.exec(line)
+  if(!match||!deploySecretNames.has(match[1])||!match[2])return []
+  return [match[2].startsWith('"')?JSON.parse(match[2]):match[2]]
+ }))]
  const dryRunOutput=await m.command(['deploy','--environment','production','--dry-run','--non-interactive'],0,offlineDeployEnv)
  assert.match(dryRunOutput,/deploy: local dry run complete; no credentials were needed, no Cloudflare requests were made and nothing was changed remotely\. Target secrets and remote readiness were not checked\./,'the public command completes its local-only plan without provider authority')
  await assert.rejects(lstat('.rer/deploy'),{code:'ENOENT'},'a local plan creates no deployment record')
- assert.ok(privateBuildValues.every(value=>!dryRunOutput.includes(value)),'dry-run output discloses no private fixture settings or development key')
+ assert.ok(privateDeployValues.every(value=>!dryRunOutput.includes(value)),'dry-run output discloses no private fixture settings or development key')
  assert.ok(!dryRunOutput.includes('rer-dev-layer:local-only-never-deploy'),'dry-run output contains no development identity layer')
  const plannedFiles=(await readdir('dist',{recursive:true,withFileTypes:true})).filter(entry=>entry.isFile()).map(entry=>join(entry.parentPath,entry.name))
  assert.ok(plannedFiles.includes(join('dist','server','index.js')),'the local plan emits the production Worker')
@@ -487,7 +493,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
   assert.ok(!/(?:^|\/)(?:\.dev\.vars(?:\.[^/]*)?|\.env(?:\.[^/]*)?|[^/]+\.env)$/.test(path),'dry-run artifacts contain no private settings file')
   const bytes=await readFile(path)
   assert.ok(!bytes.includes('rer-dev-layer:local-only-never-deploy'),'dry-run artifacts contain no development identity layer')
-  assert.ok(privateBuildValues.every(value=>!bytes.includes(value)),'dry-run artifacts exclude private fixture values and the development key')
+  assert.ok(privateDeployValues.every(value=>!bytes.includes(value)),'dry-run artifacts exclude private fixture values and the development key')
  }
  for(const [index,path] of privateBuildFiles.entries()){
   assert.ok((await readFile(path)).equals(privateBuildBefore[index].bytes),'the dry run restores private fixture settings byte for byte')
