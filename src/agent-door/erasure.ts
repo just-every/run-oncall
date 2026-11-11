@@ -21,11 +21,14 @@ const textBoundary = (position: string, outward: number) => {
 }
 // Search decoded string values, never JSON keys or numbers. A bounded
 // occurrence can follow an embedded one in the same string, so every literal
-// hit is checked. A column equal to the whole value matches directly.
-const textMention = (column: string) => `(CAST(${column} AS TEXT)=${textValue} OR EXISTS(
+// hit is checked. One search spans all of a table's columns, which keeps the
+// expression shallow enough for D1's depth limit.
+const cells = (table: string, columns: string[]) => columns.map(name => `SELECT ${table}.${name} AS cell`).join(' UNION ALL ')
+const decoded = 'json_tree(CASE WHEN json_valid(cells.cell) THEN cells.cell ELSE json_quote(cells.cell) END) content'
+const textMention = (table: string, columns: string[]) => `(${textValue} IN (${columns.map(name => `CAST(${table}.${name} AS TEXT)`).join(',')}) OR EXISTS(
       WITH RECURSIVE hits(text,source,pos,token) AS (
         SELECT content.value,${textValue},instr(content.value,${textValue}),(${tokenCharacter})
-        FROM json_tree(CASE WHEN json_valid(${column}) THEN ${column} ELSE json_quote(${column}) END) content
+        FROM (${cells(table, columns)}) cells, ${decoded}
         WHERE content.type='text' AND instr(content.value,${textValue})>0
         UNION ALL SELECT text,source,pos+instr(substr(text,pos+1),source),token FROM hits
           WHERE pos>0 AND instr(substr(text,pos+1),source)>0
@@ -33,20 +36,18 @@ const textMention = (column: string) => `(CAST(${column} AS TEXT)=${textValue} O
         AND ${textBoundary('pos-1', -1)}
         AND ${textBoundary('pos+length(source)', 1)}
     ))`
-const mentions = (table: string, columns: string[]) => `EXISTS(SELECT 1 FROM json_each(?1) subject WHERE ` + columns.map(name => {
-  const column = `${table}.${name}`
-  return `(subject.type='text' AND ${textMention(column)}) OR
-    (subject.type='object' AND EXISTS(
+const nameMention = (table: string, columns: string[]) => `EXISTS(
       WITH RECURSIVE hits(text,source,pos) AS (
         SELECT content.value,json_extract(subject.value,'$.name'),instr(content.value,json_extract(subject.value,'$.name'))
-        FROM json_tree(CASE WHEN json_valid(${column}) THEN ${column} ELSE json_quote(${column}) END) content WHERE content.type='text'
+        FROM (${cells(table, columns)}) cells, ${decoded} WHERE content.type='text'
         UNION ALL SELECT text,source,pos+instr(substr(text,pos+1),source) FROM hits
           WHERE pos>0 AND instr(substr(text,pos+1),source)>0
       ) SELECT 1 FROM hits WHERE pos>0
         AND (pos=1 OR substr(text,pos-1,1) NOT GLOB '[A-Za-z0-9_@/+-]')
         AND (pos+length(source)>length(text) OR substr(text,pos+length(source),1) NOT GLOB '[A-Za-z0-9_@/+-]')
-    ))`
-}).join(' OR ') + ')'
+    )`
+const mentions = (table: string, columns: string[]) => `EXISTS(SELECT 1 FROM json_each(?1) subject WHERE
+    (subject.type='text' AND ${textMention(table, columns)}) OR (subject.type='object' AND ${nameMention(table, columns)}))`
 const calls = mentions('agent_door_calls', ['key','outcome'])
 const approvals = mentions('agent_door_approvals', ['saved','approvals','result'])
 const reviews = mentions('agent_door_reviews', ['saved','marked_by'])
