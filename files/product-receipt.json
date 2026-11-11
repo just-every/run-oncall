@@ -1,0 +1,54 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-run-docs-1",
+  "head": "e4066e802e5c04f26f3b5e750fb9755aba3b473f",
+  "base_main": "669b0c877ca659e5475e4ed2016fe584ac3d859d",
+  "initial_main": "b2464679c558a7c6628e90eb98478f7a335409b7",
+  "files": [
+    "README.md",
+    "docs/getting-started.md",
+    "sources.lock.json"
+  ],
+  "product_push": "succeeded first attempt; see product-push.log",
+  "commit_identity": "Run Edit Run fleet <fleet@runeditrun.com> for author and committer; no trailers",
+  "local_checks": {
+    "typecheck": 0,
+    "source_lock_check": 0,
+    "contract_docs_check": 0,
+    "site_build": 0
+  },
+  "contract_status_before": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34
+  },
+  "contract_status_after": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34
+  },
+  "test_changes": {
+    "added": 0,
+    "removed": 0,
+    "modified": 0
+  },
+  "ci_runner_invocations": {
+    "before": 16,
+    "after": 16,
+    "distinct_entrypoint_files": 12,
+    "note": "Runner invocation count, not a newly counted acceptance-assertion total. No test or cap changes."
+  },
+  "declaration_changes": false,
+  "contract_changes": false,
+  "generated_views_committed": false,
+  "publication_scan": "Mac fleet lander requirement; unavailable in cloud by task protocol; not claimed",
+  "pr": null,
+  "public_candidate_dry_run_exit": 0,
+  "active_dev_dry_run_exit": 4,
+  "run_page_http_status": 200,
+  "browser_receipt": "browser-receipt.json",
+  "verify_run_id": 43010917621,
+  "verify_url": "https://github.com/just-every/run-oncall/actions/runs/43010917621",
+  "verify_status": "in_progress",
+  "github_api_calls_used": 3
+}

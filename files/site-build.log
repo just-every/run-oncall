@@ -1,0 +1,10 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+Heavy job admitted: Oncall build:workflow [845f241f9cb2]
+Checking pinned pnpm
+10.12.4
+Building the run site
+{"pages":26,"assets":4,"styles":1}
+Run site written to dist/site (26 pages, 52 files): [REDACTED]/dist/site
+build: complete (exit 0)
+
+site-build exit=0

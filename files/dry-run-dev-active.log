@@ -1,0 +1,6 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+deploy: failed (exit 4)
+Heavy job admitted: Oncall deploy:workflow [845f241f9cb2]
+An active local operation owns the state: PID 2174 (node). Stop it with rer dev --stop or rer preview --stop; for an unmanaged process, stop PID 2174 before retrying.
+
+dry-run-dev-active exit=4

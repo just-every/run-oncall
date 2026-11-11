@@ -1,0 +1,7 @@
+# Plan: main-oncall-run-docs-1
+
+1. Read launcher and seed rules; reproduce production dry-run without an env file through the public rer command before edits. Trace the duplicated SendGrid input to the seed declaration or rer implementation.
+2. Correct README.md and docs/getting-started.md: explain offline exit-0 dry-run and its unchecked target readiness; show that remote checks require a real deployment with the private env-file (a credentialed dry-run is still offline); stop dev before deployment; link the Oncall Run page. Change declarations only if the seed causes duplication. Leave contract judgments and generated acceptance views unchanged.
+3. Run touched checks (rer check if declarations change) and typecheck. Add no wording tests; record unchanged test/status counts. Render the changed docs at 1440 and 390 and retain screenshots only in this packet.
+4. Fetch/rebase main before the first publication (merge thereafter), preserve newer source judgments, regenerate/check source lock last, commit with fleet identity/hooks, inspect all candidate identities/trailers, push only cloud/main-oncall-run-docs-1 using the fleet guard.
+5. Discover/poll exact-SHA Verify via REST within the ten-call budget and five-minute interval. Preserve complete reports/actual receipts outside the product clone; publish selected public-safe packet files to evidence/main-oncall-run-docs-1, report product custody separately, then delete the successfully pushed clone.

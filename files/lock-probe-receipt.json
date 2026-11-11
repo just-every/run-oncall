@@ -1,0 +1,7 @@
+{
+  "dev_ready": true,
+  "started_process_group": 2118,
+  "probe_command": "npx -y @runeditrun/rer deploy --environment production --dry-run",
+  "exit": 4,
+  "cleanup": "SIGINT only to the process group started by this probe; no rer dev --stop executed"
+}

@@ -1,0 +1,76 @@
+{
+  "head": "e4066e802e5c04f26f3b5e750fb9755aba3b473f",
+  "browser": "system Chromium /usr/bin/chromium --no-sandbox",
+  "assertionWidth": 1440,
+  "rows": [
+    {
+      "screen": "README changed sections (local Markdown preview, not GitHub)",
+      "width": 1440,
+      "viewport": 1440,
+      "document": 1440,
+      "codeBlocks": [
+        {
+          "width": 852,
+          "scroll": 852
+        },
+        {
+          "width": 852,
+          "scroll": 852
+        },
+        {
+          "width": 852,
+          "scroll": 852
+        },
+        {
+          "width": 852,
+          "scroll": 852
+        }
+      ],
+      "screenshot": "readme-1440.png"
+    },
+    {
+      "screen": "Actual built /docs/getting-started, deployment section",
+      "width": 1440,
+      "y": 7703,
+      "end": 9399,
+      "viewport": 1440,
+      "document": 1440,
+      "screenshot": "getting-started-1440.png"
+    },
+    {
+      "screen": "README changed sections (local Markdown preview, not GitHub)",
+      "width": 390,
+      "viewport": 390,
+      "document": 390,
+      "codeBlocks": [
+        {
+          "width": 342,
+          "scroll": 734
+        },
+        {
+          "width": 342,
+          "scroll": 457
+        },
+        {
+          "width": 342,
+          "scroll": 535
+        },
+        {
+          "width": 342,
+          "scroll": 846
+        }
+      ],
+      "screenshot": "readme-390.png"
+    },
+    {
+      "screen": "Actual built /docs/getting-started, deployment section",
+      "width": 390,
+      "y": 11576,
+      "end": 14371,
+      "viewport": 390,
+      "document": 390,
+      "screenshot": "getting-started-390.png"
+    }
+  ],
+  "visual_review": "Inspected all four captured images: revised local-only dry-run explanation, stop commands, Run link and real-deployment instructions are readable at 1440 and 390. Code stays within its cards; long commands scroll or wrap using existing styles."
+}

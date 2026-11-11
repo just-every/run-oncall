@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>README changed sections</title><style>body{box-sizing:border-box;max-width:900px;margin:0 auto;padding:24px;font:16px/1.6 Arial,sans-serif;color:#202020}h1,h2,h3{line-height:1.25}a{color:#0969da}code{font-size:.9em;overflow-wrap:anywhere}pre{padding:16px;background:#f6f8fa;overflow:auto;border-radius:6px}pre code{overflow-wrap:normal}p,li{overflow-wrap:anywhere}</style><main><h1>Run it locally</h1>
+<p>See the <a href="https://run-oncall.com/run">Oncall Run page</a> for local launch and PATH help. Public source: <a href="https://github.com/just-every/run-oncall">just-every/run-oncall</a>. The latest tag, <code>v0.5.7</code>, includes hosted coordination. See <a href="docs/getting-started.md#host-for-your-team">Getting started</a> for complete credentials and deployment instructions.</p>
+<p>One line installs the <code>rer</code> command, clones Oncall and starts it:</p>
+<pre><code class="language-sh">curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall
+</code></pre>
+<p>Already have Node 22 or later? <code>npx -y @runeditrun/rer dev just-every/run-oncall</code> does the same.</p>
+<p>macOS, Linux or Windows with WSL2. git is required; rer brings Node and pnpm.</p>
+<p>To start it again later, run <code>cd run-oncall &amp;&amp; rer dev</code>; after the <code>curl</code> installer, a terminal without <code>~/.local/bin</code> on PATH needs <code>export PATH=&quot;$HOME/.local/bin:$PATH&quot;</code> first or it says <code>rer: command not found</code> (add that line to your shell startup file to keep it; <code>&quot;$HOME/.local/bin/rer&quot; cli path</code> shows the line for your shell). <code>rer dev</code> installs the application dependencies, creates a local development owner and prints a private <code>RER_OPEN</code> link that opens Oncall signed in. On first launch, confirm the read-only owner details at <code>/setup</code> (<strong>Finish setup</strong>); later launches open the app directly. To choose your own owner mailbox before the first launch, use <a href="docs/getting-started.md#explicit-and-unattended-setup">explicit setup</a>; unattended setup accepts a private answers file.</p>
+<p>Open the printed link on this computer. <code>rer dev --as signed-out</code> selects the signed-out persona. The compatibility flag <code>rer dev --login</code> still opens automatic owner entry. Ordinary <code>/signin</code> email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. The app does not capture mail or print sign-in tokens. Stop the background server with <code>rer dev --stop</code> (Ctrl-C also stops a foreground run); stop preview with <code>rer preview --stop</code> before building, verifying or deploying. A running dev or preview server owns the local state, so even a deploy dry run refuses with exit 4 until it stops.</p>
+<pre><code class="language-sh">rer build
+rer preview
+rer verify
+rer export --output exports/installation.rer
+rer import --input exports/installation.rer --yes
+rer reset --yes
+rer dev --stop
+rer preview --stop
+rer deploy --environment production --dry-run
+rer describe
+rer check
+</code></pre>
+<p>Before the first <code>rer verify</code>, stop dev and preview, then install its browser using the dependencies <code>rer dev</code> (or <code>rer install</code>) already installed:</p>
+<pre><code class="language-sh">node node_modules/@playwright/test/cli.js install chromium
+rer verify
+</code></pre>
+<p>This command uses Node directly; no global pnpm is needed. On Linux, add <code>--with-deps</code> to the browser install command if system libraries are missing. <code>rer doctor</code> reports a missing verification browser and prints this command. <code>rer check</code> is silent on success (exit 0); <code>rer check --json</code> prints the result.</p>
+<p>Export includes supported durable records and the import journal, excluding sessions and dev credentials. Import requires an empty destination and explicit confirmation. If it refuses with <code>target_not_empty</code>, export any data you need to keep, stop dev and preview, then run <code>rer reset --yes</code> before importing into the now-empty installation. Configure a new owner, sign in, then explicitly map an archived administrator identity from the signed-out workspace; credentials never travel. Reset deletes local data and owner settings and keeps your exports; see <a href="docs/data.md">Export and restore</a> for the in-place restore sequence.</p>
+<p>A deploy dry run builds and validates the local deployment plan. With no env file or Cloudflare credentials, a valid local plan exits 0: it sends nothing to Cloudflare, changes nothing remotely and checks no target secrets, deployment permissions or remote readiness. Adding <code>--env-file</code> to a dry run does not enable remote checks. For those checks, prepare the private credentials file and run the real deployment described in <a href="#host-for-your-team">Host for your team</a>; it creates or updates hosted resources. Email delivery needs the separate sign-in test below.</p>
+<p>Release 1 supports hosted incident coordination alongside your existing pager. Paging stays OFF; an independent standby is not required for coordination. Release 2 paging and its independent standby are not built. See <a href="docs/getting-started.md#host-for-your-team">hosting instructions</a> for deployment, sign-in and removal. Use <code>describe</code> for flags and <code>doctor</code> for missing local prerequisites.</p>
+<h3>Host for your team</h3>
+<p>Hosting is in <code>v0.3.0</code> and later. Release 1 hosts coordination alongside your existing pager, with paging OFF and no standby requirement. Follow <a href="docs/getting-started.md#host-for-your-team">Getting started</a> to prepare a real owner mailbox, obtain Cloudflare and SendGrid credentials with the required permissions, and save them in an owner-only <code>0600</code> file outside Git. The Install page includes each provider&#39;s menu path, verification steps and expected results.</p>
+<p>Stop dev and preview from the hosting checkout before either the dry run or deployment (Ctrl-C also stops a foreground server). With the private file prepared as described there:</p>
+<pre><code class="language-sh">rer dev --stop
+rer preview --stop
+rer deploy --environment production --env-file &quot;$HOME/.config/oncall/production.env&quot; --dry-run
+rer deploy --environment production --env-file &quot;$HOME/.config/oncall/production.env&quot;
+</code></pre>
+<p>The dry run above remains local even with the private file. The real command without <code>--dry-run</code> uses <code>CLOUDFLARE_ACCOUNT_ID</code>, <code>CLOUDFLARE_API_TOKEN</code>, <code>SENDGRID_API_KEY</code> and <code>MAIL_FROM</code> from that file to check the target and deploy; a dry-run success does not prove those inputs work.</p>
+<p>Use the same named environment for every later command; it defaults to <code>production</code> if omitted. Deployment creates the hosted installation, applies migrations, verifies deployment identity, claims the configured owner automatically and retires its one-time setup token. Open the returned address and use <strong>Email a sign-in link</strong>, then open the email on the same device and press <strong>Confirm</strong>. Finish the owner confirmation at <code>/setup</code> if shown. Local dev entry links do not work there. Admin-created team members use their workspace name and password at <code>/signin/local</code>; Oncall sends no invitations.</p>
+</main>
