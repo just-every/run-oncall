@@ -1,0 +1,28 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "347265e1efe5b5ace2ea575d316ea97336dbca21",
+  "calls": 2,
+  "observations": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "347265e1efe5b5ace2ea575d316ea97336dbca21",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42997501414",
+      "id": 42997501414,
+      "name": "Verify",
+      "status": "in_progress",
+      "checked_at": "2026-11-11T09:43:05.042206+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "347265e1efe5b5ace2ea575d316ea97336dbca21",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/42997501414",
+      "status": "in_progress",
+      "checked_at": "2026-11-11T09:48:05.707733+00:00"
+    }
+  ],
+  "status": "in_progress",
+  "run_id": 42997501414,
+  "url": "https://github.com/just-every/run-oncall/actions/runs/42997501414",
+  "conclusion": null
+}

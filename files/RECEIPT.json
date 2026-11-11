@@ -1,0 +1,63 @@
+{
+  "tag": "main-oncall-explain-refusals-1",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-explain-refusals-1",
+  "head": "347265e1efe5b5ace2ea575d316ea97336dbca21",
+  "integrated_main": "bb04c4bb7bb5ed8f0962325daf8a5d79d440452c",
+  "product_push": "success",
+  "pr": null,
+  "local_checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build (through cloud_run)",
+      "exit_code": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "node /tmp/oncall-rota-check.mjs (existing productSchedule, coverageRulesBrowser and scheduleCoordinationBrowser at 1440)",
+      "exit_code": 0
+    },
+    {
+      "command": "node tests/member-coordination-browser.mjs",
+      "exit_code": 0
+    }
+  ],
+  "contract_counts_before": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34
+  },
+  "contract_counts_after": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34
+  },
+  "verification_commands_before": 16,
+  "verification_commands_after": 16,
+  "new_test_registrations": 0,
+  "clause_status_changes": [],
+  "recorded_at": "2026-11-11T09:43:21.820198+00:00",
+  "publication_scan": "fleet Mac pending; unavailable in cloud by brief",
+  "ci": "see CI.json",
+  "public_door_proof": {
+    "exit_code": 0,
+    "receipt": "candidate-proof.json",
+    "assertion_width": 1440,
+    "screenshot_widths": [
+      1440,
+      390
+    ]
+  },
+  "named_silent_stops_before": 2,
+  "named_silent_stops_after": 0
+}

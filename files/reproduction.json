@@ -1,0 +1,13 @@
+{
+  "baseHead": "07eefee5c8f62aa2e56574e7a5e36a582e598198",
+  "status": {
+    "unchanged": true,
+    "inlineAlerts": 0,
+    "supportingValidity": false
+  },
+  "cover": {
+    "disabled": true,
+    "description": null,
+    "adjacentText": "About this reviewApplying changes the whole rota; only the coverage in this range is shown. Existing slots stay in the proposal, and unavailable people show as gaps. A changed rota or workspace needs a fresh review. Paging stays off."
+  }
+}

@@ -1,0 +1,4 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+{"head":"347265e1efe5b5ace2ea575d316ea97336dbca21","status":{"unchanged":true,"inlineAlerts":1,"supportingValidity":false},"cover":{"disabled":true,"description":"_r_d_","adjacentText":"Select “I reviewed these assignments and gaps” to enable applying this change."}}

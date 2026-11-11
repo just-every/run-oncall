@@ -1,0 +1,7 @@
+{
+  "command": "node scripts/edition-authoring/cli.mjs check",
+  "exit_code": 0,
+  "stdout_sha256": "706591340547f4ac61cb746df5ea801ea584f36bf4ff187ed62ff1040a024748",
+  "checked_files": 1645,
+  "source_lock_sha256": "e8b66c2b99283ca3a721d6ddda62817dc9afb2e32e3fd8bd10b81998e0629cee"
+}
