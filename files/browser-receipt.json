@@ -1,0 +1,105 @@
+{
+  "head": "ee708e33867764e3022d3d055b3761666bfe8cdd",
+  "runtime": "emitted production Worker",
+  "synthetic": true,
+  "screenshots": [
+    {
+      "path": "browser/refusal-supporting-service-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "1f061f22b859b6dccb358e999e13a426b0382a14a687578246c105bfb8637bfd",
+      "bytes": 89539
+    },
+    {
+      "path": "browser/refusal-supporting-service-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "b42a9b1e1601685509a38e1a5add3ba466a168b4be3db75ee50cfb4d5c1c2223",
+      "bytes": 59910
+    },
+    {
+      "path": "browser/refusal-server-create-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "1d582fa4e07fc19daa70c041a0ac0bd1eab1d5adb70955cedd4a084d25e2cf32",
+      "bytes": 95547
+    },
+    {
+      "path": "browser/refusal-server-create-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "925791c2ee114c041d9cee20bdc95240210636bb99c7f7d4ea0e153d276dcee4",
+      "bytes": 67024
+    },
+    {
+      "path": "browser/refusal-status-reason-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "5f53b5ff5001bbb4ce4c19b20d6bb8fff8165cb9c5482fd2cf6d9559c43fae59",
+      "bytes": 80701
+    },
+    {
+      "path": "browser/refusal-status-reason-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "a3c7f8d725073bf50204b7e7e478ede540335e1f46c40fe03ae2811592915f72",
+      "bytes": 54126
+    },
+    {
+      "path": "browser/refusal-cover-review-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "1447799c150c592e9aff39aed0e5d52365f84fc003afe92da32c548beb4688de",
+      "bytes": 130435
+    },
+    {
+      "path": "browser/refusal-cover-review-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "9e5f094226b5e37b5c61c7bed7a1c0472479e6a99f2539e883ab18c972b98ebc",
+      "bytes": 64965
+    },
+    {
+      "path": "browser/refusal-swap-substitute-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "5aeda5dd6bce738364577dc676802cfe00873f7a209ecec0bd08740ee78d01b1",
+      "bytes": 115007
+    },
+    {
+      "path": "browser/refusal-swap-substitute-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "9b6395b45a16cc4705266616b27d48fe03e5671a38bee5697a5619ba2ba3fead",
+      "bytes": 61015
+    },
+    {
+      "path": "browser/oc009-rota-name-1440.png",
+      "width": 1440,
+      "height": 1041,
+      "sha256": "4810a8861a3df33f4069ef977b0c06be2313bf24a5b79a60232c8c6898f82f36",
+      "bytes": 128171
+    },
+    {
+      "path": "browser/oc009-rota-name-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "eb284ed552705c82a687ade0fff195a714701aaf86eb14c3be9fd6b577ae991f",
+      "bytes": 41019
+    },
+    {
+      "path": "browser/oc009-cover-preparation-1440.png",
+      "width": 1440,
+      "height": 1354,
+      "sha256": "45fd73994a5a7bc0ec550d2daa509fea363bd5e0dd686bd1532b0288da2bfb1a",
+      "bytes": 123011
+    },
+    {
+      "path": "browser/oc009-cover-preparation-390.png",
+      "width": 390,
+      "height": 1595,
+      "sha256": "a9f168856cb0c278282382012079d8f6066c2ed14eebf6f35a03777515ca9114",
+      "bytes": 87755
+    }
+  ]
+}

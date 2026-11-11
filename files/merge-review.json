@@ -1,0 +1,19 @@
+{
+  "main_retained_files": {
+    "CONTRACT.md": true,
+    "ACCEPTANCE.md": true,
+    "docs/CLAIMS.md": true,
+    "tests/oncall-agent-flow.mjs": true,
+    "tests/oncall-agent-role-replay.mjs": true
+  },
+  "round_changed_files": [
+    "README.md",
+    "docs/getting-started.md",
+    "sources.lock.json",
+    "tests/oncall-agent-flow.mjs",
+    "tests/oncall-agent-role-replay.mjs"
+  ],
+  "added_test_registrations_this_round": 0,
+  "removed_test_registrations_this_round": 0,
+  "registration_basis": "Only a clean merge; tests from main retained byte for byte; no new tests authored in this round."
+}

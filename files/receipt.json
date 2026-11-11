@@ -1,0 +1,135 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-explain-refusals-1-fix1-c1",
+  "head": "ee708e33867764e3022d3d055b3761666bfe8cdd",
+  "main_merged": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "starting_head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+  "clock_fix": "051a993",
+  "merge_conflicts": [],
+  "product_edits_this_round": 0,
+  "added_tests": 0,
+  "removed_tests": 0,
+  "clause_counts_before": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_counts_after": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_status_changes": [],
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0
+  },
+  "typecheck": {
+    "command": "cloud_run pnpm run typecheck",
+    "exit": 0
+  },
+  "publication_scan": {
+    "status": "delegated to fleet Mac lander",
+    "reason": "cloud adaptation states the publication scan cannot run in this cloud"
+  },
+  "source_lock": {
+    "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+    "ok": true
+  },
+  "contract_check": {
+    "exit": 0,
+    "changed": false
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  "candidate_identity_audit": {
+    "commits": 6,
+    "author_committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": "none",
+    "side_parents_included": true
+  },
+  "journeys": {
+    "member-coordination": {
+      "exit": 0,
+      "command": "cloud_run node tests/member-coordination-browser.mjs",
+      "browser": "/usr/bin/chromium",
+      "capture_widths": [
+        1440,
+        390
+      ]
+    },
+    "product-accessibility": {
+      "exit": 0,
+      "command": [
+        "env",
+        "ONCALL_PRODUCT_JOURNEY=accessibility",
+        "node",
+        "tests/product-browser.mjs"
+      ]
+    },
+    "product-swap": {
+      "exit": 0,
+      "command": [
+        "env",
+        "ONCALL_PRODUCT_JOURNEY=readable-times",
+        "node",
+        "tests/product-browser.mjs"
+      ]
+    },
+    "agent": {
+      "exit": 0,
+      "command": [
+        "node",
+        "tests/oncall-agent-flow.mjs"
+      ]
+    }
+  },
+  "diff_credential_check": {
+    "status": "passed",
+    "scope": "candidate additions against merged main",
+    "full_publication_scan": false
+  },
+  "local_validation_head": "ee708e33867764e3022d3d055b3761666bfe8cdd",
+  "browser_capture_count": 14,
+  "clock_retention": {
+    "autonomous": {
+      "at_24h": "passed",
+      "at_24h_plus_1s": "passed"
+    },
+    "held": {
+      "at_24h": "passed",
+      "at_24h_plus_1s": "passed"
+    }
+  },
+  "product_push": {
+    "status": "pushed",
+    "attempts": 1,
+    "branch": "cloud/main-oncall-explain-refusals-1-fix1-c1",
+    "head": "ee708e33867764e3022d3d055b3761666bfe8cdd",
+    "guard": "cloud-push.py",
+    "http_error": null
+  },
+  "pr": null,
+  "blockers": [],
+  "ci_watcher_recovery": {
+    "github_call": 2,
+    "command_exit": 0,
+    "issue": "Local sanitizer truncated a JSON URL; response parsing failed",
+    "resolution": "Preserve JSON structure during sanitization; resume respecting the 300-second interval and original 45-minute window",
+    "product_changed": false
+  },
+  "ci": {
+    "id": 43106483365,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "ee708e33867764e3022d3d055b3761666bfe8cdd",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43106483365"
+  },
+  "github_calls_used": 5,
+  "terminal_product_status": "READY",
+  "evidence_ref": "refs/heads/evidence/main-oncall-explain-refusals-1-fix1-c1"
+}

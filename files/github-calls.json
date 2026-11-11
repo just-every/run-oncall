@@ -1,0 +1,48 @@
+[
+  {
+    "number": 1,
+    "at": 1794433788.9759388,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=ee708e33867764e3022d3d055b3761666bfe8cdd&per_page=100"
+    ]
+  },
+  {
+    "number": 2,
+    "at": 1794434089.0706077,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=ee708e33867764e3022d3d055b3761666bfe8cdd&per_page=100"
+    ]
+  },
+  {
+    "number": 3,
+    "at": 1794434389.1112216,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=ee708e33867764e3022d3d055b3761666bfe8cdd&per_page=100",
+      "--jq",
+      "{workflow_runs: [.workflow_runs[] | {id,name,status,conclusion,head_sha,html_url,event}]}"
+    ]
+  },
+  {
+    "number": 4,
+    "at": 1794434689.1432383,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43106483365",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "number": 5,
+    "at": 1794434989.123491,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43106483365",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

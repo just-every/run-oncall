@@ -1,0 +1,190 @@
+{
+  "files": [
+    {
+      "blob": "780eeb73d29bc301dbbe9c8f8817f9313d065071",
+      "bytes": 1954,
+      "path": "PLAN.md",
+      "sha256": "def940400f60c10c6ec22bca149143f51b7a72e460f71d2a15b913ca66b4b0cf"
+    },
+    {
+      "blob": "3df41d2a92276a824b8b77f4e5f4f6ccff14b6c1",
+      "bytes": 5379,
+      "path": "REPORT.md",
+      "sha256": "12432bd593cded240c0ecfa1de6dfb2aef9c0cb567f21818d9af86bc45e02d94"
+    },
+    {
+      "blob": "4868393bbbb1ca833aceda7168c8be7c7e841706",
+      "bytes": 3175,
+      "path": "browser-receipt.json",
+      "sha256": "854b3c97595b86b13a5ccf220e1a79999512b56908650bf20368aeac6d987538"
+    },
+    {
+      "blob": "c1b8991d6dbe13fad66f2a50d121b92d5041b767",
+      "bytes": 123011,
+      "path": "browser/oc009-cover-preparation-1440.png",
+      "sha256": "45fd73994a5a7bc0ec550d2daa509fea363bd5e0dd686bd1532b0288da2bfb1a"
+    },
+    {
+      "blob": "52652e662624172abe085b31a2c75f2a41af1739",
+      "bytes": 87755,
+      "path": "browser/oc009-cover-preparation-390.png",
+      "sha256": "a9f168856cb0c278282382012079d8f6066c2ed14eebf6f35a03777515ca9114"
+    },
+    {
+      "blob": "63e641150b854b3c977932f8cbc74918f7018489",
+      "bytes": 128171,
+      "path": "browser/oc009-rota-name-1440.png",
+      "sha256": "4810a8861a3df33f4069ef977b0c06be2313bf24a5b79a60232c8c6898f82f36"
+    },
+    {
+      "blob": "85ad0094bb36d3d4e8a5a2d23b52137f6155ef62",
+      "bytes": 41019,
+      "path": "browser/oc009-rota-name-390.png",
+      "sha256": "eb284ed552705c82a687ade0fff195a714701aaf86eb14c3be9fd6b577ae991f"
+    },
+    {
+      "blob": "c8925f1a0c5dbafc7d9d347069ef94b8ea6826fc",
+      "bytes": 130435,
+      "path": "browser/refusal-cover-review-1440.png",
+      "sha256": "1447799c150c592e9aff39aed0e5d52365f84fc003afe92da32c548beb4688de"
+    },
+    {
+      "blob": "797c15c20d7e2bbeecf7fe4b5aa6704c31c75d4a",
+      "bytes": 64965,
+      "path": "browser/refusal-cover-review-390.png",
+      "sha256": "9e5f094226b5e37b5c61c7bed7a1c0472479e6a99f2539e883ab18c972b98ebc"
+    },
+    {
+      "blob": "d0850e689277be59306d520275a5c2f66d08a847",
+      "bytes": 95547,
+      "path": "browser/refusal-server-create-1440.png",
+      "sha256": "1d582fa4e07fc19daa70c041a0ac0bd1eab1d5adb70955cedd4a084d25e2cf32"
+    },
+    {
+      "blob": "492528a47dd72acbce9b68555d6cf28f5d4201e4",
+      "bytes": 67024,
+      "path": "browser/refusal-server-create-390.png",
+      "sha256": "925791c2ee114c041d9cee20bdc95240210636bb99c7f7d4ea0e153d276dcee4"
+    },
+    {
+      "blob": "48795248e4d7780161289cad9700a36b271197df",
+      "bytes": 80701,
+      "path": "browser/refusal-status-reason-1440.png",
+      "sha256": "5f53b5ff5001bbb4ce4c19b20d6bb8fff8165cb9c5482fd2cf6d9559c43fae59"
+    },
+    {
+      "blob": "0802f325141a1df674fce7e4a00435852134867e",
+      "bytes": 54126,
+      "path": "browser/refusal-status-reason-390.png",
+      "sha256": "a3c7f8d725073bf50204b7e7e478ede540335e1f46c40fe03ae2811592915f72"
+    },
+    {
+      "blob": "a4019ec8e98146fbc1f2cfde32c48a3c40b3d625",
+      "bytes": 89539,
+      "path": "browser/refusal-supporting-service-1440.png",
+      "sha256": "1f061f22b859b6dccb358e999e13a426b0382a14a687578246c105bfb8637bfd"
+    },
+    {
+      "blob": "f366b56b2c4e61ea4bacbaa78d12f06b85c1331d",
+      "bytes": 59910,
+      "path": "browser/refusal-supporting-service-390.png",
+      "sha256": "b42a9b1e1601685509a38e1a5add3ba466a168b4be3db75ee50cfb4d5c1c2223"
+    },
+    {
+      "blob": "b6f81cfc13f079d97f2c2fda05dc57c04874e610",
+      "bytes": 115007,
+      "path": "browser/refusal-swap-substitute-1440.png",
+      "sha256": "5aeda5dd6bce738364577dc676802cfe00873f7a209ecec0bd08740ee78d01b1"
+    },
+    {
+      "blob": "a14104963b706eb68c472c142eab1d2fd38b14bc",
+      "bytes": 61015,
+      "path": "browser/refusal-swap-substitute-390.png",
+      "sha256": "9b6395b45a16cc4705266616b27d48fe03e5671a38bee5697a5619ba2ba3fead"
+    },
+    {
+      "blob": "1165e0a7c817132208c67d1a9e85d31d8c88c981",
+      "bytes": 510,
+      "path": "candidate-identities.txt",
+      "sha256": "611ca8fded6b38fb8d0499c725b1e5b79156df92b61f2c7c14df1e8b612cea0a"
+    },
+    {
+      "blob": "00b8fd6e0c19d8d55ac5e33bc3a8ead1af20738c",
+      "bytes": 46,
+      "path": "ci-observation-01.json",
+      "sha256": "763f11efb3fd0695809422708bf5765dfad5d8438bfb9a7bad31f23ff74d3285"
+    },
+    {
+      "blob": "5bf473debfbb2d426b1acefbe73af9af1723de30",
+      "bytes": 318,
+      "path": "ci-observation-02.json",
+      "sha256": "a72aec9bbd4ee51440b752ac3a4cbe65e779ee5a9a2563597021f5b3e04f4aa3"
+    },
+    {
+      "blob": "c9baba0c786b57eb76652dd3db4d5fc6eb54bcbe",
+      "bytes": 188,
+      "path": "ci-observation-03.json",
+      "sha256": "d0abdaae56c6a5626020311d8b9853d75e87a692b5aa54d714cb0f17f57fb2da"
+    },
+    {
+      "blob": "f1e4eb6f1194d1dc1ac813649daa7de40df78af6",
+      "bytes": 196,
+      "path": "ci-observation-04.json",
+      "sha256": "90723c0bf28f05299c13dad3e176a2b632e4bd6c37fe393e815a9d00be4e60cd"
+    },
+    {
+      "blob": "457b3d297b98cb729bd04a045fb8fa4989f92b48",
+      "bytes": 217,
+      "path": "ci-receipt.json",
+      "sha256": "2105ba9b40d44b09f0e2c6640fd4ab67deebe46bfbdd934ab36e5cdc9adb6c80"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-check.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "9fe44f400b86067b6575eac9108621961516f98c",
+      "bytes": 1140,
+      "path": "github-calls.json",
+      "sha256": "fa39d1fc3e5fe00bc93e260a80fc9bb13f6de29eb710eaaccdab32ecebae5c8a"
+    },
+    {
+      "blob": "9557e015e394c687470cc75ebe374b118cfbf182",
+      "bytes": 53757,
+      "path": "local-results.log",
+      "sha256": "433a1bb68db6f3520142ff3cbb9e26d4754213ce13fa61551cd3cf471190dd7e"
+    },
+    {
+      "blob": "977e524b19a83ca3c0fed86c582eee547509b20c",
+      "bytes": 598,
+      "path": "merge-review.json",
+      "sha256": "0a36ff93458245cf0e7cf14a8a4956e3082080f42c8b9d3ebee84f13c28ad9fe"
+    },
+    {
+      "blob": "9edb19633afea046532edf43d385011f8ba43ed2",
+      "bytes": 1018,
+      "path": "product-push.log",
+      "sha256": "cd74df1fd2b460b8c3fc2d9c24da799ce1ac8adc2ed5cd705f2992dffa055760"
+    },
+    {
+      "blob": "63da60e1bda999d83d74b2174b12b52b0c7bcc0b",
+      "bytes": 3685,
+      "path": "receipt.json",
+      "sha256": "5cba8dd77c5c58d282f92d8b04928825c9c5c708c54407581a2228d17cf4a808"
+    },
+    {
+      "blob": "a396ce18223fd1b23267785b085f7b5cde913786",
+      "bytes": 245,
+      "path": "typecheck.log",
+      "sha256": "8da11479edc57658676f70c51dfc746af2985de99e1cb07fe2068191183e0227"
+    }
+  ],
+  "product_branch": "cloud/main-oncall-explain-refusals-1-fix1-c1",
+  "product_head": "ee708e33867764e3022d3d055b3761666bfe8cdd",
+  "ref": "refs/heads/evidence/main-oncall-explain-refusals-1-fix1-c1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "main-oncall-explain-refusals-1-fix1-c1"
+}
