@@ -605,6 +605,7 @@ async function readinessBrowser(page,context) {
 // OC-001: a sender can leave for Alerts and return to recover the same generation.
 async function eventsSourceBrowser(page,context) {
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ await page.setViewportSize({width:1440,height:1000});
  await mkdir(directory,{recursive:true});await context.grantPermissions(['clipboard-read','clipboard-write']);
  const request=async(path,data,status=200)=>{
   const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});
