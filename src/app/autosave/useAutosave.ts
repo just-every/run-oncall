@@ -9,6 +9,8 @@ export type FieldSaveState = {status: 'idle' | 'pending' | 'saved' | 'failed' | 
 export type AutosaveOptions<T, R> = {
   snapshot: SaveSnapshot<T, R>;
   storageKey?: string;
+  /** Keep successful feedback visible until this field is edited again. */
+  keepSaved?: boolean;
   read: () => Promise<SaveSnapshot<T, R>>;
   write: (change: SaveChange<T, R>, transport: {keepalive: boolean}) => Promise<SaveSnapshot<T, R>>;
   equal?: (a: unknown, b: unknown) => boolean;
@@ -56,7 +58,7 @@ export function useAutosave<T extends Record<string, any>, R = number>(options: 
     const m = model.current;
     clearTimeout(m.marks.get(key));
     m.states[key] = state;
-    if (state.status === 'saved' || state.message === 'Nothing to change') m.marks.set(key, setTimeout(() => {m.states[key] = {status: 'idle'}; repaint();}, 2000));
+    if ((state.status === 'saved' && !opts.current.keepSaved) || state.message === 'Nothing to change') m.marks.set(key, setTimeout(() => {m.states[key] = {status: 'idle'}; repaint();}, 2000));
     repaint();
   }
   async function execute(edit: Edit, keepalive: boolean) {

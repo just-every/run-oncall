@@ -488,10 +488,12 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  let state=await api('/api/state');
  let second=state.members.find(member=>member.active&&member.id!==session.member.id&&['admin','responder'].includes(member.role));
  if(!second){const response=await context.request.post(origin+'/api/members',{headers:{origin},data:{name:'Schedule colleague '+width,role:'responder',password:'synthetic-schedule-colleague-password'}});assert.equal(response.status(),201);second=await response.json();}
- const anchor=new Date(now-86400000).toISOString().slice(0,10)+'T09:00';
+ const reliefResponse=await context.request.post(origin+'/api/members',{headers:{origin},data:{name:'Rosalind Campbell '+width,role:'responder',password:'synthetic-oncall-7301-password'}});assert.equal(reliefResponse.status(),201);const relief=await reliefResponse.json();
+ const anchor=new Date(now-86400000).toISOString().slice(0,10)+'T12:00';
  // OC-020 / OC-011: both rota rows are visible together; a four-step weekly create agrees with its zero-write preview.
  const fixtures=[];
- for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(now-2*86400000).toISOString(),validUntil:null,primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[]}));
+ for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(now-2*86400000).toISOString(),validUntil:null,primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[{id:'synthetic-oncall-7302',role:'primary',start:new Date(now+2*86400000).toISOString(),end:new Date(now+2.5*86400000).toISOString(),member:relief.id}]}));
+ await rotaTimelineScreens(page,width,fixtures[0].id,relief.name);
  await page.goto(origin+'/on-call');
  const onCall=await api('/api/on-call');
  for(const fixture of fixtures){const row=page.locator('[data-rota="'+fixture.id+'"]');await row.waitFor();const coverage=onCall.rotas.find(rota=>rota.id===fixture.id);assert.ok((await row.innerText()).includes(coverage.now.primary.name));assert.ok((await row.innerText()).includes(coverage.next.primary.name));assert.ok((await row.innerText()).includes(coverage.now.backup.name));}
@@ -599,6 +601,36 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  if(!selectedOnly){await coverageRulesBrowser(page,context,width,session,{ownerLink});await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});}
  console.log(`PROBE OC-009 schedules, overrides and preview ${width}: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed`);
 }
+// The existing schedule journey carries the one phone smoke, including both timeline doors.
+export async function rotaTimelineScreens(page,width,id,compactName){
+ const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ await mkdir(directory,{recursive:true});
+ for(const [name,path] of [['overview','/on-call'],['rota','/on-call/'+id]]){
+  await page.goto(origin+path);const bands=page.locator('.oc-bands');await bands.waitFor();
+  await page.evaluate(()=>document.fonts.ready);
+  if(width===390){
+   await bands.locator('.oc-bands-list').waitFor();
+   const people=await bands.locator('li > strong,li > button').allTextContents();
+   assert.ok(people.includes(compactName),'phone timeline retains the entire cover name');
+   assert.ok(await bands.locator('li time[datetime]').count()>0,'each phone interval has dated endpoints');
+   assert.deepEqual(await bands.locator('li > strong,li > button,li time').evaluateAll(elements=>elements.filter(element=>{
+    const box=element.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(element);
+    return [...range.getClientRects()].some(rect=>rect.left<box.left-1||rect.right>box.right+1);
+   }).map(element=>element.textContent)),[],'phone names and dates wrap without clipping');
+  }else{
+   await bands.locator('.oc-band-name').first().waitFor();
+   await page.waitForFunction(()=>[...document.querySelectorAll('.oc-band [aria-label]')].some(element=>element.getAttribute('aria-label').startsWith('Rosalind Campbell')&&element.querySelector('.oc-band-name > span:last-child')?.textContent==='R'+element.getAttribute('aria-label').match(/Campbell (\d)/)?.[1]));
+   const chips=await bands.locator('.oc-band [aria-label]').evaluateAll(elements=>elements.map(element=>({label:element.getAttribute('aria-label'),text:element.querySelector('.oc-band-name > span:last-child').textContent,clipped:element.querySelector('.oc-band-name > span:last-child').getBoundingClientRect().width>element.querySelector('.oc-band-name').clientWidth+1})));
+   assert.ok(chips.some(chip=>chip.label.startsWith(compactName)&&chip.text!==compactName),'short cover slices use initials');
+   for(const chip of chips){assert.equal(chip.clipped,false,'a timeline name or its initials fits the chip');assert.match(chip.label,/GMT[+-]\d/,'accessible shift label includes the zoned endpoint times');}
+   const scroll=await bands.locator('.oc-bands-scroll').evaluate(element=>element.scrollWidth>element.clientWidth);
+   if(scroll)assert.equal(await bands.locator('.oc-band-scroll-hint').isVisible(),true,'scrolling timeline advertises more dates');
+  }
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'timeline keeps the page within its viewport');
+  await bands.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/rota-timeline-${name}-${width}.png`,fullPage:true});
+ }
+}
+
 // Pair the next nearby offset changes from the zones themselves, beyond tomorrow.
 export function scheduleReviewWindow(now) {
  const hour=3600000,day=24*hour,zones=['Europe/London','America/New_York']

@@ -1417,6 +1417,26 @@ try {
   assert.match(demoDocument, /<style\b[^>]*data-rer-label="Demo"[^>]*>[^<]*content:\s*" Demo"/i, 'emitted HTML visibly decorates the product as Demo')
   assert.match(demoDocument, /<title\b[^>]*>[^<]*\bDemo<\/title>/i, 'the emitted page title identifies the simulation')
   assert.equal(ok(await req('/api/workspace')).demo, true, 'workspace identifies the simulated channel results as demo outcomes')
+  const schedules = ok(await req('/api/paging/state')).schedules;
+  const current = ok(await req('/api/on-call'));
+  for (const schedule of schedules) {
+    const rota = current.rotas.find(row => row.id === schedule.id);
+    const clock = new Intl.DateTimeFormat('en-GB', { timeZone: schedule.timezone, weekday: 'long', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+    const assertBoundary = at => {
+      const parts = Object.fromEntries(clock.formatToParts(Date.parse(at)).map(part => [part.type,part.value]));
+      assert.equal(parts.weekday, rota.rhythm.weekday, 'demo cover and hand-over use the stated weekday');
+      assert.equal(parts.hour+':'+parts.minute, rota.rhythm.time, 'demo cover and hand-over use the stated local minute');
+    };
+    assert.ok(rota.next, 'demo rota has an upcoming hand-over');assertBoundary(rota.next.at);
+    for(const cover of schedule.overrides){assertBoundary(cover.start);assertBoundary(cover.end);}
+    // Inspect actual now/next through the same HTTP door at both DST seasons.
+    for(const date of ['03-06','03-14','10-24','11-07']){
+      const year=new Date(current.at).getUTCFullYear()+1, at=`${year}-${date}T12:00:00.000Z`;
+      const future=ok(await req('/api/on-call?at='+encodeURIComponent(at))).rotas.find(row=>row.id===schedule.id);
+      if(Date.parse(at)>Date.parse(schedule.validFrom))assertBoundary(future.next.at);
+    }
+  }
+  console.log('PASS demoRotaRules: HTTP On call next hand-overs and sample cover endpoints agree with every stated local weekly rule');
   const state = ok(await req('/api/state'))
   const incident = state.incidents.find(item => item.state !== 'resolved')
   ok(await req('/api/command', { type: 'transition', incident: incident.id, revision: incident.revision,

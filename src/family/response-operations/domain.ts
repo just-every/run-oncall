@@ -679,7 +679,9 @@ function applyCommand(
   if (reviewResult !== null) {
     incident.revision++;
     const accepted = input.type === 'review' && input.accept === true ? incident.reviewAcceptance : null;
-    incident.timeline.push({...stamp(actor.id, input.type, reviewResult, at), ...(accepted ? {review:{rootCause:accepted.rootCause,impact:accepted.impact,review:incident.review,materialRevision:accepted.materialRevision,workspaceRevision:accepted.workspaceRevision}} : {})});
+    // Drafts retain their revision and permanent audit, while the incident
+    // timeline records the explicit human acceptance of a review.
+    if (input.type !== 'review' || accepted) incident.timeline.push({...stamp(actor.id, input.type, reviewResult, at), ...(accepted ? {review:{rootCause:accepted.rootCause,impact:accepted.impact,review:incident.review,materialRevision:accepted.materialRevision,workspaceRevision:accepted.workspaceRevision}} : {})});
     return incident;
   }
   let lifecycle: Entry['lifecycle'];

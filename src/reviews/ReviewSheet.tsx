@@ -16,7 +16,7 @@ export function ReviewSheet({incident,state,canEdit,command,onOpenIncident,onSav
   const [latest,setLatest]=useState(incident),[material,setMaterial]=useState<Material|null>(null),[confirm,setConfirm]=useState(false),[accepting,setAccepting]=useState(false),[menu,setMenu]=useState(false);
   const current=latest.revision>incident.revision?latest:incident;
   const snapshot=(i:Incident)=>({values:{text:i.review,rootCause:i.rootCause??i.reviewAcceptance?.rootCause??'',impact:i.impact??i.reviewAcceptance?.impact??''},revision:i.revision});
-  const save=useAutosave({storageKey:'review:'+draftScope+':'+incident.id,snapshot:snapshot(current),read:async()=>{const state:State=await request('/api/state');return snapshot(state.incidents.find(i=>i.id===incident.id)!);},write:async change=>{
+  const save=useAutosave({keepSaved:true,storageKey:'review:'+draftScope+':'+incident.id,snapshot:snapshot(current),read:async()=>{const state:State=await request('/api/state');return snapshot(state.incidents.find(i=>i.id===incident.id)!);},write:async change=>{
     const result:Incident=await autosaveRequest('/api/command',{type:'review',incident:incident.id,revision:change.revision,field:change.field==='text'?'review':change.field,to:change.to});setLatest(result);onSaved?.(result);return snapshot(result);
   }});
   const close=()=>{void leaveAfterSaving(()=>{void navigate({to:'/reviews',resetScroll:false} as any);});};
