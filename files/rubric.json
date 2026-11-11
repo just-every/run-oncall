@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "clause": "OC-017",
+  "scope": "Frozen native clause rubric; external provider acceptance is not claimed.",
+  "rows": [
+    {
+      "id": "A1",
+      "kind": "Acceptance 1",
+      "item": "Prepare, review, inspect and export exact copy; change source or revision, withdraw, restore versions 1 and 2 and race writes.",
+      "evidence": "tests/activation.mjs:1014-1166; tests/checkpoint-cli.mjs:149-211",
+      "door": "Protected HTTP and real private CLI",
+      "status": "PASS",
+      "run_head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "local_receipt": "candidate-journey.json"
+    },
+    {
+      "id": "A2",
+      "kind": "Acceptance 2",
+      "item": "Eligibility and holds, stable identities, append-only attribution, every storage bound, no send authority.",
+      "evidence": "tests/activation.mjs:1050-1150; tests/checkpoint-cli.mjs:105-119,143-211",
+      "door": "Protected HTTP, restored-state readback and CLI",
+      "status": "PASS",
+      "run_head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "local_receipt": "candidate-journey.json"
+    },
+    {
+      "id": "D1",
+      "kind": "Retained requirement",
+      "item": "Explicit audience, immutable payload and incident and service snapshots, canonical hashes.",
+      "evidence": "tests/activation.mjs:1025-1067; tests/checkpoint-cli.mjs:49-55,105-119,149-170",
+      "door": "Prepare, review, export and tampered checkpoint refusal",
+      "status": "PASS",
+      "run_head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "local_receipt": "candidate-journey.json"
+    },
+    {
+      "id": "D2",
+      "kind": "Retained requirement",
+      "item": "Current responder and administrator mutation authority; viewer inspection; administrator restore.",
+      "evidence": "tests/activation.mjs:1015-1018,1051-1062,1099,1130; tests/checkpoint-cli.mjs:163",
+      "door": "Current-role HTTP doors",
+      "status": "PASS",
+      "run_head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "local_receipt": "candidate-journey.json"
+    },
+    {
+      "id": "D3",
+      "kind": "Retained requirement",
+      "item": "Exact review never conveys independent-review, recovery, sending or publication authority.",
+      "evidence": "tests/activation.mjs:1060-1069,1080-1082,1118-1125; src/family/response-operations/handoffs.ts:296-309",
+      "door": "Self-review marker, unsent export, empty outbound ledger, held refusal",
+      "status": "PASS",
+      "run_head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "local_receipt": "candidate-journey.json"
+    },
+    {
+      "id": "D4",
+      "kind": "Retained requirement",
+      "item": "Terminal withdrawal retains attributed append-only history; legacy unreviewed envelope stays unchanged.",
+      "evidence": "tests/activation.mjs:1026-1028,1069,1087-1089,1120,1135",
+      "door": "Review, legacy export, withdrawal and restored record readback",
+      "status": "PASS",
+      "run_head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "local_receipt": "candidate-journey.json"
+    },
+    {
+      "id": "D5",
+      "kind": "Retained requirement",
+      "item": "All storage bounds preserve prior state on refusal.",
+      "evidence": "tests/activation.mjs:1131-1150",
+      "door": "65-record archive refusal, history and byte-bound reviews, aggregate restore refusal",
+      "status": "PASS",
+      "run_head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "local_receipt": "candidate-journey.json"
+    },
+    {
+      "id": "D6",
+      "kind": "Inherited recovery safeguard named in requirement",
+      "item": "Atomic snapshots, current password mapping, earlier-session revocation and winning-session protection.",
+      "evidence": "tests/activation.mjs:1092-1128,1156-1164; tests/checkpoint-cli.mjs:149-211",
+      "door": "Checkpoint capture, injected SQL failure, competing restore, fresh-target mapping and CLI restore",
+      "status": "PASS",
+      "run_head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "local_receipt": "candidate-journey.json"
+    },
+    {
+      "id": "D7",
+      "kind": "Inherited recovery safeguard named in requirement",
+      "item": "Erased subject or replayed old capture cannot resurrect records or authority.",
+      "evidence": "tests/activation.mjs:1246-1250,1364-1365; tests/checkpoint-cli.mjs:216-228",
+      "door": "Erase, stale archive restore refusal, CLI erasure fence and revoked-session reads",
+      "status": "PASS",
+      "run_head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "local_receipt": "candidate-journey.json"
+    }
+  ]
+}

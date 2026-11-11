@@ -1,0 +1,13 @@
+{
+  "run": {
+    "conclusion": null,
+    "head_sha": "4451720a3e353d18218c03cbd0d75c180e322403",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43099362981",
+    "status": "in_progress",
+    "id": 43099362981,
+    "name": "Verify",
+    "event": "push"
+  },
+  "recorded_at": "2026-11-11T21:11:35.902380+00:00",
+  "gh_call": 4
+}

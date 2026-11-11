@@ -1,0 +1,18 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f222",
+  "head": "4451720a3e353d18218c03cbd0d75c180e322403",
+  "base": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "changed_files": [
+    "HANDOFF-STAGE.md",
+    "sources.lock.json"
+  ],
+  "product_push": {
+    "status": "success",
+    "attempt": 1,
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f222"
+  },
+  "created_at": "2026-11-11T21:00:59.915074+00:00",
+  "api_calls": 4,
+  "last_ci_query_at": 1794431495.9016705
+}

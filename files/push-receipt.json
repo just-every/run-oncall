@@ -1,0 +1,17 @@
+{
+  "candidate": "4451720a3e353d18218c03cbd0d75c180e322403",
+  "all_candidate_commits_including_side_parents": [
+    {
+      "head": "4451720a3e353d18218c03cbd0d75c180e322403",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "trailers": "",
+      "message": "docs: map reviewed handoff acceptance to maintained public-door proof\n"
+    }
+  ],
+  "remote_ref": "4451720a3e353d18218c03cbd0d75c180e322403\trefs/heads/cloud/sd-oncall-c-f222",
+  "full_history": true,
+  "identity_and_trailer_check": "pass"
+}

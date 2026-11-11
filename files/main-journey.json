@@ -1,0 +1,18 @@
+{
+  "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "command": "ONCALL_VERIFY_LANE=changes timeout 1200 npx -y @runeditrun/rer verify",
+  "exit": 0,
+  "log": "main-changes.log",
+  "log_sha256": "a0320834c135ea7bff9d68f44b6ee4e29507e95668edd54eb62359fa99b58705",
+  "completed_at": "2026-11-11T21:00:13.063368+00:00",
+  "activation_groups": 40,
+  "agent_conformance": {
+    "passed": 7780,
+    "total": 7780
+  },
+  "hydration": {
+    "pages": 4,
+    "loads": 23
+  },
+  "source_and_tests_unchanged": true
+}

@@ -1,0 +1,17 @@
+{
+  "commit": "4451720a3e353d18218c03cbd0d75c180e322403",
+  "main_equals_candidate": false,
+  "main_observed_before_push": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "publication_scan": {
+    "commit": "4451720a3e353d18218c03cbd0d75c180e322403",
+    "complete": false,
+    "historyScanned": false,
+    "findings": null,
+    "reason": "Cloud branch push does not require the cloud-side scanner. Guarded Mac lander must scan the exact full-history candidate before landing."
+  },
+  "candidate_run_site": {
+    "status": "not_run",
+    "reason": "Main-only workflow; main is never pushed by this cloud task."
+  },
+  "contract_judgments": "Unchanged; lander owns OC-017 Status, Gap and Evidence."
+}

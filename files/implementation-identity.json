@@ -1,0 +1,53 @@
+{
+  "base": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "files": [
+    {
+      "path": "src/handoff-api.ts",
+      "sha256": "a9807a15e50c9f3535c56a8de2f52628107fb164f317f71085def728afe180a1",
+      "equals_main": true
+    },
+    {
+      "path": "src/family/response-operations/handoffs.ts",
+      "sha256": "a8cf00e386e211f257f6afe0a3fdfff59f888bc7703e4c6376e2316d2f6346af",
+      "equals_main": true
+    },
+    {
+      "path": "src/family/response-operations/recovery-v2.ts",
+      "sha256": "7eb58fc4de8922fc22c91319961997603a4b0c7953a4c1a35de81079294b8676",
+      "equals_main": true
+    },
+    {
+      "path": "src/handoff-store.ts",
+      "sha256": "bff287b985d599d601aa4508aee1f2715277a410a3b699ed52c2ed837406e7f2",
+      "equals_main": true
+    },
+    {
+      "path": "tests/activation.mjs",
+      "sha256": "b71b38c99ebfce4ea2386e7b46442a919e4892627a610fff86878d5f1b600d42",
+      "equals_main": true
+    },
+    {
+      "path": "tests/checkpoint-cli.mjs",
+      "sha256": "3c3d13506a3ccae21846a86d8847cd7e97336b90817595ac53cb7c8badfb0c12",
+      "equals_main": true
+    },
+    {
+      "path": "tests/worker.mjs",
+      "sha256": "35232262cbaeda53598b6e4d35b5145a1e38740503d08bdf4ebe7e5f58ca6c7e",
+      "equals_main": true
+    },
+    {
+      "path": "tests/worker-server.mjs",
+      "sha256": "9f0e31fb2060544caa2fd7a5133b8ed9200224fd16072feeda8dbcca9136a604",
+      "equals_main": true
+    },
+    {
+      "path": "tests/changes.mjs",
+      "sha256": "e651180d5688ef657b850c8c594ea75eb0093c94f5491b16ecc54f08134b19a5",
+      "equals_main": true
+    }
+  ],
+  "all_equal": true,
+  "candidate": "4451720a3e353d18218c03cbd0d75c180e322403",
+  "candidate_matches_round_main_proof": true
+}

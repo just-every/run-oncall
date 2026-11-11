@@ -1,0 +1,22 @@
+{
+  "head": "4451720a3e353d18218c03cbd0d75c180e322403",
+  "command": "ONCALL_VERIFY_LANE=changes timeout 1200 npx -y @runeditrun/rer verify",
+  "exit": 0,
+  "log": "candidate-changes.log",
+  "log_sha256": "9a948ab6a3d746ae681f12393a95517ec559c11198745f650a51087e9e9f6f9d",
+  "completed_at": "2026-11-11T21:11:34.943341+00:00",
+  "chromium_executable": "/usr/bin/chromium",
+  "chromium_args": [
+    "--no-sandbox"
+  ],
+  "browser_launcher_preload": "Outside-product runner forces system Chromium; no assertion or application behavior is altered.",
+  "activation_groups": 40,
+  "agent_conformance": {
+    "passed": 7780,
+    "total": 7780
+  },
+  "hydration": {
+    "pages": 4,
+    "loads": 23
+  }
+}
