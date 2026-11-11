@@ -87,7 +87,7 @@
         "package.json",
         "scripts/installer/local.mjs"
       ],
-      "effects": "Deploy incident coordination to your own Cloudflare account, claim the configured owner and retire its one-time setup token. Requires Cloudflare credentials and configured remote sign-in mail. Paging stays OFF; keep your existing pager active. --remove --yes deletes owned resources and reads back their absence. --site publishes the separate Run site. --dry-run builds and validates locally, then reads target secret bindings with Cloudflare credentials, without provider writes. --site --dry-run builds the separate Run site with no provider request."
+      "effects": "Deploy incident coordination to your own Cloudflare account, claim the configured owner and retire its one-time setup token. Requires Cloudflare credentials and configured remote sign-in mail. Paging stays OFF; keep your existing pager active. --remove --yes deletes owned resources and reads back their absence. --site publishes the separate Run site. --dry-run builds and validates a local plan without credentials or Cloudflare requests and changes nothing remotely. It does not check target secrets, deployment permissions, remote readiness or mail delivery. --site --dry-run builds the separate Run site with no provider request."
     },
     "export": {
       "argv": [
