@@ -4,7 +4,11 @@ Start Oncall from nothing with
 `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-oncall`
 (Git is required; rer brings Node and pnpm. Already have Node 22 or later?
 `npx -y @runeditrun/rer dev just-every/run-oncall` does the same; to set up only,
-use `setup` in place of `dev`).
+use `setup` in place of `dev`). After the installer script, a terminal without
+`~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` before a bare
+`rer dev`, or it says `rer: command not found` (add that line to your shell
+startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows the line for
+your shell).
 `rer` runs every verb with the checkout's exact `@runeditrun/rer` package pin.
 The `OPERATIONS.json` argv and `package.json` aliases name `rer VERB`.
 
