@@ -1652,7 +1652,7 @@
       "executable": false
     },
     "scripts/verify-shards.json": {
-      "sha256": "abc6f54c6b7c988a3b21c7fa3f6320224f2134f01b70ce4654082f3a378c5561",
+      "sha256": "0da46383e22f0e279768c49792fda5f5321a75014d126d1b5866f67b5866335b",
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
@@ -1692,7 +1692,7 @@
       "executable": false
     },
     "src/agent-door/erasure.ts": {
-      "sha256": "817d9313af82e12b53272f68825824a1545162affde8a30e05f8af18b318d1f5",
+      "sha256": "156023a4ea7c9a5c64525b34e24108626e4433f331576c442e21890926ab5c62",
       "executable": false
     },
     "src/agent-door/index.server.ts": {
@@ -6521,6 +6521,10 @@
     },
     "tests/oncall-agent-erase-replay.mjs": {
       "sha256": "3009d353b76e7866568e531e1469bfe017338e4378488be187f14e430f3898d5",
+      "executable": false
+    },
+    "tests/oncall-agent-erase-subjects.mjs": {
+      "sha256": "4413d0d00c5046bada0d545aa5b5bf168f6e3b20b766e898232fb243f3389f35",
       "executable": false
     },
     "tests/oncall-agent-fixtures.mjs": {

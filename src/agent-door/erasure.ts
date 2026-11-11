@@ -1,24 +1,53 @@
 import { agentErasureStatements, type AgentArtifactMap } from '../modules/agent-door/index.ts'
 
 // Adapted from default-seed/src/agent-door/erasure.ts at Base
-// 8b925fa5ffaa577df9f2e4ebab6ede8af5155baa to Oncall's native subjects.
-// Native ids and exact email addresses select linked custody. Display names
+// 8b925fa5ffaa577df9f2e4ebab6ede8af5155baa to Oncall's native subjects, with
+// the bounded text matcher of Base 1943bd59. Native ids and exact email
+// addresses select linked custody only as whole tokens: erasing al@example.com
+// never selects sal@example.com, nor id u1 the record of u10. Display names
 // use token boundaries, so a short name cannot erase an unrelated peer.
 export type AgentSubjectValue = string | { name: string }
-const mentions = (table: string, columns: string[]) => `EXISTS(SELECT 1 FROM json_each(?1) subject WHERE ` + columns.map(name => {
-  const column = `${table}.${name}`
-  return `(subject.type='text' AND instr(CAST(${column} AS TEXT),subject.value)>0) OR
-    (subject.type='object' AND EXISTS(
+const textValue = 'CAST(subject.value AS TEXT)'
+const strictTokenCharacter = "'[A-Za-z0-9_@.+/:-]'"
+const separatorTokenCharacter = "'[A-Za-z0-9_@.+-]'"
+const minimumSeparatorLength = 8
+// Short identifiers preserve URI/version tokens; longer ids and emails can
+// occur in path segments. A period delimits a sentence when its outward
+// neighbor is not an identifier character.
+const tokenCharacter = `CASE WHEN length(${textValue})<${minimumSeparatorLength} AND instr(${textValue},'@')=0 THEN ${strictTokenCharacter} ELSE ${separatorTokenCharacter} END`
+const textBoundary = (position: string, outward: number) => {
+  const char = `substr(text,${position},1)`, next = `substr(text,(${position})+(${outward}),1)`
+  return `(${char} NOT GLOB token OR (${char}='.' AND ${next} NOT GLOB token))`
+}
+// Search decoded string values, never JSON keys or numbers. A bounded
+// occurrence can follow an embedded one in the same string, so every literal
+// hit is checked. One search spans all of a table's columns, which keeps the
+// expression shallow enough for D1's depth limit.
+const cells = (table: string, columns: string[]) => columns.map(name => `SELECT ${table}.${name} AS cell`).join(' UNION ALL ')
+const decoded = 'json_tree(CASE WHEN json_valid(cells.cell) THEN cells.cell ELSE json_quote(cells.cell) END) content'
+const textMention = (table: string, columns: string[]) => `(${textValue} IN (${columns.map(name => `CAST(${table}.${name} AS TEXT)`).join(',')}) OR EXISTS(
+      WITH RECURSIVE hits(text,source,pos,token) AS (
+        SELECT content.value,${textValue},instr(content.value,${textValue}),(${tokenCharacter})
+        FROM (${cells(table, columns)}) cells, ${decoded}
+        WHERE content.type='text' AND instr(content.value,${textValue})>0
+        UNION ALL SELECT text,source,pos+instr(substr(text,pos+1),source),token FROM hits
+          WHERE pos>0 AND instr(substr(text,pos+1),source)>0
+      ) SELECT 1 FROM hits WHERE pos>0
+        AND ${textBoundary('pos-1', -1)}
+        AND ${textBoundary('pos+length(source)', 1)}
+    ))`
+const nameMention = (table: string, columns: string[]) => `EXISTS(
       WITH RECURSIVE hits(text,source,pos) AS (
         SELECT content.value,json_extract(subject.value,'$.name'),instr(content.value,json_extract(subject.value,'$.name'))
-        FROM json_tree(CASE WHEN json_valid(${column}) THEN ${column} ELSE json_quote(${column}) END) content WHERE content.type='text'
+        FROM (${cells(table, columns)}) cells, ${decoded} WHERE content.type='text'
         UNION ALL SELECT text,source,pos+instr(substr(text,pos+1),source) FROM hits
           WHERE pos>0 AND instr(substr(text,pos+1),source)>0
       ) SELECT 1 FROM hits WHERE pos>0
         AND (pos=1 OR substr(text,pos-1,1) NOT GLOB '[A-Za-z0-9_@/+-]')
         AND (pos+length(source)>length(text) OR substr(text,pos+length(source),1) NOT GLOB '[A-Za-z0-9_@/+-]')
-    ))`
-}).join(' OR ') + ')'
+    )`
+const mentions = (table: string, columns: string[]) => `EXISTS(SELECT 1 FROM json_each(?1) subject WHERE
+    (subject.type='text' AND ${textMention(table, columns)}) OR (subject.type='object' AND ${nameMention(table, columns)}))`
 const calls = mentions('agent_door_calls', ['key','outcome'])
 const approvals = mentions('agent_door_approvals', ['saved','approvals','result'])
 const reviews = mentions('agent_door_reviews', ['saved','marked_by'])
