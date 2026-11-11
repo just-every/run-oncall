@@ -1,0 +1,129 @@
+{
+  "head": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "screens": [
+    {
+      "file": "browser/agent-door-manual-page-pending-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 63296
+    },
+    {
+      "file": "browser/agent-door-manual-page-pending-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 52998
+    },
+    {
+      "file": "browser/agent-door-manual-page-executed-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 61882
+    },
+    {
+      "file": "browser/agent-door-manual-page-executed-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 51480
+    },
+    {
+      "file": "browser/agent-door-manual-page-timeline-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 172079
+    },
+    {
+      "file": "browser/agent-door-manual-page-timeline-390.png",
+      "width": 390,
+      "height": 1291,
+      "bytes": 88911
+    },
+    {
+      "file": "browser/agent-door-deadline-snooze-pending-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 73751
+    },
+    {
+      "file": "browser/agent-door-deadline-snooze-pending-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 63296
+    },
+    {
+      "file": "browser/agent-door-deadline-snooze-executed-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 45999
+    },
+    {
+      "file": "browser/agent-door-deadline-snooze-executed-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 37994
+    },
+    {
+      "file": "browser/agent-door-deadline-cancel-deadline-pending-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 72958
+    },
+    {
+      "file": "browser/agent-door-deadline-cancel-deadline-pending-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 63376
+    },
+    {
+      "file": "browser/agent-door-deadline-cancel-deadline-executed-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 45109
+    },
+    {
+      "file": "browser/agent-door-deadline-cancel-deadline-executed-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 37982
+    },
+    {
+      "file": "browser/agent-door-deadline-expire-deadline-pending-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 80465
+    },
+    {
+      "file": "browser/agent-door-deadline-expire-deadline-pending-390.png",
+      "width": 390,
+      "height": 1011,
+      "bytes": 70290
+    },
+    {
+      "file": "browser/agent-door-deadline-expire-deadline-executed-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 52655
+    },
+    {
+      "file": "browser/agent-door-deadline-expire-deadline-executed-390.png",
+      "width": 390,
+      "height": 1000,
+      "bytes": 44715
+    },
+    {
+      "file": "browser/agent-door-guide-1440.png",
+      "width": 1440,
+      "height": 11107,
+      "bytes": 4593421
+    },
+    {
+      "file": "browser/agent-door-guide-390.png",
+      "width": 390,
+      "height": 14325,
+      "bytes": 2410491
+    }
+  ],
+  "manual_visual_inspection": [
+    "manual-page-pending at 1440 and 390",
+    "deadline-expire-deadline-pending at 1440 and 390"
+  ]
+}

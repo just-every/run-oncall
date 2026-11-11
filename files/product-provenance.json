@@ -1,0 +1,29 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f227",
+  "head": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "remote_head": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "tree": "f52cfa6330222dde077de4ba36216ff58b7e0c9c",
+  "main_at_push": "2743e71f76044322080b1b136b9dce82c4793915",
+  "candidate_commits": [
+    "4fed382945f688afdcceb15ae9df976135cdbb1e Prove live incident updates across approval and replay custody",
+    "41b1448eb4c71b1c3cab774e01e32092ba200db6 Classify recorded incident paging changes as live [skip ci]"
+  ],
+  "all_candidate_authors_and_committers_fleet": true,
+  "trailers": [],
+  "changed_files": [
+    "CONTRACT.md",
+    "agent-surface.json",
+    "docs/agents.md",
+    "sources.lock.json",
+    "src/agent-door/coordination-tools.ts",
+    "src/agent-door/deadlines.ts",
+    "src/manual-pages/model.ts",
+    "tests/agent-door-browser.mjs",
+    "tests/oncall-agent-fixtures.mjs",
+    "tests/oncall-agent-flow.mjs",
+    "tests/oncall-agent-live.mjs"
+  ],
+  "generated_contract_views_committed": false,
+  "product_checkout_clean": true
+}

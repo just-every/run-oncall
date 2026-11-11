@@ -1,0 +1,214 @@
+{
+  "files": [
+    {
+      "blob": "da237e0faa0b224b3db3249012bb23fa1962f4c8",
+      "bytes": 4409,
+      "path": "PROBES.txt",
+      "sha256": "01089838f24677f075b59143d9cce460b8704be21ebc7cf6ba85cb743524a03b"
+    },
+    {
+      "blob": "bf4988733ecbf440d2a8ab494c7c2236dfcd3ada",
+      "bytes": 16938,
+      "path": "REPORT.md",
+      "sha256": "a447831c185647234c9bd098973e67cfbed9182f6202f0ca2fc6af9271a09408"
+    },
+    {
+      "blob": "27fb177af54b3264fd8f946f0ad0d20723ba36ea",
+      "bytes": 3649,
+      "path": "audit-pagination-fixed.log",
+      "sha256": "5590ebb57a294ce7041b488406bf711006a0dc12507fb8ab2863d3c4ef850b72"
+    },
+    {
+      "blob": "65804f85255cba9167f44e5175e9ca15159a4aa6",
+      "bytes": 812,
+      "path": "audit-pagination-reproduction.log",
+      "sha256": "0c67b30e9111379ae3cbc93f54c3d2fc721df0633582a0244a972d50c68e6c39"
+    },
+    {
+      "blob": "1d11701d00eb6eb34b18c6503197d80ef3e6d771",
+      "bytes": 27870,
+      "path": "browser.log",
+      "sha256": "0fc802801be6d7c305bfcca384e676b41be81bba561e334c07f037027c5d385b"
+    },
+    {
+      "blob": "fe26aabd5cbdd2d480102daedc0170c655c8fe9a",
+      "bytes": 45109,
+      "path": "browser/agent-door-deadline-cancel-deadline-executed-1440.png",
+      "sha256": "d1f18fa334a2182d80bcda16014e6a971acd8b408e0bd6150b7506ade5a75991"
+    },
+    {
+      "blob": "ba0a3d15f28ecf8da22d5a9b943b01d8ade75474",
+      "bytes": 37982,
+      "path": "browser/agent-door-deadline-cancel-deadline-executed-390.png",
+      "sha256": "5ea397604adf8dc0ac6e369bd03e61d447eb6cc2ea379b50c99ca106d1677705"
+    },
+    {
+      "blob": "276a0d93772aea51db00347933109573de16487e",
+      "bytes": 72958,
+      "path": "browser/agent-door-deadline-cancel-deadline-pending-1440.png",
+      "sha256": "e7d8ee9a4717dfa0a9a2d73d4c17f09b793a5af8cc06f2fd87e70d44cf73211e"
+    },
+    {
+      "blob": "dd702f7483b45a420f25bbc71dc84c868d4a4cff",
+      "bytes": 63376,
+      "path": "browser/agent-door-deadline-cancel-deadline-pending-390.png",
+      "sha256": "03e1378032c6f3b3eab1fc928ab9dd496aae6a87275de9f3c643f1b5817b93d0"
+    },
+    {
+      "blob": "ce7d6c8210ee080ad2734df8b3fa10bf3ebd1975",
+      "bytes": 52655,
+      "path": "browser/agent-door-deadline-expire-deadline-executed-1440.png",
+      "sha256": "77d0603c3528b3526a0f8fa8fd58fb517990632049244d234744b728dce2ea73"
+    },
+    {
+      "blob": "f9c0a9a6cd95b8b5a59554a1794330c9b8cdc3f2",
+      "bytes": 44715,
+      "path": "browser/agent-door-deadline-expire-deadline-executed-390.png",
+      "sha256": "729f4a0373f565e191867682b87e266810a26662d48122a527806f110726917c"
+    },
+    {
+      "blob": "d2b82e199cea8d0c5e5311a435e6c82c5a712fb2",
+      "bytes": 80465,
+      "path": "browser/agent-door-deadline-expire-deadline-pending-1440.png",
+      "sha256": "5a747b31c9f36d524765e77898bda4fbf567fef41f890baa6e8b62cd4e4a3e33"
+    },
+    {
+      "blob": "c2ea99f69939a6b409e7081da8b4ceb788930ed3",
+      "bytes": 70290,
+      "path": "browser/agent-door-deadline-expire-deadline-pending-390.png",
+      "sha256": "ff53f11d4cc9920065d269c11182bed57b44a3d86cdfaa6431c13159f17b86b7"
+    },
+    {
+      "blob": "cd67acdf2e93a0e8ccd352ff8bd4d9a9a1f8847f",
+      "bytes": 45999,
+      "path": "browser/agent-door-deadline-snooze-executed-1440.png",
+      "sha256": "6fbf2119720d4be4c23d3843d11c76fd619dcfba4e9e3a69a40841a8cdf56b32"
+    },
+    {
+      "blob": "672f8b0c9c26897f08045eef7dbb9ccfb7df5f1b",
+      "bytes": 37994,
+      "path": "browser/agent-door-deadline-snooze-executed-390.png",
+      "sha256": "9069d286d1327d1a9cb8209b45553c2b891b83b3b452f227c3e9363aad288e5a"
+    },
+    {
+      "blob": "65d0aecc5aa732012fa7030055b70174bc563983",
+      "bytes": 73751,
+      "path": "browser/agent-door-deadline-snooze-pending-1440.png",
+      "sha256": "40d995f964d31aec3d66d27917ce3522afdfc436ea2ffeb4bfcb4bb424bbf005"
+    },
+    {
+      "blob": "b35b63b21db35442e8faf8953e16cfac625a103c",
+      "bytes": 63296,
+      "path": "browser/agent-door-deadline-snooze-pending-390.png",
+      "sha256": "83b395cbe649478de84340af037fd6f5d09ea3aeb9e9f03ea0c5fc9392673417"
+    },
+    {
+      "blob": "49eeab023b6d42cc043f2f329903b62576e18468",
+      "bytes": 4593421,
+      "path": "browser/agent-door-guide-1440.png",
+      "sha256": "1367c1c423fee9e5d47f959b065edba2fb91ae8f700cec71d3a77437d2ef957e"
+    },
+    {
+      "blob": "43a7900a8a454a3fab6b489a8d38ff0951b9e1da",
+      "bytes": 2410491,
+      "path": "browser/agent-door-guide-390.png",
+      "sha256": "52c41fea6cf1606a210cdd581615234d4a2e54ccf20bd30e4fbcc8f31d2d7f84"
+    },
+    {
+      "blob": "d4c0674c0b22659da41ca4204d4c0b30697f40f5",
+      "bytes": 61882,
+      "path": "browser/agent-door-manual-page-executed-1440.png",
+      "sha256": "5950043315f1b22dee52174c20ec5ff84ed8aa45ba7b2bf9a9aab69231af13bf"
+    },
+    {
+      "blob": "0c6079fdb65f64448d888dd023fa2c272d3acbb8",
+      "bytes": 51480,
+      "path": "browser/agent-door-manual-page-executed-390.png",
+      "sha256": "03c8b0c566edf39df4c31ce09fb6b1e59af44c5520a743ff20b97b57c08c2c3b"
+    },
+    {
+      "blob": "46aedbd999d80af3f52646e62c5db9a599fab8e2",
+      "bytes": 63296,
+      "path": "browser/agent-door-manual-page-pending-1440.png",
+      "sha256": "d471f31b6dfb5cd7a72d99ad93511b71adc5902af57eb22665de517f2e85e144"
+    },
+    {
+      "blob": "3a44de3dca446135feb873e22fdada4259242323",
+      "bytes": 52998,
+      "path": "browser/agent-door-manual-page-pending-390.png",
+      "sha256": "0e31428a705f20e71e2266a24e3f330530041f8940496b0dec18a02dca62782a"
+    },
+    {
+      "blob": "d99c58c5503ea8e28b7a4efbbbcf3b6ec549d34f",
+      "bytes": 172079,
+      "path": "browser/agent-door-manual-page-timeline-1440.png",
+      "sha256": "11dd82699bfa53d6b7ada55c7069027dabefa21bfc9db67fccf362615007f984"
+    },
+    {
+      "blob": "3f9da7c09c7fcec75bbc2b01ed6e28757bc75425",
+      "bytes": 88911,
+      "path": "browser/agent-door-manual-page-timeline-390.png",
+      "sha256": "c4bb05aa335b5307e397cfb6a40327f28444e8cf3adb0c995ac16f7563abd696"
+    },
+    {
+      "blob": "a6b4970bb7b543d512a6650667e521a591df07ca",
+      "bytes": 51,
+      "path": "build-receipt.json",
+      "sha256": "f3ca744c9da1ca7381b909cb5c01e08a70b2c7c2061ba8e77a0e1814cf8d6b21"
+    },
+    {
+      "blob": "3fbe266f201acce2be1f8c4f3696545a5d96e753",
+      "bytes": 256,
+      "path": "candidate-ci.json",
+      "sha256": "ee44343b1001d32c402186e8c993837d516f54793ce6536917b68bbe418c88a9"
+    },
+    {
+      "blob": "1eb946e198ff2eb1e6201dcd3c70a4c76d53c24d",
+      "bytes": 4094,
+      "path": "checks.json",
+      "sha256": "095e7cc475c1564a944fce5577a8fda54a6d828042b3ed80934b982037727de5"
+    },
+    {
+      "blob": "0e3b857c351dd37a8c480f176f35767c78da7a0d",
+      "bytes": 190760,
+      "path": "initial-verification-failure.log",
+      "sha256": "5b215776cce136301416d29641a091574ab61d2d39ad291bf2d371cc542cc876"
+    },
+    {
+      "blob": "82655242894c3289b03d7fd26db5d37659f81a13",
+      "bytes": 1148,
+      "path": "main-ci.json",
+      "sha256": "d1695ea6cf4900bf57cdd7662d2e4f98ab2977b95f81205395ef1ea021879223"
+    },
+    {
+      "blob": "d486b43e3ece1b3367aa25197616a256382d9f9e",
+      "bytes": 16504,
+      "path": "preparation.log",
+      "sha256": "e68f8653af5930c22bce63c698afc5b2930a786ca3714507fd2e03c0d799f7d5"
+    },
+    {
+      "blob": "ffc5df00767298dc7de8ec92e467e5c312eb1b05",
+      "bytes": 1088,
+      "path": "product-provenance.json",
+      "sha256": "134cf5e4f356de29099b8f1fe08017cf2ce686f98214ad764861ba0048040dab"
+    },
+    {
+      "blob": "ef703bd202dcc97f7140d1316d36147b880dfb2c",
+      "bytes": 3140,
+      "path": "screens.json",
+      "sha256": "6d49b79c0b7299cef6f0a2b42566eb2e4b1969ec400c5f57930ac385c721ca6b"
+    },
+    {
+      "blob": "b0c31380041d92447387c4d1ef921a80be18809d",
+      "bytes": 409852,
+      "path": "verify.log",
+      "sha256": "7debf267732ca37d2f8b51ed1db1b85348d3d3004b93ebe5778d14d84d811fd8"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f227",
+  "product_head": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "ref": "refs/heads/evidence/sd-oncall-c-f227",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f227"
+}

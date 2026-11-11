@@ -1,0 +1,14 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["8146","8145","MainThread"],["8155","8146","esbuild"],["8164","8146","workerd"],["8170","8146","ps"]]
+file:///workspace/oncall-f227/tests/oncall-agent-live.mjs:53
+   const refusedAudit=await audit(refused);assert.equal(refusedAudit.outcome,'refused');
+                                                                     ^
+
+TypeError: Cannot read properties of undefined (reading 'outcome')
+    at manualPageClassification (file:///workspace/oncall-f227/tests/oncall-agent-live.mjs:53:70)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///tmp/f227-pagination-reproduce.mjs:11:2
+
+Node.js v24.19.0

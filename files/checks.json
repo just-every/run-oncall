@@ -1,0 +1,145 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f227",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f227",
+  "head": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "observed_at": "2026-11-11T23:53:49.224180+00:00",
+  "checks": {
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "first_party": {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    "contract_views": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "exit": 0,
+      "committed": false
+    },
+    "source_lock": {
+      "commands": [
+        "node scripts/edition-authoring/cli.mjs lock",
+        "node scripts/edition-authoring/cli.mjs check"
+      ],
+      "exit": 0,
+      "ok": true,
+      "final_check_ok": true,
+      "files": 1645
+    },
+    "focused_probe": {
+      "command": "node /tmp/f227-pagination-reproduce.mjs",
+      "exit": 0,
+      "prior_audit_records": 205,
+      "coverage": "all new manual and deadline cases under both policies"
+    },
+    "required_verify": {
+      "command": "ONCALL_VERIFY_LANE=intake ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify --non-interactive",
+      "status": "completed",
+      "exit": 0,
+      "head": "4fed382945f688afdcceb15ae9df976135cdbb1e"
+    },
+    "browser": {
+      "command": "ONCALL_VERIFY_PREBUILT=1 ONCALL_VERIFY_LANE=browser node tests/verify.mjs",
+      "exit": 0,
+      "head": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+      "screens": [
+        1440,
+        390
+      ],
+      "member_seconds": 186.2,
+      "product_and_agent_seconds": 562.3
+    },
+    "machine_runtime": {
+      "command": "node tests/runtime.mjs",
+      "environment_selector": "ONCALL_RUNTIME_PART=machines",
+      "exit": 0,
+      "seconds": 585.6,
+      "head": "4fed382945f688afdcceb15ae9df976135cdbb1e"
+    },
+    "intake": {
+      "command": "node tests/intake.mjs",
+      "exit": 0,
+      "seconds": 85.8,
+      "head": "4fed382945f688afdcceb15ae9df976135cdbb1e"
+    },
+    "routing": {
+      "command": "node tests/routing.mjs",
+      "exit": 0,
+      "seconds": 163.6,
+      "head": "4fed382945f688afdcceb15ae9df976135cdbb1e"
+    },
+    "hydration": {
+      "exit": 0,
+      "pages": 4,
+      "loads": 23
+    },
+    "native_conformance": {
+      "exit": 0,
+      "summary": "Agent door conformance: 8230/8230 points passed."
+    }
+  },
+  "status_section_unchanged": true,
+  "generated_views_in_diff": false,
+  "history_shallow": false,
+  "added_email_shaped_strings": 0,
+  "clause_claim": {
+    "id": "SURFACE-002",
+    "status": "PARTIAL",
+    "points": [
+      8
+    ],
+    "scope": "shipped manual-page, snooze, cancel-deadline and expire-deadline additions"
+  },
+  "counts": {
+    "before": {
+      "done": 23,
+      "partial": 44,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 23,
+      "partial": 44,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "publication_scan": {
+    "status": "not_run_in_cloud",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "custody": "fleet lander"
+  },
+  "product_push": {
+    "status": "pushed",
+    "head": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+    "branch": "cloud/sd-oncall-c-f227",
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f227",
+    "exit": 0
+  },
+  "local_repair": {
+    "failed_head": "4ea76f2e078756d6f22ec3e5b109fbf396e01970",
+    "failure": "TypeError: Cannot read properties of undefined (reading 'outcome')",
+    "test": "manualPageClassification",
+    "reproduction_exit": 1,
+    "corrected_populated_audit_probe_exit": 0,
+    "change": "Reuse existing public audit cursor reader; preserve assertions"
+  },
+  "ci": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43120087627",
+    "id": 43120087627,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "github_calls": 6
+}
