@@ -1191,7 +1191,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.incidents.list` | List incidents the caller may read | OC-003, OC-053 | standard (+ sensitive) | Shipped |
 | `oncall.incidents.read` | Read one incident | OC-003, OC-004, OC-053 | standard (+ sensitive) | Shipped |
 | `oncall.incidents.receipt` | Read the receipt of an earlier incident call by its idempotency key | OC-053 | standard | Shipped |
-| `oncall.incidents.update` | Acknowledge, note, reassign, snooze or escalate an incident and assign its roles | OC-004, OC-027, OC-050, OC-058 | standard (+ live) | Shipped for reassign, role and recovery changes; acknowledge and note ship as oncall.incidents.acknowledge and oncall.notes.add; snooze, escalate and the live addition not yet shipped |
+| `oncall.incidents.update` | Acknowledge, note, reassign, snooze or escalate an incident and assign its roles | OC-004, OC-027, OC-050, OC-058 | standard (+ live) | Shipped for reassign, role and recovery changes; manual-page, snooze, cancel-deadline and expire-deadline add live from validated native custody; acknowledge and note ship as oncall.incidents.acknowledge and oncall.notes.add; escalation not yet shipped; paging remains OFF |
 | `oncall.incidents.acknowledge` | Record an agent acknowledgment naming an active human responder | OC-004, OC-053 | standard (+ sensitive) | Shipped |
 | `oncall.notes.add` | Append an agent-attributed note to an incident | OC-004, OC-008 | standard (+ sensitive) | Shipped |
 | `oncall.bridges.create` | Create or join a Zoom or Teams incident bridge and record its participants and link | OC-035 | external | Not yet shipped |
