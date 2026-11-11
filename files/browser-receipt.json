@@ -1,0 +1,41 @@
+{
+  "head": "ecd5c13b31c8ed3c12a4d6c47aa26ba1dc4d1050",
+  "command": "ONCALL_PRODUCT_JOURNEY=accessibility ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+  "exit": 0,
+  "screens": [
+    {
+      "file": "screens/rota-timeline-overview-1440.png",
+      "width": 1440,
+      "height": 1050,
+      "sha256": "3798861be6e6902f5894e40c25cc178414565086ea8907c87125f884d7150c2b",
+      "visually_reviewed": true
+    },
+    {
+      "file": "screens/rota-timeline-rota-1440.png",
+      "width": 1440,
+      "height": 1503,
+      "sha256": "4766dca4ebd527b981182afe202cbbb00b441b1b744befb60a88a7ecd512503c",
+      "visually_reviewed": true
+    },
+    {
+      "file": "screens/rota-timeline-overview-390.png",
+      "width": 390,
+      "height": 5537,
+      "sha256": "927fd69a41e94e37e8dd940622b5297fbb613a1bb80116eb85273814e5e03956",
+      "visually_reviewed": true
+    },
+    {
+      "file": "screens/rota-timeline-rota-390.png",
+      "width": 390,
+      "height": 2975,
+      "sha256": "21fb6d771a16e293f1373e876ee64a74ed5cf4d189f4b434d36adf0e2d3a39c6",
+      "visually_reviewed": true
+    }
+  ],
+  "observations": [
+    "Overview and individual rota show desktop timeline chips with compact initials for short slices. Full names remain in accessible labels.",
+    "Both phone screens show full names and dated interval endpoints wrapping inside the viewport.",
+    "Existing keyboard coordination, schedules, overrides, preview, focus, real stale-write failure and serious/critical axe checks passed."
+  ],
+  "limits": "Synthetic emitted Worker and local D1; no live provider, human screen-reader, native app or full WCAG conformance claim."
+}

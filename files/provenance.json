@@ -1,0 +1,14 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-rota-timeline-1-c1",
+  "head": "ecd5c13b31c8ed3c12a4d6c47aa26ba1dc4d1050",
+  "original_timeline_head": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+  "merged_main": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "clock_fix": "051a993687882c63b472c8397946d52157ec4c0f",
+  "parents": [
+    "b2c7ebf9342581aff62bbd358147866c1134c5af",
+    "1e8f35e6ec553ed607b812dd6f957aae2b3acce9"
+  ],
+  "contract_diff": "",
+  "generated_views_diff": ""
+}

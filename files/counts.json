@@ -1,0 +1,20 @@
+{
+  "origin/main": {
+    "status_rows": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34
+    },
+    "OC-009": "partial"
+  },
+  "HEAD": {
+    "status_rows": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34
+    },
+    "OC-009": "partial"
+  },
+  "test_registration_delta": 0,
+  "scope": "No test registrations added, deleted, skipped or weakened by this merge. Existing test scripts only."
+}

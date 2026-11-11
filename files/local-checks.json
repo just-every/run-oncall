@@ -1,0 +1,53 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 18.3,
+    "head": "ecd5c13b31c8ed3c12a4d6c47aa26ba1dc4d1050"
+  },
+  {
+    "name": "agent-flow",
+    "command": [
+      "node",
+      "tests/oncall-agent-flow.mjs"
+    ],
+    "exit": 0,
+    "seconds": 240.3,
+    "head": "ecd5c13b31c8ed3c12a4d6c47aa26ba1dc4d1050"
+  },
+  {
+    "name": "agent-role-replay",
+    "command": [
+      "node",
+      "tests/oncall-agent-role-replay.mjs"
+    ],
+    "exit": 0,
+    "seconds": 1.4,
+    "head": "ecd5c13b31c8ed3c12a4d6c47aa26ba1dc4d1050"
+  },
+  {
+    "name": "activation",
+    "command": [
+      "node",
+      "tests/activation.mjs"
+    ],
+    "exit": 0,
+    "seconds": 318.0,
+    "head": "ecd5c13b31c8ed3c12a4d6c47aa26ba1dc4d1050"
+  },
+  {
+    "name": "accessibility",
+    "command": [
+      "node",
+      "tests/product-browser.mjs"
+    ],
+    "exit": 0,
+    "seconds": 114.0,
+    "head": "ecd5c13b31c8ed3c12a4d6c47aa26ba1dc4d1050"
+  }
+]

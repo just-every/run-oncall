@@ -1,0 +1,38 @@
+[
+  {
+    "utc_epoch": 1794433275.89156,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=ecd5c13b31c8ed3c12a4d6c47aa26ba1dc4d1050&per_page=100",
+      "--jq",
+      "[.workflow_runs[] | {id,name,status,conclusion,head_sha,html_url,event,head_branch}]"
+    ]
+  },
+  {
+    "utc_epoch": 1794433576.9511442,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43105225939",
+      "--jq",
+      "{id,name,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "utc_epoch": 1794433877.9904072,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43105225939",
+      "--jq",
+      "{id,name,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "utc_epoch": 1794434179.143617,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43105225939",
+      "--jq",
+      "{id,name,status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

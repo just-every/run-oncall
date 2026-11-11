@@ -1,0 +1,10 @@
+{
+  "scope": "Candidate product diff only; fleet publication scan remains Mac landing responsibility per cloud brief",
+  "patterns": {
+    "github_token": 0,
+    "private_key": 0,
+    "aws_key": 0,
+    "credential_url": 0
+  },
+  "passed": true
+}

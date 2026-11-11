@@ -1,0 +1,289 @@
+diff --git a/src/demo.ts b/src/demo.ts
+index 6408049..bfcc01b 100644
+--- a/src/demo.ts
++++ b/src/demo.ts
+@@ -1,7 +1,7 @@
+ import type { Bindings } from './auth.server'
+ import { admit, command, empty, type Incident, type Member, type State } from './family/response-operations/domain'
+ import { validatePolicy } from './family/response-operations/escalation'
+-import { coverage, validateSchedule, type Override, type Schedule } from './family/response-operations/schedules'
++import { coverage, resolveLocal, validateSchedule, type Override, type Schedule } from './family/response-operations/schedules'
+ import { commitPaging, pagingSnapshot, putPolicy, putSchedule } from './paging-store'
+ import { workspaceRows } from './workspace-store'
+ 
+@@ -106,12 +106,15 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
+       backup: { anchorLocal: anchor(now, zone, hour, 5), periodDays: 7, members: backup, ambiguity: 'earlier' as const } }
+     return validateSchedule({ ...base, overrides: overrides(validateSchedule(base, state)) }, state)
+   }
++  // Sample covers use the rota's Monday boundary, not the demo launch minute.
++  // Resolve each week in its named zone so DST keeps the stated local hour.
++  const boundary = (schedule: Schedule, weeksAhead: number) => resolveLocal(anchor(now, schedule.timezone, Number(schedule.primary.anchorLocal.slice(11, 13)), -weeksAhead), schedule.timezone, 'earlier')!;
+   const checkout = rota('checkout-weekly', 'Checkout API weekly rota', 'checkout-api', 'America/New_York', 9, [priya.id, marcus.id, elena.id, sam.id], [elena.id, sam.id, priya.id, marcus.id], schedule => [
+-    { id: 'swap-last-week', role: 'primary', start: iso(now - 12 * DAY), end: iso(now - 11 * DAY), member: standIn(schedule, members, now - 12 * DAY + 12 * HOUR) },
+-    { id: 'cover-next-week', role: 'backup', start: iso(now + 2 * DAY), end: iso(now + 4 * DAY), member: standIn(schedule, members, now + 3 * DAY) },
++    { id: 'swap-last-week', role: 'primary', start: iso(boundary(schedule, -1)), end: iso(boundary(schedule, 0)), member: standIn(schedule, members, boundary(schedule, -1)) },
++    { id: 'cover-next-week', role: 'backup', start: iso(boundary(schedule, 1)), end: iso(boundary(schedule, 2)), member: standIn(schedule, members, boundary(schedule, 1)) },
+   ])
+   const payments = rota('payments-weekly', 'Payments worker weekly rota', 'payments-worker', 'Europe/London', 10, [elena.id, admin.id, sam.id], [sam.id, elena.id, admin.id], schedule => [
+-    { id: 'conference-cover', role: 'primary', start: iso(now + 5 * DAY), end: iso(now + 7 * DAY), member: standIn(schedule, members, now + 6 * DAY) },
++    { id: 'conference-cover', role: 'primary', start: iso(boundary(schedule, 1)), end: iso(boundary(schedule, 2)), member: standIn(schedule, members, boundary(schedule, 1)) },
+   ])
+ 
+   const token = crypto.randomUUID()
+diff --git a/src/on-call/WeekBands.tsx b/src/on-call/WeekBands.tsx
+index 9c3d557..6d22235 100644
+--- a/src/on-call/WeekBands.tsx
++++ b/src/on-call/WeekBands.tsx
+@@ -1,18 +1,71 @@
++import {useEffect, useRef, useState} from 'react';
+ import {Tooltip} from '../app/Tooltip';
+ import type {OnCallBand} from './read';
+ import {shortTime} from './time';
+ import {viewerZone} from './rota-steps/draft';
++
++const DAY = 86_400_000;
++const initials = (name: string) => {
++  const words = name.trim().split(/\s+/);
++  return [words[0], ...(words.length > 1 ? [words.at(-1)!] : [])].map(word => Array.from(word)[0]).join('').toLocaleUpperCase();
++};
++
++/** Keep the full name when it fits; a compact chip retains its complete accessible name. */
++function BandName({name}: {name: string}) {
++  const root = useRef<HTMLSpanElement>(null), measure = useRef<HTMLSpanElement>(null);
++  const [compact, setCompact] = useState(false);
++  useEffect(() => {
++    const element = root.current, text = measure.current;
++    if (!element || !text) return;
++    const fit = () => setCompact(text.getBoundingClientRect().width > element.clientWidth);
++    const observer = new ResizeObserver(fit);
++    observer.observe(element);fit();
++    void document.fonts.ready.then(fit);
++    return () => observer.disconnect();
++  }, [name]);
++  return <span ref={root} className="oc-band-name"><span ref={measure} className="oc-band-measure" aria-hidden="true">{name}</span><span aria-hidden="true">{compact ? initials(name) : name}</span></span>;
++}
++
+ export function WeekBands({rotas, from, to, title = 'This week', onShift, selectable, zone = viewerZone()}: {rotas: {id: string; name: string; week: OnCallBand[]}[]; from: number; to: number; title?: string; zone?: string; onShift?: (band: OnCallBand) => void; selectable?: (band: OnCallBand) => boolean}) {
+-  const days = Math.round((to - from) / 86_400_000);
+-  return <section className="oc-bands oc-card" aria-label={title}><h2>{title}</h2><p className="oc-quiet" data-time-zone={zone}>Times shown in {zone}</p><div className="oc-bands-scroll" tabIndex={0} role="region" aria-label={`${title} coverage bands`}><div className="oc-bands-axis" style={{minWidth: Math.max(680, days * 70)}}>
+-    <div className="oc-band-dates"><span/>{Array.from({length: days}, (_, index) => <time key={index} style={{left: `calc(140px + (100% - 140px) * ${index / days})`}}>{new Intl.DateTimeFormat('en-GB', {timeZone: zone, day:'numeric',month:'short'}).format(from + index * 86_400_000)}</time>)}</div>
+-    {rotas.map(rota => <div className="oc-band-rota" key={rota.id}><h3>{rota.name}</h3>{(['primary', 'backup'] as const).map(role => <div className="oc-band-role" key={role}><span>{role === 'primary' ? 'Primary' : 'Backup'}</span><div className="oc-band-track">{rota.week.filter(band => band.role === role).map((band, index) => {
++  const root = useRef<HTMLElement>(null), [width, setWidth] = useState(0);
++  useEffect(() => {
++    if (!root.current) return;
++    const observer = new ResizeObserver(entries => setWidth(entries[0].contentRect.width));
++    observer.observe(root.current);
++    return () => observer.disconnect();
++  }, []);
++  const days = Math.round((to - from) / DAY);
++  // A boundary in one role must not cut the other person's uninterrupted shift into small chips.
++  const rows = rotas.map(rota => ({...rota, roles: (['primary', 'backup'] as const).map(role => {
++    const bands: OnCallBand[] = [];
++    for (const band of rota.week.filter(band => band.role === role)) {
+       const start = Math.max(from, Date.parse(band.from)), end = Math.min(to, Date.parse(band.to));
+-      if (end <= start) return null;
+-      const label = `${band.member?.name ?? 'Nobody on call'} · ${shortTime(start, zone)} – ${shortTime(end, zone)}`;
+-      const style = {left: `${(start - from) / (to - from) * 100}%`, width: `${(end - start) / (to - from) * 100}%`};
+-      const current = start <= Date.now() && end > Date.now();
+-      return <div key={role + index} className={`oc-band ${!band.member ? 'oc-band-gap' : current ? 'oc-band-now' : 'oc-band-next'}`} style={style}>{onShift && (!selectable || selectable(band)) && (end-start)/(to-from)*(Math.max(680,days*70)-140)>=44 ? <button type="button" aria-label={label} onClick={() => onShift(band)}>{band.member?.name ?? 'Nobody on call'}</button> : <Tooltip label={label}><span tabIndex={0}>{band.member?.name ?? 'Nobody on call'}</span></Tooltip>}</div>;
+-    })}</div></div>)}</div>)}
+-  </div></div></section>;
++      if (end <= start) continue;
++      const previous = bands.at(-1);
++      if (!onShift && previous && previous.member?.id === band.member?.id && Date.parse(previous.to) === start) previous.to = new Date(end).toISOString();
++      else bands.push({...band, from: new Date(start).toISOString(), to: new Date(end).toISOString()});
++    }
++    return {role, bands};
++  })}));
++  const fractions = rows.flatMap(rota => rota.roles.flatMap(({bands}) => bands.map(band => (Date.parse(band.to) - Date.parse(band.from)) / (to - from))));
++  // Allow two initials and padding even on a short shift. Dense timelines become a list
++  // rather than requiring an impractically wide axis for a few minutes of cover.
++  const axisWidth = Math.ceil(Math.max(840, days * 100, ...fractions.map(fraction => 140 + 52 / fraction)));
++  const stacked = (width > 0 && width < 600) || axisWidth > 2400;
++  const label = (band: OnCallBand) => `${band.member?.name ?? 'Nobody on call'} · ${shortTime(band.from, zone)} – ${shortTime(band.to, zone)}`;
++  const canSelect = (band: OnCallBand) => onShift && (!selectable || selectable(band));
++  return <section ref={root} className="oc-bands oc-card" aria-label={title}><h2>{title}</h2><p className="oc-quiet" data-time-zone={zone}>Times shown in {zone}</p>
++    {stacked ? <div className="oc-bands-list">{rows.map(rota => <section key={rota.id} className="oc-band-rota"><h3>{rota.name}</h3>{rota.roles.map(({role, bands}) => <div key={role} className="oc-band-list-role"><h4>{role === 'primary' ? 'Primary' : 'Backup'}</h4><ol>{bands.map((band, index) => <li key={index} className={!band.member ? 'oc-band-list-gap' : ''}>{canSelect(band) ? <button type="button" aria-label={label(band)} onClick={() => onShift!(band)}>{band.member?.name ?? 'Nobody on call'}</button> : <strong>{band.member?.name ?? 'Nobody on call'}</strong>}<p><time dateTime={band.from}>{shortTime(band.from, zone)}</time><span aria-hidden="true"> → </span><span> to </span><time dateTime={band.to}>{shortTime(band.to, zone)}</time></p></li>)}</ol></div>)}</section>)}</div> : <>
++      {width > 0 && axisWidth > width && <p className="oc-band-scroll-hint">↔ Scroll sideways to see every day</p>}
++      <div className="oc-bands-scroll" tabIndex={0} role="region" aria-label={`${title} coverage bands`}><div className="oc-bands-axis" style={{minWidth: axisWidth}}>
++        <div className="oc-band-dates"><span/>{Array.from({length: days}, (_, index) => <time key={index} dateTime={new Date(from + index * DAY).toISOString()} style={{left: `calc(140px + (100% - 140px) * ${index / days})`}}>{new Intl.DateTimeFormat('en-GB', {timeZone: zone, day:'numeric',month:'short'}).format(from + index * DAY)}</time>)}</div>
++        {rows.map(rota => <div className="oc-band-rota" key={rota.id}><h3>{rota.name}</h3>{rota.roles.map(({role, bands}) => <div className="oc-band-role" key={role}><span>{role === 'primary' ? 'Primary' : 'Backup'}</span><div className="oc-band-track">{bands.map((band, index) => {
++          const start = Date.parse(band.from), end = Date.parse(band.to), name = band.member?.name ?? 'Nobody on call';
++          const style = {left: `${(start - from) / (to - from) * 100}%`, width: `${(end - start) / (to - from) * 100}%`};
++          const current = start <= Date.now() && end > Date.now();
++          return <div key={index} className={`oc-band ${!band.member ? 'oc-band-gap' : current ? 'oc-band-now' : 'oc-band-next'}`} style={style}>{canSelect(band) ? <button type="button" aria-label={label(band)} onClick={() => onShift!(band)}><BandName name={name}/></button> : <Tooltip label="Shift details"><span tabIndex={0} role="group" aria-label={label(band)}><BandName name={name}/></span></Tooltip>}</div>;
++        })}</div></div>)}</div>)}
++      </div></div>
++    </>}
++  </section>;
+ }
+diff --git a/src/on-call/on-call.css b/src/on-call/on-call.css
+index 9c5455c..aa5cc6f 100644
+--- a/src/on-call/on-call.css
++++ b/src/on-call/on-call.css
+@@ -41,6 +41,19 @@
+ .oc-bands { overflow:visible; }
+ .oc-bands-scroll { overflow-x:auto; max-width:100%; padding:8px 4px 10px; margin:4px -4px -4px; overscroll-behavior-inline:contain; }
+ .oc-bands-axis { position:relative; }
++.oc-band-scroll-hint { margin-top:8px !important; color:var(--oc-muted); font-size:14px; }
++.oc-band-name { position:relative; display:block; width:100%; white-space:nowrap; overflow:hidden; }
++.oc-band-measure { position:absolute; visibility:hidden; width:max-content; pointer-events:none; }
++.oc-bands-list { margin-top:18px; }
++.oc-band-list-role h4 { margin:12px 0 6px; color:var(--oc-muted); font-size:14px; font-weight:550; }
++.oc-band-list-role ol { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
++.oc-band-list-role li { padding:12px 14px; border:1px solid var(--oc-rule); border-radius:8px; background:var(--oc-paper-deep); }
++.oc-band-list-role li.oc-band-list-gap { border-style:dashed; background:var(--oc-paper); }
++.oc-band-list-role li p { margin-top:4px; font-size:14px; }
++.oc-band-list-role time { display:block; }
++.oc-band-list-role li p > span[aria-hidden] { display:none; }
++.oc-band-list-role button { max-width:100%; white-space:normal; text-align:left; }
++
+ .oc-band-dates { height:32px; position:relative; }
+ .oc-band-dates time { position:absolute; white-space:nowrap; font-size:13px; color:var(--oc-muted); }
+ .oc-band-rota { margin:0 0 18px; }
+@@ -51,7 +64,7 @@
+ .oc-band-track { height:44px; position:relative; border-radius:8px; background:var(--oc-paper-deep); }
+ .oc-band { position:absolute; height:44px; padding:0 2px; }
+ .oc-band > .oncall-tooltip { width:100%; height:100%; }
+-.oc-band > .oncall-tooltip > span:first-child, .oc-band > button { width:100%; height:44px; display:block; padding:11px 10px; border:1px solid var(--oc-rule); border-radius:8px; color:var(--oc-ink); text-align:left; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; font-size:14px; }
++.oc-band > .oncall-tooltip > span:first-child, .oc-band > button { width:100%; height:44px; display:block; padding:11px 10px; border:1px solid var(--oc-rule); border-radius:8px; color:var(--oc-ink); text-align:left; white-space:nowrap; font-size:14px; }
+ .oc-band-now > .oncall-tooltip > span:first-child, .oc-band-now > button { background:var(--oc-now-wash); }
+ .oc-band-next > .oncall-tooltip > span:first-child, .oc-band-next > button { background:var(--oc-next-wash); }
+ .oc-band-gap > .oncall-tooltip > span:first-child, .oc-band-gap > button { background:var(--oc-paper); border-style:dashed; }
+diff --git a/tests/activation.mjs b/tests/activation.mjs
+index 57d17b5..8fad69a 100644
+--- a/tests/activation.mjs
++++ b/tests/activation.mjs
+@@ -1417,6 +1417,26 @@ try {
+   assert.match(demoDocument, /<style\b[^>]*data-rer-label="Demo"[^>]*>[^<]*content:\s*" Demo"/i, 'emitted HTML visibly decorates the product as Demo')
+   assert.match(demoDocument, /<title\b[^>]*>[^<]*\bDemo<\/title>/i, 'the emitted page title identifies the simulation')
+   assert.equal(ok(await req('/api/workspace')).demo, true, 'workspace identifies the simulated channel results as demo outcomes')
++  const schedules = ok(await req('/api/paging/state')).schedules;
++  const current = ok(await req('/api/on-call'));
++  for (const schedule of schedules) {
++    const rota = current.rotas.find(row => row.id === schedule.id);
++    const clock = new Intl.DateTimeFormat('en-GB', { timeZone: schedule.timezone, weekday: 'long', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
++    const assertBoundary = at => {
++      const parts = Object.fromEntries(clock.formatToParts(Date.parse(at)).map(part => [part.type,part.value]));
++      assert.equal(parts.weekday, rota.rhythm.weekday, 'demo cover and hand-over use the stated weekday');
++      assert.equal(parts.hour+':'+parts.minute, rota.rhythm.time, 'demo cover and hand-over use the stated local minute');
++    };
++    assert.ok(rota.next, 'demo rota has an upcoming hand-over');assertBoundary(rota.next.at);
++    for(const cover of schedule.overrides){assertBoundary(cover.start);assertBoundary(cover.end);}
++    // Inspect actual now/next through the same HTTP door at both DST seasons.
++    for(const date of ['03-06','03-14','10-24','11-07']){
++      const year=new Date(current.at).getUTCFullYear()+1, at=`${year}-${date}T12:00:00.000Z`;
++      const future=ok(await req('/api/on-call?at='+encodeURIComponent(at))).rotas.find(row=>row.id===schedule.id);
++      if(Date.parse(at)>Date.parse(schedule.validFrom))assertBoundary(future.next.at);
++    }
++  }
++  console.log('PASS demoRotaRules: HTTP On call next hand-overs and sample cover endpoints agree with every stated local weekly rule');
+   const state = ok(await req('/api/state'))
+   const incident = state.incidents.find(item => item.state !== 'resolved')
+   ok(await req('/api/command', { type: 'transition', incident: incident.id, revision: incident.revision,
+diff --git a/tests/product-browser-journey.mjs b/tests/product-browser-journey.mjs
+index 15ef3be..6928299 100644
+--- a/tests/product-browser-journey.mjs
++++ b/tests/product-browser-journey.mjs
+@@ -488,10 +488,12 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
+  let state=await api('/api/state');
+  let second=state.members.find(member=>member.active&&member.id!==session.member.id&&['admin','responder'].includes(member.role));
+  if(!second){const response=await context.request.post(origin+'/api/members',{headers:{origin},data:{name:'Schedule colleague '+width,role:'responder',password:'synthetic-schedule-colleague-password'}});assert.equal(response.status(),201);second=await response.json();}
+- const anchor=new Date(now-86400000).toISOString().slice(0,10)+'T09:00';
++ const reliefResponse=await context.request.post(origin+'/api/members',{headers:{origin},data:{name:'Rosalind Campbell '+width,role:'responder',password:'synthetic-oncall-7301-password'}});assert.equal(reliefResponse.status(),201);const relief=await reliefResponse.json();
++ const anchor=new Date(now-86400000).toISOString().slice(0,10)+'T12:00';
+  // OC-020 / OC-011: both rota rows are visible together; a four-step weekly create agrees with its zero-write preview.
+  const fixtures=[];
+- for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(now-2*86400000).toISOString(),validUntil:null,primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[]}));
++ for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(now-2*86400000).toISOString(),validUntil:null,primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[{id:'synthetic-oncall-7302',role:'primary',start:new Date(now+2*86400000).toISOString(),end:new Date(now+2.5*86400000).toISOString(),member:relief.id}]}));
++ await rotaTimelineScreens(page,width,fixtures[0].id,relief.name);
+  await page.goto(origin+'/on-call');
+  const onCall=await api('/api/on-call');
+  for(const fixture of fixtures){const row=page.locator('[data-rota="'+fixture.id+'"]');await row.waitFor();const coverage=onCall.rotas.find(rota=>rota.id===fixture.id);assert.ok((await row.innerText()).includes(coverage.now.primary.name));assert.ok((await row.innerText()).includes(coverage.next.primary.name));assert.ok((await row.innerText()).includes(coverage.now.backup.name));}
+@@ -599,6 +601,36 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
+  if(!selectedOnly){await coverageRulesBrowser(page,context,width,session,{ownerLink});await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});}
+  console.log(`PROBE OC-009 schedules, overrides and preview ${width}: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed`);
+ }
++// The existing schedule journey carries the one phone smoke, including both timeline doors.
++export async function rotaTimelineScreens(page,width,id,compactName){
++ const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
++ await mkdir(directory,{recursive:true});
++ for(const [name,path] of [['overview','/on-call'],['rota','/on-call/'+id]]){
++  await page.goto(origin+path);const bands=page.locator('.oc-bands');await bands.waitFor();
++  await page.evaluate(()=>document.fonts.ready);
++  if(width===390){
++   await bands.locator('.oc-bands-list').waitFor();
++   const people=await bands.locator('li > strong,li > button').allTextContents();
++   assert.ok(people.includes(compactName),'phone timeline retains the entire cover name');
++   assert.ok(await bands.locator('li time[datetime]').count()>0,'each phone interval has dated endpoints');
++   assert.deepEqual(await bands.locator('li > strong,li > button,li time').evaluateAll(elements=>elements.filter(element=>{
++    const box=element.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(element);
++    return [...range.getClientRects()].some(rect=>rect.left<box.left-1||rect.right>box.right+1);
++   }).map(element=>element.textContent)),[],'phone names and dates wrap without clipping');
++  }else{
++   await bands.locator('.oc-band-name').first().waitFor();
++   await page.waitForFunction(()=>[...document.querySelectorAll('.oc-band [aria-label]')].some(element=>element.getAttribute('aria-label').startsWith('Rosalind Campbell')&&element.querySelector('.oc-band-name > span:last-child')?.textContent==='R'+element.getAttribute('aria-label').match(/Campbell (\d)/)?.[1]));
++   const chips=await bands.locator('.oc-band [aria-label]').evaluateAll(elements=>elements.map(element=>({label:element.getAttribute('aria-label'),text:element.querySelector('.oc-band-name > span:last-child').textContent,clipped:element.querySelector('.oc-band-name > span:last-child').getBoundingClientRect().width>element.querySelector('.oc-band-name').clientWidth+1})));
++   assert.ok(chips.some(chip=>chip.label.startsWith(compactName)&&chip.text!==compactName),'short cover slices use initials');
++   for(const chip of chips){assert.equal(chip.clipped,false,'a timeline name or its initials fits the chip');assert.match(chip.label,/GMT[+-]\d/,'accessible shift label includes the zoned endpoint times');}
++   const scroll=await bands.locator('.oc-bands-scroll').evaluate(element=>element.scrollWidth>element.clientWidth);
++   if(scroll)assert.equal(await bands.locator('.oc-band-scroll-hint').isVisible(),true,'scrolling timeline advertises more dates');
++  }
++  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'timeline keeps the page within its viewport');
++  await bands.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/rota-timeline-${name}-${width}.png`,fullPage:true});
++ }
++}
++
+ // Pair the next nearby offset changes from the zones themselves, beyond tomorrow.
+ export function scheduleReviewWindow(now) {
+  const hour=3600000,day=24*hour,zones=['Europe/London','America/New_York']
+diff --git a/tests/product-browser.mjs b/tests/product-browser.mjs
+index 8d37669..dbea75f 100644
+--- a/tests/product-browser.mjs
++++ b/tests/product-browser.mjs
+@@ -704,9 +704,15 @@ try {
+   } finally { await worker.time(selectedTime) }
+  }
+  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
+- if(focused&&!['events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(focused))throw Error('Unknown focused product journey');
++ if(focused&&!['events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))throw Error('Unknown focused product journey');
+  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
+  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
++ if(focused==='rota-timeline'){
++  const session=await (await context.request.get('/api/session')).json();
++  await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
++  const {productSchedule}=await import('./product-browser-journey.mjs');
++  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await productSchedule(page,context,width,session,{selectedOnly:true,setTime});}
++ }
+  if(focused==='readable-times'){
+   const session=await (await context.request.get('/api/session')).json();
+   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
+@@ -725,7 +731,7 @@ try {
+  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
+  if(focused==='limitations')await limitationsBrowser(page,context);
+  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
+- if(!['events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(focused)){
++ if(!['events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
+  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
+  if(focused!=='accessibility'){
+  await incompleteIntakeBrowser(page,context)
+@@ -736,11 +742,11 @@ try {
+  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
+  }
+  }
+- if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(focused))await readinessBrowser(page,context)
++ if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))await readinessBrowser(page,context)
+  if(!focused)await responseReportBrowser(browser)
+  if(!focused)await eventsSourceBrowser(page,context)
+  assert.deepEqual(errors,[],'no browser application errors')
+- console.log(focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
++ console.log(focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ } catch(error) {
+  if(page){
+   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
+@@ -751,4 +757,4 @@ try {
+ } finally {
+  try {await browser?.close()} finally {await worker.close()}
+ }
+-if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
++if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

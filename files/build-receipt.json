@@ -1,0 +1,7 @@
+{
+  "head": "ecd5c13b31c8ed3c12a4d6c47aa26ba1dc4d1050",
+  "command": "cloud_run npx -y @runeditrun/rer build",
+  "exit": 0,
+  "setup_exit": 0,
+  "browser_executable": "/usr/bin/chromium"
+}
