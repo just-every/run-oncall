@@ -162,16 +162,25 @@ In `vi`, press `i` to edit, replace each placeholder after `=` with its copied v
 
 ### 4. Deploy and test sign-in
 
-From the hosting checkout, run:
+Stop the development server and preview from the hosting checkout before a dry run or deployment. Ctrl-C also stops a foreground server. A running local server owns the state, so even a deploy dry run refuses with exit 4 until it stops.
 
 ```sh
-rer deploy --environment production --env-file "$HOME/.config/oncall/production.env" --dry-run
+rer dev --stop
+rer preview --stop
+rer deploy --environment production --dry-run
+```
+
+**The dry run is local only.** It builds and validates the local deployment plan. With no env file or Cloudflare credentials, a valid local plan exits 0: no Cloudflare requests are made, nothing changes remotely, and target secrets, deployment permissions and remote readiness are not checked. Local validation or build errors can still refuse. Passing `--env-file` with `--dry-run` does not enable remote checks.
+
+To check the target and deploy, use the real command below with the private file from step 3. It supplies `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `SENDGRID_API_KEY` and `MAIL_FROM`; the sender must be verified and the setup owner must use a real mailbox. This creates or updates hosted resources. A successful dry run is not proof that the credentials, target secrets or hosted sign-in are ready.
+
+```sh
 rer deploy --environment production --env-file "$HOME/.config/oncall/production.env"
 ```
 
 Check each result:
 
-1. **Dry run:** validates and builds locally, then uses Cloudflare credentials to read the target Worker and secret bindings, without provider writes. Missing credentials, unreadable bindings or required secrets refuse. It does not establish deployment permissions, hosted health or email delivery.
+1. **Dry run:** expect exit 0 and the local-only completion message when local validation and the build pass. Missing Cloudflare credentials do not prevent that result; target secrets and remote readiness remain unchecked.
 2. **Real deployment:** exits successfully and returns an HTTPS `workers.dev` app address. It creates the Worker and D1 database, applies migrations, verifies deployment identity at `/health`, claims the owner automatically and retires its setup token. There is no setup token to copy or delete. Opening `/health` at that address should return HTTP 200.
 3. **Email delivery and owner access:** open the app address, enter the configured owner email and press **Email a sign-in link**. Expect a real email from `MAIL_FROM`. Open it on the same device and press **Confirm**; expect to enter Oncall as the owner. Complete **Finish setup** at `/setup` if shown. A successful deployment alone is not evidence that the mailbox received mail.
 

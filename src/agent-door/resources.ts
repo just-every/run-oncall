@@ -40,7 +40,7 @@ function visibleIncident(state: State, id: string, services: string[]): Incident
 }
 
 /** Scope before generators join dependency changes, source evidence or people. */
-function scopedState(access: NativeAccess): State {
+export function scopedState(access: NativeAccess): State {
   const { state, services } = access
   const events = state.events.filter(row => services.includes(row.service))
   const eventIds = new Set(events.map(row => row.id))

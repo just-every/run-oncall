@@ -1,12 +1,13 @@
+import {assertInstallationChecklist} from './readiness.mjs'
 import {nightResponseScenario,assertNightResponse,responseCsvRows} from './response-report-fixture.mjs'
 import {openWorkspaceSection,openHistoryComparison,selectRoutedSource,keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes,createHmac} from 'node:crypto'
-import {mkdir,readFile} from 'node:fs/promises'
+import {mkdir,readFile,writeFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
-import {productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser,scheduleCoordinationBrowser,keyboardCoordination,coverageRulesBrowser} from './product-browser-journey.mjs'
+import {importedEmailBrowser,productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser,scheduleCoordinationBrowser,keyboardCoordination,coverageRulesBrowser} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -186,6 +187,12 @@ async function responsePolicyBrowser(page,context) {
   await recovery.getByText('all alerts recovered — awaiting resolution',{exact:true}).waitFor()
   await recovery.locator('p').filter({hasText:'Commander reminder: '+member.name}).waitFor()
   await incidentContext.getByRole('button',{name:'Close',exact:true}).click()
+  const retainedTimeline=detail.getByRole('region',{name:'Timeline',exact:true});
+  const earlier=retainedTimeline.getByRole('button',{name:/^Earlier entries/});if(await earlier.count())await earlier.click();
+  const generatedCopy=await retainedTimeline.innerText();
+  assert.doesNotMatch(generatedCopy,/\b[A-Z]{2,}-\d{3}\b/,'automatic declaration and recovery explain themselves without clause codes');
+  assert.ok(!generatedCopy.includes(criticalAlert.obligation.policy.rule),'automatic declaration does not expose an internal response-rule identity');
+  assert.ok((await retainedTimeline.locator('.event small').allTextContents()).includes('Source: Checkout native monitor '+width),'routed source history uses its configured name');
   // The phone incident is its own page; list controls are reached through Back.
   if(width===390)await page.locator('.incident-back').click()
   const reminderView=page.getByRole('region',{name:'My commander reminders',exact:true})
@@ -293,6 +300,11 @@ async function limitationsBrowser(page,context){
   else {assert.equal(cells[4],'not run');assert.match(text.slice(text.indexOf('R-5')),/not run/i);}
  }
  assert.match(text,/dated prior observations, not a current deployment/i);assert.match(text,/not[^.]*outbound paging proof/i);
+ const checklist=article.getByRole('link',{name:'US installation and dependency checklist',exact:true});await checklist.click();
+ await page.locator('.docs-article[data-doc="readiness"]').getByRole('heading',{name:'US installation and dependency checklist',exact:true}).waitFor();
+ await page.goto(origin+'/docs/install');await page.locator('.docs-article[data-doc="install"]').getByRole('link',{name:'US installation and dependency checklist',exact:true}).click();
+ await page.locator('.docs-article[data-doc="readiness"]').getByRole('heading',{name:'US installation and dependency checklist',exact:true}).waitFor();
+ await page.goto(origin+'/docs/limits');await article.waitFor();
  const readiness=article.getByRole('link',{name:'Readiness',exact:true});await readiness.click();
  await page.locator('.docs-article[data-doc="readiness"]').waitFor();
  await page.goto(origin+'/docs/limits');await article.waitFor();
@@ -493,7 +505,55 @@ async function changeAndSigningBrowser(page,context){
   for(const slug of docSlugs.filter(slug=>!['changes','routed-intake','data','urgency'].includes(slug))){await page.goto(new URL(page.url()).origin+'/docs/'+slug);await page.locator('.docs-article').waitFor();if(slug==='limits')await limitationsBrowser(page,context);else await check('oc040-043-docs-'+slug,width);}
   await page.goto(new URL(page.url()).origin);
  }
+ await senderSetupBrowser(page,context,origin,request,token);
  console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440; overflow, axe and hydration');
+}
+
+// A newcomer finishes sender setup from the page alone: the change-event recipe runs as written, and a refused
+// Alertmanager batch is explained, counted and fixable on the integration page without leaving it.
+async function senderSetupBrowser(page,context,origin,request,token){
+ const {tmpdir}=await import('node:os'),{spawn}=await import('node:child_process'),{mkdtemp,writeFile}=await import('node:fs/promises'),{join}=await import('node:path');
+ await context.grantPermissions(['clipboard-read','clipboard-write']);
+ const proof=async(label)=>{
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label+' fits '+width);
+   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations,[],label+' has no WCAG axe violations at '+width);
+   await page.screenshot({path:`evidence/browser/${label}-${width}.png`,fullPage:true});
+  }
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ const run=(file,key)=>new Promise((resolve,reject)=>{const child=spawn(process.execPath,[file],{env:{...process.env,ONCALL_SOURCE_KEY:key}});let out='';child.stdout.on('data',d=>out+=d);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(out):reject(Error('send.mjs exited '+code+': '+out)));});
+ // Change events: the sample is a recipe, and the saved file runs with only the documented steps.
+ const changeKey=token(),changeId='synthetic-oncall-recipe';
+ await request('/api/changes/sources',{id:changeId,name:'Synthetic recipe source',provider:'native',service:'synthetic-oncall-1',repository:'',mode:'signed',revision:0,key:changeKey});
+ await page.goto(origin+'/settings/integrations/'+encodeURIComponent('change:'+changeId));
+ await page.getByText('Sample request',{exact:true}).click();
+ const recipe=page.locator('details').filter({has:page.getByLabel('Sample request',{exact:true})});
+ for(const text of ['send.mjs','ONCALL_SOURCE_KEY','node send.mjs','Node 22 or newer'])assert.ok((await recipe.innerText()).includes(text)||(await recipe.locator('pre').allInnerTexts()).join('').includes(text),'recipe names '+text);
+ const sample=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!sample.includes(changeKey),'sample never embeds the secret');
+ await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
+ await page.getByRole('button',{name:'Copy run commands',exact:true}).click();assert.match(await page.evaluate(()=>navigator.clipboard.readText()),/export ONCALL_SOURCE_KEY=.*\nnode send\.mjs$/);
+ const dir=await mkdtemp(join(tmpdir(),'oncall-send-')),file=join(dir,'send.mjs');await writeFile(file,sample);
+ assert.match(await run(file,changeKey),/^201 /,'the copied file sends one change when run as the recipe says');
+ await page.reload();await page.getByText('Sample request',{exact:true}).click();await proof('sender-change-recipe');
+ // Alertmanager: a 200-alert group exceeds the default event allowance, is counted, and is fixed from its own page.
+ const key=token(),id='synthetic-oncall-batch',now=new Date().toISOString();
+ await request('/api/intake/sources',{id,name:'Synthetic batch Alertmanager',provider:'alertmanager',service:'synthetic-oncall-1',key,revision:0});
+ const batch={version:'4',receiver:'oncall',status:'firing',groupKey:'branches',groupLabels:{},commonLabels:{},commonAnnotations:{},alerts:Array.from({length:200},(_,i)=>({status:'firing',labels:{alertname:'BranchDown',branch:'branch-'+i,severity:'warning'},annotations:{summary:'Branch '+i+' unreachable'},startsAt:now,endsAt:'0001-01-01T00:00:00Z',fingerprint:'branch-'+i,generatorURL:''}))};
+ const send=()=>context.request.post('/api/monitoring/'+id,{headers:{'content-type':'application/json',authorization:'Bearer '+key},data:JSON.stringify(batch)});
+ const refused=await send();assert.equal(refused.status(),429);assert.equal((await refused.json()).rateLimit.code,'batch_exceeds_allowance');
+ await page.goto(origin+'/settings/integrations/'+encodeURIComponent('intake:'+id));
+ await page.getByText('Rejected requests (1)',{exact:true}).waitFor();
+ const allowance=page.locator('#key-allowance');assert.equal(await allowance.getAttribute('open'),'','the allowance editor is open beside a refused request');
+ await page.getByText('Rejected requests (1)',{exact:true}).click();
+ const refusals=page.getByRole('list',{name:'Allowance refusals',exact:true});await refusals.getByRole('link',{name:'Raise this key’s allowance'}).waitFor();assert.match(await refusals.innerText(),/200 new events requested/);
+ await proof('sender-alertmanager-refused');
+ const saved=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/intake/allowances'&&r.request().method()==='POST');
+ const events=allowance.getByLabel('New events per minute',{exact:true});await events.fill('300');await events.blur();assert.equal((await saved).status(),200);
+ assert.ok((await request('/api/state')).audit.some(a=>a.kind==='key-allowance'&&a.text.includes('intake:'+id)&&a.text.includes('300 new events')),'the edit is audited like the routed-key editor');
+ const admitted=await send();assert.ok(admitted.ok(),'the same 200-alert group is admitted after the allowance is raised: '+admitted.status());
+ await page.reload();await page.getByText('Rejected requests (1)',{exact:true}).waitFor();await proof('sender-alertmanager-raised');
 }
 
 // The screen, API and downloaded CSV observe one frozen, populated night cohort.
@@ -581,12 +641,35 @@ async function readinessBrowser(page,context) {
  await request('/api/sources',{id:source,key,scopes:[source]});
  const intake=await context.request.post('/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:{source,eventId:source,service:source,environment:'production',key:source,generation:source,intent:'trigger',severity:'warning',title:'Checkout response latency',observedAt:new Date().toISOString(),evidence:''}});assert.equal(intake.status(),201);
  await page.setViewportSize({width:1440,height:1000});
+ await page.goto(origin);await page.locator('.oncall-frame').waitFor();
  await openWorkspaceSection(page,'services');
  await page.getByRole('navigation',{name:'Settings',exact:true}).getByRole('link',{name:'Readiness',exact:true}).click();
  await page.locator('.readiness [data-readiness-row]').first().waitFor();
- const report=await request('/api/readiness');
+ const before=durableSnapshot(worker),outbound=await worker.outboundRequests();
+ const report=await request('/api/readiness');await assertInstallationChecklist(report);
+ const checklist=page.getByRole('region',{name:'US installation and dependency checklist',exact:true});
+ const assertChecklistPage=async report=>{
+ assert.equal(await checklist.locator('[data-installation-item]').count(),report.installation.items.length);
+ assert.ok((await checklist.innerText()).includes(report.installation.reviewedOn));
+ assert.equal(await checklist.locator('input,button,select,textarea').count(),0,'checklist has no self-attestation or provider action control');
+ for(const item of report.installation.items){
+  const row=checklist.locator('[data-installation-item="'+item.id+'"]'),text=await row.innerText();
+  assert.equal(await row.locator('[data-state]').getAttribute('data-state'),item.state);
+  assert.ok(text.includes(item.name));assert.ok(text.includes(item.requirement));
+  for(const clause of item.clauses)assert.ok(text.includes(clause),'owning clause is visible');
+  for(const matrix of item.matrix){
+   const capability=report.matrix.find(row=>row.id===matrix.id),state={'working-here':'Working here',off:'Off','not-built':'Not built','unproven-live':'Unproven live'}[matrix.state];
+   assert.ok(text.includes(capability.area+': '+state),'each constituent release state is readable beside its dependency');
+  }
+  if(!item.fieldProof.length)assert.ok(text.includes('No field-proof row recorded'),'absent external evidence is explicit');
+  assert.ok(text.includes(item.completion==='not-done'?'Not done for this installation':'Guidance only'));
+  for(const proof of item.fieldProof)assert.ok((await row.locator('[data-field-proof="'+proof.id+'"]').innerText()).includes(proof.state==='passed'?'Passed on '+proof.date:'Not run'));
+ }
+ };
+ await assertChecklistPage(report);
  const visible=await page.locator('.readiness').innerText();
  assert.doesNotMatch(visible,/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}|tests\//,'readiness presents readable dates without repository paths');
+ assert.doesNotMatch(await page.locator('[data-readiness-row]').allTextContents().then(rows=>rows.join(' ')),/\b[A-Z]{2,}-\d{3}\b/,'release readiness matrix presents plain limitations without clause codes');
  const zone=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);
  for(const time of await page.locator('.readiness time').allTextContents())assert.ok(time.includes(zone),'readiness observation times identify the local clock');
  assert.ok(report.matrix.some(row=>row.evidence.reference?.includes('tests/')),'internal journey references remain available through the protected API');
@@ -596,19 +679,35 @@ async function readinessBrowser(page,context) {
  for(const row of report.matrix)assert.equal(await page.locator(`[data-readiness-row="${row.id}"] [data-state]`).getAttribute('data-state'),row.state);
  for(const signal of report.signals)assert.equal(await page.locator(`[data-readiness-signal="${signal.id}"] [data-state]`).getAttribute('data-state'),signal.state);
  const refreshed=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/readiness'&&response.request().method()==='GET');
- await page.getByRole('button',{name:'Refresh readiness',exact:true}).click();assert.equal((await refreshed).status(),200);await page.locator('.readiness [data-readiness-row]').first().waitFor();
+ await page.getByRole('button',{name:'Refresh readiness',exact:true}).click();
+ const refreshResponse=await refreshed;assert.equal(refreshResponse.status(),200);
+ const refreshReport=await refreshResponse.json();await assertInstallationChecklist(refreshReport);
+ await page.locator('.readiness [data-readiness-row]').first().waitFor();
+ await assertChecklistPage(refreshReport);
+ assert.deepEqual(durableSnapshot(worker),before,'reading and refreshing the populated checklist writes no durable rows, paging records, revisions or audit');
+ assert.deepEqual(await worker.outboundRequests(),outbound,'reading and refreshing sends no outbound request');
+ assert.deepEqual(outbound,[],'the native checklist journey makes zero outbound requests');
  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0,'readiness has no hydration mismatch');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'readiness fits the desktop viewport');
  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[],'readiness has no serious or critical accessibility violation');
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
- for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc054-readiness-${width}.png`,fullPage:true});}
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc054-readiness-${width}.png`,fullPage:true});
+  console.log('CHECKLIST_LAYOUT '+JSON.stringify({width,...await checklist.evaluate(node=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,minimumTextSize:Math.min(...[...node.querySelectorAll('h3,p,strong,span')].map(element=>parseFloat(getComputedStyle(element).fontSize)))}))}));
+  await checklist.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/oc044-checklist-${width}.png`,fullPage:false});
+ }
+ console.log('PROBE OC-044 acceptance 1 checklist: emitted Settings Readiness -> protected API and all rendered dependency states, owners, field-proof dates and not-done labels agree; refresh preserves durable and paging records with zero outbound requests; desktop axe and overflow pass; screenshots at 1440 and 390');
+ console.log('INSTALLATION_RECEIPT '+JSON.stringify({observedAt:report.observedAt,release:report.release,installation:report.installation}));
  console.log('PASS OC-054 Readiness Settings navigation, real matrix/signal rendering, pager refusal, refresh, axe/overflow/hydration at 1440; Readiness visual proof once at 1440/390');
 }
 
 // OC-001: a sender can leave for Alerts and return to recover the same generation.
 async function eventsSourceBrowser(page,context) {
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ const sourceContext=await context.browser().newContext({baseURL:origin,storageState:await context.storageState(),viewport:{width:1440,height:1000},locale:'en-US',timezoneId:'Australia/Brisbane',extraHTTPHeaders:{connection:'close'}});
+ try {
+ context=sourceContext;page=await context.newPage();const sourceErrors=[];page.on('pageerror',error=>sourceErrors.push(error.message));await page.goto(origin);
  await page.setViewportSize({width:1440,height:1000});
  await mkdir(directory,{recursive:true});await context.grantPermissions(['clipboard-read','clipboard-write']);
  const request=async(path,data,status=200)=>{
@@ -629,6 +728,7 @@ async function eventsSourceBrowser(page,context) {
   await page.getByLabel('Authentication',{exact:true}).selectOption(mode);
   await page.getByRole('button',{name:'Create source',exact:true}).click();
   const key=await page.getByLabel('Private key',{exact:true}).inputValue();assert.ok(key);
+  await expect(page.getByRole('button',{name:'Copy ingress URL',exact:true})).toBeEnabled();
   const url=await page.getByLabel('Ingress URL',{exact:true}).inputValue();
   assert.equal(new URL(url).origin,origin);assert.ok(new URL(url).pathname.startsWith('/api/ingress/'));
   await page.getByRole('button',{name:'Copy ingress URL',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),url);
@@ -649,18 +749,51 @@ async function eventsSourceBrowser(page,context) {
  let state=await request('/api/state'),alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].state,'active');
  const alert=alerts[0],nav=()=>page.locator('a[href="/alerts"] .nav-count').first();assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active').length));
  const row=page.locator('.alert-row').filter({hasText:'Checkout API latency above 2 seconds'});assert.equal(await row.count(),1);assert.match(await row.innerText(),/critical/);
- const incident=await request('/api/command',{type:'declare',service,title:'Synthetic checkout investigation',severity:'critical',summary:'Investigating',alerts:[alert.id]});
+ await row.click();await page.getByRole('button',{name:'Declare incident from alert',exact:true}).click();
+ await page.locator('.incident-page h1').waitFor();
+ const incident=(await request('/api/state')).incidents.find(item=>item.alerts.includes(alert.id));assert.ok(incident);
+ await page.locator('.incident-page').getByRole('button',{name:'Acknowledge',exact:true}).click();
+ await page.locator('.incident-state.state-acknowledged').waitFor();
  await page.goto(origin+source.path);await page.getByText('Send a test event',{exact:true}).click();
  assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),key);assert.equal(await page.getByLabel('Lifecycle generation',{exact:true}).inputValue(),generation);
  assert.equal(await page.getByLabel('Title',{exact:true}).inputValue(),'Checkout API latency above 2 seconds');
  await page.getByLabel('Intent',{exact:true}).selectOption('recover');assert.equal(await page.getByLabel('Severity',{exact:true}).inputValue(),'warning');
  await proof('recover-form');await page.getByLabel('Private key',{exact:true}).fill(source.key);await send();
  state=await request('/api/state');alerts=state.alerts.filter(a=>a.source===source.source);assert.equal(alerts.length,1);assert.equal(alerts[0].id,alert.id);assert.equal(alerts[0].state,'recovered');assert.equal(alerts[0].events.length,2);
- assert.equal(state.incidents.find(i=>i.id===incident.id).state,'declared','source recovery keeps the declared incident open');
+ assert.equal(state.incidents.find(i=>i.id===incident.id).state,'acknowledged','source recovery keeps the acknowledged incident open');
  const events=state.events.filter(e=>e.source===source.source);assert.deepEqual(events.map(e=>[e.intent,e.key,e.generation,e.severity]),[['trigger',key,generation,'critical'],['recover',key,generation,'warning']]);
  await page.goto(origin+'/alerts');assert.equal(await row.count(),1);assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
  assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active').length));await proof('recovered-list');
  await row.click();await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();assert.match(await page.locator('.alert-meta').innerText(),/critical.*recovered/);await proof('recovered-alert');
+ // Extend this source-recovery journey: readable history at desktop width and
+ // the long-zone timestamp boundary at phone width, without rewriting records.
+ await page.goto(origin+'/incidents/'+incident.id);
+ const timeline=page.getByRole('region',{name:'Timeline',exact:true});await timeline.locator('.event').last().waitFor();
+ const earlier=timeline.getByRole('button',{name:/^Earlier entries/});if(await earlier.count())await earlier.click();
+ const stored=state.incidents.find(i=>i.id===incident.id).timeline;
+ const text=await timeline.innerText();
+ assert.doesNotMatch(text,/\b[A-Z]{2,}-\d{3}\b/,'generated timeline copy contains no internal clause code');
+ assert.ok(!text.includes(source.source),'the generated source identifier is not a display name');
+ assert.ok((await timeline.locator('.event small').allTextContents()).includes('Source: '+source.name),'recovery names the source its owner created');
+ assert.equal(state.incidents.find(i=>i.id===incident.id).sourceRecovery.reminder.automatic,false,'the recorded reminder is not automatic delivery');
+ assert.ok((await timeline.locator('time').allTextContents()).every(text=>text.includes('Australia/Brisbane')),'timeline timestamps retain the browser zone');
+ await timeline.scrollIntoViewIfNeeded();await timeline.screenshot({path:`${directory}/timeline-recovery-1440.png`});
+ await page.setViewportSize({width:390,height:1000});
+ const bounds=await timeline.evaluate(card=>{
+  const bounds=card.getBoundingClientRect();
+  return {viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth,times:[...card.querySelectorAll('time')].map(time=>{
+   const range=document.createRange();range.selectNodeContents(time);
+   return {text:time.textContent,inside:[...range.getClientRects()].every(rect=>rect.left>=bounds.left&&rect.right<=bounds.right),fits:time.scrollWidth<=time.clientWidth};
+  })};
+ });
+ assert.ok(bounds.times.length>=3,'declared, acknowledged and source recovery times are visible');
+ assert.ok(bounds.times.every(time=>time.inside&&time.fits),'every timestamp line stays inside the phone timeline card without clipping');
+ assert.ok(bounds.scrollWidth<=bounds.viewport,'phone timeline has no sideways scroll');
+ await timeline.screenshot({path:`${directory}/timeline-recovery-390.png`});
+ await page.setViewportSize({width:1440,height:1000});
+ assert.deepEqual((await request('/api/state')).incidents.find(i=>i.id===incident.id).timeline,stored,'reading and formatting retained history never changes it');
+ await writeFile(`${directory}/timeline-receipt.json`,JSON.stringify({journey:'eventsSourceBrowser',desktop:{width:1440,sourceName:source.name,internalCodes:0,storedHistoryUnchanged:true},phone:bounds},null,2)+'\n');
+ console.log('PASS source recovery timeline: owner-given source name, no internal codes and unchanged stored history at 1440; all Australia/Brisbane timestamp lines inside the card without clipping or sideways scroll at 390');
  // Read each detail page, copy its command unchanged and send it through the
  // public HTTP door. Human names must retain the same stored identity as IDs.
  for(const sample of [source,await create('signed')]){
@@ -701,6 +834,8 @@ async function eventsSourceBrowser(page,context) {
  }
 
  console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Detail-page readable source samples copied and executed for bearer and signed, alerts visible, legacy ID retries deduplicated and mismatched identities refused; changed screens captured once at 1440/390.');
+ assert.deepEqual(sourceErrors,[],'source recovery has no browser application errors');
+ } finally {await sourceContext.close();}
 }
 
 // Production Worker + real local D1, without starting a managed rer dev server.
@@ -737,9 +872,15 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
+ if(focused==='rota-timeline'){
+  const session=await (await context.request.get('/api/session')).json();
+  await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
+  const {productSchedule}=await import('./product-browser-journey.mjs');
+  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await productSchedule(page,context,width,session,{selectedOnly:true,setTime});}
+ }
  if(focused==='readable-times'){
   const session=await (await context.request.get('/api/session')).json();
   await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
@@ -748,7 +889,9 @@ try {
   await coverageRulesBrowser(page,context,1440,session);
   await readinessBrowser(page,context);
  }
+ if(focused==='imported-email')await importedEmailBrowser(page,context);
  if(focused==='events-source')await eventsSourceBrowser(page,context);
+ if(focused==='response-policy')await responsePolicyBrowser(page,context);
  if(focused==='support-start')await supportStartBrowser(page,context,{setTime,proof:triageProof});
  if(focused==='roles'){
   const member=(await (await context.request.get('/api/session')).json()).member;
@@ -756,9 +899,9 @@ try {
   await incidentWorkflowBrowser(page,context,triageProof);
  }
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
- if(focused==='limitations')await limitationsBrowser(page,context);
+ if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(focused)){
+ if(!['response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -769,11 +912,12 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(focused))await readinessBrowser(page,context)
+ if(!['response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))await readinessBrowser(page,context)
+ if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log(focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -784,4 +928,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

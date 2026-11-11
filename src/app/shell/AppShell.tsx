@@ -30,6 +30,9 @@ export function AppShell() {
   const settings = pathname.startsWith('/settings');
   const [sheetOpen, setSheetOpen] = useState(false), [sheetSettings, setSheetSettings] = useState(false);
   const sheet = useRef<HTMLDialogElement>(null), menuButton = useRef<HTMLButtonElement>(null);
+  // A navigation hands focus to the persistent content landmark immediately;
+  // the dialog's later close event must not return it to Menu.
+  const sheetNavigation = useRef(false);
   const closeSheet = () => {sheet.current?.close(); setSheetOpen(false);};
   useEffect(() => {
     if (sheetOpen) sheet.current?.showModal();
@@ -56,7 +59,7 @@ export function AppShell() {
     } catch (error) {setSigningOut(false); w.setError((error as Error).message);}
   };
   const owner = () => <OwnerMenu actor={actor} busy={w.busy} signingOut={signingOut} onSignOut={signOut} />;
-  const links = (items: NavItem[], mobile = false) => items.map(item => <a key={item.id} className={`nav ${page === item.id ? 'active' : ''}`} href={item.path} aria-current={page === item.id ? 'page' : undefined} onClick={mobile ? closeSheet : undefined}>
+  const links = (items: NavItem[], mobile = false) => items.map(item => <a key={item.id} className={`nav ${page === item.id ? 'active' : ''}`} href={item.path} aria-current={page === item.id ? 'page' : undefined} onClick={mobile ? () => {sheetNavigation.current = true; closeSheet(); document.getElementById('main')?.focus({preventScroll: true});} : undefined}>
     {item.icon && <NavIcon name={item.icon} />}<span className="nav-label">{item.label}</span>
     {item.count !== undefined && <span className="nav-count" aria-label={`${item.count} ${item.id === 'incidents' ? 'open' : 'active'}`}>{item.count}</span>}
   </a>);
@@ -70,9 +73,9 @@ export function AppShell() {
     </aside>
     <div className="mobile-bar">
       <a href={stakeholder ? '/status' : '/on-call'} className="brand"><Mark size={30} /><span data-rer-name>Oncall</span></a>
-      <button ref={menuButton} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => {setSheetSettings(settings && !stakeholder); setSheetOpen(true);}}>Menu</button>
+      <button ref={menuButton} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => {sheetNavigation.current = false; setSheetSettings(settings && !stakeholder); setSheetOpen(true);}}>Menu</button>
     </div>
-    <dialog className="shell-sheet" ref={sheet} aria-label="Menu" onClose={() => {setSheetOpen(false); menuButton.current?.focus({preventScroll: true});}} onClick={event => {if (event.target === sheet.current) {const rect=sheet.current.getBoundingClientRect(); if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSheet();}}}>
+    <dialog className="shell-sheet" ref={sheet} aria-label="Menu" onClose={() => {setSheetOpen(false); if (!sheetNavigation.current) menuButton.current?.focus({preventScroll: true});}} onClick={event => {if (event.target === sheet.current) {const rect=sheet.current.getBoundingClientRect(); if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSheet();}}}>
       <div className="sheet-heading"><span>{sheetSettings ? 'Settings' : 'Menu'}</span><button onClick={closeSheet}>Close menu</button></div>
       {sheetSettings ? <>
         <button className="nav settings-back" onClick={() => setSheetSettings(false)}>‹ Oncall</button>

@@ -1,6 +1,7 @@
 import {shortDate, shortTime} from '../reviews/time';
 export {shortTime} from '../reviews/time';
 import type {Entry, Incident, Member, State} from '../family/response-operations/domain';
+import {nativeName} from '../integrations/native-name';
 
 export type IncidentProps = {
   incident: Incident;
@@ -14,7 +15,15 @@ export type IncidentProps = {
   mutate: (data: any) => Promise<any>;
 };
 export const memberName = (state: State, id: string | null | undefined) => {
-  if(id?.startsWith('source:'))return `Source: ${id.slice('source:'.length)}`;
+  if(id?.startsWith('source:')) {
+    const source = id.slice('source:'.length);
+    const name = source.startsWith('intake:')
+      ? state.intakeSources?.find(row => row.id === source.slice(7))?.name ?? 'Unavailable source'
+      : source.startsWith('email:')
+        ? state.emailAddresses?.find(row => row.id === source.slice(6))?.name ?? 'Unavailable source'
+        : nativeName(source);
+    return `Source: ${name}`;
+  }
   if(id==='system:incident-deadlines')return 'Deadline scheduler';
   const member=state.members.find(member=>member.id===id);
   if(member)return member.name;
@@ -27,6 +36,13 @@ export const memberName = (state: State, id: string | null | undefined) => {
 export function timelineText(entry: Entry, state: State) {
   // Only format generated workflow prefixes. Authored notes and reasons remain
   // literal text, and the retained timeline is never changed.
+  if (entry.kind === 'source-recovery') {
+    return 'All alerts recovered — awaiting resolution. Source recovery stopped the alert obligations. The incident still needs human recovery evidence and a summary. A reminder was recorded for the incident lead; automatic reminders and recovery notices are not available yet.';
+  }
+  if (entry.kind === 'declared' && entry.metadata?.event && entry.metadata.policyVersion !== undefined) {
+    const event = state.events.find(event => event.id === entry.metadata!.event);
+    if (event) return `Automatically declared from alert: ${event.title}. The service response policy was applied. No human acknowledgment has been recorded.`;
+  }
   if (entry.kind === 'assign-role' || entry.kind === 'reassign') {
     const match = /^(commander|scribe|communications|assignee): ([\s\S]*?) → ([\s\S]*?)(: [\s\S]*)?$/.exec(entry.text);
     if (match) {

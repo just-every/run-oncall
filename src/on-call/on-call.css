@@ -41,6 +41,19 @@
 .oc-bands { overflow:visible; }
 .oc-bands-scroll { overflow-x:auto; max-width:100%; padding:8px 4px 10px; margin:4px -4px -4px; overscroll-behavior-inline:contain; }
 .oc-bands-axis { position:relative; }
+.oc-band-scroll-hint { margin-top:8px !important; color:var(--oc-muted); font-size:14px; }
+.oc-band-name { position:relative; display:block; width:100%; white-space:nowrap; overflow:hidden; }
+.oc-band-measure { position:absolute; visibility:hidden; width:max-content; pointer-events:none; }
+.oc-bands-list { margin-top:18px; }
+.oc-band-list-role h4 { margin:12px 0 6px; color:var(--oc-muted); font-size:14px; font-weight:550; }
+.oc-band-list-role ol { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+.oc-band-list-role li { padding:12px 14px; border:1px solid var(--oc-rule); border-radius:8px; background:var(--oc-paper-deep); }
+.oc-band-list-role li.oc-band-list-gap { border-style:dashed; background:var(--oc-paper); }
+.oc-band-list-role li p { margin-top:4px; font-size:14px; }
+.oc-band-list-role time { display:block; }
+.oc-band-list-role li p > span[aria-hidden] { display:none; }
+.oc-band-list-role button { max-width:100%; white-space:normal; text-align:left; }
+
 .oc-band-dates { height:32px; position:relative; }
 .oc-band-dates time { position:absolute; white-space:nowrap; font-size:13px; color:var(--oc-muted); }
 .oc-band-rota { margin:0 0 18px; }
@@ -51,7 +64,7 @@
 .oc-band-track { height:44px; position:relative; border-radius:8px; background:var(--oc-paper-deep); }
 .oc-band { position:absolute; height:44px; padding:0 2px; }
 .oc-band > .oncall-tooltip { width:100%; height:100%; }
-.oc-band > .oncall-tooltip > span:first-child, .oc-band > button { width:100%; height:44px; display:block; padding:11px 10px; border:1px solid var(--oc-rule); border-radius:8px; color:var(--oc-ink); text-align:left; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; font-size:14px; }
+.oc-band > .oncall-tooltip > span:first-child, .oc-band > button { width:100%; height:44px; display:block; padding:11px 10px; border:1px solid var(--oc-rule); border-radius:8px; color:var(--oc-ink); text-align:left; white-space:nowrap; font-size:14px; }
 .oc-band-now > .oncall-tooltip > span:first-child, .oc-band-now > button { background:var(--oc-now-wash); }
 .oc-band-next > .oncall-tooltip > span:first-child, .oc-band-next > button { background:var(--oc-next-wash); }
 .oc-band-gap > .oncall-tooltip > span:first-child, .oc-band-gap > button { background:var(--oc-paper); border-style:dashed; }

@@ -2,6 +2,8 @@
 
 Oncall runs on macOS, Linux or Windows with WSL2. Git is required; rer brings Node and pnpm. `rer` provides the checkout's pinned Node and pnpm tooling.
 
+Start with the dated [US installation and dependency checklist](readiness.md#us-installation-and-dependency-checklist). It names the account, provider, native-device, standby and live-proof prerequisites and keeps unverified steps explicitly not done. Settings → Readiness shows the same read-only checklist beside this installation's release evidence.
+
 ## Run it on your computer
 
 One line installs the `rer` command, clones Oncall into `run-oncall` and starts it:
