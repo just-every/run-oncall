@@ -1,6 +1,6 @@
 # sd-oncall-c-f222 — OC-017
 
-Recorded 2026-11-11T21:11:55.698260+00:00. Repository: just-every/run-oncall. Branch: cloud/sd-oncall-c-f222. Candidate: `4451720a3e353d18218c03cbd0d75c180e322403`. No PR is required by the push Verify entry point.
+Recorded 2026-11-11T21:17:05.412283+00:00. Repository: just-every/run-oncall. Branch: cloud/sd-oncall-c-f222. Candidate: `4451720a3e353d18218c03cbd0d75c180e322403`. No PR is required by the push Verify entry point.
 
 ## Outcome and scope
 
@@ -24,23 +24,23 @@ Each acceptance sentence and named inherited safeguard is scored below. Status r
 
 | ID | Acceptance sentence or retained duty | Door and proof | Local result | Exact-SHA Verify |
 | --- | --- | --- | --- | --- |
-| A1 | Prepare, review, inspect and export exact copy; change source or revision, withdraw, restore versions 1 and 2 and race writes. | Protected HTTP and real private CLI; tests/activation.mjs:1014-1166; tests/checkpoint-cli.mjs:149-211 | PASS | 43099362981 event=push status=in_progress conclusion=None |
-| A2 | Eligibility and holds, stable identities, append-only attribution, every storage bound, no send authority. | Protected HTTP, restored-state readback and CLI; tests/activation.mjs:1050-1150; tests/checkpoint-cli.mjs:105-119,143-211 | PASS | 43099362981 event=push status=in_progress conclusion=None |
-| D1 | Explicit audience, immutable payload and incident and service snapshots, canonical hashes. | Prepare, review, export and tampered checkpoint refusal; tests/activation.mjs:1025-1067; tests/checkpoint-cli.mjs:49-55,105-119,149-170 | PASS | 43099362981 event=push status=in_progress conclusion=None |
-| D2 | Current responder and administrator mutation authority; viewer inspection; administrator restore. | Current-role HTTP doors; tests/activation.mjs:1015-1018,1051-1062,1099,1130; tests/checkpoint-cli.mjs:163 | PASS | 43099362981 event=push status=in_progress conclusion=None |
-| D3 | Exact review never conveys independent-review, recovery, sending or publication authority. | Self-review marker, unsent export, empty outbound ledger, held refusal; tests/activation.mjs:1060-1069,1080-1082,1118-1125; src/family/response-operations/handoffs.ts:296-309 | PASS | 43099362981 event=push status=in_progress conclusion=None |
-| D4 | Terminal withdrawal retains attributed append-only history; legacy unreviewed envelope stays unchanged. | Review, legacy export, withdrawal and restored record readback; tests/activation.mjs:1026-1028,1069,1087-1089,1120,1135 | PASS | 43099362981 event=push status=in_progress conclusion=None |
-| D5 | All storage bounds preserve prior state on refusal. | 65-record archive refusal, history and byte-bound reviews, aggregate restore refusal; tests/activation.mjs:1131-1150 | PASS | 43099362981 event=push status=in_progress conclusion=None |
-| D6 | Atomic snapshots, current password mapping, earlier-session revocation and winning-session protection. | Checkpoint capture, injected SQL failure, competing restore, fresh-target mapping and CLI restore; tests/activation.mjs:1092-1128,1156-1164; tests/checkpoint-cli.mjs:149-211 | PASS | 43099362981 event=push status=in_progress conclusion=None |
-| D7 | Erased subject or replayed old capture cannot resurrect records or authority. | Erase, stale archive restore refusal, CLI erasure fence and revoked-session reads; tests/activation.mjs:1246-1250,1364-1365; tests/checkpoint-cli.mjs:216-228 | PASS | 43099362981 event=push status=in_progress conclusion=None |
+| A1 | Prepare, review, inspect and export exact copy; change source or revision, withdraw, restore versions 1 and 2 and race writes. | Protected HTTP and real private CLI; tests/activation.mjs:1014-1166; tests/checkpoint-cli.mjs:149-211 | PASS | 43099362981 event=push status=completed conclusion=success |
+| A2 | Eligibility and holds, stable identities, append-only attribution, every storage bound, no send authority. | Protected HTTP, restored-state readback and CLI; tests/activation.mjs:1050-1150; tests/checkpoint-cli.mjs:105-119,143-211 | PASS | 43099362981 event=push status=completed conclusion=success |
+| D1 | Explicit audience, immutable payload and incident and service snapshots, canonical hashes. | Prepare, review, export and tampered checkpoint refusal; tests/activation.mjs:1025-1067; tests/checkpoint-cli.mjs:49-55,105-119,149-170 | PASS | 43099362981 event=push status=completed conclusion=success |
+| D2 | Current responder and administrator mutation authority; viewer inspection; administrator restore. | Current-role HTTP doors; tests/activation.mjs:1015-1018,1051-1062,1099,1130; tests/checkpoint-cli.mjs:163 | PASS | 43099362981 event=push status=completed conclusion=success |
+| D3 | Exact review never conveys independent-review, recovery, sending or publication authority. | Self-review marker, unsent export, empty outbound ledger, held refusal; tests/activation.mjs:1060-1069,1080-1082,1118-1125; src/family/response-operations/handoffs.ts:296-309 | PASS | 43099362981 event=push status=completed conclusion=success |
+| D4 | Terminal withdrawal retains attributed append-only history; legacy unreviewed envelope stays unchanged. | Review, legacy export, withdrawal and restored record readback; tests/activation.mjs:1026-1028,1069,1087-1089,1120,1135 | PASS | 43099362981 event=push status=completed conclusion=success |
+| D5 | All storage bounds preserve prior state on refusal. | 65-record archive refusal, history and byte-bound reviews, aggregate restore refusal; tests/activation.mjs:1131-1150 | PASS | 43099362981 event=push status=completed conclusion=success |
+| D6 | Atomic snapshots, current password mapping, earlier-session revocation and winning-session protection. | Checkpoint capture, injected SQL failure, competing restore, fresh-target mapping and CLI restore; tests/activation.mjs:1092-1128,1156-1164; tests/checkpoint-cli.mjs:149-211 | PASS | 43099362981 event=push status=completed conclusion=success |
+| D7 | Erased subject or replayed old capture cannot resurrect records or authority. | Erase, stale archive restore refusal, CLI erasure fence and revoked-session reads; tests/activation.mjs:1246-1250,1364-1365; tests/checkpoint-cli.mjs:216-228 | PASS | 43099362981 event=push status=completed conclusion=success |
 
 ## DONE riders
 
 | Row | Result | Proof and limits |
 | --- | --- | --- |
-| 1 | PASS | Both acceptance points have the populated HTTP and CLI observations in A1 and A2; exact-SHA Verify 43099362981 event=push status=in_progress conclusion=None. |
+| 1 | PASS | Both acceptance points have the populated HTTP and CLI observations in A1 and A2; exact-SHA Verify 43099362981 event=push status=completed conclusion=success. |
 | 2 | PASS | Supported review and export succeed; wrong role, hash, identity, source state, restore authority and capacity refuse. Complete prior-state assertions cover dangerous failures. |
-| 3 | PENDING CI | The unchanged changes lane is loaded by push Verify, via scripts/verify-shards.json and tests/verify.mjs. Exact candidate run: 43099362981 event=push status=in_progress conclusion=None. Fresh local candidate run is independently recorded. |
+| 3 | PASS | The maintained push plan declares the changes lane in scripts/verify-shards.json and tests/verify.mjs; this round independently records its fresh execution through root rer verify on the exact candidate. Exact candidate run: 43099362981 event=push status=completed conclusion=success. Fresh local candidate run is independently recorded. |
 | 4 | PASS | Candidate journey receipt binds the local command to the reported SHA. No source or test byte differs from the fresh main run; implementation-identity.json records hashes. |
 | 5 | PASS INSPECTED | OC-017 has no separate Base citation in its meta line. Its own requirement names the recovery, identity, credential and session safeguards; D6 and D7 cover those inherited duties. No new inheritance is claimed. |
 | 6 | PASS MECHANICAL; LANDER JUDGMENT PENDING | Generator write and check pass. CONTRACT.md, including Status, Gap and Evidence, is unchanged by explicit one-writer policy. The stale exact-copy Gap is reported for the lander to remove after its gate, not hand-edited. |
@@ -93,7 +93,7 @@ These probe descriptions refer to the existing activation flow, not a new perman
 
 Publication scan: commit=4451720a3e353d18218c03cbd0d75c180e322403, complete=false, historyScanned=false, findings=unestablished. A cloud-side publication scanner is not required for the branch push. The maintained Mac lander must run the complete full-history exact-SHA scan and require zero findings before landing. This report makes no scan-success claim.
 
-Branch Verify: 43099362981 event=push status=in_progress conclusion=None. Base Verify 43085467285 and base Run site 43085467371 were completed/success on 1e8f35e6ec553ed607b812dd6f957aae2b3acce9. No candidate Run site or main equality is claimed; main was never pushed.
+Branch Verify: 43099362981 event=push status=completed conclusion=success. Base Verify 43085467285 and base Run site 43085467371 were completed/success on 1e8f35e6ec553ed607b812dd6f957aae2b3acce9. No candidate Run site or main equality is claimed; main was never pushed.
 
 All actual non-secret receipts remain in this packet. Only explicitly selected regular files are published on the separate evidence ref. Evidence publication is not product READY, landing, acceptance or provider authorization.
 
@@ -101,3 +101,5 @@ All actual non-secret receipts remain in this packet. Only explicitly selected r
 
 No native implementation blocker was found. Slack and Teams account prerequisites, OC-051 Statuspage and Lamp prerequisites, connected submission, synchronization, reminders, publication and provider sends remain outside this clause. Paging stays OFF. No new account, provider, deployment, recovery-verification or independent-review authority is claimed.
 
+
+Terminal handoff: local and exact-SHA branch gates pass. READY branch=cloud/sd-oncall-c-f222 head=4451720a3e353d18218c03cbd0d75c180e322403. OC-017 is a native DONE claim for guarded landing; it is not counted as landed here. No remaining product blocker.
