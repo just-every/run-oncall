@@ -1,0 +1,23 @@
+{
+  "tag": "sd-oncall-c-f220",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f220",
+  "target": "BASE-AGENT-012",
+  "scope": "Only acceptance 2 Commander assignment dropped-response replay; retain MISSING and every held remainder.",
+  "steps": [
+    "Inspect main, full clause, existing role replay helpers and Communications predecessors; establish green main.",
+    "Invoke the existing shared role recovery helper for Commander from the maintained agent flow.",
+    "Populate native companion roles and a distinct stored assignee as witnesses, leaving Commander unassigned.",
+    "Run production build, emitted Worker machines journey, typecheck and first-party check.",
+    "Fetch main and reconcile; generate and check contract views, restore generated views from main, regenerate and check source lock last.",
+    "Inspect all unpublished commit identities and trailers, push the named branch with the guard, discover and observe exact-SHA Verify within the API budget.",
+    "Publish explicitly selected non-secret report and actual receipts to the evidence ref; hand product custody to the fleet."
+  ],
+  "preserved": [
+    "Communications changed-argument, dropped-response, optional-revision and native-revision observations",
+    "Scribe, reassignment, declaration, note, acknowledgment, follow-up and service scopes",
+    "classifiers, declarations, capabilities and held Base replay seam",
+    "Contract Status, Gap, Evidence and summary counts",
+    "paging OFF and all provider, authority, predecessor and release holds"
+  ]
+}

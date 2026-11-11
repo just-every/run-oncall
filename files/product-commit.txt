@@ -1,0 +1,12 @@
+commit 1e8f35e6ec553ed607b812dd6f957aae2b3acce9
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Wed Nov 11 18:33:40 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Wed Nov 11 18:33:40 2026 +0000
+
+    test: recover Commander assignment after a lost MCP response
+
+ sources.lock.json                  |  4 ++--
+ tests/oncall-agent-flow.mjs        |  3 ++-
+ tests/oncall-agent-role-replay.mjs | 13 +++++++++++--
+ 3 files changed, 15 insertions(+), 5 deletions(-)

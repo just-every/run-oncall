@@ -1,0 +1,135 @@
+{
+  "tag": "sd-oncall-c-f220",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f220",
+  "local_proof": {
+    "runtime": {
+      "command": "cloud_run timeout 1200 env ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "duration_seconds": 615.6,
+      "output": "runtime-machines.log",
+      "commander_probes": [
+        "PROBE BASE-AGENT-012 acceptance 2 autonomous Commander assignment: real MCP response destroyed at headers with unread body; D1 confirms completed standard-only call, saved outcome and one agent-attributed assign-role before retry; original revision and key with new RPC id return exact result and original review identity; one incident and workspace revision increment and native audit commit; native custody and paging unchanged; one linked replay-attempt audit and capacity bookkeeping only; zero outbound requests",
+        "PROBE BASE-AGENT-012 acceptance 2 held Commander assignment: real MCP response destroyed at headers with unread body; D1 confirms completed standard-only call, saved outcome and one agent-attributed assign-role before retry; original revision and key with new RPC id return exact result and original review identity; one incident and workspace revision increment and native audit commit; one original open review; native custody and paging unchanged; one linked replay-attempt audit and capacity bookkeeping only; zero outbound requests"
+      ]
+    },
+    "build": {
+      "command": "cloud_run timeout 900 npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "setup": {
+      "command": "cloud_run timeout 900 npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "cloud_run timeout 300 pnpm run typecheck",
+      "exit": 0,
+      "output": "typecheck.log"
+    },
+    "first_party": {
+      "command": "cloud_run timeout 300 npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "output": "first-party.log",
+      "note": "The first invocation returned 1 without diagnostics; an unchanged repeat returned 0. No repair or test weakening."
+    }
+  },
+  "source_sha256": {
+    "tests/oncall-agent-flow.mjs": "f653e270464716fb5305b5eb8ce4ba6d7b2e6ebc9c61e89ee89899f10f904820",
+    "tests/oncall-agent-role-replay.mjs": "4a514f440831345834a12503e383e6554d5e44de9025ea5dccbf392696df86cf",
+    "tests/agent-door-runtime.mjs": "bf53cb3a0ba1513189d5a93695987be5453d38032aec9b9ceba2973c5b7dbea6",
+    "tests/runtime.mjs": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3"
+  },
+  "counts_before": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_status_before": "missing",
+  "contract_status_after": "missing",
+  "claim": "PARTIAL, selected acceptance-2 Commander observation only",
+  "publication_scan": {
+    "status": "not run in cloud; fleet landing gate"
+  },
+  "main": "c8e19598f10885a8c7f9ae309d303705805e54f8",
+  "main_runs": {
+    "Verify": 43066529316,
+    "Run site": 43066527389
+  },
+  "github_api_calls": 4,
+  "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "mechanical": [
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "migration_ledger": {
+    "command": "none",
+    "reason": "no migration changed",
+    "exit": 0
+  },
+  "contract_diff": "empty, including all Status, Gap and Evidence cells",
+  "generated_views_committed": false,
+  "product_push": {
+    "status": "PUSH_OK",
+    "branch": "cloud/sd-oncall-c-f220",
+    "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+    "attempts": 1
+  },
+  "verify": {
+    "id": 43078949282,
+    "name": "Verify",
+    "event": "push",
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43078949282"
+  },
+  "identity_check": {
+    "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+    "commits": 1,
+    "result": "pass; no co-author trailers",
+    "output": "identity-check.log"
+  },
+  "mechanical_line": "MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock then check exit=0; views=node src/base/contract-docs.mjs write then check exit=0, restored from origin main; ledger=none exit=0",
+  "browser_proof": {
+    "status": "not applicable",
+    "reason": "No UI changes"
+  },
+  "pr": null,
+  "changed_files": [
+    "sources.lock.json",
+    "tests/oncall-agent-flow.mjs",
+    "tests/oncall-agent-role-replay.mjs"
+  ],
+  "unrelated_scope_diff": "none",
+  "existing_journey_registrations_removed": 0,
+  "new_journey_scripts": 0
+}

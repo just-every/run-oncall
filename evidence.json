@@ -1,0 +1,94 @@
+{
+  "files": [
+    {
+      "blob": "28fb5eb48dba16093c6b289f79e11111b0ad7159",
+      "bytes": 16260,
+      "path": "REPORT.md",
+      "sha256": "368e5005aed57dc8e0738e07cb0dc514096a186930460909c00d8b07d921e9e1"
+    },
+    {
+      "blob": "d63f4aa86fabeb6280801520ace892dfa622bc66",
+      "bytes": 253,
+      "path": "candidate-ci.json",
+      "sha256": "ff6754b95a4e0a55fa257f777787adc28908d1845b8593758405ebfd4b7d35cf"
+    },
+    {
+      "blob": "007fb7a39f94f7603ed7b9aad7156581a1ffec73",
+      "bytes": 12433,
+      "path": "ci-discovery.json",
+      "sha256": "baf32a2fb4e59a56a58b182f6167ee5e06c705ca57a32ef4e79d1556ed7d1160"
+    },
+    {
+      "blob": "97bfa9eb407488f3a899c8f35bd2b5c7dbf737b8",
+      "bytes": 1054,
+      "path": "commander-probes.log",
+      "sha256": "d10f97bd773131c5e87c2ea8e28177e76fca34769190be8c255816428ef81b8e"
+    },
+    {
+      "blob": "bb9c4e09e69cc8954bb80183c8ee2dc5167b817c",
+      "bytes": 816417,
+      "path": "final-mechanical.log",
+      "sha256": "1aa2cbfa3c60263b27118977c459d748b02ece4918440084eab5c7f8f0e3ef8a"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "first-party.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "8a1fd55b8708daee11dd3b4b02a03a6cc637814b",
+      "bytes": 128,
+      "path": "identity-check.log",
+      "sha256": "22f723e2e040b1299d83ef453905b195b1fe90b9f3c0e327b54bd2ed8debf9b6"
+    },
+    {
+      "blob": "77de057b8ff309ea311c453d5293d51a082dd77c",
+      "bytes": 537,
+      "path": "mechanical-receipt.json",
+      "sha256": "8c040aacb5e451749466e260a44831394f37aa642b43ab306ad68aac01191d5f"
+    },
+    {
+      "blob": "bb9c4e09e69cc8954bb80183c8ee2dc5167b817c",
+      "bytes": 816417,
+      "path": "mechanical.log",
+      "sha256": "1aa2cbfa3c60263b27118977c459d748b02ece4918440084eab5c7f8f0e3ef8a"
+    },
+    {
+      "blob": "75a4785877129b52e39d69cf1ad3ab8506604a6a",
+      "bytes": 1568,
+      "path": "plan.json",
+      "sha256": "181aae59c94edcbc1e632c52ad8bd06ba02376ff10a4f23f8ffef497d9119e36"
+    },
+    {
+      "blob": "8ca6fb21c51767ee1a2ac578b14827618168b148",
+      "bytes": 506,
+      "path": "product-commit.txt",
+      "sha256": "f3f5eb9a2c92c12bda3d0c0f47ac4b1901e2f6a8ad4926be986ef2688c673160"
+    },
+    {
+      "blob": "bfd7066c6197296e01341cd73c816cc2d8c37ff3",
+      "bytes": 5281,
+      "path": "receipt.json",
+      "sha256": "4b87c9ed015d12085f4a2ed4f61615daa2618dd3aa3fd48a4643ec5f0f5f76f4"
+    },
+    {
+      "blob": "1d0c694b5ee9e14583642b5cada192c146aded94",
+      "bytes": 57766,
+      "path": "runtime-machines.log",
+      "sha256": "7d975502ebfb2519463c4863e82ee18a231026ae5d88b85fcd2eabed1655d61d"
+    },
+    {
+      "blob": "60c4f7052dcc35fc1d59b50fe0ebece6ce333e57",
+      "bytes": 187,
+      "path": "typecheck.log",
+      "sha256": "609679de2b6582214234fb09939eaa937636854694e14df918fb45cb7eac5609"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f220",
+  "product_head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "ref": "refs/heads/evidence/sd-oncall-c-f220",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f220"
+}
