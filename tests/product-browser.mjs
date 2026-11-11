@@ -665,7 +665,7 @@ async function eventsSourceBrowser(page,context) {
  // public HTTP door. Human names must retain the same stored identity as IDs.
  for(const sample of [source,await create('signed')]){
   await page.goto(origin+sample.path);
-  assert.equal(await page.getByRole('heading',{level:2}).innerText(),sample.name,'the existing source link names its source plainly');
+  assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the existing source link names its source plainly');
   const details=page.locator('.ingress-example');if(await details.getAttribute('open')===null)await details.locator('summary').click();
   assert.equal(await page.getByLabel('Ingress URL',{exact:true}).inputValue(),sample.url,'existing ingress address is unchanged');
   const example=await page.getByLabel('Sample request',{exact:true}).inputValue();
@@ -697,7 +697,7 @@ async function eventsSourceBrowser(page,context) {
   await page.goto(origin+'/alerts');const opened=page.locator('.alert-row').filter({hasText:body.title});assert.ok(await opened.count()>0,'the sent sample opens an alert visible in Alerts');
   await page.locator('.alert-row[href="/alerts/'+encodeURIComponent(alert.id)+'"]').click();
   await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();
-  await page.goto(origin+sample.path);assert.equal(await page.getByRole('heading',{level:2}).innerText(),sample.name,'the original page URL still works after sending');
+  await page.goto(origin+sample.path);assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the original page URL still works after sending');
  }
 
  console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Detail-page readable source samples copied and executed for bearer and signed, alerts visible, legacy ID retries deduplicated and mismatched identities refused; changed screens captured once at 1440/390.');
