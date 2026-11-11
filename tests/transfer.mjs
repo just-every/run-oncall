@@ -89,7 +89,7 @@ export function transferDoor(m) {
    ok(await m.request('/api/automation/clients/'+client+'/rotate',{revision:clientBefore.revision,key},cookie))
    const native=async()=>({application:ok(await m.request('/api/state',undefined,cookie)),paging:ok(await m.request('/api/paging/state',undefined,cookie))})
    const before=await native()
-   const paused=await agentCall('oncall.services.list',{})
+   const paused=await agentCall('oncall.incidents.receipt',{key:'synthetic-oncall-portable'})
    assert.equal(paused.isError,true);assert.equal(paused._meta['com.runeditrun/error'].code,'agents_paused')
    assert.equal((await m.request('/agents/api/pause',{paused:false})).status,401,'anonymous callers cannot resume restored agents')
    const approvalRows=()=>agentApprovals.map(({id})=>sql("SELECT * FROM agent_door_approvals WHERE id='"+id+"'")[0])
@@ -106,8 +106,8 @@ export function transferDoor(m) {
    await refuseApprovals()
    ok(await m.request('/agents/api/pause',{paused:false},cookie))
    await this.choosePolicy(cookie)
-   const resumed=await agentCall('oncall.services.list',{})
-   assert.equal(resumed.isError,false);assert.ok(resumed.structuredContent.data.some(row=>row.id==='transfer'),'only the signed-in owner resume enables a valid agent read')
+   const resumed=await agentCall('oncall.incidents.receipt',{key:'synthetic-oncall-portable'})
+   assert.equal(resumed.isError,false);assert.equal(resumed.structuredContent.operation.client,client,'only the signed-in owner resume enables a valid agent receipt read')
    await refuseApprovals()
    for(const {args} of agentApprovals){const replay=await agentCall('oncall.incidents.resolve',args);assert.equal(replay.isError,true)}
    for(const table of agentTables){const restored=history(sql)[table];for(const row of agentHistory[table])assert.deepEqual(restored.find(item=>item.id===row.id&&item.key===row.key),row,'receiving activity never rewrites retained '+table)}
@@ -199,7 +199,7 @@ export async function managedSeed(bindings={}){
  async function startHttp(options={}){
   outboundLedger=options.outboundLedger
   if(outboundLedger)await writeFile(outboundLedger,'',{mode:0o600})
-  const key=await readDevKey(process.cwd()),child=spawn(process.execPath,outboundLedger?['tests/worker-server.mjs','dist/server/wrangler.json','.wrangler/state',String(port),'.dev.vars',outboundLedger]:['node_modules/vite/bin/vite.js','dev','--host','127.0.0.1','--port',String(port),'--strictPort'],{env:{...env,RER_DEV_ORIGIN:origin,RER_DEV_KEY:key,RER_DEV_IDENTITY:'on'},stdio:['ignore','pipe','pipe']});children.push(child);console.log('Owned transfer HTTP runtime PID',child.pid)
+  const key=await readDevKey(process.cwd()),child=spawn(process.execPath,outboundLedger?['tests/worker-server.mjs','dist/server/wrangler.json','.wrangler/state',String(port),join(process.cwd(),'.dev.vars'),outboundLedger]:['node_modules/vite/bin/vite.js','dev','--host','127.0.0.1','--port',String(port),'--strictPort'],{env:{...env,RER_DEV_ORIGIN:origin,RER_DEV_KEY:key,RER_DEV_IDENTITY:'on'},stdio:['ignore','pipe','pipe']});children.push(child);console.log('Owned transfer HTTP runtime PID',child.pid)
   let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c)
   for(let n=0;n<240;n++){
    if(child.exitCode!==null||child.signalCode!==null)throw Error(safe(output).split(key).join('[redacted]').slice(-1400))
@@ -386,7 +386,7 @@ try{
  // OC-053 extends this populated transfer journey with machine history and pending egress.
  const erasedNativeIncident=ok(await req('/api/command',{type:'declare',service:'transfer',title:'Synthetic erasable incident',summary:'Synthetic erasable context',severity:'warning'}));
  const apiKey=randomBytes(32).toString('hex'),endpointKey=randomBytes(32).toString('hex')
- const createdClient=await req('/api/automation/clients',{name:'alice@example.test automation',key:apiKey,services:['transfer'],permissions:['services:read','incidents:read','incidents:write']});assert.equal(createdClient.status,201);const apiClient=createdClient.value
+ const createdClient=await req('/api/automation/clients',{name:'alice@example.test automation',key:apiKey,services:['transfer'],permissions:['incidents:read','incidents:write']});assert.equal(createdClient.status,201);const apiClient=createdClient.value
  const createdEndpoint=await req('/api/automation/endpoints',{name:'Portable receiver',client:apiClient.id,services:['transfer'],url:'https://8.8.8.8/events',key:endpointKey,approve:true});assert.equal(createdEndpoint.status,201)
  await business.choosePolicy(cookie)
  const listedResponse=await fetch(m.origin+'/mcp',{method:'POST',headers:{origin:m.origin,authorization:'Bearer '+apiKey,'content-type':'application/json',accept:'application/json, text/event-stream','MCP-Protocol-Version':'2026-07-28','Mcp-Method':'tools/list'},body:JSON.stringify({jsonrpc:'2.0',id:randomUUID(),method:'tools/list',params:{_meta:{'io.modelcontextprotocol/protocolVersion':'2026-07-28'}}})});
