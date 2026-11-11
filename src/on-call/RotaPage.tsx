@@ -19,7 +19,7 @@ import type {OnCall, OnCallBand} from './read';
 import {RotaSheet} from './RotaSheet';
 import {WeekBands} from './WeekBands';
 import {localDate, sameRota} from './rota-steps/draft';
-import {shortTime, zoneName} from './time';
+import {shortTime} from './time';
 import './on-call.css';
 import '../scheduling.css';
 
@@ -100,13 +100,13 @@ export function RotaPage({id, state, actor, value, refresh, edit = false, render
     <FailureLine failure={sheet ? null : failures.failure}/>
     {data && !schedule && <p>Rota not found. <Link to={'/on-call' as any}>Return to On call</Link></p>}
     {schedule && <><ScheduleNowNext schedule={schedule} state={state} request={request}/>
-      <WeekBands rotas={[{id, name:schedule.name, week:bands}]} from={from} to={from + 14 * 86_400_000} title="Next two weeks" selectable={band=>band.member?.id===actor.id&&Date.parse(band.from)>Date.now()} onShift={band => {if (band.member?.id === actor.id && Date.parse(band.from) > Date.now()) openSwap(band);}}/>
+      <WeekBands rotas={[{id, name:schedule.name, week:bands}]} from={from} to={from + 14 * 86_400_000} title="Next two weeks" zone={schedule.timezone} selectable={band=>band.member?.id===actor.id&&Date.parse(band.from)>Date.now()} onShift={band => {if (band.member?.id === actor.id && Date.parse(band.from) > Date.now()) openSwap(band);}}/>
       <div className="oc-rota-actions">{canEdit && <button type="button" onClick={openCover}>Cover a shift</button>}{responsive && <button type="button" onClick={() => openSwap()}>Request a swap</button>}</div>
-      {schedule.overrides.length > 0 && <section className="oc-card"><h2>Cover</h2><ul className="oc-cover-list">{schedule.overrides.map(override => <li key={override.id}><div><strong>{person(override.member)?.name ?? 'Nobody on call'}</strong><p>{override.role} · {shortTime(override.start, schedule.timezone)} – {shortTime(override.end, schedule.timezone)} · {zoneName(schedule.timezone)}</p></div>{canEdit && <Tooltip label="Remove cover"><button type="button" aria-label="Remove cover" onClick={() => {setSheet('cover');void reviewChange({...schedule, overrides:schedule.overrides.filter(row => row.id !== override.id)});}}>×</button></Tooltip>}</li>)}</ul></section>}
+      {schedule.overrides.length > 0 && <section className="oc-card"><h2>Cover</h2><ul className="oc-cover-list">{schedule.overrides.map(override => <li key={override.id}><div><strong>{person(override.member)?.name ?? 'Nobody on call'}</strong><p>{override.role} · {shortTime(override.start, schedule.timezone)} – {shortTime(override.end, schedule.timezone)}</p></div>{canEdit && <Tooltip label="Remove cover"><button type="button" aria-label="Remove cover" onClick={() => {setSheet('cover');void reviewChange({...schedule, overrides:schedule.overrides.filter(row => row.id !== override.id)});}}>×</button></Tooltip>}</li>)}</ul></section>}
       <div className="oc-coordination"><ScheduleCoordination rotaPage onRequestSwap={() => openSwap()} schedule={schedule} state={state} actor={actor} onChanged={changed}/></div>
       <details className="oc-card oc-paging"><summary>Paging is off</summary><ScheduleSummary showCalendar={false} schedule={schedule} policies={data?.policies ?? []} admin={canEdit} request={request} onSaved={() => {void load();}}/></details>
     </>}
-    {sheet && schedule && <RotaSheet title={sheet === 'cover' ? 'Cover a shift' : 'Request a swap'} close={close}><p className="oc-quiet">{schedule.timezone.replaceAll('_',' ')}</p><FailureLine failure={failures.failure}/>
+    {sheet && schedule && <RotaSheet title={sheet === 'cover' ? 'Cover a shift' : 'Request a swap'} close={close}><p className="oc-quiet">{schedule.timezone}</p><FailureLine failure={failures.failure}/>
       {review ? <ReviewedChange key={review.digest} review={review} busy={busy} onApply={() => void apply()}/> : sheet === 'cover' ? <form onSubmit={event => {event.preventDefault();void coverShift();}}>
         <RotaField label={<>Who</>}><select value={cover.member} onChange={event => updateCover({member:event.target.value})}><option value="">Nobody on call</option>{state.members.filter(person => person.active && ['admin','responder'].includes(person.role)).map(person => <option value={person.id} key={person.id}>{person.name}</option>)}</select></RotaField>
         <RotaField label={<>Role</>}><select value={cover.role} onChange={event => updateCover({role:event.target.value as 'primary'|'backup'})}><option value="primary">Primary</option><option value="backup">Backup</option></select></RotaField>

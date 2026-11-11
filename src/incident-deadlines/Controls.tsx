@@ -1,10 +1,11 @@
+import {shortTime} from '../reviews/time';
 import {autosaveRequest,useAutosave} from '../app/autosave/useAutosave';
 import {SavedState,SaveFeedback} from '../app/autosave/SavedState';
 import {request} from '../useWorkspace';
 import {Field,Form} from '../forms';
 import type {Incident,Member,Service,State} from '../family/response-operations/domain';
 export function DeadlineControls({incident,actor,busy,submit,compact=false,displayName=(id:string)=>id}:{incident:Incident;actor:Member;busy:boolean;submit:(input:any)=>Promise<any>;compact?:boolean;displayName?:(id:string)=>string}) {
- const shownTime=(value:string)=>compact?new Date(value).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):value;
+ const shownTime=(value:string)=>shortTime(value);
  const editable=['admin','responder'].includes(actor.role),pending=incident.deadlines?.find(d=>d.state==='pending');
  return <section aria-label="Incident deadlines">{!compact&&<h3>Incident deadlines</h3>}
  {pending&&<p role="status">Snoozed / acknowledgment held until {shownTime(pending.dueAt)} · {pending.kind} · {pending.minutes} minutes. Paging OFF.</p>}
