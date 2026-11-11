@@ -14,7 +14,7 @@ PR: none; this seed uses the fleet landing path. No default-branch push or landi
 4. Traced the doubled SendGrid input to the pinned rer package's formatting, not a duplicate seed declaration. Left the valid MAIL_API_KEY ← SENDGRID_API_KEY declaration unchanged. SOURCE-TRACE.md records the exact modules and mechanism.
 5. Ran typecheck and the source-lock/contract-document checks successfully. No test files changed, and no wording tests were added. Built the actual run site (26 pages, 52 files) successfully. Inspected its changed Getting started deployment section at 1440 and 390, plus a local Markdown rendering of the changed README sections at both widths. The README rendering is not a claim about GitHub's hosted UI. Desktop overflow checks passed; both widths keep document width within the viewport. Mobile README code blocks retain horizontal scrolling.
 6. Fetched main and rebased the unpublished edits before the first commit, retaining the newer time-display work and its tests. Regenerated the source lock last with node scripts/edition-authoring/cli.mjs lock, and ran its check. CONTRACT.md and both generated acceptance views are unchanged. Made one real commit without a CI skip marker. Audited every candidate commit, including side parents: fleet author/committer, no trailers. The guarded branch push succeeded on its first attempt.
-7. Verify was discovered on this exact SHA using REST. Its final result is recorded in the CI receipt when available. The report-only packet is published separately from product custody; evidence publication does not claim acceptance or landing.
+7. Verify was discovered on this exact SHA using REST. Run 43010917621 completed successfully on e4066e802e5c04f26f3b5e750fb9755aba3b473f. Four REST calls were used: discovery plus three polls, at least 300 seconds apart. See ci-receipt.json and ci-poll-3.json. The report-only packet is published separately from product custody; evidence publication does not claim acceptance or landing.
 
 ## Changed sections
 
@@ -43,4 +43,8 @@ CLAIM OC-018 PARTIAL points=none tests=none
 GAP OC-018: No complete new acceptance point is claimed by this docs-only run. Existing maintained build/deploy-dry-run test gap and the rest of the clause remain as recorded on main.
 DEFAULT OC-018: Dry-run is the pinned command's local-only plan, even with an env file; target checks require the real deploy command with its stated remote effects.
 
-No product blocker identified locally. The remaining upstream duplicated hint is allowed by the brief and is reported for follow-up. CI and evidence custody are recorded separately.
+Blockers: none. Exact-SHA Verify is green; the branch is a READY candidate for the fleet, not a landed change. The remaining upstream duplicated hint is allowed by the brief and is reported for follow-up. CI and evidence custody are recorded separately.
+
+## Terminal custody
+
+Product: pushed once to cloud/main-oncall-run-docs-1 at e4066e802e5c04f26f3b5e750fb9755aba3b473f. Verify: completed/success, run 43010917621. Evidence: the separate evidence/main-oncall-run-docs-1 ref contains this report and actual receipts; its exact head is printed in the terminal final message. Product clone cleanup follows successful final evidence publication.

@@ -3,8 +3,8 @@
   "head": "e4066e802e5c04f26f3b5e750fb9755aba3b473f",
   "run_id": 43010917621,
   "html_url": "https://github.com/just-every/run-oncall/actions/runs/43010917621",
-  "status": "in_progress",
-  "conclusion": null,
-  "github_calls": 3,
+  "status": "completed",
+  "conclusion": "success",
+  "github_calls": 4,
   "poll_interval_seconds_minimum": 300
 }
