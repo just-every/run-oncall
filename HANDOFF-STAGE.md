@@ -109,3 +109,23 @@ capacity before replacement; invalid input or storage failure changes none.
 OC-017 records this contract target. Passing this local slice does not accept
 an external adapter, production paging,
 customer communication delivery or customer adoption.
+
+## Maintained OC-017 proof
+
+The changes verification lane runs `tests/activation.mjs`, including its
+`checkpointCli` flow from `tests/checkpoint-cli.mjs`. The emitted Worker and D1
+exercise both acceptance points through protected HTTP and the private local
+CLI. The HTTP export comparison is independent of the checkpoint comparison:
+the exported record must equal the record returned by the successful review.
+
+| Acceptance point | Public-door observations in the maintained journey |
+| --- | --- |
+| 1: prepare, review, inspect, exact export, source changes, withdrawal, both checkpoint versions and competing writes | The reviewed-handoff block prepares explicit copy, refuses missing audience and viewer mutations, inspects as a viewer, then compares the complete HTTP export record with the reviewed record: payload, immutable source snapshots, hashes, revision and attributed history. A source change refuses export; withdrawal refuses another review. Checkpoint versions 1 and 2 retain handoff history, and concurrent restores publish one winner without revoking its session. `checkpointCli` independently compares populated exports and restored records through the real CLI. |
+| 2: eligibility, recovery holds, stable identities, attribution, capacity and no send authority | Preparation retries preserve identity and changed content conflicts. Reviews bind exact hashes and record self-review; withdrawal retains the attributed history prefix. Restored approvals are held and cannot export. The journey refuses excess record count, history count, record bytes and aggregate bytes while preserving prior data, and restores valid bounded records. Audit-insert and storage failures roll back. Export stays unsent and unpublished, with no provider actions or outbound requests; the legacy draft stays unreviewed and its source links grant no anonymous access. |
+
+Run the selected lane with `ONCALL_VERIFY_LANE=changes rer verify`; run
+`pnpm run typecheck` and `rer check --profile first-party` for the local candidate
+as well. Contract status and evidence are judged separately from this proof
+map. Connected submission, synchronization, reminders and provider publication
+remain outside this native handoff flow, and a review grants none of their
+authority.
