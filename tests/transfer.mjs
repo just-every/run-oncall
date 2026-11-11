@@ -673,10 +673,10 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
   if(table==='ik_door_apply_failures')expected=[...expected,...interruptedPlans.filter(id=>!expected.some(row=>row.plan_id===id)).map(plan_id=>({plan_id,reason_code:'import_interrupted_restore'}))].sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))
   assert.deepEqual(restoredImports[table],expected,table+' retains every import/provenance/plan/approval field, with restored in-flight work explicitly interrupted')
  }
+ await business.assertInactive(cookie,oldCookie,sql)
  cookie=await business.personSession(cookie)
  await m.close();await m.startHttp({outboundLedger:'.rer/local/agent-transfer-outbound.jsonl'})
  await business.assertAgentsInactive(cookie,apiKey,apiClient.id,sql)
- await business.assertInactive(cookie,oldCookie,sql)
  console.log('OC-052 portable restore: complete import history preserved and restored pending Business execution refused')
  assert.equal((await req('/api/delivery',{})).status,409)
  // Restored entity IDs do not recover the source installation's audit labels.
