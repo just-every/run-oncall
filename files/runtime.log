@@ -1,0 +1,155 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PASS additive audit migration upgrade: 121 prior application tables and 31 held rows unchanged before Worker writes.
+PASS held upgrade through pre-0106 SQL: full ordered members/services/policies/events/alerts/incidents/audit and nested history unchanged; held password works after upgrade and repeat migration/restart.
+PASS OC-042 held signed-source custody survives upgrade, rotation, revocation and archive exclusion without secret echoes
+PROBE OC-005 copied steps: protected service command and state read -> new service instructions; original incident copy unchanged
+PASS OC-003 responder authority: populated workspace reads, attributed acknowledgment and note, ten administrator refusals with unchanged application and credential records
+PROBE OC-005 owned action: protected action command and state read -> responder owner, 2026-11-03 UTC calendar due date, open with no evidence
+PROBE OC-005 evidence refusal: protected completion without evidence -> 400; complete application state and revisions unchanged
+PROBE OC-005 unfinished work: protected evidenced recovery and summarized resolution -> resolved incident retains the unchanged open action
+PASS OC-004 native lifecycle: exact admitted alerts, responder commander, atomic evidence and summary refusals, evidenced recovery and resolved human-attributed timeline
+PASS OC-002 native replay: frozen severity decision, owner, version and evaluation beside changed ownership in submitted order; no state or permanent-audit writes
+PROBE OC-006 2: protected legacy draft export and its actual source references -> review required, stable internal identity; authorized populated reads succeed, anonymous and revoked reads return 401 with error only
+PASS OC-043 runtime: maintenance policy, immutable explanation and owned suppressed signal survive restart; duplicate admission adds no workflow or obligation
+PASS OC-043 removing maintenance routes the next observation of the retained alert group
+PASS OC-043 correlation restart: frozen original and version survive migration/restart, next source generation joins once, duplicate admission adds no action
+PASS OC-043 durable coordination workflow: frozen ordered plan, two committed steps, restart mid-workflow, explicit authorized resume, atomic audit-failure rollback with interrupted outcome, exact-once completion/replay and member-erasure/export custody
+{"clause":"OC-010","category":"local","outcome":"passed","recordedAt":"2026-11-11T23:18:51.300Z","provenance":{"kind":"maintained-journey","journey":"tests/runtime.mjs: coordinationHealth","execution":"local","accountDeployment":false},"build":{"sourceSha":"7cec5859c1f52f59070019bef6ef5764440922a0","fingerprint":"03dc504125266b82a6cd4f9666d96822690d5998ea798802cfa01952e9d5043b"},"observations":{"available":{"httpStatus":200,"ok":true,"deployment":{"sourceSha":"7cec5859c1f52f59070019bef6ef5764440922a0","fingerprint":"03dc504125266b82a6cd4f9666d96822690d5998ea798802cfa01952e9d5043b","versionId":null},"paging":"not-provided","target":"coordination","status":"ok","storage":"available"},"unavailable":{"httpStatus":503,"ok":false,"deployment":{"sourceSha":"7cec5859c1f52f59070019bef6ef5764440922a0","fingerprint":"03dc504125266b82a6cd4f9666d96822690d5998ea798802cfa01952e9d5043b","versionId":null},"paging":"not-provided","target":"coordination","status":"unavailable","storage":"unavailable","error":"Storage or server failure; no success confirmed"},"unavailableStateStatus":503,"recovered":{"httpStatus":200,"ok":true,"deployment":{"sourceSha":"7cec5859c1f52f59070019bef6ef5764440922a0","fingerprint":"03dc504125266b82a6cd4f9666d96822690d5998ea798802cfa01952e9d5043b","versionId":null},"paging":"not-provided","target":"coordination","status":"ok","storage":"available"},"recordsUnchanged":true,"commands":{"available":{"check":{"ok":true,"exitCode":0},"describe":{"cliVersion":"0.2.108","profile":"first-party","effects":{"install":"See SEED-COMMAND-CONTRACT.md for install effects.","setup":"Build and migrate local state, save the first owner and private settings, and retain existing owner, secrets and data on repeat setup. No provider request.","dev":"Run Oncall on a loopback address, applying local migrations and printing a private RER_OPEN owner entry. First launch confirms the read-only owner at /setup; later launches open the app. --as signed-out selects the signed-out persona; --login retains automatic owner entry for compatibility. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server.","preview":"Serve the built Oncall app on a loopback address with local state and owner sign-in. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server.","build":"See SEED-COMMAND-CONTRACT.md for build effects.","verify":"See SEED-COMMAND-CONTRACT.md for verify effects.","reset":"See SEED-COMMAND-CONTRACT.md for reset effects.","deploy":"Deploy incident coordination to your own Cloudflare account, claim the configured owner and retire its one-time setup token. Requires Cloudflare credentials and configured remote sign-in mail. Paging stays OFF; keep your existing pager active. --remove --yes deletes owned resources and reads back their absence. --site publishes the separate Run site. --dry-run builds and validates locally, then reads target secret bindings with Cloudflare credentials, without provider writes. --site --dry-run builds the separate Run site with no provider request.","export":"Write a private local archive of supported durable records and import journal; exclude sessions, credentials and private settings. Stop dev and preview first.","import":"Require an empty local destination and explicit --yes; atomically restore validated records and journal, pause pending timers, hold handoff approvals and disable Business import intake. Credentials and sessions never transfer; new owners must explicitly map an archived administrator identity.","doctor":"See SEED-COMMAND-CONTRACT.md for doctor effects.","describe":"See SEED-COMMAND-CONTRACT.md for describe effects.","check":"See SEED-COMMAND-CONTRACT.md for check effects.","release":"See SEED-COMMAND-CONTRACT.md for release effects.","demo":"A throwaway demo of this seed (rer dev --demo): fresh data in .rer/demo/START (deleted when it stops: --stop, Ctrl-C or its end, one hour by default or --idle-timeout), the saved owner signed in through the demo persona, a separate RER_OWNER_OPEN link for single-use native owner entry on loopback (15-minute expiry; never saved), the seed's demo data, Demo in the app name and title, real public reads/checks and simulated external writes (RER_DEMO=1; the checkout's own data is never touched).","adopt-edition":"Add edition.json and sources.lock.json for the existing tracked local source, preserving declared project identity and existing copy/composition records. Create an empty base-copies.json only when none exists. Review and stage the new authoring inputs; no source regeneration, install setup or commit.","refresh-base":"Consent to each declared edition edit with repeatable --edition-migration ID; refresh leaves the edit owed. Refresh recorded Base copies to --ref FULL_COMMIT, preserving acknowledged adaptations and applied migrations; announce removed singleton retirement. Deliver invoked workflow helpers atomically; adopt tracked known historical Verify templates and preserve divergent workflows with adoption notices. Acquire committed source from the declared Base repository (default https://github.com/runeditrun/base.git), or read immutable trees, blobs and ancestry through authenticated gh with --from-api, or use --base CHECKOUT or --base-archive DIRECTORY with --ref FULL_COMMIT for an exported source tree. --offline requires --base or --base-archive and never acquires remote source. Refuse incomplete Git checkouts without changing their records. Review the diff and run edition tests before committing.","signin":"A one-time sign-in link for the hosted owner, without mail. Uses the Cloudflare credentials that deployed --environment (default production; from the environment or --env-file) to write a single-use grant for the recorded owner into that deployment's auth database, then prints the link once to this terminal; it is never saved. The link works once, only for that owner, expires within 15 minutes, and its use is recorded in the owner's audit log. Signed in this way, the owner can correct a wrong email in settings."}}},"unavailable":{"check":{"ok":true,"exitCode":0},"describe":{"cliVersion":"0.2.108","profile":"first-party","effects":{"install":"See SEED-COMMAND-CONTRACT.md for install effects.","setup":"Build and migrate local state, save the first owner and private settings, and retain existing owner, secrets and data on repeat setup. No provider request.","dev":"Run Oncall on a loopback address, applying local migrations and printing a private RER_OPEN owner entry. First launch confirms the read-only owner at /setup; later launches open the app. --as signed-out selects the signed-out persona; --login retains automatic owner entry for compatibility. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server.","preview":"Serve the built Oncall app on a loopback address with local state and owner sign-in. Ordinary /signin email sign-in sends only through a configured remote mail provider with real credentials; no sender is configured by default. --stop stops the owned server.","build":"See SEED-COMMAND-CONTRACT.md for build effects.","verify":"See SEED-COMMAND-CONTRACT.md for verify effects.","reset":"See SEED-COMMAND-CONTRACT.md for reset effects.","deploy":"Deploy incident coordination to your own Cloudflare account, claim the configured owner and retire its one-time setup token. Requires Cloudflare credentials and configured remote sign-in mail. Paging stays OFF; keep your existing pager active. --remove --yes deletes owned resources and reads back their absence. --site publishes the separate Run site. --dry-run builds and validates locally, then reads target secret bindings with Cloudflare credentials, without provider writes. --site --dry-run builds the separate Run site with no provider request.","export":"Write a private local archive of supported durable records and import journal; exclude sessions, credentials and private settings. Stop dev and preview first.","import":"Require an empty local destination and explicit --yes; atomically restore validated records and journal, pause pending timers, hold handoff approvals and disable Business import intake. Credentials and sessions never transfer; new owners must explicitly map an archived administrator identity.","doctor":"See SEED-COMMAND-CONTRACT.md for doctor effects.","describe":"See SEED-COMMAND-CONTRACT.md for describe effects.","check":"See SEED-COMMAND-CONTRACT.md for check effects.","release":"See SEED-COMMAND-CONTRACT.md for release effects.","demo":"A throwaway demo of this seed (rer dev --demo): fresh data in .rer/demo/START (deleted when it stops: --stop, Ctrl-C or its end, one hour by default or --idle-timeout), the saved owner signed in through the demo persona, a separate RER_OWNER_OPEN link for single-use native owner entry on loopback (15-minute expiry; never saved), the seed's demo data, Demo in the app name and title, real public reads/checks and simulated external writes (RER_DEMO=1; the checkout's own data is never touched).","adopt-edition":"Add edition.json and sources.lock.json for the existing tracked local source, preserving declared project identity and existing copy/composition records. Create an empty base-copies.json only when none exists. Review and stage the new authoring inputs; no source regeneration, install setup or commit.","refresh-base":"Consent to each declared edition edit with repeatable --edition-migration ID; refresh leaves the edit owed. Refresh recorded Base copies to --ref FULL_COMMIT, preserving acknowledged adaptations and applied migrations; announce removed singleton retirement. Deliver invoked workflow helpers atomically; adopt tracked known historical Verify templates and preserve divergent workflows with adoption notices. Acquire committed source from the declared Base repository (default https://github.com/runeditrun/base.git), or read immutable trees, blobs and ancestry through authenticated gh with --from-api, or use --base CHECKOUT or --base-archive DIRECTORY with --ref FULL_COMMIT for an exported source tree. --offline requires --base or --base-archive and never acquires remote source. Refuse incomplete Git checkouts without changing their records. Review the diff and run edition tests before committing.","signin":"A one-time sign-in link for the hosted owner, without mail. Uses the Cloudflare credentials that deployed --environment (default production; from the environment or --env-file) to write a single-use grant for the recorded owner into that deployment's auth database, then prints the link once to this terminal; it is never saved. The link works once, only for that owner, expires within 15 minutes, and its use is recorded in the owner's audit log. Signed in this way, the owner can correct a wrong email in settings."}}}}}}
+OC-010 coordination health, deployment identity and honest command effects survive storage failure: local 503/recovery and read-only check/describe; paging not provided; capacity unmeasured
+PASS OC-054 readiness: release identity, closed matrix states, dynamic source/revocation observations; independent durable signals, zero-write reads, public-door queued delivery/refused intake/overdue deadline; isolated 503 and restored signal; admin/responder/viewer access and signed-out/stakeholder/expired/revoked refusal; storage never proves pager coverage; zero outbound calls
+PROBE OC-041 password: protected password change and targeted audit failure -> credential and session rollback, one accepted revision-bound fact, old authority revoked
+PASS OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; emitted Worker + local D1: setup/session/roles/CSRF, scoped bearer and raw-body HMAC ingress, identities, concurrent CAS, incident/recovery/runbook/review/follow-up, replay purity, archive equality/rollback, session invalidation, restart and repeat migration, truthful handoffs.
+Runtime core completed (165.0s)
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5822","3456","workerd"],["5828","3456","ps"]]
+PROBE OC-052 denied-AI: emitted Worker native lifecycle -> resolved with attributed note; outbound attempts=0
+PROBE OC-052 public-embed: anonymous incident and foreign-origin embed GET -> no incident disclosure; owner embed=404
+PROBE OC-052 arbitrary-upload: anonymous multipart POST refused and owner POST=404; all non-audit durable tables unchanged; outbound attempts=0
+{"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+{"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+{"witness":"automation-erasure-fence","path":"/api/restore","status":409,"labelReturned":false}
+PASS OC-053 erasure fence: legacy journal and native custody refuse stale archive/checkpoints atomically; current checkpoint restores and retains custody
+PASS OC-040 member recipient custody: local access revoked, queued work removed, named deletion open item and zero outbound calls without consent
+oncall request failure Error
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5829","3456","workerd"],["5835","3456","ps"]]
+oncall request failure Error
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5836","3456","workerd"],["5842","3456","ps"]]
+PASS OC-040 expired-lease clearance: live refusal, admin approval/revision, expired and uncertain leases, atomic audit rollback, clear/clear and clear/erase 200/409, restart before committed erasure and zero external calls
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5843","3456","workerd"],["5849","3456","ps"]]
+PASS OC-053 management denial: anonymous/token-only 401, viewer/responder 403 across read, create, rotate, revoke, dispatch and replay; token has no session/export/audit door
+PASS OC-053 permanent named responder: service-account acknowledgment names A; reassignment and new commander B and resolution preserve timeline and pseudonymous audit attribution
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5857","3456","workerd"],["5863","3456","ps"]]
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5864","3456","workerd"],["5870","3456","ps"]]
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5871","3456","workerd"],["5877","3456","ps"]]
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5926","3456","workerd"],["5932","3456","ps"]]
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5933","3456","workerd"],["5939","3456","ps"]]
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5940","3456","workerd"],["5946","3456","ps"]]
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5947","3456","workerd"],["5953","3456","ps"]]
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5954","3456","workerd"],["5960","3456","ps"]]
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5961","3456","workerd"],["5967","3456","ps"]]
+PASS OC-053 creator demotion/removal: next read/write and origin/endpoint/receiver dispatch refused, no authority transfer, restart, inactive responder acknowledgment refused
+PASS OC-053 named-responder erasure: timeline association scrubbed, permanent pseudonymous audit fact unchanged, no reassigned label
+PROBE OC-042 acceptance-1: protected setup and emitted Worker dispatch -> 25 POST requests only to https://8.8.8.8/events; all three redirect targets receive zero requests; authority refusals add zero requests; exact frozen seven-field payloads and archive credential exclusion pass
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5961","3456","workerd"],["5968","3456","workerd"],["5974","3456","ps"]]
+PASS OC-053 lifetime API receipts: full history refuses new machine mutation, identical authorized retry retains receipt, human coordination continues
+PASS OC-053 scoped API, atomic signed outbox, receipt uncertainty, replay, revocation and inactive native restore
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["5975","3456","workerd"],["5981","3456","ps"]]
+{"witness":"human-capacity","request":"/api/command","type":"assign-role","status":200,"before":{"incidentRevision":1,"events":1001},"after":{"incidentRevision":2,"events":1002,"acceptedAuditFacts":1,"outcome":"queued","reason":"domain-commit"}}
+{"witness":"human-capacity","request":"/api/command","type":"transition","status":200,"before":{"incidentRevision":1002,"events":2002},"after":{"incidentRevision":1003,"events":2003,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"reassign","status":200,"before":{"incidentRevision":1003,"events":2003},"after":{"incidentRevision":1004,"events":2004,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"assign-role","status":200,"before":{"incidentRevision":1004,"events":2004},"after":{"incidentRevision":1005,"events":2005,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"action","status":200,"before":{"incidentRevision":1005,"events":2005},"after":{"incidentRevision":1006,"events":2006,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"complete","status":200,"before":{"incidentRevision":1006,"events":2006},"after":{"incidentRevision":1007,"events":2007,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"accept-action","status":200,"before":{"incidentRevision":1007,"events":2007},"after":{"incidentRevision":1008,"events":2008,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+{"witness":"human-capacity","request":"/api/command","type":"transition","status":200,"before":{"incidentRevision":1009,"events":2008},"after":{"incidentRevision":1010,"events":2009,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+oncall request failure Error
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["6129","3456","workerd"],["6135","3456","ps"]]
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["6129","3456","workerd"],["6136","3456","workerd"],["6142","3456","ps"]]
+PASS OC-053 human capacity: retained history >1000, full unfinished backlog, all human event paths, multi-recipient boundary, storage rollback, restart, stable replay and inactive checkpoint restore
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["6143","3456","workerd"],["6149","3456","ps"]]
+OC-068 API manual page: explicit incident-write scope, real policy override, repeated-key single incident, conflicting/cross-scope/read-only refusals and recorded-only obligation
+OC-058 scheduled snooze: absolute replacement, never-early boundary, restart and concurrent/double sweep produce one deterministic re-trigger obligation with paging OFF
+OC-058 timeout: each new acknowledgment starts a new versioned deadline and current level-one coverage is resolved only when it fires
+OC-058 snooze handoff: departed assignee is replaced by current on-call at the captured level, with no invented level or delivery
+OC-058 checkpoint receiving duty: pending snooze restored held and scheduled work never resumes it
+OC-058 OC-053 API incident door: scoped snooze and repeated idempotency key retain one pending absolute deadline
+OC-058 cancellation and gaps: resolution and explicit cancellation stop deadlines; missing current on-call is a retained operator-visible failure, never silence
+OC-058 scheduled source recovery: a source recovered mid-snooze remains acknowledged after the deadline with no re-trigger obligation
+OC-058 atomic deadline custody: failed permanent audit rolls back snooze and scheduled expiry together; the durable pending item remains visible and a later sweep commits exactly once
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["6648","3456","workerd"],["6654","3456","ps"]]
+oncall request failure Error
+PASS OC-040 integration erasure: queued send prevented, in-flight public erasure 409, completion only after outcome, audit rollback, per-table credentials/outbox counts, concurrent 200/409, client unlink and native restore fence
+Owned runtime processes [["3456","3455","MainThread"],["3465","3456","esbuild"],["6655","3456","workerd"],["6661","3456","ps"]]
+PROBE BASE-AGENT-003 3 autonomous oncall://alerts/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://services/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://incidents/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://incidents/{id}/review-material: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://actions/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://changes/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://services/{id}/changes: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://schedules/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://schedules/{id}/coverage: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://handoffs/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://reports/{period}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://members/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://teams/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/clients/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/endpoints/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://erasures/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/outbox/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 1,4,6 autonomous: 17 scoped templates, policy-appropriate reads, customer and imported text marked, native-only fence unmarked; native records and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 3 held oncall://alerts/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://services/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://incidents/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://incidents/{id}/review-material: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://actions/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://changes/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://services/{id}/changes: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://schedules/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://schedules/{id}/coverage: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://handoffs/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://reports/{period}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://members/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://teams/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/clients/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/endpoints/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://erasures/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/outbox/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 1,4,6 held: 17 scoped templates, policy-appropriate reads, customer and imported text marked, native-only fence unmarked; native records and paging unchanged; zero outbound requests
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-SL8bDo/local.env
+[stderr] oncall health storage failure Error
+
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-G4cVeH/local.env
+[stderr] oncall request failure Error
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'not_found'
+- 'subject_erased'
+
+    at resourceJourney (file:///home/agent/rer-consolidation/work/sd-oncall-c-f229/run-oncall/tests/oncall-agent-resources.mjs:121:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/agent/rer-consolidation/work/sd-oncall-c-f229/run-oncall/tests/oncall-agent-flow.mjs:671:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'not_found',
+  expected: 'subject_erased',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

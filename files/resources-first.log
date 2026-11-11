@@ -1,0 +1,61 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["2834","2833","MainThread"],["2843","2834","esbuild"],["2852","2834","workerd"],["2858","2834","ps"]]
+PROBE BASE-AGENT-003 3 autonomous oncall://alerts/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://services/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://incidents/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://incidents/{id}/review-material: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://actions/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://changes/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://services/{id}/changes: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://schedules/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://schedules/{id}/coverage: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://handoffs/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://reports/{period}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://members/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://teams/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/clients/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/endpoints/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://erasures/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/outbox/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 1,4,6 autonomous: 17 scoped templates, policy-appropriate reads, customer and imported text marked, native-only fence unmarked; native records and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 3 held oncall://alerts/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://services/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://incidents/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://incidents/{id}/review-material: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://actions/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://changes/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://services/{id}/changes: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://schedules/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://schedules/{id}/coverage: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://handoffs/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://reports/{period}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://members/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://teams/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/clients/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/endpoints/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://erasures/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/outbox/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'complete'
+- 'input_required'
+
+    at resourceJourney (file:///home/agent/rer-consolidation/work/sd-oncall-c-f229/run-oncall/tests/oncall-agent-resources.mjs:85:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///tmp/sd-run-resources.mjs:2:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'complete',
+  expected: 'input_required',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

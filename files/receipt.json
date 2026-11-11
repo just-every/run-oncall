@@ -1,0 +1,246 @@
+{
+  "tag": "sd-oncall-c-f229",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f229",
+  "base": "2743e71f76044322080b1b136b9dce82c4793915",
+  "save": "7cec5859c1f52f59070019bef6ef5764440922a0",
+  "countsBefore": {
+    "done": 23,
+    "partial": 44,
+    "missing": 34
+  },
+  "selectedPoints": [
+    1,
+    3,
+    4,
+    6
+  ],
+  "heldPoints": [
+    2,
+    5
+  ],
+  "statusCellsEdited": false,
+  "baseCopiesEdited": false,
+  "checks": {
+    "focusedResources": {
+      "command": "node /tmp/sd-run-resources.mjs",
+      "exit": 0,
+      "log": "resources.log",
+      "source": "save source with later test-only authority additions pending"
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck-final.log"
+    },
+    "manifest": {
+      "command": "node scripts/write-agent-surface.mjs --check",
+      "exit": 0,
+      "log": "manifest-final.log"
+    },
+    "runtimeCore": {
+      "command": "node tests/runtime.mjs",
+      "partition": "core",
+      "result": "passed before a later added machine assertion failed",
+      "log": "runtime.log"
+    },
+    "runtimeMachines": {
+      "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "log": "runtime-machines.log",
+      "seconds": 545.1
+    },
+    "runtimeDelivery": {
+      "command": "ONCALL_RUNTIME_PART=delivery node tests/runtime.mjs",
+      "exit": 0,
+      "log": "runtime-delivery.log"
+    },
+    "candidateBuild": {
+      "command": "node scripts/verify-oncall-build.mjs",
+      "exit": 0,
+      "log": "build-final.log",
+      "head": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+      "node": "22.20.0"
+    },
+    "candidateResources": {
+      "command": "node /tmp/sd-run-resources.mjs",
+      "exit": 0,
+      "log": "resources-final.log",
+      "head": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+      "node": "22.20.0"
+    },
+    "contractViews": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check",
+        "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md"
+      ],
+      "exit": 0,
+      "log": "views-final.log",
+      "changedFiles": 0
+    },
+    "sourceLock": {
+      "commands": [
+        "node scripts/edition-authoring/cli.mjs lock",
+        "node scripts/edition-authoring/cli.mjs check"
+      ],
+      "exit": 0,
+      "log": "lock-final.log",
+      "includesResourceHelper": true
+    },
+    "migrationLedger": {
+      "command": null,
+      "exit": 0,
+      "reason": "no migration changes"
+    },
+    "rerVerify": {
+      "command": "ONCALL_VERIFY_LANE=hosted ONCALL_VERIFY_PREBUILT=true npx -y @runeditrun/rer verify --non-interactive",
+      "exit": 0,
+      "head": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+      "node": "22.20.0",
+      "log": "rer-verify.log",
+      "conformancePassed": 8519,
+      "conformanceTotal": 8519,
+      "writeLinkChecks": 56,
+      "resourcePolicyChecks": 56,
+      "writtenStateChecks": 45,
+      "note": "Same hosted lane and shared-build contract used by Verify; includes production hosting, hydration and the installed Base conformance runner."
+    },
+    "browser": {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node tests/agent-door-browser.mjs",
+      "exit": 0,
+      "head": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+      "node": "22.20.0",
+      "log": "browser.log",
+      "guideScreens": [
+        "screens/guide-1440.png",
+        "screens/guide-390.png"
+      ],
+      "assertionWidth": 1440,
+      "proofWidths": [
+        1440,
+        390
+      ],
+      "guideFits": true,
+      "seriousOrCriticalAxeFindings": 0,
+      "undersizedControls": 0,
+      "visuallyInspected": true
+    },
+    "coreOrCopiesDiff": {
+      "command": "git diff origin/main...HEAD -- CONTRACT.md ACCEPTANCE.md docs/CLAIMS.md src/modules/agent-door .github/workflows/verify.yml",
+      "exit": 0,
+      "empty": true
+    }
+  },
+  "mainRuns": [
+    {
+      "id": 43115851492,
+      "name": "Verify",
+      "head": "2743e71f76044322080b1b136b9dce82c4793915",
+      "conclusion": "success"
+    },
+    {
+      "id": 43115851706,
+      "name": "Run site",
+      "head": "2743e71f76044322080b1b136b9dce82c4793915",
+      "conclusion": "success"
+    }
+  ],
+  "publicationScan": {
+    "status": "not run in cloud; required from fleet before landing"
+  },
+  "landing": {
+    "status": "not attempted; branch only"
+  },
+  "head": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+  "countsAfter": {
+    "done": 23,
+    "partial": 44,
+    "missing": 34
+  },
+  "changes": {
+    "exposedResourcesBefore": 0,
+    "exposedResourcesAfter": 17,
+    "nativeTemplatesBefore": 12,
+    "nativeTemplatesAfter": 17,
+    "writeResourceFixturesBefore": 0,
+    "writeResourceFixturesAfter": 28,
+    "exposedToolsBefore": 39,
+    "exposedToolsAfter": 39
+  },
+  "anchors": {
+    "file": "tests/oncall-agent-resources.mjs",
+    "list": 47,
+    "scope": 70,
+    "write": 99,
+    "untrusted": 62,
+    "email": 88,
+    "authority": 106,
+    "erasure": 113
+  },
+  "hygiene": {
+    "addedEmailShapedLines": 0,
+    "packetInjectedSecretMatches": 0,
+    "packetCredentialShapedMatches": 0,
+    "symlinks": 0
+  },
+  "surfaceCounts": {
+    "before": {
+      "nativeTemplates": 12,
+      "exposedResources": 0,
+      "writeResourceFixtures": 0
+    },
+    "after": {
+      "nativeTemplates": 17,
+      "exposedResources": 17,
+      "writeResourceFixtures": 28
+    }
+  },
+  "remoteHeads": [
+    {
+      "head": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+      "ref": "refs/heads/cloud/sd-oncall-c-f229"
+    },
+    {
+      "head": "2743e71f76044322080b1b136b9dce82c4793915",
+      "ref": "refs/heads/main"
+    }
+  ],
+  "ci": {
+    "run": 43121817312,
+    "head": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+    "discovery": {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121817312",
+      "id": 43121817312,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    "polls": [
+      {
+        "conclusion": null,
+        "head_sha": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121817312",
+        "status": "in_progress"
+      }
+    ],
+    "github_calls_before_watcher": 3,
+    "github_calls_total": 4
+  },
+  "claim": {
+    "clause": "BASE-AGENT-003",
+    "status": "PARTIAL",
+    "points": [
+      1,
+      3,
+      4,
+      6
+    ],
+    "tests": [
+      "tests/oncall-agent-resources.mjs#resourceJourney",
+      "agent-surface.json#journey"
+    ]
+  }
+}

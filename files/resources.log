@@ -1,0 +1,40 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["3131","3130","MainThread"],["3140","3131","esbuild"],["3149","3131","workerd"],["3155","3131","ps"]]
+PROBE BASE-AGENT-003 3 autonomous oncall://alerts/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://services/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://incidents/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://incidents/{id}/review-material: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://actions/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://changes/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://services/{id}/changes: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://schedules/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://schedules/{id}/coverage: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://handoffs/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://reports/{period}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://members/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://teams/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/clients/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/endpoints/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://erasures/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 autonomous oncall://automation/outbox/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 1,4,6 autonomous: 17 scoped templates, policy-appropriate reads, customer and imported text marked, native-only fence unmarked; native records and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-003 3 held oncall://alerts/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://services/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://incidents/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://incidents/{id}/review-material: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://actions/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://changes/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://services/{id}/changes: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://schedules/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://schedules/{id}/coverage: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://handoffs/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://reports/{period}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://members/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://teams/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/clients/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/endpoints/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://erasures/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 3 held oncall://automation/outbox/{id}: populated unauthorized and missing record -> identical Resource unavailable without content
+PROBE BASE-AGENT-003 1,4,6 held: 17 scoped templates, policy-appropriate reads, customer and imported text marked, native-only fence unmarked; native records and paging unchanged; zero outbound requests
