@@ -2110,6 +2110,7 @@
     "policy",
     "pause",
     "audit",
-    "idempotency"
+    "idempotency",
+    "events"
   ]
 }

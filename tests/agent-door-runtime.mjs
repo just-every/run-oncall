@@ -438,3 +438,9 @@ export async function pauseMatrix(runtime,{setLocal=async paused=>{
  assert.equal((await adopt()).status,200);
  console.log(`PASS independent Pause flags: both policies, valid next reads and mutations, maximum refusal ${maximum.toFixed(0)}ms, bearer resume 403 including owner cookie, human coordination and policy-appropriate resume; zero outbound requests`);
 }
+
+/** Native records and paging must remain exact across retained event reads. */
+export async function eventReadSnapshot(runtime){
+ const {application,records}=await agentEffectSnapshot(runtime);
+ return {application,records:Object.fromEntries(Object.entries(records).filter(([name])=>!name.startsWith('agent_door_')))};
+}

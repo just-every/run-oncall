@@ -15,7 +15,7 @@ Open Agents (`/agents`) to inspect decisions, pending approvals, reviews and Pau
 | Dispatch an already authorized signed response event | The frozen minimal body goes to the approved recipient; authenticated acceptance and uncertainty remain distinct |
 | Read and narrow native access | Current administrators can manage existing native membership and public teams, revoke clients/endpoints and use native privacy erasure under company policy |
 
-The MCP endpoint is `/mcp`. Discovery and protected-resource metadata describe the current registry. Both supported protocol versions expose the same tools: `2026-07-28` and `2025-11-25`. Tools expose the coordination journey. This installation declares only tools, policy, pause, audit and idempotency. Public resource reads, specialist prompts, retained event listing and subscriptions are undeclared and refuse with `capability_not_declared`. Native authorization, short-lived owner-bound tokens, approval and consent checks remain mandatory. Existing `/api/v1` clients use the same policy admission and retain their native service and action scopes, operation keys and ETags.
+The MCP endpoint is `/mcp`. Discovery and protected-resource metadata describe the current registry. Both supported protocol versions expose the same tools: `2026-07-28` and `2025-11-25`. Tools expose the coordination journey. This installation declares tools, policy, pause, audit, idempotency and events. Retained changes are available through `oncall.events.list` with an optional `after` cursor. Public resource reads, specialist prompts and subscriptions are undeclared and refuse with `capability_not_declared`. Native authorization, short-lived owner-bound tokens, approval and consent checks remain mandatory. Existing `/api/v1` clients use the same policy admission and retain their native service and action scopes, operation keys and ETags.
 
 ## People and credentials
 
@@ -85,6 +85,12 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
 | `oncall.endpoints.update` | `endpoints:write` | `access` | `access`: `tests/agent-door.mjs` (`revoke-endpoint`) |
+
+### Events
+
+| Tool | Scope | Possible risk classes | Computed class checks |
+| --- | --- | --- | --- |
+| `oncall.events.list` | `events:read` | `standard` | `standard`: `tests/agent-door.mjs` (`events`) |
 
 ### Imports
 
@@ -161,9 +167,8 @@ No resource templates are exposed. The template listing is empty because resourc
 
 ## Target capabilities
 
-`oncall.events.list` is retained in the source manifest with scope `events:read` and possible classes `standard`, but is withheld from the current tool listing. Its target fixture is not current execution evidence.
 
-The source manifest retains native resource targets; they are not exposed templates. Events, resources, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.
+The source manifest retains native resource targets; they are not exposed templates. Events are declared for retained cursor reads. Resources, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.
 [native-tool-inventory-end]: #
 
 ## Approvals and limits
@@ -182,9 +187,9 @@ Completed team-manager edits retain native effect custody in the same transactio
 
 ## Declaration and proof limits
 
-The CORE declaration does not prove optional multi-sponsor, mail-edge, resource-refresh, timed, queued, dual-host or owner-native administration families. Built-in `oncall.events.list` remains described for a future events declaration and is withheld from this installation’s tool list. Native tools and their complete security assertions still run.
+The CORE declaration does not prove optional multi-sponsor, mail-edge, resource-refresh, timed, queued, dual-host or owner-native administration families. Built-in `oncall.events.list` is declared and follows current native resource access even while public resource reads are undeclared. Native tools and their complete security assertions still run.
 
-The contract generator preserves existing judgments. BASE-AGENT-003 (resources), BASE-AGENT-010 (events and subscriptions), the optional parts of BASE-AGENT-001/013 and SURFACE-001/003 were missing before this adoption and remain unproved. No optional clause is promoted by declaring CORE.
+The contract generator preserves existing judgments. BASE-AGENT-003 (resources), BASE-AGENT-010 (complete change notifications and subscriptions), the optional parts of BASE-AGENT-001/013 and SURFACE-001/003 were missing before this adoption and remain unproved. No optional clause is promoted by declaring CORE.
 
 Native erasure computes destructive for one erased subject. It also computes access when member or API-client authority is removed, security when integration credentials or intake email addresses are deleted, and live when retained coverage, active intake or pending delivery is affected. A history-only incident with no pending work carries destructive alone. The facts contain the one-action measure, narrowing direction, credential setting and affected service IDs as applicable; record text and caller claims cannot choose classes.
 

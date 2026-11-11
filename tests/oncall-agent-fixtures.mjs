@@ -76,3 +76,19 @@ export async function recoveredResolutionTarget(runtime, title) {
     state: 'recovered', summary: 'Retain recovery evidence before the binding resolution',
     evidence: 'https://evidence.example.invalid/native-recovery' });
 }
+
+/** A distinct signed-in person supplies the service-access revocation witness. */
+export async function eventReader(runtime,mode,roster,role='admin'){
+ const revision=(await runtime.db.prepare('SELECT rev FROM bs_settings WHERE singleton=1').first()).rev+1;
+ const password=randomBytes(32).toString('hex');
+ const created=await runtime.http('/api/members',{name:'Synthetic event reader '+mode,role,password});
+ assert.equal(created.status,201);const person=await created.json();
+ const login=await runtime.request(runtime.origin+'/api/login',{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json'},body:JSON.stringify({name:person.name,password})});
+ assert.equal(login.status,200);
+ const cookie=login.headers.getSetCookie().map(value=>value.split(';',1)[0]).join('; ');await login.body?.cancel();
+ const businessId=randomUUID(),email=['synthetic-oncall-events-'+mode,'example.invalid'].join('@');
+ roster.push({id:businessId,email,name:person.name,role:role==='admin'?'admin':'member',invite:1});
+ await runtime.settings(roster,revision);
+ assert.equal((await runtime.http('/api/rer/people-link',{businessId,memberId:person.id,revision})).status,303);
+ return {person,cookie,claims:{sub:businessId,email,act:{sub:'synthetic-oncall-events-'+randomUUID(),name:'Synthetic retained-event reader',specialist:'oncall-responder'}}};
+}

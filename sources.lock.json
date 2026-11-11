@@ -148,7 +148,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "6937e24a019ed9b233900e8e194c37ec811914d326aaaa6789c17383095be5ad",
+      "sha256": "96b0496bff088d8465bb8774ad95b6d249d367806e2529a8068eb6d0f4346215",
       "executable": false
     },
     "AGENTS.md": {
@@ -192,7 +192,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "8df2eacf6f41ba0b65c63d37dbb951d38f4b7263402d9206e5cd738a38b3986d",
+      "sha256": "826bb0f48ff6aea9190a22906710c1e15ca7bfc9d3c0cb9aea148d0b6b7d4e93",
       "executable": false
     },
     "docs/audit.md": {
@@ -1660,7 +1660,7 @@
       "executable": false
     },
     "scripts/write-agent-surface.mjs": {
-      "sha256": "9c151711989c3afa227fe983bcf0b27718e2c4773643fff53716e676b26e3959",
+      "sha256": "53bd0800762c4489be1320f1efc338ba34669301e28aeb7ff09edcda2dc22ac3",
       "executable": false
     },
     "SEED-COMMAND-CONTRACT.md": {
@@ -1700,7 +1700,7 @@
       "executable": false
     },
     "src/agent-door/index.server.ts": {
-      "sha256": "7271c1f5c80f3e2a3ec91a63ef6249bf465573738b005e1fcef98f81691ae857",
+      "sha256": "4a088b572e916ed7d5e10458dfa98752367a94569572aab9c793ea03d155b749",
       "executable": false
     },
     "src/agent-door/management-tools.ts": {
@@ -6364,7 +6364,7 @@
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
-      "sha256": "bf53cb3a0ba1513189d5a93695987be5453d38032aec9b9ceba2973c5b7dbea6",
+      "sha256": "1e90925f39f756d423885cb44ce18f09037c5c6a92190595784f4d5f7da23818",
       "executable": false
     },
     "tests/agent-door.mjs": {
@@ -6544,11 +6544,11 @@
       "executable": false
     },
     "tests/oncall-agent-fixtures.mjs": {
-      "sha256": "ad5f4649650702c5d74d62b84999daa259c13aa665becd8927e4f4c3e0e92674",
+      "sha256": "65ff80c413a9b4087010e1e1f941324ba92586f53036793b95b7a1f0624b49d5",
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "f653e270464716fb5305b5eb8ce4ba6d7b2e6ebc9c61e89ee89899f10f904820",
+      "sha256": "2fb76474a47e283f28696129d08b1517c33928bf9c2b63dd72b53bb224c5a000",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {
