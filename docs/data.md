@@ -28,6 +28,8 @@ Import checks the archive first and only restores into an empty installation, so
 
 The chooser shows archived names and IDs so you can distinguish duplicate names. Archived member records do not contain email addresses; the chooser says **email not recorded**. The list is available only to the signed-in installation owner while the installation has no password accounts and no existing owner-to-member mapping. Mapping checks these conditions and the selected administrator's current active status again when you confirm. An installation with existing password accounts must keep using its existing workspace password access.
 
+Agent policy and audit, call, review and event history travel as retained records. Before publishing the restored installation, import sets the local agent Pause, clears admission leases and marks pending or in-flight approvals expired. Their saved proposals and attribution remain readable, but cannot be approved or executed. Local credentials must be provisioned again, and only the signed-in installation owner can resume agents. Resuming does not revive an expired approval or replay a historical action. Private agent relay custody and installation-bound replay receipts do not travel.
+
 ## The archive screen
 
 Admins also have **Archive** in the app. **Portable workspace archive** downloads the workspace's coordination records as a file. **Validate and replace from archive** puts a downloaded file back: Oncall checks it completely first, you type `REPLACE` to confirm, and a file that fails the check leaves your current workspace exactly as it was.
