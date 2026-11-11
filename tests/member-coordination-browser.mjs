@@ -307,8 +307,17 @@ try {
  assert.equal(await supporting.getAttribute('aria-describedby'),await fieldError.getAttribute('id'),'the adjacent error describes the supporting-services field');
  assert.ok((await fieldError.innerText()).includes(await supporting.evaluate(e=>document.getElementById(e.getAttribute('aria-labelledby')).textContent)),'the error names its field');
  assert.equal(createRequests.length,0,'invalid create never reaches the write door');assert.deepEqual(ok(await call(owner.page,'/api/status')),statusBefore,'invalid create saves no business service');
- const captureRefusal=async (name,target=createBusiness)=>{for(const width of [1440,390]){await owner.page.setViewportSize({width,height:1000});await target.scrollIntoViewIfNeeded();await owner.page.screenshot({path:`${captureDirectory}/refusal-${name}-${width}.png`});}await owner.page.setViewportSize({width:1440,height:1000});};
- await captureRefusal('supporting-service');
+ // The create disclosure closes after a successful create. Each refusal must
+ // capture its own initiating action, including the disabled manual-status action.
+ const captureRefusal=async (name,target)=>{
+  for(const width of [1440,390]){
+   await owner.page.setViewportSize({width,height:1000});
+   await target.scrollIntoViewIfNeeded();
+   await owner.page.screenshot({path:`${captureDirectory}/refusal-${name}-${width}.png`});
+  }
+  await owner.page.setViewportSize({width:1440,height:1000});
+ };
+ await captureRefusal('supporting-service',createBusiness);
  await supporting.selectOption('synthetic-oncall-61');await expect(fieldError).toHaveCount(0);
  // A real server-side length refusal is also visible beside the initiating action.
  await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout '.repeat(15));
@@ -319,7 +328,7 @@ try {
  assert.ok((await createForm.getByRole('alert').innerText()).includes(reason),'the page shows the server refusal reason');
  assert.equal(await statusPanel.getByText('Saved',{exact:true}).count(),0);assert.deepEqual(ok(await call(owner.page,'/api/status')),statusBefore);
  await expect(statusPanel.getByLabel('Business-service name',{exact:true})).toHaveValue('Checkout '.repeat(15));
- await captureRefusal('server-create');owner.page.off('request',observeCreate);
+ await captureRefusal('server-create',createBusiness);owner.page.off('request',observeCreate);
  await statusPanel.getByLabel('Business-service name',{exact:true}).fill('Checkout')
  await statusPanel.getByLabel('Communications owner',{exact:true}).selectOption(rosaRecord.id)
  await statusPanel.getByRole('group',{name:'Stakeholder audience',exact:true}).getByRole('checkbox',{name:sam.name,exact:true}).check()
@@ -339,11 +348,13 @@ try {
   await page.screenshot({path:`${captureDirectory}/${(/^(oc068|oc058)-/.test(screen))?screen:'oc061-'+screen}-${width}.png`,fullPage:true})
  }
  for(const width of [1440])await statusCapture(owner.page,'derived-status',width)
+ const beforeOverride=ok(await call(owner.page,'/api/status'));
  await checkout.getByText('Manage internal status',{exact:true}).click()
  await checkout.getByLabel('Status set by hand',{exact:true}).selectOption('operational')
  const setStatus=checkout.getByRole('button',{name:'Set status',exact:true});await expect(setStatus).toBeDisabled();
  const reasonHint=await setStatus.getAttribute('aria-describedby');assert.ok(reasonHint);await expect(checkout.locator(`[id="${reasonHint}"]`)).toBeVisible();
  await captureRefusal('status-reason',setStatus);
+ assert.deepEqual(ok(await call(owner.page,'/api/status')),beforeOverride,'a missing reason saves no manual status');
  await checkout.getByLabel('Reason',{exact:true}).fill('Alternate gateway is processing payments')
  await checkout.getByRole('button',{name:'Set status',exact:true}).click()
  await checkout.getByText(/Manual override: operational/).waitFor()

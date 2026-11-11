@@ -1,3 +1,4 @@
+import {shortTime} from '../reviews/time';
 import {InlineConfirm} from '../app/autosave/InlineConfirm';
 import {failureMessage} from '../app/FailureLine';
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import {timelineText} from '../incident/types';
 import './workflows.css';
 
 type Props = { state: State; incident: Incident; member: Member; send: (command: any) => Promise<any>; view?: 'merge' | 'split' | 'context' };
-const time = (value: string) => new Date(value).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+const time = shortTime;
 
 export function IncidentWorkflows({ state, incident, member, send, view }: Props) {
   const [busy, setBusy] = useState(false);

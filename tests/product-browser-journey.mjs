@@ -430,17 +430,31 @@ async function retainPreview(page, change, submit) {
   window.stopRotaPreviewProbe=()=>{sample();active=false;observer.disconnect();return probe;};
  });
  let release,latest;const gate=new Promise(resolve=>{release=resolve;}),pending=[];
- const hold=route=>{latest=route.request();const task=(async()=>{const response=await route.fetch();await gate;await route.fulfill({response});})();pending.push(task);return task;};
+ const hold=route=>{
+  // The parent rota also refreshes saved coverage on this endpoint. Only draft
+  // requests feed this editor preview; a saved read must not replace its oracle.
+  if(!route.request().postDataJSON()?.schedule)return route.continue();
+  latest=route.request();const task=(async()=>{const response=await route.fetch();await gate;await route.fulfill({response});})();pending.push(task);return task;
+ };
  await page.route('**/api/paging/preview',hold);
  try{
   await change();await page.waitForTimeout(2000);
+  // Exercise the background reader while the editor's draft response is held.
+  // Its different saved window must remain readable without becoming the draft oracle.
+  const saved=/^\/on-call\/([^/]+)\/edit$/.exec(new URL(page.url()).pathname);
+  if(saved){
+   const status=await page.evaluate(async id=>{const from=Date.now();return (await fetch('/api/paging/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scheduleId:id,from,to:from+14*86400000})})).status;},decodeURIComponent(saved[1]));
+   assert.equal(status,200,'saved coverage remains readable while a draft preview is pending');
+  }
   assert.ok(latest,'the valid change requests a new preview');
   assert.equal(await preview.innerText(),before,'the last coverage stays visible for the entire delayed answer');
   const probe=await page.evaluate(()=>window.stopRotaPreviewProbe());
   assert.equal(probe.minWeeks,probe.weeks,'typing and valid changes never blank the weeks');
   assert.equal(probe.minHeight,probe.height,'the pending preview never collapses');
   if(submit)assert.equal(await submit.isDisabled(),true,'visible old weeks never authorize saving a new draft');
-  const answered=page.waitForResponse(response=>response.request()===latest);release();const response=await answered;await response.finished();
+  // Finish the delayed draft requests before comparing the final draft's result.
+  release();await Promise.all(pending);await page.waitForLoadState('networkidle');
+  const response=await latest.response();assert.ok(response?.ok(),'the final valid draft preview succeeds');await response.finished();
   const windows=await response.json();
   await page.waitForFunction(times=>JSON.stringify([...document.querySelectorAll('.oc-preview time')].map(time=>time.dateTime))===JSON.stringify(times),windows.map(window=>new Date(window.at).toISOString()));
  }finally{release();await Promise.all(pending);await page.unroute('**/api/paging/preview',hold);await page.evaluate(()=>window.stopRotaPreviewProbe());}
@@ -635,7 +649,7 @@ export async function coverageRulesBrowser(page,context,width,session,{ownerLink
  const edit=async()=>{await page.getByRole('link',{name:'Edit rota',exact:true}).click();for(let i=0;i<3;i++)await page.getByRole('button',{name:'Continue',exact:true}).click();await page.getByLabel('Coverage review elapsed days',{exact:true}).fill('366');await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);};
  const directory=process.env.ONCALL_BROWSER_EVIDENCE;await edit();
  const proposal=page.getByRole('region',{name:'Layers, holidays and PTO',exact:true});
- await proposal.getByLabel('PTO start, UTC',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await proposal.getByLabel('PTO end, UTC',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
+ await proposal.getByLabel('PTO start (UTC)',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await proposal.getByLabel('PTO end (UTC)',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
  await proposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await inView(proposal.getByRole('status'));
  await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();
  const review=page.getByRole('region',{name:'Review schedule changes',exact:true});await inView(review.locator('h2'));assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
@@ -643,7 +657,7 @@ export async function coverageRulesBrowser(page,context,width,session,{ownerLink
  for(const internal of [id,layer.id,session.member.id])assert.equal((await page.locator('body').innerText()).includes(internal),false);
  await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);await inView(page.getByRole('status').filter({hasText:/./}).first());
  let saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,1);
- await edit();await proposal.getByLabel('PTO start, UTC',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await proposal.getByLabel('PTO end, UTC',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await proposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await inView(proposal.getByRole('status'));await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();await review.waitFor();await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,2);
+ await edit();await proposal.getByLabel('PTO start (UTC)',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await proposal.getByLabel('PTO end (UTC)',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await proposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await inView(proposal.getByRole('status'));await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await page.getByRole('button',{name:'Review change',exact:true}).click();await review.waitFor();await review.getByRole('checkbox').check();await review.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await page.waitForURL(url=>url.pathname==='/on-call/'+id);saved=(await api('/api/paging/state')).schedules.find(s=>s.id===id);assert.equal(saved.pto.length,2);
  await edit();
  const refused=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));
  await proposal.getByLabel('Review ICS PTO upload',{exact:true}).setInputFiles({name:'synthetic-oncall.ics',mimeType:'text/calendar',buffer:Buffer.from('BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:bad\nEND:VEVENT\nEND:VCALENDAR')});assert.equal((await refused).status(),400);await inView(proposal.getByRole('status'));
@@ -669,7 +683,7 @@ export async function coverageRulesBrowser(page,context,width,session,{ownerLink
   const ownProposal=memberPage.getByRole('region',{name:'Layers, holidays and PTO',exact:true}),ownReview=memberPage.getByRole('region',{name:'Review schedule changes',exact:true});
   assert.deepEqual(await ownProposal.getByLabel('PTO member',{exact:true}).locator('option').evaluateAll(options=>options.map(o=>o.value)),[member.id]);
   assert.equal(await memberPage.getByRole('button',{name:'Add layer',exact:true}).count(),0);
-  await ownProposal.getByLabel('PTO start, UTC',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await ownProposal.getByLabel('PTO end, UTC',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
+  await ownProposal.getByLabel('PTO start (UTC)',{exact:true}).fill(new Date(now+7200000).toISOString().slice(0,16));await ownProposal.getByLabel('PTO end (UTC)',{exact:true}).fill(new Date(now+10800000).toISOString().slice(0,16));
   await ownProposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();
   await memberPage.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);
   const reviewed=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-review'));await memberPage.getByRole('button',{name:'Review change',exact:true}).click();assert.equal((await reviewed).status(),200);
@@ -683,7 +697,7 @@ export async function coverageRulesBrowser(page,context,width,session,{ownerLink
   await memberPage.setViewportSize({width:1440,height:1000});
   await ownReview.getByRole('button',{name:'Apply reviewed change',exact:true}).click();await memberPage.waitForURL(url=>url.pathname==='/on-call/'+selfRota.id);
   stored=(await api('/api/paging/state')).schedules.find(s=>s.id===selfRota.id);assert.equal(stored.revision,selfRota.revision+2);assert.equal(stored.pto.length,1+imported.import.entries.length);
-  await open();await ownProposal.getByLabel('PTO start, UTC',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await ownProposal.getByLabel('PTO end, UTC',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await ownProposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await memberPage.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await memberPage.getByRole('button',{name:'Review change',exact:true}).click();await ownReview.waitFor();
+  await open();await ownProposal.getByLabel('PTO start (UTC)',{exact:true}).fill(new Date(now+14400000).toISOString().slice(0,16));await ownProposal.getByLabel('PTO end (UTC)',{exact:true}).fill(new Date(now+18000000).toISOString().slice(0,16));await ownProposal.getByRole('button',{name:'Add PTO to proposal',exact:true}).click();await memberPage.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);await memberPage.getByRole('button',{name:'Review change',exact:true}).click();await ownReview.waitFor();
   await api('/api/schedules/'+selfRota.id+'/overrides',{revision:stored.revision,override:{id:id+'-self-cover',role:'primary',member:null,start:new Date(now+21600000).toISOString(),end:new Date(now+25200000).toISOString()}});
   await ownReview.getByRole('checkbox').check();const staleSelf=memberPage.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/pto-apply'));await ownReview.getByRole('button',{name:'Apply reviewed change',exact:true}).click();assert.equal((await staleSelf).status(),409);await memberPage.locator('.failure-line').waitFor();assert.equal((await api('/api/paging/state')).schedules.find(s=>s.id===selfRota.id).pto.length,stored.pto.length);
   console.log('PASS OC-024 ordinary-member browser 1440: password sign-in, own-only picker, self-PTO and self-ICS review/apply, current consecutive revisions, effective gap, retained slots, visible stale refusal, axe; PTO screen captured at 1440');
@@ -698,11 +712,42 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  const api=async(path,input)=>{const response=await(input===undefined?context.request.get(origin+path):context.request.post(origin+path,{headers:{origin},data:input}));assert.equal(response.status(),200);return response.json();};
  const fixture=2500+width,name='synthetic-oncall-'+fixture,password='synthetic-oncall-'+fixture+'-password';
  const created=await context.request.post(origin+'/api/members',{headers:{origin},data:{name,role:'responder',password}});assert.equal(created.status(),201);const substitute=await created.json();
+ const browserZone=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone),zone='America/New_York';
+ assert.notEqual(browserZone,zone,'the browser and rota use different clocks');
+ const capture=async name=>{for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await page.screenshot({path:`${directory}/readable-times-${name}-${proofWidth}.png`,fullPage:true});}await page.setViewportSize({width,height:1000});};
  const state=await api('/api/state'),tomorrow=new Date(Date.now()+86400000).toISOString().slice(0,10)+'T09:00';
- const schedule=await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:'Coordination rota '+width,service:state.services[0].id,revision:0,timezone:'UTC',validFrom:new Date(Date.now()-86400000).toISOString(),validUntil:null,primary:{anchorLocal:tomorrow,periodDays:7,members:[session.member.id],ambiguity:'earlier'},backup:{anchorLocal:tomorrow,periodDays:7,members:[],ambiguity:'earlier'},overrides:[]});
+ // Extend the native create/swap/history journey with a rota clock different from the browser.
+ await page.goto(origin+'/on-call/new');await page.getByLabel('Rota name',{exact:true}).fill('Coordination rota '+width);
+ const service=page.getByLabel('Service',{exact:true});if(await service.count())await service.selectOption(state.services[0].id);
+ await page.getByRole('button',{name:'Continue',exact:true}).click();
+ while(await page.getByRole('button',{name:'Remove person',exact:true}).count()>1)await page.getByRole('button',{name:'Remove person',exact:true}).last().click();
+ await page.getByRole('combobox',{name:'Primary person 1',exact:true}).selectOption(session.member.id);
+ await page.getByRole('button',{name:'Continue',exact:true}).click();
+ await page.getByLabel('Time zone',{exact:true}).selectOption(zone);await page.getByLabel('Starts',{exact:true}).fill(tomorrow.slice(0,10));
+ await page.getByRole('button',{name:'Continue',exact:true}).click();
+ await page.waitForFunction(()=>!document.querySelector('.oc-step-actions button[type=submit]').disabled);
+ if(width===1440){
+  assert.doesNotMatch(await page.locator('.oc-rota-steps').innerText(),/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}|tests\//,'new rota presents readable dates without repository paths');
+  const times=await page.locator('.oc-preview time').allTextContents();assert.ok(times.length>1);for(const time of times){assert.ok(time.includes(zone));assert.match(time,/GMT[+-]\d/);}
+  assert.equal(await page.locator('.oc-preview [data-time-zone]').getAttribute('data-time-zone'),zone);
+ }
+ await capture('new-rota');
+ await page.getByRole('button',{name:'Create rota',exact:true}).click();await page.waitForURL(/\/on-call\/rota-[a-f0-9]{8}$/);
+ const schedule=(await api('/api/paging/state')).schedules.find(row=>row.id===new URL(page.url()).pathname.split('/').at(-1));assert.equal(schedule.timezone,zone);
+ await page.goto(origin+'/on-call');const row=page.locator('[data-rota="'+schedule.id+'"]');await row.waitFor();
+ if(width===1440){
+  const times=await row.locator('time').allTextContents();assert.ok(times.length>=3,'future start exposes a hand-over and coverage gaps');
+  for(const time of times)assert.ok(time.includes(zone),'each overview hand-over and gap names its rota clock');
+  const first=row.locator('time').first(),at=await first.getAttribute('datetime');
+  const expected=new Intl.DateTimeFormat('en-US',{timeZone:zone,hour:'2-digit',minute:'2-digit'}).format(Date.parse(at));assert.ok((await first.innerText()).includes(expected),'the labelled clock agrees with the retained instant in the rota zone');
+  assert.equal(await page.locator('.oc-bands [data-time-zone]').getAttribute('data-time-zone'),browserZone,'multi-rota band axis identifies its browser clock separately');
+ }
+ await capture('overview');
  assert.ok(Number.isSafeInteger(schedule.revision)&&schedule.revision>0);
  await page.goto(origin+'/on-call/'+schedule.id);await focusWorkspace(page);
  const coordination=page.getByRole('region',{name:'Shift coordination',exact:true});await coordination.getByRole('heading',{name:'Shift coordination',exact:true}).waitFor();
+ if(width===1440){assert.equal(await page.locator('.oc-bands [data-time-zone]').getAttribute('data-time-zone'),zone);for(const label of await page.locator('.handoff').allTextContents())assert.ok(label.includes(zone));}
+ await capture('rota');
  await page.getByRole('button',{name:'Request a swap',exact:true}).click();const swapSheet=page.getByRole('dialog',{name:'Request a swap',exact:true});await swapSheet.getByLabel('Shift to swap',{exact:true}).waitFor();
  const requestSwap=swapSheet.getByRole('button',{name:'Request',exact:true});
  assert.equal(await requestSwap.isDisabled(),true);const substituteHint=await requestSwap.getAttribute('aria-describedby');assert.ok(substituteHint);await swapSheet.locator(`[id="${substituteHint}"]`).waitFor();
@@ -711,7 +756,7 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);assert.equal(await requestSwap.isEnabled(),true);assert.equal(await requestSwap.getAttribute('aria-describedby'),null);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
  const swap=(await api('/api/schedule-coordination')).records.find(row=>row.kind==='swap'&&row.data.schedule===schedule.id&&row.data.status==='pending');assert.ok(swap);
  await coordination.getByRole('button',{name:'Approve swap',exact:true}).click();await coordination.getByText(/approval recorded/).waitFor();
- const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:900}});
+ const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:900},timezoneId:'Australia/Brisbane'});
  try{
   if(ownerLink){
    const local=new URL(ownerLink);assert.equal(local.origin,origin);const key=new URLSearchParams(local.hash.slice(1)).get('rer-dev');assert.ok(key);
@@ -733,6 +778,12 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  await coordination.getByText('Calendar feed',{exact:true}).click();await coordination.getByLabel('Calendar scope',{exact:true}).selectOption('schedule');await coordination.getByRole('button',{name:'Create link',exact:true}).click();
  const field=coordination.getByRole('textbox',{name:'New private calendar URL',exact:true});await field.waitFor();const url=await field.inputValue();assert.equal((await context.request.get(url)).status(),200);await coordination.getByRole('button',{name:'Hide calendar URL',exact:true}).click();assert.equal(await field.count(),0,'the bearer is dismissed before proof');
  await coordination.getByText('History',{exact:true}).click();assert.ok((await api('/api/state')).scheduleRecords.some(row=>row.kind==='notice'&&row.data.schedule===schedule.id),'schedule changes retain their recorded obligations');
+ if(width===1440){
+  const history=coordination.locator('details').filter({has:page.locator('summary').filter({hasText:/^History$/})});
+  const entries=await history.locator('p').allTextContents();assert.ok(entries.length>0);for(const entry of entries){assert.ok(entry.includes(zone),'each retained history time names the rota zone');assert.doesNotMatch(entry,/\d{4}-\d{2}-\d{2}T/);}
+  for(const entry of await coordination.locator('article > p').allTextContents())assert.ok(entry.includes(zone),'swap intervals identify their rota clock');
+ }
+ await capture('history');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));const axe=await new AxeBuilder({page}).include('[aria-label="Shift coordination"]').withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations,[]);
  assert.equal(await coordination.getByLabel('Swap approval',{exact:true}).inputValue(),'none','saved policy stays selected');await coordination.screenshot({path:`${directory}/OC-025-settings-${width}.png`});
  await coordination.getByRole('button',{name:'Revoke subscription',exact:true}).click();await coordination.getByText(/revoked or restored inactive/).waitFor();assert.equal((await context.request.get(url)).status(),404);
@@ -1164,6 +1215,10 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  await accessibleState(page,'declaration',width,page.getByRole('button',{name:'Declare',exact:true}))
  await page.keyboard.press('Enter')
  await page.getByRole('heading',{name:`Keyboard incident ${width}`,exact:true}).last().waitFor()
+ if(width===1440){
+  const zone=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone),times=await page.locator('.incident-page time').allTextContents();assert.ok(times.length>=2);
+  for(const time of times){assert.ok(time.includes(zone),'incident header and timeline show their browser zone');assert.doesNotMatch(time,/\d{4}-\d{2}-\d{2}T/);}
+ }
  const manualState=await (await context.request.get('/api/state')).json(),manual=manualState.incidents.find(i=>i.title===`Keyboard incident ${width}`);assert.equal(manual.urgency,'low');assert.equal(manual.priority,'P2');assert.ok(manual.manualPage.operation);assert.ok(manual.manualPage.obligations.every(o=>o.automatic===false&&o.paging==='off'));console.log('OC-068 keyboard manual page: urgency, priority, replay-safe operation and recorded target obligation persisted')
  // O8: a keyboard Lead choice commits one attributed timeline line.
  if(width===1440) {

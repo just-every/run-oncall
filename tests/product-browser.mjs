@@ -6,7 +6,7 @@ import {mkdir,readFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
-import {productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser} from './product-browser-journey.mjs'
+import {productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser,scheduleCoordinationBrowser,keyboardCoordination,coverageRulesBrowser} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -585,6 +585,11 @@ async function readinessBrowser(page,context) {
  await page.getByRole('navigation',{name:'Settings',exact:true}).getByRole('link',{name:'Readiness',exact:true}).click();
  await page.locator('.readiness [data-readiness-row]').first().waitFor();
  const report=await request('/api/readiness');
+ const visible=await page.locator('.readiness').innerText();
+ assert.doesNotMatch(visible,/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}|tests\//,'readiness presents readable dates without repository paths');
+ const zone=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);
+ for(const time of await page.locator('.readiness time').allTextContents())assert.ok(time.includes(zone),'readiness observation times identify the local clock');
+ assert.ok(report.matrix.some(row=>row.evidence.reference?.includes('tests/')),'internal journey references remain available through the protected API');
  assert.equal(new URL(page.url()).pathname,'/settings/readiness');
  assert.equal(await page.locator('.readiness [data-coverage]').getAttribute('data-coverage'),report.pagerCoverage.state);
  assert.equal(await page.locator('[data-readiness-row]').count(),report.matrix.length);
@@ -677,7 +682,7 @@ try {
  browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH??process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']})
  // The journey pauses for D1 reads and held responses. Match localWorker's
  // one-request connections so Playwright cannot reuse a Worker-idle socket.
- const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000},locale:'en-US',timezoneId:'UTC',extraHTTPHeaders:{connection:'close'}})
+ const context=await browser.newContext({baseURL:worker.origin,viewport:{width:1440,height:1000},locale:'en-US',timezoneId:process.env.ONCALL_PRODUCT_JOURNEY==='readable-times'?'Australia/Brisbane':'UTC',extraHTTPHeaders:{connection:'close'}})
  await context.addCookies(owner.headers.getSetCookie().map(line=>{
   const pair=line.split(';')[0],at=pair.indexOf('=')
   return {name:pair.slice(0,at),value:pair.slice(at+1),url:worker.origin,httpOnly:true,sameSite:'Lax'}
@@ -699,9 +704,17 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
+ if(focused==='readable-times'){
+  const session=await (await context.request.get('/api/session')).json();
+  await context.request.post('/api/command',{headers:{origin:worker.origin},data:{type:'service',id:'synthetic-oncall-1',name:'Checkout',environment:'test',owner:session.member.id,runbook:[],pager:''}});
+  await keyboardCoordination(page,context,1440,undefined,openSession);
+  await scheduleCoordinationBrowser(page,context,1440,session);
+  await coverageRulesBrowser(page,context,1440,session);
+  await readinessBrowser(page,context);
+ }
  if(focused==='events-source')await eventsSourceBrowser(page,context);
  if(focused==='support-start')await supportStartBrowser(page,context,{setTime,proof:triageProof});
  if(focused==='roles'){
@@ -712,7 +725,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(focused==='limitations')await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['events-source','readiness','triage','limitations','roles','move-in-guide','support-start'].includes(focused)){
+ if(!['events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -723,11 +736,11 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start'].includes(focused))await readinessBrowser(page,context)
+ if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log(focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -738,4 +751,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

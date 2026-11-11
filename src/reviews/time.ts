@@ -1,7 +1,10 @@
 export const browserZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-export function shortTime(value: string, zone = browserZone()) {
+export function shortTime(value: string | number, zone = browserZone()) {
   const date = new Date(value);
-  return Number.isFinite(date.getTime()) ? date.toLocaleString([], {timeZone: zone, month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'}) : 'Time unavailable';
+  if (!Number.isFinite(date.getTime())) return 'Time unavailable';
+  const local = date.toLocaleString([], {timeZone: zone, month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'});
+  const offset = new Intl.DateTimeFormat('en-GB', {timeZone: zone, timeZoneName: 'shortOffset'}).formatToParts(date).find(part => part.type === 'timeZoneName')!.value;
+  return `${local} ${zone} (${offset})`;
 }
 export function shortDate(value: string, zone = browserZone()) {
   return new Date(value + 'T12:00:00Z').toLocaleDateString([], {timeZone: 'UTC', month: 'short', day: 'numeric'});
