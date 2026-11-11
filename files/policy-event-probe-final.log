@@ -1,0 +1,59 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Owned runtime processes [["13385","13384","MainThread"],["13395","13385","esbuild"],["13404","13385","workerd"],["13410","13385","ps"]]
+{
+  "head": "0aa680bcde80637ca688881af05ba23b87f7b2cc",
+  "probe": "BASE-AGENT-010.6 policy.adopted class and decision",
+  "observations": [
+    {
+      "mode": "autonomous",
+      "event": {
+        "seq": 1,
+        "revision": 1,
+        "id": "187bae26-2e0a-47dc-9bc9-75c17c6c1e35",
+        "type": "policy.adopted",
+        "uri": "http://127.0.0.1:36479/agents/policy/1",
+        "actor": {
+          "kind": "business"
+        },
+        "at": "2026-11-11T23:37:20.277Z"
+      },
+      "hasClasses": false,
+      "hasDecision": false
+    },
+    {
+      "mode": "held",
+      "event": {
+        "seq": 2,
+        "revision": 2,
+        "id": "434595ab-bb93-4317-bff8-201dddd511cc",
+        "type": "policy.adopted",
+        "uri": "http://127.0.0.1:36479/agents/policy/2",
+        "actor": {
+          "kind": "business"
+        },
+        "at": "2026-11-11T23:37:20.429Z"
+      },
+      "hasClasses": false,
+      "hasDecision": false
+    }
+  ],
+  "outboundRequests": []
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: policy.adopted must carry its class and decision; emitted Base events contain neither under either company policy
+    at file:///home/agent/rer-consolidation/work/sd-oncall-c-f228/packet/policy-event-probe.mjs:20:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

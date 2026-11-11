@@ -1,0 +1,10 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Owned runtime processes [["2897","2896","MainThread"],["2906","2897","esbuild"],["2915","2897","workerd"],["2921","2897","ps"]]
+PROBE BASE-AGENT-010 3 autonomous: populated MCP cursor replay twice -> same retained ids in order; every call audited; native and paging records unchanged; zero outbound requests
+PROBE BASE-AGENT-010 4 autonomous: same live bearer after sponsor loses native read authority -> no incident event id, URI or content; own readable approval events remain
+PROBE BASE-AGENT-010 6 autonomous: signed-in approval and review feed -> pending, executed decision and flagged review with original classes and decision ids and no saved private payload
+PROBE BASE-AGENT-010 3 held: populated MCP cursor replay twice -> same retained ids in order; every call audited; native and paging records unchanged; zero outbound requests
+PROBE BASE-AGENT-010 4 held: same live bearer after sponsor loses native read authority -> no incident event id, URI or content; own readable approval events remain
+PROBE BASE-AGENT-010 6 held: signed-in approval and review feed -> pending, executed decision and flagged review with original classes and decision ids and no saved private payload

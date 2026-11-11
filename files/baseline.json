@@ -1,0 +1,32 @@
+{
+  "tag": "sd-oncall-c-f228",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f228",
+  "baseline": "2743e71f76044322080b1b136b9dce82c4793915",
+  "counts": {
+    "done": 23,
+    "partial": 44,
+    "missing": 34,
+    "total": 101
+  },
+  "mainRuns": [
+    {
+      "id": 43115851492,
+      "name": "Verify",
+      "event": "push",
+      "conclusion": "success"
+    },
+    {
+      "id": 43115851706,
+      "name": "Run site",
+      "event": "push",
+      "conclusion": "success"
+    }
+  ],
+  "savedHead": "9287ed6d245cf019fe71ac17fa2cd7001aa9c195",
+  "savedPush": {
+    "status": "success",
+    "attempt": 1
+  },
+  "githubCallsSoFar": 1
+}

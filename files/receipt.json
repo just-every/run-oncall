@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f228",
+  "repository": "just-every/run-oncall",
+  "head": "0aa680bcde80637ca688881af05ba23b87f7b2cc",
+  "branch": "cloud/sd-oncall-c-f228",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email <fleet-address> --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node /tmp/f228-events-run.mjs",
+      "exit": 0,
+      "test": "tests/oncall-agent-events.mjs#retainedEvents",
+      "policyModes": [
+        "autonomous",
+        "held"
+      ]
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=core node tests/runtime.mjs",
+      "exit": 0,
+      "durationSeconds": 152.5
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write; node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "generatedViewsCommitted": false
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "head": "0aa680bcde80637ca688881af05ba23b87f7b2cc"
+    }
+  ],
+  "dependencyProbe": {
+    "command": "node <packet>/policy-event-probe.mjs",
+    "exit": 1,
+    "test": "BASE-AGENT-010.6 policy.adopted class and decision",
+    "failure": "policy.adopted must carry its class and decision; emitted Base events contain neither under either company policy",
+    "upstreamLocation": "src/modules/agent-door/index.ts:47",
+    "baseModified": false,
+    "head": "0aa680bcde80637ca688881af05ba23b87f7b2cc"
+  },
+  "sourceLockFresh": true,
+  "contractStatusChanged": false,
+  "countsBefore": {
+    "done": 23,
+    "partial": 44,
+    "missing": 34
+  },
+  "countsAfter": {
+    "done": 23,
+    "partial": 44,
+    "missing": 34
+  },
+  "registeredJourneyCountDelta": 0,
+  "fullVerification": {
+    "initialFullInvocation": {
+      "head": "27c5a2b7f35b6e04d56bf4517339a58b77747338",
+      "exit": 1,
+      "failure": "Obsolete undeclared-events audit expectation, actual 1 versus expected 2",
+      "corrected": true
+    },
+    "requiredHostedLane": {
+      "head": "0aa680bcde80637ca688881af05ba23b87f7b2cc",
+      "command": "ONCALL_VERIFY_LANE=hosted npx -y @runeditrun/rer verify --non-interactive",
+      "exit": 0,
+      "conformancePassed": 8412,
+      "conformanceTotal": 8412,
+      "hydrationPages": 4,
+      "hydrationLoads": 23
+    },
+    "agentFlow": {
+      "command": "node tests/oncall-agent-flow.mjs",
+      "exit": 0,
+      "note": "Executed with the final transport and browser test bytes before their commit; no product byte changed at that commit."
+    },
+    "browser": {
+      "command": "node tests/agent-door-browser.mjs",
+      "head": "0aa680bcde80637ca688881af05ba23b87f7b2cc",
+      "exit": 0,
+      "widths": [
+        1440,
+        390
+      ],
+      "guideSeriousOrCriticalFindings": 0,
+      "guidePageOverflow": false
+    },
+    "focusedFinal": {
+      "command": "node /tmp/f228-events-run.mjs",
+      "head": "0aa680bcde80637ca688881af05ba23b87f7b2cc",
+      "exit": 0
+    },
+    "policyProbeFinal": {
+      "command": "node <packet>/policy-event-probe.mjs",
+      "head": "0aa680bcde80637ca688881af05ba23b87f7b2cc",
+      "exit": 1,
+      "outboundRequests": 0,
+      "modes": [
+        "autonomous",
+        "held"
+      ],
+      "hasClasses": [
+        false,
+        false
+      ],
+      "hasDecision": [
+        false,
+        false
+      ]
+    }
+  },
+  "publicationScan": {
+    "status": "not_run_in_cloud",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null
+  },
+  "migrationLedger": {
+    "status": "not_applicable",
+    "reason": "No migrations added or changed"
+  },
+  "baseline": "2743e71f76044322080b1b136b9dce82c4793915",
+  "productPush": {
+    "status": "success",
+    "attempt": 1,
+    "branch": "cloud/sd-oncall-c-f228",
+    "head": "0aa680bcde80637ca688881af05ba23b87f7b2cc"
+  },
+  "sourceLockSha256": "20da7303e6a2826f370bfd253253649d999115846d6f599045aa3ead5b16b725",
+  "gitHistoryShallow": false,
+  "githubCalls": 5,
+  "candidateVerify": {
+    "id": 43120294053,
+    "name": "Verify",
+    "event": "push",
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "0aa680bcde80637ca688881af05ba23b87f7b2cc",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43120294053"
+  },
+  "buildSourceAndTestsCommitted": true,
+  "status": "BLOCKED_ON_BASE_POLICY_EVENT_METADATA",
+  "pr": null,
+  "claim": {
+    "clause": "BASE-AGENT-010",
+    "status": "PARTIAL",
+    "points": [
+      3,
+      4
+    ],
+    "scope": "Point 4 names only the planner-selected events.list channel. Subscription and webhook duties remain gaps."
+  }
+}

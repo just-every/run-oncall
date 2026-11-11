@@ -1,0 +1,88 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Owned runtime processes [["10746","10745","MainThread"],["10755","10746","esbuild"],["10764","10746","workerd"],["10770","10746","ps"]]
+Browser proof weekly-counts 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof weekly-counts 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous initially on: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous initially on: fresh bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+Browser proof pause-matrix-local 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof pause-matrix-local 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-011 6 autonomous local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 3375ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both: retained and fresh bearer valid next MCP read and note -> agents_paused in 609ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+Browser proof pause-matrix-business 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof pause-matrix-business 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-011 6 autonomous Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 3055ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 810ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 621ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: fresh bearer read served; note executed; zero outbound requests
+Browser proof pause-matrix-resumed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof pause-matrix-resumed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-011 6 held initially on: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held initially on: fresh bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 734ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both: retained and fresh bearer valid next MCP read and note -> agents_paused in 655ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+PROBE BASE-AGENT-011 6 held Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 932ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 801ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 739ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: fresh bearer read served; note held then human-approved; zero outbound requests
+PASS independent Pause flags: both policies, valid next reads and mutations, maximum refusal 528ms, bearer resume 403 including owner cookie, human coordination and policy-appropriate resume; zero outbound requests
+Browser proof people-linked-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof people-linked-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof people-error 1440: alert=true fits=true serious/critical=0
+Browser proof people-error 390: alert=true fits=true serious/critical=0
+Browser proof incident 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof incident 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof review 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof review 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof responders 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof responders 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 390: fits=true serious/critical=0 undersized-controls=0
+PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry
+Browser proof approval-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-paused 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-paused 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-paused 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-paused 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-blocked 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-blocked 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-unavailable 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-unavailable 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-013 rendered autonomous: /docs/agents -> complete 40-tool class, scope and fixture inventory agrees with MCP; resources empty; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-013 rendered held: /docs/agents -> complete 40-tool class, scope and fixture inventory agrees with MCP; resources empty; native and paging unchanged; zero outbound requests
+Browser proof guide 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof guide 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erasure-data 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erasure-data 390: fits=true serious/critical=0 undersized-controls=0
+PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements

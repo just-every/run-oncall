@@ -1,0 +1,9 @@
+{
+  "head": "27c5a2b7f35b6e04d56bf4517339a58b77747338",
+  "job": "local application verification, runtime machines",
+  "command": "npx -y @runeditrun/rer verify --non-interactive",
+  "test": "tests/oncall-agent-transport.mjs#refusalAudit",
+  "exit": 1,
+  "failure": "Only resource and event refusals enter the tool audit pipeline: 1 !== 2",
+  "repair": "Retain exact resource-refusal audit identity and invariants; events are declared and no longer generate a capability refusal. Update rendered inventory to include the live event tool."
+}

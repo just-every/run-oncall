@@ -1,0 +1,57 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Owned runtime processes [["2976","2975","MainThread"],["2985","2976","esbuild"],["2994","2976","workerd"],["3000","2976","ps"]]
+{
+  "probe": "BASE-AGENT-010.6 policy.adopted class and decision",
+  "observations": [
+    {
+      "mode": "autonomous",
+      "event": {
+        "seq": 1,
+        "revision": 1,
+        "id": "72e8ad36-cb05-49cf-bb52-fadb776e0b41",
+        "type": "policy.adopted",
+        "uri": "http://127.0.0.1:41025/agents/policy/1",
+        "actor": {
+          "kind": "business"
+        },
+        "at": "2026-11-11T23:08:16.077Z"
+      },
+      "hasClasses": false,
+      "hasDecision": false
+    },
+    {
+      "mode": "held",
+      "event": {
+        "seq": 2,
+        "revision": 2,
+        "id": "9930efa9-4c6b-4052-b771-54b8e0bb27e3",
+        "type": "policy.adopted",
+        "uri": "http://127.0.0.1:41025/agents/policy/2",
+        "actor": {
+          "kind": "business"
+        },
+        "at": "2026-11-11T23:08:16.247Z"
+      },
+      "hasClasses": false,
+      "hasDecision": false
+    }
+  ]
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: policy.adopted must carry its class and decision; emitted Base events contain neither under either company policy
+    at file:///home/agent/rer-consolidation/work/sd-oncall-c-f228/packet/policy-event-probe.mjs:15:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0
