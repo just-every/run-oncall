@@ -52,8 +52,16 @@ export function transferDoor(m) {
    const policy=jwt('rer-agent-policy+jwt',{v:1,iss:issuer,aud:m.origin,sub:installationId,business,seq:revision,revision,paused:false,catalogue:document.catalogue,document,revision_signature,iat:now,exp:now+300})
    ok(await m.request('/api/rer/agent-policy',{policy},cookie))
   },
+  async personSession(cookie) {
+   const member=ok(await m.request('/api/session',undefined,cookie)).member,password='synthetic-oncall-528-password'
+   ok(await m.request('/api/password',{member:member.id,password},cookie))
+   const login=await m.request('/api/login',{name:member.name,password})
+   assert.equal(ok(login).member.id,member.id,'the emitted Worker uses a real native person session, never a dev credential')
+   return login.cookie
+  },
   async prepareAgents(cookie,key,sql) {
    agentKey=key
+   cookie=await this.personSession(cookie)
    await m.close();await m.startHttp({outboundLedger:'.rer/local/agent-transfer-outbound.jsonl'})
    await this.choosePolicy(cookie,heldPolicy())
    const created=await agentCall('oncall.incidents.declare',{service:'transfer',title:'Synthetic portable agent custody',summary:'Native history retained without execution authority',severity:'warning',idempotency_key:randomUUID()})
@@ -77,6 +85,7 @@ export function transferDoor(m) {
    agentHistory=history(sql)
    for(const table of agentTables)assert.ok(agentHistory[table].length>0,table+' holds real agent history before export')
    assert.deepEqual(await m.outboundRequests(),[],'agent preparation makes no outbound request')
+   return cookie
   },
   async assertAgentsInactive(cookie,key,client,sql) {
    assert.deepEqual(history(sql),agentHistory,'portable restore retains populated agent audit, calls, reviews and events byte for byte')
@@ -438,7 +447,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  assert.equal((await req('/api/routing/keys',{id:'portable-alertmanager',name:'Portable Alertmanager',provider:'alertmanager',scope:['transfer'],owner:member.id,revision:reauthorized.intakeSources.find(s=>s.id==='portable-alertmanager').revision,key:monitoringKey})).status,200)
  assert.equal((await req('/api/routing/keys',{id:'portable-native',name:'Portable native monitor',provider:'native',authentication:'signed',scope:['transfer','upstream'],owner:member.id,revision:reauthorized.intakeSources.find(s=>s.id==='portable-native').revision,key:nativeRoutedKey})).status,200)
  await business.prepare(cookie)
- await business.prepareAgents(cookie,apiKey,sql)
+ cookie=await business.prepareAgents(cookie,apiKey,sql)
  statusBusiness=ok(await req('/api/status')).services.find(row=>row.name==='Checkout');ok(await req('/api/status',{action:'activate',id:statusBusiness.id,revision:statusBusiness.revision}))
  const oldCookie=cookie
  const source=await readFile('tests/fixtures/opsgenie.json','utf8'),door=ownerDoor(m,cookie),preview=ok(await door.preview('opsgenie',source)),job=ok(await door.apply('opsgenie',preview)).job;assert.equal(job.state,'completed')
@@ -615,6 +624,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
   if(table==='ik_door_apply_failures')expected=[...expected,...interruptedPlans.filter(id=>!expected.some(row=>row.plan_id===id)).map(plan_id=>({plan_id,reason_code:'import_interrupted_restore'}))].sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))
   assert.deepEqual(restoredImports[table],expected,table+' retains every import/provenance/plan/approval field, with restored in-flight work explicitly interrupted')
  }
+ cookie=await business.personSession(cookie)
  await m.close();await m.startHttp({outboundLedger:'.rer/local/agent-transfer-outbound.jsonl'})
  await business.assertAgentsInactive(cookie,apiKey,apiClient.id,sql)
  await business.assertInactive(cookie,oldCookie,sql)
