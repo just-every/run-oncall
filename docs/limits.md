@@ -26,6 +26,12 @@ Moving in from Opsgenie or PagerDuty reads export files you saved yourself. Onca
 
 Nothing you write in Oncall is sent to an AI model. Local development has no mail sender configured by default. Ordinary `/signin` email sign-in sends only through a configured remote mail provider with real credentials; the app does not capture mail or print sign-in tokens. The private `RER_OPEN` owner entry printed by `rer dev` needs no email delivery.
 
+## Handoff exports stay unsent
+
+On a normal installation with no approved response endpoint, incident coordination, handoff preparation and export make no outbound request. They create no paging receipt or production action and publish nothing to Lamp. An administrator-approved OC-053 response endpoint is a separate, explicitly authorized flow; it does not authorize AI calls, paging or publication.
+
+The legacy incident draft remains explicitly review-required, including after someone reviews a separate authored handoff. Prepared copy cannot be exported until its exact copy and source versions have been reviewed. An eligible reviewed export is still unsent and not published; review grants no delivery authority. Evidence and impact source links retain their existing access checks: copying or exporting a link never grants its recipient access to private records.
+
 ## Hosted coordination keeps your existing pager
 
 Run Oncall locally or host release 1 in your own Cloudflare account with `rer deploy`. It coordinates incidents alongside your existing pager with paging OFF; no independent standby is required for coordination. Release 2 paging and independent standby are not built. Hosted email-link sign-in requires a configured remote mail provider. See [Getting started](getting-started.md#host-for-your-team) for setup, deployment and removal. A local dry run does not establish hosted health or mail delivery.
