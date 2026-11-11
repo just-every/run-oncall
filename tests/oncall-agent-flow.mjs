@@ -715,7 +715,7 @@ try{
   const discovered=await mcp('server/discover'),listed=await mcp('tools/list'),templates=await mcp('resources/templates/list');
   assert.equal(discovered.status,200);assert.equal(listed.status,200);assert.equal(templates.status,200);
   assert.deepEqual(discovered.result._meta['com.runeditrun/capabilities'].declared,runtime.context.surface.capabilities);
-  assert.deepEqual(discovered.result.capabilities.resources,{});
+  assert.deepEqual(discovered.result.capabilities.resources,{subscribe:false,listChanged:false});
   assert.equal(listed.result.nextCursor,undefined);
   assert.deepEqual(documented.map(({checks,...row})=>row),listed.result.tools.map(row=>({name:row.name,scope:row._meta['com.runeditrun/scope'],classes:row._meta['com.runeditrun/classes']})));
   assert.deepEqual(templates.result.resourceTemplates.map(row=>row.uriTemplate),[...surface.resources].sort());

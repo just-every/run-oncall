@@ -37,6 +37,7 @@ export async function resourceJourney() {
    ['erasures/{id}',f.fence,f.fence,false,'admin'],
    ['automation/outbox/{id}',outbox.id,outbox.id,false],
   ].map(([path,id,foreign,untrusted,authority])=>({template:'oncall://'+path,id,foreign,untrusted,authority}));
+  let lastWrite;
   for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]) {
    assert.equal((await adopt(policy)).status,200);
    const before=await native();
@@ -90,6 +91,7 @@ export async function resourceJourney() {
    // A completed write's actual link reads the newly committed native state.
    const args={incident:f.own.id,revision:(await state()).incidents.find(row=>row.id===f.own.id).revision,text:'Synthetic customer note '+mode,idempotency_key:randomUUID()};
    const call=await tool('oncall.notes.add',args);
+   lastWrite=args;
    assert.equal(call.decision.disposition,mode==='held'?'review':'autonomous','A standard note follows the company policy');
    assert.equal(call.result.isError,false);
    const link=call.result.content.find(row=>row.type==='resource_link');assert.ok(link);
@@ -99,5 +101,27 @@ export async function resourceJourney() {
    assert.deepEqual(await native(),snapshot);
    console.log(`PROBE BASE-AGENT-003 1,4,6 ${mode}: 17 scoped templates, policy-appropriate reads, customer and imported text marked, native-only fence unmarked; native records and paging unchanged; zero outbound requests`);
   }
+  assert.equal((await adopt()).status,200);
+  await completeResource('oncall://services/agent-service',{bearer:f.readKey});
+  const revoked=await http('/api/automation/clients/'+f.client.id+'/revoke',{revision:f.client.revision});
+  assert.equal(revoked.status,200);await revoked.json();
+  const afterRevoke=await native();
+  const refused=await mcp('resources/read',{uri:'oncall://services/agent-service'},{},f.readKey);
+  assert.equal(refused.status,401);assert.equal(refused.result,undefined);
+  assert.deepEqual(await native(),afterRevoke,'A revoked resource credential cannot expose or change native data');
+  const current=await state();
+  const erased=await http('/api/erasure/incident/'+f.own.id,{workspaceRevision:current.revision,confirmation:'erase '+f.own.id});
+  assert.equal(erased.status,200);assert.equal((await erased.json()).state,'complete');
+  const afterErase=await native();
+  for(const uri of ['oncall://incidents/'+f.own.id,'oncall://handoffs/'+f.ownHandoff.id]) {
+   const answer=await mcp('resources/read',{uri});
+   assert.equal(answer.body.error?.data?.code,'resource_unavailable');assert.equal(answer.result,undefined);
+  }
+  const replay=await tool('oncall.notes.add',lastWrite);
+  assert.equal(replay.result?._meta?.['com.runeditrun/error']?.code,'not_found');
+  assert.equal(replay.result.structuredContent,undefined);
+  assert.deepEqual(await native(),afterErase,'Erased resource links and a captured write cannot resurrect or expose erased custody');
+  assert.deepEqual(await runtime.outboundRequests(),[]);
+  console.log('PROBE BASE-AGENT-003 authority: revoked scoped bearer -> 401; erased incident and handoff links -> Resource unavailable; captured note -> not_found; native and paging unchanged; zero outbound requests');
  } finally {await runtime.close()}
 }
