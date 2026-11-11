@@ -105,9 +105,18 @@ try {
   console.log('PASS OC-033 custom email: distinct failure messages open and deduplicate one generation and canonical recorded obligation; resolve stops it by source recovery, keeps the declared incident open and creates no production delivery receipt. Paging remains OFF.');
   const original=ok(await request('/api/state'));
   const nativeKey=randomBytes(32).toString('hex');ok(await request('/api/sources',{id:'native',key:nativeKey,scopes:['payments']}));
-  const native={source:'native',eventId:'held-trigger',service:'payments',environment:'production',key:'held',generation:'held-cycle',intent:'trigger',severity:'warning',title:'Held native observation',observedAt:'2026-10-01T00:00:00Z',evidence:''};
+  const native={source:'native',eventId:'held-trigger',service:'payments',environment:'production',key:'held',generation:'held-cycle',intent:'trigger',severity:'critical',title:'Held native observation',observedAt:'2026-10-01T00:00:00Z',evidence:''};
   ok(await external('/api/ingress/native',native,{authorization:'Bearer '+nativeKey}),201);
   const nativeEvent=ok(await request('/api/state')).events.find(e=>e.eventId==='held-trigger');
+  // OC-001: the default Warning recovery must close the preceding Critical
+  // Trigger through the public native door, using its exact key and generation.
+  const nativeAlerts=()=>request('/api/state').then(r=>ok(r).alerts.filter(a=>a.source==='native'));
+  const openedNative=await nativeAlerts();assert.equal(openedNative.length,1);assert.equal(openedNative[0].state,'active');
+  const recoveredNative=ok(await external('/api/ingress/native',{...native,eventId:'synthetic-oncall-237',intent:'recover',severity:'warning'},{authorization:'Bearer '+nativeKey}),201);
+  const closedNative=await nativeAlerts();assert.equal(closedNative.length,1);assert.equal(closedNative[0].id,openedNative[0].id);assert.equal(closedNative[0].state,'recovered');
+  assert.deepEqual(closedNative[0].events,[nativeEvent.id,recoveredNative.id]);
+  console.log('PASS OC-001 native Critical Trigger then Warning Recover: same public Events API key/generation -> one alert, active 1 to 0, recovered 0 to 1');
+
   const first=ok(await pd('trigger'),202);assert.equal(first.dedup_key,'checkout-latency');ok(await pd('trigger'),202);
   let state=ok(await request('/api/state')),receipts=state.intakeReceipts.filter(r=>r.source==='pd');
   assert.deepEqual(receipts.map(r=>r.outcome),['opened','deduplicated']);assert.equal(new Set(receipts.map(r=>r.generation)).size,1);

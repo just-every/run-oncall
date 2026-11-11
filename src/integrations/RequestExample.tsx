@@ -2,32 +2,37 @@ import { useEffect, useState } from 'react';
 import type { Service } from '../family/response-operations/domain';
 
 const quote = (value: string) => "'" + value.replace(/'/g, "'\\''") + "'";
-export function RequestExample({ source, service, mode }: { source: string; service: Service; mode: string }) {
+export function RequestExample({ source, service, mode, defaultOpen = false }: { source: string; service: Service; mode: string; defaultOpen?: boolean }) {
   const [origin, setOrigin] = useState('');
   const [copied, setCopied] = useState('');
   const [sample] = useState(() => ({ id: crypto.randomUUID(), observedAt: new Date().toISOString() }));
   useEffect(() => { setOrigin(location.origin); }, []);
   const payload = { source, eventId: `example-${service.id}-${sample.id}-trigger`, service: service.id, environment: service.environment, key: `${service.id}-latency`, generation: `example-${sample.id}`, intent: 'trigger', severity: 'warning', title: `${service.name} latency above 2 seconds`, observedAt: sample.observedAt, evidence: '' };
   const endpoint = origin + '/api/ingress/' + encodeURIComponent(source);
-  const example = mode === 'signed' ? `node --input-type=module <<'ONCALL_REQUEST'
-import { createHmac } from 'node:crypto';
+  const body = quote(JSON.stringify(payload, null, 2));
+  const example = mode === 'signed' ? `body=${body}
+timestamp=$(date +%s)
+signature=$(printf '%s.%s' "$timestamp" "$body" | node --input-type=module -e '
+import { createHmac } from "node:crypto";
 const key = process.env.ONCALL_SOURCE_KEY;
-if (!key) throw Error('Set ONCALL_SOURCE_KEY privately first');
-const body = JSON.stringify(${JSON.stringify(payload, null, 2)});
-const timestamp = String(Math.floor(Date.now() / 1000));
-const signature = createHmac('sha256', key).update(timestamp + '.' + body).digest('hex');
-const response = await fetch(${JSON.stringify(endpoint)}, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', 'x-oncall-timestamp': timestamp, 'x-oncall-signature': signature },
-  body
-});
-console.log(response.status, await response.text());
-if (!response.ok) process.exitCode = 1;
-ONCALL_REQUEST` : `curl --fail-with-body ${quote(endpoint)} \\
+if (!key) throw Error("Set ONCALL_SOURCE_KEY privately first");
+let body = "";
+for await (const chunk of process.stdin) body += chunk;
+process.stdout.write(createHmac("sha256", key).update(body).digest("hex"));')
+curl --fail-with-body ${quote(endpoint)} \\
+  -H 'Content-Type: application/json' \\
+  -H "x-oncall-timestamp: $timestamp" \\
+  -H "x-oncall-signature: $signature" \\
+  --data-binary "$body"` : `curl --fail-with-body ${quote(endpoint)} \\
   -H 'Content-Type: application/json' \\
   -H "Authorization: Bearer \${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}" \\
-  --data-binary ${quote(JSON.stringify(payload, null, 2))}`;
-  return <details className="ingress-example"><summary>Sample request</summary>
+  --data-binary ${body}`;
+  return <details className="ingress-example" open={defaultOpen}><summary>Sample request</summary>
+    <label className="field">Ingress URL<input readOnly value={endpoint} /></label>
+    <button type="button" disabled={!origin || !source} onClick={async () => {
+      try { await navigator.clipboard.writeText(endpoint); setCopied('Ingress URL copied'); }
+      catch { setCopied('Select the URL above and copy it.'); }
+    }}>Copy ingress URL</button>
     <p>Keep the private key in your sender’s environment, then run this request.</p>
     <label className="field"><span>Sample request</span><textarea aria-label="Sample request" readOnly value={example} rows={12} spellCheck={false} /></label>
     <button type="button" disabled={!origin || !source} onClick={async () => {
