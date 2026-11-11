@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f231",
+  "head": "05e955fadd58ab162f3fce04d0370efff143d071",
+  "main": "2743e71f76044322080b1b136b9dce82c4793915",
+  "predecessor": "4451720a3e353d18218c03cbd0d75c180e322403",
+  "files": [
+    {
+      "path": "src/handoff-api.ts",
+      "candidate_blob": "482623197238d926e4d6381ac67ce3502ae056ce",
+      "main_blob": "482623197238d926e4d6381ac67ce3502ae056ce",
+      "identical": true,
+      "executed_blob": "482623197238d926e4d6381ac67ce3502ae056ce"
+    },
+    {
+      "path": "src/family/response-operations/handoffs.ts",
+      "candidate_blob": "23c32d889e634162a49575a07740242630c185a9",
+      "main_blob": "23c32d889e634162a49575a07740242630c185a9",
+      "identical": true,
+      "executed_blob": "23c32d889e634162a49575a07740242630c185a9"
+    },
+    {
+      "path": "tests/activation.mjs",
+      "candidate_blob": "8fad69ab08ed059e8c5b52e9efdf557060b0492d",
+      "main_blob": "8fad69ab08ed059e8c5b52e9efdf557060b0492d",
+      "identical": true,
+      "executed_blob": "8fad69ab08ed059e8c5b52e9efdf557060b0492d"
+    },
+    {
+      "path": "tests/checkpoint-cli.mjs",
+      "candidate_blob": "6a8934d4266db03901098272d56663e2ddd1e277",
+      "main_blob": "6a8934d4266db03901098272d56663e2ddd1e277",
+      "identical": true,
+      "executed_blob": "6a8934d4266db03901098272d56663e2ddd1e277"
+    },
+    {
+      "path": "tests/worker.mjs",
+      "candidate_blob": "1b2325e1b9458d5a7672eb54ddf7d77711ba479c",
+      "main_blob": "1b2325e1b9458d5a7672eb54ddf7d77711ba479c",
+      "identical": true,
+      "executed_blob": "1b2325e1b9458d5a7672eb54ddf7d77711ba479c"
+    },
+    {
+      "path": "tests/worker-server.mjs",
+      "candidate_blob": "66de76539d0e461ba795fe785f1928e9fa7a2007",
+      "main_blob": "66de76539d0e461ba795fe785f1928e9fa7a2007",
+      "identical": true,
+      "executed_blob": "66de76539d0e461ba795fe785f1928e9fa7a2007"
+    },
+    {
+      "path": "scripts/verify-shards.json",
+      "candidate_blob": "377c652848be7de6a42ed1eab6045f36eff48a76",
+      "main_blob": "377c652848be7de6a42ed1eab6045f36eff48a76",
+      "identical": true,
+      "executed_blob": "377c652848be7de6a42ed1eab6045f36eff48a76"
+    }
+  ],
+  "product_diff": "HANDOFF-STAGE.md  | 28 ++++++++++++++++++++++++++++\n sources.lock.json |  2 +-\n 2 files changed, 29 insertions(+), 1 deletion(-)",
+  "contract_unchanged": true,
+  "views_unchanged": true,
+  "captured_at": "2026-11-11T23:40:59.888715+00:00",
+  "executed_head": "bc58a5da7a8204b54f8bf0c7d08c45f4bd9d94d0",
+  "runtime_diff_from_executed": "",
+  "full_history": true,
+  "added_text_email_count": 0,
+  "added_bare_slash_token_count": 0,
+  "identity_and_trailers": "all candidate commits and side parents checked; fleet identity; no trailers"
+}

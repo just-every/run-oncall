@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f231",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f231",
+  "head": "05e955fadd58ab162f3fce04d0370efff143d071",
+  "executed_head": "bc58a5da7a8204b54f8bf0c7d08c45f4bd9d94d0",
+  "main_at_final_fetch": "2743e71f76044322080b1b136b9dce82c4793915",
+  "captured_at": "2026-11-11T23:41:34.145899+00:00",
+  "checks": [
+    {
+      "command": "rer check --profile first-party",
+      "exit": 0,
+      "ok": true,
+      "checks": 1398,
+      "failures": 0
+    },
+    {
+      "command": "rer build",
+      "exit": 0,
+      "ok": true
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "proof": "Journey completed: run typecheck (18.4s)"
+    },
+    {
+      "command": "ONCALL_VERIFY_LANE=changes timeout 1200 npx -y @runeditrun/rer verify",
+      "exit": 0,
+      "executed_head": "bc58a5da7a8204b54f8bf0c7d08c45f4bd9d94d0",
+      "candidate_head": "05e955fadd58ab162f3fce04d0370efff143d071",
+      "runtime_and_tests_identical": true,
+      "changes_seconds": 51.2,
+      "activation_seconds": 365.0,
+      "activation_groups": 40,
+      "hydration_pages": 4,
+      "hydration_loads": 23,
+      "agent_door_passed": 7780,
+      "agent_door_total": 7780
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "candidate_head": "05e955fadd58ab162f3fce04d0370efff143d071"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "candidate_head": "05e955fadd58ab162f3fce04d0370efff143d071"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "candidate_head": "05e955fadd58ab162f3fce04d0370efff143d071"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "candidate_head": "05e955fadd58ab162f3fce04d0370efff143d071"
+    }
+  ],
+  "publication_scan": {
+    "commit": "05e955fadd58ab162f3fce04d0370efff143d071",
+    "complete": false,
+    "historyScanned": false,
+    "findings": null,
+    "status": "not run in cloud; guarded Mac lander required"
+  },
+  "counts": {
+    "before": {
+      "done": 23,
+      "partial": 44,
+      "missing": 34,
+      "total": 101
+    },
+    "candidate": {
+      "done": 23,
+      "partial": 44,
+      "missing": 34,
+      "total": 101
+    },
+    "after_lander_if_accepted": {
+      "done": 24,
+      "partial": 43,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "claim": {
+    "clause": "OC-017",
+    "status": "DONE",
+    "points": [
+      1,
+      2
+    ]
+  },
+  "push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f231",
+    "attempts": 1,
+    "status": "PUSH_OK",
+    "head": "05e955fadd58ab162f3fce04d0370efff143d071"
+  },
+  "files": [
+    {
+      "path": "changes-verify.log",
+      "bytes": 466417,
+      "sha256": "dfe0b290be453744e4bfa8caf6a4ef407ae02f50f3876668148d12b3a63163b4"
+    },
+    {
+      "path": "contract-generation.log",
+      "bytes": 98,
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    },
+    {
+      "path": "code-provenance.json",
+      "bytes": 2732,
+      "sha256": "9c9644e471a5c20a5f01add0cd583e586ae3ccc3df63166667de67c7f64b5edc"
+    },
+    {
+      "path": "PLAN.md",
+      "bytes": 2138,
+      "sha256": "bfb11b8d415e7e8a39f79deb6e1304d257c81631efb0fc217c544a00913581c0"
+    }
+  ]
+}
