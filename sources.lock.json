@@ -244,7 +244,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "4ea7db50a75ff4f5580f4d49231e5d8ad5e803faa4632030ef37c3d0b6448268",
+      "sha256": "8ad3009332fb03bbe19744c7b7ea1951a34e8cd2513850f6ee930241a27112bf",
       "executable": false
     },
     "docs/incidents.md": {
@@ -820,7 +820,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "f5739b53a6de62f08d72e592c7417d3b005f1cb22f262b69b85c3788ad7a41d6",
+      "sha256": "8a404152c656bb8f83a033f0e7431333f3e3b4786cbf2314653008858fa7c92b",
       "executable": false
     },
     "RELEASE.json": {
