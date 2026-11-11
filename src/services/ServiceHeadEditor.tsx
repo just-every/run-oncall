@@ -15,7 +15,7 @@ export function ServiceHeadEditor(props: Props) {
 }
 function EditableServiceHead({service, state, admin, refresh, focusName}: Props) {
   const snapshot = (service: Service, revision: number) => ({values:serviceValues(service), revision});
-  const save = useAutosave<ServiceValues>({storageKey:'service:'+service.id,equal:(a,b) => {const clean=(value:unknown) => Array.isArray(value) ? value.map(item => typeof item === 'string' ? item.trim() : item).filter(Boolean) : typeof value === 'string' ? value.trim() : value;return JSON.stringify(clean(a)) === JSON.stringify(clean(b));},snapshot:snapshot(service,state.revision), read:async () => {
+  const save = useAutosave<ServiceValues>({keepSaved:true,storageKey:'service:'+service.id,equal:(a,b) => {const clean=(value:unknown) => Array.isArray(value) ? value.map(item => typeof item === 'string' ? item.trim() : item).filter(Boolean) : typeof value === 'string' ? value.trim() : value;return JSON.stringify(clean(a)) === JSON.stringify(clean(b));},snapshot:snapshot(service,state.revision), read:async () => {
     const latest: State = await request('/api/state');
     const found = latest.services.find(row => row.id === service.id);
     if (!found) throw Error('This service is no longer available.');
