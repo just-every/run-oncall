@@ -53,3 +53,5 @@ Push custody: the fleet guard reports PUSH_OK for the named branch at this exact
 ## Terminal CI and handoff
 
 Verify 42997501414 completed successfully on the exact product SHA 347265e1efe5b5ace2ea575d316ea97336dbca21, observed at 2026-11-11T09:58:06Z. Four GitHub API calls were used, with at least 300 seconds between lookups; no failing-job log retrieval was needed. There are no remaining task blockers. This is a pushed candidate, not a main landing or deployment. The fleet retains publication-scan and landing custody. The evidence packet is published separately to refs/heads/evidence/main-oncall-explain-refusals-1, with the exact evidence head returned in the terminal message.
+
+TRANSFER-RECEIPT.json records successful exact-ref readback and manifest/hash verification of the preceding evidence commit; the final evidence head is returned separately in the terminal handoff.
