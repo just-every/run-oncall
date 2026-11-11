@@ -42,6 +42,9 @@ try {
  await work('sal','sal@example.com');
  await work('al-suffix','al@example.com+test');
  await work('al-sentence','Ask al@example.com.');
+ // An address that merely extends the erased one with a further domain label is another person's.
+ await work('al-au','al@example.com.test');
+ await work('al-au-sentence','Ask al@example.com.test.');
  const before = await snapshot();
  for (const tag of ['al','al-sentence']) assert.ok(mentions(before[tag],'al@example.com'),tag+' work names the person before erasure');
  const erased = await tool('oncall.privacy.erase',{kind:'member',id:target.id,workspaceRevision:(await state()).revision,confirmation:'erase '+target.id,identitiesReviewed:true,importedPeople:[],idempotency_key:randomUUID()});
@@ -51,8 +54,8 @@ try {
   assert.notEqual(after[tag],before[tag],tag+' agent records are erased');
   assert.ok(!mentions(after[tag],'al@example.com'),tag+' agent records no longer name the person');
  }
- for (const tag of ['sal','al-suffix']) assert.equal(after[tag],before[tag],tag+' agent records are byte-identical: another person is not erased');
- console.log('PROBE native member erasure of al@example.com redacts only its own agent records; sal@example.com and al@example.com+test records are byte-identical');
+ for (const tag of ['sal','al-suffix','al-au','al-au-sentence']) assert.equal(after[tag],before[tag],tag+' agent records are byte-identical: another person is not erased');
+ console.log('PROBE native member erasure of al@example.com redacts only its own agent records; sal@example.com, al@example.com+test and al@example.com.test records are byte-identical; a trailing-period mention is erased');
 
  // Imported-person erasure: the email and the vendor id are text values.
  const door = ownerDoor({request:async(path,input,cookie,headers)=>{
@@ -74,6 +77,6 @@ try {
  const importedAfter = await snapshot();
  for (const tag of ['ed','ed-id']) assert.notEqual(importedAfter[tag],importedBefore[tag],tag+' agent records are erased');
  for (const tag of ['ted','ted-id']) assert.equal(importedAfter[tag],importedBefore[tag],tag+' agent records are byte-identical: another imported person is not erased');
- for (const tag of ['sal','al-suffix']) assert.equal(importedAfter[tag],before[tag],tag+' stays byte-identical');
+ for (const tag of ['sal','al-suffix','al-au','al-au-sentence']) assert.equal(importedAfter[tag],before[tag],tag+' stays byte-identical');
  console.log('PROBE imported-person erasure of ed@example.com and its vendor id pd-1 redacts only its own agent records; ted@example.com and pd-10 records are byte-identical');
 } finally { await runtime.close(); }
