@@ -16,7 +16,7 @@ import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
 import {auditRows} from '../src/modules/agent-door/conformance/audit-pages.mjs';
 import {droppedReassignmentReplay} from './oncall-agent-incident-replay.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
-import {changedScribeReasonConflict,droppedScribeAssignmentReplay} from './oncall-agent-role-replay.mjs';
+import {changedScribeReasonConflict,droppedScribeAssignmentReplay,droppedRoleAssignmentReplay} from './oncall-agent-role-replay.mjs';
 import {changedCommunicationsReasonConflict,droppedCommunicationsAssignmentReplay} from './oncall-agent-communications-replay.mjs';
 import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
 import {nativeTransport} from './oncall-agent-transport.mjs';
@@ -739,6 +739,7 @@ try{
  await droppedNoteReplay(runtime);
  await droppedReassignmentReplay(runtime);
  await droppedScribeAssignmentReplay(runtime);
+ await droppedRoleAssignmentReplay(runtime,'commander','Commander');
  await droppedCommunicationsAssignmentReplay(runtime);
  await changedArgumentConflicts(runtime);
  await changedServiceNameReplay(runtime);

@@ -21,8 +21,17 @@ export async function droppedRoleAssignmentReplay(runtime,role,label){
  const owner=(await read('/api/workspace')).member,name='oncall.incidents.update';
  for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
   assert.equal((await adopt(policy)).status,200);
-  const incident=await command({type:'declare',service:'agent-service',title:'Synthetic lost '+label+' response '+mode,
+  let incident=await command({type:'declare',service:'agent-service',title:'Synthetic lost '+label+' response '+mode,
    summary:'Ordinary coordination without protected evidence',severity:'warning',alerts:[]});
+  if(role==='commander'){
+   const state=await read('/api/state'),peer=state.members.find(row=>row.active&&row.role==='responder');
+   assert.ok(peer);assert.notEqual(peer.id,owner.id);
+   // Keep populated companion roles and a distinct explicit assignee as custody witnesses.
+   for(const input of [{type:'reassign',member:owner.id},{type:'assign-role',role:'scribe',member:owner.id},{type:'assign-role',role:'communications',member:peer.id}])
+    incident=await command({...input,incident:incident.id,revision:incident.revision,reason:'Synthetic retained coordination witness'});
+   assert.equal(incident.commander,null);assert.equal(incident.assignee,owner.id);
+   assert.equal(incident.scribe,owner.id);assert.equal(incident.communications,peer.id);
+  }
   const before=await snapshot(),pagingBefore=await read('/api/paging/state'),priorAudit=await audits();
   assert.equal(incident[role]??null,null);assert.equal(incident.state,'declared');
   assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);assert.equal(incident.recovery,'');
@@ -47,7 +56,7 @@ export async function droppedRoleAssignmentReplay(runtime,role,label){
   assert.deepEqual(once.application.incidents.filter(row=>row.id!==incident.id),before.application.incidents.filter(row=>row.id!==incident.id));
   assert.equal(stored.timeline.length,incident.timeline.length+1);assert.deepEqual(stored.timeline.slice(0,-1),incident.timeline);
   const entry=stored.timeline.at(-1);
-  assert.equal(entry.kind,'assign-role');assert.equal(stored.timeline.filter(row=>row.kind==='assign-role').length,1);
+  assert.equal(entry.kind,'assign-role');assert.equal(stored.timeline.filter(row=>row.kind==='assign-role').length,incident.timeline.filter(row=>row.kind==='assign-role').length+1);
   assert.equal(entry.text,role+': Unassigned → '+responder.name+': '+args.reason);
   assert.equal(entry.actor,context.agentId);assert.notEqual(entry.actor,responder.id);
   assert.equal(entry.metadata.agent.agent.id,context.agentId);assert.equal(entry.metadata.agent.for.id,owner.id);
