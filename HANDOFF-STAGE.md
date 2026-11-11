@@ -123,6 +123,14 @@ the exported record must equal the record returned by the successful review.
 | 1: prepare, review, inspect, exact export, source changes, withdrawal, both checkpoint versions and competing writes | The reviewed-handoff block prepares explicit copy, refuses missing audience and viewer mutations, inspects as a viewer, then compares the complete HTTP export record with the reviewed record: payload, immutable source snapshots, hashes, revision and attributed history. A source change refuses export; withdrawal refuses another review. Checkpoint versions 1 and 2 retain handoff history, and concurrent restores publish one winner without revoking its session. `checkpointCli` independently compares populated exports and restored records through the real CLI. |
 | 2: eligibility, recovery holds, stable identities, attribution, capacity and no send authority | Preparation retries preserve identity and changed content conflicts. Reviews bind exact hashes and record self-review; withdrawal retains the attributed history prefix. Restored approvals are held and cannot export. The journey refuses excess record count, history count, record bytes and aggregate bytes while preserving prior data, and restores valid bounded records. Audit-insert and storage failures roll back. Export stays unsent and unpublished, with no provider actions or outbound requests; the legacy draft stays unreviewed and its source links grant no anonymous access. |
 
+The direct comparison is the assertion named "HTTP export preserves the exact
+reviewed payload, source snapshots, hashes, revision and attributed history" in
+`tests/activation.mjs`. Its later checkpoint-consistency result
+records the combined recovery and handoff flow. `checkpointCli` checks both
+checkpoint versions against populated HTTP readback and refuses export of
+restored approvals before they receive a fresh review. These checks establish
+native copy custody; they provide no external delivery or publication evidence.
+
 Run the selected lane with `ONCALL_VERIFY_LANE=changes rer verify`; run
 `pnpm run typecheck` and `rer check --profile first-party` for the local candidate
 as well. Contract status and evidence are judged separately from this proof
