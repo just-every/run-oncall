@@ -105,8 +105,8 @@ export async function managedSeed(bindings={}){
  const origin=`http://127.0.0.1:${port}`,children=[],env={...process.env,CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false',...bindings}
  const safe=s=>s.replace(/#rer-dev=[^\s"']+/g,'#rer-dev=[redacted]').replace(/\?token=[^\s"']+/g,'?token=[redacted]')
  const commandOutcomes=[]
- function spawnCommand(args){const child=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),...args],{env,stdio:['ignore','pipe','pipe']});children.push(child);let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c);return {child,output:()=>output}}
- async function command(args,status=0){const run=spawnCommand(args),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));commandOutcomes.push({verb:args[0],exitCode:code,expectedExitCode:status});return run.output()}
+ function spawnCommand(args,childEnv=env){const child=spawn(process.execPath,[fileURLToPath(import.meta.resolve('@runeditrun/rer/internal/bin/rer.mjs')),...args],{env:childEnv,stdio:['ignore','pipe','pipe']});children.push(child);let output='';for(const stream of [child.stdout,child.stderr])stream.on('data',c=>output+=c);return {child,output:()=>output}}
+ async function command(args,status=0,childEnv=env){const run=spawnCommand(args,childEnv),code=await new Promise(r=>run.child.once('exit',r));assert.equal(code,status,safe(run.output()).slice(-1400));commandOutcomes.push({verb:args[0],exitCode:code,expectedExitCode:status});return run.output()}
  let openLink
  async function start(){
   const run=spawnCommand(['dev','--foreground','--port',String(port),'--idle-timeout','180','--non-interactive']);for(let n=0;n<600;n++){if(run.child.exitCode!==null||run.child.signalCode!==null)throw Error(safe(run.output()).slice(-1400));const link=run.output().match(/RER_OPEN (http[^\s]+)/)?.[1];if(link){openLink=link;return;}await new Promise(r=>setTimeout(r,250))}throw Error('Managed dev readiness timeout')}
@@ -469,6 +469,31 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  console.log('PROBE OC-018 build: pinned rer build after removing dist -> exit 0, production Worker and client assets, no dev identity or private settings, exact settings restoration')
  await m.preview();await m.close()
  console.log('Managed production preview refuses anonymous state and carries no dev identity')
+ // The pinned owner adapter plans locally. No account or mail authority is
+ // supplied, and both managed runtimes have exited before this public command.
+ const offlineDeployEnv=Object.fromEntries(Object.entries(process.env).filter(([name])=>!/(?:CLOUDFLARE|^CF_|MAIL|SMTP|SENDGRID|RESEND|POSTMARK|^AWS_|^SES_|^GH_TOKEN$|^GITHUB_TOKEN$|^RER_CLOUD_)/i.test(name)))
+ Object.assign(offlineDeployEnv,{CI:'true',RER_SERVER_JOURNEY:'1',WRANGLER_SEND_METRICS:'false'})
+ delete offlineDeployEnv.RER_LOCAL_OPERATION
+ await assert.rejects(lstat('.rer/deploy'),{code:'ENOENT'},'the disposable installation has no deployment record before planning')
+ const dryRunOutput=await m.command(['deploy','--environment','production','--dry-run','--non-interactive'],0,offlineDeployEnv)
+ assert.match(dryRunOutput,/deploy: local dry run complete; no credentials were needed, no Cloudflare requests were made and nothing was changed remotely\. Target secrets and remote readiness were not checked\./,'the public command completes its local-only plan without provider authority')
+ await assert.rejects(lstat('.rer/deploy'),{code:'ENOENT'},'a local plan creates no deployment record')
+ assert.ok(privateBuildValues.every(value=>!dryRunOutput.includes(value)),'dry-run output discloses no private fixture settings or development key')
+ assert.ok(!dryRunOutput.includes('rer-dev-layer:local-only-never-deploy'),'dry-run output contains no development identity layer')
+ const plannedFiles=(await readdir('dist',{recursive:true,withFileTypes:true})).filter(entry=>entry.isFile()).map(entry=>join(entry.parentPath,entry.name))
+ assert.ok(plannedFiles.includes(join('dist','server','index.js')),'the local plan emits the production Worker')
+ assert.ok(plannedFiles.some(path=>path.includes(join('dist','client','assets'))&&path.endsWith('.js')),'the local plan emits production client assets')
+ for(const path of plannedFiles){
+  assert.ok(!/(?:^|\/)(?:\.dev\.vars(?:\.[^/]*)?|\.env(?:\.[^/]*)?|[^/]+\.env)$/.test(path),'dry-run artifacts contain no private settings file')
+  const bytes=await readFile(path)
+  assert.ok(!bytes.includes('rer-dev-layer:local-only-never-deploy'),'dry-run artifacts contain no development identity layer')
+  assert.ok(privateBuildValues.every(value=>!bytes.includes(value)),'dry-run artifacts exclude private fixture values and the development key')
+ }
+ for(const [index,path] of privateBuildFiles.entries()){
+  assert.ok((await readFile(path)).equals(privateBuildBefore[index].bytes),'the dry run restores private fixture settings byte for byte')
+  assert.equal((await lstat(path)).mode&0o777,privateBuildBefore[index].mode,'the dry run preserves private settings permissions')
+ }
+ console.log('PROBE OC-018 deploy dry-run: stopped dev and preview, no Cloudflare or mail credentials -> exit 0, local-only completion, no deployment record, clean production artifacts and exact private settings restoration')
  await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
