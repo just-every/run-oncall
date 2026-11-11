@@ -3,7 +3,7 @@
 Repository: just-every/run-oncall
 Branch: cloud/sd-oncall-c-f220
 Product head: 1e8f35e6ec553ed607b812dd6f957aae2b3acce9
-Recorded at: 2026-11-11T18:45:13.093357+00:00
+Recorded at: 2026-11-11T18:49:45.143583+00:00
 
 This round finishes only the selected Commander dropped-response observation within BASE-AGENT-012 acceptance 2. The claim is PARTIAL. CONTRACT.md retains main's MISSING judgment, original Status, Gap, Evidence and summary counts. Counts before and after: 22 DONE, 45 PARTIAL, 34 MISSING, 101 total. No clause is promoted. No plan file or queue is edited; the selected replan-53 Commander observation is the only plan item advanced.
 
@@ -41,8 +41,8 @@ The clause is not claimed DONE. These rows separate the observed slice from whol
 | --- | --- | --- |
 | 1 | FAIL for whole clause | Only the selected acceptance-2 observation is advanced; acceptances 1, 3, 4 and 5 and other dropped-response cases retain their gaps. |
 | 2 | PASS for selected observation | Real seeded records, active responder, distinct stored assignee and populated companion roles; exact D1 and audit equality assertions. Authority and erasure boundaries remain in existing runtime journeys. |
-| 3 | Pending until exact-SHA Verify succeeds | Existing push intake shard invokes ./tests/runtime.mjs with ONCALL_RUNTIME_PART=machines. No conditional exclusion is introduced. |
-| 4 | Source-bound local proof | Actual receipt binds the runtime source hashes; changes are tests plus generated source lock. No relevant source is changed after local proof. Exact-SHA CI supplies committed proof. |
+| 3 | PASS exact-SHA push Verify 43078949282, completed success | Existing push intake shard invokes ./tests/runtime.mjs with ONCALL_RUNTIME_PART=machines. No conditional exclusion is introduced. |
+| 4 | PASS local source hashes and exact-SHA Verify 43078949282 | Actual receipt binds the runtime source hashes; changes are tests plus generated source lock. No relevant source is changed after local proof. Exact-SHA CI supplies committed proof. |
 | 5 | INSPECTED, unchanged | Existing Agent surface inheritance and BASE-AGENT-012 requirements remain untouched. |
 | 6 | PASS mechanical, no judgment claim | Contract generator write and check, restore generated views whole from main, then source lock regeneration and check; status cells unchanged. |
 | 7 | PASS | No acceptance text, coverage map or ruling is changed. |
@@ -56,6 +56,8 @@ The clause is not claimed DONE. These rows separate the observed slice from whol
 The selected outcome is asserted through real emitted Worker MCP and native D1 under both policies. No existing assertion is deleted or moved behind a width or policy condition; the role-count expectation retains the whole immutable prefix and requires exactly one new entry. Existing Communications and Scribe observations remain. Runtime includes existing revoked authority, erased subject and replay refusal journeys; no corresponding application path changes. There are no screen changes, so new browser proof is not applicable. No migration changes, no new permanent journey registrations, no fixture email additions and no provider-shaped keys. The final source lock and generator results are recorded in receipt.json. A cloud publication scan is not claimed; the fleet must run the complete full-history scan and landing gates.
 
 ## Actual results and custody
+
+Exact-SHA push Verify 43078949282 completed successfully on 1e8f35e6ec553ed607b812dd6f957aae2b3acce9. No PR was needed because push starts Verify. No failed CI job or repair round occurred. The candidate is READY for the fleet gates; main and Run site are not changed from cloud. Five GitHub API calls were used, with one watcher and at least 300 seconds between status reads.
 
 MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock then check exit=0; views=node src/base/contract-docs.mjs write then check exit=0, restored from origin main; ledger=none exit=0
 
@@ -128,7 +130,7 @@ Receipt: receipt.json. Full touched runtime output: runtime-machines.log. Mechan
       "Verify": 43066529316,
       "Run site": 43066527389
     },
-    "github_api_calls": 4,
+    "github_api_calls": 5,
     "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
     "mechanical": [
       {
@@ -173,8 +175,8 @@ Receipt: receipt.json. Full touched runtime output: runtime-machines.log. Mechan
       "id": 43078949282,
       "name": "Verify",
       "event": "push",
-      "status": "in_progress",
-      "conclusion": null,
+      "status": "completed",
+      "conclusion": "success",
       "head_sha": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
       "html_url": "https://github.com/just-every/run-oncall/actions/runs/43078949282"
     },
@@ -197,14 +199,37 @@ Receipt: receipt.json. Full touched runtime output: runtime-machines.log. Mechan
     ],
     "unrelated_scope_diff": "none",
     "existing_journey_registrations_removed": 0,
-    "new_journey_scripts": 0
+    "new_journey_scripts": 0,
+    "terminal_product_custody": {
+      "status": "READY",
+      "branch": "cloud/sd-oncall-c-f220",
+      "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+      "verify_run": 43078949282,
+      "verify_event": "push",
+      "verify_conclusion": "success",
+      "main_landing": "not performed; fleet only",
+      "publication_scan": "not run in cloud; fleet gate"
+    },
+    "riders": {
+      "1": "FAIL for whole clause; only selected acceptance-2 slice advanced",
+      "2": "PASS selected observation",
+      "3": "PASS exact-SHA push Verify 43078949282",
+      "4": "PASS source-bound local proof and exact-SHA Verify",
+      "5": "INSPECTED unchanged inheritance",
+      "6": "PASS mechanical; no status judgment claim",
+      "7": "PASS unchanged acceptance",
+      "8": "PASS retained authority regressions in exact-SHA Verify; authority code unchanged",
+      "9": "PASS provider boundary retained",
+      "10": "N/A no policy choice",
+      "11": "PENDING fleet landing"
+    }
   },
   "ci": {
     "id": 43078949282,
     "name": "Verify",
     "event": "push",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "head_sha": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/43078949282"
   }

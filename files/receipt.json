@@ -62,7 +62,7 @@
     "Verify": 43066529316,
     "Run site": 43066527389
   },
-  "github_api_calls": 4,
+  "github_api_calls": 5,
   "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
   "mechanical": [
     {
@@ -107,8 +107,8 @@
     "id": 43078949282,
     "name": "Verify",
     "event": "push",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "head_sha": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/43078949282"
   },
@@ -131,5 +131,28 @@
   ],
   "unrelated_scope_diff": "none",
   "existing_journey_registrations_removed": 0,
-  "new_journey_scripts": 0
+  "new_journey_scripts": 0,
+  "terminal_product_custody": {
+    "status": "READY",
+    "branch": "cloud/sd-oncall-c-f220",
+    "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+    "verify_run": 43078949282,
+    "verify_event": "push",
+    "verify_conclusion": "success",
+    "main_landing": "not performed; fleet only",
+    "publication_scan": "not run in cloud; fleet gate"
+  },
+  "riders": {
+    "1": "FAIL for whole clause; only selected acceptance-2 slice advanced",
+    "2": "PASS selected observation",
+    "3": "PASS exact-SHA push Verify 43078949282",
+    "4": "PASS source-bound local proof and exact-SHA Verify",
+    "5": "INSPECTED unchanged inheritance",
+    "6": "PASS mechanical; no status judgment claim",
+    "7": "PASS unchanged acceptance",
+    "8": "PASS retained authority regressions in exact-SHA Verify; authority code unchanged",
+    "9": "PASS provider boundary retained",
+    "10": "N/A no policy choice",
+    "11": "PENDING fleet landing"
+  }
 }
