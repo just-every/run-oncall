@@ -1,0 +1,19 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+{
+  "base": "46054a9e371e97591213c9625ab939770fdea1bd",
+  "browserZone": "Australia/Brisbane",
+  "rotaZone": "America/New_York",
+  "readiness": {
+    "rawISO": [],
+    "testPaths": []
+  },
+  "preview": "Preview coverage\n\nTimes shown in America/New_York\n\nNov 11, 2026, 09:00 AM America/New_York (GMT-5) · 31 elapsed days\n\n5 resolved spans. Showing the first 5; gaps are listed first below.\n\nAll gaps\nNov 11, 2026, 09:00 AM America/New_York (GMT-5)\n\nSynthetic oncall observer\n\nBackup · Nobody on call\n\nbackup: rotation has no member slots\n\n⚠ Coverage gap\n\nNov 18, 2026, 09:00 AM America/New_York (GMT-5)\n\nSynthetic oncall observer\n\nBackup · Nobody on call\n\nbackup: rotation has no member slots\n\n⚠ Coverage gap\n\nNov 25, 2026, 09:00 AM America/New_York (GMT-5)\n\nSynthetic oncall observer\n\nBackup · Nobody on call\n\nbackup: rotation has no member slots\n\n⚠ Cov",
+  "rota": "‹ On call\nSynthetic New York rota\n\nSynthetic checkout\n\nEdit rota\nOn call now and next\nPRIMARY\n\nNow: Nobody on call\n\nprimary: schedule has not started\n\nNext: Synthetic oncall observer\n\nHand-over: Wed 11 Nov, 09:00 America/New_York (GMT-5)\n\nBACKUP\n\nNow: Nobody on call\n\nbackup: schedule has not started\n\nNext: Nobody on call\n\nbackup: rotation has no member slots\n\nHand-over: Wed 11 Nov, 09:00 America/New_York (GMT-5)\n\nNext two weeks\n\nTimes shown in America/New_York\n\n11 Nov\n12 Nov\n13 Nov\n14 Nov\n15 Nov\n16 Nov\n17 Nov\n18 Nov\n19 Nov\n20 Nov\n21 Nov\n22 Nov\n23 Nov\n24 Nov\nSynthetic New York rota\nPrimary\nNobody on call\nSynthetic oncall observer\nSynthetic oncall observer\nBackup\nNobody on call\nNobody on call\nNobody on call\nCover a shift\nRequest a swap\nShift coordination\n\nLoading shift coordination…\n\nPaging is off",
+  "overview": "On call\nNew rota\nSynthetic checkout\n\nSynthetic New York rota · Wednesdays 09:00 · America/New_York\n\nNow\n\n⚠ Nobody on call\n\nBackup · Nobody on call\n\nNext hand-over\n\nNov 11, 2026, 09:00 AM America/New_York (GMT-5)\n\nSynthetic oncall observer · backup Nobody on call\n\nGaps this week\nPrimary · \nNov 11, 2026, 04:38 AM America/New_York (GMT-5)\n – \nNov 11, 2026, 09:00 AM America/New_York (GMT-5)\nBackup · \nNov 11, 2026, 04:38 AM America/New_York (GMT-5)\n – \nNov 18, 2026, 04:38 AM America/New_York (GMT-5)\nThis week\n\nTimes shown in Australia/Brisbane\n\n10 Nov\n11 Nov\n12 Nov\n13 Nov\n14 Nov\n15 Nov\n16 Nov\nSynthetic New York rota\nPrimary\nNobody on call\nSynthetic oncall observer\nBackup\nNobody on call",
+  "incidentTimes": [
+    "Nov 11, 2026, 07:38 PM Australia/Brisbane (GMT+10)",
+    "Nov 11, 2026, 07:38 PM Australia/Brisbane (GMT+10)"
+  ]
+}

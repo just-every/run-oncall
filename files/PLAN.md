@@ -1,0 +1,11 @@
+# main-oncall-readable-times-1 plan
+
+1. Configure fleet identity, launcher credentials, guarded product pushes, and preserved repository commit hooks. Clone only just-every/run-oncall and work on cloud/main-oncall-readable-times-1.
+2. Read repository rules and contract. Reproduce via the emitted Worker and native setup, with Australia/Brisbane browser time and an America/New_York rota. Record actual observations without credentials.
+3. Preserve scheduling and stored instants. Make presentation consistently use canonical IANA zone names (including underscores), a rota's clock on its detail view, and clearly identified browser time on multi-rota/incident pages. Format readiness timestamps and keep internal test paths in the protected API. Clarify UTC field labels.
+4. Extend existing browser journeys, without adding registrations: readiness rejects ISO-shaped visible dates and tests/ paths; rota creation, gaps, coverage and history assert readable zoned times under a different browser zone. Capture each changed screen at 1440 and 390; make behavioural assertions at 1440.
+5. Run touched journeys and typecheck only. Refresh main before candidate publication (rebase only before any product save; merge once a save is published), retain newer assertions, and regenerate/check sources.lock.json last. Leave CONTRACT.md judgments and generated views untouched.
+6. Commit with fleet author and committer, inspect all candidate identities and messages, and publish only the named product branch with the cloud guard. Save real substantial work promptly. Await exact-SHA Verify through REST within the ten-call budget and 300-second polling interval.
+7. Save actual non-secret reports/receipts in this packet, publish an explicit report-only evidence tree, and return product provenance, claims, CI IDs, and POST lines. Delete the clone only after custody is secured; retain bundles if any publication is blocked.
+
+Defaults: retain UTC interpretation of existing review/PTO inputs; labels explain the clock. No scheduling-logic changes or clause promotions. Timeline layout at 390 remains outside scope.

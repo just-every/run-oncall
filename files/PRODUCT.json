@@ -1,0 +1,41 @@
+{
+  "branch": "cloud/main-oncall-readable-times-1",
+  "commit_author": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "commit_committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "commit_trailers": "",
+  "contract_changes": [],
+  "generated_view_changes": [],
+  "head": "46054a9e371e97591213c9625ab939770fdea1bd",
+  "local_commands": {
+    "browser": "ONCALL_PRODUCT_JOURNEY=readable-times ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+    "build": "cloud_run npx -y @runeditrun/rer build",
+    "lock": "node scripts/edition-authoring/cli.mjs lock",
+    "lock_check": "node scripts/edition-authoring/cli.mjs check",
+    "setup": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "typecheck": "cloud_run pnpm typecheck"
+  },
+  "lock_sha256": "1be22de8e4f363239813c518c3579cc65e5c1e59959cb1c56b38029228728f49",
+  "new_registrations": 0,
+  "parent": "bb04c4bb7bb5ed8f0962325daf8a5d79d440452c",
+  "product_files": [
+    "sources.lock.json",
+    "src/incident-deadlines/Controls.tsx",
+    "src/incident-workflows/Controls.tsx",
+    "src/manual-pages/Controls.tsx",
+    "src/on-call/RotaPage.tsx",
+    "src/on-call/WeekBands.tsx",
+    "src/on-call/rota-steps/RotaPreview.tsx",
+    "src/on-call/rota-steps/RotaSteps.tsx",
+    "src/on-call/rota-steps/StepCheck.tsx",
+    "src/on-call/rota-steps/StepHandover.tsx",
+    "src/on-call/time.tsx",
+    "src/readiness/ReadinessPage.tsx",
+    "src/reviews/time.ts",
+    "src/schedule-coverage/CoverageRules.tsx",
+    "tests/product-browser-journey.mjs",
+    "tests/product-browser.mjs"
+  ],
+  "repository": "just-every/run-oncall",
+  "verification_plan_entries": 16,
+  "worktree_clean": true
+}

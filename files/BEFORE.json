@@ -1,0 +1,40 @@
+{
+  "base": "07eefee5c8f62aa2e56574e7a5e36a582e598198",
+  "browserZone": "Australia/Brisbane",
+  "rotaZone": "America/New_York",
+  "readiness": {
+    "rawISO": [
+      "2026-11-11T09:22:47.300Z",
+      "2026-11-11T09:22:47.300Z",
+      "2026-11-11T09:22:47.300Z",
+      "2026-11-11T09:22:47.300Z",
+      "2026-11-11T09:22:46.195Z",
+      "2026-11-11T09:22:47.300Z",
+      "2026-11-11T09:22:47.300Z",
+      "2026-11-11T09:22:47.300Z"
+    ],
+    "testPaths": [
+      "tests/runtime.mjs / tests/coordination-health.mjs",
+      "tests/runtime.mjs — paging refusal",
+      "tests/intake.mjs",
+      "tests/intake.mjs",
+      "tests/intake.mjs",
+      "tests/intake.mjs",
+      "tests/monitoring.mjs",
+      "tests/monitoring.mjs",
+      "tests/monitoring.mjs",
+      "tests/runtime.mjs",
+      "tests/changes.mjs",
+      "tests/changes.mjs",
+      "tests/changes.mjs",
+      "tests/changes.mjs",
+      "tests/changes.mjs",
+      "tests/changes.mjs",
+      "tests/changes.mjs",
+      "tests/transfer.mjs / tests/checkpoint-cli.mjs"
+    ]
+  },
+  "preview": "Preview coverage\n\nAmerica/New York\n\n2026-11-11T14:00:00.000Z · 31 elapsed days\n\n5 resolved spans. Showing the first 5; gaps are listed first below.\n\nAll gaps\n11 Nov, 09:00\n\nSynthetic oncall observer\n\nBackup · Nobody on call\n\nbackup: rotation has no member slots\n\n⚠ Coverage gap\n\n18 Nov, 09:00\n\nSynthetic oncall observer\n\nBackup · Nobody on call\n\nbackup: rotation has no member slots\n\n⚠ Coverage gap\n\n25 Nov, 09:00\n\nSynthetic oncall observer\n\nBackup · Nobody on call\n\nbackup: rotation has no member slots\n\n⚠ Coverage gap\n\n2 Dec, 09:00\n\nSynthetic oncall observer\n\nBackup · Nobody on call\n\nbackup: rotation has no member slots\n\n⚠ Coverage gap\n\n9 Dec, 09",
+  "rota": "‹ On call\nSynthetic New York rota\n\nSynthetic checkout\n\nEdit rota\nOn call now and next\nPRIMARY\n\nNow: Nobody on call\n\nprimary: schedule has not started\n\nNext: Synthetic oncall observer\n\nHand-over: Wed 11 Nov, 09:00 America/New_York (GMT-5)\n\nBACKUP\n\nNow: Nobody on call\n\nbackup: schedule has not started\n\nNext: Nobody on call\n\nbackup: rotation has no member slots\n\nHand-over: Wed 11 Nov, 09:00 America/New_York (GMT-5)\n\nNext two weeks\n\nAustralia/Brisbane\n\n11 Nov\n12 Nov\n13 Nov\n14 Nov\n15 Nov\n16 Nov\n17 Nov\n18 Nov\n19 Nov\n20 Nov\n21 Nov\n22 Nov\n23 Nov\n24 Nov\nSynthetic New York rota\nPrimary\nNobody on call\nSynthetic oncall observer\nSynthetic oncall observer\nBackup\nNobody on call\nNobody on call\nNobody on call\nCover a shift\nRequest a swap\nShift coordination\n\nLoading shift coordination…\n\nPaging is off",
+  "overview": "On call\nNew rota\nSynthetic checkout\n\nSynthetic New York rota · Wednesdays 09:00 · New York\n\nNow\n\n⚠ Nobody on call\n\nBackup · Nobody on call\n\nNext hand-over\n\n11 Nov, 09:00\n\nSynthetic oncall observer · backup Nobody on call\n\nGaps this week\nPrimary · \n11 Nov, 04:22\n – \n11 Nov, 09:00\nBackup · \n11 Nov, 04:22\n – \n18 Nov, 04:22\nThis week\n\nAustralia/Brisbane\n\n10 Nov\n11 Nov\n12 Nov\n13 Nov\n14 Nov\n15 Nov\n16 Nov\nSynthetic New York rota\nPrimary\nNobody on call\nSynthetic oncall observer\nBackup\nNobody on call"
+}

@@ -1,0 +1,89 @@
+{
+  "product_head": "46054a9e371e97591213c9625ab939770fdea1bd",
+  "screenshots": [
+    {
+      "bytes": 224814,
+      "height": 1683,
+      "path": "browser/readable-times-new-rota-1440.png",
+      "sha256": "e8cdd17b4402801d5bc3e267beb6a28dc9f828426dcd6faa1bd4f7d246e2836a",
+      "width": 1440
+    },
+    {
+      "bytes": 188863,
+      "height": 2671,
+      "path": "browser/readable-times-new-rota-390.png",
+      "sha256": "cc43dce64cd8045c6e0e5c9fcad3ad6abe2c629ac3380060576625a8796f0f39",
+      "width": 390
+    },
+    {
+      "bytes": 127302,
+      "height": 1037,
+      "path": "browser/readable-times-overview-1440.png",
+      "sha256": "975b99fbe525ffb4e0f579f9e7a4d70fb82bae44bb5f79316ed6e79a93be1f94",
+      "width": 1440
+    },
+    {
+      "bytes": 98410,
+      "height": 1438,
+      "path": "browser/readable-times-overview-390.png",
+      "sha256": "58d53651a39563adb9314b70a5cffa2cb21e5a154bffb197a8dc4f45736d8d98",
+      "width": 390
+    },
+    {
+      "bytes": 131855,
+      "height": 1376,
+      "path": "browser/readable-times-rota-1440.png",
+      "sha256": "540a1147b83829645a12e93f3b6e382d519b7bc4766290e0a64d7b7e4e1597fe",
+      "width": 1440
+    },
+    {
+      "bytes": 97747,
+      "height": 1692,
+      "path": "browser/readable-times-rota-390.png",
+      "sha256": "4fe00627348c0b24ab0c9b6779ed8556c1969cd8ce713a4bb72dda1e03b1cf9f",
+      "width": 390
+    },
+    {
+      "bytes": 227430,
+      "height": 2166,
+      "path": "browser/readable-times-history-1440.png",
+      "sha256": "06256d84f93047fbed425ef3f70fa2855302b5fe1ca5faecc848a7de5e67495c",
+      "width": 1440
+    },
+    {
+      "bytes": 181689,
+      "height": 2652,
+      "path": "browser/readable-times-history-390.png",
+      "sha256": "10aa0b194a20a668ceb0eb86f721aa1acdd017931d7a93a0426446876ebb3da5",
+      "width": 390
+    },
+    {
+      "bytes": 118503,
+      "height": 1000,
+      "path": "browser/readable-times-incident-1440.png",
+      "sha256": "ca7988b78cabf0323cd452f46409cae51abfad01cbb7120470370ac22e087bd7",
+      "width": 1440
+    },
+    {
+      "bytes": 63844,
+      "height": 1025,
+      "path": "browser/readable-times-incident-390.png",
+      "sha256": "97572d1e5c08ceebf35a65318b52254c8a0ddc9826f0d1ffb63a75831318ac06",
+      "width": 390
+    },
+    {
+      "bytes": 801227,
+      "height": 5460,
+      "path": "browser/oc054-readiness-1440.png",
+      "sha256": "d080ed96603fd37f217d096781c95761d09afd6bbf1d1c02ad4bc0ccff4244c1",
+      "width": 1440
+    },
+    {
+      "bytes": 760884,
+      "height": 10444,
+      "path": "browser/oc054-readiness-390.png",
+      "sha256": "57a02dd23d8dd5bcb0cde6d28cc36e8b8c97dabb3db4ec94d438edfb7e0d3678",
+      "width": 390
+    }
+  ]
+}

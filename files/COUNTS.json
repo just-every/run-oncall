@@ -1,0 +1,14 @@
+{
+  "readiness_iso_occurrences": {
+    "before": 8,
+    "after": 0
+  },
+  "readiness_test_path_lines": {
+    "before": 18,
+    "after": 0
+  },
+  "preview_iso_occurrences": {
+    "before": 1,
+    "after": 0
+  }
+}
