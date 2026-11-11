@@ -629,6 +629,7 @@ async function eventsSourceBrowser(page,context) {
   await page.getByLabel('Authentication',{exact:true}).selectOption(mode);
   await page.getByRole('button',{name:'Create source',exact:true}).click();
   const key=await page.getByLabel('Private key',{exact:true}).inputValue();assert.ok(key);
+  await expect(page.getByRole('button',{name:'Copy ingress URL',exact:true})).toBeEnabled();
   const url=await page.getByLabel('Ingress URL',{exact:true}).inputValue();
   assert.equal(new URL(url).origin,origin);assert.ok(new URL(url).pathname.startsWith('/api/ingress/'));
   await page.getByRole('button',{name:'Copy ingress URL',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),url);
