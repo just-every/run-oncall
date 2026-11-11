@@ -15,7 +15,7 @@ The maintained member-coordination journey requires an explicit target for every
 
 The first candidate's CI passed that complete member journey and desktop productSchedule, then failed a visible-focus assertion when starting the 390 keyboard leg after pointer-driven navigation. The maintained keyboard coordination leg now begins with a native Tab key; its visible-focus assertion remains unchanged. No pointer action, programmatic focus or product focus-style change is substituted for the keyboard proof.
 
-On the final committed head, the production build, typecheck, complete member-coordination script and complete product-browser script all pass using the repository's installed Node 22.20.0 pin. Both desktop and selected phone keyboard/schedule legs pass, including all refusal assertions and the included agent-door browser tail. Final exact-SHA Verify is running; its terminal result is recorded in CI-RECEIPT.json and the final CI section below when observed.
+On the final committed head, the production build, typecheck, complete member-coordination script and complete product-browser script all pass using the repository's installed Node 22.20.0 pin. Both desktop and selected phone keyboard/schedule legs pass, including all refusal assertions and the included agent-door browser tail. Final exact-SHA Verify 43017534949 completed with failure. This candidate is BLOCKED and is not READY. The final-run failed job and assertion remain unknown because the ten-call task GitHub budget is exhausted. CI-RECEIPT.json records the exact result.
 
 ## Full plan and execution
 
@@ -26,7 +26,7 @@ On the final committed head, the production build, typecheck, complete member-co
 5. Merge main 669b0c877ca659e5475e4ed2016fe584ac3d859d. Resolve rota overlap by preserving ValidationForm/RotaField and disabled-action explanations together with main's canonical zone label and Coverage review from (UTC) wording. Keep main's newer readable-times and saved-coverage/draft-preview assertions. Regenerate/check the lock last and publish candidate 4ead7411f829af788364c234f171d4719776c796 after local checks.
 6. Inspect that candidate's completed Verify failure once. Repair keyboard-leg preparation with a native Tab without weakening visible-focus checks. Merge main 0dac089dba93dc1209c3a2317d5e7a4392d44c4e, which adds only the 0.5.8 release metadata; retain it intact. Regenerate/check the lock last and commit final head 6db7f98e020f55e12ed4b2362cf30d93970275a4 without a skip marker.
 7. Rebuild and rerun typecheck and both complete browser scripts on the final head. Review ten final-build refusal captures at 1440 and 390. Audit every candidate author, committer and complete message, including side parents. Push the final head with cloud-push.py; it succeeds on the first attempt. No rebase, force push, default-branch push or inbox-file write occurs.
-8. Discover and monitor exact-SHA Verify through one watcher per candidate, within the ten-call task budget. Publish explicitly selected public-safe reports only to evidence/main-oncall-explain-refusals-1-fix1. Product readiness, report custody, acceptance and landing remain separate. Delete the clone after successful product/evidence custody and the terminal CI observation, retaining the packet outside it.
+8. Discover and monitor exact-SHA Verify through one watcher per candidate, within the ten-call task budget. Publish explicitly selected public-safe reports only to evidence/main-oncall-explain-refusals-1-fix1. Product readiness, report custody, acceptance and landing remain separate. Delete the clone after successful product/evidence custody and the final permitted CI observation, retaining the packet outside it.
 
 ## Actual checks and retained evidence
 
@@ -47,7 +47,7 @@ On the final committed head, the production build, typecheck, complete member-co
 | Generated contract documents | PASS, already current | contract-check.txt |
 | All candidate identities/messages | PASS: five fleet-authored/committed commits including side parents; no trailers | identity-audit.json |
 | Final product push | PASS, first guard attempt | product-push.log |
-| Final exact-SHA Verify 43017534949 | Pending terminal observation | CI-RECEIPT.json |
+| Final exact-SHA Verify 43017534949 | FAIL on exact final SHA; final job/diagnostic not fetched within exhausted API budget | CI-RECEIPT.json |
 
 The first Node 24 product failure and the first candidate's red CI remain visible in the evidence. No workflow is dispatched or rerun manually. Failure archives are read once per failed browser job. Workflow command/environment headers are omitted from transfer copies; complete actual test output is retained.
 
@@ -72,8 +72,14 @@ The final product checkout is clean and pushed. Fleet identity and commit hooks 
 
 Local changed-content and selected-report checks find no injected credential values or GitHub/private-key patterns. The complete Base publication scan cannot run in this cloud and remains the fleet's pre-landing gate; it is not represented as completed. No credentials, environment dumps, private held-out gate material or symlinks are selected. Evidence publication does not grant acceptance, landing or READY by itself.
 
-Nine task GitHub calls have been used after discovery of final Verify. The last status observation is scheduled fifteen minutes after discovery to preserve the ten-call budget. Report-only Git transport does not use the Actions API budget.
+Ten task GitHub calls were used. The final status observation occurred fifteen minutes after discovery and confirmed completed/failure on the exact final SHA. No further provider reads, workflow reruns or dispatches are made. Report-only Git transport does not use the Actions API budget.
 
 ## Final CI and transfer
 
-Final exact-SHA Verify 43017534949 on 6db7f98e020f55e12ed4b2362cf30d93970275a4 is pending the last scheduled observation. CI-RECEIPT.json records every discovery/poll command and actual status. The final terminal message names the exact evidence ref/head separately from product readiness.
+Final exact-SHA Verify 43017534949 on 6db7f98e020f55e12ed4b2362cf30d93970275a4 completed with failure at the last permitted observation (2026-11-11T12:22:04.762992+00:00). Product custody is PUSHED, but readiness is BLOCKED. The complete final build, typecheck and both local browser scripts pass, and all work is preserved on the named product branch.
+
+The final failed job and its diagnostic were not fetched: the ten-call task budget is exhausted. The previous candidate's known phone visible-focus failure must not be presented as the final run's failure without reading that run's actual jobs/log. No contract-generator-only exception is claimed, and no green result is inferred from another SHA.
+
+Follow-through for a separately budgeted run: inspect completed Verify 43017534949's failed jobs, read each failed job's archive once through gh run view with --job and --log-failed, then reproduce that actual failure before another change. Keep every refusal and visible-focus assertion, preserve current main's judgments and tests, and require a successful exact-SHA Verify before READY.
+
+CI-RECEIPT.json records every discovery/poll command and actual status. The final terminal message names the exact evidence ref/head separately from product readiness. The clone is removed only after the updated report packet is successfully published; this external packet remains.

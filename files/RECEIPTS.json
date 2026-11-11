@@ -151,8 +151,8 @@
   "ci_receipt": "CI-RECEIPT.json",
   "candidate_verify_run": 43017534949,
   "browser_receipt": "BROWSER-RECEIPT.json",
-  "ci_observed_status": "in_progress",
-  "github_calls_used": 9,
+  "ci_observed_status": "completed",
+  "github_calls_used": 10,
   "prior_candidate": "4ead7411f829af788364c234f171d4719776c796",
   "first_candidate_ci": {
     "head": "4ead7411f829af788364c234f171d4719776c796",
@@ -170,5 +170,8 @@
     "success": true,
     "attempts": 1,
     "log": "product-push.log"
-  }
+  },
+  "ci_conclusion": "failure",
+  "terminal_status": "BLOCKED",
+  "blocker": "Required exact-SHA Verify 43017534949 failed. The ten-call task GitHub budget is exhausted; final-run job details and failure archive were not fetched. Do not infer the final failure is identical to the first candidate failure."
 }

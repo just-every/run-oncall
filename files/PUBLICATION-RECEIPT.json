@@ -4,6 +4,11 @@
   "selected_packet_texts": "same local check passed",
   "files": [
     {
+      "path": "TERMINAL-RECEIPT.json",
+      "bytes": 805,
+      "sha256": "27f52ceaa9c0ceec01231c850d762920906c97de6773f74a15e24740535f3dff"
+    },
+    {
       "path": "first-candidate-ci.json",
       "bytes": 2043,
       "sha256": "7d14481b5080709d7fa576f41ff301cb589dcbb97ff2536678ab0ffc90fbfcd4"
@@ -50,13 +55,13 @@
     },
     {
       "path": "REPORT.md",
-      "bytes": 10129,
-      "sha256": "50b2559714bbece22b60986f92869a0391798da2c2d89ca65681a2632e639775"
+      "bytes": 11450,
+      "sha256": "0a8cec1dde2a72e6b3e6d96a3882c844778ba2a737fbddfb6539a912d7ab5707"
     },
     {
       "path": "RECEIPTS.json",
-      "bytes": 6300,
-      "sha256": "6635d3a16e3ccc5331eee2b87dde10fcc330b0b8612d6e3edf5cc59785bc2381"
+      "bytes": 6605,
+      "sha256": "5dd62ab1ab9bfad5775b40db7459b0370605baec17ee92e503c6121459eb0d9d"
     },
     {
       "path": "prior-ci-failure.txt",
@@ -125,8 +130,8 @@
     },
     {
       "path": "CI-RECEIPT.json",
-      "bytes": 744,
-      "sha256": "9feaadb09d387969f5d483ae7a93f4bd823b5dbcb19aa75167818af02d176668"
+      "bytes": 1181,
+      "sha256": "c6a7e0f54ddf9a00f05e0ebac0702489c0d2bd7705c8ab5d9784dc249b155286"
     },
     {
       "path": "product-push.log",

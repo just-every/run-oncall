@@ -12,10 +12,20 @@
       "conclusion": null,
       "head_sha": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
       "html_url": "https://github.com/just-every/run-oncall/actions/runs/43017534949"
+    },
+    {
+      "at": "2026-11-11T12:22:04.762992+00:00",
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43017534949 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0,
+      "id": 43017534949,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43017534949"
     }
   ],
-  "status": "in_progress",
+  "status": "completed",
   "run_id": 43017534949,
-  "conclusion": null,
+  "conclusion": "failure",
   "html_url": "https://github.com/just-every/run-oncall/actions/runs/43017534949"
 }

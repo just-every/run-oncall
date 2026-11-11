@@ -1,0 +1,20 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-explain-refusals-1-fix1",
+  "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+  "product_pushed": true,
+  "readiness": "BLOCKED",
+  "required_verify": {
+    "run_id": 43017534949,
+    "head": "6db7f98e020f55e12ed4b2362cf30d93970275a4",
+    "status": "completed",
+    "conclusion": "failure",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43017534949"
+  },
+  "local_checks": "final build, typecheck, complete member and product scripts passed",
+  "github_task_calls": 10,
+  "final_failure_diagnostic": "NOT FETCHED: task API budget exhausted",
+  "clause_changes": "none; OC-009 remains PARTIAL",
+  "new_test_registrations": 0,
+  "evidence_publication": "separate report-only ref; see terminal EVIDENCE line"
+}
