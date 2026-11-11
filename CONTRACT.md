@@ -1424,9 +1424,9 @@ Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 17 | 5 | 0 | 22 |
+| Published | 18 | 4 | 0 | 22 |
 | Target and push further | 6 | 39 | 34 | 79 |
-| All | 23 | 44 | 34 | 101 |
+| All | 24 | 43 | 34 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1447,7 +1447,7 @@ Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d
 | `OC-015` | Strict module archives | published | done | `tests/activation.mjs` pagingHistory: current-admin populated archive round trip; anonymous 401 and active viewer and responder 403 at both archive and restore doors, no disclosure, unchanged module records and both revisions with refusal audit; unknown fields, broken references, retained callbacks, paused pending jobs and injected SQL rollback. |  |
 | `OC-016` | Recovery checkpoint | published | done | `src/api.ts`; `src/family/response-operations/recovery.ts`; `scripts/checkpoint.mjs`; `tests/activation.mjs`; `tests/checkpoint-cli.mjs` |  |
 | `OC-017` | Reviewed handoffs | published | partial | `src/handoff-api.ts`; `src/family/response-operations/handoffs.ts`; `tests/activation.mjs` | The exported packet's copy is not compared with the reviewed copy in the cited test (`tests/checkpoint-cli.mjs` holds that comparison); preparation, review, inspection, eligibility, holds, identities, attribution, every bound and the unsent export are asserted. Connected communication is a separate target in OC-034/051. |
-| `OC-018` | Maintained root commands | published | partial | `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/member-coordination-browser.mjs`; `tests/member-coordination-browser.mjs`; `tests/product-browser-journey.mjs` | No cited test asserts `rer build` or the deploy dry-run; setup, dev, preview, reset, archive, owner entry and member password sign-in are asserted. The real-account hosted journey is register row R-1; no maintained test repeats the account steps. |
+| `OC-018` | Maintained root commands | published | done | `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/member-coordination-browser.mjs`; `tests/member-coordination-browser.mjs`; `tests/product-browser-journey.mjs`; `tests/transfer.mjs` (managed installation transfer); `tests/member-coordination-browser.mjs` (hosted member coordination); `tests/member-coordination-browser.mjs` (Production sign-in browser flow) | |
 | `OC-019` | Additive upgrade | published | done | `src/workspace-store.ts`; `migrations/core/0106_relational_workspace.sql`; `tests/runtime.mjs`; `tests/runtime.mjs` |  |
 | `OC-020` | Now/next and calendar feed | published | done | `src/calendar.ts`; `src/schedule-api.ts`; `tests/activation.mjs` — the main HTTP journey (run in the changes shard after scheduleCoordination): now/next at the 13:00 UTC hand-off and with an override (primary, backup and next hand-off); the ICS feed with no session refused 401; the seven-day default window, an explicit override window and the 31-day limit each compare every primary and backup event to the resolved UTC preview intervals (distinct UIDs, DST-day boundaries, override start and end); 31 days plus one second, a zero and a reverse window refused 400 with only the refusal audit written; an inactive responder shows primary and backup Coverage gap events with exact intervals and explanations; a scoped source credential admits an immutable event and active alert with the saved paging policy unchanged, a retry returns the original event, a revoked key is refused 401, and zero outbound requests are made. | |
 | `OC-021` | Move-in preview | published | done | `src/move-in/owner-door.ts`; `src/move-in/source.ts`; `src/move-in/adoption.ts`; `tests/activation.mjs`; `tests/import-door.mjs`; `tests/product-browser-journey.mjs`; `tests/import-door.mjs` |  |

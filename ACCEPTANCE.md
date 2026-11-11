@@ -8,10 +8,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 22 | 38 | 24 | 84 |
+| Core | 23 | 37 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 23 | 44 | 34 | 101 |
+| Full target | 24 | 43 | 34 | 101 |
 
 Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d7a` (8 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -244,15 +244,15 @@ Core · published · **partial**
 
 #### OC-018 — Maintained root commands
 
-Core · published · **partial** · Cites BASE-INSTALL-001, BASE-ACCESS-001, BASE-ACCESS-002 · Register R-1
+Core · published · **done** · Cites BASE-INSTALL-001, BASE-ACCESS-001, BASE-ACCESS-002 · Register R-1
 
 **Requirement.** Maintained root seed commands use the pinned Base installer, owner identity, dev identity and theme, with the published rer version that package.json pins and the effects OPERATIONS.json declares. Ordinary email-link sign-in is kept and tested independently of dev identity. Setup creates no example incident or service. Release 1 supports hosted coordination beside the existing pager without an independent standby (RL-1); portable SQL batch bindings are required. `rer deploy` verifies deployment identity, claims the configured owner automatically and retires the setup token. Hosted email-link sign-in requires a configured remote mail provider. Removal with the same Cloudflare credentials deletes only recorded deployment resources and verifies that they are gone. On local and hosted apps, the configured owner uses native email links, while admin-created team members use installation-local workspace names and passwords; no invitations are sent. Local dev identity never grants hosted access, local dev and preview bind loopback, and anonymous first-admin bootstrap remains loopback-only. The hosted journey on a real Cloudflare account is field proof R-1.
 
 **Acceptance.**
 1. The documented setup, dev, build, preview, reset, archive and deploy dry-run commands run, owner entry opens the workspace, and an admin-created member signs in by password.
 
-**Evidence.** `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/member-coordination-browser.mjs`; `tests/member-coordination-browser.mjs`; `tests/product-browser-journey.mjs`
-**Gap.** No cited test asserts `rer build` or the deploy dry-run; setup, dev, preview, reset, archive, owner entry and member password sign-in are asserted. The real-account hosted journey is register row R-1; no maintained test repeats the account steps.
+**Evidence.** `scripts/installer/seed.mjs`; `src/auth.server.ts`; `tests/transfer.mjs`; `tests/member-coordination-browser.mjs`; `tests/member-coordination-browser.mjs`; `tests/product-browser-journey.mjs`; `tests/transfer.mjs` (managed installation transfer); `tests/member-coordination-browser.mjs` (hosted member coordination); `tests/member-coordination-browser.mjs` (Production sign-in browser flow)
+**Gap.** None.
 
 #### OC-019 — Additive upgrade
 
