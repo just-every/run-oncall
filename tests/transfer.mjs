@@ -118,7 +118,7 @@ export function transferDoor(m) {
    ok(await m.request('/agents/api/pause',{paused:false},cookie))
    await this.choosePolicy(cookie)
    const resumed=await agentCall('oncall.incidents.receipt',{key:'synthetic-oncall-portable'})
-   assert.equal(resumed.isError,false);assert.equal(resumed.structuredContent.operation.client,client,'only the signed-in owner resume enables a valid agent receipt read')
+   assert.equal(resumed.isError,false);assert.equal(resumed.structuredContent.data.operation.client,client,'only the signed-in owner resume enables a valid agent receipt read')
    await refuseApprovals()
    for(const {args} of agentApprovals){const replay=await agentCall('oncall.incidents.resolve',args);assert.equal(replay.isError,true)}
    for(const table of agentTables){const restored=history(sql)[table];for(const row of agentHistory[table])assert.deepEqual(restored.find(item=>item.id===row.id&&item.key===row.key),row,'receiving activity never rewrites retained '+table)}
