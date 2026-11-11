@@ -157,13 +157,29 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 
 ## Current resource templates
 
-No resource templates are exposed. The template listing is empty because resources are undeclared.
+- `oncall://actions/{id}`
+- `oncall://alerts/{id}`
+- `oncall://automation/clients/{id}`
+- `oncall://automation/endpoints/{id}`
+- `oncall://automation/outbox/{id}`
+- `oncall://changes/{id}`
+- `oncall://erasures/{id}`
+- `oncall://handoffs/{id}`
+- `oncall://incidents/{id}`
+- `oncall://incidents/{id}/review-material`
+- `oncall://members/{id}`
+- `oncall://reports/{period}`
+- `oncall://schedules/{id}`
+- `oncall://schedules/{id}/coverage`
+- `oncall://services/{id}`
+- `oncall://services/{id}/changes`
+- `oncall://teams/{id}`
 
 ## Target capabilities
 
 `oncall.events.list` is retained in the source manifest with scope `events:read` and possible classes `standard`, but is withheld from the current tool listing. Its target fixture is not current execution evidence.
 
-The source manifest retains native resource targets; they are not exposed templates. Events, resources, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.
+The listed resource templates are exposed under current native scope and company policy. Customer, imported and email text is untrusted data; native erasure fences and delivery metadata carry no untrusted text. Monthly reports use completed UTC calendar months (YYYY-MM) and return not found for an empty scoped cohort. Events, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.
 [native-tool-inventory-end]: #
 
 ## Approvals and limits

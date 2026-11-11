@@ -7,10 +7,12 @@ import { resolveIncidentAlias } from '../incident-workflows/relations'
 import { recentChanges } from '../changes/model'
 import { reviewMaterial } from '../reviews/material'
 import { pagingSnapshot } from '../paging-store'
+import { handoffSnapshot } from '../handoff-store'
+import { responseReport } from '../reviews/report'
 import { ToolRefusal, type ClassAndFacts, type ResourceContext, type ResourceDefinition } from '../modules/agent-door/index.ts'
 import { nativeAccess, type NativeAccess } from './native'
 
-type RecordBody = { json: unknown; service?: string }
+type RecordBody = { json: unknown; service?: string; untrusted?: boolean }
 type Reader = (access: NativeAccess, id: string) => Promise<RecordBody | null> | RecordBody | null
 
 /** Identifiers alone are not a disclosure of a person's native profile. */
@@ -21,7 +23,8 @@ export function protectedRecords(value: unknown): number {
   const evidence = ['evidence', 'recovery', 'rootCause', 'impact', 'review', 'actorName', 'author']
     .some(key => typeof fields[key] === 'string' && Boolean((fields[key] as string).trim()))
   const people = Array.isArray(fields.people) ? fields.people.length : 0
-  return Number(evidence) + people + Object.entries(fields)
+  const profile = typeof fields.name === 'string' && typeof fields.role === 'string' && typeof fields.active === 'boolean'
+  return Number(evidence) + Number(profile) + people + Object.entries(fields)
     .filter(([key]) => key !== 'people').reduce((total, [, child]) => total + protectedRecords(child), 0)
 }
 
@@ -61,7 +64,7 @@ function scopedState(access: NativeAccess): State {
 
 function resource(env: Bindings, path: string, name: string, permission: string, read: Reader, admin = false): ResourceDefinition {
   const template = `oncall://${path}`
-  const [prefix, suffix] = template.split('{id}')
+  const [prefix, suffix] = template.split(/\{(?:id|period)\}/)
   return {
     uriTemplate: template, name, mimeType: 'application/json', scope: permission,
     classes: ['standard', 'sensitive'], classify,
@@ -80,7 +83,7 @@ function resource(env: Bindings, path: string, name: string, permission: string,
         const current = await nativeAccess(env, ctx, permission, record.service, admin)
         if (current.state.revision !== access.state.revision ||
           access.services.some(service => !current.services.includes(service))) return null
-        return { json: record.json, untrusted: true }
+        return { json: record.json, untrusted: record.untrusted ?? true }
       } catch (error) {
         if (error instanceof ToolRefusal || error instanceof Fault && [401, 403, 404].includes(error.status)) return null
         throw error
@@ -90,12 +93,53 @@ function resource(env: Bindings, path: string, name: string, permission: string,
 }
 
 export function oncallResources(env: Bindings): ResourceDefinition[] {
+  // A single transport request classifies and re-reads the same observation.
+  // Native records and authority are still freshly read at both boundaries.
+  const observedAt = Date.now()
   return [
+    resource(env, 'alerts/{id}', 'Alert generation', 'incidents:read', (access, id) => {
+      const state = scopedState(access), alert = state.alerts.find(row => row.id === id)
+      if (!alert || !alert.service) return null
+      const observations = state.events.filter(row => alert.events.includes(row.id))
+        .map(({ id, title, evidence, observedAt, intent }) => ({ id, title, evidence, observedAt, intent }))
+      return { service: alert.service, json: { ...alert, observations } }
+    }),
+    resource(env, 'schedules/{id}', 'Saved native schedule', 'schedules:read', async (access, id) => {
+      const snapshot = await pagingSnapshot(env.DB)
+      const schedule = snapshot.archive.schedules.find(row => row.id === id && access.services.includes(row.service))
+      if (!schedule || snapshot.workspace.revision !== access.state.revision) return null
+      return { service: schedule.service, json: schedule }
+    }),
+    resource(env, 'handoffs/{id}', 'Retained native handoff', 'incidents:read', async (access, id) => {
+      const snapshot = await handoffSnapshot(env.DB)
+      const record = snapshot.archive.records.find(row => row.id === id)
+      if (!record || snapshot.workspace.revision !== access.state.revision ||
+        !visibleIncident(snapshot.workspace, record.source.incident.id, access.services) ||
+        !access.services.includes(record.source.incident.service) || !access.services.includes(record.source.service.id)) return null
+      return { service: record.source.incident.service, json: { ...record, source: { ...record.source,
+        service: { ...record.source.service, dependencies: record.source.service.dependencies?.filter(service => access.services.includes(service)) } } } }
+    }),
+    resource(env, 'changes/{id}', 'Retained native change', 'services:read', (access, id) => {
+      const change = access.state.changes?.find(row => row.id === id && access.services.includes(row.service))
+      return change ? { service: change.service, json: change } : null
+    }),
+    resource(env, 'reports/{period}', 'Monthly native response report', 'analytics:read', (access, period) => {
+      if (!/^(20\d{2})-(0[1-9]|1[0-2])$/.test(period)) return null
+      const from = period + '-01T00:00:00.000Z'
+      const end = new Date(from)
+      end.setUTCMonth(end.getUTCMonth() + 1)
+      // Reports use completed calendar months, with a stable observation time.
+      // An empty scoped cohort gives no existence signal about another service.
+      if (end.getTime() > observedAt) return null
+      const state = scopedState(access), to = end.toISOString()
+      const report = responseReport(state, { from, to }, to)
+      return report.cohort.count ? { json: report } : null
+    }),
     resource(env,'members/{id}','Native member','access:read',(access,id)=>{const member=access.state.members.find(row=>row.id===id);return member?{json:{people:[member]}}:null},true),
-    resource(env,'teams/{id}','Public native team','access:read',(access,id)=>{const team=access.state.teams?.find(row=>row.id===id);return team?{json:team}:null},true),
+    resource(env,'teams/{id}','Public native team','access:read',(access,id)=>{const team=access.state.teams?.find(row=>row.id===id&&row.visibility==='public');return team?{json:team}:null},true),
     resource(env,'automation/clients/{id}','Native client authority','integrations:read',(access,id)=>{const client=access.state.apiClients?.find(row=>row.id===id);return client?{json:client}:null},true),
     resource(env,'automation/endpoints/{id}','Approved endpoint authority','integrations:read',(access,id)=>{const endpoint=access.state.apiEndpoints?.find(row=>row.id===id);return endpoint?{json:endpoint}:null},true),
-    resource(env,'erasures/{id}','Native erasure fence','privacy:write',(access,id)=>{const fence=access.state.erasureFences?.find(row=>row.id===id);return fence?{json:{state:'complete',fence:fence.id,externalDeletion:'not-requested'}}:null},true),
+    resource(env,'erasures/{id}','Native erasure fence','privacy:write',(access,id)=>{const fence=access.state.erasureFences?.find(row=>row.id===id);return fence?{json:{state:'complete',fence:fence.id,externalDeletion:'not-requested'},untrusted:false}:null},true),
     resource(env, 'services/{id}', 'Service', 'services:read', (access, id) => {
       const service = access.state.services.find(row => row.id === id && access.services.includes(row.id))
       return service ? { service: id, json: { ...service, dependencies: service.dependencies?.filter(value => access.services.includes(value)) } } : null
@@ -110,17 +154,17 @@ export function oncallResources(env: Bindings): ResourceDefinition[] {
     }),
     resource(env, 'services/{id}/changes', 'Recent service changes', 'services:read', (access, id) => {
       if (!access.services.includes(id) || !access.state.services.some(row => row.id === id)) return null
-      return { service: id, json: recentChanges(scopedState(access), id, new Date().toISOString(), 24) }
+      return { service: id, json: recentChanges(scopedState(access), id, new Date(observedAt).toISOString(), 24) }
     }),
     resource(env, 'schedules/{id}/coverage', 'Current schedule coverage', 'schedules:read', async (access, id) => {
       const snapshot = await pagingSnapshot(env.DB)
       const schedule = snapshot.archive.schedules.find(row => row.id === id && access.services.includes(row.service))
       if (!schedule || snapshot.workspace.revision !== access.state.revision) return null
-      const now = coverage(schedule, snapshot.workspace.members, Date.now())
+      const now = coverage(schedule, snapshot.workspace.members, observedAt)
       const ids = new Set([now.primary, now.backup, ...now.windows.map(window => window.member)])
       const people = snapshot.workspace.members.filter(member => ids.has(member.id))
         .map(({ id, name, active, role }) => ({ id, name, active, role }))
-      return { service: schedule.service, json: { paging: 'OFF', service: schedule.service, now, people } }
+      return { service: schedule.service, json: { paging: 'OFF', service: schedule.service, schedule, now, people } }
     }),
     resource(env, 'actions/{id}', 'Incident follow-up', 'actions:read', (access, id) => {
       const incident = access.state.incidents.find(row => row.actions.some(action => action.id === id))
@@ -133,7 +177,7 @@ export function oncallResources(env: Bindings): ResourceDefinition[] {
       if (access.client ? row.client!==access.client.id : access.member.role!=='admin') return null
       if (!access.services.includes(row.service) || !visibleIncident(access.state, row.incident, access.services)) return null
       const { lease: _lease, leaseUntil: _leaseUntil, ...record } = row
-      return { service: row.service, json: record }
+      return { service: row.service, json: record, untrusted: false }
     }),
   ]
 }
