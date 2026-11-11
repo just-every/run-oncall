@@ -28,8 +28,7 @@ function refusalAudit(before,after) {
  for(const row of after.agent_door_audit.filter(row=>old.has(row.id)))assert.deepEqual(row,old.get(row.id),'Prior agent audit is immutable');
  assert.equal(after.agent_door_audit.filter(row=>old.has(row.id)).length,old.size);
  const added=after.agent_door_audit.filter(row=>!old.has(row.id));
- assert.equal(added.length,2,'Only resource and event refusals enter the tool audit pipeline');
- assert.deepEqual(added.map(row=>JSON.parse(row.row).tool).sort(),['oncall.events.list','resources/read']);
+ assert.deepEqual(added.map(row=>JSON.parse(row.row).tool),['resources/read'],'Only the undeclared resource read enters the tool refusal audit pipeline');
  for(const record of added){
   const row=JSON.parse(record.row);
   assert.equal(row.code,'capability_not_declared');assert.equal(row.outcome,'refused');
@@ -110,7 +109,7 @@ export async function nativeTransport(runtime) {
   assert.deepEqual(withoutRefusalBookkeeping(after),withoutRefusalBookkeeping(prior),'Undeclared capabilities create no application or decision custody');
   refusalAudit(prior,after);
   assert.deepEqual(await runtime.outboundRequests(),edge);
-  console.log(`PROBE BASE-AGENT-001 ${phase} point 7: undeclared resources, events, prompts and subscriptions -> capability_not_declared, unchanged retained records, only required refusal audit, zero outbound requests`);
+  console.log(`PROBE BASE-AGENT-001 ${phase} point 7: undeclared resources, prompts and subscriptions -> capability_not_declared, unchanged retained records, only required refusal audit, zero outbound requests`);
  }
  assert.equal((await adopt()).status,200);
 }

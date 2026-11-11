@@ -346,7 +346,7 @@ try{
   }
   assert.deepEqual(templates.result.resourceTemplates,[]);
   assert.equal(discovery.result.capabilities.resources,undefined);
-  assert.ok(!rows.some(([names])=>names[0]==='oncall.events.list'));
+  assert.ok(rows.some(([names])=>names[0]==='oncall.events.list'),'The retained event tool is available in the rendered live inventory');
   await page.getByRole('heading',{name:'Current resource templates',exact:true}).waitFor();
   await page.getByText('No resource templates are exposed.',{exact:false}).waitFor();
   await page.getByRole('heading',{name:'Target capabilities',exact:true}).waitFor();
