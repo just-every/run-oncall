@@ -2663,6 +2663,10 @@
       "sha256": "df8b38fdd3b43afaf66e836f479445b1958c40ee0fa9c46718ef4a35abd7bfc3",
       "executable": false
     },
+    "src/integrations/native-name.ts": {
+      "sha256": "431229ef0e0d54d959f88a9de559923b6e6933e5a48a919d47e4a71dda7ce57d",
+      "executable": false
+    },
     "src/integrations/OneTimeSecret.tsx": {
       "sha256": "28701cb8462aa94cc0fc55ddeabf9e077aac184d1d692ba8de67af23dac79501",
       "executable": false
@@ -6596,7 +6600,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "ab3ed26b636e6df4718a799b396392fc23b06fbb927b6a510e00889aa62947ed",
+      "sha256": "704a93710d488826745685338232f486ce62dda6bd066a1a69754992a689540f",
       "executable": false
     },
     "tests/readiness.mjs": {
