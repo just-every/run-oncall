@@ -16,7 +16,8 @@ The service's runbook is copied into the incident when you declare it. Editing t
 
 - **Runbook checklist**: tick each step as it is done.
 - **Evidence and decisions**: the timeline. Every change and every **Add timeline note** is kept in order with who made it. Nothing is edited or deleted afterwards.
-- **Current response**: **Record transition** moves the incident on. Declared becomes acknowledged (the person acknowledging becomes incident commander), then mitigating or recovered, then resolved. Recovered needs a recovery evidence link, and resolved needs the incident to have recovered first.
+- **Lead and Assignee**: the Lead directs the response team; the Assignee owns the incident work. Choose either person in the incident header. **Acknowledge** makes you the Assignee and keeps the chosen Lead. If the Lead is unassigned, you become Lead too. Role changes appear in plain words on the timeline.
+- **Current response**: **Record transition** moves the incident on. Declared becomes acknowledged, then mitigating or recovered, then resolved. Recovered needs a recovery evidence link, and resolved needs the incident to have recovered first.
 - **Follow-up owners**: give each improvement action an owner and a due date. Completing one needs an evidence link.
 
 If two people change the same incident at once, the second change is refused with a clear message instead of overwriting the first. Reload, then try again.

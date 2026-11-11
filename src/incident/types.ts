@@ -27,6 +27,16 @@ export const memberName = (state: State, id: string | null | undefined) => {
 export function timelineText(entry: Entry, state: State) {
   // Only format generated workflow prefixes. Authored notes and reasons remain
   // literal text, and the retained timeline is never changed.
+  if (entry.kind === 'assign-role' || entry.kind === 'reassign') {
+    const match = /^(commander|scribe|communications|assignee): ([\s\S]*?) → ([\s\S]*?)(: [\s\S]*)?$/.exec(entry.text);
+    if (match) {
+      const role = {commander: 'lead', scribe: 'scribe', communications: 'communications lead', assignee: 'assignee'}[match[1] as 'commander' | 'scribe' | 'communications' | 'assignee'];
+      const change = match[3] === 'Unassigned'
+        ? `${role[0].toUpperCase() + role.slice(1)} is now unassigned`
+        : `${match[3]} is now ${role}`;
+      return `${change}. Previously ${match[2]}.${match[4] ? ' Reason: ' + match[4].slice(2) : ''}`;
+    }
+  }
   if (entry.kind === 'merge') {
     const match = /^Merged incident (\S+) \(([\s\S]*?)\) into (\S+) \(([\s\S]*?)\): ([\s\S]*)$/.exec(entry.text);
     if (match) return `Merged ${match[2]} into ${match[4]}: ${match[5]}`;
