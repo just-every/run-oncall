@@ -2640,7 +2640,7 @@
       "executable": false
     },
     "src/integrations/AddIntegration.tsx": {
-      "sha256": "b751176207b1f8a60da20f4a8ba09dd25c4fa5a5f72f4c83a6e50444f3272a3f",
+      "sha256": "c242f0d84a10d089dea99a48eb7d76181a7839279d4cc9b62cac22417a7d803d",
       "executable": false
     },
     "src/integrations/catalog.ts": {
@@ -2668,15 +2668,15 @@
       "executable": false
     },
     "src/integrations/RequestExample.tsx": {
-      "sha256": "2f6b5a7770f00b175e8cf30ec335c145db6b7746376ffd43a4d817b84e127c9e",
+      "sha256": "5b0f377b81793eb45bf69bf26c1080669bcb1f87933c751b8e537a2847ca37fd",
       "executable": false
     },
     "src/integrations/SourcePage.tsx": {
-      "sha256": "dc4dfa15d132d331c181c445fbdecd556e339625876ea8214729d9ccc8d59fb1",
+      "sha256": "50d7ca3b7dcf3dea1e4a6bb31308b83e55b35745747eacca8962b69a47e0700a",
       "executable": false
     },
     "src/integrations/SourceTest.tsx": {
-      "sha256": "89a5d9098f3446fb9795866b8a98877f58f4b65af181321242eef1e3e7d89746",
+      "sha256": "eda073fc31cd35aa4c4bae24cf7914feb82dea0dbbf3964b282db76b6215d0fe",
       "executable": false
     },
     "src/integrations/useVersionDraft.ts": {
@@ -6512,7 +6512,7 @@
       "executable": false
     },
     "tests/intake.mjs": {
-      "sha256": "caeab0d3faef8850a01c71a4dab1e4c38a58563f710cd57fdd75c5619238fdeb",
+      "sha256": "23cd655b92e5651f4658ff781e0b408c26c6622b6e588a238e4ac531009e9c16",
       "executable": false
     },
     "tests/keyboard.mjs": {
@@ -6596,7 +6596,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "9dbfac24c6ba1106df4b55318cb8a4263856036e600bc4a3809861eea3773244",
+      "sha256": "4f0e2dc43d48c7657e4ce7b631b0e2babb117acd3509af7a04f89336d0b30efc",
       "executable": false
     },
     "tests/readiness.mjs": {
