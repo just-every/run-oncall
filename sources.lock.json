@@ -6628,7 +6628,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "01704f729a84f0677b7a47927d9837c3e8cd32cf2761ff6c65ccf0028ba5c3ef",
+      "sha256": "0a2de01b4a2fe8e12530d4979303849c3e7898f9c995150780952b8241f4ed4b",
       "executable": false
     },
     "tests/triage.mjs": {
