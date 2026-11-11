@@ -1,0 +1,10 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+BEFORE header: Resolved · Checkout API · production · Critical · Nov 11, 2026, 11:15 AM
+BEFORE runbook saved marks after 2.5 seconds: 0
+BEFORE two review drafts timeline delta: 2
+BEFORE review draft entries: [
+  'Postincident review updated; root cause and impact acceptance not recorded',
+  'Postincident review updated; root cause and impact acceptance not recorded'
+]

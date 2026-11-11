@@ -1,0 +1,14 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:8064) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PROBE OC-036 acceptance 1 open critical work: protected command resolves an evidenced incident with a pre-existing P1 action -> state and generated material retain its exact identity, owner, UTC due date, escalation recipient, human-review policy and open state
+PROBE OC-036 authority: anonymous correction and revoked reviewer correction, acceptance and material read -> 401; existing human snapshots and durable application rows unchanged
+PROBE OC-036 acceptance 1 accepted correction: protected review commands -> draft clears current acceptance but preserves the original snapshot; stale correction, stale incident material, stale workspace material and viewer commands refuse without application changes; fresh revisions accept the correction as the actual responder and retain both snapshots
+PROBE OC-036 custody: populated protected archive replacement and Worker restart -> both accepted review snapshots and the explicitly human-accepted P1 follow-up read back unchanged
+PASS OC-037 response report keeps unknown cases visible and normalises load by scheduled coverage
+PASS OC-040 erasure-proof response denominators: erased member load remains explicit; incident becomes anonymous unknown case; audit rollback, matching CSV, changed-workspace refusal, current restore and restart preserve the cohort
+PROBE OC-037 late acknowledgement: protected HTTP declaration at 02:30Z and acknowledgement at 04:05Z -> 5700 seconds; measured mean 2300, p50 900, p90 and p95 5700; censored and unknown cases retained
+PROBE OC-037 after-hours coverage: America New York night 22:00 to 06:00 -> UTC 02:00 to 10:00, primary hours 6 and 2, backup 8; acknowledgement after 10:00 outside coverage; shares use 3 acknowledgements and 8 primary hours
+Response learning: measured/censored/unknown reports and CSV, relapse drilldown, generated material, human review, prioritized evidence acceptance, authority and archive/restart passed

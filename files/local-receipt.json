@@ -1,0 +1,130 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-incident-saves-1",
+  "head": "cf4615eae88e98457dcb118ddfcadd8363f379c4",
+  "base": "669b0c877ca659e5475e4ed2016fe584ac3d859d",
+  "tree": "a8d34e716c0eac9830d8598189fbc0b643d690ca",
+  "worktree_clean": true,
+  "product_push": "success",
+  "push_attempts": 1,
+  "pr": null,
+  "checks": [
+    {
+      "command": "node tests/member-coordination-browser.mjs",
+      "environment": {
+        "ONCALL_CHROMIUM_PATH": "/usr/bin/chromium"
+      },
+      "scope": "full touched browser file before main update",
+      "exit": 0,
+      "log": "browser.txt"
+    },
+    {
+      "command": "node tests/member-coordination-browser.mjs",
+      "environment": {
+        "ONCALL_MEMBER_JOURNEY": "incident-saves",
+        "ONCALL_CHROMIUM_PATH": "/usr/bin/chromium"
+      },
+      "scope": "changed screens after main update, Node 22.20.0",
+      "exit": 0,
+      "log": "browser-candidate.txt"
+    },
+    {
+      "command": "node tests/triage.mjs",
+      "environment": {
+        "ONCALL_TRIAGE_PART": "reports"
+      },
+      "scope": "existing HTTP review/report journey after main update, Node 22.20.0",
+      "exit": 0,
+      "log": "review-http.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.txt"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "runner": "cloud_run",
+      "exit": 0,
+      "log": "build.txt"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-docs.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-lock.txt"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "verification_plan_commands_before": 16,
+  "verification_plan_commands_after": 16,
+  "contract_counts_before": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_counts_after": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_status_changes": [],
+  "source_files": [
+    {
+      "path": "sources.lock.json",
+      "sha256": "0bf317ea9bfe944c361cc6921558590e690b0e84c754cf777cfcd4dcd5dbf3ce"
+    },
+    {
+      "path": "src/app/autosave/useAutosave.ts",
+      "sha256": "7da2d9b33b7bc8692ba0a47882d4b4cbfcb69cea713b6e67ec66dfdba8493031"
+    },
+    {
+      "path": "src/family/response-operations/domain.ts",
+      "sha256": "0dfd26c3b6b44f6cc3d8af6a0f5844f9df68749fdd722a68ec63b0b63559873a"
+    },
+    {
+      "path": "src/incident/IncidentHead.tsx",
+      "sha256": "69f6909141d658c71a5dfb87e615acb54e1d9dd4e39a931a4b8b4b9adc4ba56d"
+    },
+    {
+      "path": "src/incident/incident.css",
+      "sha256": "3757554d0b726b43bcc973345fc1eac549b5b691a38d67f4ea1e5ddf9e1a33ed"
+    },
+    {
+      "path": "src/reviews/ReviewSheet.tsx",
+      "sha256": "351085a3a3c61a815ba7da7b1095324c810c7f4a8cc3b44b110cb085c702bc41"
+    },
+    {
+      "path": "src/services/ServiceHeadEditor.tsx",
+      "sha256": "90299923cd688717fc04b51413f7a22c211450a8966f3bc59e3500471261d147"
+    },
+    {
+      "path": "tests/member-coordination-browser.mjs",
+      "sha256": "ef733baee441cc2f6dfa9273f17c691a39f9338ff79a6ef1926e82fe54bc253b"
+    },
+    {
+      "path": "tests/triage.mjs",
+      "sha256": "7aca60b726b524e5b62e7fa02a6c8b720e21f8d03eb247c464621dd47a9f1de6"
+    }
+  ],
+  "notes": [
+    "Final-source local checks ran before the commit; only the generated source lock was subsequently written.",
+    "No full local verify ran; exact-SHA branch Verify is the full wall.",
+    "Publication scan and landing remain on the Mac fleet.",
+    "Historical review timeline entries were preserved."
+  ],
+  "remote_readback": {
+    "head": "cf4615eae88e98457dcb118ddfcadd8363f379c4",
+    "ref": "refs/heads/cloud/main-oncall-incident-saves-1",
+    "matches": true
+  }
+}

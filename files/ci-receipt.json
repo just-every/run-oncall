@@ -1,0 +1,45 @@
+{
+  "repository": "just-every/run-oncall",
+  "calls": 3,
+  "observations": [
+    {
+      "at": 1794396430.3083344,
+      "action": "discover",
+      "response": {
+        "workflow_runs": []
+      }
+    },
+    {
+      "at": 1794396743.5147805,
+      "action": "discover",
+      "response": {
+        "workflow_runs": [
+          {
+            "conclusion": null,
+            "event": "push",
+            "head_sha": "cf4615eae88e98457dcb118ddfcadd8363f379c4",
+            "html_url": "https://github.com/just-every/run-oncall/actions/runs/43012054710",
+            "id": 43012054710,
+            "name": "Verify",
+            "status": "in_progress"
+          }
+        ]
+      }
+    },
+    {
+      "at": 1794397044.589875,
+      "action": "poll",
+      "response": {
+        "conclusion": null,
+        "head_sha": "cf4615eae88e98457dcb118ddfcadd8363f379c4",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43012054710",
+        "id": 43012054710,
+        "status": "in_progress"
+      }
+    }
+  ],
+  "last_call": 1794397044.589875,
+  "run_id": 43012054710,
+  "url": "https://github.com/just-every/run-oncall/actions/runs/43012054710",
+  "head_sha": "cf4615eae88e98457dcb118ddfcadd8363f379c4"
+}
