@@ -10,6 +10,8 @@ import {localWorker} from './worker.mjs'
 // /signin/local, coordinate, reload and read attributed history; signed-out and
 // revoked sessions get no workspace; paging refuses.
 const worker=await localWorker({}, {clock:true})
+const focusedSaves=process.env.ONCALL_MEMBER_JOURNEY==='incident-saves';
+if(process.env.ONCALL_MEMBER_JOURNEY&&!focusedSaves)throw Error('Unknown member coordination journey');
 const captureDirectory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
 await mkdir(captureDirectory,{recursive:true})
 const responder={name:'Rosa Responder',password:'synthetic-responder-testing-password'},viewer={name:'Vic Viewer',password:'synthetic-viewer-testing-password'}
@@ -36,6 +38,92 @@ async function denied(page,label,id){
  await page.goto(`${worker.origin}/incidents/${encodeURIComponent(id)}`);await page.reload();await page.waitForLoadState('networkidle')
  assert.equal(await page.locator('.timeline').count(),0,`${label}: no incident history rendered`)
  assert.ok(!(await page.locator('body').innerText()).includes(noteText),`${label}: no coordination text in the page`)
+}
+// Extend the existing autosave journey through the service and review screens.
+async function incidentSaves(page) {
+ const request=async(path,data)=>ok(await call(page,path,data));
+ await page.setViewportSize({width:1440,height:1000});
+ await page.goto(worker.origin+'/settings/services/checkout');
+ const runbook=page.getByLabel('Runbook steps (one per line)',{exact:true});
+ const runbookField=page.locator('.service-runbook');
+ const steps='Check payment provider status\nConfirm checkout recovery';
+ await runbook.fill(steps);await runbook.blur();
+ await expect(runbookField.getByRole('status')).toHaveText('Saved');
+ // The user can finish reading the field before checking its save result.
+ await page.waitForTimeout(2500);
+ await expect(runbookField.getByRole('status')).toHaveText('Saved');
+ assert.deepEqual((await request('/api/state')).services.find(row=>row.id==='checkout').runbook,steps.split('\n'));
+ const capture=async name=>{
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});
+   await page.screenshot({path:`${captureDirectory}/incident-saves-${name}-${width}.png`,fullPage:true});
+  }
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ await capture('runbook-saved');
+ const blockRunbook=route=>route.request().postDataJSON()?.field==='runbook'?route.abort():route.continue();
+ await page.route('**/api/command',blockRunbook);
+ await runbook.fill(steps+'\nKeep the recovery evidence');await runbook.blur();
+ await expect(runbookField.getByRole('alert')).toBeVisible();
+ await expect(runbookField.getByRole('status')).toHaveCount(0);
+ await expect(runbook).toHaveValue(steps+'\nKeep the recovery evidence');
+ await capture('runbook-error');
+ await page.unroute('**/api/command',blockRunbook);await runbookField.getByRole('button',{name:'Retry',exact:true}).click();
+ await expect(runbookField.getByRole('status')).toHaveText('Saved');
+ await page.reload();await expect(runbook).toHaveValue(steps+'\nKeep the recovery evidence');
+ let incident=await request('/api/command',{type:'declare',service:'checkout',title:'Synthetic checkout review',severity:'critical',summary:'Checkout delays were observed'});
+ const mutate=async data=>incident=await request('/api/command',{incident:incident.id,revision:incident.revision,...data});
+ for(const state of ['acknowledged','recovered','resolved'])await mutate({type:'transition',state,summary:'Recovery verified against retained evidence',evidence:'https://example.test/checkout-recovery'});
+ await page.goto(worker.origin+'/incidents/'+incident.id);await page.locator('.incident-head h1').waitFor();
+ const metadata=page.locator('.incident-head .incident-meta');
+ assert.doesNotMatch(await metadata.innerText(),/·\s*·/,'incident metadata has no empty field');
+ await capture('header');
+ await page.setViewportSize({width:390,height:1000});
+ const starts=await metadata.evaluate(element=>{
+  const walker=document.createTreeWalker(element,NodeFilter.SHOW_TEXT),lines=new Map();let node;
+  while(node=walker.nextNode())for(let offset=0;offset<node.textContent.length;offset++){
+   const char=node.textContent[offset];if(!char.trim())continue;
+   const range=document.createRange();range.setStart(node,offset);range.setEnd(node,offset+1);const box=range.getBoundingClientRect(),line=Math.round(box.top);
+   const first=lines.get(line);if(!first||box.left<first.left)lines.set(line,{left:box.left,char});
+  }
+  return [...lines.values()].map(row=>row.char);
+ });
+ assert.ok(starts.every(char=>char!=='·'),'the phone incident header never begins a line with a separator');
+ await page.setViewportSize({width:1440,height:1000});
+ const before=structuredClone(incident.timeline);
+ await page.goto(worker.origin+'/reviews/'+incident.id);
+ const review=page.getByRole('dialog',{name:incident.title,exact:true});await review.waitFor();
+ const blockReview=route=>route.request().postDataJSON()?.type==='review'?route.abort():route.continue();
+ await page.route('**/api/command',blockReview);
+ const first=review.getByLabel('Review',{exact:true});await first.fill('First assessment of the retained recovery evidence.');await first.blur();
+ const firstField=review.locator('.review-edit').filter({has:page.getByLabel('Review',{exact:true})});
+ await expect(firstField.getByRole('alert')).toBeVisible();await expect(firstField.getByRole('status')).toHaveCount(0);
+ await expect(first).toHaveValue('First assessment of the retained recovery evidence.');await capture('review-error');
+ await page.unroute('**/api/command',blockReview);await firstField.getByRole('button',{name:'Retry',exact:true}).click();
+ await expect(firstField.getByRole('status')).toHaveText('Saved');
+ for(const [label,value] of [['Review','Corrected assessment after comparing checkout observations.'],['Root cause','Connection pool admission exceeded capacity.'],['Impact','Checkout requests were delayed.']]){
+  const field=review.getByLabel(label,{exact:true});await field.fill(value);await field.blur();
+  await expect(review.locator('.review-edit').filter({has:page.getByLabel(label,{exact:true})}).getByRole('status')).toHaveText('Saved');
+ }
+ await page.waitForTimeout(2500);
+ await expect(review.locator('.review-edit').getByRole('status')).toHaveCount(3);
+ incident=(await request('/api/state')).incidents.find(row=>row.id===incident.id);
+ assert.deepEqual(incident.timeline,before,'successful review edits retain drafts without timeline noise');
+ await capture('review-saved');
+ await review.getByRole('button',{name:'Accept review',exact:true}).click();
+ await review.getByRole('button',{name:'Accept this review',exact:true}).click();
+ await expect(review.locator('.review-meta').filter({hasText:'Accepted by'})).toBeVisible();
+ const accepted=(await request('/api/state')).incidents.find(row=>row.id===incident.id);
+ assert.equal(accepted.timeline.length,before.length+1);
+ assert.equal(accepted.timeline.filter(row=>row.kind==='review').length,1,'only explicit acceptance records the review in the timeline');
+ assert.equal(accepted.timeline.at(-1).actor,accepted.reviewAcceptance.by);
+ assert.equal(accepted.timeline.at(-1).review.review,accepted.review);
+ await page.goto(worker.origin+'/incidents/'+incident.id);await page.locator('.incident-timeline').waitFor();
+ await expect(page.locator('.incident-timeline .event').filter({hasText:'Human accepted root cause'})).toHaveCount(1);
+ await capture('accepted-timeline');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ assert.deepEqual((await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
+ console.log('PASS incident saves: persistent runbook and review Saved states, failed-save alerts and Retry, phone header without leading separators, draft edits without timeline entries, exactly one attributed accepted review; changed screens captured at 1440 and 390');
 }
 try {
  const claimed=await worker.request('/auth/bootstrap',{token:worker.vars.SETUP_TOKEN,displayName:'Oncall lead'},undefined,{'CF-Connecting-IP':'127.0.0.1'})
@@ -68,6 +156,8 @@ try {
  await expect(autosaveCard.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0);
  const afterRetry=ok(await call(owner.page,'/api/state'));assert.equal(afterRetry.audit.length,beforeRetry+1,'Retry adds exactly one audit row');assert.equal(afterRetry.services.find(s=>s.id==='checkout').owner,rosaRecord.id);
  console.log('OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1');
+ await incidentSaves(owner.page);
+ if(!focusedSaves){
  // OC-023 public-team forms use the existing Team section at both widths.
  for(const width of [1440]){
   await owner.page.setViewportSize({width,height:1000});await owner.page.goto(worker.origin+'/settings/team');await owner.page.reload();
@@ -496,13 +586,14 @@ try {
  assert.ok(after.timeline.some(e=>e.text===noteText&&e.actor===rosaMember.id),'revocation keeps the attributed history')
  assert.deepEqual(errors,[])
  console.log('OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)')
+ }
 } finally {
  await browser?.close()
  await worker.close()
 }
 
 // Finish identity management with owner correction, sign-out and honest mail availability.
-{
+if(!focusedSaves){
 const {default:assert}=await import('node:assert/strict')
 const {mkdir,readFile}=await import('node:fs/promises')
 const {chromium}=await import('@playwright/test')
@@ -614,7 +705,7 @@ try {
 }
 
 // Configure scoped automation, inspect delivery failure and retain machine attribution in the workspace.
-{
+if(!focusedSaves){
 const {default:assert}=await import('node:assert/strict')
 const {mkdir}=await import('node:fs/promises')
 const {join,resolve}=await import('node:path')
