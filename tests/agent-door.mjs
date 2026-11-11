@@ -62,7 +62,19 @@ async function adoption() {
   await db.prepare('INSERT INTO agent_door_audit(id,at,agent,classes,row) VALUES(?,?,?,?,?)')
    .bind('held-execution',new Date(started).toISOString(),'held-agent','[]',JSON.stringify({door:'mcp',consent:'new-consent',decision_id:'held-decision',classes:[],tool:'oncall.incidents.read',agent:{id:'held-agent'},sponsor:{id:'native-owner'},outcome:'executed'})).run();
   assert.deepEqual((await db.prepare('SELECT decision_id,business FROM agent_door_relay ORDER BY sequence').all()).results.map(row=>row.business),['held-business','new-business'],'The old trigger leaks the execution into the new feed');
-  for (const name of ledger.filter(name=>name>relayMigration)) await apply(name);
+  // Held Business roster rows predate the roster-retirement table; its migration creates that table and rewrites nothing.
+  const rosterMigration = '0163_business_retired.sql';
+  for (const name of ledger.filter(name=>name>relayMigration&&name<rosterMigration)) await apply(name);
+  await db.batch([
+   db.prepare("INSERT INTO bs_settings(singleton,rev,document,owner_id) VALUES(1,3,?,'held-owner')").bind(JSON.stringify({v:1,rev:3,team:[{id:'held-teammate',email:'held@example.invalid',role:'member',invite:1}]})),
+   db.prepare("INSERT INTO bs_team(email,operator_id,invite,state,business_id,business_role) VALUES('held@example.invalid','held-member',1,'active','held-teammate','member')"),
+  ]);
+  const roster = async () => JSON.stringify((await db.batch([db.prepare('SELECT * FROM bs_settings'),db.prepare('SELECT * FROM bs_team')])).map(result=>result.results));
+  const heldRoster = await roster();
+  assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name='bs_retired'").first()).n,0);
+  for (const name of ledger.filter(name=>name>=rosterMigration)) await apply(name);
+  assert.equal(await roster(),heldRoster,'The roster migration rewrites no held roster row');
+  assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM bs_retired').first()).n,0,'bs_retired starts empty');
   assert.deepEqual((await db.prepare('SELECT decision_id,business FROM agent_door_relay ORDER BY sequence').all()).results,[{decision_id:'held-decision',business:'held-business'}],'Relay privacy migration removes only the cross-Business membership');
   assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM agent_door_audit WHERE id IN ('held-decision','held-execution')").first()).n,2,'Every audit is preserved');
   assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM agent_door_retired_refs').first()).n,0,'Retired-reference custody exists after the upgrade');

@@ -54,6 +54,7 @@ function oncallTeam(env: Bindings): TeamAdapter {
       const rows: ManagedMember[] = []
       const changes: { before: NativeRow; after: NativeMember }[] = []
       const bound = new Set<string>()
+      const gone: string[] = []
       for (const email of new Set([...desired.keys(), ...previous.keys()])) {
         const member = desired.get(email), prior = previous.get(email)
         // projectManaged also supports legacy email-keyed adapters. Re-read the
@@ -62,6 +63,9 @@ function oncallTeam(env: Bindings): TeamAdapter {
         const storedRow = businessId ? storedById.get(businessId) : undefined
         const target = storedRow?.operatorId ? native.get(storedRow.operatorId) : undefined
         const value = target ? JSON.parse(target.data) as NativeMember : null
+        // A member erased before the roster could be retired (or removed outright) is no longer a person the
+        // Business may list: Base retires the stored row and tombstones the person in this revision.
+        if (storedRow?.operatorId && (!target || value?.erased)) { gone.push(storedRow.operatorId); continue }
         const unique = storedRow?.operatorId && stored.results.filter(row => row.operatorId === storedRow.operatorId).length === 1
         const admissible = storedRow && ['active', 'inactive'].includes(storedRow.state) && storedRow.operatorId &&
           prior?.operatorId === storedRow.operatorId && prior.businessId === storedRow.businessId && unique &&
@@ -110,7 +114,7 @@ function oncallTeam(env: Bindings): TeamAdapter {
         auditIdentity(env.DB, { actor: { kind: 'member', id: owner.id }, source: { kind: 'service', id: 'business' } })
         auditKind(env.DB, 'member.business')
       }
-      return { statements, rows, async afterCommit() {} }
+      return { statements, rows, gone, async afterCommit() {} }
     },
   }
 }

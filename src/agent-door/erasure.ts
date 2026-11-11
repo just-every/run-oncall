@@ -1,23 +1,26 @@
-import { agentErasureStatements, type AgentArtifactMap } from '../modules/agent-door/index.ts'
+import { agentErasureStatements, operatorPolicyRefs, type AgentArtifactMap } from '../modules/agent-door/index.ts'
 
 // Adapted from default-seed/src/agent-door/erasure.ts at Base
-// 8b925fa5ffaa577df9f2e4ebab6ede8af5155baa to Oncall's native subjects, with
-// the bounded text matcher of Base 1943bd59. Native ids and exact email
-// addresses select linked custody only as whole tokens: erasing al@example.com
-// never selects sal@example.com, nor id u1 the record of u10. Display names
-// use token boundaries, so a short name cannot erase an unrelated peer.
+// 4dd4197007cefd688fd314ffb19eed4d0b3c67dd to Oncall's native subjects, with
+// the bounded text matcher of Base 1943bd59. Native ids, exact email addresses
+// and recorded display names select linked custody only as whole tokens:
+// erasing al@example.com never selects sal@example.com or al@example.com.au,
+// nor id u1 the record of u10. A recorded name also delimits at a colon.
 export type AgentSubjectValue = string | { name: string }
-const textValue = 'CAST(subject.value AS TEXT)'
+const recordedName = "CASE WHEN subject.type='object' THEN json_extract(subject.value,'$.name') END"
+const textValue = `CASE WHEN subject.type='text' THEN CAST(subject.value AS TEXT) ELSE ${recordedName} END`
 const strictTokenCharacter = "'[A-Za-z0-9_@.+/:-]'"
 const separatorTokenCharacter = "'[A-Za-z0-9_@.+-]'"
 const minimumSeparatorLength = 8
 // Short identifiers preserve URI/version tokens; longer ids and emails can
 // occur in path segments. A period delimits a sentence when its outward
-// neighbor is not an identifier character.
-const tokenCharacter = `CASE WHEN length(${textValue})<${minimumSeparatorLength} AND instr(${textValue},'@')=0 THEN ${strictTokenCharacter} ELSE ${separatorTokenCharacter} END`
+// neighbor is not an identifier character. Recorded names also delimit at
+// colons; non-ASCII letters continue names, Unicode punctuation does not.
+const tokenCharacter = `CASE WHEN length((${textValue}))<${minimumSeparatorLength} AND instr((${textValue}),'@')=0 THEN ${strictTokenCharacter} ELSE ${separatorTokenCharacter} END`
 const textBoundary = (position: string, outward: number) => {
   const char = `substr(text,${position},1)`, next = `substr(text,(${position})+(${outward}),1)`
-  return `(${char} NOT GLOB token OR (${char}='.' AND ${next} NOT GLOB token))`
+  return `(${char} NOT GLOB token OR (${char}='.' AND ${next} NOT GLOB token) OR (named AND ${char}=':'))
+    AND NOT (named AND coalesce(unicode(${char}),0)>127 AND ${char} NOT GLOB '[\u00a0\u2000-\u206f\u2e00-\u2e7f\u3000-\u303f]')`
 }
 // Search decoded string values, never JSON keys or numbers. A bounded
 // occurrence can follow an embedded one in the same string, so every literal
@@ -25,29 +28,19 @@ const textBoundary = (position: string, outward: number) => {
 // expression shallow enough for D1's depth limit.
 const cells = (table: string, columns: string[]) => columns.map(name => `SELECT ${table}.${name} AS cell`).join(' UNION ALL ')
 const decoded = 'json_tree(CASE WHEN json_valid(cells.cell) THEN cells.cell ELSE json_quote(cells.cell) END) content'
-const textMention = (table: string, columns: string[]) => `(${textValue} IN (${columns.map(name => `CAST(${table}.${name} AS TEXT)`).join(',')}) OR EXISTS(
-      WITH RECURSIVE hits(text,source,pos,token) AS (
-        SELECT content.value,${textValue},instr(content.value,${textValue}),(${tokenCharacter})
+const textMention = (table: string, columns: string[]) => `EXISTS(
+      WITH RECURSIVE hits(text,source,pos,token,named) AS (
+        SELECT content.value,(${textValue}),instr(content.value,(${textValue})),(${tokenCharacter}),(${recordedName}) IS NOT NULL
         FROM (${cells(table, columns)}) cells, ${decoded}
-        WHERE content.type='text' AND instr(content.value,${textValue})>0
-        UNION ALL SELECT text,source,pos+instr(substr(text,pos+1),source),token FROM hits
+        WHERE content.type='text' AND instr(content.value,(${textValue}))>0
+        UNION ALL SELECT text,source,pos+instr(substr(text,pos+1),source),token,named FROM hits
           WHERE pos>0 AND instr(substr(text,pos+1),source)>0
       ) SELECT 1 FROM hits WHERE pos>0
         AND ${textBoundary('pos-1', -1)}
         AND ${textBoundary('pos+length(source)', 1)}
-    ))`
-const nameMention = (table: string, columns: string[]) => `EXISTS(
-      WITH RECURSIVE hits(text,source,pos) AS (
-        SELECT content.value,json_extract(subject.value,'$.name'),instr(content.value,json_extract(subject.value,'$.name'))
-        FROM (${cells(table, columns)}) cells, ${decoded} WHERE content.type='text'
-        UNION ALL SELECT text,source,pos+instr(substr(text,pos+1),source) FROM hits
-          WHERE pos>0 AND instr(substr(text,pos+1),source)>0
-      ) SELECT 1 FROM hits WHERE pos>0
-        AND (pos=1 OR substr(text,pos-1,1) NOT GLOB '[A-Za-z0-9_@/+-]')
-        AND (pos+length(source)>length(text) OR substr(text,pos+length(source),1) NOT GLOB '[A-Za-z0-9_@/+-]')
     )`
 const mentions = (table: string, columns: string[]) => `EXISTS(SELECT 1 FROM json_each(?1) subject WHERE
-    (subject.type='text' AND ${textMention(table, columns)}) OR (subject.type='object' AND ${nameMention(table, columns)}))`
+    (subject.type='text' OR subject.type='object') AND ${textMention(table, columns)})`
 const calls = mentions('agent_door_calls', ['key','outcome'])
 const approvals = mentions('agent_door_approvals', ['saved','approvals','result'])
 const reviews = mentions('agent_door_reviews', ['saved','marked_by'])
@@ -71,7 +64,7 @@ export const oncallAgentArtifacts: AgentArtifactMap = { artifacts: [
   { table: 'agent_door_retired_refs', columns: ['digest','marker'], unrelated: 'Value-free suppression digests and erasure markers; they travel in installation archives so retirement holds across restore.' },
   { table: 'agent_door_relay', columns: ['sequence','decision_id','business'], unrelated: 'Installation-private decision ids and Business id only. External Business projections are purged by tombstone pulls, stop and unreachable rules; remote deletion is not claimed.' },
   { table: 'agent_door_replay_aliases', columns: ['agent','alias','call_id','tombstone'], unrelated: 'Installation-private HMAC replay associations, excluded from exports and removed with the original call horizon.' },
-  { table: 'agent_door_state', columns: ['id','envelope','local_document','local_revision','local_paused','decision_lock','decision_until'], unrelated: 'Retained installation policy and admission custody. Opaque policy principal refs are authority history, not personal payload; no export of relay or replay custody.' },
+  { table: 'agent_door_state', columns: ['id','envelope','local_document','local_revision','local_paused','decision_lock','decision_until'], retire: { refs: 'policyRefs' } },
   { table: 'agent_door_agents', columns: ['id','name','specialist','sponsor','sponsor_name','revoked','window','requests','tombstone'], match: match(agents) },
   { table: 'agent_door_calls', columns: ['agent','key','digest','decision_id','created_at','state','outcome','expires_at'], match: match(`decision_id IN (${decisions})`) },
   { table: 'agent_door_audit', columns: ['sequence','id','at','agent','classes','row','evidence'], match: match(`id IN (${decisions}) OR json_extract(row,'$.decision_id') IN (${decisions}) OR json_extract(row,'$.replay_of') IN (${decisions}) OR agent IN (SELECT id FROM agent_door_agents WHERE ${agents})`) },
@@ -88,10 +81,14 @@ export async function eraseOncallAgentArtifacts(db: D1Database, secret: string, 
   // Preserve that existing display contract with a fixed erased-sponsor label,
   // while the released redaction removes the sponsor's id, name and contact.
   const ids = values.filter((value): value is string => typeof value === 'string')
+  // The 0.2.97 operator recipe on Oncall's own roster ids: the Business team adapter binds bs_team.operator_id
+  // to the oc_members id, so an erased member's refs are that id and its Business id. Base's roster rule
+  // then retires bs_team and the stored signed document in the same transaction.
+  const policyRefs = [...new Set((await Promise.all(members.map(member => operatorPolicyRefs(db, member)))).flat())]
   const labels = (await db.prepare("SELECT id,json_extract(row,'$.agent.name') AS name FROM agent_door_audit WHERE json_extract(row,'$.sponsor.id') IN (SELECT value FROM json_each(?))")
     .bind(JSON.stringify(ids)).all<{ id: string; name: string | null }>()).results
   const statements = await agentErasureStatements({ db, secret, map: oncallAgentArtifacts,
-    subject: { values: JSON.stringify(values.filter(value => typeof value !== 'string' || value.length > 0)), members: JSON.stringify(members) }, tombstone,
+    subject: { values: JSON.stringify(values.filter(value => typeof value !== 'string' ? value.name.length > 0 : value.length > 0)), members: JSON.stringify(members), policyRefs: JSON.stringify(policyRefs) }, tombstone,
     // The caller already appends its existing redaction checkpoint exactly once.
     checkpoint: async () => [],
   })

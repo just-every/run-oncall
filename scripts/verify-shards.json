@@ -49,6 +49,7 @@
     "imports": [
       "tests/import-door.mjs",
       "tests/oncall-agent-erase-subjects.mjs",
+      "tests/oncall-agent-erase-roster.mjs",
       {
         "file": "tests/triage.mjs",
         "env": {
