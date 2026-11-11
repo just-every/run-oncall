@@ -1,0 +1,61 @@
+{
+  "base": "pre-fix",
+  "afterTrigger": {
+    "total": 1,
+    "active": 1,
+    "recovered": 0,
+    "events": [
+      {
+        "intent": "trigger",
+        "key": "check-c5eccf831e6c",
+        "generation": "check-c5eccf831e6c",
+        "severity": "critical"
+      }
+    ]
+  },
+  "afterRecover": {
+    "total": 2,
+    "active": 1,
+    "recovered": 1,
+    "events": [
+      {
+        "intent": "trigger",
+        "key": "check-c5eccf831e6c",
+        "generation": "check-c5eccf831e6c",
+        "severity": "critical"
+      },
+      {
+        "intent": "recover",
+        "key": "check-d923ef64a4b7",
+        "generation": "check-d923ef64a4b7",
+        "severity": "warning"
+      }
+    ]
+  },
+  "directSameKeyStatus": 201,
+  "pairedDirect": {
+    "total": 2,
+    "active": 0,
+    "recovered": 2,
+    "events": [
+      {
+        "intent": "trigger",
+        "key": "check-c5eccf831e6c",
+        "generation": "check-c5eccf831e6c",
+        "severity": "critical"
+      },
+      {
+        "intent": "recover",
+        "key": "check-d923ef64a4b7",
+        "generation": "check-d923ef64a4b7",
+        "severity": "warning"
+      },
+      {
+        "intent": "recover",
+        "key": "check-c5eccf831e6c",
+        "generation": "check-c5eccf831e6c",
+        "severity": "warning"
+      }
+    ]
+  }
+}

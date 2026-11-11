@@ -1,0 +1,5 @@
+{
+  "check": "changed code/test diff credential patterns",
+  "result": "pass",
+  "fullPublicationScan": "fleet Mac gate; unavailable in cloud"
+}

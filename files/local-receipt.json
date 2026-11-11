@@ -1,0 +1,105 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-events-recover-1",
+  "head": "40f8f21cedd03a2debcf21f9e6853c2344f51238",
+  "base": "10340960f5cc7a5e17734d65476817129dbab896",
+  "checks": [
+    {
+      "check": "typecheck",
+      "command": "cloud_run pnpm run typecheck",
+      "exit": 0,
+      "log_sha256": "093ce1a48f7f2a53de56eec733b72555f15c99104e595679a0a61e55d5a6d292",
+      "head": "6c808e000df5ab81ac3f333d7e1caae1290a5ae9",
+      "same_application_blobs_on_final_head": true
+    },
+    {
+      "check": "build",
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log_sha256": "3dd7a4b5df9cabe0ad0361bd7a1ff4771f9795c4285e696324172b76b7d836ce",
+      "head": "6c808e000df5ab81ac3f333d7e1caae1290a5ae9",
+      "same_application_blobs_on_final_head": true
+    },
+    {
+      "check": "browser",
+      "command": "cloud_run env ONCALL_PRODUCT_JOURNEY=events-source ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=<packet>/screens node tests/product-browser.mjs",
+      "exit": 0,
+      "log_sha256": "7d24ac448af5760fc866008977c4a6bef540a95a181cf0dd6155fee39a4e5298",
+      "head": "40f8f21cedd03a2debcf21f9e6853c2344f51238"
+    },
+    {
+      "check": "contract",
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422",
+      "head": "40f8f21cedd03a2debcf21f9e6853c2344f51238"
+    },
+    {
+      "check": "lock",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log_sha256": "5360078798567796def4c738d382fbb913353a4a36c7dbe51059dcc7c701d588",
+      "head": "40f8f21cedd03a2debcf21f9e6853c2344f51238"
+    },
+    {
+      "check": "intake",
+      "command": "cloud_run node tests/intake.mjs",
+      "exit": 0,
+      "head": "6c808e000df5ab81ac3f333d7e1caae1290a5ae9",
+      "same_test_and_application_blobs_on_final_head": true,
+      "log_sha256": "0148d6a62bed5f6ead56695f90904c043ea752cc5c6c4a5c612b8f1e0290898a"
+    }
+  ],
+  "test_budget": {
+    "new_registrations": 0,
+    "deleted_registrations": 0,
+    "method": "existing tests/intake.mjs and tests/product-browser.mjs extended; suite registration plan unchanged"
+  },
+  "alert_counts": {
+    "before": {
+      "trigger": {
+        "total": 1,
+        "active": 1,
+        "recovered": 0
+      },
+      "recover": {
+        "total": 2,
+        "active": 1,
+        "recovered": 1
+      }
+    },
+    "after": {
+      "trigger": {
+        "total": 1,
+        "active": 1,
+        "recovered": 0
+      },
+      "recover": {
+        "total": 1,
+        "active": 0,
+        "recovered": 1
+      }
+    }
+  },
+  "screens": {
+    "assertion_width": 1440,
+    "proof_widths": [
+      1440,
+      390
+    ],
+    "states": [
+      "created",
+      "empty-source",
+      "recover-form",
+      "recovered-list",
+      "recovered-alert"
+    ]
+  },
+  "contract_cells_changed": false,
+  "full_publication_scan": "fleet Mac gate; cannot run in cloud",
+  "commits": [
+    "8a6087899e41159f6dc8c8db9a5686cf45265661",
+    "6c808e000df5ab81ac3f333d7e1caae1290a5ae9",
+    "40f8f21cedd03a2debcf21f9e6853c2344f51238"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "browser": "closed by journey finally block",
+  "worker": "closed by journey finally block",
+  "setup": "completed and subreaper exited",
+  "owned_dev_servers": "none remain",
+  "product_worktree_clean": true,
+  "ci_watcher": "completed; exact-SHA completed/success"
+}

@@ -1,0 +1,11 @@
+{
+  "head": "40f8f21cedd03a2debcf21f9e6853c2344f51238",
+  "candidate_commits": [
+    "40f8f21cedd03a2debcf21f9e6853c2344f51238",
+    "6c808e000df5ab81ac3f333d7e1caae1290a5ae9",
+    "8a6087899e41159f6dc8c8db9a5686cf45265661"
+  ],
+  "author_and_committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "trailers": "none",
+  "result": "pass"
+}

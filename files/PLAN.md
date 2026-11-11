@@ -1,0 +1,8 @@
+# Oncall Events API recovery plan
+
+1. Reproduce the stranger journey through the emitted Worker and real browser: Trigger Critical, visit Alerts, return to source, Recover Warning. Capture public route requests and protected alert counts. Separately send matching key and generation through the public Events API to distinguish sender state from ingestion behavior.
+2. Keep native lifecycle identity source/service/environment/key/generation intact. Prefill the sender from the source’s latest Trigger, expose its key and generation, and explain recovery. Preserve compatibility sender behavior.
+3. Reuse the source request example on the creation confirmation, expose a copyable ingress URL and curl command using an environment placeholder. Open the example on an empty source. Retain signed authentication support.
+4. Extend an existing HTTP events journey and existing browser journey, keeping registration count unchanged. Assert at 1440 and capture the changed source, creation, Alerts and alert detail screens at 1440 and 390.
+5. Run touched journeys and typecheck. Preserve initial product work with the guarded cloud branch push. Merge current main after the save, keeping its newer judgments and tests, regenerate/check source lock last, and push the final candidate without a skip marker.
+6. Discover and poll exact-SHA Verify with REST within the ten-call budget and 300-second interval. Publish complete non-secret reports/receipts only to the evidence ref. Leave landing and publication scan to the fleet, report claims as PARTIAL without changing contract status cells, then remove the pushed product clone.

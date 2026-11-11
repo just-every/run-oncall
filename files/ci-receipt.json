@@ -1,0 +1,64 @@
+{
+  "head": "40f8f21cedd03a2debcf21f9e6853c2344f51238",
+  "calls": 5,
+  "observations": [
+    {
+      "call": 1,
+      "time": 1794383474.0,
+      "kind": "discovery",
+      "head": "6c808e000df5ab81ac3f333d7e1caae1290a5ae9",
+      "runs": []
+    },
+    {
+      "call": 2,
+      "time": 1794383774.5436413,
+      "kind": "discovery",
+      "result": [
+        {
+          "conclusion": null,
+          "head_sha": "40f8f21cedd03a2debcf21f9e6853c2344f51238",
+          "html_url": "https://github.com/just-every/run-oncall/actions/runs/42982841021",
+          "id": 42982841021,
+          "name": "Verify",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "call": 3,
+      "time": 1794384075.1247544,
+      "kind": "run",
+      "result": {
+        "conclusion": null,
+        "head_sha": "40f8f21cedd03a2debcf21f9e6853c2344f51238",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/42982841021",
+        "id": 42982841021,
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 4,
+      "time": 1794384375.7031503,
+      "kind": "run",
+      "result": {
+        "conclusion": null,
+        "head_sha": "40f8f21cedd03a2debcf21f9e6853c2344f51238",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/42982841021",
+        "id": 42982841021,
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 5,
+      "time": 1794384676.2202919,
+      "kind": "run",
+      "result": {
+        "conclusion": "success",
+        "head_sha": "40f8f21cedd03a2debcf21f9e6853c2344f51238",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/42982841021",
+        "id": 42982841021,
+        "status": "completed"
+      }
+    }
+  ]
+}
