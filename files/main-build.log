@@ -1,0 +1,182 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+Heavy job admitted: Oncall build:workflow [12216b2e79c1]
+Checking pinned pnpm
+10.12.4
+Building your application
+build:app
+Generated the standalone exporter from the app collection module.
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../base/run-site" without a file extension (src/docs/build/run-recipe.ts:1:34). Add the file extension
+  - import "../../site/run" without a file extension (src/docs/build/run-recipe.ts:2:21). Add the file extension
+  - import "../base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
+  - import "./icon-head" without a file extension (src/base/run-site.ts:1:26). Add the file extension
+  - import "../base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
+  - import "./run-chooser-style" without a file extension (src/base/run-site.ts:2:29). Add the file extension
+  - import "./identity" without a file extension (src/base/run-site.ts:11:53). Add the file extension
+  - import "./theme-frame" without a file extension (src/base/run-site.ts:12:21). Add the file extension
+  - import "./hosting-page" without a file extension (src/base/run-site.ts:13:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../base/run-site" without a file extension (src/docs/build/run-recipe.ts:1:34). Add the file extension
+  - import "../../site/run" without a file extension (src/docs/build/run-recipe.ts:2:21). Add the file extension
+  - import "../base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
+  - import "./icon-head" without a file extension (src/base/run-site.ts:1:26). Add the file extension
+  - import "../base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
+  - import "./run-chooser-style" without a file extension (src/base/run-site.ts:2:29). Add the file extension
+  - import "./identity" without a file extension (src/base/run-site.ts:11:53). Add the file extension
+  - import "./theme-frame" without a file extension (src/base/run-site.ts:12:21). Add the file extension
+  - import "./hosting-page" without a file extension (src/base/run-site.ts:13:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - import "../../base/run-site" without a file extension (src/docs/build/run-recipe.ts:1:34). Add the file extension
+  - import "../../site/run" without a file extension (src/docs/build/run-recipe.ts:2:21). Add the file extension
+  - import "../base/run-site" without a file extension (src/site/run.ts:1:30). Add the file extension
+  - import "./icon-head" without a file extension (src/base/run-site.ts:1:26). Add the file extension
+  - import "../base/run-pricing" without a file extension (src/site/run.ts:2:28). Add the file extension
+  - import "./run-chooser-style" without a file extension (src/base/run-site.ts:2:29). Add the file extension
+  - import "./identity" without a file extension (src/base/run-site.ts:11:53). Add the file extension
+  - import "./theme-frame" without a file extension (src/base/run-site.ts:12:21). Add the file extension
+  - import "./hosting-page" without a file extension (src/base/run-site.ts:13:34). Add the file extension
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 475 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                                           0.02 kB
+dist/client/assets/ibm-plex-mono-latin-400-normal-CvHOgSBP.woff    13.14 kB
+dist/client/assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2   14.70 kB
+dist/client/assets/forms-Dox6oL3b.css                               0.60 kB │ gzip:   0.38 kB
+dist/client/assets/signin-Cs8WhTTz.css                              4.90 kB │ gzip:   1.53 kB
+dist/client/assets/DocsLayout-CBXTVfp8.css                          7.56 kB │ gzip:   2.13 kB
+dist/client/assets/Site-3qtD2DfN.css                               17.87 kB │ gzip:   4.49 kB
+dist/client/assets/OnCallScreen-z4aT_Om7.css                       24.91 kB │ gzip:   5.15 kB
+dist/client/assets/index-BXS75IwT.css                              69.33 kB │ gzip:  12.88 kB
+dist/client/assets/root-DLTE-HSj.js                                 0.03 kB │ gzip:   0.05 kB
+dist/client/assets/_-DJ7LAi8J.js                                    0.03 kB │ gzip:   0.05 kB
+dist/client/assets/alerts-DJ7LAi8J.js                               0.03 kB │ gzip:   0.05 kB
+dist/client/assets/alerts._alertId-DJ7LAi8J.js                      0.03 kB │ gzip:   0.05 kB
+dist/client/assets/incidents-DJ7LAi8J.js                            0.03 kB │ gzip:   0.05 kB
+dist/client/assets/incidents._id-DJ7LAi8J.js                        0.03 kB │ gzip:   0.05 kB
+dist/client/assets/on-call._rota-DJ7LAi8J.js                        0.03 kB │ gzip:   0.05 kB
+dist/client/assets/on-call._rota.edit-DJ7LAi8J.js                   0.03 kB │ gzip:   0.05 kB
+dist/client/assets/on-call.new-DJ7LAi8J.js                          0.03 kB │ gzip:   0.05 kB
+dist/client/assets/reviews-DJ7LAi8J.js                              0.03 kB │ gzip:   0.05 kB
+dist/client/assets/reviews._incidentId-DJ7LAi8J.js                  0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.archive-DJ7LAi8J.js                     0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.integrations-DJ7LAi8J.js                0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.integrations._id-DJ7LAi8J.js            0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.integrations.new-DJ7LAi8J.js            0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.integrations.new._kind-DJ7LAi8J.js      0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.move-in-DJ7LAi8J.js                     0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.readiness-DJ7LAi8J.js                   0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.routing-DJ7LAi8J.js                     0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.services-DJ7LAi8J.js                    0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.services._serviceId-DJ7LAi8J.js         0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings.team-DJ7LAi8J.js                        0.03 kB │ gzip:   0.05 kB
+dist/client/assets/status-DJ7LAi8J.js                               0.03 kB │ gzip:   0.05 kB
+dist/client/assets/settings-m9o5r8U5.js                             0.07 kB │ gzip:   0.08 kB
+dist/client/assets/routes-CvdTIfC4.js                               0.09 kB │ gzip:   0.10 kB
+dist/client/assets/not-found-i5RsCZif.js                            0.11 kB │ gzip:   0.11 kB
+dist/client/assets/on-call.index-BS01ix1A.js                        0.23 kB │ gzip:   0.19 kB
+dist/client/assets/docs.index-BSx6stmC.js                           0.96 kB │ gzip:   0.46 kB
+dist/client/assets/DocsLayout-B-Zr_ZlZ.js                           1.45 kB │ gzip:   0.53 kB
+dist/client/assets/docs._slug-BgmQMxZe.js                           1.57 kB │ gzip:   0.69 kB
+dist/client/assets/useSelector-q0GRC6W3.js                          2.25 kB │ gzip:   0.96 kB
+dist/client/assets/Site-S9-qrtVp.js                                 3.52 kB │ gzip:   1.35 kB
+dist/client/assets/preload-helper-DDDGGMoO.js                       5.15 kB │ gzip:   2.01 kB
+dist/client/assets/signin.local-Du7lyOdz.js                         5.35 kB │ gzip:   2.01 kB
+dist/client/assets/jsx-runtime-Cltr0gcK.js                          8.43 kB │ gzip:   3.21 kB
+dist/client/assets/link-BG1kiwOw.js                                 9.76 kB │ gzip:   4.47 kB
+dist/client/assets/forms-DH4tZV_N.js                               15.58 kB │ gzip:   6.03 kB
+dist/client/assets/OnCallScreen-CWrbSuzA.js                        95.18 kB │ gzip:  27.65 kB
+dist/client/assets/pages-B4KmoGF2.js                              334.53 kB │ gzip:  94.36 kB
+dist/client/assets/index-BfVpYdK7.js                              641.33 kB │ gzip: 184.93 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 1.21s
+vite v8.2.2 building ssr environment for production...
+transforming...
+✓ 1151 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/server/wrangler.json                                             1.49 kB │ gzip:   0.76 kB
+dist/server/assets/ibm-plex-mono-latin-400-normal-CvHOgSBP.woff      13.14 kB
+dist/server/assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2     14.70 kB
+dist/server/.vite/manifest.json                                      17.51 kB │ gzip:   2.39 kB
+dist/server/assets/forms-Dox6oL3b.css                                 0.60 kB │ gzip:   0.38 kB
+dist/server/assets/signin-Cs8WhTTz.css                                4.90 kB │ gzip:   1.53 kB
+dist/server/assets/DocsLayout-CBXTVfp8.css                            7.56 kB │ gzip:   2.13 kB
+dist/server/assets/Site-3qtD2DfN.css                                 17.87 kB │ gzip:   4.49 kB
+dist/server/assets/OnCallScreen-z4aT_Om7.css                         24.91 kB │ gzip:   5.15 kB
+dist/server/assets/router-BXS75IwT.css                               69.33 kB │ gzip:  12.88 kB
+dist/server/assets/_-CA6m1_xF.js                                      0.13 kB │ gzip:   0.12 kB
+dist/server/assets/alerts-COGpMHoJ.js                                 0.13 kB │ gzip:   0.12 kB
+dist/server/assets/status-BVtVVuls.js                                 0.13 kB │ gzip:   0.12 kB
+dist/server/assets/reviews-DAgDkkei.js                                0.13 kB │ gzip:   0.12 kB
+dist/server/assets/incidents-6qv6bJ-h.js                              0.14 kB │ gzip:   0.12 kB
+dist/server/assets/on-call.new-DGHI1ag_.js                            0.14 kB │ gzip:   0.12 kB
+dist/server/assets/incidents._id-eLAWidqe.js                          0.14 kB │ gzip:   0.12 kB
+dist/server/assets/on-call._rota-Dk6G7Afw.js                          0.14 kB │ gzip:   0.12 kB
+dist/server/assets/settings.team-BTW-HdmY.js                          0.14 kB │ gzip:   0.12 kB
+dist/server/assets/alerts._alertId-CfQB4aY2.js                        0.14 kB │ gzip:   0.13 kB
+dist/server/assets/settings.archive-CnfbHPdz.js                       0.14 kB │ gzip:   0.13 kB
+dist/server/assets/settings.move-in-tYmFlR8z.js                       0.14 kB │ gzip:   0.13 kB
+dist/server/assets/settings.routing-DdHuudig.js                       0.14 kB │ gzip:   0.13 kB
+dist/server/assets/settings.services-CivJLk5l.js                      0.14 kB │ gzip:   0.13 kB
+dist/server/assets/on-call._rota.edit-DDJyFu9H.js                     0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.readiness-mW4IF-XB.js                     0.15 kB │ gzip:   0.13 kB
+dist/server/assets/reviews._incidentId-DzR3ILO5.js                    0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.integrations-DPe3-Mjj.js                  0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.integrations._id-1lulqrFg.js              0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.integrations.new-CJj_Rfg9.js              0.15 kB │ gzip:   0.13 kB
+dist/server/assets/settings.services._serviceId-DMzJvGAw.js           0.16 kB │ gzip:   0.13 kB
+dist/server/assets/settings.integrations.new._kind-CBdFDmyf.js        0.16 kB │ gzip:   0.14 kB
+dist/server/assets/settings-D4CPKr7k.js                               0.18 kB │ gzip:   0.15 kB
+dist/server/assets/routes-BBE3Kf-_.js                                 0.21 kB │ gzip:   0.17 kB
+dist/server/assets/root-DF5o2IBY.js                                   0.26 kB │ gzip:   0.19 kB
+dist/server/assets/empty-plugin-adapters-BkaqGSKj.js                  0.29 kB │ gzip:   0.19 kB
+dist/server/assets/start-CcT-X9hg.js                                  0.30 kB │ gzip:   0.21 kB
+dist/server/assets/on-call.index-CbldM0hT.js                          0.53 kB │ gzip:   0.31 kB
+dist/server/assets/not-found-BcmUg0v2.js                              0.96 kB │ gzip:   0.52 kB
+dist/server/assets/docs.index-TXtrhGxf.js                             2.03 kB │ gzip:   0.68 kB
+dist/server/assets/utils-IokR8NuI.js                                  2.13 kB │ gzip:   1.03 kB
+dist/server/assets/vendor-formats-DcBdI7pG.js                         2.18 kB │ gzip:   0.99 kB
+dist/server/assets/paths-BPULKZYQ.js                                  2.77 kB │ gzip:   0.96 kB
+dist/server/assets/DocsLayout-CBC8rPPQ.js                             2.95 kB │ gzip:   0.77 kB
+dist/server/assets/docs._slug-pYb7lKet.js                             3.18 kB │ gzip:   0.99 kB
+dist/server/assets/hash-CRBiT7W0.js                                   4.63 kB │ gzip:   2.12 kB
+dist/server/assets/storage-C4m6G8U8.js                                5.10 kB │ gzip:   2.04 kB
+dist/server/assets/react-dom-DFE48j7B.js                              6.65 kB │ gzip:   1.96 kB
+dist/server/assets/_tanstack-start-manifest_v-C8w2rDUs.js             6.66 kB │ gzip:   1.25 kB
+dist/server/assets/Site-f4PxsPfU.js                                   6.94 kB │ gzip:   1.79 kB
+dist/server/assets/link-Cpfe5mFJ.js                                   8.15 kB │ gzip:   2.89 kB
+dist/server/assets/useSelector-BJo7PhSp.js                            9.21 kB │ gzip:   2.56 kB
+dist/server/assets/signin.local-Bkfs9GZV.js                          10.16 kB │ gzip:   2.68 kB
+dist/server/assets/Match-BfArCCdD.js                                 11.83 kB │ gzip:   3.07 kB
+dist/server/assets/lazyRouteComponent-SMwKQ5Be.js                    12.44 kB │ gzip:   3.01 kB
+dist/server/assets/invariant-C0W5bQeQ.js                             13.29 kB │ gzip:   5.07 kB
+dist/server/assets/jsx-runtime-DvnkHMvo.js                           18.56 kB │ gzip:   4.99 kB
+dist/server/assets/forms-BDkFPvcI.js                                 21.40 kB │ gzip:   6.32 kB
+dist/server/assets/bundle-CqfKT2ix.js                                23.39 kB │ gzip:   7.30 kB
+dist/server/assets/manifest-CH6ESCBA.js                             109.96 kB │ gzip:  26.70 kB
+dist/server/assets/OnCallScreen-B_CiYDIN.js                         147.66 kB │ gzip:  31.58 kB
+dist/server/assets/pages-CoNJ2r8y.js                                345.72 kB │ gzip:  95.48 kB
+dist/server/assets/undo-snapshot-DguF1IdG.js                        438.29 kB │ gzip: 110.85 kB
+dist/server/assets/domain-C789jHAM.js                               568.20 kB │ gzip: 140.33 kB
+dist/server/assets/router-aogQ6DcY.js                               671.29 kB │ gzip: 131.96 kB
+dist/server/index.js                                              2,627.13 kB │ gzip: 638.69 kB
+
+[INEFFECTIVE_DYNAMIC_IMPORT] src/agent-door/index.server.ts is dynamically imported by src/agent-door/rest.ts, src/automation/dispatch.ts but also statically imported by src/server.ts, dynamic import will not move module into another chunk.
+
+✓ built in 2.02s
+Generated management/integration/deployment-spec.json from the built Worker and source policy.
+Your application is built
+build: complete (exit 0)

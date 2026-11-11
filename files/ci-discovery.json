@@ -1,0 +1,16 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "2be483ab7374229a404e5df705b907688bdb6a39",
+  "command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=2be483ab7374229a404e5df705b907688bdb6a39&per_page=100",
+  "runs": [
+    {
+      "id": 43100175114,
+      "name": "Verify",
+      "head_sha": "2be483ab7374229a404e5df705b907688bdb6a39",
+      "event": "push",
+      "status": "queued",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43100175114"
+    }
+  ]
+}

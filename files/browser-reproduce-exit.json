@@ -1,0 +1,5 @@
+{
+  "head": "2be483ab7374229a404e5df705b907688bdb6a39",
+  "command": "node tests/product-browser.mjs",
+  "exit": 0
+}

@@ -1,0 +1,8 @@
+{
+  "head": "2be483ab7374229a404e5df705b907688bdb6a39",
+  "command": "npx -y @runeditrun/rer verify --non-interactive",
+  "timeoutSeconds": 5400,
+  "exit": 1,
+  "startedAt": "2026-11-11T21:06:13Z",
+  "endedAt": "2026-11-11T21:28:13.352427+00:00"
+}

@@ -1,0 +1,146 @@
+{
+  "head": "2be483ab7374229a404e5df705b907688bdb6a39",
+  "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium timeout 1200 node tests/transfer.mjs",
+  "exit": 0,
+  "observations": [
+    {
+      "clause": "OC-010",
+      "category": "local",
+      "outcome": "passed",
+      "recordedAt": "2026-11-11T21:05:53.373Z",
+      "provenance": {
+        "kind": "maintained-journey",
+        "journey": "tests/transfer.mjs: managed installation transfer",
+        "execution": "local",
+        "accountDeployment": false
+      },
+      "build": {
+        "sourceSha": "2be483ab7374229a404e5df705b907688bdb6a39",
+        "fingerprint": "f647313d796ef86733efdc93c5f5fa1501bfc7e2336506436d2a2df9f79d88d0"
+      },
+      "observations": {
+        "commands": [
+          {
+            "verb": "setup",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "check",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "check",
+            "exitCode": 1,
+            "expectedExitCode": 1
+          },
+          {
+            "verb": "check",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "build",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "preview",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "deploy",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "export",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "import",
+            "exitCode": 4,
+            "expectedExitCode": 4
+          },
+          {
+            "verb": "export",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "reset",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "import",
+            "exitCode": 2,
+            "expectedExitCode": 2
+          },
+          {
+            "verb": "import",
+            "exitCode": 1,
+            "expectedExitCode": 1
+          },
+          {
+            "verb": "import",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "setup",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "export",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "export",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "reset",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "import",
+            "exitCode": 1,
+            "expectedExitCode": 1
+          },
+          {
+            "verb": "import",
+            "exitCode": 4,
+            "expectedExitCode": 4
+          },
+          {
+            "verb": "import",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          },
+          {
+            "verb": "reset",
+            "exitCode": 0,
+            "expectedExitCode": 0
+          }
+        ],
+        "populatedRestore": "passed",
+        "inactiveAuthority": "passed",
+        "erasureFences": "passed",
+        "invalidArchiveRefusals": "passed",
+        "currentArchiveRetainsErasure": true
+      }
+    }
+  ],
+  "probes": [
+    "PROBE OC-018 build: pinned rer build after removing dist -> exit 0, production Worker and client assets, no dev identity or private settings, exact settings restoration",
+    "PROBE OC-018 deploy dry-run: stopped dev and preview, no Cloudflare or mail credentials -> exit 0, local-only completion, no deployment record, clean production artifacts and exact private settings restoration"
+  ]
+}

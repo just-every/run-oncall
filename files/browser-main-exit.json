@@ -1,0 +1,7 @@
+{
+  "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "command": "node tests/product-browser.mjs",
+  "buildCommand": "npx -y @runeditrun/rer build --non-interactive",
+  "buildExit": 0,
+  "exit": 1
+}

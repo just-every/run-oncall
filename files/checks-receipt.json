@@ -1,0 +1,261 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f224",
+  "head": "2be483ab7374229a404e5df705b907688bdb6a39",
+  "baselineMain": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "checks": [
+    {
+      "command": "node --check tests/transfer.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "timeout 1200 node tests/transfer.mjs",
+      "exit": 0,
+      "runtimeChromium": "/usr/bin/chromium",
+      "receipt": "transfer-receipt.json"
+    },
+    {
+      "command": "npx -y @runeditrun/rer verify --non-interactive",
+      "exit": 1,
+      "receipt": "verify-receipt.json"
+    }
+  ],
+  "testRegistrationDelta": 0,
+  "newEmailShapedStrings": 0,
+  "contractStatusRowsPreserved": 101,
+  "contractUnchanged": true,
+  "generatedViewsUnchanged": true,
+  "fullHistory": true,
+  "migrationLedger": "not applicable; no migration changed",
+  "ci": {
+    "id": 43100175114,
+    "event": "push",
+    "conclusion": "success",
+    "head_sha": "2be483ab7374229a404e5df705b907688bdb6a39",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43100175114",
+    "status": "completed"
+  },
+  "counts": {
+    "actualBefore": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34
+    },
+    "actualProductAfter": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34
+    },
+    "ifOC018Accepted": {
+      "done": 23,
+      "partial": 44,
+      "missing": 34
+    }
+  },
+  "publicationScan": {
+    "commit": "2be483ab7374229a404e5df705b907688bdb6a39",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "custody": "not run in cloud; fleet lander required"
+  },
+  "mainEquality": false,
+  "mainVerify": {
+    "id": 43085467285,
+    "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+    "event": "push",
+    "conclusion": "success"
+  },
+  "mainRunSite": {
+    "id": 43085467371,
+    "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+    "event": "push",
+    "conclusion": "success"
+  },
+  "initialAttempt": {
+    "head": "647ff01ebc0154902d997a57d84d320e59552890",
+    "command": "node tests/transfer.mjs",
+    "exit": 1,
+    "failure": "Existing phone smoke had no Chromium executable path; final attempt set ONCALL_CHROMIUM_PATH=/usr/bin/chromium and passed without changing that assertion."
+  },
+  "fieldProof": {
+    "register": "R-1",
+    "state": "dated prior passed evidence",
+    "date": "2026-10-19",
+    "executedInThisRun": false,
+    "providerOperationAuthorized": false
+  },
+  "runtime": {
+    "outerNode": "24.19.0",
+    "rerProjectNode": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.108",
+    "chromium": "154.0.8037.57",
+    "browserExecutable": "/usr/bin/chromium",
+    "browserArgs": [
+      "--no-sandbox"
+    ],
+    "note": "The CLI browser cache executables delegate to the same system Chromium; browser assertions are unchanged."
+  },
+  "initialFullVerify": {
+    "head": "2be483ab7374229a404e5df705b907688bdb6a39",
+    "command": "npx -y @runeditrun/rer verify --non-interactive",
+    "timeoutSeconds": 5400,
+    "exit": 1,
+    "startedAt": "2026-11-11T21:06:13Z",
+    "endedAt": "2026-11-11T21:28:13.352427+00:00"
+  },
+  "browserCandidateReplay": {
+    "head": "2be483ab7374229a404e5df705b907688bdb6a39",
+    "command": "node tests/product-browser.mjs",
+    "exit": 0
+  },
+  "browserMainComparison": {
+    "head": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+    "command": "node tests/product-browser.mjs",
+    "buildCommand": "npx -y @runeditrun/rer build --non-interactive",
+    "buildExit": 0,
+    "exit": 1
+  },
+  "localTransportFailure": {
+    "failure": "apiRequestContext.get: socket hang up (ECONNRESET) on GET /api/paging/state",
+    "test": "tests/product-browser-journey.mjs:629",
+    "candidateReplay": "passed",
+    "mainComparison": "same browser journey also fails on baseline main with support-hours sample request timeout",
+    "relevantSourceDiff": "empty",
+    "productRepair": "none",
+    "ciRerun": "none"
+  },
+  "reportedAt": "2026-11-11T21:41:37.679297+00:00",
+  "logFiles": {
+    "browser-candidate-replay.log": {
+      "bytes": 20407,
+      "sha256": "243b99164584014590a7ef5083343f3a9b2cf66ecc1102ee4e6c0d949d1ea4e9"
+    },
+    "browser-main-comparison.log": {
+      "bytes": 3187,
+      "sha256": "39a8f36346fb31b600b3f77b1f71d0cfd716f574b987dd0584db5ab58ecf9715"
+    },
+    "contract-views.log": {
+      "bytes": 98,
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    },
+    "first-party.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "main-build.log": {
+      "bytes": 16063,
+      "sha256": "a036382dde76eb8c312d39fc4f0a85710f4c5969a1a9919528225a627abc19a8"
+    },
+    "product-push.log": {
+      "bytes": 719,
+      "sha256": "956d913559f0e4ab0c688cd194ca7ea469ad8c5aaca97a045eb098446cc13bce"
+    },
+    "transfer-initial-browser-prerequisite.log": {
+      "bytes": 1903,
+      "sha256": "fc3c8586a12a7221dd509e1743bd7785547997ee4f013211db03d365c6ad14c3"
+    },
+    "transfer.log": {
+      "bytes": 5297,
+      "sha256": "128fa8b7439ef31c2d2ff53fc981486c829bd8075ce4cf1759ad6f7bc5153c4b"
+    },
+    "typecheck.log": {
+      "bytes": 182,
+      "sha256": "9b0b3594186bafc8dab911d0c747824f1d6b96686af29dd61cb9871a699c6700"
+    },
+    "verify-first-transport-failure.log": {
+      "bytes": 217317,
+      "sha256": "64031f926163881d6342fa873d6094fc2bd9882b26726e8886fea74b4d0479b8"
+    },
+    "verify.log": {
+      "bytes": 217317,
+      "sha256": "64031f926163881d6342fa873d6094fc2bd9882b26726e8886fea74b4d0479b8"
+    }
+  },
+  "riders": [
+    {
+      "row": 1,
+      "result": "PASS",
+      "proof": "tests/transfer.mjs L103-L168, L209-L240, L445-L534; tests/member-coordination-browser.mjs L24-L58, L481-L498; push Verify 43100175114 success"
+    },
+    {
+      "row": 2,
+      "result": "PASS",
+      "proof": "Populated transfer, bad and nonempty archive refusal, erasure-journal rejection, exact settings preservation and credential exclusion; tests/transfer.mjs L445-L534, L575-L663"
+    },
+    {
+      "row": 3,
+      "result": "PASS",
+      "proof": "Existing push matrix transfer and browser lanes invoke both maintained journeys; exact-SHA push Verify 43100175114 success"
+    },
+    {
+      "row": 4,
+      "result": "PASS",
+      "proof": "Transfer and complete browser replay passed on exact candidate 2be483ab7374229a404e5df705b907688bdb6a39; full CI Verify green; local full attempt retains its nonzero transport-flake receipt"
+    },
+    {
+      "row": 5,
+      "result": "PASS INSPECTED",
+      "proof": "CONTRACT.md L100 explicitly cites BASE-INSTALL-001, BASE-ACCESS-001, BASE-ACCESS-002 and register R-1; receiving requirements unchanged"
+    },
+    {
+      "row": 6,
+      "result": "PASS MECHANICAL",
+      "proof": "Contract generator write and check exit 0; source status and stale Gap remain main-owned and are reconciled by lander claim, not builder edits"
+    },
+    {
+      "row": 7,
+      "result": "PASS INSPECTED",
+      "proof": "No CONTRACT.md change, acceptance rewrite, ID allocation or coverage loss; all 101 rows retained"
+    },
+    {
+      "row": 8,
+      "result": "PASS",
+      "proof": "Allowed local commands complete; private values and development identity excluded; rejected restore and revoked member access change no authority; tests/transfer.mjs L474-L534 and tests/member-coordination-browser.mjs L481-L496; Verify 43100175114"
+    },
+    {
+      "row": 9,
+      "result": "PASS",
+      "proof": "No provider or legal qualification inferred; CONTRACT.md L1380 R-1 remains dated prior 19 October evidence, not repeated; no account operation"
+    },
+    {
+      "row": 10,
+      "result": "PASS INSPECTED",
+      "proof": "No new policy default or authority rule; documented existing pinned CLI behavior only"
+    },
+    {
+      "row": 11,
+      "result": "PENDING GUARDED LANDER",
+      "proof": "Candidate branch only; main equality false at handoff, candidate Run site and COMPLETE publication scan not run in cloud; baseline main Verify 43085467285 and Run site 43085467371 were success"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "head": "2be483ab7374229a404e5df705b907688bdb6a39",
+  "files": {
+    "tests/transfer.mjs": "28c9c9983db3366fce83740382e23bed9bcb4f3021fcc4441f04d703e43321a0",
+    "tests/member-coordination-browser.mjs": "a2072d8e119ef4d99725238ad30096e8b5e359c8cd055160148cd68f10499253",
+    "tests/product-browser-journey.mjs": "fa1337e88de82aac0b2bba3d5e92fa5e753682a6702b4c8d61672ad79559cb8d",
+    "scripts/installer/local.mjs": "d229e80f567f08f73880367c8230cb8248149bf9069057ca50f7ef46ce4b91e9",
+    "scripts/installer/seed.mjs": "7bd4e291b926f9744cf262a2bb119502fe7506a8f142a67409c0b32293c949f9",
+    "OPERATIONS.json": "d8d28fe99c45ac0e20c8969c007d695ae57cbfacff9795173c6a78137843688c",
+    "OPERATIONS.md": "9cb9b2d7c4979aa08dd535d826b66661ef981eb0247aab3f68390ef80b63f220",
+    "SEED-COMMAND-CONTRACT.md": "02b9de32ab677d478b2c24bb3b738b327febdcee430f21c2e12ca8b1c82d8471",
+    "AGENTS.md": "7ece9c4e5df92c8496e68751339062eeb5c772741659613862052b7ff1ef8a3b",
+    "CONTRACT.md": "18eeac1c52740d240c9c82de27ff3ef90f22e2fd82749c256367781a15731e79",
+    "sources.lock.json": "70783cc3d30f92e50acb287b3814f9903a0d806e3ccd7c83371ee21d10a12ee4"
+  },
+  "unchangedContract": true,
+  "unchangedMemberJourney": true,
+  "browserMainComparison": {
+    "candidateHead": "2be483ab7374229a404e5df705b907688bdb6a39",
+    "mainHead": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+    "relevantDiffEmpty": true,
+    "files": {
+      "tests/product-browser.mjs": {
+        "candidateSha256": "a1b588702a9542d882b97889be365b80ca9fe245bd0da992bb3ff1eb67b848a2",
+        "mainSha256": "a1b588702a9542d882b97889be365b80ca9fe245bd0da992bb3ff1eb67b848a2"
+      },
+      "tests/product-browser-journey.mjs": {
+        "candidateSha256": "fa1337e88de82aac0b2bba3d5e92fa5e753682a6702b4c8d61672ad79559cb8d",
+        "mainSha256": "fa1337e88de82aac0b2bba3d5e92fa5e753682a6702b4c8d61672ad79559cb8d"
+      },
+      "tests/worker.mjs": {
+        "candidateSha256": "35232262cbaeda53598b6e4d35b5145a1e38740503d08bdf4ebe7e5f58ca6c7e",
+        "mainSha256": "35232262cbaeda53598b6e4d35b5145a1e38740503d08bdf4ebe7e5f58ca6c7e"
+      }
+    }
+  }
+}
