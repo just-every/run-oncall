@@ -1,7 +1,7 @@
 import type { Bindings } from './auth.server'
 import { admit, command, empty, type Incident, type Member, type State } from './family/response-operations/domain'
 import { validatePolicy } from './family/response-operations/escalation'
-import { coverage, validateSchedule, type Override, type Schedule } from './family/response-operations/schedules'
+import { coverage, resolveLocal, validateSchedule, type Override, type Schedule } from './family/response-operations/schedules'
 import { commitPaging, pagingSnapshot, putPolicy, putSchedule } from './paging-store'
 import { workspaceRows } from './workspace-store'
 
@@ -106,12 +106,15 @@ export async function seedDemo(env: Bindings, { now: seededAt }: { ownerEmail: s
       backup: { anchorLocal: anchor(now, zone, hour, 5), periodDays: 7, members: backup, ambiguity: 'earlier' as const } }
     return validateSchedule({ ...base, overrides: overrides(validateSchedule(base, state)) }, state)
   }
+  // Sample covers use the rota's Monday boundary, not the demo launch minute.
+  // Resolve each week in its named zone so DST keeps the stated local hour.
+  const boundary = (schedule: Schedule, weeksAhead: number) => resolveLocal(anchor(now, schedule.timezone, Number(schedule.primary.anchorLocal.slice(11, 13)), -weeksAhead), schedule.timezone, 'earlier')!;
   const checkout = rota('checkout-weekly', 'Checkout API weekly rota', 'checkout-api', 'America/New_York', 9, [priya.id, marcus.id, elena.id, sam.id], [elena.id, sam.id, priya.id, marcus.id], schedule => [
-    { id: 'swap-last-week', role: 'primary', start: iso(now - 12 * DAY), end: iso(now - 11 * DAY), member: standIn(schedule, members, now - 12 * DAY + 12 * HOUR) },
-    { id: 'cover-next-week', role: 'backup', start: iso(now + 2 * DAY), end: iso(now + 4 * DAY), member: standIn(schedule, members, now + 3 * DAY) },
+    { id: 'swap-last-week', role: 'primary', start: iso(boundary(schedule, -1)), end: iso(boundary(schedule, 0)), member: standIn(schedule, members, boundary(schedule, -1)) },
+    { id: 'cover-next-week', role: 'backup', start: iso(boundary(schedule, 1)), end: iso(boundary(schedule, 2)), member: standIn(schedule, members, boundary(schedule, 1)) },
   ])
   const payments = rota('payments-weekly', 'Payments worker weekly rota', 'payments-worker', 'Europe/London', 10, [elena.id, admin.id, sam.id], [sam.id, elena.id, admin.id], schedule => [
-    { id: 'conference-cover', role: 'primary', start: iso(now + 5 * DAY), end: iso(now + 7 * DAY), member: standIn(schedule, members, now + 6 * DAY) },
+    { id: 'conference-cover', role: 'primary', start: iso(boundary(schedule, 1)), end: iso(boundary(schedule, 2)), member: standIn(schedule, members, boundary(schedule, 1)) },
   ])
 
   const token = crypto.randomUUID()
