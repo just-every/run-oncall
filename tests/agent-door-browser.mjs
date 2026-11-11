@@ -305,7 +305,7 @@ try{
  console.log('PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry');
  // The real signed-in URL holds each recorded deadline effect for its sponsor.
  for(const change of ['snooze','cancel-deadline','expire-deadline']){
-  await runtime.time(null);
+  await runtime.time(Date.parse('2026-11-04T12:00:00.000Z'));
   assert.equal((await runtime.adopt()).status,200);
   const {incident:target,deadline,args}=await deadlineTarget(runtime,change,'browser '+change);
   if(change==='expire-deadline')await runtime.time(Date.parse(deadline.dueAt)+1);
@@ -330,7 +330,11 @@ try{
    await page.locator('details').getByText('Details',{exact:true}).click();
    await page.getByText(/running services/).first().waitFor();
   });
-  await page.goto(runtime.origin+path);await page.getByRole('button',{name:'Approve',exact:true}).click();
+  await page.goto(runtime.origin+path);
+  const submission=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname.endsWith('/approve'));
+  await page.getByRole('button',{name:'Approve',exact:true}).click();
+  const posted=(await submission).postDataJSON();
+  assert.equal(posted.revision,saved.revision);assert.equal(posted.summary_sha256,saved.summary_sha256);
   await page.locator('[data-approval-state="executed"]').waitFor();
   const after=await native(),current=after.incidents.find(row=>row.id===target.id);
   assert.equal(after.revision,before.revision+1);

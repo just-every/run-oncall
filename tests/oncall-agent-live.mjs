@@ -1,7 +1,19 @@
 import assert from 'node:assert/strict';
 import {randomBytes,randomUUID} from 'node:crypto';
+import {auditRows} from '../src/modules/agent-door/conformance/audit-pages.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 import {recoveredResolutionTarget,manualPageFixture,manualPageClasses,manualPageSnapshot,manualPagePolicy,deadlineTarget} from './oncall-agent-fixtures.mjs';
+
+/** Use the existing public audit cursor reader after earlier native journeys. */
+async function decisionAudit(runtime, id) {
+ const {rows,differs}=await auditRows({agentId:runtime.context.agentId,personJson:async path=>{
+  const response=await runtime.http(path);assert.equal(response.status,200);return response.json();
+ }});
+ assert.equal(differs,0);
+ const row=rows.find(row=>row.id===id);
+ assert.ok(row,'The decision is retained in the complete public audit');
+ return row;
+}
 
 /** Existing manual-page updates carry live even while physical paging is off. */
 export async function manualPageClassification(runtime) {
@@ -12,7 +24,8 @@ export async function manualPageClassification(runtime) {
  const owner=(await read('/api/workspace')).member;
  const responder=(await read('/api/state')).members.find(row=>row.role==='responder');
  const snapshot=()=>manualPageSnapshot(runtime);
- const audit=async answer=>(await read('/agents/api/audit?agent='+encodeURIComponent(context.agentId))).rows.find(row=>row.id===answer.decision.id);
+ const audit=answer=>decisionAudit(runtime,answer.decision.id);
+ assert.equal((await adopt()).status,200);
  const listed=(await runtime.mcp('tools/list')).result.tools.find(row=>row.name===name);
  assert.deepEqual(listed._meta['com.runeditrun/classes'],['standard','sensitive','live']);
  assert.deepEqual(listed._meta['com.runeditrun/classes'],context.surface.tools.find(row=>row.name===name).classes);
@@ -23,6 +36,21 @@ export async function manualPageClassification(runtime) {
  const update=await tool(name,{change:'transition',incident:control.id,revision:control.revision,state:'mitigating',summary:'Continue native coordination',idempotency_key:randomUUID()});
  assert.equal(update.result?.isError,false,JSON.stringify(update.body));
  assert.deepEqual(facts(update),[{class:'standard',facts:{measure:1}},{class:'sensitive',facts:{measure:2,kind:'personal_or_incident_evidence'}}]);
+ const nonpaging=autonomousPolicy();nonpaging.rules.unshift({id:'nonpaging-live-block',class:'live',do:'blocked'});
+ assert.equal((await adopt(nonpaging)).status,200);
+ let currentControl=update.result.structuredContent;
+ for(const input of [
+  {change:'reassign',member:responder.id,reason:'Keep native responsibility inside coordination'},
+  {change:'assign-role',role:'scribe',member:responder.id,reason:'Record a coordination role'},
+ ]){
+  const changed=await tool(name,{...input,incident:control.id,revision:currentControl.revision,idempotency_key:randomUUID()});
+  assert.equal(changed.result?.isError,false,JSON.stringify(changed.body));
+  assert.deepEqual(facts(changed),facts(update),'Nonpaging role and responsibility updates add no live class');
+  currentControl=changed.result.structuredContent;
+ }
+ const note=await tool('oncall.notes.add',{incident:control.id,revision:currentControl.revision,text:'Literal coordination note; this does not page anyone',idempotency_key:randomUUID()});
+ assert.equal(note.result?.isError,false,JSON.stringify(note.body));assert.deepEqual(facts(note),facts(update));
+
  for(const [mode,policy] of [['autonomous',autonomousPolicy()],['held',heldPolicy()]]){
   for(const target of ['user','policy']){
    const args=manualPageFixture(target==='user'?responder.id:undefined,`Synthetic ${mode} ${target} coordination`);
@@ -39,7 +67,11 @@ export async function manualPageClassification(runtime) {
    assert.deepEqual(refusedAudit.ignored_arguments,['class','confirm','confirmExternal','internal']);
    assert.deepEqual(await snapshot(),before,'Live refusal changes no application record, revision, timeline, manual obligation, paging job or receipt');
    assert.equal((await adopt(policy)).status,200);
-   const ready=await snapshot(),answer=await tool(name,args);
+   const ready=await snapshot();
+   args.expected_revision=ready.application.revision;
+   const staleExpected=await tool(name,{...args,expected_revision:args.expected_revision-1,idempotency_key:randomUUID()});
+   assert.equal(code(staleExpected),'revision_conflict');assert.deepEqual(await snapshot(),ready);
+   const answer=await tool(name,args);
    assert.deepEqual(facts(answer),manualPageClasses);
    assert.equal(answer.decision.disposition,mode==='held'?'approval':'autonomous');
    let pending;
@@ -74,6 +106,11 @@ export async function manualPageClassification(runtime) {
    const retry=await tool(name,args);assert.equal(retry.result?.isError,false,JSON.stringify(retry.body));
    assert.deepEqual(retry.result.structuredContent,incident);assert.deepEqual(facts(retry),manualPageClasses);
    assert.deepEqual(await snapshot(),once,'Identical retry creates no second recorded operation or application commit');
+   assert.equal((await adopt(blocked)).status,200);
+   const blockedRetry=await tool(name,args);
+   assert.equal(code(blockedRetry),'policy_blocked');assert.deepEqual(facts(blockedRetry),manualPageClasses);
+   assert.equal(blockedRetry.result.structuredContent,undefined);assert.deepEqual(await snapshot(),once);
+
    assert.deepEqual(await runtime.outboundRequests(),[],'Manual recording never attempts provider egress');
    console.log(`PROBE SURFACE-002 8 ${mode} ${target}: emitted MCP manual-page -> standard and live with service agent-service; isolated live block unchanged; ${pending?'exact saved approval, ':''}one attributed recorded obligation, effect-free retry, paging OFF and zero outbound requests`);
   }
@@ -114,10 +151,32 @@ export async function manualPageClassification(runtime) {
  // Native service-account scope must also cover a policy's service.
  const credential='synthetic-oncall-manual-client-credential-material';
  const clientResponse=await http('/api/automation/clients',{name:'Synthetic scoped manual writer',key:credential,services:['agent-service'],permissions:['incidents:write']});
- assert.equal(clientResponse.status,201);await clientResponse.body?.cancel();
+ assert.equal(clientResponse.status,201);const client=await clientResponse.json();
  const nativeBefore=await snapshot();
  const scoped=await tool(name,{...manualPageFixture(),policy:'agent-foreign-service'},{},credential);
  assert.equal(code(scoped),'not_found');assert.deepEqual(await snapshot(),nativeBefore);
+ // A named user also carries its configured escalation policy in recorded custody.
+ const assignment=await http('/api/command',{type:'user-assignment',service:'agent-service',baseVersion:0,mode:'escalate',minutes:10,policy:'agent-foreign-service'});
+ assert.equal(assignment.status,200);await assignment.body.cancel();
+ const assignedBefore=await snapshot(),assignedArgs=manualPageFixture(responder.id,'Synthetic cross-service assignment');
+ const assignedRefusal=await tool(name,assignedArgs,{},credential);
+ assert.equal(code(assignedRefusal),'not_found');assert.deepEqual(await snapshot(),assignedBefore);
+ const assigned=await tool(name,assignedArgs);
+ assert.equal(assigned.result?.isError,false,JSON.stringify(assigned.body));
+ assert.deepEqual(facts(assigned),[{class:'standard',facts:{measure:1}},{class:'live',facts:{measure:1,service:'agent-foreign-service, agent-service'}}]);
+ assert.equal(assigned.result.structuredContent.manualPage.obligations[0].assignment.policy,'agent-foreign-service');
+ const reset=await http('/api/command',{type:'user-assignment',service:'agent-service',baseVersion:1,mode:'escalate',minutes:10,policy:'agent-service'});
+ assert.equal(reset.status,200);await reset.body.cancel();
+ const clientArgs=manualPageFixture(responder.id,'Synthetic native client manual custody');
+ const clientPage=await tool(name,clientArgs,{},credential);
+ assert.equal(clientPage.result?.isError,false,JSON.stringify(clientPage.body));assert.deepEqual(facts(clientPage),manualPageClasses);
+ const revoked=await http('/api/automation/clients/'+client.id+'/revoke',{revision:client.revision});
+ assert.equal(revoked.status,200);await revoked.body.cancel();
+ const revokedBefore=await snapshot(),revokedReplay=await tool(name,clientArgs,{},credential);
+ assert.equal(revokedReplay.status,401);assert.equal(revokedReplay.result?.structuredContent,undefined);
+ assert.deepEqual(await snapshot(),revokedBefore,'Revoked client cannot recover or repeat its recorded manual operation');
+
+
  const authorityPassword='synthetic-oncall-manual-authority-password';
  const authorityResponse=await http('/api/members',{name:'Synthetic manual authority administrator',role:'admin',password:authorityPassword});
  assert.equal(authorityResponse.status,201);const authority=await authorityResponse.json();
@@ -155,7 +214,7 @@ export async function deadlineClassification(runtime) {
  assert.equal(foreignClient.status,201);await foreignClient.body.cancel();
  const expected=[{class:'standard',facts:{measure:1}},{class:'sensitive',facts:{measure:2,kind:'personal_or_incident_evidence'}},{class:'live',facts:{measure:1,service:'agent-service'}}];
  for(const mode of ['autonomous','held'])for(const change of ['snooze','cancel-deadline','expire-deadline']){
-  await runtime.time(null);
+  await runtime.time(Date.parse('2026-11-04T12:00:00.000Z'));
   assert.equal((await adopt()).status,200);
   const {incident,deadline,args}=await deadlineTarget(runtime,change,mode+' '+change);
   if(change==='expire-deadline'){
@@ -250,7 +309,7 @@ export async function deadlineClassification(runtime) {
   assert.deepEqual(classes(retry),expected);
   assert.deepEqual(retry.result.structuredContent,saved);
   assert.deepEqual(await custody(),once,'Identical retry creates no second deadline, obligation or application audit commit');
-  const row=(await read('/agents/api/audit?agent='+encodeURIComponent(runtime.context.agentId))).rows.find(row=>row.id===answer.decision.id);
+  const row=await decisionAudit(runtime,answer.decision.id);
   assert.deepEqual(row.classes,expected);
   assert.deepEqual(await runtime.outboundRequests(),[],'Deadline changes attempt zero outbound requests');
   assert.equal((await adopt(blocked)).status,200);
@@ -259,6 +318,30 @@ export async function deadlineClassification(runtime) {
   assert.equal(stoppedReplay.result.structuredContent,undefined);assert.deepEqual(await custody(),once);
   console.log('PROBE SURFACE-002 acceptance 8 '+mode+' '+change+': emitted MCP -> standard, sensitive and live for validated agent-service; live-only policy refusal, stale and scope refusals, permanent-audit rollback, '+(mode==='held'?'no-effect pending and exact saved signed-in approval; ':'')+'one attributed recorded effect, identical retry and zero outbound requests');
  }
+
+ // A paging-only edit leaves incident revision intact but invalidates the held evidence.
+ for(const change of ['snooze','cancel-deadline','expire-deadline']){
+  await runtime.time(Date.parse('2026-11-04T12:00:00.000Z'));
+  assert.equal((await adopt()).status,200);
+  const {deadline,args}=await deadlineTarget(runtime,change,'stale paging '+change);
+  if(change==='expire-deadline')await runtime.time(Date.parse(deadline.dueAt)+1);
+  assert.equal((await adopt(heldPolicy())).status,200);
+  const pending=await tool(name,args);
+  assert.equal(pending.result?.resultType,'input_required');
+  const handle=pending.result._meta['com.runeditrun/approval'];
+  const saved=(await read('/agents/api/approvals/'+handle.id)).approval;
+  const policy=(await read('/api/paging/state')).policies.find(row=>row.service==='agent-service');
+  assert.ok(saved.summary.items.some(item=>item.startsWith('Paging revision ')));
+  const changed=await http('/api/paging/policies',{...policy,primaryWaitSeconds:policy.primaryWaitSeconds+1});
+  assert.equal(changed.status,200);await changed.body.cancel();
+  const before=await custody();
+  const approved=await http('/agents/api/approvals/'+handle.id+'/approve',{revision:saved.revision,summary_sha256:saved.summary_sha256});
+  assert.equal(approved.status,200);
+  const refused=(await approved.json()).approval;
+  assert.equal(refused.state,'refused');assert.equal(refused.code,'approval_evidence_changed');
+  assert.deepEqual(await custody(),before,'Stale paging evidence cannot execute a held deadline change');
+ }
+ console.log('PROBE SURFACE-002 acceptance 8 saved paging custody: all three held deadline changes refuse after a paging-only revision without a native effect');
  await runtime.time(null);
  assert.equal((await adopt()).status,200);
  }

@@ -101,7 +101,7 @@ export function coordinationTools(env: Bindings): ToolDefinition[] {
         const service = current.state.services.find(row => row.id === args.service)!
         return { kind: 'service', id: service.id }
       }),
-      revision: (args, ctx) => nativeCall(async () => { const { current, incident, manual } = await access(args, ctx); return manual ? `${current.state.revision}:${manual.pagingRevision}` : incident?.revision ?? current.state.revision }),
+      revision: (args, ctx) => nativeCall(async () => { const { current, incident } = await access(args, ctx); return incident?.revision ?? current.state.revision }),
       summary: (args, ctx) => nativeCall(async () => {
         const { current, incident, manual } = await access(args, ctx)
         const target = incident ?? current.state.services.find(row => row.id === args.service)!

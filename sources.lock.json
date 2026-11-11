@@ -148,7 +148,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "5d184872385f1ce6279f0cc66eb24ae50cbe9d30b5b6638445ca7816afe286c1",
+      "sha256": "ae2236c501a8eacde297b249490ae4392e38117f48913158edc35a922c469aef",
       "executable": false
     },
     "AGENTS.md": {
@@ -192,7 +192,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "ac116fb8f22f4f32fd45a7b677bc205de7758beecff19dcbe35035f3958186e0",
+      "sha256": "61ce45b850537f39f25237742814a25a4dae30dfddc5dd708e4ab6ccd702397f",
       "executable": false
     },
     "docs/audit.md": {
@@ -1680,7 +1680,7 @@
       "executable": false
     },
     "src/agent-door/coordination-tools.ts": {
-      "sha256": "e53d75d9078cfb1ffdb0cb516b803b46dc939943ac209a5d5e7915992218f3c9",
+      "sha256": "848123859239db0ce677f2fc82b55409d5511b564e90d024a61964dd67591118",
       "executable": false
     },
     "src/agent-door/deadlines.ts": {
@@ -6360,7 +6360,7 @@
       "executable": false
     },
     "tests/agent-door-browser.mjs": {
-      "sha256": "722852ec5d3dc3bba2b1468e84f516d382f9e12c6af715bfc7656108ad2b8498",
+      "sha256": "af456172c962f17bd83dedf0898ea1cbd2aff614d4fe41f11b020069ce9c16b3",
       "executable": false
     },
     "tests/agent-door-runtime.mjs": {
@@ -6557,6 +6557,10 @@
     },
     "tests/oncall-agent-incident-revisions.mjs": {
       "sha256": "e3f42a8f4e0bd19e08884493cbd81a07fb00f5d8af4e65c07ca4546cc6d3d7d0",
+      "executable": false
+    },
+    "tests/oncall-agent-live.mjs": {
+      "sha256": "11d356494695e25d975da7a8e15f3b11f1ab9490335925257c6f0b1c01c440b0",
       "executable": false
     },
     "tests/oncall-agent-native.mjs": {
