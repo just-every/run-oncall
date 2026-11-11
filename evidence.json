@@ -169,6 +169,18 @@
       "sha256": "095e7cc475c1564a944fce5577a8fda54a6d828042b3ed80934b982037727de5"
     },
     {
+      "blob": "ae96f0247583b364f217963a8313501709a5de29",
+      "bytes": 320,
+      "path": "evidence-initial-transfer-receipt.json",
+      "sha256": "b033a6b684a17fa8dfab1c3440459b59a2e726061f9c3d3d5fcd5c333b8a9250"
+    },
+    {
+      "blob": "909ab76b57dcf8b04c2ba8954dbbcc082ad46c28",
+      "bytes": 6978,
+      "path": "evidence-initial-transfer.log",
+      "sha256": "a86b2641b65acf7584e5650c8145d5c6e36094f7411326f07294b3aa74d60b8b"
+    },
+    {
       "blob": "0e3b857c351dd37a8c480f176f35767c78da7a0d",
       "bytes": 190760,
       "path": "initial-verification-failure.log",

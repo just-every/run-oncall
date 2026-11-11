@@ -1,0 +1,9 @@
+{
+  "repository": "just-every/run-oncall",
+  "ref": "refs/heads/evidence/sd-oncall-c-f227",
+  "head": "b440bfd7f08cbd3f0e6e76942110b21855d886d7",
+  "advertised_head_verified": true,
+  "packet_file_hashes_verified": 34,
+  "product_head": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "product_checkout_unchanged": true
+}
