@@ -1,0 +1,133 @@
+{
+  "stage": "after",
+  "rows": [
+    "Checkout APICheckout API weekly rota · Mondays 09:00 · America/New_YorkNowMarcus WebbBackup · Sam OkaforNext hand-overNov 16, 2026, 09:00 AM America/New_York (GMT-5)Nov 16, 2026, 02:00 PM UTC (GMT+0)Elena Rossi · backup Marcus WebbGaps this weekCovered",
+    "Payments workerPayments worker weekly rota · Mondays 10:00 · Europe/LondonNowSam OkaforBackup · OwnerNext hand-overNov 16, 2026, 10:00 AM Europe/London (GMT+0)Nov 16, 2026, 10:00 AM UTC (GMT+0)Priya Raman · backup Sam OkaforGaps this weekCovered"
+  ],
+  "proof": [
+    {
+      "width": 1440,
+      "path": "/on-call",
+      "bands": [
+        {
+          "text": "Marcus Webb",
+          "width": 835.296875
+        },
+        {
+          "text": "Elena Rossi",
+          "width": 130.6875
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 835.296875
+        },
+        {
+          "text": "Marcus Webb",
+          "width": 130.6875
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 812.296875
+        },
+        {
+          "text": "Priya Raman",
+          "width": 153.6875
+        },
+        {
+          "text": "Owner",
+          "width": 812.296875
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 153.6875
+        }
+      ],
+      "scroll": [
+        {
+          "client": 1114,
+          "scroll": 1114
+        }
+      ],
+      "listRows": 0,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "path": "/on-call/checkout-weekly",
+      "bands": [
+        {
+          "text": "Marcus Webb",
+          "width": 454.75
+        },
+        {
+          "text": "Elena Rossi",
+          "width": 630
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 175.234375
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 454.75
+        },
+        {
+          "text": "Marcus Webb",
+          "width": 630
+        },
+        {
+          "text": "Marcus Webb",
+          "width": 175.234375
+        }
+      ],
+      "scroll": [
+        {
+          "client": 870,
+          "scroll": 1408
+        }
+      ],
+      "listRows": 0,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "path": "/on-call",
+      "bands": [],
+      "scroll": [],
+      "listRows": 8,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "path": "/on-call/checkout-weekly",
+      "bands": [],
+      "scroll": [],
+      "listRows": 6,
+      "overflow": false
+    }
+  ],
+  "rules": [
+    {
+      "name": "Checkout API weekly rota",
+      "zone": "America/New_York",
+      "rule": {
+        "every": 7,
+        "weekday": "Monday",
+        "time": "09:00"
+      },
+      "next": "2026-11-16T14:00:00.000Z",
+      "local": "Monday 09:00"
+    },
+    {
+      "name": "Payments worker weekly rota",
+      "zone": "Europe/London",
+      "rule": {
+        "every": 7,
+        "weekday": "Monday",
+        "time": "10:00"
+      },
+      "next": "2026-11-16T10:00:00.000Z",
+      "local": "Monday 10:00"
+    }
+  ]
+}

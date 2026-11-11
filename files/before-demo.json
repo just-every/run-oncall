@@ -1,0 +1,221 @@
+{
+  "stage": "before",
+  "rows": [
+    "Checkout APICheckout API weekly rota · Mondays 09:00 · America/New_YorkNowMarcus WebbBackup · Sam OkaforNext hand-overNov 13, 2026, 07:28 AM America/New_York (GMT-5)Nov 13, 2026, 12:28 PM UTC (GMT+0)Marcus Webb · backup Priya RamanGaps this weekCovered",
+    "Payments workerPayments worker weekly rota · Mondays 10:00 · Europe/LondonNowSam OkaforBackup · OwnerNext hand-overNov 16, 2026, 10:00 AM Europe/London (GMT+0)Nov 16, 2026, 10:00 AM UTC (GMT+0)Elena Rossi · backup Sam OkaforGaps this weekCovered"
+  ],
+  "proof": [
+    {
+      "width": 1440,
+      "path": "/on-call",
+      "bands": [
+        {
+          "text": "Marcus Webb",
+          "width": 836.59375
+        },
+        {
+          "text": "Elena Rossi",
+          "width": 129.390625
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 413.78125
+        },
+        {
+          "text": "Priya Raman",
+          "width": 276
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 146.796875
+        },
+        {
+          "text": "Priya Raman",
+          "width": 129.390625
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 813.59375
+        },
+        {
+          "text": "Elena Rossi",
+          "width": 14.1875
+        },
+        {
+          "text": "Priya Raman",
+          "width": 138.203125
+        },
+        {
+          "text": "Owner",
+          "width": 813.59375
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 152.390625
+        }
+      ],
+      "scroll": {
+        "client": 1114,
+        "scroll": 1114
+      },
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "path": "/on-call/checkout-weekly",
+      "bands": [
+        {
+          "text": "Marcus Webb",
+          "width": 119.90625
+        },
+        {
+          "text": "Marcus Webb",
+          "width": 120
+        },
+        {
+          "text": "Marcus Webb",
+          "width": 63.828125
+        },
+        {
+          "text": "Elena Rossi",
+          "width": 420
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 116.25
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 119.90625
+        },
+        {
+          "text": "Priya Raman",
+          "width": 120
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 63.828125
+        },
+        {
+          "text": "Priya Raman",
+          "width": 420
+        },
+        {
+          "text": "Marcus Webb",
+          "width": 116.25
+        }
+      ],
+      "scroll": {
+        "client": 870,
+        "scroll": 988
+      },
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "path": "/on-call",
+      "bands": [
+        {
+          "text": "Marcus Webb",
+          "width": 467.65625
+        },
+        {
+          "text": "Elena Rossi",
+          "width": 72.328125
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 231.296875
+        },
+        {
+          "text": "Priya Raman",
+          "width": 154.28125
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 82.0625
+        },
+        {
+          "text": "Priya Raman",
+          "width": 72.328125
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 454.796875
+        },
+        {
+          "text": "Elena Rossi",
+          "width": 7.921875
+        },
+        {
+          "text": "Priya Raman",
+          "width": 77.25
+        },
+        {
+          "text": "Owner",
+          "width": 454.796875
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 85.1875
+        }
+      ],
+      "scroll": {
+        "client": 320,
+        "scroll": 688
+      },
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "path": "/on-call/checkout-weekly",
+      "bands": [
+        {
+          "text": "Marcus Webb",
+          "width": 119.90625
+        },
+        {
+          "text": "Marcus Webb",
+          "width": 120
+        },
+        {
+          "text": "Marcus Webb",
+          "width": 63.828125
+        },
+        {
+          "text": "Elena Rossi",
+          "width": 420
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 116.25
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 119.90625
+        },
+        {
+          "text": "Priya Raman",
+          "width": 120
+        },
+        {
+          "text": "Sam Okafor",
+          "width": 63.828125
+        },
+        {
+          "text": "Priya Raman",
+          "width": 420
+        },
+        {
+          "text": "Marcus Webb",
+          "width": 116.25
+        }
+      ],
+      "scroll": {
+        "client": 320,
+        "scroll": 988
+      },
+      "overflow": false
+    }
+  ]
+}

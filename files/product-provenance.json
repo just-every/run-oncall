@@ -1,0 +1,17 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-rota-timeline-1",
+  "head": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+  "tree": "cf28a0f618ef9fbb256c760d63d350833ac4b4fe",
+  "base": "0dac089dba93dc1209c3a2317d5e7a4392d44c4e",
+  "committed_files": [
+    "sources.lock.json",
+    "src/demo.ts",
+    "src/on-call/WeekBands.tsx",
+    "src/on-call/on-call.css",
+    "tests/activation.mjs",
+    "tests/product-browser-journey.mjs",
+    "tests/product-browser.mjs"
+  ],
+  "worktree_clean": true
+}

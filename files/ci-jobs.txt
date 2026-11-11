@@ -1,0 +1,13 @@
+{"conclusion":"success","failed_steps":[],"id":130529692519,"name":"plan","status":"completed"}
+{"conclusion":"success","failed_steps":[],"id":130529783692,"name":"build","status":"completed"}
+{"conclusion":"skipped","failed_steps":[],"id":130529786419,"name":"light","status":"completed"}
+{"conclusion":"success","failed_steps":[],"id":130531158254,"name":"shards (transfer)","status":"completed"}
+{"conclusion":"success","failed_steps":[],"id":130531158294,"name":"shards (triage)","status":"completed"}
+{"conclusion":"success","failed_steps":[],"id":130531158297,"name":"shards (browser)","status":"completed"}
+{"conclusion":"success","failed_steps":[],"id":130531158345,"name":"shards (changes)","status":"completed"}
+{"conclusion":"failure","failed_steps":["Run this shard"],"id":130531158355,"name":"shards (intake)","status":"completed"}
+{"conclusion":"success","failed_steps":[],"id":130531158368,"name":"shards (hosted)","status":"completed"}
+{"conclusion":"success","failed_steps":[],"id":130531158385,"name":"shards (runtime)","status":"completed"}
+{"conclusion":"failure","failed_steps":["Require the selected coverage and its proof"],"id":130536533914,"name":"verify","status":"completed"}
+{"conclusion":"skipped","failed_steps":[],"id":130536535859,"name":"nightly-proof","status":"completed"}
+{"conclusion":"skipped","failed_steps":[],"id":130536536505,"name":"full-push-proof","status":"completed"}

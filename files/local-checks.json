@@ -1,0 +1,67 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-rota-timeline-1",
+  "head": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+  "tree": "cf28a0f618ef9fbb256c760d63d350833ac4b4fe",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.txt"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "result": true
+    },
+    {
+      "command": "node tests/.oncall-demo-check.mjs (exact final demo activation block extracted from tests/activation.mjs; temporary runner removed)",
+      "exit": 0,
+      "log": "demo-http-test.txt"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=rota-timeline node tests/product-browser.mjs",
+      "exit": 0,
+      "log": "browser-test.txt"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "contract_counts_before": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_counts_after": {
+    "done": 22,
+    "partial": 45,
+    "missing": 34,
+    "total": 101
+  },
+  "verification_lane_entries_before": 16,
+  "verification_lane_entries_after": 16,
+  "new_registrations": 0,
+  "publication_scan": {
+    "status": "fleet Mac gate",
+    "reason": "Unavailable in this cloud by task instructions"
+  },
+  "pr": null,
+  "product_push": "first attempt succeeded",
+  "terminal_status": "BLOCKED",
+  "blocker": "Exact-SHA Verify 43022735176 failed twice in untouched agedReplayRetention member bootstrap (409 vs 201)",
+  "ci_attempts": 2,
+  "ci_run": 43022735176,
+  "github_calls_total": 10
+}

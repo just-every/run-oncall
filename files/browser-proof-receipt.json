@@ -1,0 +1,19 @@
+{
+  "product_head": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+  "screens": [
+    "/on-call",
+    "/on-call/checkout-weekly"
+  ],
+  "viewports": [
+    1440,
+    390
+  ],
+  "checks": [
+    "read complete demo rules and next hand-over DOM instants",
+    "both demo hand-overs match stated weekday and wall minute",
+    "all screenshots inspected",
+    "no page overflow at either viewport"
+  ],
+  "browser_closed": true,
+  "task_demo_server_stopped": true
+}

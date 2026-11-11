@@ -1,0 +1,80 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+  "calls": 4,
+  "run": 43022735176,
+  "observations": [
+    {
+      "timestamp": "2026-11-11T12:43:13.187649+00:00",
+      "id": 43022735176,
+      "name": "Verify",
+      "status": "queued",
+      "conclusion": null,
+      "head_sha": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43022735176"
+    },
+    {
+      "timestamp": "2026-11-11T12:48:13.811854+00:00",
+      "id": 43022735176,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43022735176"
+    },
+    {
+      "timestamp": "2026-11-11T12:53:14.428488+00:00",
+      "id": 43022735176,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43022735176"
+    },
+    {
+      "timestamp": "2026-11-11T12:58:15.201331+00:00",
+      "id": 43022735176,
+      "name": "Verify",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43022735176"
+    },
+    {
+      "timestamp": "2026-11-11T13:06:42.673995+00:00",
+      "id": 43022735176,
+      "name": "Verify",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "b2c7ebf9342581aff62bbd358147866c1134c5af",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43022735176",
+      "run_attempt": 2
+    }
+  ],
+  "api_calls_total": 10,
+  "diagnostic_calls": [
+    {
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43022735176/jobs",
+      "call": 5
+    },
+    {
+      "command": "gh run view 43022735176 --repo just-every/run-oncall --job 130531158355 --log-failed",
+      "call": 6
+    },
+    {
+      "command": "gh api --method POST repos/just-every/run-oncall/actions/runs/43022735176/rerun-failed-jobs",
+      "call": 7,
+      "accepted": true,
+      "at": "2026-11-11T12:59:12.097324+00:00"
+    },
+    {
+      "command": "gh api repos/just-every/run-oncall/actions/runs/43022735176/jobs",
+      "call": 9
+    },
+    {
+      "command": "gh run view 43022735176 --repo just-every/run-oncall --job 130537579161 --log-failed",
+      "call": 10,
+      "exit": 0
+    }
+  ]
+}

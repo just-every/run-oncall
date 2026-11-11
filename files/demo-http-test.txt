@@ -1,0 +1,6 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+PASS demoRotaRules: HTTP On call next hand-overs and sample cover endpoints agree with every stated local weekly rule
+PROBE OC-012 2: emitted demo HTML and GET /api/workspace beside simulated SMS, voice, push and email -> Demo decoration and title, demo=true, four simulated sent outcomes, no production receipt or outbound request
+Demo HTTP flow passed: acknowledgment, simulated SMS/voice/push/email and suppressed mail; auth and invalid incident checks remain real.
