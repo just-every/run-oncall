@@ -187,6 +187,8 @@ Completed team-manager edits retain native effect custody in the same transactio
 
 ## Declaration and proof limits
 
+Retained event listing supports cursor replay and checks current native read access for record events. Approval and review events retain their computed classes and decision IDs. Policy adoption events currently contain only sequence and revision metadata; their missing class and decision remain Base work under BASE-AGENT-010 acceptance 6. Subscriptions, UI-triggered notification timing and signed change webhooks remain unproved.
+
 The CORE declaration does not prove optional multi-sponsor, mail-edge, resource-refresh, timed, queued, dual-host or owner-native administration families. Built-in `oncall.events.list` is declared and follows current native resource access even while public resource reads are undeclared. Native tools and their complete security assertions still run.
 
 The contract generator preserves existing judgments. BASE-AGENT-003 (resources), BASE-AGENT-010 (complete change notifications and subscriptions), the optional parts of BASE-AGENT-001/013 and SURFACE-001/003 were missing before this adoption and remain unproved. No optional clause is promoted by declaring CORE.

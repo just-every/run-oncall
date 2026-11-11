@@ -192,7 +192,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "826bb0f48ff6aea9190a22906710c1e15ca7bfc9d3c0cb9aea148d0b6b7d4e93",
+      "sha256": "7de633f4420e46f78ff94955b85ce3e3b00879c0447b8073513d7e74b69b8bd5",
       "executable": false
     },
     "docs/audit.md": {
@@ -6541,6 +6541,10 @@
     },
     "tests/oncall-agent-erase-subjects.mjs": {
       "sha256": "96c32a10fe49f5321b11a9d19905e855aa78280001a5af5cb5900c0b4682e465",
+      "executable": false
+    },
+    "tests/oncall-agent-events.mjs": {
+      "sha256": "e7932dc7732e756f253d7de14a2fbe40f426e5f0272749ae78b0345e6f278f4a",
       "executable": false
     },
     "tests/oncall-agent-fixtures.mjs": {
