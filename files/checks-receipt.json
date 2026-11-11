@@ -1,0 +1,65 @@
+{
+  "head": "c92e49165b54b84c6e9df099de317882233c0602",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "receipt": "Observed RER_SETUP_READY; raw setup log excluded because setup can contain private local links."
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-lock.log"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=<packet>/browser node tests/product-browser.mjs",
+      "exit": 0,
+      "log": "events-source-browser.log",
+      "initial_exit": 1,
+      "initial_log": "events-source-browser-initial.log",
+      "fix": "Await enabled Copy ingress URL before reading the absolute URL; existing assertions retained."
+    },
+    {
+      "command": "node tests/oncall-agent-flow.mjs",
+      "exit": 0,
+      "log": "agent-flow.log",
+      "covers": [
+        "agedReplayRetention",
+        "droppedRoleAssignmentReplay commander under autonomous and held policies",
+        "existing agent native flow"
+      ]
+    },
+    {
+      "command": "fleet candidate identity/trailer audit",
+      "exit": 0,
+      "log": "identity-audit.log"
+    },
+    {
+      "command": "cloud-push.py origin cloud/main-oncall-events-sample-1-c1",
+      "exit": 0,
+      "log": "product-push.log"
+    }
+  ],
+  "full_local_verify": "Not run, per touched-check-only rule. Exact-SHA branch Verify is the full wall.",
+  "build_source_head": "c254d5dc053dcf28a1b97d5e256ac5451ba3229f",
+  "typecheck_source_head": "c254d5dc053dcf28a1b97d5e256ac5451ba3229f",
+  "final_browser_and_agent_head": "c92e49165b54b84c6e9df099de317882233c0602",
+  "note": "The follow-up after build/typecheck changes only the browser test synchronization and its source-lock hash; product and TypeScript sources are identical. CI builds and checks the exact candidate.",
+  "source_lock_check_exit": 0,
+  "source_lock_check_log": "source-lock-check.log"
+}

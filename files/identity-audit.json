@@ -1,0 +1,12 @@
+{
+  "head": "c92e49165b54b84c6e9df099de317882233c0602",
+  "candidate_commits": [
+    "c92e49165b54b84c6e9df099de317882233c0602",
+    "c254d5dc053dcf28a1b97d5e256ac5451ba3229f",
+    "5c3fcdae807d6cbd08fbe5521f9ba89ca1a5222d",
+    "3e696d8511db6218c52a394542f74a6d4e2e29d6"
+  ],
+  "all_identities": "fleet",
+  "trailers": "none or allowed",
+  "side_parents_included": true
+}

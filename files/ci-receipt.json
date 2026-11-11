@@ -1,0 +1,72 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "c92e49165b54b84c6e9df099de317882233c0602",
+  "calls": [
+    {
+      "number": 1,
+      "at": "2026-11-11T21:37:35.020380+00:00",
+      "endpoint": "repos/just-every/run-oncall/actions/runs?head_sha=c92e49165b54b84c6e9df099de317882233c0602&per_page=100",
+      "run": {
+        "id": 43104670031,
+        "name": "Verify",
+        "status": "queued",
+        "conclusion": null,
+        "head_sha": "c92e49165b54b84c6e9df099de317882233c0602",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43104670031",
+        "run_attempt": 1
+      }
+    },
+    {
+      "number": 2,
+      "at": "2026-11-11T21:42:36.022282+00:00",
+      "endpoint": "repos/just-every/run-oncall/actions/runs/43104670031",
+      "run": {
+        "id": 43104670031,
+        "name": "Verify",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "c92e49165b54b84c6e9df099de317882233c0602",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43104670031",
+        "run_attempt": 1
+      }
+    },
+    {
+      "number": 3,
+      "at": "2026-11-11T21:47:37.025676+00:00",
+      "endpoint": "repos/just-every/run-oncall/actions/runs/43104670031",
+      "run": {
+        "id": 43104670031,
+        "name": "Verify",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "c92e49165b54b84c6e9df099de317882233c0602",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43104670031",
+        "run_attempt": 1
+      }
+    },
+    {
+      "number": 4,
+      "at": "2026-11-11T21:52:38.027615+00:00",
+      "endpoint": "repos/just-every/run-oncall/actions/runs/43104670031",
+      "run": {
+        "id": 43104670031,
+        "name": "Verify",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "c92e49165b54b84c6e9df099de317882233c0602",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43104670031",
+        "run_attempt": 1
+      }
+    }
+  ],
+  "run": {
+    "id": 43104670031,
+    "name": "Verify",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "c92e49165b54b84c6e9df099de317882233c0602",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43104670031",
+    "run_attempt": 1
+  },
+  "result": "success"
+}

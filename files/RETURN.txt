@@ -1,0 +1,3 @@
+CLAIM OC-001 PARTIAL points=none tests=tests/product-browser.mjs#eventsSourceBrowser
+POST lanes/main/INBOX.md: main-oncall-events-sample-1-c1 READY; carried readable Events API sample and merged clock-fixed main; clause status changes none (22 done/45 partial/34 missing unchanged); head=c92e49165b54b84c6e9df099de317882233c0602; Verify=43104670031 success; no PR; reports published separately.
+READY branch=cloud/main-oncall-events-sample-1-c1 head=c92e49165b54b84c6e9df099de317882233c0602

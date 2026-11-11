@@ -1,0 +1,87 @@
+{
+  "head": "c92e49165b54b84c6e9df099de317882233c0602",
+  "journey": "tests/product-browser.mjs#eventsSourceBrowser",
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "result": "passed",
+  "screenshots": [
+    {
+      "file": "browser/events-created-1440.png",
+      "bytes": 137434,
+      "sha256": "25ffb05f298abfc86b3c5147a8cdf314c4c177c150f800702ce1b382907d108d"
+    },
+    {
+      "file": "browser/events-created-390.png",
+      "bytes": 99710,
+      "sha256": "66dc1676482ace52fd736887e8133c44be4a103a4070679ca96b9f80e782ce91"
+    },
+    {
+      "file": "browser/events-empty-source-1440.png",
+      "bytes": 154895,
+      "sha256": "3fee76043f2264270f0d73cbd81a547ea75d480dbbca1fafc3eb509124172cdf"
+    },
+    {
+      "file": "browser/events-empty-source-390.png",
+      "bytes": 104721,
+      "sha256": "68ac6971b1e08c37f7231f28917e3d28bbb831338e8b37bc6ffcf8f6e9f93711"
+    },
+    {
+      "file": "browser/events-readable-bearer-source-1440.png",
+      "bytes": 170497,
+      "sha256": "1f0c0462f81af6083b4bd892dee130033e16aa09feec474ed1ebd75022e367dd"
+    },
+    {
+      "file": "browser/events-readable-bearer-source-390.png",
+      "bytes": 115221,
+      "sha256": "c90c11e7a44787e8fce2a7afb446ba1b6a4b458decb50b00155a4927835e3303"
+    },
+    {
+      "file": "browser/events-readable-signed-source-1440.png",
+      "bytes": 146393,
+      "sha256": "db203e4112fa9b3eb7b3c5c131694ae3e70a31431a0e68aec1d50965c48d120d"
+    },
+    {
+      "file": "browser/events-readable-signed-source-390.png",
+      "bytes": 99375,
+      "sha256": "90047d4306ee32d0995648ae092fa9e47a889c915eafc106cd3442d6d7f7d8c9"
+    },
+    {
+      "file": "browser/events-recover-form-1440.png",
+      "bytes": 107520,
+      "sha256": "4f617b949bb831fdea5030842394c57ff4a2a0c450a347ab67d2128177d9b19c"
+    },
+    {
+      "file": "browser/events-recover-form-390.png",
+      "bytes": 79166,
+      "sha256": "2f5032ec6ed5a5dc3337fd03ed26b3b24af31d857f4a74503ef7433f49754d5d"
+    },
+    {
+      "file": "browser/events-recovered-alert-1440.png",
+      "bytes": 77395,
+      "sha256": "4478134fae55dbe876ef03069b98f748367546a40ff1826a119bd30b8ed07a17"
+    },
+    {
+      "file": "browser/events-recovered-alert-390.png",
+      "bytes": 44046,
+      "sha256": "f2f5aeb172ca5f6372f7d7272327ba176b77456726c98cbe1d7d59fde1007998"
+    },
+    {
+      "file": "browser/events-recovered-list-1440.png",
+      "bytes": 46310,
+      "sha256": "159c4999bfa9baeb3807d4a540cf124a7e91b1e73fb24ca444e2259fcc28e371"
+    },
+    {
+      "file": "browser/events-recovered-list-390.png",
+      "bytes": 29260,
+      "sha256": "509a39cca63fc23f020c85bb58ffa5d64ea2c4cc545abcbbaf0c2d373531e775"
+    }
+  ],
+  "visual_review": [
+    "readable-bearer-source 1440 and 390",
+    "readable-signed-source 1440 and 390"
+  ],
+  "mask": "Private credentials and password controls; magenta bars are screenshot masks."
+}

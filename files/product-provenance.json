@@ -1,0 +1,27 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-events-sample-1-c1",
+  "head": "c92e49165b54b84c6e9df099de317882233c0602",
+  "original_head": "5c3fcdae807d6cbd08fbe5521f9ba89ca1a5222d",
+  "merged_main": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "clock_fix": "051a993",
+  "contract_changes": false,
+  "generated_views_committed": false,
+  "test_registrations_added": 0,
+  "verification_lanes_before": 8,
+  "verification_lanes_after": 8,
+  "verification_command_entries_before": 16,
+  "verification_command_entries_after": 16,
+  "publication_scan": "Fleet Mac gate; unavailable in this cloud VM",
+  "pr": null,
+  "product_pushed": true,
+  "push_attempts": 1,
+  "origin_branch_head": "c92e49165b54b84c6e9df099de317882233c0602",
+  "commits": [
+    "c92e49165b54b84c6e9df099de317882233c0602 Wait for the source sample URL before reading it",
+    "c254d5dc053dcf28a1b97d5e256ac5451ba3229f Merge current main into readable Events API samples",
+    "5c3fcdae807d6cbd08fbe5521f9ba89ca1a5222d Document readable source aliases and verify copied detail-page samples",
+    "3e696d8511db6218c52a394542f74a6d4e2e29d6 Use readable Events API source samples [skip ci]"
+  ],
+  "all_candidate_commits_audited": true
+}

@@ -1,0 +1,59 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Product browser failure at /settings/integrations/new/events
+Skip to content
+‹ Oncall
+Services
+Integrations
+Routing
+Team
+Move in
+Readiness
+Archive
+PR
+Product browser owner
+admin
+⌄
+Integrations
+Existing pager authoritative · paging OFF · schedules and coordination
+Integration created
+Synthetic events signed
+Private key
+
+Copy it now. It cannot be read back.
+
+Private key
+Copy
+Sample request
+Ingress URL
+Copy ingress URL
+
+Keep the private key in your sender’s environment, then run this request.
+
+The service value is Checkout events’s internal ID, copied from Services. The source ID in the URL was assigned when this source was created.
+
+Sample request
+Copy sample request
+
+Open source
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-c0fKSC/local.env
+
+node:internal/url:840
+      href = bindingUrl.parse(input, base, true);
+                        ^
+
+TypeError: Invalid URL
+    at new URL (node:internal/url:840:25)
+    at create (file:///home/agent/rer-consolidation/work/main-oncall-events-sample-1-c1/repo/tests/product-browser.mjs:633:16)
+    at async eventsSourceBrowser (file:///home/agent/rer-consolidation/work/main-oncall-events-sample-1-c1/repo/tests/product-browser.mjs:666:30)
+    at async file:///home/agent/rer-consolidation/work/main-oncall-events-sample-1-c1/repo/tests/product-browser.mjs:751:31 {
+  code: 'ERR_INVALID_URL',
+  input: '/api/ingress/Synthetic%20events%20signed-667913307b79'
+}
+
+Node.js v24.19.0
