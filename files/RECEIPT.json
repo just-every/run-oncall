@@ -48,7 +48,14 @@
   "clause_status_changes": [],
   "recorded_at": "2026-11-11T09:43:21.820198+00:00",
   "publication_scan": "fleet Mac pending; unavailable in cloud by brief",
-  "ci": "see CI.json",
+  "ci": {
+    "run_id": 42997501414,
+    "status": "completed",
+    "conclusion": "success",
+    "head": "347265e1efe5b5ace2ea575d316ea97336dbca21",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/42997501414",
+    "github_api_calls": 4
+  },
   "public_door_proof": {
     "exit_code": 0,
     "receipt": "candidate-proof.json",
@@ -59,5 +66,6 @@
     ]
   },
   "named_silent_stops_before": 2,
-  "named_silent_stops_after": 0
+  "named_silent_stops_after": 0,
+  "blockers": []
 }
