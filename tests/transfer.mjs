@@ -36,7 +36,7 @@ export function transferDoor(m) {
  const ok=r=>{assert.equal(r.status,200,JSON.stringify(r.value));return r.value}
  let plan,approval,pendingJob,oldGrant,policyRevision=0,agentHistory,agentApprovals,agentKey,agentState
  const agentTables=['agent_door_audit','agent_door_calls','agent_door_reviews','agent_door_events']
- const history=sql=>Object.fromEntries(agentTables.map(table=>[table,sql('SELECT * FROM '+table+' ORDER BY rowid')]))
+ const history=sql=>Object.fromEntries(agentTables.map(table=>[table,sql('SELECT * FROM '+table+' ORDER BY '+(table==='agent_door_calls'?'agent,key':table==='agent_door_reviews'?'id':'sequence'))]))
  const agentCall=async(name,args)=>{
   const response=await m.request('/mcp',{jsonrpc:'2.0',id:randomUUID(),method:'tools/call',params:{name,arguments:args,_meta:{'io.modelcontextprotocol/protocolVersion':'2026-07-28'}}},undefined,{Authorization:'Bearer '+agentKey,Accept:'application/json, text/event-stream','MCP-Protocol-Version':'2026-07-28','Mcp-Method':'tools/call','Mcp-Name':name})
   assert.equal(response.status,200,JSON.stringify(response.value));assert.equal(response.value.error,undefined);return response.value.result
@@ -81,11 +81,13 @@ export function transferDoor(m) {
     agentApprovals.push({id,args,view,row:sql("SELECT * FROM agent_door_approvals WHERE id='"+id+"'")[0]})
    }
    sql("UPDATE agent_door_state SET decision_lock='synthetic-oncall-527',decision_until="+(Date.now()+3600000)+" WHERE id=1")
+   assert.deepEqual(await m.outboundRequests(),[],'agent preparation makes no outbound request')
+   return cookie
+  },
+  captureAgents(sql) {
    agentState=sql('SELECT * FROM agent_door_state')[0]
    agentHistory=history(sql)
    for(const table of agentTables)assert.ok(agentHistory[table].length>0,table+' holds real agent history before export')
-   assert.deepEqual(await m.outboundRequests(),[],'agent preparation makes no outbound request')
-   return cookie
   },
   async assertAgentsInactive(cookie,key,client,sql) {
    assert.deepEqual(history(sql),agentHistory,'portable restore retains populated agent audit, calls, reviews and events byte for byte')
@@ -496,6 +498,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  // A live-upgraded installation may still carry the original embedded legacy bytes.
  const legacyPrefix=prefixesBefore[0];
  sql(`UPDATE oc_intake_receipts SET data=json_set(data,'$.details.nativePrefix',json_object('encoding','base64','value','${legacyPrefix.prefix}')) WHERE id='${legacyPrefix.id}'`)
+ business.captureAgents(sql)
  await m.close()
  // Observe the pinned CLI, including its own catalog diagnostic, in this
  // disposable managed checkout. Never substitute a validator invocation.
