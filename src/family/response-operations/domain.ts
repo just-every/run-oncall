@@ -697,7 +697,11 @@ function applyCommand(
     if (!next[incident.state].includes(input.state))
       fail("Invalid lifecycle transition");
     description = `${incident.state} → ${input.state}: ${text(input.summary, "transition summary", 3000)}`;
-    if (input.state === "acknowledged") { incident.commander = actor.machine ? input.member : actor.id; incident.assignee = incident.commander; }
+    if (input.state === "acknowledged") {
+      const responder = actor.machine ? input.member : actor.id;
+      if (!incident.commander) incident.commander = responder;
+      incident.assignee = responder;
+    }
     if (input.state === "recovered") {
       incident.recovery = link(input.evidence);
       if (!incident.recovery) fail("Recovery evidence URL is required");
