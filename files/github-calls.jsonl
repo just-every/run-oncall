@@ -1,0 +1,4 @@
+{"call": 1, "utc": "2026-11-11T21:37:50.972040+00:00", "command": ["gh", "api", "repos/just-every/run-oncall/actions/runs?head_sha=b094e12602a77d199f94ee85aab3cba4418e82ce&per_page=100"], "exit": 0}
+{"call": 2, "utc": "2026-11-11T21:42:51.847896+00:00", "command": ["gh", "api", "repos/just-every/run-oncall/actions/runs/43104700847"], "exit": 0}
+{"call": 3, "utc": "2026-11-11T21:47:52.923296+00:00", "command": ["gh", "api", "repos/just-every/run-oncall/actions/runs/43104700847"], "exit": 0}
+{"call": 4, "utc": "2026-11-11T21:52:53.869594+00:00", "command": ["gh", "api", "repos/just-every/run-oncall/actions/runs/43104700847"], "exit": 0}

@@ -1,0 +1,20 @@
+{
+  "clause_status_counts": {
+    "origin/main": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34
+    },
+    "HEAD": {
+      "done": 22,
+      "partial": 45,
+      "missing": 34
+    }
+  },
+  "script_selections_before": 16,
+  "script_selections_after": 16,
+  "push_shards_before": 7,
+  "push_shards_after": 7,
+  "tests_added_by_carry_forward": 0,
+  "test_cap": 200
+}

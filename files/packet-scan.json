@@ -1,0 +1,9 @@
+{
+  "result": "passed",
+  "regular_files_checked": 38,
+  "symlinks_selected": false,
+  "injected_values_excluded": true,
+  "credential_shape_check": true,
+  "full_publication_scan": false,
+  "failed_files": []
+}

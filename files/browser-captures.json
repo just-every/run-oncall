@@ -1,0 +1,66 @@
+{
+  "head": "b094e12602a77d199f94ee85aab3cba4418e82ce",
+  "captures": [
+    {
+      "file": "screens/incident-saves-accepted-timeline-1440.png",
+      "bytes": 141736,
+      "sha256": "827dafef5bf2fb02bfb4e474a149145efbd9c7d3ea022ad6d85378898b1e9485"
+    },
+    {
+      "file": "screens/incident-saves-accepted-timeline-390.png",
+      "bytes": 88921,
+      "sha256": "6c74c8c24de841eb3b734813419a9a7c0a62a4007d599a0e1af79771908f612d"
+    },
+    {
+      "file": "screens/incident-saves-header-1440.png",
+      "bytes": 141831,
+      "sha256": "18a27b69f810952ebeaf83b7fdd9ff4ac1adc364c3d7986561b31d8348fd5de1"
+    },
+    {
+      "file": "screens/incident-saves-header-390.png",
+      "bytes": 88912,
+      "sha256": "507429ac1e9663382a4d79b971e38a34e40f4b725d75fa49d769189d1c9ba00c"
+    },
+    {
+      "file": "screens/incident-saves-review-error-1440.png",
+      "bytes": 96175,
+      "sha256": "934dde1064b32587feb51f95384a0cf13b87abf439ddd437835eef97fc59d335"
+    },
+    {
+      "file": "screens/incident-saves-review-error-390.png",
+      "bytes": 41685,
+      "sha256": "600af261d0fa343c6ea91aa401639eef06464251aa3d1155946d5a91791dd90e"
+    },
+    {
+      "file": "screens/incident-saves-review-saved-1440.png",
+      "bytes": 96367,
+      "sha256": "203d882bd14cd6ffc34c13e06838f0199203a6e0387c02e697f197cc82a81f24"
+    },
+    {
+      "file": "screens/incident-saves-review-saved-390.png",
+      "bytes": 43988,
+      "sha256": "28e939e2dd00aee118e39caa37f5d2cae255a6942fc52fc129ff57dde10f836c"
+    },
+    {
+      "file": "screens/incident-saves-runbook-error-1440.png",
+      "bytes": 105418,
+      "sha256": "ef057e16e96a23cb21a2e11288c3a799124270981e1bd4f5862bff00dfd39730"
+    },
+    {
+      "file": "screens/incident-saves-runbook-error-390.png",
+      "bytes": 79593,
+      "sha256": "302f7eb64c0eec50b6ab94b6df103cfa6c7dda88007af8ded8113bfc63b9d795"
+    },
+    {
+      "file": "screens/incident-saves-runbook-saved-1440.png",
+      "bytes": 95476,
+      "sha256": "2b69daaf54f5cc26562b15d691828e1f7d0c9b02e198e26bffa0a8b5a00dfdd4"
+    },
+    {
+      "file": "screens/incident-saves-runbook-saved-390.png",
+      "bytes": 69815,
+      "sha256": "33dfbfb9fd0ee409684d28224c1d5cc6646d3de8d835f1f152c9cf3766eb3cef"
+    }
+  ],
+  "visual_review": "all twelve captures opened and reviewed"
+}

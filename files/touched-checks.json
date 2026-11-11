@@ -1,0 +1,56 @@
+[
+  {
+    "name": "reports",
+    "command": [
+      "node",
+      "tests/triage.mjs"
+    ],
+    "selection": {
+      "ONCALL_TRIAGE_PART": "reports"
+    },
+    "head": "b094e12602a77d199f94ee85aab3cba4418e82ce",
+    "exit": 0,
+    "seconds": 70.6,
+    "log": "reports.log"
+  },
+  {
+    "name": "incident-saves",
+    "command": [
+      "node",
+      "tests/member-coordination-browser.mjs"
+    ],
+    "selection": {
+      "ONCALL_MEMBER_JOURNEY": "incident-saves",
+      "ONCALL_CHROMIUM_PATH": "/usr/bin/chromium",
+      "ONCALL_BROWSER_EVIDENCE": "/home/agent/rer-consolidation/work/main-oncall-incident-saves-1-c1/packet/screens"
+    },
+    "head": "b094e12602a77d199f94ee85aab3cba4418e82ce",
+    "exit": 0,
+    "seconds": 42.89,
+    "log": "incident-saves.log"
+  },
+  {
+    "name": "agent-flow",
+    "command": [
+      "node",
+      "tests/oncall-agent-flow.mjs"
+    ],
+    "selection": {},
+    "head": "b094e12602a77d199f94ee85aab3cba4418e82ce",
+    "exit": 0,
+    "seconds": 253.97,
+    "log": "agent-flow.log"
+  },
+  {
+    "name": "agent-role-replay",
+    "command": [
+      "node",
+      "tests/oncall-agent-role-replay.mjs"
+    ],
+    "selection": {},
+    "head": "b094e12602a77d199f94ee85aab3cba4418e82ce",
+    "exit": 0,
+    "seconds": 1.57,
+    "log": "agent-role-replay.log"
+  }
+]

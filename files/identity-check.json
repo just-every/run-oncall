@@ -1,0 +1,10 @@
+{
+  "head": "b094e12602a77d199f94ee85aab3cba4418e82ce",
+  "range": "origin/main..HEAD",
+  "includes_side_parents": true,
+  "commits": [
+    "b094e12602a77d199f94ee85aab3cba4418e82ce",
+    "cf4615eae88e98457dcb118ddfcadd8363f379c4"
+  ],
+  "result": "passed"
+}

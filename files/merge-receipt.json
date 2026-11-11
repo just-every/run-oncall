@@ -1,0 +1,23 @@
+{
+  "branch": "cloud/main-oncall-incident-saves-1-c1",
+  "head": "b094e12602a77d199f94ee85aab3cba4418e82ce",
+  "parents": [
+    "cf4615eae88e98457dcb118ddfcadd8363f379c4",
+    "1e8f35e6ec553ed607b812dd6f957aae2b3acce9"
+  ],
+  "original_product": "cf4615eae88e98457dcb118ddfcadd8363f379c4",
+  "main_at_merge": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "merge_conflicts": false,
+  "clock_fix": "051a993687882c63b472c8397946d52157ec4c0f",
+  "contract_unchanged_from_main": true,
+  "generated_views_unchanged_from_main": true,
+  "product_diff": "sources.lock.json                        | 16 +++---\n src/app/autosave/useAutosave.ts          |  4 +-\n src/family/response-operations/domain.ts |  4 +-\n src/incident/IncidentHead.tsx            |  9 ++-\n src/incident/incident.css                |  3 +\n src/reviews/ReviewSheet.tsx              |  2 +-\n src/services/ServiceHeadEditor.tsx       |  2 +-\n tests/member-coordination-browser.mjs    | 95 +++++++++++++++++++++++++++++++-\n tests/triage.mjs                         | 15 ++++-\n 9 files changed, 133 insertions(+), 17 deletions(-)",
+  "rebase_used": false,
+  "force_push_used": false,
+  "full_history": true,
+  "pre_push_fetch_main": "1e8f35e6ec553ed607b812dd6f957aae2b3acce9",
+  "pre_push_merge": "Already up to date.",
+  "source_lock_regenerated": true,
+  "source_lock_check": true,
+  "contract_generator_check_exit": 0
+}

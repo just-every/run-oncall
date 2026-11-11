@@ -1,0 +1,6 @@
+{
+  "head": "b094e12602a77d199f94ee85aab3cba4418e82ce",
+  "check": "candidate diff credential-shaped values and injected-bundle-value exclusion",
+  "result": "passed",
+  "full_publication_scan": "not available in this cloud; fleet Mac runs the required scan before landing"
+}
