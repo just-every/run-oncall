@@ -34,6 +34,22 @@ export async function agentReadSnapshot({db,http}) {
   .sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))};
 }
 
+/** Read decision custody may append value-free audit, never native effects. */
+export function assertAgentReadUnchanged(before,after){
+ assert.deepEqual(after.application,before.application,'Reads preserve application records and revisions');
+ for(const [name,rows] of Object.entries(before.records)){
+  if(['oc_admin_audit','oc_audit_clock','oc_audit_identities'].includes(name))continue;
+  assert.deepEqual(after.records[name],rows,'Reads preserve native table '+name);
+ }
+ const prior=new Map(before.records.oc_admin_audit.map(row=>[row.id,row]));
+ for(const [id,row] of prior)assert.deepEqual(after.records.oc_admin_audit.find(row=>row.id===id),row,'Existing permanent audit is immutable');
+ for(const row of after.records.oc_admin_audit.filter(row=>!prior.has(row.id))){
+  assert.equal(row.kind,'agent-door.persistence','Only documented read decision custody appends native audit');
+  for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
+ }
+ for(const row of before.records.oc_audit_identities)assert.deepEqual(after.records.oc_audit_identities.find(value=>value.kind===row.kind&&value.entity_id===row.entity_id),row);
+}
+
 /** Real emitted Worker, native D1 and native owner lifecycle; only paid egress is replaced. */
 export async function agentRuntime({clock}={}){
  let platformTime=clock;

@@ -669,6 +669,7 @@ async function staleCoordinationRevision(runtime){
  assert.equal((await adopt()).status,200);
 }
 await (await import('./oncall-agent-alerts.mjs')).alertReads();
+await (await import('./oncall-agent-triage.mjs')).triageReads();
 await agedReplayRetention();
 
 const runtime=await agentRuntime({clock:null});

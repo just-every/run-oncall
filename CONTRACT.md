@@ -1197,7 +1197,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.bridges.create` | Create or join a Zoom or Teams incident bridge and record its participants and link | OC-035 | external | Not yet shipped |
 | `oncall.incidents.resolve` | Resolve a declared incident with its summary and evidence | OC-004, OC-056 | commitment (+ sensitive) | Shipped |
 | `oncall.incidents.merge` | Merge related incidents or split an unrelated alert group | OC-050 | standard | Not yet shipped |
-| `oncall.triage.list` | Search, filter and save triage views | OC-060 | standard | Not yet shipped |
+| `oncall.triage.list` | Search, filter and save triage views | OC-060 | standard; sensitive when returned records contain personal or incident evidence | Read-only search and filters shipped; saved views not yet shipped |
 | `oncall.triage.bulk` | Apply one action to selected or matching items | OC-079 | standard (+ commitment) (+ live) | Not yet shipped |
 | `oncall.pages.create` | Page a service, a person or a policy, or request responders | OC-026, OC-068 | live | Not yet shipped · API (incidents) |
 | `oncall.schedules.update` | Change rotations, layers, overrides, holiday and PTO coverage | OC-011, OC-024, OC-077 | live | Shipped |

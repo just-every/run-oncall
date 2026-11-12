@@ -34,7 +34,7 @@ function observation(event: Event | undefined, receipt: IntakeReceipt | undefine
 }
 
 /** An allowlist, never a spread of payload custody or a routing member snapshot. */
-function project(state: State, alert: Alert) {
+export function projectAlert(state: State, alert: Alert) {
   const events = state.events.filter(event => event.service === alert.service && alert.events.includes(event.id))
   const receipts = (state.intakeReceipts ?? []).filter(receipt => receipt.alert === alert.id && receipt.service === alert.service)
   const first = events.find(event => event.intent === 'trigger') ?? events[0]
@@ -69,6 +69,6 @@ export async function listAlerts(env: Bindings, args: Record<string, unknown>, c
     } catch { throw new ToolRefusal('invalid_cursor') }
   }
   const limit = Number(args.limit ?? 50), page = rows.slice(after + 1, after + 1 + limit)
-  return { alerts: page.map(alert => project(access.state, alert)),
+  return { alerts: page.map(alert => projectAlert(access.state, alert)),
     ...(after + 1 + limit < rows.length ? { nextCursor: btoa(JSON.stringify({ query, id: page.at(-1)!.id })) } : {}) }
 }

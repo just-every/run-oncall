@@ -10,6 +10,7 @@ import { targets } from '../move-in/target'
 import { protectedRecords } from './resources'
 import { changeHash } from '../changes/credentials'
 import { listAlerts } from './alert-tools'
+import { listTriage } from './triage-tools'
 
 export const string = { type: 'string', minLength: 1, maxLength: 200 } as const
 export const input = (properties: Record<string, JsonSchema> = {}, required: string[] = []) => ({ type: 'object' as const, properties, required, additionalProperties: false })
@@ -64,6 +65,18 @@ export function readTools(env: Bindings): ToolDefinition[] {
       service: string, state: { enum: ['active', 'recovered'] }, urgency: { enum: ['high', 'low'] },
       limit: { type: 'integer', minimum: 1, maximum: 100 }, cursor: { type: 'string', minLength: 1, maxLength: 512 },
     }), (args, ctx) => listAlerts(env, args, ctx), 'computed'),
+    read('triage.list', 'incidents:read', ['OC-060'], input({
+      q: { type: 'string', maxLength: 600 }, kind: { enum: ['incidents', 'alerts'] },
+      status: { enum: ['triggered', 'snoozed', 'declared', 'acknowledged', 'mitigating', 'recovered', 'resolved', 'open'] },
+      severity: { enum: ['critical', 'warning', 'info'] }, urgency: { enum: ['high', 'low'] },
+      priority: { enum: ['P1', 'P2', 'P3', 'P4', 'P5', 'unset'] },
+      service: string, assignee: string, mine: { enum: ['true'] },
+      ...Object.fromEntries(['createdAfter', 'createdBefore', 'updatedAfter', 'updatedBefore']
+        .map(key => [key, { type: 'string' as const, format: 'date-time' as const }])),
+      sort: { enum: ['created', 'updated', 'urgency', 'priority'] },
+      limit: { type: 'integer', minimum: 1, maximum: 100 },
+      cursor: { type: 'string', minLength: 1, maxLength: 512 },
+    }), (args, ctx) => listTriage(env, args, ctx), 'computed'),
     read('changes.read', 'services:read', ['OC-065'], input({ service: string, at: { type: 'string', format: 'date-time' }, hours: { type: 'integer', minimum: 1, maximum: 168 } }, ['service', 'at', 'hours']), async (args, ctx) => {
       const access = await nativeAccess(env, ctx, 'services:read', args.service)
       const state = { ...access.state, services: access.state.services.filter(row => access.services.includes(row.id)), changes: access.state.changes?.filter(row => access.services.includes(row.service)) }

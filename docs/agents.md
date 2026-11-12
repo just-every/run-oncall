@@ -167,6 +167,12 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | --- | --- | --- | --- |
 | `oncall.teams.update` | `teams:write` | `standard`, `access` | `standard`: `tests/agent-door.mjs` (`team-create`); `access`: `tests/agent-door.mjs` (`team-manager`) |
 
+### Triage
+
+| Tool | Scope | Possible risk classes | Computed class checks |
+| --- | --- | --- | --- |
+| `oncall.triage.list` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`triage-list-standard`, `triage-list-sensitive`); `sensitive`: `tests/agent-door.mjs` (`triage-list-sensitive`) |
+
 ## Current resource templates
 
 No resource templates are exposed. The template listing is empty because resources are undeclared.

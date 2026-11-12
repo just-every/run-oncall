@@ -174,3 +174,72 @@ export async function deadlineTarget(runtime, change, label, { sensitive = true 
     ...(change === 'snooze' ? { minutes: 5 } : change === 'expire-deadline' ? { deadline: deadline.id } : {}),
     idempotency_key: randomUUID() } };
 }
+
+/** Scoped triage preparation uses native admission and human coordination only. */
+export async function triageFixture(runtime){
+ const json=async(path,input,status=200)=>{
+  const response=await runtime.http(path,input);assert.equal(response.status,status,await response.clone().text());return response.json();
+ };
+ const owner=(await json('/api/workspace')).member;
+ const responder=(await json('/api/state')).members.find(row=>row.role==='responder'&&row.active);
+ const local='agent-service',foreign='agent-foreign-service',services=[local,foreign];
+ const native='synthetic-oncall-triage-native',routed='synthetic-oncall-triage-routed';
+ const nativeKey='synthetic-oncall-triage-native-credential',routedKey='synthetic-oncall-triage-routed-credential';
+ await json('/api/sources',{id:native,key:nativeKey,scopes:services});
+ await json('/api/routing/keys',{id:routed,name:'Synthetic triage routing',provider:'native',scope:services,owner:owner.id,key:routedKey,revision:0,
+  rules:services.map(service=>({id:'synthetic-oncall-triage-route-'+service,match:'all',conditions:[{field:'details.destination',op:'equals',value:service}],target:{service}})),catchAll:null},201);
+ await runtime.time(runtime.context.now()+1000);
+ const start=runtime.context.now();
+ const advance=()=>runtime.time(runtime.context.now()+1000);
+ async function admit(service,label,{route=false,severity='warning',priority='P3',evidence=''}={}){
+  await advance();
+  const source=route?'intake:'+routed:native;
+  const signal={source,eventId:'synthetic-oncall-triage-event-'+label,service,environment:'production',key:'synthetic-oncall-triage-key-'+label,generation:'synthetic-oncall-triage-generation-'+label,
+   intent:'trigger',severity,...(priority===null?{}:{priority}),title:'Synthetic triage '+label,observedAt:new Date(runtime.context.now()).toISOString(),evidence,...(route?{details:{destination:service,privatePayload:'synthetic-oncall-triage-private-bytes'}}:{})};
+  const response=await runtime.request(runtime.origin+'/api/ingress/'+source,{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json',Authorization:'Bearer '+(route?routedKey:nativeKey)},body:JSON.stringify(signal)});
+  assert.equal(response.status,201,await response.clone().text());
+  const receipt=await response.json(),state=await json('/api/state');
+  return state.alerts.find(row=>row.events.includes(receipt.id));
+ }
+ async function declare(service,label,alerts=[],severity='warning'){
+  await advance();return json('/api/command',{type:'declare',service,title:'Synthetic triage '+label,summary:'Synthetic read-only triage fixture',severity,alerts:alerts.map(row=>row.id)});
+ }
+ async function change(incident,type,fields){
+  await advance();return json('/api/command',{type,incident:incident.id,revision:incident.revision,...fields});
+ }
+ const declaredAlert=await admit(local,'declared',{severity:'critical',priority:'P1'});
+ let declared=await declare(local,'declared',[declaredAlert],'critical');
+ declared=await change(declared,'reassign',{member:owner.id,reason:'Sponsor owns coordination'});
+ declared=await change(declared,'set-priority',{priority:'P1'});
+ declared=await change(declared,'action',{title:'Synthetic triage evidence',owner:owner.id,due:'2027-01-01',priority:'P2',completionPolicy:'evidence'});
+ declared=await change(declared,'complete',{action:declared.actions.at(-1).id,evidence:'https://evidence.example.invalid/synthetic-triage-action'});
+ const snoozedAlert=await admit(local,'snoozed',{route:true,priority:'P2'});
+ let snoozed=await declare(local,'snoozed',[snoozedAlert]);
+ snoozed=await change(snoozed,'transition',{state:'acknowledged',summary:'Human acknowledged before snooze'});
+ snoozed=await change(snoozed,'set-priority',{priority:'P2'});
+ snoozed=await change(snoozed,'snooze',{minutes:1});
+ const unassigned=await declare(local,'unassignedneedle',[],'info');
+ const foreignAlert=await admit(foreign,'foreignneedle',{route:true});
+ const source=await declare(foreign,'foreignneedle',[foreignAlert]);
+ let merged=await declare(local,'merged target');
+ merged=await change(merged,'merge-incidents',{sources:[{id:source.id,revision:source.revision}],reason:'Synthetic foreign source must remain private'});
+ const reverseSource=await declare(local,'merged source');
+ let foreignTarget=await declare(foreign,'foreign target');
+ foreignTarget=await change(foreignTarget,'merge-incidents',{sources:[{id:reverseSource.id,revision:reverseSource.revision}],reason:'Synthetic foreign target must remain private'});
+ const foreignIncident=await declare(foreign,'private incident');
+ const nativeOnly=await admit(local,'native alert');
+ await json('/api/triage/bulk',{operationId:'synthetic-oncall-triage-sponsor',action:'reassign',items:[{id:nativeOnly.id,revision:nativeOnly.revision??1,kind:'alert'}],confirmedCount:1,member:owner.id,reason:'Sponsor owns this alert'});
+ const assigned=(await json('/api/state')).alerts.find(row=>row.id===nativeOnly.id);
+ await json('/api/triage/bulk',{operationId:'synthetic-oncall-triage-priority',action:'set-priority',items:[{id:nativeOnly.id,revision:assigned.revision,kind:'alert'}],confirmedCount:1,priority:'P3',reason:'Synthetic explicit priority'});
+ const routedOnly=await admit(local,'routed alert',{route:true,severity:'info',priority:null,evidence:'https://evidence.example.invalid/synthetic-triage'});
+ await json('/api/triage/bulk',{operationId:'synthetic-oncall-triage-reassign',action:'reassign',items:[{id:routedOnly.id,revision:routedOnly.revision??1,kind:'alert'}],confirmedCount:1,member:responder.id,reason:'Other responder owns this alert'});
+ for(const [alert,urgency] of [[nativeOnly,'high'],[routedOnly,'low']])await json('/api/urgency/alerts/'+alert.id,{revision:alert.urgencyRevision??0,urgency,reason:'Synthetic explicit filter fixture'});
+ const foreignOnly=await admit(foreign,'private alert');
+ const response=await runtime.request(runtime.origin+'/api/ingress/intake:'+routed,{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json',Authorization:'Bearer '+routedKey},body:'{"synthetic-oncall-unrouted-private":'});
+ assert.equal(response.status,202);await response.json();
+ const state=await json('/api/state'),unrouted=state.alerts.find(row=>row.service===null);assert.ok(unrouted);
+ // A read at or after the deadline must retain the pending snooze unchanged.
+ await runtime.time(Date.parse(snoozed.deadlines.find(row=>row.state==='pending').dueAt)+1000);
+ return {state,owner,responder,declared,snoozed,unassigned,nativeOnly,routedOnly,foreignOnly,merged,source,reverseSource,foreignTarget,foreignIncident,unrouted,
+  start:new Date(start).toISOString(),end:new Date(runtime.context.now()+1000).toISOString(),secrets:[nativeKey,routedKey,'synthetic-oncall-triage-private-bytes','synthetic-oncall-unrouted-private']};
+}
