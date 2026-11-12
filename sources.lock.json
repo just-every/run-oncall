@@ -5420,15 +5420,19 @@
       "executable": false
     },
     "src/move-in/CompatibilityReview.tsx": {
-      "sha256": "6c385e92a77b2071dd06b7249a68d7cb9e2745948296f62d5a6d51ffa4e0c449",
+      "sha256": "919055eafef244fd4299bc641785a66aba7f315dbeabe57846c4a1214c6a5983",
       "executable": false
     },
     "src/move-in/ConnectStep.tsx": {
       "sha256": "da3f4c53bfe96f2cc69be7d012305524d15a4781aa2767a5dab0d6f595fa6215",
       "executable": false
     },
+    "src/move-in/CopyDetails.tsx": {
+      "sha256": "a537126fe3076251714099ba59fe05c240ceba6a6aa4e1df98726e103da611a2",
+      "executable": false
+    },
     "src/move-in/door-client.ts": {
-      "sha256": "040b371123683eff6e259b3f897ad6abd943fb955e8ffb266462d2ac34a68a25",
+      "sha256": "df97441e41322891d21d73ef87037b3ef099ae12556ce01784c22fcb566308a9",
       "executable": false
     },
     "src/move-in/door-key.ts": {
@@ -5492,11 +5496,11 @@
       "executable": false
     },
     "src/move-in/move-in.css": {
-      "sha256": "f0458f60f4467c9507c53e6affd27319962a51d9554ca81a0cd4153ac7d33812",
+      "sha256": "62ee7f0eae5bdd7098e65924bb0a177ec948bb91c8858f76ddbaa00c57a91e51",
       "executable": false
     },
     "src/move-in/MoveIn.tsx": {
-      "sha256": "b71bef93ca31ab8d46809b579d59d6e42a4d27b1ffbeda861e45315534c46fbf",
+      "sha256": "f984d1f134448c49b2658cea071e68be0fc35e263edb84b767d45dff776925c3",
       "executable": false
     },
     "src/move-in/native-erasure.ts": {
@@ -5504,7 +5508,7 @@
       "executable": false
     },
     "src/move-in/owner-door.ts": {
-      "sha256": "65666c73df365cfa85fc987f1d2de727fd9bd04693c3011d2d586d6e4709bffd",
+      "sha256": "a519b4e82ea88d058fad1f51c30bf8e32b8b7302d5cb4b08aceac5bf6c840616",
       "executable": false
     },
     "src/move-in/pagerduty-mapping.ts": {
@@ -5532,7 +5536,11 @@
       "executable": false
     },
     "src/move-in/refusals.ts": {
-      "sha256": "4a59cee69927f39682a54a2397e432e50f58ddc730d9c1efa17c2278e7fa6615",
+      "sha256": "7e2697e481ba0c966be304f00c0d2983a9216db93554a16474c4eb568ff7807c",
+      "executable": false
+    },
+    "src/move-in/review-copy.ts": {
+      "sha256": "689ae4d32c5dffc2744a341b7cedc82004802b2e6d77db467eed4e0472fb8c6a",
       "executable": false
     },
     "src/move-in/ReviewStep.tsx": {
@@ -6652,7 +6660,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "6e1327503788bc13d2e6850ac2ac134bf96319bae60aba3face1dc590388a92d",
+      "sha256": "7ae79aeec6c66b539a6798fe552cadf6479cee3b0aca16e08e9237baea67043a",
       "executable": false
     },
     "tests/product-browser.mjs": {
