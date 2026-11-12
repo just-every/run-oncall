@@ -1,0 +1,13 @@
+{
+  "head": "5cb3a7323e22ef9502da207fc98071820c58130c",
+  "job": "shards (browser)",
+  "jobId": 130908363902,
+  "runId": 43134751182,
+  "command": "CI=true WRANGLER_SEND_METRICS=false PLAYWRIGHT_SKIP_BROWSER_GC=1 SHARD=browser node scripts/verify-oncall.mjs browser",
+  "node": "22.20.0",
+  "exit": 1,
+  "test": "routedImportBrowser",
+  "expectedFailure": "locator.waitFor: Timeout 30000ms exceeded waiting for getByText(/undone/).first(); hidden option selected",
+  "reproduced": true,
+  "failure": "locator.waitFor: Timeout 30000ms exceeded waiting for getByText(/undone/).first(); resolved to hidden option in the saved journal selector"
+}

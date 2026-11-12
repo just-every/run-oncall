@@ -1,0 +1,19 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f235",
+  "head": "e9da4de5d47ec834cb25e3bece5e86bd215c87ba",
+  "base": "0766444566ab517f42308c8a407f4791948f18b0",
+  "pushed": true,
+  "pushReceipt": "product-push.log",
+  "mainPushed": false,
+  "pr": null,
+  "publishedProductCommits": [
+    "e9da4de5d47ec834cb25e3bece5e86bd215c87ba",
+    "1feef5013b42ed4500f044411984f79599c58e8d",
+    "5cb3a7323e22ef9502da207fc98071820c58130c",
+    "5e8eef1bcc8d0563521e3891888336b5e9a09b0f"
+  ],
+  "fullHistory": true,
+  "backendProofHead": "1feef5013b42ed4500f044411984f79599c58e8d",
+  "backendProofCodeUnchangedAfterMainMerge": true
+}

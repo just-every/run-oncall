@@ -1,0 +1,11 @@
+{
+  "main": "25b173adff3e5a2e7bedd97e02428eebee9418f4",
+  "counts": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34
+  },
+  "clause": "OC-083",
+  "status": "partial",
+  "selectedAcceptance": 4
+}

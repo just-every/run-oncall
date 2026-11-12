@@ -1,0 +1,17 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "e9da4de5d47ec834cb25e3bece5e86bd215c87ba",
+  "runId": 43141820984,
+  "event": "push",
+  "watchers": 1,
+  "githubCallsUsed": 10,
+  "githubCallsLimit": 10,
+  "lastDiscoveryUTC": "2026-11-12T02:41:14Z",
+  "earliestNextPollUTC": "2026-11-12T02:46:15Z",
+  "workflowDispatches": 0,
+  "workflowReruns": 0,
+  "githubCallsRemaining": 0,
+  "finalPollUTC": "2026-11-12T02:50:05Z",
+  "status": "completed",
+  "conclusion": "success"
+}

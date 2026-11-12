@@ -1,0 +1,9 @@
+{
+  "head": "17c0841856dc15a46449578db3920cca7c49dedf",
+  "command": "CI=true WRANGLER_SEND_METRICS=false PLAYWRIGHT_SKIP_BROWSER_GC=1 SHARD=browser node scripts/verify-oncall.mjs browser",
+  "node": "22.20.0",
+  "exit": 1,
+  "repairRound": 1,
+  "originalRunId": 43134751182,
+  "originalJobId": 130908363902
+}

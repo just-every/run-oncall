@@ -1,0 +1,13 @@
+{
+  "head": "e9da4de5d47ec834cb25e3bece5e86bd215c87ba",
+  "command": "node /tmp/oncall-routed-browser-probe.mjs",
+  "journey": "tests/product-browser-journey.mjs#routedImportBrowser",
+  "priorUndoneJournals": 2,
+  "node": "22.20.0",
+  "exit": 0,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "assertionWidth": 1440
+}

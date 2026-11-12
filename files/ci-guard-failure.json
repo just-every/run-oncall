@@ -1,0 +1,8 @@
+{
+  "runId": 43134751182,
+  "head": "5cb3a7323e22ef9502da207fc98071820c58130c",
+  "jobId": 130912597908,
+  "step": "Require the selected coverage and its proof",
+  "exit": 1,
+  "observed": "SHARDS was failure; final coverage guard refused success"
+}

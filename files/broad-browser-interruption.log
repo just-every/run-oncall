@@ -1,0 +1,232 @@
+> pnpm run verify:app
+
+> @just-every/oncall@0.5.8 verify:app /workspace/run-oncall
+> node tests/verify.mjs
+
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+(node:29984) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1
+PASS incident saves: persistent runbook and review Saved states, failed-save alerts and Retry, phone header without leading separators, draft edits without timeline entries, exactly one attributed accepted review; changed screens captured at 1440 and 390
+PROBE OC-023 browser: Backstage dependency review, conflict choice, apply, lost-response Retry and reload -> rendered and HTTP state agree; screens captured at 1440 and 390
+Member coordination derived-status at 1440: overflow, hydration and accessibility passed
+Member coordination override-reason at 1440: overflow, hydration and accessibility passed
+Member coordination stakeholder-status-and-refusals at 1440: overflow, hydration and accessibility passed
+OC-061 browser: existing internal-status panel, derived degraded, attributed override and reason, stakeholder subscription and private-door refusals at 1440
+Member coordination email-list-started at 1440: overflow, hydration and accessibility passed
+Member coordination email-list-ended at 1440: overflow, hydration and accessibility passed
+Member coordination email-list-unsubscribed at 1440: overflow, hydration and accessibility passed
+Member coordination email-list-erasure-review at 1440: overflow, hydration and accessibility passed
+Member coordination email-list-erasure-receipt at 1440: overflow, hydration and accessibility passed
+OC-061 email-list browser: Settings authoring, started/ended recorded no-sender obligations, unsubscribe prevents future records and shared erasure receipt at 1440; overflow, axe and hydration passed
+Member coordination role-team at 1440: overflow, hydration and accessibility passed
+Member coordination role-services at 1440: overflow, hydration and accessibility passed
+Member coordination role-routing at 1440: overflow, hydration and accessibility passed
+Member coordination role-schedules at 1440: overflow, hydration and accessibility passed
+Member coordination role-incidents at 1440: overflow, hydration and accessibility passed
+OC-061 role selectors and tooltips: team, service, routing, schedule and incident/bulk screens at 1440 with own browser CPU rate 4; stakeholder excluded from response owners and keyboard tooltip immediate
+Member coordination oc068-manual-page-form at 1440: overflow, hydration and accessibility passed
+Member coordination oc068-requests-and-obligations at 1440: overflow, hydration and accessibility passed
+Member coordination oc068-viewer-refusal at 1440: overflow, hydration and accessibility passed
+Member coordination oc068-service-assignment-rule at 1440: overflow, hydration and accessibility passed
+OC-068 browser: manual page urgency/target, recorded obligations, independent accepted and declined responder requests, viewer refusal and versioned assignment setting at 1440
+Member coordination oc058-service-timeout at 1440: overflow, hydration and accessibility passed
+Member coordination oc058-snooze-form at 1440: overflow, hydration and accessibility passed
+Member coordination oc058-snoozed at 1440: overflow, hydration and accessibility passed
+Member coordination oc058-expired-triggered at 1440: overflow, hydration and accessibility passed
+OC-058 browser: timeout setting, snooze duration, persisted snoozed state and scheduled expiry back to triggered at 1440; paging OFF
+OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)
+Production sign-in browser flow passed at 1440: configured editable hints without a send, unconfigured mail refusal, sign-out and denied access without a session
+Owned runtime processes [["29984","29972","node"],["29992","29984","esbuild"],["32310","29984","workerd"],["32316","29984","ps"]]
+Owned runtime processes [["29984","29972","node"],["29992","29984","esbuild"],["32310","29984","workerd"],["32317","29984","chromium"],["32338","32317","chromium"],["32339","32317","chromium"],["32359","32338","chromium"],["32362","32317","chromium"],["32384","32339","chromium"],["32396","29984","ps"]]
+Browser driver PID 29984 runtime proof uses a fresh test-only context
+PASS OC-053 settings management, restore refusal and permanent machine attribution after reassignment at 1440
+Journey completed: tests/member-coordination-browser.mjs (133.4s)
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+(node:32507) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+OC-068 keyboard manual page: urgency, priority, replay-safe operation and recorded target obligation persisted
+PROBE OC-009 declaration, acknowledgment and notes 1440: native keyboard incident and action dialog -> protected incident, commander and literal attributed note retained; focus, Tab containment, Escape return, labels, overflow and axe passed
+PROBE OC-009 stale write 1440: second authenticated HTTP session wins -> real 409, alert announcement, editable losing draft and no saved claim; winning data unchanged
+Workspace path / 200 /on-call hops 1
+Workspace path /#incidents 200 /incidents hops 1
+Workspace path /#alerts 200 /alerts hops 1
+Workspace path /#services 200 /settings/services hops 1
+Workspace path /#status 200 /status hops 1
+Workspace path /#routing 200 /settings/routing hops 1
+Workspace path /#schedules 200 /on-call hops 1
+Workspace path /#move-in 200 /settings/move-in hops 1
+Workspace path /#reviews 200 /reviews hops 1
+Workspace path /#team 200 /settings/team hops 1
+Workspace path /#archive 200 /settings/archive hops 1
+Workspace path /services 200 /settings/services hops 1
+Workspace path /routing 200 /settings/routing hops 1
+Workspace path /schedules 200 /on-call hops 1
+Workspace path /team 200 /settings/team hops 1
+Workspace path /move-in 200 /settings/move-in hops 1
+Workspace path /archive 200 /settings/archive hops 1
+Workspace path /settings 200 /settings/services hops 1
+Workspace path /?incident=f79530a5-e957-4dac-9490-45b4bb8fb329#incidents 200 /incidents/f79530a5-e957-4dac-9490-45b4bb8fb329 hops 1
+PROBE OC-057 acceptance 8: emitted Settings saves New York weekdays 09:00–17:00 without holidays; warning admitted at 2026-11-03T08:00:00Z -> active low alert, visible not-automatic notice and next support start 2026-11-03T14:00:00Z; reload at 08:30Z retains urgency history, native records, paging jobs and receipts; zero outbound requests; screens captured at 1440 and 390
+Product browser failure at /on-call/synthetic-oncall-4440
+Skip to content
+Oncall
+On call
+Incidents
+5
+Alerts
+4
+Reviews
+Status
+Settings
+PR
+Product browser owner
+admin
+⌄
+Existing pager authoritative · paging OFF · schedules and coordination
+Rotas
+Checkout
+Primary service rota
+Schedule colleague 1440
+Literal runbook 1440
+Secondary service rota
+Schedule colleague 1440
+Checkout
+Checkout rota 1440Gate flicker
+Nobody on call
+Checkout
+synthetic-oncall-6440
+Product browser owner
+‹ On call
+synthetic-oncall-6440
+
+Checkout
+
+Edit rota
+
+Reviewed change saved. Paging is off.
+
+On call now and next
+PRIMARY
+
+Now: Product browser owner
+
+synthetic-oncall-5440 (UTC, daily): wins by first eligible layer precedence
+
+Next: Nobody on call
+
+synthetic-oncall-5440 (UTC, daily): member on PTO; try next layer
+
+Hand-over: Thu 12 Nov, 04:10 UTC (GMT+0)
+
+BACKUP
+
+Now: Nobody on call
+
+backup: rotation has no member slots
+
+Next: Nobody on call
+
+backup: rotation has no member slots
+
+Next coverage window: Fri 13 Nov, 00:00 UTC (GMT+0)
+
+Next two weeks
+
+Times shown in UTC
+
+synthetic-oncall-6440
+Primary
+Product browser owner
+
+Nov 12, 2026, 02:10 AM UTC (GMT+0)
+to
+Nov 12, 2026, 04:10 AM UTC (GMT+0)
+
+Nobody on call
+
+Nov 12, 2026, 04:10 AM UTC (GMT+0)
+to
+Nov 12, 2026, 05:10 AM UTC (GMT+0)
+
+Product browser owner
+
+Nov 12, 2026, 05:10 AM UTC (GMT+0)
+to
+Nov 12, 2026, 06:10 AM UTC (GMT+0)
+
+Nobody on call
+
+Nov 12, 2026, 06:10 AM UTC (GMT+0)
+to
+Nov 12, 2026, 07:10 AM UTC (GMT+0)
+
+Product browser owner
+
+Nov 12, 2026, 07:10 AM UTC (GMT+0)
+to
+Nov 12, 2026, 09:00 AM UTC (GMT+0)
+
+Product browser owner
+
+Nov 12, 2026, 09:00 AM UTC (GMT+0)
+to
+Nov 12, 2026, 05:00 PM UTC (GMT+0)
+
+Product browser owner
+
+Nov 12, 2026, 05:00 PM UTC (GMT+0)
+to
+Nov 13, 2026, 12:00 AM UTC (GMT+0)
+
+Product browser owner
+
+Nov 13, 2026, 12:00 AM UTC (GMT+0)
+to
+Nov 13, 2026, 09:00 AM UTC (GMT+0)
+
+Product browser o
+Worker diagnostics (test failure):
+[stderr] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../tmp/oncall-flow-7S98KE/local.env
+[stderr] (node:32963) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+[stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+apiRequestContext.get: socket hang up (ECONNRESET)
+Call log:
+  - → GET http://127.0.0.1:38071/api/paging/state
+    - user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36
+    - accept: */*
+    - accept-encoding: gzip,deflate,br
+    - connection: close
+[authentication diagnostic redacted]
+
+    at api (/workspace/run-oncall/tests/product-browser-journey.mjs:723:114)
+    at coverageRulesBrowser (/workspace/run-oncall/tests/product-browser-journey.mjs:740:763)
+    at async productSchedule (/workspace/run-oncall/tests/product-browser-journey.mjs:663:20)
+    at async productBrowserJourney (/workspace/run-oncall/tests/product-browser-journey.mjs:1540:19)
+    at async file:///workspace/run-oncall/tests/product-browser.mjs:770:2 {
+  log: [
+    '  - → GET http://127.0.0.1:38071/api/paging/state',
+    '    - user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36',
+    '    - accept: */*',
+    '    - accept-encoding: gzip,deflate,br',
+    '    - connection: close',
+[authentication diagnostic redacted]
+  ],
+  name: 'Error',
+  code: 'ECONNRESET'
+}
+
+Node.js v22.20.0
+ ELIFECYCLE  Command failed with exit code 1.

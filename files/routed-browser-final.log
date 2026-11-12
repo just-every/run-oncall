@@ -1,0 +1,7 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+(node:38294) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS routedImportBrowser: explicit source-target review, inactive key supply, separate activation and undo fencing at 1440; Opsgenie and Splunk review and activation screens captured at 1440 and 390
+PASS routed import browser with two prior undone journals: visible selected-journal undo, both native compatible credential denials, all selected screenshots at 1440 and 390, no application errors and zero outbound requests

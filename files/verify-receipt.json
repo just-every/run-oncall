@@ -1,0 +1,7 @@
+{
+  "head": "5cb3a7323e22ef9502da207fc98071820c58130c",
+  "command": "npx -y @runeditrun/rer verify",
+  "exit": 1,
+  "chromium": "/usr/bin/chromium",
+  "timeoutSeconds": 1800
+}

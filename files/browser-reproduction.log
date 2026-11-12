@@ -1,0 +1,20 @@
+locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+  - waiting for getByText(/undone/).first() to be visible
+    3 × locator resolved to hidden <option value="a9271281-b262-4fc6-9cc4-1fe6b81c0339">Opsgenie · undone 3</option>
+    58 × locator resolved to hidden <option value="60ef5e96-1141-4394-949f-7c3b1766035d">Opsgenie · undone 1</option>
+
+    at routedImportBrowser (/workspace/run-oncall/tests/product-browser-journey.mjs:135:42)
+    at async productImport (/workspace/run-oncall/tests/product-browser-journey.mjs:78:19)
+    at async productBrowserJourney (/workspace/run-oncall/tests/product-browser-journey.mjs:1543:3)
+    at async file:///workspace/run-oncall/tests/product-browser.mjs:770:2 {
+  log: [
+    '  - waiting for getByText(/undone/).first() to be visible',
+    '    3 × locator resolved to hidden <option value="a9271281-b262-4fc6-9cc4-1fe6b81c0339">Opsgenie · undone 3</option>',
+    '    58 × locator resolved to hidden <option value="60ef5e96-1141-4394-949f-7c3b1766035d">Opsgenie · undone 1</option>'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v22.20.0
+ ELIFECYCLE  Command failed with exit code 1.

@@ -1,0 +1,18 @@
+{
+  "baseline": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34
+  },
+  "candidate": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34
+  },
+  "total": 101,
+  "builderStatusChanges": 0,
+  "clause": "OC-083",
+  "before": "partial",
+  "after": "partial",
+  "selectedPoint": 4
+}

@@ -1,0 +1,67 @@
+{
+  "head": "e9da4de5d47ec834cb25e3bece5e86bd215c87ba",
+  "journey": "tests/product-browser-journey.mjs#routedImportBrowser",
+  "receipt": "routed-browser-probe-receipt.json",
+  "images": [
+    {
+      "path": "browser/routed-import-opsgenie-active-1440.png",
+      "sha256": "fb14a9472176cf3ac4d2a56c3366f7ee5eecbbcf5a66d9aa2120e0caa55a0a54",
+      "bytes": 266225
+    },
+    {
+      "path": "browser/routed-import-opsgenie-active-390.png",
+      "sha256": "2b9422cd564ffd4adac60f594b6018cdda0331a279420f73a4de54cb7f8f517d",
+      "bytes": 257472
+    },
+    {
+      "path": "browser/routed-import-opsgenie-inactive-1440.png",
+      "sha256": "1bae96ce904c742e068f9edb433ca1fdd8f41f5e96f00bcc2d48bb08ed6876eb",
+      "bytes": 267740
+    },
+    {
+      "path": "browser/routed-import-opsgenie-inactive-390.png",
+      "sha256": "da6e4ff107dc8960418af893f0d14310809878961e0daf89c62ce38e6a2c043e",
+      "bytes": 260637
+    },
+    {
+      "path": "browser/routed-import-opsgenie-review-1440.png",
+      "sha256": "fbb5758e3d1441e9100b616ae3e2abab663569967ea6d34d01d539e0eccf17f2",
+      "bytes": 226556
+    },
+    {
+      "path": "browser/routed-import-opsgenie-review-390.png",
+      "sha256": "27376072a965cee4bc658bc30cf5cbe7b9cd9da7b98a6772051c3145cb1e326f",
+      "bytes": 209702
+    },
+    {
+      "path": "browser/routed-import-splunk-active-1440.png",
+      "sha256": "04e5f31a3f179d74117f6ce884e96fd58fbd6a9f1b656121df99bfbf768d8437",
+      "bytes": 209337
+    },
+    {
+      "path": "browser/routed-import-splunk-active-390.png",
+      "sha256": "6403958f41addb46ca72631b1b33f8e7c8356446707e473a715bd4d5241a5a50",
+      "bytes": 195089
+    },
+    {
+      "path": "browser/routed-import-splunk-inactive-1440.png",
+      "sha256": "2d254b4d9a930d770ee9a02e2fbfcbe3ca943ce69cb193b35c01635266da5804",
+      "bytes": 210953
+    },
+    {
+      "path": "browser/routed-import-splunk-inactive-390.png",
+      "sha256": "95946006534fdf9da4d9965e507485dab3948a37bd53061a36ce76900eccb5d9",
+      "bytes": 198057
+    },
+    {
+      "path": "browser/routed-import-splunk-review-1440.png",
+      "sha256": "daac5fe8f07cb475440d4172c5787e87d47df18326a9663fff241ea2c9f23824",
+      "bytes": 170721
+    },
+    {
+      "path": "browser/routed-import-splunk-review-390.png",
+      "sha256": "e4bf83e398893eeda2258a8482580d048f78507682342c64343b2ee2a290433c",
+      "bytes": 151321
+    }
+  ]
+}

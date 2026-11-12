@@ -1,0 +1,7 @@
+{
+  "head": "e9da4de5d47ec834cb25e3bece5e86bd215c87ba",
+  "newEmailLiteralCount": 0,
+  "unmodifiedHistoricalEmailLiterals": "preserved",
+  "newFixtures": "synthetic-oncall identifiers only",
+  "review": "Added text uses real repository paths and endpoint paths. No invented repository references. No provider-shaped keys or injected values selected."
+}

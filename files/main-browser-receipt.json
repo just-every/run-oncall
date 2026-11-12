@@ -1,0 +1,8 @@
+{
+  "head": "90f391b56d492b998e0e55509e076eaf588cbea4",
+  "command": "CI=true WRANGLER_SEND_METRICS=false PLAYWRIGHT_SKIP_BROWSER_GC=1 SHARD=browser node scripts/verify-oncall.mjs browser",
+  "node": "22.20.0",
+  "exit": 0,
+  "runner": "same dedicated cloud VM",
+  "purpose": "Compare the failed browser shard on main before repair"
+}

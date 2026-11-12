@@ -1,0 +1,21 @@
+locator.waitFor: Timeout 30000ms exceeded.
+shards (browser)	Run this shard	2026-11-12T01:37:11.6689152Z Call log:
+shards (browser)	Run this shard	2026-11-12T01:37:11.6689424Z   - waiting for getByText(/undone/).first() to be visible
+shards (browser)	Run this shard	2026-11-12T01:37:11.6690227Z     3 × locator resolved to hidden <option value="37ddd282-3f51-4b4e-96b3-5f5042af6c4a">Opsgenie · undone 3</option>
+shards (browser)	Run this shard	2026-11-12T01:37:11.6690784Z     60 × locator resolved to hidden <option value="fa343128-15c5-4662-95a5-f159d8424afe">Opsgenie · undone 1</option>
+shards (browser)	Run this shard	2026-11-12T01:37:11.6691200Z 
+shards (browser)	Run this shard	2026-11-12T01:37:11.6691462Z     at routedImportBrowser (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:135:42)
+shards (browser)	Run this shard	2026-11-12T01:37:11.6692105Z     at async productImport (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:78:19)
+shards (browser)	Run this shard	2026-11-12T01:37:11.6692864Z     at async productBrowserJourney (/home/runner/work/run-oncall/run-oncall/tests/product-browser-journey.mjs:1543:3)
+shards (browser)	Run this shard	2026-11-12T01:37:11.6693325Z     at async file:///home/runner/work/run-oncall/run-oncall/tests/product-browser.mjs:770:2 {
+shards (browser)	Run this shard	2026-11-12T01:37:11.6693578Z   log: [
+shards (browser)	Run this shard	2026-11-12T01:37:11.6693755Z     '  - waiting for getByText(/undone/).first() to be visible',
+shards (browser)	Run this shard	2026-11-12T01:37:11.6694230Z     '    3 × locator resolved to hidden <option value="37ddd282-3f51-4b4e-96b3-5f5042af6c4a">Opsgenie · undone 3</option>',
+shards (browser)	Run this shard	2026-11-12T01:37:11.6694765Z     '    60 × locator resolved to hidden <option value="fa343128-15c5-4662-95a5-f159d8424afe">Opsgenie · undone 1</option>'
+shards (browser)	Run this shard	2026-11-12T01:37:11.6695050Z   ],
+shards (browser)	Run this shard	2026-11-12T01:37:11.6695167Z   name: 'TimeoutError'
+shards (browser)	Run this shard	2026-11-12T01:37:11.6695311Z }
+shards (browser)	Run this shard	2026-11-12T01:37:11.6695370Z 
+shards (browser)	Run this shard	2026-11-12T01:37:11.6695424Z Node.js v22.20.0
+shards (browser)	Run this shard	2026-11-12T01:37:11.7156200Z  ELIFECYCLE  Command failed with exit code 1.
+shards (browser)	Run this shard	2026-11-12T01:37:11.7373026Z ##[error]Process completed with exit code 1.

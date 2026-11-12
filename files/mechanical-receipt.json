@@ -1,0 +1,30 @@
+{
+  "head": "e9da4de5d47ec834cb25e3bece5e86bd215c87ba",
+  "views": {
+    "write": "node src/base/contract-docs.mjs write",
+    "check": "node src/base/contract-docs.mjs check",
+    "exit": 0,
+    "generatedChangesCommitted": false
+  },
+  "lock": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "migrationLedger": {
+    "command": null,
+    "reason": "No migration added or edited",
+    "exit": 0
+  },
+  "contractJudgmentChanges": 0,
+  "firstParty": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0,
+    "receipt": "merged-build.log"
+  },
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0,
+    "receipt": "merged-build.log"
+  }
+}
