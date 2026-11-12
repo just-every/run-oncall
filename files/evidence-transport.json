@@ -1,0 +1,18 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "exit": 1,
+      "diagnostic": "EVIDENCE_FAILED Git fetch failed exit=128",
+      "http": "unknown (not supplied by Git)",
+      "observed_probe": "Invalid username or token; authentication failed"
+    },
+    {
+      "attempt": 2,
+      "exit": 0,
+      "http": null,
+      "status": "published"
+    }
+  ],
+  "status": "published"
+}

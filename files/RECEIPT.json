@@ -131,5 +131,7 @@
   "no_new_fixture_emails": true,
   "github_api_calls": 6,
   "ready": true,
-  "product_landed": false
+  "product_landed": false,
+  "evidence_transport_receipt": "evidence-transport.json",
+  "evidence_update_recovered": true
 }

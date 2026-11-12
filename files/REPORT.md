@@ -106,3 +106,7 @@ Riders 1–4 and 8 pass for the selected slice, including exact-SHA push Verify 
 The native readiness test retains active member authority, unauthorized and revoked refusals, isolated unavailable sources and HTTP 503 completeness. The existing REST analytics assertions remain green in the machine journey and exact-SHA Verify. The final source lock is fresh, generated contract views equal main, no Base copies changed, and no fixture email or provider-shaped credential was added.
 
 This packet, its plan, probe outputs, mechanical receipt, exact CI receipt and two actual guide screenshots are returned only through the separate evidence ref. Product custody is only cloud/sd-oncall-c-f243 at the full SHA above. No main push, default-branch fast-forward, PR, account deployment or provider action was performed.
+
+## Evidence transport recovery
+
+The final report update initially failed while fetching the existing evidence ref (Git exit 128; HTTP status unknown, not supplied by Git). A sanitized direct probe reported invalid username or token. The required launcher refresh and fleet Git setup were repeated, then the same declared credential source was re-read at Git use. Publication succeeded on attempt 2. No other credential was sought; product branch custody and green Verify were unchanged. The actual transport receipt is evidence-transport.json.
