@@ -123,8 +123,12 @@ export async function readinessHealth(deployment) {
   await value('/api/intake/sources/'+adapterId+'/revoke',{revision:adapter.revision});const inactive=(await value('/api/readiness')).matrix.find(row=>row.id==='pagerduty');assert.equal(inactive.observation.configured,1);assert.equal(inactive.observation.active,0);assert.equal(inactive.observation.lastAcceptedAt,new Date(at).toISOString());
   await runtime.time(at+180000);await value('/api/command',{type:'acknowledgment-timeout',service:service.id,baseVersion:0,minutes:0});
   const editedConfiguration=signal(await value('/api/readiness'),'configuration');assert.equal(editedConfiguration.values.policyChangedAt,new Date(at+180000).toISOString());assert.equal(editedConfiguration.values.serviceChangedAt,new Date(at+180000).toISOString());assert.equal(editedConfiguration.values.scheduleChangedAt,new Date(at).toISOString(),'service policy edits never invent a schedule change');
-  await value('/api/command',{type:'member',id:roles.viewer.member.id,role:'viewer',active:false});assert.equal((await call('/api/readiness',undefined,roles.viewer.cookie)).status,401);
-  await runtime.time(at+13*3600000);assert.equal((await call('/api/readiness',undefined,roles.responder.cookie)).status,401,'expired sessions cannot inspect readiness');
+  await value('/api/command',{type:'member',id:roles.viewer.member.id,role:'viewer',active:false});
+  const revokedRead=await call('/api/readiness',undefined,roles.viewer.cookie);assert.equal(revokedRead.status,401);
+  assert.deepEqual(Object.keys(revokedRead.value),['error'],'revoked sessions disclose no populated installation checklist or deployment identity');
+  await runtime.time(at+13*3600000);
+  const expiredRead=await call('/api/readiness',undefined,roles.responder.cookie);assert.equal(expiredRead.status,401,'expired sessions cannot inspect readiness');
+  assert.deepEqual(Object.keys(expiredRead.value),['error'],'expired sessions disclose no populated installation checklist or deployment identity');
   assert.deepEqual(await runtime.outboundRequests(),[],'readiness and fixture setup make zero outbound requests at the Worker network edge');
   const network=await runtime.request('/__provider_calls');assert.equal(network.status,200);assert.deepEqual(network.value.calls,[],'readiness and setup/state changes make zero outbound calls');
   console.log('PROBE OC-044 acceptance 1 checklist: protected GET /api/readiness -> every US dependency matches release matrix and actual field register; account steps remain not done; populated queued-work reads preserve all durable tables and revisions with zero outbound requests');
