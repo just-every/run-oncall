@@ -2,8 +2,8 @@
   {
     "id": 43216456301,
     "name": "Verify",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "head_sha": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
     "event": "push",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/43216456301"

@@ -62,7 +62,7 @@ Both policy rounds passed. The record-unrouted fixture has no retained trigger e
 | --- | --- |
 | 1 | Selected row's nonempty public-door outcomes PASS locally (R1–R8). Whole clause remains incomplete. |
 | 2 | PASS: exact seeded counts and hours, allowed and denied paths, unchanged state; R2, R4, R5 and R8. |
-| 3 | CI pending at report draft; tests/oncall-agent-flow.mjs invokes analyticsReads beside alertReads, reached through tests/runtime.mjs machines. Exact-SHA conclusion recorded in final receipt. |
+| 3 | PASS for current declared coverage: push Verify 43216456301 completed successfully on f33bb4e04334d6dbb1fc6aef47e4b419c474a871. tests/oncall-agent-flow.mjs invokes analyticsReads beside alertReads through tests/runtime.mjs machines. Whole-clause capability holds remain. |
 | 4 | PASS for relevant bytes: local machine source and analytics tests are identical to the save; our later commit adds only guide prose and its regenerated lock. The final merge also preserves main’s unrelated move-in review changes. Required verification and the focused probe are repeated on the merged candidate. |
 | 5 | INSPECTED: SURFACE-001 already cites BASE-AGENT-001, 002, 003, 010, 012 and 013; no duty moved. |
 | 6 | Mechanical PASS: generation write and check pass, both generated views restored from main, lock regenerated and checked. Judgment cells intentionally remain main's text. |
@@ -82,10 +82,27 @@ Final test exits, exact candidate CI discovery, mechanics and publication custod
 
 ## Final candidate custody
 
-The final main fetch found accepted move-in review changes at 37299328ad8c7baacfc3d0356aa49316650bb557. These were merged without conflict or history rewrite in f33bb4e04334d6dbb1fc6aef47e4b419c474a871. Contract generation and lock regeneration/check were repeated after the merge, producing no pending change. The fleet guard successfully pushed that full SHA. Exact-SHA push Verify 43216456301 was discovered in progress. No workflow dispatch or rerun was used.
+The final main fetch found accepted move-in review changes at 37299328ad8c7baacfc3d0356aa49316650bb557. These were merged without conflict or history rewrite in f33bb4e04334d6dbb1fc6aef47e4b419c474a871. Contract generation and lock regeneration/check were repeated after the merge, producing no pending change. The fleet guard successfully pushed that full SHA. Exact-SHA push Verify 43216456301 was discovered in progress and subsequently completed successfully. No workflow dispatch or rerun was used.
 
 ## Local gate result on the merged SHA
 
-All local gates PASS on f33bb4e04334d6dbb1fc6aef47e4b419c474a871: scoped required rer verification (existing hosted lane plus hosted output, hydration and 8,824 of 8,824 declared agent conformance checks), focused analyticsReads under both policies, native readinessHealth with authority and partial 503 proof, generated metadata freshness and source integrity. The served guide was captured and inspected at 1440 and 390 using Chromium at /usr/bin/chromium with no sandbox. Machine runtime passed in 430.6 seconds; its relevant analytics source and test bytes are unchanged on this final candidate. Branch Verify is still in progress at this packet revision. No landing, COMPLETE publication scan or final-main Run site is claimed.
+All local gates PASS on f33bb4e04334d6dbb1fc6aef47e4b419c474a871: scoped required rer verification (existing hosted lane plus hosted output, hydration and 8,824 of 8,824 declared agent conformance checks), focused analyticsReads under both policies, native readinessHealth with authority and partial 503 proof, generated metadata freshness and source integrity. The served guide was captured and inspected at 1440 and 390 using Chromium at /usr/bin/chromium with no sandbox. Machine runtime passed in 430.6 seconds; its relevant analytics source and test bytes are unchanged on this final candidate. Branch Verify 43216456301 is completed with conclusion success on this exact full SHA. No landing, COMPLETE publication scan or final-main Run site is claimed.
 
 MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0, restored from main; ledger=none exit=0.
+
+## Final exact-SHA result and claim
+
+Push Verify 43216456301 completed with conclusion success on f33bb4e04334d6dbb1fc6aef47e4b419c474a871.
+Run: https://github.com/just-every/run-oncall/actions/runs/43216456301
+Six GitHub API calls were used in total. No dispatch, workflow rerun or repair round was needed. Both product pushes and the first evidence publication succeeded without transport retries. No selected-slice blocker remains.
+
+CLAIM SURFACE-001 PARTIAL points=none tests=tests/oncall-agent-analytics.mjs#analyticsReads; tests/readiness.mjs#readinessHealth
+GAP SURFACE-001: The selected acceptance 1 analytics row's response, load and readiness figures are complete; usage, team load and all other held rows, resources, events, prompts and broader conformance obligations remain. No entire numbered acceptance point or clause is promoted.
+
+The claim's points field is none because the whole first acceptance sentence still includes unshipped rows. The selected analytics slice is proved in R1–R8 and the PROBE lines. Status remains missing and all 101 source judgment rows stay identical to merged main; counts remain 26 DONE, 41 PARTIAL and 34 MISSING.
+
+Riders 1–4 and 8 pass for the selected slice, including exact-SHA push Verify and nonempty allowed and denied public-door probes. Rider 5 is inspected and unchanged; 6 and 7 pass mechanically; 9 and 10 preserve the explicit boundary. Rider 11 awaits the maintained fleet's guarded landing, COMPLETE full-history publication scan and exact-main Run site. The scan receipt is unestablished in this cloud, with complete, historyScanned and findings recorded as null rather than fabricated.
+
+The native readiness test retains active member authority, unauthorized and revoked refusals, isolated unavailable sources and HTTP 503 completeness. The existing REST analytics assertions remain green in the machine journey and exact-SHA Verify. The final source lock is fresh, generated contract views equal main, no Base copies changed, and no fixture email or provider-shaped credential was added.
+
+This packet, its plan, probe outputs, mechanical receipt, exact CI receipt and two actual guide screenshots are returned only through the separate evidence ref. Product custody is only cloud/sd-oncall-c-f243 at the full SHA above. No main push, default-branch fast-forward, PR, account deployment or provider action was performed.
