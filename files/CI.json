@@ -1,0 +1,14 @@
+{
+  "githubApiCalls": 8,
+  "runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43160634124",
+      "id": 43160634124,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ]
+}

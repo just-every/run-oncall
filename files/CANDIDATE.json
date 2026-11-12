@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f240",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f240",
+  "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+  "mainAtFinalMerge": "985c3205031072eb37af857eafc69b44090c938f",
+  "requestedPredecessor": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+  "productFiles": [
+    "sources.lock.json",
+    "tests/product-browser.mjs",
+    "tests/readiness.mjs"
+  ],
+  "contractUnchanged": true,
+  "countsBefore": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34
+  },
+  "countsAfter": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34
+  },
+  "assertionsRemoved": false,
+  "newTestRegistrations": 0,
+  "ciRun": 43160634124,
+  "ciStatus": "completed",
+  "ciEvent": "push",
+  "mainVerify": 43152812229,
+  "mainRunSite": 43152812320,
+  "publicationScan": "deferred to fleet lander; cloud scan not available or required",
+  "providerRequests": 0,
+  "wholeClauseStatus": "PARTIAL",
+  "candidateIdentities": [
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>"
+  ],
+  "predecessorReadinessAssertionsRetained": true,
+  "mechanical": {
+    "viewsWrite": "node src/base/contract-docs.mjs write",
+    "viewsCheck": "node src/base/contract-docs.mjs check",
+    "viewsExit": 0,
+    "generatedViewsRestored": true,
+    "lock": "node scripts/edition-authoring/cli.mjs lock",
+    "lockCheck": "node scripts/edition-authoring/cli.mjs check",
+    "lockExit": 0,
+    "ledger": "none; no migration changed",
+    "ledgerExit": 0
+  },
+  "localSupportSampleTimeout": {
+    "initialExit": 1,
+    "failure": "Support-hours sample requests did not settle",
+    "mainHead": "dd8f2de57d7ef33ef010dacfc42155253635b5fd",
+    "mainCommand": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/product-browser.mjs",
+    "mainExit": 0,
+    "repair": "none; no assertion or timeout changed",
+    "candidateRetry": "passed: complete browser lane on final head; no support-hours code, assertion or timeout changed"
+  },
+  "mainVerifyHead": "dd8f2de57d7ef33ef010dacfc42155253635b5fd",
+  "mainRunSiteHead": "dd8f2de57d7ef33ef010dacfc42155253635b5fd",
+  "duplicatesRemoved": [
+    "new redundant limitationsBrowser invocation; original documentation-loop invocation retained"
+  ],
+  "ciConclusion": "success",
+  "ciUrl": "https://github.com/just-every/run-oncall/actions/runs/43160634124",
+  "ciHead": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+  "environmentReconnect": "The original controller session was lost. Browser and runtime success receipts were preserved; incomplete intake was rerun, followed by all remaining lanes. Only actual final returned exits are counted.",
+  "allLocalLanesPassed": true,
+  "localLanes": [
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "browser",
+      "timeoutSeconds": 1800,
+      "startedAt": "2026-11-12T05:19:41Z",
+      "endedAt": "2026-11-12T05:31:57.418881+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=browser ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "runtime",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T05:31:57Z",
+      "endedAt": "2026-11-12T05:37:02.245765+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=runtime ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "intake",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T05:45:50Z",
+      "endedAt": "2026-11-12T06:02:25.038051+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=intake ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "changes",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T06:02:25Z",
+      "endedAt": "2026-11-12T06:08:54.760331+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=changes ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "imports",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T06:08:54Z",
+      "endedAt": "2026-11-12T06:13:42.677104+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=imports ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "triage",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T06:13:42Z",
+      "endedAt": "2026-11-12T06:23:32.523112+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=triage ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "transfer",
+      "timeoutSeconds": 1800,
+      "startedAt": "2026-11-12T06:23:32Z",
+      "endedAt": "2026-11-12T06:35:15.525472+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=transfer ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "hosted",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T06:35:15Z",
+      "endedAt": "2026-11-12T06:37:31.447978+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=hosted ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    }
+  ],
+  "fullHistory": true,
+  "productClean": true
+}

@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f240",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f240",
+  "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+  "recordedAt": "2026-11-12T06:43:00.238038+00:00",
+  "buildFirstPartyAndTypecheck": {
+    "command": "cloud_run timeout 600 node scripts/verify-oncall-build.mjs",
+    "exit": 0,
+    "preparedBuildHead": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8"
+  },
+  "focusedReadinessAndLimitationsBrowser": {
+    "command": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=readiness node tests/product-browser.mjs",
+    "exit": 0
+  },
+  "protectedReadiness": {
+    "command": "cloud_run timeout 1200 node /tmp/f240-readiness.mjs",
+    "journey": "tests/readiness.mjs#readinessHealth",
+    "exit": 0
+  },
+  "lanes": [
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "browser",
+      "timeoutSeconds": 1800,
+      "startedAt": "2026-11-12T05:19:41Z",
+      "endedAt": "2026-11-12T05:31:57.418881+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=browser ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "runtime",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T05:31:57Z",
+      "endedAt": "2026-11-12T05:37:02.245765+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=runtime ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "intake",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T05:45:50Z",
+      "endedAt": "2026-11-12T06:02:25.038051+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=intake ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "changes",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T06:02:25Z",
+      "endedAt": "2026-11-12T06:08:54.760331+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=changes ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "imports",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T06:08:54Z",
+      "endedAt": "2026-11-12T06:13:42.677104+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=imports ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "triage",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T06:13:42Z",
+      "endedAt": "2026-11-12T06:23:32.523112+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=triage ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "transfer",
+      "timeoutSeconds": 1800,
+      "startedAt": "2026-11-12T06:23:32Z",
+      "endedAt": "2026-11-12T06:35:15.525472+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1800 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=transfer ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    },
+    {
+      "head": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+      "lane": "hosted",
+      "timeoutSeconds": 1200,
+      "startedAt": "2026-11-12T06:35:15Z",
+      "endedAt": "2026-11-12T06:37:31.447978+00:00",
+      "exit": 0,
+      "command": "cloud_run timeout 1200 env ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_BROWSER_EVIDENCE=/tmp/f240-final-verify-screens ONCALL_VERIFY_LANE=hosted ONCALL_VERIFY_PREBUILT=1 npx -y @runeditrun/rer verify"
+    }
+  ],
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "f179d01fb6fd0c9d08ad1580dcf6cb753b6578d8",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43160634124",
+    "id": 43160634124,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "mechanical": {
+    "viewsWrite": "node src/base/contract-docs.mjs write",
+    "viewsCheck": "node src/base/contract-docs.mjs check",
+    "viewsExit": 0,
+    "generatedViewsRestored": true,
+    "lock": "node scripts/edition-authoring/cli.mjs lock",
+    "lockCheck": "node scripts/edition-authoring/cli.mjs check",
+    "lockExit": 0,
+    "ledger": "none; no migration changed",
+    "ledgerExit": 0
+  },
+  "countsBefore": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34
+  },
+  "countsAfter": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34
+  },
+  "clause": "OC-044",
+  "claim": "PARTIAL",
+  "completeAcceptancePoints": [
+    2
+  ],
+  "selectedObservation": "US installation dependency checklist within acceptance 1",
+  "applicationOutboundRequests": 0,
+  "publicationScan": "fleet lander pending; no cloud scan result claimed",
+  "runSite": "fleet lander after landing; no candidate Run site claimed"
+}
