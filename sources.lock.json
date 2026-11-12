@@ -6612,7 +6612,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "ae9853781a3209ea91ed16c54ce93ad70ea31711e8aa4c01fd2e4e4797251008",
+      "sha256": "29e3766ab4b704fa000ec922bf55dfe1a1aa2e3e78d31200c5363d1fb0f8ae92",
       "executable": false
     },
     "tests/readiness.mjs": {
