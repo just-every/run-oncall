@@ -352,8 +352,10 @@ there is no exact filter gate in Oncall's email model. Any unconverted rule or
 active filter blocks activation until the saved settings are resolved and
 imported again. No earlier unsupported rule is silently skipped in live intake.
 PagerDuty's discard fallback and Opsgenie's unmatched-action discard instead
-become quarantine for review, never silent deletion. Those differences require
-an administrator's explicit acknowledgment before activation.
+become quarantine for review, never silent deletion. Quarantined messages have
+a visible receipt and reason even when the email transport rejects delivery.
+Those differences require an administrator's explicit acknowledgment before
+activation.
 
 Import, preview, apply, restart and reconciliation create no address, native
 email version or receiving endpoint. An administrator separately chooses an
