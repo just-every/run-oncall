@@ -1,0 +1,13 @@
+Product head a206fb7f6186f78558bcfa645906a7764795d7f4
+
+Journey completed: exec rer check --profile first-party (0.8s)
+Journey completed: run build (6.0s)
+Journey completed: run typecheck (2.9s)
+Runtime machines completed (457.1s)
+Journey completed: tests/runtime.mjs {"ONCALL_RUNTIME_PART":"machines"} (457.9s)
+Journey completed: tests/intake.mjs (70.2s)
+Journey completed: tests/routing.mjs (124.5s)
+Oncall verification passed: intake
+Hydration check: 4 page(s), 23 load(s)
+Agent door conformance: 8688/8688 points passed.
+verify: complete (exit 0)

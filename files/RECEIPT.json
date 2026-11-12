@@ -1,0 +1,198 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2514,
+      "path": "PLAN.md",
+      "sha256": "2e2c85a43392c337b08698dd163ba0bf31b067145ae9b34f94e590472921a969"
+    },
+    {
+      "bytes": 1198,
+      "path": "TRIAGE-PROBES.txt",
+      "sha256": "73ebe3e5e45f42ff5e6545cbb572940786359bf0b558ae36a713222523c3307a"
+    },
+    {
+      "bytes": 426140,
+      "path": "guide-1440.png",
+      "sha256": "6c6812bf11f886534cf7413b7d4bf7190671ff04dae4b42beb9eaf65790bf3af"
+    },
+    {
+      "bytes": 124563,
+      "path": "guide-390.png",
+      "sha256": "3376fcbce266be585671237b3a98ebae00df7f42ace6e6efc5324bf185d5b16d"
+    }
+  ],
+  "branch": "cloud/sd-oncall-c-f242",
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "name": "typecheck",
+      "output_sha256": "312a0a778e78bb8f3707ca9ffb32250093598590017e243a07464dcf52adc6c6"
+    },
+    {
+      "command": "node scripts/write-agent-surface.mjs --check",
+      "exit": 0,
+      "name": "agent_inventory",
+      "output_sha256": "801486cf8a19668691e28200acfa70e235f646ba032a7ca3adc2f62c2683fa77"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "name": "contract_write",
+      "output_sha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "name": "contract_check",
+      "output_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "name": "source_lock",
+      "output_sha256": "a4200b4fa81cc8c4c2ca5be0f2cac21590b6d464080d0f3fdfff18b4d87dba6a"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "name": "first_party",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "ONCALL_VERIFY_LANE=intake ONCALL_CHROMIUM_PATH=/usr/bin/chromium CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run timeout 1500 npx -y @runeditrun/rer verify",
+      "conformance": {
+        "passed": 8688,
+        "total": 8688
+      },
+      "exit": 0,
+      "head": "a206fb7f6186f78558bcfa645906a7764795d7f4",
+      "name": "required_rer_verify",
+      "output_sha256": "0daf99acb52d19ca2359ade15840006412b000b2ba86f71b2a8425c3eb47c99e",
+      "runtime_machines_seconds": 457.1,
+      "selected_lane": "intake"
+    },
+    {
+      "args": [
+        "--no-sandbox"
+      ],
+      "assertion_width": 1440,
+      "chromium": "/usr/bin/chromium",
+      "command": "cloud_run timeout 1200 node /tmp/f242-guide-run.mjs",
+      "exit": 0,
+      "head": "a206fb7f6186f78558bcfa645906a7764795d7f4",
+      "name": "guide_browser_proof",
+      "proof_widths": [
+        1440,
+        390
+      ],
+      "visual_observation": "The existing horizontally constrained inventory table clips later columns at 390; the new tool and scope are visible. This is a minor pre-existing documentation layout follow-up, with no new screen or control implementation."
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "head": "a206fb7f6186f78558bcfa645906a7764795d7f4",
+      "name": "source_lock_regenerate",
+      "output_sha256": "6241425e8b729fcf0bdbce677461fa318bd17813bc0c459478f32fe3070778f5",
+      "phase": "after final source edit and main merge, before candidate commit"
+    }
+  ],
+  "ci": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head": "a206fb7f6186f78558bcfa645906a7764795d7f4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43184206807",
+      "id": 43184206807,
+      "name": "Verify",
+      "observed_at": "2026-11-12T08:51:17.044096+00:00",
+      "status": "completed"
+    }
+  ],
+  "ci_observation_policy": {
+    "last_observed_at": "2026-11-12T08:51:17.044096+00:00",
+    "minimum_poll_interval_seconds": 300,
+    "watchers": 1
+  },
+  "claim": {
+    "clause": "SURFACE-001",
+    "new_policy_default": null,
+    "selected_slice": "Acceptance 1 triage read row",
+    "source_status": "missing",
+    "status": "PARTIAL",
+    "whole_acceptance_points_closed": []
+  },
+  "counts": {
+    "candidate": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "class_fixtures": {
+      "after": 64,
+      "before": 62
+    },
+    "exposed_tools": {
+      "after": 41,
+      "before": 40
+    },
+    "initial_main": {
+      "done": 25,
+      "missing": 34,
+      "partial": 42
+    },
+    "manifest_tools": {
+      "after": 42,
+      "before": 41
+    },
+    "refreshed_main": {
+      "done": 26,
+      "missing": 34,
+      "partial": 41
+    },
+    "rows": 101
+  },
+  "generated_contract_views_differ_from_main": false,
+  "github_call_budget": 10,
+  "github_calls_used": 6,
+  "head": "a206fb7f6186f78558bcfa645906a7764795d7f4",
+  "landing": {
+    "main_equality_claimed": false,
+    "status": "BRANCH_ONLY"
+  },
+  "main_basis": {
+    "head": "6b4689cbf0d25f36c43c0d9967fd0a3e00a22a41",
+    "run_site": 43181655448,
+    "run_site_conclusion": "success",
+    "verify_conclusion": "success",
+    "verify_run": 43181655382
+  },
+  "migration_ledger": {
+    "command": null,
+    "reason": "No migrations added or changed"
+  },
+  "product_push": {
+    "attempts": 1,
+    "guard": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f242",
+    "head": "a206fb7f6186f78558bcfa645906a7764795d7f4",
+    "ref": "refs/heads/cloud/sd-oncall-c-f242",
+    "remote": "origin",
+    "status": "PUSHED"
+  },
+  "publication_scan": {
+    "required_custodian": "fleet lander",
+    "status": "NOT_RUN_IN_CLOUD"
+  },
+  "ready": {
+    "branch_verify": "success",
+    "custody": "branch_only",
+    "landing_claimed": false,
+    "local_gates": "success",
+    "publication_scan_claimed": false
+  },
+  "repository": "just-every/run-oncall",
+  "status_source_matches_main": true,
+  "tag": "sd-oncall-c-f242",
+  "timestamp": "2026-11-12T08:36:24.849232+00:00",
+  "updated_at": "2026-11-12T08:52:03.312964+00:00"
+}

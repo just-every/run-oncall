@@ -1,0 +1,6 @@
+Product head a206fb7f6186f78558bcfa645906a7764795d7f4
+Command: ONCALL_VERIFY_LANE=intake ONCALL_CHROMIUM_PATH=/usr/bin/chromium CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run timeout 1500 npx -y @runeditrun/rer verify
+
+PROBE SURFACE-001 1 autonomous: MCP triage search and filters -> exactly three scoped incidents and three alert-only items with sponsor mine, snoozed status past due, stable cursor pages and scoped totals; foreign merged text and unrouted records absent; policy parity, current guide, no native effects and zero outbound requests
+PROBE SURFACE-001 1 held: MCP triage search and filters -> exactly three scoped incidents and three alert-only items with sponsor mine, snoozed status past due, stable cursor pages and scoped totals; foreign merged text and unrouted records absent; policy parity, current guide, no native effects and zero outbound requests
+PASS scoped triage reads: populated native D1 and emitted MCP, both policies, all native query fields, sponsor attribution, allowlisted records, cursor revision and principal and grant refusals, revoked and erased and insufficient credentials, unchanged deadlines and paging and permanent audit; zero outbound requests

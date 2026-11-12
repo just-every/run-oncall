@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "d1f8c061502cfb254b15a68fb5bb4b67e63bbdfc",
+      "bytes": 1406,
+      "path": "CI-OBSERVATIONS.json",
+      "sha256": "d33082bf8eaf6cd55f3ebfc8aff9d28b29ebf0bd73e225d8953d75eed00be058"
+    },
+    {
+      "blob": "0ead4281d5bf669d575da390b94c6d28185eb56d",
+      "bytes": 2514,
+      "path": "PLAN.md",
+      "sha256": "2e2c85a43392c337b08698dd163ba0bf31b067145ae9b34f94e590472921a969"
+    },
+    {
+      "blob": "e47b6124c2bcb16c01afac8cc5a26179d3544522",
+      "bytes": 6056,
+      "path": "RECEIPT.json",
+      "sha256": "faee88f4dc3091065f56edc2968fc12a9c39e7c7413bd962399ebf6743286cde"
+    },
+    {
+      "blob": "9dbad04c32c0cfd86e71d1c075018328648d4775",
+      "bytes": 15660,
+      "path": "REPORT.md",
+      "sha256": "8567be6ff0eac4026a48d64bd6a54532e73215bde9a332f6ea92e3c1ecbdfc33"
+    },
+    {
+      "blob": "ca9d6d5ed91a11e485e2632a50f14969b3101917",
+      "bytes": 1198,
+      "path": "TRIAGE-PROBES.txt",
+      "sha256": "73ebe3e5e45f42ff5e6545cbb572940786359bf0b558ae36a713222523c3307a"
+    },
+    {
+      "blob": "8970ab84d083b103071ef60b16df6b5db3a1d8c1",
+      "bytes": 550,
+      "path": "VERIFY-RESULTS.txt",
+      "sha256": "523f9da822d6a9b0143971265ab3be7444298f448fb6070a3aa348e509643890"
+    },
+    {
+      "blob": "ef0c559d62ef7a2b8781175849eccbacedcb16a0",
+      "bytes": 426140,
+      "path": "guide-1440.png",
+      "sha256": "6c6812bf11f886534cf7413b7d4bf7190671ff04dae4b42beb9eaf65790bf3af"
+    },
+    {
+      "blob": "d32ae1b32e48bea9749222bdfefbf424b8bca4ad",
+      "bytes": 124563,
+      "path": "guide-390.png",
+      "sha256": "3376fcbce266be585671237b3a98ebae00df7f42ace6e6efc5324bf185d5b16d"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f242",
+  "product_head": "a206fb7f6186f78558bcfa645906a7764795d7f4",
+  "ref": "refs/heads/evidence/sd-oncall-c-f242",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f242"
+}
