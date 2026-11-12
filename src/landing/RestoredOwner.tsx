@@ -2,7 +2,24 @@ import { useEffect, useRef, useState } from "react";
 import { Form } from "../forms";
 import { request } from "../useWorkspace";
 
-type Administrator = { id: string; name: string };
+type Administrator = { id: string; name: string; email?: string | null };
+
+function administratorOptions(administrators: Administrator[]) {
+  const identities = administrators.map((admin) => `${admin.name} — Administrator — ${admin.email?.trim() || "no email on record"}`);
+  const counts = new Map<string, number>();
+  const occurrences = new Map<string, number>();
+  for (const label of identities) {
+    const identity = label.toLocaleLowerCase();
+    counts.set(identity, (counts.get(identity) ?? 0) + 1);
+  }
+  return administrators.map((admin, index) => {
+    const label = identities[index];
+    const identity = label.toLocaleLowerCase();
+    const ordinal = (occurrences.get(identity) ?? 0) + 1;
+    occurrences.set(identity, ordinal);
+    return { id: admin.id, label: counts.get(identity)! > 1 ? `${label} — administrator ${ordinal}` : label };
+  });
+}
 
 export function RestoredOwner({ onLinked, autoOpen = false }: { onLinked: () => Promise<void>; autoOpen?: boolean }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -56,6 +73,8 @@ function AdministratorPicker({ onLinked }: { onLinked: () => Promise<void> }) {
     } finally { setBusy(false); }
   }
 
+  const options = administratorOptions(administrators);
+
   return (
     <div aria-busy={loading || busy}>
       {loading ? <p role="status">Loading archived administrators…</p> : <>
@@ -69,12 +88,12 @@ function AdministratorPicker({ onLinked }: { onLinked: () => Promise<void> }) {
               setConfirmed(false);
             }}>
               <option value="" disabled>Choose your archived administrator</option>
-              {administrators.map((admin) => <option key={admin.id} value={admin.id}>
-                {admin.name} — email not recorded — {admin.id}
+              {options.map((admin) => <option key={admin.id} value={admin.id}>
+                {admin.label}
               </option>)}
             </select>
           </label>
-          {selected && <p className="oc-door-identity">Archived ID: <code>{selected}</code>. Email not recorded in the archived member record.</p>}
+          {selected && <p className="oc-door-identity">{options.find((admin) => admin.id === selected)?.label}</p>}
           <label className="oc-door-confirm">
             <input type="checkbox" name="confirm" required checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />
             <span>I confirm this is my archived administrator identity.</span>

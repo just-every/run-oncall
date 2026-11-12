@@ -24,6 +24,16 @@ export default async function prepare({ phase, request, origin, cookie }) {
   const clients = { receipts: { token, clientId: client.id,
     agent: { id: `oncall-client:${client.id}`, name: client.name, specialist: 'oncall-responder' },
   } };
+  // A populated evidence-free recovery gives the generic class journey a
+  // standard read, independently of the evidence-bearing monitor fixture.
+  const source = 'synthetic-oncall-alert-class-' + phase;
+  const sourceKey = 'synthetic-oncall-alert-class-credential-' + phase;
+  await http('/api/sources', { id: source, key: sourceKey, scopes: ['agent-foreign-service'] });
+  for (const intent of ['trigger', 'recover']) await http('/api/ingress/' + source, {
+    source, eventId: source + '-' + intent, service: 'agent-foreign-service', environment: 'production',
+    key: source, generation: source, intent, severity: 'warning', title: 'Synthetic alert classification',
+    observedAt: new Date().toISOString(), evidence: '',
+  }, { bearer: sourceKey, status: 201 });
   if (phase === 'initial') return { clients };
 
   const values = { manualPage: { operationId: randomUUID() } };

@@ -70,6 +70,18 @@ export function savedExportRecords(vendor:Vendor,value:Json):ParsedRecord[] {
     records.push({kind,sourceId:String(payload?.id??payload?.accountId??payload?.alias??payload?.username??payload?.slug??payload?._parent?.id??(kind==='event_orchestrations'?payload?.parent?.id:undefined)??`${kind}-${index}`),payload,pointer})
    }
   if(!records.length)throw Error('The export bundle is empty')
+  if(vendor==='opsgenie') {
+   if(records.some(row=>Object.hasOwn(row.payload as object,'_emailActions')))fail('Reserved email action binding; save the original integration and action responses instead')
+   const actions=records.filter(row=>row.kind==='integration_actions')
+   const seen=new Set<string>()
+   for(const row of actions) {
+    const parent=(row.payload as any)?._parent?.id
+    const integration=records.find(r=>r.kind==='integrations'&&r.sourceId===String(parent))
+    if(!parent||!integration||seen.has(String(parent)))fail('Saved integration actions need one matching integration and a unique _parent id; nothing was imported')
+    seen.add(String(parent))
+    integration.payload={...(integration.payload as any),_emailActions:row.payload}
+   }
+  }
   const result=vendor==='pagerduty'?pagerdutyRecords(records):records
   if(result.length>500)fail(`The saved export holds ${result.length} records, above the 500-record limit (including embedded integrations); narrow the export and preview again. Nothing was imported or truncated.`,413)
   return result

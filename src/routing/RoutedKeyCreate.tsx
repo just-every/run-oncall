@@ -2,20 +2,21 @@ import { useState } from 'react';
 import { Form } from '../forms';
 import { OneTimeSecret } from '../integrations/OneTimeSecret';
 import { newIdentity, privateKey, type IntegrationProps } from '../integrations/catalog';
+import { RoutedSenderSetup, type RoutedSender } from './RoutedSenderSetup';
 
 export function RoutedKeyCreate({ state, busy, run, defaultOpen = false, onCreated }: Pick<IntegrationProps, 'state' | 'busy' | 'run'> & { defaultOpen?: boolean; onCreated?: (id: string) => void }) {
   const [open, setOpen] = useState(defaultOpen), [name, setName] = useState(''), [provider, setProvider] = useState('pagerduty');
   const [team, setTeam] = useState(''), [scope, setScope] = useState<string[]>([]), [owner, setOwner] = useState(state.members.find(m => m.active && m.role === 'admin')?.id ?? '');
-  const [authentication, setAuthentication] = useState('bearer'), [created, setCreated] = useState(''),[error,setError]=useState('');
+  const [authentication, setAuthentication] = useState('bearer'), [created, setCreated] = useState(''),[sender,setSender]=useState<RoutedSender>(),[error,setError]=useState('');
   const teams = (state.teams??[]).filter(t=>t.active).sort((a,b)=>a.name.localeCompare(b.name));
   const services = state.services.filter(s=>!team||s.team===team);
   const owners = state.members.filter(m => m.active && ['admin', 'responder'].includes(m.role));
   return <details className="panel padded integrations routing-create" open={open} onToggle={e => setOpen(e.currentTarget.open)}><summary>Add routed key</summary>
-    {created ? <OneTimeSecret value={created} onDone={() => { setCreated(''); setName(''); setOpen(false); }} /> : !state.services.length ? <p><a href="/settings/services">Add a service first</a></p> : <Form busy={busy} label="Create routed key" onSubmit={async () => {
+    {created ? <><OneTimeSecret value={created} onDone={() => { setCreated(''); setSender(undefined); setName(''); setOpen(false); }} />{sender && <RoutedSenderSetup sender={sender} defaultOpen />}</> : !state.services.length ? <p><a href="/settings/services">Add a service first</a></p> : <Form busy={busy} label="Create routed key" onSubmit={async () => {
       if(!scope.length){setError('Choose at least one service.');return false;}setError('');
       const id = newIdentity('routed'), key = privateKey();
       const result = await run('/api/routing/keys', { id, name, provider, scope, owner, key, ...(team?{team}:{}), revision: 0, rules: [], catchAll: null, ...(provider === 'native' ? { authentication } : {}) }, 'Routed key created');
-      if (result) { setCreated(key); onCreated?.(id); }
+      if (result) { const service = state.services.find(s => s.id === scope[0]); setCreated(key); if (service) setSender({ id, name, provider, service, ...(provider === 'native' ? { authentication } : {}) }); onCreated?.(id); }
       return false;
     }}>
       {error&&<p role="alert">{error}</p>}<label className="field">Name<input aria-label="Name" autoFocus={defaultOpen} required maxLength={200} value={name} onChange={e => setName(e.target.value)} /></label>
