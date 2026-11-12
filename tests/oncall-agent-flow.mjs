@@ -6,6 +6,7 @@ import {lexer} from 'marked';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption,consentRevocationMatrix} from './agent-door-runtime.mjs';
 import {resourceJourney} from './oncall-agent-resources.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
@@ -671,7 +672,7 @@ async function staleCoordinationRevision(runtime){
 await resourceJourney();
 await agedReplayRetention();
 
-const runtime=await agentRuntime();
+const runtime=await agentRuntime({clock:null});
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
 try{
  const {tool,mcp,http,adopt}=runtime;
@@ -753,6 +754,8 @@ try{
  await staleCoordinationRevision(runtime);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
+ await manualPageClassification(runtime);
+ await deadlineClassification(runtime);
  const owner=(await (await http('/api/workspace')).json()).member;
  // Create real coordination work under the held policy. Retained pending work
  // must remain a person's decision even if the company later allows autonomy.
