@@ -16,6 +16,10 @@
     "product-browser.log",
     "product-coordination-focused.log",
     "product-rota-focused.log",
+    "member-coordination.exit",
+    "product-browser.exit",
+    "product-coordination-focused.exit",
+    "product-rota-focused.exit",
     "ci-latest.json",
     "workflow-api-receipt.json",
     "ci-watch.log",
@@ -38,5 +42,6 @@
   "private_held_out_material_selected": false,
   "ci_state": "completed/success",
   "head": "d563ad121bcc5508a89c85e908e823c910a11ac5",
-  "run_id": 43130282710
+  "run_id": 43130282710,
+  "complete_relevant_packet": true
 }

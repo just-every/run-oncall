@@ -103,16 +103,22 @@
       "sha256": "abc2a97246f0f8120796a5e91a10eb0ff5d30f2e8636105f11612316800f9f1a"
     },
     {
+      "blob": "573541ac9702dd3969c9bc859d2b91ec1f7e6e56",
+      "bytes": 2,
+      "path": "member-coordination.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
       "blob": "8fefd80cd58ffa297a8a3ae7bb06cce8da7242b4",
       "bytes": 4516,
       "path": "member-coordination.log",
       "sha256": "4bcb5986e986633649fdf9109d602faec85820e6f32b595c32d148f412335cef"
     },
     {
-      "blob": "142e9c86c903c2e807921049f1edb77e50b99353",
-      "bytes": 1352,
+      "blob": "8e7120f4da95db671d338e13bc5b82fdd85d8763",
+      "bytes": 1522,
       "path": "packet-audit.json",
-      "sha256": "e18644620c970cc2c2d10793212a8fe012a3c769c84e2bb33e955cc20a0370ab"
+      "sha256": "15e5aa6f6711581cf770a785058ec072250bbfb195b3057cd87afb9920ffe377"
     },
     {
       "blob": "1b799b1df09b627f989e50b0db5f2784e53b0f1e",
@@ -121,10 +127,22 @@
       "sha256": "5e32536bcfbc5701278233f79d500f8f8f8e252378cb78ffa3c1acf5d1ebffed"
     },
     {
+      "blob": "d00491fd7e5bb6fa28c517a0bb32b8b506539d4d",
+      "bytes": 2,
+      "path": "product-browser.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
       "blob": "b0b8c87b5f925f7acb8015a86a9779ab13997658",
       "bytes": 11162,
       "path": "product-browser.log",
       "sha256": "e988c8c64f87649fdc0f5221d624795febd8bae57720ba96d7d29ead0592746e"
+    },
+    {
+      "blob": "573541ac9702dd3969c9bc859d2b91ec1f7e6e56",
+      "bytes": 2,
+      "path": "product-coordination-focused.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
     {
       "blob": "b05fc9df355f5fdfbdafea2ebf520205560b2a65",
@@ -155,6 +173,12 @@
       "bytes": 1104,
       "path": "product-push-receipt.txt",
       "sha256": "d95cfbe61db8d5c36e106a03ccc6b74ceb52e4ac9da398e73221868794d2c32d"
+    },
+    {
+      "blob": "573541ac9702dd3969c9bc859d2b91ec1f7e6e56",
+      "bytes": 2,
+      "path": "product-rota-focused.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
     },
     {
       "blob": "6df8993aed99ce5729ea00b82bb83ed1ecf134b4",
