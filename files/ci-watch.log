@@ -3,3 +3,6 @@ CI {"conclusion": null, "head_sha": "d563ad121bcc5508a89c85e908e823c910a11ac5", 
 CI_WAIT seconds=300
 CI {"conclusion": null, "head_sha": "d563ad121bcc5508a89c85e908e823c910a11ac5", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43130282710", "run_id": 43130282710, "status": "in_progress"}
 CI_WAIT seconds=300
+CI {"conclusion": null, "head_sha": "d563ad121bcc5508a89c85e908e823c910a11ac5", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43130282710", "run_id": 43130282710, "status": "queued"}
+CI_WAIT seconds=300
+CI {"conclusion": "success", "head_sha": "d563ad121bcc5508a89c85e908e823c910a11ac5", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43130282710", "run_id": 43130282710, "status": "completed"}
