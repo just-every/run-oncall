@@ -1,0 +1,16 @@
+{
+  "id": 43127636159,
+  "status": "completed",
+  "conclusion": "success",
+  "head_sha": "4a63fd678ef366d3552198f6f6f574b2fa272706",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43127636159",
+  "run_attempt": 1,
+  "github_calls_used": 4,
+  "poll_intervals_seconds": [
+    301.144179,
+    301.074964,
+    301.167854
+  ],
+  "reruns": 0,
+  "failed_jobs": 0
+}

@@ -1,0 +1,28 @@
+{
+  "branch": "cloud/main-oncall-events-sample-1-c2",
+  "head": "4a63fd678ef366d3552198f6f6f574b2fa272706",
+  "tree": "fd6923d7a4e60501399df9642268da924de3f94f",
+  "parent": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "candidate_commits": [
+    "4a63fd678ef366d3552198f6f6f574b2fa272706"
+  ],
+  "merge_commits": 0,
+  "identities_and_trailers": "passed",
+  "diff_stat": "docs/incidents.md                   |  2 +-\n sources.lock.json                   | 14 +++++++----\n src/api.ts                          |  7 +++++-\n src/integrations/RequestExample.tsx |  6 +++--\n src/integrations/catalog.ts         |  3 ++-\n src/integrations/native-name.ts     |  1 +\n tests/product-browser.mjs           | 46 ++++++++++++++++++++++++++++++++-----\n 7 files changed, 63 insertions(+), 16 deletions(-)",
+  "product_push": {
+    "status": "pushed",
+    "attempts": 1,
+    "remote_branch": "cloud/main-oncall-events-sample-1-c2",
+    "remote_head": "4a63fd678ef366d3552198f6f6f574b2fa272706"
+  },
+  "pr": null,
+  "candidate_commit_subject": "Make Events API source samples readable on current main",
+  "contract_files_byte_identical_at_publication": true,
+  "worktree_clean_after_browser_and_push": true,
+  "remote_advertisement_verified": true,
+  "ready": {
+    "head": "4a63fd678ef366d3552198f6f6f574b2fa272706",
+    "verify_run": 43127636159,
+    "conclusion": "success"
+  }
+}

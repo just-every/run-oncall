@@ -1,0 +1,88 @@
+{
+  "utc": "2026-11-12T00:29:16.740148+00:00",
+  "base_sha": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "replayed_source_sha": "c92e49165b54b84c6e9df099de317882233c0602",
+  "source_lock_check": "passed",
+  "contract_documents_check": "passed",
+  "contract_files": {
+    "CONTRACT.md": {
+      "sha256": "48f813aa7b0a6db5de868f526078ab90274b6c7efd1c8d5ba546c881cc6c55a5",
+      "byte_identical_to_origin_main": true
+    },
+    "ACCEPTANCE.md": {
+      "sha256": "c2af263d4691b54ef12b6def48e94db0c34a83fab760c997c748e5f246e7f5c6",
+      "byte_identical_to_origin_main": true
+    },
+    "docs/CLAIMS.md": {
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440",
+      "byte_identical_to_origin_main": true
+    }
+  },
+  "contract_counts_before": {
+    "done": 23,
+    "partial": 44,
+    "missing": 34
+  },
+  "contract_counts_after": {
+    "done": 23,
+    "partial": 44,
+    "missing": 34
+  },
+  "clause_status_changes": [],
+  "oc022_status_before": "done",
+  "oc022_status_after": "done",
+  "new_test_registrations": 0,
+  "focused_journey_count_before": 1,
+  "focused_journey_count_after": 1,
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+      "exit": 0,
+      "log": "events-source.log",
+      "assertion_width": 1440,
+      "proof_widths": [
+        1440,
+        390
+      ]
+    }
+  ],
+  "publication_scan": {
+    "status": "external fleet gate",
+    "reason": "Cloud task has no Mac publication scanner; no scan completion claimed."
+  },
+  "implementation_files": [
+    "docs/incidents.md",
+    "sources.lock.json",
+    "src/api.ts",
+    "src/integrations/RequestExample.tsx",
+    "src/integrations/catalog.ts",
+    "src/integrations/native-name.ts",
+    "tests/product-browser.mjs"
+  ],
+  "tested_candidate_head": "4a63fd678ef366d3552198f6f6f574b2fa272706",
+  "tested_tree": "fd6923d7a4e60501399df9642268da924de3f94f",
+  "test_provenance": "Local checks ran immediately before the only commit; the product source tree was unchanged between checks and commit. The source lock was regenerated last and its check passed.",
+  "browser_review": {
+    "reviewed": [
+      "browser/events-readable-bearer-source-1440.png",
+      "browser/events-readable-bearer-source-390.png",
+      "browser/events-readable-signed-source-1440.png",
+      "browser/events-readable-signed-source-390.png"
+    ],
+    "result": "Source names, timestamp identities and service-name dedup keys are readable. Required service IDs are retained and explained. Both viewport layouts fit; private-key fields are masked."
+  }
+}

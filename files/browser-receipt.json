@@ -1,0 +1,92 @@
+{
+  "head": "4a63fd678ef366d3552198f6f6f574b2fa272706",
+  "journey": "tests/product-browser.mjs#eventsSourceBrowser",
+  "assertion_width": 1440,
+  "screenshots": [
+    {
+      "file": "browser/events-created-1440.png",
+      "width": 1440,
+      "height": 1279,
+      "expected_viewport_width": 1440
+    },
+    {
+      "file": "browser/events-created-390.png",
+      "width": 390,
+      "height": 1424,
+      "expected_viewport_width": 390
+    },
+    {
+      "file": "browser/events-empty-source-1440.png",
+      "width": 1440,
+      "height": 1389,
+      "expected_viewport_width": 1440
+    },
+    {
+      "file": "browser/events-empty-source-390.png",
+      "width": 390,
+      "height": 1507,
+      "expected_viewport_width": 390
+    },
+    {
+      "file": "browser/events-readable-bearer-source-1440.png",
+      "width": 1440,
+      "height": 1561,
+      "expected_viewport_width": 1440
+    },
+    {
+      "file": "browser/events-readable-bearer-source-390.png",
+      "width": 390,
+      "height": 1679,
+      "expected_viewport_width": 390
+    },
+    {
+      "file": "browser/events-readable-signed-source-1440.png",
+      "width": 1440,
+      "height": 1425,
+      "expected_viewport_width": 1440
+    },
+    {
+      "file": "browser/events-readable-signed-source-390.png",
+      "width": 390,
+      "height": 1543,
+      "expected_viewport_width": 390
+    },
+    {
+      "file": "browser/events-recover-form-1440.png",
+      "width": 1440,
+      "height": 1442,
+      "expected_viewport_width": 1440
+    },
+    {
+      "file": "browser/events-recover-form-390.png",
+      "width": 390,
+      "height": 1546,
+      "expected_viewport_width": 390
+    },
+    {
+      "file": "browser/events-recovered-alert-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "expected_viewport_width": 1440
+    },
+    {
+      "file": "browser/events-recovered-alert-390.png",
+      "width": 390,
+      "height": 1000,
+      "expected_viewport_width": 390
+    },
+    {
+      "file": "browser/events-recovered-list-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "expected_viewport_width": 1440
+    },
+    {
+      "file": "browser/events-recovered-list-390.png",
+      "width": 390,
+      "height": 1000,
+      "expected_viewport_width": 390
+    }
+  ],
+  "private_key_mask": ".one-time-secret input and input[type=\"password\"]"
+}
