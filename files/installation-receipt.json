@@ -1,0 +1,320 @@
+{
+  "observedAt": "2026-11-12T03:48:08.035Z",
+  "release": {
+    "package": "@just-every/oncall",
+    "version": "0.5.8",
+    "deployment": {
+      "sourceSha": null,
+      "fingerprint": null,
+      "versionId": null
+    }
+  },
+  "installation": {
+    "country": "US",
+    "reviewedOn": "2026-11-12",
+    "items": [
+      {
+        "id": "hosting",
+        "name": "Hosting account and deployment identity",
+        "clauses": [
+          "OC-018"
+        ],
+        "state": "working-here",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "coordination",
+            "state": "working-here"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-1",
+            "state": "passed",
+            "date": "2026-10-19"
+          }
+        ],
+        "requirement": "Not done for this installation: authorize its Cloudflare account and deployment operation, bind the source SHA, artifact fingerprint and version, and verify owner access and removal. R-1 is dated prior evidence, not this deployment."
+      },
+      {
+        "id": "mail",
+        "name": "Remote mail for hosted sign-in",
+        "clauses": [
+          "OC-018"
+        ],
+        "state": "unproven-live",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "hosted-mail",
+            "state": "unproven-live"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-1",
+            "state": "passed",
+            "date": "2026-10-19"
+          },
+          {
+            "id": "R-2",
+            "state": "passed",
+            "date": "2026-10-21"
+          }
+        ],
+        "requirement": "Not done: configure a remote mail provider, credentials and verified sender, then prove a real hosted sign-in email. Local owner entry is not mail delivery; prior R-1 does not verify this sender. R-2 is dated prior inbound intake evidence only, not hosted sign-in or paging."
+      },
+      {
+        "id": "us-sending",
+        "name": "Registered US voice and SMS sending",
+        "clauses": [
+          "OC-026",
+          "OC-066"
+        ],
+        "state": "off",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "paging",
+            "state": "off"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-5",
+            "state": "not run",
+            "date": null
+          }
+        ],
+        "requirement": "Not done: register US A2P 10DLC brand and campaign, sender numbers and caller identity; establish consent, opt-out handling and carrier tests. Paging remains OFF; account configuration grants no sending authority."
+      },
+      {
+        "id": "push",
+        "name": "APNs and FCM entitlements",
+        "clauses": [
+          "OC-029"
+        ],
+        "state": "not-built",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "ios",
+            "state": "not-built"
+          },
+          {
+            "id": "android",
+            "state": "not-built"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-7",
+            "state": "not run",
+            "date": null
+          }
+        ],
+        "requirement": "Not done: provision APNs and FCM, iOS Critical Alerts entitlement, Android full-screen and Do Not Disturb permissions, and device acceptance. No native push adapter is built."
+      },
+      {
+        "id": "native-apps",
+        "name": "Native apps and store distribution",
+        "clauses": [
+          "OC-029"
+        ],
+        "state": "not-built",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "ios",
+            "state": "not-built"
+          },
+          {
+            "id": "android",
+            "state": "not-built"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-7",
+            "state": "not run",
+            "date": null
+          }
+        ],
+        "requirement": "Not done: build and distribute iOS and Android apps through the App Store and Google Play, with native-device proof. A web app or local test is not distribution evidence."
+      },
+      {
+        "id": "bridges",
+        "name": "Zoom or Microsoft Teams bridges",
+        "clauses": [
+          "OC-035"
+        ],
+        "state": "not-built",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "bridges",
+            "state": "not-built"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-12",
+            "state": "not run",
+            "date": null
+          },
+          {
+            "id": "R-6",
+            "state": "not run",
+            "date": null
+          }
+        ],
+        "requirement": "Not done: authorize a real Zoom or Teams tenant, build the bridge integration and prove live inbound call routing. No bridge or provider request is supplied by this checklist."
+      },
+      {
+        "id": "chat",
+        "name": "Slack and Microsoft Teams apps",
+        "clauses": [
+          "OC-034",
+          "OC-067"
+        ],
+        "state": "not-built",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "chat-slack",
+            "state": "not-built"
+          },
+          {
+            "id": "chat-microsoft-teams",
+            "state": "not-built"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-12",
+            "state": "not run",
+            "date": null
+          }
+        ],
+        "requirement": "Not done: install and authorize the scoped Slack and Teams apps and prove real chat actions. Neither connected app is built."
+      },
+      {
+        "id": "standby",
+        "name": "Independent standby, takeover and real-phone drills",
+        "clauses": [
+          "OC-028",
+          "OC-047",
+          "OC-054"
+        ],
+        "state": "not-built",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "standby",
+            "state": "not-built"
+          },
+          {
+            "id": "drills",
+            "state": "unproven-live"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-8",
+            "state": "not run",
+            "date": null
+          }
+        ],
+        "requirement": "Not done: establish independent account and identity authority, takeover and failback, and human-confirmed real-phone loss drills. Required for paging cutover; hosted coordination may run beside the existing pager without standby."
+      },
+      {
+        "id": "handsets",
+        "name": "Live handset delivery",
+        "clauses": [
+          "OC-026",
+          "OC-029",
+          "OC-035",
+          "OC-064",
+          "OC-066",
+          "OC-071",
+          "OC-080",
+          "OC-082"
+        ],
+        "state": "unproven-live",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "cutover",
+            "state": "unproven-live"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-6",
+            "state": "not run",
+            "date": null
+          }
+        ],
+        "requirement": "Not done: prove registered real-handset voice with DTMF, SMS replies and links, push and email, plus provider-disable and inbound-call drills. Local receipts and provider sandboxes prove no live receipt."
+      },
+      {
+        "id": "reference-load",
+        "name": "OC-064 reference load",
+        "clauses": [
+          "OC-064",
+          "OC-054"
+        ],
+        "state": "unproven-live",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "reference-load",
+            "state": "unproven-live"
+          }
+        ],
+        "fieldProof": [
+          {
+            "id": "R-6",
+            "state": "not run",
+            "date": null
+          }
+        ],
+        "requirement": "Not done: measure sustained and burst intake, escalation, failover, recovery and archive capacity with p50, p95, p99 and maximum against OC-064. R-6 covers related live delivery, not a passing reference-load measurement."
+      },
+      {
+        "id": "regulated-data",
+        "name": "Applicable regulated-data agreements and validated controls",
+        "clauses": [
+          "OC-044"
+        ],
+        "state": "unproven-live",
+        "completion": "not-done",
+        "matrix": [
+          {
+            "id": "regulated-data",
+            "state": "unproven-live"
+          }
+        ],
+        "fieldProof": [],
+        "requirement": "Not done: applicable agreements and validated controls are absent, and no field-proof row records them. Make no HIPAA or regulated-data suitability claim; use redacted incident descriptions and separately authorized references."
+      },
+      {
+        "id": "911",
+        "name": "911 emergency boundary",
+        "clauses": [
+          "OC-044"
+        ],
+        "state": "working-here",
+        "completion": "guidance-only",
+        "matrix": [
+          {
+            "id": "us-emergency",
+            "state": "working-here"
+          }
+        ],
+        "fieldProof": [],
+        "requirement": "Oncall is not a 911 dispatch service. For a US emergency, call 911 directly; do not send it to Oncall or wait for an alert or acknowledgment. This is guidance, not an emergency-service capability; no field-proof row applies."
+      }
+    ]
+  }
+}

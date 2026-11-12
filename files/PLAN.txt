@@ -1,0 +1,8 @@
+Scope: OC-044 acceptance 1 account-free US checklist only; retain PARTIAL.
+1. Inspect the full clause, status, release matrix, field proof register, checklist implementation and existing public-door journeys.
+2. Rebase the supplied continuation onto main, preserving main's newer judgments and both independent network checks. Keep all existing assertions; extend existing readiness and browser journeys only.
+3. Verify each US dependency's state, owner and proof date through protected HTTP and the emitted Settings Readiness screen. Prove populated signed-out and stakeholder refusal; compare durable records, paging state and outbound ledgers.
+4. Run touched readiness and browser journeys, typecheck, first-party check and required rer verify. Capture and inspect 1440 and 390 screens, labels, overflow and serious or critical axe findings.
+5. Regenerate contract views and check, restore them from main, lock source last and check. Leave all Contract status judgments unchanged.
+6. Push cloud/sd-oncall-c-f238 using the fleet guard after identity and message checks. Discover exact-SHA Verify by REST and observe its actual state; no claim from another SHA. Publish complete public non-secret report and actual receipts on evidence/sd-oncall-c-f238.
+7. Report only the checklist observation as proved. Real usage, budgets, quota alternate, protected sibling journeys, provider authorization, A2P, live delivery, independent standby, real-phone drills and OC-064 reference load remain unproved or held.

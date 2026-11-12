@@ -1,0 +1,37 @@
+[
+  {
+    "at": "2026-11-12T03:59:23.329532+00:00",
+    "githubCall": 3,
+    "exit": 0,
+    "endpoint": "repos/just-every/run-oncall/actions/runs?head_sha=8ff43f09a433dce0913125c4d19332b9e395d4d1&per_page=100",
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43151163443",
+    "id": 43151163443,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  {
+    "at": "2026-11-12T04:04:23.862493+00:00",
+    "githubCall": 4,
+    "exit": 0,
+    "endpoint": "repos/just-every/run-oncall/actions/runs/43151163443",
+    "conclusion": null,
+    "head_sha": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43151163443",
+    "status": "in_progress",
+    "id": 43151163443
+  },
+  {
+    "at": "2026-11-12T04:09:24.378622+00:00",
+    "githubCall": 5,
+    "exit": 0,
+    "endpoint": "repos/just-every/run-oncall/actions/runs/43151163443",
+    "conclusion": "success",
+    "head_sha": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43151163443",
+    "status": "completed",
+    "id": 43151163443
+  }
+]

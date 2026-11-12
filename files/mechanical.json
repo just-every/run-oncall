@@ -1,0 +1,28 @@
+{
+  "head": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+  "recordedAt": "2026-11-12T04:10:10.752258+00:00",
+  "views": {
+    "write": "node src/base/contract-docs.mjs write",
+    "check": "node src/base/contract-docs.mjs check",
+    "writeExit": 0,
+    "checkExit": 0,
+    "generatedFilesRestored": [
+      "ACCEPTANCE.md",
+      "docs/CLAIMS.md"
+    ]
+  },
+  "lock": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "installedCheck": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+    "writeExit": 0,
+    "checkExit": 0,
+    "installedCheckExit": 0,
+    "sha256": "0ad6e9d1204f4b624c6ebacbfc198d87a8e9006835311d4f25887c1dd3ed1db5"
+  },
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration changed"
+  }
+}

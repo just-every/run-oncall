@@ -1,0 +1,11 @@
+{
+  "repository": "just-every/run-oncall",
+  "recordedAt": "2026-11-12T04:03:02.886730+00:00",
+  "productHead": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+  "remoteRefs": {
+    "refs/heads/cloud/sd-oncall-c-f238": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+    "refs/heads/main": "31813dc294a6bbc7c0fe23b398e454b4a0f15b1b"
+  },
+  "branchOnly": true,
+  "mainPushed": false
+}

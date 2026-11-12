@@ -1,0 +1,74 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f238",
+  "head": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+  "mainIntegrated": "31813dc294a6bbc7c0fe23b398e454b4a0f15b1b",
+  "fullHistory": true,
+  "contractJudgmentsChanged": false,
+  "countsBefore": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34
+  },
+  "countsAfter": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34
+  },
+  "claim": "PARTIAL",
+  "completedAcceptancePoints": [
+    2
+  ],
+  "selectedSubpoint": "acceptance 1, account-free installation checklist",
+  "checks": [
+    {
+      "command": "readinessHealth against emitted Worker",
+      "head": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+      "exit": 0,
+      "log": "readiness-final.log"
+    },
+    {
+      "command": "rer verify, existing browser lane with readiness selection",
+      "executionHead": "79dcc2365733a9800694c38180178c91acd69051",
+      "relevantSourceAndBrowserBytesMatchCandidate": true,
+      "exit": 0,
+      "log": "verify.log"
+    },
+    {
+      "command": "product-browser, readiness selection",
+      "executionHead": "0efe0fdf16fbc69eb35a04a85006c13b9945b53e",
+      "exit": 0,
+      "log": "browser.log"
+    },
+    {
+      "command": "contract-docs write and check; restore generated views",
+      "head": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+      "exit": 0
+    },
+    {
+      "command": "vendored and installed edition-authoring check",
+      "head": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+      "exit": 0
+    }
+  ],
+  "productPushed": true,
+  "pr": null,
+  "publicationScan": "not run in cloud; fleet lander required",
+  "githubCallsSoFar": 5,
+  "files": {
+    "tests/readiness.mjs": "7a00725baf5538a7be7bf5d18e86b170309dacc1be103beaac83a943b1eb07bc",
+    "tests/product-browser.mjs": "e3624881efe2e7457f6f0b2c2a1630da174274787c0597e4993dd7d58371a63a",
+    "sources.lock.json": "0ad6e9d1204f4b624c6ebacbfc198d87a8e9006835311d4f25887c1dd3ed1db5"
+  },
+  "exactShaVerify": {
+    "at": "2026-11-12T04:09:24.378622+00:00",
+    "githubCall": 5,
+    "exit": 0,
+    "endpoint": "repos/just-every/run-oncall/actions/runs/43151163443",
+    "conclusion": "success",
+    "head_sha": "8ff43f09a433dce0913125c4d19332b9e395d4d1",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43151163443",
+    "status": "completed",
+    "id": 43151163443
+  }
+}

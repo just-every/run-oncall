@@ -1,0 +1,102 @@
+{
+  "tests/readiness.mjs": [
+    {
+      "anchor": "export async function assertInstallationChecklist",
+      "line": 6
+    },
+    {
+      "anchor": "export async function readinessHealth",
+      "line": 43
+    },
+    {
+      "anchor": "for(const [as,status]",
+      "line": 93
+    },
+    {
+      "anchor": "const revokedRead=",
+      "line": 127
+    },
+    {
+      "anchor": "const expiredRead=",
+      "line": 130
+    },
+    {
+      "anchor": "await runtime.outboundRequests()",
+      "line": 132
+    }
+  ],
+  "tests/product-browser.mjs": [
+    {
+      "anchor": "async function limitationsBrowser",
+      "line": 272
+    },
+    {
+      "anchor": "async function readinessBrowser",
+      "line": 627
+    },
+    {
+      "anchor": "for(const matrix of item.matrix)",
+      "line": 653
+    },
+    {
+      "anchor": "reading and refreshing the populated checklist",
+      "line": 673
+    },
+    {
+      "anchor": "readiness has no serious or critical",
+      "line": 679
+    },
+    {
+      "anchor": "CHECKLIST_LAYOUT",
+      "line": 683
+    }
+  ],
+  "src/readiness/api.ts": [
+    {
+      "anchor": "api.get('/api/readiness'",
+      "line": 12
+    },
+    {
+      "anchor": "const report:Readiness=",
+      "line": 24
+    }
+  ],
+  "src/readiness/matrix.ts": [
+    {
+      "anchor": "const dependencies:Dependency[]",
+      "line": 38
+    },
+    {
+      "anchor": "export function installationChecklist",
+      "line": 52
+    }
+  ],
+  "src/readiness/ReadinessPage.tsx": [
+    {
+      "anchor": "US installation and dependency checklist",
+      "line": 46
+    },
+    {
+      "anchor": "data-installation-item=",
+      "line": 49
+    }
+  ],
+  "docs/readiness.md": [
+    {
+      "anchor": "## US installation and dependency checklist",
+      "line": 40
+    }
+  ],
+  "docs/limits.md": [
+    {
+      "anchor": "US installation and dependency checklist",
+      "line": 5
+    }
+  ],
+  "docs/install.md": [
+    {
+      "anchor": "US installation and dependency checklist",
+      "line": 5
+    }
+  ]
+}
