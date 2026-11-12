@@ -1876,7 +1876,7 @@
       "executable": false
     },
     "src/app/shell/AppShell.tsx": {
-      "sha256": "06a8b5f4ab4dfbe4e61119715fba9f572fbe66c63631c809af6ab9afdb59a3c7",
+      "sha256": "425d7179020b5eac7208df9d0c7fb4ba0abb2b2043ef7b55461b93cf827b8aad",
       "executable": false
     },
     "src/app/shell/frame.css": {
