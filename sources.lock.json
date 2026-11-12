@@ -144,7 +144,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "523c6934a62c4d09fd9467a5682b61bc406f286297a1589b10fe23ef7327e433",
+      "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3",
       "executable": false
     },
     "agent-surface.json": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a208cb22abfc75694c9155e630cdf7277cc2c168e43aba24ff97965368bf9e99",
+      "sha256": "3ba769d11b265482949e571b667cd835e61b0de3b4fa92d56c490d93d604add8",
       "executable": false
     },
     "DEMO.md": {
@@ -192,7 +192,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "8dd97a3c0193c8f5533c5c57fae336a85d201514b88b90c74fa6ce3f74cca431",
+      "sha256": "f69d3fe0efedb3265017910be0bf9d4d57ae94377c16d74e9decba2cb070954e",
       "executable": false
     },
     "docs/audit.md": {
@@ -240,7 +240,7 @@
       "executable": false
     },
     "docs/data.md": {
-      "sha256": "4010a262791d079d193785e7d97b2c184f3b24b90c8bf4bb5f4f83fb43fd6624",
+      "sha256": "37e9923ea33481af147e64807ee58e0a046f0e6e178c311678c2eb9e7b6c022c",
       "executable": false
     },
     "docs/getting-started.md": {
@@ -1592,7 +1592,7 @@
       "executable": false
     },
     "scripts/installer/archive-policy.mjs": {
-      "sha256": "f92049b5df001b416edb96f02a8c7598aab406a08d9fd809a1fa620126f7c977",
+      "sha256": "9ce6980353ab2d81e2a5836dd13f3265a21f3bce0a9446e000d25411f99062bf",
       "executable": false
     },
     "scripts/installer/audit-archive.mjs": {
@@ -6656,11 +6656,11 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "b1c14252343785debd82a03c07c6e54d9a33250ed34491a3067cae83754909bd",
+      "sha256": "148c36580f60702cb4cf6c4503a080764dde88a668fb535dac997178b73137e6",
       "executable": false
     },
     "tests/readiness.mjs": {
-      "sha256": "068a7f7d4398e6ac41b87855d6def1ce5bbcba214104cd6d0cb4a0812aed03ba",
+      "sha256": "7a00725baf5538a7be7bf5d18e86b170309dacc1be103beaac83a943b1eb07bc",
       "executable": false
     },
     "tests/response-report-fixture.mjs": {
@@ -6676,7 +6676,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "0a2728b03e35b91845ff21805923565d18c3f2d744598e2403eeec3d167d6bfe",
+      "sha256": "c05abec778ddae61899c92c798153be09a69bdb37aab13a937ee5e3e2affaea5",
       "executable": false
     },
     "tests/triage.mjs": {

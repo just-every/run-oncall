@@ -642,6 +642,7 @@ async function readinessBrowser(page,context) {
  const before=durableSnapshot(worker),outbound=await worker.outboundRequests();
  const report=await request('/api/readiness');await assertInstallationChecklist(report);
  const checklist=page.getByRole('region',{name:'US installation and dependency checklist',exact:true});
+ const assertChecklistPage=async report=>{
  assert.equal(await checklist.locator('[data-installation-item]').count(),report.installation.items.length);
  assert.ok((await checklist.innerText()).includes(report.installation.reviewedOn));
  assert.equal(await checklist.locator('input,button,select,textarea').count(),0,'checklist has no self-attestation or provider action control');
@@ -658,6 +659,8 @@ async function readinessBrowser(page,context) {
   assert.ok(text.includes(item.completion==='not-done'?'Not done for this installation':'Guidance only'));
   for(const proof of item.fieldProof)assert.ok((await row.locator('[data-field-proof="'+proof.id+'"]').innerText()).includes(proof.state==='passed'?'Passed on '+proof.date:'Not run'));
  }
+ };
+ await assertChecklistPage(report);
  const visible=await page.locator('.readiness').innerText();
  assert.doesNotMatch(visible,/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}|tests\//,'readiness presents readable dates without repository paths');
  const zone=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -669,7 +672,11 @@ async function readinessBrowser(page,context) {
  for(const row of report.matrix)assert.equal(await page.locator(`[data-readiness-row="${row.id}"] [data-state]`).getAttribute('data-state'),row.state);
  for(const signal of report.signals)assert.equal(await page.locator(`[data-readiness-signal="${signal.id}"] [data-state]`).getAttribute('data-state'),signal.state);
  const refreshed=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/readiness'&&response.request().method()==='GET');
- await page.getByRole('button',{name:'Refresh readiness',exact:true}).click();assert.equal((await refreshed).status(),200);await page.locator('.readiness [data-readiness-row]').first().waitFor();
+ await page.getByRole('button',{name:'Refresh readiness',exact:true}).click();
+ const refreshResponse=await refreshed;assert.equal(refreshResponse.status(),200);
+ const refreshReport=await refreshResponse.json();await assertInstallationChecklist(refreshReport);
+ await page.locator('.readiness [data-readiness-row]').first().waitFor();
+ await assertChecklistPage(refreshReport);
  assert.deepEqual(durableSnapshot(worker),before,'reading and refreshing the populated checklist writes no durable rows, paging records, revisions or audit');
  assert.deepEqual(await worker.outboundRequests(),outbound,'reading and refreshing sends no outbound request');
  assert.deepEqual(outbound,[],'the native checklist journey makes zero outbound requests');
