@@ -1,0 +1,1 @@
+{"at": "2026-11-12T02:17:31.751764+00:00", "call": 1, "head_sha": "a467ff31046fa5a5c750f69c49e663a4d2a30c60", "status": "discovery-parse-error", "diagnostic": "Local URL sanitizer damaged unprojected discovery JSON; no CI conclusion obtained. Next discovery waits at least 301 seconds."}

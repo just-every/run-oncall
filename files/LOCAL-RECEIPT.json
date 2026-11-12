@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-oncall",
+  "tag": "main-oncall-timeline-plain-1",
+  "branch": "cloud/main-oncall-timeline-plain-1",
+  "head": "a467ff31046fa5a5c750f69c49e663a4d2a30c60",
+  "at": "2026-11-12T02:17:03.987647+00:00",
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "log": "setup sanitized by rer; no secrets selected"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log",
+      "log_sha256": "9b0b3594186bafc8dab911d0c747824f1d6b96686af29dd61cb9871a699c6700"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+      "exit": 0,
+      "log": "events-source-browser.log",
+      "log_sha256": "6a0d1883efe5ef51d8b256862edc571222ec9d965e7b1948370b388aa3388205"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=response-policy ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+      "exit": 0,
+      "log": "response-policy-browser.log",
+      "log_sha256": "40e87b3c8a1baf85e17815a25a23290a1c46d44bef9a37ebd7d32fe924bb5d7c"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=readiness ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+      "exit": 0,
+      "log": "readiness-browser.log",
+      "log_sha256": "9e87c99d05df2fffca5bc02776c44e8458f5202b89e42159358a76ec95ad574e"
+    },
+    {
+      "command": "cloud_run node tests/import-door.mjs",
+      "exit": 0,
+      "log": "import-door.log",
+      "log_sha256": "c57509e9debb4e2dc2b00299ce1fcc900404837fc436deef5f0f2e548a2b0d11"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "lock-check.json",
+      "log_sha256": "7266991a6c1570aab69c0e7c0c7f98f59c9c25d916522c552a78f3398ce34123"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-check.log",
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "before_after": {
+    "timeline_clause_codes": [
+      1,
+      0
+    ],
+    "source_id_names": [
+      1,
+      0
+    ],
+    "phone_escaping_timestamp_count": [
+      2,
+      0
+    ],
+    "candidate_phone_timestamps_inside": 3,
+    "manifest_command_registrations": [
+      16,
+      16
+    ],
+    "contract_counts": {
+      "done": [
+        24,
+        24
+      ],
+      "partial": [
+        43,
+        43
+      ],
+      "missing": [
+        34,
+        34
+      ]
+    }
+  },
+  "clause_status_changes": [],
+  "ci": "pending; see ci-status.json",
+  "pr": null,
+  "publication_scan": "Fleet Mac landing gate; not run in cloud",
+  "local_build_product_source_head": "880c3b559b1bb5e51df6570442813ed7e810d89b"
+}

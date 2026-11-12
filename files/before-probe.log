@@ -1,0 +1,81 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[
+  {
+    "width": 1440,
+    "text": "Timeline\ndeclared\nNov 12, 2026, 12:02 PM Australia/Brisbane (GMT+10)\n\nDeclared from alert; impact requires responder review\n\nSynthetic timeline owner\nsource recovery\nNov 12, 2026, 12:02 PM Australia/Brisbane (GMT+10)\n\nAll alerts recovered — awaiting resolution. Source recovery stopped the alert obligations; the incident still requires human recovery evidence and a summary. Reminder recorded; no timer until OC-027.\n\nSource: intake:synthetic-oncall-2\nObservation, decision or evidence\nAdd note",
+    "measurements": {
+      "card": {
+        "left": 980.390625,
+        "right": 1383
+      },
+      "scrollWidth": 1440,
+      "viewport": 1440,
+      "times": [
+        {
+          "text": "Nov 12, 2026, 12:02 PM Australia/Brisbane (GMT+10)",
+          "rects": [
+            {
+              "left": 1031.390625,
+              "right": 1338.390625,
+              "top": 385,
+              "bottom": 402
+            }
+          ],
+          "fits": true
+        },
+        {
+          "text": "Nov 12, 2026, 12:02 PM Australia/Brisbane (GMT+10)",
+          "rects": [
+            {
+              "left": 1031.390625,
+              "right": 1338.390625,
+              "top": 522.5,
+              "bottom": 539.5
+            }
+          ],
+          "fits": true
+        }
+      ]
+    }
+  },
+  {
+    "width": 390,
+    "text": "Timeline\ndeclared\nNov 12, 2026, 12:02 PM Australia/Brisbane (GMT+10)\n\nDeclared from alert; impact requires responder review\n\nSynthetic timeline owner\nsource recovery\nNov 12, 2026, 12:02 PM Australia/Brisbane (GMT+10)\n\nAll alerts recovered — awaiting resolution. Source recovery stopped the alert obligations; the incident still requires human recovery evidence and a summary. Reminder recorded; no timer until OC-027.\n\nSource: intake:synthetic-oncall-2\nObservation, decision or evidence\nAdd note",
+    "measurements": {
+      "card": {
+        "left": 33,
+        "right": 357
+      },
+      "scrollWidth": 390,
+      "viewport": 390,
+      "times": [
+        {
+          "text": "Nov 12, 2026, 12:02 PM Australia/Brisbane (GMT+10)",
+          "rects": [
+            {
+              "left": 82,
+              "right": 389,
+              "top": 519,
+              "bottom": 536
+            }
+          ],
+          "fits": false
+        },
+        {
+          "text": "Nov 12, 2026, 12:02 PM Australia/Brisbane (GMT+10)",
+          "rects": [
+            {
+              "left": 82,
+              "right": 389,
+              "top": 642.5,
+              "bottom": 659.5
+            }
+          ],
+          "fits": false
+        }
+      ]
+    }
+  }
+]

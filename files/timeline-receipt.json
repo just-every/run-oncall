@@ -1,0 +1,30 @@
+{
+  "journey": "eventsSourceBrowser",
+  "desktop": {
+    "width": 1440,
+    "sourceName": "Synthetic events bearer",
+    "internalCodes": 0,
+    "storedHistoryUnchanged": true
+  },
+  "phone": {
+    "viewport": 390,
+    "scrollWidth": 390,
+    "times": [
+      {
+        "text": "Nov 12, 2026, 12:10 PM Australia/Brisbane (GMT+10)",
+        "inside": true,
+        "fits": true
+      },
+      {
+        "text": "Nov 12, 2026, 12:10 PM Australia/Brisbane (GMT+10)",
+        "inside": true,
+        "fits": true
+      },
+      {
+        "text": "Nov 12, 2026, 12:10 PM Australia/Brisbane (GMT+10)",
+        "inside": true,
+        "fits": true
+      }
+    ]
+  }
+}

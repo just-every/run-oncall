@@ -1,0 +1,40 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Product browser failure at /on-call
+Skip to content
+Oncall
+On call
+Incidents
+0
+Alerts
+0
+Reviews
+Status
+Settings
+PR
+Product browser owner
+admin
+⌄
+Existing pager authoritative · paging OFF · schedules and coordination
+On call
+Start with a service
+Add service
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../tmp/oncall-flow-ZnDriv/local.env
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+cdpSession.send: Protocol error (Emulation.setTimezoneOverride): Timezone override is already in effect
+    at eventsSourceBrowser (/workspace/run-oncall/tests/product-browser.mjs:613:66)
+    at async file:///workspace/run-oncall/tests/product-browser.mjs:793:31 {
+  log: [],
+  name: 'Error'
+}
+
+Node.js v24.19.0
