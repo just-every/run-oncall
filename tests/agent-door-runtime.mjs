@@ -24,6 +24,16 @@ export async function agentEffectSnapshot({db,http}){
  return {application,records};
 }
 
+/** Read tools may retain agent decisions, approvals and reviews, never native effects. */
+export async function agentReadSnapshot({db,http}) {
+ const response=await http('/api/state');assert.equal(response.status,200);
+ const names=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all()).results
+  .map(row=>row.name).filter(name=>/^(oc_|paging_|workspace_|sources$|sessions$|credentials$|operator_members$)/.test(name));
+ const rows=await db.batch(names.map(name=>db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"')));
+ return {application:await response.json(),records:Object.fromEntries(rows.map((row,index)=>[names[index],row.results
+  .sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))};
+}
+
 /** Real emitted Worker, native D1 and native owner lifecycle; only paid egress is replaced. */
 export async function agentRuntime({clock}={}){
  let platformTime=clock;
