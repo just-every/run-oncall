@@ -128,7 +128,7 @@ function ImportedEmailActivation({row,services,request,reload}:{row:any;services
   <p>{row.value.name??row.value.sourceId}. {row.value.emailAddress?'Activated email settings':'Inactive email settings; no address and no intake'}. Paging OFF.</p>
   <p>Mode: {settings.draft.mode}. {settings.draft.rules.length} converted rules. Unmatched mail: {settings.draft.fallback==='quarantine'?'quarantine for review':'group by subject'}.</p>
   {settings.blocked?<p>Resolve the unconverted rules in the saved export and import again before activation.</p>:!row.value.emailAddress&&<>
-   <label className="scheduling-field">Service for imported email<select value={service} onChange={e=>setService(e.target.value)} disabled={busy}>{services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+   <label className="scheduling-field">Service for imported email<select aria-label="Service for imported email" value={service} onChange={e=>setService(e.target.value)} disabled={busy}>{services.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
    {settings.differences.length>0&&<label><input type="checkbox" checked={reviewed} onChange={e=>setReviewed(e.target.checked)}/>I reviewed the differences and accept quarantine instead of discarding unmatched mail.</label>}
    <button type="button" disabled={busy||!service||settings.differences.length>0&&!reviewed} onClick={()=>setConfirm(true)}>Activate email integration</button>
    {confirm&&<InlineConfirm action="Confirm email activation" keep="Keep inactive" busy={busy} onCancel={()=>setConfirm(false)} onConfirm={async()=>{
