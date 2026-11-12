@@ -1,3 +1,4 @@
+import {savedEmailBundle} from './email-fixtures.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
@@ -1568,4 +1569,66 @@ async function sharedIncidentLinks(page,context) {
  assert.equal(await page.locator('.detail').count(),0,'a missing shared incident never opens a different incident')
  await back.click()
  await page.waitForURL(url=>url.pathname==='/on-call')
+}
+
+
+// Saved email import is exercised at one width; 390 is visual evidence only.
+export async function importedEmailBrowser(page,context) {
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',origin=new URL(page.url()).origin;
+ await mkdir(directory,{recursive:true});await page.setViewportSize({width:1440,height:1000});
+ const api=async(path,data)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});
+  assert.ok(response.ok(),path+' '+response.status());return response.json();
+ };
+ const session=await api('/api/session');
+ const service='synthetic-oncall-email-browser';
+ await api('/api/command',{type:'service',id:service,name:'Email monitor',environment:'test',owner:session.member.id,runbook:[],pager:''});
+ const screens=async(name)=>{
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'email import fits desktop');
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  for(const width of [1440,390]) {
+   await page.setViewportSize({width,height:1000});
+   await page.screenshot({path:`${directory}/email-import-${name}-${width}.png`,fullPage:true,mask:[page.locator('.one-time-secret input')]});
+  }
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ for(const vendor of ['pagerduty','opsgenie']) {
+  const bundle=await savedEmailBundle(vendor);
+  if(vendor==='opsgenie') {
+   const integration={id:'synthetic-oncall-email-browser-refused',name:'Email requiring review',type:'Email'};
+   bundle.integrations.data.push(integration);
+   bundle.integration_actions.push({data:{_parent:integration,create:[],close:[],ignore:[],addNote:[],acknowledge:[{type:'acknowledge',name:'Review this acknowledge rule',order:1,alias:'{{subject}}'}]}});
+  }
+  const before=await api('/api/email');
+  await fileSource(page,vendor);
+  await page.getByLabel('Export JSON').setInputFiles({name:'synthetic-oncall-email-'+vendor+'.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))});
+  await page.getByRole('heading',{name:'Compatibility review',exact:true}).waitFor();
+  const count=vendor==='pagerduty'?8:6;
+  await page.getByText(new RegExp('custom mode, '+count+' converted rules')).waitFor();
+  if(vendor==='opsgenie') {
+   const note=page.locator('.move-in-workspace li div').filter({hasText:'Action Review this acknowledge rule'}).first();
+   await note.getByText('Original settings',{exact:true}).click();
+   assert.match(await note.locator('pre').innerText(),/"type": "acknowledge"/);
+  }
+  assert.deepEqual((await api('/api/email')).addresses,before.addresses,'review creates no address');
+  await screens(vendor+'-report');await confirmImport(page);
+  const panels=page.getByRole('region',{name:'Activate imported email integration',exact:true});
+  const panel=panels.filter({hasText:count+' converted rules'}).filter({hasText:'Inactive email settings'}).last();
+  await panel.waitFor();await panel.getByText(/Inactive email settings; no address and no intake/).waitFor();
+  const select=panel.getByLabel('Service for imported email',{exact:true});await select.selectOption(service);
+  if(vendor==='opsgenie')await panel.getByRole('checkbox').check();
+  await screens(vendor+'-inactive');
+  await panel.getByRole('button',{name:'Activate email integration',exact:true}).click();
+  const confirmation=panel.getByRole('button',{name:'Confirm email activation',exact:true});
+  await confirmation.click();
+  await page.getByLabel('Private email address',{exact:true}).waitFor();
+  const address=await page.getByLabel('Private email address',{exact:true}).inputValue();assert.ok(address.endsWith('@inbound.example.test'));
+  const created=await api('/api/email'),active=created.addresses.find(a=>!before.addresses.some(old=>old.id===a.id));assert.ok(active);
+  assert.equal(active.service,service);assert.equal(created.versions.find(v=>v.address===active.id).version,1);
+  await screens(vendor+'-activated');await page.getByRole('button',{name:'Done',exact:true}).click();
+  assert.ok(!(await page.content()).includes(address),'one-time address leaves the document');
+  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
+ }
+ console.log('PASS OC-070 email import browser: mapping reports and original unsupported action, inactive custody, explicit administrator activation and one-time address; assertions at 1440; changed screens captured once at 1440 and 390');
 }
