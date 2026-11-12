@@ -138,7 +138,7 @@
       "head": "25b173adff3e5a2e7bedd97e02428eebee9418f4"
     }
   ],
-  "github_calls": 4,
+  "github_calls": 5,
   "local_port_adjustments": [
     {
       "command": "ONCALL_RUNTIME_PART=machines WRANGLER_SEND_METRICS=false node tests/runtime.mjs",
@@ -168,11 +168,11 @@
     "id": 43135768629,
     "name": "Verify",
     "event": "push",
-    "conclusion": null,
+    "conclusion": "success",
     "head_sha": "25c0fe55b1f2928c526119d79d3629dfb8be7931",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/43135768629",
-    "status": "in_progress",
-    "github_call_number": 4,
+    "status": "completed",
+    "github_call_number": 5,
     "command": [
       "gh",
       "api",
@@ -189,6 +189,11 @@
     "matrix_file": "PROBE-MATRIX.json"
   },
   "artifact_hashes": [
+    {
+      "path": "CI-WATCH.log",
+      "bytes": 2414,
+      "sha256": "e070c7fab671ca706cecfa5bc29730a24d7afd7e99702e3191bd0427cadfd911"
+    },
     {
       "path": "DIRECT-AGENT.log",
       "bytes": 67094,
@@ -230,5 +235,14 @@
     "exit": 0,
     "advertised_head": "25c0fe55b1f2928c526119d79d3629dfb8be7931",
     "ref": "refs/heads/cloud/sd-oncall-c-f232"
+  },
+  "final_product_state": "pushed; exact-head Verify success; READY for independent guarded landing",
+  "blockers_selected_scope": [],
+  "evidence_transport": {
+    "repository": "just-every/run-oncall",
+    "ref": "refs/heads/evidence/sd-oncall-c-f232",
+    "scope": "report-only; product READY and acceptance are separate",
+    "first_publication_head": "1b331fcd3f032b84babd85c1f849c6de7581faa3",
+    "terminal_publication": "performed after this receipt is finalized"
   }
 }

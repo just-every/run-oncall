@@ -49,7 +49,7 @@ Every row runs through emitted Worker MCP and real D1 in `tests/oncall-agent-flo
 | --- | --- | --- |
 | 1 | PARTIAL | Selected outcomes are reached; full mutating-tool, retention and long-work scope remains unproved. |
 | 2 | PASS for selected scope | Seeded real D1; supported recovery and forbidden stale, missing and foreign-target paths; complete custody equality. |
-| 3 | Exact-head Verify queued | Machine part of tests/runtime.mjs invokes the full agent journey in push Verify. |
+| 3 | PASS for selected scope | Exact-head push Verify 43135768629 completed successfully on 25c0fe55b1f2928c526119d79d3629dfb8be7931; machine part of tests/runtime.mjs invokes the full agent journey. |
 | 4 | PASS | Exact candidate preparation and required rer verify passed after the last edit and lock; relevant source hashes and actual logs are retained. |
 | 5 | INSPECTED | No receiving clause or inherited duty was rewritten; BASE-AGENT-012 and every existing hold remain. |
 | 6 | MECHANICAL PASS; judgment reconciliation deferred | Contract generator write and check pass; generated views restored from main. Status, Evidence, Gap and judged-from provenance remain lander-owned and unchanged, as required by the brief. |
@@ -95,4 +95,14 @@ The explicit matrix contains all 20 selected logical observations under both pol
 
 MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock then check exit=0; views=node src/base/contract-docs.mjs write then check exit=0, restored from origin main; ledger=none exit=0, no migrations changed.
 
-Candidate push Verify: run 43135768629, event push, exact full head above. Status at discovery: queued. No PR was created because this repository has a branch push entry point. The independent guarded lander owns the full-history publication scan, main equality and main Run site.
+Candidate push Verify: run 43135768629, event push, exact full head above, completed SUCCESS. The run was discovered queued, then observed in progress twice, then completed successfully; one watcher used five total GitHub calls including the initial main check, with at least 300 seconds between run observations. No PR was created because this repository has a branch push entry point. The independent guarded lander owns the full-history publication scan, main equality and main Run site.
+
+## Terminal result
+
+Selected scope: complete, no implementation blocker. Exact-SHA Verify 43135768629 (push) is completed and successful at `25c0fe55b1f2928c526119d79d3629dfb8be7931`: https://github.com/just-every/run-oncall/actions/runs/43135768629. Local required verification and all mechanical checks pass; every selected matrix row passed under both policies. The terminal product candidate is pushed, and the separate complete evidence packet is being republished after this terminal receipt update. No PR was created. The scratch product clone will be deleted after successful evidence publication; the actual packet remains outside it.
+
+The candidate contract remains 24 DONE, 43 PARTIAL and 34 MISSING, with BASE-AGENT-012 MISSING unchanged. The selected diagnostic matrix moves from 7 of 18 to 18 of 18, with the service dropped-response and Commander changed-reason observations added. Full-clause promotion is not claimed. Riders 1 and the broader acceptance scope remain partial; rider 11 is the independent lander's job. No publication scan result, main equality, candidate Run site or release authority is asserted by this cloud report.
+
+CLAIM BASE-AGENT-012 PARTIAL points=2,3,4 tests=tests/oncall-agent-service-replay.mjs#droppedServiceReplay; tests/oncall-agent-role-replay.mjs#changedRoleReasonConflict; tests/oncall-agent-native-revisions.mjs#nativeRevisions; tests/oncall-agent-native-revisions.mjs#staleNoteNativeRevision; tests/oncall-agent-native-revisions.mjs#staleCoordinationNativeRevision; tests/oncall-agent-declaration-revisions.mjs#staleDeclarationExpectedRevision; tests/oncall-agent-incident-revisions.mjs#staleReassignmentNativeRevision; tests/oncall-agent-role-revisions.mjs#staleRoleExpectedRevision; tests/oncall-agent-role-revisions.mjs#staleRoleNativeRevision; tests/oncall-agent-service-revisions.mjs#staleServiceRevision
+
+The claim's point numbers identify the selected bounded observations, not completion of each acceptance sentence across every mutating tool. The retained GAP above governs the parent clause and every omitted combination.
