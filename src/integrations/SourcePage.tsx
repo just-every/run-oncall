@@ -7,6 +7,8 @@ import { integrationKinds, shortTime, type IntegrationProps, type SourceRecord }
 import './integrations.css';
 import {GrafanaSigning} from '../monitoring/GrafanaSigning';
 import { ChangeSourceTest } from '../changes/ChangeSourceTest';
+import { AllowanceForm } from '../intake-rate/AllowanceForm';
+import { allowanceKey, refusalText, throttleNotices } from './key-refusals';
 
 const references = { email: ['/docs/compatible-intake#integration-email', 'Set up email routing'], events: ['/docs/incidents#send-an-alert-event', 'Events API reference'], changes: ['/docs/changes', 'Change events reference'], pagerduty: ['/docs/compatible-intake', 'Provider setup'], opsgenie: ['/docs/compatible-intake', 'Provider setup'], splunk: ['/docs/compatible-intake', 'Provider setup'], alertmanager: ['/docs/monitoring-providers', 'Provider setup'], grafana: ['/docs/monitoring-providers', 'Provider setup'], datadog: ['/docs/monitoring-providers', 'Provider setup'] } as const;
 
@@ -18,6 +20,7 @@ export function SourcePage({ source, state, admin, busy, run, children }: Integr
   const events = state.events.filter(e => e.source === id || e.source === 'intake:' + id).slice().reverse();
   const changes = (state.changes ?? []).filter(c => c.source === id).slice().reverse();
   const rejections = state.audit.filter(a => a.kind === 'intake-rejected' && a.text.includes(' for integration ' + id + ';'));
+  const allowanceId = allowanceKey(source), refused = throttleNotices(state, allowanceId);
   const emailRejected=source.kind==='email'?(state.emailReceipts??[]).filter(r=>r.address===id&&r.outcome==='refused'):[];
   const [reference, referenceName] = references[source.kind];
   const existing = source.id.startsWith('intake:') ? state.intakeSources?.find(s => s.id === id) : source.id.startsWith('change:') ? state.changeSources?.find(s => s.id === id) : undefined;
@@ -29,7 +32,8 @@ export function SourcePage({ source, state, admin, busy, run, children }: Integr
     {source.statusKnown===false&&<p>An administrator can view this source’s settings.</p>}
     {service && source.statusKnown!==false && <SourceTest source={source} service={service} busy={busy} run={run} events={source.kind === 'events' ? events : []} />}
     {source.kind !== 'email' && <><h3>Receipts</h3><ol className="integration-receipts">{(source.kind === 'changes' ? changes : source.kind === 'events' ? events : intake).map((r: any) => <li key={r.id}><strong>{r.title ?? r.summary ?? 'Received event'}</strong><p>{r.outcome ?? r.intent ?? 'Accepted'} · {shortTime(r.acceptedAt ?? r.timestamp ?? r.observedAt)}</p>{r.incomplete && <p>Incomplete intake · {r.incomplete.bytes.toLocaleString()} bytes · {r.incomplete.dropped ?? 'Some'} alerts unread</p>}</li>)}</ol>{!(source.kind === 'changes' ? changes : source.kind === 'events' ? events : intake).length && <p>No accepted requests yet.</p>}</>}
-    <details><summary>Rejected requests ({rejections.length+emailRejected.length})</summary>{rejections.length ? <ul>{rejections.map(r => <li key={r.id}>Request refused · {shortTime(r.at)}</li>)}</ul> : !emailRejected.length&&<p>No rejected requests retained for this source.</p>}{emailRejected.length>0&&<ul>{emailRejected.map(r=><li key={r.id}>Message refused · {shortTime(r.at)}</li>)}</ul>}</details>
+    {allowanceId && source.statusKnown !== false && <AllowanceForm state={state} id={allowanceId} admin={admin} busy={busy} run={run} open={refused.length > 0} />}
+    <details><summary>Rejected requests ({rejections.length+refused.length+emailRejected.length})</summary>{rejections.length ? <ul>{rejections.map(r => <li key={r.id}>Request refused · {shortTime(r.at)}</li>)}</ul> : !refused.length&&!emailRejected.length&&<p>No rejected requests retained for this source.</p>}{refused.length>0&&<ul aria-label="Allowance refusals">{refused.map(r=><li key={r.id}>Request refused · {shortTime(r.at)} · {refusalText(r.text)} {admin?<a href="#key-allowance">Raise this key’s allowance</a>:'An administrator can raise this key’s allowance.'}</li>)}</ul>}{emailRejected.length>0&&<ul>{emailRejected.map(r=><li key={r.id}>Message refused · {shortTime(r.at)}</li>)}</ul>}</details>
     {admin&&source.kind!=='email'&&<details><summary>Source actions</summary><button type="button" disabled={busy||source.kind==='events'&&!source.active} onClick={()=>setConfirm('rotate')}>Rotate key</button><button type="button" disabled={busy||!source.active} onClick={()=>setConfirm('revoke')}>Revoke key</button>
      {confirm&&<InlineConfirm action={confirm==='rotate'?'Rotate key now':'Revoke key now'} keep="Cancel" busy={busy} onCancel={()=>setConfirm(undefined)} onConfirm={async()=>{
       let key=privateKey(source.kind==='changes'&&existing&&'provider' in existing&&existing.provider==='pagerduty'?16:32);

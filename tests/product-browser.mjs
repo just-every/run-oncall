@@ -493,7 +493,55 @@ async function changeAndSigningBrowser(page,context){
   for(const slug of docSlugs.filter(slug=>!['changes','routed-intake','data','urgency'].includes(slug))){await page.goto(new URL(page.url()).origin+'/docs/'+slug);await page.locator('.docs-article').waitFor();if(slug==='limits')await limitationsBrowser(page,context);else await check('oc040-043-docs-'+slug,width);}
   await page.goto(new URL(page.url()).origin);
  }
+ await senderSetupBrowser(page,context,origin,request,token);
  console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440; overflow, axe and hydration');
+}
+
+// A newcomer finishes sender setup from the page alone: the change-event recipe runs as written, and a refused
+// Alertmanager batch is explained, counted and fixable on the integration page without leaving it.
+async function senderSetupBrowser(page,context,origin,request,token){
+ const {tmpdir}=await import('node:os'),{spawn}=await import('node:child_process'),{mkdtemp,writeFile}=await import('node:fs/promises'),{join}=await import('node:path');
+ await context.grantPermissions(['clipboard-read','clipboard-write']);
+ const proof=async(label)=>{
+  for(const width of [1440,390]){
+   await page.setViewportSize({width,height:1000});
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),label+' fits '+width);
+   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations,[],label+' has no WCAG axe violations at '+width);
+   await page.screenshot({path:`evidence/browser/${label}-${width}.png`,fullPage:true});
+  }
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ const run=(file,key)=>new Promise((resolve,reject)=>{const child=spawn(process.execPath,[file],{env:{...process.env,ONCALL_SOURCE_KEY:key}});let out='';child.stdout.on('data',d=>out+=d);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(out):reject(Error('send.mjs exited '+code+': '+out)));});
+ // Change events: the sample is a recipe, and the saved file runs with only the documented steps.
+ const changeKey=token(),changeId='synthetic-oncall-recipe';
+ await request('/api/changes/sources',{id:changeId,name:'Synthetic recipe source',provider:'native',service:'synthetic-oncall-1',repository:'',mode:'signed',revision:0,key:changeKey});
+ await page.goto(origin+'/settings/integrations/'+encodeURIComponent('change:'+changeId));
+ await page.getByText('Sample request',{exact:true}).click();
+ const recipe=page.locator('details').filter({has:page.getByLabel('Sample request',{exact:true})});
+ for(const text of ['send.mjs','ONCALL_SOURCE_KEY','node send.mjs','Node 22 or newer'])assert.ok((await recipe.innerText()).includes(text)||(await recipe.locator('pre').allInnerTexts()).join('').includes(text),'recipe names '+text);
+ const sample=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!sample.includes(changeKey),'sample never embeds the secret');
+ await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
+ await page.getByRole('button',{name:'Copy run commands',exact:true}).click();assert.match(await page.evaluate(()=>navigator.clipboard.readText()),/export ONCALL_SOURCE_KEY=.*\nnode send\.mjs$/);
+ const dir=await mkdtemp(join(tmpdir(),'oncall-send-')),file=join(dir,'send.mjs');await writeFile(file,sample);
+ assert.match(await run(file,changeKey),/^201 /,'the copied file sends one change when run as the recipe says');
+ await page.reload();await page.getByText('Sample request',{exact:true}).click();await proof('sender-change-recipe');
+ // Alertmanager: a 200-alert group exceeds the default event allowance, is counted, and is fixed from its own page.
+ const key=token(),id='synthetic-oncall-batch',now=new Date().toISOString();
+ await request('/api/intake/sources',{id,name:'Synthetic batch Alertmanager',provider:'alertmanager',service:'synthetic-oncall-1',key,revision:0});
+ const batch={version:'4',receiver:'oncall',status:'firing',groupKey:'branches',groupLabels:{},commonLabels:{},commonAnnotations:{},alerts:Array.from({length:200},(_,i)=>({status:'firing',labels:{alertname:'BranchDown',branch:'branch-'+i,severity:'warning'},annotations:{summary:'Branch '+i+' unreachable'},startsAt:now,endsAt:'0001-01-01T00:00:00Z',fingerprint:'branch-'+i,generatorURL:''}))};
+ const send=()=>context.request.post('/api/monitoring/'+id,{headers:{'content-type':'application/json',authorization:'Bearer '+key},data:JSON.stringify(batch)});
+ const refused=await send();assert.equal(refused.status(),429);assert.equal((await refused.json()).rateLimit.code,'batch_exceeds_allowance');
+ await page.goto(origin+'/settings/integrations/'+encodeURIComponent('intake:'+id));
+ await page.getByText('Rejected requests (1)',{exact:true}).waitFor();
+ const allowance=page.locator('#key-allowance');assert.equal(await allowance.getAttribute('open'),'','the allowance editor is open beside a refused request');
+ await page.getByText('Rejected requests (1)',{exact:true}).click();
+ const refusals=page.getByRole('list',{name:'Allowance refusals',exact:true});await refusals.getByRole('link',{name:'Raise this key’s allowance'}).waitFor();assert.match(await refusals.innerText(),/200 new events requested/);
+ await proof('sender-alertmanager-refused');
+ const saved=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/intake/allowances'&&r.request().method()==='POST');
+ const events=allowance.getByLabel('New events per minute',{exact:true});await events.fill('300');await events.blur();assert.equal((await saved).status(),200);
+ assert.ok((await request('/api/state')).audit.some(a=>a.kind==='key-allowance'&&a.text.includes('intake:'+id)&&a.text.includes('300 new events')),'the edit is audited like the routed-key editor');
+ const admitted=await send();assert.ok(admitted.ok(),'the same 200-alert group is admitted after the allowance is raised: '+admitted.status());
+ await page.reload();await page.getByText('Rejected requests (1)',{exact:true}).waitFor();await proof('sender-alertmanager-raised');
 }
 
 // The screen, API and downloaded CSV observe one frozen, populated night cohort.
