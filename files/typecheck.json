@@ -1,0 +1,14 @@
+{
+  "name": "typecheck",
+  "head": "0112c439aa13765d6db1c5e9c481251801183055",
+  "command": [
+    "pnpm",
+    "exec",
+    "tsc",
+    "--noEmit"
+  ],
+  "started_at": "2026-11-12T02:23:48.745406+00:00",
+  "finished_at": "2026-11-12T02:24:01.947001+00:00",
+  "exit": 0,
+  "log": "typecheck.log"
+}

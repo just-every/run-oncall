@@ -1,0 +1,64 @@
+{
+  "head": "31f53d141fcbc028afd73ba2d5b6e604441f4094",
+  "checks": [
+    {
+      "name": "views-write",
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "write"
+      ],
+      "exit": 0,
+      "log": "mechanical-views-write.log"
+    },
+    {
+      "name": "views-check",
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "log": "mechanical-views-check.log"
+    },
+    {
+      "name": "views-restore",
+      "command": [
+        "git",
+        "checkout",
+        "origin/main",
+        "--",
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ],
+      "exit": 0,
+      "log": "mechanical-views-restore.log"
+    },
+    {
+      "name": "lock-write",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0,
+      "log": "mechanical-lock-write.log"
+    },
+    {
+      "name": "lock-check",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "log": "mechanical-lock-check.log"
+    }
+  ],
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration changes",
+    "changed": []
+  }
+}

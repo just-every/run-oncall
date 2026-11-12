@@ -1,0 +1,15 @@
+# Official saved-response field checks
+
+Checked during this execution on 12 November 2026. No provider account was accessed.
+
+- PagerDuty official REST OpenAPI: https://raw.githubusercontent.com/PagerDuty/api-schema/main/reference/REST/openapiv3.json returned HTTP 200. Inspected Integration, EmailParser and MatchPredicate schemas. Confirmed generic_email_inbound_integration; the four email_incident_creation values; email_filter_mode; email_filters with subject, body and from_email mode and regex fields; email_parsing_fallback open_new_incident and discard; email_parsers action, match_predicate and value_extractors; predicate type, matcher, part and children; extractor type, part, value_name, regex, starts_after and ends_with. No live export was fetched.
+- Opsgenie official Integration API: https://docs.opsgenie.com/docs/integration-api was read through the connected web search tool. Confirmed Email type, saved data response, GET integration actions response with _parent and ignore, create, close, acknowledge and addNote groups; action type, name, order, filter and alias; conditionMatchType, conditions, field, isNot, operation and expectedValue. Direct HTTP requests to this documentation host returned HTTP 403; web retrieval supplied the official reference.
+- Atlassian official email integration guide: https://support.atlassian.com/opsgenie/docs/integrate-your-email-with-opsgenie confirmed sender, subject and message filters, alias identity and one-action processing.
+- Atlassian official action ordering: https://support.atlassian.com/opsgenie/docs/what-are-the-integration-types-and-actions confirmed group precedence: ignore, create, close, acknowledge, then add note, with ordering inside each group. The converter preserves that precedence rather than sorting unrelated groups together.
+- Atlassian official string methods: https://support.atlassian.com/opsgenie/docs/string-processing-methods-in-opsgenie-integrations/ confirmed substringBetween with one quoted marker pair, and extract using a regex literal with a parenthesized capture. The converter uses that documented syntax and rejects concatenation, chained methods and multiple captures.
+
+Other attempted documentation paths for an Email Integration API and Integration Action API returned HTTP 403 or 404. They are not claimed as verified references. Two GitHub API reads inspected the official Python SDK repository metadata and tree, but supplied no additional field evidence. No SDK field check is claimed.
+
+Scope remains saved synthetic responses, RE2 validation and existing local public doors. Live-account export completeness, real inbound provider mail, delivery and cutover remain unverified.
+
+A further official PagerDuty regex check used https://docs.pagerduty.com/incident-management/services/regular-expressions. It confirmed that incident-key extraction implicitly enables multiline and dotall options and concatenates multiple capture groups. The adapter preserves the two implicit options and refuses multiple captures rather than approximating concatenation. A multiline saved-rule mail case was added through the emitted email door for this behavior.

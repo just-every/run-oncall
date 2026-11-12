@@ -1,0 +1,13 @@
+{
+  "name": "build",
+  "head": "4bd1028496bb9c5b12a41f1f84878965a7eb73ee",
+  "command": [
+    "cloud_run",
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "build"
+  ],
+  "exit": 0,
+  "log": "build-initial.log"
+}

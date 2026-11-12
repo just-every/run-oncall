@@ -1,0 +1,14 @@
+{
+  "name": "import-door",
+  "head": "2066466280ccd4634e324a63690d640472641156",
+  "command": [
+    "timeout",
+    "1200",
+    "node",
+    "tests/import-door.mjs"
+  ],
+  "started_at": "2026-11-12T02:16:54.365122+00:00",
+  "finished_at": "2026-11-12T02:19:40.485825+00:00",
+  "exit": 0,
+  "log": "import-door.log"
+}

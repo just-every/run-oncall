@@ -1,0 +1,155 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f234",
+  "head": "31f53d141fcbc028afd73ba2d5b6e604441f4094",
+  "status": "local-gates-passed-product-pushed",
+  "checks": [
+    {
+      "name": "build",
+      "head": "0112c439aa13765d6db1c5e9c481251801183055",
+      "command": [
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "build"
+      ],
+      "started_at": "2026-11-12T02:24:03.798852+00:00",
+      "finished_at": "2026-11-12T02:24:18.091911+00:00",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "name": "typecheck",
+      "head": "0112c439aa13765d6db1c5e9c481251801183055",
+      "command": [
+        "pnpm",
+        "exec",
+        "tsc",
+        "--noEmit"
+      ],
+      "started_at": "2026-11-12T02:23:48.745406+00:00",
+      "finished_at": "2026-11-12T02:24:01.947001+00:00",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "name": "first-party",
+      "head": "0112c439aa13765d6db1c5e9c481251801183055",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "started_at": "2026-11-12T02:24:02.051162+00:00",
+      "finished_at": "2026-11-12T02:24:03.685845+00:00",
+      "exit": 0,
+      "log": "first-party.log"
+    },
+    {
+      "name": "rer-verify",
+      "head": "2066466280ccd4634e324a63690d640472641156",
+      "command": [
+        "timeout",
+        "1800",
+        "env",
+        "ONCALL_VERIFY_LANE=intake",
+        "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "verify",
+        "--non-interactive"
+      ],
+      "started_at": "2026-11-12T01:52:41.197101+00:00",
+      "finished_at": "2026-11-12T02:16:54.091623+00:00",
+      "exit": 0,
+      "log": "rer-verify.log"
+    },
+    {
+      "name": "import-door",
+      "head": "2066466280ccd4634e324a63690d640472641156",
+      "command": [
+        "timeout",
+        "1200",
+        "node",
+        "tests/import-door.mjs"
+      ],
+      "started_at": "2026-11-12T02:16:54.365122+00:00",
+      "finished_at": "2026-11-12T02:19:40.485825+00:00",
+      "exit": 0,
+      "log": "import-door.log"
+    },
+    {
+      "name": "product-browser",
+      "head": "31f53d141fcbc028afd73ba2d5b6e604441f4094",
+      "command": [
+        "timeout",
+        "1200",
+        "env",
+        "ONCALL_PRODUCT_JOURNEY=imported-email",
+        "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+        "ONCALL_BROWSER_EVIDENCE=/home/agent/rer-consolidation/work/sd-oncall-c-f234/packet/screens",
+        "node",
+        "tests/product-browser.mjs"
+      ],
+      "started_at": "2026-11-12T02:26:54.222283+00:00",
+      "finished_at": "2026-11-12T02:28:10.101144+00:00",
+      "exit": 0,
+      "log": "product-browser.log"
+    },
+    {
+      "name": "mapping-upgrade",
+      "head": "2066466280ccd4634e324a63690d640472641156",
+      "command": [
+        "timeout",
+        "1200",
+        "node",
+        "/tmp/f234-upgrade-check.mjs"
+      ],
+      "started_at": "2026-11-12T01:51:23.974320+00:00",
+      "finished_at": "2026-11-12T01:51:38.600083+00:00",
+      "exit": 0,
+      "log": "mapping-upgrade.log"
+    }
+  ],
+  "mechanical": "MECHANICAL.json",
+  "equivalence": "CODE-EQUIVALENCE.json",
+  "converted_mail_receipt_count": 22,
+  "converted_mail_outcomes": {
+    "pagerduty:opened": 6,
+    "pagerduty:deduplicated": 1,
+    "pagerduty:recovered": 4,
+    "pagerduty:no-effect": 1,
+    "opsgenie:opened": 3,
+    "opsgenie:deduplicated": 1,
+    "opsgenie:recovered": 3,
+    "opsgenie:no-effect": 1,
+    "opsgenie:quarantined": 2
+  },
+  "contract_counts_before": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34
+  },
+  "contract_counts_after": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34
+  },
+  "clause": "OC-070",
+  "claim": "PARTIAL",
+  "points_proven": [
+    8
+  ],
+  "publication_scan": {
+    "commit": "31f53d141fcbc028afd73ba2d5b6e604441f4094",
+    "complete": false,
+    "historyScanned": false,
+    "findings": null,
+    "reason": "Not run in cloud; required guarded Mac lander duty"
+  },
+  "main_and_run_site": "pending guarded landing"
+}

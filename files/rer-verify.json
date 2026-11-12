@@ -1,0 +1,20 @@
+{
+  "name": "rer-verify",
+  "head": "2066466280ccd4634e324a63690d640472641156",
+  "command": [
+    "timeout",
+    "1800",
+    "env",
+    "ONCALL_VERIFY_LANE=intake",
+    "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "verify",
+    "--non-interactive"
+  ],
+  "started_at": "2026-11-12T01:52:41.197101+00:00",
+  "finished_at": "2026-11-12T02:16:54.091623+00:00",
+  "exit": 0,
+  "log": "rer-verify.log"
+}

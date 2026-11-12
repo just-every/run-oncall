@@ -1,0 +1,79 @@
+{
+  "scope": "Explicitly selected task-owned report packet; no environment dumps or raw credential bundles",
+  "text_credential_findings": [],
+  "screens": [
+    {
+      "file": "screens/email-import-opsgenie-activated-1440.png",
+      "width": 1440,
+      "height": 1876,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-opsgenie-activated-390.png",
+      "width": 390,
+      "height": 2459,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-opsgenie-inactive-1440.png",
+      "width": 1440,
+      "height": 1816,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-opsgenie-inactive-390.png",
+      "width": 390,
+      "height": 2495,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-opsgenie-report-1440.png",
+      "width": 1440,
+      "height": 1816,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-opsgenie-report-390.png",
+      "width": 390,
+      "height": 2891,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-pagerduty-activated-1440.png",
+      "width": 1440,
+      "height": 1428,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-pagerduty-activated-390.png",
+      "width": 390,
+      "height": 1722,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-pagerduty-inactive-1440.png",
+      "width": 1440,
+      "height": 1367,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-pagerduty-inactive-390.png",
+      "width": 390,
+      "height": 1662,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-pagerduty-report-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "private_address_masked_by_journey": true
+    },
+    {
+      "file": "screens/email-import-pagerduty-report-390.png",
+      "width": 390,
+      "height": 1249,
+      "private_address_masked_by_journey": true
+    }
+  ],
+  "screenshot_count": 12
+}

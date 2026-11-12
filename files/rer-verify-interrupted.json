@@ -1,0 +1,16 @@
+{
+  "name": "rer-verify",
+  "head": "2d41bd7064d397418d2bb0a2096bb42bba021428",
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "verify",
+    "--non-interactive"
+  ],
+  "started_at": "2026-11-12T01:40:46.236509+00:00",
+  "finished_at": "2026-11-12T01:45:44.876598+00:00",
+  "exit": -15,
+  "log": "rer-verify-interrupted.log",
+  "reason": "Stopped the all-suite local run to apply mapping-version compatibility and use the touched intake lane, with system Chromium, in the required verifier."
+}

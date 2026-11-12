@@ -1,0 +1,75 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Product browser failure at /settings/move-in
+Skip to content
+‹ Oncall
+Services
+Integrations
+Routing
+Team
+Move in
+Readiness
+Archive
+PR
+Product browser owner
+admin
+⌄
+Move in
+Existing pager authoritative · paging OFF · schedules and coordination
+Import complete
+
+Matched. The imported data agrees with the saved export.
+
+2 source objects · 1 present · 1 explained · 1 matching native objects
+
+Review imported data below. Adopt a schedule when you’re ready.
+
+Read another account or file
+Import journal
+
+PagerDuty · synthetic-oncall-email-pagerduty.json · completed · 2/2 source objects processed
+
+Approval details
+Check imported dataUndo this import
+Imported data
+
+Data stays paused until you adopt a schedule or activate an integration.
+
+Email alerts
+Activate imported email integration
+
+Email alerts. Inactive email settings; no address and no intake. Paging OFF.
+
+Mode: custom. 8 converted rules. Unmatched mail: group by subject.
+
+Service for imported email
+Email monitor
+Activate email integration
+
+Activation is an explicit edit to this imported object; import undo cannot overwrite it. Erase the native email integration to remove its settings and import custody together.
+
+How move-in works
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../tmp/oncall-flow-qZySG1/local.env
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.selectOption: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('region', { name: 'Activate imported email integration', exact: true }).filter({ hasText: '8 converted rules' }).filter({ hasText: 'Inactive email settings' }).last().getByLabel('Service for imported email', { exact: true })[22m
+
+    at importedEmailBrowser (/workspace/run-oncall/tests/product-browser-journey.mjs:1598:89)
+    at async file:///workspace/run-oncall/tests/product-browser.mjs:758:32 {
+  log: [
+    "  - waiting for getByRole('region', { name: 'Activate imported email integration', exact: true }).filter({ hasText: '8 converted rules' }).filter({ hasText: 'Inactive email settings' }).last().getByLabel('Service for imported email', { exact: true })"
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.19.0

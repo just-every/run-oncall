@@ -1,0 +1,20 @@
+{
+  "tested_head": "2066466280ccd4634e324a63690d640472641156",
+  "candidate_head": "31f53d141fcbc028afd73ba2d5b6e604441f4094",
+  "changed_files": [
+    "sources.lock.json",
+    "src/app/autosave/InlineConfirm.tsx",
+    "src/business-status/StatusPanel.tsx",
+    "src/form-validation.tsx",
+    "src/forms.tsx",
+    "src/on-call/Field.tsx",
+    "src/on-call/RotaPage.tsx",
+    "src/on-call/rota-steps/RotaSteps.tsx",
+    "src/schedule-coverage/ReviewedChange.tsx",
+    "tests/member-coordination-browser.mjs",
+    "tests/product-browser-journey.mjs",
+    "tests/product-browser.mjs"
+  ],
+  "backend_and_runtime_assertions_unchanged": true,
+  "difference": "Later changes are current-main UI form validation, the focused browser success message, an explicit equivalent evidence directory path and regenerated source lock. Typecheck, first-party check, build and focused browser were repeated after main merge; the focused browser passed on the candidate."
+}

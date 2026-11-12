@@ -1,0 +1,310 @@
+{
+  "before_head": "2d41bd7064d397418d2bb0a2096bb42bba021428",
+  "baseline": {
+    "planId": "716f194d-9f8c-4a2a-879b-14e03eb931cf",
+    "fingerprint": "add65c1cf67cf4358af5ddd9c32ce4e0d0dfa7c2a7ef43af3e22ddf61d9675b2",
+    "bundleSha256": "dd0624fded50445b916c83b2380fc7b7c085ebbb99edd7d29109902f0be6bf67",
+    "created": true,
+    "summary": {
+      "sourceRecords": 2,
+      "created": 1,
+      "updated": 0,
+      "unchanged": 0,
+      "gone": 0
+    },
+    "counts": {
+      "input": 2,
+      "unique": 2,
+      "duplicates": 0,
+      "mapped": 1,
+      "unmapped": 2,
+      "rejected": 0,
+      "effects": 1,
+      "byKind": {
+        "integration_actions": 1,
+        "integrations": 1
+      }
+    },
+    "rejected": [],
+    "diagnostics": [
+      {
+        "severity": "warning",
+        "code": "UNMAPPED",
+        "message": "Integration Saved email monitor (synthetic-oncall-email-og): Opsgenie ignores mail with no matching action; Oncall quarantines it instead. Original retained for review; no equivalent rule activated.",
+        "kind": "integrations",
+        "sourceId": "synthetic-oncall-email-og",
+        "location": {
+          "artifact": "opsgenie-export.json",
+          "pointer": "/integrations/data/0",
+          "row": 1
+        },
+        "field": "unmatched-email"
+      },
+      {
+        "severity": "warning",
+        "code": "UNMAPPED",
+        "message": "Saved actions are reviewed with their parent email integration; originals remain in import custody.",
+        "kind": "integration_actions",
+        "sourceId": "synthetic-oncall-email-og",
+        "location": {
+          "artifact": "opsgenie-export.json",
+          "pointer": "/integration_actions/0/data",
+          "row": 1
+        },
+        "field": "integration_actions"
+      }
+    ],
+    "differences": {
+      "additions": [
+        "[\"integrations\",\"synthetic-oncall-email-og\"]"
+      ],
+      "replacements": [],
+      "unchanged": [],
+      "gone": [],
+      "conflicts": []
+    },
+    "items": [
+      {
+        "kind": "integrations",
+        "id": "synthetic-oncall-email-og",
+        "location": {
+          "artifact": "opsgenie-export.json",
+          "pointer": "/integrations/data/0",
+          "row": 1
+        },
+        "disposition": "mapped-with-differences",
+        "name": "Saved email monitor",
+        "unmapped": [
+          {
+            "field": "unmatched-email",
+            "original": "no matching action",
+            "reason": "Integration Saved email monitor (synthetic-oncall-email-og): Opsgenie ignores mail with no matching action; Oncall quarantines it instead. Original retained for review; no equivalent rule activated."
+          }
+        ],
+        "effects": [
+          {
+            "targetId": "opsgenie:synthetic-oncall-email-og",
+            "targetKind": "integration",
+            "value": {
+              "active": false,
+              "emailSettings": {
+                "blocked": false,
+                "differences": [
+                  {
+                    "field": "unmatched-email",
+                    "original": "no matching action",
+                    "reason": "Opsgenie ignores mail with no matching action; Oncall quarantines it instead. Original retained for review; no equivalent rule activated."
+                  }
+                ],
+                "draft": {
+                  "fallback": "quarantine",
+                  "mode": "custom",
+                  "rules": [
+                    {
+                      "action": "trigger",
+                      "conditions": [
+                        {
+                          "field": "subject",
+                          "op": "matches",
+                          "value": "FAILED: (\\S+)"
+                        },
+                        {
+                          "field": "sender",
+                          "op": "contains",
+                          "value": "monitor"
+                        },
+                        {
+                          "field": "text",
+                          "op": "not-matches",
+                          "value": "mute"
+                        }
+                      ],
+                      "id": "opsgenie-create-1",
+                      "key": {
+                        "field": "subject",
+                        "group": 1,
+                        "kind": "regex",
+                        "pattern": "FAILED: (\\S+)"
+                      },
+                      "match": "all"
+                    },
+                    {
+                      "action": "trigger",
+                      "conditions": [
+                        {
+                          "field": "subject",
+                          "op": "equals",
+                          "value": "Marked failure"
+                        }
+                      ],
+                      "id": "opsgenie-create-2",
+                      "key": {
+                        "end": "]",
+                        "field": "text",
+                        "kind": "markers",
+                        "start": "["
+                      },
+                      "match": "all"
+                    },
+                    {
+                      "action": "trigger",
+                      "conditions": [
+                        {
+                          "field": "subject",
+                          "op": "equals",
+                          "value": "Whole failure"
+                        }
+                      ],
+                      "id": "opsgenie-create-3",
+                      "key": {
+                        "field": "text",
+                        "group": 1,
+                        "kind": "regex",
+                        "pattern": "(?s)^(.*)$"
+                      },
+                      "match": "all"
+                    },
+                    {
+                      "action": "resolve",
+                      "conditions": [
+                        {
+                          "field": "subject",
+                          "op": "matches",
+                          "value": "OK: (\\S+)"
+                        },
+                        {
+                          "field": "text",
+                          "op": "equals",
+                          "value": "resolve-by-body"
+                        }
+                      ],
+                      "id": "opsgenie-close-1",
+                      "key": {
+                        "field": "subject",
+                        "group": 1,
+                        "kind": "regex",
+                        "pattern": "OK: (\\S+)"
+                      },
+                      "match": "any"
+                    },
+                    {
+                      "action": "resolve",
+                      "conditions": [
+                        {
+                          "field": "subject",
+                          "op": "equals",
+                          "value": "Marked recovery"
+                        }
+                      ],
+                      "id": "opsgenie-close-2",
+                      "key": {
+                        "end": "]",
+                        "field": "text",
+                        "kind": "markers",
+                        "start": "["
+                      },
+                      "match": "all"
+                    },
+                    {
+                      "action": "resolve",
+                      "conditions": [
+                        {
+                          "field": "subject",
+                          "op": "equals",
+                          "value": "Whole recovery"
+                        }
+                      ],
+                      "id": "opsgenie-close-3",
+                      "key": {
+                        "field": "text",
+                        "group": 1,
+                        "kind": "regex",
+                        "pattern": "(?s)^(.*)$"
+                      },
+                      "match": "all"
+                    }
+                  ]
+                }
+              },
+              "kind": "Email",
+              "login": false,
+              "paging": false,
+              "paused": true,
+              "provider": "email",
+              "sourceId": "synthetic-oncall-email-og",
+              "vendor": "opsgenie"
+            }
+          }
+        ]
+      },
+      {
+        "kind": "integration_actions",
+        "id": "synthetic-oncall-email-og",
+        "location": {
+          "artifact": "opsgenie-export.json",
+          "pointer": "/integration_actions/0/data",
+          "row": 1
+        },
+        "disposition": "mapped-with-differences",
+        "name": "synthetic-oncall-email-og",
+        "unmapped": [
+          {
+            "field": "integration_actions",
+            "reason": "Saved actions are reviewed with their parent email integration; originals remain in import custody."
+          }
+        ],
+        "effects": []
+      }
+    ],
+    "classification": {
+      "mapped": 0,
+      "mappedWithDifferences": 2,
+      "rejected": 0
+    }
+  },
+  "job": {
+    "id": "adec2a92-7a38-46dd-b8db-4c358331d496",
+    "fingerprint": "add65c1cf67cf4358af5ddd9c32ce4e0d0dfa7c2a7ef43af3e22ddf61d9675b2",
+    "destination": "oncall",
+    "namespace": "door:35d3af3e2ac7ca80c6ba3299e4ba4daf4a0bfa787a73901dbed4d0d3e9247078",
+    "mappingVersion": "oncall-move-in-1",
+    "principalId": "7f0eaa7e-04f1-4420-b4c5-add695c9619a",
+    "state": "completed",
+    "checkpoint": 2,
+    "total": 2,
+    "fence": 1,
+    "error": null,
+    "erasedRecords": 0
+  },
+  "jobs": [
+    {
+      "id": "adec2a92-7a38-46dd-b8db-4c358331d496",
+      "fingerprint": "add65c1cf67cf4358af5ddd9c32ce4e0d0dfa7c2a7ef43af3e22ddf61d9675b2",
+      "destination": "oncall",
+      "namespace": "door:35d3af3e2ac7ca80c6ba3299e4ba4daf4a0bfa787a73901dbed4d0d3e9247078",
+      "mappingVersion": "oncall-move-in-1",
+      "principalId": "7f0eaa7e-04f1-4420-b4c5-add695c9619a",
+      "state": "completed",
+      "checkpoint": 2,
+      "total": 2,
+      "fence": 1,
+      "error": null,
+      "erasedRecords": 0,
+      "schedules": [],
+      "files": [
+        "opsgenie-export.json"
+      ],
+      "comparisons": [],
+      "labels": {
+        "integration:opsgenie:synthetic-oncall-email-og": "Saved email monitor"
+      },
+      "vendor": "opsgenie",
+      "approval": "approved by Synthetic mapping upgrade operator at 2026-11-12T01:47:59.549Z, fingerprint add65c1cf67cf4358af5ddd9c32ce4e0d0dfa7c2a7ef43af3e22ddf61d9675b2",
+      "door": {
+        "planId": "716f194d-9f8c-4a2a-879b-14e03eb931cf",
+        "fingerprint": "add65c1cf67cf4358af5ddd9c32ce4e0d0dfa7c2a7ef43af3e22ddf61d9675b2",
+        "business": false
+      }
+    }
+  ]
+}

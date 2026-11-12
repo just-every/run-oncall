@@ -1,0 +1,33 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+O2 workspace moveIn.pagerdutyConnect=true
+O2 aborted provider request after 10036 ms
+O2 read door: steps=30,21,30,21,30,26,30,26; non-admin 403, anonymous 401, cross-origin 403, wrong key, redirect, 501 objects, 512 KiB and echo refusals passed; hosts=api.eu.opsgenie.com,api.eu.pagerduty.com,api.opsgenie.com,api.pagerduty.com
+O2 local-admin consent: transaction-only cross-site callback succeeds; demotion redirects to connection=failed with zero exchanges and tokens
+O2 failed revocation: plain refusal, cleared cookie, permanent failed audit, sealed retry and scheduled cleanup passed
+O2 failed return, refused revocation: revoke-failed landing, no token cookie, one sealed duty no cookie can read, revoked by the sweep
+O2 OC-042: PKCE US/EU, read-only scopes, sealed HttpOnly Lax /api/move-in cookie <=600s, clear and revoke, abandoned lease cleanup passed; secret hits={"responses":0,"audit":0,"archive":0,"logs":0}
+opsgenie: uploaded and planned saved response
+opsgenie: applied and reconciled paused objects
+opsgenie: undo completed
+pagerduty: uploaded and planned saved response
+pagerduty: applied and reconciled paused objects
+pagerduty: undo completed
+Business import door: unlisted namespaces and cross-vendor envelopes refused with no product writes; Opsgenie retains its own parser
+Business import door: ADOPTING.md public HTTP conformance passed
+OC-038 signed import door: PagerDuty account/Splunk/JSM/Better Stack reviewed grants, source reconciliation, inactive integration inventory and undo passed
+OC-038 PagerDuty account HTTP: upload/plan, publication revocation and failure rollback, bounded apply/restart/reconcile, identical-byte idempotence, catch-up addition/replacement/gone/native conflict and guarded undo passed
+Owner import door: ADOPTING.md public HTTP conformance passed; signed-out 401, non-admin 403, cross-origin 403 and unlisted sources 400 wrote nothing; one history for owner and Business imports
+Business import door: a failed apply stayed failed (no journal resume, old route 409) and a new plan of the same upload applied, reconciled and undid
+Business import door: person erasure with door custody present answered 200 and withdrew every door copy
+O2 standing lifecycle: baseline=46, replacement=1, addition=1, reconciled=47; newest-first undo restored 4 prior imported objects; native human edit kept
+O2 standing refusals: approval mismatch, outside allowance, source gone, native edit preserved and erased native record not resurrected; reconcile exposed the edit; paging OFF, no new jobs, receipts or callbacks
+Token-free health: after the owner claim and SETUP_TOKEN retirement with the Business trust bound, /health and /signin answer 200, the owner session and the import door still answer, and /auth/owner-claim answers 409 claim_unavailable
+Business import door: off 404, owner opt-in, both saved-response formats, zero native writes in plan, reviewed grants, replay refusal, reconcile, restart, door/owner undo and durable key revocation passed
+OC-038 splunk: credential refusal, named unsupported objects, inactive integrations, no login/send authority, preview/apply/restart/reconcile/undo and related-person erasure passed
+OC-038 jsm: credential refusal, named unsupported objects, inactive integrations, no login/send authority, preview/apply/restart/reconcile/undo and related-person erasure passed
+OC-038 betterstack: credential refusal, named unsupported objects, inactive integrations, no login/send authority, preview/apply/restart/reconcile/undo and related-person erasure passed
+OC-038 PagerDuty account: {"records":75,"kinds":{"users":12,"schedules":8,"overrides":1,"escalation_policies":8,"services":8,"teams":4,"incidents":12,"maintenance_windows":2,"business_services":3,"event_orchestrations":1,"integrations":16},"classification":{"mapped":1,"mappedWithDifferences":52,"rejected":22}}; contacts, source-bound keyless inventory, named evidence/refusals, zero-write preview, paused apply/restart/reconcile/idempotence/undo and related-person erasure passed
+OC-055 import activation: separate key supply, inactive receiving, explicit activation, no supplied-key echo and revoke passed
+Move-in: explicit timing difference, named people, validated adoption, authority, concurrent publication, atomic rollback, now/next, ICS and protected undo passed

@@ -1,0 +1,14 @@
+{
+  "name": "mapping-upgrade",
+  "head": "2066466280ccd4634e324a63690d640472641156",
+  "command": [
+    "timeout",
+    "1200",
+    "node",
+    "/tmp/f234-upgrade-check.mjs"
+  ],
+  "started_at": "2026-11-12T01:51:23.974320+00:00",
+  "finished_at": "2026-11-12T01:51:38.600083+00:00",
+  "exit": 0,
+  "log": "mapping-upgrade.log"
+}
