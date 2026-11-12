@@ -5395,6 +5395,10 @@
       "sha256": "da3f4c53bfe96f2cc69be7d012305524d15a4781aa2767a5dab0d6f595fa6215",
       "executable": false
     },
+    "src/move-in/CopyDetails.tsx": {
+      "sha256": "a537126fe3076251714099ba59fe05c240ceba6a6aa4e1df98726e103da611a2",
+      "executable": false
+    },
     "src/move-in/door-client.ts": {
       "sha256": "df97441e41322891d21d73ef87037b3ef099ae12556ce01784c22fcb566308a9",
       "executable": false
@@ -5497,6 +5501,10 @@
     },
     "src/move-in/refusals.ts": {
       "sha256": "7e2697e481ba0c966be304f00c0d2983a9216db93554a16474c4eb568ff7807c",
+      "executable": false
+    },
+    "src/move-in/review-copy.ts": {
+      "sha256": "689ae4d32c5dffc2744a341b7cedc82004802b2e6d77db467eed4e0472fb8c6a",
       "executable": false
     },
     "src/move-in/ReviewStep.tsx": {
