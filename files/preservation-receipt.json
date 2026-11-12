@@ -1,0 +1,42 @@
+{
+  "base_sha": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "documents": [
+    {
+      "path": "CONTRACT.md",
+      "unchanged": true,
+      "sha256": "48f813aa7b0a6db5de868f526078ab90274b6c7efd1c8d5ba546c881cc6c55a5"
+    },
+    {
+      "path": "ACCEPTANCE.md",
+      "unchanged": true,
+      "sha256": "c2af263d4691b54ef12b6def48e94db0c34a83fab760c997c748e5f246e7f5c6"
+    },
+    {
+      "path": "docs/CLAIMS.md",
+      "unchanged": true,
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440"
+    }
+  ],
+  "verification_command_registrations": {
+    "before": 16,
+    "after": 16,
+    "note": "Configured public assert-script invocations; no test registrations added or removed. This is not a count of individual assertions."
+  },
+  "generated_status_summary": {
+    "before": {
+      "done": 23,
+      "partial": 44,
+      "missing": 34,
+      "total": 101
+    },
+    "after": {
+      "done": 23,
+      "partial": 44,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "clause_changes": [],
+  "OC-009": "partial unchanged",
+  "OC-022": "done unchanged"
+}

@@ -1,0 +1,31 @@
+[
+  {
+    "number": 1,
+    "time": 1794444672.9477136,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=d563ad121bcc5508a89c85e908e823c910a11ac5&per_page=100"
+    ]
+  },
+  {
+    "number": 2,
+    "time": 1794444974.0019045,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=d563ad121bcc5508a89c85e908e823c910a11ac5&per_page=100"
+    ]
+  },
+  {
+    "number": 3,
+    "time": 1794445275.0841959,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43130282710",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

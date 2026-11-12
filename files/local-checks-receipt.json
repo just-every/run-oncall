@@ -1,0 +1,55 @@
+{
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0
+  },
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0
+  },
+  "runtime": {
+    "node": "v24.19.0",
+    "pnpm": "10.12.4",
+    "browser": "/usr/bin/chromium",
+    "browser_arguments": [
+      "--no-sandbox",
+      "--use-mock-keychain",
+      "--password-store=basic"
+    ]
+  },
+  "contract_check": {
+    "command": "node src/base/contract-docs.mjs check",
+    "exit": 0
+  },
+  "source_lock_check": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "publication_scan": "Full fleet publication scan is unavailable in cloud and remains the Mac landing gate. Changed-line credential-shaped-value check passed.",
+  "member_browser": {
+    "command": "cloud_run node tests/member-coordination-browser.mjs",
+    "exit": 0,
+    "log": "member-coordination.log"
+  },
+  "browser_proof": "browser-proof-receipt.json: ten selected captures, both widths visually inspected",
+  "product_browser": {
+    "command": "cloud_run node tests/product-browser.mjs",
+    "exit": 1,
+    "log": "product-browser.log",
+    "failure": "TypeError ERR_INVALID_URL at tests/product-browser.mjs:633, eventsSourceBrowser create(): Ingress URL was still relative before RequestExample useEffect supplied location.origin. This file and Events source implementation are unchanged from main. All refusal and schedule assertions completed before this failure."
+  },
+  "focused_coordination": {
+    "command": "cloud_run env ONCALL_PRODUCT_JOURNEY=readable-times node tests/product-browser.mjs",
+    "exit": 0,
+    "log": "product-coordination-focused.log"
+  },
+  "focused_rota": {
+    "command": "cloud_run env ONCALL_PRODUCT_JOURNEY=rota-timeline node tests/product-browser.mjs",
+    "exit": 0,
+    "log": "product-rota-focused.log"
+  }
+}

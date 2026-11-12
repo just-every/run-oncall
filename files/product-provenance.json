@@ -1,0 +1,28 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-explain-refusals-1-fix1-c2",
+  "head": "d563ad121bcc5508a89c85e908e823c910a11ac5",
+  "base": "4fed382945f688afdcceb15ae9df976135cdbb1e",
+  "tree": "13fe9bd3a2e0034a955515624c33a8d8cdd12394",
+  "candidate_commits": 1,
+  "candidate_merges": 0,
+  "changed_files": [
+    "sources.lock.json",
+    "src/app/autosave/InlineConfirm.tsx",
+    "src/business-status/StatusPanel.tsx",
+    "src/form-validation.tsx",
+    "src/forms.tsx",
+    "src/on-call/Field.tsx",
+    "src/on-call/RotaPage.tsx",
+    "src/on-call/rota-steps/RotaSteps.tsx",
+    "src/schedule-coverage/ReviewedChange.tsx",
+    "tests/member-coordination-browser.mjs",
+    "tests/product-browser-journey.mjs"
+  ],
+  "diff_stat": "sources.lock.json                        | 22 ++++++++++-------\n src/app/autosave/InlineConfirm.tsx       |  6 +++--\n src/business-status/StatusPanel.tsx      | 10 ++++----\n src/form-validation.tsx                  | 37 ++++++++++++++++++++++++++++\n src/forms.tsx                            | 21 ++++++++++++----\n src/on-call/Field.tsx                    |  8 ++++---\n src/on-call/RotaPage.tsx                 |  8 ++++---\n src/on-call/rota-steps/RotaSteps.tsx     | 18 +++++++++-----\n src/schedule-coverage/ReviewedChange.tsx |  8 ++++---\n tests/member-coordination-browser.mjs    | 41 +++++++++++++++++++++++++++++++-\n tests/product-browser-journey.mjs        | 23 +++++++++++++++++-\n 11 files changed, 164 insertions(+), 38 deletions(-)",
+  "contracts_match_main": true,
+  "all_locally_tested_source_hashes_match": true,
+  "commit_identity_and_trailers": "fleet authors and committers; no trailers",
+  "push": "success on first guarded attempt",
+  "pr": null
+}

@@ -1,0 +1,38 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+OC4 autosave: menu departure retains owner after reload; offline retains input; Retry audit +1
+PASS incident saves: persistent runbook and review Saved states, failed-save alerts and Retry, phone header without leading separators, draft edits without timeline entries, exactly one attributed accepted review; changed screens captured at 1440 and 390
+PROBE OC-023 browser: Backstage dependency review, conflict choice, apply, lost-response Retry and reload -> rendered and HTTP state agree; screens captured at 1440 and 390
+Member coordination derived-status at 1440: overflow, hydration and accessibility passed
+Member coordination override-reason at 1440: overflow, hydration and accessibility passed
+Member coordination stakeholder-status-and-refusals at 1440: overflow, hydration and accessibility passed
+OC-061 browser: existing internal-status panel, derived degraded, attributed override and reason, stakeholder subscription and private-door refusals at 1440
+Member coordination email-list-started at 1440: overflow, hydration and accessibility passed
+Member coordination email-list-ended at 1440: overflow, hydration and accessibility passed
+Member coordination email-list-unsubscribed at 1440: overflow, hydration and accessibility passed
+Member coordination email-list-erasure-review at 1440: overflow, hydration and accessibility passed
+Member coordination email-list-erasure-receipt at 1440: overflow, hydration and accessibility passed
+OC-061 email-list browser: Settings authoring, started/ended recorded no-sender obligations, unsubscribe prevents future records and shared erasure receipt at 1440; overflow, axe and hydration passed
+Member coordination role-team at 1440: overflow, hydration and accessibility passed
+Member coordination role-services at 1440: overflow, hydration and accessibility passed
+Member coordination role-routing at 1440: overflow, hydration and accessibility passed
+Member coordination role-schedules at 1440: overflow, hydration and accessibility passed
+Member coordination role-incidents at 1440: overflow, hydration and accessibility passed
+OC-061 role selectors and tooltips: team, service, routing, schedule and incident/bulk screens at 1440 with own browser CPU rate 4; stakeholder excluded from response owners and keyboard tooltip immediate
+Member coordination oc068-manual-page-form at 1440: overflow, hydration and accessibility passed
+Member coordination oc068-requests-and-obligations at 1440: overflow, hydration and accessibility passed
+Member coordination oc068-viewer-refusal at 1440: overflow, hydration and accessibility passed
+Member coordination oc068-service-assignment-rule at 1440: overflow, hydration and accessibility passed
+OC-068 browser: manual page urgency/target, recorded obligations, independent accepted and declined responder requests, viewer refusal and versioned assignment setting at 1440
+Member coordination oc058-service-timeout at 1440: overflow, hydration and accessibility passed
+Member coordination oc058-snooze-form at 1440: overflow, hydration and accessibility passed
+Member coordination oc058-snoozed at 1440: overflow, hydration and accessibility passed
+Member coordination oc058-expired-triggered at 1440: overflow, hydration and accessibility passed
+OC-058 browser: timeout setting, snooze duration, persisted snoozed state and scheduled expiry back to triggered at 1440; paging OFF
+OC-018 real hosted member coordination persists after reload: on the emitted production Worker a password member acknowledged and noted an incident, reloaded at 1440 and kept attribution; a viewer read it; signed-out, anonymous and revoked sessions got no workspace; paging refused (409)
+Production sign-in browser flow passed at 1440: configured editable hints without a send, unconfigured mail refusal, sign-out and denied access without a session
+Owned runtime processes [["2087","2086","MainThread"],["2096","2087","esbuild"],["4662","2087","workerd"],["4674","2087","ps"]]
+Owned runtime processes [["2087","2086","MainThread"],["2096","2087","esbuild"],["4662","2087","workerd"],["4675","2087","chromium"],["4693","4675","chromium"],["4694","4675","chromium"],["4716","4693","chromium"],["4719","4675","chromium"],["4740","4694","chromium"],["4757","2087","ps"]]
+Browser driver PID 2087 runtime proof uses a fresh test-only context
+PASS OC-053 settings management, restore refusal and permanent machine attribution after reassignment at 1440

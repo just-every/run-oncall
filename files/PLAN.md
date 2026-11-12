@@ -1,0 +1,11 @@
+# Plan: refusal explanations on current Oncall main
+
+1. Configure fleet identity, refresh the authorized launcher, install decrypted-bundle Git authentication, push guard, evidence transport and preserving commit hooks.
+2. Clone just-every/run-oncall with full commit history and blob filtering. Read AGENTS.md and contract rules. Start the named cloud branch at current origin/main and squash the prior fix1-c1 branch, preserving main's newer source/tests and contract judgments.
+3. Restore CONTRACT.md, ACCEPTANCE.md and docs/CLAIMS.md byte-for-byte from main. Inspect the net change, preserving all member refusal captures and newer assertions. Regenerate sources.lock.json last and run its check. Add no test registrations and change no clause status, gap or evidence.
+4. Run typecheck, production build, the member-coordination browser journey and product browser journey. Use system Chromium without sandbox; retain changed-screen proof at 1440 and 390 outside the product tree. Inspect the refusal screenshots.
+5. Recheck current main before committing. If it moved, integrate while unpublished and resolve the source contract first; preserve exactly one ordinary candidate commit. Inspect all candidate author/committer identities and trailers, then publish only the named cloud product branch through cloud-push.py.
+6. Discover and watch exact-SHA Verify through REST within the ten-call budget, at least 300 seconds between calls for a run. Inspect completed failure logs only once per failed job. Rerun failed jobs once when applicable, and fix only in-scope defects without rewriting published history.
+7. Write complete non-secret reports, receipts, counts, clause limitations and proof to this packet. Explicitly publish its selected files to the separate evidence ref. Report product provenance, CI runs, evidence head, claim and inbox relay lines. Delete the clone only after successful publication and verification; preserve finished unpushed work in a verified external bundle if blocked.
+
+Scope: only the prior round's eight UI source files, two browser journey files and regenerated sources.lock.json. No new features, no new test, no contract status change, no main push, no other repository write, no PR unless the repository requires one.

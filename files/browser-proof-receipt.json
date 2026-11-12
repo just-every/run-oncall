@@ -1,0 +1,61 @@
+{
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "screens": [
+    {
+      "path": "browser/refusal-cover-review-1440.png",
+      "bytes": 125660,
+      "sha256": "eb0fb9d6ac9b7b5d6ecde279905ea8187b7e9e771015023c646a0270c86f082e"
+    },
+    {
+      "path": "browser/refusal-cover-review-390.png",
+      "bytes": 64965,
+      "sha256": "9e5f094226b5e37b5c61c7bed7a1c0472479e6a99f2539e883ab18c972b98ebc"
+    },
+    {
+      "path": "browser/refusal-server-create-1440.png",
+      "bytes": 95547,
+      "sha256": "1d582fa4e07fc19daa70c041a0ac0bd1eab1d5adb70955cedd4a084d25e2cf32"
+    },
+    {
+      "path": "browser/refusal-server-create-390.png",
+      "bytes": 67024,
+      "sha256": "925791c2ee114c041d9cee20bdc95240210636bb99c7f7d4ea0e153d276dcee4"
+    },
+    {
+      "path": "browser/refusal-status-reason-1440.png",
+      "bytes": 79714,
+      "sha256": "374bd2650f7dc5f370d38a2f1659fe04a8b403ae6dbcd49c1154cedc63c11932"
+    },
+    {
+      "path": "browser/refusal-status-reason-390.png",
+      "bytes": 54330,
+      "sha256": "7201fa4ca2e221338ce1d9f2316d36c38c969a69c72fe2b980ff1f1e3c22230c"
+    },
+    {
+      "path": "browser/refusal-supporting-service-1440.png",
+      "bytes": 89539,
+      "sha256": "1f061f22b859b6dccb358e999e13a426b0382a14a687578246c105bfb8637bfd"
+    },
+    {
+      "path": "browser/refusal-supporting-service-390.png",
+      "bytes": 59910,
+      "sha256": "b42a9b1e1601685509a38e1a5add3ba466a168b4be3db75ee50cfb4d5c1c2223"
+    },
+    {
+      "path": "browser/refusal-swap-substitute-1440.png",
+      "bytes": 141084,
+      "sha256": "c6489cc6789d846745079ce4f26c01f714c9d91fdd1bde9cbab6dc4a733896bc"
+    },
+    {
+      "path": "browser/refusal-swap-substitute-390.png",
+      "bytes": 61021,
+      "sha256": "b11ac0105eb248bef4fc594e6fca66613e4e241c1b6007b8b829c0e86bd2c872"
+    }
+  ],
+  "review": "All five refusal states reviewed at 1440 and 390: required supporting service, real server create refusal, manual-status missing reason, cover-review confirmation, swap missing substitute. The phone server-refusal viewport shows its first line at the lower edge; the desktop capture shows the complete server reason. No product behavior was changed for capture framing.",
+  "new_tests": 0
+}

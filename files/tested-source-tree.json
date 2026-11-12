@@ -1,0 +1,49 @@
+{
+  "files": [
+    {
+      "path": "sources.lock.json",
+      "sha256": "a803fcac37f6ba1bdb472a01854c219a66249210e2c68f544a92d980a1c77c25"
+    },
+    {
+      "path": "src/app/autosave/InlineConfirm.tsx",
+      "sha256": "bde1623399dfbacd750c77c96b78011b2dcfcd2755d8255984c0632dd6114f46"
+    },
+    {
+      "path": "src/business-status/StatusPanel.tsx",
+      "sha256": "829c31e7f28a5de65d786e43da0bdfd5478e6a0a0ddf1bfdc0da05a9b42c3ff8"
+    },
+    {
+      "path": "src/form-validation.tsx",
+      "sha256": "6b9645d61f7454d1acbb2a096b17715265e4bdbf3d3e086560e02cd6bb37a50b"
+    },
+    {
+      "path": "src/forms.tsx",
+      "sha256": "e449a2c7f55d0fed995af58e8b2a5fc68291ccb06988c9e46b248c7f9ee98206"
+    },
+    {
+      "path": "src/on-call/Field.tsx",
+      "sha256": "397a1d8c32376c1865164cf48048829ef8a4460431f2803cfc1c2062e2ace0b2"
+    },
+    {
+      "path": "src/on-call/RotaPage.tsx",
+      "sha256": "e502414f9815dc41216e76d7a0742f627c1336bed958e9a374e79d1e9fc45733"
+    },
+    {
+      "path": "src/on-call/rota-steps/RotaSteps.tsx",
+      "sha256": "d4110c4e7e42381c9041f2620107984cb1fdf547f8d164dbe12d50382eea3e4f"
+    },
+    {
+      "path": "src/schedule-coverage/ReviewedChange.tsx",
+      "sha256": "06efcd123800354f61914bcc2c7cbb460f22404bcb3b87a917a842a6fbef17f0"
+    },
+    {
+      "path": "tests/member-coordination-browser.mjs",
+      "sha256": "bf553da88c5b225be8a9a1ec5a17c9b56343bc8f2895a96339dadfc1be87b2a8"
+    },
+    {
+      "path": "tests/product-browser-journey.mjs",
+      "sha256": "5a40408cb65063242ccc2267082a99b7a7231a579c6408975df184d73c6dfd03"
+    }
+  ],
+  "purpose": "Source hashes for the tree consumed by the local production build and both touched browser scripts, prior to the single commit."
+}
