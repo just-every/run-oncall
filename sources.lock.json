@@ -192,7 +192,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "14abfcd4e1bccc5002af783b5c9ecc29d15ecb76de4735c7c0b81099d5cb29e2",
+      "sha256": "d32acfbe9102f8c91dff318e64e51ed8e60b3dd96b9bd40b46be1103b9b584a5",
       "executable": false
     },
     "docs/audit.md": {
@@ -1673,6 +1673,10 @@
     },
     "src/agent-door/alert-tools.ts": {
       "sha256": "0a8c802318b2c8a1d749a4e9f220a019bb03a21d861d0c2dce26327c444ada2a",
+      "executable": false
+    },
+    "src/agent-door/analytics-tools.ts": {
+      "sha256": "eb42f9b1135262fb718a6b878a3ec5fb9fe92f6423d75766c4756b1dad54176b",
       "executable": false
     },
     "src/agent-door/automation-tools.ts": {
@@ -6573,6 +6577,10 @@
     },
     "tests/oncall-agent-alerts.mjs": {
       "sha256": "970d171db99dfee529d33325c53c81716a7c0a3178ce82cf9f023eb8567c544c",
+      "executable": false
+    },
+    "tests/oncall-agent-analytics.mjs": {
+      "sha256": "5ab66f6aafaaf6a8395f4c3c8aa26f6681d9a55fa1cefa21ad48562b79ac2f40",
       "executable": false
     },
     "tests/oncall-agent-communications-replay.mjs": {

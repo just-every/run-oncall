@@ -23,6 +23,14 @@ Use `oncall.alerts.list` with the existing `incidents:read` permission. Optional
 
 Each alert includes its native identity, original severity and priority, current state and urgency, suppression, owner and retained observations. Policy and routing versions describe admission, even after the live rules change. Imported text is untrusted. Service-less unrouted alerts, foreign records, source payloads, truncated prefixes and routing member snapshots are excluded. Incomplete observations expose their flags without their retained bytes. Reads compute standard and, when retained personal or incident evidence is present, sensitive using the same rule as incident reads. Company policy may require approval before returning sensitive content. Reads retain decision audit and any policy-required approval or review; they send no outbound request and create no native coordination or paging effect.
 
+## Read analytics
+
+Use `oncall.analytics.read` with `analytics:read`. With no arguments it returns the existing per-service incident, open and unfinished follow-up counts. Set `view` to `response` for the native response report, scheduled load and alert noise. Optional `from`, `to` and `at` timestamps use the native report rules; `at` cannot be later than now. An optional `service` must be in the caller's current grants. Incidents, alerts and schedules are scoped before any totals or responder hours are computed. Service-less unrouted alerts are excluded. Scheduled hours do not establish worked hours or delivered interruptions.
+
+Set `view` to `readiness`, with no other filters, to read release and deployment identity, the release matrix, workspace signals, the US installation checklist and the pager-coverage statement. This view is available only when current grants cover every workspace service; a narrower caller receives no report or counts. Unavailable measurements remain explicitly unavailable and the report retains `complete: false`. Neither a healthy report nor local configuration establishes paging readiness.
+
+These reads compute standard and add sensitive only for retained personal or incident evidence under the existing incident-read rule. Company policy may require review or approval. They retain read-decision custody, create no native coordination or paging effect and send no outbound request. Usage and cost figures are not shipped; team load is not modelled.
+
 ## People and credentials
 
 Business supplies signed owner and teammate person IDs. The installation owner uses Business people (`/agents/people`) to link an applied teammate ID to an existing local workspace account. Matching an email address is insufficient. Oncall creates no invitation or password from a Business roster. A local role promotion does not make someone a Business policy editor.
