@@ -6,7 +6,7 @@ import {mkdir,readFile} from 'node:fs/promises'
 import {chromium,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {localWorker,ownerDoor,durableSnapshot} from './worker.mjs'
-import {productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser,scheduleCoordinationBrowser,keyboardCoordination,coverageRulesBrowser} from './product-browser-journey.mjs'
+import {importedEmailBrowser,productBrowserJourney,triageFiltersBrowser,incidentRolesBrowser,providerExport,supportStartBrowser,scheduleCoordinationBrowser,keyboardCoordination,coverageRulesBrowser} from './product-browser-journey.mjs'
 import {redact} from './diagnostics.mjs'
 // OC-059: one oversized real intake produces readable service custody and an owner queue alert.
 async function incompleteIntakeBrowser(page,context) {
@@ -704,7 +704,7 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
  if(focused==='rota-timeline'){
@@ -721,6 +721,7 @@ try {
   await coverageRulesBrowser(page,context,1440,session);
   await readinessBrowser(page,context);
  }
+ if(focused==='imported-email')await importedEmailBrowser(page,context);
  if(focused==='events-source')await eventsSourceBrowser(page,context);
  if(focused==='support-start')await supportStartBrowser(page,context,{setTime,proof:triageProof});
  if(focused==='roles'){
@@ -731,7 +732,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(focused==='limitations')await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
+ if(!['imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -742,7 +743,8 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))await readinessBrowser(page,context)
+ if(!['imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))await readinessBrowser(page,context)
+ if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
@@ -757,4 +759,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

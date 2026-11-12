@@ -1,3 +1,4 @@
+import {emailSettings} from './email-settings'
 import {addressRanges} from './address-match'
 import {pagerdutyContacts,pagerdutyEvidence} from './pagerduty-mapping'
 import {mappingPayload,importedContacts,opsFamily} from './vendor-formats'
@@ -83,12 +84,15 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
     // Keep personal labels in erasable journal custody, not in a new native identity.
     const id=record.sourceId,kind=value.type??value.kind??'unknown'
     if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id)||typeof kind!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(kind))throw Error('integration identifier or kind cannot be represented safely; original retained for resolution')
+    const email=emailSettings(vendor,value)
+    if(email)return {...effect('integration',`${vendor}:${id}`,{sourceId:id,vendor,kind,provider:'email',active:false,emailSettings:email,...(vendor==='pagerduty'&&(value._service??value.service)?{serviceSource:{namespace:vendor,kind:'services',sourceId:String((value._service??value.service).id)}}:{})}),unmapped:email.differences.map(d=>({field:d.field,reason:`Integration ${label} (${id}): ${d.reason}`,original:d.original}))}
     const provider=vendor==='splunk'&&kind==='REST'?'splunk':(vendor==='jsm'||vendor==='opsgenie')&&kind==='API'?'opsgenie':vendor==='pagerduty'&&['generic_events_api_inbound_integration','events_api_v1_inbound_integration','events_api_v2_inbound_integration'].includes(kind)?'pagerduty':null
     if(vendor==='pagerduty'&&!provider)return {effects:[],rejection:kind==='email_inbound_integration'
      ?`Integration ${label} (${id}, ${kind}): email modes and rules need OC-070 and the inherited OC-038 import; recreate and review the email receiving mode. Original retained; no delivery is activated.`
      :`Integration ${label} (${id}, ${kind}): vendor-hosted or unsupported integration; recreate it as the matching Oncall source or use the generic webhook and change its URL. Original retained; no endpoint is activated.`}
     return {...effect('integration',`${vendor}:${id}`,{sourceId:id,vendor,kind,provider,active:false,incumbentKey:'not supplied',...(vendor==='pagerduty'&&value._service?{serviceSource:{namespace:vendor,kind:'services',sourceId:String(value._service.id)}}:{})}),unmapped:[{field:'integration',reason:`Inactive ${kind} integration ${id}; incumbent key: not supplied. No endpoint or send authority is activated. Original settings and labels remain in the journal.`}]}
    }
+   if(record.kind==='integration_actions'&&vendor==='opsgenie')return {effects:[],unmapped:[{field:'integration_actions',reason:'Saved actions are reviewed with their parent email integration; originals remain in import custody.'}]}
    if(record.kind==='schedules') {
     if(errors.has(record.sourceId))throw Error(errors.get(record.sourceId))
     const mapped=schedules.get(record.sourceId);if(!mapped)throw Error('missing rotation definitions')

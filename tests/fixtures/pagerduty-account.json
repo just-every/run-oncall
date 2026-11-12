@@ -1718,12 +1718,162 @@
           "integrations": [
             {
               "id": "synthetic-oncall-i7",
-              "type": "email_inbound_integration",
+              "type": "generic_email_inbound_integration",
               "name": "Email alerts",
               "summary": "Monitor intake 4",
               "created_at": "2026-01-01T09:00:00Z",
               "integration_email": "alerts@example.test",
-              "email_filter_mode": "all-email"
+              "email_filter_mode": "all-email",
+              "email_incident_creation": "use_rules",
+              "email_parsing_fallback": "open_new_incident",
+              "email_parsers": [
+                {
+                  "action": "trigger",
+                  "match_predicate": {
+                    "type": "all",
+                    "children": [
+                      {
+                        "type": "regex",
+                        "part": "subject",
+                        "matcher": "FAILED: (\\S+)"
+                      },
+                      {
+                        "type": "not",
+                        "children": [
+                          {
+                            "type": "contains",
+                            "part": "body",
+                            "matcher": "mute"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "contains",
+                        "part": "from_addresses",
+                        "matcher": "monitor"
+                      }
+                    ]
+                  },
+                  "value_extractors": [
+                    {
+                      "type": "regex",
+                      "part": "subject",
+                      "value_name": "incident_key",
+                      "regex": "FAILED: (\\S+)"
+                    }
+                  ]
+                },
+                {
+                  "action": "resolve",
+                  "match_predicate": {
+                    "type": "any",
+                    "children": [
+                      {
+                        "type": "regex",
+                        "part": "subject",
+                        "matcher": "OK: (\\S+)"
+                      },
+                      {
+                        "type": "exactly",
+                        "part": "body",
+                        "matcher": "resolve-by-body"
+                      }
+                    ]
+                  },
+                  "value_extractors": [
+                    {
+                      "type": "regex",
+                      "part": "subject",
+                      "value_name": "incident_key",
+                      "regex": "OK: (\\S+)"
+                    }
+                  ]
+                },
+                {
+                  "action": "trigger",
+                  "match_predicate": {
+                    "type": "all",
+                    "children": [
+                      {
+                        "type": "exactly",
+                        "part": "subject",
+                        "matcher": "Marked failure"
+                      }
+                    ]
+                  },
+                  "value_extractors": [
+                    {
+                      "type": "between",
+                      "part": "body",
+                      "value_name": "incident_key",
+                      "starts_after": "[",
+                      "ends_with": "]"
+                    }
+                  ]
+                },
+                {
+                  "action": "resolve",
+                  "match_predicate": {
+                    "type": "all",
+                    "children": [
+                      {
+                        "type": "exactly",
+                        "part": "subject",
+                        "matcher": "Marked recovery"
+                      }
+                    ]
+                  },
+                  "value_extractors": [
+                    {
+                      "type": "between",
+                      "part": "body",
+                      "value_name": "incident_key",
+                      "starts_after": "[",
+                      "ends_with": "]"
+                    }
+                  ]
+                },
+                {
+                  "action": "trigger",
+                  "match_predicate": {
+                    "type": "all",
+                    "children": [
+                      {
+                        "type": "exactly",
+                        "part": "subject",
+                        "matcher": "Whole failure"
+                      }
+                    ]
+                  },
+                  "value_extractors": [
+                    {
+                      "type": "entire",
+                      "part": "body",
+                      "value_name": "incident_key"
+                    }
+                  ]
+                },
+                {
+                  "action": "resolve",
+                  "match_predicate": {
+                    "type": "all",
+                    "children": [
+                      {
+                        "type": "exactly",
+                        "part": "subject",
+                        "matcher": "Whole recovery"
+                      }
+                    ]
+                  },
+                  "value_extractors": [
+                    {
+                      "type": "entire",
+                      "part": "body",
+                      "value_name": "incident_key"
+                    }
+                  ]
+                }
+              ]
             },
             {
               "id": "synthetic-oncall-i8",

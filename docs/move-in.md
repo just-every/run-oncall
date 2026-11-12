@@ -289,8 +289,8 @@ present objects and explained source-only records.
   rules and their delivery settings remain notes, with no delivery.
 - Events v1, Events v2 and generic Events API integrations become inactive,
   keyless inventory bound to the **source** service identity. The file cannot
-  supply a key. Email integrations are named for OC-070 and OC-038's inherited
-  email import duty. Vendor-hosted integrations such as Datadog, CloudWatch and
+  supply a key. Documented saved email integrations become inactive settings as
+  described below; they receive no address or intake authority during import. Vendor-hosted integrations such as Datadog, CloudWatch and
   Grafana are named for re-creation as the matching Oncall source or generic
   webhook. Unsupported integrations retain their original settings.
 - Services remain source evidence. Grouping, urgency, support hours, auto-resolve
@@ -316,3 +316,63 @@ committed prefix; an uncertain interrupted publication still follows the
 existing failed-import/explicit-rollback rules. Related people in retained and
 rejected PagerDuty records, including opaque user references and imported
 numbers, participate in the existing person-erasure flow.
+
+
+## Saved email settings
+
+Save PagerDuty REST service details with embedded integration details, or saved
+integration responses, using `generic_email_inbound_integration`. The saved
+`email_incident_creation` values `on_new_email`, `on_new_email_subject`,
+`only_if_no_open_incidents` and `use_rules` map to new-per-email, subject, single
+open alert and custom modes respectively. Ordered trigger and resolve parsers
+support flat all or any predicates, negated leaves, subject, body and sender,
+contains, exactly and RE2-compatible regexes. A single `incident_key` extractor
+can use a marker pair, one regex capture or the entire subject or body. The
+report preserves every unsupported parser and its original, including nested
+predicates, unsupported operators, additional extracted values and non-RE2
+patterns. No more than 20 rules are converted, and an overflow is named.
+
+For Opsgenie, save integration detail or list responses under `integrations`
+and each saved GET integration actions response under `integration_actions`.
+Keep the response's `data` wrapper and `_parent.id`; the parent must name one
+integration in the same bundle. Only `Email` integrations use this adapter.
+Create and close groups preserve the documented group order, followed by each
+action's numeric order. Supported filters use `subject`, `message` and
+`from_address`, Contains, Equals and Matches, optional `isNot`, and Match All,
+Match All Conditions or Match Any Condition. An alias may be the whole subject
+or message, one `substringBetween` pair, or one `extract` regex capture using
+the documented regex literal syntax. Arbitrary templates and content,
+attachment, responder or note effects remain unconverted. Ignore,
+acknowledge and add-note actions are always named with their originals.
+
+The Compatibility review shows each difference and expandable original JSON.
+The complete saved source remains in existing import journal custody, subject
+to its erasure rules. Active accept or reject email filters are retained only;
+there is no exact filter gate in Oncall's email model. Any unconverted rule or
+active filter blocks activation until the saved settings are resolved and
+imported again. No earlier unsupported rule is silently skipped in live intake.
+PagerDuty's discard fallback and Opsgenie's unmatched-action discard instead
+become quarantine for review, never silent deletion. Those differences require
+an administrator's explicit acknowledgment before activation.
+
+Import, preview, apply, restart and reconciliation create no address, native
+email version or receiving endpoint. An administrator separately chooses an
+existing service and confirms activation in the imported integration's panel.
+The existing email management door creates the private OC-033 address and
+attributed version 1 atomically with the current imported revision. The address
+is shown once. The native email settings page provides subsequent rule edits,
+saved-mail draft tests, rotation and revocation. Activation is a native edit,
+so journal undo refuses to overwrite it; inactive settings still undo normally.
+Permanent native email erasure removes the activated settings and related
+originals and plans together, and fences old archives against restoration.
+No new portable archive category or provider credential is introduced.
+
+Field checks on 12 November 2026 used the official
+[PagerDuty REST API schema](https://developer.pagerduty.com/api-reference/) and
+[Opsgenie Integration API](https://docs.opsgenie.com/docs/integration-api),
+plus Atlassian's [action ordering](https://support.atlassian.com/opsgenie/docs/what-are-the-integration-types-and-actions)
+and [string processing reference](https://support.atlassian.com/opsgenie/docs/string-processing-methods-in-opsgenie-integrations/).
+These are saved-response adapters tested with synthetic exports. No live
+incumbent account, export inventory, delivery, reconciliation or cutover was
+verified. OC-038's account and move gates and OC-074 remain unchanged. Paging
+stays OFF, and a local receiving test is not a provider receipt.
