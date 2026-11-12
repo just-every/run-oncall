@@ -1804,7 +1804,7 @@
       "executable": false
     },
     "src/app/BulkResults.tsx": {
-      "sha256": "ed843970392ad3012fee858d42b9b0f7ca3ef10ff6f1d1edad14fa7a2420677e",
+      "sha256": "ee4813c66944c25d7dafc9479bfcac8d18c8c3f27963810f37143f8ade637db1",
       "executable": false
     },
     "src/app/FailureLine.tsx": {
@@ -6304,7 +6304,7 @@
       "executable": false
     },
     "src/triage-api.ts": {
-      "sha256": "6749da6aa3c48098c9c58ffb1c1487b98b5c961bb04d34bb1ab38f2bdd5d5782",
+      "sha256": "d9c711c8272394a6b70cabd69d6e2e0034a2485b575e4b70b98d4e2f731a5acd",
       "executable": false
     },
     "src/triage-orchestration.ts": {

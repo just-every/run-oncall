@@ -14,7 +14,7 @@ function selectedItem(result: BulkResult, items: BulkSelection[]) {
 function skipped(result: BulkResult, items: BulkSelection[]) {
   return result.ok
     ? !result.step && result.revision === selectedItem(result, items)?.revision
-    : ['Cannot acknowledge an incident in acknowledged state', 'Incident is already resolved', 'Alert-only item is already closed'].includes(result.error ?? '');
+    : ['Cannot acknowledge an incident in acknowledged state', 'Incident is already resolved', 'Alert-only item is already closed', 'No assignment change needed', 'No priority change needed', 'No urgency change needed'].includes(result.error ?? '');
 }
 
 export function bulkCounts(result: BulkResponse, items: BulkSelection[]) {
