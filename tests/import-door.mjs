@@ -858,6 +858,14 @@ try {
   assert.deepEqual(details.counts.byKind,expected)
   assert.equal(ok(await door.call('pagerduty','undo',{planId:details.planId})).state,'cancelled')
   const savedEmail=records.services.flatMap(service=>service.integrations).find(item=>item.type==='generic_email_inbound_integration')
+  for(const [creation,mode] of [['on_new_email','each'],['on_new_email_subject','subject'],['only_if_no_open_incidents','single']]) {
+   const integration={...structuredClone(savedEmail),id:'synthetic-oncall-mode-'+mode,email_incident_creation:creation,email_parsers:[structuredClone(savedEmail.email_parsers[1])]}
+   const modesReview=ok(await door.preview('pagerduty',JSON.stringify({integrations:{integration}})))
+   const settings=modesReview.items[0].effects[0].value.emailSettings
+   assert.equal(settings.draft.mode,mode);assert.equal(settings.blocked,false)
+   assert.equal(settings.draft.rules[0].action,'resolve','non-custom modes retain their saved resolve rule')
+   ok(await door.call('pagerduty','undo',{planId:modesReview.planId}))
+  }
   const refusedEmail=structuredClone(savedEmail)
   refusedEmail.id='synthetic-oncall-email-refused';refusedEmail.email_filter_mode='and-rules-email'
   refusedEmail.email_filters=[{subject_mode:'no-match',subject_regex:'test',body_mode:'always',from_email_mode:'always'}]

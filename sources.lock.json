@@ -5407,6 +5407,10 @@
       "sha256": "04a31cdaad037b4aad331ac22c805fb720f038e719b02633112372487dbc42ed",
       "executable": false
     },
+    "src/move-in/email-settings.ts": {
+      "sha256": "bc4ba9177326ae2ef7e98a28f2ce9b9e4fdac364aad680fce49b0c25791f0cfb",
+      "executable": false
+    },
     "src/move-in/equivalence.ts": {
       "sha256": "8d4c0fa6c572f20e0f41a61500d83929f81005f1474edaf68817477a16af22c6",
       "executable": false
@@ -6388,7 +6392,7 @@
       "executable": false
     },
     "tests/email-fixtures.mjs": {
-      "sha256": "783276ac7949e7d4853796bbf5ac633230bf14fdcb83870bf1cacdf955ef057c",
+      "sha256": "1811fe17f32910a00791f66527e6a2882d795be336b1fb4591f94c97a8f9b78a",
       "executable": false
     },
     "tests/fixture-database.mjs": {
@@ -6433,6 +6437,10 @@
     },
     "tests/fixtures/octokit-LICENSE.txt": {
       "sha256": "e68f8081cee4fcf84619364e6cbf0eb3b2e4100907a56d6c5912a6f090bb09ae",
+      "executable": false
+    },
+    "tests/fixtures/opsgenie-email.json": {
+      "sha256": "3cf3ec07b2009a336829bd4efd80c774326db94bc6d14dc12d3a9958f229ca86",
       "executable": false
     },
     "tests/fixtures/opsgenie-override-detail.json": {
@@ -6500,7 +6508,7 @@
       "executable": false
     },
     "tests/import-door.mjs": {
-      "sha256": "e9095bc44fb4f5196c4790fc2c9015578505ab401c35d794fdf86cc3fe6045ab",
+      "sha256": "98975a2b8595ad249e01dd261f0aefa9c4e68819203c4f9afcb5a1aa4793ac60",
       "executable": false
     },
     "tests/initialize-agent-owner.mjs": {

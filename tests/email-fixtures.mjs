@@ -102,7 +102,8 @@ export async function importedEmailSettings({w,request,cookie,actor,ok}) {
   assert.deepEqual(version.rules,row.value.emailSettings.draft.rules,'activation uses the reviewed saved settings, never client replacements');
   ok(await request('/api/email/addresses',{...input,id:id+'-repeat',localPart:localPart()}),409);
   for(const sample of convertedEmailCases(vendor)) {
-   assert.equal((await mail(w,local,sample.subject,{body:sample.body})).status,200);
+   const delivered=await mail(w,local,sample.subject,{body:sample.body});
+   assert.equal(delivered.status,sample.outcome==='quarantined'?400:200,vendor+' '+sample.subject+': '+delivered.text);
    const receipt=ok(await request('/api/email')).receipts.at(-1);
    assert.equal(receipt.address,active.id);assert.equal(receipt.outcome,sample.outcome);
    assert.deepEqual([receipt.decision.mode,receipt.decision.version,receipt.decision.rule,receipt.decision.key,receipt.decision.action],['custom',1,sample.rule,sample.key,sample.action]);
@@ -114,7 +115,8 @@ export async function importedEmailSettings({w,request,cookie,actor,ok}) {
   assert.equal(comparison.sideEffects,false);assert.deepEqual(durableSnapshot(w),zeroBefore,'testing the imported draft makes zero durable, audit or outbox writes');
   for(const decision of comparison.decisions) {
    const sample=saved.find(s=>s.id===decision.sample);
-   await mail(w,local,sample.subject,{body:sample.text});
+   const delivered=await mail(w,local,sample.subject,{body:sample.text});
+   assert.equal(delivered.status,decision.proposed.action==='quarantine'?400:200,delivered.text);
    const receipt=ok(await request('/api/email')).receipts.at(-1);
    assert.deepEqual(receipt.decision,{...decision.proposed,version:1},'the emitted email door agrees with the zero-write draft test');
   }
@@ -138,5 +140,5 @@ export async function importedEmailSettings({w,request,cookie,actor,ok}) {
  assert.deepEqual(await w.outboundRequests(),[],'saved-file import, activation, test and intake make zero outbound or provider requests');
  const {mkdir,writeFile}=await import('node:fs/promises');
  await mkdir('evidence',{recursive:true});await writeFile('evidence/imported-email-receipts.json',JSON.stringify(receipts,null,2)+'\n');
- console.log('PROBE OC-070 8: saved PagerDuty service and Opsgenie Email/actions -> inactive preview/apply/restart/reconcile/undo; guarded activation version 1; each converted rule opened/deduplicated/recovered/no-effect or quarantine; saved-mail draft zero writes; atomic erasure and replay refusal; zero outbound requests');
+ console.log('PROBE OC-070 8: saved PagerDuty service and Opsgenie Email and actions -> inactive preview, apply, restart, reconcile and undo; guarded activation version 1; each converted rule opened, deduplicated, recovered, no-effect or quarantine; saved-mail draft zero writes; atomic erasure and replay refusal; zero outbound requests');
 }
