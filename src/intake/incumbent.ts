@@ -63,3 +63,18 @@ export function installIncumbentKeys(api:any,deps:Dependencies) {
   return c.json({source,keySupplied:true,nativeKey,paging:'OFF'});
  });
 }
+
+/** The email management door owns creation. Imported settings are never an
+ * intake source or address until this completed, reviewed import is activated. */
+export async function importedEmailActivation(db:D1Database,input:any) {
+ if(input.importedId===undefined)return null
+ const importedId=text(input.importedId,'Imported integration',200)
+ const row=await db.prepare("SELECT revision,data FROM move_in_objects WHERE kind='integration' AND id=?").bind(importedId).first<{revision:string;data:string}>()
+ if(!row||row.revision!==input.importedRevision)fail('Imported integration changed; reload',409)
+ const value=JSON.parse(row.data),settings=value.emailSettings
+ if(value.provider!=='email'||!settings||settings.blocked)fail('Resolve the unconverted email rules in the saved export and import again before activation',409)
+ if(input.confirmed!==true||settings.differences.length&&input.reviewedDifferences!==true)fail('Confirm activation and review the quarantine differences first',409)
+ if(value.emailAddress)fail('This imported email integration was already activated',409)
+ return {draft:settings.draft,guard:{sql:`EXISTS(SELECT 1 FROM move_in_objects WHERE kind='integration' AND id=? AND revision=? AND data=?) AND ${completed}`,values:[importedId,row.revision,row.data,importedId]},
+  write(token:string,id:string){return db.prepare(`UPDATE move_in_objects SET revision=?,data=? WHERE kind='integration' AND id=? AND ${gate}`).bind('email-'+token,JSON.stringify({...value,emailAddress:id}),importedId,token)}}
+}
