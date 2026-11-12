@@ -21,7 +21,7 @@ function payloadFor(source: ChangeSource, title: string, eventId: string, secret
 }
 export function ChangeSourceTest({ source, busy, run }: { source: ChangeSource; busy: boolean; run: IntakeRun }) {
   const [secret, setSecret] = useState(''), [title, setTitle] = useState('Service deployed');
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState('');
   const path = source.provider === 'pagerduty' ? '/v2/change/enqueue' : '/api/changes/ingress/' + encodeURIComponent(source.id);
   const [origin,setOrigin]=useState('');
   useEffect(()=>setOrigin(location.origin),[]);
@@ -43,8 +43,10 @@ const timestamp = String(Math.floor(Date.now() / 1000));
 const headers = { 'content-type': 'application/json' };
 ${auth}
 const response = await fetch(${JSON.stringify(origin+path)}, { method: 'POST', headers, body });
-console.log(response.status);
+console.log(response.status, await response.text());
 if (!response.ok) process.exitCode = 1;`;
+  const commands = `export ONCALL_SOURCE_KEY='PASTE_YOUR_PRIVATE_KEY'\nnode send.mjs`;
+  const copy = async (text: string, done: string) => { try { await navigator.clipboard.writeText(text); setCopied(done); } catch { setCopied('Select the text above and copy it.'); } };
 
   return <>
     <details><summary>Send a test event</summary><Form busy={busy} disabled={!source.active} label="Send test event" onSubmit={async () => {
@@ -66,6 +68,13 @@ if (!response.ok) process.exitCode = 1;`;
       if (result) setSecret('');
       return false;
     }}><label className="field">Private key<input type="password" autoComplete="off" required value={secret} onChange={e => setSecret(e.target.value)} /></label>{source.provider!=='terraform'&&<label className="field">Title<input required maxLength={300} value={title} onChange={e => setTitle(e.target.value)} /></label>}</Form></details>
-    <details><summary>Sample request</summary><p>Keep the private key in your sender’s environment, then run this with Node 22.</p><label className="field">Sample request<textarea aria-label="Sample request" readOnly rows={12} value={sample}/></label><button type="button" disabled={!origin} onClick={async () => { try { await navigator.clipboard.writeText(sample); setCopied(true); } catch { setCopied(false); } }}>Copy sample request</button>{copied && <p role="status">Copied</p>}</details>
+    <details><summary>Sample request</summary>
+      <p>This sends one change event to this source from your own machine. It needs Node 22 or newer: check with <code>node --version</code>, or get it from <a href="https://nodejs.org/en/download">nodejs.org</a>.</p>
+      <ol>
+        <li>Save this sample as <code>send.mjs</code>.<label className="field">Sample request<textarea aria-label="Sample request" readOnly rows={12} spellCheck={false} value={sample}/></label><button type="button" disabled={!origin} onClick={() => copy(sample, 'Copied')}>Copy sample request</button></li>
+        <li>In a terminal in the same folder, set the private key you copied when you created this source, then run the file.<pre tabIndex={0}>{commands}</pre><button type="button" onClick={() => copy(commands, 'Commands copied')}>Copy run commands</button></li>
+        <li>A new change prints <code>201</code> (<code>202</code> for PagerDuty-compatible sources) and the receipt. Running the same file again is a duplicate of the same <code>eventId</code>; edit it to send another.</li>
+      </ol>
+      {copied && <p role="status">{copied}</p>}</details>
   </>;
 }
