@@ -8,10 +8,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 23 | 37 | 24 | 84 |
+| Core | 24 | 36 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 24 | 43 | 34 | 101 |
+| Full target | 25 | 42 | 34 | 101 |
 
 Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d7a` (8 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -83,7 +83,7 @@ Core · published · **done**
 
 #### OC-006 — Bounded outbound incident effects
 
-Core · published · **partial** · Cites BASE-DATA-004
+Core · published · **done** · Cites BASE-DATA-004
 
 **Requirement.** In release 1, only signed OC-053 response events to an endpoint a current administrator explicitly approved may leave the incident workspace (RL-2). No paging provider notification, AI call, production action or Lamp publication occurs in release 1. Configured remote mail sends sign-in links only. Handoffs are minimum summaries with stable identity and visibility; an exported draft is explicitly unreviewed. Source links grant no access. External acceptance, delivery and acknowledgment are distinct later records. Approved OC-053 events are proved under OC-053.
 
@@ -91,8 +91,8 @@ Core · published · **partial** · Cites BASE-DATA-004
 1. Coordination and handoff preparation and export create no paging receipt, production action, AI call or external publication.
 2. Draft exports remain unreviewed, and source links confer no access.
 
-**Evidence.** `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs`
-**Gap.** No cited test asserts the absence of an AI call, that an exported draft stays marked unreviewed, or that a source link grants no access; no paging receipt, no production action and no Lamp publication are asserted. This is the current-release safety boundary, not the final product boundary.
+**Evidence.** `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs`; `tests/activation.mjs` (PROBE OC-006 1); `tests/activation.mjs` (PROBE OC-006 2); `tests/runtime.mjs` (coordinationJourney)
+**Gap.** None.
 
 #### OC-007 — Native archive
 
