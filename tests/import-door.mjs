@@ -502,7 +502,7 @@ try {
   nativeSnapshot:async()=>ok(await req('/api/move-in/objects')),
   assertApplied:async(before,after,report)=>{
    assert.ok(after.length>before.length);assert.ok(report.counts.explained>0)
-   assert.ok(after.filter(row=>row.targetKind==='integration').every(row=>row.value.active===false&&row.value.incumbentKey==='not supplied'))
+   assert.ok(after.filter(row=>row.targetKind==='integration').every(row=>row.value.active===false&&(row.value.provider==='email'?row.value.emailSettings.draft.rules.length>0:row.value.incumbentKey==='not supplied')))
    assert.ok(after.every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
   },assertUndone:async(before,after)=>assert.deepEqual(after,before)})
  console.log('OC-038 signed import door: PagerDuty account/Splunk/JSM/Better Stack reviewed grants, source reconciliation, inactive integration inventory and undo passed')
@@ -858,6 +858,39 @@ try {
   const details=ok(await door.preview('pagerduty',JSON.stringify(detailVariant)))
   assert.deepEqual(details.counts.byKind,expected)
   assert.equal(ok(await door.call('pagerduty','undo',{planId:details.planId})).state,'cancelled')
+  const savedEmail=records.services.flatMap(service=>service.integrations).find(item=>item.type==='generic_email_inbound_integration')
+  for(const [creation,mode] of [['on_new_email','each'],['on_new_email_subject','subject'],['only_if_no_open_incidents','single']]) {
+   const integration={...structuredClone(savedEmail),id:'synthetic-oncall-mode-'+mode,email_incident_creation:creation,email_parsers:[structuredClone(savedEmail.email_parsers[1])]}
+   const modesReview=ok(await door.preview('pagerduty',JSON.stringify({integrations:{integration}})))
+   const settings=modesReview.items[0].effects[0].value.emailSettings
+   assert.equal(settings.draft.mode,mode);assert.equal(settings.blocked,false)
+   assert.equal(settings.draft.rules[0].action,'resolve','non-custom modes retain their saved resolve rule')
+   ok(await door.call('pagerduty','undo',{planId:modesReview.planId}))
+  }
+  const overflow={...structuredClone(savedEmail),id:'synthetic-oncall-email-overflow',email_parsers:Array.from({length:21},()=>structuredClone(savedEmail.email_parsers[0]))}
+  const overflowReview=ok(await door.preview('pagerduty',JSON.stringify({integrations:{integration:overflow}})))
+  assert.equal(overflowReview.items[0].effects[0].value.emailSettings.draft.rules.length,20)
+  assert.equal(overflowReview.items[0].effects[0].value.emailSettings.blocked,true)
+  assert.ok(overflowReview.items[0].unmapped.some(note=>note.field==='email_parsers.20'&&note.original.action==='trigger'),'the overflow parser is named and retained without truncating the report')
+  ok(await door.call('pagerduty','undo',{planId:overflowReview.planId}))
+  const refusedEmail=structuredClone(savedEmail)
+  refusedEmail.id='synthetic-oncall-email-refused';refusedEmail.email_filter_mode='and-rules-email'
+  refusedEmail.email_filters=[{subject_mode:'no-match',subject_regex:'test',body_mode:'always',from_email_mode:'always'}]
+  refusedEmail.email_parsing_fallback='discard'
+  refusedEmail.email_parsers=[
+   {...structuredClone(savedEmail.email_parsers[0]),match_predicate:{type:'all',children:[{type:'any',children:[{type:'contains',part:'subject',matcher:'nested'}]}]}},
+   {...structuredClone(savedEmail.email_parsers[0]),match_predicate:{type:'regex',part:'subject',matcher:'(?=unsupported)'}},
+   {...structuredClone(savedEmail.email_parsers[0]),match_predicate:{type:'starts_with',part:'subject',matcher:'FAILED'}},
+  ]
+  const refusalBundle={integrations:{integrations:[refusedEmail,{id:'synthetic-oncall-email-legacy',name:'Undocumented email kind',type:'email_inbound_integration'}]}}
+  const refusedReview=ok(await door.preview('pagerduty',JSON.stringify(refusalBundle)))
+  const refusedItem=refusedReview.items.find(item=>item.id===refusedEmail.id)
+  assert.equal(refusedItem.effects[0].value.emailSettings.blocked,true)
+  for(const field of ['email_filter_mode','email_filters.0','email_parsing_fallback','email_parsers.0','email_parsers.1','email_parsers.2'])assert.ok(refusedItem.unmapped.some(note=>note.field===field&&note.original!==undefined),'report names '+field+' with original')
+  assert.deepEqual(refusedItem.unmapped.find(note=>note.field==='email_parsers.1').original,refusedEmail.email_parsers[1])
+  assert.equal(refusedReview.items.find(item=>item.id==='synthetic-oncall-email-legacy').effects.length,0,'undocumented email type remains refused')
+  assert.match(refusedReview.items.find(item=>item.id==='synthetic-oncall-email-legacy').rejection,/OC-070/)
+  ok(await door.call('pagerduty','undo',{planId:refusedReview.planId}))
   const beforeObjects=await imported(),beforeNative=ok(await req('/api/state')),beforePaging=ok(await req('/api/paging/state'))
   const durable=()=>w.sql('SELECT COUNT(*) AS n FROM ik_jobs UNION ALL SELECT COUNT(*) FROM ik_batches UNION ALL SELECT COUNT(*) FROM ik_d1_assertions UNION ALL SELECT COUNT(*) FROM move_in_objects')
   const beforeDurable=durable(),preview=ok(await door.preview('pagerduty',raw))
@@ -896,7 +929,13 @@ try {
      assert.equal(item.effects[0].targetKind,'integration')
      assert.deepEqual(item.effects[0].value.serviceSource,{namespace:'pagerduty',kind:'services',sourceId:service.id})
      assert.equal(item.effects[0].value.provider,'pagerduty');assert.equal(item.effects[0].value.active,false);assert.equal(item.effects[0].value.incumbentKey,'not supplied')
-    }else{assert.equal(item.effects.length,0);assert.match(item.rejection,integration.type==='email_inbound_integration'?/OC-070/:/matching Oncall source.*generic webhook/);assert.ok(item.rejection.includes(integration.name))}
+    }else if(integration.type==='generic_email_inbound_integration') {
+     const converted=item.effects[0].value
+     assert.equal(converted.provider,'email');assert.equal(converted.active,false)
+     assert.equal(converted.emailSettings.draft.mode,'custom');assert.equal(converted.emailSettings.draft.rules.length,8)
+     assert.equal(converted.emailSettings.blocked,false);assert.equal(converted.emailAddress,undefined)
+     assert.deepEqual(converted.serviceSource,{namespace:'pagerduty',kind:'services',sourceId:service.id})
+    }else{assert.equal(item.effects.length,0);assert.match(item.rejection,/matching Oncall source.*generic webhook/);assert.ok(item.rejection.includes(integration.name))}
    }
   }
   for(const [kind,clause] of [['teams','OC-023'],['business_services','OC-061'],['maintenance_windows','OC-043'],['event_orchestrations','OC-072']])for(const item of preview.items.filter(item=>item.kind===kind))assert.ok(item.rejection.includes(clause)&&item.effects.length===0)
@@ -920,6 +959,9 @@ try {
   assert.deepEqual(await imported(),partial,'restart retains the committed prefix')
   assert.equal(ok(await door.apply('pagerduty',preview)).job.state,'completed')
   const applied=await imported()
+  const history=ok(await req('/api/move-in/jobs?vendor=pagerduty'))
+  assert.ok(history.some(job=>job.id===first.job.id&&job.state==='completed'),'the completed import stays readable through native journal history')
+  assert.equal(ok(await req('/api/move-in/'+first.job.id+'/status',{vendor:'pagerduty'})).state,'completed','native status uses the recorded mapping version')
   assert.deepEqual(ok(await req('/api/state')),beforeNative,'account import creates no member, service, incident, delivery, active integration or routed key')
   assert.deepEqual(ok(await req('/api/paging/state')),beforePaging,'paging and native schedule authority stay unchanged')
   assert.ok(applied.filter(row=>!beforeObjects.some(old=>old.targetId===row.targetId&&old.targetKind===row.targetKind)).every(row=>row.value.paused&&row.value.paging===false&&row.value.login===false))
