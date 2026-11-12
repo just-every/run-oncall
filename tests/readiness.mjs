@@ -6,7 +6,7 @@ import {readFile} from 'node:fs/promises'
 export async function assertInstallationChecklist(report) {
  const ownership={
   hosting:[['OC-018'],['coordination'],['R-1']],
-  mail:[['OC-018'],['hosted-mail'],['R-1']],
+  mail:[['OC-018'],['hosted-mail'],['R-1','R-2']],
   'us-sending':[['OC-026','OC-066'],['paging'],['R-5']],
   push:[['OC-029'],['ios','android'],['R-7']],
   'native-apps':[['OC-029'],['ios','android'],['R-7']],

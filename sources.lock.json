@@ -5688,7 +5688,7 @@
       "executable": false
     },
     "src/readiness/matrix.ts": {
-      "sha256": "f2460d1dfd7f2c16228a6b2bfaa928510f7228b8b4b3d247f0ac8850017acf12",
+      "sha256": "a06fc65439667b8691ef28d8bb6a38d8688fa42cbce69b8b70d647ca412606d0",
       "executable": false
     },
     "src/readiness/obligations.ts": {
@@ -6600,11 +6600,11 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "50bb25e892b7332b4088848f0284c9b2c3eef0fe8941dfd9ec01e00e7fd857fb",
+      "sha256": "5133298f6486b4b729969dc09c85a33da38377fa9ff21a9479a8cf88c2347d48",
       "executable": false
     },
     "tests/readiness.mjs": {
-      "sha256": "8f04a66dda92dbafb90ddde670da7228bf89973ea5853315eb6117187e5b6aaf",
+      "sha256": "af04692ece2686ac8f12ff3b8051989b52036f12856b8d546e954fa217435408",
       "executable": false
     },
     "tests/response-report-fixture.mjs": {
