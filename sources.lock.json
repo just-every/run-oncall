@@ -6512,7 +6512,7 @@
       "executable": false
     },
     "tests/import-door.mjs": {
-      "sha256": "6158c6606cf1482c2741147b0a2538d7b345653a0305415cd24b26f34f2dc1dc",
+      "sha256": "3c25c682d6a38387ec06c9ea7e97678b6fa3b4b752a6d90eb06710ef857aa704",
       "executable": false
     },
     "tests/initialize-agent-owner.mjs": {
