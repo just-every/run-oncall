@@ -1968,7 +1968,7 @@
       "executable": false
     },
     "src/automation/ClientPolicyNotice.tsx": {
-      "sha256": "f13c912affaa4d701919b93841665065a6582d2999cdc2e59551bfd3e8b85221",
+      "sha256": "24b242990fbc0f081233263931258206f6777077edb26852e1b17457221c5ffb",
       "executable": false
     },
     "src/automation/dispatch.ts": {
@@ -6532,7 +6532,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "73ab4f5c76117706b6e7dab4a55b7b4ce36a361b01d8f92ba8a58b896ec56f16",
+      "sha256": "8d58026272e31ee3f82f03bbec3734bb9abf92a2440846f39237c842c7ea956b",
       "executable": false
     },
     "tests/oncall-agent-communications-replay.mjs": {

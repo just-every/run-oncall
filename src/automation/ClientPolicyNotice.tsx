@@ -27,6 +27,7 @@ export function ClientPolicyNotice({revision}:{revision:number}) {
  return <div className="api-client-policy" aria-label="API client policy">
   <p role="status">{message}</p>
   {policy?.state==='unset'&&<p>An owner or administrator sets the policy for this installation. In Business, ask the Business owner.</p>}
-  <a className="integration-link" href={policy?.setupUrl??'/agents'}>{policy?.state==='unset'?'Set agent policy':'Agent policy'}</a>
+  {/* The policy has its own document handler outside the workspace router. */}
+  <a className="integration-link" href={policy?.setupUrl??'/agents'} target="_self">{policy?.state==='unset'?'Set agent policy':'Agent policy'}</a>
  </div>;
 }

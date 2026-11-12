@@ -759,6 +759,7 @@ try {
   // Follow the page's prerequisite and make explicit choices in its existing form.
   await notice.getByRole('link').click();await page.waitForURL(runtime.origin+'/agents');
   const choices=page.locator('[data-policy-class]');
+  await choices.first().waitFor();
   assert.ok(await choices.count()>0);
   for(const choice of await choices.all())await choice.selectOption('autonomous');
   await page.getByRole('radio',{name:'No',exact:true}).check();
