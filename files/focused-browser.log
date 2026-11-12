@@ -1,0 +1,117 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE OC-044 acceptance 2: GET /docs/limits -> direct US emergency guidance; paging OFF, standby not built, unmeasured load, no availability or regulated-data claim; dated field evidence distinct from not-run rows; Readiness link works; desktop assertions and 1440/390 visual proof passed
+CHECKLIST_LAYOUT {"width":1440,"viewport":1440,"documentWidth":1440,"minimumTextSize":13}
+CHECKLIST_LAYOUT {"width":390,"viewport":390,"documentWidth":390,"minimumTextSize":13}
+PROBE OC-044 acceptance 1 checklist: emitted Settings Readiness -> protected API and all rendered dependency states, owners, field-proof dates and not-done labels agree; refresh preserves durable and paging records with zero outbound requests; desktop axe and overflow pass; screenshots at 1440 and 390
+INSTALLATION_RECEIPT {"observedAt":"2026-11-12T02:16:24.512Z","release":{"package":"@just-every/oncall","version":"0.5.8","deployment":{"sourceSha":null,"fingerprint":null,"versionId":null}},"installation":{"country":"US","reviewedOn":"2026-11-12","items":[{"id":"hosting","name":"Hosting account and deployment identity","clauses":["OC-018"],"state":"working-here","completion":"not-done","matrix":[{"id":"coordination","state":"working-here"}],"fieldProof":[{"id":"R-1","state":"passed","date":"2026-10-19"}],"requirement":"Not done for this installation: authorize its Cloudflare account and deployment operation, bind the source SHA, artifact fingerprint and version, and verify owner access and removal. R-1 is dated prior evidence, not this deployment."},{"id":"mail","name":"Remote mail for hosted sign-in","clauses":["OC-018"],"state":"unproven-live","completion":"not-done","matrix":[{"id":"hosted-mail","state":"unproven-live"}],"fieldProof":[{"id":"R-1","state":"passed","date":"2026-10-19"},{"id":"R-2","state":"passed","date":"2026-10-21"}],"requirement":"Not done: configure a remote mail provider, credentials and verified sender, then prove a real hosted sign-in email. Local owner entry is not mail delivery; prior R-1 does not verify this sender. R-2 is dated prior inbound intake evidence only, not hosted sign-in or paging."},{"id":"us-sending","name":"Registered US voice and SMS sending","clauses":["OC-026","OC-066"],"state":"off","completion":"not-done","matrix":[{"id":"paging","state":"off"}],"fieldProof":[{"id":"R-5","state":"not run","date":null}],"requirement":"Not done: register US A2P 10DLC brand and campaign, sender numbers and caller identity; establish consent, opt-out handling and carrier tests. Paging remains OFF; account configuration grants no sending authority."},{"id":"push","name":"APNs and FCM entitlements","clauses":["OC-029"],"state":"not-built","completion":"not-done","matrix":[{"id":"ios","state":"not-built"},{"id":"android","state":"not-built"}],"fieldProof":[{"id":"R-7","state":"not run","date":null}],"requirement":"Not done: provision APNs and FCM, iOS Critical Alerts entitlement, Android full-screen and Do Not Disturb permissions, and device acceptance. No native push adapter is built."},{"id":"native-apps","name":"Native apps and store distribution","clauses":["OC-029"],"state":"not-built","completion":"not-done","matrix":[{"id":"ios","state":"not-built"},{"id":"android","state":"not-built"}],"fieldProof":[{"id":"R-7","state":"not run","date":null}],"requirement":"Not done: build and distribute iOS and Android apps through the App Store and Google Play, with native-device proof. A web app or local test is not distribution evidence."},{"id":"bridges","name":"Zoom or Microsoft Teams bridges","clauses":["OC-035"],"state":"not-built","completion":"not-done","matrix":[{"id":"bridges","state":"not-built"}],"fieldProof":[{"id":"R-12","state":"not run","date":null},{"id":"R-6","state":"not run","date":null}],"requirement":"Not done: authorize a real Zoom or Teams tenant, build the bridge integration and prove live inbound call routing. No bridge or provider request is supplied by this checklist."},{"id":"chat","name":"Slack and Microsoft Teams apps","clauses":["OC-034","OC-067"],"state":"not-built","completion":"not-done","matrix":[{"id":"chat-slack","state":"not-built"},{"id":"chat-microsoft-teams","state":"not-built"}],"fieldProof":[{"id":"R-12","state":"not run","date":null}],"requirement":"Not done: install and authorize the scoped Slack and Teams apps and prove real chat actions. Neither connected app is built."},{"id":"standby","name":"Independent standby, takeover and real-phone drills","clauses":["OC-028","OC-047","OC-054"],"state":"not-built","completion":"not-done","matrix":[{"id":"standby","state":"not-built"},{"id":"drills","state":"unproven-live"}],"fieldProof":[{"id":"R-8","state":"not run","date":null}],"requirement":"Not done: establish independent account and identity authority, takeover and failback, and human-confirmed real-phone loss drills. Required for paging cutover; hosted coordination may run beside the existing pager without standby."},{"id":"handsets","name":"Live handset delivery","clauses":["OC-026","OC-029","OC-035","OC-064","OC-066","OC-071","OC-080","OC-082"],"state":"unproven-live","completion":"not-done","matrix":[{"id":"cutover","state":"unproven-live"}],"fieldProof":[{"id":"R-6","state":"not run","date":null}],"requirement":"Not done: prove registered real-handset voice with DTMF, SMS replies and links, push and email, plus provider-disable and inbound-call drills. Local receipts and provider sandboxes prove no live receipt."},{"id":"reference-load","name":"OC-064 reference load","clauses":["OC-064","OC-054"],"state":"unproven-live","completion":"not-done","matrix":[{"id":"reference-load","state":"unproven-live"}],"fieldProof":[{"id":"R-6","state":"not run","date":null}],"requirement":"Not done: measure sustained and burst intake, escalation, failover, recovery and archive capacity with p50, p95, p99 and maximum against OC-064. R-6 covers related live delivery, not a passing reference-load measurement."},{"id":"regulated-data","name":"Applicable regulated-data agreements and validated controls","clauses":["OC-044"],"state":"unproven-live","completion":"not-done","matrix":[{"id":"regulated-data","state":"unproven-live"}],"fieldProof":[],"requirement":"Not done: applicable agreements and validated controls are absent, and no field-proof row records them. Make no HIPAA or regulated-data suitability claim; use redacted incident descriptions and separately authorized references."},{"id":"911","name":"911 emergency boundary","clauses":["OC-044"],"state":"working-here","completion":"guidance-only","matrix":[{"id":"us-emergency","state":"working-here"}],"fieldProof":[],"requirement":"Oncall is not a 911 dispatch service. For a US emergency, call 911 directly; do not send it to Oncall or wait for an alert or acknowledgment. This is guidance, not an emergency-service capability; no field-proof row applies."}]}}
+PASS OC-054 Readiness Settings navigation, real matrix/signal rendering, pager refusal, refresh, axe/overflow/hydration at 1440; Readiness visual proof once at 1440/390
+Emitted Worker readiness browser journey passed at 1440
+Owned runtime processes [["4411","4410","MainThread"],["4420","4411","esbuild"],["5170","4411","workerd"],["5176","4411","ps"]]
+Browser proof weekly-counts 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof weekly-counts 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-009 acceptance 3: native MCP at UTC week boundaries, complete paginated audit and Agents at 1440 and 390 -> 210 retained calls, 207 in period, exactly 8 cohorts, multi-class contributions once each, stable records and zero outbound requests
+Browser proof manual-page-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof manual-page-timeline 390: fits=true serious/critical=0 undersized-controls=0
+PROBE SURFACE-002 8 browser: autonomous manual update and held policy target -> pending without effect, returned signed-in URL submits exact saved revision and summary, one attributed operation, identical retry unchanged, zero outbound requests; screens at 1440 and 390
+PROBE BASE-AGENT-011 6 autonomous initially on: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous initially on: fresh bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+Browser proof pause-matrix-local 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof pause-matrix-local 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-011 6 autonomous local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 3581ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both: retained and fresh bearer valid next MCP read and note -> agents_paused in 796ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+Browser proof pause-matrix-business 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof pause-matrix-business 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-011 6 autonomous Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 4011ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 3852ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 autonomous: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 autonomous local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 1949ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: retained bearer read served; note executed; zero outbound requests
+PROBE BASE-AGENT-011 6 autonomous both resumed: fresh bearer read served; note executed; zero outbound requests
+Browser proof pause-matrix-resumed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof pause-matrix-resumed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-011 6 held initially on: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held initially on: fresh bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only: retained and fresh bearer valid next MCP read and note -> agents_paused in 1182ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both: retained and fresh bearer valid next MCP read and note -> agents_paused in 943ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held: owner session reads and adds an attributed note with both flags set; paging unchanged
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":false} unchanged
+PROBE BASE-AGENT-011 6 held Business-only after local resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 1658ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":true,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held both again: retained and fresh bearer valid next MCP read and note -> agents_paused in 1209ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 7 held: retained and fresh agent bearer resume with and without owner cookie -> 403; flags {"business":false,"local":true} unchanged
+PROBE BASE-AGENT-011 6 held local-only after Business resume: retained and fresh bearer valid next MCP read and note -> agents_paused in 992ms; application and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: retained bearer read served; note held then human-approved; zero outbound requests
+PROBE BASE-AGENT-011 6 held both resumed: fresh bearer read served; note held then human-approved; zero outbound requests
+PASS independent Pause flags: both policies, valid next reads and mutations, maximum refusal 2487ms, bearer resume 403 including owner cookie, human coordination and policy-appropriate resume; zero outbound requests
+Browser proof people-linked-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof people-linked-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof people-error 1440: alert=true fits=true serious/critical=0
+Browser proof people-error 390: alert=true fits=true serious/critical=0
+Browser proof incident 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof incident 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof review 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof review 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof responders 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof responders 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof resolution-timeline 390: fits=true serious/critical=0 undersized-controls=0
+PASS incident resolution browser: commitment-only approval, exact saved revision, native human approver and agent preparer, one attributed resolution and effect-free retry
+Browser proof deadline-snooze-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-snooze-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-snooze-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-snooze-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE SURFACE-002 acceptance 8 browser snooze: signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests
+Browser proof deadline-cancel-deadline-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-cancel-deadline-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-cancel-deadline-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-cancel-deadline-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE SURFACE-002 acceptance 8 browser cancel-deadline: signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests
+Browser proof deadline-expire-deadline-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-expire-deadline-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-expire-deadline-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof deadline-expire-deadline-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE SURFACE-002 acceptance 8 browser expire-deadline: signed-in approval URL at 1440 and 390 -> held live class, exact saved revision approved, one attributed recorded effect, identical retry, paging unchanged and zero outbound requests
+Browser proof approval-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-paused 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-paused 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-paused 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-paused 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-blocked 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof agents-blocked 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-unavailable 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof approval-unavailable 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-executed 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-pending 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-pending 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-executed 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erase-client-executed 390: fits=true serious/critical=0 undersized-controls=0
+PROBE BASE-AGENT-013 rendered autonomous: /docs/agents -> complete 39-tool class, scope and fixture inventory agrees with MCP; resources empty; native and paging unchanged; zero outbound requests
+PROBE BASE-AGENT-013 rendered held: /docs/agents -> complete 39-tool class, scope and fixture inventory agrees with MCP; resources empty; native and paging unchanged; zero outbound requests
+Browser proof guide 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof guide 390: fits=true serious/critical=0 undersized-controls=0
+Browser proof erasure-data 1440: fits=true serious/critical=0 undersized-controls=0
+Browser proof erasure-data 390: fits=true serious/critical=0 undersized-controls=0
+PASS agent door browser: native incident/review/responders, linked/pending/error people, pending/executed/paused approval, Agents and guide; assertions at 1440, browser proof at 1440/390 with overflow, 44px controls and axe measurements

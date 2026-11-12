@@ -1,0 +1,39 @@
+{
+  "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+  "views": {
+    "commands": [
+      "node src/base/contract-docs.mjs write",
+      "node src/base/contract-docs.mjs check"
+    ],
+    "exit": 0,
+    "output": "Wrote 0 contract documents.\nContract prose: 0 errors, 0 warnings.\nContract documents are current.\n",
+    "restored": [
+      "ACCEPTANCE.md",
+      "docs/CLAIMS.md"
+    ]
+  },
+  "lock": {
+    "commands": [
+      "node scripts/edition-authoring/cli.mjs lock",
+      "node scripts/edition-authoring/cli.mjs check"
+    ],
+    "exit": 0,
+    "sha256": "4a38bbb6bdbf006c4ba6266c7fa1f3168809618b8a763156546f0d82f36ae5ef",
+    "installed_package_check_exit": 0
+  },
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration added or edited"
+  },
+  "first_party": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0
+  },
+  "contract_diff": "",
+  "working_tree": ""
+}

@@ -1,0 +1,16 @@
+{
+  "label": "main-build",
+  "head": "77c552b9c9c5d0d5d579916a8bb35974d833c9ac",
+  "command": [
+    "timeout",
+    "1200",
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "build"
+  ],
+  "started": "2026-11-12T02:42:25.757047+00:00",
+  "finished": "2026-11-12T02:42:41.691315+00:00",
+  "seconds": 15.934,
+  "exit": 0
+}

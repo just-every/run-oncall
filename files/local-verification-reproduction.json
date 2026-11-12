@@ -1,0 +1,17 @@
+{
+  "candidate_head": "fc9462667adae5e7a8ddf0bfe772cc6ab28673e1",
+  "main_head": "77c552b9c9c5d0d5d579916a8bb35974d833c9ac",
+  "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+  "environment": "Node 24.19.0, same cloud runner",
+  "candidate_exit": 1,
+  "candidate_failure": "TypeError: fetch failed; UND_ERR_SOCKET: other side closed",
+  "main_exit": 1,
+  "main_failure": "TypeError: fetch failed; read ECONNRESET",
+  "classification": "Pre-existing local socket transport failure; no product repair, assertion change or workflow change",
+  "receipts": [
+    "rer-verify.json",
+    "machines-reproduction.json",
+    "main-build.json",
+    "main-machines.json"
+  ]
+}

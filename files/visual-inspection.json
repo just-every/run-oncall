@@ -1,0 +1,33 @@
+{
+  "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+  "layouts": [
+    {
+      "width": 1440,
+      "viewport": 1440,
+      "documentWidth": 1440,
+      "minimumTextSize": 13
+    },
+    {
+      "width": 390,
+      "viewport": 390,
+      "documentWidth": 390,
+      "minimumTextSize": 13
+    }
+  ],
+  "inspected": [
+    "screenshots/oc044-checklist-1440.png",
+    "screenshots/oc044-checklist-390.png",
+    "screenshots/oc054-readiness-390.png",
+    "screenshots/oc044-limits-390.png"
+  ],
+  "observations": [
+    "Dependency labels, account not-done labels and release states are legible and wrap within both viewports.",
+    "The full narrow Readiness report retains all 12 dependencies, both dated prior evidence rows, explicit not-run evidence and the emergency boundary.",
+    "The limitations page presents direct US emergency instructions and retains the unmeasured availability and regulated-data boundaries.",
+    "Checklist controls are absent; the existing text refresh control is labeled. No icon-only control was added.",
+    "Desktop WCAG axe checks passed; readiness has no serious or critical findings."
+  ],
+  "automatic_assertion_width": 1440,
+  "phone_width": 390,
+  "phone_proof": "Captured and inspected; layout observations only, without duplicating the desktop assertion suite."
+}

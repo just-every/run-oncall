@@ -1,0 +1,18 @@
+{
+  "label": "final-focused-browser",
+  "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+  "command": [
+    "timeout",
+    "1200",
+    "env",
+    "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+    "ONCALL_PRODUCT_JOURNEY=readiness",
+    "ONCALL_BROWSER_EVIDENCE=/home/agent/rer-consolidation/work/sd-oncall-c-f236/packet/screenshots",
+    "node",
+    "tests/product-browser.mjs"
+  ],
+  "started": "2026-11-12T02:56:36.143622+00:00",
+  "finished": "2026-11-12T03:00:57.897986+00:00",
+  "seconds": 261.754,
+  "exit": 0
+}

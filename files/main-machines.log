@@ -1,0 +1,51 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11376","11358","workerd"],["11382","11358","ps"]]
+PROBE OC-052 denied-AI: emitted Worker native lifecycle -> resolved with attributed note; outbound attempts=0
+PROBE OC-052 public-embed: anonymous incident and foreign-origin embed GET -> no incident disclosure; owner embed=404
+PROBE OC-052 arbitrary-upload: anonymous multipart POST refused and owner POST=404; all non-audit durable tables unchanged; outbound attempts=0
+{"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+{"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+{"witness":"automation-erasure-fence","path":"/api/restore","status":409,"labelReturned":false}
+PASS OC-053 erasure fence: legacy journal and native custody refuse stale archive/checkpoints atomically; current checkpoint restores and retains custody
+PASS OC-040 member recipient custody: local access revoked, queued work removed, named deletion open item and zero outbound calls without consent
+oncall request failure Error
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11383","11358","workerd"],["11389","11358","ps"]]
+oncall request failure Error
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11390","11358","workerd"],["11396","11358","ps"]]
+PASS OC-040 expired-lease clearance: live refusal, admin approval/revision, expired and uncertain leases, atomic audit rollback, clear/clear and clear/erase 200/409, restart before committed erasure and zero external calls
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11397","11358","workerd"],["11403","11358","ps"]]
+PASS OC-053 management denial: anonymous/token-only 401, viewer/responder 403 across read, create, rotate, revoke, dispatch and replay; token has no session/export/audit door
+PASS OC-053 permanent named responder: service-account acknowledgment names A; reassignment and new commander B and resolution preserve timeline and pseudonymous audit attribution
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11408","11358","workerd"],["11414","11358","ps"]]
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11415","11358","workerd"],["11421","11358","ps"]]
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11422","11358","workerd"],["11428","11358","ps"]]
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11483","11358","workerd"],["11489","11358","ps"]]
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11490","11358","workerd"],["11496","11358","ps"]]
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11497","11358","workerd"],["11503","11358","ps"]]
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11504","11358","workerd"],["11510","11358","ps"]]
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11511","11358","workerd"],["11517","11358","ps"]]
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11518","11358","workerd"],["11524","11358","ps"]]
+PASS OC-053 creator demotion/removal: next read/write and origin/endpoint/receiver dispatch refused, no authority transfer, restart, inactive responder acknowledgment refused
+PASS OC-053 named-responder erasure: timeline association scrubbed, permanent pseudonymous audit fact unchanged, no reassigned label
+PROBE OC-042 acceptance-1: protected setup and emitted Worker dispatch -> 25 POST requests only to https://8.8.8.8/events; all three redirect targets receive zero requests; authority refusals add zero requests; exact frozen seven-field payloads and archive credential exclusion pass
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11518","11358","workerd"],["11525","11358","workerd"],["11531","11358","ps"]]
+PASS OC-053 lifetime API receipts: full history refuses new machine mutation, identical authorized retry retains receipt, human coordination continues
+PASS OC-053 scoped API, atomic signed outbox, receipt uncertainty, replay, revocation and inactive native restore
+Owned runtime processes [["11358","11357","MainThread"],["11367","11358","esbuild"],["11532","11358","workerd"],["11538","11358","ps"]]
+{"witness":"human-capacity","request":"/api/command","type":"assign-role","status":200,"before":{"incidentRevision":1,"events":1001},"after":{"incidentRevision":2,"events":1002,"acceptedAuditFacts":1,"outcome":"queued","reason":"domain-commit"}}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+[TypeError: fetch failed] {
+  [cause]: Error: read ECONNRESET
+      at TCP.onStreamRead (node:internal/stream_base_commons:216:20) {
+    errno: -104,
+    code: 'ECONNRESET',
+    syscall: 'read'
+  }
+}
+
+Node.js v24.19.0

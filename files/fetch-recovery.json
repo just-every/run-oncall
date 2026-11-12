@@ -1,0 +1,20 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "command": "git fetch origin main",
+      "exit": 128,
+      "http": "503",
+      "diagnostic": "error: RPC failed; HTTP 503 curl 22 The requested URL returned error: 503; fatal: expected flush after ref listing"
+    },
+    {
+      "attempt": 2,
+      "command": "git fetch origin main",
+      "at": "2026-11-12T02:54:20.242664+00:00",
+      "exit": 0,
+      "http": "unknown (not supplied by Git)",
+      "diagnostic": "From https://github.com/just-every/run-oncall\n * branch              main       -> FETCH_HEAD\n"
+    }
+  ],
+  "success": true
+}

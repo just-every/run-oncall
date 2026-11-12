@@ -1,0 +1,16 @@
+{
+  "label": "main-machines",
+  "head": "77c552b9c9c5d0d5d579916a8bb35974d833c9ac",
+  "command": [
+    "timeout",
+    "1200",
+    "env",
+    "ONCALL_RUNTIME_PART=machines",
+    "node",
+    "tests/runtime.mjs"
+  ],
+  "started": "2026-11-12T02:42:41.785115+00:00",
+  "finished": "2026-11-12T02:48:20.147049+00:00",
+  "seconds": 338.374,
+  "exit": 1
+}

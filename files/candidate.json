@@ -1,0 +1,137 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f236",
+  "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+  "origin_main_at_push": "77c552b9c9c5d0d5d579916a8bb35974d833c9ac",
+  "product_push": "succeeded on attempt 1 via cloud-push.py",
+  "pr": null,
+  "counts_before": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34,
+    "total": 101
+  },
+  "clause": "OC-044",
+  "status_before": "PARTIAL",
+  "status_after": "PARTIAL",
+  "judgment_cells_changed": false,
+  "source_lock_sha256": "4a38bbb6bdbf006c4ba6266c7fa1f3168809618b8a763156546f0d82f36ae5ef",
+  "working_tree": "",
+  "diff": " sources.lock.json         | 4 ++--\n tests/product-browser.mjs | 6 ++++++\n tests/readiness.mjs       | 8 +++++++-\n 3 files changed, 15 insertions(+), 3 deletions(-)\n",
+  "claims": [
+    "Acceptance 1 account-free checklist slice proved; whole acceptance remains open",
+    "Acceptance 2 guidance retained and verified"
+  ],
+  "local_node": "22.20.0 for final checks",
+  "checks": [
+    {
+      "label": "final-first-party",
+      "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+      "command": [
+        "timeout",
+        "1200",
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "started": "2026-11-12T02:55:23.378776+00:00",
+      "finished": "2026-11-12T02:55:25.165358+00:00",
+      "seconds": 1.787,
+      "exit": 0
+    },
+    {
+      "label": "final-typecheck",
+      "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+      "command": [
+        "timeout",
+        "1200",
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-11-12T02:55:25.268866+00:00",
+      "finished": "2026-11-12T02:55:40.054432+00:00",
+      "seconds": 14.786,
+      "exit": 0
+    },
+    {
+      "label": "final-build",
+      "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+      "command": [
+        "timeout",
+        "1200",
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "build"
+      ],
+      "started": "2026-11-12T02:55:40.158605+00:00",
+      "finished": "2026-11-12T02:55:54.193482+00:00",
+      "seconds": 14.035,
+      "exit": 0
+    },
+    {
+      "label": "final-readiness-api",
+      "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+      "command": [
+        "timeout",
+        "1200",
+        "node",
+        "--input-type=module",
+        "-e",
+        "import {readinessHealth} from './tests/readiness.mjs'; import {healthBuildIdentity} from './tests/health-outcomes.mjs'; await readinessHealth({...await healthBuildIdentity(),versionId:null});"
+      ],
+      "started": "2026-11-12T02:55:54.400984+00:00",
+      "finished": "2026-11-12T02:56:36.052109+00:00",
+      "seconds": 41.651,
+      "exit": 0
+    },
+    {
+      "label": "final-focused-browser",
+      "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+      "command": [
+        "timeout",
+        "1200",
+        "env",
+        "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+        "ONCALL_PRODUCT_JOURNEY=readiness",
+        "ONCALL_BROWSER_EVIDENCE=/home/agent/rer-consolidation/work/sd-oncall-c-f236/packet/screenshots",
+        "node",
+        "tests/product-browser.mjs"
+      ],
+      "started": "2026-11-12T02:56:36.143622+00:00",
+      "finished": "2026-11-12T03:00:57.897986+00:00",
+      "seconds": 261.754,
+      "exit": 0
+    }
+  ],
+  "publication_scan": {
+    "state": "not run in cloud",
+    "owner": "fleet lander"
+  },
+  "main_equality": false,
+  "run_site": "fleet post-landing gate",
+  "evidence_publication": "separate report-only ref",
+  "verify": {
+    "id": 43145428793,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "37bfcf83b8660e4c14329c370787e88346162f08",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43145428793",
+    "event": "push",
+    "call": 4,
+    "at": "2026-11-12T03:19:08.395862+00:00"
+  },
+  "github_api_calls": 4,
+  "blockers": [],
+  "local_full_verify_limitation": "Node 24 local socket transport failure also observed on main; exact-head Node 22 touched checks and full push Verify passed."
+}

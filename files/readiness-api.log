@@ -1,0 +1,5 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE OC-044 acceptance 1 checklist: protected GET /api/readiness -> every US dependency matches release matrix and actual field register; account steps remain not done; populated queued-work reads preserve all durable tables and revisions with zero outbound requests
+PASS OC-054 readiness: release identity, closed matrix states, dynamic source/revocation observations; independent durable signals, zero-write reads, public-door queued delivery/refused intake/overdue deadline; isolated 503 and restored signal; admin/responder/viewer access and signed-out/stakeholder/expired/revoked refusal; storage never proves pager coverage; zero outbound calls

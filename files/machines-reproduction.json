@@ -1,0 +1,16 @@
+{
+  "label": "machines-reproduction",
+  "head": "fc9462667adae5e7a8ddf0bfe772cc6ab28673e1",
+  "command": [
+    "timeout",
+    "1200",
+    "env",
+    "ONCALL_RUNTIME_PART=machines",
+    "node",
+    "tests/runtime.mjs"
+  ],
+  "started": "2026-11-12T02:37:54.719408+00:00",
+  "finished": "2026-11-12T02:40:32.464740+00:00",
+  "seconds": 157.745,
+  "exit": 1
+}

@@ -1,0 +1,7 @@
+{
+  "head": "fc9462667adae5e7a8ddf0bfe772cc6ab28673e1",
+  "command": "cloud_run timeout 1200 node --input-type=module -e \"import {readinessHealth} from './tests/readiness.mjs'; import {healthBuildIdentity} from './tests/health-outcomes.mjs'; await readinessHealth({...await healthBuildIdentity(),versionId:null});\"",
+  "exit": 0,
+  "result": "All 12 dependency mappings and field dates agree; populated signed-out and stakeholder reads refused with no data; all-table zero-write reads; zero requests at the denied Worker network edge.",
+  "invocation_note": "Earlier standalone probes used an interim build and then supplied an invented versionId instead of the unbound null value. Rebuilding and calling the existing helper with actual unbound deployment identity passed; no assertion was weakened."
+}

@@ -1,0 +1,15 @@
+{
+  "label": "final-typecheck",
+  "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+  "command": [
+    "timeout",
+    "1200",
+    "pnpm",
+    "run",
+    "typecheck"
+  ],
+  "started": "2026-11-12T02:55:25.268866+00:00",
+  "finished": "2026-11-12T02:55:40.054432+00:00",
+  "seconds": 14.786,
+  "exit": 0
+}

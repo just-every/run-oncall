@@ -1,0 +1,19 @@
+{
+  "label": "rer-verify",
+  "head": "fc9462667adae5e7a8ddf0bfe772cc6ab28673e1",
+  "command": [
+    "timeout",
+    "5400",
+    "env",
+    "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+    "ONCALL_BROWSER_EVIDENCE=/home/agent/rer-consolidation/work/sd-oncall-c-f236/verify-screens",
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "verify"
+  ],
+  "started": "2026-11-12T02:19:22.087447+00:00",
+  "finished": "2026-11-12T02:34:37.232365+00:00",
+  "seconds": 915.145,
+  "exit": 1
+}

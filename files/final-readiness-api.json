@@ -1,0 +1,16 @@
+{
+  "label": "final-readiness-api",
+  "head": "37bfcf83b8660e4c14329c370787e88346162f08",
+  "command": [
+    "timeout",
+    "1200",
+    "node",
+    "--input-type=module",
+    "-e",
+    "import {readinessHealth} from './tests/readiness.mjs'; import {healthBuildIdentity} from './tests/health-outcomes.mjs'; await readinessHealth({...await healthBuildIdentity(),versionId:null});"
+  ],
+  "started": "2026-11-12T02:55:54.400984+00:00",
+  "finished": "2026-11-12T02:56:36.052109+00:00",
+  "seconds": 41.651,
+  "exit": 0
+}
