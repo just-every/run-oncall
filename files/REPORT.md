@@ -38,7 +38,7 @@ Contract custody: no CONTRACT.md judgment, acceptance or generated-view change i
 
 Mapping compatibility: the adapter now has a new mapping version so catch-up re-reviews unchanged source instead of reusing a prior rejection. Native job and history reads use each job’s recorded version; old legacy routes keep their original context. A one-off emitted-Worker upgrade probe created an inactive integration under the previous mapping, restarted the held database under the new candidate, read the old journal, re-reviewed the exact same source, applied and reconciled it, read both jobs and undid newest then oldest with no address or outbound request. The synthetic held database was removed after this probe. Its actual process receipt and log are mapping-upgrade.json and mapping-upgrade.log.
 
-The browser’s first local run found a real accessible-label ambiguity: its service option text was included in the select label. An explicit accessible name fixed it; the subsequent browser run passed and screenshots were inspected at both widths. The final browser run is repeated after mapping compatibility. The earlier all-suite local verifier was deliberately stopped after its preparation passed, to follow the task’s touched-check rule; the required rer verifier is rerun with the maintained intake lane, while import and selected browser journeys run separately. No CI configuration or assertion was weakened.
+The browser’s first local run found a real accessible-label ambiguity: its service option text was included in the select label. An explicit accessible name fixed it; the subsequent browser run passed and screenshots were inspected at both widths. The final browser run was repeated successfully after mapping compatibility and main reconciliation. The earlier all-suite local verifier was deliberately stopped after its preparation passed, to follow the task’s touched-check rule; the required rer verifier is rerun with the maintained intake lane, while import and selected browser journeys run separately. No CI configuration or assertion was weakened.
 
 
 Final local proof and custody:
@@ -48,14 +48,14 @@ Final local proof and custody:
 - The converted-mail receipt file contains 22 observed rows: PagerDuty 6 opened, 1 deduplicated, 4 recovered and 1 no-effect; Opsgenie 3 opened, 1 deduplicated, 3 recovered, 1 no-effect and 2 quarantined. Each row includes mode, matched rule, version, key and action. These are local synthetic email results, not delivered pages or provider receipts.
 - The final browser captured report, inactive and activated states for both vendors once each at 1440 and 390. One-time private addresses are masked. Desktop assertions cover overflow, serious and critical accessibility findings, hydration, inactive receiving, actual service choice, explicit confirmation, native version 1 and one-time address dismissal. The 390 captures were visually inspected; no second-width behavioral assertion was introduced.
 - No migration changed. Contract generation write and check, generated-view restoration, source-lock regeneration and its check all exited 0. The final mechanical receipt is MECHANICAL.json; generated views and CONTRACT.md are unchanged relative to main.
-- Exact-SHA push Verify run 43141799150 is pending at report assembly; its actual latest response is CI.json. No result from an earlier SHA is used as green proof.
+- Exact-SHA push Verify run 43141799150 completed with success on 31f53d141fcbc028afd73ba2d5b6e604441f4094. Its actual response history is CI.json. No result from an earlier SHA is used as green proof.
 - Publication scan: commit 31f53d141fcbc028afd73ba2d5b6e604441f4094; complete=false; historyScanned=false; findings=unestablished. The cloud did not run the Mac publication scanner. Main equality, exact-main Run site and publication scanning remain guarded-lander duties; this branch has not landed.
 
 DONE-RIDERS review for the selected point, not a whole-clause DONE claim:
 1. Selected acceptance 8 is reached by the named emitted-Worker and browser journeys. Acceptance 2's real pages and continuing escalation remain held, so OC-070 remains PARTIAL. Exact-SHA CI is recorded separately.
 2. PASS: populated exports and real local D1 records; unsafe authority, stale revision, unsupported settings, concurrent activation, audit failure and erasure failure are attempted and refused with retained data.
-3. PENDING exact-SHA Verify: push run 43141799150. The maintained push matrix includes intake, browser and the changes shard's import lane. The new browser path also runs in the normal unfiltered product journey.
-4. PASS for local evidence: final browser binds 31f53d141fcbc028afd73ba2d5b6e604441f4094; backend evidence binds the unchanged source proved by CODE-EQUIVALENCE.json. Exact-SHA CI remains the final workflow proof.
+3. PASS exact-SHA Verify: push run 43141799150 completed with success on 31f53d141fcbc028afd73ba2d5b6e604441f4094. The maintained push matrix includes intake, browser and the changes shard's import lane. The new browser path also runs in the normal unfiltered product journey.
+4. PASS for local evidence: final browser binds 31f53d141fcbc028afd73ba2d5b6e604441f4094; backend evidence binds the unchanged source proved by CODE-EQUIVALENCE.json. Exact-SHA push Verify is now successful on the final candidate.
 5. INSPECTED: OC-070 names D-2 and its imported-original custody duty. No acceptance text or inherited duty was rewritten or claimed beyond the selected saved-file slice.
 6. PASS mechanical: generator write and check succeeded, both generated views were restored, no Status, Gap or Evidence cell changed, all 101 Status rows remain, and the source lock is fresh. Lander owns judgment reconciliation.
 7. PASS: no acceptance sentence, ID map, coverage map or ct ruling changed. No obligation was removed.
@@ -71,3 +71,11 @@ PROBE OC-070 8: saved PagerDuty service and Opsgenie Email with saved actions ->
 DEFAULT OC-070: unconverted rules block activation; current administrators explicitly accept discard-to-quarantine differences.
 GAP OC-070: two live pages with nightly-web still escalating remain unproved; existing paging, phone, standby, code-management, live-export, account-reconciliation and cutover holds remain. R-2 remains dated prior provider evidence.
 CLAIM OC-070 PARTIAL points=8 tests=tests/import-door.mjs#OC-038 PagerDuty account; tests/intake.mjs#importedEmailSettings; tests/product-browser.mjs#importedEmailBrowser
+
+
+Nonblocking follow-up (C, code inspection only): when a PagerDuty all-email export retains an inactive email_filters entry with subject fallback, the shared difference checkbox uses quarantine wording. The displayed and applied fallback remains subject; no rule or receiving authority changes. Use generic retained-setting wording for that case in the next UI copy round. This is not an acceptance or security blocker under the stated proportionality rule.
+
+Exact Gap reconciliation for the lander: delete only the phrase ", or imports PagerDuty email settings and Opsgenie filters into a mapping report (OC-038's inherited duty)" from OC-070's current Gap. Keep all other Gap text and all other clause judgments verbatim. The claim above supplies acceptance 8's new evidence without promoting OC-070 or OC-038.
+
+Final branch Verify: push event, run 43141799150, completed/success, https://github.com/just-every/run-oncall/actions/runs/43141799150, exact head 31f53d141fcbc028afd73ba2d5b6e604441f4094. Main landing, publication scanning and Run site are pending with the guarded Mac lander. No cloud push to main occurred.
+READY branch=cloud/sd-oncall-c-f234 head=31f53d141fcbc028afd73ba2d5b6e604441f4094

@@ -2,7 +2,7 @@
   "repository": "just-every/run-oncall",
   "branch": "cloud/sd-oncall-c-f234",
   "head": "31f53d141fcbc028afd73ba2d5b6e604441f4094",
-  "status": "local-gates-passed-product-pushed",
+  "status": "ready-for-guarded-landing",
   "checks": [
     {
       "name": "build",
@@ -151,5 +151,16 @@
     "findings": null,
     "reason": "Not run in cloud; required guarded Mac lander duty"
   },
-  "main_and_run_site": "pending guarded landing"
+  "main_and_run_site": "pending guarded landing",
+  "branch_verify": {
+    "id": 43141799150,
+    "name": "Verify",
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "31f53d141fcbc028afd73ba2d5b6e604441f4094",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43141799150"
+  },
+  "github_direct_api_calls": 6,
+  "nonblocking_followup": "C: generic checkbox wording for retained inactive PagerDuty filters with subject fallback"
 }
