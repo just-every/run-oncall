@@ -1,0 +1,58 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-handoff-review-ui-1",
+  "head": "53f66988f27781f0d9a1851257f921db2f4e5205",
+  "base": "90f391b56d492b998e0e55509e076eaf588cbea4",
+  "product_push": "success",
+  "product_push_attempts": 1,
+  "pr": null,
+  "checks": {
+    "build": "passed",
+    "typecheck": "passed",
+    "touched_browser_journey": "passed",
+    "contract_generator": "passed, 0 files written",
+    "contract_check": "passed",
+    "source_lock": "regenerated last",
+    "source_lock_check": "passed",
+    "diff_check": "passed",
+    "candidate_identity_and_trailers": "fleet author and committer; no trailers"
+  },
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "53f66988f27781f0d9a1851257f921db2f4e5205",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43140164557",
+    "status": "completed",
+    "run_id": 43140164557,
+    "gh_calls": 5
+  },
+  "counts": {
+    "verification_manifest_registrations_before": 16,
+    "verification_manifest_registrations_after": 16,
+    "member_browser_registrations_before": 1,
+    "member_browser_registrations_after": 1,
+    "contract_before": {
+      "done": 24,
+      "partial": 43,
+      "missing": 34,
+      "total": 101
+    },
+    "contract_after": {
+      "done": 24,
+      "partial": 43,
+      "missing": 34,
+      "total": 101
+    },
+    "incident_handoff_workflow_stages_before": 0,
+    "incident_handoff_workflow_stages_after": 3
+  },
+  "clause_status_changes": [],
+  "contract_status_gap_evidence_changed": false,
+  "generated_views_committed": false,
+  "publication_scan": "deferred to independent Mac lander as instructed",
+  "blockers": [],
+  "remote_head_verified": "53f66988f27781f0d9a1851257f921db2f4e5205",
+  "owned_browser_and_test_worker_processes": "closed; failed-run worker PID 5666 stopped and its synthetic scratch removed",
+  "terminal_custody": "READY",
+  "recorded_at": "2026-11-12T02:36:47.151166+00:00",
+  "clone_cleanup": "Delete the product clone after successful evidence publication; packet remains outside clone."
+}

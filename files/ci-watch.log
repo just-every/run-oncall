@@ -1,0 +1,8 @@
+CI_WAIT next_call=2 due_epoch=1794450054
+CI_POLL call=2 {"conclusion": null, "head_sha": "53f66988f27781f0d9a1851257f921db2f4e5205", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43140164557", "status": "in_progress"}
+CI_WAIT next_call=3 due_epoch=1794450355.6604476
+CI_POLL call=3 {"conclusion": null, "head_sha": "53f66988f27781f0d9a1851257f921db2f4e5205", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43140164557", "status": "in_progress"}
+CI_WAIT next_call=4 due_epoch=1794450657.2063477
+CI_POLL call=4 {"conclusion": null, "head_sha": "53f66988f27781f0d9a1851257f921db2f4e5205", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43140164557", "status": "in_progress"}
+CI_WAIT next_call=5 due_epoch=1794450958.8537233
+CI_POLL call=5 {"conclusion": "success", "head_sha": "53f66988f27781f0d9a1851257f921db2f4e5205", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43140164557", "status": "completed"}

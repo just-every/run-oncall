@@ -1,0 +1,11 @@
+# Incident handoff review/export plan
+
+1. Configure fleet Git authentication and commit hygiene, clone only just-every/run-oncall and create cloud/main-oncall-handoff-review-ui-1 from main. Read launcher and repository rules, contract and brand.
+2. Reproduce Incident actions > Handoff draft through the emitted production Worker browser door before editing. Record the read-only legacy panel.
+3. Replace that panel's legacy preview read with the existing protected retained-handoff actions. Keep API/storage behavior unchanged. Let active responders/admins author the existing audience/title/summary payload, prepare it, inspect exact saved copy, explicitly review it and download the existing JSON export. Show attributed review time and unsent boundaries. Let viewers inspect saved records without mutation/export controls. Surface current-role refusal and source-drift conflicts, with replacement preparation.
+4. Extend the existing member incident browser journey, at 1440 only, with exact downloaded packet comparison, lost-response stable preparation retry, viewer inspection, role-change refusal, source drift and replacement, and admin review. Capture changed panel states and incident page at 1440 and 390. Run the touched journey and typecheck; branch Verify supplies the full wall.
+5. Fetch main before the first product commit/push; rebase unpublished work on current main, preserve contract judgments and all main tests. Regenerate/check sources.lock.json last. Audit every candidate author, committer and trailer; publish the named branch using the cloud push guard. Never change contract status/gap/evidence or generated views.
+6. Discover/poll exact-SHA Verify through fleet-token gh REST with one watcher and at least 300 seconds between calls per run, within ten calls. Record actual outcome and run ID. Publish explicit non-secret report and receipt files separately on evidence/main-oncall-handoff-review-ui-1, then report product custody and clause claims independently.
+
+Default: no send or publication work. OC-051 remains unbuilt outside its inherited handoff preparation/review surface; no DONE claim.
+Design tooling: 12ui installed and existing-panel improve attempted. Hosted design features require a separate account sign-in; no account creation or credential substitution. Use existing Oncall brand/dialog styles for this bounded feature.

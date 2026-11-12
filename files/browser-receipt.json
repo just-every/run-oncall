@@ -1,0 +1,76 @@
+{
+  "product_head": "53f66988f27781f0d9a1851257f921db2f4e5205",
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "synthetic_sessions_only": true,
+  "files": [
+    {
+      "path": "before-1440.png",
+      "bytes": 130480,
+      "sha256": "9b446f4102dc2dcf741d5aa5ec8132b6fda6eb9f0f42d6c8ea7742ca3e7f5eb6"
+    },
+    {
+      "path": "browser/handoff-prepare-1440.png",
+      "bytes": 162723,
+      "sha256": "c0b32f62b353580d31d69626f4b54d863ff5c43d7f5211cfa15ec0576b236402"
+    },
+    {
+      "path": "browser/handoff-prepare-390.png",
+      "bytes": 50853,
+      "sha256": "b9bb7e0dcef52fbfd3da71f8ebca17a62f5283cfb22a2cec08199c1f6758d3cc"
+    },
+    {
+      "path": "browser/handoff-prepared-1440.png",
+      "bytes": 174967,
+      "sha256": "e86ec02def616b8286fc8ccff65077c9ee70a7822ee8022e48f3af8a21a158ed"
+    },
+    {
+      "path": "browser/handoff-prepared-390.png",
+      "bytes": 57426,
+      "sha256": "c419b566e75f333733c018bf9d8728f8a63d7316e7adeee7550aac403bec79ea"
+    },
+    {
+      "path": "browser/handoff-reviewed-1440.png",
+      "bytes": 179005,
+      "sha256": "d60eab6b816542f0ba3f0e9934f5c871d0df1374890f76d7d31d6fbf54ffdeec"
+    },
+    {
+      "path": "browser/handoff-reviewed-390.png",
+      "bytes": 64760,
+      "sha256": "d348fbcb5a75733554412d667086c173948f982d777cae4d6f111efa6c4521f8"
+    },
+    {
+      "path": "browser/handoff-viewer-1440.png",
+      "bytes": 173893,
+      "sha256": "53272b6fc840ac40952a1ba340d8ca9aef523048214f6ea5181a8a0873b26797"
+    },
+    {
+      "path": "browser/handoff-viewer-390.png",
+      "bytes": 64189,
+      "sha256": "83319292326065e88a039364c9f627756c673ad074f79ca63192e00940830465"
+    },
+    {
+      "path": "browser/handoff-stale-1440.png",
+      "bytes": 187225,
+      "sha256": "64c8bb33c33dd8c91c917c7d449a5d5bd0ce8fbab08e79a0e6cc774d616f6a11"
+    },
+    {
+      "path": "browser/handoff-stale-390.png",
+      "bytes": 72875,
+      "sha256": "d0fa88bb8b4cb1e563fb920cdc67991e57e8f12cd610a74cc8d06ba02354f3b6"
+    },
+    {
+      "path": "browser/incident-saves-header-1440.png",
+      "bytes": 142235,
+      "sha256": "394f0afc97c6bb81f0307e61b137f460a0696a3a3476b950cb901eb0c1df24a1"
+    },
+    {
+      "path": "browser/incident-saves-header-390.png",
+      "bytes": 88597,
+      "sha256": "30fd4934e4e2f60b71ec866e12418b39a8c7eb0b431bc9a4ec947ece0d2b9c4b"
+    }
+  ]
+}
