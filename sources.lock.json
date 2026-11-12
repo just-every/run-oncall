@@ -264,7 +264,7 @@
       "executable": false
     },
     "docs/move-in.md": {
-      "sha256": "25599f8b28530b3d8dd0de710a7beaf6626ee86613658f281cfe4e29a3ec9d47",
+      "sha256": "950ceabae4ca53d74b00634dc43f5bb41896d8fe219be46b73ffb4271e11f55d",
       "executable": false
     },
     "docs/overview.md": {
@@ -5372,7 +5372,7 @@
       "executable": false
     },
     "src/move-in/api.ts": {
-      "sha256": "927a956bdb180c9916b545db9784ef0fdac2856861c1903a107094668003edba",
+      "sha256": "07b3165677c6d15685ee0c7bd052e6430c2afb314112f4345e76e114d32c7dd6",
       "executable": false
     },
     "src/move-in/collect/bundle.ts": {
@@ -5408,7 +5408,7 @@
       "executable": false
     },
     "src/move-in/door.ts": {
-      "sha256": "04a31cdaad037b4aad331ac22c805fb720f038e719b02633112372487dbc42ed",
+      "sha256": "cf5c9990cce6d32fbe47cade6bcf669b65faca58f6b8b26df037638f6f3929e6",
       "executable": false
     },
     "src/move-in/email-settings.ts": {
@@ -5456,7 +5456,7 @@
       "executable": false
     },
     "src/move-in/mapping.ts": {
-      "sha256": "682864d042f50b6fb80c6e54f48e0867be994c5e15f0e2fefd983904f058edd8",
+      "sha256": "f5169c9de4ef81d7d4a34ef8ddc324ef3e5153e8e30ee7ca72b3b39b890e1f8c",
       "executable": false
     },
     "src/move-in/move-in.css": {

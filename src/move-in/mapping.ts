@@ -8,6 +8,8 @@ import { validateSchedule } from '../family/response-operations/schedules'
 import { mailbox, mapSchedule, type Mapped } from './rotations'
 import type { Vendor } from './source'
 
+// A semantic adapter change must re-review unchanged saved source on catch-up.
+export const MOVE_IN_MAPPING_VERSION='oncall-move-in-2'
 type MappingRecord=Pick<SourceRecord,'kind'|'sourceId'|'payload'|'location'>
 export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:number):ImportMapping {
  source={records:source.records.map(row=>({...row,payload:mappingPayload(vendor,row.kind,row.payload)}))}
@@ -69,7 +71,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
   }catch(e){errors.set(row.sourceId,`Timeline equivalence: ${(e as Error).message}`)}
  }
  const effect=(kind:string,id:string,value:any):MappingResult=>({effects:[{targetKind:kind,targetId:id,value:{...value,paused:true,paging:false,login:false}}]})
- const adapter:ImportMapping={version:'oncall-move-in-1',map(record){
+ const adapter:ImportMapping={version:MOVE_IN_MAPPING_VERSION,map(record){
   const value=mappingPayload(vendor,record.kind,record.payload),label=value?.fullName??value?.name??value?.summary??value?.username??value?.email??record.sourceId
   try {
    if(record.kind==='users') {

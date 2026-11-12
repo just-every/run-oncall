@@ -349,7 +349,8 @@ acknowledge and add-note actions are always named with their originals.
 
 The Compatibility review shows each difference and expandable original JSON.
 The complete saved source remains in existing import journal custody, subject
-to its erasure rules. Active accept or reject email filters are retained only;
+to its erasure rules. A new mapping version re-reviews unchanged source during
+catch-up; older completed journals remain readable under their recorded version. Active accept or reject email filters are retained only;
 there is no exact filter gate in Oncall's email model. Any unconverted rule or
 active filter blocks activation until the saved settings are resolved and
 imported again. No earlier unsupported rule is silently skipped in live intake.
