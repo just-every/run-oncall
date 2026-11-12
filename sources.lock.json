@@ -6608,7 +6608,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "6cfbf04112eb97359efa0f72c641530fab0979684bd88bcd3763949b78b143de",
+      "sha256": "646996a60dae7e3511a36739e1d70e1c9c2a0c1a42436a25889665909d838b8d",
       "executable": false
     },
     "tests/readiness.mjs": {
