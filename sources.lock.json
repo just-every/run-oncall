@@ -1872,7 +1872,7 @@
       "executable": false
     },
     "src/app/shell/AppShell.tsx": {
-      "sha256": "08efeeda7337f935f3737a4176f73dc4f3557c073331ed016ee107d9c8c0ceee",
+      "sha256": "06a8b5f4ab4dfbe4e61119715fba9f572fbe66c63631c809af6ab9afdb59a3c7",
       "executable": false
     },
     "src/app/shell/frame.css": {
@@ -6560,7 +6560,7 @@
       "executable": false
     },
     "tests/keyboard.mjs": {
-      "sha256": "6fdb8158e7aed4e303225ec69dedc3e36b2a3da1164e38b9436ead3bffac4dbd",
+      "sha256": "81f317d62481fccc9cfd5ced90b5c93adba4e546de0d3d5fff8a2b86a22266fb",
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
@@ -6644,7 +6644,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "6e1327503788bc13d2e6850ac2ac134bf96319bae60aba3face1dc590388a92d",
+      "sha256": "e56658d2636cd7db2e18c082aec8469f7591d67a98577919abe8996cc951ac4f",
       "executable": false
     },
     "tests/product-browser.mjs": {
