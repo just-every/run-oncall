@@ -1,0 +1,181 @@
+{
+  "planId": "2ad869cf-c554-46a0-a6c8-1fa0b0ed56e7",
+  "fingerprint": "5c62a19a8cbb2a8d1fd133f23347574202eb0a353bfab04b8db5ca4c33fa7add",
+  "bundleSha256": "74710208d32a407bae7d3f24daa232281fa3bfef0c72c4481ecd574811bf3afd",
+  "created": true,
+  "summary": {
+    "sourceRecords": 2,
+    "created": 2,
+    "updated": 0,
+    "unchanged": 0,
+    "gone": 0
+  },
+  "counts": {
+    "input": 2,
+    "unique": 2,
+    "duplicates": 0,
+    "mapped": 2,
+    "unmapped": 2,
+    "rejected": 0,
+    "effects": 2,
+    "byKind": {
+      "schedules": 1,
+      "users": 1
+    }
+  },
+  "rejected": [],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "UNMAPPED",
+      "message": "Retained source references: riley@example.test. No login or paging authority is granted.",
+      "kind": "users",
+      "sourceId": "synthetic-oncall-1",
+      "location": {
+        "artifact": "synthetic-oncall-1.json",
+        "pointer": "/users/0",
+        "row": 1
+      },
+      "field": "related-users"
+    },
+    {
+      "severity": "warning",
+      "code": "UNMAPPED",
+      "message": "Source has one rotation; backup is an explicit gap. No backup authority is inferred.",
+      "kind": "schedules",
+      "sourceId": "synthetic-oncall-2",
+      "location": {
+        "artifact": "synthetic-oncall-1.json",
+        "pointer": "/schedules/0",
+        "row": 1
+      },
+      "field": "backup"
+    },
+    {
+      "severity": "warning",
+      "code": "UNMAPPED",
+      "message": "Retained source references: riley@example.test. No login or paging authority is granted.",
+      "kind": "schedules",
+      "sourceId": "synthetic-oncall-2",
+      "location": {
+        "artifact": "synthetic-oncall-1.json",
+        "pointer": "/schedules/0",
+        "row": 1
+      },
+      "field": "related-users"
+    }
+  ],
+  "differences": {
+    "additions": [
+      "[\"users\",\"synthetic-oncall-1\"]",
+      "[\"schedules\",\"synthetic-oncall-2\"]"
+    ],
+    "replacements": [],
+    "unchanged": [],
+    "gone": [],
+    "conflicts": []
+  },
+  "items": [
+    {
+      "kind": "users",
+      "id": "synthetic-oncall-1",
+      "location": {
+        "artifact": "synthetic-oncall-1.json",
+        "pointer": "/users/0",
+        "row": 1
+      },
+      "disposition": "mapped-with-differences",
+      "name": "Riley Chen",
+      "unmapped": [
+        {
+          "field": "related-users",
+          "reason": "Retained source references: riley@example.test. No login or paging authority is granted."
+        }
+      ],
+      "effects": [
+        {
+          "targetId": "riley@example.test",
+          "targetKind": "user",
+          "value": {
+            "contacts": [],
+            "email": "riley@example.test",
+            "id": "riley@example.test",
+            "login": false,
+            "name": "Riley Chen",
+            "paging": false,
+            "paused": true,
+            "sourceId": "synthetic-oncall-1"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "schedules",
+      "id": "synthetic-oncall-2",
+      "location": {
+        "artifact": "synthetic-oncall-1.json",
+        "pointer": "/schedules/0",
+        "row": 1
+      },
+      "disposition": "mapped-with-differences",
+      "name": "Customer support weekly",
+      "unmapped": [
+        {
+          "field": "backup",
+          "reason": "Source has one rotation; backup is an explicit gap. No backup authority is inferred."
+        },
+        {
+          "field": "related-users",
+          "reason": "Retained source references: riley@example.test. No login or paging authority is granted."
+        }
+      ],
+      "effects": [
+        {
+          "targetId": "pagerduty:synthetic-oncall-2",
+          "targetKind": "schedule",
+          "value": {
+            "equivalence": {
+              "differences": [
+                "No final timeline supplied; no incumbent equivalence is claimed."
+              ],
+              "status": "not-supplied"
+            },
+            "login": false,
+            "paging": false,
+            "paused": true,
+            "schedule": {
+              "backup": {
+                "ambiguity": "reject",
+                "anchorLocal": "2026-10-12T09:00",
+                "members": [],
+                "periodDays": 7
+              },
+              "id": "pagerduty:synthetic-oncall-2",
+              "name": "Customer support weekly",
+              "overrides": [],
+              "primary": {
+                "ambiguity": "reject",
+                "anchorLocal": "2026-10-12T09:00",
+                "members": [
+                  "riley@example.test"
+                ],
+                "periodDays": 7
+              },
+              "revision": 1,
+              "service": "pagerduty:synthetic-oncall-2",
+              "timezone": "UTC",
+              "validFrom": "2026-10-12T09:00:00.000Z",
+              "validUntil": null
+            },
+            "sourceId": "synthetic-oncall-2"
+          }
+        }
+      ]
+    }
+  ],
+  "classification": {
+    "mapped": 0,
+    "mappedWithDifferences": 2,
+    "rejected": 0
+  }
+}

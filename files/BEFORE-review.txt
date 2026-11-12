@@ -1,0 +1,25 @@
+2 · Review
+
+Nothing has been imported. Review what will arrive paused.
+
+Compatibility review
+
+2 source objects · 2 mapped directly · 0 rejected · 2 with differences or retained-only fields
+
+These counts overlap: mapped or rejected objects can also have differences or fields kept only as evidence. “Mapped directly” counts objects that create a paused user, schedule, policy or inactive integration. Review the details below before confirming.
+
+users: Riley Chen
+
+related-users: Retained source references: riley@example.test. No login or paging authority is granted.
+
+schedules: Customer support weekly
+
+Equivalence: not-supplied → No final timeline supplied; no incumbent equivalence is claimed.
+
+backup: Source has one rotation; backup is an explicit gap. No backup authority is inferred.
+
+related-users: Retained source references: riley@example.test. No login or paging authority is granted.
+
+Download read data
+Back to connection
+Import paused

@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-oncall",
+  "main_head": "90f391b56d492b998e0e55509e076eaf588cbea4",
+  "reproduction": "saved PagerDuty file through owner browser, paused import, explicit schedule adoption, refused undo",
+  "review_internal_markers": [
+    "related-users",
+    "not-supplied",
+    "backup:"
+  ],
+  "undo_named_source_key": true,
+  "undo_named_schedule": false,
+  "test_registration_changes": 0
+}

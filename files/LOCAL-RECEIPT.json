@@ -1,0 +1,65 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-movein-plain-labels-1",
+  "head": "c8531010b62374aef16e23611b37b4cb6d2623b2",
+  "baseline": "90f391b56d492b998e0e55509e076eaf588cbea4",
+  "product_pushes": [
+    {
+      "head": "18c4335e5f7af662d1d792c287609acfc69a451e",
+      "result": "success"
+    },
+    {
+      "head": "c8531010b62374aef16e23611b37b4cb6d2623b2",
+      "result": "success"
+    }
+  ],
+  "checks": {
+    "typecheck": "passed",
+    "build": "passed",
+    "importDoor": "passed",
+    "existingMoveInBrowserJourney": "passed",
+    "plainMoveInReview": "passed",
+    "contractDocuments": "passed",
+    "sourceLock": "passed",
+    "gitDiffCheck": "passed",
+    "candidateIdentitiesAndTrailers": "passed"
+  },
+  "browserAssertionsWidth": 1440,
+  "browserProofWidths": [
+    1440,
+    390
+  ],
+  "testRegistrationsAdded": 0,
+  "testRegistrationsRemoved": 0,
+  "rawLabelsBefore": 4,
+  "rawLabelsAfter": 0,
+  "adoptedUndoNamesScheduleBefore": false,
+  "adoptedUndoNamesScheduleAfter": true,
+  "clauseCountsBefore": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34,
+    "total": 101
+  },
+  "clauseCountsAfter": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34,
+    "total": 101
+  },
+  "clauseStatusChanges": [],
+  "changedFiles": [
+    "sources.lock.json",
+    "src/move-in/CompatibilityReview.tsx",
+    "src/move-in/CopyDetails.tsx",
+    "src/move-in/MoveIn.tsx",
+    "src/move-in/door-client.ts",
+    "src/move-in/move-in.css",
+    "src/move-in/owner-door.ts",
+    "src/move-in/refusals.ts",
+    "src/move-in/review-copy.ts",
+    "tests/product-browser-journey.mjs"
+  ],
+  "planMappingAdoptionFingerprintSourceFilesChanged": false,
+  "proofNote": "Browser checks ran on the final product source tree; the final follow-up only added the already-tested helpers to sources.lock.json. No UI source changed after those checks."
+}

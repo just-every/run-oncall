@@ -1,0 +1,14 @@
+{
+  "repository": "just-every/run-oncall",
+  "passed": true,
+  "fieldsComparedAcrossVersions": [
+    "bundleSha256",
+    "items",
+    "counts",
+    "classification"
+  ],
+  "sameAdministratorRepeatFingerprint": true,
+  "crossInstallationFingerprintComparison": "Not applicable: the fingerprint includes principalId; the first exploratory probe also read pretty-printed bytes instead of the original compact upload.",
+  "fingerprint": "baf3ef572d05b5f6dc5a79bbb51d979f01e38da6a8288f0d66f89e2b72b8f789",
+  "bundleSha256": "74710208d32a407bae7d3f24daa232281fa3bfef0c72c4481ecd574811bf3afd"
+}
