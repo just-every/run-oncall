@@ -643,8 +643,8 @@ async function eventsSourceBrowser(page,context) {
   const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});
   assert.equal(response.status(),status,`Events source ${path}`);return response.json();
  };
- const member=(await request('/api/session')).member,service='synthetic-oncall-238';
- await request('/api/command',{type:'service',id:service,name:'Checkout events',environment:'production',owner:member.id,runbook:[],pager:''});
+ const member=(await request('/api/session')).member,service='synthetic-oncall-238',serviceName='Checkout events';
+ await request('/api/command',{type:'service',id:service,name:serviceName,environment:'production',owner:member.id,runbook:[],pager:''});
  const proof=async(name)=>{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),name+' fits desktop');
   for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/events-${name}-${width}.png`,fullPage:true,mask:[page.locator('.one-time-secret input'),page.locator('input[type="password"]')]});}
@@ -657,6 +657,7 @@ async function eventsSourceBrowser(page,context) {
   await page.getByLabel('Authentication',{exact:true}).selectOption(mode);
   await page.getByRole('button',{name:'Create source',exact:true}).click();
   const key=await page.getByLabel('Private key',{exact:true}).inputValue();assert.ok(key);
+  await expect(page.getByRole('button',{name:'Copy ingress URL',exact:true})).toBeEnabled();
   const url=await page.getByLabel('Ingress URL',{exact:true}).inputValue();
   assert.equal(new URL(url).origin,origin);assert.ok(new URL(url).pathname.startsWith('/api/ingress/'));
   await page.getByRole('button',{name:'Copy ingress URL',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),url);
@@ -664,7 +665,7 @@ async function eventsSourceBrowser(page,context) {
   await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
   if(mode==='bearer')await proof('created');
   const path=new URL(await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href'),origin).pathname;
-  return {key,url,example,path,source:decodeURIComponent(new URL(url).pathname.split('/').at(-1))};
+  return {key,url,example,path,name:await page.getByRole('heading',{level:2}).innerText(),source:decodeURIComponent(new URL(url).pathname.split('/').at(-1))};
  };
  const source=await create('bearer');await page.getByRole('link',{name:'Open source',exact:true}).click();
  await page.getByLabel('Ingress URL',{exact:true}).waitFor();assert.equal(await page.locator('.ingress-example').getAttribute('open'),'','empty source opens its sample');
@@ -689,13 +690,46 @@ async function eventsSourceBrowser(page,context) {
  await page.goto(origin+'/alerts');assert.equal(await row.count(),1);assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
  assert.equal(await nav().innerText(),String(state.alerts.filter(a=>a.state==='active').length));await proof('recovered-list');
  await row.click();await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();assert.match(await page.locator('.alert-meta').innerText(),/critical.*recovered/);await proof('recovered-alert');
- // Executing the copied commands proves the setup page is sufficient, including HMAC.
+ // Read each detail page, copy its command unchanged and send it through the
+ // public HTTP door. Human names must retain the same stored identity as IDs.
  for(const sample of [source,await create('signed')]){
+  await page.goto(origin+sample.path);
+  assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the existing source link names its source plainly');
+  const details=page.locator('.ingress-example');if(await details.getAttribute('open')===null)await details.locator('summary').click();
+  assert.equal(await page.getByLabel('Ingress URL',{exact:true}).inputValue(),sample.url,'existing ingress address is unchanged');
+  const example=await page.getByLabel('Sample request',{exact:true}).inputValue();
+  const body=JSON.parse(example.match(/'({\n[\s\S]*\n})'/)[1].replaceAll("'\\''","'"));
+  assert.equal(body.source,sample.name,'sample uses the source name shown on its page');
+  assert.equal(body.service,service,'sample keeps the service identity required by the API');
+  assert.ok(body.key.includes(serviceName)&&!body.key.includes(service),'dedup key describes the named service');
+  assert.ok(body.generation.includes(body.observedAt)&&body.eventId.includes(body.generation),'sample observation and lifecycle IDs use a readable timestamp');
+  assert.ok(!body.eventId.includes(service)&&!/[a-f0-9]{8}-[a-f0-9]{4}-/i.test(body.eventId),'event identity contains no internal UUID');
+  assert.ok((await details.locator('p').allTextContents()).some(text=>text.includes(serviceName)&&text.includes('internal ID')),'required service ID is explained beside the sample');
+  assert.equal(await details.getByRole('link',{name:'Services',exact:true}).getAttribute('href'),'/settings/services');
+  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
+  await proof(sample===source?'readable-bearer-source':'readable-signed-source');
   const {spawn}=await import('node:child_process');
-  const output=await new Promise((resolve,reject)=>{const child=spawn('bash',['-e','-o','pipefail','-c',sample.example],{env:{...process.env,ONCALL_SOURCE_KEY:sample.key}});let text='';child.stdout.on('data',data=>text+=data);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(text):reject(Error('Copied Events API command failed: '+code)));});
+  const output=await new Promise((resolve,reject)=>{const child=spawn('bash',['-e','-o','pipefail','-c',example],{env:{...process.env,ONCALL_SOURCE_KEY:sample.key}});let text='';child.stdout.on('data',data=>text+=data);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(text):reject(Error('Copied Events API command failed: '+code)));});
   const receipt=JSON.parse(output);assert.equal(receipt.service,service);assert.ok(receipt.id);
+  const sendBody=async(value)=>{
+   const raw=JSON.stringify(value),headers={'content-type':'application/json'};
+   if(sample===source)headers.authorization='Bearer '+sample.key;
+   else {const timestamp=String(Math.floor(Date.now()/1000));headers['x-oncall-timestamp']=timestamp;headers['x-oncall-signature']=createHmac('sha256',sample.key).update(timestamp+'.'+raw).digest('hex');}
+   const response=await context.request.post(sample.url,{headers,data:raw});return {status:response.status(),value:await response.json()};
+  };
+  const legacy=await sendBody({...body,source:sample.source});assert.equal(legacy.status,200);assert.equal(legacy.value.id,receipt.id);assert.equal(legacy.value.duplicate,true,'legacy ID retries share the named sample receipt');
+  const accepted=await request('/api/state'),event=accepted.events.find(event=>event.id===receipt.id),alert=accepted.alerts.find(alert=>alert.events.includes(receipt.id));
+  assert.equal(event.source,sample.source,'stored event keeps the established source identity');assert.equal(event.key,body.key);assert.equal(alert.state,'active');assert.equal(alert.service,service);
+  assert.equal((await sendBody({...body,source:'Another source',eventId:body.eventId+'-wrong-source'})).status,403,'a display name cannot select another source');
+  assert.equal((await sendBody({...body,service:serviceName,eventId:body.eventId+'-wrong-service'})).status,403,'service names cannot bypass the explicit ID scope');
+  const unchanged=await request('/api/state');assert.deepEqual(unchanged.events,accepted.events);assert.deepEqual(unchanged.alerts,accepted.alerts,'refused identities create no accepted event or alert');
+  await page.goto(origin+'/alerts');const opened=page.locator('.alert-row').filter({hasText:body.title});assert.ok(await opened.count()>0,'the sent sample opens an alert visible in Alerts');
+  await page.locator('.alert-row[href="/alerts/'+encodeURIComponent(alert.id)+'"]').click();
+  await page.getByRole('article',{name:'Alert details',exact:true}).waitFor();
+  await page.goto(origin+sample.path);assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the original page URL still works after sending');
  }
- console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Creation copy URL/curl executed for bearer and signed; changed screens captured once at 1440/390.');
+
+ console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Detail-page readable source samples copied and executed for bearer and signed, alerts visible, legacy ID retries deduplicated and mismatched identities refused; changed screens captured once at 1440/390.');
 }
 
 // Production Worker + real local D1, without starting a managed rer dev server.
