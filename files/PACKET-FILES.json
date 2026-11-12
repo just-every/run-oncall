@@ -1,0 +1,145 @@
+{
+  "files": [
+    {
+      "name": "BASELINE.json",
+      "bytes": 414,
+      "sha256": "38d30f41af031d3b51659d1bb1fcb51537fad4536018cfd8e03000739a24e24a"
+    },
+    {
+      "name": "BEFORE-plan.json",
+      "bytes": 5014,
+      "sha256": "34b69d75c0788977ab6a1e33e728786c7a049a3b3ed6dad6abe6120cc30c7ef9"
+    },
+    {
+      "name": "BEFORE-review.txt",
+      "bytes": 959,
+      "sha256": "26ee0cdbe1847870d7e0c388e2b5d7b505cad475a8457fe374d992fedf240467"
+    },
+    {
+      "name": "BEFORE-undo.txt",
+      "bytes": 150,
+      "sha256": "b7bad9766af8b704c86f431d58adf82ccd4d7e304bb47b30b9b3fad8e914514e"
+    },
+    {
+      "name": "BROWSER.log",
+      "bytes": 286,
+      "sha256": "dafb73bfbac9e10e297dbeff5999fafc27a0268be25cd152a86d194e7c0cf8c3"
+    },
+    {
+      "name": "CI-RECEIPT.json",
+      "bytes": 1778,
+      "sha256": "55f0b7811e82707612737ba0fd38149eaa33d55462f9e9725c2c6e9bb0968478"
+    },
+    {
+      "name": "COMMIT-IDENTITY.txt",
+      "bytes": 252,
+      "sha256": "5c584de32315441a3a34296861709e28828b073d354b121524ed4dd8f06f05ec"
+    },
+    {
+      "name": "CONTRACT-CHECK.log",
+      "bytes": 70,
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "name": "EVIDENCE-INITIAL.txt",
+      "bytes": 140,
+      "sha256": "4aed72401f45b87157f3f3150ec02b2105f90363800901bb4853cb2600e5e0b1"
+    },
+    {
+      "name": "EVIDENCE-READBACK-INITIAL.json",
+      "bytes": 362,
+      "sha256": "1cf57628e2dd724869c1fb4394cf254aefcc5f417c2e1693034ef668f4421569"
+    },
+    {
+      "name": "FINGERPRINT-RECEIPT.json",
+      "bytes": 588,
+      "sha256": "8e95e01165c6c4626946ba30ba3d4cc3c90fea1f086adeddcaf3c059687b30e6"
+    },
+    {
+      "name": "FINGERPRINT.log",
+      "bytes": 269,
+      "sha256": "4a93951457fadf384dc46c639c015ddac522ee3c88d7db64587a07a163ebe785"
+    },
+    {
+      "name": "IMPORT-BROWSER.log",
+      "bytes": 1209,
+      "sha256": "826a4b0c0b6463f686b879e759468e6413921ba1f0a45f1ed81ffad299033b70"
+    },
+    {
+      "name": "IMPORT-DOOR.log",
+      "bytes": 4409,
+      "sha256": "2e7dd8b8003aac2f0d7b39e76b017bc295f45ed42133504266ee76e4df654892"
+    },
+    {
+      "name": "LOCAL-RECEIPT.json",
+      "bytes": 2226,
+      "sha256": "5ab566e7aea3b699f1923b572549074150ee45014ac0a3e241c15a02c3efe21e"
+    },
+    {
+      "name": "PLAN.md",
+      "bytes": 1535,
+      "sha256": "842cd1aac0d0a82a47d25c9cb212ee7672c8463c60e036144695f4e3d562e626"
+    },
+    {
+      "name": "PUSH.log",
+      "bytes": 1563,
+      "sha256": "d9f2ce9e4d88c5065e215cf75c3be3e1afe1725898a6f4e4fe6aa60d547ef81f"
+    },
+    {
+      "name": "REPORT.md",
+      "bytes": 7360,
+      "sha256": "96bc72ae3cfcfd0ea403fd1c31f143ef58eb04540ad592346b3b3b1ef0d80be6"
+    },
+    {
+      "name": "REPRODUCTION.log",
+      "bytes": 174,
+      "sha256": "9edf043e6bf8a9a741d179541bf7f47ed99292b2a2841d3989502c3e0476f12c"
+    },
+    {
+      "name": "SOURCE-LOCK-RECEIPT.json",
+      "bytes": 218,
+      "sha256": "8d619fe8406f5bb8c14d6a3595a81824b29f8c474f1208291383961e2eed8d72"
+    },
+    {
+      "name": "TYPECHECK.log",
+      "bytes": 182,
+      "sha256": "9b0b3594186bafc8dab911d0c747824f1d6b96686af29dd61cb9871a699c6700"
+    },
+    {
+      "name": "before-review-1440.png",
+      "bytes": 106434,
+      "sha256": "9c496de90d17b14f3975851384d3e49fd52577cb38feb01ea063b69607a1260e"
+    },
+    {
+      "name": "before-undo-1440.png",
+      "bytes": 128677,
+      "sha256": "bd94eb25230c96eb739376a583c85cb347ccea055ca973608a55e3e14abcdfaa"
+    },
+    {
+      "name": "plain-move-in-review-1440.png",
+      "bytes": 162056,
+      "sha256": "49fab7c18a2d4fe975d2a7d577d3be9aa2c2a6a204e1b90e0be332487b5f8e68"
+    },
+    {
+      "name": "plain-move-in-review-390.png",
+      "bytes": 153967,
+      "sha256": "e231f7605adf216c8e38419387c30363e306f74572e9cc31f82c9c3663db08c8"
+    },
+    {
+      "name": "plain-move-in-undo-1440.png",
+      "bytes": 136068,
+      "sha256": "19b6d28dc7aad45ce7841b71f945cb1e6994c028215e3aab0a0e636bbdf6efab"
+    },
+    {
+      "name": "plain-move-in-undo-390.png",
+      "bytes": 119886,
+      "sha256": "c40ed1764a44202d3ceaa4d0c5aa20f061f820a5507439aebca1acc2e9b76219"
+    },
+    {
+      "name": "synthetic-oncall-1.json",
+      "bytes": 392,
+      "sha256": "74710208d32a407bae7d3f24daa232281fa3bfef0c72c4481ecd574811bf3afd"
+    }
+  ],
+  "note": "All actual packet files except this inventory itself; evidence.json is the authoritative transferred-file manifest."
+}

@@ -49,4 +49,6 @@ OC-038 remains partial and OC-074 remains missing. No live provider, carrier del
 
 Verify run: 43139950723, https://github.com/just-every/run-oncall/actions/runs/43139950723
 Exact head: c8531010b62374aef16e23611b37b4cb6d2623b2
-CI status is recorded in CI-RECEIPT.json. This initial report transfer records Verify in progress; the final transfer will record the terminal observation. There is no product blocker observed locally. The publication scan and fleet landing are still fleet-owned gates.
+Verify completed successfully on this exact product SHA, observed at 2026-11-12T02:34:35.961952+00:00. The single REST watcher made 5 calls, spaced at least 300 seconds apart. CI-RECEIPT.json retains every observation. There are no unresolved product blockers. The publication scan and fleet landing are still fleet-owned gates. The initial 26-file evidence transfer was fetched back and all manifest and file hashes verified; the final transfer includes this completed Verify receipt and all relevant reports.
+
+READY branch=cloud/main-oncall-movein-plain-labels-1 head=c8531010b62374aef16e23611b37b4cb6d2623b2

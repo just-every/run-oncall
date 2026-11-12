@@ -1,7 +1,7 @@
 {
   "repository": "just-every/run-oncall",
   "head": "c8531010b62374aef16e23611b37b4cb6d2623b2",
-  "calls": 2,
+  "calls": 5,
   "observations": [
     {
       "timestamp": "2026-11-12T02:14:33.876373+00:00",
@@ -22,6 +22,33 @@
       "head_sha": "c8531010b62374aef16e23611b37b4cb6d2623b2",
       "html_url": "https://github.com/just-every/run-oncall/actions/runs/43139950723",
       "status": "in_progress"
+    },
+    {
+      "timestamp": "2026-11-12T02:24:34.940749+00:00",
+      "call": 3,
+      "run_id": 43139950723,
+      "conclusion": null,
+      "head_sha": "c8531010b62374aef16e23611b37b4cb6d2623b2",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43139950723",
+      "status": "in_progress"
+    },
+    {
+      "timestamp": "2026-11-12T02:29:35.481889+00:00",
+      "call": 4,
+      "run_id": 43139950723,
+      "conclusion": null,
+      "head_sha": "c8531010b62374aef16e23611b37b4cb6d2623b2",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43139950723",
+      "status": "in_progress"
+    },
+    {
+      "timestamp": "2026-11-12T02:34:35.961952+00:00",
+      "call": 5,
+      "run_id": 43139950723,
+      "conclusion": "success",
+      "head_sha": "c8531010b62374aef16e23611b37b4cb6d2623b2",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43139950723",
+      "status": "completed"
     }
   ]
 }

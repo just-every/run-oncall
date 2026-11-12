@@ -61,5 +61,15 @@
     "tests/product-browser-journey.mjs"
   ],
   "planMappingAdoptionFingerprintSourceFilesChanged": false,
-  "proofNote": "Browser checks ran on the final product source tree; the final follow-up only added the already-tested helpers to sources.lock.json. No UI source changed after those checks."
+  "proofNote": "Browser checks ran on the final product source tree; the final follow-up only added the already-tested helpers to sources.lock.json. No UI source changed after those checks.",
+  "verify": {
+    "run_id": 43139950723,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "c8531010b62374aef16e23611b37b4cb6d2623b2",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43139950723",
+    "observed_at": "2026-11-12T02:34:35.961952+00:00",
+    "rest_calls": 5
+  },
+  "terminal_custody": "READY"
 }

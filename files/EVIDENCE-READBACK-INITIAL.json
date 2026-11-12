@@ -1,0 +1,9 @@
+{
+  "status": "restored",
+  "repository": "just-every/run-oncall",
+  "ref": "refs/heads/evidence/main-oncall-movein-plain-labels-1",
+  "head": "a4586a701e07eefdd59a1ebe5a173afab592d03d",
+  "product_head": "c8531010b62374aef16e23611b37b4cb6d2623b2",
+  "manifest_sha256": "a35a026249fdd62b60194eaaf2df9c71f887600a6cf7cb7edae60c91e00bfda3",
+  "filesVerified": 26
+}
