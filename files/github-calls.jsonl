@@ -1,0 +1,5 @@
+{"call": 1, "at": "2026-11-12T09:37:40.880198+00:00", "command": ["gh", "api", "repos/just-every/run-oncall/actions/runs?head_sha=2b1c491fa3990d6d7d12693a1dbae0110983501c&per_page=100"]}
+{"call": 2, "at": "2026-11-12T09:42:41.924617+00:00", "command": ["gh", "api", "repos/just-every/run-oncall/actions/runs/43193110027", "--jq", "{status,conclusion,head_sha,html_url}"]}
+{"call": 3, "at": "2026-11-12T09:47:42.911762+00:00", "command": ["gh", "api", "repos/just-every/run-oncall/actions/runs/43193110027", "--jq", "{status,conclusion,head_sha,html_url}"]}
+{"call": 4, "at": "2026-11-12T09:52:43.908731+00:00", "command": ["gh", "api", "repos/just-every/run-oncall/actions/runs/43193110027", "--jq", "{status,conclusion,head_sha,html_url}"]}
+{"call": 5, "at": "2026-11-12T09:57:44.922545+00:00", "command": ["gh", "api", "repos/just-every/run-oncall/actions/runs/43193110027", "--jq", "{status,conclusion,head_sha,html_url}"]}

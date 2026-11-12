@@ -1,0 +1,116 @@
+{
+  "head": "2b1c491fa3990d6d7d12693a1dbae0110983501c",
+  "parent": "7f9d04290b2405f9a2372a51c079f44613e5db45",
+  "main": "7f9d04290b2405f9a2372a51c079f44613e5db45",
+  "source": "976bc732837760dc9708f13b014fae0a5c108ff4",
+  "shared_base": "4a727385b719532d120ab2d6e9fa8ac02e098379",
+  "candidate_commits": 1,
+  "merge_commits": 0,
+  "contract_files": [
+    {
+      "path": "CONTRACT.md",
+      "sha256": "30ec2847a2d4f15345ef23431b101317265342fd4548f8bf033d635eb2d26639",
+      "same_as_main": true
+    },
+    {
+      "path": "ACCEPTANCE.md",
+      "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3",
+      "same_as_main": true
+    },
+    {
+      "path": "docs/CLAIMS.md",
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440",
+      "same_as_main": true
+    }
+  ],
+  "touched_paths": [
+    {
+      "path": "sources.lock.json",
+      "main_changes_since_base": [
+        "6b4689c OC-052 done: its gate passed (lander status flip)",
+        "25e6ed0 Prove active source approvals remain unconsumed until portable export",
+        "59af2f8 Release Oncall 0.5.9 with clearer sender setup and newcomer guidance",
+        "5b39442 Explain API client policy setup and keep Client actions usable",
+        "3615e5e Remove duplicate limitations proof while retaining default documentation coverage",
+        "98df9d6 Run existing operating-limits browser proof in default Verify journey",
+        "4ddbcd0 Retain managed owner authority for existing import refusal checks [skip ci]",
+        "093106a Verify resumed native receipt after agent restore",
+        "1003d14 Compare complete portable agent history by durable identity [skip ci]",
+        "65667f8 Assert inactive native work created by the agent transfer fixture [skip ci]",
+        "7d9ce05 Document atomic agent receiving custody for portable restores",
+        "fbffe05 Use native owner login for emitted restore custody proof [skip ci]",
+        "1ceef44 Update agent custody in restore staging without live-table constraints [skip ci]",
+        "1f7a57b Bind transfer network probe to managed installation settings [skip ci]",
+        "a4e18ef Pause agent authority before portable restore publication [skip ci]",
+        "02ec9fb Preserve predecessor revoked and expired readiness disclosure proof",
+        "dc23dd7 Verify refreshed US installation checklist against protected readiness report",
+        "bbf58b2 Retain current-session checklist disclosure refusals after main integration [skip ci]",
+        "c720156 Verify every installation dependency and capture responsive checklist proof",
+        "c5e6948 Prove populated readiness refusals and denied network edge [skip ci]",
+        "4c91727 Record unchanged bulk incident actions as skipped",
+        "c025c99 Name every incident in bulk triage results"
+      ]
+    },
+    {
+      "path": "src/incident/incident.css",
+      "main_changes_since_base": []
+    },
+    {
+      "path": "src/incident/types.ts",
+      "main_changes_since_base": []
+    },
+    {
+      "path": "src/move-in/mapping.ts",
+      "main_changes_since_base": []
+    },
+    {
+      "path": "src/move-in/pagerduty-mapping.ts",
+      "main_changes_since_base": []
+    },
+    {
+      "path": "src/readiness/matrix.ts",
+      "main_changes_since_base": []
+    },
+    {
+      "path": "tests/import-door.mjs",
+      "main_changes_since_base": []
+    },
+    {
+      "path": "tests/product-browser.mjs",
+      "main_changes_since_base": [
+        "3615e5e Remove duplicate limitations proof while retaining default documentation coverage",
+        "98df9d6 Run existing operating-limits browser proof in default Verify journey",
+        "dc23dd7 Verify refreshed US installation checklist against protected readiness report",
+        "c720156 Verify every installation dependency and capture responsive checklist proof"
+      ]
+    }
+  ],
+  "verify_entries_before": 16,
+  "verify_entries_after": 16,
+  "added_test_registrations": 0,
+  "contract_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_status_before": {
+    "OC_009": "PARTIAL",
+    "OC_056": "DONE",
+    "OC_027": "PARTIAL",
+    "OC_075": "MISSING"
+  },
+  "clause_status_after": {
+    "OC_009": "PARTIAL",
+    "OC_056": "DONE",
+    "OC_027": "PARTIAL",
+    "OC_075": "MISSING"
+  },
+  "status_changes": []
+}

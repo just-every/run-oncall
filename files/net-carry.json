@@ -1,0 +1,38 @@
+{
+  "head": "2b1c491fa3990d6d7d12693a1dbae0110983501c",
+  "checks": [
+    {
+      "path": "src/incident/incident.css",
+      "patch_identical_to_round": true,
+      "patch_sha256": "7315387ee58a3c97b05a0d630d37b634a365e50420065dc3eb4b9c2059c76667"
+    },
+    {
+      "path": "src/incident/types.ts",
+      "patch_identical_to_round": true,
+      "patch_sha256": "b5d9b10d4cd8104d12fa808c446e0576188f1db07ee21bea8ae3a3c251c26824"
+    },
+    {
+      "path": "src/move-in/mapping.ts",
+      "patch_identical_to_round": true,
+      "patch_sha256": "0a542449ec52383046cb0be79c33659a8f22d6826fd54cfb926d9acb5beb92cf"
+    },
+    {
+      "path": "src/move-in/pagerduty-mapping.ts",
+      "patch_identical_to_round": true,
+      "patch_sha256": "5cfac631d9b416b2a87ec0747209992c98df6e9f5e6c169752be5a27285be66d"
+    },
+    {
+      "path": "src/readiness/matrix.ts",
+      "patch_identical_to_round": true,
+      "patch_sha256": "16dfe192d9ab7d123d167fbe6b5a7226b0081bd0dbb4645e4d19551b288eea3a"
+    },
+    {
+      "path": "tests/import-door.mjs",
+      "patch_identical_to_round": true,
+      "patch_sha256": "6059617b8cdd6fbc43570a0f97b7cf3ff5bf295ad5fe8bc746179a23a9fee39c"
+    }
+  ],
+  "browser_test": "Round hunks merged onto main; newer checklist and default limitations proof retained.",
+  "source_lock": "Regenerated from main plus the carried seven paths.",
+  "browser_round_added_and_removed_lines_identical": true
+}

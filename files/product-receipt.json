@@ -1,0 +1,58 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-timeline-plain-1-c1",
+  "head": "2b1c491fa3990d6d7d12693a1dbae0110983501c",
+  "parent": "7f9d04290b2405f9a2372a51c079f44613e5db45",
+  "product_push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-oncall-timeline-plain-1-c1",
+    "exit_code": 0,
+    "attempt": 1,
+    "status": "PUSH_OK",
+    "ref": "refs/heads/cloud/main-oncall-timeline-plain-1-c1"
+  },
+  "identity": {
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": [],
+    "candidate_commits_inspected": 1
+  },
+  "precommit_checks": [
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit_code": 0
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit_code": 0
+  },
+  "pr": null,
+  "publication_scan": "Fleet landing gate; unavailable in this cloud task, per cloud adaptation.",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "2b1c491fa3990d6d7d12693a1dbae0110983501c",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43193110027",
+    "status": "completed",
+    "run_id": 43193110027,
+    "observed_at": "2026-11-12T09:57:45.526493+00:00",
+    "github_calls": 5
+  },
+  "terminal_product_state": "READY",
+  "blockers": []
+}
