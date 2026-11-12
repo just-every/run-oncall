@@ -1,3 +1,4 @@
+import {savedEmailBundle} from './email-fixtures.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
@@ -574,6 +575,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  page.on('response',observe);
  await key.activate(page.locator('.oc-page-head').getByRole('link',{name:'New rota',exact:true}));
  if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
+ if(width===1440){
+  const name=page.getByLabel('Rota name',{exact:true});await name.fill('');await page.getByRole('button',{name:'Continue',exact:true}).click();
+  const error=name.locator('..').getByRole('alert');await error.waitFor();assert.equal(await name.evaluate(e=>e===document.activeElement),true);assert.equal(await name.getAttribute('aria-describedby'),await error.getAttribute('id'));
+ }
  await key.text(page.getByLabel('Rota name',{exact:true}),'Checkout rota '+width);
  await accessibleState(page,'rota-name',width,page.getByLabel('Rota name',{exact:true}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();
@@ -626,6 +631,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  assert.deepEqual(await api('/api/paging/state'),beforeDismiss,'Escape dismisses cover preparation without saving');
  await key.activate(coverOpener);
  await key.option(cover.getByLabel('Who',{exact:true}),'');await key.option(cover.getByLabel('Role',{exact:true}),'primary');await key.calendar(cover.getByLabel('From',{exact:true}),future.overrideStart);await key.calendar(cover.getByLabel('To',{exact:true}),future.overrideEnd);
+ if(width===1440){
+  const end=cover.getByLabel('To',{exact:true}),value=await end.inputValue();await end.fill('');await cover.getByRole('button',{name:'Review change',exact:true}).click();
+  const error=end.locator('..').getByRole('alert');await error.waitFor();assert.equal(await end.evaluate(e=>e===document.activeElement),true);assert.equal(await end.getAttribute('aria-describedby'),await error.getAttribute('id'));await end.fill(value);
+ }
  await accessibleState(page,'cover-preparation',width,cover.getByRole('button',{name:'Review change',exact:true}));
  const coverBefore=await api('/api/paging/state'),coverReviewResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/schedules/'+id+'/review'&&r.request().method()==='POST');
  await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
@@ -633,6 +642,12 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  const reviewedNames=await cover.getByRole('region',{name:'Coverage change intervals',exact:true}).locator('.scheduling-window > p > strong').allTextContents(),reviewName=id=>id===null?'Coverage gap':coverReview.members.find(member=>member.id===id)?.name??'Unavailable member';
  assert.deepEqual(reviewedNames,[...coverReview.intervals].sort((a,b)=>Number(b.after===null)-Number(a.after===null)||a.start-b.start||a.role.localeCompare(b.role)).slice(0,80).map(interval=>interval.role+': '+reviewName(interval.before)+' → '+reviewName(interval.after)),'the cover review renders every protected before and after assignment');
  assert.deepEqual(await api('/api/paging/state'),coverBefore,'cover review writes nothing');assert.equal(await cover.getByRole('button',{name:'Apply reviewed change',exact:true}).isDisabled(),true);
+ if(width===1440){
+  const apply=cover.getByRole('button',{name:'Apply reviewed change',exact:true}),hint=await apply.getAttribute('aria-describedby');assert.ok(hint);
+  const explanation=cover.locator(`[id="${hint}"]`);await explanation.waitFor();assert.ok((await explanation.innerText()).includes(await cover.getByRole('checkbox').locator('..').innerText()),'Apply names the review checkbox that enables it');
+  assert.equal(await explanation.evaluate((e,id)=>e.previousElementSibling?.getAttribute('aria-describedby')===id,hint),true,'the explanation sits immediately beside Apply');
+  for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await apply.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-cover-review-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ }
  await key.dialog(cover);await accessibleState(page,'cover-review',width,cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}));
  await key.dismiss(cover,coverOpener);assert.deepEqual(await api('/api/paging/state'),coverBefore,'Escape from the review writes nothing');
  await key.activate(coverOpener);await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
@@ -839,7 +854,11 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  if(width===1440){assert.equal(await page.locator('.oc-bands [data-time-zone]').getAttribute('data-time-zone'),zone);for(const label of await page.locator('.handoff').allTextContents())assert.ok(label.includes(zone));}
  await capture('rota');
  await page.getByRole('button',{name:'Request a swap',exact:true}).click();const swapSheet=page.getByRole('dialog',{name:'Request a swap',exact:true});await swapSheet.getByLabel('Shift to swap',{exact:true}).waitFor();
- await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
+ const requestSwap=swapSheet.getByRole('button',{name:'Request',exact:true});
+ assert.equal(await requestSwap.isDisabled(),true);const substituteHint=await requestSwap.getAttribute('aria-describedby');assert.ok(substituteHint);await swapSheet.locator(`[id="${substituteHint}"]`).waitFor();
+ const beforeSelection=await api('/api/schedule-coordination');assert.equal(beforeSelection.records.some(row=>row.kind==='swap'&&row.data.schedule===schedule.id),false,'no request is saved without a substitute');
+ for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await requestSwap.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-swap-substitute-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);assert.equal(await requestSwap.isEnabled(),true);assert.equal(await requestSwap.getAttribute('aria-describedby'),null);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
  const swap=(await api('/api/schedule-coordination')).records.find(row=>row.kind==='swap'&&row.data.schedule===schedule.id&&row.data.status==='pending');assert.ok(swap);
  await coordination.getByRole('button',{name:'Approve swap',exact:true}).click();await coordination.getByText(/approval recorded/).waitFor();
  const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:900},timezoneId:'Australia/Brisbane'});
@@ -1282,6 +1301,9 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  const external=[];const observe=request=>{if(request.url().startsWith('https://hostile.invalid/'))external.push(request.url())};page.on('request',observe)
  // OC-008: author a runbook containing a link and HTML, then use its copied incident step.
  const runbookText=`https://hostile.invalid/runbook ${hostile}`
+ // Begin this keyboard leg with a real key even when a preceding pointer flow
+ // left focus on the menu's return target. Keep visible-focus assertions intact.
+ await page.keyboard.press('Tab')
  await openWorkspaceSection(page,'services',{keyboard:true})
  await key.activate(page.getByRole('button',{name:'Add service',exact:true}))
  await key.text(page.getByLabel('Service name',{exact:true}),`Literal runbook ${width}`)
@@ -1619,4 +1641,66 @@ async function sharedIncidentLinks(page,context) {
  assert.equal(await page.locator('.detail').count(),0,'a missing shared incident never opens a different incident')
  await back.click()
  await page.waitForURL(url=>url.pathname==='/on-call')
+}
+
+
+// Saved email import is exercised at one width; 390 is visual evidence only.
+export async function importedEmailBrowser(page,context) {
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',origin=new URL(page.url()).origin;
+ await mkdir(directory,{recursive:true});await page.setViewportSize({width:1440,height:1000});
+ const api=async(path,data)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});
+  assert.ok(response.ok(),path+' '+response.status());return response.json();
+ };
+ const session=await api('/api/session');
+ const service='synthetic-oncall-email-browser';
+ await api('/api/command',{type:'service',id:service,name:'Email monitor',environment:'test',owner:session.member.id,runbook:[],pager:''});
+ const screens=async(name)=>{
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'email import fits desktop');
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  for(const width of [1440,390]) {
+   await page.setViewportSize({width,height:1000});
+   await page.screenshot({path:`${directory}/email-import-${name}-${width}.png`,fullPage:true,mask:[page.locator('.one-time-secret input')]});
+  }
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ for(const vendor of ['pagerduty','opsgenie']) {
+  const bundle=await savedEmailBundle(vendor);
+  if(vendor==='opsgenie') {
+   const integration={id:'synthetic-oncall-email-browser-refused',name:'Email requiring review',type:'Email'};
+   bundle.integrations.data.push(integration);
+   bundle.integration_actions.push({data:{_parent:integration,create:[],close:[],ignore:[],addNote:[],acknowledge:[{type:'acknowledge',name:'Review this acknowledge rule',order:1,alias:'{{subject}}'}]}});
+  }
+  const before=await api('/api/email');
+  await fileSource(page,vendor);
+  await page.getByLabel('Export JSON').setInputFiles({name:'synthetic-oncall-email-'+vendor+'.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))});
+  await page.getByRole('heading',{name:'Compatibility review',exact:true}).waitFor();
+  const count=vendor==='pagerduty'?8:6;
+  await page.getByText(new RegExp('custom mode, '+count+' converted rules')).waitFor();
+  if(vendor==='opsgenie') {
+   const note=page.locator('.move-in-workspace li div').filter({hasText:'Action Review this acknowledge rule'}).first();
+   await note.getByText('Original settings',{exact:true}).click();
+   assert.match(await note.locator('pre').innerText(),/"type": "acknowledge"/);
+  }
+  assert.deepEqual((await api('/api/email')).addresses,before.addresses,'review creates no address');
+  await screens(vendor+'-report');await confirmImport(page);
+  const panels=page.getByRole('region',{name:'Activate imported email integration',exact:true});
+  const panel=panels.filter({hasText:count+' converted rules'}).filter({hasText:'Inactive email settings'}).last();
+  await panel.waitFor();await panel.getByText(/Inactive email settings; no address and no intake/).waitFor();
+  const select=panel.getByLabel('Service for imported email',{exact:true});await select.selectOption(service);
+  if(vendor==='opsgenie')await panel.getByRole('checkbox').check();
+  await screens(vendor+'-inactive');
+  await panel.getByRole('button',{name:'Activate email integration',exact:true}).click();
+  const confirmation=panel.getByRole('button',{name:'Confirm email activation',exact:true});
+  await confirmation.click();
+  await page.getByLabel('Private email address',{exact:true}).waitFor();
+  const address=await page.getByLabel('Private email address',{exact:true}).inputValue();assert.ok(address.endsWith('@inbound.example.test'));
+  const created=await api('/api/email'),active=created.addresses.find(a=>!before.addresses.some(old=>old.id===a.id));assert.ok(active);
+  assert.equal(active.service,service);assert.equal(created.versions.find(v=>v.address===active.id).version,1);
+  await screens(vendor+'-activated');await page.getByRole('button',{name:'Done',exact:true}).click();
+  assert.ok(!(await page.content()).includes(address),'one-time address leaves the document');
+  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
+ }
+ console.log('PASS OC-070 email import browser: mapping reports and original unsupported action, inactive custody, explicit administrator activation and one-time address; assertions at 1440; changed screens captured once at 1440 and 390');
 }

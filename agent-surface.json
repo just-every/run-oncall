@@ -94,6 +94,20 @@
       ]
     },
     {
+      "name": "oncall.alerts.list",
+      "scope": "incidents:read",
+      "readOnly": true,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "clauses": [
+        "OC-001",
+        "OC-002",
+        "OC-059"
+      ]
+    },
+    {
       "name": "oncall.analytics.read",
       "scope": "analytics:read",
       "readOnly": true,
@@ -2193,6 +2207,36 @@
             "measure": 1,
             "setting": "erasure-credentials"
           }
+        }
+      ]
+    },
+    {
+      "id": "alerts-list-standard",
+      "tool": "oncall.alerts.list",
+      "args": {
+        "service": "agent-foreign-service",
+        "state": "recovered",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "alerts-list-sensitive",
+      "tool": "oncall.alerts.list",
+      "args": {
+        "service": "agent-service",
+        "limit": 100
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
         }
       ]
     }

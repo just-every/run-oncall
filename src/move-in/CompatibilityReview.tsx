@@ -12,7 +12,8 @@ export function CompatibilityReview({preview,busy,hasJob,confirm}:{preview:any;b
   {copy.effect(item)&&<p>{copy.effect(item)}</p>}
   {item.rejection&&<p>{copy.rejection(item)}</p>}
   {item.effects?.filter((effect:any)=>effect.targetKind==='schedule').flatMap((effect:any)=>copy.comparison(item,effect.value.equivalence)).map((text:string,i:number)=><p key={'comparison-'+i}>{text}</p>)}
-  {item.unmapped.map((value:any,i:number)=><p key={i}>{copy.difference(item,value)}</p>)}
+  {item.effects?.filter((effect:any)=>effect.value.emailSettings).map((effect:any)=><p key={effect.targetId}>Inactive email settings: {effect.value.emailSettings.draft.mode} mode, {effect.value.emailSettings.draft.rules.length} converted rules. No address or intake. {effect.value.emailSettings.blocked?'Unconverted rules must be resolved before activation.':'An administrator must explicitly activate these settings.'}</p>)}
+  {item.unmapped.map((value:any,i:number)=><div key={i}>{copy.difference(item,value)}{value.original!==undefined&&<details><summary>Original settings</summary><pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{JSON.stringify(value.original,null,2)}</pre></details>}</div>)}
  </li>)}</ul>
  <CopyDetails value={preview}/>
  {confirm&&<button disabled={busy||hasJob} onClick={confirm}>Confirm paused import</button>}</>
