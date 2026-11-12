@@ -36,14 +36,14 @@ This is one frozen rubric for the round. Each row is bound to the exact candidat
 
 | Rider | Result at handoff | Evidence or required landing action |
 | --- | --- | --- |
-| 1 | Local behavioral proof; exact-SHA CI observation recorded below | All acceptance outcomes are exercised by A1 through A2c, including the populated HTTP export comparison. The claim names activation and checkpointCli; the lander updates the stale Evidence cell. |
-| 2 | PASS on passing runtime receipt | Populated records and both allowed and unsafe cases are checked. Deep equality compares independent API results, while mutation denials, storage faults and concurrent writes preserve the prior state. |
-| 3 | Exact-SHA CI observation recorded below | The candidate push's Verify coverage is reported honestly. The changes lane is also run in this round through pinned rer verify. No earlier-SHA run is passed off as candidate CI. |
+| 1 | PASS | All acceptance outcomes are exercised by A1 through A2c, including the populated HTTP export comparison. The claim names activation and checkpointCli; the lander updates the stale Evidence cell. |
+| 2 | PASS | Populated records and both allowed and unsafe cases are checked. Deep equality compares independent API results, while mutation denials, storage faults and concurrent writes preserve the prior state. |
+| 3 | PASS | The candidate push's Verify coverage is reported honestly. The changes lane is also run in this round through pinned rer verify. No earlier-SHA run is passed off as candidate CI. |
 | 4 | PASS | code-provenance.json binds runtime and helper blobs to the candidate and current main. Relevant source and tests are unchanged, and the round's runtime receipt names its exact executed head. |
 | 5 | PASS, INSPECTED | OC-017 names authority, recovery and no-send duties in its own Requirement and acceptance points. No new Base conformance or receiving inheritance is claimed. |
 | 6 | Generation PASS; judgment cells deferred to lander | Contract generator write and check pass. Views are restored whole from origin/main and remain uncommitted. The source Status and Gap are deliberately unchanged under the single-writer instruction; the claim supplies fresh point-by-point proof for the lander. |
 | 7 | PASS, INSPECTED | No acceptance sentence, ruling, coverage map, ID or status row changes. |
-| 8 | PASS on passing runtime receipt | Responder prepares and reviews, viewer mutation and non-admin restore refuse, storage and audit faults roll back, and only the restore winner retains authority. A1, A1c and A2 carry the public-door details. |
+| 8 | PASS | Responder prepares and reviews, viewer mutation and non-admin restore refuse, storage and audit faults roll back, and only the restore winner retains authority. A1, A1c and A2 carry the public-door details. |
 | 9 | PASS, INSPECTED | No provider, device, legal, availability, paging, independent-standby or live-send proof is claimed. Local software storage bounds are exercised without claiming hosted capacity. |
 | 10 | PASS, INSPECTED | No policy default or new authority choice was adopted. |
 | 11 | PENDING LANDER | Candidate remains branch-only. Main equality, full-history publication scan, exact landed-SHA Verify and Run site are the guarded lander's receipts. No landing is claimed here. |
@@ -58,7 +58,7 @@ This is one frozen rubric for the round. Each row is bound to the exact candidat
 
 ## Honest retained boundaries
 
-Connected submission, synchronization, automatic reminders, publication and provider sends remain omitted. Microsoft Teams still needs the unavailable tenant; OC-051 still needs a Statuspage account and its Lamp proof needs a Lamp environment. None is a native OC-017 acceptance point. Review grants no send, publication, independent-review or recovery-verification authority. No homepage, look or logo changed. No real blocker has been identified by the reviewed native observations; final command and CI results below determine the actual handoff status.
+Connected submission, synchronization, automatic reminders, publication and provider sends remain omitted. Microsoft Teams still needs the unavailable tenant; OC-051 still needs a Statuspage account and its Lamp proof needs a Lamp environment. None is a native OC-017 acceptance point. Review grants no send, publication, independent-review or recovery-verification authority. No homepage, look or logo changed. No real blocker was found. Native observations, all local required commands and exact-SHA branch Verify pass; publication and landing remain with the maintained lander.
 
 ## Actual local results and provenance
 
@@ -83,3 +83,17 @@ Contract counts are unchanged in this candidate: 23 DONE, 44 PARTIAL, 34 MISSING
 Publication scan: commit=05e955fadd58ab162f3fce04d0370efff143d071 complete=false historyScanned=false findings=unestablished. The scan was not run in cloud, as the adaptation reserves it to the maintained Mac lander. Main equality is false: this candidate is intentionally branch-only. Candidate Run site is not run because that workflow is main-only; the lander must establish it on the resulting exact main SHA. The baseline main's Verify 43115851492 and Run site 43115851706 are completed/success, as recorded by the first REST query; they are not candidate CI proof.
 
 No PR was created or required by this repository's branch Verify entry point. The declared write scope was only just-every/run-oncall. No external adapter, account, provider or other repository was modified. Evidence is published on the separate evidence ref and is never product READY or landing proof by itself.
+
+## Final exact-SHA CI and claim
+
+Verify run 43121694236, event push, status completed, conclusion success, head 05e955fadd58ab162f3fce04d0370efff143d071.
+Run URL: https://github.com/just-every/run-oncall/actions/runs/43121694236.
+Total repository REST calls used: 6. One watcher observed the 300-second interval. The immediate post-push discovery initially returned no run; the next bounded discovery found the push's own run. No workflow was dispatched or rerun.
+
+DONE-RIDERS results: 1 PASS, 2 PASS, 3 PASS, 4 PASS, 5 PASS by inspection, 6 generator PASS with judgment cells deferred under the single-writer rule, 7 PASS by inspection, 8 PASS, 9 PASS by inspection, 10 PASS by inspection; 11 pending the guarded lander's receipt. This is ACCEPT ON LANDING for the native clause, not a counted or landed judgment. No DEFAULT or native GAP line is needed.
+
+CLAIM OC-017 DONE points=1,2 tests=tests/activation.mjs#HTTP export preserves the exact reviewed payload, source snapshots, hashes, revision and attributed history; tests/activation.mjs#OC-016/017: checkpoint consistency, auth exclusion, atomic refusal under invalid/capacity/storage/concurrent writes, winner session, paused jobs and orphans, version 1, empty-target mapping, the 1 MiB aggregate, review identity/eligibility/hold/withdrawal and the private CLI passed; tests/checkpoint-cli.mjs#checkpointCli
+
+Proposed plan-row change: OC-017 PARTIAL to DONE, native points 1 and 2 closed; actual source cells and actual counts unchanged. All remaining campaign and provider holds in the supplied extract stay held. No other target was started.
+
+Final product custody: PUSHED cloud/sd-oncall-c-f231 at 05e955fadd58ab162f3fce04d0370efff143d071; exact-SHA branch Verify completed/success. Product READY and the report-only evidence ref are separate custody records. The lane must perform the complete full-history publication scan, main equality and Run site before counting the proposed flip. The clone is removed only after both remote product and evidence custody are verified.

@@ -103,6 +103,21 @@
   },
   "files": [
     {
+      "path": "REPORT.md",
+      "bytes": 17262,
+      "sha256": "b17dfff87bca6640a2156aabd7aa4fde56475215a3a24f8dd252de41b8dbc349"
+    },
+    {
+      "path": "PLAN.md",
+      "bytes": 2138,
+      "sha256": "bfb11b8d415e7e8a39f79deb6e1304d257c81631efb0fc217c544a00913581c0"
+    },
+    {
+      "path": "code-provenance.json",
+      "bytes": 2732,
+      "sha256": "9c9644e471a5c20a5f01add0cd583e586ae3ccc3df63166667de67c7f64b5edc"
+    },
+    {
       "path": "changes-verify.log",
       "bytes": 466417,
       "sha256": "dfe0b290be453744e4bfa8caf6a4ef407ae02f50f3876668148d12b3a63163b4"
@@ -113,14 +128,25 @@
       "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
     },
     {
-      "path": "code-provenance.json",
-      "bytes": 2732,
-      "sha256": "9c9644e471a5c20a5f01add0cd583e586ae3ccc3df63166667de67c7f64b5edc"
+      "path": "ci-receipt.json",
+      "bytes": 3916,
+      "sha256": "adb2ce1d44ada3057fbfa8f9bb9c0b4e808f05ce26ce256a5cac128546e00748"
     },
     {
-      "path": "PLAN.md",
-      "bytes": 2138,
-      "sha256": "bfb11b8d415e7e8a39f79deb6e1304d257c81631efb0fc217c544a00913581c0"
+      "path": "evidence-save-verification.json",
+      "bytes": 1702,
+      "sha256": "26215c957f1af4a081e2340fd97c7e5ebeab1ea41bc6610642f35c2eefcde444"
     }
-  ]
+  ],
+  "ci": {
+    "id": 43121694236,
+    "event": "push",
+    "head": "05e955fadd58ab162f3fce04d0370efff143d071",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43121694236"
+  },
+  "repository_rest_calls": 6,
+  "finalized_at": "2026-11-12T00:02:23.696648+00:00",
+  "blockers": []
 }

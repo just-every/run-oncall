@@ -15,13 +15,13 @@
       "exit": 0,
       "response": [
         {
-          "conclusion": null,
+          "conclusion": "success",
           "event": "push",
           "head_sha": "05e955fadd58ab162f3fce04d0370efff143d071",
           "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121694236",
           "id": 43121694236,
           "name": "Verify",
-          "status": "in_progress"
+          "status": "completed"
         }
       ]
     },
@@ -46,16 +46,27 @@
         "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121694236",
         "status": "in_progress"
       }
+    },
+    {
+      "at": "2026-11-12T00:01:53.947350+00:00",
+      "endpoint": "repos/just-every/run-oncall/actions/runs/43121694236",
+      "exit": 0,
+      "response": {
+        "conclusion": "success",
+        "head_sha": "05e955fadd58ab162f3fce04d0370efff143d071",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121694236",
+        "status": "completed"
+      }
     }
   ],
   "verify": {
-    "conclusion": null,
+    "conclusion": "success",
     "event": "push",
     "head_sha": "05e955fadd58ab162f3fce04d0370efff143d071",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121694236",
     "id": 43121694236,
     "name": "Verify",
-    "status": "in_progress"
+    "status": "completed"
   },
   "main_runs": [
     {
@@ -104,5 +115,5 @@
       "status": "completed"
     }
   ],
-  "status": "waiting_for_registration"
+  "status": "success"
 }
