@@ -43,7 +43,8 @@ export async function assertInstallationChecklist(report) {
 export async function readinessHealth(deployment) {
  const {localWorker}=await import('./worker.mjs');
  const {randomBytes,createHash}=await import('node:crypto');
- const runtime=await localWorker({RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint},{clock:true,outboundLedger:true});
+ const runtime=await localWorker({RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint},{clock:true,outboundLedger:true,fetchSource:`let providerMode='normal',providerCalls=[],pkceChallenge='',pkceValid=true,revoked=false;
+ globalThis.fetch=async(input)=>{providerCalls.push(String(input instanceof Request?input.url:input));throw Error('Unexpected readiness outbound call');};`});
  try {
   const at=Date.now();await runtime.time(at);
   const setup=await runtime.request('/api/setup',{name:'synthetic-oncall-540',password:'synthetic-oncall-540-password'});assert.equal(setup.status,200);
@@ -125,6 +126,7 @@ export async function readinessHealth(deployment) {
   await value('/api/command',{type:'member',id:roles.viewer.member.id,role:'viewer',active:false});assert.equal((await call('/api/readiness',undefined,roles.viewer.cookie)).status,401);
   await runtime.time(at+13*3600000);assert.equal((await call('/api/readiness',undefined,roles.responder.cookie)).status,401,'expired sessions cannot inspect readiness');
   assert.deepEqual(await runtime.outboundRequests(),[],'readiness and fixture setup make zero outbound requests at the Worker network edge');
+  const network=await runtime.request('/__provider_calls');assert.equal(network.status,200);assert.deepEqual(network.value.calls,[],'readiness and setup/state changes make zero outbound calls');
   console.log('PROBE OC-044 acceptance 1 checklist: protected GET /api/readiness -> every US dependency matches release matrix and actual field register; account steps remain not done; populated queued-work reads preserve all durable tables and revisions with zero outbound requests');
   console.log('PASS OC-054 readiness: release identity, closed matrix states, dynamic source/revocation observations; independent durable signals, zero-write reads, public-door queued delivery/refused intake/overdue deadline; isolated 503 and restored signal; admin/responder/viewer access and signed-out/stakeholder/expired/revoked refusal; storage never proves pager coverage; zero outbound calls');
  } finally {await runtime.close();}
