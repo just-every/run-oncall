@@ -1,3 +1,4 @@
+import {savedEmailBundle} from './email-fixtures.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
@@ -5,6 +6,7 @@ import {readFile,mkdir} from 'node:fs/promises'
 import {selectRoutedSource,openIncidentAction,focusWorkspace,openWorkspaceSection,routingBrowser,openHistoryComparison,keyboardUser} from './keyboard.mjs'
 import {randomBytes,randomUUID} from 'node:crypto'
 import AxeBuilder from '@axe-core/playwright'
+import {expect} from '@playwright/test'
 import assert from 'node:assert/strict'
 // product-import-browser: part of this public journey.
 export async function productImport(page,context,width,session,proof) {
@@ -75,6 +77,7 @@ export async function productImport(page,context,width,session,proof) {
   await page.getByText(/^Erased\. Receipt /).waitFor();assert.equal(await person.count(),0,'the erased person leaves the paused data list')
   await incumbentActivation(page,context,width)
   await reconciliationJourney(page,context,session)
+  await plainMoveInReview(page,context,session)
 }
 
 async function incumbentActivation(page,context,width) {
@@ -89,8 +92,13 @@ async function incumbentActivation(page,context,width) {
  }
  const panel=page.getByRole('region',{name:'Activate imported integration Synthetic browser integration '+width,exact:true}),key='synthetic-oncall-incumbent-browser-'+width
  await panel.waitFor();await panel.getByLabel('Incumbent integration key',{exact:true}).fill(key)
+ // Supplying the key reloads the imported row, whose new revision starts an
+ // incumbent reread. The supplied text precedes that second busy cycle.
+ const supplied=page.waitForRequest(request=>new URL(request.url()).pathname==='/api/intake/incumbent'&&request.method()==='POST')
+ const reread=page.waitForResponse(async response=>response.request().method()==='GET'&&new URL(response.url()).pathname==='/api/intake/sources/'+encodeURIComponent((await supplied).postDataJSON().id)+'/incumbent')
  await panel.getByRole('button',{name:'Supply incumbent key · leave inactive',exact:true}).click()
  await panel.getByText(/Incumbent key supplied; never shown again/).waitFor()
+ const incumbent=await reread;assert.equal(incumbent.status(),200);assert.equal(await incumbent.finished(),null)
  assert.equal(await panel.getByLabel('Incumbent integration key',{exact:true}).inputValue(),'')
  assert.ok(!(await page.content()).includes(key),'incumbent key does not reappear in the document')
  await panel.screenshot({path:`${directory}/incumbent-inactive-${width}.png`})
@@ -414,6 +422,77 @@ export async function reconciliationJourney(page,context,session) {
 }
 
 
+// Plain review explanations extend the existing move-in journey, with assertions
+// at 1440 and screenshots of the same two states at both supported widths.
+export async function plainMoveInReview(page,context,session) {
+ const origin=new URL(page.url()).origin,viewport=page.viewportSize()
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
+ await mkdir(directory,{recursive:true});await page.setViewportSize({width:1440,height:1000})
+ const request=async(path,data)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data})
+  assert.ok(response.ok(),`${path}: ${response.status()}`);return response.json()
+ }
+ const person={id:'synthetic-oncall-1901',name:'Riley Chen',email:'riley-review@example.test'}
+ const schedule={id:'synthetic-oncall-1902',name:'Customer support weekly',time_zone:'UTC',schedule_layers:[{name:'Weekly coverage',start:'2026-10-12T09:00:00Z',rotation_virtual_start:'2026-10-12T09:00:00Z',rotation_turn_length_seconds:604800,users:[{user:{id:person.id}}]}]}
+ const service={id:'synthetic-oncall-1903',name:'Customer support',support_hours:{type:'fixed_time_per_day'}}
+ const bundle={users:[person],schedules:[schedule],services:[service]}
+ const before=await request('/api/move-in/objects'),nativeBefore=await request('/api/paging/state')
+ await fileSource(page,'pagerduty')
+ const [planned]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/operator/import/plan'),page.getByLabel('Export JSON',{exact:true}).setInputFiles({name:'synthetic-oncall-1901.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))})])
+ const plan=await planned.json();assert.equal(planned.status(),200)
+ await page.getByRole('heading',{name:'Compatibility review',exact:true}).waitFor()
+ const review=page.locator('.move-in-step')
+ const rawLabels=/related[-_]users|not-supplied|equivalent-in-window|(?:^|\n)(?:backup|final_schedule|schedule_layers|support_hours):|\b[a-z]+_[a-z_]+\b|pagerduty:synthetic-oncall-/i
+ assert.doesNotMatch(await review.innerText(),rawLabels,'review explains differences without import field names, status enums or target keys')
+ const scheduleReview=review.locator('.move-in-review > li').filter({hasText:schedule.name})
+ assert.ok((await scheduleReview.innerText()).includes(person.name),'source references resolve to the exported person’s name')
+ assert.ok(!(await scheduleReview.innerText()).includes(person.email),'known people are named rather than identified by their email key')
+ assert.deepEqual(await request('/api/move-in/objects'),before,'review remains zero-write for native imported objects')
+ assert.deepEqual(await request('/api/paging/state'),nativeBefore,'review does not adopt or activate coverage')
+ await context.grantPermissions(['clipboard-read','clipboard-write'])
+ await review.getByRole('button',{name:'Copy details',exact:true}).click()
+ await review.getByRole('status').waitFor()
+ const copied=JSON.parse(await page.evaluate(()=>navigator.clipboard.readText()))
+ assert.deepEqual(copied,plan,'support copy preserves the complete original review, fingerprint, internal differences and values')
+ const capture=async(state)=>{
+  for(const width of [1440,390]) {
+   await page.setViewportSize({width,height:1000})
+   await page.screenshot({path:`${directory}/plain-move-in-${state}-${width}.png`,fullPage:true})
+  }
+  await page.setViewportSize({width:1440,height:1000})
+ }
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'review fits the desktop viewport')
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
+ assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[],'review has no serious or critical accessibility violations')
+ await capture('review')
+ await confirmImport(page);await page.getByRole('heading',{name:'Import complete',exact:true}).waitFor()
+ const rows=await request('/api/move-in/objects'),row=rows.find(row=>row.value.sourceId===schedule.id)
+ assert.ok(row);assert.equal(row.value.paused,true)
+ const choices=await request('/api/move-in/adoption')
+ const imported=page.locator('.move-in-objects > li').filter({hasText:schedule.name})
+ await imported.getByRole('button',{name:'Make schedule live',exact:true}).click()
+ const servicePicker=imported.getByLabel('Service for '+schedule.name,{exact:true})
+ if(await servicePicker.count())await servicePicker.selectOption(choices.services[0].id)
+ const memberPicker=imported.getByLabel('Workspace member for '+person.name,{exact:true})
+ if(await memberPicker.count())await memberPicker.selectOption(session.member.id)
+ await imported.getByRole('button',{name:'Confirm live schedule · paging OFF',exact:true}).click()
+ await imported.getByText(/Adopted into/).waitFor()
+ const adopted=await request('/api/paging/state'),objects=await request('/api/move-in/objects')
+ await confirmUndo(page)
+ const failure=page.getByRole('alert');await failure.waitFor()
+ const refusal=await failure.innerText()
+ assert.ok(refusal.includes(schedule.name),'adopted undo refusal names the schedule')
+ assert.doesNotMatch(refusal,/pagerduty:synthetic-oncall-|NATIVE_EDIT_CONFLICT/,'undo explains the conflict without internal keys or codes')
+ assert.deepEqual(await request('/api/move-in/objects'),objects,'refused undo preserves every imported object')
+ assert.deepEqual(await request('/api/paging/state'),adopted,'refused undo preserves live coverage')
+ await page.getByRole('button',{name:'Copy details',exact:true}).click()
+ const support=JSON.parse(await page.evaluate(()=>navigator.clipboard.readText()))
+ assert.ok(support.objects.some(object=>object.id===row.targetId&&object.name===schedule.name),'undo support copy retains the target key beside its name')
+ await capture('undo')
+ await page.setViewportSize(viewport)
+ console.log('PASS plainMoveInReview: saved PagerDuty review without raw labels; exact support copy; named adopted undo; zero preview writes and preserved live coverage; 1440 assertions and 1440/390 proof')
+}
+
 // product-schedule-browser: part of this public journey.
 // Extend this journey: pending valid answers retain coverage, but cannot be saved.
 async function retainPreview(page, change, submit) {
@@ -488,10 +567,12 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  let state=await api('/api/state');
  let second=state.members.find(member=>member.active&&member.id!==session.member.id&&['admin','responder'].includes(member.role));
  if(!second){const response=await context.request.post(origin+'/api/members',{headers:{origin},data:{name:'Schedule colleague '+width,role:'responder',password:'synthetic-schedule-colleague-password'}});assert.equal(response.status(),201);second=await response.json();}
- const anchor=new Date(now-86400000).toISOString().slice(0,10)+'T09:00';
+ const reliefResponse=await context.request.post(origin+'/api/members',{headers:{origin},data:{name:'Rosalind Campbell '+width,role:'responder',password:'synthetic-oncall-7301-password'}});assert.equal(reliefResponse.status(),201);const relief=await reliefResponse.json();
+ const anchor=new Date(now-86400000).toISOString().slice(0,10)+'T12:00';
  // OC-020 / OC-011: both rota rows are visible together; a four-step weekly create agrees with its zero-write preview.
  const fixtures=[];
- for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(now-2*86400000).toISOString(),validUntil:null,primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[]}));
+ for(const index of [0,1])fixtures.push(await api('/api/paging/schedules',{id:'rota-'+crypto.randomUUID().replaceAll('-','').slice(0,8),name:['Primary service rota','Secondary service rota'][index],service:state.services[index%state.services.length].id,revision:0,timezone:'UTC',validFrom:new Date(now-2*86400000).toISOString(),validUntil:null,primary:{anchorLocal:anchor,periodDays:7,members:[session.member.id,second.id],ambiguity:'earlier'},backup:{anchorLocal:anchor,periodDays:7,members:[second.id,session.member.id],ambiguity:'earlier'},overrides:[{id:'synthetic-oncall-7302',role:'primary',start:new Date(now+2*86400000).toISOString(),end:new Date(now+2.5*86400000).toISOString(),member:relief.id}]}));
+ await rotaTimelineScreens(page,width,fixtures[0].id,relief.name);
  await page.goto(origin+'/on-call');
  const onCall=await api('/api/on-call');
  for(const fixture of fixtures){const row=page.locator('[data-rota="'+fixture.id+'"]');await row.waitFor();const coverage=onCall.rotas.find(rota=>rota.id===fixture.id);assert.ok((await row.innerText()).includes(coverage.now.primary.name));assert.ok((await row.innerText()).includes(coverage.next.primary.name));assert.ok((await row.innerText()).includes(coverage.now.backup.name));}
@@ -500,6 +581,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  page.on('response',observe);
  await key.activate(page.locator('.oc-page-head').getByRole('link',{name:'New rota',exact:true}));
  if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
+ if(width===1440){
+  const name=page.getByLabel('Rota name',{exact:true});await name.fill('');await page.getByRole('button',{name:'Continue',exact:true}).click();
+  const error=name.locator('..').getByRole('alert');await error.waitFor();assert.equal(await name.evaluate(e=>e===document.activeElement),true);assert.equal(await name.getAttribute('aria-describedby'),await error.getAttribute('id'));
+ }
  await key.text(page.getByLabel('Rota name',{exact:true}),'Checkout rota '+width);
  await accessibleState(page,'rota-name',width,page.getByLabel('Rota name',{exact:true}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();
@@ -552,6 +637,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  assert.deepEqual(await api('/api/paging/state'),beforeDismiss,'Escape dismisses cover preparation without saving');
  await key.activate(coverOpener);
  await key.option(cover.getByLabel('Who',{exact:true}),'');await key.option(cover.getByLabel('Role',{exact:true}),'primary');await key.calendar(cover.getByLabel('From',{exact:true}),future.overrideStart);await key.calendar(cover.getByLabel('To',{exact:true}),future.overrideEnd);
+ if(width===1440){
+  const end=cover.getByLabel('To',{exact:true}),value=await end.inputValue();await end.fill('');await cover.getByRole('button',{name:'Review change',exact:true}).click();
+  const error=end.locator('..').getByRole('alert');await error.waitFor();assert.equal(await end.evaluate(e=>e===document.activeElement),true);assert.equal(await end.getAttribute('aria-describedby'),await error.getAttribute('id'));await end.fill(value);
+ }
  await accessibleState(page,'cover-preparation',width,cover.getByRole('button',{name:'Review change',exact:true}));
  const coverBefore=await api('/api/paging/state'),coverReviewResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/schedules/'+id+'/review'&&r.request().method()==='POST');
  await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
@@ -559,6 +648,12 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  const reviewedNames=await cover.getByRole('region',{name:'Coverage change intervals',exact:true}).locator('.scheduling-window > p > strong').allTextContents(),reviewName=id=>id===null?'Coverage gap':coverReview.members.find(member=>member.id===id)?.name??'Unavailable member';
  assert.deepEqual(reviewedNames,[...coverReview.intervals].sort((a,b)=>Number(b.after===null)-Number(a.after===null)||a.start-b.start||a.role.localeCompare(b.role)).slice(0,80).map(interval=>interval.role+': '+reviewName(interval.before)+' → '+reviewName(interval.after)),'the cover review renders every protected before and after assignment');
  assert.deepEqual(await api('/api/paging/state'),coverBefore,'cover review writes nothing');assert.equal(await cover.getByRole('button',{name:'Apply reviewed change',exact:true}).isDisabled(),true);
+ if(width===1440){
+  const apply=cover.getByRole('button',{name:'Apply reviewed change',exact:true}),hint=await apply.getAttribute('aria-describedby');assert.ok(hint);
+  const explanation=cover.locator(`[id="${hint}"]`);await explanation.waitFor();assert.ok((await explanation.innerText()).includes(await cover.getByRole('checkbox').locator('..').innerText()),'Apply names the review checkbox that enables it');
+  assert.equal(await explanation.evaluate((e,id)=>e.previousElementSibling?.getAttribute('aria-describedby')===id,hint),true,'the explanation sits immediately beside Apply');
+  for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await apply.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-cover-review-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ }
  await key.dialog(cover);await accessibleState(page,'cover-review',width,cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}));
  await key.dismiss(cover,coverOpener);assert.deepEqual(await api('/api/paging/state'),coverBefore,'Escape from the review writes nothing');
  await key.activate(coverOpener);await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
@@ -599,6 +694,36 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  if(!selectedOnly){await coverageRulesBrowser(page,context,width,session,{ownerLink});await scheduleCoordinationBrowser(page,context,width,session,{ownerLink});}
  console.log(`PROBE OC-009 schedules, overrides and preview ${width}: native keyboard create, narrow disclosure, cover preparation, review, Escape and confirmation -> protected saved assignments and preview agree; focus, dialog containment, labels, overflow and axe passed`);
 }
+// The existing schedule journey carries the one phone smoke, including both timeline doors.
+export async function rotaTimelineScreens(page,width,id,compactName){
+ const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';
+ await mkdir(directory,{recursive:true});
+ for(const [name,path] of [['overview','/on-call'],['rota','/on-call/'+id]]){
+  await page.goto(origin+path);const bands=page.locator('.oc-bands');await bands.waitFor();
+  await page.evaluate(()=>document.fonts.ready);
+  if(width===390){
+   await bands.locator('.oc-bands-list').waitFor();
+   const people=await bands.locator('li > strong,li > button').allTextContents();
+   assert.ok(people.includes(compactName),'phone timeline retains the entire cover name');
+   assert.ok(await bands.locator('li time[datetime]').count()>0,'each phone interval has dated endpoints');
+   assert.deepEqual(await bands.locator('li > strong,li > button,li time').evaluateAll(elements=>elements.filter(element=>{
+    const box=element.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(element);
+    return [...range.getClientRects()].some(rect=>rect.left<box.left-1||rect.right>box.right+1);
+   }).map(element=>element.textContent)),[],'phone names and dates wrap without clipping');
+  }else{
+   await bands.locator('.oc-band-name').first().waitFor();
+   await page.waitForFunction(()=>[...document.querySelectorAll('.oc-band [aria-label]')].some(element=>element.getAttribute('aria-label').startsWith('Rosalind Campbell')&&element.querySelector('.oc-band-name > span:last-child')?.textContent==='R'+element.getAttribute('aria-label').match(/Campbell (\d)/)?.[1]));
+   const chips=await bands.locator('.oc-band [aria-label]').evaluateAll(elements=>elements.map(element=>({label:element.getAttribute('aria-label'),text:element.querySelector('.oc-band-name > span:last-child').textContent,clipped:element.querySelector('.oc-band-name > span:last-child').getBoundingClientRect().width>element.querySelector('.oc-band-name').clientWidth+1})));
+   assert.ok(chips.some(chip=>chip.label.startsWith(compactName)&&chip.text!==compactName),'short cover slices use initials');
+   for(const chip of chips){assert.equal(chip.clipped,false,'a timeline name or its initials fits the chip');assert.match(chip.label,/GMT[+-]\d/,'accessible shift label includes the zoned endpoint times');}
+   const scroll=await bands.locator('.oc-bands-scroll').evaluate(element=>element.scrollWidth>element.clientWidth);
+   if(scroll)assert.equal(await bands.locator('.oc-band-scroll-hint').isVisible(),true,'scrolling timeline advertises more dates');
+  }
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'timeline keeps the page within its viewport');
+  await bands.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/rota-timeline-${name}-${width}.png`,fullPage:true});
+ }
+}
+
 // Pair the next nearby offset changes from the zones themselves, beyond tomorrow.
 export function scheduleReviewWindow(now) {
  const hour=3600000,day=24*hour,zones=['Europe/London','America/New_York']
@@ -735,7 +860,11 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  if(width===1440){assert.equal(await page.locator('.oc-bands [data-time-zone]').getAttribute('data-time-zone'),zone);for(const label of await page.locator('.handoff').allTextContents())assert.ok(label.includes(zone));}
  await capture('rota');
  await page.getByRole('button',{name:'Request a swap',exact:true}).click();const swapSheet=page.getByRole('dialog',{name:'Request a swap',exact:true});await swapSheet.getByLabel('Shift to swap',{exact:true}).waitFor();
- await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
+ const requestSwap=swapSheet.getByRole('button',{name:'Request',exact:true});
+ assert.equal(await requestSwap.isDisabled(),true);const substituteHint=await requestSwap.getAttribute('aria-describedby');assert.ok(substituteHint);await swapSheet.locator(`[id="${substituteHint}"]`).waitFor();
+ const beforeSelection=await api('/api/schedule-coordination');assert.equal(beforeSelection.records.some(row=>row.kind==='swap'&&row.data.schedule===schedule.id),false,'no request is saved without a substitute');
+ for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await requestSwap.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-swap-substitute-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);assert.equal(await requestSwap.isEnabled(),true);assert.equal(await requestSwap.getAttribute('aria-describedby'),null);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
  const swap=(await api('/api/schedule-coordination')).records.find(row=>row.kind==='swap'&&row.data.schedule===schedule.id&&row.data.status==='pending');assert.ok(swap);
  await coordination.getByRole('button',{name:'Approve swap',exact:true}).click();await coordination.getByText(/approval recorded/).waitFor();
  const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:900},timezoneId:'Australia/Brisbane'});
@@ -898,6 +1027,72 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
 export async function triageBulkBrowser(page,context,width){
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const call=async(path,data,status=200)=>{const response=data===undefined?await context.request.get(origin+path):await context.request.post(origin+path,{headers:{origin},data});assert.equal(response.status(),status,path);return response.json();};
+ // Extend the existing bulk journey: all matching retains labels beyond page one.
+ const stormService=(await call('/api/state')).services.find(s=>s.name==='Checkout');
+ const branchService=await call('/api/command',{type:'service',name:'Checkout east branch',environment:'production',owner:(await call('/api/session')).member.id,runbook:[],pager:''});
+ const stormPrefix='Synthetic branch timeout storm',storm=[];
+ for(let n=0;n<50;n++)storm.push(await call('/api/command',{type:'declare',service:n===1?branchService.id:stormService.id,severity:'warning',title:stormPrefix+(n<2?' repeated title':n===49?' long title while the regional dependency is unavailable and customer requests are timing out':' '+n),summary:'Human response to branch timeouts'}));
+ await page.goto(origin+'/incidents');await page.getByLabel('Search incidents',{exact:true}).fill(stormPrefix);await page.getByText('50 matching incidents',{exact:true}).waitFor();
+ await page.getByRole('checkbox',{name:/^Select /}).first().check();await page.getByRole('button',{name:'Select all 50 matching',exact:true}).click();
+ let stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});
+ const stormReason='Investigating all affected branches';
+ await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill(stormReason);
+ await stormBulk.getByRole('button',{name:'Apply to 50 incidents',exact:true}).click();
+ const resultList=stormBulk.getByRole('list',{name:'Bulk operation results',exact:true});
+ await expect(resultList.locator('li')).toHaveCount(50,{timeout:180000});
+ await expect(resultList.locator('[data-bulk-outcome="succeeded"]')).toHaveCount(50);
+ const names=await resultList.locator('strong').allTextContents();assert.deepEqual([...names].sort(),storm.map(i=>i.title).sort(),'each result retains its incident title, including later pages');
+ const duplicated=resultList.locator('li').filter({hasText:storm[0].title});await expect(duplicated).toHaveCount(2);
+ assert.ok((await duplicated.allTextContents()).some(text=>text.includes(branchService.name)),'repeated titles retain their service context');
+ assert.ok((await duplicated.allTextContents()).some(text=>text.includes(stormService.name)&&!text.includes(branchService.name)));
+ await expect(stormBulk.getByRole('status')).toContainText(['50 succeeded · 0 skipped · 0 refused']);
+ const completed=await call('/api/state'),stormOperation=completed.triage.find(row=>row.kind==='bulk'&&row.results.length===50&&row.results.every(r=>storm.some(i=>i.id===r.id)));
+ assert.ok(stormOperation);assert.ok(completed.incidents.filter(i=>storm.some(s=>s.id===i.id)).every(i=>i.state==='acknowledged'&&i.timeline.at(-1).operationId===stormOperation.id),'all 50 changes retain the shared timeline operation id');
+ const displayed=await stormBulk.locator('.bulk-results').innerText();
+ assert.ok(!displayed.includes(stormOperation.id));for(const incident of storm)assert.ok(!displayed.includes(incident.id.slice(0,8)),'no internal incident identity names a result');
+ assert.ok(await resultList.evaluate(list=>list.scrollHeight>list.clientHeight),'a long result list scrolls inside the panel');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await context.grantPermissions(['clipboard-read','clipboard-write']);
+ await stormBulk.getByRole('button',{name:'Copy details',exact:true}).click();await stormBulk.getByText('Details copied',{exact:true}).waitFor();
+ const details=JSON.parse(await page.evaluate(()=>navigator.clipboard.readText()));assert.equal(details.operationId,stormOperation.id);assert.deepEqual(new Set(details.results.map(row=>row.title)),new Set(storm.map(i=>i.title)));
+ const captureBulk=async label=>{for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await stormBulk.screenshot({path:`${directory}/OC-079-${label}-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});};
+ await captureBulk('storm-results');
+ // Re-submit the same public form: the copied operation identity and timelines stay stable.
+ await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill(stormReason);
+ const replay=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/triage/bulk'&&response.request().method()==='POST');
+ await stormBulk.getByRole('button',{name:'Apply to 50 incidents',exact:true}).click();assert.equal((await replay).status(),200);
+ await expect(resultList.locator('li')).toHaveCount(50);await expect(stormBulk.getByRole('button',{name:'Apply to 50 incidents',exact:true})).toBeEnabled();
+ assert.deepEqual((await call('/api/state')).incidents,completed.incidents,'operation replay makes no second change');
+ await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();
+ // A live revision conflict is attributed to the right title beside a success and an already-acknowledged skip.
+ const mixed=[];for(const suffix of ['stale','fresh'])mixed.push(await call('/api/command',{type:'declare',service:stormService.id,severity:'warning',title:stormPrefix+' '+suffix,summary:'Review mixed bulk outcomes'}));
+ await page.reload();await page.getByLabel('Search incidents',{exact:true}).fill(stormPrefix);await page.getByText('52 matching incidents',{exact:true}).waitFor();
+ // The shared journey may freeze time, so equal-created incidents can land on either cursor page.
+ while(await page.locator('.triage-item').count()<52){const loaded=await page.locator('.triage-item').count();await page.getByRole('button',{name:'Load more incidents',exact:true}).click();await expect(page.locator('.triage-item')).toHaveCount(Math.min(52,loaded+25));}
+ await page.getByLabel('Select '+mixed[0].title,{exact:true}).check();await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();
+ // Select one acknowledged row without relying on a duplicate title's identity.
+ await page.getByRole('checkbox',{name:'Select '+storm[49].title,exact:true}).check();
+ stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});
+ await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Review changed and already acknowledged branches');
+ let raced=false;const race=async route=>{if(!raced){raced=true;await call('/api/command',{type:'note',incident:mixed[0].id,revision:mixed[0].revision,text:'Another responder updated this incident'});}await route.continue();};
+ await page.route('**/api/triage/bulk',race);
+ try{await stormBulk.getByRole('button',{name:'Apply to 3 incidents',exact:true}).click();await expect(stormBulk.getByRole('list',{name:'Bulk operation results'}).locator('li')).toHaveCount(3,{timeout:60000});await expect(stormBulk.getByRole('button',{name:'Apply to 3 incidents',exact:true})).toBeEnabled();}finally{await page.unroute('**/api/triage/bulk',race);}
+ const mixedResults=stormBulk.getByRole('list',{name:'Bulk operation results'});
+ await expect(mixedResults.locator('[data-bulk-outcome="succeeded"]')).toHaveCount(1);await expect(mixedResults.locator('[data-bulk-outcome="skipped"]')).toHaveCount(1);await expect(mixedResults.locator('[data-bulk-outcome="refused"]')).toHaveCount(1);
+ await expect(stormBulk.getByRole('status')).toContainText(['1 succeeded · 1 skipped · 1 refused']);
+ const stale=mixedResults.locator('li').filter({hasText:mixed[0].title});assert.match(await stale.innerText(),/changed.*reload.*select/is,'a stale refusal explains how to recover');
+ assert.match(await mixedResults.locator('li').filter({hasText:storm[49].title}).innerText(),/already.*acknowledged/is);
+ const mixedState=await call('/api/state');assert.equal(mixedState.incidents.find(i=>i.id===mixed[0].id).state,'declared');assert.equal(mixedState.incidents.find(i=>i.id===mixed[1].id).state,'acknowledged');
+ await captureBulk('mixed-results');
+ await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();
+ // Same-value priority is a successful server no-op, displayed as skipped rather than changed.
+ await page.getByLabel('Search incidents',{exact:true}).fill(mixed[1].title);await page.getByText('1 matching incidents',{exact:true}).waitFor();
+ await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await stormBulk.getByLabel('Bulk action',{exact:true}).selectOption('set-priority');await stormBulk.getByLabel('Bulk priority',{exact:true}).selectOption('P2');await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Coordinate the same priority');await stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true}).click();await expect(stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true})).toBeEnabled();
+ await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await stormBulk.getByLabel('Bulk action',{exact:true}).selectOption('set-priority');await stormBulk.getByLabel('Bulk priority',{exact:true}).selectOption('P2');await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Review unchanged priority');
+ const beforeNoop=(await call('/api/state')).incidents.find(i=>i.id===mixed[1].id);
+ await stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true}).click();await expect(stormBulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="skipped"]')).toHaveCount(1);await expect(stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true})).toBeEnabled();assert.deepEqual((await call('/api/state')).incidents.find(i=>i.id===mixed[1].id),beforeNoop);
+ await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();
+ console.log('PROBE OC-079 bulk result titles: 50 all-matching acknowledgments retain titles and service context, shared timeline operation id, hidden/copyable diagnostic identity, bounded scrolling, unchanged replay and named mixed success/skipped/stale refusal; 1440 assertions, 1440/390 screen proof');
  const state=await call('/api/state'),service=state.services.find(s=>s.name==='Checkout'),prefix='Synthetic bulk '+(width===1440?'desktop':'phone');
  const make=async title=>call('/api/command',{type:'declare',service:service.id,severity:'warning',title,summary:'Human response evidence'});
  let a=await make(prefix+' first'),b=await make(prefix+' second'),target=await make(prefix+' target');
@@ -916,7 +1111,7 @@ export async function triageBulkBrowser(page,context,width){
   await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();
   if(refreshing){await refreshing;assert.equal(await page.getByLabel('Select '+a.title,{exact:true}).isDisabled(),true,'post-save triage refresh keeps stale row revisions unselectable');}
  }finally{releaseRefresh();await Promise.all(heldRefreshes);if(width===1440)await page.unroute('**/api/triage?*',holdRefresh);}
- await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();await selectSources();bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('merge');await bulk.getByLabel('Merge target',{exact:true}).selectOption(target.id);await bulk.getByLabel('Bulk action reason',{exact:true}).fill('One response owns the common failure');await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();await bulk.getByText(/saved · revision/).first().waitFor();
+ await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();await selectSources();bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('merge');await bulk.getByLabel('Merge target',{exact:true}).selectOption(target.id);await bulk.getByLabel('Bulk action reason',{exact:true}).fill('One response owns the common failure');await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();await expect(bulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="succeeded"]')).toHaveCount(2);
  await bulk.screenshot({path:`${directory}/OC-079-merge-${width}.png`});await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();
  const source='synthetic-oncall-'+(6600+width),key=randomBytes(32).toString('hex');await call('/api/sources',{id:source,key,scopes:[service.id]});
  for(let n=0;n<2;n++){
@@ -1046,12 +1241,21 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
   assert.equal(rule.mode,'support-hours');assert.equal(rule.timezone,'America/New_York');
   assert.deepEqual(rule.weekly,[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})));
   assert.deepEqual(rule.holidays,[]);assert.equal(rule.inside,'high');assert.equal(rule.outside,'low');
-  // Leave Settings and finish its sample requests before measuring alert reads.
-  await page.goto(origin+'/alerts');
+  // Publication does not await the debounced sample. Request the final saved
+  // rule explicitly and finish its work while Settings is still mounted.
+  const finalSample=page.waitForResponse(response=>{
+   if(new URL(response.url()).pathname!=='/api/urgency/preview'||response.request().method()!=='POST')return false;
+   const input=response.request().postDataJSON();
+   return input.service===service&&input.severity==='critical'&&input.at===admittedAt&&JSON.stringify(input.rule)===JSON.stringify({mode:rule.mode,timezone:rule.timezone,weekly:rule.weekly,holidays:rule.holidays,inside:rule.inside,outside:rule.outside,reason:'Sample alert'});
+  });
+  await policy.getByLabel('Sample severity',{exact:true}).selectOption('critical');
+  const preview=await finalSample;assert.equal(preview.status(),200);assert.equal(await preview.finished(),null);
+  await policy.getByRole('status').filter({hasText:'Low urgency'}).waitFor();
   let sampleTimeout;
   try {
    await Promise.race([Promise.all([...samples.values()].map(sample=>sample.done)),new Promise((_,reject)=>{sampleTimeout=setTimeout(()=>reject(Error('Support-hours sample requests did not settle')),30000);})]);
   } finally {clearTimeout(sampleTimeout);}
+  await page.goto(origin+'/alerts');
   page.off('request',trackSample);page.off('requestfinished',settleSample);page.off('requestfailed',settleSample);
   await call('/api/sources',{id:source,key,scopes:[service],mode:'bearer'});
   const event={source,eventId:'synthetic-oncall-572',service,environment:'test',key:'synthetic-oncall-573',generation:'synthetic-oncall-574',intent:'trigger',severity:'warning',title:'New York pre-support warning',observedAt:admittedAt,evidence:''};
@@ -1178,6 +1382,9 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  const external=[];const observe=request=>{if(request.url().startsWith('https://hostile.invalid/'))external.push(request.url())};page.on('request',observe)
  // OC-008: author a runbook containing a link and HTML, then use its copied incident step.
  const runbookText=`https://hostile.invalid/runbook ${hostile}`
+ // Begin this keyboard leg with a real key even when a preceding pointer flow
+ // left focus on the menu's return target. Keep visible-focus assertions intact.
+ await page.keyboard.press('Tab')
  await openWorkspaceSection(page,'services',{keyboard:true})
  await key.activate(page.getByRole('button',{name:'Add service',exact:true}))
  await key.text(page.getByLabel('Service name',{exact:true}),`Literal runbook ${width}`)
@@ -1515,4 +1722,66 @@ async function sharedIncidentLinks(page,context) {
  assert.equal(await page.locator('.detail').count(),0,'a missing shared incident never opens a different incident')
  await back.click()
  await page.waitForURL(url=>url.pathname==='/on-call')
+}
+
+
+// Saved email import is exercised at one width; 390 is visual evidence only.
+export async function importedEmailBrowser(page,context) {
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',origin=new URL(page.url()).origin;
+ await mkdir(directory,{recursive:true});await page.setViewportSize({width:1440,height:1000});
+ const api=async(path,data)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});
+  assert.ok(response.ok(),path+' '+response.status());return response.json();
+ };
+ const session=await api('/api/session');
+ const service='synthetic-oncall-email-browser';
+ await api('/api/command',{type:'service',id:service,name:'Email monitor',environment:'test',owner:session.member.id,runbook:[],pager:''});
+ const screens=async(name)=>{
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'email import fits desktop');
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[]);
+  for(const width of [1440,390]) {
+   await page.setViewportSize({width,height:1000});
+   await page.screenshot({path:`${directory}/email-import-${name}-${width}.png`,fullPage:true,mask:[page.locator('.one-time-secret input')]});
+  }
+  await page.setViewportSize({width:1440,height:1000});
+ };
+ for(const vendor of ['pagerduty','opsgenie']) {
+  const bundle=await savedEmailBundle(vendor);
+  if(vendor==='opsgenie') {
+   const integration={id:'synthetic-oncall-email-browser-refused',name:'Email requiring review',type:'Email'};
+   bundle.integrations.data.push(integration);
+   bundle.integration_actions.push({data:{_parent:integration,create:[],close:[],ignore:[],addNote:[],acknowledge:[{type:'acknowledge',name:'Review this acknowledge rule',order:1,alias:'{{subject}}'}]}});
+  }
+  const before=await api('/api/email');
+  await fileSource(page,vendor);
+  await page.getByLabel('Export JSON').setInputFiles({name:'synthetic-oncall-email-'+vendor+'.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))});
+  await page.getByRole('heading',{name:'Compatibility review',exact:true}).waitFor();
+  const count=vendor==='pagerduty'?8:6;
+  await page.getByText(new RegExp('custom mode, '+count+' converted rules')).waitFor();
+  if(vendor==='opsgenie') {
+   const note=page.locator('.move-in-workspace li div').filter({hasText:'Action Review this acknowledge rule'}).first();
+   await note.getByText('Original settings',{exact:true}).click();
+   assert.match(await note.locator('pre').innerText(),/"type": "acknowledge"/);
+  }
+  assert.deepEqual((await api('/api/email')).addresses,before.addresses,'review creates no address');
+  await screens(vendor+'-report');await confirmImport(page);
+  const panels=page.getByRole('region',{name:'Activate imported email integration',exact:true});
+  const panel=panels.filter({hasText:count+' converted rules'}).filter({hasText:'Inactive email settings'}).last();
+  await panel.waitFor();await panel.getByText(/Inactive email settings; no address and no intake/).waitFor();
+  const select=panel.getByLabel('Service for imported email',{exact:true});await select.selectOption(service);
+  if(vendor==='opsgenie')await panel.getByRole('checkbox').check();
+  await screens(vendor+'-inactive');
+  await panel.getByRole('button',{name:'Activate email integration',exact:true}).click();
+  const confirmation=panel.getByRole('button',{name:'Confirm email activation',exact:true});
+  await confirmation.click();
+  await page.getByLabel('Private email address',{exact:true}).waitFor();
+  const address=await page.getByLabel('Private email address',{exact:true}).inputValue();assert.ok(address.endsWith('@inbound.example.test'));
+  const created=await api('/api/email'),active=created.addresses.find(a=>!before.addresses.some(old=>old.id===a.id));assert.ok(active);
+  assert.equal(active.service,service);assert.equal(created.versions.find(v=>v.address===active.id).version,1);
+  await screens(vendor+'-activated');await page.getByRole('button',{name:'Done',exact:true}).click();
+  assert.ok(!(await page.content()).includes(address),'one-time address leaves the document');
+  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0);
+ }
+ console.log('PASS OC-070 email import browser: mapping reports and original unsupported action, inactive custody, explicit administrator activation and one-time address; assertions at 1440; changed screens captured once at 1440 and 390');
 }

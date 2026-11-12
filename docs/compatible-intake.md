@@ -88,3 +88,17 @@ The owner activity shows outcome, stable receipt ID, delivery count, mode, rule 
 Raw MIME is limited to 512 KiB, depth 12 and 100 MIME parts. Decoded body text/HTML together is limited to 512 KiB. At most 20 attachments, 64 KiB each and 128 KiB total are parsed then discarded; attachment bytes and HTML are never stored or executed. Rules see at most the first 256 KiB of plain text and a 1,000-character subject. Regexes use the existing linear-time RE2 engine with patterns up to 512 characters. Keys are at most 200 characters. An address admits at most 60 new receipts per minute; duplicate deliveries reuse their original receipt. Past that limit one receipt records the engaged limit, and later mail in the same minute is refused without being stored. Saved mail, email receipts and quarantine have their own 1 MB storage allocation, separate from the 1 MB authored-record profile, so received mail can never refuse a human write. The installation also enforces its 10,000-receipt capacity; capacity/storage failure refuses delivery rather than confirming success. The 10,000-receipt count is a local limit; it becomes a hosted capacity only under OC-073.
 
 Addresses, versioned rules, saved plain-text samples, receipts and quarantine join the portable archive. Restore removes all address keys, marks every address inactive and replays no email. **Erase saved mail and quarantine** deletes those source copies, revokes the address and fences older native/checkpoint/portable archives; operational alert history and permanent pseudonymous audit remain. Permanent audit commits in the same D1 batch as creation, rotation, revocation, edits and accepted/refused mail, and contains no subject, body, sender, address or key. Retained local tests fake only the provider-delivery edge; a dated, named-SHA real-provider journey is recorded separately in CONTRACT and ACCEPTANCE.
+
+
+### Imported email settings
+
+PagerDuty and Opsgenie saved email settings use the same inactive move-in
+custody as compatible integrations. Review their converted rules and every
+retained original in Move in, choose a service, and explicitly activate as an
+administrator. This creates a private address and its first rule version via
+the existing email management door; importing a file alone never receives mail.
+Unsupported rules block activation. Discard-to-quarantine differences require
+explicit review. See [Saved email settings](move-in.md#saved-email-settings).
+Activation protects the native edit from import undo. Native permanent email
+erasure removes its imported custody as well. Paging remains OFF; saved-file
+proof grants no provider, account or cutover authority.

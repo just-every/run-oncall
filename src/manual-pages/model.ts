@@ -7,7 +7,7 @@ const responsive=(state:State,id:string)=>state.members.some(m=>m.id===id&&m.act
 export function assignmentRule(state:State,service:string):AssignmentRule {
   return state.services.find(s=>s.id===service)?.userAssignments?.at(-1)??{version:0,mode:'escalate',minutes:10,policy:service,by:'',at:'1970-01-01T00:00:00.000Z'};
 }
-function targets(state:State,input:any,service:string,context:PolicyContext,required:boolean):ResponseTarget[] {
+export function responseTargets(state:State,input:any,service:string,context:PolicyContext,required:boolean):ResponseTarget[] {
   if(input.policy&&input.users?.length)fail('Choose named users or one policy, not both');
   if(input.policy){const policy=context.policies.find(p=>p.service===input.policy);if(!policy)fail('Choose an existing escalation policy');return [{kind:'policy',id:policy.service,policyRevision:policy.revision}];}
   if(input.users!==undefined&&(!Array.isArray(input.users)||input.users.length>100||new Set(input.users).size!==input.users.length))fail('Choose up to 100 distinct responders');
@@ -35,7 +35,7 @@ export function manualCommand(state:State,actor:Member,input:any,at:string,conte
     const fingerprint=JSON.stringify({service:input.service,title:input.title,incidentType:input.incidentType??'',severity:input.severity,description:input.description??input.summary??'',urgency:input.urgency??'',priority:input.priority??null,users:input.users??[],policy:input.policy??''});
     const prior=state.incidents.find(i=>i.manualPage?.creator===actor.id&&i.manualPage.operation===operation);
     if(prior){if(prior.manualPage!.fingerprint!==fingerprint)fail('Operation ID already names different page input',409);return prior;}
-    const chosen=targets(state,input,service.id,context,false),rule=service.urgencyRules?.at(-1);
+    const chosen=responseTargets(state,input,service.id,context,false),rule=service.urgencyRules?.at(-1);
     const urgency=input.urgency||(!rule||rule.mode==='severity'?'high':serviceUrgency(state,service.id,input.severity,at).urgency);
     if(!['high','low'].includes(urgency))fail('Choose high or low urgency');
     if(input.priority&& !['P1','P2','P3','P4','P5'].includes(input.priority))fail('Choose a priority');
@@ -51,7 +51,7 @@ export function manualCommand(state:State,actor:Member,input:any,at:string,conte
   if(incident.state==='resolved')fail('Responder requests require an open incident',409);
   let detail='';
   if(input.type==='request-responders') {
-    const chosen=targets(state,input,incident.service,context,true),message=text(input.message,'Responder request message',3000);
+    const chosen=responseTargets(state,input,incident.service,context,true),message=text(input.message,'Responder request message',3000);
     const rows=incident.responderRequests??=[];if(rows.length+chosen.length>500)fail('Responder request history capacity reached',429);
     for(const target of chosen)rows.push({id:crypto.randomUUID(),requester:actor.id,message,at,status:'pending',response:null,notice:null,obligation:obligation(actor,target,incident.urgency??'high',at,'Responder request pending; no sender')});
     detail=`Requested ${chosen.map(t=>t.kind+' '+t.id).join(', ')}: ${message}; recorded only, paging OFF`;

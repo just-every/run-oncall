@@ -5,6 +5,7 @@ import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption,consentRevocationMatrix} from './agent-door-runtime.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
+import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
 import specialist from './oncall-agent-native.mjs';
 import {scheduleReplay} from './oncall-agent-schedule-replay.mjs';
@@ -16,7 +17,7 @@ import {changedServiceNameReplay} from './oncall-agent-service-replay.mjs';
 import {auditRows} from '../src/modules/agent-door/conformance/audit-pages.mjs';
 import {droppedReassignmentReplay} from './oncall-agent-incident-replay.mjs';
 import {changedReassignmentReasonConflict} from './oncall-agent-incident-replay.mjs';
-import {changedScribeReasonConflict,droppedScribeAssignmentReplay} from './oncall-agent-role-replay.mjs';
+import {changedScribeReasonConflict,droppedScribeAssignmentReplay,droppedRoleAssignmentReplay} from './oncall-agent-role-replay.mjs';
 import {changedCommunicationsReasonConflict,droppedCommunicationsAssignmentReplay} from './oncall-agent-communications-replay.mjs';
 import {scopedSurface} from '../src/modules/agent-door/conformance/subset.mjs';
 import {nativeTransport} from './oncall-agent-transport.mjs';
@@ -363,7 +364,9 @@ async function changedArgumentConflicts(runtime){
 
 /** Aged native MCP outcomes survive short-lived credential and policy renewal. */
 async function agedReplayRetention(){
- const started=Date.UTC(2026,10,4,12),day=24*60*60*1000;
+ // Keep bootstrap sessions current for D1's wall-clock expiry checks while
+ // retaining whole-second claims and advancing the platform clock to age calls.
+ const started=Math.floor(Date.now()/3600000)*3600000,day=24*60*60*1000;
  for(const [mode,policy,disposition] of [['autonomous',autonomousPolicy(),'autonomous'],['held',heldPolicy(),'review']]){
   // Each policy has an isolated emitted Worker and actual D1 custody. Advancing
   // this platform clock ages real calls, rather than inserting synthetic rows.
@@ -665,9 +668,12 @@ async function staleCoordinationRevision(runtime){
  }
  assert.equal((await adopt()).status,200);
 }
+await (await import('./oncall-agent-alerts.mjs')).alertReads();
+await (await import('./oncall-agent-analytics.mjs')).analyticsReads();
+await (await import('./oncall-agent-triage.mjs')).triageReads();
 await agedReplayRetention();
 
-const runtime=await agentRuntime();
+const runtime=await agentRuntime({clock:null});
 const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.body?.error?.data?.code;
 try{
  const {tool,mcp,http,adopt}=runtime;
@@ -737,6 +743,7 @@ try{
  await droppedNoteReplay(runtime);
  await droppedReassignmentReplay(runtime);
  await droppedScribeAssignmentReplay(runtime);
+ await droppedRoleAssignmentReplay(runtime,'commander','Commander');
  await droppedCommunicationsAssignmentReplay(runtime);
  await changedArgumentConflicts(runtime);
  await changedServiceNameReplay(runtime);
@@ -748,6 +755,8 @@ try{
  await staleCoordinationRevision(runtime);
  // Resolve native targets before any policy disposition; cached outcomes
  // still require current policy, scopes and live native record authority.
+ await manualPageClassification(runtime);
+ await deadlineClassification(runtime);
  const owner=(await (await http('/api/workspace')).json()).member;
  // Create real coordination work under the held policy. Retained pending work
  // must remain a person's decision even if the company later allows autonomy.

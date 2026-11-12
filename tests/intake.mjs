@@ -2,10 +2,10 @@ import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {durableSnapshot,localWorker,ownerDoor} from './worker.mjs'
 import {readFile} from 'node:fs/promises'
-import {localPart,mail,recoveryRules} from './email-fixtures.mjs'
+import {localPart,mail,recoveryRules,importedEmailSettings} from './email-fixtures.mjs'
 // One real emitted-Worker journey. Provider request bodies are synthetic test
 // inputs built to their documented protocols; no live-sender claim is made.
-const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
+const w=await localWorker({INBOUND_EMAIL_DOMAIN:'inbound.example.test'},{clock:true,outboundLedger:true}),ok=(r,status=200)=>{assert.equal(r.status,status,JSON.stringify(r.value));return r.value};
 const keys={pd:randomBytes(32).toString('hex'),og:randomBytes(32).toString('hex'),sp:randomBytes(32).toString('hex'),other:randomBytes(32).toString('hex')};
 let cookie;
 const request=(path,data)=>w.request(path,data,cookie);
@@ -103,6 +103,7 @@ try {
   assert.deepEqual(afterCustomReplay.alerts,customState.alerts,'message retry cannot reopen or replace the stopped obligation');
   assert.deepEqual(afterCustomReplay.incidents,customState.incidents,'message retry changes no human incident');
   console.log('PASS OC-033 custom email: distinct failure messages open and deduplicate one generation and canonical recorded obligation; resolve stops it by source recovery, keeps the declared incident open and creates no production delivery receipt. Paging remains OFF.');
+  await importedEmailSettings({w,request,cookie,actor,ok});
   const original=ok(await request('/api/state'));
   const nativeKey=randomBytes(32).toString('hex');ok(await request('/api/sources',{id:'native',key:nativeKey,scopes:['payments']}));
   const native={source:'native',eventId:'held-trigger',service:'payments',environment:'production',key:'held',generation:'held-cycle',intent:'trigger',severity:'critical',title:'Held native observation',observedAt:'2026-10-01T00:00:00Z',evidence:''};
