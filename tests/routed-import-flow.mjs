@@ -50,7 +50,9 @@ export async function routedImportedKeys() {
     const path=vendor==='opsgenie'?action==='recover'?`/v2/alerts/${alias}/close?identifierType=alias`:'/v2/alerts':`/integrations/generic/20131114/alert/${credential}/synthetic-oncall-${route===0?'521':'522'}`
     return w.send(path,JSON.stringify(body),{'content-type':'application/json',...(vendor==='opsgenie'?{authorization:'GenieKey '+credential}:{})})
    }
-   const deniedBefore=await state();ok(await send('trigger'),401)
+   const deniedBefore=await state();
+   const native={id,name:'Synthetic direct key',provider:vendor,scope:[targetA,targetB],owner:actor.id,revision:0,key};
+   ok(await req('/api/routing/keys',native),409);ok(await req('/api/intake/sources',{id,name:native.name,provider:vendor,service:targetA,revision:0,key}),409);ok(await send('trigger'),401)
    assert.deepEqual((await state()).intakeReceipts,deniedBefore.intakeReceipts)
    assert.equal(((await state()).intakeSources??[]).some(source=>source.id===id),false)
    const input={importedId:row.targetId,importedRevision:row.revision,id,name:'Synthetic reviewed '+vendor,revision:0,key,routing:{scope:[targetA,targetB],targets:{'synthetic-oncall-511':targetA,'synthetic-oncall-512':targetB},owner:actor.id,confirmed:true}}
@@ -68,7 +70,7 @@ export async function routedImportedKeys() {
    const activate='/api/intake/sources/'+id+'/activate-incumbent'
    ok(await req(activate,{revision:supplied.source.revision,confirmed:true},responder),403)
    ok(await req(activate,{revision:supplied.source.revision,confirmed:false}),409)
-   const active=ok(await req(activate,{revision:supplied.source.revision,confirmed:true}));assert.equal(active.source.active,true)
+   let active=ok(await req(activate,{revision:supplied.source.revision,confirmed:true}));assert.equal(active.source.active,true)
    ok(await send('trigger'),vendor==='opsgenie'?202:200);ok(await send('trigger',1),vendor==='opsgenie'?202:200)
    let s=await state(),alerts=s.alerts.filter(alert=>alert.source==='intake:'+id&&alert.key==='synthetic-oncall-shared')
    assert.equal(alerts.length,2);assert.equal(new Set(alerts.map(a=>a.generation)).size,2);assert.deepEqual(alerts.map(a=>a.service),[targetA,targetB])
@@ -95,6 +97,12 @@ export async function routedImportedKeys() {
    assert.equal(ok(await door.call(vendor,'reconcile',{planId:preview.planId})).ok,true,'key review and activation preserve import reconciliation')
    await w.stop();await w.start()
    ok(await send('trigger',0,'synthetic-oncall-after-restart',active.nativeKey),vendor==='opsgenie'?202:200)
+   const originalNative=active.nativeKey,rotatedKey='synthetic-oncall-replacement-key-'+vendor+'-501';
+   const rotated=ok(await req('/api/routing/keys',{id,name:active.source.name,provider:vendor,scope:active.source.routing.scope,owner:actor.id,revision:active.source.revision,key:rotatedKey}));
+   assert.deepEqual(rotated.imported,active.source.imported);active={source:rotated,nativeKey:rotatedKey};
+   ok(await send('trigger',0,'synthetic-oncall-old-native',originalNative),401);ok(await send('trigger',0,'synthetic-oncall-rotated',rotatedKey),vendor==='opsgenie'?202:200);
+   const published=ok(await req('/api/routing/keys/'+id+'/publish',{baseVersion:1,rules:rotated.routing.versions[0].rules,catchAll:null}),201);assert.equal(published.version,2);
+   active.source=(await state()).intakeSources.find(source=>source.id===id);
    const revoked=ok(await req('/api/intake/sources/'+id+'/revoke',{revision:active.source.revision}))
    const beforeRevoke=await state();ok(await send('trigger'),401);ok(await send('trigger',0,'synthetic-oncall-revoked',active.nativeKey),401);assert.deepEqual((await state()).intakeReceipts,beforeRevoke.intakeReceipts)
    const replacement=ok(await req('/api/intake/incumbent',{...input,revision:revoked.revision}))
