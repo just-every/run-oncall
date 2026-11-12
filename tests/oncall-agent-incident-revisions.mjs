@@ -4,7 +4,7 @@ import {agentEffectSnapshot} from './agent-door-runtime.mjs';
 import {autonomousPolicy,heldPolicy} from '../src/modules/agent-door/conformance/crypto.mjs';
 
 /** A stale native reassignment revision diagnoses only an authorized parent. */
-export async function staleReassignmentNativeRevision(runtime){
+export async function staleReassignmentNativeRevision(runtime,optional=false){
  const {db,http,tool,adopt,context}=runtime;
  const read=async path=>{const response=await http(path);assert.equal(response.status,200);return response.json()};
  const command=async input=>{const response=await http('/api/command',input);assert.equal(response.status,200);return response.json()};
@@ -35,8 +35,8 @@ export async function staleReassignmentNativeRevision(runtime){
   assert.deepEqual(incident.alerts,[]);assert.deepEqual(incident.actions,[]);assert.equal(incident.recovery,'');
   const args={change:'reassign',incident:incident.id,revision:incident.revision,member:responder.id,
    reason:'Synthetic literal reassignment reason <keep this text>',idempotency_key:randomUUID()};
-  const staleArgs={...args,revision:incident.revision-1};
-  assert.equal(Object.hasOwn(staleArgs,'expected_revision'),false);
+  const staleArgs={...args,...(optional?{expected_revision:incident.revision-1}:{revision:incident.revision-1})};
+  assert.equal(Object.hasOwn(staleArgs,'expected_revision'),optional);
   const stale=await tool(name,staleArgs);
   assert.equal(stale.status,200);assert.equal(stale.body.error,undefined);assert.equal(stale.result.isError,true);
   const error={code:'revision_conflict',current_revision:incident.revision};
@@ -49,6 +49,7 @@ export async function staleReassignmentNativeRevision(runtime){
   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'revision_conflict');
   assert.equal(refusal.idempotency_key,staleArgs.idempotency_key);assert.equal(refusal.agent.id,context.agentId);assert.equal(refusal.sponsor.id,owner.id);
   assert.deepEqual(refusal.resource,{kind:'incident',id:incident.id});
+  if(optional)args.expected_revision=incident.revision;
   args.revision=stale.result._meta['com.runeditrun/error'].current_revision;args.idempotency_key=randomUUID();
   assert.notEqual(args.idempotency_key,staleArgs.idempotency_key);
   const first=await tool(name,args);
@@ -119,7 +120,7 @@ export async function staleReassignmentNativeRevision(runtime){
    for(const family of ['workspace','paging','handoff'])assert.equal(record[family+'_before'],record[family+'_after'],'Attempt audit never commits another application effect');
   }
   assert.deepEqual(await runtime.outboundRequests(),[],'Reassignment revision refusal, recovery and exact retry attempt zero outbound requests');
-  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' reassignment native revision: stale revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision '+error.current_revision+' in metadata and text, no private result or native effect; fresh key and returned revision -> standard-only '+disposition+', one agent-attributed reassignment, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests');
+  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' reassignment '+(optional?'optional expected revision':'native revision')+': stale revision -> isError revision_conflict and exact authorized current_revision '+error.current_revision+' in metadata and text, no private result or native effect; fresh key and returned revision -> standard-only '+disposition+', one agent-attributed reassignment, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests');
 
   const scoped=await tool('oncall.services.read',{id:'agent-service'},{},credential);
   assert.equal(scoped.result.isError,false);assert.equal(scoped.result.structuredContent.data[0].id,'agent-service');
@@ -127,7 +128,7 @@ export async function staleReassignmentNativeRevision(runtime){
    summary:'Ordinary private coordination',severity:'warning',alerts:[]});
   const privateBefore=await snapshot(),privatePaging=await read('/api/paging/state'),denials=[];
   for(const target of [foreign,{id:'synthetic-oncall-'+randomUUID(),revision:foreign.revision}]){
-   const deniedArgs={...args,incident:target.id,revision:target.revision-1,idempotency_key:randomUUID()};
+   const deniedArgs={...args,incident:target.id,revision:optional?target.revision:target.revision-1,...(optional?{expected_revision:target.revision-1}:{}),idempotency_key:randomUUID()};
    const prior=await audits(),denied=await tool(name,deniedArgs,{},credential);
    assert.equal(denied.status,200);assert.equal(denied.body.error,undefined);assert.equal(denied.result.isError,true);
    assert.deepEqual(denied.result._meta['com.runeditrun/error'],{code:'not_found'});
@@ -141,7 +142,7 @@ export async function staleReassignmentNativeRevision(runtime){
   }
   assert.deepEqual(denials[0],denials[1],'Missing and scoped-out incidents have identical public errors');
   assert.deepEqual(await runtime.outboundRequests(),[]);
-  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' reassignment non-disclosure: valid scoped client with stale native revision against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests');
+  console.log('PROBE BASE-AGENT-012 acceptance 4 '+mode+' reassignment non-disclosure: valid scoped client with stale revision against foreign and missing incidents -> identical not_found, no revision or private result, custody and paging unchanged, zero outbound requests');
  }
  assert.equal((await adopt()).status,200);
 }
