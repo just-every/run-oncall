@@ -10,9 +10,19 @@ export type MatrixRow = {
  observation: {state: 'available' | 'unavailable'; configured: number | null; active: number | null; lastAcceptedAt: string | null} | null;
  limitation: string;
 };
+export type InstallationDependency = {
+ id: string; name: string; clauses: string[]; state: MatrixState;
+ completion: 'not-done' | 'guidance-only';
+ matrix: {id: string; state: MatrixState}[];
+ fieldProof: {id: string; state: 'passed' | 'not run'; date: string | null}[];
+ requirement: string;
+};
+export type InstallationChecklist = {
+ country: 'US'; reviewedOn: string; items: InstallationDependency[];
+};
 export type Readiness = {
  observedAt: string; complete: boolean;
  release: {package: string; version: string; deployment: {sourceSha: string | null; fingerprint: string | null; versionId: string | null}};
- matrix: MatrixRow[]; signals: Signal[];
+ matrix: MatrixRow[]; signals: Signal[]; installation: InstallationChecklist;
  pagerCoverage: {state: 'unproven'; paging: 'off'; reason: string};
 };
