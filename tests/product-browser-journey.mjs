@@ -1,3 +1,4 @@
+import {prepareSplunkRouting} from '../scripts/prepare-routed-splunk.mjs'
 import {pathToFileURL} from 'node:url'
 import {resolve} from 'node:path'
 import {isDeepStrictEqual} from 'node:util'
@@ -74,7 +75,68 @@ export async function productImport(page,context,width,session,proof) {
   await person.getByRole('button',{name:'Erase permanently',exact:true}).click()
   await page.getByText(/^Erased\. Receipt /).waitFor();assert.equal(await person.count(),0,'the erased person leaves the paused data list')
   await incumbentActivation(page,context,width)
+  if(width===1440)await routedImportBrowser(page,context)
   await reconciliationJourney(page,context,session)
+}
+
+export async function routedImportBrowser(page,context) {
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser',origin=new URL(page.url()).origin
+ await mkdir(directory,{recursive:true})
+ const request=async(path,data,status=200)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data})
+  assert.equal(response.status(),status,await response.text());return response.json()
+ }
+ const {member}=await request('/api/session')
+ for(const [id,name] of [['synthetic-oncall-541','Reviewed payments'],['synthetic-oncall-542','Reviewed search']])await request('/api/command',{type:'service',id,name,environment:'test',owner:member.id,runbook:[],pager:''})
+ const capture=async(vendor,stage)=>{
+  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/routed-import-${vendor}-${stage}-${width}.png`,fullPage:true})}
+  await page.setViewportSize({width:1440,height:1000})
+ }
+ for(const vendor of ['opsgenie','splunk']) {
+  let source=JSON.parse(await readFile(`tests/fixtures/synthetic-oncall-${vendor}-routed.json`,'utf8'))
+  if(vendor==='splunk')source=prepareSplunkRouting(source)
+  await fileSource(page,vendor)
+  await page.getByLabel('Export JSON').setInputFiles({name:'synthetic-oncall-routed-'+vendor+'.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(source))})
+  await page.getByRole('heading',{name:'Compatibility review',exact:true}).waitFor()
+  await page.getByText(/Workspace routed key · inactive · incumbent key not supplied/).waitFor()
+  const originals=page.getByText('Original saved routing settings',{exact:true});await originals.first().click()
+  await capture(vendor,'review')
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+  await confirmImport(page)
+  const name=vendor==='opsgenie'?'Synthetic responders router':'Synthetic routing labels'
+  const panel=page.getByRole('region',{name:'Activate imported integration '+name,exact:true});await panel.waitFor()
+  const supply=panel.getByRole('button',{name:'Supply incumbent key · leave inactive',exact:true})
+  assert.equal(await supply.isDisabled(),true,'no inferred targets before review')
+  await panel.getByRole('checkbox',{name:'Reviewed payments',exact:true}).check()
+  await panel.getByRole('checkbox',{name:'Reviewed search',exact:true}).check()
+  await panel.getByLabel('Service for source target Source search',{exact:true}).selectOption('synthetic-oncall-541')
+  await panel.getByLabel('Service for source target Source payments',{exact:true}).selectOption('synthetic-oncall-542')
+  await panel.getByLabel('Routed integration owner',{exact:true}).selectOption(member.id)
+  const key='synthetic-oncall-browser-routed-'+vendor+'-501'
+  await panel.getByLabel('Incumbent integration key',{exact:true}).fill(key)
+  await supply.click()
+  await panel.getByText(/Incumbent key supplied; never shown again/).waitFor()
+  assert.ok(!(await page.content()).includes(key))
+  const rows=await request('/api/move-in/objects'),row=rows.find(row=>row.value.routed&&row.value.vendor===vendor)
+  const id=row.value.intakeSource
+  let status=await request('/api/intake/sources/'+id+'/incumbent');assert.equal(status.source.active,false);assert.equal(status.source.routing.versions[0].version,1)
+  assert.deepEqual(status.source.routing.versions[0].rules.map(rule=>rule.target.service),['synthetic-oncall-541','synthetic-oncall-542'])
+  await capture(vendor,'inactive')
+  await panel.getByRole('button',{name:'Activate integration',exact:true}).click()
+  await panel.getByRole('button',{name:'Confirm activation',exact:true}).click()
+  await panel.getByRole('button',{name:'I saved the Oncall key',exact:true}).click()
+  await panel.getByText(/Active compatible intake/).waitFor()
+  status=await request('/api/intake/sources/'+id+'/incumbent');assert.equal(status.source.active,true)
+  await capture(vendor,'active')
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth))
+  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[])
+  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0)
+  await confirmUndo(page)
+  await page.getByText(/undone/).first().waitFor()
+  const denied=await context.request.post(vendor==='opsgenie'?'/v2/alerts':`/integrations/generic/20131114/alert/${key}/synthetic-oncall-521`,{headers:{...(vendor==='opsgenie'?{authorization:'GenieKey '+key}:{})},data:vendor==='opsgenie'?{alias:'synthetic-oncall-browser',message:'Synthetic alert',responders:[{id:'synthetic-oncall-511'}]}:{message_type:'CRITICAL',entity_id:'synthetic-oncall-browser',state_message:'Synthetic alert'}})
+  assert.equal(denied.status(),401,'undo fences the browser-activated imported credential')
+ }
+ console.log('PASS routedImportBrowser: explicit source-target review, inactive key supply, separate activation and undo fencing at 1440; Opsgenie and Splunk review and activation screens captured at 1440 and 390')
 }
 
 async function incumbentActivation(page,context,width) {

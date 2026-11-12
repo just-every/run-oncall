@@ -14,6 +14,7 @@ export function ImportJournal({jobs,job,busy,select,resume,reconcile,undo}:{jobs
  {job&&<div role="status"><h3>Import journal</h3><p>{label(job)} · {job.checkpoint}/{job.total} source objects processed</p>
  {job.exportedAt&&<p>Export date from filename: {new Date(job.exportedAt).toLocaleDateString([], {month:'short',day:'numeric',year:'numeric'})}</p>}
  {job.comparisons?.map((comparison:string)=><p key={comparison}>Coverage comparison: {comparison}</p>)}
+ {job.moveReports?.map((report:any)=><details key={report.sourceId}><summary>Routing move report · {report.sourceId}</summary>{report.unconverted.map((issue:any,index:number)=><p key={index}>{issue.field}: {issue.reason}</p>)}<details><summary>Original saved routing settings</summary><pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{JSON.stringify(report.original,null,2)}</pre></details></details>)}
  {job.approval&&<details><summary>Approval details</summary><p style={{overflowWrap:'anywhere'}}>{job.approval}</p></details>}
  {resumable(job)&&<button disabled={busy} onClick={resume}>{job.state==='rolling_back'?'Continue rollback':'Resume import'}</button>}
  {job.door&&job.state==='completed'&&<button disabled={busy} onClick={reconcile}>Check imported data</button>}

@@ -10,7 +10,7 @@ import type { CompatibleInput, CompatibleProvider } from './provider-types.ts';
 
 export const intakeProviders = ['pagerduty', 'opsgenie', 'splunk', 'alertmanager', 'grafana', 'datadog', 'native'] as const;
 export type IntakeProvider = typeof intakeProviders[number];
-export type IntakeSource = {id:string;name:string;provider:IntakeProvider;service:string;active:boolean;revision:number;createdBy:string;updatedAt:string;routing?:RoutingDefinition;authentication?:'bearer'|'signed'};
+export type IntakeSource = {id:string;name:string;provider:IntakeProvider;service:string;active:boolean;revision:number;createdBy:string;updatedAt:string;routing?:RoutingDefinition;authentication?:'bearer'|'signed';imported?:{id:string;revision:string}};
 export type IntakeReceipt = CompatibleInput & {id:string;source:string;provider:CompatibleProvider|MonitoringProvider|'native';service:string|null;generation:string|null;event:string|null;alert:string|null;acceptedAt:string;outcome:'opened'|'deduplicated'|'recovered'|'acknowledged'|'noted'|'no-effect'|'unrouted';routing?:RoutingExplanation;routingInput?:Record<string,unknown>;monitoring?:MonitoringMetadata;incomplete?:IncompleteEvidence;native?:{eventId:string;sourceGeneration:string;fingerprint:string}};
 export const intakeSourceIdentity = (source:string) => 'intake:'+source;
 const date = (v:unknown) => typeof v==='string' && /(?:Z|[+-]\d{2}:\d{2})$/i.test(v) && Number.isFinite(Date.parse(v));
@@ -24,7 +24,8 @@ export function validateIntakeArchive(state:State) {
     if(records!==undefined&&(!Array.isArray(records)||records.length>10000||new Set(records.map(r=>r.id)).size!==records.length))fail('Invalid intake archive identities');
   }
   for(const s of state.intakeSources??[]) {
-    fields(s,['id','name','provider','service','active','revision','createdBy','updatedAt'],['routing','authentication']);
+    fields(s,['id','name','provider','service','active','revision','createdBy','updatedAt'],['routing','authentication','imported']);
+    if(s.imported){fields(s.imported,['id','revision']);text(s.imported.id,'Imported integration',200);text(s.imported.revision,'Imported revision',200);if(!s.routing||!['opsgenie','splunk'].includes(s.provider))fail('Invalid routed import binding');}
     if(s.provider==='native'?(!s.routing||!['bearer','signed'].includes(s.authentication??'')):s.authentication!==undefined)fail('Invalid native routed source');
     text(s.id,'Integration ID',80);text(s.name,'Integration name',200);
     if(!intakeProviders.includes(s.provider)||!state.services.some(v=>v.id===s.service)||!state.members.some(v=>v.id===s.createdBy)||typeof s.active!=='boolean'||!Number.isSafeInteger(s.revision)||s.revision<1||!date(s.updatedAt))fail('Invalid intake source');

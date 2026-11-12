@@ -1,3 +1,4 @@
+import {importBinding} from '../intake/import-binding'
 import { auditIdentity, auditOutcome } from '../audit-store'
 import { fail, type State } from '../family/response-operations/domain.ts';
 import { intakeHash } from '../intake/credentials.ts';
@@ -26,13 +27,15 @@ export async function intakeCredential(c:any,deps:IntakeDependencies,key:unknown
   const row=digest?await c.env.DB.prepare('SELECT source,key_digest FROM oc_intake_credentials WHERE key_digest=? UNION ALL SELECT source,key_digest FROM oc_incumbent_credentials WHERE key_digest=?').bind(digest,digest).first():null;
   const source=state.intakeSources?.find(s=>s.id===row?.source);
   if(source)auditIdentity(c.env.DB,{actor:{kind:'intake-source',id:source.id},source:{kind:'intake-source',id:source.id}});
-  if(!source||!source.active||source.provider!==provider||sourceId!==undefined&&source.id!==sourceId) {
+  const bound=source?importBinding(source):undefined;
+  const imported=bound?await c.env.DB.prepare('SELECT 1 AS ok WHERE '+bound.sql).bind(...bound.values).first():null;
+  if(!imported||!source||!source.active||source.provider!==provider||sourceId!==undefined&&source.id!==sourceId) {
     await rejectIntake(c,deps,state,known??source,provider,'Invalid, revoked or wrong-provider credential');
     fail('Invalid integration credential',401);
   }
   return {state,source,digest,key:key as string};
 }
-export const credentialGuard=(source:IntakeSource,digest:string)=>({sql:'(EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=?) OR EXISTS(SELECT 1 FROM oc_incumbent_credentials WHERE source=? AND key_digest=?))',values:[source.id,digest,source.id,digest]});
+export const credentialGuard=(source:IntakeSource,digest:string)=>{const bound=importBinding(source);return {sql:'(EXISTS(SELECT 1 FROM oc_intake_credentials WHERE source=? AND key_digest=?) OR EXISTS(SELECT 1 FROM oc_incumbent_credentials WHERE source=? AND key_digest=?)) AND ('+bound.sql+')',values:[source.id,digest,source.id,digest,...bound.values]}};
 
 export const grafanaCustody:Custody={label:'oncall-grafana-signing-v1',unavailable:'Installation key unavailable for Grafana signing',unreadable:'Grafana signing secret cannot be opened; configure it again'};
 export async function grafanaSigning(c:any,source:IntakeSource) {

@@ -117,3 +117,10 @@ The approving administrator explicitly resumes the saved run to declare the inci
 Each resume reserves a bounded execution lease with a durable uncertain outcome before applying its step. If execution stops, the administrator must explicitly clear the expired lease, inspect the interrupted result and approve another resume. Concurrent actions on one revision return 409. Active or uncertain execution refuses erasure of its referenced subject until the expired lease is cleared.
 
 Service replay includes the proposed ordered `reassign → declare → notify` launch once per generation, with no durable or permanent-audit writes. Restore holds workflow approval and pending runs; it never resumes them. Member or source-alert erasure removes the affected workflow and its personal copies from exports while retaining permanent anonymized audit facts.
+
+
+## Imported Opsgenie and Splunk keys
+
+The [saved routed import review](move-in.md#saved-routed-integrations) converts exact supported conditions into ordered workspace rules. Source team references need explicit existing-service choices by a workspace administrator; they confer no team authority. The first native rule-set version is created on reviewed key supply and intake stays inactive until separate activation. No credential is read from a saved export. Unsupported conditions retain their originals in the move report. Undo and replacement invalidate admission through both key hashes even if an already-retained source definition remains in history. Re-importing the same saved bytes cannot revive those credentials.
+
+After activation, Opsgenie alias and Splunk entity identities are scoped to the selected service. A recovery routed to a closed service is a no-effect receipt naming other services with that identity still open. Oversized compatible requests preserve readable routed alerts and hold the incomplete remainder in unrouted custody with the integration-owner obligation and 202 truncation. These are recorded paging-OFF obligations; no live delivery is claimed.

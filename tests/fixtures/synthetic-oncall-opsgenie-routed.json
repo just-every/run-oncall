@@ -1,0 +1,12 @@
+{
+  "integrations": {"data": [{
+    "id": "synthetic-oncall-501", "name": "Synthetic responders router", "type": "API", "enabled": true,
+    "actions": {"create": [
+      {"name": "First responder team", "order": 0, "filter": {"type": "match-all-conditions", "conditions": [{"field": "responders", "operation": "contains", "expectedValue": "synthetic-oncall-511"}]}, "responders": [{"type": "team", "id": "synthetic-oncall-511", "name": "Source search"}]},
+      {"name": "Second responder team", "order": 1, "filter": {"type": "match-any", "conditions": [{"field": "responders", "operation": "contains", "expectedValue": "synthetic-oncall-512"}, {"field": "tags", "operation": "equals", "expectedValue": "synthetic-oncall-512"}]}, "responders": [{"type": "team", "id": "synthetic-oncall-512", "name": "Source payments"}]},
+      {"name": "Unsupported alert policy", "order": 2, "filter": {"type": "match-all-conditions", "conditions": [{"field": "alertPolicy", "operation": "equals", "expectedValue": "synthetic-oncall-513"}]}, "responders": [{"type": "escalation", "id": "synthetic-oncall-514"}]},
+      {"name": "Unsupported schedule", "order": 3, "filter": {"type": "match-all"}, "responders": [{"type": "schedule", "id": "synthetic-oncall-515"}]}
+    ]},
+    "alertPolicies": [{"id": "synthetic-oncall-513", "criteria": {"timeRestriction": "business-hours"}}]
+  }]}
+}

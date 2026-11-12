@@ -213,7 +213,7 @@ Choose **Other: from a file**, then **Better Stack** under **File source**. Save
 
 For all three sources, the existing reviewed fingerprint, bounded apply, restart, reconciliation and undo journal remain authoritative. Original rejected objects, contacts, teams, services, escalation/repeat settings, open incidents and historical timelines remain provenance-carrying source evidence; they are not live incidents or delivery. Inactive integration inventory holds only opaque foreign ID, source and kind, never a key; personal labels stay in erasable source custody. Related foreign user references are recorded in the mapping report so the existing person erasure can retire their retained source records.
 
-No live API pull, account completeness reconciliation, phone cutover or parallel-routing rehearsal is provided. Terraform, automation actions, routed-key import, chat re-creation, email-mode rules and business services remain named unsupported objects. Use the dated [Opsgenie migration readiness checklist](#opsgenie-migration-readiness-checklist); its account checks and cutover gates remain unchecked. Paging stays OFF; these are unverified synthetic file-format proofs, not dated live-provider acceptance.
+No live API pull, account completeness reconciliation, phone cutover or parallel-routing rehearsal is provided. Terraform, automation actions, PagerDuty routed-key import, chat re-creation, email-mode rules and business services remain named unsupported objects. Saved Opsgenie and Splunk routed imports are described below. Use the dated [Opsgenie migration readiness checklist](#opsgenie-migration-readiness-checklist); its account checks and cutover gates remain unchecked. Paging stays OFF; these are unverified synthetic file-format proofs, not dated live-provider acceptance.
 
 ### Separate administrator key activation
 
@@ -316,3 +316,26 @@ committed prefix; an uncertain interrupted publication still follows the
 existing failed-import/explicit-rollback rules. Related people in retained and
 rejected PagerDuty records, including opaque user references and imported
 numbers, participate in the existing person-erasure flow.
+
+
+## Saved routed integrations
+
+Saved Opsgenie API create actions and Splunk REST routing labels can become an inactive workspace routed key. This is saved-file support only: the fixtures document the supported projection; live account shapes and account completeness remain unverified. Team names never select native services and imported team references grant no team authority.
+
+For Opsgenie, include `integrations.data` with the integration's `id`, `name`, `type: "API"` and ordered `actions.create`. Each action has one team responder and a filter with `match-all-conditions` or `match-any`, containing `field`, `operation` and `expectedValue`. Exact responder and team membership uses the exported identifier; supported fields are responders, teams, tags, details properties, entity and source. Supported operations are exact equality, substring containment and presence. A terminal unconditional `match-all` action can supply the catch-all only when it has one exactly mapped target. All other unmatched input is recorded unrouted.
+
+For Splunk, assemble the saved REST integration metadata and its routing-key response under `integrations`, with each integration's `routingKeys` list. Each entry has a non-secret URL routing label and one team target. Keep endpoint credentials out of the file. The shared credential guard treats the provider's `routingKey` field as authentication material, so prepare its non-secret label before upload:
+
+```sh
+node scripts/prepare-routed-splunk.mjs saved-splunk.json prepared-splunk.json
+```
+
+The local command changes only that field name to `routingLabel`. It refuses other credential fields and existing output files; it makes no network request. Keep the source file locally. The prepared saved file, including every unconvertible condition and target, is retained as the original for the import and move report. The routing label remains the same final URL segment on compatible intake. It is never the endpoint credential.
+
+Preview lists the converted rules and every unconvertible condition, with expandable original settings. Escalation and schedule targets, simultaneous targets, alert-policy criteria, transformations and unknown attributes are named rather than approximated. An unsupported earlier rule fences later rules that might otherwise match; the fallback stays record unrouted. Saved import journals retain the move report after restart and undo.
+
+Apply creates inactive routing inventory with no incumbent key. In **Settings → Move in**, review the allowed existing services, explicitly map every source target, and choose an active integration owner. Supplying the incumbent key creates the first attributed native rule-set version and still leaves intake inactive. Confirm activation separately. The Opsgenie or Splunk monitor then changes only its destination URL; its incumbent credential, alias or entity identity and Splunk routing label stay unchanged. The same alias or entity on different routed services has separate generations. Recovery affects only its selected service; a no-effect receipt lists where that identity remains open.
+
+Oversized compatible input returns 202 with truncation: readable alerts keep their routed services, while the incomplete remainder stays in unrouted custody with its high-urgency integration-owner obligation. Paging remains OFF. Revocation removes both credentials. Undo or replacement of the saved import fences both incumbent and native keys, including after restart or replaying the file. A fresh explicit key review and activation is required; importing a saved file never grants credential authority.
+
+PagerDuty orchestration imports, SNS credentials, team authority and privacy, live API pull and account reconciliation, actual service paging, owner notification delivery, standby and real-phone cutover remain separate held obligations.

@@ -56,7 +56,7 @@ const review = (plan: ImportPlan) => plan.entries.map(entry => {
  return { kind: entry.source.kind, id: entry.source.sourceId, location: entry.source.location,
   disposition: entry.rejection ? 'rejected' : entry.unmapped.length ? 'mapped-with-differences' : 'mapped',
   name: value?.fullName ?? value?.name ?? value?.title ?? value?.summary ?? value?.username ?? value?.email ?? entry.source.sourceId,
-  rejection: entry.rejection, unmapped: entry.unmapped, effects: entry.effects }
+  rejection: entry.rejection, unmapped: entry.unmapped, effects: entry.effects,...(entry.effects.some(effect=>(effect.value as any).routed)?{original:entry.source.payload}:{}) }
 })
 
 /** Why Undo cannot run on this import yet, named before the door records reversal intent: a later import replaced

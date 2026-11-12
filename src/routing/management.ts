@@ -1,3 +1,4 @@
+import {importBinding} from '../intake/import-binding';
 import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import { runtimeBindings } from '../auth.server';
 import { sealCredential, sourceCustody } from '../changes/credentials';
@@ -28,6 +29,7 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     await requireNewSubjectIdentity(state,'intake',id)
     if(!/^[a-zA-Z0-9_-]+$/.test(id))fail('Use letters, numbers, hyphens or underscores for the integration ID');
     if(input.revision!==(previous?.revision??0))fail('Integration changed; reload before saving',409);
+    if(previous?.imported&&!previous.active)fail('Use the imported integration review and activation door for this key',409);
     const scope=routingScope(state,input.scope);
     if(!intakeProviders.includes(input.provider))fail('Choose a supported provider');
     if(!state.members.some(m=>m.id===input.owner&&m.active&&["admin", "responder"].includes(m.role)))fail('Integration owner must be an active responder');
@@ -40,7 +42,7 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     if(authentication!==undefined&&!['bearer','signed'].includes(authentication)||input.provider!=='native'&&input.authentication!==undefined)fail('Choose bearer or signed authentication for a native routed key');
     const key=text(input.key,'Integration key',200);if(key.length<32)fail('Integration key needs at least 32 characters');
     const at=new Date().toISOString(),definition=previous?.routing??{...(team?{team:team.id}:{}),scope,owner:input.owner,versions:[{version:1,...routingRules(scope,input.rules??[],input.catchAll??null),publishedBy:actor.id,publishedAt:at}]};
-    const source:IntakeSource={id,name:text(input.name,'Integration name',200),provider:input.provider,service:scope[0],active:true,revision:(previous?.revision??0)+1,createdBy:previous?.createdBy??actor.id,updatedAt:at,routing:{...definition,owner:input.owner},...(authentication?{authentication}:{} )};
+    const source:IntakeSource={id,name:text(input.name,'Integration name',200),provider:input.provider,service:scope[0],active:true,revision:(previous?.revision??0)+1,createdBy:previous?.createdBy??actor.id,updatedAt:at,routing:{...definition,owner:input.owner},...(authentication?{authentication}:{} ),...(previous?.imported?{imported:previous.imported}:{})};
     refuseKeyEcho([JSON.stringify(source),team?.name??''],key);
     const custody=authentication==='signed'?await sealCredential(key,runtimeBindings(c.env).SESSION_SECRET,sourceCustody):null;
     const digest=await intakeHash(key),other=await c.env.DB.prepare('SELECT source FROM oc_intake_credentials WHERE key_digest=? AND source<>?').bind(digest,id).first();
@@ -49,7 +51,7 @@ export function installRoutingManagement(api:any,deps:RoutingDependencies) {
     if(previous)state.intakeSources![state.intakeSources!.indexOf(previous)]=source;else(state.intakeSources??=[]).push(source);
     state.audit.push({id:crypto.randomUUID(),at,actor:actor.id,kind:'routing-key',text:`Configured routed ${source.provider} key ${source.name}${team?` for team ${team.name}`:''}; revision ${source.revision}; rule version ${definition.versions.at(-1)!.version}`});
     auditIdentity(c.env.DB,{source:{kind:'intake-source',id:source.id},subject:{kind:'intake-source',id:source.id}});
-    const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest,signing_custody) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,signing_custody=excluded.signing_custody').bind(id,digest,custody,token)]);
+    const token=crypto.randomUUID(),binding=importBinding(source),guard=deps.guard(c),bound={sql:`(${guard.sql}) AND (${binding.sql})`,values:[...guard.values,...binding.values]},result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,bound,token),c.env.DB.prepare('INSERT INTO oc_intake_credentials(source,key_digest,signing_custody) SELECT ?,?,? WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?) ON CONFLICT(source) DO UPDATE SET key_digest=excluded.key_digest,signing_custody=excluded.signing_custody').bind(id,digest,custody,token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload',409);
     return c.json(source,previous?200:201);
   });

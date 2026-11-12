@@ -1,0 +1,10 @@
+{
+  "integrations": [{
+    "id": "synthetic-oncall-502", "name": "Synthetic routing labels", "type": "REST",
+    "routingKeys": [
+      {"name": "First routing label", "routingKey": "synthetic-oncall-521", "targets": [{"type": "team", "slug": "synthetic-oncall-511", "name": "Source search"}]},
+      {"name": "Second routing label", "routingKey": "synthetic-oncall-522", "targets": [{"type": "team", "slug": "synthetic-oncall-512", "name": "Source payments"}]},
+      {"name": "Unsupported escalation", "routingKey": "synthetic-oncall-523", "targets": [{"type": "escalation", "id": "synthetic-oncall-524"}], "timeRestriction": "business-hours"}
+    ]
+  }]
+}

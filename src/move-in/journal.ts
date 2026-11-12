@@ -29,5 +29,6 @@ export async function readMoveInJournal(id:string,context:D1ImportContext) {
   const name=value?.name??value?.fullName??value?.summary
   return typeof name==='string'?entry.effects.map(effect=>[effect.targetKind+':'+effect.targetId,name]):[]
  }))
- return {...job,schedules,files,exportedAt,comparisons,labels}
+ const moveReports=plan.entries.filter(entry=>!entry.erased&&entry.effects.some(effect=>(effect.value as any).routed)).map(entry=>({sourceId:entry.source.sourceId,location:entry.source.location,original:entry.source.payload,unconverted:entry.unmapped,routed:entry.effects.map(effect=>effect.value)}))
+ return {...job,schedules,files,exportedAt,comparisons,labels,moveReports}
 }

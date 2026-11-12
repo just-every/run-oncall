@@ -187,3 +187,8 @@ person-erasure use the existing doors. See [the field-by-field behavior and
 dated format references](docs/move-in.md#pagerduty-account-saved-responses).
 The 75-record synthetic account is documented-shape proof, **unverified against
 a live account**. OC-038 remains PARTIAL; paging stays OFF.
+
+
+### Saved routed-key review
+
+Opsgenie API create-action routing and Splunk REST URL labels now have a saved-file converter. See [the supported projection and local Splunk preparation command](docs/move-in.md#saved-routed-integrations). The report retains unsupported conditions and their originals. Apply retains inactive inventory with no key; a workspace administrator explicitly chooses existing allowed services and each source target before supplying a key and confirming activation. There is no inferred team mapping or team authority. The first routing version uses record unrouted unless an exact source default is mapped. Revocation, import undo and replacement fence both receiving credentials. Saved-file replay grants no authority. Live account shapes, PagerDuty router import and all paging and cutover obligations remain held.

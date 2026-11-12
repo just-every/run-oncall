@@ -1,3 +1,4 @@
+import {routedImport} from './routed-import'
 import {addressRanges} from './address-match'
 import {pagerdutyContacts,pagerdutyEvidence} from './pagerduty-mapping'
 import {mappingPayload,importedContacts,opsFamily} from './vendor-formats'
@@ -80,6 +81,7 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
     return result
    }
    if(record.kind==='integrations') {
+    const routed=routedImport(vendor,record);if(routed)return routed
     // Keep personal labels in erasable journal custody, not in a new native identity.
     const id=record.sourceId,kind=value.type??value.kind??'unknown'
     if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id)||typeof kind!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(kind))throw Error('integration identifier or kind cannot be represented safely; original retained for resolution')

@@ -1,3 +1,4 @@
+import {routedImportedKeys} from './routed-import-flow.mjs'
 import assert from 'node:assert/strict'
 import {generateKeyPairSync,sign,createHash,randomUUID} from 'node:crypto'
 import {readFile,readdir,writeFile} from 'node:fs/promises'
@@ -960,3 +961,5 @@ try {
 } finally {await w.close()}
 
 }
+
+await routedImportedKeys()
