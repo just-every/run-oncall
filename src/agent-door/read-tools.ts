@@ -9,6 +9,7 @@ import { readMoveInJournal } from '../move-in/journal'
 import { targets } from '../move-in/target'
 import { protectedRecords } from './resources'
 import { changeHash } from '../changes/credentials'
+import { listAlerts } from './alert-tools'
 
 export const string = { type: 'string', minLength: 1, maxLength: 200 } as const
 export const input = (properties: Record<string, JsonSchema> = {}, required: string[] = []) => ({ type: 'object' as const, properties, required, additionalProperties: false })
@@ -59,6 +60,10 @@ export function readTools(env: Bindings): ToolDefinition[] {
     read('services.read', 'services:read', ['OC-003', 'OC-005', 'OC-053'], id, serviceRead),
     read('incidents.list', 'incidents:read', ['OC-003', 'OC-053'], list, incidents, 'computed'),
     read('incidents.read', 'incidents:read', ['OC-003', 'OC-004', 'OC-053'], id, incidents, 'computed'),
+    read('alerts.list', 'incidents:read', ['OC-001', 'OC-002', 'OC-059'], input({
+      service: string, state: { enum: ['active', 'recovered'] }, urgency: { enum: ['high', 'low'] },
+      limit: { type: 'integer', minimum: 1, maximum: 100 }, cursor: { type: 'string', minLength: 1, maxLength: 512 },
+    }), (args, ctx) => listAlerts(env, args, ctx), 'computed'),
     read('changes.read', 'services:read', ['OC-065'], input({ service: string, at: { type: 'string', format: 'date-time' }, hours: { type: 'integer', minimum: 1, maximum: 168 } }, ['service', 'at', 'hours']), async (args, ctx) => {
       const access = await nativeAccess(env, ctx, 'services:read', args.service)
       const state = { ...access.state, services: access.state.services.filter(row => access.services.includes(row.id)), changes: access.state.changes?.filter(row => access.services.includes(row.service)) }

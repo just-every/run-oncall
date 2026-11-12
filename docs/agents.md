@@ -17,6 +17,12 @@ Open Agents (`/agents`) to inspect decisions, pending approvals, reviews and Pau
 
 The MCP endpoint is `/mcp`. Discovery and protected-resource metadata describe the current registry. Both supported protocol versions expose the same tools: `2026-07-28` and `2025-11-25`. Tools expose the coordination journey. This installation declares only tools, policy, pause, audit and idempotency. Public resource reads, specialist prompts, retained event listing and subscriptions are undeclared and refuse with `capability_not_declared`. Native authorization, short-lived owner-bound tokens, approval and consent checks remain mandatory. Existing `/api/v1` clients use the same policy admission and retain their native service and action scopes, operation keys and ETags.
 
+## Read alerts
+
+Use `oncall.alerts.list` with the existing `incidents:read` permission. Optional `service`, `state` (`active` or `recovered`) and `urgency` (`high` or `low`) filters narrow the current service grants. Each page accepts `limit` from 1 to 100, defaulting to 50. Follow `data.nextCursor` with the same filters and credential; no cursor means the final page. Alerts are ordered by ID, and their observations by acceptance time then ID. A cursor whose anchor is no longer visible is refused.
+
+Each alert includes its native identity, original severity and priority, current state and urgency, suppression, owner and retained observations. Policy and routing versions describe admission, even after the live rules change. Imported text is untrusted. Service-less unrouted alerts, foreign records, source payloads, truncated prefixes and routing member snapshots are excluded. Incomplete observations expose their flags without their retained bytes. Reads compute standard and, when retained personal or incident evidence is present, sensitive using the same rule as incident reads. Company policy may require approval before returning sensitive content. Reads retain decision audit and any policy-required approval or review; they send no outbound request and create no native coordination or paging effect.
+
 ## People and credentials
 
 Business supplies signed owner and teammate person IDs. The installation owner uses Business people (`/agents/people`) to link an applied teammate ID to an existing local workspace account. Matching an email address is insufficient. Oncall creates no invitation or password from a Business roster. A local role promotion does not make someone a Business policy editor.
@@ -47,6 +53,12 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | `oncall.actions.read` | `actions:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`action-read`); `sensitive`: `tests/agent-door.mjs` (`action-read`) |
 | `oncall.actions.receipt` | `actions:write` | `standard` | `standard`: `tests/agent-door.mjs` (`actions-receipt`) |
 | `oncall.actions.submit` | `actions:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`submit`, `second-submit`); `sensitive`: `tests/agent-door.mjs` (`submit`, `second-submit`) |
+
+### Alerts
+
+| Tool | Scope | Possible risk classes | Computed class checks |
+| --- | --- | --- | --- |
+| `oncall.alerts.list` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`alerts-list-standard`, `alerts-list-sensitive`); `sensitive`: `tests/agent-door.mjs` (`alerts-list-sensitive`) |
 
 ### Analytics
 

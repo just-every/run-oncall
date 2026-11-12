@@ -1,3 +1,4 @@
+import { importedEmailActivation } from '../intake/incumbent'
 import { requireNewSubjectIdentity } from '../subject-erasure-identity.ts'
 import { syncErasureFences } from '../erasure-fence'
 import { authority, fail, text, type State } from '../family/response-operations/domain.ts';
@@ -15,18 +16,19 @@ type Deps={body:(c:any)=>Promise<any>;state:(c:any,admin?:boolean)=>Promise<Stat
 export function installEmailManagement(api:any,deps:Deps) {
   const current=async(c:any)=>{const state=await deps.state(c,true);authority(state,c.get('actor'),true);return state;};
   api.get('/api/email',async(c:any)=>{const state=await current(c);return c.json({domain:inboundDomain(c.env),addresses:state.emailAddresses??[],versions:state.emailRules??[],samples:state.emailSamples??[],receipts:state.emailReceipts??[],quarantine:state.emailQuarantine??[]});});
-  async function commit(c:any,state:State,extra:(token:string)=>D1PreparedStatement[]=()=>[]) {
-    const token=crypto.randomUUID(),result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,deps.guard(c),token),...extra(token)]);
+  async function commit(c:any,state:State,extra:(token:string)=>D1PreparedStatement[]=()=>[],importGuard?:{sql:string;values:(string|number|null)[]}) {
+    const token=crypto.randomUUID(),guard=deps.guard(c),bound=importGuard?{sql:`(${guard.sql}) AND (${importGuard.sql})`,values:[...guard.values,...importGuard.values]}:guard,result=await c.env.DB.batch([...workspaceWrite(c.env.DB,state,state.revision,bound,token),...extra(token)]);
     if(result[0].meta.changes!==1)fail('Workspace or authority changed; reload',409);
   }
   api.post('/api/email/addresses',async(c:any)=>{
     const state=await current(c),input=await deps.body(c),domain=inboundDomain(c.env);
     if(!domain)fail('Inbound email is off: configure INBOUND_EMAIL_DOMAIN first');
+    const imported=await importedEmailActivation(c.env.DB,input);
     const id=text(input.id,'Address ID',80);if(!/^[a-zA-Z0-9_-]+$/.test(id)||state.emailAddresses?.some(a=>a.id===id))fail('Choose a new address ID');
     await requireNewSubjectIdentity(state,'email',id)
     const service=state.services.find(s=>s.id===input.service);if(!service)fail('Choose a mapped service and environment');
-    const owner=state.members.find(m=>m.id===input.owner&&m.active&&m.role==='admin');if(!owner)fail('Choose an active integration administrator');
-    const draft=emailDraft(input),at=new Date().toISOString();
+    const owner=state.members.find(m=>m.id===(imported?c.get('actor').id:input.owner)&&m.active&&m.role==='admin');if(!owner)fail('Choose an active integration administrator');
+    const draft=emailDraft(imported?.draft??input),at=new Date().toISOString();
     const address:EmailAddress={id,name:text(input.name,'Address name',100),service:service.id,environment:service.environment,owner:owner.id,active:true,revision:1,at};
     const local=text(input.localPart,'Private local part',64).toLowerCase();
     if(!/^[a-z0-9][a-z0-9-]{31,63}$/.test(local))fail('Use an installation-generated random local part of 32–64 letters, digits or hyphens');
@@ -36,8 +38,8 @@ export function installEmailManagement(api:any,deps:Deps) {
     (state.emailAddresses??=[]).push(address);
     (state.emailRules??=[]).push({...draft,id:crypto.randomUUID(),address:id,version:1,by:c.get('actor').id,at});
     auditKind(c.env.DB,'email.create');auditIdentity(c.env.DB,{source:{kind:'email-address',id},subject:{kind:'email-address',id}});
-    await commit(c,state,token=>[c.env.DB.prepare('INSERT INTO oc_email_credentials(digest,address,active) SELECT ?,?,1 WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(digest,id,token)]);
-    return c.json(address,201);
+    await commit(c,state,token=>[c.env.DB.prepare('INSERT INTO oc_email_credentials(digest,address,active) SELECT ?,?,1 WHERE EXISTS(SELECT 1 FROM workspace_control WHERE write_token=?)').bind(digest,id,token),...(imported?[imported.write(token,id)]:[])],imported?.guard);
+    return c.json(imported?{...address,privateAddress:local+'@'+domain}:address,201);
   });
   api.post('/api/email/addresses/:id/:action',async(c:any)=>{
     const state=await current(c),input=await deps.body(c),address=state.emailAddresses?.find(a=>a.id===c.req.param('id')),action=c.req.param('action');

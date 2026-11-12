@@ -1185,7 +1185,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 | Tool | Does | Core clauses | Risk class | Today |
 | --- | --- | --- | --- | --- |
-| `oncall.alerts.list` | Read alerts, events and their routing explanations | OC-001, OC-002, OC-059 | standard | Not yet shipped · API (integrations) |
+| `oncall.alerts.list` | Read alerts, events and their routing explanations | OC-001, OC-002, OC-059 | standard; sensitive for retained personal or incident evidence | MCP · scoped alerts and observations with bounded cursor pages, service, state and urgency filters |
 | `oncall.alerts.replay` | Replay events against the current or a draft policy with zero writes | OC-002, OC-014, OC-043, OC-070 | standard | Not yet shipped |
 | `oncall.incidents.declare` | Declare an incident from alerts | OC-004, OC-050, OC-056 | standard | Shipped |
 | `oncall.incidents.list` | List incidents the caller may read | OC-003, OC-053 | standard (+ sensitive) | Shipped |
