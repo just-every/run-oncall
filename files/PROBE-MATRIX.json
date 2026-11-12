@@ -1,0 +1,167 @@
+{
+  "head": "25c0fe55b1f2928c526119d79d3629dfb8be7931",
+  "logical_observations": 20,
+  "policy_observations": 40,
+  "rows": [
+    {
+      "observation": "declaration optional",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.incidents.declare: stale expected_revision at workspace revision 151 -> isError revision_conflict, exact current_revision in metadata and text; durable state and custody unchanged; fresh key using returned revision -> autonomous, one attributed incident with copied runbook and application commit; new RPC id retry unchanged; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held oncall.incidents.declare: stale expected_revision at workspace revision 154 -> isError revision_conflict, exact current_revision in metadata and text; durable state and custody unchanged; fresh key using returned revision -> review, one attributed incident with copied runbook and application commit; new RPC id retry unchanged; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "declaration native",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.incidents.declare: stale native revision without expected_revision -> revision_conflict with exact authorized current_revision 159 in metadata and text, no private result, custody unchanged; fresh key and returned revision -> one attributed declaration with copied runbook, autonomous; new RPC id retry -> stored outcome, no duplicate effect or review; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held oncall.incidents.declare: stale native revision without expected_revision -> revision_conflict with exact authorized current_revision 165 in metadata and text, no private result, custody unchanged; fresh key and returned revision -> one attributed declaration with copied runbook, review; new RPC id retry -> stored outcome, no duplicate effect or review; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "note optional",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous: valid native note revision 1 with stale expected_revision -> isError revision_conflict, exact current_revision 1; durable state and custody unchanged; fresh key using returned revision -> autonomous, one note and application commit; retry unchanged; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held: valid native note revision 1 with stale expected_revision -> isError revision_conflict, exact current_revision 1; durable state and custody unchanged; fresh key using returned revision -> review, one note and application commit; retry unchanged; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "note native",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous native required revision: stale note with expected_revision omitted -> isError revision_conflict, exact current_revision 2 in metadata and text; durable state and custody unchanged; fresh key using returned revision -> autonomous, one note and application commit; retry unchanged; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held native required revision: stale note with expected_revision omitted -> isError revision_conflict, exact current_revision 2 in metadata and text; durable state and custody unchanged; fresh key using returned revision -> review, one note and application commit; retry unchanged; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "acknowledgment optional",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.incidents.acknowledge: current native revision 1 with stale expected_revision -> isError revision_conflict and exact parent current_revision 1 in metadata and text; no private result or native effect; fresh returned revision and key -> one agent-attributed acknowledgment naming active responder, autonomous; new RPC id retry -> stored result, no duplicate effect or review; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held oncall.incidents.acknowledge: current native revision 1 with stale expected_revision -> isError revision_conflict and exact parent current_revision 1 in metadata and text; no private result or native effect; fresh returned revision and key -> one agent-attributed acknowledgment naming active responder, review; new RPC id retry -> stored result, no duplicate effect or review; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "acknowledgment native",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.incidents.acknowledge: stale required revision 1, expected_revision omitted -> isError revision_conflict current_revision 2 in metadata and text; no retained effects; missing and unauthorized parents -> not_found without revision; fresh key -> one attributed acknowledgment for active responder, autonomous; identical new-RPC-id retry -> stored result without duplicate effect or review; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held oncall.incidents.acknowledge: stale required revision 1, expected_revision omitted -> isError revision_conflict current_revision 2 in metadata and text; no retained effects; missing and unauthorized parents -> not_found without revision; fresh key -> one attributed acknowledgment for active responder, review; identical new-RPC-id retry -> stored result without duplicate effect or review; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "follow-up optional",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.actions.create: current native revision 1 with stale expected_revision -> isError revision_conflict and exact parent current_revision 1 in metadata and text; no private result or native effect; fresh returned revision and key -> one agent-attributed owned due-dated P1 human-review follow-up still open, autonomous; new RPC id retry -> stored result, no duplicate effect or review; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held oncall.actions.create: current native revision 1 with stale expected_revision -> isError revision_conflict and exact parent current_revision 1 in metadata and text; no private result or native effect; fresh returned revision and key -> one agent-attributed owned due-dated P1 human-review follow-up still open, review; new RPC id retry -> stored result, no duplicate effect or review; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "follow-up native",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.actions.create: stale required revision 1, expected_revision omitted -> isError revision_conflict current_revision 2 in metadata and text; no retained effects; missing and unauthorized parents -> not_found without revision; fresh key -> one attributed owned due-dated open P1 human-review follow-up, autonomous; identical new-RPC-id retry -> stored result without duplicate effect or review; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held oncall.actions.create: stale required revision 1, expected_revision omitted -> isError revision_conflict current_revision 2 in metadata and text; no retained effects; missing and unauthorized parents -> not_found without revision; fresh key -> one attributed owned due-dated open P1 human-review follow-up, review; identical new-RPC-id retry -> stored result without duplicate effect or review; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "reassignment optional",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous reassignment optional expected revision: stale revision -> isError revision_conflict and exact authorized current_revision 2 in metadata and text, no private result or native effect; fresh key and returned revision -> standard-only autonomous, one agent-attributed reassignment, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held reassignment optional expected revision: stale revision -> isError revision_conflict and exact authorized current_revision 2 in metadata and text, no private result or native effect; fresh key and returned revision -> standard-only review, one agent-attributed reassignment, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "reassignment native",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous reassignment native revision: stale revision -> isError revision_conflict and exact authorized current_revision 2 in metadata and text, no private result or native effect; fresh key and returned revision -> standard-only autonomous, one agent-attributed reassignment, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held reassignment native revision: stale revision -> isError revision_conflict and exact authorized current_revision 2 in metadata and text, no private result or native effect; fresh key and returned revision -> standard-only review, one agent-attributed reassignment, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "Scribe optional",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous Scribe optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only autonomous, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held Scribe optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only review, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "Scribe native",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous Scribe native revision: stale revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned native revision with expected_revision omitted -> standard-only autonomous, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held Scribe native revision: stale revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned native revision with expected_revision omitted -> standard-only review, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "Communications optional",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous Communications optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only autonomous, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held Communications optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only review, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "Communications native",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous Communications native revision: stale revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned native revision with expected_revision omitted -> standard-only autonomous, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held Communications native revision: stale revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned native revision with expected_revision omitted -> standard-only review, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "Commander optional",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous Commander optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only autonomous, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held Commander optional revision: current native revision with stale expected_revision -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned revision in both fields -> standard-only review, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "Commander native",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous Commander native revision: stale revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned native revision with expected_revision omitted -> standard-only autonomous, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held Commander native revision: stale revision with expected_revision omitted -> isError revision_conflict and exact authorized current_revision 1 in metadata and text, no private result or native effect; fresh key and returned native revision with expected_revision omitted -> standard-only review, one agent-attributed assign-role, incident and workspace increment and native audit commit; new RPC id replay -> saved result and original review without another effect; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "service optional",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.services.update: valid native ETag with stale string expected_revision -> isError revision_conflict with exact authorized current_revision in metadata and text, no private result or effect; fresh key and returned ETag in both revision fields -> one agent-attributed name-only edit, autonomous; new RPC id retry -> stored result, no duplicate effect or review; missing and scoped-out services -> not_found without revision or private result; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held oncall.services.update: valid native ETag with stale string expected_revision -> isError revision_conflict with exact authorized current_revision in metadata and text, no private result or effect; fresh key and returned ETag in both revision fields -> one agent-attributed name-only edit, review; new RPC id retry -> stored result, no duplicate effect or review; missing and scoped-out services -> not_found without revision or private result; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "service native",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 4 autonomous oncall.services.update: stale native revision without expected_revision -> revision_conflict with exact authorized current_revision 86413a0c1c593290b91611ce2b17532292d639eac30d5e97d13102b3001ac4ff in metadata and text, no private result, custody unchanged; fresh key and returned revision -> one attributed name-only service edit preserving every other field, autonomous; new RPC id retry -> stored outcome, no duplicate effect or review; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 4 held oncall.services.update: stale native revision without expected_revision -> revision_conflict with exact authorized current_revision 56d64ddf8316fc114364f9cb28c44672f93c11cfa301ab4fa5868a212b882e97 in metadata and text, no private result, custody unchanged; fresh key and returned revision -> one attributed name-only service edit preserving every other field, review; new RPC id retry -> stored outcome, no duplicate effect or review; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "service dropped response",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 2 autonomous oncall.services.update: authorized service name edit with current projected ETag; real response destroyed at headers with unread body; D1 confirms committed service and original outcome; identical arguments and original ETag with new RPC id -> exact saved result and resulting ETag; one workspace revision and agent-attributed native audit commit; no review; retry preserves all native effects and custody; one linked replay-attempt audit; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 2 held oncall.services.update: authorized service name edit with current projected ETag; real response destroyed at headers with unread body; D1 confirms committed service and original outcome; identical arguments and original ETag with new RPC id -> exact saved result and resulting ETag; one workspace revision and agent-attributed native audit commit; one original open review; retry preserves all native effects and custody; one linked replay-attempt audit; zero outbound requests"
+      },
+      "result": "pass"
+    },
+    {
+      "observation": "Commander changed reason",
+      "policies": {
+        "autonomous": "PROBE BASE-AGENT-012 acceptance 3 autonomous Commander assignment: one standard-only agent-attributed assign-role from unassigned to an existing active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests",
+        "held": "PROBE BASE-AGENT-012 acceptance 3 held Commander assignment: one standard-only agent-attributed assign-role from unassigned to an existing active responder, one incident and workspace revision and native audit commit; original key and revision with changed reason -> isError idempotency_conflict in metadata and text, no private result; exact original arguments with new RPC id -> saved result and original review; native effect custody and paging unchanged; attributed refusal and linked replay audit only; zero outbound requests"
+      },
+      "result": "pass"
+    }
+  ]
+}

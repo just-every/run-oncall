@@ -1,0 +1,234 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f232",
+  "head": "25c0fe55b1f2928c526119d79d3629dfb8be7931",
+  "initial_main": "25b173adff3e5a2e7bedd97e02428eebee9418f4",
+  "merged_main": "90f391b56d492b998e0e55509e076eaf588cbea4",
+  "files": [
+    {
+      "path": "src/agent-door/service-tools.ts",
+      "sha256": "3f989bacc173fbac7336c8d3c6681556fc9d13a112058c4ddf8c5e3b14acc92e"
+    },
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "sha256": "65a117a205cf4a261c4f7fe73eac18f3f994303801de8dedc6f9f5d6a26fa354"
+    },
+    {
+      "path": "tests/oncall-agent-role-revisions.mjs",
+      "sha256": "6e53d6edaa10c9c16fda90ec61b20d703f17454f9a444b3c933c5c784ef9b31b"
+    },
+    {
+      "path": "tests/oncall-agent-role-replay.mjs",
+      "sha256": "ab86dfbba20ee5085a571892698da1ad6514a9a18aa7b5a2896f223bf2dba250"
+    },
+    {
+      "path": "tests/oncall-agent-incident-revisions.mjs",
+      "sha256": "3e8ea85a8762b7aecae590fe297e28c9a6cf44ba014afeded2db22281d80482d"
+    },
+    {
+      "path": "tests/oncall-agent-communications-revisions.mjs",
+      "sha256": "35d18be23dc7da5fea391f3d226d7465917a62113cf41136b1c933f996c59f6d"
+    },
+    {
+      "path": "tests/oncall-agent-native-revisions.mjs",
+      "sha256": "7a07dfb90446acc6b5d830cfdf26925246c2826d673304b8c92b0dde0787d869"
+    },
+    {
+      "path": "tests/oncall-agent-declaration-revisions.mjs",
+      "sha256": "58baf992c12cbd6cb86ea124ed8e7afaae11358f9a6f454982be58c27dfa115f"
+    },
+    {
+      "path": "tests/oncall-agent-service-revisions.mjs",
+      "sha256": "cb39d9ba914d0e25d88bca6c43140a2db942986caf5b319c5d4342fbe3f1655a"
+    },
+    {
+      "path": "tests/oncall-agent-service-replay.mjs",
+      "sha256": "f597c34900b78d720b3de4f69d63b3649767a398e04466ecf6c136a9068eeb0e"
+    }
+  ],
+  "source_lock_sha256": "6f86644ed9a7f4614f94b26d8ab80bd97e52d535ae4ff5b0f546f0c9ca679907",
+  "contract_changed": false,
+  "generated_views_changed": false,
+  "migrations_changed": false,
+  "counts_before": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34,
+    "total": 101
+  },
+  "selected_diagnostic_cells": {
+    "before": 7,
+    "after": 18,
+    "total": 18
+  },
+  "direct_agent_journey": {
+    "command": "WRANGLER_SEND_METRICS=false node tests/oncall-agent-flow.mjs",
+    "exit": 0,
+    "scope": "all selected probes and retained native agent journey; before merge, no subsequent changes to relevant agent code or tests"
+  },
+  "preparation": {
+    "command": "node scripts/verify-oncall-build.mjs",
+    "exit": 0,
+    "checks": [
+      "rer check --profile first-party",
+      "rer build",
+      "tsc --noEmit"
+    ]
+  },
+  "mechanical": {
+    "views_write": "node src/base/contract-docs.mjs write",
+    "views_check": "node src/base/contract-docs.mjs check",
+    "views_exit": 0,
+    "restored": [
+      "ACCEPTANCE.md",
+      "docs/CLAIMS.md"
+    ],
+    "lock_write": "node scripts/edition-authoring/cli.mjs lock",
+    "lock_check": "node scripts/edition-authoring/cli.mjs check",
+    "lock_exit": 0,
+    "ledger": "none; no migration changes"
+  },
+  "final_verify": {
+    "command": "ONCALL_VERIFY_LANE=intake ONCALL_VERIFY_PREBUILT=true pnpm exec rer verify --non-interactive",
+    "status": "passed",
+    "head": "25c0fe55b1f2928c526119d79d3629dfb8be7931",
+    "runtime": "project-pinned Node 22.20.0, selected automatically by rer verify",
+    "exit": 0,
+    "selected_lane": "intake",
+    "app_journeys": [
+      "tests/runtime.mjs (machines)",
+      "tests/intake.mjs",
+      "tests/routing.mjs"
+    ],
+    "base_conformance": {
+      "passed": 8230,
+      "total": 8230
+    },
+    "hydration": {
+      "pages": 4,
+      "loads": 23
+    }
+  },
+  "publication_scan": {
+    "status": "not run in cloud; guarded lander required",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "main_equality": "not landed; guarded lander pending",
+  "candidate_run_site": "not run; main-only after landing",
+  "pr": null,
+  "baseline_workflows": [
+    {
+      "id": 43131004505,
+      "name": "Verify",
+      "conclusion": "success",
+      "head": "25b173adff3e5a2e7bedd97e02428eebee9418f4"
+    },
+    {
+      "id": 43131004503,
+      "name": "Run site",
+      "conclusion": "success",
+      "head": "25b173adff3e5a2e7bedd97e02428eebee9418f4"
+    }
+  ],
+  "github_calls": 4,
+  "local_port_adjustments": [
+    {
+      "command": "ONCALL_RUNTIME_PART=machines WRANGLER_SEND_METRICS=false node tests/runtime.mjs",
+      "exit": 1,
+      "test": "staleServiceRevision",
+      "failure": "Expected response omitted explicit dependencies: [] in the current authorized service projection.",
+      "resolution": "Compare the exact saved native record plus its explicit projected dependencies and resulting ETag."
+    },
+    {
+      "command": "WRANGLER_SEND_METRICS=false node tests/oncall-agent-flow.mjs",
+      "exit": 1,
+      "test": "staleDeclarationExpectedRevision",
+      "failure": "Old ordinal-prefix audit comparison was applied to the common helper\u2019s serialized-content sort order.",
+      "resolution": "Require one new state-changing row and byte-equal retention of every prior audit row by immutable id."
+    }
+  ],
+  "verify_repair_rounds": 0,
+  "push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f232",
+    "exit": 0,
+    "branch": "cloud/sd-oncall-c-f232",
+    "head": "25c0fe55b1f2928c526119d79d3629dfb8be7931",
+    "save_head": "9162c0942ae7994f1d51f4258f9838675ca502b8",
+    "save_pushed": true
+  },
+  "candidate_ci": {
+    "id": 43135768629,
+    "name": "Verify",
+    "event": "push",
+    "conclusion": null,
+    "head_sha": "25c0fe55b1f2928c526119d79d3629dfb8be7931",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43135768629",
+    "status": "in_progress",
+    "github_call_number": 4,
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43135768629",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  "probes": {
+    "logical_selected_observations": 20,
+    "policies_per_observation": 2,
+    "all_passed": true,
+    "matrix_file": "PROBE-MATRIX.json"
+  },
+  "artifact_hashes": [
+    {
+      "path": "DIRECT-AGENT.log",
+      "bytes": 67094,
+      "sha256": "974b98b118f200dfbd952cc3efdc76e4fec1605b649091416cd50626772f1c2a"
+    },
+    {
+      "path": "INITIAL-AUDIT-ORDER-FAILURE.log",
+      "bytes": 165725,
+      "sha256": "359a321534b0ce41d827f275c55a2bee9ac546d8ea62cb9648fb72e0618b2e2f"
+    },
+    {
+      "path": "INITIAL-SERVICE-PROJECTION-FAILURE.log",
+      "bytes": 50755,
+      "sha256": "b9055920da6c7a5532bcc29ea9c1e180a391385cffb65de43e88528816983da4"
+    },
+    {
+      "path": "PREPARATION.log",
+      "bytes": 16512,
+      "sha256": "6ae3a1da6b729e89db09e43502bd35dd0615b7035d6fce3e5dd0252f42c1ae09"
+    },
+    {
+      "path": "PUSH.log",
+      "bytes": 719,
+      "sha256": "09bfb9e336c7edcbc38723de1ed072c35f71f00554a2931a06875cd64dd2e082"
+    },
+    {
+      "path": "VERIFY.log",
+      "bytes": 432417,
+      "sha256": "de05c147551d96712785023f78df71ec91833e812654773c08d612ce4fc4f488"
+    },
+    {
+      "path": "VIEWS.log",
+      "bytes": 98,
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    }
+  ],
+  "remote_ref_confirmation": {
+    "command": "git ls-remote --refs origin refs/heads/cloud/sd-oncall-c-f232",
+    "exit": 0,
+    "advertised_head": "25c0fe55b1f2928c526119d79d3629dfb8be7931",
+    "ref": "refs/heads/cloud/sd-oncall-c-f232"
+  }
+}
