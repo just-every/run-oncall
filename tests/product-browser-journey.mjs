@@ -77,6 +77,7 @@ export async function productImport(page,context,width,session,proof) {
   await page.getByText(/^Erased\. Receipt /).waitFor();assert.equal(await person.count(),0,'the erased person leaves the paused data list')
   await incumbentActivation(page,context,width)
   await reconciliationJourney(page,context,session)
+  await plainMoveInReview(page,context,session)
 }
 
 async function incumbentActivation(page,context,width) {
@@ -91,8 +92,13 @@ async function incumbentActivation(page,context,width) {
  }
  const panel=page.getByRole('region',{name:'Activate imported integration Synthetic browser integration '+width,exact:true}),key='synthetic-oncall-incumbent-browser-'+width
  await panel.waitFor();await panel.getByLabel('Incumbent integration key',{exact:true}).fill(key)
+ // Supplying the key reloads the imported row, whose new revision starts an
+ // incumbent reread. The supplied text precedes that second busy cycle.
+ const supplied=page.waitForRequest(request=>new URL(request.url()).pathname==='/api/intake/incumbent'&&request.method()==='POST')
+ const reread=page.waitForResponse(async response=>response.request().method()==='GET'&&new URL(response.url()).pathname==='/api/intake/sources/'+encodeURIComponent((await supplied).postDataJSON().id)+'/incumbent')
  await panel.getByRole('button',{name:'Supply incumbent key · leave inactive',exact:true}).click()
  await panel.getByText(/Incumbent key supplied; never shown again/).waitFor()
+ const incumbent=await reread;assert.equal(incumbent.status(),200);assert.equal(await incumbent.finished(),null)
  assert.equal(await panel.getByLabel('Incumbent integration key',{exact:true}).inputValue(),'')
  assert.ok(!(await page.content()).includes(key),'incumbent key does not reappear in the document')
  await panel.screenshot({path:`${directory}/incumbent-inactive-${width}.png`})
@@ -415,6 +421,77 @@ export async function reconciliationJourney(page,context,session) {
  console.log(`O1 Move-in: clean apply matched; bounded apply interrupted and resumed; adopted native ${scheduleId} remains a named difference; comparison failure/retry never claims completion; paging OFF`)
 }
 
+
+// Plain review explanations extend the existing move-in journey, with assertions
+// at 1440 and screenshots of the same two states at both supported widths.
+export async function plainMoveInReview(page,context,session) {
+ const origin=new URL(page.url()).origin,viewport=page.viewportSize()
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser'
+ await mkdir(directory,{recursive:true});await page.setViewportSize({width:1440,height:1000})
+ const request=async(path,data)=>{
+  const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data})
+  assert.ok(response.ok(),`${path}: ${response.status()}`);return response.json()
+ }
+ const person={id:'synthetic-oncall-1901',name:'Riley Chen',email:'riley-review@example.test'}
+ const schedule={id:'synthetic-oncall-1902',name:'Customer support weekly',time_zone:'UTC',schedule_layers:[{name:'Weekly coverage',start:'2026-10-12T09:00:00Z',rotation_virtual_start:'2026-10-12T09:00:00Z',rotation_turn_length_seconds:604800,users:[{user:{id:person.id}}]}]}
+ const service={id:'synthetic-oncall-1903',name:'Customer support',support_hours:{type:'fixed_time_per_day'}}
+ const bundle={users:[person],schedules:[schedule],services:[service]}
+ const before=await request('/api/move-in/objects'),nativeBefore=await request('/api/paging/state')
+ await fileSource(page,'pagerduty')
+ const [planned]=await Promise.all([page.waitForResponse(response=>new URL(response.url()).pathname==='/api/operator/import/plan'),page.getByLabel('Export JSON',{exact:true}).setInputFiles({name:'synthetic-oncall-1901.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))})])
+ const plan=await planned.json();assert.equal(planned.status(),200)
+ await page.getByRole('heading',{name:'Compatibility review',exact:true}).waitFor()
+ const review=page.locator('.move-in-step')
+ const rawLabels=/related[-_]users|not-supplied|equivalent-in-window|(?:^|\n)(?:backup|final_schedule|schedule_layers|support_hours):|\b[a-z]+_[a-z_]+\b|pagerduty:synthetic-oncall-/i
+ assert.doesNotMatch(await review.innerText(),rawLabels,'review explains differences without import field names, status enums or target keys')
+ const scheduleReview=review.locator('.move-in-review > li').filter({hasText:schedule.name})
+ assert.ok((await scheduleReview.innerText()).includes(person.name),'source references resolve to the exported person’s name')
+ assert.ok(!(await scheduleReview.innerText()).includes(person.email),'known people are named rather than identified by their email key')
+ assert.deepEqual(await request('/api/move-in/objects'),before,'review remains zero-write for native imported objects')
+ assert.deepEqual(await request('/api/paging/state'),nativeBefore,'review does not adopt or activate coverage')
+ await context.grantPermissions(['clipboard-read','clipboard-write'])
+ await review.getByRole('button',{name:'Copy details',exact:true}).click()
+ await review.getByRole('status').waitFor()
+ const copied=JSON.parse(await page.evaluate(()=>navigator.clipboard.readText()))
+ assert.deepEqual(copied,plan,'support copy preserves the complete original review, fingerprint, internal differences and values')
+ const capture=async(state)=>{
+  for(const width of [1440,390]) {
+   await page.setViewportSize({width,height:1000})
+   await page.screenshot({path:`${directory}/plain-move-in-${state}-${width}.png`,fullPage:true})
+  }
+  await page.setViewportSize({width:1440,height:1000})
+ }
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'review fits the desktop viewport')
+ const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()
+ assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[],'review has no serious or critical accessibility violations')
+ await capture('review')
+ await confirmImport(page);await page.getByRole('heading',{name:'Import complete',exact:true}).waitFor()
+ const rows=await request('/api/move-in/objects'),row=rows.find(row=>row.value.sourceId===schedule.id)
+ assert.ok(row);assert.equal(row.value.paused,true)
+ const choices=await request('/api/move-in/adoption')
+ const imported=page.locator('.move-in-objects > li').filter({hasText:schedule.name})
+ await imported.getByRole('button',{name:'Make schedule live',exact:true}).click()
+ const servicePicker=imported.getByLabel('Service for '+schedule.name,{exact:true})
+ if(await servicePicker.count())await servicePicker.selectOption(choices.services[0].id)
+ const memberPicker=imported.getByLabel('Workspace member for '+person.name,{exact:true})
+ if(await memberPicker.count())await memberPicker.selectOption(session.member.id)
+ await imported.getByRole('button',{name:'Confirm live schedule · paging OFF',exact:true}).click()
+ await imported.getByText(/Adopted into/).waitFor()
+ const adopted=await request('/api/paging/state'),objects=await request('/api/move-in/objects')
+ await confirmUndo(page)
+ const failure=page.getByRole('alert');await failure.waitFor()
+ const refusal=await failure.innerText()
+ assert.ok(refusal.includes(schedule.name),'adopted undo refusal names the schedule')
+ assert.doesNotMatch(refusal,/pagerduty:synthetic-oncall-|NATIVE_EDIT_CONFLICT/,'undo explains the conflict without internal keys or codes')
+ assert.deepEqual(await request('/api/move-in/objects'),objects,'refused undo preserves every imported object')
+ assert.deepEqual(await request('/api/paging/state'),adopted,'refused undo preserves live coverage')
+ await page.getByRole('button',{name:'Copy details',exact:true}).click()
+ const support=JSON.parse(await page.evaluate(()=>navigator.clipboard.readText()))
+ assert.ok(support.objects.some(object=>object.id===row.targetId&&object.name===schedule.name),'undo support copy retains the target key beside its name')
+ await capture('undo')
+ await page.setViewportSize(viewport)
+ console.log('PASS plainMoveInReview: saved PagerDuty review without raw labels; exact support copy; named adopted undo; zero preview writes and preserved live coverage; 1440 assertions and 1440/390 proof')
+}
 
 // product-schedule-browser: part of this public journey.
 // Extend this journey: pending valid answers retain coverage, but cannot be saved.
@@ -1164,12 +1241,21 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
   assert.equal(rule.mode,'support-hours');assert.equal(rule.timezone,'America/New_York');
   assert.deepEqual(rule.weekly,[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})));
   assert.deepEqual(rule.holidays,[]);assert.equal(rule.inside,'high');assert.equal(rule.outside,'low');
-  // Leave Settings and finish its sample requests before measuring alert reads.
-  await page.goto(origin+'/alerts');
+  // Publication does not await the debounced sample. Request the final saved
+  // rule explicitly and finish its work while Settings is still mounted.
+  const finalSample=page.waitForResponse(response=>{
+   if(new URL(response.url()).pathname!=='/api/urgency/preview'||response.request().method()!=='POST')return false;
+   const input=response.request().postDataJSON();
+   return input.service===service&&input.severity==='critical'&&input.at===admittedAt&&JSON.stringify(input.rule)===JSON.stringify({mode:rule.mode,timezone:rule.timezone,weekly:rule.weekly,holidays:rule.holidays,inside:rule.inside,outside:rule.outside,reason:'Sample alert'});
+  });
+  await policy.getByLabel('Sample severity',{exact:true}).selectOption('critical');
+  const preview=await finalSample;assert.equal(preview.status(),200);assert.equal(await preview.finished(),null);
+  await policy.getByRole('status').filter({hasText:'Low urgency'}).waitFor();
   let sampleTimeout;
   try {
    await Promise.race([Promise.all([...samples.values()].map(sample=>sample.done)),new Promise((_,reject)=>{sampleTimeout=setTimeout(()=>reject(Error('Support-hours sample requests did not settle')),30000);})]);
   } finally {clearTimeout(sampleTimeout);}
+  await page.goto(origin+'/alerts');
   page.off('request',trackSample);page.off('requestfinished',settleSample);page.off('requestfailed',settleSample);
   await call('/api/sources',{id:source,key,scopes:[service],mode:'bearer'});
   const event={source,eventId:'synthetic-oncall-572',service,environment:'test',key:'synthetic-oncall-573',generation:'synthetic-oncall-574',intent:'trigger',severity:'warning',title:'New York pre-support warning',observedAt:admittedAt,evidence:''};
