@@ -1,0 +1,12 @@
+{
+  "filesBefore": 46,
+  "filesAfter": 46,
+  "journeyFunctionsBefore": 28,
+  "journeyFunctionsAfter": 28,
+  "registrationsAdded": 0,
+  "registrationsRemoved": 0,
+  "extendedJourney": "triageBulkBrowser",
+  "cap": 200,
+  "budgetFile": null,
+  "method": "Existing public bulk journey extended; no new top-level function, suite, test registration or executable test file."
+}

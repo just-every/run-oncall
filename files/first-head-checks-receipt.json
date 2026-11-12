@@ -1,0 +1,16 @@
+{
+  "head": "9191ac11783e2a261b58c4a996ff76c151d12422",
+  "typecheck": "passed",
+  "browserJourney": "tests/product-browser-journey.mjs#triageBulkBrowser",
+  "browser": "passed",
+  "sourceLock": "passed",
+  "contractDocuments": "current; unchanged",
+  "changedFiles": {
+    "src/app/BulkResults.tsx": "f2bd6068ef3a7f444f9aca89fb6cf291990cd6b0413555a9b72203e639e5f3a4",
+    "src/app/IncidentBulkActions.tsx": "c33ca6de0162df6a65baa3e987c24e9031b799dd2f8bf6d3b9900d97d7d3be2b",
+    "src/app/IncidentTriage.tsx": "4def00f83020e73fef5a6b892a9c789f2a6b6d511d9400e04decdd2537f173ba",
+    "src/app/triage.css": "8556483d892ce8e25bda9cff2504706e6176ecd0000500bb133f1788be2d5365",
+    "tests/product-browser-journey.mjs": "59912a4940eb0d9dfa18946a0de2b0074dc9977362299ed056600b34a22dbc74",
+    "sources.lock.json": "133c4aa83e0fc3a3094adf35248689cb916cf8290952c22379a401fe6d59446b"
+  }
+}

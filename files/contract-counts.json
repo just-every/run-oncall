@@ -1,0 +1,1 @@
+{"before":{"done":24,"partial":43,"missing":34,"total":101},"after":{"done":24,"partial":43,"missing":34,"total":101},"statusChanges":[],"testRegistrationsAdded":0,"testRegistrationsRemoved":0,"extendedJourney":"tests/product-browser-journey.mjs#triageBulkBrowser"}

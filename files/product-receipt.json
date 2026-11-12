@@ -1,0 +1,19 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-bulk-results-titles-1",
+  "head": "5f361388b082bd7a5f2bd9e24cfbd6b1be887d06",
+  "remoteHead": "5f361388b082bd7a5f2bd9e24cfbd6b1be887d06",
+  "pushed": true,
+  "mainMerged": "77c552b9c9c5d0d5d579916a8bb35974d833c9ac",
+  "initialProductHead": "9191ac11783e2a261b58c4a996ff76c151d12422",
+  "candidateCommits": [
+    "5f361388b082bd7a5f2bd9e24cfbd6b1be887d06",
+    "e38a3771742b0e04bf87a0f759a837baa918b821",
+    "9191ac11783e2a261b58c4a996ff76c151d12422"
+  ],
+  "authorsAndCommitters": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "trailers": [],
+  "pr": null,
+  "publicationScan": "fleet Mac lander responsibility; unavailable in cloud",
+  "contractStatusEdits": false
+}

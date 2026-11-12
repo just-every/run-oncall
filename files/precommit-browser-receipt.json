@@ -1,0 +1,19 @@
+{
+  "journey": "tests/product-browser-journey.mjs#triageBulkBrowser",
+  "result": "passed",
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "publicDoors": [
+    "/api/setup",
+    "/api/command",
+    "/api/triage",
+    "/api/triage/bulk",
+    "/incidents"
+  ],
+  "newRegistrations": 0,
+  "baseHead": "90f391b56d492b998e0e55509e076eaf588cbea4",
+  "workingTree": "modified pre-commit candidate"
+}

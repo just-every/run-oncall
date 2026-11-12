@@ -1,0 +1,17 @@
+{
+  "head": "e38a3771742b0e04bf87a0f759a837baa918b821",
+  "typecheck": "passed",
+  "browserJourney": "tests/product-browser-journey.mjs#triageBulkBrowser",
+  "browser": "passed",
+  "clock": "Worker fixed one hour ahead after real-time setup, so SQLite execution lease guards remain valid",
+  "sourceLock": "passed",
+  "contractDocuments": "current; unchanged",
+  "changedFiles": {
+    "src/app/BulkResults.tsx": "f2bd6068ef3a7f444f9aca89fb6cf291990cd6b0413555a9b72203e639e5f3a4",
+    "src/app/IncidentBulkActions.tsx": "c33ca6de0162df6a65baa3e987c24e9031b799dd2f8bf6d3b9900d97d7d3be2b",
+    "src/app/IncidentTriage.tsx": "4def00f83020e73fef5a6b892a9c789f2a6b6d511d9400e04decdd2537f173ba",
+    "src/app/triage.css": "8556483d892ce8e25bda9cff2504706e6176ecd0000500bb133f1788be2d5365",
+    "tests/product-browser-journey.mjs": "245839ef05f108f22f40f520377cb3e022c56385912bbbe6f85d490d4f12c60f",
+    "sources.lock.json": "293cda1e72c04d09facfed3880c41d92294931d2983519251fd3bda0d4343e33"
+  }
+}

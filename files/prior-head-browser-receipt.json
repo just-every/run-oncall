@@ -1,0 +1,18 @@
+{
+  "head": "e38a3771742b0e04bf87a0f759a837baa918b821",
+  "journey": "tests/product-browser-journey.mjs#triageBulkBrowser",
+  "result": "passed",
+  "assertionWidth": 1440,
+  "screenshotWidths": [
+    1440,
+    390
+  ],
+  "publicDoors": [
+    "/api/setup",
+    "/api/command",
+    "/api/triage",
+    "/api/triage/bulk",
+    "/incidents"
+  ],
+  "newRegistrations": 0
+}

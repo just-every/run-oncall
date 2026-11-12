@@ -1,0 +1,59 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "e38a3771742b0e04bf87a0f759a837baa918b821",
+  "observations": [
+    {
+      "time": 1794450393.310642,
+      "command": [
+        "python3",
+        "/tmp/fleet-gh.py",
+        "api",
+        "repos/just-every/run-oncall/actions/runs?head_sha=e38a3771742b0e04bf87a0f759a837baa918b821&per_page=100"
+      ],
+      "exitCode": 0,
+      "id": 43141343111,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "e38a3771742b0e04bf87a0f759a837baa918b821",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43141343111"
+    },
+    {
+      "time": 1794450751.105338,
+      "command": [
+        "python3",
+        "/tmp/fleet-gh.py",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43141343111",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exitCode": 0,
+      "id": null,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "e38a3771742b0e04bf87a0f759a837baa918b821",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43141343111"
+    },
+    {
+      "time": 1794451053.1080606,
+      "command": [
+        "python3",
+        "/tmp/fleet-gh.py",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43141343111",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exitCode": 0,
+      "id": null,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "e38a3771742b0e04bf87a0f759a837baa918b821",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43141343111"
+    }
+  ],
+  "runId": 43141343111,
+  "status": "in_progress",
+  "conclusion": null,
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43141343111"
+}

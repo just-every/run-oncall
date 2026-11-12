@@ -1,0 +1,24 @@
+{
+  "head": "5f361388b082bd7a5f2bd9e24cfbd6b1be887d06",
+  "asserted": {
+    "selected": 50,
+    "committed": 50,
+    "rowsWithTitles": 50,
+    "rawIncidentOrOperationIdsVisible": false,
+    "copiedOperationMatchesTimeline": true,
+    "replayChangesIncidents": false,
+    "mixed": {
+      "succeeded": 1,
+      "skipped": 1,
+      "refused": 1
+    },
+    "noOpChangesIncident": false,
+    "internallyScrollingList": true
+  },
+  "assertionWidth": 1440,
+  "screenshots": [
+    1440,
+    390
+  ],
+  "journey": "tests/product-browser-journey.mjs#triageBulkBrowser"
+}

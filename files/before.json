@@ -1,0 +1,17 @@
+{
+  "base": "reproduction before changes",
+  "head": "90f391b56d492b998e0e55509e076eaf588cbea4",
+  "total": 50,
+  "committed": 50,
+  "rowsWithTitles": 0,
+  "rawOperationVisible": true,
+  "sampleRows": [
+    "55d83245: saved · revision 2",
+    "3167f4e7: saved · revision 2",
+    "76b3b910: saved · revision 2"
+  ],
+  "widths": [
+    1440,
+    390
+  ]
+}

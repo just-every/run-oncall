@@ -1,0 +1,113 @@
+{
+  "calls": [
+    {
+      "time": 1794449618.8699124,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs?head_sha=9191ac11783e2a261b58c4a996ff76c151d12422&per_page=100"
+      ],
+      "exitCode": 0
+    },
+    {
+      "time": 1794450392.1114128,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs?head_sha=e38a3771742b0e04bf87a0f759a837baa918b821&per_page=100"
+      ],
+      "exitCode": 0
+    },
+    {
+      "time": 1794450712.3898995,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43141343111",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exitCode": 0
+    },
+    {
+      "time": 1794451052.2842996,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43141343111",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exitCode": 0
+    },
+    {
+      "time": 1794451512.3728507,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs?head_sha=5f361388b082bd7a5f2bd9e24cfbd6b1be887d06&per_page=100"
+      ],
+      "exitCode": 0
+    },
+    {
+      "time": 1794451813.345148,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43143362718",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exitCode": 0
+    },
+    {
+      "time": 1794452121.9424274,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43143362718",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exitCode": 0
+    },
+    {
+      "time": 1794452432.593843,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43143362718",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exitCode": 0
+    },
+    {
+      "time": 1794452458.1209438,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43143362718/jobs?per_page=100",
+        "--jq",
+        "{jobs: [.jobs[] | {id,name,conclusion,steps:[.steps[] | select(.conclusion == \"failure\") | {name,conclusion}]}]}"
+      ],
+      "exitCode": 0
+    },
+    {
+      "time": 1794452472.0351033,
+      "command": [
+        "gh",
+        "run",
+        "view",
+        "43143362718",
+        "--repo",
+        "just-every/run-oncall",
+        "--job",
+        "130936341773",
+        "--log-failed"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "maxCalls": 10
+}
