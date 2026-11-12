@@ -49,8 +49,8 @@ export async function staleReassignmentNativeRevision(runtime,optional=false){
   assert.equal(refusal.tool,name);assert.equal(refusal.outcome,'refused');assert.equal(refusal.code,'revision_conflict');
   assert.equal(refusal.idempotency_key,staleArgs.idempotency_key);assert.equal(refusal.agent.id,context.agentId);assert.equal(refusal.sponsor.id,owner.id);
   assert.deepEqual(refusal.resource,{kind:'incident',id:incident.id});
-  if(optional)args.expected_revision=incident.revision;
   args.revision=stale.result._meta['com.runeditrun/error'].current_revision;args.idempotency_key=randomUUID();
+  if(optional)args.expected_revision=args.revision;
   assert.notEqual(args.idempotency_key,staleArgs.idempotency_key);
   const first=await tool(name,args);
   assert.equal(first.status,200);assert.equal(first.body.error,undefined);assert.equal(first.result.isError,false);

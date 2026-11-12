@@ -72,7 +72,7 @@ export async function staleServiceRevision(runtime){
    services:before.application.services.map(row=>row.id===id?saved:row),audit:once.application.audit});
   const savedEtag=fresh.result.structuredContent.etag;
   assert.match(savedEtag,/^[a-f0-9]{64}$/);assert.notEqual(savedEtag,returned);
-  assert.deepEqual(fresh.result.structuredContent,{...saved,etag:savedEtag});
+  assert.deepEqual(fresh.result.structuredContent,{...saved,dependencies:saved.dependencies??[],etag:savedEtag});
   assert.equal(once.records.oc_admin_audit.length,before.records.oc_admin_audit.length+1);
   for(const record of before.records.oc_admin_audit)assert.deepEqual(once.records.oc_admin_audit.find(row=>row.id===record.id),record);
   const commit=once.records.oc_admin_audit.find(row=>!before.records.oc_admin_audit.some(prior=>prior.id===row.id));
