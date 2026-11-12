@@ -1,0 +1,96 @@
+diff --git a/src/agent-door/rest.ts b/src/agent-door/rest.ts
+index a7344ad..40de7e2 100644
+--- a/src/agent-door/rest.ts
++++ b/src/agent-door/rest.ts
+@@ -1,4 +1,5 @@
+-import { runtimeBindings, type Bindings } from '../auth.server'
++import { ownerClaimConfig, runtimeBindings, type Bindings } from '../auth.server'
++import { apiClientPolicyUnset, type ClientPolicyStatus } from '../automation/client-policy'
+ import { fail } from '../family/response-operations/domain'
+ import type { Operation } from '../automation/model'
+ import type { CallResult } from '../modules/agent-door/index.ts'
+@@ -10,6 +11,20 @@ const select = (value: Args, keys: string[]) => Object.fromEntries(keys.filter(k
+ // REST adapter never creates an initialization cycle through this module.
+ const agentDoor = async (env: Bindings) => (await import('./index.server')).oncallAgentDoor(runtimeBindings(env))
+ 
++/** Read the supported policy door with the same current administrator session. */
++export async function clientPolicyStatus(env: Bindings, request: Request): Promise<ClientPolicyStatus> {
++  const response = await (await agentDoor(env)).handle(new Request(new URL('/agents/api/state', runtimeBindings(env).AUTH_ORIGIN), { headers: request.headers }))
++  if (!response?.ok) return { state: 'unknown', setupUrl: '/agents' }
++  const { policy, paused } = await response.json() as {
++    policy: { complete: boolean; business: string | null; expires_at: string | null }
++    paused: { business: boolean; local: boolean }
++  }
++  const trust = ownerClaimConfig(runtimeBindings(env))
++  const setupUrl = trust && policy.business ? `${trust.issuer}/business/${encodeURIComponent(policy.business)}/settings/policy` : '/agents'
++  return { setupUrl, state: paused.business || paused.local ? 'paused'
++    : policy.expires_at && Date.parse(policy.expires_at) <= Date.now() ? 'expired' : policy.complete ? 'set' : 'unset' }
++}
++
+ /** REST credentials are the same real local service-account principal as MCP. */
+ async function principal(env: Bindings, request: Request) {
+   const local = await localCredentials(env, request)
+@@ -82,7 +97,7 @@ export function restRefusal(result: CallResult): Response | null {
+     : ['rate_limited','rate_or_capacity_limit','capacity_exceeded'].includes(code) ? 429
+     : code === 'request_too_large' ? 413
+     : ['execution_failed', 'output_invalid', 'policy_unavailable'].includes(code) ? 503 : 403
+-  return Response.json({ error: { code, message: code.replaceAll('_', ' ') }, decision: result.decision, ...(result.fields ? { fields: result.fields } : {}),
++  return Response.json({ error: { code, message: code === 'policy_unset' ? apiClientPolicyUnset : code.replaceAll('_', ' ') }, decision: result.decision, ...(result.fields ? { fields: result.fields } : {}),
+     ...(result.approval ? { approval: result.approval } : {}), ...(result.requestState ? { requestState: result.requestState } : {}) },
+     { status, headers: { 'cache-control': 'no-store' } })
+ }
+diff --git a/src/automation/AutomationSettings.tsx b/src/automation/AutomationSettings.tsx
+index 307db39..ba05040 100644
+--- a/src/automation/AutomationSettings.tsx
++++ b/src/automation/AutomationSettings.tsx
+@@ -2,6 +2,7 @@ import { useState } from 'react';
+ import { InlineConfirm } from '../app/autosave/InlineConfirm';
+ import { Form } from '../forms';
+ import { ClientCreate,permissionAreas } from './ClientCreate';
++import { ClientPolicyNotice } from './ClientPolicyNotice';
+ import { OneTimeSecret } from '../integrations/OneTimeSecret';
+ import { privateKey, shortTime, type IntegrationProps } from '../integrations/catalog';
+ import '../integrations/integrations.css';
+@@ -16,8 +17,9 @@ export function AutomationSettings({state,admin,busy,run}:IntegrationProps) {
+  return <section className="panel padded integrations" id="response-api" aria-label="API clients, recipients and outbox">
+   {!admin&&<p>An administrator manages clients, recipients and delivery failures.</p>}
+   <details><summary>API clients ({clients.length})</summary><h2>API clients</h2>
++   {admin&&<ClientPolicyNotice revision={state.revision}/>}
+    {!clients.length&&<p>No API clients configured.</p>}
+-   <ul className="integration-rows">{clients.map(c=><li key={c.id}><strong>{c.name}</strong><p>{c.services.map(id=>state.services.find(s=>s.id===id)?.name??'Service unavailable').join(', ')}{!c.active?' · Inactive':''}</p><details><summary>Permissions</summary><ul>{permissionAreas.filter(([area])=>c.permissions.includes(area+':read')).map(([area,label])=><li key={area}>{label} · {c.permissions.includes(area+':write')?'Read and change':'Read'}</li>)}</ul></details>{admin&&<details className="integration-entry-actions"><summary>Client actions</summary><button disabled={busy} onClick={()=>setAction({kind:'clients',id:c.id,verb:'rotate'})}>Rotate {c.name}</button><button disabled={busy||!c.active} onClick={()=>setAction({kind:'clients',id:c.id,verb:'revoke'})}>Revoke {c.name}</button></details>}</li>)}</ul>
++   <ul className="integration-rows">{clients.map(c=><li key={c.id}><strong>{c.name}</strong><p>{c.services.map(id=>state.services.find(s=>s.id===id)?.name??'Service unavailable').join(', ')}{!c.active?' · Inactive':''}</p><details><summary>Permissions</summary><ul>{permissionAreas.filter(([area])=>c.permissions.includes(area+':read')).map(([area,label])=><li key={area}>{label} · {c.permissions.includes(area+':write')?'Read and change':'Read'}</li>)}</ul></details>{admin&&<details className="integration-entry-actions integration-client-actions"><summary>Client actions</summary><button disabled={busy} onClick={()=>setAction({kind:'clients',id:c.id,verb:'rotate'})}>Rotate {c.name}</button><button disabled={busy||!c.active} onClick={()=>setAction({kind:'clients',id:c.id,verb:'revoke'})}>Revoke {c.name}</button></details>}</li>)}</ul>
+    {admin&&<>{clientForm||!clients.length?<ClientCreate state={state} busy={busy} run={run} onDone={()=>setClientForm(false)}/>:<button type="button" onClick={()=>setClientForm(true)}>Add client</button>}</>}
+    <a className="integration-link" href="/docs/response-api">API reference</a>
+   </details>
+diff --git a/src/automation/api.ts b/src/automation/api.ts
+index 8e33fb4..fb505cd 100644
+--- a/src/automation/api.ts
++++ b/src/automation/api.ts
+@@ -1,4 +1,4 @@
+-import { invokeRestMutation, invokeRestRead, invokeRestReceipt, restRefusal } from '../agent-door/rest';
++import { clientPolicyStatus, invokeRestMutation, invokeRestRead, invokeRestReceipt, restRefusal } from '../agent-door/rest';
+ import { resolveIncidentAlias } from '../incident-workflows/relations.ts';
+ import { incidentWithinServices } from '../incident-workflows/scope.ts';
+ import { fail, Fault, text, type State } from '../family/response-operations/domain';
+@@ -26,7 +26,7 @@ function scopes(state:State,input:any) {
+ }
+ export function installAutomationManagement(api:any,deps:Deps) {
+  const owner=async(c:any)=>{const state=await deps.state(c,true);if(!activeOwner(state,c.get('actor').id))fail('Current administrator required',403);return state;};
+- api.get('/api/automation',async(c:any)=>{const state=await owner(c);return c.json({clients:state.apiClients??[],endpoints:state.apiEndpoints??[],outbox:state.apiOutbox??[],paging:'OFF'});});
++ api.get('/api/automation',async(c:any)=>{const state=await owner(c);return c.json({clients:state.apiClients??[],endpoints:state.apiEndpoints??[],outbox:state.apiOutbox??[],paging:'OFF',policy:await clientPolicyStatus(c.env,c.req.raw)});});
+  api.post('/api/automation/clients',async(c:any)=>{
+   const state=await owner(c),input=await deps.body(c),key=secret(input.key),allowed=scopes(state,input.services);
+   if(!Array.isArray(input.permissions)||!input.permissions.length||new Set(input.permissions).size!==input.permissions.length||input.permissions.some((p:any)=>!permissions.includes(p)))fail('Choose documented API permissions');
+diff --git a/src/integrations/integrations.css b/src/integrations/integrations.css
+index a21c4b9..7cbf0b6 100644
+--- a/src/integrations/integrations.css
++++ b/src/integrations/integrations.css
+@@ -45,6 +45,8 @@
+ 
+ .integration-entry-actions { opacity:0; pointer-events:none; }
+ .integrations li:hover>.integration-entry-actions, .integrations li:focus-within>.integration-entry-actions { opacity:1; pointer-events:auto; }
++#response-api .integration-client-actions { opacity:1; pointer-events:auto; }
++.api-client-policy p { margin: 4px 0; }
+ 
+ .integration-home-panels #response-api { border:0; padding:0; background:transparent; box-shadow:none; }
+ 

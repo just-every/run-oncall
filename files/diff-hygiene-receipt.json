@@ -1,0 +1,16 @@
+{
+  "scope": "candidate diff; credential-shaped token and private-key review, not the fleet publication scan",
+  "paths": [
+    "docs/response-api.md",
+    "sources.lock.json",
+    "src/agent-door/rest.ts",
+    "src/automation/AutomationSettings.tsx",
+    "src/automation/ClientPolicyNotice.tsx",
+    "src/automation/api.ts",
+    "src/automation/client-policy.ts",
+    "src/integrations/integrations.css",
+    "tests/member-coordination-browser.mjs"
+  ],
+  "credential_findings": 0,
+  "full_publication_scan": "deferred to fleet as required by cloud adaptation"
+}

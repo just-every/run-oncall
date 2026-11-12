@@ -1,0 +1,46 @@
+{
+  "head": "d4922ff315c71dcf2693b00405b083e121c17397",
+  "run": 43150587877,
+  "observations": [
+    {
+      "id": 43150587877,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "d4922ff315c71dcf2693b00405b083e121c17397",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43150587877",
+      "observed_at": 1794455308.9687998
+    },
+    {
+      "id": 43150587877,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "d4922ff315c71dcf2693b00405b083e121c17397",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43150587877",
+      "observed_at": 1794455609.4888468
+    },
+    {
+      "id": 43150587877,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "d4922ff315c71dcf2693b00405b083e121c17397",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43150587877",
+      "observed_at": 1794455909.980202
+    },
+    {
+      "id": 43150587877,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "d4922ff315c71dcf2693b00405b083e121c17397",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43150587877",
+      "observed_at": 1794456210.4904573
+    },
+    {
+      "id": 43150587877,
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "d4922ff315c71dcf2693b00405b083e121c17397",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43150587877",
+      "observed_at": 1794456511.077173
+    }
+  ]
+}

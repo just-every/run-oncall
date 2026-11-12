@@ -1,0 +1,42 @@
+[
+  {
+    "call": 1,
+    "time": 1794454593.179496,
+    "command": "gh run view 43147182798 --repo just-every/run-oncall --json status,conclusion,jobs"
+  },
+  {
+    "call": 2,
+    "time": 1794454822.4650476,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/43147182798 --jq {id,run_attempt,status,conclusion,head_sha,html_url}"
+  },
+  {
+    "call": 3,
+    "time": 1794455125.0914605,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/43147182798 --jq {id,run_attempt,status,conclusion,head_sha,html_url}"
+  },
+  {
+    "call": 4,
+    "time": 1794455308.4371667,
+    "command": "gh api repos/just-every/run-oncall/actions/runs?head_sha=d4922ff315c71dcf2693b00405b083e121c17397&per_page=100"
+  },
+  {
+    "call": 5,
+    "time": 1794455609.0094974,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/43150587877 --jq {id,status,conclusion,head_sha,html_url}"
+  },
+  {
+    "call": 6,
+    "time": 1794455909.5229123,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/43150587877 --jq {id,status,conclusion,head_sha,html_url}"
+  },
+  {
+    "call": 7,
+    "time": 1794456210.0207598,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/43150587877 --jq {id,status,conclusion,head_sha,html_url}"
+  },
+  {
+    "call": 8,
+    "time": 1794456510.5181487,
+    "command": "gh api repos/just-every/run-oncall/actions/runs/43150587877 --jq {id,status,conclusion,head_sha,html_url}"
+  }
+]

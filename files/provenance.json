@@ -1,0 +1,27 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-api-clients-ready-1-c1",
+  "head": "d4922ff315c71dcf2693b00405b083e121c17397",
+  "tree": "5c0eac02180c1ff5437a2b56aeaeae6618021405",
+  "parent": "c3e47a61047a1396df78e337ad76bb7e0a2fd85d",
+  "base": "c3e47a61047a1396df78e337ad76bb7e0a2fd85d",
+  "commit_count": 1,
+  "merge_count": 0,
+  "worktree_clean": true,
+  "views": {
+    "CONTRACT.md": {
+      "sha256": "665a095143d1742134d154c6cce7a91a82ec0add0e1c7f6813b2b18708594da6",
+      "identical_to_origin_main": true
+    },
+    "ACCEPTANCE.md": {
+      "sha256": "523c6934a62c4d09fd9467a5682b61bc406f286297a1589b10fe23ef7327e433",
+      "identical_to_origin_main": true
+    },
+    "docs/CLAIMS.md": {
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440",
+      "identical_to_origin_main": true
+    }
+  },
+  "pr": null,
+  "baseline_worktree_removed": true
+}

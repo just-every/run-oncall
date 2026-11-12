@@ -1,0 +1,42 @@
+{
+  "repository": "just-every/run-oncall",
+  "tag": "main-oncall-api-clients-ready-1-c1",
+  "branch": "cloud/main-oncall-api-clients-ready-1-c1",
+  "head": "d4922ff315c71dcf2693b00405b083e121c17397",
+  "product_push": "success",
+  "product_commit_count": 1,
+  "merges": 0,
+  "pr": null,
+  "verify": {
+    "id": 43150587877,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "d4922ff315c71dcf2693b00405b083e121c17397",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43150587877",
+    "observed_at": 1794456511.077173
+  },
+  "github_calls_used": 8,
+  "local_checks": "passed; see local-checks.json",
+  "clause_status_changes": [],
+  "counts_before": {
+    "clause_status_counts": {
+      "done": 25,
+      "partial": 42,
+      "missing": 34
+    },
+    "plan_invocations": 16,
+    "unique_files": 12
+  },
+  "counts_after": {
+    "clause_status_counts": {
+      "done": 25,
+      "partial": 42,
+      "missing": 34
+    },
+    "plan_invocations": 16,
+    "unique_files": 12
+  },
+  "claim": "CLAIM OC-053 PARTIAL points=none tests=tests/member-coordination-browser.mjs#OC-053 API client policy setup",
+  "blockers": [],
+  "full_publication_scan": "fleet landing gate; cannot run in cloud"
+}

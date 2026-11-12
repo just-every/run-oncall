@@ -1,0 +1,12 @@
+{
+  "candidate_count": 1,
+  "merges": 0,
+  "commits": [
+    {
+      "sha": "d4922ff315c71dcf2693b00405b083e121c17397",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": []
+    }
+  ]
+}

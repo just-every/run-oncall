@@ -1,0 +1,57 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {writeFile,mkdir} from 'node:fs/promises';
+import {join} from 'node:path';
+import {randomBytes} from 'node:crypto';
+import {automationRuntime} from './run-oncall/tests/worker.mjs';
+import {keyboardUser} from './run-oncall/tests/keyboard.mjs';
+const require=createRequire(new URL('./run-oncall/package.json',import.meta.url));
+const {chromium,expect}=require('@playwright/test');
+const packet=new URL('./packet/',import.meta.url).pathname;
+await mkdir(join(packet,'client-proof'),{recursive:true});
+const runtime=await automationRuntime();
+const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
+const receipts=[];
+try {
+ const setup=await runtime.request('/api/setup',{name:'Synthetic Oncall Proof Owner',password:'synthetic-oncall-proof-password'});assert.equal(setup.status,200);
+ const cookie=setup.cookie,req=(p,d)=>runtime.request(p,d,cookie),owner=setup.value.member;
+ assert.equal((await req('/api/command',{type:'service',id:'synthetic-oncall-1',name:'Synthetic proof service',environment:'test',owner:owner.id,runbook:[],pager:''})).status,200);
+ for(const width of [1440,390]) {
+  const context=await browser.newContext({viewport:{width,height:1000},hasTouch:width===390});
+  const at=cookie.indexOf('=');await context.addCookies([{name:cookie.slice(0,at),value:cookie.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}]);
+  const page=await context.newPage(),key=keyboardUser(page);
+  const clientName='Synthetic proof client '+width,secret=randomBytes(32).toString('hex');
+  const created=await req('/api/automation/clients',{name:clientName,key:secret,services:['synthetic-oncall-1'],permissions:['incidents:read']});assert.equal(created.status,201);
+  await page.goto(runtime.origin+'/settings/integrations');
+  const panel=page.locator('#response-api');await panel.locator(':scope > details > summary').first().click();
+  const row=panel.locator('.integration-rows > li').filter({has:page.getByText(clientName,{exact:true})});
+  const actions=row.locator('.integration-client-actions'),summary=actions.locator('summary');
+  if(width===390)await summary.tap();else await summary.click();
+  await expect(actions.getByRole('button',{name:'Rotate '+clientName,exact:true})).toBeVisible();
+  assert.equal(await actions.evaluate(el=>getComputedStyle(el).opacity),'1');
+  await panel.screenshot({path:join(packet,'client-proof','pointer-'+width+'.png')});
+  if(width===390)await summary.tap();else await summary.click();
+  await page.keyboard.press('Tab');await key.activate(summary);await key.visibleFocus(summary);
+  await panel.screenshot({path:join(packet,'client-proof','keyboard-'+width+'.png')});
+  await key.activate(actions.getByRole('button',{name:'Rotate '+clientName,exact:true}));
+  const rotateResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/automation/clients/'+created.value.id+'/rotate'&&r.request().method()==='POST');
+  await key.activate(panel.getByRole('button',{name:'Rotate key',exact:true}));assert.equal((await rotateResponse).status(),200);
+  await panel.getByLabel('Private key',{exact:true}).waitFor();
+  const rotated=await panel.getByLabel('Private key',{exact:true}).inputValue();assert.ok(rotated&&rotated!==secret);
+  await key.activate(panel.getByRole('button',{name:'Done',exact:true}));
+  const old=await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+secret});assert.equal(old.status,401);
+  const revoke=actions.getByRole('button',{name:'Revoke '+clientName,exact:true});
+  await key.activate(revoke);
+  const revokeResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/automation/clients/'+created.value.id+'/revoke'&&r.request().method()==='POST');
+  await key.activate(panel.getByRole('button',{name:'Revoke key',exact:true}));assert.equal((await revokeResponse).status(),200);
+  assert.equal((await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+rotated})).status,401);
+  await page.goto(runtime.origin+'/settings/services');await page.getByRole('button',{name:'Add service',exact:true}).waitFor();
+  await page.keyboard.press('Tab');await key.reach(page.getByRole('button',{name:'Add service',exact:true}));await key.visibleFocus(page.getByRole('button',{name:'Add service',exact:true}));
+  await page.screenshot({path:join(packet,'client-proof','services-focus-'+width+'.png'),fullPage:true});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  receipts.push({width,pointer:width===390?'unforced tap':'unforced click',actionsVisible:true,keyboard:{nativeTab:true,summaryEnter:true,visibleFocus:true,rotationStatus:200,oldKeyStatus:401,revocationStatus:200,revokedKeyStatus:401},servicesFocus:true,overflow:false});
+  await context.close();
+ }
+ await writeFile(join(packet,'client-input-receipt.json'),JSON.stringify({schema:1,results:receipts},null,2)+'\n');
+ console.log('PASS pointer and native keyboard Client actions, rotation, revocation and Settings Services focus at 1440 and 390');
+}finally {await browser.close();await runtime.close();}

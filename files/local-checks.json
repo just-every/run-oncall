@@ -1,0 +1,77 @@
+{
+  "head": "d4922ff315c71dcf2693b00405b083e121c17397",
+  "tree": "5c0eac02180c1ff5437a2b56aeaeae6618021405",
+  "checks": [
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=accessibility node tests/product-browser.mjs",
+      "exit_code": 0,
+      "scope": "squashed candidate product tree; before navigation-wait-only test repair",
+      "log": "focus-candidate.log",
+      "log_sha256": "ea835fe07b0f25100769b0344ca616d81451365aa528004c651c222c2c48c236"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=accessibility node tests/product-browser.mjs",
+      "exit_code": 0,
+      "scope": "origin/main c3e47a61047a1396df78e337ad76bb7e0a2fd85d",
+      "log": "focus-main.log",
+      "log_sha256": "ea835fe07b0f25100769b0344ca616d81451365aa528004c651c222c2c48c236"
+    },
+    {
+      "command": "node tests/member-coordination-browser.mjs",
+      "exit_code": 0,
+      "scope": "final product source before commit; source lock regenerated afterward",
+      "log": "browser-api.log",
+      "log_sha256": "352f2fae715c8eb05e0e1b71b3837d9349a474e9d3c103b65e5ac20b38d4f58a"
+    },
+    {
+      "command": "node ../client-proof.mjs",
+      "exit_code": 0,
+      "scope": "final product source; before navigation-wait-only test repair",
+      "log": "client-input-proof.log",
+      "log_sha256": "3a337d9b8427f0a8b738d77760033d68727ef821ce0ccbc8efb33a4ea22479e7"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0,
+      "scope": "final product source before commit; source lock regenerated afterward",
+      "log": "typecheck.log",
+      "log_sha256": "7532dfb13a27b71b1680d12e79f5eb7df9e7edfec9f25f070614d39d18b6b7a9"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit_code": 0,
+      "scope": "final product source before commit; source lock regenerated afterward",
+      "log": "build.log",
+      "log_sha256": "e890c7137e59e16fe03dbbbf3e89c7b26035f91e01f93f438d8fb57187791f3d"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "scope": "final product source before commit; source lock regenerated afterward",
+      "log": "contract-check.log",
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0,
+      "scope": "final product tree",
+      "log": "source-lock.log",
+      "log_sha256": "3e4383f015655366356be85fb598d9087027bd1228d9ca6f15291977ada0ff0b"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "scope": "final product tree",
+      "log": "source-lock-check.log",
+      "log_sha256": "8d40aded14cf77a30afed4329360dead9fba1c3e58b5e18040e13b0e005f3edc"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit_code": 0,
+      "scope": "origin/main c3e47a61047a1396df78e337ad76bb7e0a2fd85d",
+      "log": "baseline-build.log",
+      "log_sha256": "6669b2ac33c29a2834b3d1cc4e1fbd73cf57035dd932fc0ba7b7194f45664311"
+    }
+  ],
+  "full_local_verify": "not run; touched checks locally and full exact-SHA branch Verify in CI"
+}

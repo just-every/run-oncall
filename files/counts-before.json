@@ -1,0 +1,9 @@
+{
+  "clause_status_counts": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34
+  },
+  "plan_invocations": 16,
+  "unique_files": 12
+}

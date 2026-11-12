@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "blob": "83e4fadbd21426e919a578d35c7f5b920de34d90",
+      "bytes": 2109,
+      "path": "PLAN.md",
+      "sha256": "b8860dc109c820fc775ac334da99f329a9a20895a2c5da033ed1ce8a95abba0a"
+    },
+    {
+      "blob": "dcf82bf3ff0269f1cd7d1b761c9d225aed0c1e02",
+      "bytes": 7095,
+      "path": "REPORT.md",
+      "sha256": "874e40c0d6812194e7fb49e3abe65ee4ab17554fd9c4a93074cc1f406778f5c6"
+    },
+    {
+      "blob": "69abf970270eb56b78cd4cefc1580dbcedd9c08a",
+      "bytes": 38931,
+      "path": "automation-client-actions-1440.png",
+      "sha256": "4b6a07ffff6593732486dc843e5d1f72549f625a97cb25764f3a0772fe7fd5ec"
+    },
+    {
+      "blob": "0952edc1b25b0c5c4b687363294f67d12d1db55f",
+      "bytes": 37384,
+      "path": "automation-client-actions-390.png",
+      "sha256": "c312ef97326e5ad142b9c0df6798ae22d1feb07ffd9794ef2f5be93ed2909cd0"
+    },
+    {
+      "blob": "68254ee3053fa9f8d863c88a7a7bfa61dd542475",
+      "bytes": 35557,
+      "path": "automation-client-pending-1440.png",
+      "sha256": "d28cd827f86906eab6ca2da8f7bca1b3639a37ee3f26506fc2a6a3587f5eed82"
+    },
+    {
+      "blob": "d648aebc5088e0a1ce3be53919e2613e96c408d7",
+      "bytes": 33195,
+      "path": "automation-client-pending-390.png",
+      "sha256": "40199976df0e07601329d5a8f38857b3bec1e1b4d13cc927bd3daae636c41385"
+    },
+    {
+      "blob": "51caf44ba1efeeb9f0e316b4e894edce186e55a5",
+      "bytes": 57662,
+      "path": "automation-policy-unset-1440.png",
+      "sha256": "0807ec9f3b00f616db16dc23443f0343536c400e20d4523b8f1cd6fdee9b8651"
+    },
+    {
+      "blob": "f8f63c556320bfe5785f731dd69121b54f51e183",
+      "bytes": 52680,
+      "path": "automation-policy-unset-390.png",
+      "sha256": "09f8d2f5b617f89b51cf6129fdcd12a1d53eb35d91aaa55aa3f5ee9407369d47"
+    },
+    {
+      "blob": "5038192ac3ad8f6de24bdc02bba2742d5e867c90",
+      "bytes": 27288,
+      "path": "before-1440.png",
+      "sha256": "98a84f3afd908a21e9a1a5602062ba42d5520b1f2dad82b5bfff3c2faf4edc44"
+    },
+    {
+      "blob": "a54cb8b483b3e105dd8ce6fb6c669feb838fea8f",
+      "bytes": 32560,
+      "path": "before-390.png",
+      "sha256": "f4b2b86cb0acc6d7a9ee503c6e324ba47fc09cae04441fa8e7c9121914859883"
+    },
+    {
+      "blob": "be9f359af97a60fa24a14bde0d29efbcb6a37e76",
+      "bytes": 4657,
+      "path": "browser.log",
+      "sha256": "8be8ad2500bea61ff8609d4c9e422d891ddbe45e8a36e1b65c7c102b384b092a"
+    },
+    {
+      "blob": "43517b65f5739726283339d8d228402a9b58b599",
+      "bytes": 16063,
+      "path": "build.log",
+      "sha256": "097a533089cd348661e71d1c4fb39596f6c4363ffedfae00d7a0e69812d3f36e"
+    },
+    {
+      "blob": "c8a2f857c2a0afaa4b1468747f5125a1d42fe137",
+      "bytes": 1145,
+      "path": "candidate-push.txt",
+      "sha256": "be67692e794a8910979f9cd93b7fe8305de1db1752f8d6398c9e777f424fbe3d"
+    },
+    {
+      "blob": "56f9256a04a433d61fc209138120dbc524c730a8",
+      "bytes": 1387,
+      "path": "ci-receipt.json",
+      "sha256": "8da19bb0b886fa8a3710dfb91445f6f0eb468e123f44035b22666410bd82ef8e"
+    },
+    {
+      "blob": "5e20625482ee8dd2467b5e21be95cdfa54b21fa6",
+      "bytes": 1772,
+      "path": "local-checks.json",
+      "sha256": "a9f19ef4cf3f3cd3c3974afb1aa9cb99c4d99bf643e3991d6fc0ae6560b90da4"
+    },
+    {
+      "blob": "3d4893dbd92d5df1ac921389b08778e9b8560e1a",
+      "bytes": 506,
+      "path": "phone-pointer-receipt.json",
+      "sha256": "abcf80e8bc9a9d4d43b4d2a77733ce52f19dfbfc3eac0cf21898c7a8014b764f"
+    },
+    {
+      "blob": "b3a6cf85289c3284ae175815a508104396bcf149",
+      "bytes": 2706,
+      "path": "provenance.json",
+      "sha256": "44946e06f881f1e3260943e953d714c8b0362a772307ec0d7b31571055097b62"
+    },
+    {
+      "blob": "974dfa6b7abdf10ff5af059fadf0f82be3bf4baf",
+      "bytes": 1120,
+      "path": "reproduction.json",
+      "sha256": "f934877909543e8b4b1f0f07cdeda8eeffb0c244d5289a70c43a977319e7c898"
+    },
+    {
+      "blob": "85da2baf874822d06b897545386b2d45e9b4e902",
+      "bytes": 1108,
+      "path": "save-push.txt",
+      "sha256": "a2792aa84f0a8aab81b9a1c62a58a19a41511ab4959e574f70f3260272b5bd4f"
+    },
+    {
+      "blob": "465833a78e1c3815ca6ee31262d902c7385affa9",
+      "bytes": 182,
+      "path": "typecheck.log",
+      "sha256": "9b0b3594186bafc8dab911d0c747824f1d6b96686af29dd61cb9871a699c6700"
+    }
+  ],
+  "product_branch": "cloud/main-oncall-api-clients-ready-1",
+  "product_head": "fcc1fec3a3b0be2e85b4c928260fe80fa0ca1e01",
+  "ref": "refs/heads/evidence/main-oncall-api-clients-ready-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "main-oncall-api-clients-ready-1"
+}

@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "results": [
+    {
+      "width": 1440,
+      "pointer": "unforced click",
+      "actionsVisible": true,
+      "keyboard": {
+        "nativeTab": true,
+        "summaryEnter": true,
+        "visibleFocus": true,
+        "rotationStatus": 200,
+        "oldKeyStatus": 401,
+        "revocationStatus": 200,
+        "revokedKeyStatus": 401
+      },
+      "servicesFocus": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "pointer": "unforced tap",
+      "actionsVisible": true,
+      "keyboard": {
+        "nativeTab": true,
+        "summaryEnter": true,
+        "visibleFocus": true,
+        "rotationStatus": 200,
+        "oldKeyStatus": 401,
+        "revocationStatus": 200,
+        "revokedKeyStatus": 401
+      },
+      "servicesFocus": true,
+      "overflow": false
+    }
+  ],
+  "head": "d4922ff315c71dcf2693b00405b083e121c17397",
+  "scope": "same runtime source as the final head; proof ran before the existing journey navigation-wait change and final source-lock regeneration"
+}
