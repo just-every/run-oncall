@@ -102,7 +102,7 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | `oncall.incidents.read` | `incidents:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`incident-read`, `erase-read`); `sensitive`: `tests/agent-door.mjs` (`incident-read`, `erase-read`) |
 | `oncall.incidents.receipt` | `incidents:write` | `standard` | `standard`: `tests/agent-door.mjs` (`incidents-receipt`) |
 | `oncall.incidents.resolve` | `incidents:write` | `commitment`, `sensitive` | `commitment`: `tests/agent-door.mjs` (`resolve`); `sensitive`: `tests/agent-door.mjs` (`resolve`) |
-| `oncall.incidents.update` | `incidents:write` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`recover`); `sensitive`: `tests/agent-door.mjs` (`recover`) |
+| `oncall.incidents.update` | `incidents:write` | `standard`, `sensitive`, `live` | `standard`: `tests/agent-door.mjs` (`incident-snooze`, `incident-cancel-deadline`, `manual-page`, `recover`); `sensitive`: `tests/agent-door.mjs` (`recover`); `live`: `tests/agent-door.mjs` (`incident-snooze`, `incident-cancel-deadline`, `manual-page`) |
 
 ### Integrations
 

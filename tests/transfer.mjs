@@ -587,7 +587,42 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  sql("INSERT INTO credentials VALUES('"+member.id+"','fixture-salt','fixture-password-digest')")
  assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:member.id})).status,409,'held password data cannot be claimed by a new native owner')
  sql('DELETE FROM credentials')
- ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}))
+ // Choose the retained identity through the same owner entry as a restored installation.
+ {
+  const {chromium}=await import('@playwright/test')
+  const browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH,args:['--no-sandbox']})
+  try {
+   const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage()
+   await page.goto(m.openLink)
+   await page.waitForURL(url=>url.pathname==='/signin/local'&&url.searchParams.get('restore')==='1')
+   const picker=page.getByRole('combobox',{name:'Archived administrator'})
+   await picker.locator('option').nth(1).waitFor({state:'attached'})
+   const administrators=ok(await req('/api/identity-link/administrators')).administrators
+   const options=await picker.locator('option').evaluateAll(rows=>rows.filter(row=>row.value).map(row=>({id:row.value,text:row.textContent})))
+   assert.equal(options.length,administrators.length,'every archived administrator remains selectable')
+   for(const admin of administrators){
+    const option=options.find(row=>row.id===admin.id)
+    assert.ok(option?.text.includes(admin.name),'the hidden option value retains the named administrator identity')
+    assert.doesNotMatch(option.text,/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i,'visible administrator choices contain no database UUID')
+   }
+   await picker.selectOption(member.id)
+   assert.doesNotMatch(await page.locator('.oc-door-restore').innerText(),/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i,'selected identity details also contain no UUID')
+   const evidence=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(evidence,{recursive:true})
+   for(const width of [1440,390]){
+    await page.setViewportSize({width,height:1000})
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'restored owner entry fits the viewport')
+    await page.screenshot({path:evidence+'/restored-owner-'+width+'.png',fullPage:true})
+   }
+   await page.getByRole('checkbox',{name:'I confirm this is my archived administrator identity.'}).check()
+   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname==='/api/identity-link')
+   await page.getByRole('button',{name:'Confirm restored owner mapping'}).click()
+   assert.equal((await submitted).postDataJSON().adminMapping,member.id,'mapping submits the selected hidden identity unchanged')
+   await page.locator('.oncall-frame').waitFor()
+   const session=await context.request.get(m.origin+'/api/session');assert.equal(session.status(),200)
+   assert.equal((await session.json()).member.id,member.id,'the browser maps to the chosen archived administrator')
+   await context.close()
+  }finally{await browser.close()}
+ }
  const receivingState=ok(await req('/api/state'))
  const heldOutbox=prior.apiOutbox.map(item=>{
   if(!['queued','sending','failed'].includes(item.status))return {...item,authorized:false}
