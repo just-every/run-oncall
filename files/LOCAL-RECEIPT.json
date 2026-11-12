@@ -100,5 +100,29 @@
   "ci": "pending; see ci-status.json",
   "pr": null,
   "publication_scan": "Fleet Mac landing gate; not run in cloud",
-  "local_build_product_source_head": "880c3b559b1bb5e51df6570442813ed7e810d89b"
+  "local_build_product_source_head": "880c3b559b1bb5e51df6570442813ed7e810d89b",
+  "import_account_records": 75,
+  "import_account_classification": {
+    "mapped": 0,
+    "mappedWithDifferences": 52,
+    "rejected": 23
+  },
+  "browser_proof": [
+    "timeline-recovery-1440.png",
+    "timeline-recovery-390.png",
+    "oc054-readiness-1440.png",
+    "oc054-readiness-390.png"
+  ],
+  "initial_test_failures": [
+    {
+      "file": "baseline-regression.log",
+      "reason": "CDP timezone override conflicted with the configured Playwright timezone; corrected by a separate synthetic-session context"
+    },
+    {
+      "file": "import-door-initial.log",
+      "reason": "New test used sourceId instead of the preview item id; corrected"
+    }
+  ],
+  "extra_local_check": "The initial focused readiness command also ran and passed the existing agent-door browser suite; the focused selector now stops after Readiness.",
+  "working_tree_clean": true
 }

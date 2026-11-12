@@ -5,7 +5,10 @@ Repository: just-every/run-oncall
 Branch: cloud/main-oncall-timeline-plain-1
 Baseline main: 90f391b56d492b998e0e55509e076eaf588cbea4
 Saved product commit: 880c3b559b1bb5e51df6570442813ed7e810d89b
-Final product head and exact-SHA CI outcome: recorded in FINAL-RECEIPT.json and ci-status.json after publication.
+Final product head: a467ff31046fa5a5c750f69c49e663a4d2a30c60
+Verify run: [43140273566](https://github.com/just-every/run-oncall/actions/runs/43140273566) — completed/success on the exact candidate SHA at 2026-11-12T02:32:36Z.
+Blockers: none. Product custody: READY.
+PR: none; this brief uses the fleet branch landing contract.
 
 ## Result and scope
 
@@ -40,9 +43,9 @@ The source browser uses a separate synthetic-session context in Australia/Brisba
 
 ## Validation and publication
 
-See FINAL-RECEIPT.json for the actual final command outcomes, product SHA and CI IDs. Actual local logs, the generated lock-check result, contract check output, timeline-receipt.json, and exact-SHA CI observations accompany this report. Full local verify was not run: the brief reserves the full wall for exact-SHA branch Verify.
+See FINAL-RECEIPT.json for the actual final command outcomes, product SHA and CI IDs. Actual local logs, the generated lock-check result, contract check output, timeline-receipt.json, and exact-SHA CI observations accompany this report. Full local verify was not run: the brief reserves the full wall for exact-SHA branch Verify. CI discovery initially failed locally because a URL sanitizer damaged unprojected JSON; no CI conclusion was claimed, the sanitizer was corrected, REST output was narrowed, and the next call was deferred at least 301 seconds. Every observation and the call count is retained in ci-runs.jsonl.
 
-The first real source commit was saved to the named cloud branch with skip-ci. Before the candidate, current main was fetched and merged (already included); published history was never rebased or force-pushed. The source lock was regenerated last and checked. Neither generated acceptance view was committed. Candidate author, committer, complete messages and trailers were inspected. Product and report-only refs are separate. The fleet Mac retains its required publication scan and landing gates; this cloud makes no landing or production-release claim.
+The first real source commit was saved to the named cloud branch with skip-ci. Before the candidate, current main was fetched and merged (already included); published history was never rebased or force-pushed. The source lock was regenerated last and checked. Neither generated acceptance view was committed. Candidate author, committer, complete messages and trailers were inspected. An initial report-only evidence save was published and fetched independently with every manifest and file hash verified; EVIDENCE-RETURN-CHECK.json records that initial transport check. Final reports are republished with the completed exact-SHA CI receipt. Product and report-only refs are separate. The fleet Mac retains its required publication scan and landing gates; this cloud makes no landing or production-release claim.
 
 CLAIM OC-009 PARTIAL points=none tests=tests/product-browser.mjs#eventsSourceBrowser; tests/product-browser.mjs#readinessBrowser
 CLAIM OC-056 PARTIAL points=none tests=tests/product-browser.mjs#responsePolicyBrowser
@@ -51,3 +54,5 @@ GAP OC-009: This focused polish proves no complete new acceptance point or assis
 GAP OC-056: Native recorded-state recovery proof does not prove the clause's email acceptance point, automatic reminder firing or delivery.
 GAP OC-027: Durable escalation and automatic reminders remain outside this round.
 GAP OC-075: Actual attempt cancellation and recovered-notice delivery remain unbuilt and outside this round.
+
+Final validation: setup/build, typecheck, the existing source recovery, response policy and Readiness browser journeys, the full touched import-door journey, source lock check and contract document check passed. Exact-SHA Verify passed after four status calls total (one local discovery parse failure, one discovery and two run-status reads); no workflow rerun or log archive request was needed. The scratch clone is removed after final report publication; actual packet files remain under the fleet work directory.

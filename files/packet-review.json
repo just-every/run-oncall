@@ -5,8 +5,8 @@
   "files": [
     {
       "path": "REPORT.md",
-      "bytes": 6939,
-      "sha256": "949bf83e4422ba0a4cb9ea40dc8dd7550c04db9c060158d100e3a0bed9efc80a"
+      "bytes": 8221,
+      "sha256": "9c35785d360361241f8e08d429579a8b4f58d0a8b494d4aad285003484030456"
     },
     {
       "path": "PLAN.md",
@@ -15,8 +15,13 @@
     },
     {
       "path": "LOCAL-RECEIPT.json",
-      "bytes": 3106,
-      "sha256": "736205e95614f67275aabe7096ef80d9efc7563fb8ac9c1f41748789313b1c87"
+      "bytes": 3971,
+      "sha256": "fc980415a3eed61922bd8001966cc8058c5b2525c35fe57f8a62240d262394f1"
+    },
+    {
+      "path": "FINAL-RECEIPT.json",
+      "bytes": 5271,
+      "sha256": "778c90e3e8cd7bf360bc24e99e33d260a30f07b346215a1bbc5324c060401da9"
     },
     {
       "path": "string-audit.md",
@@ -104,14 +109,29 @@
       "sha256": "f0ab02aeb90dfc00efc07550335dd0ebd02758242729ef061d1467f5840bb0aa"
     },
     {
+      "path": "product-remote-ref.log",
+      "bytes": 87,
+      "sha256": "f45d0d4f2b00a7215a5978bb2c4724111fd7dc063ecf07d4d3b3123dc363461b"
+    },
+    {
       "path": "timeline-receipt.json",
       "bytes": 661,
       "sha256": "9ac736a1baf1fa4d0b6b03b422a8792d941416d9e5d9142bf053dfce2deb1f28"
     },
     {
       "path": "ci-runs.jsonl",
-      "bytes": 288,
-      "sha256": "d2b652f54f804ddbe794ab50342680c477a1211606f5c4774bb987ddb43484a4"
+      "bytes": 1386,
+      "sha256": "613f9362ac6ddc14574b1e150ce50436beb1e21ed89a2d6cf18e2d4a93111c04"
+    },
+    {
+      "path": "ci-status.json",
+      "bytes": 373,
+      "sha256": "b1c834d17766578c2cdf07e0bda2be512c3de7c31c3bd57713af675a4a3f0246"
+    },
+    {
+      "path": "EVIDENCE-RETURN-CHECK.json",
+      "bytes": 5697,
+      "sha256": "b9aaf743044cea12ed76d3e063c865792882906b3738e41dc4eba0bb8ff08b5a"
     },
     {
       "path": "before-timeline-1440.png",
