@@ -503,6 +503,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  page.on('response',observe);
  await key.activate(page.locator('.oc-page-head').getByRole('link',{name:'New rota',exact:true}));
  if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
+ if(width===1440){
+  const name=page.getByLabel('Rota name',{exact:true});await name.fill('');await page.getByRole('button',{name:'Continue',exact:true}).click();
+  const error=name.locator('..').getByRole('alert');await error.waitFor();assert.equal(await name.evaluate(e=>e===document.activeElement),true);assert.equal(await name.getAttribute('aria-describedby'),await error.getAttribute('id'));
+ }
  await key.text(page.getByLabel('Rota name',{exact:true}),'Checkout rota '+width);
  await accessibleState(page,'rota-name',width,page.getByLabel('Rota name',{exact:true}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();
@@ -555,6 +559,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  assert.deepEqual(await api('/api/paging/state'),beforeDismiss,'Escape dismisses cover preparation without saving');
  await key.activate(coverOpener);
  await key.option(cover.getByLabel('Who',{exact:true}),'');await key.option(cover.getByLabel('Role',{exact:true}),'primary');await key.calendar(cover.getByLabel('From',{exact:true}),future.overrideStart);await key.calendar(cover.getByLabel('To',{exact:true}),future.overrideEnd);
+ if(width===1440){
+  const end=cover.getByLabel('To',{exact:true}),value=await end.inputValue();await end.fill('');await cover.getByRole('button',{name:'Review change',exact:true}).click();
+  const error=end.locator('..').getByRole('alert');await error.waitFor();assert.equal(await end.evaluate(e=>e===document.activeElement),true);assert.equal(await end.getAttribute('aria-describedby'),await error.getAttribute('id'));await end.fill(value);
+ }
  await accessibleState(page,'cover-preparation',width,cover.getByRole('button',{name:'Review change',exact:true}));
  const coverBefore=await api('/api/paging/state'),coverReviewResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/schedules/'+id+'/review'&&r.request().method()==='POST');
  await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
@@ -562,6 +570,12 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  const reviewedNames=await cover.getByRole('region',{name:'Coverage change intervals',exact:true}).locator('.scheduling-window > p > strong').allTextContents(),reviewName=id=>id===null?'Coverage gap':coverReview.members.find(member=>member.id===id)?.name??'Unavailable member';
  assert.deepEqual(reviewedNames,[...coverReview.intervals].sort((a,b)=>Number(b.after===null)-Number(a.after===null)||a.start-b.start||a.role.localeCompare(b.role)).slice(0,80).map(interval=>interval.role+': '+reviewName(interval.before)+' → '+reviewName(interval.after)),'the cover review renders every protected before and after assignment');
  assert.deepEqual(await api('/api/paging/state'),coverBefore,'cover review writes nothing');assert.equal(await cover.getByRole('button',{name:'Apply reviewed change',exact:true}).isDisabled(),true);
+ if(width===1440){
+  const apply=cover.getByRole('button',{name:'Apply reviewed change',exact:true}),hint=await apply.getAttribute('aria-describedby');assert.ok(hint);
+  const explanation=cover.locator(`[id="${hint}"]`);await explanation.waitFor();assert.ok((await explanation.innerText()).includes(await cover.getByRole('checkbox').locator('..').innerText()),'Apply names the review checkbox that enables it');
+  assert.equal(await explanation.evaluate((e,id)=>e.previousElementSibling?.getAttribute('aria-describedby')===id,hint),true,'the explanation sits immediately beside Apply');
+  for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await apply.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-cover-review-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ }
  await key.dialog(cover);await accessibleState(page,'cover-review',width,cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}));
  await key.dismiss(cover,coverOpener);assert.deepEqual(await api('/api/paging/state'),coverBefore,'Escape from the review writes nothing');
  await key.activate(coverOpener);await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
@@ -768,7 +782,11 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  if(width===1440){assert.equal(await page.locator('.oc-bands [data-time-zone]').getAttribute('data-time-zone'),zone);for(const label of await page.locator('.handoff').allTextContents())assert.ok(label.includes(zone));}
  await capture('rota');
  await page.getByRole('button',{name:'Request a swap',exact:true}).click();const swapSheet=page.getByRole('dialog',{name:'Request a swap',exact:true});await swapSheet.getByLabel('Shift to swap',{exact:true}).waitFor();
- await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
+ const requestSwap=swapSheet.getByRole('button',{name:'Request',exact:true});
+ assert.equal(await requestSwap.isDisabled(),true);const substituteHint=await requestSwap.getAttribute('aria-describedby');assert.ok(substituteHint);await swapSheet.locator(`[id="${substituteHint}"]`).waitFor();
+ const beforeSelection=await api('/api/schedule-coordination');assert.equal(beforeSelection.records.some(row=>row.kind==='swap'&&row.data.schedule===schedule.id),false,'no request is saved without a substitute');
+ for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await requestSwap.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-swap-substitute-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);assert.equal(await requestSwap.isEnabled(),true);assert.equal(await requestSwap.getAttribute('aria-describedby'),null);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
  const swap=(await api('/api/schedule-coordination')).records.find(row=>row.kind==='swap'&&row.data.schedule===schedule.id&&row.data.status==='pending');assert.ok(swap);
  await coordination.getByRole('button',{name:'Approve swap',exact:true}).click();await coordination.getByText(/approval recorded/).waitFor();
  const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:900},timezoneId:'Australia/Brisbane'});
@@ -971,6 +989,8 @@ export async function triageBulkBrowser(page,context,width){
  // A live revision conflict is attributed to the right title beside a success and an already-acknowledged skip.
  const mixed=[];for(const suffix of ['stale','fresh'])mixed.push(await call('/api/command',{type:'declare',service:stormService.id,severity:'warning',title:stormPrefix+' '+suffix,summary:'Review mixed bulk outcomes'}));
  await page.reload();await page.getByLabel('Search incidents',{exact:true}).fill(stormPrefix);await page.getByText('52 matching incidents',{exact:true}).waitFor();
+ // The shared journey may freeze time, so equal-created incidents can land on either cursor page.
+ while(await page.locator('.triage-item').count()<52){const loaded=await page.locator('.triage-item').count();await page.getByRole('button',{name:'Load more incidents',exact:true}).click();await expect(page.locator('.triage-item')).toHaveCount(Math.min(52,loaded+25));}
  await page.getByLabel('Select '+mixed[0].title,{exact:true}).check();await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();
  // Select one acknowledged row without relying on a duplicate title's identity.
  await page.getByRole('checkbox',{name:'Select '+storm[49].title,exact:true}).check();
@@ -988,6 +1008,7 @@ export async function triageBulkBrowser(page,context,width){
  await captureBulk('mixed-results');
  await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();
  // Same-value priority is a successful server no-op, displayed as skipped rather than changed.
+ await page.getByLabel('Search incidents',{exact:true}).fill(mixed[1].title);await page.getByText('1 matching incidents',{exact:true}).waitFor();
  await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await stormBulk.getByLabel('Bulk action',{exact:true}).selectOption('set-priority');await stormBulk.getByLabel('Bulk priority',{exact:true}).selectOption('P2');await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Coordinate the same priority');await stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true}).click();await expect(stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true})).toBeEnabled();
  await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await stormBulk.getByLabel('Bulk action',{exact:true}).selectOption('set-priority');await stormBulk.getByLabel('Bulk priority',{exact:true}).selectOption('P2');await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Review unchanged priority');
  const beforeNoop=(await call('/api/state')).incidents.find(i=>i.id===mixed[1].id);
@@ -1274,6 +1295,9 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  const external=[];const observe=request=>{if(request.url().startsWith('https://hostile.invalid/'))external.push(request.url())};page.on('request',observe)
  // OC-008: author a runbook containing a link and HTML, then use its copied incident step.
  const runbookText=`https://hostile.invalid/runbook ${hostile}`
+ // Begin this keyboard leg with a real key even when a preceding pointer flow
+ // left focus on the menu's return target. Keep visible-focus assertions intact.
+ await page.keyboard.press('Tab')
  await openWorkspaceSection(page,'services',{keyboard:true})
  await key.activate(page.getByRole('button',{name:'Add service',exact:true}))
  await key.text(page.getByLabel('Service name',{exact:true}),`Literal runbook ${width}`)
