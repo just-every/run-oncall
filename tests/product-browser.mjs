@@ -650,6 +650,11 @@ async function readinessBrowser(page,context) {
   assert.equal(await row.locator('[data-state]').getAttribute('data-state'),item.state);
   assert.ok(text.includes(item.name));assert.ok(text.includes(item.requirement));
   for(const clause of item.clauses)assert.ok(text.includes(clause),'owning clause is visible');
+  for(const matrix of item.matrix){
+   const capability=report.matrix.find(row=>row.id===matrix.id),state={'working-here':'Working here',off:'Off','not-built':'Not built','unproven-live':'Unproven live'}[matrix.state];
+   assert.ok(text.includes(capability.area+': '+state),'each constituent release state is readable beside its dependency');
+  }
+  if(!item.fieldProof.length)assert.ok(text.includes('No field-proof row recorded'),'absent external evidence is explicit');
   assert.ok(text.includes(item.completion==='not-done'?'Not done for this installation':'Guidance only'));
   for(const proof of item.fieldProof)assert.ok((await row.locator('[data-field-proof="'+proof.id+'"]').innerText()).includes(proof.state==='passed'?'Passed on '+proof.date:'Not run'));
  }
@@ -675,6 +680,7 @@ async function readinessBrowser(page,context) {
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc054-readiness-${width}.png`,fullPage:true});
+  console.log('CHECKLIST_LAYOUT '+JSON.stringify({width,...await checklist.evaluate(node=>({viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,minimumTextSize:Math.min(...[...node.querySelectorAll('h3,p,strong,span')].map(element=>parseFloat(getComputedStyle(element).fontSize)))}))}));
   await checklist.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/oc044-checklist-${width}.png`,fullPage:false});
  }
  console.log('PROBE OC-044 acceptance 1 checklist: emitted Settings Readiness -> protected API and all rendered dependency states, owners, field-proof dates and not-done labels agree; refresh preserves durable and paging records with zero outbound requests; desktop axe and overflow pass; screenshots at 1440 and 390');
