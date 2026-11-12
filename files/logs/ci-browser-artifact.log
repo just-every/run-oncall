@@ -1,0 +1,4 @@
+gh run download 43157854267 --repo just-every/run-oncall --name oncall-browser-evidence-browser --dir /tmp/f241-ci-browser
+error downloading oncall-browser-evidence-browser: Get "https://productionresultssa1.blob.core.windows.net/actions-results/0787762e-beee-8153-a765-c649c2a6c4e0/workflow-job-run-b779fe1c-1fa3-5aa3-a710-cbdbb4510ccc/artifacts/07366ea8349f61ded08c7b61985e7a8c9147b32b48894304a11affd450c30a46.zip Forbidden
+
+No retry; direct local proof is in browser/literal-input-receipt.json.

@@ -1,0 +1,9 @@
+{
+  "tag": "sd-oncall-c-f241",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f241",
+  "starting_main": "dd8f2de57d7ef33ef010dacfc42155253635b5fd",
+  "predecessor": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+  "contract_judgments": "unchanged; lander owns status, gap and evidence",
+  "plan_rows": "OC-052 continuation only; no lane file written"
+}

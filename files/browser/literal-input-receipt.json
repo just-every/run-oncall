@@ -1,0 +1,17 @@
+{
+  "head": "9fef00d11e650030f7d9698326261562b4d24085",
+  "journey": "tests/product-browser-journey.mjs#keyboardCoordination",
+  "execution": "existing journey through emitted Worker and real D1",
+  "assertionWidth": 1440,
+  "captureWidths": [
+    1440,
+    390
+  ],
+  "literalRunbook": true,
+  "literalNote": true,
+  "verbatimArchive": true,
+  "hostileElements": 0,
+  "scriptExecution": false,
+  "outboundRequests": 0,
+  "exit": 0
+}

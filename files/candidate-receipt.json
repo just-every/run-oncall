@@ -1,0 +1,151 @@
+{
+  "tag": "sd-oncall-c-f241",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f241",
+  "head": "9fef00d11e650030f7d9698326261562b4d24085",
+  "createdAt": "2026-11-12T04:55:37.602144+00:00",
+  "productPush": {
+    "exit": 0,
+    "status": "PUSH_OK",
+    "remoteHead": "9fef00d11e650030f7d9698326261562b4d24085",
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f241"
+  },
+  "checks": {
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party --json --non-interactive",
+      "exit": 0,
+      "ok": true,
+      "clauses": 1425
+    },
+    "views": {
+      "command": "node src/base/contract-docs.mjs write then check; generated views restored from origin/main",
+      "exit": 0
+    },
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock then check",
+      "exit": 0,
+      "ok": true
+    },
+    "ledger": {
+      "command": null,
+      "exit": 0,
+      "reason": "No migration added or edited"
+    },
+    "initialTransfer": {
+      "command": "timeout 1200 node tests/transfer.mjs",
+      "head": "4ddbcd08e4f86d12434cdfa43dac40ffab314a95",
+      "exit": 0,
+      "note": "Preliminary source proof, superseded for final evidence by exact-candidate verification"
+    },
+    "localRerVerify": {
+      "command": "env ONCALL_VERIFY_LANE=transfer npx -y @runeditrun/rer verify --non-interactive",
+      "head": "9fef00d11e650030f7d9698326261562b4d24085",
+      "exit": 0,
+      "agentConformance": {
+        "passed": 8230,
+        "total": 8230
+      },
+      "hydration": {
+        "pages": 4,
+        "loads": 23
+      },
+      "transferSeconds": 834.0
+    },
+    "literalInputBrowser": {
+      "head": "9fef00d11e650030f7d9698326261562b4d24085",
+      "journey": "tests/product-browser-journey.mjs#keyboardCoordination",
+      "execution": "existing journey through emitted Worker and real D1",
+      "assertionWidth": 1440,
+      "captureWidths": [
+        1440,
+        390
+      ],
+      "literalRunbook": true,
+      "literalNote": true,
+      "verbatimArchive": true,
+      "hostileElements": 0,
+      "scriptExecution": false,
+      "outboundRequests": 0,
+      "exit": 0
+    }
+  },
+  "ci": {
+    "id": 43157854267,
+    "event": "push",
+    "head": "9fef00d11e650030f7d9698326261562b4d24085",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43157854267",
+    "head_sha": "9fef00d11e650030f7d9698326261562b4d24085",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43157854267"
+  },
+  "publicationScan": {
+    "commit": "9fef00d11e650030f7d9698326261562b4d24085",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "status": "not run in cloud; guarded lander required"
+  },
+  "landing": {
+    "mainEqualsCandidate": false,
+    "mainSnapshot": "69f6d7b3ac67b97241e9167472b212da976a242c",
+    "runSite": null,
+    "status": "branch only; guarded lander pending",
+    "terminalMain": "985c3205031072eb37af857eafc69b44090c938f",
+    "mainAdvancedAfterCandidatePush": true
+  },
+  "contractCounts": {
+    "before": {
+      "done": 25,
+      "partial": 42,
+      "missing": 34,
+      "total": 101
+    },
+    "candidate": {
+      "done": 25,
+      "partial": 42,
+      "missing": 34,
+      "total": 101
+    },
+    "proposedAfterGate": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "contractJudgmentDiff": false,
+  "generatedViewDiff": false,
+  "registeredTestsAdded": 0,
+  "registeredTestsRemoved": 0,
+  "localLaneScheduler": {
+    "exit": 143,
+    "reason": "Only the follow-on scheduler was stopped once exact-SHA full CI passed; its running rer verify child completed normally with exit 0. No follow-on lane was started or reported as locally passing.",
+    "CIProvides": [
+      "runtime",
+      "intake",
+      "changes",
+      "browser",
+      "triage",
+      "imports"
+    ]
+  },
+  "browserArtifactDownload": {
+    "command": "gh run download 43157854267 --repo just-every/run-oncall --name oncall-browser-evidence-browser --dir /tmp/f241-ci-browser",
+    "exit": 1,
+    "httpStatus": 403,
+    "reason": "GitHub Actions blob download Forbidden; no retry attempted",
+    "localFallback": "PASS: existing keyboardCoordination, asserted at 1440 and captured at 1440 and 390, direct emitted Worker, no outbound requests"
+  },
+  "githubApiBudget": {
+    "restInvocations": 6,
+    "artifactDownloadInvocations": 1,
+    "accountedCoreCalls": 8,
+    "limit": 10,
+    "retryOnBlockedBlob": false
+  }
+}
