@@ -1574,7 +1574,7 @@ async function sharedIncidentLinks(page,context) {
 
 // Saved email import is exercised at one width; 390 is visual evidence only.
 export async function importedEmailBrowser(page,context) {
- const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser',origin=new URL(page.url()).origin;
+ const directory=process.env.ONCALL_BROWSER_EVIDENCE??'./evidence/browser',origin=new URL(page.url()).origin;
  await mkdir(directory,{recursive:true});await page.setViewportSize({width:1440,height:1000});
  const api=async(path,data)=>{
   const response=data===undefined?await context.request.get(path):await context.request.post(path,{headers:{origin},data});
