@@ -22,7 +22,8 @@ The matrix uses a closed set of states:
 - **Unproven live:** local adapter behavior or a required operation lacks external acceptance.
 
 Every row names its maintained journey or says there is no evidence. There are
-no dated external live-acceptance records. Configured and active-with-credentials
+no current external live-acceptance records for the matrix adapters. The separate
+installation checklist retains dated prior field evidence without promoting it. Configured and active-with-credentials
 counts and the last retained accepted event are observations, not live proof.
 Inactive definitions and revoked credentials are not counted as active. Unknown
 source observations never appear as zero. Historical receipts can outlive a
@@ -35,6 +36,45 @@ unproven. Sustained and burst intake, escalation delay, provider failover,
 recovery and archive capacity have no measured p50, p95, p99 or maximum against
 OC-064. Those missing measurements block cutover. An actual buyer must pass its
 real-service and real-device checklist before retiring the incumbent.
+
+## US installation and dependency checklist
+
+Reviewed **12 November 2026** for this release. Start here before arranging a US
+installation. **Settings → Readiness** and protected `GET /api/readiness`
+show the same dated checklist, installed deployment identity and current release
+matrix. The checklist is read-only: it writes nothing, sends nothing, starts no
+timer and has no completion checkbox. It grants no provider, deployment,
+publication or cutover authority.
+
+Each item retains its owning clauses, constituent matrix states and applicable
+[contract field proof](https://github.com/just-every/run-oncall/blob/main/CONTRACT.md#field-proof-register)
+state and date. **Working here**, **off**, **not built** and **unproven live**
+describe the release capability; a passed field row means **passed on its date**,
+never that this installation is ready. A **not run** row supplies no proof.
+Every account or live step below remains **not done for this installation**.
+The 911 row is guidance only. Configuration counts, a local receipt or an
+unbound deployment identity cannot complete a prerequisite.
+
+| US dependency | Owning clauses | Release state and field proof | Installer requirement still outstanding |
+| --- | --- | --- | --- |
+| Hosting account and deployment identity | OC-018 | Coordination working here; R-1 passed on 2026-10-19, dated prior evidence | Authorize this Cloudflare account and deployment operation; verify its source SHA, artifact fingerprint, version, owner access and removal. Prior evidence is not the current deployment. |
+| Remote mail for hosted sign-in | OC-018 | Unproven live; R-1 passed on 2026-10-19, dated prior evidence | Configure a remote mail provider, credentials and verified sender; test a real sign-in email. Local owner entry proves no mail delivery. R-2 passed on 2026-10-21 for inbound intake only, not sign-in or paging. |
+| Registered US voice and SMS | OC-026, OC-066 | Paging off; R-5 not run | Register A2P 10DLC brand and campaign, sending numbers and caller identity; establish consent, opt-out handling and carrier tests. No sending authority is granted. |
+| APNs and FCM entitlements | OC-029 | iOS and Android not built; R-7 not run | Provision APNs and FCM, iOS Critical Alerts entitlement and Android full-screen and Do Not Disturb permissions; prove device acceptance. |
+| Native apps and store distribution | OC-029 | Not built; R-7 not run | Build native apps and distribute through the App Store and Google Play. Web and local proof is not native distribution. |
+| Zoom or Microsoft Teams bridges | OC-035 | Not built; R-12 and R-6 not run | Authorize a real tenant, build the bridge integration and prove inbound call routing. |
+| Slack and Microsoft Teams apps | OC-034, OC-067 | Both not built; R-12 not run | Install and authorize scoped apps and prove real chat actions. |
+| Independent standby, takeover and real-phone drills | OC-028, OC-047, OC-054 | Standby not built; drills unproven live; R-8 not run | Establish independent account and identity authority, takeover and failback, and human-confirmed phone drills. Paging cutover requires them; coordination beside an existing pager does not require standby. |
+| Live handset delivery | OC-026, OC-029, OC-035, OC-064, OC-066, OC-071, OC-080, OC-082 | Unproven live; R-6 not run | Prove registered real-handset voice with DTMF, SMS replies and links, push and email, provider-disable drills and inbound calls. Local receipts and sandboxes do not prove human receipt. |
+| OC-064 reference load | OC-064, OC-054 | Unproven live; related R-6 not run | Measure sustained and burst intake, escalation, failover, recovery and archive capacity, with p50, p95, p99 and maximum against OC-064. R-6 alone is not reference-load proof. |
+| Applicable regulated-data agreements and validated controls | OC-044 | Unproven live; no field-proof row recorded | Establish applicable agreements and validated controls before any regulated-data claim. Use redacted descriptions and separately authorized references. |
+| 911 boundary | OC-044 | Guidance working here; no field-proof row applies | Oncall is not a 911 dispatch service. For a US emergency call 911 directly; do not wait for Oncall. |
+
+Paging stays **OFF** and your existing pager stays authoritative. This checklist
+closes no real usage, budget-warning, alternate-route, measured-availability or
+live cutover obligation. R-1 and R-2 remain dated prior evidence, while not-run
+rows remain unproved. See [limitations](limits.md) and [installation](install.md)
+for emergency and regulated-data guidance and the authorized coordination setup.
 
 ## Independent observations
 

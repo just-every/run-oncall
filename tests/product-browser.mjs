@@ -1,3 +1,4 @@
+import {assertInstallationChecklist} from './readiness.mjs'
 import {nightResponseScenario,assertNightResponse,responseCsvRows} from './response-report-fixture.mjs'
 import {openWorkspaceSection,openHistoryComparison,selectRoutedSource,keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
 import assert from 'node:assert/strict'
@@ -293,6 +294,11 @@ async function limitationsBrowser(page,context){
   else {assert.equal(cells[4],'not run');assert.match(text.slice(text.indexOf('R-5')),/not run/i);}
  }
  assert.match(text,/dated prior observations, not a current deployment/i);assert.match(text,/not[^.]*outbound paging proof/i);
+ const checklist=article.getByRole('link',{name:'US installation and dependency checklist',exact:true});await checklist.click();
+ await page.locator('.docs-article[data-doc="readiness"]').getByRole('heading',{name:'US installation and dependency checklist',exact:true}).waitFor();
+ await page.goto(origin+'/docs/install');await page.locator('.docs-article[data-doc="install"]').getByRole('link',{name:'US installation and dependency checklist',exact:true}).click();
+ await page.locator('.docs-article[data-doc="readiness"]').getByRole('heading',{name:'US installation and dependency checklist',exact:true}).waitFor();
+ await page.goto(origin+'/docs/limits');await article.waitFor();
  const readiness=article.getByRole('link',{name:'Readiness',exact:true});await readiness.click();
  await page.locator('.docs-article[data-doc="readiness"]').waitFor();
  await page.goto(origin+'/docs/limits');await article.waitFor();
@@ -584,7 +590,20 @@ async function readinessBrowser(page,context) {
  await openWorkspaceSection(page,'services');
  await page.getByRole('navigation',{name:'Settings',exact:true}).getByRole('link',{name:'Readiness',exact:true}).click();
  await page.locator('.readiness [data-readiness-row]').first().waitFor();
- const report=await request('/api/readiness');
+ const before=durableSnapshot(worker),outbound=await worker.outboundRequests();
+ const report=await request('/api/readiness');await assertInstallationChecklist(report);
+ const checklist=page.getByRole('region',{name:'US installation and dependency checklist',exact:true});
+ assert.equal(await checklist.locator('[data-installation-item]').count(),report.installation.items.length);
+ assert.ok((await checklist.innerText()).includes(report.installation.reviewedOn));
+ assert.equal(await checklist.locator('input,button,select,textarea').count(),0,'checklist has no self-attestation or provider action control');
+ for(const item of report.installation.items){
+  const row=checklist.locator('[data-installation-item="'+item.id+'"]'),text=await row.innerText();
+  assert.equal(await row.locator('[data-state]').getAttribute('data-state'),item.state);
+  assert.ok(text.includes(item.name));assert.ok(text.includes(item.requirement));
+  for(const clause of item.clauses)assert.ok(text.includes(clause),'owning clause is visible');
+  assert.ok(text.includes(item.completion==='not-done'?'Not done for this installation':'Guidance only'));
+  for(const proof of item.fieldProof)assert.ok((await row.locator('[data-field-proof="'+proof.id+'"]').innerText()).includes(proof.state==='passed'?'Passed on '+proof.date:'Not run'));
+ }
  const visible=await page.locator('.readiness').innerText();
  assert.doesNotMatch(visible,/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}|tests\//,'readiness presents readable dates without repository paths');
  const zone=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -597,12 +616,18 @@ async function readinessBrowser(page,context) {
  for(const signal of report.signals)assert.equal(await page.locator(`[data-readiness-signal="${signal.id}"] [data-state]`).getAttribute('data-state'),signal.state);
  const refreshed=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/readiness'&&response.request().method()==='GET');
  await page.getByRole('button',{name:'Refresh readiness',exact:true}).click();assert.equal((await refreshed).status(),200);await page.locator('.readiness [data-readiness-row]').first().waitFor();
+ assert.deepEqual(durableSnapshot(worker),before,'reading and refreshing the populated checklist writes no durable rows, paging records, revisions or audit');
+ assert.deepEqual(await worker.outboundRequests(),outbound,'reading and refreshing sends no outbound request');
+ assert.deepEqual(outbound,[],'the native checklist journey makes zero outbound requests');
  assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0,'readiness has no hydration mismatch');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'readiness fits the desktop viewport');
  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();
  assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[],'readiness has no serious or critical accessibility violation');
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
- for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc054-readiness-${width}.png`,fullPage:true});}
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc054-readiness-${width}.png`,fullPage:true});
+  await checklist.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/oc044-checklist-${width}.png`,fullPage:true});
+ }
  console.log('PASS OC-054 Readiness Settings navigation, real matrix/signal rendering, pager refusal, refresh, axe/overflow/hydration at 1440; Readiness visual proof once at 1440/390');
 }
 
@@ -763,7 +788,7 @@ try {
   await incidentWorkflowBrowser(page,context,triageProof);
  }
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
- if(focused==='limitations')await limitationsBrowser(page,context);
+ if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
  if(!['events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})

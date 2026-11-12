@@ -2,10 +2,19 @@ import { cloudflare } from '@cloudflare/vite-plugin'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { readFileSync } from 'node:fs'
 import { archiveOutputGuard } from '@runeditrun/rer/archive-output'
 import { docsSite } from './src/docs/build/plugin.ts'
 import { demoSockets } from './src/modules/demo/vite.mjs'
 import pkg from './package.json' with { type: 'json' }
+
+// Bind only public field facts at build time; the root contract is not a served
+// development source and no account inspection is performed.
+const fieldProof = readFileSync('CONTRACT.md','utf8').split('## Field proof register\n')[1].split('\n## ')[0]
+ .split('\n').filter(line=>/^\| R-\d+ \|/.test(line)).map(line=>{
+  const [id,,,state,date]=line.split('|').slice(1,-1).map(cell=>cell.trim());
+  return {id,state:state==='passed'?'passed':'not run',date:state==='passed'&&date?date:null};
+ });
 
 // Only `vite dev` loads the local-only entry and the checkout's dev key; a build
 // keeps src/server.ts and never sees either (rer build checks its output).
@@ -17,4 +26,4 @@ const serve = { main: './src/server.dev.ts', vars: { ...local('INBOUND_EMAIL_DOM
 // key, installer state), export archives, settings or local data.
 const server = { fs: { allow: ['src', 'public', 'node_modules'], deny: ['**/.rer/**', '**/.seed/**', '**/exports/**', '**/*.rer'] } }
 
-export default defineConfig(({ command, isPreview }) => ({ server, define: { __ONCALL_RELEASE__: JSON.stringify({ package: pkg.name, version: pkg.version }) }, plugins: [demoSockets(), cloudflare({ inspectorPort: false, viteEnvironment: { name: 'ssr' }, persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, ...(command === 'serve' && !isPreview ? { config: serve } : process.env.RER_DEV_ORIGIN ? { config: { vars: local('RER_DEV_ORIGIN') } } : {}) }), docsSite(), tanstackStart(), react(), archiveOutputGuard()] }))
+export default defineConfig(({ command, isPreview }) => ({ server, define: { __ONCALL_FIELD_PROOF__: JSON.stringify(fieldProof), __ONCALL_RELEASE__: JSON.stringify({ package: pkg.name, version: pkg.version }) }, plugins: [demoSockets(), cloudflare({ inspectorPort: false, viteEnvironment: { name: 'ssr' }, persistState: { path: process.env.RER_STATE_DIR ?? '.wrangler/state' }, ...(command === 'serve' && !isPreview ? { config: serve } : process.env.RER_DEV_ORIGIN ? { config: { vars: local('RER_DEV_ORIGIN') } } : {}) }), docsSite(), tanstackStart(), react(), archiveOutputGuard()] }))
