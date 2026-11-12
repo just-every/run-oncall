@@ -1,0 +1,73 @@
+{
+  "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+  "steps": [
+    {
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "write"
+      ],
+      "exit": 0,
+      "outputSha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2"
+    },
+    {
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "outputSha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": [
+        "git",
+        "checkout",
+        "origin/main",
+        "--",
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ],
+      "exit": 0,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0,
+      "outputSha256": "b5a16c2d3f361c51424a22228582146b800837ab896fe8103e1054f1c3b4eb32"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "outputSha256": "b18dcf956e0927e4cf376174aac993d0df25b5db8ad273c6283fd7247cf08768"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "sources.lock.json",
+        "CONTRACT.md",
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ],
+      "exit": 0,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration changed"
+  },
+  "sourceLockSha256": "7f9ee857e372756618e457a37a58cf6792bfb182818a894131cfc3e68747eed5"
+}

@@ -1,0 +1,17 @@
+{
+  "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+  "inspected": [
+    {
+      "file": "browser/OC-008-literal-runbook-1440.png",
+      "width": 1440,
+      "result": "Literal hostile runbook and note text visible in the native incident; no hostile element rendering."
+    },
+    {
+      "file": "browser/OC-052-literal-runbook-390.png",
+      "width": 390,
+      "result": "Literal hostile runbook and note text visible without horizontal clipping in the phone incident layout."
+    }
+  ],
+  "journey": "tests/product-browser-journey.mjs#keyboardCoordination",
+  "assertions": "Literal DOM text, no script effect or hostile element, no hostile network request, exact exported text; existing maintained journey."
+}

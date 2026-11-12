@@ -1,0 +1,28 @@
+{
+  "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+  "base": "2743e71f76044322080b1b136b9dce82c4793915",
+  "fullHistory": true,
+  "contractDiffBytes": 0,
+  "files": [
+    {
+      "path": "docs/agents.md",
+      "sha256": "1575a918ce3d9c1787aabfa997a5b1b509af926d473464eb972ef2db2bcd86f5"
+    },
+    {
+      "path": "docs/data.md",
+      "sha256": "c40f93be5437a755022f7c10159241cdcc6ad7d12a01180487bc053e37e914a3"
+    },
+    {
+      "path": "scripts/installer/archive-policy.mjs",
+      "sha256": "9ce6980353ab2d81e2a5836dd13f3265a21f3bce0a9446e000d25411f99062bf"
+    },
+    {
+      "path": "sources.lock.json",
+      "sha256": "7f9ee857e372756618e457a37a58cf6792bfb182818a894131cfc3e68747eed5"
+    },
+    {
+      "path": "tests/transfer.mjs",
+      "sha256": "f4a1706f7bd03e2ebc2321208910cc07aabc9e5066f4551690a05eda12eefad3"
+    }
+  ]
+}

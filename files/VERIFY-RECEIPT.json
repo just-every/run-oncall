@@ -1,0 +1,16 @@
+{
+  "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "verify",
+    "--non-interactive"
+  ],
+  "exit": 0,
+  "startedAt": "2026-11-12T00:06:04.565517+00:00",
+  "finishedAt": "2026-11-12T01:10:01.961185+00:00",
+  "seconds": 3837.396,
+  "log": "verify-final.log",
+  "logSha256": "3d38014442f8ab19d7c1ede7b063a1a72ea70e45221a3f3cecc2006366cc6e05"
+}

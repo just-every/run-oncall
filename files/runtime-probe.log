@@ -1,0 +1,6 @@
+Command: cloud_run python3 /tmp/probe-transfer-runtime.py
+The isolated emitted Worker runtime was started against the managed installation database, probed once and stopped by its own PID for each settings-path variant.
+absolute_envfile=False HTTP=503 body={"error":"Storage or server failure; no success confirmed"}
+absolute_envfile=True HTTP=200
+Exit: 0
+Resolution: pass the managed installation settings file by its absolute path, as the existing emitted Worker helper already does. No application or authority behavior was changed to repair runtime setup.

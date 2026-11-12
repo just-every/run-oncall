@@ -1,0 +1,19 @@
+{
+  "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+  "command": [
+    "python3",
+    "/tmp/rer-reap.py",
+    "env",
+    "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+    "perl",
+    "-e",
+    "alarm 1200; exec @ARGV",
+    "--",
+    "node",
+    "tests/transfer.mjs"
+  ],
+  "exit": 0,
+  "recordedAt": "2026-11-12T00:05:58.892441+00:00",
+  "log": "transfer-final.log",
+  "logSha256": "4aae8c6d0222185530ece9ee0788a87af115a7c90fe7c5c1975b4df762454fa6"
+}

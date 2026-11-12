@@ -1,0 +1,284 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f226",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f226",
+  "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+  "checks": {
+    "transfer": {
+      "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+      "command": [
+        "python3",
+        "/tmp/rer-reap.py",
+        "env",
+        "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+        "perl",
+        "-e",
+        "alarm 1200; exec @ARGV",
+        "--",
+        "node",
+        "tests/transfer.mjs"
+      ],
+      "exit": 0,
+      "recordedAt": "2026-11-12T00:05:58.892441+00:00",
+      "log": "transfer-final.log",
+      "logSha256": "4aae8c6d0222185530ece9ee0788a87af115a7c90fe7c5c1975b4df762454fa6"
+    },
+    "verify": {
+      "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+      "command": [
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "verify",
+        "--non-interactive"
+      ],
+      "exit": 0,
+      "startedAt": "2026-11-12T00:06:04.565517+00:00",
+      "finishedAt": "2026-11-12T01:10:01.961185+00:00",
+      "seconds": 3837.396,
+      "log": "verify-final.log",
+      "logSha256": "3d38014442f8ab19d7c1ede7b063a1a72ea70e45221a3f3cecc2006366cc6e05"
+    },
+    "typecheck": {
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0
+    },
+    "firstParty": {
+      "command": [
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "check",
+        "--profile",
+        "first-party",
+        "--json",
+        "--non-interactive"
+      ],
+      "exit": 0
+    },
+    "mechanical": {
+      "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+      "steps": [
+        {
+          "command": [
+            "node",
+            "src/base/contract-docs.mjs",
+            "write"
+          ],
+          "exit": 0,
+          "outputSha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2"
+        },
+        {
+          "command": [
+            "node",
+            "src/base/contract-docs.mjs",
+            "check"
+          ],
+          "exit": 0,
+          "outputSha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+        },
+        {
+          "command": [
+            "git",
+            "checkout",
+            "origin/main",
+            "--",
+            "ACCEPTANCE.md",
+            "docs/CLAIMS.md"
+          ],
+          "exit": 0,
+          "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "command": [
+            "node",
+            "scripts/edition-authoring/cli.mjs",
+            "lock"
+          ],
+          "exit": 0,
+          "outputSha256": "b5a16c2d3f361c51424a22228582146b800837ab896fe8103e1054f1c3b4eb32"
+        },
+        {
+          "command": [
+            "node",
+            "scripts/edition-authoring/cli.mjs",
+            "check"
+          ],
+          "exit": 0,
+          "outputSha256": "b18dcf956e0927e4cf376174aac993d0df25b5db8ad273c6283fd7247cf08768"
+        },
+        {
+          "command": [
+            "git",
+            "diff",
+            "--exit-code",
+            "--",
+            "sources.lock.json",
+            "CONTRACT.md",
+            "ACCEPTANCE.md",
+            "docs/CLAIMS.md"
+          ],
+          "exit": 0,
+          "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "ledger": {
+        "command": null,
+        "exit": 0,
+        "reason": "No migration changed"
+      },
+      "sourceLockSha256": "7f9ee857e372756618e457a37a58cf6792bfb182818a894131cfc3e68747eed5"
+    }
+  },
+  "ci": {
+    "id": 43124777228,
+    "event": "push",
+    "conclusion": "success",
+    "head_sha": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43124777228",
+    "status": "completed",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "id": 130873966063,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130874049010,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "id": 130874051698,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130875435179,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130875435188,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130875435194,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130875435211,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130875435223,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130875435255,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130875435430,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130880753693,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "id": 130880756308,
+        "name": "nightly-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "id": 130880784874,
+        "name": "verify",
+        "status": "completed"
+      }
+    ]
+  },
+  "main": {
+    "observedHead": "25b173adff3e5a2e7bedd97e02428eebee9418f4",
+    "equalsCandidate": false,
+    "initialHead": "2743e71f76044322080b1b136b9dce82c4793915",
+    "initialVerify": 43115851492,
+    "initialRunSite": 43115851706,
+    "candidateRunSite": "pending guarded landing"
+  },
+  "scan": {
+    "commit": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+    "complete": false,
+    "historyScanned": false,
+    "findings": null,
+    "reason": "Not run in cloud; required from the guarded Mac lander"
+  },
+  "sourceCounts": {
+    "done": 23,
+    "partial": 44,
+    "missing": 34,
+    "total": 101
+  },
+  "proposedCountsAfterAcceptedClaim": {
+    "done": 24,
+    "partial": 43,
+    "missing": 34,
+    "total": 101
+  },
+  "contractStatusEdits": 0,
+  "newTestRegistrations": 0,
+  "migrationsChanged": false,
+  "sourceProvenance": {
+    "head": "68ac127faf5d7c29d73a4a7dcde95022bd8bc93f",
+    "base": "2743e71f76044322080b1b136b9dce82c4793915",
+    "fullHistory": true,
+    "contractDiffBytes": 0,
+    "files": [
+      {
+        "path": "docs/agents.md",
+        "sha256": "1575a918ce3d9c1787aabfa997a5b1b509af926d473464eb972ef2db2bcd86f5"
+      },
+      {
+        "path": "docs/data.md",
+        "sha256": "c40f93be5437a755022f7c10159241cdcc6ad7d12a01180487bc053e37e914a3"
+      },
+      {
+        "path": "scripts/installer/archive-policy.mjs",
+        "sha256": "9ce6980353ab2d81e2a5836dd13f3265a21f3bce0a9446e000d25411f99062bf"
+      },
+      {
+        "path": "sources.lock.json",
+        "sha256": "7f9ee857e372756618e457a37a58cf6792bfb182818a894131cfc3e68747eed5"
+      },
+      {
+        "path": "tests/transfer.mjs",
+        "sha256": "f4a1706f7bd03e2ebc2321208910cc07aabc9e5066f4551690a05eda12eefad3"
+      }
+    ]
+  }
+}
