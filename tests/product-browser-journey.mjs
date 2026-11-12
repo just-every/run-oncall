@@ -6,6 +6,7 @@ import {readFile,mkdir} from 'node:fs/promises'
 import {selectRoutedSource,openIncidentAction,focusWorkspace,openWorkspaceSection,routingBrowser,openHistoryComparison,keyboardUser} from './keyboard.mjs'
 import {randomBytes,randomUUID} from 'node:crypto'
 import AxeBuilder from '@axe-core/playwright'
+import {expect} from '@playwright/test'
 import assert from 'node:assert/strict'
 // product-import-browser: part of this public journey.
 export async function productImport(page,context,width,session,proof) {
@@ -949,6 +950,72 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
 export async function triageBulkBrowser(page,context,width){
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const call=async(path,data,status=200)=>{const response=data===undefined?await context.request.get(origin+path):await context.request.post(origin+path,{headers:{origin},data});assert.equal(response.status(),status,path);return response.json();};
+ // Extend the existing bulk journey: all matching retains labels beyond page one.
+ const stormService=(await call('/api/state')).services.find(s=>s.name==='Checkout');
+ const branchService=await call('/api/command',{type:'service',name:'Checkout east branch',environment:'production',owner:(await call('/api/session')).member.id,runbook:[],pager:''});
+ const stormPrefix='Synthetic branch timeout storm',storm=[];
+ for(let n=0;n<50;n++)storm.push(await call('/api/command',{type:'declare',service:n===1?branchService.id:stormService.id,severity:'warning',title:stormPrefix+(n<2?' repeated title':n===49?' long title while the regional dependency is unavailable and customer requests are timing out':' '+n),summary:'Human response to branch timeouts'}));
+ await page.goto(origin+'/incidents');await page.getByLabel('Search incidents',{exact:true}).fill(stormPrefix);await page.getByText('50 matching incidents',{exact:true}).waitFor();
+ await page.getByRole('checkbox',{name:/^Select /}).first().check();await page.getByRole('button',{name:'Select all 50 matching',exact:true}).click();
+ let stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});
+ const stormReason='Investigating all affected branches';
+ await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill(stormReason);
+ await stormBulk.getByRole('button',{name:'Apply to 50 incidents',exact:true}).click();
+ const resultList=stormBulk.getByRole('list',{name:'Bulk operation results',exact:true});
+ await expect(resultList.locator('li')).toHaveCount(50,{timeout:180000});
+ await expect(resultList.locator('[data-bulk-outcome="succeeded"]')).toHaveCount(50);
+ const names=await resultList.locator('strong').allTextContents();assert.deepEqual([...names].sort(),storm.map(i=>i.title).sort(),'each result retains its incident title, including later pages');
+ const duplicated=resultList.locator('li').filter({hasText:storm[0].title});await expect(duplicated).toHaveCount(2);
+ assert.ok((await duplicated.allTextContents()).some(text=>text.includes(branchService.name)),'repeated titles retain their service context');
+ assert.ok((await duplicated.allTextContents()).some(text=>text.includes(stormService.name)&&!text.includes(branchService.name)));
+ await expect(stormBulk.getByRole('status')).toContainText(['50 succeeded · 0 skipped · 0 refused']);
+ const completed=await call('/api/state'),stormOperation=completed.triage.find(row=>row.kind==='bulk'&&row.results.length===50&&row.results.every(r=>storm.some(i=>i.id===r.id)));
+ assert.ok(stormOperation);assert.ok(completed.incidents.filter(i=>storm.some(s=>s.id===i.id)).every(i=>i.state==='acknowledged'&&i.timeline.at(-1).operationId===stormOperation.id),'all 50 changes retain the shared timeline operation id');
+ const displayed=await stormBulk.locator('.bulk-results').innerText();
+ assert.ok(!displayed.includes(stormOperation.id));for(const incident of storm)assert.ok(!displayed.includes(incident.id.slice(0,8)),'no internal incident identity names a result');
+ assert.ok(await resultList.evaluate(list=>list.scrollHeight>list.clientHeight),'a long result list scrolls inside the panel');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await context.grantPermissions(['clipboard-read','clipboard-write']);
+ await stormBulk.getByRole('button',{name:'Copy details',exact:true}).click();await stormBulk.getByText('Details copied',{exact:true}).waitFor();
+ const details=JSON.parse(await page.evaluate(()=>navigator.clipboard.readText()));assert.equal(details.operationId,stormOperation.id);assert.deepEqual(new Set(details.results.map(row=>row.title)),new Set(storm.map(i=>i.title)));
+ const captureBulk=async label=>{for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await stormBulk.screenshot({path:`${directory}/OC-079-${label}-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});};
+ await captureBulk('storm-results');
+ // Re-submit the same public form: the copied operation identity and timelines stay stable.
+ await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill(stormReason);
+ const replay=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/triage/bulk'&&response.request().method()==='POST');
+ await stormBulk.getByRole('button',{name:'Apply to 50 incidents',exact:true}).click();assert.equal((await replay).status(),200);
+ await expect(resultList.locator('li')).toHaveCount(50);await expect(stormBulk.getByRole('button',{name:'Apply to 50 incidents',exact:true})).toBeEnabled();
+ assert.deepEqual((await call('/api/state')).incidents,completed.incidents,'operation replay makes no second change');
+ await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();
+ // A live revision conflict is attributed to the right title beside a success and an already-acknowledged skip.
+ const mixed=[];for(const suffix of ['stale','fresh'])mixed.push(await call('/api/command',{type:'declare',service:stormService.id,severity:'warning',title:stormPrefix+' '+suffix,summary:'Review mixed bulk outcomes'}));
+ await page.reload();await page.getByLabel('Search incidents',{exact:true}).fill(stormPrefix);await page.getByText('52 matching incidents',{exact:true}).waitFor();
+ // The shared journey may freeze time, so equal-created incidents can land on either cursor page.
+ while(await page.locator('.triage-item').count()<52){const loaded=await page.locator('.triage-item').count();await page.getByRole('button',{name:'Load more incidents',exact:true}).click();await expect(page.locator('.triage-item')).toHaveCount(Math.min(52,loaded+25));}
+ await page.getByLabel('Select '+mixed[0].title,{exact:true}).check();await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();
+ // Select one acknowledged row without relying on a duplicate title's identity.
+ await page.getByRole('checkbox',{name:'Select '+storm[49].title,exact:true}).check();
+ stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});
+ await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Review changed and already acknowledged branches');
+ let raced=false;const race=async route=>{if(!raced){raced=true;await call('/api/command',{type:'note',incident:mixed[0].id,revision:mixed[0].revision,text:'Another responder updated this incident'});}await route.continue();};
+ await page.route('**/api/triage/bulk',race);
+ try{await stormBulk.getByRole('button',{name:'Apply to 3 incidents',exact:true}).click();await expect(stormBulk.getByRole('list',{name:'Bulk operation results'}).locator('li')).toHaveCount(3,{timeout:60000});await expect(stormBulk.getByRole('button',{name:'Apply to 3 incidents',exact:true})).toBeEnabled();}finally{await page.unroute('**/api/triage/bulk',race);}
+ const mixedResults=stormBulk.getByRole('list',{name:'Bulk operation results'});
+ await expect(mixedResults.locator('[data-bulk-outcome="succeeded"]')).toHaveCount(1);await expect(mixedResults.locator('[data-bulk-outcome="skipped"]')).toHaveCount(1);await expect(mixedResults.locator('[data-bulk-outcome="refused"]')).toHaveCount(1);
+ await expect(stormBulk.getByRole('status')).toContainText(['1 succeeded · 1 skipped · 1 refused']);
+ const stale=mixedResults.locator('li').filter({hasText:mixed[0].title});assert.match(await stale.innerText(),/changed.*reload.*select/is,'a stale refusal explains how to recover');
+ assert.match(await mixedResults.locator('li').filter({hasText:storm[49].title}).innerText(),/already.*acknowledged/is);
+ const mixedState=await call('/api/state');assert.equal(mixedState.incidents.find(i=>i.id===mixed[0].id).state,'declared');assert.equal(mixedState.incidents.find(i=>i.id===mixed[1].id).state,'acknowledged');
+ await captureBulk('mixed-results');
+ await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();
+ // Same-value priority is a successful server no-op, displayed as skipped rather than changed.
+ await page.getByLabel('Search incidents',{exact:true}).fill(mixed[1].title);await page.getByText('1 matching incidents',{exact:true}).waitFor();
+ await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await stormBulk.getByLabel('Bulk action',{exact:true}).selectOption('set-priority');await stormBulk.getByLabel('Bulk priority',{exact:true}).selectOption('P2');await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Coordinate the same priority');await stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true}).click();await expect(stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true})).toBeEnabled();
+ await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();await page.getByLabel('Select '+mixed[1].title,{exact:true}).check();stormBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await stormBulk.getByLabel('Bulk action',{exact:true}).selectOption('set-priority');await stormBulk.getByLabel('Bulk priority',{exact:true}).selectOption('P2');await stormBulk.getByLabel('Bulk action reason',{exact:true}).fill('Review unchanged priority');
+ const beforeNoop=(await call('/api/state')).incidents.find(i=>i.id===mixed[1].id);
+ await stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true}).click();await expect(stormBulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="skipped"]')).toHaveCount(1);await expect(stormBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true})).toBeEnabled();assert.deepEqual((await call('/api/state')).incidents.find(i=>i.id===mixed[1].id),beforeNoop);
+ await stormBulk.getByRole('button',{name:'Clear selection',exact:true}).click();
+ console.log('PROBE OC-079 bulk result titles: 50 all-matching acknowledgments retain titles and service context, shared timeline operation id, hidden/copyable diagnostic identity, bounded scrolling, unchanged replay and named mixed success/skipped/stale refusal; 1440 assertions, 1440/390 screen proof');
  const state=await call('/api/state'),service=state.services.find(s=>s.name==='Checkout'),prefix='Synthetic bulk '+(width===1440?'desktop':'phone');
  const make=async title=>call('/api/command',{type:'declare',service:service.id,severity:'warning',title,summary:'Human response evidence'});
  let a=await make(prefix+' first'),b=await make(prefix+' second'),target=await make(prefix+' target');
@@ -967,7 +1034,7 @@ export async function triageBulkBrowser(page,context,width){
   await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();
   if(refreshing){await refreshing;assert.equal(await page.getByLabel('Select '+a.title,{exact:true}).isDisabled(),true,'post-save triage refresh keeps stale row revisions unselectable');}
  }finally{releaseRefresh();await Promise.all(heldRefreshes);if(width===1440)await page.unroute('**/api/triage?*',holdRefresh);}
- await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();await selectSources();bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('merge');await bulk.getByLabel('Merge target',{exact:true}).selectOption(target.id);await bulk.getByLabel('Bulk action reason',{exact:true}).fill('One response owns the common failure');await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();await bulk.getByText(/saved · revision/).first().waitFor();
+ await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();await selectSources();bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('merge');await bulk.getByLabel('Merge target',{exact:true}).selectOption(target.id);await bulk.getByLabel('Bulk action reason',{exact:true}).fill('One response owns the common failure');await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();await expect(bulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="succeeded"]')).toHaveCount(2);
  await bulk.screenshot({path:`${directory}/OC-079-merge-${width}.png`});await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();
  const source='synthetic-oncall-'+(6600+width),key=randomBytes(32).toString('hex');await call('/api/sources',{id:source,key,scopes:[service.id]});
  for(let n=0;n<2;n++){
