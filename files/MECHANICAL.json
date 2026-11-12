@@ -1,0 +1,51 @@
+{
+  "head": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+  "merged_main": "37299328ad8c7baacfc3d0356aa49316650bb557",
+  "clean": true,
+  "status_judgments_equal_main": true,
+  "generated_views_equal_main": {
+    "ACCEPTANCE.md": true,
+    "docs/CLAIMS.md": true
+  },
+  "base_copies_changed": false,
+  "new_fixture_email_lines": 0,
+  "status_counts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "changed_files": [
+    "CONTRACT.md",
+    "agent-surface.json",
+    "docs/agents.md",
+    "sources.lock.json",
+    "src/agent-door/analytics-tools.ts",
+    "src/agent-door/read-tools.ts",
+    "src/agent-door/resources.ts",
+    "src/readiness/api.ts",
+    "tests/oncall-agent-analytics.mjs",
+    "tests/oncall-agent-fixtures.mjs",
+    "tests/oncall-agent-flow.mjs"
+  ],
+  "lock": {
+    "path": "sources.lock.json",
+    "sha256": "bae7edf24debbf44404f00998856cc77c95213a90c3b0b77c69081c5d2b53449",
+    "regenerate": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "views": {
+    "write": "node src/base/contract-docs.mjs write",
+    "check": "node src/base/contract-docs.mjs check",
+    "exit": 0,
+    "restored": [
+      "ACCEPTANCE.md",
+      "docs/CLAIMS.md"
+    ]
+  },
+  "migration_ledger": {
+    "command": null,
+    "reason": "No migration added or changed",
+    "exit": 0
+  }
+}

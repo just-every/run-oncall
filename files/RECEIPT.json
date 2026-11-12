@@ -1,0 +1,132 @@
+{
+  "tag": "sd-oncall-c-f243",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f243",
+  "head": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+  "product_pushed": true,
+  "pr": null,
+  "status_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "status_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "clause": "SURFACE-001",
+  "source_status": "missing",
+  "claim": "PARTIAL",
+  "complete_acceptance_points": [],
+  "completed_selected_slice": "acceptance 1 analytics row: response, scheduled load, noise and readiness; usage omitted",
+  "tests": [
+    {
+      "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 0,
+      "duration_seconds": 430.6,
+      "head_at_start": "0c0619ce0f9b7024dd441ef6ee62a5e7d3092c81",
+      "relevant_source_and_test_bytes_equal_candidate": true
+    },
+    {
+      "command": "node /tmp/run-oncall-analytics.mjs",
+      "module": "tests/oncall-agent-analytics.mjs",
+      "test": "analyticsReads",
+      "head": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+      "exit": 0,
+      "policies": [
+        "all-autonomous",
+        "held"
+      ],
+      "observations": {
+        "local_incidents": 2,
+        "measured_mtta_seconds": 60,
+        "primary_seconds": 3600,
+        "backup_seconds": 3600,
+        "local_triggers": 3,
+        "outbound_requests": 0
+      }
+    },
+    {
+      "command": "node /tmp/run-oncall-readiness.mjs",
+      "module": "tests/readiness.mjs",
+      "test": "readinessHealth",
+      "head": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+      "exit": 0,
+      "includes": [
+        "current-member authority",
+        "503 completeness",
+        "restored signals",
+        "zero durable writes",
+        "zero outbound requests"
+      ]
+    },
+    {
+      "command": "ONCALL_VERIFY_LANE=hosted npx -y @runeditrun/rer verify",
+      "head": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+      "exit": 0,
+      "includes": [
+        "first-party check",
+        "production build",
+        "typecheck",
+        "hosted output",
+        "hydration",
+        "declared agent conformance"
+      ],
+      "conformance": {
+        "passed": 8824,
+        "total": 8824
+      },
+      "browser_executable": "/usr/bin/chromium",
+      "browser_arguments": [
+        "--no-sandbox"
+      ],
+      "scope": "Existing hosted lane plus CLI checks; touched runtime machines run separately"
+    },
+    {
+      "command": "node /tmp/oncall-guide-proof.mjs",
+      "head": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+      "exit": 0,
+      "widths": [
+        1440,
+        390
+      ],
+      "worker_outbound_requests": 0,
+      "browser_executable": "/usr/bin/chromium",
+      "screenshots_inspected": true
+    },
+    {
+      "command": "node scripts/write-agent-surface.mjs --check",
+      "head": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+      "exit": 0
+    }
+  ],
+  "mechanical_receipt": "MECHANICAL.json",
+  "probes": "PROBES.txt",
+  "ci": [
+    {
+      "id": 43216456301,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+      "event": "push",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43216456301"
+    }
+  ],
+  "publication_scan": {
+    "commit": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "state": "Not run in cloud; required fleet landing gate"
+  },
+  "run_site": {
+    "state": "Pending guarded landing on main"
+  },
+  "inherited_holds_unchanged": true,
+  "source_lock_fresh": true,
+  "no_existing_assertions_removed_or_weakened": true,
+  "no_base_copies_changed": true,
+  "no_new_fixture_emails": true
+}

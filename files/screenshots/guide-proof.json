@@ -1,0 +1,27 @@
+{
+  "observations": [
+    {
+      "width": 1440,
+      "status": 200,
+      "guideSectionVisible": true,
+      "registryRows": 1,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "screenshot": "screenshots/analytics-guide-1440.png"
+    },
+    {
+      "width": 390,
+      "status": 200,
+      "guideSectionVisible": true,
+      "registryRows": 1,
+      "classes": [
+        "standard",
+        "sensitive"
+      ],
+      "screenshot": "screenshots/analytics-guide-390.png"
+    }
+  ],
+  "workerOutboundRequests": 0
+}

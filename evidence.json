@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "02430f1d1cd085c10fd0be452d7844028d24ffe8",
+      "bytes": 275,
+      "path": "CI.json",
+      "sha256": "8b2099385874fb8081b916307ef2c10ae8da8fc6d371fb7b8b2844db067e930e"
+    },
+    {
+      "blob": "d1f64099a9dd33d17bdf0cb84072a9508356dc82",
+      "bytes": 1375,
+      "path": "MECHANICAL.json",
+      "sha256": "eccd44b4e5e81716c14c03fade436706c984d21b011496c18520625a3cd25182"
+    },
+    {
+      "blob": "7826fea310e88be2a5a94e61cdd52f9ef340c119",
+      "bytes": 1885,
+      "path": "PLAN.md",
+      "sha256": "c90dafa691d12c4d33fc00696a7d380f515094006857d3369a2ae85ff32ef1dc"
+    },
+    {
+      "blob": "43c886868de01b082f2e41b772db17a808f413a0",
+      "bytes": 1223,
+      "path": "PROBES.txt",
+      "sha256": "eb7d7daf36319f881e2b345c951a600055ead8eff06e2b6f7a2fda92ad6ef25a"
+    },
+    {
+      "blob": "9e292dbb9de4d42b4de695d63631862274ba78d4",
+      "bytes": 3752,
+      "path": "RECEIPT.json",
+      "sha256": "113ea8abb6c21871b9d885ea2841976baf2ede7a3c28b8d11f37ace25b7baa95"
+    },
+    {
+      "blob": "2aa19717ac112080cf993a3a3206b856f6d2bf02",
+      "bytes": 11210,
+      "path": "REPORT.md",
+      "sha256": "416bee736a3bc5ea7d6b50c3d38f8ff22d24aad9441879d85e5d457bd88049bf"
+    },
+    {
+      "blob": "c9aa6870cf831fb50fb5595e4cff258fada145c5",
+      "bytes": 5389163,
+      "path": "screenshots/analytics-guide-1440.png",
+      "sha256": "f0a27b238616101305de5236eb9f04fe0cd4322315462c69e907f905a170ee33"
+    },
+    {
+      "blob": "c788b4a99f8ab5e26c908064b6d7f11be5cd0f1e",
+      "bytes": 2914787,
+      "path": "screenshots/analytics-guide-390.png",
+      "sha256": "ab6a9f1efa0460b53dee9f4dc20c42e0a36e083cf532f8ff3248b0937e1a1d44"
+    },
+    {
+      "blob": "0cde086614fee796a3453140db3f25cf71f9dd68",
+      "bytes": 540,
+      "path": "screenshots/guide-proof.json",
+      "sha256": "56e22c1bdd1c2379e504512283051ba0bf1c332f2eb7fb90f4c4983fdf785102"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f243",
+  "product_head": "f33bb4e04334d6dbb1fc6aef47e4b419c474a871",
+  "ref": "refs/heads/evidence/sd-oncall-c-f243",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f243"
+}
