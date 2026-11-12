@@ -1,0 +1,13 @@
+{
+  "name": "import-door",
+  "command": [
+    "node",
+    "tests/import-door.mjs"
+  ],
+  "head": "2833697c0f0770529bd4c0022d995a4a0cd34837",
+  "started_at": "2026-11-12T09:36:09.664162+00:00",
+  "finished_at": "2026-11-12T09:37:44.320970+00:00",
+  "exit_code": 0,
+  "log": "import-door.log",
+  "log_sha256": "6b3684c81b4dd414abb2d7bfa9a5418de1c04d4c2d38e32dcebcdb0a52d5c27c"
+}

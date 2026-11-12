@@ -1,0 +1,15 @@
+{
+  "name": "product-push",
+  "command": [
+    "python3",
+    "/home/agent/rer-consolidation/.tools/cloud-push.py",
+    "origin",
+    "cloud/main-oncall-movein-plain-labels-1-c1"
+  ],
+  "head": "2833697c0f0770529bd4c0022d995a4a0cd34837",
+  "started_at": "2026-11-12T09:36:23.326725+00:00",
+  "finished_at": "2026-11-12T09:36:26.954409+00:00",
+  "exit_code": 0,
+  "log": "product-push.log",
+  "log_sha256": "8db3f3781b09b0acdcb6e969aae845106f0f6536a9698b1b6b7f52214684e1b7"
+}

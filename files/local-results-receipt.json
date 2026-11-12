@@ -1,0 +1,43 @@
+{
+  "head": "2833697c0f0770529bd4c0022d995a4a0cd34837",
+  "checks": [
+    {
+      "name": "build",
+      "exit_code": 0,
+      "receipt": "build-receipt.json"
+    },
+    {
+      "name": "static-checks",
+      "exit_code": 0,
+      "receipt": "static-checks-receipt.json"
+    },
+    {
+      "name": "movein-browser",
+      "exit_code": 0,
+      "receipt": "movein-browser-receipt.json"
+    },
+    {
+      "name": "import-door",
+      "exit_code": 0,
+      "receipt": "import-door-receipt.json"
+    },
+    {
+      "name": "imported-email-browser",
+      "exit_code": 0,
+      "receipt": "imported-email-browser-receipt.json"
+    },
+    {
+      "name": "activation",
+      "exit_code": 0,
+      "receipt": "activation-receipt.json"
+    },
+    {
+      "name": "product-push",
+      "exit_code": 0,
+      "receipt": "product-push-receipt.json"
+    }
+  ],
+  "packet_regular_files_only": true,
+  "injected_secret_matches": 0,
+  "credential_shape_matches": 0
+}

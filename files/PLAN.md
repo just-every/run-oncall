@@ -1,0 +1,10 @@
+# Plan: carry plain move-in review onto current main
+
+1. Refresh the authorized fleet launcher, install bundle-only Git authentication and the cloud push/evidence helpers, clone just-every/run-oncall with full history, install repository-preserving commit hooks and pinned checkout tooling.
+2. Start cloud/main-oncall-movein-plain-labels-1-c1 at current origin/main. Squash cloud/main-oncall-movein-plain-labels-1-land-c4e128ba81. Resolve source conflicts by keeping main's newer behavior and tests; restore CONTRACT.md, ACCEPTANCE.md and docs/CLAIMS.md byte for byte from origin/main.
+3. Review every carried file against main and the prior round. Keep this presentation-only: plain difference sentences, named references, missing comparison and backup explanations, named adopted-undo refusal, raw support payload behind Copy details. Preserve preview writes, matching, adoption, saved plan and fingerprint.
+4. Regenerate the source lock last, check it, and make one fleet-authored commit with no co-author trailer or skip marker. Run typecheck and the existing plainMoveInReview, current move-in browser flows, activation and import-door checks through real emitted Worker/browser doors. Capture changed review/undo screens once at 1440 and 390; add no test registrations and weaken no assertion.
+5. Inspect every candidate author, committer and trailer; push only the named product branch with the fleet guard. Use a single budgeted REST watcher for exact-SHA Verify; inspect failed job logs once if needed. Never push main or rewrite published history.
+6. Save complete non-secret report, receipts and selected screen proof outside the product tree. Publish explicitly selected files using the report-only evidence ref, record terminal provenance and claim lines, then delete the pushed clone. Preserve a verified bundle and clone if any product work remains unpushed.
+
+Defaults: CONTRACT Status/Gap/Evidence stay with main. No new import sources, matching/adoption changes, additional findings, new tests or DONE claims. Mac publication scan is deferred to the fleet lander as explicitly required by the cloud adaptation.

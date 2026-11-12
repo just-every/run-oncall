@@ -1,0 +1,39 @@
+{
+  "head": "2833697c0f0770529bd4c0022d995a4a0cd34837",
+  "assertion_width": 1440,
+  "screens": [
+    {
+      "path": "plain-move-in-review-1440.png",
+      "state": "review",
+      "width": 1440,
+      "height": 5486,
+      "bytes": 420538,
+      "sha256": "8c0c732985314c2eb4da595e010e2af3f095850b3caa3272e3baf9a2020eac09"
+    },
+    {
+      "path": "plain-move-in-review-390.png",
+      "state": "review",
+      "width": 390,
+      "height": 6517,
+      "bytes": 389468,
+      "sha256": "38d49d0aaff89362b5db65fc5a5ad81dd3513d68ebced1c6a8161c8fd54432d5"
+    },
+    {
+      "path": "plain-move-in-undo-1440.png",
+      "state": "undo",
+      "width": 1440,
+      "height": 5634,
+      "bytes": 377090,
+      "sha256": "3ab22bc789dd70d6bd3b8acbc4bfc0bc2ceb4339d375a1f6e5a41efc5d6469bd"
+    },
+    {
+      "path": "plain-move-in-undo-390.png",
+      "state": "undo",
+      "width": 390,
+      "height": 6260,
+      "bytes": 340954,
+      "sha256": "bc0f17b3609f56d4b3a0801db70821e57aa23499ffdcb66c1797514f44a6c89f"
+    }
+  ],
+  "visually_reviewed": true
+}

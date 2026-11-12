@@ -1,0 +1,9 @@
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Edition source lock check passed.
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> @just-every/oncall@0.5.9 typecheck /workspace/run-oncall
+> tsc --noEmit
+
+Contract files match main; diff whitespace check passed.

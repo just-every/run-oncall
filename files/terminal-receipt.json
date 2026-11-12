@@ -1,0 +1,31 @@
+{
+  "repository": "just-every/run-oncall",
+  "tag": "main-oncall-movein-plain-labels-1-c1",
+  "branch": "cloud/main-oncall-movein-plain-labels-1-c1",
+  "head": "2833697c0f0770529bd4c0022d995a4a0cd34837",
+  "base": "7f9d04290b2405f9a2372a51c079f44613e5db45",
+  "product_status": "READY",
+  "remote_product_head": "2833697c0f0770529bd4c0022d995a4a0cd34837",
+  "candidate_commits": 1,
+  "merge_commits": 0,
+  "checkout_clean": true,
+  "pr_url": null,
+  "ci": {
+    "run_id": 43192941949,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "2833697c0f0770529bd4c0022d995a4a0cd34837",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43192941949",
+    "gh_calls": 5
+  },
+  "clause_status_changes": [],
+  "claims": [
+    "CLAIM OC-021 PARTIAL points=1 tests=tests/product-browser-journey.mjs#plainMoveInReview",
+    "CLAIM OC-022 PARTIAL points=1 tests=tests/product-browser-journey.mjs#plainMoveInReview"
+  ],
+  "blockers": [],
+  "full_publication_scan": "fleet-owned; not run in cloud",
+  "landing": "fleet-owned; not performed",
+  "evidence_ref": "refs/heads/evidence/main-oncall-movein-plain-labels-1-c1",
+  "observed_at": "2026-11-12T09:57:42.487917+00:00"
+}

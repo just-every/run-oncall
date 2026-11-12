@@ -1,0 +1,13 @@
+{
+  "name": "static-checks",
+  "command": [
+    "bash",
+    "/tmp/oncall-static-check.sh"
+  ],
+  "head": "2833697c0f0770529bd4c0022d995a4a0cd34837",
+  "started_at": "2026-11-12T09:35:58.583964+00:00",
+  "finished_at": "2026-11-12T09:36:02.456333+00:00",
+  "exit_code": 0,
+  "log": "static-checks.log",
+  "log_sha256": "a9c13f539d947c40ae9aa1cc8d9a08dfdf5a3db2c4c2bb0225823df0b24afcc8"
+}

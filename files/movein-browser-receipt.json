@@ -1,0 +1,13 @@
+{
+  "name": "movein-browser",
+  "command": [
+    "node",
+    "/tmp/oncall-movein-runner.mjs"
+  ],
+  "head": "2833697c0f0770529bd4c0022d995a4a0cd34837",
+  "started_at": "2026-11-12T09:34:50.027019+00:00",
+  "finished_at": "2026-11-12T09:35:38.854145+00:00",
+  "exit_code": 0,
+  "log": "movein-browser.log",
+  "log_sha256": "de7e054f463456d97feaaf9b3c1f8bd0a1f2b576d0d35fb1ca1a86c8bd35ef5a"
+}
