@@ -1,0 +1,24 @@
+{
+  "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+  "command": [
+    "node",
+    "tests/runtime.mjs"
+  ],
+  "environment": {
+    "ONCALL_RUNTIME_PART": "machines"
+  },
+  "exit": 1,
+  "phase": "after autonomous Scribe optional-revision result, before its non-disclosure completion",
+  "error": "TypeError: fetch failed; caused by SocketError: other side closed in Miniflare synchronous proxy worker eval line 32",
+  "cgroup_oom": 0,
+  "cgroup_oom_kill": 0,
+  "exact_sha_verify_run": 43154671717,
+  "exact_sha_verify_conclusion": "success",
+  "source_edits_for_observation": false,
+  "one_fresh_repeat": {
+    "exit": 0,
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "log": "f239-runtime-machines-retry.log",
+    "duration_seconds": 851.266091
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+  "screens": [
+    {
+      "width": 1440,
+      "url": "/docs/agents",
+      "tool": "oncall.alerts.list",
+      "status": "shown"
+    },
+    {
+      "width": 390,
+      "url": "/docs/agents",
+      "tool": "oncall.alerts.list",
+      "status": "shown"
+    }
+  ],
+  "assertionWidth": 1440,
+  "outboundRequests": 0
+}

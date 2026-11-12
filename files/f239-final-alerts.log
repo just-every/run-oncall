@@ -1,0 +1,9 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:4182) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["4182","4181","node"],["4190","4182","esbuild"],["4199","4182","workerd"],["4205","4182","ps"]]
+PROBE SURFACE-001 1 autonomous: MCP oncall.alerts.list -> six scoped alerts across three stable pages with native, compatible and monitoring observations and retained routing versions; recovered low filter, sensitive policy parity, truncation without bytes, foreign and unrouted non-disclosure, permission refusal, unchanged native records and permanent audit, zero outbound requests; tools/list and served guide include the row
+PROBE SURFACE-001 1 held: MCP oncall.alerts.list -> six scoped alerts across three stable pages with native, compatible and monitoring observations and retained routing versions; recovered low filter, sensitive policy parity, truncation without bytes, foreign and unrouted non-disclosure, permission refusal, unchanged native records and permanent audit, zero outbound requests; tools/list and served guide include the row
+PASS scoped alerts and retained observations: both company policies, native D1 admissions, stable bounded pages, filters, class computation, denied and revoked credentials, zero native effects and zero outbound requests

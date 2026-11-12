@@ -1,0 +1,15 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:4454) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["4454","4453","node"],["4467","4454","esbuild"],["4476","4454","workerd"],["4482","4454","ps"]]
+file:///tmp/f239-browser.mjs:13
+ browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+                        ^
+
+TypeError: Cannot read properties of undefined (reading 'launch')
+    at file:///tmp/f239-browser.mjs:13:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Node.js v22.20.0

@@ -1,0 +1,162 @@
+[
+  {
+    "name": "final-typecheck",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "start": "2026-11-12T04:25:34.920450+00:00",
+    "end": "2026-11-12T04:25:47.118989+00:00",
+    "exit": 0,
+    "log": "f239-final-typecheck.log"
+  },
+  {
+    "name": "final-first-party",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "start": "2026-11-12T04:25:47.243749+00:00",
+    "end": "2026-11-12T04:25:50.049198+00:00",
+    "exit": 0,
+    "log": "f239-final-first-party.log"
+  },
+  {
+    "name": "final-build",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "start": "2026-11-12T04:25:50.159745+00:00",
+    "end": "2026-11-12T04:26:06.820193+00:00",
+    "exit": 0,
+    "log": "f239-final-build.log"
+  },
+  {
+    "name": "final-alerts",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "timeout",
+      "1200",
+      "node",
+      "-e",
+      "import('./tests/oncall-agent-alerts.mjs').then(m=>m.alertReads())"
+    ],
+    "start": "2026-11-12T04:26:06.919526+00:00",
+    "end": "2026-11-12T04:26:20.246833+00:00",
+    "exit": 0,
+    "log": "f239-final-alerts.log"
+  },
+  {
+    "name": "agent-conformance",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "timeout",
+      "1200",
+      "node",
+      "tests/agent-door.mjs"
+    ],
+    "start": "2026-11-12T04:26:38.975583+00:00",
+    "end": "2026-11-12T04:30:32.800072+00:00",
+    "exit": 0,
+    "log": "f239-agent-conformance.log"
+  },
+  {
+    "name": "browser-guide",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "timeout",
+      "1200",
+      "node",
+      "/tmp/f239-browser.mjs"
+    ],
+    "start": "2026-11-12T04:31:39.221194+00:00",
+    "end": "2026-11-12T04:31:45.854322+00:00",
+    "exit": 1,
+    "log": "f239-browser-guide.log"
+  },
+  {
+    "name": "browser-guide-fixed",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "timeout",
+      "1200",
+      "node",
+      "/tmp/f239-browser.mjs"
+    ],
+    "start": "2026-11-12T04:32:36.507628+00:00",
+    "end": "2026-11-12T04:32:48.189112+00:00",
+    "exit": 0,
+    "log": "f239-browser-guide-fixed.log"
+  },
+  {
+    "name": "final-contract-check",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "check"
+    ],
+    "start": "2026-11-12T04:42:52.811620+00:00",
+    "end": "2026-11-12T04:42:53.209715+00:00",
+    "exit": 0,
+    "log": "f239-final-contract-check.log"
+  },
+  {
+    "name": "final-lock-check",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "start": "2026-11-12T04:42:53.299856+00:00",
+    "end": "2026-11-12T04:42:54.105219+00:00",
+    "exit": 0,
+    "log": "f239-final-lock-check.log"
+  },
+  {
+    "name": "runtime-machines",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "timeout",
+      "1200",
+      "node",
+      "tests/runtime.mjs"
+    ],
+    "start": "2026-11-12T04:32:48.275481+00:00",
+    "end": "2026-11-12T04:45:28.847071+00:00",
+    "exit": 1,
+    "log": "f239-runtime-machines.log",
+    "environment": {
+      "ONCALL_RUNTIME_PART": "machines"
+    }
+  },
+  {
+    "name": "runtime-machines-retry",
+    "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "command": [
+      "timeout",
+      "1200",
+      "node",
+      "tests/runtime.mjs"
+    ],
+    "start": "2026-11-12T04:46:27.602508+00:00",
+    "end": "2026-11-12T05:00:38.868599+00:00",
+    "exit": 0,
+    "log": "f239-runtime-machines-retry.log",
+    "environment": {
+      "ONCALL_RUNTIME_PART": "machines"
+    }
+  }
+]

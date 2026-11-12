@@ -1,0 +1,64 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-c-f239",
+  "head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+  "remote_ref": "refs/heads/cloud/sd-oncall-c-f239",
+  "remote_head": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+  "parent_main": "dd8f2de57d7ef33ef010dacfc42155253635b5fd",
+  "product_push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-c-f239",
+    "attempts": 1,
+    "result": "PUSH_OK"
+  },
+  "identity": {
+    "all_candidates_checked": true,
+    "author": "Run Edit Run fleet",
+    "committer": "Run Edit Run fleet",
+    "trailer_count": 0
+  },
+  "contract_counts_before": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_counts_after": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34,
+    "total": 101
+  },
+  "status_section_unchanged": true,
+  "declared_tools_before": 40,
+  "declared_tools_after": 41,
+  "exposed_tools_before": 39,
+  "exposed_tools_after": 40,
+  "publication_scan": {
+    "status": "NOT RUN IN CLOUD",
+    "owner": "fleet lander",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "landing": {
+    "status": "branch only",
+    "main_pushed": false,
+    "run_site_for_candidate": null
+  },
+  "verify_run": 43154671717,
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "8810246317c7f72e7f6415ddb88d1f7aa996de08",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43154671717",
+    "status": "completed",
+    "run_id": 43154671717,
+    "event": "push"
+  },
+  "full_history": true,
+  "local_runtime": {
+    "initial_exit": 1,
+    "initial_error": "Miniflare synchronous proxy SocketError: other side closed",
+    "fresh_repeat_exit": 0,
+    "source_changed_for_retry": false
+  }
+}
