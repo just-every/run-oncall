@@ -1,0 +1,17 @@
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+shards (browser)	Run this shard	2026-11-12T03:33:29.6299495Z 
+shards (browser)	Run this shard	2026-11-12T03:33:29.6299584Z 400 !== 200
+shards (browser)	Run this shard	2026-11-12T03:33:29.6299705Z 
+shards (browser)	Run this shard	2026-11-12T03:33:29.6300425Z     at changeAndSigningBrowser (file:///home/runner/work/run-oncall/run-oncall/tests/product-browser.mjs:369:96)
+shards (browser)	Run this shard	2026-11-12T03:33:29.6301499Z     at async file:///home/runner/work/run-oncall/run-oncall/tests/product-browser.mjs:803:2 {
+shards (browser)	Run this shard	2026-11-12T03:33:29.6302136Z   generatedMessage: true,
+shards (browser)	Run this shard	2026-11-12T03:33:29.6302401Z   code: 'ERR_ASSERTION',
+shards (browser)	Run this shard	2026-11-12T03:33:29.6302649Z   actual: 400,
+shards (browser)	Run this shard	2026-11-12T03:33:29.6302870Z   expected: 200,
+shards (browser)	Run this shard	2026-11-12T03:33:29.6303112Z   operator: 'strictEqual',
+shards (browser)	Run this shard	2026-11-12T03:33:29.6303358Z   diff: 'simple'
+shards (browser)	Run this shard	2026-11-12T03:33:29.6303566Z }
+shards (browser)	Run this shard	2026-11-12T03:33:29.6303677Z 
+shards (browser)	Run this shard	2026-11-12T03:33:29.6303774Z Node.js v22.20.0
+shards (browser)	Run this shard	2026-11-12T03:33:29.7168804Z  ELIFECYCLE  Command failed with exit code 1.
+shards (browser)	Run this shard	2026-11-12T03:33:29.7398596Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,35 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE OC-079 bulk result titles: 50 all-matching acknowledgments retain titles and service context, shared timeline operation id, hidden/copyable diagnostic identity, bounded scrolling, unchanged replay and named mixed success/skipped/stale refusal; 1440 assertions, 1440/390 screen proof
+OC-043 browser 1440: selected durable reassignment, saved pending plan after reload, explicit resume and completion, axe, overflow and hydration passed
+OC-043 transformation browser 1440: Alerts, triage, routed replay and service replay show original/effective classifications and versions; lost comparison responses recover through one real retry without state effects; mutations remain one attempt; axe, overflow and hydration passed
+OC-043 declaration browser 1440: zero-write ordered comparison, saved pending declaration/notification progress after reload, explicit completion, frozen checklist and recorded no-sender obligations; axe, overflow and hydration passed
+OC-079 browser 1440: selected snooze, merge target and per-item receipts, confirmed alert-only close, retained human-resolution history, no fabricated incident, axe and overflow passed
+OC-043 approved rule browser 1440: Settings approval, launch versions, saved progress across reload, explicit declaration/notification, axe, overflow and hydration passed
+INCIDENT_ERASURE 400 {"error":"Invalid bulk outcome reference or attribution"}
+Worker diagnostics (test failure):
+[stderr] [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+[stderr] 
+[stderr] 
+[stdout] Using secrets defined in ../../../../../../tmp/oncall-flow-AJRhtr/local.env
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+400 !== 200
+
+    at changeAndSigningBrowser (file:///tmp/oncall-probes/change-flow.mjs?1794455218399:369:240)
+    at async file:///tmp/oncall-probes/probe.mjs:32:176 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 400,
+  expected: 200,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

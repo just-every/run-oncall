@@ -1,0 +1,21 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE OC-060 acceptance 1: protected HTTP on 50 incidents -> exact service, high and low urgency, triggered, declared, acknowledged, snoozed and assigned-to-me IDs; overdue reads preserve all durable rows, audit, paging and zero outbound requests
+OC-058 triage permissions: viewer and stakeholder snooze, cancellation and timeout-policy changes refused without state mutation
+OC-068 triage permissions: viewers and stakeholders refuse manual page and responder requests without creating state
+OC-061 business services and subscriptions: explicit audience, self subscription, recorded channel, unauthorized subscription and override refusals
+OC-061 derived incident impact and notice custody: degraded, one record per subscriber, no raw alert text, no sender or approved-update fabrication
+OC-061 attributed override: derived value retained, explicit clear, permanent audit and audit-failure rollback
+OC-061 stakeholder boundary: workspace and HTML contain no response state; triage, timelines, runbooks, contacts, audit/archive/checkpoint, ICS, reports, source lists and OC-053 API refused; manual page and responder request create nothing
+OC-061 configured high-urgency impact: alert admission and source recovery recompute internal status without a browser or subscriber delivery
+OC-061 bulk impact recomputation and unsubscribe: resolution restores operational status and no new subscriber notice is recorded
+OC-058 source recovery mid-snooze: atomic source recovery cancels the persisted deadline and records no re-trigger obligation
+PASS OC-050: versioned service templates freeze complete declaration snapshots; commander-only checklist history survives role transfer, decisions retain authors, merges preserve source timelines/roles/actions and aliases, splits move selected alerts without lifecycle changes, concurrent merge/split commit once, stale/viewer/anonymous/machine/expired/revoked/state refusals and audit-failure rollback preserve exact state, malformed provenance refuses restore, and archive/restore/restart retain workflow custody. Paging remains OFF.
+PASS OC-056: native, PagerDuty-compatible before/after source acknowledgment, Alertmanager and email recover exact canonical obligations without human summaries; retry/late traffic preserve stop receipts, policy versions freeze silent/nonautomatic no-sender notices, declared incidents retain current-commander no-timer reminders and require summary plus evidence, urgency/severity/orchestration rules explicitly declare incidents, stale/anonymous/expired/revoked/nonadmin edits fail, audit failure rolls back recovery atomically, and archive/restore/restart retain history without credentials or sends. Paging remains OFF.
+OC-041 triage accepted and refused items retain their own atomic audit outcomes; triage storm: 50 incidents, 49 independent commits plus stale failure, replay, roles, queries, viewer denial, confirmed matching and archive/restart passed
+Owned runtime processes [["11916","11915","MainThread"],["11925","11916","esbuild"],["12451","11916","workerd"],["12457","11916","ps"]]
+oncall request failure Error
+oncall request failure Error
+Owned runtime processes [["11916","11915","MainThread"],["11925","11916","esbuild"],["12458","11916","workerd"],["12464","11916","ps"]]
+PASS OC-061 email-list records: bounded validated category/address/channel, admin/communications-owner authority and restricted reads, atomic list/obligation audit rollback, start/end recorded obligations without raw alerts, unsubscribe, shared list/native/imported erasure and restore fences, legacy archive compatibility and inactive restart; no sender

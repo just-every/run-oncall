@@ -1,0 +1,7 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE OC-079 acceptance 1 and 2: protected bulk HTTP acknowledged 50 distinct declared incidents with expected revisions, responder attribution and one shared-operation timeline entry each; identical payload continuations completed and exact retry added only a value-free attempt audit.
+PASS held alert revisions: absent through strict restore, first human change advances implicit revision 1 to 2, stale second write refuses 409 without mutation
+PROBE OC-060 acceptance 3: native low alerts -> two stable identities retained over repeated protected reads, one attributed acknowledgment, one explicit human close, acknowledged and resolved views retain history with active source state; anonymous and intake-only reads refused, duplicate intake cannot reopen, revoked intake changes nothing; unchanged paging and zero outbound requests
+PASS OC-079 public bulk completion: revisioned incident snooze and multi-source merge, independent stale refusal and exact replay, attributed atomic merge history, selected and confirmed matching alert-only closes, unchanged source recovery/incident semantics, viewer denial, source-revision fencing, no-timer alert snooze, per-item audit rollback/retry and full archive/restart custody. Paging OFF.

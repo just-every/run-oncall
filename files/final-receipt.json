@@ -1,0 +1,51 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-bulk-results-titles-1-c1",
+  "head": "9118b95b704efba6235e81c3ff1352ed84038650",
+  "base": "31813dc294a6bbc7c0fe23b398e454b4a0f15b1b",
+  "commits": [
+    "9118b95b704efba6235e81c3ff1352ed84038650 Merge current main into bulk results candidate",
+    "4c91727a279adeb9c367c9e1c3e8356630bd31de Record unchanged bulk incident actions as skipped",
+    "c025c99d0a783177fa4ed2c66949a70b47f25a8a Name every incident in bulk triage results"
+  ],
+  "candidate_commit_count": 3,
+  "merge_count": 1,
+  "clean": true,
+  "contract_views_identical": true,
+  "source_lock": true,
+  "build": true,
+  "typecheck": true,
+  "combined_bulk_then_erasure": true,
+  "incident_erasure_http": 200,
+  "triage_http_bulk": true,
+  "triage_http_storm": true,
+  "identity": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "trailers": [],
+  "new_test_registrations": 0,
+  "clause_status_changes": [],
+  "title_count_before": 0,
+  "title_count_after": 50,
+  "result_count": 50,
+  "status_counts_before": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34,
+    "total": 101
+  },
+  "status_counts_after": {
+    "done": 25,
+    "partial": 42,
+    "missing": 34,
+    "total": 101
+  },
+  "browser_assertion_width": 1440,
+  "browser_proof_widths": [
+    1440,
+    390
+  ],
+  "contract_blob_identity": {
+    "CONTRACT.md": "01a72f028c91bba74b99a1ef999c273e63d41c96",
+    "ACCEPTANCE.md": "340375f5029fac59235262becb3915b5988cef01",
+    "docs/CLAIMS.md": "3c5adb6bf26f1463050bbbbbc37a55b166202979"
+  }
+}

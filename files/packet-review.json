@@ -1,0 +1,142 @@
+{
+  "files": [
+    {
+      "path": "REPORT.md",
+      "bytes": 9799,
+      "sha256": "3de07e816ce3e9cb329d8311761665f576affbe827f2dbdaf2ee8f21c9cece39"
+    },
+    {
+      "path": "final-receipt.json",
+      "bytes": 1541,
+      "sha256": "d9632a6fb466935f699e8fb8ef81009b467b896c9d6756ad595fff6f5f5d069d"
+    },
+    {
+      "path": "final-push-receipt.json",
+      "bytes": 326,
+      "sha256": "85763a203727a9f82a7bc15840082a7c410397368000eb156977731d0f7af404"
+    },
+    {
+      "path": "source-lock-receipt.json",
+      "bytes": 132,
+      "sha256": "6044a9ded02286f594f856ad683ca08ce53dd32e2fd03910253c1707be33abaa"
+    },
+    {
+      "path": "final-contract-check.log",
+      "bytes": 70,
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "path": "final-typecheck.log",
+      "bytes": 243,
+      "sha256": "e6cd2ad108f03b14cf82439ca9b60155d6af2f27d1b33bc896b389ac23e1b603"
+    },
+    {
+      "path": "triage-bulk.log",
+      "bytes": 1372,
+      "sha256": "c717bb81e76b0090e3f8fde011b916f5ec92eda874184c914c50f40b2849ae93"
+    },
+    {
+      "path": "triage-storm.log",
+      "bytes": 3756,
+      "sha256": "d10f3ece011c2c1313bcbec959287f2189ea78e6516476b2240ea50f38c8209b"
+    },
+    {
+      "path": "combined-final-candidate.log",
+      "bytes": 2563,
+      "sha256": "3e3c6a86ebff6d16850256f3d13de273a77871f10d4f2aaae90f0828bad5b45a"
+    },
+    {
+      "path": "combined-fixed-candidate.log",
+      "bytes": 2563,
+      "sha256": "c00a3b8d6b8d95b5107713bab494de1ff75f5b85890c42778787a1de3ec10270"
+    },
+    {
+      "path": "combined-main.log",
+      "bytes": 2263,
+      "sha256": "24c011858042142471e19985e1b38924b7f472062ba668164c0fc17f98fbe8c9"
+    },
+    {
+      "path": "combined-candidate-diagnostic.log",
+      "bytes": 2273,
+      "sha256": "4d1e6de2bf72ea23ed7661321367008c64e5e04af0f7689a6cc582b79f0686ea"
+    },
+    {
+      "path": "prior-verify.json",
+      "bytes": 23802,
+      "sha256": "cdf9db620a15a633640ea41a6d75ffe2aa7597f82914b0e3cc16c3d6fa1663c2"
+    },
+    {
+      "path": "prior-erasure-assertion.txt",
+      "bytes": 1509,
+      "sha256": "fb359b850a38837a5e540370785743d59a017393b7c1a13b428696502b675832"
+    },
+    {
+      "path": "probe.mjs",
+      "bytes": 3372,
+      "sha256": "b83a504ae8ccc91f7b61f718d4cde57b55a41c4e3068581bdd1d2e877e39cf99"
+    },
+    {
+      "path": "browser/OC-079-storm-results-1440.png",
+      "bytes": 61342,
+      "sha256": "5267167e3ba11e1c2367a1142ae0b0126504ae0fceca3e0fb6486b5b15228e38"
+    },
+    {
+      "path": "browser/OC-079-storm-results-390.png",
+      "bytes": 53633,
+      "sha256": "faba614178029cbfe9f9167d4eb69dacb78bdc0c4f2ba9cf74efb597a64d68c0"
+    },
+    {
+      "path": "browser/OC-079-mixed-results-1440.png",
+      "bytes": 59509,
+      "sha256": "844aad191eaf76838d9f42d8e30826a5fa8df2b94c6fafdf029b713a29e9ddac"
+    },
+    {
+      "path": "browser/OC-079-mixed-results-390.png",
+      "bytes": 58573,
+      "sha256": "aaeb78f864734f5fbe1d70b2630cb5813a510f5d7b1ba2cef02aa5b48a786096"
+    },
+    {
+      "path": "combined-main.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "combined-candidate-diagnostic.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "ci-receipt.json",
+      "bytes": 330,
+      "sha256": "877d50e33a050ec298357f101c3a29798b864bbb7c128a0cfed97faa8d9c8c05"
+    },
+    {
+      "path": "ci-poll-1.json",
+      "bytes": 176,
+      "sha256": "3f17ce8a2f8db89938bd226cc79ae2bed755c42fe23c729b20e9ed75417d0fcb"
+    },
+    {
+      "path": "ci-poll-2.json",
+      "bytes": 176,
+      "sha256": "3f17ce8a2f8db89938bd226cc79ae2bed755c42fe23c729b20e9ed75417d0fcb"
+    },
+    {
+      "path": "final-ci-poll-1.json",
+      "bytes": 176,
+      "sha256": "cfaa31a7aae976c9a6920619d98fd52a84e5ae703a1bd215e27816f4aca554b5"
+    },
+    {
+      "path": "final-ci-poll-2.json",
+      "bytes": 176,
+      "sha256": "cfaa31a7aae976c9a6920619d98fd52a84e5ae703a1bd215e27816f4aca554b5"
+    },
+    {
+      "path": "final-ci-poll-3.json",
+      "bytes": 179,
+      "sha256": "fc577b0cb6d17ee8ec0aa9e3fc78c43ba38475450019d2dc54738d1f57b3b1e8"
+    }
+  ],
+  "regular_files_only": true,
+  "scope": "declared public repository; non-secret reports, actual receipts and synthetic browser proof",
+  "excluded": "credentials, environment/setup dumps, private gate material, symlinks and unrelated screenshots"
+}
