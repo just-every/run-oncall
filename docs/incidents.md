@@ -40,7 +40,7 @@ Send `POST /api/ingress/SOURCE` with a JSON object, at most 65,536 bytes (64 KiB
 
 | JSON key | Required value |
 | --- | --- |
-| `source` | Source ID, repeated in the body and equal to the URL's source; nonblank string, max 100 characters. |
+| `source` | Source ID or the displayed name on that source’s Settings → Integrations page; nonblank string, max 100 characters. Names are accepted only for the source in the URL and stored under its existing ID, so old senders and retries keep working. |
 | `eventId` | Unique event identity within this source; nonblank string, max 200 characters. Use a new ID for each observation, including recovery. |
 | `service` | The allowed service's internal UUID, max 100 characters; a display name such as `Checkout` will not work. |
 | `environment` | Exact environment recorded on that service, such as `production`; nonblank string, max 100 characters. |
