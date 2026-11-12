@@ -888,7 +888,7 @@ try {
   for(const field of ['email_filter_mode','email_filters.0','email_parsing_fallback','email_parsers.0','email_parsers.1','email_parsers.2'])assert.ok(refusedItem.unmapped.some(note=>note.field===field&&note.original!==undefined),'report names '+field+' with original')
   assert.deepEqual(refusedItem.unmapped.find(note=>note.field==='email_parsers.1').original,refusedEmail.email_parsers[1])
   assert.equal(refusedReview.items.find(item=>item.id==='synthetic-oncall-email-legacy').effects.length,0,'undocumented email type remains refused')
-  assert.match(refusedReview.items.find(item=>item.id==='synthetic-oncall-email-legacy').rejection,/OC-070/)
+  assert.match(refusedReview.items.find(item=>item.id==='synthetic-oncall-email-legacy').rejection,/email receiving modes and rules are not imported; recreate and review the email receiving mode/)
   ok(await door.call('pagerduty','undo',{planId:refusedReview.planId}))
   const beforeObjects=await imported(),beforeNative=ok(await req('/api/state')),beforePaging=ok(await req('/api/paging/state'))
   const durable=()=>w.sql('SELECT COUNT(*) AS n FROM ik_jobs UNION ALL SELECT COUNT(*) FROM ik_batches UNION ALL SELECT COUNT(*) FROM ik_d1_assertions UNION ALL SELECT COUNT(*) FROM move_in_objects')
