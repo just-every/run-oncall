@@ -1,0 +1,88 @@
+{
+  "repository": "just-every/run-oncall",
+  "remote": "https://github.com/just-every/run-oncall",
+  "branch": "cloud/main-oncall-api-clients-ready-1",
+  "head": "fcc1fec3a3b0be2e85b4c928260fe80fa0ca1e01",
+  "tree": "4aa807e5d38a398994f8e6a59fced0c60bc3199f",
+  "merged_main": "0766444566ab517f42308c8a407f4791948f18b0",
+  "clean": true,
+  "commits": [
+    {
+      "sha": "fcc1fec3a3b0be2e85b4c928260fe80fa0ca1e01",
+      "parents": [
+        "a0374b6b13661fff2caee165b49b77171f1fd90f",
+        "0766444566ab517f42308c8a407f4791948f18b0"
+      ],
+      "author": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "committer": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "subject": "Merge current main form validation into API client work",
+      "trailers": ""
+    },
+    {
+      "sha": "a0374b6b13661fff2caee165b49b77171f1fd90f",
+      "parents": [
+        "89d2dc99e012659d64daffeedf7b8b356b67b1bb"
+      ],
+      "author": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "committer": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "subject": "Open policy setup through its supported document door",
+      "trailers": ""
+    },
+    {
+      "sha": "89d2dc99e012659d64daffeedf7b8b356b67b1bb",
+      "parents": [
+        "54e3af1304de5c4abca8823b234f7c692293f7db"
+      ],
+      "author": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "committer": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "subject": "Keep the API policy setup reference portable in rendered docs",
+      "trailers": ""
+    },
+    {
+      "sha": "54e3af1304de5c4abca8823b234f7c692293f7db",
+      "parents": [
+        "90f391b56d492b998e0e55509e076eaf588cbea4"
+      ],
+      "author": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "committer": {
+        "name": "Run Edit Run fleet",
+        "email": "fleet@runeditrun.com"
+      },
+      "subject": "Explain API client policy prerequisite and expose client actions [skip ci]",
+      "trailers": ""
+    }
+  ],
+  "product_files": [
+    "docs/response-api.md",
+    "sources.lock.json",
+    "src/agent-door/rest.ts",
+    "src/automation/AutomationSettings.tsx",
+    "src/automation/ClientPolicyNotice.tsx",
+    "src/automation/api.ts",
+    "src/automation/client-policy.ts",
+    "src/integrations/integrations.css",
+    "tests/member-coordination-browser.mjs"
+  ],
+  "diff_sha256": "3b6bc612b2b0ce1747f31812402ca5141820af6ca7431a613041acca3cd72a5f"
+}

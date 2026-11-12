@@ -1,0 +1,10 @@
+# API client readiness and actions plan
+
+1. Initialize fleet identity, decrypted-bundle Git helper, commit hooks and the repository toolchain. Clone only just-every/run-oncall, and work on cloud/main-oncall-api-clients-ready-1.
+2. Inspect OC-053, the shared agent policy gate, existing setup door and API reference. Reproduce a newly created client refusing a granted read and inspect the pointer target at desktop and phone widths using the emitted production Worker.
+3. Keep the intentional shared policy gate. Connect API client management to the supported agent policy setup, expose a current policy status before and after client creation, and use one plain missing-step message in the page and REST refusal. Document the prerequisite and policy errors.
+4. Keep Client actions visible without hover, preserving the existing rotate/revoke confirmation and server authority/revision checks.
+5. Extend the existing OC-053 browser journey, adding no journey registration. Create a read client, follow the policy link and save choices through the real browser form, read only the granted service, reject an ungranted read, rotate and revoke through pointer actions, and retain the existing conflict, outbox, attribution, erasure and viewer assertions. Assertions run at 1440; capture the changed API client states once at 1440 and 390 without credential values.
+6. Commit product changes only, as the fleet identity with hooks active. Push the first real commit through the fleet guard. Merge updated main after any published save; preserve source contract and newer tests. Regenerate and check the source lock last.
+7. Run touched browser tests and typecheck, push the final real candidate without skip-ci, and use a single exact-SHA REST watcher at 300-second intervals within the ten-call GitHub budget. Preserve actual non-secret receipts outside the product tree.
+8. Publish the complete explicitly selected report packet only to evidence/main-oncall-api-clients-ready-1. Report product provenance, test count delta, clause claim limits and exact CI run IDs; leave landing/publication scan to the fleet.

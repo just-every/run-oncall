@@ -1,0 +1,69 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-api-clients-ready-1",
+  "head": "fcc1fec3a3b0be2e85b4c928260fe80fa0ca1e01",
+  "merged_main": "0766444566ab517f42308c8a407f4791948f18b0",
+  "recorded_at": "2026-11-12T02:22:29.229559+00:00",
+  "commands": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node tests/member-coordination-browser.mjs",
+      "exit": 0,
+      "log": "browser.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    }
+  ],
+  "logs": {
+    "browser.log": {
+      "sha256": "8be8ad2500bea61ff8609d4c9e422d891ddbe45e8a36e1b65c7c102b384b092a",
+      "bytes": 4657
+    },
+    "typecheck.log": {
+      "sha256": "9b0b3594186bafc8dab911d0c747824f1d6b96686af29dd61cb9871a699c6700",
+      "bytes": 182
+    },
+    "build.log": {
+      "sha256": "097a533089cd348661e71d1c4fb39596f6c4363ffedfae00d7a0e69812d3f36e",
+      "bytes": 16063
+    }
+  },
+  "counts": {
+    "before": {
+      "done": 24,
+      "partial": 43,
+      "missing": 34
+    },
+    "after": {
+      "done": 24,
+      "partial": 43,
+      "missing": 34
+    },
+    "lane_invocations_before": 16,
+    "lane_invocations_after": 16,
+    "unique_journey_files_before": 12,
+    "unique_journey_files_after": 12,
+    "journey_registrations_added": 0
+  },
+  "contract_identical_to_main": true,
+  "status_changes": [],
+  "proof_widths": [
+    1440,
+    390
+  ]
+}

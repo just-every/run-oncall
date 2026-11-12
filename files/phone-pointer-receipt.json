@@ -1,0 +1,27 @@
+{
+  "head": "fcc1fec3a3b0be2e85b4c928260fe80fa0ca1e01",
+  "viewport": {
+    "width": 390,
+    "height": 1000
+  },
+  "pointer": "touchscreen",
+  "forcedClicks": false,
+  "beforePolicy": {
+    "status": 403
+  },
+  "policySaveStatus": 200,
+  "afterPolicy": {
+    "status": 200,
+    "grantedIncidentReturned": true
+  },
+  "actionsOpened": true,
+  "rotation": {
+    "oldKeyStatus": 401,
+    "newKeyStatus": 200
+  },
+  "revocation": {
+    "managementStatus": 200,
+    "keyStatus": 401
+  },
+  "completed": true
+}

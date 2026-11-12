@@ -1,0 +1,47 @@
+{
+  "head": "90f391b56d492b998e0e55509e076eaf588cbea4",
+  "widths": [
+    {
+      "width": 1440,
+      "opacity": "0",
+      "pointerEvents": "none",
+      "hit": "LI",
+      "hitText": "Harbour reporting 1440Harbour CheckoutPermissionsIncidents · ReadServices · ReadClient actionsRotate",
+      "pointerOpened": true
+    },
+    {
+      "width": 390,
+      "opacity": "0",
+      "pointerEvents": "none",
+      "hit": "LI",
+      "hitText": "Harbour reporting 390Harbour CheckoutPermissionsIncidents · ReadServices · ReadClient actionsRotate ",
+      "pointerOpened": true
+    }
+  ],
+  "read": {
+    "status": 403,
+    "body": {
+      "error": {
+        "code": "policy_unset",
+        "message": "policy unset"
+      },
+      "decision": {
+        "id": "f2f94a19-c242-4e34-8cf6-23f780d26f16",
+        "disposition": "unset",
+        "revision": null,
+        "classes": []
+      },
+      "fields": {
+        "unanswered": [
+          "standard",
+          "sensitive"
+        ],
+        "setup_url": "http://127.0.0.1:33111/agents"
+      }
+    }
+  },
+  "policyPage": {
+    "status": 200,
+    "hasSetup": true
+  }
+}
