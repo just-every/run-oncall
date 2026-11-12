@@ -2499,8 +2499,12 @@
       "sha256": "2d6da8b0c93d3d49c06cd32a5a14383232d5b3704c608db32fb3abfa03184069",
       "executable": false
     },
+    "src/incident/more/handoff.css": {
+      "sha256": "e442e23138bbfddc0aec94ed1e1d0b5598f250cc7fdc32cb61eda95d4c6a69e9",
+      "executable": false
+    },
     "src/incident/more/Handoff.tsx": {
-      "sha256": "1ce55e5947c6b434be02e4c91d0330f7ce732d2ec07333bfe2de0ff9974555d0",
+      "sha256": "9b70b6027e762ec8c08d04a4e21d3fd3c8629720595291b1cd28e11b87ca909a",
       "executable": false
     },
     "src/incident/more/Merge.tsx": {
@@ -6524,7 +6528,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "ef733baee441cc2f6dfa9273f17c691a39f9338ff79a6ef1926e82fe54bc253b",
+      "sha256": "75a1ed3ec3f8c6ece91f01f1c7ff6465e6398dd0ab602b9949a2e1733390504e",
       "executable": false
     },
     "tests/oncall-agent-communications-replay.mjs": {
