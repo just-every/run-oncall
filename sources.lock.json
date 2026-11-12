@@ -2764,7 +2764,7 @@
       "executable": false
     },
     "src/landing/RestoredOwner.tsx": {
-      "sha256": "ca59d9666df62eba70db0a963eea7d71fcdc7bf55d4668b27699ab07378b4b99",
+      "sha256": "3cd2dcebf054e757f7a9c09b643e2236ce178cb89dc8c98c3adbfec458045cfe",
       "executable": false
     },
     "src/landing/Section.tsx": {
@@ -6628,7 +6628,7 @@
       "executable": false
     },
     "tests/transfer.mjs": {
-      "sha256": "603e5a95560d9a8db8a009dc261eaa9fb81ced2da8229ebca54a91d0bc9a3484",
+      "sha256": "0a2728b03e35b91845ff21805923565d18c3f2d744598e2403eeec3d167d6bfe",
       "executable": false
     },
     "tests/triage.mjs": {
