@@ -96,4 +96,18 @@ Remote custody is recorded in remote-heads.txt. Both product commits use the fle
 CLAIM BASE-AGENT-003 PARTIAL points=1,3,4,6 tests=tests/oncall-agent-resources.mjs#resourceJourney; agent-surface.json#journey
 GAP BASE-AGENT-003: Acceptance 2 exact UI field parity across roles and acceptance 5 grant byte-budget exhaustion without partial content remain unproved; retained authority, privacy, Base and release holds are unchanged.
 
-Initial evidence snapshot: exact-SHA push Verify run 43121817312 remains in progress after its first permitted status poll. No CI green, main equality, scan result or landing is claimed by this snapshot. The terminal packet will carry the final observed conclusion.
+The earlier evidence snapshot recorded Verify in progress. The final exact-head conclusion below supersedes that snapshot; neither snapshot claims main equality, a publication scan or landing.
+
+Additional exact-candidate semantic probe: probe-held-resources.mjs explicitly asserts a standard-only service read is review with content and a review handle, and named native coverage profiles carry standard and sensitive, initially return approval_required without content, then read successfully after the exact native human approval. It passed on the real clock with unchanged native records and paging and zero outbound requests. The complete runnable probe and its actual log are in the packet; it adds no product test registration and changes no product source. This independently checks the intended sensitive-data boundary rather than deriving the expected disposition only from the returned classes.
+
+## Terminal result
+
+Exact-SHA GitHub Verify: run 43121817312, event push, completed successfully on c4d1659997f1f5a785e39e4de3549b9e3990be38. URL: https://github.com/just-every/run-oncall/actions/runs/43121817312 . Eight GitHub API calls were used in total; one watcher polled no more often than every 305 seconds. No CI failure, dispatch, rerun or repair was needed. Local checks and exact-head Verify are green.
+
+All selected points 1, 3, 4 and 6 are closed with the proof above. Rider 3 is satisfied for these selected points by this exact-SHA push Verify; the full clause remains PARTIAL because points 2 and 5 are unproved. Rider 11 remains with guarded landing, so no whole-clause count change or landed-main claim is made. Main was last observed at 2743e71f76044322080b1b136b9dce82c4793915; its successful Verify 43115851492 and Run site 43115851706 are prior-main custody, not candidate landing receipts. No PR was opened because branch push is the repository's existing Verify entry point.
+
+Publication scan receipt: commit=c4d1659997f1f5a785e39e4de3549b9e3990be38 complete=false historyScanned=not-run-in-cloud findings=not-established. The fleet must run the complete full-history publication scan, guard main integration and confirm the resulting main Run site. Evidence publication is report transport only and does not grant acceptance or landing authority.
+
+Blockers: none for the requested selected points. Retained gaps: BASE-AGENT-003 acceptance 2 UI role parity and acceptance 5 grant byte budgets, plus the unchanged authority, team privacy, Base replay and release holds already named above. Counts remain 23 done, 44 partial, 34 missing. No product or test edits followed the exact-candidate proof.
+
+READY repo=just-every/run-oncall branch=cloud/sd-oncall-c-f229 head=c4d1659997f1f5a785e39e4de3549b9e3990be38

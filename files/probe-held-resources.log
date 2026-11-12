@@ -1,0 +1,7 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:9892) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Owned runtime processes [["9892","9891","node"],["9900","9892","esbuild"],["9910","9892","workerd"],["9916","9892","ps"]]
+{"head":"c4d1659997f1f5a785e39e4de3549b9e3990be38","result":"passed","clock":"real","standard":"review with content and review handle","sensitive":"approval_required without content, exact native approval then named coverage profiles","nativeUnchanged":true,"pagingUnchanged":true,"outboundRequests":0}

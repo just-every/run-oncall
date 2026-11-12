@@ -130,6 +130,29 @@
       "command": "git diff origin/main...HEAD -- CONTRACT.md ACCEPTANCE.md docs/CLAIMS.md src/modules/agent-door .github/workflows/verify.yml",
       "exit": 0,
       "empty": true
+    },
+    "heldResourceSemanticProbe": {
+      "command": "node ../packet/probe-held-resources.mjs",
+      "head": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+      "node": "22.20.0",
+      "exit": 0,
+      "source": "probe-held-resources.mjs",
+      "log": "probe-held-resources.log",
+      "standardClasses": [
+        "standard"
+      ],
+      "standardDisposition": "review",
+      "sensitiveClasses": [
+        "standard",
+        "sensitive"
+      ],
+      "sensitiveDisposition": "approval",
+      "contentBeforeApproval": false,
+      "contentAfterExactHumanApproval": true,
+      "clock": "real",
+      "nativeUnchanged": true,
+      "pagingUnchanged": true,
+      "outboundRequests": 0
     }
   },
   "mainRuns": [
@@ -147,7 +170,11 @@
     }
   ],
   "publicationScan": {
-    "status": "not run in cloud; required from fleet before landing"
+    "commit": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+    "complete": false,
+    "historyScanned": "not run in cloud",
+    "findings": "not established",
+    "custodian": "guarded fleet lander"
   },
   "landing": {
     "status": "not attempted; branch only"
@@ -224,10 +251,34 @@
         "head_sha": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
         "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121817312",
         "status": "in_progress"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121817312",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121817312",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121817312",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": "success",
+        "head_sha": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43121817312",
+        "status": "completed"
       }
     ],
     "github_calls_before_watcher": 3,
-    "github_calls_total": 4
+    "github_calls_total": 8
   },
   "claim": {
     "clause": "BASE-AGENT-003",
@@ -242,5 +293,25 @@
       "tests/oncall-agent-resources.mjs#resourceJourney",
       "agent-surface.json#journey"
     ]
+  },
+  "artifacts": [
+    {
+      "path": "screens/guide-1440.png",
+      "bytes": 4757262,
+      "sha256": "4040ee21cd2df526e8bfb82b9fcacd017b9f5b91d268e91a2b3c90f8de6e9b82"
+    },
+    {
+      "path": "screens/guide-390.png",
+      "bytes": 2500204,
+      "sha256": "a7a6258f82af6a1e7137d78e8f1bbc9b6fcd02e93cb0b51d005130ff0cff8da1"
+    }
+  ],
+  "status": "READY for guarded fleet landing; BASE-AGENT-003 remains PARTIAL",
+  "productPush": {
+    "branch": "cloud/sd-oncall-c-f229",
+    "head": "c4d1659997f1f5a785e39e4de3549b9e3990be38",
+    "guard": "cloud-push.py",
+    "result": "success",
+    "log": "push-final.log"
   }
 }
