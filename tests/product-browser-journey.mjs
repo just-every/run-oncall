@@ -503,6 +503,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  page.on('response',observe);
  await key.activate(page.locator('.oc-page-head').getByRole('link',{name:'New rota',exact:true}));
  if(width===1440)await retainPreview(page,()=>page.getByLabel('Rota name',{exact:true}).pressSequentially('Gate flicker',{delay:120}));
+ if(width===1440){
+  const name=page.getByLabel('Rota name',{exact:true});await name.fill('');await page.getByRole('button',{name:'Continue',exact:true}).click();
+  const error=name.locator('..').getByRole('alert');await error.waitFor();assert.equal(await name.evaluate(e=>e===document.activeElement),true);assert.equal(await name.getAttribute('aria-describedby'),await error.getAttribute('id'));
+ }
  await key.text(page.getByLabel('Rota name',{exact:true}),'Checkout rota '+width);
  await accessibleState(page,'rota-name',width,page.getByLabel('Rota name',{exact:true}));
  await key.activate(page.getByRole('button',{name:'Continue',exact:true}));await page.getByRole('heading',{name:'Who is on, in order',exact:true}).waitFor();
@@ -555,6 +559,10 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  assert.deepEqual(await api('/api/paging/state'),beforeDismiss,'Escape dismisses cover preparation without saving');
  await key.activate(coverOpener);
  await key.option(cover.getByLabel('Who',{exact:true}),'');await key.option(cover.getByLabel('Role',{exact:true}),'primary');await key.calendar(cover.getByLabel('From',{exact:true}),future.overrideStart);await key.calendar(cover.getByLabel('To',{exact:true}),future.overrideEnd);
+ if(width===1440){
+  const end=cover.getByLabel('To',{exact:true}),value=await end.inputValue();await end.fill('');await cover.getByRole('button',{name:'Review change',exact:true}).click();
+  const error=end.locator('..').getByRole('alert');await error.waitFor();assert.equal(await end.evaluate(e=>e===document.activeElement),true);assert.equal(await end.getAttribute('aria-describedby'),await error.getAttribute('id'));await end.fill(value);
+ }
  await accessibleState(page,'cover-preparation',width,cover.getByRole('button',{name:'Review change',exact:true}));
  const coverBefore=await api('/api/paging/state'),coverReviewResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/schedules/'+id+'/review'&&r.request().method()==='POST');
  await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
@@ -562,6 +570,12 @@ export async function productSchedule(page,context,width,session,{ownerLink,sele
  const reviewedNames=await cover.getByRole('region',{name:'Coverage change intervals',exact:true}).locator('.scheduling-window > p > strong').allTextContents(),reviewName=id=>id===null?'Coverage gap':coverReview.members.find(member=>member.id===id)?.name??'Unavailable member';
  assert.deepEqual(reviewedNames,[...coverReview.intervals].sort((a,b)=>Number(b.after===null)-Number(a.after===null)||a.start-b.start||a.role.localeCompare(b.role)).slice(0,80).map(interval=>interval.role+': '+reviewName(interval.before)+' → '+reviewName(interval.after)),'the cover review renders every protected before and after assignment');
  assert.deepEqual(await api('/api/paging/state'),coverBefore,'cover review writes nothing');assert.equal(await cover.getByRole('button',{name:'Apply reviewed change',exact:true}).isDisabled(),true);
+ if(width===1440){
+  const apply=cover.getByRole('button',{name:'Apply reviewed change',exact:true}),hint=await apply.getAttribute('aria-describedby');assert.ok(hint);
+  const explanation=cover.locator(`[id="${hint}"]`);await explanation.waitFor();assert.ok((await explanation.innerText()).includes(await cover.getByRole('checkbox').locator('..').innerText()),'Apply names the review checkbox that enables it');
+  assert.equal(await explanation.evaluate((e,id)=>e.previousElementSibling?.getAttribute('aria-describedby')===id,hint),true,'the explanation sits immediately beside Apply');
+  for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await apply.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-cover-review-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ }
  await key.dialog(cover);await accessibleState(page,'cover-review',width,cover.getByRole('checkbox',{name:'I reviewed these assignments and gaps'}));
  await key.dismiss(cover,coverOpener);assert.deepEqual(await api('/api/paging/state'),coverBefore,'Escape from the review writes nothing');
  await key.activate(coverOpener);await key.activate(cover.getByRole('button',{name:'Review change',exact:true}));await cover.getByText('New coverage gap',{exact:true}).first().waitFor();
@@ -768,7 +782,11 @@ export async function scheduleCoordinationBrowser(page,context,width,session,{ow
  if(width===1440){assert.equal(await page.locator('.oc-bands [data-time-zone]').getAttribute('data-time-zone'),zone);for(const label of await page.locator('.handoff').allTextContents())assert.ok(label.includes(zone));}
  await capture('rota');
  await page.getByRole('button',{name:'Request a swap',exact:true}).click();const swapSheet=page.getByRole('dialog',{name:'Request a swap',exact:true});await swapSheet.getByLabel('Shift to swap',{exact:true}).waitFor();
- await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
+ const requestSwap=swapSheet.getByRole('button',{name:'Request',exact:true});
+ assert.equal(await requestSwap.isDisabled(),true);const substituteHint=await requestSwap.getAttribute('aria-describedby');assert.ok(substituteHint);await swapSheet.locator(`[id="${substituteHint}"]`).waitFor();
+ const beforeSelection=await api('/api/schedule-coordination');assert.equal(beforeSelection.records.some(row=>row.kind==='swap'&&row.data.schedule===schedule.id),false,'no request is saved without a substitute');
+ for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await requestSwap.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/refusal-swap-substitute-${proofWidth}.png`});}await page.setViewportSize({width,height:1000});
+ await swapSheet.getByLabel('Substitute',{exact:true}).selectOption(substitute.id);assert.equal(await requestSwap.isEnabled(),true);assert.equal(await requestSwap.getAttribute('aria-describedby'),null);await swapSheet.getByRole('button',{name:'Request',exact:true}).click();await swapSheet.waitFor({state:'detached'});await coordination.getByText(/admin approval required/).waitFor();
  const swap=(await api('/api/schedule-coordination')).records.find(row=>row.kind==='swap'&&row.data.schedule===schedule.id&&row.data.status==='pending');assert.ok(swap);
  await coordination.getByRole('button',{name:'Approve swap',exact:true}).click();await coordination.getByText(/approval recorded/).waitFor();
  const relief=await context.browser().newContext({baseURL:origin,viewport:{width,height:900},timezoneId:'Australia/Brisbane'});
@@ -1211,6 +1229,9 @@ export async function keyboardCoordination(page,context,width,ownerLink,openSess
  const external=[];const observe=request=>{if(request.url().startsWith('https://hostile.invalid/'))external.push(request.url())};page.on('request',observe)
  // OC-008: author a runbook containing a link and HTML, then use its copied incident step.
  const runbookText=`https://hostile.invalid/runbook ${hostile}`
+ // Begin this keyboard leg with a real key even when a preceding pointer flow
+ // left focus on the menu's return target. Keep visible-focus assertions intact.
+ await page.keyboard.press('Tab')
  await openWorkspaceSection(page,'services',{keyboard:true})
  await key.activate(page.getByRole('button',{name:'Add service',exact:true}))
  await key.text(page.getByLabel('Service name',{exact:true}),`Literal runbook ${width}`)

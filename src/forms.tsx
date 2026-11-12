@@ -1,4 +1,5 @@
 import { useId, type FormEvent, type ReactNode } from "react";
+import {ValidationForm, useValidationField} from "./form-validation";
 
 // The labelled field and the busy-aware form every app screen and the local sign-in door share.
 export function Field({
@@ -9,6 +10,7 @@ export function Field({
   value,
   children,
   help,
+  multiple = false,
 }: {
   name: string;
   label: string;
@@ -17,36 +19,42 @@ export function Field({
   value?: string;
   children?: ReactNode;
   help?: string;
+  multiple?: boolean;
 }) {
   const helpId = useId();
+  const validation = useValidationField(helpId + "-control");
+  const description = [help ? helpId : null, validation.control["aria-describedby"]].filter(Boolean).join(" ") || undefined;
   return (
     <label className="field">
       <span id={helpId + '-label'}>{label}</span>
       {children ? (
-        <select name={name} required={required} defaultValue={value} aria-labelledby={helpId + '-label'} aria-describedby={help ? helpId : undefined}>
+        <select {...validation.control} name={name} multiple={multiple} required={required} defaultValue={value} aria-labelledby={helpId + '-label'} aria-describedby={description}>
           {children}
         </select>
       ) : type === "textarea" ? (
         <textarea
+          {...validation.control}
           name={name}
           required={required}
           defaultValue={value}
           rows={3}
           aria-labelledby={helpId + '-label'}
-          aria-describedby={help ? helpId : undefined}
+          aria-describedby={description}
         />
       ) : (
         <input
+          {...validation.control}
           name={name}
           type={type}
           required={required}
           defaultValue={value}
           minLength={type === "password" ? 12 : undefined}
           aria-labelledby={helpId + '-label'}
-          aria-describedby={help ? helpId : undefined}
+          aria-describedby={description}
         />
       )}
       {help && <small id={helpId}>{help}</small>}
+      {validation.error && <span id={validation.errorId} role="alert">{validation.error}</span>}
     </label>
   );
 }
@@ -56,15 +64,18 @@ export function Form({
   label,
   busy,
   disabled = false,
+  inlineValidation = false,
 }: {
   children: ReactNode;
   onSubmit: (data: any) => Promise<any>;
   label: string;
   busy: boolean;
   disabled?: boolean;
+  inlineValidation?: boolean;
 }) {
+  const Container = inlineValidation ? ValidationForm : "form";
   return (
-    <form
+    <Container
       onSubmit={async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
@@ -83,6 +94,6 @@ export function Form({
           {busy ? "Saving…" : label}
         </button>
       </fieldset>
-    </form>
+    </Container>
   );
 }
