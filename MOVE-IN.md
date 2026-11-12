@@ -169,8 +169,11 @@ email, push and notification rules remain notes. No imported contact satisfies
 paging or two-route coverage before OC-026/OC-066 verification and country
 coverage checks. Supported Events v1/v2/generic API inventory stays inactive,
 keyless and bound to the source service; no native service is created.
-Email integrations name OC-070 and OC-038's inherited duty; vendor integrations
-name re-creation as the matching Oncall source or generic webhook.
+Saved PagerDuty `generic_email_inbound_integration` settings and Opsgenie `Email`
+integrations with saved actions now become inactive email settings. See
+[Saved email settings](docs/move-in.md#saved-email-settings) for the response
+shapes, exact conversions and retained differences. Vendor-hosted integrations
+still name re-creation as the matching Oncall source or generic webhook.
 
 Service grouping, urgency, support hours and both timeouts are individually
 unconverted. Teams (OC-023), business services (OC-061), maintenance (OC-043)
