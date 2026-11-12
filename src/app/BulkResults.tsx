@@ -26,7 +26,8 @@ export function bulkCounts(result: BulkResponse, items: BulkSelection[]) {
 function outcome(row: BulkResult, result: BulkDisplay) {
   const action = row.step ?? result.action;
   if (skipped(row, result.items)) {
-    const state = row.error === 'Alert-only item is already closed' ? 'closed' : action === 'acknowledge' ? 'acknowledged' : action === 'resolve' ? 'resolved' : action === 'reassign' ? 'assigned to this responder' : action === 'set-priority' ? 'at this priority' : action === 'set-urgency' ? 'at this urgency' : 'in that state';
+    if (action === 'reassign') return 'Skipped — no assignment change needed.';
+    const state = row.error === 'Alert-only item is already closed' ? 'closed' : action === 'acknowledge' ? 'acknowledged' : action === 'resolve' ? 'resolved' : action === 'set-priority' ? 'at this priority' : action === 'set-urgency' ? 'at this urgency' : 'in that state';
     return `Skipped — already ${state}.`;
   }
   if (row.ok) {

@@ -2,6 +2,8 @@
 
 Oncall keeps your rota and your incident coordination. Some things it leaves to other tools on purpose, and it says so rather than pretending.
 
+Start with the dated [US installation and dependency checklist](readiness.md#us-installation-and-dependency-checklist). It names the account, provider, native-device, standby and live-proof prerequisites and keeps unverified steps explicitly not done. Settings → Readiness shows the same read-only checklist beside this installation's release evidence.
+
 ## In a US emergency, call 911 directly
 
 Oncall is not a 911 dispatch service. For a US emergency, **call 911** directly to reach US emergency services. Do not send the emergency to Oncall or wait for an Oncall alert, acknowledgment or responder.
