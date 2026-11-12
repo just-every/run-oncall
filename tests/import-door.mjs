@@ -872,7 +872,8 @@ try {
    let original=bundle;for(const key of item.location.pointer.slice(1).split('/').map(key=>key.replaceAll('~1','/').replaceAll('~0','~')))original=original?.[key]
    assert.ok(original,'every review entry points into the original account bytes')
    assert.ok(item.effects.length||item.rejection||item.unmapped.length,'nothing silently disappears')
-   if(item.rejection)assert.equal(item.effects.length,0)
+   if(item.rejection){assert.equal(item.effects.length,0);assert.doesNotMatch(item.rejection,/\b[A-Z]{2,}-\d{3}\b/,'refusals explain unsupported imports without internal clause codes')}
+   for(const note of item.unmapped)assert.doesNotMatch(note.reason,/\b[A-Z]{2,}-\d{3}\b/,'retained import differences use customer-facing explanations')
   }
   assert.deepEqual([...new Set(preview.items.flatMap(item=>item.effects).map(effect=>effect.targetKind))].sort(),['integration','policy','schedule','user'],'account import adds no active integration, routed key or other native target kind')
   const find=(kind,id)=>preview.items.find(item=>item.kind===kind&&item.id===id)
@@ -895,10 +896,14 @@ try {
      assert.equal(item.effects[0].targetKind,'integration')
      assert.deepEqual(item.effects[0].value.serviceSource,{namespace:'pagerduty',kind:'services',sourceId:service.id})
      assert.equal(item.effects[0].value.provider,'pagerduty');assert.equal(item.effects[0].value.active,false);assert.equal(item.effects[0].value.incumbentKey,'not supplied')
-    }else{assert.equal(item.effects.length,0);assert.match(item.rejection,integration.type==='email_inbound_integration'?/OC-070/:/matching Oncall source.*generic webhook/);assert.ok(item.rejection.includes(integration.name))}
+    }else{assert.equal(item.effects.length,0);assert.ok(item.rejection.includes(integration.name))}
    }
   }
-  for(const [kind,clause] of [['teams','OC-023'],['business_services','OC-061'],['maintenance_windows','OC-043'],['event_orchestrations','OC-072']])for(const item of preview.items.filter(item=>item.kind===kind))assert.ok(item.rejection.includes(clause)&&item.effects.length===0)
+  for(const kind of ['teams','business_services','maintenance_windows','event_orchestrations'])for(const item of preview.items.filter(item=>item.kind===kind)){
+   assert.equal(item.effects.length,0);
+   assert.ok(item.rejection.includes(item.id),'refusal identifies the retained source object');
+   assert.ok(item.unmapped.some(note=>note.field===kind&&note.reason.length>item.id.length),'unsupported object retains its field-level explanation');
+  }
   const orchestration=preview.items.find(item=>item.kind==='event_orchestrations'),router=records.event_orchestrations[0]
   assert.equal(orchestration.unmapped.filter(note=>/^sets\.\d+\.rules\.\d+$/.test(note.field)).length,router.sets.reduce((sum,set)=>sum+set.rules.length,0))
   assert.ok(orchestration.unmapped.some(note=>note.field==='catch_all'));assert.ok(orchestration.unmapped.some(note=>/dynamic routing/.test(note.reason)))
