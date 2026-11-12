@@ -200,7 +200,7 @@
       "executable": false
     },
     "docs/changes.md": {
-      "sha256": "00dfe457af60305b053d12401a9a34792583f0c9f7be9beb9cdea022e182172e",
+      "sha256": "d233891dc321f5de0f1785c52dec41cdeaa4d895cea33ba65eb2a58c7e419849",
       "executable": false
     },
     "docs/checkpoints.md": {
@@ -284,7 +284,7 @@
       "executable": false
     },
     "docs/routed-intake.md": {
-      "sha256": "bbc0b243e6517dac4ff0e8fd51015ccd31cb2ae28042f87f3c02a12b7d73a8cf",
+      "sha256": "6c1dee2ab5b2572982eeec66f8d6c60aebd7164142c5c0aef9bc7a2eef23b352",
       "executable": false
     },
     "docs/schedules.md": {
@@ -2172,7 +2172,7 @@
       "executable": false
     },
     "src/changes/ChangeSourceTest.tsx": {
-      "sha256": "e1da4471be8bb867dc02ae387f5f40e9a9416fe9a7d80e8cd59ceec0613dbd60",
+      "sha256": "7ee3a778f58f13f9ee4474d10c6aa4821eeeec68fe35fe4860780d7b687afeaa",
       "executable": false
     },
     "src/changes/credentials.ts": {
@@ -2576,7 +2576,7 @@
       "executable": false
     },
     "src/intake-rate/AllowanceForm.tsx": {
-      "sha256": "07c5c7ec13066b283377f586283e4103e783dd009bf17c67a1c0557bc2adc950",
+      "sha256": "7f0efeec637e9ac09ccf4942de983d5a756444fe3a9b0e139766982f681ad462",
       "executable": false
     },
     "src/intake-rate/fault.ts": {
@@ -2667,6 +2667,10 @@
       "sha256": "df8b38fdd3b43afaf66e836f479445b1958c40ee0fa9c46718ef4a35abd7bfc3",
       "executable": false
     },
+    "src/integrations/key-refusals.ts": {
+      "sha256": "7927eab7ad9701d342705c104518e588b66b114251b871d470012ceac8db96d9",
+      "executable": false
+    },
     "src/integrations/native-name.ts": {
       "sha256": "431229ef0e0d54d959f88a9de559923b6e6933e5a48a919d47e4a71dda7ce57d",
       "executable": false
@@ -2676,15 +2680,15 @@
       "executable": false
     },
     "src/integrations/RequestExample.tsx": {
-      "sha256": "1d3e24f2404806b9f5c2ce8c0d2f9d9e9b0e43bb6ade5e6f4c95474979fa714f",
+      "sha256": "4bae766c0e7f4444695ec728aac18c95f811581ed9808aaffe73c79db1057d7f",
       "executable": false
     },
     "src/integrations/SourcePage.tsx": {
-      "sha256": "50d7ca3b7dcf3dea1e4a6bb31308b83e55b35745747eacca8962b69a47e0700a",
+      "sha256": "4b8539d4a81033394b7269053061ab7ba2b74b0de7074b37e1be385cb912de25",
       "executable": false
     },
     "src/integrations/SourceTest.tsx": {
-      "sha256": "eda073fc31cd35aa4c4bae24cf7914feb82dea0dbbf3964b282db76b6215d0fe",
+      "sha256": "0cd3c2401cd671ef37f1104b379eb86a2123142e2689e9138453c175f5ef2403",
       "executable": false
     },
     "src/integrations/useVersionDraft.ts": {
@@ -6036,7 +6040,11 @@
       "executable": false
     },
     "src/routing/RoutedKeyCreate.tsx": {
-      "sha256": "aa4e31d0b0a34c65852cfd53922d931450e3586c988864e6f4c6da4e3ddc6e51",
+      "sha256": "3804ec64893c94a77a0d996b9e4c340404e55668012d7d51e746c875bf77ef47",
+      "executable": false
+    },
+    "src/routing/RoutedSenderSetup.tsx": {
+      "sha256": "c05e5f3a2b5695ef9f6e148965aacdc6df59a55ea2add6efba02b15f1ce6458e",
       "executable": false
     },
     "src/routing/routing.css": {
@@ -6052,7 +6060,7 @@
       "executable": false
     },
     "src/routing/RoutingWorkspace.tsx": {
-      "sha256": "a587f8646e140809cd32e64e9e687e7609d6e46ff34969d02f1ae47c83695303",
+      "sha256": "192e3d87f715bc45f2cf4f12a850782e06775381085f6c5471ac75c988dd7f47",
       "executable": false
     },
     "src/routing/RuleEditor.tsx": {
@@ -6524,7 +6532,7 @@
       "executable": false
     },
     "tests/keyboard.mjs": {
-      "sha256": "e0650897a16f81ca2d6354094f729fea589377524848c584a1bb67727ea3f1ff",
+      "sha256": "6fdb8158e7aed4e303225ec69dedc3e36b2a3da1164e38b9436ead3bffac4dbd",
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
@@ -6608,7 +6616,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "6cfbf04112eb97359efa0f72c641530fab0979684bd88bcd3763949b78b143de",
+      "sha256": "18a722599f3b8f68420432ff14f7b5d57f74510a359e3a62a5ac367f0ea9c3b0",
       "executable": false
     },
     "tests/readiness.mjs": {

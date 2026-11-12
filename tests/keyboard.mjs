@@ -13,13 +13,24 @@ export async function routingBrowser(page,context,width) {
  const createdResponse=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/routing/keys'&&r.request().method()==='POST');
  await key.activate(create.getByRole('button',{name:'Create routed key',exact:true}));
  const response=await createdResponse;assert.equal(response.status(),201);const source=await response.json();
- const createdKey=await create.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);await key.activate(create.getByRole('button',{name:'Done',exact:true}));
+ const createdKey=await create.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);
+ // A newcomer can configure the sender from this confirmation alone: the key ID, the ingress address and a sample that runs as copied.
+ const setup=create.getByRole('region',{name:'Sender setup for this key',exact:true}),shots=process.env.ONCALL_BROWSER_EVIDENCE??'../evidence/browser';
+ assert.equal(await setup.getByLabel('Key ID',{exact:true}).inputValue(),source.id);
+ const url=await setup.getByLabel('Ingress URL',{exact:true}).inputValue();assert.equal(url,origin+'/api/ingress/'+encodeURIComponent('intake:'+source.id));
+ const sample=await setup.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!sample.includes(createdKey),'sample never embeds the secret');assert.ok(sample.includes(JSON.stringify('intake:'+source.id).slice(1,-1)),'sample names the key as its source');
+ await context.grantPermissions(['clipboard-read','clipboard-write']);await setup.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
+ const {spawn}=await import('node:child_process');
+ const sent=await new Promise((resolve,reject)=>{const child=spawn('bash',['-e','-o','pipefail','-c',sample],{env:{...process.env,ONCALL_SOURCE_KEY:createdKey}});let out='';child.stdout.on('data',d=>out+=d);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(out):reject(Error('Copied routed-key sample failed: '+code)));});
+ assert.ok(JSON.parse(sent).id,'the copied sample is accepted by the new key');
+ await mkdir(shots,{recursive:true});for(const shot of [1440,390]){await page.setViewportSize({width:shot,height:1000});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'sender setup fits '+shot);await page.screenshot({path:shots+'/routed-key-sender-setup-'+shot+'.png',fullPage:true,mask:[page.locator('.one-time-secret input')]});}await page.setViewportSize({width,height:1000});
+ await key.activate(create.getByRole('button',{name:'Done',exact:true}));
  await selectRoutedSource(page,source);
  const rules=page.getByRole('region',{name:'Routing rules',exact:true});
  await key.activate(rules.getByText('Per-key rate allowance',{exact:true}));
  const firstSave=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/intake/allowances'&&r.request().method()==='POST');await key.text(rules.getByLabel('Requests per minute',{exact:true}),'500');assert.equal((await firstSave).status(),200);
  const secondSave=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/intake/allowances'&&r.request().method()==='POST');await key.text(rules.getByLabel('New events per minute',{exact:true}),'100');assert.equal((await secondSave).status(),200);
- await key.activate(rules.getByRole('button',{name:'Preview routing changes',exact:true}));await rules.getByText('No retained events yet.',{exact:false}).waitFor();
+ await key.activate(rules.getByRole('button',{name:'Preview routing changes',exact:true}));await rules.getByText('1 retained events compared. No records changed.',{exact:true}).waitFor();
  const evidence=process.env.ONCALL_BROWSER_EVIDENCE??'../evidence/browser';await mkdir(evidence,{recursive:true});await rules.screenshot({path:evidence+'/native-routing-empty-'+width+'.png'});
  // Keep the stale-write refusal: draft, open its confirmation, then publish a competing version.
  await rules.getByLabel('Catch-all for unmatched events',{exact:true}).selectOption(source.routing.scope[0]);await rules.getByRole('button',{name:'Publish version 2',exact:true}).click();
