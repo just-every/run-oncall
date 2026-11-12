@@ -1,0 +1,76 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-10",
+  "head": "05fd1923828dd77244c3d4a2bc1ed252e7efb121",
+  "version": "0.5.10",
+  "product_push": "success",
+  "status": "READY",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "05fd1923828dd77244c3d4a2bc1ed252e7efb121",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43217849539",
+    "id": 43217849539,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "github_api_calls_used": 7,
+  "ci_polls": [
+    {
+      "receipt": "verify-poll-4.json",
+      "observed_at": "2026-11-12T12:31:25.587315+00:00",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "05fd1923828dd77244c3d4a2bc1ed252e7efb121"
+    },
+    {
+      "receipt": "verify-poll-5.json",
+      "observed_at": "2026-11-12T12:36:25.545178+00:00",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "05fd1923828dd77244c3d4a2bc1ed252e7efb121"
+    },
+    {
+      "receipt": "verify-poll-6.json",
+      "observed_at": "2026-11-12T12:41:25.581240+00:00",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "05fd1923828dd77244c3d4a2bc1ed252e7efb121"
+    },
+    {
+      "receipt": "verify-poll-7.json",
+      "observed_at": "2026-11-12T12:46:25.552161+00:00",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "05fd1923828dd77244c3d4a2bc1ed252e7efb121"
+    }
+  ],
+  "pr": null,
+  "blockers": [],
+  "metadata_paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "before": {
+    "version": "0.5.9",
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "rer": "0.2.108"
+  },
+  "after": {
+    "version": "0.5.10",
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "rer": "0.2.108"
+  },
+  "clause_status_changes": [],
+  "migrations_added": 0,
+  "tests_changed": 0,
+  "prepared_at": "2026-11-12T12:46:49.670762+00:00"
+}

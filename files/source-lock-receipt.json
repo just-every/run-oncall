@@ -1,0 +1,15 @@
+{
+  "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+  "exit": 0,
+  "head": "05fd1923828dd77244c3d4a2bc1ed252e7efb121",
+  "source_lock_sha256": "2769fbd85a72ed79816a920684d6482fb65b447e6dc4f36679023a4d58d96319",
+  "changed_paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ]
+}

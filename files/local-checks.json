@@ -1,0 +1,69 @@
+{
+  "checked_at": "2026-11-12T12:26:02.174325+00:00",
+  "version_before": "0.5.9",
+  "version_after": "0.5.10",
+  "metadata_paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "rer_pin_before": "0.2.108",
+  "rer_pin_after": "0.2.108",
+  "migrations_added": 0,
+  "contract_status_changes": [],
+  "contract_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive (cloud_run)",
+      "exit": 0
+    },
+    {
+      "command": "git rebase --autostash origin/main (explicit fleet identity)",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party (cloud_run)",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck (cloud_run)",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "release consistency and scope assertions",
+      "exit": 0
+    }
+  ],
+  "local_tests_run": 0,
+  "tests_added": 0,
+  "tests_deleted": 0,
+  "tests_changed": 0,
+  "note": "Metadata-only candidate; no local full suite or browser proof required. Node 24.19.0 satisfied toolchain minimum selection; pnpm warned package engines specifies 22.20.0. Typecheck passed."
+}

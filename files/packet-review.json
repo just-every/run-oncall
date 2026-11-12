@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-11-12T12:46:49.676092+00:00",
+  "explicit_selection": [
+    "CANDIDATE.json",
+    "CHANGE-SOURCES.md",
+    "PLAN.md",
+    "REPORT.md",
+    "candidate-ci-discovery.json",
+    "candidate-files.txt",
+    "candidate-identities.txt",
+    "candidate-messages.txt",
+    "candidate.diff",
+    "ci-watch-state.json",
+    "local-checks.json",
+    "main-ci.json",
+    "metadata-check.txt",
+    "packet-review.json",
+    "preflight.json",
+    "product-push.txt",
+    "source-lock-receipt.json",
+    "typecheck.txt",
+    "verify-poll-4.json",
+    "verify-poll-5.json",
+    "verify-poll-6.json",
+    "verify-poll-7.json"
+  ],
+  "regular_files_only": true,
+  "injected_value_scan": "passed",
+  "private_setup_material_excluded": true,
+  "product_head": "05fd1923828dd77244c3d4a2bc1ed252e7efb121",
+  "note": "All selected files are actual reports, diffs or receipts, with no credential values or environment dumps."
+}

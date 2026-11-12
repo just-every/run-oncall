@@ -1,0 +1,3 @@
+05fd1923828dd77244c3d4a2bc1ed252e7efb121
+Prepare Oncall 0.5.10 release metadata
+
