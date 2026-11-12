@@ -43,8 +43,7 @@ export async function assertInstallationChecklist(report) {
 export async function readinessHealth(deployment) {
  const {localWorker}=await import('./worker.mjs');
  const {randomBytes,createHash}=await import('node:crypto');
- const runtime=await localWorker({RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint},{clock:true,fetchSource:`let providerMode='normal',providerCalls=[],pkceChallenge='',pkceValid=true,revoked=false;
- globalThis.fetch=async(input)=>{providerCalls.push(String(input instanceof Request?input.url:input));throw Error('Unexpected readiness outbound call');};`});
+ const runtime=await localWorker({RER_DEPLOY_SOURCE:deployment.sourceSha,RER_DEPLOY_FINGERPRINT:deployment.fingerprint},{clock:true,outboundLedger:true});
  try {
   const at=Date.now();await runtime.time(at);
   const setup=await runtime.request('/api/setup',{name:'synthetic-oncall-540',password:'synthetic-oncall-540-password'});assert.equal(setup.status,200);
@@ -90,6 +89,11 @@ export async function readinessHealth(deployment) {
   incident=await value('/api/command',{type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Synthetic responder accepts coordination'});
   incident=await value('/api/command',{type:'snooze',incident:incident.id,revision:incident.revision,minutes:1});
   const busy=await value('/api/readiness'),state=await value('/api/state');
+  for(const [as,status] of [['',401],[roles.stakeholder.cookie,403]]){
+   const denied=await call('/api/readiness',undefined,as);assert.equal(denied.status,status);
+   assert.deepEqual(Object.keys(denied.value),['error'],'refused reads disclose no populated checklist, release identity or health data');
+   assert.deepEqual(await value('/api/state'),state,'refused report reads leave populated paging and application records unchanged');
+  }
   await assertInstallationChecklist(busy);assert.deepEqual(busy.installation,baseline.installation,'configuring real local sources never promotes installation completion or field proof');
   const intake=signal(busy,'intake');assert.equal(intake.state,'degraded');assert.equal(intake.values.lastAdmittedAt,new Date(at).toISOString());assert.ok(intake.values.recentRefusals>signal(baseline,'intake').values.recentRefusals);assert.ok(intake.values.keysAtAllowance>0);assert.ok(intake.values.keysThrottledLastMinute>0);
   const events=busy.matrix.find(row=>row.id==='events');assert.equal(events.observation.configured,1);assert.equal(events.observation.active,1);assert.equal(events.observation.lastAcceptedAt,new Date(at).toISOString());assert.equal(events.state,'unproven-live');
@@ -120,7 +124,7 @@ export async function readinessHealth(deployment) {
   const editedConfiguration=signal(await value('/api/readiness'),'configuration');assert.equal(editedConfiguration.values.policyChangedAt,new Date(at+180000).toISOString());assert.equal(editedConfiguration.values.serviceChangedAt,new Date(at+180000).toISOString());assert.equal(editedConfiguration.values.scheduleChangedAt,new Date(at).toISOString(),'service policy edits never invent a schedule change');
   await value('/api/command',{type:'member',id:roles.viewer.member.id,role:'viewer',active:false});assert.equal((await call('/api/readiness',undefined,roles.viewer.cookie)).status,401);
   await runtime.time(at+13*3600000);assert.equal((await call('/api/readiness',undefined,roles.responder.cookie)).status,401,'expired sessions cannot inspect readiness');
-  const network=await runtime.request('/__provider_calls');assert.equal(network.status,200);assert.deepEqual(network.value.calls,[],'readiness and setup/state changes make zero outbound calls');
+  assert.deepEqual(await runtime.outboundRequests(),[],'readiness and fixture setup make zero outbound requests at the Worker network edge');
   console.log('PROBE OC-044 acceptance 1 checklist: protected GET /api/readiness -> every US dependency matches release matrix and actual field register; account steps remain not done; populated queued-work reads preserve all durable tables and revisions with zero outbound requests');
   console.log('PASS OC-054 readiness: release identity, closed matrix states, dynamic source/revocation observations; independent durable signals, zero-write reads, public-door queued delivery/refused intake/overdue deadline; isolated 503 and restored signal; admin/responder/viewer access and signed-out/stakeholder/expired/revoked refusal; storage never proves pager coverage; zero outbound calls');
  } finally {await runtime.close();}
