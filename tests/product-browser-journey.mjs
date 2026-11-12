@@ -132,7 +132,7 @@ export async function routedImportBrowser(page,context) {
   const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag22aa']).analyze();assert.deepEqual(axe.violations.filter(v=>['serious','critical'].includes(v.impact)),[])
   assert.equal(await page.evaluate(()=>window.__rerHydration?.count??0),0)
   await confirmUndo(page)
-  await page.getByText(/undone/).first().waitFor()
+  await page.getByRole('status').filter({hasText:'Import journal'}).getByText(/undone/).first().waitFor()
   const denied=await context.request.post(vendor==='opsgenie'?'/v2/alerts':`/integrations/generic/20131114/alert/${key}/synthetic-oncall-521`,{headers:{...(vendor==='opsgenie'?{authorization:'GenieKey '+key}:{})},data:vendor==='opsgenie'?{alias:'synthetic-oncall-browser',message:'Synthetic alert',responders:[{id:'synthetic-oncall-511'}]}:{message_type:'CRITICAL',entity_id:'synthetic-oncall-browser',state_message:'Synthetic alert'}})
   assert.equal(denied.status(),401,'undo fences the browser-activated imported credential')
  }

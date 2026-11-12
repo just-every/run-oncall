@@ -19,12 +19,25 @@ export function routedImport(vendor:string,record:SourceRecord):MappingResult|un
  const definition:RoutedImport={routes:[],targets:[],catchAllTarget:null,unconverted:[]}
  const issue=(field:string,reason:string)=>definition.unconverted.push({field,reason:`${reason}. ${retained}`})
  const target=(recipient:any,field:string):string|undefined=>{
-  if(!isObject(recipient)||recipient.type!=='team'||!textValue(recipient.id??recipient.slug)) {issue(field,'Only a single team reference can be reviewed as a service target; escalation, schedule and user targets are unsupported');return}
+  if(!isObject(recipient)||recipient.type!=='team'||!textValue(recipient.id??recipient.slug)) {issue(field,`Unsupported ${String(recipient?.type??'unknown')} target ${String(recipient?.id??recipient?.slug??recipient?.name??'(missing)')}; only one team reference can be reviewed as a service target`);return}
   const id=String(recipient.id??recipient.slug)
   if(!definition.targets.some(t=>t.id===id))definition.targets.push({id,label:String(recipient.name??id)})
   return id
  }
- if(value.alertPolicies!==undefined)issue('alertPolicies','Alert-policy criteria and transformations are unsupported')
+ if(value.alertPolicies!==undefined) {
+  issue('alertPolicies','Alert-policy criteria and transformations are unsupported')
+  const criteria=(item:unknown,path:string):void=>{
+   if(Array.isArray(item))item.forEach((child,index)=>criteria(child,path+'.'+index))
+   else if(isObject(item))for(const [key,child] of Object.entries(item))criteria(child,path+'.'+key)
+   else issue(path,`Unsupported alert-policy criterion ${JSON.stringify(item)}`)
+  }
+  const policies=Array.isArray(value.alertPolicies)?value.alertPolicies:[value.alertPolicies]
+  policies.forEach((policy:any,index:number)=>{
+   issue('alertPolicies.'+index,`Alert policy ${String(policy?.name??policy?.id??index)} cannot be converted`)
+   if(policy?.criteria!==undefined)criteria(policy.criteria,`alertPolicies.${index}.criteria`)
+   if(policy?.filter!==undefined)criteria(policy.filter,`alertPolicies.${index}.filter`)
+  })
+ }
  if(!Array.isArray(candidates)||candidates.length>100)issue(vendor==='opsgenie'?'actions.create':'routingKeys','Expected at most 100 saved ordered routes')
  else {let blocked=false;candidates.forEach((row:any,index:number)=>{
   const field=vendor==='opsgenie'?`actions.create.${index}`:`routingKeys.${index}`,before=definition.unconverted.length
@@ -45,6 +58,7 @@ export function routedImport(vendor:string,record:SourceRecord):MappingResult|un
    if(!isObject(filter)||!['match-all','match-any','match-all-conditions'].includes(filter.type))issue(field+'.filter','Unsupported Opsgenie filter')
    else {
     isDefault=filter.type==='match-all'&&(!filter.conditions||filter.conditions.length===0)
+    if(filter.type==='match-all'&&!isDefault)issue(field+'.filter','An unconditional source filter also contains conditions; its meaning must be reviewed without approximation')
     match=filter.type==='match-any'?'any':'all'
     if(Object.keys(filter).some(k=>!['type','conditions'].includes(k)))issue(field+'.filter','Unknown filter attributes')
     if(!isDefault&&(!Array.isArray(filter.conditions)||!filter.conditions.length||filter.conditions.length>20))issue(field+'.filter.conditions','Expected 1–20 exact conditions')

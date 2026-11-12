@@ -81,10 +81,10 @@ export function mapping(vendor:Vendor,source:{records:MappingRecord[]},now:numbe
     return result
    }
    if(record.kind==='integrations') {
-    const routed=routedImport(vendor,record);if(routed)return routed
     // Keep personal labels in erasable journal custody, not in a new native identity.
     const id=record.sourceId,kind=value.type??value.kind??'unknown'
     if(!/^[a-zA-Z0-9_-]{1,80}$/.test(id)||typeof kind!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(kind))throw Error('integration identifier or kind cannot be represented safely; original retained for resolution')
+    const routed=routedImport(vendor,record);if(routed)return routed
     const provider=vendor==='splunk'&&kind==='REST'?'splunk':(vendor==='jsm'||vendor==='opsgenie')&&kind==='API'?'opsgenie':vendor==='pagerduty'&&['generic_events_api_inbound_integration','events_api_v1_inbound_integration','events_api_v2_inbound_integration'].includes(kind)?'pagerduty':null
     if(vendor==='pagerduty'&&!provider)return {effects:[],rejection:kind==='email_inbound_integration'
      ?`Integration ${label} (${id}, ${kind}): email modes and rules need OC-070 and the inherited OC-038 import; recreate and review the email receiving mode. Original retained; no delivery is activated.`

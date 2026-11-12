@@ -34,5 +34,5 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).hr
   const prepared=prepareSplunkRouting(JSON.parse(await readFile(process.argv[2],'utf8')))
   await writeFile(process.argv[3],JSON.stringify(prepared,null,2)+'\n',{flag:'wx',mode:0o600})
   console.log('Prepared credential-free routing labels; unsupported settings are unchanged. Review the new file before importing.')
- } catch(error){console.error(error.message);process.exitCode=1}
+ } catch(error){console.error(error instanceof SyntaxError?'The saved response is not valid JSON; use a complete export.':error.message);process.exitCode=1}
 }

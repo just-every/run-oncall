@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
-import {readFile,mkdtemp,rm} from 'node:fs/promises'
+import {readFile,mkdtemp,rm,writeFile,access} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
-import {execFileSync} from 'node:child_process'
+import {execFileSync,spawnSync} from 'node:child_process'
 import {localWorker,ownerDoor} from './worker.mjs'
 
 // Called by the existing import-door journey. All mutations enter the emitted
@@ -24,17 +24,36 @@ export async function routedImportedKeys() {
    let raw=await readFile(`tests/fixtures/synthetic-oncall-${vendor}-routed.json`,'utf8')
    if(vendor==='splunk'){
     const directory=await mkdtemp(join(tmpdir(),'oncall-routed-labels-'));
-    try{const destination=join(directory,'prepared.json');execFileSync(process.execPath,['scripts/prepare-routed-splunk.mjs','tests/fixtures/synthetic-oncall-splunk-routed.json',destination]);raw=await readFile(destination,'utf8')}finally{await rm(directory,{recursive:true,force:true})}
+    try{
+     const inputFile=join(directory,'refused.json'),outputFile=join(directory,'refused-output.json'),sentinel='synthetic-oncall-private-credential';
+     for(const body of [JSON.stringify({apiKey:sentinel}),'{"apiKey":'+sentinel+'}']){
+      await writeFile(inputFile,body)
+      const refused=spawnSync(process.execPath,['scripts/prepare-routed-splunk.mjs',inputFile,outputFile],{encoding:'utf8'})
+      assert.equal(refused.status,1);assert.equal((refused.stdout+refused.stderr).includes('synthetic-oncall-private'),false,'credential fields and malformed JSON never echo their contents');await assert.rejects(access(outputFile))
+     }
+     const destination=join(directory,'prepared.json');execFileSync(process.execPath,['scripts/prepare-routed-splunk.mjs','tests/fixtures/synthetic-oncall-splunk-routed.json',destination]);raw=await readFile(destination,'utf8')}finally{await rm(directory,{recursive:true,force:true})}
    }
    const original=JSON.parse(raw)
-   const initial=await objects(),preview=ok(await door.preview(vendor,raw))
+   if(vendor==='splunk'){
+    const unprepared=JSON.parse(await readFile('tests/fixtures/synthetic-oncall-splunk-routed.json','utf8'))
+    for(const [index,route] of unprepared.integrations[0].routingKeys.entries()){
+     const {routingKey,...rest}=route,{routingLabel,...kept}=original.integrations[0].routingKeys[index]
+     assert.equal(routingLabel,routingKey);assert.deepEqual(kept,rest,'local preparation preserves every unsupported target and condition')
+    }
+   }
+   const initial=await objects(),malformed=structuredClone(original)
+   const invalid=vendor==='opsgenie'?malformed.integrations.data[0]:malformed.integrations[0]
+   invalid.id='synthetic-oncall-invalid.route'
+   const refused=ok(await door.preview(vendor,JSON.stringify(malformed)))
+   assert.ok(refused.items[0].rejection.includes('identifier or kind cannot be represented safely'));assert.deepEqual(refused.items[0].effects,[]);assert.deepEqual(await objects(),initial)
+   const preview=ok(await door.preview(vendor,raw))
    assert.deepEqual(await objects(),initial,'preview changes no imported objects')
    const item=preview.items.find(item=>item.kind==='integrations'),mapped=item.effects[0].value
    assert.equal(mapped.active,false);assert.equal(mapped.incumbentKey,'not supplied');assert.equal(mapped.routed.routes.length,2,JSON.stringify(item));assert.equal(mapped.routed.catchAllTarget,null)
    const expected=vendor==='opsgenie'?original.integrations.data[0]:original.integrations[0]
    assert.deepEqual(item.original,expected)
    assert.ok(item.unmapped.some(row=>/escalation/.test(row.reason)));assert.ok(item.unmapped.some(row=>/Original retained/.test(row.reason)))
-   if(vendor==='opsgenie') {assert.ok(item.unmapped.some(row=>row.field==='alertPolicies'));assert.ok(item.unmapped.some(row=>/schedule/.test(row.reason)));assert.ok(item.unmapped.some(row=>row.field.endsWith('conditions.0')))}
+   if(vendor==='opsgenie') {assert.ok(item.unmapped.some(row=>row.field==='alertPolicies'));assert.ok(item.unmapped.some(row=>row.reason.includes('schedule target synthetic-oncall-515')));assert.ok(item.unmapped.some(row=>row.reason.includes('escalation target synthetic-oncall-514')));assert.ok(item.unmapped.some(row=>row.field==='alertPolicies.0.criteria.timeRestriction'&&row.reason.includes('business-hours')));assert.ok(item.unmapped.some(row=>row.field.endsWith('conditions.0')))}
    else assert.ok(item.unmapped.some(row=>row.field.endsWith('timeRestriction')))
    const job=ok(await door.apply(vendor,preview)).job;assert.equal(job.state,'completed')
    await w.stop();await w.start()
