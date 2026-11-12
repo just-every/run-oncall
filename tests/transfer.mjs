@@ -86,6 +86,8 @@ export function transferDoor(m) {
   },
   captureAgents(sql) {
    agentState=sql('SELECT * FROM agent_door_state')[0]
+   assert.equal(agentState.local_paused,0,'the exported agent door is active, so receiving Pause cannot be inherited from the source')
+   assert.deepEqual(agentApprovals.map(({id})=>sql("SELECT * FROM agent_door_approvals WHERE id='"+id+"'")[0]),agentApprovals.map(({row})=>row),'both pending and in-flight approvals remain unconsumed at export')
    agentHistory=history(sql)
    for(const table of agentTables)assert.ok(agentHistory[table].length>0,table+' holds real agent history before export')
   },
@@ -498,7 +500,6 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  // A live-upgraded installation may still carry the original embedded legacy bytes.
  const legacyPrefix=prefixesBefore[0];
  sql(`UPDATE oc_intake_receipts SET data=json_set(data,'$.details.nativePrefix',json_object('encoding','base64','value','${legacyPrefix.prefix}')) WHERE id='${legacyPrefix.id}'`)
- business.captureAgents(sql)
  await m.close()
  // Observe the pinned CLI, including its own catalog diagnostic, in this
  // disposable managed checkout. Never substitute a validator invocation.
@@ -555,6 +556,7 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  console.log('PROBE OC-018 build: pinned rer build after removing dist -> exit 0, production Worker and client assets, no dev identity or private settings, exact settings restoration')
  await m.preview();await m.close()
  console.log('Managed production preview refuses anonymous state and carries no dev identity')
+ business.captureAgents(sql)
  await m.command(['export','--output',archive,'--non-interactive'])
  const exportedArchive=await readFile(archive)
  assert.ok(exportedArchive.includes('Preserve authored history'),'the archive holds readable authored records')
