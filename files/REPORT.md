@@ -5,7 +5,7 @@ Product branch: cloud/main-oncall-api-clients-ready-1
 Product head: fcc1fec3a3b0be2e85b4c928260fe80fa0ca1e01
 Merged main: 0766444566ab517f42308c8a407f4791948f18b0
 PR: none; this seed's fleet branch landing path is used.
-CI: Verify 43140611903, exact product SHA; current state is recorded in ci-receipt.json.
+CI: Verify 43140611903 completed/success on fcc1fec3a3b0be2e85b4c928260fe80fa0ca1e01. Four GitHub REST calls were used, spaced at least 300 seconds apart. Actual status and call timestamps are recorded in ci-receipt.json.
 
 ## Finding and chosen policy path
 
@@ -55,6 +55,6 @@ The named browser segment proves the scoped read/setup and client-lifecycle subs
 
 The first real commit 54e3af1304de5c4abca8823b234f7c692293f7db was pushed as a skip-ci save. The final candidate contains real changes and has no skip marker. Updated main was merged after the published save; published history was never rebased or force-pushed. The only merge conflict was the source lock, which was regenerated and checked after keeping main's newer files. All candidate authors, committers and trailers, including side parents, were checked before the guarded product push.
 
-Product pushes went only to cloud/main-oncall-api-clients-ready-1. Report files are outside the product tree and will be transferred only through evidence/main-oncall-api-clients-ready-1. Evidence publication is separate from product readiness or acceptance. The Mac fleet owns the complete publication scan and landing; neither was run or claimed in this cloud.
+Product pushes went only to cloud/main-oncall-api-clients-ready-1. Report files are outside the product tree and are transferred only through evidence/main-oncall-api-clients-ready-1. Evidence publication is separate from product readiness or acceptance. The Mac fleet owns the complete publication scan and landing; neither was run or claimed in this cloud.
 
-No product blocker remains in local checks. Final exact-SHA CI state and call timestamps are in ci-receipt.json. No live provider, hosted deployment, real handset, general paging, or full OC-053 acceptance claim is made.
+No blockers remain: local checks pass and exact-SHA Verify completed successfully. Final CI state and call timestamps are in ci-receipt.json. No live provider, hosted deployment, real handset, general paging, or full OC-053 acceptance claim is made.

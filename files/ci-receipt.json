@@ -16,27 +16,32 @@
       "at": "2026-11-12T02:30:03.991712+00:00",
       "endpoint": "repos/just-every/run-oncall/actions/runs/43140611903",
       "exit": 0
+    },
+    {
+      "at": "2026-11-12T02:35:04.744076+00:00",
+      "endpoint": "repos/just-every/run-oncall/actions/runs/43140611903",
+      "exit": 0
     }
   ],
   "runs": [
     {
-      "conclusion": null,
+      "conclusion": "success",
       "event": "push",
       "head_sha": "fcc1fec3a3b0be2e85b4c928260fe80fa0ca1e01",
       "html_url": "https://github.com/just-every/run-oncall/actions/runs/43140611903",
       "id": 43140611903,
       "name": "Verify",
-      "status": "in_progress"
+      "status": "completed"
     }
   ],
-  "status": "watching",
+  "status": "success",
   "verify": {
-    "conclusion": null,
+    "conclusion": "success",
     "event": "push",
     "head_sha": "fcc1fec3a3b0be2e85b4c928260fe80fa0ca1e01",
     "html_url": "https://github.com/just-every/run-oncall/actions/runs/43140611903",
     "id": 43140611903,
     "name": "Verify",
-    "status": "in_progress"
+    "status": "completed"
   }
 }
