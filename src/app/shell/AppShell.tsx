@@ -1,5 +1,5 @@
 import {ReadinessSection} from '../../readiness/ReadinessPage';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {useLocation} from '@tanstack/react-router';
 import {StatusPanel} from '../../business-status/StatusPanel';
 import {FailureLine} from '../FailureLine';
@@ -30,7 +30,13 @@ export function AppShell() {
   const settings = pathname.startsWith('/settings');
   const [sheetOpen, setSheetOpen] = useState(false), [sheetSettings, setSheetSettings] = useState(false);
   const sheet = useRef<HTMLDialogElement>(null), menuButton = useRef<HTMLButtonElement>(null);
+  const sheetDestination = useRef<string | null>(null);
   const closeSheet = () => {sheet.current?.close(); setSheetOpen(false);};
+  useLayoutEffect(() => {
+    if (!sheetOpen && sheetDestination.current === pathname) {
+      document.getElementById('main')?.focus({preventScroll: true});
+    }
+  }, [pathname, sheetOpen]);
   useEffect(() => {
     if (sheetOpen) sheet.current?.showModal();
     else sheet.current?.close();
@@ -56,7 +62,7 @@ export function AppShell() {
     } catch (error) {setSigningOut(false); w.setError((error as Error).message);}
   };
   const owner = () => <OwnerMenu actor={actor} busy={w.busy} signingOut={signingOut} onSignOut={signOut} />;
-  const links = (items: NavItem[], mobile = false) => items.map(item => <a key={item.id} className={`nav ${page === item.id ? 'active' : ''}`} href={item.path} aria-current={page === item.id ? 'page' : undefined} onClick={mobile ? closeSheet : undefined}>
+  const links = (items: NavItem[], mobile = false) => items.map(item => <a key={item.id} className={`nav ${page === item.id ? 'active' : ''}`} href={item.path} aria-current={page === item.id ? 'page' : undefined} onClick={mobile ? () => {sheetDestination.current = item.path; closeSheet();} : undefined}>
     {item.icon && <NavIcon name={item.icon} />}<span className="nav-label">{item.label}</span>
     {item.count !== undefined && <span className="nav-count" aria-label={`${item.count} ${item.id === 'incidents' ? 'open' : 'active'}`}>{item.count}</span>}
   </a>);
@@ -70,9 +76,9 @@ export function AppShell() {
     </aside>
     <div className="mobile-bar">
       <a href={stakeholder ? '/status' : '/on-call'} className="brand"><Mark size={30} /><span data-rer-name>Oncall</span></a>
-      <button ref={menuButton} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => {setSheetSettings(settings && !stakeholder); setSheetOpen(true);}}>Menu</button>
+      <button ref={menuButton} aria-haspopup="dialog" aria-expanded={sheetOpen} onClick={() => {sheetDestination.current = null; setSheetSettings(settings && !stakeholder); setSheetOpen(true);}}>Menu</button>
     </div>
-    <dialog className="shell-sheet" ref={sheet} aria-label="Menu" onClose={() => {setSheetOpen(false); menuButton.current?.focus({preventScroll: true});}} onClick={event => {if (event.target === sheet.current) {const rect=sheet.current.getBoundingClientRect(); if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSheet();}}}>
+    <dialog className="shell-sheet" ref={sheet} aria-label="Menu" onClose={() => {setSheetOpen(false); if (!sheetDestination.current) menuButton.current?.focus({preventScroll: true});}} onClick={event => {if (event.target === sheet.current) {const rect=sheet.current.getBoundingClientRect(); if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeSheet();}}}>
       <div className="sheet-heading"><span>{sheetSettings ? 'Settings' : 'Menu'}</span><button onClick={closeSheet}>Close menu</button></div>
       {sheetSettings ? <>
         <button className="nav settings-back" onClick={() => setSheetSettings(false)}>‹ Oncall</button>
