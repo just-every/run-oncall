@@ -499,7 +499,43 @@ assert.ok(ok(await req('/api/state')).apiOutbox.some(o=>o.incident===machineOper
  sql("INSERT INTO credentials VALUES('"+member.id+"','fixture-salt','fixture-password-digest')")
  assert.equal((await req('/api/identity-link',{confirm:true,adminMapping:member.id})).status,409,'held password data cannot be claimed by a new native owner')
  sql('DELETE FROM credentials')
- ok(await req('/api/identity-link',{confirm:true,adminMapping:member.id}));assert.deepEqual(ok(await req('/api/state')),{...prior,policies:prior.policies.map(p=>p.workflow?{...p,workflow:{...p.workflow,held:true}}:p),triage:prior.triage.map(r=>r.rule?{...r,rule:{...r.rule,state:'interrupted',outcome:'interrupted',lease:null,leaseUntil:null,revision:r.rule.revision+1}}:r),scheduleRecords:prior.scheduleRecords.map(row=>({...row,active:false,data:row.kind==='subscription'?{...row.data,hash:null}:row.data})),incidents:prior.incidents.map(i=>({...i,...(i.manualPage?{manualPage:{...i.manualPage,obligations:i.manualPage.obligations.map(o=>o.state==='recorded'?{...o,state:'stopped',outcome:'Restored inactive; no sender'}:o)}}:{}),...(i.responderRequests?{responderRequests:i.responderRequests.map(r=>({...r,status:r.status==='pending'?'held':r.status,obligation:r.obligation.state==='recorded'?{...r.obligation,state:'stopped',outcome:'Restored inactive; no sender'}:r.obligation,notice:r.notice?{...r.notice,state:'stopped'}:null}))}:{})})),members:prior.members.map(member=>member.role==='stakeholder'?{...member,active:false}:member),businessServices:prior.businessServices.map(service=>({...service,active:false,...(service.emailLists?{emailLists:service.emailLists.map(list=>({...list,active:false}))}:{}),subscriptions:service.subscriptions.map(row=>({...row,active:false})),notices:service.notices.map(row=>({...row,state:'stopped'}))})),changeSources:prior.changeSources.map(source=>({...source,active:false})),intakeSources:prior.intakeSources.map(source=>({...source,active:false})),emailAddresses:prior.emailAddresses.map(address=>({...address,active:false})),apiClients:prior.apiClients.map(c=>({...c,active:false})),apiEndpoints:prior.apiEndpoints.map(e=>({...e,active:false})),apiOutbox:prior.apiOutbox.map(o=>({...o,authorized:false}))},'all relational coordination and attribution restored with source definitions explicitly inactive')
+ // Choose the retained identity through the same owner entry as a restored installation.
+ {
+  const {chromium}=await import('@playwright/test')
+  const browser=await chromium.launch({headless:true,executablePath:process.env.ONCALL_CHROMIUM_PATH,args:['--no-sandbox']})
+  try {
+   const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage()
+   await page.goto(m.openLink)
+   await page.waitForURL(url=>url.pathname==='/signin/local'&&url.searchParams.get('restore')==='1')
+   const picker=page.getByRole('combobox',{name:'Archived administrator'})
+   await picker.locator('option').nth(1).waitFor({state:'attached'})
+   const administrators=ok(await req('/api/identity-link/administrators')).administrators
+   const options=await picker.locator('option').evaluateAll(rows=>rows.filter(row=>row.value).map(row=>({id:row.value,text:row.textContent})))
+   assert.equal(options.length,administrators.length,'every archived administrator remains selectable')
+   for(const admin of administrators){
+    const option=options.find(row=>row.id===admin.id)
+    assert.ok(option?.text.includes(admin.name),'the hidden option value retains the named administrator identity')
+    assert.doesNotMatch(option.text,/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i,'visible administrator choices contain no database UUID')
+   }
+   await picker.selectOption(member.id)
+   assert.doesNotMatch(await page.locator('.oc-door-restore').innerText(),/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i,'selected identity details also contain no UUID')
+   const evidence=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(evidence,{recursive:true})
+   for(const width of [1440,390]){
+    await page.setViewportSize({width,height:1000})
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'restored owner entry fits the viewport')
+    await page.screenshot({path:evidence+'/restored-owner-'+width+'.png',fullPage:true})
+   }
+   await page.getByRole('checkbox',{name:'I confirm this is my archived administrator identity.'}).check()
+   const submitted=page.waitForRequest(request=>request.method()==='POST'&&new URL(request.url()).pathname==='/api/identity-link')
+   await page.getByRole('button',{name:'Confirm restored owner mapping'}).click()
+   assert.equal((await submitted).postDataJSON().adminMapping,member.id,'mapping submits the selected hidden identity unchanged')
+   await page.locator('.oncall-frame').waitFor()
+   const session=await context.request.get(m.origin+'/api/session');assert.equal(session.status(),200)
+   assert.equal((await session.json()).member.id,member.id,'the browser maps to the chosen archived administrator')
+   await context.close()
+  }finally{await browser.close()}
+ }
+ assert.deepEqual(ok(await req('/api/state')),{...prior,policies:prior.policies.map(p=>p.workflow?{...p,workflow:{...p.workflow,held:true}}:p),triage:prior.triage.map(r=>r.rule?{...r,rule:{...r.rule,state:'interrupted',outcome:'interrupted',lease:null,leaseUntil:null,revision:r.rule.revision+1}}:r),scheduleRecords:prior.scheduleRecords.map(row=>({...row,active:false,data:row.kind==='subscription'?{...row.data,hash:null}:row.data})),incidents:prior.incidents.map(i=>({...i,...(i.manualPage?{manualPage:{...i.manualPage,obligations:i.manualPage.obligations.map(o=>o.state==='recorded'?{...o,state:'stopped',outcome:'Restored inactive; no sender'}:o)}}:{}),...(i.responderRequests?{responderRequests:i.responderRequests.map(r=>({...r,status:r.status==='pending'?'held':r.status,obligation:r.obligation.state==='recorded'?{...r.obligation,state:'stopped',outcome:'Restored inactive; no sender'}:r.obligation,notice:r.notice?{...r.notice,state:'stopped'}:null}))}:{})})),members:prior.members.map(member=>member.role==='stakeholder'?{...member,active:false}:member),businessServices:prior.businessServices.map(service=>({...service,active:false,...(service.emailLists?{emailLists:service.emailLists.map(list=>({...list,active:false}))}:{}),subscriptions:service.subscriptions.map(row=>({...row,active:false})),notices:service.notices.map(row=>({...row,state:'stopped'}))})),changeSources:prior.changeSources.map(source=>({...source,active:false})),intakeSources:prior.intakeSources.map(source=>({...source,active:false})),emailAddresses:prior.emailAddresses.map(address=>({...address,active:false})),apiClients:prior.apiClients.map(c=>({...c,active:false})),apiEndpoints:prior.apiEndpoints.map(e=>({...e,active:false})),apiOutbox:prior.apiOutbox.map(o=>({...o,authorized:false}))},'all relational coordination and attribution restored with source definitions explicitly inactive')
  assert.deepEqual(ok(await req('/api/state')).teams,prior.teams,'public teams and membership authority survive portable restore');assert.equal(ok(await req('/api/state')).services.find(service=>service.id==='transfer').team,portableTeam.id);
  assert.equal(ok(await req('/api/state')).services.find(service=>service.id==='upstream').owner,'','OC-023 portable restore keeps unassigned ownership without mapping it to the receiving owner');
  assert.equal(ok(await req('/api/state')).businessServices[0].active,false);assert.ok(ok(await req('/api/state')).businessServices[0].subscriptions.every(row=>!row.active));assert.ok(ok(await req('/api/state')).businessServices[0].notices.every(row=>row.state==='stopped'));assert.equal(ok(await req('/api/state')).members.find(row=>row.id===stakeholder.id).active,false)

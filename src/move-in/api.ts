@@ -29,10 +29,10 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
  for(const action of ['resume','undo','status'])api.post(`/api/move-in/:id/${action}`,async(c:any)=>{
   const input=await body(c),ctx=context(c,input.vendor)
   await expireInterruptedImports(c.env.DB)
-  const door=await c.env.DB.prepare(`SELECT j.namespace FROM ik_jobs j JOIN ik_door_plans p ON p.job_id=j.id
+  const door=await c.env.DB.prepare(`SELECT j.namespace,j.mapping_version FROM ik_jobs j JOIN ik_door_plans p ON p.job_id=j.id
    WHERE j.id=? AND j.principal_id=? AND p.namespace=? AND p.installation_id=?`).bind(c.req.param('id'),ctx.authorization.principalId,input.vendor,IMPORT_DOOR_KEY).first()
   if(door&&action!=='status')throw new Refusal(409,'This import runs through the import door. Choose it in Saved import journal to undo it; a failed import needs a new preview and confirmation.','IMPORT_DOOR_JOB')
-  if(door)ctx.namespace=door.namespace
+  if(door){ctx.namespace=door.namespace;ctx.mappingVersion=door.mapping_version}
   if(action==='undo'&&input.confirm!==true)fail('Confirm import undo',409)
   const attempt=action==='resume'?importAttempt(c.env.DB,{jobId:c.req.param('id')}):undefined
   if(attempt)ctx.storage={...ctx.storage,database:attempt.database}
@@ -43,13 +43,13 @@ export function installMoveIn(api:any,body:(c:any,max?:number)=>Promise<any>) {
   const ctx=context(c,c.req.query('vendor')??'opsgenie'),auth=ctx.authorization.predicate('read','oncall')
   await expireInterruptedImports(c.env.DB)
   const history=await readImportDoorHistory(c.env.DB,IMPORT_DOOR_KEY,auth)
-  const rows=await c.env.DB.prepare(`SELECT j.id,j.namespace FROM ik_jobs j WHERE destination='oncall' AND principal_id=?
+  const rows=await c.env.DB.prepare(`SELECT j.id,j.namespace,j.mapping_version FROM ik_jobs j WHERE destination='oncall' AND principal_id=?
    AND (namespace=? OR EXISTS(SELECT 1 FROM ik_door_plans p WHERE p.job_id=j.id AND p.namespace=? AND p.installation_id=?))
    AND (${auth.sql}) ORDER BY j.rowid DESC`).bind(ctx.authorization.principalId,ctx.namespace,ctx.namespace,IMPORT_DOOR_KEY,...auth.params!).all()
   // Owner and Business door imports list together, each with its approval: "approved by" or "approved via Business by".
   return c.json(await Promise.all(rows.results.map(async(row:any)=>{
    const approved=history.find(item=>item.jobId===row.id)
-   return {...await readMoveInJournal(row.id,{...ctx,namespace:row.namespace}),vendor:ctx.namespace,approval:approved?.caption,
+   return {...await readMoveInJournal(row.id,{...ctx,namespace:row.namespace,mappingVersion:row.mapping_version}),vendor:ctx.namespace,approval:approved?.caption,
     door:approved?{planId:approved.planId,fingerprint:approved.fingerprint,business:approved.reviewer===approved.approvalRecordId}:undefined}
   })))
  })

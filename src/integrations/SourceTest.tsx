@@ -23,6 +23,11 @@ async function signature(key: string, input: string) {
   const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return Array.from(new Uint8Array(await crypto.subtle.sign('HMAC', material, new TextEncoder().encode(input))), b => b.toString(16).padStart(2, '0')).join('');
 }
+/** The request a provider-compatible sender makes, with the secret left as a placeholder. */
+export function providerSample(source: SourceRecord, service: Service, origin = '') {
+  const example = sender(source, service, 'YOUR_PRIVATE_KEY', 'Service latency is above normal', 'warning', 'trigger', 'receiver-check');
+  return `POST ${origin}${example.path}\n${JSON.stringify(example.headers, null, 2)}\n\n${JSON.stringify(example.body, null, 2)}`;
+}
 export function SourceTest({ source, service, busy, run, events = [] }: { source: SourceRecord; service: Service; busy: boolean; run: IntakeRun; events?: Event[] }) {
   // The last accepted Trigger is durable workspace state. Component-only identity
   // is lost when a sender visits Alerts or reloads before sending Recover.

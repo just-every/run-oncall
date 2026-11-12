@@ -42,6 +42,18 @@ function ReadinessPage() {
      <div className="readiness-evidence"><strong>{label(row.evidence.kind)}</strong></div>
     </article>)}</div>
    </section>
+   <section aria-labelledby="installation-title" id="us-installation">
+    <h2 id="installation-title">US installation and dependency checklist</h2>
+    <p>Reviewed {report.installation.reviewedOn}. States come from this release matrix and the contract field proof register. Passed evidence is dated prior evidence, not completion for this installation. Reading this checklist grants no provider, deployment, publication or cutover authority.</p>
+    <p>Account steps remain not done until independently verified. Keep your existing pager authoritative.</p>
+    <div className="panel readiness-matrix">{report.installation.items.map(item=><article key={item.id} data-installation-item={item.id}>
+     <div><h3>{item.name}</h3><span className="readiness-state" data-state={item.state}>{label(item.state)}</span><p>{item.completion==='not-done'?'Not done for this installation':'Guidance only'}</p></div>
+     <div><p>{item.requirement}</p><p>Owning clauses: {item.clauses.join(', ')}</p></div>
+     <div className="readiness-evidence"><strong>Release evidence</strong>{item.matrix.map(row=><span key={row.id}>{report.matrix.find(item=>item.id===row.id)?.area}: {label(row.state)}</span>)}
+      {item.fieldProof.length?item.fieldProof.map(row=><span key={row.id} data-field-proof={row.id}>{row.id}: {row.state==='passed'?'Passed on '+row.date+' · dated prior evidence':'Not run'}</span>):<span>No field-proof row recorded</span>}
+     </div>
+    </article>)}</div>
+   </section>
    <section aria-labelledby="signals-title"><h2 id="signals-title">Independent health signals</h2><p>These observations share this installation’s storage. They are separate reads, not an independent external watch.</p>
     <div className="readiness-signals">{report.signals.map(signal=><article className="panel padded" key={signal.id} data-readiness-signal={signal.id}>
      <div className="readiness-signal-title"><h3>{signal.name}</h3><strong data-state={signal.state}>{label(signal.state)}</strong></div>

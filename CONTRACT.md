@@ -1185,7 +1185,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 
 | Tool | Does | Core clauses | Risk class | Today |
 | --- | --- | --- | --- | --- |
-| `oncall.alerts.list` | Read alerts, events and their routing explanations | OC-001, OC-002, OC-059 | standard | Not yet shipped · API (integrations) |
+| `oncall.alerts.list` | Read alerts, events and their routing explanations | OC-001, OC-002, OC-059 | standard; sensitive for retained personal or incident evidence | MCP · scoped alerts and observations with bounded cursor pages, service, state and urgency filters |
 | `oncall.alerts.replay` | Replay events against the current or a draft policy with zero writes | OC-002, OC-014, OC-043, OC-070 | standard | Not yet shipped |
 | `oncall.incidents.declare` | Declare an incident from alerts | OC-004, OC-050, OC-056 | standard | Shipped |
 | `oncall.incidents.list` | List incidents the caller may read | OC-003, OC-053 | standard (+ sensitive) | Shipped |
@@ -1424,9 +1424,9 @@ Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 18 | 4 | 0 | 22 |
+| Published | 19 | 3 | 0 | 22 |
 | Target and push further | 6 | 39 | 34 | 79 |
-| All | 24 | 43 | 34 | 101 |
+| All | 25 | 42 | 34 | 101 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1435,7 +1435,7 @@ Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d
 | `OC-003` | Roles and authority | published | done | `tests/runtime.mjs` — coordinationJourney: session roles, responder workspace reads, attributed acknowledgment and note, administrator refusals, held downgrade and revoke mutations, minimal bearer and signed intake receipts; `tests/member-coordination-browser.mjs` — responder coordinates and reloads attributed history. |  |
 | `OC-004` | Incident state transitions | published | done | `tests/runtime.mjs` — coordinationJourney: exact admitted alert links, responder commander, stale and concurrent refusal, source recovery independence, unchanged state after recovery without evidence and resolution without a summary, evidenced recovery, resolved state and human-attributed lifecycle history; `tests/triage.mjs` — bulk resolution refuses missing recovery evidence. |  |
 | `OC-005` | Copied runbooks | published | done | `tests/runtime.mjs` — coordinationJourney: declaration copies every service step; an accepted service runbook edit reads back while the declared incident, its copied steps and revision stay unchanged; an owned, due-dated action reads back open with no evidence; completion without a URL is refused with every record unchanged; an evidenced submission awaits human acceptance and is accepted; the unfinished action, copied steps with checklist progress and an editable review are retained after resolution.; `tests/runtime.mjs` (coordinationJourney) | |
-| `OC-006` | Bounded outbound incident effects | published | partial | `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs` | No cited test asserts the absence of an AI call, that an exported draft stays marked unreviewed, or that a source link grants no access; no paging receipt, no production action and no Lamp publication are asserted. This is the current-release safety boundary, not the final product boundary. |
+| `OC-006` | Bounded outbound incident effects | published | done | `src/delivery.ts`; `src/handoff-api.ts`; `src/mail.server.mjs`; `tests/runtime.mjs`; `tests/activation.mjs`; `tests/activation.mjs` (PROBE OC-006 1); `tests/activation.mjs` (PROBE OC-006 2); `tests/runtime.mjs` (coordinationJourney) | |
 | `OC-007` | Native archive | published | done | `src/api.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs` |  |
 | `OC-008` | User-authored records kept | published | done | `src/api.ts`; `src/native-incomplete.ts`; `src/family/response-operations/domain.ts`; `tests/runtime.mjs`; `tests/product-browser-journey.mjs`; `tests/product-browser.mjs` |  |
 | `OC-009` | Accessible interface | published | partial | `src/forms.tsx`; `src/app/AlertsPanel.tsx`; `tests/product-browser-journey.mjs` — keyboardCoordination: native-key declaration, acknowledgment, literal attributed notes, action-dialog focus containment and Escape return at 1440 and 390, plus the desktop real-409 alert with no saved claim; productSchedule: native-key rota person order, date and time entry, phone preview disclosure, cover preparation, zero-write review, Escape, explicit confirmation and protected assignment and preview readback at 1440 and 390. `tests/product-browser.mjs` runs these legs in push Verify with a controlled platform and browser clock; `tests/keyboard.mjs` checks visible focus; selected states check labels, overflow and serious or critical axe findings. | Maintained keyboard/responsive journeys exist; full accessibility conformance is not established. BASE-ACCESSIBILITY-001 is not established across every Oncall journey and the OC-029 apps; the human passes and the VPAT are register rows R-3 and R-4. |
