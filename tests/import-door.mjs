@@ -866,6 +866,12 @@ try {
    assert.equal(settings.draft.rules[0].action,'resolve','non-custom modes retain their saved resolve rule')
    ok(await door.call('pagerduty','undo',{planId:modesReview.planId}))
   }
+  const overflow={...structuredClone(savedEmail),id:'synthetic-oncall-email-overflow',email_parsers:Array.from({length:21},()=>structuredClone(savedEmail.email_parsers[0]))}
+  const overflowReview=ok(await door.preview('pagerduty',JSON.stringify({integrations:{integration:overflow}})))
+  assert.equal(overflowReview.items[0].effects[0].value.emailSettings.draft.rules.length,20)
+  assert.equal(overflowReview.items[0].effects[0].value.emailSettings.blocked,true)
+  assert.ok(overflowReview.items[0].unmapped.some(note=>note.field==='email_parsers.20'&&note.original.action==='trigger'),'the overflow parser is named and retained without truncating the report')
+  ok(await door.call('pagerduty','undo',{planId:overflowReview.planId}))
   const refusedEmail=structuredClone(savedEmail)
   refusedEmail.id='synthetic-oncall-email-refused';refusedEmail.email_filter_mode='and-rules-email'
   refusedEmail.email_filters=[{subject_mode:'no-match',subject_regex:'test',body_mode:'always',from_email_mode:'always'}]
@@ -925,7 +931,7 @@ try {
     }else if(integration.type==='generic_email_inbound_integration') {
      const converted=item.effects[0].value
      assert.equal(converted.provider,'email');assert.equal(converted.active,false)
-     assert.equal(converted.emailSettings.draft.mode,'custom');assert.equal(converted.emailSettings.draft.rules.length,6)
+     assert.equal(converted.emailSettings.draft.mode,'custom');assert.equal(converted.emailSettings.draft.rules.length,8)
      assert.equal(converted.emailSettings.blocked,false);assert.equal(converted.emailAddress,undefined)
      assert.deepEqual(converted.serviceSource,{namespace:'pagerduty',kind:'services',sourceId:service.id})
     }else{assert.equal(item.effects.length,0);assert.match(item.rejection,/matching Oncall source.*generic webhook/);assert.ok(item.rejection.includes(integration.name))}

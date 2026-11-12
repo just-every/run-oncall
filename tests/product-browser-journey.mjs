@@ -1583,7 +1583,8 @@ export async function importedEmailBrowser(page,context) {
   await fileSource(page,vendor);
   await page.getByLabel('Export JSON').setInputFiles({name:'synthetic-oncall-email-'+vendor+'.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bundle))});
   await page.getByRole('heading',{name:'Compatibility review',exact:true}).waitFor();
-  await page.getByText(/custom mode, 6 converted rules/).waitFor();
+  const count=vendor==='pagerduty'?8:6;
+  await page.getByText(new RegExp('custom mode, '+count+' converted rules')).waitFor();
   if(vendor==='opsgenie') {
    const note=page.locator('.move-in-workspace li div').filter({hasText:'Action Review this acknowledge rule'}).first();
    await note.getByText('Original settings',{exact:true}).click();
@@ -1592,7 +1593,7 @@ export async function importedEmailBrowser(page,context) {
   assert.deepEqual((await api('/api/email')).addresses,before.addresses,'review creates no address');
   await screens(vendor+'-report');await confirmImport(page);
   const panels=page.getByRole('region',{name:'Activate imported email integration',exact:true});
-  const panel=panels.filter({hasText:'6 converted rules'}).filter({hasText:'Inactive email settings'}).last();
+  const panel=panels.filter({hasText:count+' converted rules'}).filter({hasText:'Inactive email settings'}).last();
   await panel.waitFor();await panel.getByText(/Inactive email settings; no address and no intake/).waitFor();
   const select=panel.getByLabel('Service for imported email',{exact:true});await select.selectOption(service);
   if(vendor==='opsgenie')await panel.getByRole('checkbox').check();

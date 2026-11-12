@@ -1872,6 +1872,38 @@
                       "value_name": "incident_key"
                     }
                   ]
+                },
+                {
+                  "action": "trigger",
+                  "match_predicate": {
+                    "type": "exactly",
+                    "part": "subject",
+                    "matcher": "Multiline failure"
+                  },
+                  "value_extractors": [
+                    {
+                      "type": "regex",
+                      "part": "body",
+                      "value_name": "incident_key",
+                      "regex": "^Header.*Host: (\\S+)"
+                    }
+                  ]
+                },
+                {
+                  "action": "resolve",
+                  "match_predicate": {
+                    "type": "exactly",
+                    "part": "subject",
+                    "matcher": "Multiline recovery"
+                  },
+                  "value_extractors": [
+                    {
+                      "type": "regex",
+                      "part": "body",
+                      "value_name": "incident_key",
+                      "regex": "^Header.*Host: (\\S+)"
+                    }
+                  ]
                 }
               ]
             },

@@ -330,7 +330,9 @@ contains, exactly and RE2-compatible regexes. A single `incident_key` extractor
 can use a marker pair, one regex capture or the entire subject or body. The
 report preserves every unsupported parser and its original, including nested
 predicates, unsupported operators, additional extracted values and non-RE2
-patterns. No more than 20 rules are converted, and an overflow is named.
+patterns. PagerDuty key extraction retains its implicit multiline and dotall
+regex options; multiple captures that would require concatenation are retained
+for review. No more than 20 rules are converted, and an overflow is named.
 
 For Opsgenie, save integration detail or list responses under `integrations`
 and each saved GET integration actions response under `integration_actions`.

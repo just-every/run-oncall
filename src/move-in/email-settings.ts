@@ -47,9 +47,9 @@ function pdKey(value:any):EmailRule['key'] {
  if(value.type==='entire')return entire(field)
  if(value.type==='between')return {field,kind:'markers',start:value.starts_after,end:value.ends_with}
  if(value.type==='regex') {
-  const pattern=routingPattern(value.regex)
+  const pattern=routingPattern('(?ms)'+value.regex)
   if(pattern.groupCount()!==1)throw Error('incident key regex needs exactly one capture')
-  return {field,kind:'regex',pattern:value.regex,group:1}
+  return {field,kind:'regex',pattern:'(?ms)'+value.regex,group:1}
  }
  throw Error(`unsupported incident key extractor ${value.type}`)
 }

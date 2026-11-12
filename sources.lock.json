@@ -264,7 +264,7 @@
       "executable": false
     },
     "docs/move-in.md": {
-      "sha256": "7361624944f39ca0f4576213397e5474ea7bec6a36b86929405c872cda6c36c3",
+      "sha256": "25599f8b28530b3d8dd0de710a7beaf6626ee86613658f281cfe4e29a3ec9d47",
       "executable": false
     },
     "docs/overview.md": {
@@ -5412,7 +5412,7 @@
       "executable": false
     },
     "src/move-in/email-settings.ts": {
-      "sha256": "bc4ba9177326ae2ef7e98a28f2ce9b9e4fdac364aad680fce49b0c25791f0cfb",
+      "sha256": "a222c06d32225379ad78ca096da17f4d3ac6cbd706ab345df8e2a8d1d72700b7",
       "executable": false
     },
     "src/move-in/equivalence.ts": {
@@ -6396,7 +6396,7 @@
       "executable": false
     },
     "tests/email-fixtures.mjs": {
-      "sha256": "1811fe17f32910a00791f66527e6a2882d795be336b1fb4591f94c97a8f9b78a",
+      "sha256": "13495f065745d9d67520dac38b93f71cb1570887a4abdca52782afcb71cf3772",
       "executable": false
     },
     "tests/fixture-database.mjs": {
@@ -6464,7 +6464,7 @@
       "executable": false
     },
     "tests/fixtures/pagerduty-account.json": {
-      "sha256": "afac31bde7cbe403f6fb53fae7a5ea94aa13319e69013f502c1122204ed25eb6",
+      "sha256": "59c0c5e36cf2365e8e499bd33b03dcff287dd1c1ba78da3781a0c4bf2f7b2e66",
       "executable": false
     },
     "tests/fixtures/pagerduty-layers.json": {
@@ -6512,7 +6512,7 @@
       "executable": false
     },
     "tests/import-door.mjs": {
-      "sha256": "98975a2b8595ad249e01dd261f0aefa9c4e68819203c4f9afcb5a1aa4793ac60",
+      "sha256": "6158c6606cf1482c2741147b0a2538d7b345653a0305415cd24b26f34f2dc1dc",
       "executable": false
     },
     "tests/initialize-agent-owner.mjs": {
@@ -6608,7 +6608,7 @@
       "executable": false
     },
     "tests/product-browser-journey.mjs": {
-      "sha256": "06fd494a2719cbf4bee788e7b88de1c9a9d6440cd7030e8d4a0a8f008ef570ce",
+      "sha256": "e45091cd471fe1383fbfa2f9239c5a784c425b6acb8d736eaccc3b7e38d1556d",
       "executable": false
     },
     "tests/product-browser.mjs": {

@@ -30,6 +30,8 @@ export const convertedEmailCases=vendor=>[
  {subject:'Marked recovery',body:'Host [synthetic-oncall-marked]',outcome:'recovered',rule:vendor==='pagerduty'?'pagerduty-4':'opsgenie-close-2',key:'synthetic-oncall-marked',action:'resolve'},
  {subject:'Whole failure',body:'synthetic-oncall-entire',outcome:'opened',rule:vendor==='pagerduty'?'pagerduty-5':'opsgenie-create-3',key:'synthetic-oncall-entire',action:'trigger'},
  {subject:'Whole recovery',body:'synthetic-oncall-entire',outcome:'recovered',rule:vendor==='pagerduty'?'pagerduty-6':'opsgenie-close-3',key:'synthetic-oncall-entire',action:'resolve'},
+ ...(vendor==='pagerduty'?[{subject:'Multiline failure',body:'Prefix\nHeader\nHost: synthetic-oncall-lines',outcome:'opened',rule:'pagerduty-7',key:'synthetic-oncall-lines',action:'trigger'},{subject:'Multiline recovery',body:'Prefix\nHeader\nHost: synthetic-oncall-lines',outcome:'recovered',rule:'pagerduty-8',key:'synthetic-oncall-lines',action:'resolve'}]:[]),
+ {subject:'FAILED: synthetic-oncall-muted',body:'mute',outcome:vendor==='pagerduty'?'opened':'quarantined',rule:null,key:vendor==='pagerduty'?'FAILED: synthetic-oncall-muted':null,action:vendor==='pagerduty'?'trigger':'quarantine'},
  {subject:'Unmatched observation',outcome:vendor==='pagerduty'?'opened':'quarantined',rule:null,key:vendor==='pagerduty'?'Unmatched observation':null,action:vendor==='pagerduty'?'trigger':'quarantine'},
 ];
 
@@ -61,7 +63,7 @@ export async function importedEmailSettings({w,request,cookie,actor,ok}) {
   const preview=ok(await door.preview(vendor,JSON.stringify(bundle)));
   const item=preview.items.find(item=>item.effects.some(e=>e.value.provider==='email'));
   assert.ok(item);assert.equal(item.effects[0].value.emailSettings.blocked,false);
-  assert.equal(item.effects[0].value.emailSettings.draft.rules.length,6);
+  assert.equal(item.effects[0].value.emailSettings.draft.rules.length,vendor==='pagerduty'?8:6);
   assert.deepEqual(ok(await request('/api/state')),before,'preview creates no native records');
   assert.equal(ok(await door.apply(vendor,preview)).job.state,'completed');
   await w.stop();await w.start();
