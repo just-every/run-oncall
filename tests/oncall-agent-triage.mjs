@@ -125,6 +125,13 @@ export async function triageReads(){
   await json('/api/automation/clients/'+reader.record.id+'/revoke',{revision:reader.record.revision});
   const revokedBefore=await agentReadSnapshot(runtime),revoked=await call({cursor});assert.equal(revoked.status,401);assert.equal(revoked.result,undefined);
   assertAgentReadUnchanged(revokedBefore,await agentReadSnapshot(runtime));assert.deepEqual(await runtime.outboundRequests(),[]);
-  console.log('PASS scoped triage reads: populated native D1 and emitted MCP, both policies, all native query fields, sponsor attribution, allowlisted records, cursor revision and principal and grant refusals, revoked and insufficient credentials, unchanged deadlines and paging and permanent audit; zero outbound requests');
+  const captured=await read({limit:1},other.token);
+  assert.ok(captured.data.nextCursor);
+  const erased=await json('/api/erasure/client/'+other.record.id,{workspaceRevision:(await json('/api/state')).revision,confirmation:'erase '+other.record.id});
+  assert.equal(erased.state,'complete');
+  const erasedBefore=await agentReadSnapshot(runtime),replayed=await call({cursor:captured.data.nextCursor},other.token);
+  assert.equal(replayed.status,401);assert.equal(replayed.result,undefined,'An erased client cannot replay a captured cursor to recover private records');
+  assertAgentReadUnchanged(erasedBefore,await agentReadSnapshot(runtime));assert.deepEqual(await runtime.outboundRequests(),[]);
+  console.log('PASS scoped triage reads: populated native D1 and emitted MCP, both policies, all native query fields, sponsor attribution, allowlisted records, cursor revision and principal and grant refusals, revoked and erased and insufficient credentials, unchanged deadlines and paging and permanent audit; zero outbound requests');
  }finally{await runtime.close()}
 }

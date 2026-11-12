@@ -20,6 +20,10 @@ export default {
  async validateStaged({db,tables,read,manifest}) {
   rejectPrivateAgentCustody({manifest})
   const auditRestore=await interruptStagedImports(db,tables,read)
+  // Receiving agent authority is paused before staging can publish. Retain the
+  // policy and decision history, but never carry an admission lease or approval.
+  if(tables.agent_door_state)await db.prepare('UPDATE "'+tables.agent_door_state.replaceAll('"','""')+'" SET local_paused=1,decision_lock=NULL,decision_until=NULL').run()
+  if(tables.agent_door_approvals)await db.prepare(`UPDATE "${tables.agent_door_approvals.replaceAll('"','""')}" SET state='expired',version=version+1 WHERE state IN ('pending','executing')`).run()
   // Receiving opt-in is local authority; keep plans, approvals and replay journals as history.
   if(tables.ik_door_settings)await db.prepare('UPDATE "'+tables.ik_door_settings.replaceAll('"','""')+'" SET enabled=0').run()
   const control=(await read('workspace_control'))[0],paging=(await read('paging_control'))[0]
