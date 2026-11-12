@@ -587,6 +587,7 @@ async function readinessBrowser(page,context) {
  await request('/api/sources',{id:source,key,scopes:[source]});
  const intake=await context.request.post('/api/ingress/'+source,{headers:{authorization:'Bearer '+key},data:{source,eventId:source,service:source,environment:'production',key:source,generation:source,intent:'trigger',severity:'warning',title:'Checkout response latency',observedAt:new Date().toISOString(),evidence:''}});assert.equal(intake.status(),201);
  await page.setViewportSize({width:1440,height:1000});
+ await page.goto(origin);await page.locator('.oncall-frame').waitFor();
  await openWorkspaceSection(page,'services');
  await page.getByRole('navigation',{name:'Settings',exact:true}).getByRole('link',{name:'Readiness',exact:true}).click();
  await page.locator('.readiness [data-readiness-row]').first().waitFor();
@@ -626,8 +627,10 @@ async function readinessBrowser(page,context) {
  const directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:1000});await page.screenshot({path:`${directory}/oc054-readiness-${width}.png`,fullPage:true});
-  await checklist.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/oc044-checklist-${width}.png`,fullPage:true});
+  await checklist.scrollIntoViewIfNeeded();await page.screenshot({path:`${directory}/oc044-checklist-${width}.png`,fullPage:false});
  }
+ console.log('PROBE OC-044 acceptance 1 checklist: emitted Settings Readiness -> protected API and all rendered dependency states, owners, field-proof dates and not-done labels agree; refresh preserves durable and paging records with zero outbound requests; desktop axe and overflow pass; screenshots at 1440 and 390');
+ console.log('INSTALLATION_RECEIPT '+JSON.stringify({observedAt:report.observedAt,release:report.release,installation:report.installation}));
  console.log('PASS OC-054 Readiness Settings navigation, real matrix/signal rendering, pager refusal, refresh, axe/overflow/hydration at 1440; Readiness visual proof once at 1440/390');
 }
 
