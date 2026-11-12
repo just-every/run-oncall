@@ -8,10 +8,10 @@ The primary journey: receive a monitoring or phone-in incident, find who is on c
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 24 | 36 | 24 | 84 |
+| Core | 25 | 35 | 24 | 84 |
 | Agent surface | 1 | 6 | 10 | 17 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 25 | 42 | 34 | 101 |
+| Full target | 26 | 41 | 34 | 101 |
 
 Judged from the code and tests at commit `f4f0bdb097de881accfb709543d551c71e674d7a` (8 November 2026). Field proof register: 14 rows; 2 passed, 0 failed, 12 not run.
 
@@ -710,7 +710,7 @@ Core · target · **partial** · Rules D-1, D-3, D-4 · Register R-12
 
 #### OC-052 — Complete portable target archive and Base replacements
 
-Core · target · **partial** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT-003, BASE-PUBLIC-002, BASE-DATA-005 · Rules D-2
+Core · target · **done** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT-003, BASE-PUBLIC-002, BASE-DATA-005 · Rules D-2
 
 **Requirement.** Extend the OC-007, OC-015 and OC-016 archives to every new durable product record: teams and services, complete coverage, policies, responder destination definitions and verification history, alert and incident identities, delivery, escalation and call histories, reviews and actions, connector definitions, investigations, plans and grants as inactive history, audit, import provenance and erasure journals. Exclude sessions, passwords, provider keys, device and acknowledgment capabilities and execution credentials as installation-local authority; declare these exclusions as the product's explicit BASE-DATA-001 replacement rather than claiming credential portability. Restore atomically into the documented receiving state with all sends, schedules needing reauthorization, agent actions and publication paused; preserved history cannot satisfy live readiness or replay effects. BASE-INPUT-002 uses literal structured text and no arbitrary supplied HTML; BASE-INPUT-003 treats current JSON imports as bounded structured data with no arbitrary attachment upload (any future recording or upload must add validated scoped custody); BASE-PUBLIC-002 has no public incident embed. Native coordination has no AI dependency, and any optional management connector is explicit and revocable. These replacements preserve security, erasure and operating obligations; they do not claim untested baseline equivalence. Every new durable category keeps door rule D-2.
 
@@ -719,8 +719,8 @@ Core · target · **partial** · Cites BASE-DATA-001, BASE-INPUT-002, BASE-INPUT
 2. Supply malformed/over-limit/erased/unknown records and inject storage/concurrency faults; preserve the full prior state.
 3. Deny optional AI network access and use native incident coordination, then verify literal input and absence of an undeclared public embed/upload door.
 
-**Evidence.** `scripts/installer/archive-policy.mjs`; `src/portability-policy.mjs`; `tests/transfer.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`
-**Gap.** No cited test denies optional AI network access while native coordination runs, verifies literal input, or checks for the absence of an undeclared public embed or upload door; populated HTTP and CLI export, inactive restore with local reauthorization, refusal of malformed, over-limit, erased and unknown records and rollback under storage and concurrency faults are asserted. All current durable categories restore inactive without authority or replay.
+**Evidence.** `scripts/installer/archive-policy.mjs`; `src/portability-policy.mjs`; `tests/transfer.mjs`; `tests/transfer.mjs`; `tests/checkpoint-cli.mjs`; `tests/activation.mjs`; `tests/transfer.mjs` (managed installation transfer); `tests/activation.mjs` (paired checkpoint refusal and restore); `tests/checkpoint-cli.mjs` (checkpointCli); `tests/runtime.mjs` (automationJourney); `tests/product-browser-journey.mjs` (keyboardCoordination)
+**Gap.** None.
 
 #### OC-053 — Public API, outbound events and reliable automation
 
