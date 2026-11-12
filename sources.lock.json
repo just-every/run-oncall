@@ -276,7 +276,7 @@
       "executable": false
     },
     "docs/response-api.md": {
-      "sha256": "1b67f8792b4509c1b92449b3a14039e1645040a8309a77dc08ffff2df784fd21",
+      "sha256": "98fc1a6b96fb98aa36370ce6cd4fe85b70c5775d0013e0302541b7b5357547d7",
       "executable": false
     },
     "docs/reviews.md": {
@@ -1728,7 +1728,7 @@
       "executable": false
     },
     "src/agent-door/rest.ts": {
-      "sha256": "541ac96dbc6f77f3408de1e25efc3d3806880989fe75b300b6d221ce1b0bbf97",
+      "sha256": "5e2aad69e9b8623c9d8f70f599b94e1e5c0e233b8a433da43b9349437cfa4b6f",
       "executable": false
     },
     "src/agent-door/schedule-receipts.ts": {
@@ -1952,15 +1952,23 @@
       "executable": false
     },
     "src/automation/api.ts": {
-      "sha256": "b4099972b165886d550e47f112e1c57d686a179e29d643445454fa3598719b39",
+      "sha256": "8e293db87d244741c4d6a6e0f2a58aecbaa05eb5bdba556dd62faab045faab57",
       "executable": false
     },
     "src/automation/AutomationSettings.tsx": {
-      "sha256": "9adacd45beef51067ff0ad364fb08f227a917dbf3687e3e6e280ab9e55c5b1ed",
+      "sha256": "487488afaafceda432673cc502fa5b8a98a5e47341dc62698a5a66dfc716b978",
+      "executable": false
+    },
+    "src/automation/client-policy.ts": {
+      "sha256": "c9ef9f3a4a49223e0c081cc93e3c5bf5d75160bfc5f69314594c9972c62e644c",
       "executable": false
     },
     "src/automation/ClientCreate.tsx": {
       "sha256": "8e3353a6bb9d314c71147b2a28cc630a32b4f6423288942036a77c1b27888cf7",
+      "executable": false
+    },
+    "src/automation/ClientPolicyNotice.tsx": {
+      "sha256": "24b242990fbc0f081233263931258206f6777077edb26852e1b17457221c5ffb",
       "executable": false
     },
     "src/automation/dispatch.ts": {
@@ -2656,7 +2664,7 @@
       "executable": false
     },
     "src/integrations/integrations.css": {
-      "sha256": "a90051abf2128929a6f4ee2fc1332f99d9fbfa9b2b94ef0b8c31b5e504996df1",
+      "sha256": "fca52e1fbfba9c10c4a6c0abd92531bdcdac64b003079eb3520f13d052e6f6cd",
       "executable": false
     },
     "src/integrations/IntegrationsHome.tsx": {
@@ -6528,7 +6536,7 @@
       "executable": false
     },
     "tests/member-coordination-browser.mjs": {
-      "sha256": "bf553da88c5b225be8a9a1ec5a17c9b56343bc8f2895a96339dadfc1be87b2a8",
+      "sha256": "4c1b61275c4cdf39cea31b72d09534ebb8bd0bb04731e1860dc5cb6fb6ab56f9",
       "executable": false
     },
     "tests/oncall-agent-communications-replay.mjs": {

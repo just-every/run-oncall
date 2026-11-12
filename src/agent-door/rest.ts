@@ -1,4 +1,5 @@
-import { runtimeBindings, type Bindings } from '../auth.server'
+import { ownerClaimConfig, runtimeBindings, type Bindings } from '../auth.server'
+import { apiClientPolicyUnset, type ClientPolicyStatus } from '../automation/client-policy'
 import { fail } from '../family/response-operations/domain'
 import type { Operation } from '../automation/model'
 import type { CallResult } from '../modules/agent-door/index.ts'
@@ -9,6 +10,20 @@ const select = (value: Args, keys: string[]) => Object.fromEntries(keys.filter(k
 // Composition imports automation management. Load it at request time so its
 // REST adapter never creates an initialization cycle through this module.
 const agentDoor = async (env: Bindings) => (await import('./index.server')).oncallAgentDoor(runtimeBindings(env))
+
+/** Read the supported policy door with the same current administrator session. */
+export async function clientPolicyStatus(env: Bindings, request: Request): Promise<ClientPolicyStatus> {
+  const response = await (await agentDoor(env)).handle(new Request(new URL('/agents/api/state', runtimeBindings(env).AUTH_ORIGIN), { headers: request.headers }))
+  if (!response?.ok) return { state: 'unknown', setupUrl: '/agents' }
+  const { policy, paused } = await response.json() as {
+    policy: { complete: boolean; business: string | null; expires_at: string | null }
+    paused: { business: boolean; local: boolean }
+  }
+  const trust = ownerClaimConfig(runtimeBindings(env))
+  const setupUrl = trust && policy.business ? `${trust.issuer}/business/${encodeURIComponent(policy.business)}/settings/policy` : '/agents'
+  return { setupUrl, state: paused.business || paused.local ? 'paused'
+    : policy.expires_at && Date.parse(policy.expires_at) <= Date.now() ? 'expired' : policy.complete ? 'set' : 'unset' }
+}
 
 /** REST credentials are the same real local service-account principal as MCP. */
 async function principal(env: Bindings, request: Request) {
@@ -82,7 +97,7 @@ export function restRefusal(result: CallResult): Response | null {
     : ['rate_limited','rate_or_capacity_limit','capacity_exceeded'].includes(code) ? 429
     : code === 'request_too_large' ? 413
     : ['execution_failed', 'output_invalid', 'policy_unavailable'].includes(code) ? 503 : 403
-  return Response.json({ error: { code, message: code.replaceAll('_', ' ') }, decision: result.decision, ...(result.fields ? { fields: result.fields } : {}),
+  return Response.json({ error: { code, message: code === 'policy_unset' ? apiClientPolicyUnset : code.replaceAll('_', ' ') }, decision: result.decision, ...(result.fields ? { fields: result.fields } : {}),
     ...(result.approval ? { approval: result.approval } : {}), ...(result.requestState ? { requestState: result.requestState } : {}) },
     { status, headers: { 'cache-control': 'no-store' } })
 }

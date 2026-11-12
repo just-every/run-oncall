@@ -753,7 +753,6 @@ const {default:AxeBuilder}=await import('@axe-core/playwright')
 const {ownerDoor}=await import('./worker.mjs')
 const {chromium}=await import('@playwright/test')
 const {automationRuntime,recordOwnedProcesses}=await import('./worker.mjs')
-const {autonomousCoordination}=await import('./agent-policy-fixture.mjs')
 let receiverStatus=403;
 const runtime=await automationRuntime(()=>new Response(null,{status:receiverStatus})),proof=process.env.ONCALL_BROWSER_EVIDENCE??resolve('../evidence/browser');
 let browser;
@@ -770,17 +769,74 @@ try {
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const at=cookie.indexOf('=');await context.addCookies([{name:cookie.slice(0,at),value:cookie.slice(at+1),url:runtime.origin,httpOnly:true,sameSite:'Lax'}]);
   await page.goto(runtime.origin+'/settings/integrations');const panel=page.locator('#response-api');await panel.locator(':scope > details > summary').nth(0).click();await panel.getByRole('heading',{name:'API clients',exact:true}).waitFor();
-  if(width===1440){await panel.getByText('No API clients configured.',{exact:true}).waitFor();for(const emptyWidth of [1440]){await page.setViewportSize({width:emptyWidth,height:1000});await panel.screenshot({path:join(proof,'automation-empty-'+emptyWidth+'.png')});}await page.setViewportSize({width,height:1000});}
+  const notice=panel.getByLabel('API client policy',{exact:true});
+  const captureClients=async name=>{
+   for(const proofWidth of [1440,390]){
+    await page.setViewportSize({width:proofWidth,height:1000});
+    await panel.screenshot({path:join(proof,'automation-'+name+'-'+proofWidth+'.png')});
+   }
+   await page.setViewportSize({width,height:1000});
+  };
+  const prerequisite=await req('/api/automation');assert.equal(prerequisite.value.policy.state,'unset');
+  await expect(notice.getByRole('link')).toHaveAttribute('href',prerequisite.value.policy.setupUrl);
+  await captureClients('policy-unset');
+  const granted=await req('/api/command',{type:'declare',service:'synthetic-oncall-browser',title:'Synthetic granted incident',severity:'warning',summary:'Granted service record'});
+  assert.equal(granted.status,200);
+  assert.equal((await req('/api/command',{type:'service',id:'synthetic-oncall-private',name:'Synthetic other service',environment:'test',owner:owner.id,runbook:[],pager:''})).status,200);
+  const foreign=await req('/api/command',{type:'declare',service:'synthetic-oncall-private',title:'Synthetic foreign incident',severity:'warning',summary:'Outside the client grant'});
+  assert.equal(foreign.status,200);
   if(await panel.getByRole('button',{name:'Add client',exact:true}).isVisible())await panel.getByRole('button',{name:'Add client',exact:true}).click();
   await panel.getByLabel('Name',{exact:true}).fill('Synthetic browser client '+width);
-  await panel.getByLabel('Incidents',{exact:true}).selectOption('write');await panel.getByRole('button',{name:'Create client',exact:true}).click();await panel.getByText('Synthetic browser client '+width,{exact:true}).first().waitFor();
-  const createdKey=await panel.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);await panel.getByRole('button',{name:'Done',exact:true}).click();if(width===1440){const unset=await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+createdKey});assert.equal(unset.status,403);assert.equal(unset.value.error.code,'policy_unset');await autonomousCoordination(runtime,cookie);}
-  assert.equal((await runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+createdKey})).status,200);
+  await panel.getByLabel('Incidents',{exact:true}).selectOption('read');await panel.getByRole('button',{name:'Create client',exact:true}).click();await panel.getByText('Synthetic browser client '+width,{exact:true}).first().waitFor();
+  const createdKey=await panel.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);await panel.getByRole('button',{name:'Done',exact:true}).click();
+  const read=key=>runtime.request('/api/v1/incidents',undefined,'',{authorization:'Bearer '+key});
+  const unset=await read(createdKey);assert.equal(unset.status,403);assert.equal(unset.value.error.code,'policy_unset');
+  await expect(notice.getByRole('status')).toHaveText(unset.value.error.message);
+  assert.equal(new URL(await notice.getByRole('link').getAttribute('href'),runtime.origin).href,unset.value.fields.setup_url);
+  assert.equal((await runtime.request('/api/v1/analytics',undefined,'',{authorization:'Bearer '+createdKey})).status,403);
+  await captureClients('client-pending');
+  // Follow the page's prerequisite and make explicit choices in its existing form.
+  await notice.getByRole('link').click();await page.waitForURL(runtime.origin+'/agents');
+  const choices=page.locator('[data-policy-class]');
+  await choices.first().waitFor();
+  assert.ok(await choices.count()>0);
+  for(const choice of await choices.all())await choice.selectOption('autonomous');
+  await page.getByRole('radio',{name:'No',exact:true}).check();
+  const savedPolicy=page.waitForResponse(r=>new URL(r.url()).pathname==='/agents/api/policy'&&r.request().method()==='PUT');
+  // The policy document reloads after saving; finish that navigation before leaving it.
+  await Promise.all([page.waitForNavigation({waitUntil:'load'}),page.getByRole('button',{name:'Save policy',exact:true}).click()]);assert.equal((await savedPolicy).status(),200);
+  const grantedRead=await read(createdKey);assert.equal(grantedRead.status,200);
+  assert.deepEqual(grantedRead.value.data.map(row=>row.id),[granted.value.id]);
+  assert.ok(!JSON.stringify(grantedRead.value).includes(foreign.value.id),'the same key reads only its granted service');
+  assert.equal((await runtime.request('/api/v1/analytics',undefined,'',{authorization:'Bearer '+createdKey})).status,403);
+  await page.goto(runtime.origin+'/settings/integrations');await panel.locator(':scope > details > summary').first().click();
+  assert.equal((await req('/api/automation')).value.policy.state,'set');
+  const client=(await req('/api/automation')).value.clients.find(c=>c.name==='Synthetic browser client '+width);
+  const clientRow=panel.locator('.integration-rows > li').filter({hasText:client.name}),actions=clientRow.locator('.integration-client-actions');
+  // Real pointer clicks, without a preliminary row hover or forced action.
+  await actions.locator('summary').click();await expect(actions.getByRole('button',{name:'Rotate '+client.name,exact:true})).toBeVisible();
+  await captureClients('client-actions');
+  const rotate=async()=>{
+   if(!await actions.evaluate(el=>el.open))await actions.locator('summary').click();
+   await actions.getByRole('button',{name:'Rotate '+client.name,exact:true}).click();
+   await panel.getByRole('button',{name:'Rotate key',exact:true}).click();
+   await panel.getByLabel('Private key',{exact:true}).waitFor();
+   const key=await panel.getByLabel('Private key',{exact:true}).inputValue();
+   await panel.getByRole('button',{name:'Done',exact:true}).click();return key;
+  };
+  const rotatedKey=await rotate();assert.notEqual(rotatedKey,createdKey);
+  assert.equal((await read(createdKey)).status,401);assert.equal((await read(rotatedKey)).status,200);
   // A stale lifecycle write is a real server conflict and must be announced.
-  const clients=(await req('/api/automation')).value.clients,client=clients.find(c=>c.name==='Synthetic browser client '+width);
-  await req('/api/automation/clients/'+client.id+'/revoke',{revision:client.revision});
-  await panel.locator('li').filter({hasText:client.name}).hover();await panel.locator('li').filter({hasText:client.name}).getByText('Client actions',{exact:true}).click();await panel.getByRole('button',{name:'Revoke '+client.name,exact:true}).click();await panel.getByRole('button',{name:'Revoke key',exact:true}).click();await page.getByRole('alert').filter({hasText:'Revision conflict'}).waitFor();
+  const current=(await req('/api/automation')).value.clients.find(c=>c.id===client.id);
+  await req('/api/automation/clients/'+client.id+'/revoke',{revision:current.revision});
+  await actions.getByRole('button',{name:'Revoke '+client.name,exact:true}).click();await panel.getByRole('button',{name:'Revoke key',exact:true}).click();await page.getByRole('alert').filter({hasText:'Revision conflict'}).waitFor();
   await page.screenshot({path:join(proof,'automation-conflict-'+width+'.png'),fullPage:true});
+  await page.reload();await panel.locator(':scope > details > summary').first().click();
+  const renewedKey=await rotate();assert.equal((await read(renewedKey)).status,200);
+  await actions.getByRole('button',{name:'Revoke '+client.name,exact:true}).click();
+  const revoked=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/automation/clients/'+client.id+'/revoke'&&r.request().method()==='POST');
+  await panel.getByRole('button',{name:'Revoke key',exact:true}).click();assert.equal((await revoked).status(),200);
+  assert.equal((await read(renewedKey)).status,401);
   await page.reload();await panel.locator(':scope > details > summary').nth(2).click();await panel.getByRole('heading',{name:'Outbox',exact:true}).waitFor();assert.equal(await panel.locator('input').evaluateAll((inputs,key)=>inputs.some(input=>input.value===key),createdKey),false);
   // Approved recipient and actual refusal produce a durable terminal outcome on screen.
   const key=randomBytes(32).toString('hex'),created=await req('/api/automation/clients',{name:'Synthetic sending client '+width,key,services:['synthetic-oncall-browser'],permissions:['incidents:read','incidents:write']});assert.equal(created.status,201);
@@ -830,7 +886,7 @@ try {
   assert.equal((await denied.request.get(runtime.origin+'/api/automation')).status(),403);
   await deniedPage.screenshot({path:join(proof,'automation-denied-'+width+'.png'),fullPage:true});await denied.close();
  }
- console.log('PASS OC-053 settings management, restore refusal and permanent machine attribution after reassignment at 1440');
+ console.log('PASS OC-053 API client policy setup, granted service read, pointer rotation/revocation, stale management refusal, outbox and permanent machine attribution at 1440; client screens at 1440 and 390');
 }finally{await browser?.close();await runtime.close();}
 
 }
