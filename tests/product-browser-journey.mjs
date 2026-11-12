@@ -91,8 +91,13 @@ async function incumbentActivation(page,context,width) {
  }
  const panel=page.getByRole('region',{name:'Activate imported integration Synthetic browser integration '+width,exact:true}),key='synthetic-oncall-incumbent-browser-'+width
  await panel.waitFor();await panel.getByLabel('Incumbent integration key',{exact:true}).fill(key)
+ // Supplying the key reloads the imported row, whose new revision starts an
+ // incumbent reread. The supplied text precedes that second busy cycle.
+ const supplied=page.waitForRequest(request=>new URL(request.url()).pathname==='/api/intake/incumbent'&&request.method()==='POST')
+ const reread=page.waitForResponse(async response=>response.request().method()==='GET'&&new URL(response.url()).pathname==='/api/intake/sources/'+encodeURIComponent((await supplied).postDataJSON().id)+'/incumbent')
  await panel.getByRole('button',{name:'Supply incumbent key · leave inactive',exact:true}).click()
  await panel.getByText(/Incumbent key supplied; never shown again/).waitFor()
+ const incumbent=await reread;assert.equal(incumbent.status(),200);assert.equal(await incumbent.finished(),null)
  assert.equal(await panel.getByLabel('Incumbent integration key',{exact:true}).inputValue(),'')
  assert.ok(!(await page.content()).includes(key),'incumbent key does not reappear in the document')
  await panel.screenshot({path:`${directory}/incumbent-inactive-${width}.png`})
@@ -1164,12 +1169,21 @@ export async function supportStartBrowser(page,context,{setTime,proof}) {
   assert.equal(rule.mode,'support-hours');assert.equal(rule.timezone,'America/New_York');
   assert.deepEqual(rule.weekly,[1,2,3,4,5].map(day=>({day,start:'09:00',end:'17:00'})));
   assert.deepEqual(rule.holidays,[]);assert.equal(rule.inside,'high');assert.equal(rule.outside,'low');
-  // Leave Settings and finish its sample requests before measuring alert reads.
-  await page.goto(origin+'/alerts');
+  // Publication does not await the debounced sample. Request the final saved
+  // rule explicitly and finish its work while Settings is still mounted.
+  const finalSample=page.waitForResponse(response=>{
+   if(new URL(response.url()).pathname!=='/api/urgency/preview'||response.request().method()!=='POST')return false;
+   const input=response.request().postDataJSON();
+   return input.service===service&&input.severity==='critical'&&input.at===admittedAt&&JSON.stringify(input.rule)===JSON.stringify({mode:rule.mode,timezone:rule.timezone,weekly:rule.weekly,holidays:rule.holidays,inside:rule.inside,outside:rule.outside,reason:'Sample alert'});
+  });
+  await policy.getByLabel('Sample severity',{exact:true}).selectOption('critical');
+  const preview=await finalSample;assert.equal(preview.status(),200);assert.equal(await preview.finished(),null);
+  await policy.getByRole('status').filter({hasText:'Low urgency'}).waitFor();
   let sampleTimeout;
   try {
    await Promise.race([Promise.all([...samples.values()].map(sample=>sample.done)),new Promise((_,reject)=>{sampleTimeout=setTimeout(()=>reject(Error('Support-hours sample requests did not settle')),30000);})]);
   } finally {clearTimeout(sampleTimeout);}
+  await page.goto(origin+'/alerts');
   page.off('request',trackSample);page.off('requestfinished',settleSample);page.off('requestfailed',settleSample);
   await call('/api/sources',{id:source,key,scopes:[service],mode:'bearer'});
   const event={source,eventId:'synthetic-oncall-572',service,environment:'test',key:'synthetic-oncall-573',generation:'synthetic-oncall-574',intent:'trigger',severity:'warning',title:'New York pre-support warning',observedAt:admittedAt,evidence:''};

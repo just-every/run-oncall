@@ -99,13 +99,19 @@ export function keyboardUser(page) {
    await reach(locator);await visibleFocus(locator)
    const type=await locator.getAttribute('type')
    assert.ok(['date','time','datetime-local'].includes(type),'a native calendar or clock field')
-   // The journey uses Chromium's en-US segmented editor. Move to its first
-   // segment with keys; two-digit month, day, hour and minute entries advance
-   // natively, while the year needs one Right before the clock segments.
+   // Chromium's native date order follows the host on macOS even when the
+   // context locale is en-US. Inspect the focused native segment; keep all
+   // entry and movement on the keyboard rather than filling the ISO value.
    for(let count=0;count<8;count++)await page.keyboard.press('ArrowLeft')
    if(type!=='time') {
     const [year,month,day]=value.slice(0,10).split('-')
-    await page.keyboard.type(month+day+year)
+    const session=await page.context().newCDPSession(page)
+    let nodes
+    try {({nodes}=await session.send('Accessibility.getFullAXTree'))} finally {await session.detach()}
+    const first=nodes.find(node=>node.role?.value==='spinbutton'&&node.properties?.some(property=>property.name==='focused'&&property.value.value===true))
+    const segment=first?.name?.sources?.find(source=>source.attribute==='aria-label'&&!source.superseded)?.value?.value
+    assert.ok(['Day','Month'].includes(segment),'the native date editor starts with a day or month segment')
+    await page.keyboard.type((segment==='Day'?day+month:month+day)+year)
     if(type==='datetime-local')await page.keyboard.press('ArrowRight')
    }
    if(type!=='date') {
