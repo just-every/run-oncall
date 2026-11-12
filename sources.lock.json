@@ -148,7 +148,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "e99dd03e5ed5f777865d1402635643aed140cb08596cd74ce6ac339aa156e053",
+      "sha256": "7fcdcf2d1dffdd1502265f108dd2baeec8fd44409de6f963970da8daddb5b511",
       "executable": false
     },
     "AGENTS.md": {
@@ -172,7 +172,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "3ba769d11b265482949e571b667cd835e61b0de3b4fa92d56c490d93d604add8",
+      "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
       "executable": false
     },
     "DEMO.md": {
@@ -192,7 +192,7 @@
       "executable": false
     },
     "docs/agents.md": {
-      "sha256": "f69d3fe0efedb3265017910be0bf9d4d57ae94377c16d74e9decba2cb070954e",
+      "sha256": "14abfcd4e1bccc5002af783b5c9ecc29d15ecb76de4735c7c0b81099d5cb29e2",
       "executable": false
     },
     "docs/audit.md": {
@@ -1724,11 +1724,11 @@
       "executable": false
     },
     "src/agent-door/read-tools.ts": {
-      "sha256": "2c4dfbbc5c8f79f71605d14c070213608ac50c773e91247b48f8f0321f9c1746",
+      "sha256": "2e4ed7d0a636debaa6c5c9ba2313d8e28fdbdec925ccba81fd257619a9f74b52",
       "executable": false
     },
     "src/agent-door/resources.ts": {
-      "sha256": "8534e8e78271ed108158be12a57f330da4969e24508212b0eb89225ad3e16159",
+      "sha256": "dbff78a05ca2aefc77a85edea40e41effa7fc8fd62775633d32d585565c465e8",
       "executable": false
     },
     "src/agent-door/rest.ts": {
@@ -5720,7 +5720,7 @@
       "executable": false
     },
     "src/readiness/api.ts": {
-      "sha256": "45f90b3238e87764c007ce04bb7fa4034671aa9d15bd42a046e7319a6d0dbd99",
+      "sha256": "bab8a0f155b9c0f092b49737fdaaaca531ba2e60a485766c21cf105a3b8612f4",
       "executable": false
     },
     "src/readiness/authority.ts": {
@@ -6596,11 +6596,11 @@
       "executable": false
     },
     "tests/oncall-agent-fixtures.mjs": {
-      "sha256": "486c5b28677e0163007a03d195f034a408721c921e1147853f34ab2c9723ada2",
+      "sha256": "561819b1197797ae6bfea9ecdcd1cef0789a5b20ca60dd0be589b14e0e896005",
       "executable": false
     },
     "tests/oncall-agent-flow.mjs": {
-      "sha256": "719973856d6dfc48aa9eb42a464ff857f84aef69e3f9736cd4902a4083dbbd97",
+      "sha256": "7167cdc1c2c19f230690baaa75ff8e61983a3cf48704217c0f434e40f4cf5c76",
       "executable": false
     },
     "tests/oncall-agent-incident-replay.mjs": {

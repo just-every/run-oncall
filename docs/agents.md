@@ -64,7 +64,7 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 
 | Tool | Scope | Possible risk classes | Computed class checks |
 | --- | --- | --- | --- |
-| `oncall.analytics.read` | `analytics:read` | `standard` | `standard`: `tests/agent-door.mjs` (`analytics`) |
+| `oncall.analytics.read` | `analytics:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`analytics`, `analytics-response`); `sensitive`: `tests/agent-door.mjs` (`analytics-response`) |
 
 ### Automation
 

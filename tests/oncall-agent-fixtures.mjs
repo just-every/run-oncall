@@ -243,3 +243,58 @@ export async function triageFixture(runtime){
  return {state,owner,responder,declared,snoozed,unassigned,nativeOnly,routedOnly,foreignOnly,merged,source,reverseSource,foreignTarget,foreignIncident,unrouted,
   start:new Date(start).toISOString(),end:new Date(runtime.context.now()+1000).toISOString(),secrets:[nativeKey,routedKey,'synthetic-oncall-triage-private-bytes','synthetic-oncall-unrouted-private']};
 }
+
+/** Analytics cohorts, coverage and noisy admissions enter through native HTTP only. */
+export async function analyticsFixture(runtime) {
+ const json=async(path,input,status=200)=>{
+  const response=await runtime.http(path,input);assert.equal(response.status,status,await response.clone().text());return response.json();
+ };
+ const owner=(await json('/api/workspace')).member;
+ const state=await json('/api/state'),backup=state.members.find(row=>row.role==='responder'&&row.active);
+ const foreignPassword='synthetic-oncall-analytics-foreign-password';
+ const foreignMember=await json('/api/members',{name:'Synthetic analytics foreign responder',role:'responder',password:foreignPassword},201);
+ const foreignBackup=await json('/api/members',{name:'Synthetic analytics foreign backup',role:'responder',password:'synthetic-oncall-analytics-backup-password'},201);
+ const local='synthetic-oncall-analytics-local',foreign='synthetic-oncall-analytics-foreign';
+ const from=new Date(runtime.context.now()).toISOString();
+ for(const [service,primary,secondary] of [[local,owner,backup],[foreign,foreignMember,foreignBackup]]){
+  await json('/api/command',{type:'service',id:service,name:'Synthetic analytics '+service,environment:'production',owner:owner.id,runbook:['Synthetic native recovery'],pager:''});
+  await json('/api/paging/schedules',{id:service,name:'Synthetic analytics coverage '+service,service,revision:0,timezone:'UTC',validFrom:from,validUntil:null,
+   primary:{anchorLocal:from.slice(0,16),periodDays:1,members:[primary.id],ambiguity:'earlier'},
+   backup:{anchorLocal:from.slice(0,16),periodDays:1,members:[secondary.id],ambiguity:'earlier'},overrides:[]});
+ }
+ const source='synthetic-oncall-analytics-source',key='synthetic-oncall-analytics-source-credential';
+ await json('/api/sources',{id:source,key,scopes:[local,foreign]});
+ async function send(path,body,credential=key,status=201){
+  const response=await runtime.request(runtime.origin+path,{method:'POST',headers:{Origin:runtime.origin,Authorization:'Bearer '+credential,'Content-Type':'application/json'},body:typeof body==='string'?body:JSON.stringify(body)});
+  assert.equal(response.status,status,await response.clone().text());return response.json();
+ }
+ const incidents=[],alerts=[];
+ for(const [service,repeats] of [[local,3],[foreign,5]]){
+  for(let n=0;n<repeats;n++)await send('/api/ingress/'+source,{source,eventId:service+'-'+n,service,environment:'production',key:service,generation:service,intent:'trigger',severity:'warning',
+   title:'Synthetic analytics repeated alert '+service,observedAt:new Date(runtime.context.now()).toISOString(),evidence:''});
+  const alert=(await json('/api/state')).alerts.find(row=>row.service===service);assert.ok(alert);alerts.push(alert);
+  let incident=await json('/api/command',{type:'declare',service,title:'Synthetic analytics incident '+service,summary:'Synthetic native report cohort',severity:'warning',alerts:[alert.id]});
+  await runtime.time(runtime.context.now()+60000);
+  const input={type:'transition',incident:incident.id,revision:incident.revision,state:'acknowledged',summary:'Synthetic human response'};
+  if(service===foreign){
+   const login=await runtime.request(runtime.origin+'/api/login',{method:'POST',headers:{Origin:runtime.origin,'Content-Type':'application/json'},body:JSON.stringify({name:foreignMember.name,password:foreignPassword})});
+   assert.equal(login.status,200);await login.body.cancel();
+   const cookie=login.headers.getSetCookie().map(row=>row.split(';',1)[0]).join('; ');
+   const response=await runtime.request(runtime.origin+'/api/command',{method:'POST',headers:{Origin:runtime.origin,Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify(input)});
+   assert.equal(response.status,200);incident=await response.json();
+  }else{
+   incident=await json('/api/command',input);
+   incident=await json('/api/command',{type:'transition',incident:incident.id,revision:incident.revision,state:'recovered',summary:'Synthetic human recovery attestation',evidence:'https://evidence.example.invalid/synthetic-oncall-analytics'});
+  }
+  incidents.push(incident);
+ }
+ const routed='synthetic-oncall-analytics-routed',routedKey='synthetic-oncall-analytics-routed-credential';
+ await json('/api/routing/keys',{id:routed,name:'Synthetic analytics unrouted custody',provider:'native',scope:[local,foreign],owner:owner.id,key:routedKey,revision:0,rules:[],catchAll:null},201);
+ await send('/api/ingress/intake:'+routed,'{"synthetic-oncall-analytics-private-prefix":',routedKey,202);
+ const unrouted=(await json('/api/state')).alerts.find(row=>row.service===null);assert.ok(unrouted);
+ await runtime.time(Date.parse(from)+30*60000);
+ const pending=await json('/api/command',{type:'declare',service:local,title:'Synthetic analytics unacknowledged cohort',summary:'Synthetic native pending response',severity:'info',alerts:[]});
+ await runtime.time(Date.parse(from)+3600000);
+ return {local,foreign,owner,backup,foreignMember,foreignBackup,incidents,alerts,pending,unrouted,from,
+  at:new Date(runtime.context.now()).toISOString(),to:new Date(runtime.context.now()+1000).toISOString(),secrets:[key,routedKey,'synthetic-oncall-analytics-private-prefix']};
+}

@@ -11,6 +11,7 @@ import { protectedRecords } from './resources'
 import { changeHash } from '../changes/credentials'
 import { listAlerts } from './alert-tools'
 import { listTriage } from './triage-tools'
+import { readAnalytics } from './analytics-tools'
 
 export const string = { type: 'string', minLength: 1, maxLength: 200 } as const
 export const input = (properties: Record<string, JsonSchema> = {}, required: string[] = []) => ({ type: 'object' as const, properties, required, additionalProperties: false })
@@ -103,13 +104,10 @@ export function readTools(env: Bindings): ToolDefinition[] {
       const native=(await env.DB.prepare('SELECT id,scopes FROM sources').all<{id:string;scopes:string}>()).results
       return [...(state.intakeSources??[]).filter(row=>access.services.includes(row.service)).map(row=>({id:'intake:'+row.id,service:row.service,active:row.active,provider:row.provider})),...(state.changeSources??[]).filter(row=>access.services.includes(row.service)).map(row=>({id:'change:'+row.id,service:row.service,active:row.active,provider:row.provider})),...(state.emailAddresses??[]).filter(row=>access.services.includes(row.service)).map(row=>({id:'email:'+row.id,service:row.service,active:row.active,provider:'email'})),...native.filter(row=>{const grants=JSON.parse(row.scopes) as string[];return grants.length>0&&grants.every(id=>access.services.includes(id))}).map(row=>({id:'native:'+row.id,services:JSON.parse(row.scopes),active:true,provider:'native'}))]
     }),
-    read('analytics.read', 'analytics:read', ['OC-030', 'OC-053'], list, async (_args, ctx) => {
-      const access = await nativeAccess(env, ctx, 'analytics:read')
-      return access.state.services.filter(row => access.services.includes(row.id)).map(service => {
-        const rows = access.state.incidents.filter(row => row.service === service.id && incidentWithinServices(access.state, row, access.services))
-        return { service: service.id, incidents: rows.length, open: rows.filter(row => row.state !== 'resolved').length, followups: rows.flatMap(row => row.actions).filter(row => !row.done).length }
-      })
-    }),
+    read('analytics.read', 'analytics:read', ['OC-037', 'OC-044', 'OC-054'], input({
+      view: { enum: ['response', 'readiness'] }, service: string,
+      ...Object.fromEntries(['from', 'to', 'at'].map(key => [key, { type: 'string' as const, format: 'date-time' as const }])),
+    }), (args, ctx) => readAnalytics(env, args, ctx), 'computed'),
     read('automation.read', 'integrations:read', ['OC-053'], input({id:string,kind:{enum:['client','endpoint']},incident:string,endpoint:string}), async (args, ctx) => {
       const access = await nativeAccess(env, ctx, 'integrations:read', undefined, true)
       if(args.id){

@@ -1231,7 +1231,7 @@ Inherits BASE-AGENT-001 to BASE-AGENT-013. The company's policy decides every ca
 | `oncall.actions.submit` | Submit completion evidence for a follow-up | OC-005, OC-053 | standard (+ sensitive) | Shipped |
 | `oncall.actions.receipt` | Read the receipt of an earlier follow-up call by its idempotency key | OC-053 | standard | Shipped |
 | `oncall.reviews.read` | Read an incident's review material | OC-036, OC-049 | standard (+ sensitive) | Shipped |
-| `oncall.analytics.read` | Read response analytics, load, usage and readiness | OC-037, OC-044, OC-054 | standard | Shipped as response analytics (OC-030, OC-053); load, usage and readiness reading not yet shipped |
+| `oncall.analytics.read` | Read response analytics, load, usage and readiness | OC-037, OC-044, OC-054 | standard; sensitive for retained personal or incident evidence | Shipped response analytics, scheduled load and noise for granted services; workspace readiness only with every service granted; no-argument OC-053 counts retained; usage not yet shipped |
 | `oncall.coordination.read` | Read the workspace coordination state and its revision | OC-003, OC-004, OC-036, OC-053 | standard | Shipped |
 | `oncall.events.list` | List events an agent can follow | BASE-AGENT-010 | standard | Shipped |
 | `oncall.imports.read` | Read imports | OC-038, OC-040 | standard | Shipped |

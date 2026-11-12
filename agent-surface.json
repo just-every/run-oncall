@@ -112,11 +112,13 @@
       "scope": "analytics:read",
       "readOnly": true,
       "classes": [
-        "standard"
+        "standard",
+        "sensitive"
       ],
       "clauses": [
-        "OC-030",
-        "OC-053"
+        "OC-037",
+        "OC-044",
+        "OC-054"
       ]
     },
     {
@@ -1444,6 +1446,21 @@
       "expect": [
         {
           "class": "standard"
+        }
+      ]
+    },
+    {
+      "id": "analytics-response",
+      "tool": "oncall.analytics.read",
+      "args": {
+        "view": "response"
+      },
+      "expect": [
+        {
+          "class": "standard"
+        },
+        {
+          "class": "sensitive"
         }
       ]
     },
