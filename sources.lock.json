@@ -6676,7 +6676,7 @@
       "executable": false
     },
     "tests/readable-names-browser.mjs": {
-      "sha256": "fa3391ef64ab5fb7d00c10166dae6f62c643cac8f199fbfe670ad65065c64389",
+      "sha256": "619304fdac52d9a318248a5e2afb0d6e33b36b6ccab9196d69e5d830aa702c9e",
       "executable": false
     },
     "tests/readiness.mjs": {

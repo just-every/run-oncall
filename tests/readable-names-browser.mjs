@@ -61,7 +61,11 @@ export async function readableNamesBrowser(page,context,{source,service,serviceN
  for(const id of ['intake:'+routed.id,'source:'+source.source]){
   const state=await request('/api/state');await request('/api/intake/allowances',{id,requests:1,events:1,revision:state.revision});
  }
- const refused=await context.request.post(source.url,{headers:{authorization:'Bearer '+source.key},data:{source:source.source,eventId:'synthetic-oncall-512',service,environment:'production',key:'synthetic-oncall-513',generation:'synthetic-oncall-514',intent:'trigger',severity:'warning',title:'Checkout capacity',observedAt:new Date().toISOString(),evidence:''}});
+ const attempt=eventId=>context.request.post(source.url,{headers:{authorization:'Bearer '+source.key},data:{source:source.source,eventId,service,environment:'production',key:'synthetic-oncall-513',generation:'synthetic-oncall-514',intent:'trigger',severity:'warning',title:'Checkout capacity',observedAt:new Date().toISOString(),evidence:''}});
+ // Establish this request window explicitly; earlier source samples may have
+ // fallen out of it on a slower host. With allowance one, the next must refuse.
+ const first=await attempt('synthetic-oncall-512');assert.ok([201,429].includes(first.status()));
+ const refused=await attempt('synthetic-oncall-516');
  assert.equal(refused.status(),429,'a real allowance refusal is retained for the named source');
  const before=await request('/api/state');
  await page.goto(origin+'/settings/archive');await page.getByRole('heading',{name:'Configuration audit',exact:true}).waitFor();
