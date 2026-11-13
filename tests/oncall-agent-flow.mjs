@@ -4,6 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {readFile,access} from 'node:fs/promises';
 import {lexer} from 'marked';
 import {agentRuntime,agentEffectSnapshot,pauseMatrix,policyAdoption,consentRevocationMatrix} from './agent-door-runtime.mjs';
+import {resourceJourney} from './oncall-agent-resources.mjs';
 import {recoveredResolutionTarget} from './oncall-agent-fixtures.mjs';
 import {manualPageClassification,deadlineClassification} from './oncall-agent-live.mjs';
 import {eraseReplay,eraseClasses} from './oncall-agent-erase-replay.mjs';
@@ -668,6 +669,7 @@ async function staleCoordinationRevision(runtime){
  }
  assert.equal((await adopt()).status,200);
 }
+await resourceJourney();
 await (await import('./oncall-agent-alerts.mjs')).alertReads();
 await (await import('./oncall-agent-analytics.mjs')).analyticsReads();
 await (await import('./oncall-agent-triage.mjs')).triageReads();
@@ -717,11 +719,11 @@ try{
   const discovered=await mcp('server/discover'),listed=await mcp('tools/list'),templates=await mcp('resources/templates/list');
   assert.equal(discovered.status,200);assert.equal(listed.status,200);assert.equal(templates.status,200);
   assert.deepEqual(discovered.result._meta['com.runeditrun/capabilities'].declared,runtime.context.surface.capabilities);
-  assert.equal(discovered.result.capabilities.resources,undefined);
+  assert.deepEqual(discovered.result.capabilities.resources,{subscribe:false,listChanged:false});
   assert.equal(listed.result.nextCursor,undefined);
   assert.deepEqual(documented.map(({checks,...row})=>row),listed.result.tools.map(row=>({name:row.name,scope:row._meta['com.runeditrun/scope'],classes:row._meta['com.runeditrun/classes']})));
-  assert.deepEqual(templates.result.resourceTemplates,surface.resources);
-  assert.deepEqual(surface.resources,[]);
+  assert.deepEqual(templates.result.resourceTemplates.map(row=>row.uriTemplate),[...surface.resources].sort());
+  assert.ok(surface.resources.length>0);
   // MCP retains its required protocol bookkeeping; the public guide itself
   // makes no permanent audit write or native effect.
   const beforeGuideAudit=await permanentAudit();
@@ -732,7 +734,7 @@ try{
   assert.deepEqual(await permanentAudit(),beforeGuideAudit,'The public guide writes no permanent audit');
   assert.deepEqual(await inventoryState(),before,'Guide and discovery reads preserve native data and paging');
   assert.deepEqual(await runtime.outboundRequests(),edge);
-  console.log(`PROBE BASE-AGENT-013 1 ${label}: GET /docs/agents and MCP discovery -> ${documented.length} exact tools, scopes and class sets; no resource templates; event target withheld; native and paging unchanged; zero outbound requests`);
+  console.log(`PROBE BASE-AGENT-013 1 ${label}: GET /docs/agents and MCP discovery -> ${documented.length} exact tools, scopes and class sets; ${surface.resources.length} scoped resource templates; event target withheld; native and paging unchanged; zero outbound requests`);
   console.log(`PROBE BASE-AGENT-013 2 ${label}: generated class references -> every documented class names tests/agent-door.mjs and all matching maintained fixture IDs`);
  }
  assert.equal((await adopt()).status,200);
@@ -970,8 +972,7 @@ try{
  console.log('PASS incident resolution classification: commitment and sensitive facts, autonomous and isolated blocked policies, immutable pending and stale approval, ignored caller and record claims, attributed once-only resolution and effect-free retry');
 
  const missing=await mcp('resources/read',{uri:'oncall://incidents/not-present'});
- assert.equal(missing.body.error.data.code,'capability_not_declared');
- assert.equal(missing.body.error.data.capability,'resources');
+ assert.equal(missing.body.error.data.code,'resource_unavailable');
  assert.equal(missing.result,undefined);
  const noReadScope=await tool('oncall.services.read',{id:'agent-service'},{scope:'events:read'});
  assert.equal(code(noReadScope),'insufficient_scope');
@@ -981,7 +982,7 @@ try{
  assert.equal(code(blockedResource),'policy_blocked');
  assert.equal(blockedResource.result.structuredContent,undefined);
  assert.equal((await adopt()).status,200);
- console.log('PASS core read admission: undeclared resources refuse without content; tools retain insufficient_scope and policy_blocked');
+ console.log('PASS core read admission: missing resources refuse without content; tools retain insufficient_scope and policy_blocked');
  const before=await (await http('/agents/api/state')).json();
  assert.equal((await http('/api/rer/agent-policy',{policy:'invalid.signature.document'})).status,400);
  assert.deepEqual(await (await http('/agents/api/state')).json(),before,'Invalid adoption retains the exact prior policy');

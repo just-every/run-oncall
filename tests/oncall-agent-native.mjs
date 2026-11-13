@@ -133,14 +133,13 @@ export default async function journey({ request, origin, cookie, fixtures, tool 
     });
     return response.json();
   }
-  const refused = await resource('oncall://services/agent-service');
-  assert.equal(refused.error.data.code, 'capability_not_declared');
-  assert.equal(refused.error.data.capability, 'resources');
-  assert.equal(refused.result, undefined);
+  const opened = await resource('oncall://services/agent-service');
+  assert.equal(opened.error, undefined);
+  assert.equal(JSON.parse(opened.result.contents[0].text).id, 'agent-service');
   const hidden = await resource('oncall://services/agent-foreign-service');
   const absent = await resource('oncall://services/not-present');
-  assert.equal(hidden.error.data.code, 'capability_not_declared');
-  assert.equal(absent.error.data.code, hidden.error.data.code);
+  assert.equal(hidden.error.data.code, 'resource_unavailable');
+  assert.deepEqual(hidden.error, absent.error);
   assert.equal(hidden.result, undefined); assert.equal(absent.result, undefined);
 
   await http('/api/command', { type: 'member', id: sponsor.id, role: 'viewer', active: true });

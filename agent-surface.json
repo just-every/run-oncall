@@ -636,13 +636,18 @@
   ],
   "resources": [
     "oncall://actions/{id}",
+    "oncall://alerts/{id}",
     "oncall://automation/clients/{id}",
     "oncall://automation/endpoints/{id}",
     "oncall://automation/outbox/{id}",
+    "oncall://changes/{id}",
     "oncall://erasures/{id}",
+    "oncall://handoffs/{id}",
     "oncall://incidents/{id}",
     "oncall://incidents/{id}/review-material",
     "oncall://members/{id}",
+    "oncall://reports/{period}",
+    "oncall://schedules/{id}",
     "oncall://schedules/{id}/coverage",
     "oncall://services/{id}",
     "oncall://services/{id}/changes",
@@ -750,6 +755,23 @@
       "target": {
         "kind": "service",
         "id": "agent-service"
+      },
+      "resource": {
+        "uriTemplate": "oncall://services/{id}",
+        "state": {
+          "id": {
+            "$from": "service-update",
+            "pointer": "/id"
+          },
+          "name": {
+            "$from": "service-update",
+            "pointer": "/name"
+          },
+          "runbook": {
+            "$from": "service-update",
+            "pointer": "/runbook"
+          }
+        }
       }
     },
     {
@@ -784,6 +806,31 @@
       "target": {
         "kind": "service",
         "id": "agent-service"
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "declare",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "declare",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "declare",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "declare",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "declare",
+            "pointer": "/state"
+          }
+        }
       }
     },
     {
@@ -813,6 +860,31 @@
         "id": {
           "$from": "declare",
           "pointer": "/id"
+        }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "acknowledge",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "acknowledge",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "acknowledge",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "acknowledge",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "acknowledge",
+            "pointer": "/state"
+          }
         }
       }
     },
@@ -920,6 +992,31 @@
           "$from": "declare",
           "pointer": "/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "note",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "note",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "note",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "note",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "note",
+            "pointer": "/state"
+          }
+        }
       }
     },
     {
@@ -952,6 +1049,31 @@
         "id": {
           "$from": "declare",
           "pointer": "/id"
+        }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "follow-up",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "follow-up",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "follow-up",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "follow-up",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "follow-up",
+            "pointer": "/state"
+          }
         }
       }
     },
@@ -986,6 +1108,31 @@
         "id": {
           "$from": "declare",
           "pointer": "/id"
+        }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "submit",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "submit",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "submit",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "submit",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "submit",
+            "pointer": "/state"
+          }
         }
       }
     },
@@ -1065,6 +1212,31 @@
           "$from": "declare",
           "pointer": "/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "recover",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "recover",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "recover",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "recover",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "recover",
+            "pointer": "/state"
+          }
+        }
       }
     },
     {
@@ -1106,6 +1278,31 @@
         "confirmExternal": true,
         "class": "standard",
         "confirm": true
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "resolve",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "resolve",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "resolve",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "resolve",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "resolve",
+            "pointer": "/state"
+          }
+        }
       }
     },
     {
@@ -1135,6 +1332,31 @@
         "id": {
           "$from": "declare",
           "pointer": "/id"
+        }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "sensitive-note",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "sensitive-note",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "sensitive-note",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "sensitive-note",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "sensitive-note",
+            "pointer": "/state"
+          }
         }
       }
     },
@@ -1172,6 +1394,31 @@
           "$from": "declare",
           "pointer": "/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "sensitive-action",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "sensitive-action",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "sensitive-action",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "sensitive-action",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "sensitive-action",
+            "pointer": "/state"
+          }
+        }
       }
     },
     {
@@ -1202,7 +1449,32 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "second-declare",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "second-declare",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "second-declare",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "second-declare",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "second-declare",
+            "pointer": "/state"
+          }
+        }
+      }
     },
     {
       "id": "second-action",
@@ -1234,6 +1506,31 @@
         "id": {
           "$from": "second-declare",
           "pointer": "/id"
+        }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "second-action",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "second-action",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "second-action",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "second-action",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "second-action",
+            "pointer": "/state"
+          }
         }
       }
     },
@@ -1269,6 +1566,31 @@
           "$from": "second-declare",
           "pointer": "/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "second-submit",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "second-submit",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "second-submit",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "second-submit",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "second-submit",
+            "pointer": "/state"
+          }
+        }
       }
     },
     {
@@ -1301,6 +1623,31 @@
         "id": {
           "$from": "second-declare",
           "pointer": "/id"
+        }
+      },
+      "resource": {
+        "uriTemplate": "oncall://incidents/{id}",
+        "state": {
+          "id": {
+            "$from": "sensitive-acknowledge",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "sensitive-acknowledge",
+            "pointer": "/revision"
+          },
+          "timeline": {
+            "$from": "sensitive-acknowledge",
+            "pointer": "/timeline"
+          },
+          "actions": {
+            "$from": "sensitive-acknowledge",
+            "pointer": "/actions"
+          },
+          "state": {
+            "$from": "sensitive-acknowledge",
+            "pointer": "/state"
+          }
         }
       }
     },
@@ -1518,7 +1865,16 @@
         {
           "class": "live"
         }
-      ]
+      ],
+      "resource": {
+        "uriTemplate": "oncall://schedules/{id}/coverage",
+        "state": {
+          "schedule": {
+            "$from": "schedule-create",
+            "pointer": "/schedule"
+          }
+        }
+      }
     },
     {
       "id": "schedule-read",
@@ -1674,6 +2030,15 @@
           "$from": "schedule-create",
           "pointer": "/schedule/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://schedules/{id}/coverage",
+        "state": {
+          "schedule": {
+            "$from": "schedule-update",
+            "pointer": "/schedule"
+          }
+        }
       }
     },
     {
@@ -1715,6 +2080,15 @@
           "$from": "schedule-create",
           "pointer": "/schedule/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://schedules/{id}/coverage",
+        "state": {
+          "schedule": {
+            "$from": "schedule-override",
+            "pointer": "/schedule"
+          }
+        }
       }
     },
     {
@@ -1753,7 +2127,32 @@
         {
           "class": "standard"
         }
-      ]
+      ],
+      "resource": {
+        "uriTemplate": "oncall://teams/{id}",
+        "state": {
+          "id": {
+            "$from": "team-create",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "team-create",
+            "pointer": "/revision"
+          },
+          "name": {
+            "$from": "team-create",
+            "pointer": "/name"
+          },
+          "members": {
+            "$from": "team-create",
+            "pointer": "/members"
+          },
+          "managers": {
+            "$from": "team-create",
+            "pointer": "/managers"
+          }
+        }
+      }
     },
     {
       "id": "team-manager",
@@ -1800,6 +2199,31 @@
           "$from": "team-create",
           "pointer": "/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://teams/{id}",
+        "state": {
+          "id": {
+            "$from": "team-manager",
+            "pointer": "/id"
+          },
+          "revision": {
+            "$from": "team-manager",
+            "pointer": "/revision"
+          },
+          "name": {
+            "$from": "team-manager",
+            "pointer": "/name"
+          },
+          "members": {
+            "$from": "team-manager",
+            "pointer": "/members"
+          },
+          "managers": {
+            "$from": "team-manager",
+            "pointer": "/managers"
+          }
+        }
       }
     },
     {
@@ -1841,6 +2265,27 @@
           "$from": "access-read",
           "pointer": "/data/members/2/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://members/{id}",
+        "state": {
+          "people": [
+            {
+              "id": {
+                "$from": "access-widen",
+                "pointer": "/id"
+              },
+              "role": {
+                "$from": "access-widen",
+                "pointer": "/role"
+              },
+              "active": {
+                "$from": "access-widen",
+                "pointer": "/active"
+              }
+            }
+          ]
+        }
       }
     },
     {
@@ -1881,6 +2326,27 @@
         "id": {
           "$from": "access-read",
           "pointer": "/data/members/2/id"
+        }
+      },
+      "resource": {
+        "uriTemplate": "oncall://members/{id}",
+        "state": {
+          "people": [
+            {
+              "id": {
+                "$from": "access-narrow",
+                "pointer": "/id"
+              },
+              "role": {
+                "$from": "access-narrow",
+                "pointer": "/role"
+              },
+              "active": {
+                "$from": "access-narrow",
+                "pointer": "/active"
+              }
+            }
+          ]
         }
       }
     },
@@ -1940,6 +2406,23 @@
           "$from": "outbox",
           "pointer": "/data/outbox/0/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://automation/outbox/{id}",
+        "state": {
+          "id": {
+            "$from": "dispatch-retry",
+            "pointer": "/operation/id"
+          },
+          "revision": {
+            "$from": "dispatch-retry",
+            "pointer": "/operation/revision"
+          },
+          "status": {
+            "$from": "dispatch-retry",
+            "pointer": "/operation/status"
+          }
+        }
       }
     },
     {
@@ -1968,6 +2451,23 @@
         "id": {
           "$from": "dispatch-retry",
           "pointer": "/operation/id"
+        }
+      },
+      "resource": {
+        "uriTemplate": "oncall://automation/outbox/{id}",
+        "state": {
+          "id": {
+            "$from": "replay",
+            "pointer": "/operation/id"
+          },
+          "revision": {
+            "$from": "replay",
+            "pointer": "/operation/revision"
+          },
+          "status": {
+            "$from": "replay",
+            "pointer": "/operation/status"
+          }
         }
       }
     },
@@ -1998,6 +2498,23 @@
           "$from": "replay",
           "pointer": "/operation/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://automation/outbox/{id}",
+        "state": {
+          "id": {
+            "$from": "dispatch-accepted",
+            "pointer": "/operation/id"
+          },
+          "revision": {
+            "$from": "dispatch-accepted",
+            "pointer": "/operation/revision"
+          },
+          "status": {
+            "$from": "dispatch-accepted",
+            "pointer": "/operation/status"
+          }
+        }
       }
     },
     {
@@ -2023,6 +2540,23 @@
           "$from": "automation-list",
           "pointer": "/data/endpoints/0/id"
         }
+      },
+      "resource": {
+        "uriTemplate": "oncall://automation/endpoints/{id}",
+        "state": {
+          "id": {
+            "$from": "revoke-endpoint",
+            "pointer": "/id"
+          },
+          "active": {
+            "$from": "revoke-endpoint",
+            "pointer": "/active"
+          },
+          "revision": {
+            "$from": "revoke-endpoint",
+            "pointer": "/revision"
+          }
+        }
       }
     },
     {
@@ -2047,6 +2581,23 @@
         "id": {
           "$from": "automation-list",
           "pointer": "/data/clients/0/id"
+        }
+      },
+      "resource": {
+        "uriTemplate": "oncall://automation/clients/{id}",
+        "state": {
+          "id": {
+            "$from": "revoke-client",
+            "pointer": "/id"
+          },
+          "active": {
+            "$from": "revoke-client",
+            "pointer": "/active"
+          },
+          "revision": {
+            "$from": "revoke-client",
+            "pointer": "/revision"
+          }
         }
       }
     },
@@ -2110,7 +2661,14 @@
             "service": "agent-service"
           }
         }
-      ]
+      ],
+      "resource": {
+        "uriTemplate": "oncall://erasures/{id}",
+        "state": {
+          "state": "complete",
+          "externalDeletion": "not-requested"
+        }
+      }
     },
     {
       "id": "services-receipt",
@@ -2237,7 +2795,14 @@
             "setting": "erasure-credentials"
           }
         }
-      ]
+      ],
+      "resource": {
+        "uriTemplate": "oncall://erasures/{id}",
+        "state": {
+          "state": "complete",
+          "externalDeletion": "not-requested"
+        }
+      }
     },
     {
       "id": "alerts-list-standard",
@@ -2337,6 +2902,7 @@
   },
   "capabilities": [
     "tools",
+    "resources",
     "policy",
     "pause",
     "audit",
