@@ -1,0 +1,11 @@
+# API client policy and responder plan
+
+1. Initialize fleet Git credentials, identity and commit hooks. Clone only just-every/run-oncall and use cloud/main-oncall-api-clients-policy-1.
+2. Reproduce the saved-policy editor and absent responder lookup through the emitted Worker and browser. Record observations without keys.
+3. Preserve the existing policy model and choices. Reopen exactly representable saved policies in the guided editor with selected answers. Preserve unrelated document fields and rule order when changing an answer. Retain advanced editing; explain and open it for policies the choices cannot express.
+4. Follow OC-053's explicit named-responder acknowledgment requirement. Add an explicit responders:read grant and policy-gated, paginated name/ID projection of active responders and administrators. Keep acknowledgment attribution, eligibility checks and incident service scope intact. Document lookup beside the transition example.
+5. Extend existing browser and automation journeys rather than add test registrations. Prove one-answer edits preserve the rest, advanced fallback preserves custom policy, and a client can select its responder and acknowledge using public API data. Cover missing grant and inactive/non-responder exclusions. Capture the changed screens once at 1440 and 390; assert at 1440.
+6. Run touched journeys and typecheck, regenerate native tool inventory and source lock, and check both. Fetch main and integrate its newer source/tests before the candidate. Keep contract judgments and generated views unchanged.
+7. Inspect all unpublished identities/messages, push only the named product branch with the guard, discover/poll exact-SHA Verify using the bounded API budget, and report exact outcome. Publish the complete non-secret packet separately to evidence/main-oncall-api-clients-policy-1. Leave landing and publication scan to the fleet.
+
+Contract choice: scoped responder lookup. OC-053 explicitly requires an active named responder; implicit acknowledgment would change that contract. The list discloses only the identity fields needed for this choice, under its own named read permission and standard+sensitive agent policy. The current workspace model permits any active responder/admin to be named on an incident within the client's service grant.

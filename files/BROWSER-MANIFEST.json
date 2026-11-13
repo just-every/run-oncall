@@ -1,0 +1,110 @@
+{
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "source": "tests/member-coordination-browser.mjs, ONCALL_MEMBER_JOURNEY=api-clients",
+  "files": [
+    {
+      "path": "browser/automation-client-actions-1440.png",
+      "bytes": 38931,
+      "sha256": "4b6a07ffff6593732486dc843e5d1f72549f625a97cb25764f3a0772fe7fd5ec"
+    },
+    {
+      "path": "browser/automation-client-actions-390.png",
+      "bytes": 37384,
+      "sha256": "c312ef97326e5ad142b9c0df6798ae22d1feb07ffd9794ef2f5be93ed2909cd0"
+    },
+    {
+      "path": "browser/automation-client-pending-1440.png",
+      "bytes": 35557,
+      "sha256": "d28cd827f86906eab6ca2da8f7bca1b3639a37ee3f26506fc2a6a3587f5eed82"
+    },
+    {
+      "path": "browser/automation-client-pending-390.png",
+      "bytes": 33195,
+      "sha256": "40199976df0e07601329d5a8f38857b3bec1e1b4d13cc927bd3daae636c41385"
+    },
+    {
+      "path": "browser/automation-conflict-1440.png",
+      "bytes": 135684,
+      "sha256": "05ffbe4a83862c23bd2f078f48b98516f7c808c867445342f4819d85320558ff"
+    },
+    {
+      "path": "browser/automation-denied-1440.png",
+      "bytes": 58243,
+      "sha256": "0e6f575f701d7576ca56fb9254131b4977c229eaff865bb561214195e3233473"
+    },
+    {
+      "path": "browser/automation-docs-audit-1440.png",
+      "bytes": 705545,
+      "sha256": "7f66e48fdf098e2455d2b789298fc8ba8ef4828646d7ad8e7c983ffc357e2a54"
+    },
+    {
+      "path": "browser/automation-docs-data-1440.png",
+      "bytes": 507704,
+      "sha256": "a1190544ec889cc6a9a18b348184ff29d13c6ef1c8d297712a4e86c09dc79ab5"
+    },
+    {
+      "path": "browser/automation-docs-response-api-1440.png",
+      "bytes": 587023,
+      "sha256": "50b48f519d178ac1e3b2538bb5508eeaa6f2b909a2cb6a6b949744e3f85d3d53"
+    },
+    {
+      "path": "browser/automation-erased-member-1440.png",
+      "bytes": 63058,
+      "sha256": "61e7eff9154f9e31291a9568324b0036384dcac5320c69f2eb29be3e2a6ae3b8"
+    },
+    {
+      "path": "browser/automation-erasure-refusal-1440.png",
+      "bytes": 147241,
+      "sha256": "e70300b95ec7fcba97bb8d864c773a5b074a1129accb7da1e6f4ced305c8c11e"
+    },
+    {
+      "path": "browser/automation-guided-policy-1440.png",
+      "bytes": 148028,
+      "sha256": "26191199217ef0538357d5d1bf3a5005bb777b68761f69b0202ac88246b80b90"
+    },
+    {
+      "path": "browser/automation-guided-policy-390.png",
+      "bytes": 132683,
+      "sha256": "4e7f558e8784ee6a22d434e9b4a44c3aa13574d08578bb13b352b15fd67de954"
+    },
+    {
+      "path": "browser/automation-machine-attribution-1440.png",
+      "bytes": 65337,
+      "sha256": "31a60d82893c25d4443e4367591d6e5f4a7255c4808b970c5fa89bdd18b6691b"
+    },
+    {
+      "path": "browser/automation-policy-unset-1440.png",
+      "bytes": 61483,
+      "sha256": "f4df5e881f9c137f8ac9b606c620154ceca6d90d18cedff26158ccb0c3b22c02"
+    },
+    {
+      "path": "browser/automation-policy-unset-390.png",
+      "bytes": 56112,
+      "sha256": "1a31a946c62b3ad189f676afb7bf63200d751b958d3dc00878785dc90e1fe591"
+    },
+    {
+      "path": "browser/automation-populated-1440.png",
+      "bytes": 26494,
+      "sha256": "89b20a88af5d7a1e9c01bc8f7470218893158b5e48be8b95bf8d3f618adb1540"
+    },
+    {
+      "path": "browser/automation-reference-1440.png",
+      "bytes": 4083220,
+      "sha256": "cf06d0975436a274b9a8c8e32145bee6ee8f79e24d4b0c769fc49538e102733b"
+    },
+    {
+      "path": "browser/automation-reference-390.png",
+      "bytes": 2706326,
+      "sha256": "97259ee0becfc4fe8946715af14480ad4f8e2306c2babd12074c31803e052d65"
+    },
+    {
+      "path": "browser/automation-uncertain-1440.png",
+      "bytes": 42269,
+      "sha256": "848e86d68207faa1077068ab7ef7226b46502c908e4cc82b6a7fff5799effebf"
+    }
+  ]
+}

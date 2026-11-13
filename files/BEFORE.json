@@ -1,0 +1,11 @@
+{
+  "policy": {
+    "initialChoices": 8,
+    "savedChoices": 0,
+    "advancedEditor": 1
+  },
+  "lookup": {
+    "path": "/api/v1/responders",
+    "status": 404
+  }
+}

@@ -1,0 +1,225 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-api-clients-policy-1",
+  "head": "5e80a4c80b97818a58b49203ee94016d5aefdbfa",
+  "base": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "product_push": "succeeded",
+  "clean_checkout": true,
+  "checks": [
+    {
+      "command": "ONCALL_MEMBER_JOURNEY=api-clients ONCALL_CHROMIUM_PATH=/usr/bin/chromium node tests/member-coordination-browser.mjs",
+      "exit": 0,
+      "result": "passed",
+      "evidence": "BROWSER-TEST.txt"
+    },
+    {
+      "command": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+      "exit": 1,
+      "result": "OC-053 automation assertions passed; later known analytics fixture fails with expired session",
+      "failure": "tests/oncall-agent-fixtures.mjs:284 analyticsFixture: 401 != 200",
+      "evidence": "RUNTIME-TEST.txt"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "result": "passed",
+      "evidence": "TYPECHECK.txt"
+    },
+    {
+      "command": "node scripts/write-agent-surface.mjs --check",
+      "exit": 0,
+      "result": "fresh"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "result": "regenerated source lock last"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "result": "passed",
+      "evidence": "SOURCE-LOCK-CHECK.json"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "result": "passed",
+      "evidence": "CONTRACT-CHECK.txt"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0,
+      "result": "passed"
+    },
+    {
+      "command": "node tests/agent-door.mjs",
+      "exit": 0,
+      "result": "passed agent-door conformance and fresh/held-data adoption",
+      "evidence": "CONFORMANCE.txt"
+    }
+  ],
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "contract_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "status_changes": [],
+  "new_test_registrations": 0,
+  "configured_verification_entries_before": 16,
+  "configured_verification_entries_after": 16,
+  "tool_declarations_before": 42,
+  "tool_declarations_after": 43,
+  "conformance_steps_before": 65,
+  "conformance_steps_after": 66,
+  "ci": {
+    "run": 43353321898,
+    "head_sha": "5e80a4c80b97818a58b49203ee94016d5aefdbfa",
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131649321814",
+        "id": 131649321814,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131649410185",
+        "id": 131649410185,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131649411539",
+        "id": 131649411539,
+        "name": "light",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131650377732",
+        "id": 131650377732,
+        "name": "shards (runtime)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131650377747",
+        "id": 131650377747,
+        "name": "shards (browser)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131650377750",
+        "id": 131650377750,
+        "name": "shards (changes)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          {
+            "conclusion": "failure",
+            "name": "Run this shard",
+            "number": 18,
+            "status": "completed"
+          }
+        ],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131650377753",
+        "id": 131650377753,
+        "name": "shards (intake)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131650377799",
+        "id": 131650377799,
+        "name": "shards (triage)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131650377823",
+        "id": 131650377823,
+        "name": "shards (transfer)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131650377987",
+        "id": 131650377987,
+        "name": "shards (hosted)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          {
+            "conclusion": "failure",
+            "name": "Require the selected coverage and its proof",
+            "number": 2,
+            "status": "completed"
+          }
+        ],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131654219295",
+        "id": 131654219295,
+        "name": "verify",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131654220200",
+        "id": 131654220200,
+        "name": "full-push-proof",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353321898/job/131654220386",
+        "id": 131654220386,
+        "name": "nightly-proof",
+        "status": "completed"
+      }
+    ],
+    "failed_job": 131650377753,
+    "failed_step": "Run this shard",
+    "failure": "analyticsFixture tests/oncall-agent-fixtures.mjs:284: 401 != 200; known frozen-clock session expiration",
+    "rerun": false
+  },
+  "publication_scan": "fleet Mac landing gate; not runnable in cloud",
+  "conformance_points": {
+    "passed": 8975,
+    "total": 8975
+  },
+  "terminal_status": "BLOCKED prerequisite=\"Successful exact-SHA Verify\"",
+  "github_calls": 6
+}
