@@ -3,7 +3,7 @@ import { Form } from '../forms';
 import { OneTimeSecret } from '../integrations/OneTimeSecret';
 import { privateKey, type IntegrationProps } from '../integrations/catalog';
 
-export const permissionAreas = [ ['incidents', 'Incidents', true], ['services', 'Services', true], ['schedules', 'Rotas', true], ['actions', 'Follow-ups', true], ['analytics', 'Response numbers', false], ['integrations', 'Integrations', false] ] as const;
+export const permissionAreas = [ ['incidents', 'Incidents', true], ['services', 'Services', true], ['schedules', 'Rotas', true], ['actions', 'Follow-ups', true], ['analytics', 'Response numbers', false], ['integrations', 'Integrations', false], ['responders', 'Responders', false] ] as const;
 export function ClientCreate({ state, busy, run, onDone }: Pick<IntegrationProps, 'state' | 'busy' | 'run'> & {onDone?:()=>void}) {
   const [name, setName] = useState(''), [service, setService] = useState(state.services[0]?.id ?? '');
   const [grants, setGrants] = useState<Record<string, string>>({ incidents: 'read' }), [created, setCreated] = useState(''),[error,setError]=useState('');

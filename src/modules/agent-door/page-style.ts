@@ -86,8 +86,17 @@ document.addEventListener('submit', async event => {
     if (form.elements.namedItem('summary_sha256')) body.summary_sha256 = form.elements.namedItem('summary_sha256').value;
     if (form.elements.namedItem('paused')) body.paused = form.elements.namedItem('paused').value === 'true';
     if (form.hasAttribute('data-create-policy')) {
-      const rules = Array.from(form.querySelectorAll('[data-policy-class]')).map(select => ({id: select.dataset.policyClass, class: select.dataset.policyClass, do: select.value, ...(select.value === 'approval' ? {approver:['role:owner'], wait:'P1D'} : {})}));
-      body.document = {schema:'rer-agent-policy/1', catalogue:'rer-agent-classes/1', rules, reviewers:['role:owner'], spend:{none:true}};
+      const base = form.elements.namedItem('policy-base');
+      const document = base ? JSON.parse(base.value) : {schema:'rer-agent-policy/1', catalogue:'rer-agent-classes/1', rules:[], reviewers:['role:owner'], spend:{none:true}};
+      const choices = Array.from(form.querySelectorAll('[data-policy-class]'));
+      const prior = base ? document.rules : choices.map(select => ({id:select.dataset.policyClass, class:select.dataset.policyClass}));
+      document.rules = prior.map(rule => {
+        const value = choices.find(select => select.dataset.policyClass === rule.class).value;
+        if (rule.do === value) return rule;
+        const {approver, wait, ...answer} = rule;
+        return {...answer, do:value, ...(value === 'approval' ? {approver:['role:owner'], wait:'P1D'} : {})};
+      });
+      body.document = document;
     }
     if (form.elements.namedItem('document')) {
       try { body.document = JSON.parse(form.elements.namedItem('document').value); }

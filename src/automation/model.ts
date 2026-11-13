@@ -1,5 +1,5 @@
 import { fail, type State, type Incident, type Member } from '../family/response-operations/domain.ts';
-export const permissions = ['services:read','services:write','schedules:read','schedules:write','incidents:read','incidents:write','actions:read','actions:write','analytics:read','integrations:read'] as const;
+export const permissions = ['services:read','services:write','schedules:read','schedules:write','incidents:read','incidents:write','actions:read','actions:write','analytics:read','integrations:read','responders:read'] as const;
 export const eventTypes = ['trigger','acknowledgment','reassignment','resolution','role','follow-up'] as const;
 export type EventType = typeof eventTypes[number];
 export type Client = {id:string;name:string;owner:string;services:string[];permissions:string[];active:boolean;revision:number;createdAt:string;lastUsed:string|null};
