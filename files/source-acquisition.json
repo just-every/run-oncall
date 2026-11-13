@@ -1,0 +1,19 @@
+{
+  "method": "Authenticated gh api immutable tarballs and commit metadata; reconstructed Git tree identities verified before caching blobs and recursive tree responses",
+  "sources": [
+    {
+      "commit": "c2efb501cbc148c2aee4d5e1107ebdba81469006",
+      "tree": "ce0b5e4c36ec6460492851f1bbbfc8630d7621ff",
+      "archive_sha256": "352441c27eb664ca0ec772037cf40c80b153a00b011f68312703fdc3b1de979d",
+      "blobs": 4796,
+      "verified": true
+    },
+    {
+      "commit": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "tree": "9da85ee66853034f5f19d910374ff64e1bdd5fda",
+      "archive_sha256": "cae8634acb03fd331894da049ad5d812df5a1a138d73898efbdaefc3c32c4b13",
+      "blobs": 4701,
+      "verified": true
+    }
+  ]
+}

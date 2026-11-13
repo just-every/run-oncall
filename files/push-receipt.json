@@ -1,0 +1,12 @@
+{
+  "repository": "just-every/run-oncall",
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-oncall-rer-0213-1",
+  "exit": 0,
+  "attempt": 1,
+  "head": "4fea74eb96a0ed32ab4e0d8d195312835c053513",
+  "ref": "refs/heads/cloud/main-oncall-rer-0213-1",
+  "observed_result": "PUSH_OK branch=cloud/main-oncall-rer-0213-1",
+  "history_rewritten": false,
+  "remote_ref_verified": true,
+  "remote_head": "4fea74eb96a0ed32ab4e0d8d195312835c053513"
+}

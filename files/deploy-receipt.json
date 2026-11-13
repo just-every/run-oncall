@@ -1,0 +1,25 @@
+{
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "deploy",
+    "--environment",
+    "production",
+    "--dry-run"
+  ],
+  "exit": 0,
+  "duration_seconds": 11.56,
+  "output_excerpt": [
+    "Would deploy:",
+    "  Worker: oncall-production",
+    "  D1 database: oncall-production-db (67 declared migrations)",
+    "  Secret inputs: 5 required, 3 optional",
+    "  Public settings: 3; scheduled triggers: 1",
+    "  Cloudflare token permissions: Workers Scripts: Edit, D1: Edit",
+    "  Pending migrations: unknown until the hosted databases are checked.",
+    "deploy: local dry run complete; no credentials were needed, no Cloudflare requests were made and nothing was changed remotely. Target secrets and remote readiness were not checked.",
+    "Needed for a real deploy (this dry run went ahead without them):"
+  ],
+  "head": "4fea74eb96a0ed32ab4e0d8d195312835c053513"
+}

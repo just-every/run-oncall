@@ -1,0 +1,13 @@
+{
+  "command": [
+    "env",
+    "ONCALL_RUNTIME_PART=core",
+    "node",
+    "tests/runtime.mjs"
+  ],
+  "exit": 1,
+  "duration_seconds": 65.42,
+  "output_excerpt": [],
+  "head": "4fea74eb96a0ed32ab4e0d8d195312835c053513",
+  "diagnostic": "Worker restart failed at tests/runtime.mjs:355, called from coordinationJourney at line 1374: workerd bind failed with Address already in use (127.0.0.1:36289). Nine labelled PASS assertions preceded the restart. No product assertion failed."
+}

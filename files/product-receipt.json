@@ -1,0 +1,15 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-rer-0213-1",
+  "head": "4fea74eb96a0ed32ab4e0d8d195312835c053513",
+  "base": "4fa65b7023d8443bdea2e1aed9e46ca4a2467b56",
+  "tree": "f956bebccf5d741bd8306cb287796cfa00d5c519",
+  "candidate_commits": [
+    "4fea74eb96a0ed32ab4e0d8d195312835c053513"
+  ],
+  "identity_check": "all candidate authors and committers fleet; no trailers",
+  "contract_changes": false,
+  "tests_added": 0,
+  "tests_removed": 0,
+  "publication_scan": "Full publication scan reserved for the fleet Mac lander; staged diff checked for credential-shaped values."
+}

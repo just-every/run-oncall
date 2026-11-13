@@ -1,0 +1,16 @@
+{
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "export",
+    "--output",
+    "exports/installation.rer"
+  ],
+  "exit": 0,
+  "duration_seconds": 17.77,
+  "output_excerpt": [
+    "Exported the local copy to exports/installation.rer (207 KB): 113 tables, 4 rows",
+    "Full output: .seed/installer/commands-9265/install.log"
+  ]
+}

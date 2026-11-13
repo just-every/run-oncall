@@ -1,0 +1,26 @@
+{
+  "command": [
+    "env",
+    "ONCALL_RUNTIME_PART=core",
+    "node",
+    "tests/runtime.mjs"
+  ],
+  "exit": 0,
+  "duration_seconds": 132.11,
+  "output_excerpt": [
+    "PASS additive audit migration upgrade: 121 prior application tables and 31 held rows unchanged before Worker writes.",
+    "PASS held upgrade through pre-0106 SQL: full ordered members/services/policies/events/alerts/incidents/audit and nested history unchanged; held password works after upgrade and repeat migration/restart.",
+    "PASS OC-042 held signed-source custody survives upgrade, rotation, revocation and archive exclusion without secret echoes",
+    "PASS OC-003 responder authority: populated workspace reads, attributed acknowledgment and note, ten administrator refusals with unchanged application and credential records",
+    "PASS OC-004 native lifecycle: exact admitted alerts, responder commander, atomic evidence and summary refusals, evidenced recovery and resolved human-attributed timeline",
+    "PASS OC-002 native replay: frozen severity decision, owner, version and evaluation beside changed ownership in submitted order; no state or permanent-audit writes",
+    "PASS OC-043 runtime: maintenance policy, immutable explanation and owned suppressed signal survive restart; duplicate admission adds no workflow or obligation",
+    "PASS OC-043 removing maintenance routes the next observation of the retained alert group",
+    "PASS OC-043 correlation restart: frozen original and version survive migration/restart, next source generation joins once, duplicate admission adds no action",
+    "PASS OC-043 durable coordination workflow: frozen ordered plan, two committed steps, restart mid-workflow, explicit authorized resume, atomic audit-failure rollback with interrupted outcome, exact-once completion/replay and member-erasure/export custody",
+    "PASS OC-054 readiness: release identity, closed matrix states, dynamic source/revocation observations; independent durable signals, zero-write reads, public-door queued delivery/refused intake/overdue deadline; isolated 503 and restored signal; admin/responder/viewer access and signed-out/stakeholder/expired/revoked refusal; storage never proves pager coverage; zero outbound calls",
+    "PASS OC-041 accepted state and its audit entry commit together, survive subject erasure and export without secrets; emitted Worker + local D1: setup/session/roles/CSRF, scoped bearer and raw-body HMAC ingress, identities, concurrent CAS, incident/recovery/runbook/review/follow-up, replay purity, archive equality/rollback, session invalidation, restart and repeat migration, truthful handoffs.",
+    "Runtime core completed (127.0s)"
+  ],
+  "head": "4fea74eb96a0ed32ab4e0d8d195312835c053513"
+}

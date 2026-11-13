@@ -1,0 +1,19 @@
+{
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "setup",
+    "--owner-email",
+    "fleet@runeditrun.com",
+    "--non-interactive"
+  ],
+  "exit": 0,
+  "duration_seconds": 50.93,
+  "output_excerpt": [
+    "\u2713 built in 864ms",
+    "\u2713 built in 1.21s",
+    "Local setup is ready. The temporary app stops when setup exits; run rer dev to start Oncall.",
+    "Setup complete: 67 migrations applied, owner set up. Full output: .seed/installer/commands-8281/install.log"
+  ]
+}

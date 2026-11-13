@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "rer",
+    "check",
+    "--profile",
+    "first-party"
+  ],
+  "exit": 0,
+  "duration_seconds": 1.3,
+  "output_excerpt": []
+}

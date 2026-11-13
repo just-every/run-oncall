@@ -1,0 +1,56 @@
+[
+  {
+    "path": ".github/workflows/run-demo.yml",
+    "baseline": "2f77cdb6d8dfaa82903c2839600e23b76631a537",
+    "unchanged_from_main": true,
+    "sha256": "fcc90f33d454dbacf1f645a4b28ccfb9b2088a0b24d8c264c42fa1fe0c014d74"
+  },
+  {
+    "path": ".github/workflows/run-site.yml",
+    "baseline": "2f77cdb6d8dfaa82903c2839600e23b76631a537",
+    "unchanged_from_main": true,
+    "sha256": "f63166fb907bf7746113bb629324b891d0ace89b0e0255808d5095186d1a989b"
+  },
+  {
+    "path": ".github/workflows/verify-nightly.yml",
+    "baseline": "8b925fa5ffaa577df9f2e4ebab6ede8af5155baa",
+    "unchanged_from_main": true,
+    "sha256": "6106151071269ec353d79c622b66611eca504519aff53a5575b948209d62e791"
+  },
+  {
+    "path": ".github/workflows/verify.yml",
+    "baseline": "8b925fa5ffaa577df9f2e4ebab6ede8af5155baa",
+    "unchanged_from_main": true,
+    "sha256": "3ccb48f231bd0a9a4296b5e1509c73bb24bf586edcbc1937f5a89577c59af21e"
+  },
+  {
+    "path": "migrations/core/0147_agent_door.sql",
+    "baseline": "2f77cdb6d8dfaa82903c2839600e23b76631a537",
+    "unchanged_from_main": true,
+    "sha256": "016d8a98b964385f5c4a13447361c3c783910a76aaf4606b0e0081482bc819cc"
+  },
+  {
+    "path": "src/modules/agent-door/ADOPTING.md",
+    "baseline": "ab97e5e864013ef03fd7f1e1a335101dd9150891",
+    "unchanged_from_main": true,
+    "sha256": "fa9ea439a509aac9d96bbe322fd414febcbc5840f46d578cf2676a37697e7631"
+  },
+  {
+    "path": "src/modules/agent-door/conformance/discovery.mjs",
+    "baseline": "8b925fa5ffaa577df9f2e4ebab6ede8af5155baa",
+    "unchanged_from_main": true,
+    "sha256": "7cf427564ab181d809011fdaed46a68865107992e2a826883817bb1b45318b35"
+  },
+  {
+    "path": "src/modules/agent-door/page-style.ts",
+    "baseline": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+    "unchanged_from_main": true,
+    "sha256": "94f72b07162fe13c4fb655c8e47d2fcd8f81f39f7f36bca83b306e7275d7a691"
+  },
+  {
+    "path": "src/modules/agent-door/pages.ts",
+    "baseline": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+    "unchanged_from_main": true,
+    "sha256": "7b484ef5890da93a4a79d2b15655c4c9962348d0db9c3b97697342cae28e478c"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "command": [
+    "pnpm",
+    "run",
+    "typecheck"
+  ],
+  "exit": 0,
+  "duration_seconds": 13.8,
+  "output_excerpt": []
+}

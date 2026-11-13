@@ -1,0 +1,62 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-rer-0213-1",
+  "head": "4fea74eb96a0ed32ab4e0d8d195312835c053513",
+  "terminal": "BLOCKED",
+  "ci": {
+    "run_id": 43455124052,
+    "conclusion": "failure",
+    "head_sha": "4fea74eb96a0ed32ab4e0d8d195312835c053513",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43455124052",
+    "status": "completed"
+  },
+  "github_invocations": 10,
+  "github_budget": 10,
+  "local_checks": {
+    "setup": {
+      "receipt": "setup-receipt.json",
+      "exit": 0,
+      "expected_refusal": false
+    },
+    "deploy": {
+      "receipt": "deploy-receipt.json",
+      "exit": 0,
+      "expected_refusal": false
+    },
+    "typecheck": {
+      "receipt": "typecheck-receipt.json",
+      "exit": 0,
+      "expected_refusal": false
+    },
+    "export": {
+      "receipt": "export-receipt.json",
+      "exit": 0,
+      "expected_refusal": false
+    },
+    "import": {
+      "receipt": "import-receipt.json",
+      "exit": 4,
+      "expected_refusal": true
+    },
+    "first-party-check": {
+      "receipt": "first-party-check-receipt.json",
+      "exit": 0,
+      "expected_refusal": false
+    },
+    "runtime-core": {
+      "receipt": "runtime-core-receipt.json",
+      "exit": 0,
+      "expected_refusal": false
+    }
+  },
+  "generated_contract_documents": "current; no source or view edits",
+  "base_copy_record": "247 groups, 859 files; all copy group pins at the release revision; nine seed adaptations preserved",
+  "source_lock": "vendored generator and both vendored and installed checks passed",
+  "test_changes": {
+    "added": 0,
+    "removed": 0
+  },
+  "clause_status_changes": [],
+  "full_publication_scan": "Reserved for the fleet Mac lander; staged diff hygiene check passed.",
+  "browser_proof": "Not required by this adoption brief"
+}
