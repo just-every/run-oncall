@@ -1,0 +1,39 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "86d1ea6d2cd251b5795fb6c92b7f52ec475adbe4",
+  "run_id": 43353600782,
+  "url": "https://github.com/just-every/run-oncall/actions/runs/43353600782",
+  "status": "completed",
+  "conclusion": "failure",
+  "github_calls": 6,
+  "discovered_epoch": 1794537530,
+  "last_check_epoch": 1794538447,
+  "head_sha": "86d1ea6d2cd251b5795fb6c92b7f52ec475adbe4",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353600782",
+  "failed_jobs": [
+    {
+      "id": 131650955510,
+      "name": "shards (intake)",
+      "step": "Run this shard",
+      "failure": "analyticsFixture at tests/oncall-agent-fixtures.mjs:284:11; 401 !== 200",
+      "classification": "pre-existing session-clock failure named in brief",
+      "log_command": "gh run view 43353600782 --repo just-every/run-oncall --job 131650955510 --log-failed",
+      "log_reads": 1,
+      "log_transport_exit": 0,
+      "log_file": "ci-failed-intake.log"
+    },
+    {
+      "id": 131655181229,
+      "name": "verify",
+      "step": "Require the selected coverage and its proof",
+      "failure": "Aggregate gate fails because intake failed"
+    }
+  ],
+  "execution_shards": {
+    "passed": 6,
+    "failed": 1
+  },
+  "reruns": 0,
+  "terminal": "BLOCKED",
+  "prerequisite": "Successful exact-SHA Verify"
+}

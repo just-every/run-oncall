@@ -1,0 +1,15 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-bulk-selection-1",
+  "head": "86d1ea6d2cd251b5795fb6c92b7f52ec475adbe4",
+  "product_push": "succeeded",
+  "ready": false,
+  "status": "BLOCKED",
+  "prerequisite": "Successful exact-SHA Verify",
+  "run_id": 43353600782,
+  "failed_job": 131650955510,
+  "failed_step": "Run this shard",
+  "known_red": "tests/oncall-agent-fixtures.mjs:284 analyticsFixture; 401 !== 200",
+  "github_calls": 6,
+  "reruns": 0
+}

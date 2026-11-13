@@ -1,0 +1,110 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-bulk-selection-1",
+  "head": "86d1ea6d2cd251b5795fb6c92b7f52ec475adbe4",
+  "base": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0,
+    "output": "typecheck.log"
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0,
+    "output": "build.log"
+  },
+  "browser": {
+    "command": "cloud_run env ONCALL_BROWSER_EVIDENCE=<packet> node /tmp/oncall-bulk-test.mjs",
+    "exit": 0,
+    "journey": "tests/product-browser-journey.mjs#triageBulkBrowser",
+    "assertion_width": 1440,
+    "proof_widths": [
+      1440,
+      390
+    ],
+    "output": "bulk-browser.log",
+    "runner": "bulk-runner.mjs"
+  },
+  "source_lock": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0,
+    "output": "source-check.log"
+  },
+  "before_after": {
+    "stranger_failures": [
+      2,
+      0
+    ],
+    "bulk_journey_registrations": [
+      1,
+      1
+    ],
+    "oncall_lane_registrations": [
+      16,
+      16
+    ],
+    "contract": {
+      "done": [
+        26,
+        26
+      ],
+      "partial": [
+        41,
+        41
+      ],
+      "missing": [
+        34,
+        34
+      ]
+    }
+  },
+  "proof": [
+    {
+      "path": "OC-079-selected-target-1440.png",
+      "bytes": 30787,
+      "sha256": "bd40651d0e29df54c7b8fd0fc911af34eb8b3540d871f27afe95a1362b9cf67c"
+    },
+    {
+      "path": "OC-079-selected-target-390.png",
+      "bytes": 30416,
+      "sha256": "48573835c21edf9952fa70b9fa6418b37d212d96383e0ad1c09e4b65692b1f67"
+    },
+    {
+      "path": "OC-079-retained-merge-1440.png",
+      "bytes": 21652,
+      "sha256": "ab34f9569ff6c80d4b5df78400dd842762a70a1b77ffa85221fc6d851702fc33"
+    },
+    {
+      "path": "OC-079-retained-merge-390.png",
+      "bytes": 21063,
+      "sha256": "c64c9037f11d186286962c3ca80c78c5eca91a9111171d7cf9928de1dd9b6197"
+    }
+  ],
+  "identity": {
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": [],
+    "candidate_commits": 1,
+    "no_skip_ci": true
+  },
+  "product_push": {
+    "exit": 0,
+    "attempts": 1,
+    "ref": "refs/heads/cloud/main-oncall-bulk-selection-1",
+    "output": "product-push.log"
+  },
+  "publication_scan": {
+    "status": "not_run_in_cloud",
+    "owner": "fleet Mac landing gate"
+  },
+  "clause_claim": {
+    "id": "OC-079",
+    "status": "PARTIAL",
+    "points": [
+      1,
+      2,
+      5
+    ],
+    "tests": "tests/product-browser-journey.mjs#triageBulkBrowser"
+  }
+}
