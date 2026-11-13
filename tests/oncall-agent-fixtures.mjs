@@ -246,6 +246,9 @@ export async function triageFixture(runtime){
 
 /** Analytics cohorts, coverage and noisy admissions enter through native HTTP only. */
 export async function analyticsFixture(runtime) {
+ // SQLite checks session expiry against real now, independently of the injected
+ // JavaScript clock. Anchor this cohort to today before issuing local sessions.
+ await runtime.time(Date.now());
  const json=async(path,input,status=200)=>{
   const response=await runtime.http(path,input);assert.equal(response.status,status,await response.clone().text());return response.json();
  };

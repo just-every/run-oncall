@@ -58,14 +58,21 @@ export async function agentRuntime({clock}={}){
  const issuer='https://oncall-fixture.invalid',installationId=randomUUID(),sub=randomUUID(),email='alex@example.invalid',setupToken=randomBytes(32).toString('hex');
  let providerFixture=null;
  const fixtures={set(origin,value){assert.equal(origin,'https://8.8.8.8');providerFixture=value}};
- const runtime=await automationRuntime(request=>edge.fetch(request,{fixture:providerFixture}),{clock,bindings:origin=>({
+ // Bootstrap sessions at real time before freezing the scenario clock: D1's
+ // native session view uses SQLite now rather than the injected JavaScript Date.
+ const runtime=await automationRuntime(request=>edge.fetch(request,{fixture:providerFixture}),{clock:clock===undefined?undefined:null,bindings:origin=>({
   OWNER_EMAIL:email,SETUP_TOKEN:setupToken,INBOUND_EMAIL_DOMAIN:'inbound.example.test',RER_OWNER_CLAIM_ISSUER:issuer,RER_OWNER_CLAIM_INSTALLATION_ID:installationId,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify(publicKeys),
   RER_BUSINESS_TRUST:JSON.stringify({v:1,issuer,audience:origin,subject:installationId,email,keys:publicKeys}),
  })});
  try{
   // The Worker answers early refusals (401/403) without draining the request body and closes the socket; a pooled undici connection reused after that raises ECONNRESET. Every request opens its own connection.
   const request=(absolute,init={})=>{const url=new URL(absolute);assert.equal(url.origin,runtime.origin);const headers=new Headers(init.headers);headers.set('Connection','close');return fetch(url,{...init,headers})};
-  const bootstrap=await initialize({request,origin:runtime.origin,email,sub,displayName:'Alex Chen',token:setupToken,returnTo:'/',fixtures});
+  const bootstrap=await initialize({request:async(...args)=>{
+   const response=await request(...args);
+   // Freeze before setup creates scenario records, preserving their ordering.
+   if(new URL(args[0]).pathname==='/auth/bootstrap'&&clock!==undefined)await runtime.time(clock);
+   return response;
+  },origin:runtime.origin,email,sub,displayName:'Alex Chen',token:setupToken,returnTo:'/',fixtures});
   const cookie=bootstrap.headers.getSetCookie().map(value=>value.split(';',1)[0]).join('; ');await bootstrap.body?.cancel();
   const surface=JSON.parse(await readFile('agent-surface.json','utf8'));
   const context={origin:runtime.origin,business:'northline-response',signer:{issuer,installationId,kid,privateKey:pair.privateKey},person:{email,sub},agentId:'responder-'+randomUUID(),consent:randomUUID(),surface,seq:0,revision:0,now:()=>platformTime??Date.now()};
