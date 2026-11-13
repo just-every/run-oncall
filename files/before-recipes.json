@@ -1,0 +1,19 @@
+{
+  "phase": "before",
+  "nodeOnSenderPath": false,
+  "senderPath": "/usr/bin:/bin",
+  "rows": [
+    {
+      "label": "events-hmac",
+      "code": 22,
+      "stdout": "{\"error\":\"Invalid source signature\"}",
+      "stderr": "/bin/sh: 15: node: not found\n  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current\n                                 Dload  Upload   Total   Spent    Left  Speed\n\r  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0\r100   480  100    36  100   444   4921  60697 --:--:-- --:--:-- --:--:-- 68571\ncurl: (22) The requested URL returned error: 401\n"
+    },
+    {
+      "label": "change-native-signed",
+      "code": 127,
+      "stdout": "",
+      "stderr": "/bin/sh: 1: node: not found\n"
+    }
+  ]
+}

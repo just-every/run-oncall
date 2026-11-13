@@ -1,0 +1,26 @@
+{
+  "installerCommand": "curl -fsSL https://runeditrun.com/install.sh | sh",
+  "installerExit": 0,
+  "nodeOnPath": false,
+  "npxOnPath": false,
+  "rerOnPath": true,
+  "commands": [
+    {
+      "command": "rer install just-every/run-oncall --dir oncall-hosted",
+      "exit": 0
+    },
+    {
+      "command": "rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "curl --version",
+      "exit": 0
+    },
+    {
+      "command": "openssl version",
+      "exit": 0
+    }
+  ],
+  "cloudNetworkNote": "The private Node 22 runtime needs an Undici EnvHttpProxyAgent preload in this cloud VM to use its required HTTPS proxy. The initial rer pnpm download failed without it. Retrying the same commands with that cloud transport preload succeeded; no global Node/npm/pnpm installed."
+}

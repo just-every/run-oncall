@@ -1,0 +1,42 @@
+{
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "name": "sender-setup",
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=sender-setup cloud_run node tests/product-browser.mjs",
+      "exit": 0
+    },
+    {
+      "name": "events-source",
+      "command": "ONCALL_CHROMIUM_PATH=/usr/bin/chromium ONCALL_PRODUCT_JOURNEY=events-source cloud_run node tests/product-browser.mjs",
+      "exit": 0
+    },
+    {
+      "name": "source-lock",
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "name": "contract-docs",
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "name": "build",
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "name": "installed-source-lock",
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "newTestRegistrations": 0,
+  "ciLaneCommandEntriesBefore": 16,
+  "ciLaneCommandEntriesAfter": 16
+}

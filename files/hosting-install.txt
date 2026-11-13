@@ -1,0 +1,51 @@
+Allow roughly 500 MB–1 GB of downloads and 1–3 GB of disk space for a first run, including Node, rer, the app and its dependencies. The app and your computer can need more; later runs reuse downloads.
+Fetching pnpm 10.12.4 for this project; rer keeps it in its own cache.
+Installing the pinned @runeditrun/rer and the checkout's frozen dependencies
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +160
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 160, reused 0, downloaded 44, added 44
+Progress: resolved 160, reused 0, downloaded 97, added 97
+Progress: resolved 160, reused 0, downloaded 150, added 150
+Progress: resolved 160, reused 0, downloaded 159, added 159
+Progress: resolved 160, reused 0, downloaded 160, added 159
+Progress: resolved 160, reused 0, downloaded 160, added 160, done
+.../node_modules/workerd postinstall$ node install.js
+.../esbuild@0.28.1/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.28.1/node_modules/esbuild postinstall: Done
+.../node_modules/workerd postinstall: Done
+
+dependencies:
++ @fontsource/ibm-plex-mono 5.3.0
++ @tanstack/react-router 1.170.41
++ @tanstack/react-start 1.168.60
++ hono 4.13.7
++ re2js 2.8.6
++ react 19.2.8
++ react-dom 19.2.8
+
+devDependencies:
++ @axe-core/playwright 4.10.2
++ @cloudflare/vite-plugin 1.54.5
++ @cloudflare/workers-types 5.20260908.1
++ @playwright/test 1.64.1
++ @runeditrun/rer 0.2.108
++ @types/node 22.18.6
++ @types/react 19.2.18
++ @types/react-dom 19.2.7
++ @vitejs/plugin-react 6.1.1
++ marked 18.0.14
++ miniflare 5.20260907.0-alpha
++ typescript 5.9.3
++ vite 8.2.2
++ wrangler 4.129.1
+
+Done in 5.8s using pnpm v10.12.4
+Heavy job admitted: Oncall install:workflow [f2c1ba722d87]
+Checking pinned pnpm
+10.12.4
+Installing frozen dependencies
+Run this project's package scripts with rer run SCRIPT (it uses the pnpm this project pins).
+install: complete (exit 0)
+Next: cd 'oncall-hosted' && rer setup

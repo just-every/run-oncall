@@ -1,0 +1,126 @@
+{
+  "phase": "after",
+  "nodeOnSenderPath": false,
+  "senderPath": "isolated shell-tool bin; curl forwards unchanged request arguments and records response headers",
+  "rows": [
+    {
+      "label": "events-hmac",
+      "exit": 0,
+      "httpStatus": 201,
+      "receipt": {
+        "duplicate": false,
+        "id": "145e07b5-eaff-4dd7-84b0-0d2ae788f40d",
+        "eventId": "latency-2026-11-13T02:40:39.535Z-trigger",
+        "service": "synthetic-oncall-recipes",
+        "observedAt": "2026-11-13T02:40:39.535Z",
+        "acceptedAt": "2026-11-13T02:40:39.750Z"
+      },
+      "replayStatus": 200,
+      "duplicateSameRecord": true,
+      "missingKeyExit": 2
+    },
+    {
+      "label": "change-native-bearer",
+      "exit": 0,
+      "httpStatus": 201,
+      "receipt": {
+        "id": "5f7755d2-d669-4189-9833-0387cedec369",
+        "eventId": "change-a9d5ca0c1639",
+        "service": "synthetic-oncall-recipes",
+        "acceptedAt": "2026-11-13T02:40:40.381Z",
+        "duplicate": false
+      },
+      "replayStatus": 200,
+      "duplicateSameRecord": true,
+      "missingKeyExit": 2
+    },
+    {
+      "label": "change-native-signed",
+      "exit": 0,
+      "httpStatus": 201,
+      "receipt": {
+        "id": "9069b0ea-3236-47a8-952f-c1538381364a",
+        "eventId": "change-af6ece7fc551",
+        "service": "synthetic-oncall-recipes",
+        "acceptedAt": "2026-11-13T02:40:40.961Z",
+        "duplicate": false
+      },
+      "replayStatus": 200,
+      "duplicateSameRecord": true,
+      "missingKeyExit": 2
+    },
+    {
+      "label": "change-github",
+      "exit": 0,
+      "httpStatus": 201,
+      "receipt": {
+        "id": "335afde0-c697-433a-9989-4b08977d794c",
+        "eventId": "github:d510257b8301cdfa7ef3a4c0049e9fd5da97f4a3389b5eff72d91f5c0b8e0d47",
+        "service": "synthetic-oncall-recipes",
+        "acceptedAt": "2026-11-13T02:40:41.585Z",
+        "duplicate": false
+      },
+      "replayStatus": 200,
+      "duplicateSameRecord": true,
+      "missingKeyExit": 2
+    },
+    {
+      "label": "change-gitlab",
+      "exit": 0,
+      "httpStatus": 201,
+      "receipt": {
+        "id": "05194100-1ea6-4246-9d31-4b7426574860",
+        "eventId": "change-750565f184e5",
+        "service": "synthetic-oncall-recipes",
+        "acceptedAt": "2026-11-13T02:40:42.214Z",
+        "duplicate": false
+      },
+      "replayStatus": 200,
+      "duplicateSameRecord": true,
+      "missingKeyExit": 2
+    },
+    {
+      "label": "change-argocd",
+      "exit": 0,
+      "httpStatus": 201,
+      "receipt": {
+        "id": "e21bb266-d18e-41bf-8833-0301b8404a14",
+        "eventId": "change-95c1617fdcb3",
+        "service": "synthetic-oncall-recipes",
+        "acceptedAt": "2026-11-13T02:40:42.750Z",
+        "duplicate": false
+      },
+      "replayStatus": 200,
+      "duplicateSameRecord": true,
+      "missingKeyExit": 2
+    },
+    {
+      "label": "change-terraform",
+      "exit": 0,
+      "httpStatus": 201,
+      "receipt": {
+        "id": "d2ab833b-5cbf-4b01-84ee-5c98f19bc2a5",
+        "eventId": "terraform:422499b9e9fd7de08cfea878731181695eacb4d4e8fab62f4807f5fb4ab5d390",
+        "service": "synthetic-oncall-recipes",
+        "acceptedAt": "2026-11-13T02:40:43.298Z",
+        "duplicate": false
+      },
+      "replayStatus": 200,
+      "duplicateSameRecord": true,
+      "missingKeyExit": 2
+    },
+    {
+      "label": "change-pagerduty",
+      "exit": 0,
+      "httpStatus": 202,
+      "receipt": {
+        "status": "success",
+        "message": "Event processed",
+        "dedup_key": "1a9333a7-0d0e-4ef4-84e0-72e6436fd7a9"
+      },
+      "replayStatus": 202,
+      "duplicateSameRecord": true,
+      "missingKeyExit": 2
+    }
+  ]
+}

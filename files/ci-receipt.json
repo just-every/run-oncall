@@ -1,0 +1,34 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-recipes-toolchain-1",
+  "head": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+  "runId": 43353936328,
+  "url": "https://github.com/just-every/run-oncall/actions/runs/43353936328",
+  "status": "completed",
+  "conclusion": "failure",
+  "ghCalls": 8,
+  "watcherCalls": 5,
+  "jobsCalls": 1,
+  "archiveInvocations": 2,
+  "failedJobs": [
+    {
+      "id": 131652627715,
+      "name": "shards (intake)",
+      "step": "Run this shard",
+      "assertion": "analyticsFixture tests/oncall-agent-fixtures.mjs:284: 401 !== 200",
+      "knownMainFailure": true,
+      "archiveExit": 0
+    },
+    {
+      "id": 131657422100,
+      "name": "verify",
+      "step": "Require the selected coverage and its proof",
+      "consequence": "Intake shard failure prevents required coverage",
+      "archiveExit": 1,
+      "archiveError": "failed to get run log: zip: not a valid zip file"
+    }
+  ],
+  "reruns": 0,
+  "dispatches": 0,
+  "ready": false
+}

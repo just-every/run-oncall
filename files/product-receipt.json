@@ -1,0 +1,83 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-recipes-toolchain-1",
+  "head": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+  "base": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "productPushed": true,
+  "pr": null,
+  "candidateFiles": {
+    "docs/changes.md": "425179cda763884d4555570b083b5f7774b6de805b6a0e9a3d971bc5e79a6b61",
+    "docs/getting-started.md": "058f4f77bb637e89acdffe6c379d023a7bd1774c595e1c4f0afb334fbb5621de",
+    "src/changes/ChangeSourceTest.tsx": "db40174c5810568aa3d9df6313190911924cecf100b0831f2723ea9f7bfd2147",
+    "src/integrations/RequestExample.tsx": "164e8306d3ac3fea4ca5153e92691fa072a23df6790c705245c0a41c923353bf",
+    "tests/product-browser.mjs": "e431146aa4f943f3c3dae8394662115c1d09b4fd2cd32f8a31af32a4d559dbb4",
+    "sources.lock.json": "77ccf19baa09396daac88eb2f4e002f2edd111aa7793fb9825844f14896b3719"
+  },
+  "contractJudgmentsChanged": false,
+  "newTestRegistrations": 0,
+  "beforeAfter": {
+    "generatedRecipeGlobalNodeRequirements": [
+      2,
+      0
+    ],
+    "reproducedFailingPaths": [
+      2,
+      0
+    ],
+    "afterReceiverVariantsPassed": [
+      8,
+      8
+    ],
+    "ciLaneCommandEntries": [
+      16,
+      16
+    ],
+    "contractStatusCounts": {
+      "before": {
+        "done": 26,
+        "partial": 41,
+        "missing": 34
+      },
+      "after": {
+        "done": 26,
+        "partial": 41,
+        "missing": 34
+      }
+    }
+  },
+  "limits": "Local receiver protocol and guide proof only; no live sender, mail or hosting account operation; full publication scan belongs to Mac lander.",
+  "ci": {
+    "repository": "just-every/run-oncall",
+    "branch": "cloud/main-oncall-recipes-toolchain-1",
+    "head": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+    "runId": 43353936328,
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43353936328",
+    "status": "completed",
+    "conclusion": "failure",
+    "ghCalls": 8,
+    "watcherCalls": 5,
+    "jobsCalls": 1,
+    "archiveInvocations": 2,
+    "failedJobs": [
+      {
+        "id": 131652627715,
+        "name": "shards (intake)",
+        "step": "Run this shard",
+        "assertion": "analyticsFixture tests/oncall-agent-fixtures.mjs:284: 401 !== 200",
+        "knownMainFailure": true,
+        "archiveExit": 0
+      },
+      {
+        "id": 131657422100,
+        "name": "verify",
+        "step": "Require the selected coverage and its proof",
+        "consequence": "Intake shard failure prevents required coverage",
+        "archiveExit": 1,
+        "archiveError": "failed to get run log: zip: not a valid zip file"
+      }
+    ],
+    "reruns": 0,
+    "dispatches": 0,
+    "ready": false
+  }
+}

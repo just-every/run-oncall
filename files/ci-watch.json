@@ -1,0 +1,59 @@
+{
+  "head": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+  "repository": "just-every/run-oncall",
+  "ghCalls": 5,
+  "records": [
+    {
+      "kind": "discovery",
+      "at": 1794537735.4328604,
+      "head": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+      "runs": [
+        {
+          "id": 43353936328,
+          "name": "Verify",
+          "event": "push",
+          "head_sha": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+          "status": "in_progress",
+          "conclusion": null,
+          "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353936328"
+        }
+      ]
+    },
+    {
+      "kind": "poll",
+      "at": 1794538036.8524516,
+      "id": 43353936328,
+      "head_sha": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353936328"
+    },
+    {
+      "kind": "poll",
+      "at": 1794538338.5921874,
+      "id": 43353936328,
+      "head_sha": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353936328"
+    },
+    {
+      "kind": "poll",
+      "at": 1794538640.0122094,
+      "id": 43353936328,
+      "head_sha": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353936328"
+    },
+    {
+      "kind": "poll",
+      "at": 1794538941.670497,
+      "id": 43353936328,
+      "head_sha": "8b21d6ea781a11d750e5434cb3d107b534d01215",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43353936328"
+    }
+  ]
+}
