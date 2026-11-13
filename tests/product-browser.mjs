@@ -753,6 +753,46 @@ async function eventsSourceBrowser(page,context) {
   const path=new URL(await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href'),origin).pathname;
   return {key,url,example,path,name:await page.getByRole('heading',{level:2}).innerText(),source:decodeURIComponent(new URL(url).pathname.split('/').at(-1))};
  };
+ // Extend this existing source lifecycle journey through the compatible form.
+ await page.goto(origin+'/settings/integrations/new/pagerduty');
+ await page.getByLabel('Name',{exact:true}).fill('Harbour Checkout compatible');
+ const compatibleService=page.getByLabel('Service',{exact:true});if(await compatibleService.count())await compatibleService.selectOption(service);
+ await page.getByRole('button',{name:'Create source',exact:true}).click();
+ const compatibleKey=await page.getByLabel('Private key',{exact:true}).inputValue();
+ const compatiblePath=await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href');
+ const compatibleId=decodeURIComponent(compatiblePath.split('/').at(-1));
+ await page.getByRole('link',{name:'Open source',exact:true}).click();await page.getByText('Send a test event',{exact:true}).click();
+ await page.getByLabel('Private key',{exact:true}).fill(compatibleKey);await page.getByLabel('Title',{exact:true}).fill('Checkout gateway connection saturation');
+ const sendCompatible=async(status=202)=>{
+  const pending=page.waitForResponse(r=>new URL(r.url()).pathname==='/v2/enqueue'&&r.request().method()==='POST');
+  await page.getByRole('button',{name:'Send test event',exact:true}).click();const response=await pending;
+  assert.equal(response.status(),status);if(response.ok())await expect.poll(()=>page.locator('.notice').innerText()).toBe('Test event accepted');else await page.locator('.failure-line').waitFor();await expect(page.getByRole('button',{name:'Send test event',exact:true})).toBeEnabled();return response.json();
+ };
+ const compatibleTrigger=await sendCompatible();
+ assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),compatibleKey,'test sends retain the private key in the mounted form');
+ assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),compatibleTrigger.dedup_key,'the form exposes the actual compatible outage key');
+ await page.getByLabel('Intent',{exact:true}).selectOption('recover');await sendCompatible();
+ let compatibleState=await request('/api/state'),compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);
+ assert.equal(compatibleAlerts.length,1);assert.equal(compatibleAlerts[0].state,'recovered');
+ assert.equal(compatibleState.intakeReceipts.at(-1).outcome,'recovered','the test recovery has an effect on its trigger');
+ // Reopen the same explicit outage key, visit Alerts, then return to recover it.
+ await page.getByLabel('Intent',{exact:true}).selectOption('trigger');const reopened=await sendCompatible();assert.equal(reopened.dedup_key,compatibleTrigger.dedup_key);
+ await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:'Checkout gateway connection saturation'}).first().waitFor();
+ await page.goto(origin+compatiblePath);await page.getByText('Send a test event',{exact:true}).click();
+ assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),reopened.dedup_key,'returning to the compatible source restores the trigger key');
+ assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),'','navigation does not persist the private key');
+ await page.getByLabel('Private key',{exact:true}).fill(compatibleKey);await page.getByLabel('Intent',{exact:true}).selectOption('recover');
+ await proof('compatible-recover-form');await sendCompatible();compatibleState=await request('/api/state');
+ compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);assert.equal(compatibleAlerts.length,2);
+ assert.ok(compatibleAlerts.every(a=>a.state==='recovered'),'no compatible test alert remains active');
+ await page.goto(origin+'/alerts');const recoveredRows=page.locator('.alert-row').filter({hasText:'Checkout gateway connection saturation'});assert.equal(await recoveredRows.count(),2);
+ for(const row of await recoveredRows.all())assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
+ await proof('compatible-recovered-list');
+ // A wrong compatible credential uses its provider error envelope (HTTP 400).
+ await page.goto(origin+compatiblePath);await page.getByText('Send a test event',{exact:true}).click();
+ await page.getByLabel('Private key',{exact:true}).fill(randomBytes(32).toString('hex'));await sendCompatible(400);
+ await page.locator('.failure-line').waitFor();const keyFailure=await page.locator('.failure-line').innerText();
+ assert.match(keyFailure,/key|credential/i);assert.doesNotMatch(keyFailure,/allowance/i);await proof('compatible-key-refused');
  const source=await create('bearer');await page.getByRole('link',{name:'Open source',exact:true}).click();
  await page.getByLabel('Ingress URL',{exact:true}).waitFor();assert.equal(await page.locator('.ingress-example').getAttribute('open'),'','empty source opens its sample');
  await proof('empty-source');await page.getByText('Send a test event',{exact:true}).click();
@@ -847,6 +887,29 @@ async function eventsSourceBrowser(page,context) {
   await page.goto(origin+sample.path);assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the original page URL still works after sending');
  }
 
+ // The same form diagnoses a valid key's event allowance, including rotation.
+ await page.goto(origin+source.path);await page.getByText('Send a test event',{exact:true}).click();
+ let limited=await request('/api/state');await request('/api/intake/allowances',{id:'source:'+source.source,requests:600,events:1,revision:limited.revision});
+ const refusalBefore=await request('/api/state');
+ await page.getByLabel('Private key',{exact:true}).fill(source.key);await page.getByLabel('Intent',{exact:true}).selectOption('recover');
+ const refuse=async()=>{const pending=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();const response=await pending;assert.equal(response.status(),429);assert.ok(Number(response.headers()['retry-after'])>0);await page.locator('.failure-line').waitFor();await page.getByRole('button',{name:'Send test event',exact:true}).waitFor();return page.locator('.failure-line').innerText();};
+ const allowanceFailure=await refuse();
+ assert.match(allowanceFailure,/event.*allowance/i);assert.match(allowanceFailure,/retry|wait/i);assert.match(allowanceFailure,/New events per minute/);
+ assert.doesNotMatch(allowanceFailure,/private key|credential|sender settings/i,'an allowance refusal must not blame a valid key');
+ await page.locator('summary').filter({hasText:/^Rejected requests /}).click();
+ const retainedNotice=await page.getByRole('list',{name:'Allowance refusals',exact:true}).innerText();
+ assert.ok(retainedNotice.includes(allowanceFailure.split(' Retry')[0]),'the immediate result uses the retained refusal explanation');
+ assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),source.key);await proof('allowance-refused');
+ const rotatedKey=randomBytes(32).toString('hex');await request('/api/sources',{id:source.source,key:rotatedKey,mode:'bearer',scopes:[service]});
+ await page.getByLabel('Private key',{exact:true}).fill(rotatedKey);const rotatedFailure=await refuse();
+ assert.match(rotatedFailure,/event.*allowance/i);assert.doesNotMatch(rotatedFailure,/private key|credential/i);
+ const refusalAfter=await request('/api/state');assert.deepEqual(refusalAfter.events,refusalBefore.events);assert.deepEqual(refusalAfter.alerts,refusalBefore.alerts,'allowance refusals preserve the alert lifecycle');
+ await page.getByLabel('Private key',{exact:true}).fill(source.key);
+ const badKey=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();assert.equal((await badKey).status(),401);
+ await expect.poll(()=>page.locator('.failure-line').innerText()).toMatch(/private key/i);
+ assert.doesNotMatch(await page.locator('.failure-line').innerText(),/allowance/i);
+ await writeFile(`${directory}/test-event-receipt.json`,JSON.stringify({journey:'eventsSourceBrowser',width:1440,compatible:{sameMountedFormRecovered:true,returnedFormRecovered:true,activeAlerts:compatibleAlerts.filter(a=>a.state==='active').length,generations:compatibleAlerts.length,keyVisible:true,keyRetainedBetweenSends:true,keyNotPersistedAcrossNavigation:true},allowance:{status:429,reason:allowanceFailure,rotatedReason:rotatedFailure,unchangedAlertsAndEvents:true},authentication:{compatibleStatus:400,nativeStatus:401,reason:keyFailure},screenshots:[1440,390]},null,2)+'\n');
+ console.log('PASS test-event results: compatible same-form and returned-form recoveries leave zero active alerts, explicit outage key and in-memory private key retained; native allowance and rotated key refusals explain retry or allowance settings, wrong keys explain authentication, refused requests preserve events and alerts; changed screens captured at 1440/390.');
  console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Detail-page readable source samples copied and executed for bearer and signed, alerts visible, legacy ID retries deduplicated and mismatched identities refused; changed screens captured once at 1440/390.');
  assert.deepEqual(sourceErrors,[],'source recovery has no browser application errors');
  } finally {await sourceContext.close();}
