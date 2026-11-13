@@ -1,3 +1,7 @@
+## 0.5.11 · 2026-11-13
+
+Agents can now read response reports, scheduled on-call load and alert noise within their granted services. A workspace readiness view is available only when their grants cover every service; unavailable measurements stay marked unavailable. These reads remain subject to current authority and company policy, including approval for sensitive evidence. Scheduled hours do not establish worked hours or delivered interruptions, and readiness does not establish pager coverage. Usage and cost figures and team load are not included. The pinned rer remains 0.2.108; this update adds no migration. Back up first, keep applied migrations unchanged and keep the existing pager active: paging stays OFF.
+
 ## 0.5.10 · 2026-11-12
 
 Move in now explains imported people, schedules, coverage comparisons and differences in plain language, and offers Copy details for support. When an adopted schedule prevents undo, the refusal names the schedule. Agents can search and filter incidents and unlinked alerts within their granted services; this is read-only and remains subject to current authority and company policy. Restoring an installation now pauses agents and expires pending or in-flight approvals before the restored records become available. Retained proposals and history stay readable; resuming agents does not revive an expired approval or replay an old action. The pinned rer remains 0.2.108; this update adds no migration. Back up first, keep applied migrations unchanged and keep the existing pager active: paging stays OFF.
