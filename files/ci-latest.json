@@ -1,0 +1,13 @@
+{
+  "call": 5,
+  "at": "2026-11-13T17:17:32.374706+00:00",
+  "endpoint": "repos/just-every/run-oncall/actions/runs/43467859063",
+  "exit": 0,
+  "run_id": 43467859063,
+  "result": {
+    "conclusion": "success",
+    "head_sha": "551efe44531c876c101ec928b5a93f857976e132",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43467859063",
+    "status": "completed"
+  }
+}

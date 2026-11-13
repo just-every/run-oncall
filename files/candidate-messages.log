@@ -1,0 +1,5 @@
+551efe44531c876c101ec928b5a93f857976e132
+Adopt rer 0.2.113 with a complete edition source lock
+
+Apply the original Base c2efb501 adoption while retaining seed adaptations. Generate the source lock through the frozen installed package after staging both new upstream source files, so the CI lock check sees the complete tracked tree.
+

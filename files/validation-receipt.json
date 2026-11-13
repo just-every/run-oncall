@@ -1,0 +1,87 @@
+{
+  "base_main": "4fa65b7023d8443bdea2e1aed9e46ca4a2467b56",
+  "original_adoption": "4fea74eb96a0ed32ab4e0d8d195312835c053513",
+  "only_original_tree_difference": [
+    "sources.lock.json"
+  ],
+  "contract_files_unchanged": true,
+  "rer_version": "0.2.113",
+  "base_revision": "c2efb501cbc148c2aee4d5e1107ebdba81469006",
+  "base_copy_count": 247,
+  "clauses_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clauses_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "tests_added": 0,
+  "tests_deleted": 0,
+  "status_changes": [],
+  "checks": {
+    "clean_frozen_install": 0,
+    "typecheck": 0,
+    "contract_generator": 0,
+    "installed_package_source_lock": 0,
+    "setup": 0,
+    "production_deploy_dry_run": 0,
+    "export": 0,
+    "populated_import_expected_refusal": 4
+  },
+  "stale_original_lock": "Two newly added tracked source files were absent from files: src/modules/agent-door/policy-event.ts and src/modules/operator-auth/dev/invited.mjs; toolchain hash already matched.",
+  "product_head": "551efe44531c876c101ec928b5a93f857976e132",
+  "product_branch": "cloud/main-oncall-rer-0213-1-c1",
+  "candidate_commits": 1,
+  "identity_check": "passed; no trailers",
+  "source_lock_files_before": 1667,
+  "source_lock_files_after": 1669,
+  "committed_lock_check": true,
+  "product_checkout_clean": true,
+  "product_push": "succeeded on first attempt",
+  "pr": null,
+  "node22_clean_install_and_checks": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "clean_frozen_install": 0,
+    "typecheck": 0,
+    "exact_ci_source_lock_check": 0,
+    "working_tree_changes": false
+  },
+  "contract_byte_receipts": [
+    {
+      "path": "CONTRACT.md",
+      "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+      "byte_identical_to_origin_main": true
+    },
+    {
+      "path": "ACCEPTANCE.md",
+      "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3",
+      "byte_identical_to_origin_main": true
+    },
+    {
+      "path": "docs/CLAIMS.md",
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440",
+      "byte_identical_to_origin_main": true
+    }
+  ],
+  "ci": {
+    "call": 5,
+    "at": "2026-11-13T17:17:32.374706+00:00",
+    "endpoint": "repos/just-every/run-oncall/actions/runs/43467859063",
+    "exit": 0,
+    "run_id": 43467859063,
+    "result": {
+      "conclusion": "success",
+      "head_sha": "551efe44531c876c101ec928b5a93f857976e132",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43467859063",
+      "status": "completed"
+    }
+  },
+  "blockers": [],
+  "terminal_product_state": "READY; fleet landing and publication scan remain separate"
+}
