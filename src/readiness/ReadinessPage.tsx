@@ -34,7 +34,7 @@ function ReadinessPage() {
    </section>
    <section aria-labelledby="matrix-title">
     <h2 id="matrix-title">Release readiness matrix</h2>
-    <dl className="readiness-release"><div><dt>Release</dt><dd>{report.release.package} · {report.release.version}</dd></div><div><dt>Source SHA</dt><dd>{report.release.deployment.sourceSha??'Not bound in this deployment'}</dd></div><div><dt>Artifact fingerprint</dt><dd>{report.release.deployment.fingerprint??'Not bound in this deployment'}</dd></div><div><dt>Deployment version</dt><dd>{report.release.deployment.versionId??'Not bound in this deployment'}</dd></div><div><dt>Observed</dt><dd><time dateTime={report.observedAt}>{shortTime(report.observedAt)}</time></dd></div></dl>
+    <dl className="readiness-release"><div><dt>Release</dt><dd>Oncall {report.release.version}</dd></div><div><dt>Source SHA</dt><dd>{report.release.deployment.sourceSha??'Not bound in this deployment'}</dd></div><div><dt>Artifact fingerprint</dt><dd>{report.release.deployment.fingerprint??'Not bound in this deployment'}</dd></div><div><dt>Deployment version</dt><dd>{report.release.deployment.versionId??'Not bound in this deployment'}</dd></div><div><dt>Observed</dt><dd><time dateTime={report.observedAt}>{shortTime(report.observedAt)}</time></dd></div></dl>
     <p>Working here means maintained coordination behavior. Every live adapter and device still needs external acceptance.</p>
     <div className="panel readiness-matrix">{report.matrix.map(row=><article key={row.id} data-readiness-row={row.id}>
      <div><h3>{row.area}</h3><span className="readiness-state" data-state={row.state}>{label(row.state)}</span></div>

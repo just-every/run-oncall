@@ -35,7 +35,7 @@ curl --fail-with-body ${quote(endpoint)} \\
       catch { setCopied('Select the URL above and copy it.'); }
     }}>Copy ingress URL</button>
     <p>Keep the private key in your sender’s environment, then run this request.</p>
-    {routed ? <p>The source value is this key’s ID, <code>{source}</code>, the same text as the end of the URL. The service value is only a hint: this key’s published routing rules choose the allowed service, so you can keep {service.name}’s internal ID from <a href="/settings/services">Services</a> or use another allowed service’s.</p> : <p>The service value is {service.name}’s internal ID, copied from <a href="/settings/services">Services</a>. The source ID in the URL was assigned when this source was created.</p>}
+    {routed ? <p>This sample is ready for {service.name}. The key’s published routing rules choose the service for each event.</p> : <p>This sample is ready to send events to {service.name}. Its service value is already filled in.</p>}
     <label className="field"><span>Sample request</span><textarea aria-label="Sample request" readOnly value={example} rows={12} spellCheck={false} /></label>
     <button type="button" disabled={!origin || !source} onClick={async () => {
       try { await navigator.clipboard.writeText(example); setCopied('Copied'); }

@@ -1,8 +1,22 @@
+import {nativeName} from '../integrations/native-name';
 import type {State} from "../family/response-operations/domain";
 import {shortTime} from '../reviews/time';
 import {urgencyLabel} from '../reviews/display';
 export function ConfigurationAudit({state: s}: {state: State}) {
-  const references = [...s.services, ...s.members, ...(s.intakeSources??[]), ...(s.changeSources??[]), ...(s.emailAddresses??[]), ...(s.apiClients??[]), ...(s.apiEndpoints??[])].filter(r=>r.id.length>=8&&r.id!==r.name).sort((a,b)=>b.id.length-a.id.length);
+  // Native source display names are encoded in their established identity.
+  // The audit and allowance records keep that identity for exports and erasure.
+  const nativeIds = new Set([
+    ...(s.keyAllowances??[]).filter(row=>row.id.startsWith('source:')).map(row=>row.id.slice(7)),
+    ...s.audit.filter(row=>row.actor.startsWith('source:source:')).map(row=>row.actor.slice(14)),
+  ]);
+  const sourceReferences = [
+    ...(s.intakeSources??[]).flatMap(row=>[
+      {id:'intake:'+row.id,name:row.name},
+      ...(row.id.startsWith('native:')?[{id:'source:'+row.id.slice(7),name:nativeName(row.id.slice(7))}]:[]),
+    ]),
+    ...[...nativeIds].flatMap(id=>[{id:'source:'+id,name:nativeName(id)},{id,name:nativeName(id)}]),
+  ];
+  const references = [...sourceReferences, ...s.services, ...s.members, ...(s.intakeSources??[]), ...(s.changeSources??[]), ...(s.emailAddresses??[]), ...(s.apiClients??[]), ...(s.apiEndpoints??[])].filter(r=>r.id.length>=8&&r.id!==r.name).sort((a,b)=>b.id.length-a.id.length);
   const recordName = (id: string) => {
     const policy = s.policies.find(row => row.id === id);
     return s.services.find(r=>r.id===id)?.name ?? s.members.find(r=>r.id===id)?.name ?? s.incidents.find(r=>r.id===id)?.title ?? s.events.find(r=>r.id===id)?.title ?? s.events.find(e=>s.alerts.find(a=>a.id===id)?.events.includes(e.id))?.title ?? (policy ? `${s.services.find(service=>service.id===policy.service)?.name ?? 'Service'} · ${policy.severity==='*'?'All severities':policy.severity}` : 'Retained record');
@@ -10,7 +24,8 @@ export function ConfigurationAudit({state: s}: {state: State}) {
   const kindLabel = (kind: string) => kind === 'policy' ? 'coordination rule' : kind.replaceAll('-', ' ');
   const description = (entry: State['audit'][number]) => {
     const event = entry.kind==='event' ? s.events.find(e=>entry.actor==='source:'+e.source&&entry.text.startsWith(e.intent+' '+e.eventId+':')) : undefined;
-    const text = event ? `${event.intent==='recover'?'Recovered':'Received'} ${event.title}: ${event.decision.reason}` : entry.text;
+    let text = event ? `${event.intent==='recover'?'Recovered':'Received'} ${event.title}: ${event.decision.reason}` : entry.text;
+    if (entry.kind === 'key-allowance') text = text.replace(/^(Configured allowance for )source:(.+)(: \d+ requests and \d+ new events per rolling minute)$/, (_, before, id, after) => before + nativeName(id) + after);
     let display = text.replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, recordName);
     for(const record of references) {
       const escaped = record.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

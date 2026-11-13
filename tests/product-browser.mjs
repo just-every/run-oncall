@@ -1,3 +1,4 @@
+import {readableNamesBrowser} from './readable-names-browser.mjs'
 import {assertInstallationChecklist} from './readiness.mjs'
 import {nightResponseScenario,assertNightResponse,responseCsvRows} from './response-report-fixture.mjs'
 import {openWorkspaceSection,openHistoryComparison,selectRoutedSource,keyboardUser,focusWorkspace,openIncidentAction} from './keyboard.mjs'
@@ -808,8 +809,10 @@ async function eventsSourceBrowser(page,context) {
   assert.ok(body.key.includes(serviceName)&&!body.key.includes(service),'dedup key describes the named service');
   assert.ok(body.generation.includes(body.observedAt)&&body.eventId.includes(body.generation),'sample observation and lifecycle IDs use a readable timestamp');
   assert.ok(!body.eventId.includes(service)&&!/[a-f0-9]{8}-[a-f0-9]{4}-/i.test(body.eventId),'event identity contains no internal UUID');
-  assert.ok((await details.locator('p').allTextContents()).some(text=>text.includes(serviceName)&&text.includes('internal ID')),'required service ID is explained beside the sample');
-  assert.equal(await details.getByRole('link',{name:'Services',exact:true}).getAttribute('href'),'/settings/services');
+  const setupText=await details.innerText();
+  assert.ok(setupText.includes(serviceName),'the ready-to-copy sample names its service');
+  assert.ok(!setupText.includes(service)&&!setupText.includes(sample.source),'default explanation omits internal identities');
+  assert.ok(!setupText.includes('internal ID'),'setup does not ask the person to look up an internal ID');
   await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
   await proof(sample===source?'readable-bearer-source':'readable-signed-source');
   const {spawn}=await import('node:child_process');
@@ -833,6 +836,7 @@ async function eventsSourceBrowser(page,context) {
   await page.goto(origin+sample.path);assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the original page URL still works after sending');
  }
 
+ await readableNamesBrowser(page,context,{source,service,serviceName});
  console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Detail-page readable source samples copied and executed for bearer and signed, alerts visible, legacy ID retries deduplicated and mismatched identities refused; changed screens captured once at 1440/390.');
  assert.deepEqual(sourceErrors,[],'source recovery has no browser application errors');
  } finally {await sourceContext.close();}
