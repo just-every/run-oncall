@@ -1,0 +1,75 @@
+[
+  {
+    "check": "typecheck",
+    "command": [
+      "pnpm",
+      "exec",
+      "tsc",
+      "--noEmit"
+    ],
+    "settings": {},
+    "start": "2026-11-13T03:58:10.938541+00:00",
+    "seconds": 37.6,
+    "exit": 0,
+    "log": "typecheck.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "check": "runtime-machines",
+    "command": [
+      "node",
+      "tests/runtime.mjs"
+    ],
+    "settings": {
+      "ONCALL_RUNTIME_PART": "machines"
+    },
+    "start": "2026-11-13T03:58:48.524480+00:00",
+    "seconds": 493.4,
+    "exit": 0,
+    "log": "runtime-machines.log",
+    "sha256": "8c703207705a1041242def8a39abfc609e9e8554e87974a7da2664496740a51a"
+  },
+  {
+    "check": "intake",
+    "command": [
+      "node",
+      "tests/intake.mjs"
+    ],
+    "settings": {},
+    "start": "2026-11-13T04:07:01.888038+00:00",
+    "seconds": 76.3,
+    "exit": 0,
+    "log": "intake.log",
+    "sha256": "5e3b64bc7e52a8e86a98a2bd9c3cfceec7e3b34ba81df8d2b2376029bf460b4d"
+  },
+  {
+    "check": "routing",
+    "command": [
+      "node",
+      "tests/routing.mjs"
+    ],
+    "settings": {},
+    "start": "2026-11-13T04:08:18.220419+00:00",
+    "seconds": 119.7,
+    "exit": 0,
+    "log": "routing.log",
+    "sha256": "c2266157a5f1b6c10563a496ee176298ca707e2d03bd84bf2eb2e99a236912cf"
+  },
+  {
+    "check": "api-clients-browser",
+    "command": [
+      "node",
+      "tests/member-coordination-browser.mjs"
+    ],
+    "settings": {
+      "ONCALL_MEMBER_JOURNEY": "api-clients",
+      "ONCALL_CHROMIUM_PATH": "/usr/bin/chromium",
+      "ONCALL_BROWSER_EVIDENCE": "/home/agent/rer-consolidation/work/main-oncall-api-clients-policy-1-c1/packet/browser"
+    },
+    "start": "2026-11-13T04:10:17.877037+00:00",
+    "seconds": 41.6,
+    "exit": 0,
+    "log": "api-clients-browser.log",
+    "sha256": "3628fbf90426a1b91f18e48f5887d309eed0a630a8c268b3cf8063b0bf2ecd2a"
+  }
+]

@@ -1,0 +1,159 @@
+{
+  "driver": "Playwright Chromium /usr/bin/chromium --no-sandbox",
+  "journey_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "reviewed": [
+    "automation-guided-policy-1440.png",
+    "automation-guided-policy-390.png",
+    "automation-reference-1440.png",
+    "automation-reference-390.png",
+    "automation-client-pending-1440.png",
+    "automation-client-pending-390.png"
+  ],
+  "result": "pass",
+  "screenshots": [
+    {
+      "file": "browser/automation-client-actions-1440.png",
+      "width": 1106,
+      "height": 558,
+      "sha256": "4b6a07ffff6593732486dc843e5d1f72549f625a97cb25764f3a0772fe7fd5ec",
+      "bytes": 38931
+    },
+    {
+      "file": "browser/automation-client-actions-390.png",
+      "width": 320,
+      "height": 647,
+      "sha256": "c312ef97326e5ad142b9c0df6798ae22d1feb07ffd9794ef2f5be93ed2909cd0",
+      "bytes": 37384
+    },
+    {
+      "file": "browser/automation-client-pending-1440.png",
+      "width": 1106,
+      "height": 542,
+      "sha256": "d28cd827f86906eab6ca2da8f7bca1b3639a37ee3f26506fc2a6a3587f5eed82",
+      "bytes": 35557
+    },
+    {
+      "file": "browser/automation-client-pending-390.png",
+      "width": 320,
+      "height": 611,
+      "sha256": "40199976df0e07601329d5a8f38857b3bec1e1b4d13cc927bd3daae636c41385",
+      "bytes": 33195
+    },
+    {
+      "file": "browser/automation-conflict-1440.png",
+      "width": 1440,
+      "height": 1718,
+      "sha256": "05ffbe4a83862c23bd2f078f48b98516f7c808c867445342f4819d85320558ff",
+      "bytes": 135684
+    },
+    {
+      "file": "browser/automation-denied-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "0e6f575f701d7576ca56fb9254131b4977c229eaff865bb561214195e3233473",
+      "bytes": 58243
+    },
+    {
+      "file": "browser/automation-docs-audit-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "7f66e48fdf098e2455d2b789298fc8ba8ef4828646d7ad8e7c983ffc357e2a54",
+      "bytes": 705545
+    },
+    {
+      "file": "browser/automation-docs-data-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "a1190544ec889cc6a9a18b348184ff29d13c6ef1c8d297712a4e86c09dc79ab5",
+      "bytes": 507704
+    },
+    {
+      "file": "browser/automation-docs-response-api-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "50b48f519d178ac1e3b2538bb5508eeaa6f2b909a2cb6a6b949744e3f85d3d53",
+      "bytes": 587023
+    },
+    {
+      "file": "browser/automation-erased-member-1440.png",
+      "width": 403,
+      "height": 746,
+      "sha256": "ab63cc57de3ed19f2d6f1d659b29a718a87acf98f5c79818c8f19207aed94e8c",
+      "bytes": 63000
+    },
+    {
+      "file": "browser/automation-erasure-refusal-1440.png",
+      "width": 1440,
+      "height": 1299,
+      "sha256": "0004c97a7164c1af2a0da8eb898a8875efe4309fb8f259f85675025b115024fc",
+      "bytes": 146721
+    },
+    {
+      "file": "browser/automation-guided-policy-1440.png",
+      "width": 1440,
+      "height": 2294,
+      "sha256": "9d904ffe21bd5015ccc82216593188d06b99870d03454bf6059f51b105bbb4a4",
+      "bytes": 147869
+    },
+    {
+      "file": "browser/automation-guided-policy-390.png",
+      "width": 390,
+      "height": 2500,
+      "sha256": "8a08fa9dce02ef9f3bcedda46a949cec4afa954a8a1def2e50dbc23e1813da34",
+      "bytes": 132808
+    },
+    {
+      "file": "browser/automation-machine-attribution-1440.png",
+      "width": 403,
+      "height": 767,
+      "sha256": "d1b87a8cfe8754145f6be516dc203bc213650c3df3db0f99ea17d3e8f19a1aa1",
+      "bytes": 65277
+    },
+    {
+      "file": "browser/automation-policy-unset-1440.png",
+      "width": 1106,
+      "height": 1178,
+      "sha256": "f4df5e881f9c137f8ac9b606c620154ceca6d90d18cedff26158ccb0c3b22c02",
+      "bytes": 61483
+    },
+    {
+      "file": "browser/automation-policy-unset-390.png",
+      "width": 320,
+      "height": 1263,
+      "sha256": "1a31a946c62b3ad189f676afb7bf63200d751b958d3dc00878785dc90e1fe591",
+      "bytes": 56112
+    },
+    {
+      "file": "browser/automation-populated-1440.png",
+      "width": 1106,
+      "height": 389,
+      "sha256": "4b504b12cd6729575a8ebdab78897b91ff5f187c78285bb2500b7e605c0f7e89",
+      "bytes": 26444
+    },
+    {
+      "file": "browser/automation-reference-1440.png",
+      "width": 1440,
+      "height": 7754,
+      "sha256": "cf06d0975436a274b9a8c8e32145bee6ee8f79e24d4b0c769fc49538e102733b",
+      "bytes": 4083220
+    },
+    {
+      "file": "browser/automation-reference-390.png",
+      "width": 390,
+      "height": 12732,
+      "sha256": "97259ee0becfc4fe8946715af14480ad4f8e2306c2babd12074c31803e052d65",
+      "bytes": 2706326
+    },
+    {
+      "file": "browser/automation-uncertain-1440.png",
+      "width": 1106,
+      "height": 550,
+      "sha256": "63f6f22f1d5963712691be5999cabf8571672ff2e3bcbc08ed1de499d5f0fc60",
+      "bytes": 42317
+    }
+  ]
+}

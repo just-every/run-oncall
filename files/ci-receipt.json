@@ -1,0 +1,48 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-api-clients-policy-1-c1",
+  "head": "d04294e0a08ad3916a14fbf6091894fbe3fd8ce4",
+  "run_id": 43363908228,
+  "observations": [
+    {
+      "conclusion": null,
+      "head_sha": "d04294e0a08ad3916a14fbf6091894fbe3fd8ce4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363908228",
+      "status": "in_progress",
+      "run_id": 43363908228,
+      "observed_at": "2026-11-13T04:16:51.694360+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "d04294e0a08ad3916a14fbf6091894fbe3fd8ce4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363908228",
+      "status": "in_progress",
+      "run_id": 43363908228,
+      "observed_at": "2026-11-13T04:21:53.334899+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "d04294e0a08ad3916a14fbf6091894fbe3fd8ce4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363908228",
+      "status": "in_progress",
+      "run_id": 43363908228,
+      "observed_at": "2026-11-13T04:26:54.839257+00:00"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "d04294e0a08ad3916a14fbf6091894fbe3fd8ce4",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363908228",
+      "status": "completed",
+      "run_id": 43363908228,
+      "observed_at": "2026-11-13T04:31:56.364671+00:00"
+    }
+  ],
+  "latest": {
+    "conclusion": "success",
+    "head_sha": "d04294e0a08ad3916a14fbf6091894fbe3fd8ce4",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363908228",
+    "status": "completed",
+    "run_id": 43363908228,
+    "observed_at": "2026-11-13T04:31:56.364671+00:00"
+  }
+}

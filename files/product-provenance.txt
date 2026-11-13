@@ -1,0 +1,22 @@
+commit d04294e0a08ad3916a14fbf6091894fbe3fd8ce4
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Fri Nov 13 04:11:22 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Fri Nov 13 04:11:22 2026 +0000
+
+    Restore guided policy editing and public responder lookup
+
+ agent-surface.json                    | 25 ++++++++++++++++++
+ docs/agents.md                        |  6 +++++
+ docs/response-api.md                  | 16 +++++++++---
+ sources.lock.json                     | 24 ++++++++---------
+ src/agent-door/read-tools.ts          |  5 ++++
+ src/agent-door/rest.ts                |  1 +
+ src/automation/ClientCreate.tsx       |  2 +-
+ src/automation/api.ts                 |  5 ++--
+ src/automation/model.ts               |  2 +-
+ src/modules/agent-door/page-style.ts  | 13 ++++++++--
+ src/modules/agent-door/pages.ts       | 22 ++++++++++++----
+ tests/member-coordination-browser.mjs | 49 ++++++++++++++++++++++++++++++++---
+ tests/runtime.mjs                     | 11 ++++++--
+ 13 files changed, 149 insertions(+), 32 deletions(-)

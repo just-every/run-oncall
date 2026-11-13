@@ -1,0 +1,7 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Owned runtime processes [["5604","5603","MainThread"],["5613","5604","esbuild"],["6089","5604","workerd"],["6095","5604","ps"]]
+Owned runtime processes [["5604","5603","MainThread"],["5613","5604","esbuild"],["6089","5604","workerd"],["6096","5604","chromium"],["6115","6096","chromium"],["6117","6096","chromium"],["6137","6115","chromium"],["6148","6096","chromium"],["6163","6117","chromium"],["6175","5604","ps"]]
+Browser driver PID 5604 runtime proof uses a fresh test-only context
+PASS OC-053 API client saved guided policy editing and public responder acknowledgment, granted service read, pointer rotation/revocation, stale management refusal, outbox and permanent machine attribution at 1440; client screens at 1440 and 390

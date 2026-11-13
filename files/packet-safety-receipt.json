@@ -1,0 +1,9 @@
+{
+  "time": "2026-11-13T04:32:12.027017+00:00",
+  "selected_regular_files_checked": 40,
+  "product_diff_files_checked": 13,
+  "injected_credential_matches": 0,
+  "symlinks": 0,
+  "selection": "Explicit report, receipt, public synthetic test output and browser proof only; no setup log, environment dump, credential file, private held-out material or product evidence commit.",
+  "publication_scan": "Full fleet publication scan remains a Mac lander gate, as required by cloud adaptation."
+}

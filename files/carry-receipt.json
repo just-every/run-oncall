@@ -1,0 +1,120 @@
+{
+  "source_head": "5e80a4c80b97818a58b49203ee94016d5aefdbfa",
+  "source_merge_base": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "main": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "original_files": [
+    "agent-surface.json",
+    "docs/agents.md",
+    "docs/response-api.md",
+    "sources.lock.json",
+    "src/agent-door/read-tools.ts",
+    "src/agent-door/rest.ts",
+    "src/automation/ClientCreate.tsx",
+    "src/automation/api.ts",
+    "src/automation/model.ts",
+    "src/modules/agent-door/page-style.ts",
+    "src/modules/agent-door/pages.ts",
+    "tests/member-coordination-browser.mjs",
+    "tests/runtime.mjs"
+  ],
+  "original_blob_checks": [
+    {
+      "file": "agent-surface.json",
+      "matches_original_blob": true
+    },
+    {
+      "file": "docs/agents.md",
+      "matches_original_blob": true
+    },
+    {
+      "file": "docs/response-api.md",
+      "matches_original_blob": true
+    },
+    {
+      "file": "src/agent-door/read-tools.ts",
+      "matches_original_blob": true
+    },
+    {
+      "file": "src/agent-door/rest.ts",
+      "matches_original_blob": true
+    },
+    {
+      "file": "src/automation/ClientCreate.tsx",
+      "matches_original_blob": true
+    },
+    {
+      "file": "src/automation/api.ts",
+      "matches_original_blob": true
+    },
+    {
+      "file": "src/automation/model.ts",
+      "matches_original_blob": true
+    },
+    {
+      "file": "src/modules/agent-door/page-style.ts",
+      "matches_original_blob": true
+    },
+    {
+      "file": "src/modules/agent-door/pages.ts",
+      "matches_original_blob": true
+    },
+    {
+      "file": "tests/member-coordination-browser.mjs",
+      "matches_original_blob": true
+    },
+    {
+      "file": "tests/runtime.mjs",
+      "matches_original_blob": true
+    }
+  ],
+  "contract_files": [
+    {
+      "file": "CONTRACT.md",
+      "matches_origin_main": true,
+      "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac"
+    },
+    {
+      "file": "ACCEPTANCE.md",
+      "matches_origin_main": true,
+      "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3"
+    },
+    {
+      "file": "docs/CLAIMS.md",
+      "matches_origin_main": true,
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440"
+    }
+  ],
+  "conflicts": false,
+  "carry_fixes": [],
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "additional_tests_beyond_original_round": 0,
+  "product_head": "d04294e0a08ad3916a14fbf6091894fbe3fd8ce4",
+  "single_product_commit": true,
+  "parent": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "product_tree": "aa1ac4c91b26accd4e4c301d9e23b6afc3bd18d9",
+  "worktree_clean": true,
+  "push": "confirmed by guarded push, attempt 1",
+  "verify_run_id": 43363908228,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "browser_review": "API client panel, guided edit and HTTP reference reviewed at both widths; no clipping observed",
+  "contract_files_unchanged": true,
+  "verify_conclusion": "success",
+  "verify_head": "d04294e0a08ad3916a14fbf6091894fbe3fd8ce4",
+  "blockers": [],
+  "product_commits_pushed": 1,
+  "pull_request": null
+}

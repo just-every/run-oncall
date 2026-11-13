@@ -1,0 +1,26 @@
+{
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0,
+    "raw_log_excluded": "setup output can include a local owner entry"
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0,
+    "log": "build.log",
+    "sha256": "0a7d1a2f4c479bbfa243b8c0cd1fd50118636d659f021d14beaf3aa263137898"
+  },
+  "toolchain": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4"
+  },
+  "source_lock": {
+    "regenerate": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "contract_check": {
+    "command": "node src/base/contract-docs.mjs check",
+    "exit": 0
+  }
+}
