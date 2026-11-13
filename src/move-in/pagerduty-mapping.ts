@@ -1,7 +1,7 @@
 import type { MappingResult } from '../modules/import-kit/src/types'
 
 type Difference={field:string;reason:string}
-const retained=(label:string,clause:string)=>`${label}: not converted; original retained for review under ${clause}. No authority is activated.`
+const retained=(label:string,feature:string)=>`${label}: not converted; ${feature} settings are not imported. Original retained for review. No authority is activated.`
 
 /** Contacts carry no country inference, verification or paging authority. */
 export function pagerdutyContacts(user:any) {
@@ -19,7 +19,7 @@ export function pagerdutyContacts(user:any) {
   }
   const number='+'+code+address
   contacts.set(number,{number,verified:false,paging:false,country:'unverified'})
-  unmapped.push({field,reason:`${label}: ${number} retained as unverified E.164; unlisted for paging until OC-026/OC-066 verification and a maintained country list establish coverage. It does not meet two-route coverage; no paging route is created.`})
+  unmapped.push({field,reason:`${label}: ${number} retained as unverified E.164; unlisted for paging until number verification and a maintained country list establish coverage. It does not meet two-route coverage; no paging route is created.`})
  }
  return {contacts:[...contacts.values()],unmapped}
 }
@@ -34,19 +34,19 @@ export function pagerdutyEvidence(kind:string,id:string,value:any):MappingResult
    ...Object.keys(value).filter(field=>!['id','type','name','summary','integrations',...fields].includes(field)).map(field=>({field,reason:`Service ${label}: ${field} retained only.`}))]}
  }
  if(kind==='incidents') {
-  if(value.status==='triggered'||value.status==='acknowledged')return {effects:[],rejection:`Incident ${label} (${id}, ${value.status}): not imported as a live incident. No timeline, delivery or state change is created; original retained for resolution under OC-038.`}
+  if(value.status==='triggered'||value.status==='acknowledged')return {effects:[],rejection:`Incident ${label} (${id}, ${value.status}): not imported as a live incident. No timeline, delivery or state change is created; original retained for review during import.`}
   if(value.status==='resolved')return {effects:[],unmapped:[{field:'history',reason:`Resolved incident ${label} (${id}): retained source evidence only. No native history or timeline is created; imported history never counts as live delivery.`}]}
   return {effects:[],rejection:`Incident ${label} (${id}): unknown status ${value.status??'(missing)'}; export the incident detail again. Original retained; no live state is created.`}
  }
- const clause=({teams:'OC-023',business_services:'OC-061',maintenance_windows:'OC-043',event_orchestrations:'OC-072 routed keys'} as Record<string,string>)[kind]
- if(!clause)return
- const unmapped:Difference[]=[{field:kind,reason:retained(`${kind} ${label} (${id})`,clause)}]
+ const feature=({teams:'Team membership',business_services:'Business service',maintenance_windows:'Maintenance window',event_orchestrations:'Routed integration'} as Record<string,string>)[kind]
+ if(!feature)return
+ const unmapped:Difference[]=[{field:kind,reason:retained(`${kind} ${label} (${id})`,feature)}]
  if(kind==='event_orchestrations') {
   for(const [setIndex,set] of (value.sets??[]).entries())for(const [ruleIndex,rule] of (set.rules??[]).entries()) {
    const field=`sets.${setIndex}.rules.${ruleIndex}`
-   unmapped.push({field,reason:retained(`Orchestration ${id} rule ${rule.label??rule.id??ruleIndex}${rule.actions?.dynamic_route_to?' (dynamic routing)':''}`,clause)})
+   unmapped.push({field,reason:retained(`Orchestration ${id} rule ${rule.label??rule.id??ruleIndex}${rule.actions?.dynamic_route_to?' (dynamic routing)':''}`,feature)})
   }
-  if(value.catch_all!==undefined)unmapped.push({field:'catch_all',reason:retained(`Orchestration ${id} catch-all`,clause)})
+  if(value.catch_all!==undefined)unmapped.push({field:'catch_all',reason:retained(`Orchestration ${id} catch-all`,feature)})
  }
- return {effects:[],rejection:`${kind} ${label} (${id}): not converted; original retained for review under ${clause}. No routed key, maintenance, membership or live service is created.`,unmapped}
+ return {effects:[],rejection:`${retained(`${kind} ${label} (${id})`,feature)} No routed key, maintenance, membership or live service is created.`,unmapped}
 }

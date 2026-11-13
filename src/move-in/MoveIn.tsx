@@ -1,4 +1,5 @@
 import {useEffect,useState,useRef} from 'react'
+import {createPortal} from 'react-dom'
 import {FailureLine,useActionFailure,hasChangeBase} from '../app/FailureLine'
 import {InterruptedTransport} from '../useWorkspace'
 import {IncumbentActivation} from '../intake/IncumbentActivation'
@@ -11,6 +12,7 @@ import { InlineConfirm } from '../app/autosave/InlineConfirm'
 import { readAccount } from './read-client'
 import type { Provider, Region } from './collect/bundle'
 import './move-in.css'
+import { CopyDetails } from './CopyDetails'
 import { ImportJournal } from './ImportJournal'
 import { applyPlan, doorClient, previewFile, reconcilePlan, undoPlan, type Reconciliation } from './door-client'
 
@@ -33,15 +35,17 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  const pending=useRef(0),loadVersion=useRef(0),activeVendor=useRef(vendor)
  activeVendor.current=vendor
  const failures=useActionFailure()
+ const [failureDetails,setFailureDetails]=useState<unknown>(null)
  const door=doorClient(vendor)
 
  const run=async<T,>(action:()=>Promise<T>,options:RunOptions={}):Promise<T|null>=>{
   pending.current++;setBusy(true)
-  failures.clear()
+  failures.clear();setFailureDetails(null)
   try {
    return await action()
   } catch(caught) {
    const error=transportError(caught)
+   setFailureDetails((caught as {details?:unknown})?.details??null)
    const status=statusOf(error)
    const canRetry=options.retryInput===true&&(status===undefined||status>=500)
    failures.show(error,{read:options.read,target:options.read?null:undefined,retry:canRetry?async()=>{
@@ -109,7 +113,7 @@ export function MoveIn({admin,connect,request}:{admin:boolean;connect:boolean;re
  {step===1&&<ConnectStep source={sourceChoice} vendor={vendor} connect={connect} busy={busy}
   choose={value=>{setSourceChoice(value);if(value!=='file')setVendor(value);setPreview(null);failures.clear()}}
   fileVendor={setVendor} read={read} file={file=>{void run(async()=>{await previewBytes(new Uint8Array(await file.arrayBuffer()),file.name)},{read:true})}}/>}
- <FailureLine failure={failures.failure}/>{busy&&<p role="status">Working…</p>}
+ <FailureLine failure={failures.failure}/>{failures.failure&&failureDetails!=null&&(failures.failure.target?.isConnected?createPortal(<CopyDetails value={failureDetails}/>,failures.failure.target):<CopyDetails value={failureDetails}/>)} {busy&&<p role="status">Working…</p>}
  {step===2&&preview&&<ReviewStep preview={preview} bytes={source} filename={filename} busy={busy} back={()=>setStep(1)} next={()=>setStep(3)}/>}
  {step===3&&preview&&!job&&<ImportStep busy={busy} back={()=>setStep(2)} confirm={()=>{
   const planId=preview.planId,fingerprint=preview.fingerprint

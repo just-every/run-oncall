@@ -24,6 +24,32 @@ export async function agentEffectSnapshot({db,http}){
  return {application,records};
 }
 
+/** Read tools may retain agent decisions, approvals and reviews, never native effects. */
+export async function agentReadSnapshot({db,http}) {
+ const response=await http('/api/state');assert.equal(response.status,200);
+ const names=(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").all()).results
+  .map(row=>row.name).filter(name=>/^(oc_|paging_|workspace_|sources$|sessions$|credentials$|operator_members$)/.test(name));
+ const rows=await db.batch(names.map(name=>db.prepare('SELECT * FROM "'+name.replaceAll('"','""')+'"')));
+ return {application:await response.json(),records:Object.fromEntries(rows.map((row,index)=>[names[index],row.results
+  .sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]))};
+}
+
+/** Read decision custody may append value-free audit, never native effects. */
+export function assertAgentReadUnchanged(before,after){
+ assert.deepEqual(after.application,before.application,'Reads preserve application records and revisions');
+ for(const [name,rows] of Object.entries(before.records)){
+  if(['oc_admin_audit','oc_audit_clock','oc_audit_identities'].includes(name))continue;
+  assert.deepEqual(after.records[name],rows,'Reads preserve native table '+name);
+ }
+ const prior=new Map(before.records.oc_admin_audit.map(row=>[row.id,row]));
+ for(const [id,row] of prior)assert.deepEqual(after.records.oc_admin_audit.find(row=>row.id===id),row,'Existing permanent audit is immutable');
+ for(const row of after.records.oc_admin_audit.filter(row=>!prior.has(row.id))){
+  assert.equal(row.kind,'agent-door.persistence','Only documented read decision custody appends native audit');
+  for(const family of ['workspace','paging','handoff'])assert.equal(row[family+'_before'],row[family+'_after']);
+ }
+ for(const row of before.records.oc_audit_identities)assert.deepEqual(after.records.oc_audit_identities.find(value=>value.kind===row.kind&&value.entity_id===row.entity_id),row);
+}
+
 /** Real emitted Worker, native D1 and native owner lifecycle; only paid egress is replaced. */
 export async function agentRuntime({clock}={}){
  let platformTime=clock;
@@ -76,6 +102,28 @@ export async function agentRuntime({clock}={}){
    const {url,init}=await mcpRequest(method,params,overrides,bearer,transport),response=await request(url,init);
    const body=await response.json();return {status:response.status,headers:response.headers,body,message:body,result:body.result,decision:body.result?._meta?.['com.runeditrun/decision']??body.error?.data?._meta?.['com.runeditrun/decision']};
   }
+  async function completeResource(uri,{bearer,overrides={}}={}){
+   const initial=await mcp('resources/read',{uri},overrides,bearer);
+   let answer=initial;
+   if(initial.body.error?.data?.code==='approval_required'){
+    assert.equal(initial.result,undefined,'Held resource content remains withheld');
+    const handle=initial.body.error.data.approval;
+    const view=await http('/agents/api/approvals/'+handle.id);
+    assert.equal(view.status,200);
+    const {approval}=await view.json();
+    assert.equal(approval.decision_id,initial.decision.id);
+    assert.equal(approval.revision,context.revision);
+    assert.match(approval.summary_sha256,/^[a-f0-9]{64}$/);
+    const approved=await http('/agents/api/approvals/'+handle.id+'/approve',{revision:approval.revision,summary_sha256:approval.summary_sha256});
+    assert.equal(approved.status,200);
+    assert.equal((await approved.json()).approval.state,'executed');
+    answer=await mcp('resources/read',{uri,requestState:initial.body.error.data.requestState},overrides,bearer);
+   }
+   assert.equal(answer.status,200,uri);
+   assert.equal(answer.body.error,undefined,uri+' '+JSON.stringify(answer.body.error));
+   assert.equal(answer.result.contents.length,1,uri);
+   return {initial,answer,content:answer.result.contents[0],value:JSON.parse(answer.result.contents[0].text)};
+  }
   async function discardToolResponse(name,args,overrides={}){
    const {id,url,init}=await mcpRequest('tools/call',{name,arguments:args},overrides);
    // Use the real HTTP socket, with no body consumer or JSON parser attached.
@@ -98,7 +146,7 @@ export async function agentRuntime({clock}={}){
   const mcpWithToken=(token,method,params={})=>mcp(method,params,{},token);
   const tool=(name,args,overrides,bearer)=>mcp('tools/call',{name,arguments:args},overrides,bearer);
   await settings();
-  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,renewPolicy,mcp,mcpWithToken,tool,discardToolResponse,fixtures,async time(at){await runtime.time(at);platformTime=at}};
+  return {...runtime,request,http,agentHttp,cookie,context,settings,adopt,renewPolicy,mcp,mcpWithToken,tool,completeResource,discardToolResponse,fixtures,async time(at){await runtime.time(at);platformTime=at}};
  }catch(error){await runtime.close();throw error}
 }
 

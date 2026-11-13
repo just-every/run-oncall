@@ -24,7 +24,7 @@ const headers = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosnif
 const aVendor = (vendor: string) => (vendor==='opsgenie'?'an ':'a ')+vendorName(vendor)
 const answer = (value: unknown, status = 200) => Response.json(value, { status, headers })
 // Every Oncall refusal carries its sentence and a code, so the screen shows the sentence exactly as written.
-const refusal = (fault: Fault) => answer({ error: fault.message, code: fault instanceof Refusal ? fault.code : 'SOURCE_REFUSED' }, fault.status)
+const refusal = (fault: Fault) => answer({ error: fault.message, code: fault instanceof Refusal ? fault.code : 'SOURCE_REFUSED', ...(fault instanceof Refusal && fault.details ? {details:fault.details} : {}) }, fault.status)
 const code = async (response: Response) => (await response.clone().json().catch(() => ({})) as { error?: string }).error
 
 /** The current administrator's own session, checked in the same database as every write: Oncall's move-in authority. */
