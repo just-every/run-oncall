@@ -26,26 +26,29 @@ export function ChangeSourceTest({ source, busy, run }: { source: ChangeSource; 
   const [origin,setOrigin]=useState('');
   useEffect(()=>setOrigin(location.origin),[]);
   const [example]=useState(()=>{const eventId=newIdentity('change');return {eventId,body:payloadFor(source,'Service deployed',eventId,'YOUR_PRIVATE_KEY',new Date().toISOString())};});
-  const auth=source.provider==='native'&&source.mode==='bearer'?"headers.authorization = 'Bearer ' + key;":source.provider==='github'?`headers['x-github-event'] = 'deployment';
-headers['x-github-delivery'] = eventId;
-headers['x-hub-signature-256'] = 'sha256=' + createHmac('sha256', key).update(body).digest('hex');`:source.provider==='gitlab'?`headers['x-gitlab-event'] = 'Deployment Hook';
-headers['webhook-id'] = eventId;
-headers['webhook-timestamp'] = timestamp;
-headers['webhook-signature'] = 'v1,' + createHmac('sha256', Buffer.from(key.slice(6), 'base64')).update(eventId + '.' + timestamp + '.' + body).digest('base64');`:source.provider==='terraform'?"headers['x-tfe-notification-signature'] = createHmac('sha512', key).update(body).digest('hex');":source.provider==='pagerduty'?'':`headers['x-oncall-timestamp'] = timestamp;
-headers['x-oncall-signature'] = createHmac('sha256', key).update(timestamp + '.' + body).digest('hex');`;
-  const sample=`import { createHmac } from 'node:crypto';
-const key = process.env.ONCALL_SOURCE_KEY;
-if (!key) throw Error('Set your private source key before running this request');
-const eventId = ${JSON.stringify(example.eventId)};
-const payload = ${JSON.stringify(example.body,null,2)};
-${source.provider==='pagerduty'?'payload.routing_key = key;\n':''}const body = JSON.stringify(payload);
-const timestamp = String(Math.floor(Date.now() / 1000));
-const headers = { 'content-type': 'application/json' };
-${auth}
-const response = await fetch(${JSON.stringify(origin+path)}, { method: 'POST', headers, body });
-console.log(response.status, await response.text());
-if (!response.ok) process.exitCode = 1;`;
-  const commands = `export ONCALL_SOURCE_KEY='PASTE_YOUR_PRIVATE_KEY'\nnode send.mjs`;
+  const quote = (value: string) => "'" + value.replace(/'/g, "'\\''") + "'";
+  const hex = "od -An -v -tx1 | tr -d ' \\n'";
+  const body = source.provider === 'pagerduty'
+    ? `key_json=$(printf '%s' "$ONCALL_SOURCE_KEY" | awk '\nBEGIN { printf "\\\"" }\n{\n  if (NR > 1) printf "\\\\n"\n  for (i = 1; i <= length($0); i++) {\n    c = substr($0, i, 1)\n    if (c == "\\\\" || c == "\\\"") printf "\\\\%s", c\n    else {\n      control = 0\n      for (j = 1; j < 32; j++) if (c == sprintf("%c", j)) control = j\n      if (control) printf "\\\\u%04x", control\n      else printf "%s", c\n    }\n  }\n}\nEND { printf "\\\"" }')\nbody=${quote(JSON.stringify({...example.body, routing_key: undefined}).replace(/}$/, ',"routing_key":'))}"$key_json"'}'`
+    : `body=${quote(JSON.stringify(example.body, null, 2))}`;
+  const auth = source.provider === 'native' && source.mode === 'bearer'
+    ? `  -H "Authorization: Bearer $ONCALL_SOURCE_KEY"`
+    : source.provider === 'github'
+      ? `  -H 'x-github-event: deployment' \\\n  -H "x-github-delivery: $eventId" \\\n  -H "x-hub-signature-256: sha256=$signature"`
+      : source.provider === 'gitlab'
+        ? `  -H 'x-gitlab-event: Deployment Hook' \\\n  -H "webhook-id: $eventId" \\\n  -H "webhook-timestamp: $timestamp" \\\n  -H "webhook-signature: v1,$signature"`
+        : source.provider === 'terraform'
+          ? `  -H "x-tfe-notification-signature: $signature"`
+          : source.provider === 'pagerduty' ? ''
+            : `  -H "x-oncall-timestamp: $timestamp" \\\n  -H "x-oncall-signature: $signature"`;
+  const signing = source.provider === 'native' && source.mode === 'bearer' || source.provider === 'pagerduty' ? ''
+    : source.provider === 'gitlab'
+      ? `timestamp=$(date +%s)\nkey_hex=$(printf '%s' "\${ONCALL_SOURCE_KEY#whsec_}" | openssl base64 -d -A | ${hex})\nsignature=$(printf '%s.%s.%s' "$eventId" "$timestamp" "$body" | openssl dgst -sha256 -mac HMAC -macopt "hexkey:$key_hex" -binary | openssl base64 -A)\n`
+      : source.provider === 'github' || source.provider === 'terraform'
+        ? `signature=$(printf '%s' "$body" | openssl dgst -${source.provider === 'terraform' ? 'sha512' : 'sha256'} -hmac "$ONCALL_SOURCE_KEY" -binary | ${hex})\n`
+        : `timestamp=$(date +%s)\nsignature=$(printf '%s.%s' "$timestamp" "$body" | openssl dgst -sha256 -hmac "$ONCALL_SOURCE_KEY" -binary | ${hex})\n`;
+  const sample = `set -eu\n: "\${ONCALL_SOURCE_KEY:?Set ONCALL_SOURCE_KEY privately first}"\neventId=${quote(example.eventId)}\n${body}\n${signing}curl --fail-with-body ${quote(origin + path)} \\\n  -H 'Content-Type: application/json' \\\n${auth ? auth + ' \\\n' : ''}  --data-binary "$body"`;
+  const commands = `export ONCALL_SOURCE_KEY='PASTE_YOUR_PRIVATE_KEY'\nsh send.sh`;
   const copy = async (text: string, done: string) => { try { await navigator.clipboard.writeText(text); setCopied(done); } catch { setCopied('Select the text above and copy it.'); } };
 
   return <>
@@ -69,11 +72,11 @@ if (!response.ok) process.exitCode = 1;`;
       return false;
     }}><label className="field">Private key<input type="password" autoComplete="off" required value={secret} onChange={e => setSecret(e.target.value)} /></label>{source.provider!=='terraform'&&<label className="field">Title<input required maxLength={300} value={title} onChange={e => setTitle(e.target.value)} /></label>}</Form></details>
     <details><summary>Sample request</summary>
-      <p>This sends one change event to this source from your own machine. It needs Node 22 or newer: check with <code>node --version</code>, or get it from <a href="https://nodejs.org/en/download">nodejs.org</a>.</p>
+      <p>This sends one change event from your own machine using curl, OpenSSL and standard shell tools on macOS, Linux or WSL. No Node.js is needed. Check <code>curl --version</code> and <code>openssl version</code> first.</p>
       <ol>
-        <li>Save this sample as <code>send.mjs</code>.<label className="field">Sample request<textarea aria-label="Sample request" readOnly rows={12} spellCheck={false} value={sample}/></label><button type="button" disabled={!origin} onClick={() => copy(sample, 'Copied')}>Copy sample request</button></li>
+        <li>Save this sample as <code>send.sh</code>.<label className="field">Sample request<textarea aria-label="Sample request" readOnly rows={12} spellCheck={false} value={sample}/></label><button type="button" disabled={!origin} onClick={() => copy(sample, 'Copied')}>Copy sample request</button></li>
         <li>In a terminal in the same folder, set the private key you copied when you created this source, then run the file.<pre tabIndex={0}>{commands}</pre><button type="button" onClick={() => copy(commands, 'Commands copied')}>Copy run commands</button></li>
-        <li>A new change prints <code>201</code> (<code>202</code> for PagerDuty-compatible sources) and the receipt. Running the same file again is a duplicate of the same <code>eventId</code>; edit it to send another.</li>
+        <li>A successful request prints a JSON receipt. Running the same file again returns the same change; edit the event identity and payload to send another. A refused request prints an error and exits unsuccessfully.</li>
       </ol>
       {copied && <p role="status">{copied}</p>}</details>
   </>;
