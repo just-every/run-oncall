@@ -1,0 +1,43 @@
+{
+  "repository": "just-every/run-oncall",
+  "run_id": 43365038458,
+  "required_workflow": "Verify",
+  "head": "a958359fd0641c8521dac53446e239aa48e3c950",
+  "status": "completed",
+  "conclusion": "success",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43365038458",
+  "observations": [
+    {
+      "conclusion": null,
+      "head_sha": "a958359fd0641c8521dac53446e239aa48e3c950",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43365038458",
+      "id": 43365038458,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "a958359fd0641c8521dac53446e239aa48e3c950",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43365038458",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "a958359fd0641c8521dac53446e239aa48e3c950",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43365038458",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "a958359fd0641c8521dac53446e239aa48e3c950",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43365038458",
+      "status": "completed"
+    }
+  ],
+  "github_calls": 4,
+  "budget": 10,
+  "poll_spacing_seconds_minimum": 300,
+  "generator_failure_exception_used": false,
+  "failed_jobs_retried": false,
+  "coverage": "Full Verify; changed product source does not qualify for docs-only readers; configured push matrix includes intake and its aggregate requires all selected shards successful"
+}

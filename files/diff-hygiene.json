@@ -1,0 +1,14 @@
+{
+  "scope": "Seven explicitly changed product/test/lock files only; full publication scan belongs to fleet lander",
+  "patterns": "GitHub token formats and private-key headers",
+  "files": [
+    "sources.lock.json",
+    "src/business-status/StatusAudience.tsx",
+    "src/business-status/StatusPanel.tsx",
+    "src/business-status/model.ts",
+    "src/reviews/work.css",
+    "tests/member-coordination-browser.mjs",
+    "tests/triage.mjs"
+  ],
+  "matches": 0
+}

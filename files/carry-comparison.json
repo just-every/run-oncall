@@ -1,0 +1,32 @@
+{
+  "base": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "original": "8998e689a1888d8335efc30e6a14afff7cbc7557",
+  "main": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "files": [
+    {
+      "path": "src/business-status/StatusAudience.tsx",
+      "identical_to_original": true
+    },
+    {
+      "path": "src/business-status/StatusPanel.tsx",
+      "identical_to_original": true
+    },
+    {
+      "path": "src/business-status/model.ts",
+      "identical_to_original": true
+    },
+    {
+      "path": "src/reviews/work.css",
+      "identical_to_original": true
+    },
+    {
+      "path": "tests/member-coordination-browser.mjs",
+      "identical_to_original": true
+    },
+    {
+      "path": "tests/triage.mjs",
+      "identical_to_original": true
+    }
+  ],
+  "integrated_main": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2"
+}

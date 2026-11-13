@@ -1,0 +1,14 @@
+[
+  {
+    "name": "setup",
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit_code": 0,
+    "result": "RER_SETUP_READY; local owner setup and migrations complete"
+  },
+  {
+    "name": "build",
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit_code": 0,
+    "result": "Production Worker and deployment specification generated"
+  }
+]

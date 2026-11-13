@@ -1,0 +1,22 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-followup-audience-1-c1",
+  "head": "a958359fd0641c8521dac53446e239aa48e3c950",
+  "parent": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2",
+  "tree": "aa068dc1ee0d9d510976adeaa26738b6c54663b3",
+  "candidate_commits": 1,
+  "merge_commits": 0,
+  "changed_files": [
+    "sources.lock.json",
+    "src/business-status/StatusAudience.tsx",
+    "src/business-status/StatusPanel.tsx",
+    "src/business-status/model.ts",
+    "src/reviews/work.css",
+    "tests/member-coordination-browser.mjs",
+    "tests/triage.mjs"
+  ],
+  "diff_stat": "sources.lock.json                      | 14 +++++++-----\n src/business-status/StatusAudience.tsx | 36 +++++++++++++++++++++++++++++\n src/business-status/StatusPanel.tsx    |  4 +++-\n src/business-status/model.ts           | 14 ++++++++++--\n src/reviews/work.css                   |  7 ------\n tests/member-coordination-browser.mjs  | 41 +++++++++++++++++++++++++++++++++-\n tests/triage.mjs                       | 24 +++++++++++++++++++-\n 7 files changed, 123 insertions(+), 17 deletions(-)",
+  "remote_head_verified": true,
+  "pr": null,
+  "push_log": "fleet Git: removed 0 credential-bearing GitHub URL rewrite sections\nPUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/main-oncall-followup-audience-1-c1\nPUSH_CREDENTIAL sha256_16=8addacf6ac95b0bc bundle_file_age_seconds=1696 token_issue_age=unknown\nfleet Git: removed 0 credential-bearing GitHub URL rewrite sections\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\nCandidate identity, messages and trailers: PASS; all candidate commits inspected\nTo https://github.com/just-every/run-oncall\n*\tHEAD:refs/heads/cloud/main-oncall-followup-audience-1-c1\t[new branch]\nDone\nremote: \nremote: Create a pull request for 'cloud/main-oncall-followup-audience-1-c1' on GitHub by visiting:        \nremote:      https://github.com/just-every/run-oncall/pull/new/cloud/main-oncall-followup-audience-1-c1        \nremote: \nremote: GitHub found 32 vulnerabilities on just-every/run-oncall's default branch (16 high, 14 moderate, 2 low). To find out more, visit:        \nremote:      https://github.com/just-every/run-oncall/security/dependabot        \nremote: \nPUSH_OK branch=cloud/main-oncall-followup-audience-1-c1\n"
+}

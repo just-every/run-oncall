@@ -1,0 +1,10 @@
+{
+  "viewport": 390,
+  "steps": [
+    "390: ordinary pointer click opens Add evidence; submission and human acceptance complete the follow-up",
+    "390: stakeholder created after the service can be granted, subscribed, retained after reload, and removed with subscription stopped"
+  ],
+  "exit_code": 0,
+  "product_head": "a958359fd0641c8521dac53446e239aa48e3c950",
+  "base": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2"
+}

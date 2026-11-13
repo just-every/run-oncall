@@ -1,0 +1,95 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "settings": {},
+    "started_at": "2026-11-13T03:59:14.601795+00:00",
+    "seconds": 17.43,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-typecheck.log",
+    "archived_output": "local-check-output-initial.txt",
+    "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73"
+  },
+  {
+    "name": "triage-storm",
+    "command": [
+      "node",
+      "tests/triage.mjs"
+    ],
+    "settings": {
+      "ONCALL_TRIAGE_PART": "storm"
+    },
+    "started_at": "2026-11-13T03:59:32.029060+00:00",
+    "seconds": 49.33,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-triage-storm.log",
+    "archived_output": "local-check-output-initial.txt",
+    "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73"
+  },
+  {
+    "name": "member-coordination-browser",
+    "command": [
+      "node",
+      "tests/member-coordination-browser.mjs"
+    ],
+    "settings": {
+      "ONCALL_CHROMIUM_PATH": "/usr/bin/chromium",
+      "CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium",
+      "ONCALL_BROWSER_EVIDENCE": "/home/agent/rer-consolidation/work/main-oncall-followup-audience-1-c1/packet/browser"
+    },
+    "started_at": "2026-11-13T04:00:21.363248+00:00",
+    "seconds": 158.71,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-member-coordination-browser.log",
+    "archived_output": "local-check-output-initial.txt",
+    "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73"
+  },
+  {
+    "name": "intake-machines",
+    "command": [
+      "node",
+      "tests/runtime.mjs"
+    ],
+    "settings": {
+      "ONCALL_RUNTIME_PART": "machines"
+    },
+    "started_at": "2026-11-13T04:03:00.078756+00:00",
+    "seconds": 508.24,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-intake-machines.log",
+    "archived_output": "local-check-output-initial.txt",
+    "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73"
+  },
+  {
+    "name": "intake",
+    "command": [
+      "node",
+      "tests/intake.mjs"
+    ],
+    "settings": {},
+    "started_at": "2026-11-13T04:11:28.321213+00:00",
+    "seconds": 80.09,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-intake.log",
+    "archived_output": "local-check-output-initial.txt",
+    "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73"
+  },
+  {
+    "name": "routing",
+    "command": [
+      "node",
+      "tests/routing.mjs"
+    ],
+    "settings": {},
+    "started_at": "2026-11-13T04:12:48.409085+00:00",
+    "seconds": 144.38,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-routing.log",
+    "archived_output": "local-check-output-initial.txt",
+    "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73"
+  }
+]

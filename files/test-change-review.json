@@ -1,0 +1,16 @@
+[
+  {
+    "path": "tests/member-coordination-browser.mjs",
+    "removed_lines": [
+      " await statusPanel.getByRole('group',{name:'Stakeholder audience',exact:true}).getByRole('checkbox',{name:sam.name,exact:true}).check()"
+    ],
+    "explanation": "Existing browser creation-time audience selection is replaced by the stronger grant-after-creation, subscribe, reload, revoke and regrant flow; triage creation names a separate communications owner to exercise admin-only audience edits. No registration is added, removed or skipped."
+  },
+  {
+    "path": "tests/triage.mjs",
+    "removed_lines": [
+      "  ok(await req('/api/status',{action:'create',name:'Checkout',owningTeam:'Payments',supporting:[statusService.id],communicationsOwner:actor.id,audience:[statusMember.id],highUrgencyImpact:true}));"
+    ],
+    "explanation": "Existing browser creation-time audience selection is replaced by the stronger grant-after-creation, subscribe, reload, revoke and regrant flow; triage creation names a separate communications owner to exercise admin-only audience edits. No registration is added, removed or skipped."
+  }
+]

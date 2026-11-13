@@ -1,0 +1,105 @@
+[
+  {
+    "name": "build-after-main",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "settings": {},
+    "started_at": "2026-11-13T04:16:32.713940+00:00",
+    "seconds": 12.62,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-build-after-main.log",
+    "base": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2",
+    "archived_output": "local-check-output-after-main.txt",
+    "tested_product_content": "a958359fd0641c8521dac53446e239aa48e3c950"
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "settings": {},
+    "started_at": "2026-11-13T04:16:45.337242+00:00",
+    "seconds": 4.98,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-typecheck.log",
+    "base": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2",
+    "archived_output": "local-check-output-after-main.txt",
+    "tested_product_content": "a958359fd0641c8521dac53446e239aa48e3c950"
+  },
+  {
+    "name": "triage-storm",
+    "command": [
+      "node",
+      "tests/triage.mjs"
+    ],
+    "settings": {
+      "ONCALL_TRIAGE_PART": "storm"
+    },
+    "started_at": "2026-11-13T04:16:50.313917+00:00",
+    "seconds": 49.64,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-triage-storm.log",
+    "base": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2",
+    "archived_output": "local-check-output-after-main.txt",
+    "tested_product_content": "a958359fd0641c8521dac53446e239aa48e3c950"
+  },
+  {
+    "name": "member-coordination-browser",
+    "command": [
+      "node",
+      "tests/member-coordination-browser.mjs"
+    ],
+    "settings": {
+      "ONCALL_CHROMIUM_PATH": "/usr/bin/chromium",
+      "CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium",
+      "ONCALL_BROWSER_EVIDENCE": "/home/agent/rer-consolidation/work/main-oncall-followup-audience-1-c1/packet/browser"
+    },
+    "started_at": "2026-11-13T04:17:39.953574+00:00",
+    "seconds": 200.95,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-member-coordination-browser.log",
+    "base": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2",
+    "archived_output": "local-check-output-after-main.txt",
+    "tested_product_content": "a958359fd0641c8521dac53446e239aa48e3c950"
+  },
+  {
+    "name": "intake-machines",
+    "command": [
+      "node",
+      "tests/runtime.mjs"
+    ],
+    "settings": {
+      "ONCALL_RUNTIME_PART": "machines"
+    },
+    "started_at": "2026-11-13T04:21:00.902747+00:00",
+    "seconds": 549.73,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-intake-machines.log",
+    "base": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2",
+    "archived_output": "local-check-output-after-main.txt",
+    "tested_product_content": "a958359fd0641c8521dac53446e239aa48e3c950"
+  },
+  {
+    "name": "phone-proof",
+    "command": [
+      "node",
+      "/tmp/oncall-phone-proof.mjs"
+    ],
+    "settings": {
+      "ONCALL_BROWSER_EVIDENCE": "/home/agent/rer-consolidation/work/main-oncall-followup-audience-1-c1/packet/browser"
+    },
+    "started_at": "2026-11-13T04:30:10.639398+00:00",
+    "seconds": 36.73,
+    "exit_code": 0,
+    "raw_log": "/tmp/oncall-phone-proof.log",
+    "base": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2",
+    "archived_output": "local-check-output-after-main.txt",
+    "tested_product_content": "a958359fd0641c8521dac53446e239aa48e3c950"
+  }
+]

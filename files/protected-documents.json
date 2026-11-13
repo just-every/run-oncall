@@ -1,0 +1,20 @@
+[
+  {
+    "path": "CONTRACT.md",
+    "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+    "byte_identical_to_origin_main": true,
+    "origin_main": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2"
+  },
+  {
+    "path": "ACCEPTANCE.md",
+    "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3",
+    "byte_identical_to_origin_main": true,
+    "origin_main": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2"
+  },
+  {
+    "path": "docs/CLAIMS.md",
+    "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440",
+    "byte_identical_to_origin_main": true,
+    "origin_main": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2"
+  }
+]

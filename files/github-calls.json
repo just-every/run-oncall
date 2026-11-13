@@ -1,0 +1,54 @@
+[
+  {
+    "call": 1,
+    "time": 1794543722.2844312,
+    "at": "2026-11-13T04:22:02.284436+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs?head_sha=a958359fd0641c8521dac53446e239aa48e3c950&per_page=100",
+      "--jq",
+      ".workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}"
+    ],
+    "watcher_poll": true,
+    "exit_code": 0
+  },
+  {
+    "call": 2,
+    "time": 1794544053.401143,
+    "at": "2026-11-13T04:27:33.401147+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43365038458",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "watcher_poll": true,
+    "exit_code": 0
+  },
+  {
+    "call": 3,
+    "time": 1794544356.2058928,
+    "at": "2026-11-13T04:32:36.205897+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43365038458",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "watcher_poll": true,
+    "exit_code": 0
+  },
+  {
+    "call": 4,
+    "time": 1794544663.2230277,
+    "at": "2026-11-13T04:37:43.223050+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43365038458",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "watcher_poll": true,
+    "exit_code": 0
+  }
+]

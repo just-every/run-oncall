@@ -1,0 +1,22 @@
+{
+  "initial_main": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "integrated_main": "8976d008fa2ff43d9ccb3eed6ff94acaedb86cf2",
+  "method": "Preserved unpublished squash with fleet-authored stash; fast-forward rebase of branch base onto new main; reapplied staged squash cleanly",
+  "conflicts": [],
+  "carried_code_changes_required": false,
+  "retained_main_files": [
+    "agent-surface.json",
+    "docs/agents.md",
+    "scripts/write-agent-surface.mjs",
+    "sources.lock.json",
+    "src/agent-door/index.server.ts",
+    "src/agent-door/resources.ts",
+    "tests/agent-door-browser.mjs",
+    "tests/agent-door-runtime.mjs",
+    "tests/oncall-agent-fixtures.mjs",
+    "tests/oncall-agent-flow.mjs",
+    "tests/oncall-agent-native.mjs",
+    "tests/oncall-agent-resources.mjs",
+    "tests/oncall-agent-transport.mjs"
+  ]
+}
