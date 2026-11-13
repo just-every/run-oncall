@@ -1,0 +1,13 @@
+{
+  "name": "routing",
+  "command": [
+    "node",
+    "tests/routing.mjs"
+  ],
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "started": "2026-11-13T04:14:01.888502+00:00",
+  "finished": "2026-11-13T04:16:50.076104+00:00",
+  "seconds": 168.19,
+  "exit": 0,
+  "log": "routing.log"
+}

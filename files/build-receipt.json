@@ -1,0 +1,15 @@
+{
+  "name": "build",
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "build"
+  ],
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "started": "2026-11-13T04:00:48.076327+00:00",
+  "finished": "2026-11-13T04:01:01.242115+00:00",
+  "seconds": 13.17,
+  "exit": 0,
+  "log": "build.log"
+}

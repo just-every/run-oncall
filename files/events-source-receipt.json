@@ -1,0 +1,17 @@
+{
+  "name": "events-source",
+  "command": [
+    "env",
+    "ONCALL_PRODUCT_JOURNEY=events-source",
+    "ONCALL_CHROMIUM_PATH=/usr/bin/chromium",
+    "ONCALL_BROWSER_EVIDENCE=/home/agent/rer-consolidation/work/main-oncall-test-event-results-1-c1/packet/browser",
+    "node",
+    "tests/product-browser.mjs"
+  ],
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "started": "2026-11-13T04:01:05.571055+00:00",
+  "finished": "2026-11-13T04:01:52.710553+00:00",
+  "seconds": 47.14,
+  "exit": 0,
+  "log": "events-source.log"
+}

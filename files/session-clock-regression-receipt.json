@@ -1,0 +1,12 @@
+{
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "suite": "ONCALL_RUNTIME_PART=machines node tests/runtime.mjs",
+  "suite_exit": 0,
+  "main_fixture_unchanged": true,
+  "prior_failure": "tests/oncall-agent-fixtures.mjs analyticsFixture: expired frozen-clock session returned 401 instead of 200",
+  "actual_success_lines": [
+    "PROBE SURFACE-001 1 autonomous: analytics MCP response equals native report; one-service cohort 2, measured MTTA 60s, 3600 primary and backup seconds, 3 triggers; full readiness equals native item by item; scoped readiness and foreign service refuse without disclosure; REST counts unchanged, computed policy parity, documented read audit only and zero outbound requests",
+    "PROBE SURFACE-001 1 held: analytics MCP response equals native report; one-service cohort 2, measured MTTA 60s, 3600 primary and backup seconds, 3 triggers; full readiness equals native item by item; scoped readiness and foreign service refuse without disclosure; REST counts unchanged, computed policy parity, documented read audit only and zero outbound requests",
+    "PASS scoped response analytics and readiness: both policies, native reports and fixed nonempty figures, service isolation before totals, permission and revocation refusal, unchanged native state, zero outbound requests"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "budget": 10,
+  "used": 5,
+  "calls": [
+    {
+      "number": 1,
+      "at": 1794542648.945431,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs?head_sha=4397efcb37f73ca21efe4eef872c5fa7b4cee1cb&per_page=100",
+        "--jq",
+        ".workflow_runs | map({id,name,status,conclusion,head_sha,html_url})"
+      ]
+    },
+    {
+      "number": 2,
+      "at": 1794542948.9809906,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43363012811",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "number": 3,
+      "at": 1794543249.0235405,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43363012811",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "number": 4,
+      "at": 1794543549.0908797,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43363012811",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "number": 5,
+      "at": 1794543849.144189,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-oncall/actions/runs/43363012811",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    }
+  ],
+  "polling": "One watcher; run observations at least 300 seconds apart, including discovery. No failed-job log reads or reruns were needed."
+}

@@ -1,0 +1,18 @@
+{
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "candidate_commits_including_side_parents": [
+    "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb"
+  ],
+  "identities": "fleet author and committer on every commit",
+  "trailers": "none",
+  "diff_scope": [
+    "sources.lock.json",
+    "src/integrations/SourcePage.tsx",
+    "src/integrations/SourceTest.tsx",
+    "src/integrations/key-refusals.ts",
+    "tests/product-browser.mjs"
+  ],
+  "diff_credential_shape_check": "passed",
+  "full_fleet_publication_scan": "Mac lander prerequisite; cloud brief excludes Mac scan tooling",
+  "worktree": "clean"
+}

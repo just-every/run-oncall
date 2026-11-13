@@ -1,0 +1,26 @@
+{
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "parent": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "main": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "source": "b9e47fa70881e514b14d3ffed5a224bc7d1c6b5f",
+  "merge_base": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "carried_diff_byte_identical": true,
+  "carried_paths": [
+    "src/integrations/SourcePage.tsx",
+    "src/integrations/SourceTest.tsx",
+    "src/integrations/key-refusals.ts",
+    "tests/product-browser.mjs"
+  ],
+  "unchanged_from_main": {
+    "CONTRACT.md": true,
+    "ACCEPTANCE.md": true,
+    "docs/CLAIMS.md": true,
+    "tests/oncall-agent-fixtures.mjs": true
+  },
+  "commits_ahead": 1,
+  "merge_commits": [],
+  "source_lock_generated": true,
+  "source_lock_check_exit": 0,
+  "contract_check_exit": 0,
+  "carry_specific_fixes": []
+}

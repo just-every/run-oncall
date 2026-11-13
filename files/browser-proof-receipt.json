@@ -1,0 +1,25 @@
+{
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "behavior_assertion_width": 1440,
+  "screenshots_widths": [
+    1440,
+    390
+  ],
+  "screenshots": [
+    "browser/events-compatible-recover-form-1440.png",
+    "browser/events-compatible-recover-form-390.png",
+    "browser/events-compatible-recovered-list-1440.png",
+    "browser/events-compatible-recovered-list-390.png",
+    "browser/events-compatible-key-refused-1440.png",
+    "browser/events-compatible-key-refused-390.png",
+    "browser/events-allowance-refused-1440.png",
+    "browser/events-allowance-refused-390.png"
+  ],
+  "private_key_inputs": "masked by existing journey screenshot capture",
+  "visual_review": [
+    "PagerDuty compatible Recover form at 1440 and 390",
+    "Recovered alert list at 1440 and 390",
+    "Phone authentication and allowance refusal states"
+  ],
+  "findings": "Changed content is readable; fields have one border; recovered list shows no active alerts; phone layouts fit their viewport. No introduced icon-only controls."
+}

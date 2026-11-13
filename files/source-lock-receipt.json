@@ -1,0 +1,32 @@
+{
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "commands": [
+    {
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "output": "Contract prose: 0 errors, 0 warnings.\nContract documents are current."
+    },
+    {
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0
+    },
+    {
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0
+    }
+  ],
+  "source_lock_sha256": "f9805d62d4d8d7ae0d972349081b010d169eb05f66d49e25923263e57cff79d2",
+  "generated_views_changed": false
+}

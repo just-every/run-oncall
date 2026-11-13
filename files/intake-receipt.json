@@ -1,0 +1,13 @@
+{
+  "name": "intake",
+  "command": [
+    "node",
+    "tests/intake.mjs"
+  ],
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "started": "2026-11-13T04:12:24.320188+00:00",
+  "finished": "2026-11-13T04:14:01.663363+00:00",
+  "seconds": 97.34,
+  "exit": 0,
+  "log": "intake.log"
+}

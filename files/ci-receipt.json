@@ -1,0 +1,61 @@
+{
+  "repository": "just-every/run-oncall",
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "run_id": 43363012811,
+  "observations": [
+    {
+      "conclusion": null,
+      "head_sha": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363012811",
+      "id": 43363012811,
+      "name": "Verify",
+      "status": "in_progress",
+      "observed": "2026-11-13T04:04:10.292124+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363012811",
+      "id": 43363012811,
+      "name": "Verify",
+      "status": "in_progress",
+      "observed": "2026-11-13T04:09:10.155481+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363012811",
+      "id": 43363012811,
+      "name": "Verify",
+      "status": "in_progress",
+      "observed": "2026-11-13T04:14:10.309609+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363012811",
+      "id": 43363012811,
+      "name": "Verify",
+      "status": "in_progress",
+      "observed": "2026-11-13T04:19:10.378452+00:00"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363012811",
+      "id": 43363012811,
+      "name": "Verify",
+      "status": "completed",
+      "observed": "2026-11-13T04:24:10.398506+00:00"
+    }
+  ],
+  "latest": {
+    "conclusion": "success",
+    "head_sha": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43363012811",
+    "id": 43363012811,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "gh_calls": 5
+}

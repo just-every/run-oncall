@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-test-event-results-1-c1",
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "remote_ref": "refs/heads/cloud/main-oncall-test-event-results-1-c1",
+  "remote_head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "verified": true,
+  "product_pushes": 1,
+  "force_pushes": 0,
+  "main_pushes": 0,
+  "pr": null,
+  "pr_rule": "No repository PR landing requirement was present."
+}

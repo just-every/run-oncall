@@ -1,0 +1,15 @@
+{
+  "name": "intake-machines",
+  "command": [
+    "env",
+    "ONCALL_RUNTIME_PART=machines",
+    "node",
+    "tests/runtime.mjs"
+  ],
+  "head": "4397efcb37f73ca21efe4eef872c5fa7b4cee1cb",
+  "started": "2026-11-13T04:01:52.783461+00:00",
+  "finished": "2026-11-13T04:12:24.217032+00:00",
+  "seconds": 631.43,
+  "exit": 0,
+  "log": "intake-machines.log"
+}

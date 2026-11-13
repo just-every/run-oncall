@@ -1,0 +1,28 @@
+{
+  "journey": "eventsSourceBrowser",
+  "width": 1440,
+  "compatible": {
+    "sameMountedFormRecovered": true,
+    "returnedFormRecovered": true,
+    "activeAlerts": 0,
+    "generations": 2,
+    "keyVisible": true,
+    "keyRetainedBetweenSends": true,
+    "keyNotPersistedAcrossNavigation": true
+  },
+  "allowance": {
+    "status": 429,
+    "reason": "1 new event requested; more than this key’s event allowance leaves room for. Retry in 59 seconds, or raise New events per minute under Per-key rate allowance on this page.",
+    "rotatedReason": "1 new event requested; more than this key’s event allowance leaves room for. Retry in 58 seconds, or raise New events per minute under Per-key rate allowance on this page.",
+    "unchangedAlertsAndEvents": true
+  },
+  "authentication": {
+    "compatibleStatus": 400,
+    "nativeStatus": 401,
+    "reason": "The receiver refused this private key or signature. Copy the current private key for this source, or rotate it under Source actions and enter the new key. If signing is enabled, check its signing secret."
+  },
+  "screenshots": [
+    1440,
+    390
+  ]
+}
