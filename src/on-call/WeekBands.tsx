@@ -28,6 +28,7 @@ function BandName({name}: {name: string}) {
 
 export function WeekBands({rotas, from, to, title = 'This week', onShift, selectable, zone = viewerZone()}: {rotas: {id: string; name: string; week: OnCallBand[]}[]; from: number; to: number; title?: string; zone?: string; onShift?: (band: OnCallBand) => void; selectable?: (band: OnCallBand) => boolean}) {
   const root = useRef<HTMLElement>(null), [width, setWidth] = useState(0);
+  const scroll = useRef<HTMLDivElement>(null), axis = useRef<HTMLDivElement>(null), [scrolling, setScrolling] = useState(false);
   useEffect(() => {
     if (!root.current) return;
     const observer = new ResizeObserver(entries => setWidth(entries[0].contentRect.width));
@@ -52,12 +53,22 @@ export function WeekBands({rotas, from, to, title = 'This week', onShift, select
   // rather than requiring an impractically wide axis for a few minutes of cover.
   const axisWidth = Math.ceil(Math.max(840, days * 100, ...fractions.map(fraction => 140 + 52 / fraction)));
   const stacked = (width > 0 && width < 600) || axisWidth > 2400;
+  useEffect(() => {
+    const viewport = scroll.current, content = axis.current;
+    if (!viewport || !content) {setScrolling(false);return;}
+    // The scroll container's padding also occupies space: the calculated axis
+    // can fit the card while the rendered dates still need horizontal scrolling.
+    const measure = () => setScrolling(viewport.scrollWidth > viewport.clientWidth);
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);observer.observe(content);measure();
+    return () => observer.disconnect();
+  }, [stacked, axisWidth]);
   const label = (band: OnCallBand) => `${band.member?.name ?? 'Nobody on call'} · ${shortTime(band.from, zone)} – ${shortTime(band.to, zone)}`;
   const canSelect = (band: OnCallBand) => onShift && (!selectable || selectable(band));
   return <section ref={root} className="oc-bands oc-card" aria-label={title}><h2>{title}</h2><p className="oc-quiet" data-time-zone={zone}>Times shown in {zone}</p>
     {stacked ? <div className="oc-bands-list">{rows.map(rota => <section key={rota.id} className="oc-band-rota"><h3>{rota.name}</h3>{rota.roles.map(({role, bands}) => <div key={role} className="oc-band-list-role"><h4>{role === 'primary' ? 'Primary' : 'Backup'}</h4><ol>{bands.map((band, index) => <li key={index} className={!band.member ? 'oc-band-list-gap' : ''}>{canSelect(band) ? <button type="button" aria-label={label(band)} onClick={() => onShift!(band)}>{band.member?.name ?? 'Nobody on call'}</button> : <strong>{band.member?.name ?? 'Nobody on call'}</strong>}<p><time dateTime={band.from}>{shortTime(band.from, zone)}</time><span aria-hidden="true"> → </span><span> to </span><time dateTime={band.to}>{shortTime(band.to, zone)}</time></p></li>)}</ol></div>)}</section>)}</div> : <>
-      {width > 0 && axisWidth > width && <p className="oc-band-scroll-hint">↔ Scroll sideways to see every day</p>}
-      <div className="oc-bands-scroll" tabIndex={0} role="region" aria-label={`${title} coverage bands`}><div className="oc-bands-axis" style={{minWidth: axisWidth}}>
+      {scrolling && <p className="oc-band-scroll-hint">↔ Scroll sideways to see every day</p>}
+      <div ref={scroll} className="oc-bands-scroll" tabIndex={0} role="region" aria-label={`${title} coverage bands`}><div ref={axis} className="oc-bands-axis" style={{minWidth: axisWidth}}>
         <div className="oc-band-dates"><span/>{Array.from({length: days}, (_, index) => <time key={index} dateTime={new Date(from + index * DAY).toISOString()} style={{left: `calc(140px + (100% - 140px) * ${index / days})`}}>{new Intl.DateTimeFormat('en-GB', {timeZone: zone, day:'numeric',month:'short'}).format(from + index * DAY)}</time>)}</div>
         {rows.map(rota => <div className="oc-band-rota" key={rota.id}><h3>{rota.name}</h3>{rota.roles.map(({role, bands}) => <div className="oc-band-role" key={role}><span>{role === 'primary' ? 'Primary' : 'Backup'}</span><div className="oc-band-track">{bands.map((band, index) => {
           const start = Date.parse(band.from), end = Date.parse(band.to), name = band.member?.name ?? 'Nobody on call';
