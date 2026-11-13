@@ -582,10 +582,12 @@ try {
   const outsider = ok(await req('/api/members', {name:'synthetic-oncall-62',role:'stakeholder',password:'synthetic-oncall-62-password'}),201);
   const statusLogin=await w.request('/api/login',{name:statusMember.name,password:'synthetic-oncall-61-password'});ok(statusLogin);const statusCookie=statusLogin.cookie;
   const outsiderCookie = (await w.request('/api/login',{name:outsider.name,password:'synthetic-oncall-62-password'})).cookie;
+  const statusManager=ok(await req('/api/members',{name:'synthetic-oncall-status-manager',role:'responder',password:'synthetic-oncall-status-manager-password'}),201);
+  const statusManagerCookie=(await w.request('/api/login',{name:statusManager.name,password:'synthetic-oncall-status-manager-password'})).cookie;
   const statusService = ok(await req('/api/command',{type:'service',id:'synthetic-oncall-63',name:'Checkout gateway',environment:'production',owner:actor.id,runbook:['Private recovery steps'],pager:''}));
   const business = () => okStatus().then(services => services.find(row => row.name==='Checkout'));
   const okStatus = async () => ok(await req('/api/status')).services;
-  ok(await req('/api/status',{action:'create',name:'Checkout',owningTeam:'Payments',supporting:[statusService.id],communicationsOwner:actor.id,audience:[statusMember.id],highUrgencyImpact:true}));
+  ok(await req('/api/status',{action:'create',name:'Checkout',owningTeam:'Payments',supporting:[statusService.id],communicationsOwner:statusManager.id,audience:[statusMember.id],highUrgencyImpact:true}));
   let status = await business(); assert.equal(status.derived,'operational');
   assert.deepEqual(ok(await w.request('/api/status',undefined,outsiderCookie)).services,[],'ungranted stakeholder sees no business service');
   ok(await w.request('/api/status',{action:'subscribe',id:status.id,revision:status.revision,channel:'email',active:true},statusCookie));
@@ -595,6 +597,19 @@ try {
   const beforeDeadlineRefusal58=ok(await req('/api/state'));for(const deniedCookie of [viewerCookie,statusCookie])for(const type of ['snooze','cancel-deadline','acknowledgment-timeout'])ok(await w.request('/api/command',{type,incident:incidents[0].id,revision:incidents[0].revision,service:service.id,baseVersion:0,minutes:1},deniedCookie),403);assert.deepEqual(ok(await req('/api/state')),beforeDeadlineRefusal58);
   console.log('OC-058 triage permissions: viewer and stakeholder snooze, cancellation and timeout-policy changes refused without state mutation');
   for(const deniedCookie of [viewerCookie,statusCookie]){const before=ok(await req('/api/state'));for(const type of ['manual-page','request-responders'])assert.equal((await w.request('/api/command',{type,service:'synthetic-oncall-61',operationId:'synthetic-oncall-68-denied',title:'Forbidden page',severity:'critical',users:[]},deniedCookie)).status,403);assert.deepEqual(ok(await req('/api/state')),before);}console.log('OC-068 triage permissions: viewers and stakeholders refuse manual page and responder requests without creating state');
+  // Audience edits use creation's validation and admin authority, with stale writes refused.
+  const audienceBefore=ok(await req('/api/state'));
+  for(const deniedCookie of [viewerCookie,statusCookie,statusManagerCookie])ok(await w.request('/api/status',{action:'audience',id:status.id,revision:status.revision,audience:[outsider.id]},deniedCookie),403);
+  for(const audience of [null,[outsider.id,outsider.id],['synthetic-oncall-missing']])ok(await req('/api/status',{action:'audience',id:status.id,revision:status.revision,audience}),400);
+  assert.deepEqual(ok(await req('/api/state')),audienceBefore,'refused audience changes leave the workspace unchanged');
+  const staleAudienceRevision=status.revision;
+  ok(await req('/api/status',{action:'audience',id:status.id,revision:status.revision,audience:[statusMember.id,outsider.id]}));status=await business();
+  ok(await req('/api/status',{action:'audience',id:status.id,revision:staleAudienceRevision,audience:[]}),409);
+  assert.equal(ok(await w.request('/api/status',undefined,outsiderCookie)).services[0].id,status.id);
+  ok(await w.request('/api/status',{action:'subscribe',id:status.id,revision:status.revision,channel:'email',active:true},outsiderCookie));status=await business();
+  ok(await req('/api/status',{action:'audience',id:status.id,revision:status.revision,audience:[statusMember.id]}));status=await business();
+  assert.equal(status.subscriptions.find(row=>row.member===outsider.id).active,false);
+  assert.deepEqual(ok(await w.request('/api/status',undefined,outsiderCookie)).services,[]);
   console.log('OC-061 business services and subscriptions: explicit audience, self subscription, recorded channel, unauthorized subscription and override refusals');
   const privateText='synthetic-oncall-64-private-alert';
   const impacted=ok(await req('/api/command',{type:'declare',service:statusService.id,severity:'warning',title:privateText,summary:'Private incident impact',alerts:[]}));
@@ -605,6 +620,13 @@ try {
   assert.ok(!JSON.stringify(subscriber).includes(privateText));assert.ok(!JSON.stringify(subscriber).includes('Private recovery steps'));
   assert.equal(ok(await w.request('/api/status',undefined,outsiderCookie)).services.length,0,'unsubscribed ungranted stakeholder receives no obligation');
   console.log('OC-061 derived incident impact and notice custody: degraded, one record per subscriber, no raw alert text, no sender or approved-update fabrication');
+  ok(await req('/api/status',{action:'audience',id:status.id,revision:status.revision,audience:[]}));status=await business();
+  const removed=ok(await req('/api/state')).businessServices.find(row=>row.id===status.id);
+  assert.ok(removed.subscriptions.every(row=>!row.active));assert.ok(removed.notices.every(row=>row.state==='stopped'));
+  assert.deepEqual(ok(await w.request('/api/status',undefined,statusCookie)).services,[]);
+  ok(await req('/api/status',{action:'audience',id:status.id,revision:status.revision,audience:[statusMember.id]}));status=await business();
+  ok(await w.request('/api/status',{action:'subscribe',id:status.id,revision:status.revision,channel:'email',active:true},statusCookie));status=await business();
+  console.log('OC-061 audience changes: admin grants existing service access, stakeholder subscribes, revocation stops subscriptions and recorded obligations, invalid and unauthorized or stale writes preserve state');
   const statusAuditIds=new Set(ok(await req('/api/audit/export')).rows.map(row=>row.id));
   ok(await req('/api/status',{action:'override',id:status.id,revision:status.revision,value:'operational',reason:'Payments are processing through the alternate gateway'}));
   status=await business();assert.equal(status.derived,'degraded');assert.equal(status.override.by,actor.id);

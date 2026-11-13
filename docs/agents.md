@@ -15,7 +15,7 @@ Open Agents (`/agents`) to inspect decisions, pending approvals, reviews and Pau
 | Dispatch an already authorized signed response event | The frozen minimal body goes to the approved recipient; authenticated acceptance and uncertainty remain distinct |
 | Read and narrow native access | Current administrators can manage existing native membership and public teams, revoke clients/endpoints and use native privacy erasure under company policy |
 
-The MCP endpoint is `/mcp`. Discovery and protected-resource metadata describe the current registry. Both supported protocol versions expose the same tools: `2026-07-28` and `2025-11-25`. Tools expose the coordination journey. This installation declares only tools, policy, pause, audit and idempotency. Public resource reads, specialist prompts, retained event listing and subscriptions are undeclared and refuse with `capability_not_declared`. Native authorization, short-lived owner-bound tokens, approval and consent checks remain mandatory. Existing `/api/v1` clients use the same policy admission and retain their native service and action scopes, operation keys and ETags.
+The MCP endpoint is `/mcp`. Discovery and protected-resource metadata describe the current registry. Both supported protocol versions expose the same tools: `2026-07-28` and `2025-11-25`. Tools and scoped resource reads expose the coordination journey. This installation declares tools, resources, policy, pause, audit and idempotency. Specialist prompts, retained event listing and subscriptions remain undeclared and refuse with `capability_not_declared`. Native authorization, short-lived owner-bound tokens, approval and consent checks remain mandatory. Existing `/api/v1` clients use the same policy admission and retain their native service and action scopes, operation keys and ETags.
 
 ## Read alerts
 
@@ -142,6 +142,12 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 | --- | --- | --- | --- |
 | `oncall.privacy.erase` | `privacy:write` | `destructive`, `access`, `security`, `live` | `destructive`: `tests/agent-door.mjs` (`erase`, `erase-client`); `access`: `tests/agent-door.mjs` (`erase-client`); `security`: `tests/agent-door.mjs` (`erase-client`); `live`: `tests/agent-door.mjs` (`erase`) |
 
+### Responders
+
+| Tool | Scope | Possible risk classes | Computed class checks |
+| --- | --- | --- | --- |
+| `oncall.responders.list` | `responders:read` | `standard`, `sensitive` | `standard`: `tests/agent-door.mjs` (`responders-list`); `sensitive`: `tests/agent-door.mjs` (`responders-list`) |
+
 ### Reviews
 
 | Tool | Scope | Possible risk classes | Computed class checks |
@@ -183,13 +189,29 @@ The fixture IDs below belong to `agent-surface.json`. `tests/agent-door.mjs` exe
 
 ## Current resource templates
 
-No resource templates are exposed. The template listing is empty because resources are undeclared.
+- `oncall://actions/{id}`
+- `oncall://alerts/{id}`
+- `oncall://automation/clients/{id}`
+- `oncall://automation/endpoints/{id}`
+- `oncall://automation/outbox/{id}`
+- `oncall://changes/{id}`
+- `oncall://erasures/{id}`
+- `oncall://handoffs/{id}`
+- `oncall://incidents/{id}`
+- `oncall://incidents/{id}/review-material`
+- `oncall://members/{id}`
+- `oncall://reports/{period}`
+- `oncall://schedules/{id}`
+- `oncall://schedules/{id}/coverage`
+- `oncall://services/{id}`
+- `oncall://services/{id}/changes`
+- `oncall://teams/{id}`
 
 ## Target capabilities
 
 `oncall.events.list` is retained in the source manifest with scope `events:read` and possible classes `standard`, but is withheld from the current tool listing. Its target fixture is not current execution evidence.
 
-The source manifest retains native resource targets; they are not exposed templates. Events, resources, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.
+The listed resource templates are exposed under current native scope and company policy. Customer, imported and email text is untrusted data; native erasure fences and delivery metadata carry no untrusted text. Monthly reports use completed UTC calendar months (YYYY-MM) and return not found for an empty scoped cohort. Events, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.
 [native-tool-inventory-end]: #
 
 ## Approvals and limits
@@ -208,9 +230,9 @@ Completed team-manager edits retain native effect custody in the same transactio
 
 ## Declaration and proof limits
 
-The CORE declaration does not prove optional multi-sponsor, mail-edge, resource-refresh, timed, queued, dual-host or owner-native administration families. Built-in `oncall.events.list` remains described for a future events declaration and is withheld from this installation’s tool list. Native tools and their complete security assertions still run.
+The declared capabilities do not prove optional multi-sponsor, mail-edge, resource-refresh, timed, queued, dual-host or owner-native administration families. Built-in `oncall.events.list` remains described for a future events declaration and is withheld from this installation’s tool list. Native tools and their complete security assertions still run.
 
-The contract generator preserves existing judgments. BASE-AGENT-003 (resources), BASE-AGENT-010 (events and subscriptions), the optional parts of BASE-AGENT-001/013 and SURFACE-001/003 were missing before this adoption and remain unproved. No optional clause is promoted by declaring CORE.
+The contract generator preserves existing judgments. BASE-AGENT-003 retains unproved role-specific field parity and grant byte budgets. BASE-AGENT-010 (events and subscriptions), the optional parts of BASE-AGENT-001 and BASE-AGENT-013, and SURFACE-001 and SURFACE-003 remain unproved. Declaring resources does not promote a whole clause.
 
 Native erasure computes destructive for one erased subject. It also computes access when member or API-client authority is removed, security when integration credentials or intake email addresses are deleted, and live when retained coverage, active intake or pending delivery is affected. A history-only incident with no pending work carries destructive alone. The facts contain the one-action measure, narrowing direction, credential setting and affected service IDs as applicable; record text and caller claims cannot choose classes.
 

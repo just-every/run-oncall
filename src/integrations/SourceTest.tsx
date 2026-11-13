@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Form } from '../forms';
+import { testRefusal } from './key-refusals';
 import { RequestExample } from './RequestExample';
 import type { Event, Service } from '../family/response-operations/domain';
 import type { IntakeRun } from '../intake/CompatibleTest';
@@ -45,7 +46,7 @@ export function SourceTest({ source, service, busy, run, events = [] }: { source
   return <>
     <details><summary>Send a test event</summary><Form busy={busy} disabled={!source.active} label="Send test event" onSubmit={async () => {
       const identity = newIdentity('check');
-      const next=source.kind!=='events'&&intent==='trigger'&&cycle.lastIntent==='recover'?{identity,generation:identity,startedAt:new Date().toISOString(),lastIntent:intent}:{...cycle,lastIntent:intent};
+      const next=source.kind!=='events'&&source.kind!=='pagerduty'&&intent==='trigger'&&cycle.lastIntent==='recover'?{identity,generation:identity,startedAt:new Date().toISOString(),lastIntent:intent}:{...cycle,lastIntent:intent};
       const result = await run(async () => {
         const value = sender(source, service, secret, title, severity, intent, next.identity, next.startedAt, next.generation), body = JSON.stringify(value.body);
         if (source.kind === 'events') {
@@ -59,13 +60,18 @@ export function SourceTest({ source, service, busy, run, events = [] }: { source
           value.headers['x-grafana-alerting-signature'] = await signature(signing, timestamp + ':' + body);
         }
         const response = await fetch(value.path, { method: 'POST', headers: value.headers, body });
-        if (!response.ok) throw Error('The receiver refused this test. Check the private key and sender settings.');
-        return response.json();
+        const receipt = await response.json().catch(() => null);
+        if (!response.ok) {
+          const reason = testRefusal(response.status, receipt);
+          throw Error([secret, signing].filter(Boolean).reduce((text, key) => text.replaceAll(key, '[private key]'), reason));
+        }
+        return receipt;
       }, undefined, 'Test event accepted');
-      if (result) { setCycle(next); setSecret(''); setSigning(''); }
+      if (result) { setCycle(next); if (source.kind === 'events') { setSecret(''); setSigning(''); } }
       return false;
     }}>
       <label className="field">Private key<input type="password" autoComplete="off" required value={secret} onChange={e => setSecret(e.target.value)} /></label>
+      {source.kind === 'events' && <p>The private key is cleared after each accepted test. Enter it again before sending another.</p>}
       <label className="field">Title<input required maxLength={300} value={title} onChange={e => setTitle(e.target.value)} /></label>
       <label className="field">Severity<select aria-label="Severity" value={severity} onChange={e => setSeverity(e.target.value)}><option value="warning">Warning</option><option value="critical">Critical</option><option value="info">Information</option></select></label>
       <label className="field">Intent<select aria-label="Intent" value={intent} onChange={e => {
@@ -73,8 +79,9 @@ export function SourceTest({ source, service, busy, run, events = [] }: { source
         if (source.kind === 'events' && value === 'trigger' && cycle.lastIntent === 'recover') setCycle({...cycle,generation:newIdentity('check'),lastIntent:'',startedAt:new Date().toISOString()});
         setIntent(value);
       }}><option value="trigger">Trigger</option><option value="recover">Recover</option></select></label>
+      {(source.kind === 'events' || source.kind === 'pagerduty') && <label className="field">Alert key (dedup key)<input required maxLength={source.kind === 'pagerduty' ? 255 : 200} value={cycle.identity} onChange={e => setCycle({...cycle,identity:e.target.value})} /></label>}
+      {source.kind === 'pagerduty' && <p>Reuse this key to repeat or recover the same test. Recover closes its open alert; a declared incident stays open.</p>}
       {source.kind === 'events' && <>
-        <label className="field">Alert key (dedup key)<input required maxLength={200} value={cycle.identity} onChange={e => setCycle({...cycle,identity:e.target.value})} /></label>
         <label className="field">Lifecycle generation<input required maxLength={100} value={cycle.generation} onChange={e => setCycle({...cycle,generation:e.target.value})} /></label>
         <p>Recover closes the alert with this key and generation, regardless of severity; a declared incident stays open.</p>
       </>}

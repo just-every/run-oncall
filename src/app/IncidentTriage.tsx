@@ -4,7 +4,7 @@ import { Tooltip } from './Tooltip';
 import { useEffect, useState, type ReactNode } from 'react';
 import { request } from '../useWorkspace';
 import type { Member, State } from '../family/response-operations/domain';
-import type { BulkSelection } from './BulkResults';
+import { BulkResults, type BulkDisplay, type BulkSelection } from './BulkResults';
 import { queryFields, type SavedView, type TriageItem, type TriageQuery } from '../family/response-operations/triage';
 import { TriageFilters } from './TriageFilters';
 import { IncidentBulkActions } from './IncidentBulkActions';
@@ -19,6 +19,22 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
   const [page, setPage] = useState<{items: TriageItem[]; total: number; nextCursor: string | null; workspaceRevision: number} | null>(null);
   const [views, setViews] = useState<SavedView[]>([]);
   const [selection, setSelection] = useState<BulkSelection[]>([]);
+  const [clearedBulk, setClearedBulk] = useState<BulkDisplay | null>(null);
+  function committed(result: BulkDisplay) {
+    // Receipts advance only revisions written by this operation. A separate
+    // workspace refresh must never bless somebody else's changes as selected.
+    setAllMatching(false);
+    if (result.action === 'merge' && result.results.some(row => row.ok) || result.items.length > 500) {
+      setSelection([]);
+      setClearedBulk(result);
+      return;
+    }
+    setSelection(selected => selected.map(item => {
+      const base = result.items.find(base => base.id === item.id);
+      const saved = result.results.find(row => row.id === item.id && row.ok && !row.step);
+      return base?.revision === item.revision && saved?.revision ? {...item, revision: saved.revision} : item;
+    }));
+  }
   const selectedItem = (item: TriageItem): BulkSelection => {
     const service = state.services.find(service => service.id === item.service);
     return {id: item.id, revision: item.revision, kind: item.kind, title: item.title, context: service ? `${service.name} · ${service.environment}` : 'Integration unrouted queue'};
@@ -65,7 +81,12 @@ export function IncidentTriage({state, actor, current, select, children, busy, r
     <div className="triage-count" role="status">{loading ? 'Loading incidents…' : `${page?.total ?? 0} matching ${query.kind==='alerts'?'alert-only items':'incidents'}`}</div>
     <FailureLine failure={failures.failure} />
     {(state.triage??[]).some(row=>row.kind==='bulk'&&row.workflow&&row.actor===actor.id)&&<details className="triage-bulk"><summary>Recorded coordination workflows</summary><p>Explicitly resume up to two ordered coordination steps. No timer or sender runs. Completed and refused steps are retained and never repeated.</p><ul tabIndex={0} aria-label="Recorded workflow progress">{(state.triage??[]).filter(row=>row.kind==='bulk'&&row.workflow&&row.actor===actor.id).map(row=>row.kind==='bulk'&&row.workflow&&<li key={row.id}><strong>{row.results.length===(row.workflow.items.length*(row.rule?3:row.workflow.action==='orchestrate'?2:1))?'Complete':'Pending'} · {row.workflow.action==='orchestrate'?'recorded declaration and notification':'recorded reassignment'}</strong><p>{row.results.length} of {(row.workflow.items.length*(row.rule?3:row.workflow.action==='orchestrate'?2:1))} processed · {row.results.filter(result=>!result.ok).length} refused</p><p style={{overflowWrap:'anywhere'}}>Operation {row.id}</p>{row.rule&&<p>Rule v{row.rule.policyVersion} · approved workflow v{row.rule.workflowVersion} · {row.rule.state==='running'?'Execution uncertain until its lease is cleared':row.rule.state} · non-automatic · paging OFF</p>}{row.rule?.state==='running'&&<button disabled={busy} onClick={()=>run('/api/triage/workflows/'+encodeURIComponent(row.id)+'/clear-expired',{approve:true,revision:row.rule!.revision},'Expired workflow lease cleared; explicit resume required')}>Clear expired workflow</button>}{row.results.filter(result=>!result.ok).map(result=><p key={result.id}>{result.error}</p>)}{row.results.length<(row.workflow.items.length*(row.rule?3:row.workflow.action==='orchestrate'?2:1))&&<button disabled={busy||actor.role==='viewer'} onClick={()=>run('/api/triage/workflows/'+encodeURIComponent(row.id)+'/resume',{approve:true,...(row.rule?{revision:row.rule.revision}:{})},'Recorded workflow advanced; inspect retained outcomes')}>{row.workflow.action==='orchestrate'?'Resume recorded workflow':'Resume recorded reassignment'}</button>}</li>)}</ul></details>}
-    {selection.length > 0 && <IncidentBulkActions items={selection} allMatching={allMatching} count={selection.length} total={page?.total ?? 0} refreshing={refreshing} selectPage={() => {setSelection((page?.items ?? []).slice(0, 500).map(selectedItem)); setAllMatching(false);}} selectMatching={selectMatching} query={query} workspaceRevision={selectionRevision} members={state.members} incidents={state.incidents.filter(i=>!i.mergedInto&&i.state!=='resolved')} busy={busy || refreshing} canEdit={actor.role !== "viewer"} run={run} clear={() => {setSelection([]); setAllMatching(false);}} />}
+    {selection.length > 0 && <IncidentBulkActions items={selection} allMatching={allMatching} count={selection.length} total={page?.total ?? 0} refreshing={refreshing} selectPage={() => {setSelection((page?.items ?? []).slice(0, 500).map(selectedItem)); setAllMatching(false);}} selectMatching={selectMatching} query={query} workspaceRevision={selectionRevision} members={state.members} incidents={state.incidents.filter(i=>!i.mergedInto&&i.state!=='resolved')} busy={busy || refreshing} canEdit={actor.role !== "viewer"} run={run} committed={committed} clear={() => {setSelection([]); setAllMatching(false);}} />}
+    {!selection.length && clearedBulk && <section className="triage-bulk" aria-label="Bulk incident actions">
+      <p>{clearedBulk.action === 'merge' ? 'Selection cleared after merging.' : 'Selection cleared after this bulk action.'} Select incidents again for another bulk action.</p>
+      <BulkResults result={clearedBulk} />
+      <button className="quiet" disabled={busy} onClick={() => setClearedBulk(null)}>Dismiss results</button>
+    </section>}
     {page?.items.map(i => <div className="triage-item" key={i.id} data-triage-id={i.id}>
       {actor.role !== 'viewer' && <label className="triage-check"><input type="checkbox" aria-label={`Select ${i.title}`} checked={selection.some(s => s.id === i.id)} disabled={busy || refreshing || selection.length >= 500 && !selection.some(s => s.id === i.id)} onChange={e => {setAllMatching(false); setSelection(old => e.target.checked ? [...old, selectedItem(i)].slice(0, 500) : old.filter(s => s.id !== i.id));}} /></label>}
       <button className={`incident ${current === i.id ? 'current' : ''}`} onClick={() => {if(i.kind==='alert')void navigate({to:'/alerts/'+encodeURIComponent(i.id),resetScroll:false} as any);else select(i.id);}}>

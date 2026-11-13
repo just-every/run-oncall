@@ -510,10 +510,28 @@ async function changeAndSigningBrowser(page,context){
  console.log('PASS OC-065/030 templates, dependency, retention and protected signing settings at 1440; overflow, axe and hydration');
 }
 
+// Execute the displayed recipe in a sender shell with only its documented tools.
+// The bin contains no node, npx or package manager, even on hosts with system Node.
+async function runSenderRecipe(sample,key,commands='sh send.sh') {
+ const {tmpdir}=await import('node:os'),{spawn,execFileSync}=await import('node:child_process');
+ const {mkdtemp,writeFile,symlink,rm}=await import('node:fs/promises'),{join}=await import('node:path');
+ const dir=await mkdtemp(join(tmpdir(),'oncall-send-'));
+ try {
+  for(const name of ['sh','curl','openssl','date','od','tr','awk'])await symlink(execFileSync('/usr/bin/which',[name],{encoding:'utf8'}).trim(),join(dir,name));
+  await writeFile(join(dir,'send.sh'),sample);
+  // Substitute only the private environment setting, as the sender does. Run the copied invocation unchanged.
+  commands=commands.replace(/^export ONCALL_SOURCE_KEY=.*\n/,'');
+  return await new Promise((resolve,reject)=>{
+   const child=spawn('/bin/sh',['-eu','-c',commands],{cwd:dir,env:{...process.env,PATH:dir,ONCALL_SOURCE_KEY:key}});let out='';
+   child.stdout.on('data',d=>out+=d);child.stderr.resume();child.on('error',reject);
+   child.on('close',code=>code===0?resolve(out):reject(Error('Copied sender recipe failed with no Node on PATH: '+code)));
+  });
+ } finally {await rm(dir,{recursive:true,force:true});}
+}
+
 // A newcomer finishes sender setup from the page alone: the change-event recipe runs as written, and a refused
 // Alertmanager batch is explained, counted and fixable on the integration page without leaving it.
 async function senderSetupBrowser(page,context,origin,request,token){
- const {tmpdir}=await import('node:os'),{spawn}=await import('node:child_process'),{mkdtemp,writeFile}=await import('node:fs/promises'),{join}=await import('node:path');
  await context.grantPermissions(['clipboard-read','clipboard-write']);
  const proof=async(label)=>{
   for(const width of [1440,390]){
@@ -524,19 +542,16 @@ async function senderSetupBrowser(page,context,origin,request,token){
   }
   await page.setViewportSize({width:1440,height:1000});
  };
- const run=(file,key)=>new Promise((resolve,reject)=>{const child=spawn(process.execPath,[file],{env:{...process.env,ONCALL_SOURCE_KEY:key}});let out='';child.stdout.on('data',d=>out+=d);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(out):reject(Error('send.mjs exited '+code+': '+out)));});
  // Change events: the sample is a recipe, and the saved file runs with only the documented steps.
  const changeKey=token(),changeId='synthetic-oncall-recipe';
  await request('/api/changes/sources',{id:changeId,name:'Synthetic recipe source',provider:'native',service:'synthetic-oncall-1',repository:'',mode:'signed',revision:0,key:changeKey});
  await page.goto(origin+'/settings/integrations/'+encodeURIComponent('change:'+changeId));
  await page.getByText('Sample request',{exact:true}).click();
- const recipe=page.locator('details').filter({has:page.getByLabel('Sample request',{exact:true})});
- for(const text of ['send.mjs','ONCALL_SOURCE_KEY','node send.mjs','Node 22 or newer'])assert.ok((await recipe.innerText()).includes(text)||(await recipe.locator('pre').allInnerTexts()).join('').includes(text),'recipe names '+text);
  const sample=await page.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!sample.includes(changeKey),'sample never embeds the secret');
  await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
- await page.getByRole('button',{name:'Copy run commands',exact:true}).click();assert.match(await page.evaluate(()=>navigator.clipboard.readText()),/export ONCALL_SOURCE_KEY=.*\nnode send\.mjs$/);
- const dir=await mkdtemp(join(tmpdir(),'oncall-send-')),file=join(dir,'send.mjs');await writeFile(file,sample);
- assert.match(await run(file,changeKey),/^201 /,'the copied file sends one change when run as the recipe says');
+ await page.getByRole('button',{name:'Copy run commands',exact:true}).click();const commands=await page.evaluate(()=>navigator.clipboard.readText());
+ const receipt=JSON.parse(await runSenderRecipe(sample,changeKey,commands));assert.ok(receipt.id,'the copied recipe sends one change with no Node on PATH');assert.equal(receipt.duplicate,false);assert.equal(receipt.service,'synthetic-oncall-1');
+ assert.ok((await request('/api/state')).changes.some(change=>change.id===receipt.id),'the accepted change is retained');
  await page.reload();await page.getByText('Sample request',{exact:true}).click();await proof('sender-change-recipe');
  // Alertmanager: a 200-alert group exceeds the default event allowance, is counted, and is fixed from its own page.
  const key=token(),id='synthetic-oncall-batch',now=new Date().toISOString();
@@ -739,6 +754,46 @@ async function eventsSourceBrowser(page,context) {
   const path=new URL(await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href'),origin).pathname;
   return {key,url,example,path,name:await page.getByRole('heading',{level:2}).innerText(),source:decodeURIComponent(new URL(url).pathname.split('/').at(-1))};
  };
+ // Extend this existing source lifecycle journey through the compatible form.
+ await page.goto(origin+'/settings/integrations/new/pagerduty');
+ await page.getByLabel('Name',{exact:true}).fill('Harbour Checkout compatible');
+ const compatibleService=page.getByLabel('Service',{exact:true});if(await compatibleService.count())await compatibleService.selectOption(service);
+ await page.getByRole('button',{name:'Create source',exact:true}).click();
+ const compatibleKey=await page.getByLabel('Private key',{exact:true}).inputValue();
+ const compatiblePath=await page.getByRole('link',{name:'Open source',exact:true}).getAttribute('href');
+ const compatibleId=decodeURIComponent(compatiblePath.split('/').at(-1));
+ await page.getByRole('link',{name:'Open source',exact:true}).click();await page.getByText('Send a test event',{exact:true}).click();
+ await page.getByLabel('Private key',{exact:true}).fill(compatibleKey);await page.getByLabel('Title',{exact:true}).fill('Checkout gateway connection saturation');
+ const sendCompatible=async(status=202)=>{
+  const pending=page.waitForResponse(r=>new URL(r.url()).pathname==='/v2/enqueue'&&r.request().method()==='POST');
+  await page.getByRole('button',{name:'Send test event',exact:true}).click();const response=await pending;
+  assert.equal(response.status(),status);if(response.ok())await expect.poll(()=>page.locator('.notice').innerText()).toBe('Test event accepted');else await page.locator('.failure-line').waitFor();await expect(page.getByRole('button',{name:'Send test event',exact:true})).toBeEnabled();return response.json();
+ };
+ const compatibleTrigger=await sendCompatible();
+ assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),compatibleKey,'test sends retain the private key in the mounted form');
+ assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),compatibleTrigger.dedup_key,'the form exposes the actual compatible outage key');
+ await page.getByLabel('Intent',{exact:true}).selectOption('recover');await sendCompatible();
+ let compatibleState=await request('/api/state'),compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);
+ assert.equal(compatibleAlerts.length,1);assert.equal(compatibleAlerts[0].state,'recovered');
+ assert.equal(compatibleState.intakeReceipts.at(-1).outcome,'recovered','the test recovery has an effect on its trigger');
+ // Reopen the same explicit outage key, visit Alerts, then return to recover it.
+ await page.getByLabel('Intent',{exact:true}).selectOption('trigger');const reopened=await sendCompatible();assert.equal(reopened.dedup_key,compatibleTrigger.dedup_key);
+ await page.goto(origin+'/alerts');await page.locator('.alert-row').filter({hasText:'Checkout gateway connection saturation'}).first().waitFor();
+ await page.goto(origin+compatiblePath);await page.getByText('Send a test event',{exact:true}).click();
+ assert.equal(await page.getByLabel('Alert key (dedup key)',{exact:true}).inputValue(),reopened.dedup_key,'returning to the compatible source restores the trigger key');
+ assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),'','navigation does not persist the private key');
+ await page.getByLabel('Private key',{exact:true}).fill(compatibleKey);await page.getByLabel('Intent',{exact:true}).selectOption('recover');
+ await proof('compatible-recover-form');await sendCompatible();compatibleState=await request('/api/state');
+ compatibleAlerts=compatibleState.alerts.filter(a=>a.source===compatibleId);assert.equal(compatibleAlerts.length,2);
+ assert.ok(compatibleAlerts.every(a=>a.state==='recovered'),'no compatible test alert remains active');
+ await page.goto(origin+'/alerts');const recoveredRows=page.locator('.alert-row').filter({hasText:'Checkout gateway connection saturation'});assert.equal(await recoveredRows.count(),2);
+ for(const row of await recoveredRows.all())assert.equal(await row.locator('xpath=..').getByRole('heading',{name:'Recovered',exact:true}).count(),1);
+ await proof('compatible-recovered-list');
+ // A wrong compatible credential uses its provider error envelope (HTTP 400).
+ await page.goto(origin+compatiblePath);await page.getByText('Send a test event',{exact:true}).click();
+ await page.getByLabel('Private key',{exact:true}).fill(randomBytes(32).toString('hex'));await sendCompatible(400);
+ await page.locator('.failure-line').waitFor();const keyFailure=await page.locator('.failure-line').innerText();
+ assert.match(keyFailure,/key|credential/i);assert.doesNotMatch(keyFailure,/allowance/i);await proof('compatible-key-refused');
  const source=await create('bearer');await page.getByRole('link',{name:'Open source',exact:true}).click();
  await page.getByLabel('Ingress URL',{exact:true}).waitFor();assert.equal(await page.locator('.ingress-example').getAttribute('open'),'','empty source opens its sample');
  await proof('empty-source');await page.getByText('Send a test event',{exact:true}).click();
@@ -809,14 +864,15 @@ async function eventsSourceBrowser(page,context) {
   assert.ok(body.key.includes(serviceName)&&!body.key.includes(service),'dedup key describes the named service');
   assert.ok(body.generation.includes(body.observedAt)&&body.eventId.includes(body.generation),'sample observation and lifecycle IDs use a readable timestamp');
   assert.ok(!body.eventId.includes(service)&&!/[a-f0-9]{8}-[a-f0-9]{4}-/i.test(body.eventId),'event identity contains no internal UUID');
+  assert.ok((await details.locator('p').allTextContents()).some(text=>text.includes(serviceName)&&text.includes('internal ID')),'required service ID is explained beside the sample');
+  assert.equal(await details.getByRole('link',{name:'Services',exact:true,includeHidden:true}).getAttribute('href'),'/settings/services');
   const setupText=await details.innerText();
   assert.ok(setupText.includes(serviceName),'the ready-to-copy sample names its service');
   assert.ok(!setupText.includes(service)&&!setupText.includes(sample.source),'default explanation omits internal identities');
   assert.ok(!setupText.includes('internal ID'),'setup does not ask the person to look up an internal ID');
   await page.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),example);
   await proof(sample===source?'readable-bearer-source':'readable-signed-source');
-  const {spawn}=await import('node:child_process');
-  const output=await new Promise((resolve,reject)=>{const child=spawn('bash',['-e','-o','pipefail','-c',example],{env:{...process.env,ONCALL_SOURCE_KEY:sample.key}});let text='';child.stdout.on('data',data=>text+=data);child.stderr.resume();child.on('error',reject);child.on('close',code=>code===0?resolve(text):reject(Error('Copied Events API command failed: '+code)));});
+  const output=await runSenderRecipe(example,sample.key);
   const receipt=JSON.parse(output);assert.equal(receipt.service,service);assert.ok(receipt.id);
   const sendBody=async(value)=>{
    const raw=JSON.stringify(value),headers={'content-type':'application/json'};
@@ -837,6 +893,29 @@ async function eventsSourceBrowser(page,context) {
  }
 
  await readableNamesBrowser(page,context,{source,service,serviceName});
+ // The same form diagnoses a valid key's event allowance, including rotation.
+ await page.goto(origin+source.path);await page.getByText('Send a test event',{exact:true}).click();
+ let limited=await request('/api/state');await request('/api/intake/allowances',{id:'source:'+source.source,requests:600,events:1,revision:limited.revision});
+ const refusalBefore=await request('/api/state');
+ await page.getByLabel('Private key',{exact:true}).fill(source.key);await page.getByLabel('Intent',{exact:true}).selectOption('recover');
+ const refuse=async()=>{const pending=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();const response=await pending;assert.equal(response.status(),429);assert.ok(Number(response.headers()['retry-after'])>0);await page.locator('.failure-line').waitFor();await page.getByRole('button',{name:'Send test event',exact:true}).waitFor();return page.locator('.failure-line').innerText();};
+ const allowanceFailure=await refuse();
+ assert.match(allowanceFailure,/event.*allowance/i);assert.match(allowanceFailure,/retry|wait/i);assert.match(allowanceFailure,/New events per minute/);
+ assert.doesNotMatch(allowanceFailure,/private key|credential|sender settings/i,'an allowance refusal must not blame a valid key');
+ await page.locator('summary').filter({hasText:/^Rejected requests /}).click();
+ const retainedNotice=await page.getByRole('list',{name:'Allowance refusals',exact:true}).innerText();
+ assert.ok(retainedNotice.includes(allowanceFailure.split(' Retry')[0]),'the immediate result uses the retained refusal explanation');
+ assert.equal(await page.getByLabel('Private key',{exact:true}).inputValue(),source.key);await proof('allowance-refused');
+ const rotatedKey=randomBytes(32).toString('hex');await request('/api/sources',{id:source.source,key:rotatedKey,mode:'bearer',scopes:[service]});
+ await page.getByLabel('Private key',{exact:true}).fill(rotatedKey);const rotatedFailure=await refuse();
+ assert.match(rotatedFailure,/event.*allowance/i);assert.doesNotMatch(rotatedFailure,/private key|credential/i);
+ const refusalAfter=await request('/api/state');assert.deepEqual(refusalAfter.events,refusalBefore.events);assert.deepEqual(refusalAfter.alerts,refusalBefore.alerts,'allowance refusals preserve the alert lifecycle');
+ await page.getByLabel('Private key',{exact:true}).fill(source.key);
+ const badKey=page.waitForResponse(r=>r.url()===source.url&&r.request().method()==='POST');await page.getByRole('button',{name:'Send test event',exact:true}).click();assert.equal((await badKey).status(),401);
+ await expect.poll(()=>page.locator('.failure-line').innerText()).toMatch(/private key/i);
+ assert.doesNotMatch(await page.locator('.failure-line').innerText(),/allowance/i);
+ await writeFile(`${directory}/test-event-receipt.json`,JSON.stringify({journey:'eventsSourceBrowser',width:1440,compatible:{sameMountedFormRecovered:true,returnedFormRecovered:true,activeAlerts:compatibleAlerts.filter(a=>a.state==='active').length,generations:compatibleAlerts.length,keyVisible:true,keyRetainedBetweenSends:true,keyNotPersistedAcrossNavigation:true},allowance:{status:429,reason:allowanceFailure,rotatedReason:rotatedFailure,unchangedAlertsAndEvents:true},authentication:{compatibleStatus:400,nativeStatus:401,reason:keyFailure},screenshots:[1440,390]},null,2)+'\n');
+ console.log('PASS test-event results: compatible same-form and returned-form recoveries leave zero active alerts, explicit outage key and in-memory private key retained; native allowance and rotated key refusals explain retry or allowance settings, wrong keys explain authentication, refused requests preserve events and alerts; changed screens captured at 1440/390.');
  console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Detail-page readable source samples copied and executed for bearer and signed, alerts visible, legacy ID retries deduplicated and mismatched identities refused; changed screens captured once at 1440/390.');
  assert.deepEqual(sourceErrors,[],'source recovery has no browser application errors');
  } finally {await sourceContext.close();}
@@ -876,7 +955,7 @@ try {
   } finally { await worker.time(selectedTime) }
  }
  const focused=process.env.ONCALL_PRODUCT_JOURNEY;
- if(focused&&!['response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))throw Error('Unknown focused product journey');
+ if(focused&&!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))throw Error('Unknown focused product journey');
  const triageProof={snapshot:()=>durableSnapshot(worker),outbound:()=>worker.outboundRequests()};
  const setTime=async at=>{selectedTime=at;await worker.time(at);if(at===null)await page.clock.setSystemTime(new Date());else await page.clock.setFixedTime(new Date(at));};
  if(focused==='rota-timeline'){
@@ -895,6 +974,12 @@ try {
  }
  if(focused==='imported-email')await importedEmailBrowser(page,context);
  if(focused==='events-source')await eventsSourceBrowser(page,context);
+ if(focused==='sender-setup'){
+  const request=async(path,data)=>{const r=await worker.request(path,data,owner.cookie);assert.ok(r.status>=200&&r.status<300,JSON.stringify(r.value));return r.value;};
+  const actor=(await request('/api/session')).member;
+  await request('/api/command',{type:'service',id:'synthetic-oncall-1',name:'Synthetic checkout',environment:'test',owner:actor.id,runbook:[],pager:''});
+  await senderSetupBrowser(page,context,worker.origin,request,()=>randomBytes(32).toString('hex'));
+ }
  if(focused==='response-policy')await responsePolicyBrowser(page,context);
  if(focused==='support-start')await supportStartBrowser(page,context,{setTime,proof:triageProof});
  if(focused==='roles'){
@@ -905,7 +990,7 @@ try {
  if(focused==='move-in-guide')await providerExport(page,context,1440,triageProof);
  if(['limitations','readiness'].includes(focused))await limitationsBrowser(page,context);
  if(focused==='triage')await triageFiltersBrowser(page,context,{setTime,proof:triageProof});
- if(!['response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
+ if(!['sender-setup','response-policy','imported-email','events-source','readiness','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused)){
  await productBrowserJourney(page,context,{openSession,accessibilityOnly:focused==='accessibility',setTime,triageProof})
  if(focused!=='accessibility'){
  await incompleteIntakeBrowser(page,context)
@@ -916,12 +1001,12 @@ try {
  console.log('PASS OC-056 source recovery browser: versioned policy, stopped alert, awaiting-resolution incident, commander reminder, required-summary refusal and focused tooltips at 1440; overflow, axe and hydration checked')
  }
  }
- if(!['response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))await readinessBrowser(page,context)
+ if(!['sender-setup','response-policy','imported-email','events-source','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(focused))await readinessBrowser(page,context)
  if(!focused)await importedEmailBrowser(page,context)
  if(!focused)await responseReportBrowser(browser)
  if(!focused)await eventsSourceBrowser(page,context)
  assert.deepEqual(errors,[],'no browser application errors')
- console.log(focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
+ console.log(focused==='sender-setup'?'Emitted Worker sender setup journey passed at 1440; screens captured at 1440 and 390':focused==='response-policy'?'Emitted Worker response-policy journey passed at 1440':focused==='imported-email'?'Emitted Worker saved email import journey passed at 1440; changed states captured at 1440 and 390':focused==='rota-timeline'?'Emitted Worker rota timeline passed: readable phone lists and compact accessible desktop slices on overview and rota pages':focused==='readable-times'?'Emitted Worker readable-times journey passed at 1440 in Australia/Brisbane with an America/New_York rota; changed rota and readiness screens captured at 1440 and 390':focused==='events-source'?'Emitted Worker Events source journey passed at 1440; screens captured at 1440 and 390':focused==='support-start'?'Emitted Worker support-start browser journey passed at 1440; screens captured at 1440 and 390':focused==='move-in-guide'?'Emitted Worker move-in guide and exporter journey passed; changed screens captured at 1440 and 390':focused==='roles'?'Emitted Worker role and workflow browser journey passed at 1440; role screens captured at 1440 and 390':focused==='readiness'?'Emitted Worker readiness browser journey passed at 1440':focused==='triage'?'Emitted Worker triage browser journey passed at 1440; changed screens captured at 1440 and 390':'Emitted Worker product browser journey passed at 1440 with the selected OC-009 keyboard leg at 390')
 } catch(error) {
  if(page){
   await page.screenshot({path:'evidence/browser/product-failure.png',fullPage:true,mask:[page.locator('[aria-label="New private calendar URL"]'),page.locator('.one-time-secret input')]})
@@ -932,4 +1017,4 @@ try {
 } finally {
  try {await browser?.close()} finally {await worker.close()}
 }
-if(!['response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');
+if(!['sender-setup','response-policy','imported-email','events-source','readiness','accessibility','triage','limitations','roles','move-in-guide','support-start','readable-times','rota-timeline'].includes(process.env.ONCALL_PRODUCT_JOURNEY))await import('./agent-door-browser.mjs');

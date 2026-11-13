@@ -59,6 +59,9 @@ export function refreshBusinessStatus(state:State){
   if(phase)for(const list of service.emailLists??[])if(list.active)listNotice(service,list,phase);
  }
 }
+function validateAudience(state: State, audience: unknown): asserts audience is string[] {
+  if (!Array.isArray(audience) || audience.length > 1000 || new Set(audience).size !== audience.length || audience.some(id => !state.members.some(row => row.id === id && row.active))) fail('Choose an explicit member audience');
+}
 export function businessCommand(state: State, actor: Member, input: any) {
   const current = state.members.find(row => row.id === actor.id && row.active);
   if (!current) fail('Access revoked', 401);
@@ -67,7 +70,7 @@ export function businessCommand(state: State, actor: Member, input: any) {
     if (current.role !== 'admin') fail('Admin required', 403);
     const supporting = input.supporting, audience = input.audience;
     if (!Array.isArray(supporting) || !supporting.length || supporting.length > 100 || new Set(supporting).size !== supporting.length || supporting.some(id => !state.services.some(row => row.id === id))) fail('Choose supporting technical services');
-    if (!Array.isArray(audience) || audience.length > 1000 || new Set(audience).size !== audience.length || audience.some(id => !state.members.some(row => row.id === id && row.active))) fail('Choose an explicit member audience');
+    validateAudience(state, audience);
     if (!state.members.some(row => row.id === input.communicationsOwner && responder(row))) fail('Choose an active responder or admin as communications owner');
     if (typeof input.highUrgencyImpact !== 'boolean') fail('Choose the high-urgency impact rule');
     const service: BusinessService = {id: crypto.randomUUID(), name: text(input.name, 'Business-service name', 100),
@@ -80,7 +83,14 @@ export function businessCommand(state: State, actor: Member, input: any) {
   if (!service || !visibleBusiness(service, current)) fail('Business service not found', 404);
   if (input.revision !== service.revision) fail('Business service changed; reload', 409);
   const manages = current.role === 'admin' || current.id === service.communicationsOwner && responder(current);
-  if(['email-list-add','email-list-subscription'].includes(input.action)){
+  if (input.action === 'audience') {
+    if (current.role !== 'admin') fail('Admin required', 403);
+    validateAudience(state, input.audience);
+    service.audience = input.audience;
+    const removed = new Set(state.members.filter(member => member.role === 'stakeholder' && !visibleBusiness(service, member)).map(member => member.id));
+    for (const subscription of service.subscriptions) if (removed.has(subscription.member)) subscription.active = false;
+    for (const record of service.notices) if (record.target.kind === 'user' && removed.has(record.target.id)) record.state = 'stopped';
+  } else if(['email-list-add','email-list-subscription'].includes(input.action)){
     if(!manages)fail('Only the communications owner or an admin may manage email lists',403);
     if(input.category!=='email-list'||input.channel!=='email')fail('Email-list subscribers require the email-list category and email channel');
     if(input.action==='email-list-add'){
