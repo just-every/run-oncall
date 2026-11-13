@@ -1,0 +1,7 @@
+2026-11-13T13:40:46Z
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> @just-every/oncall@0.5.12 typecheck /home/agent/rer-consolidation/work/sd-oncall-release-0-5-12/run-oncall
+> tsc --noEmit
+
+typecheck exit=0

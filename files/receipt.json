@@ -1,0 +1,112 @@
+{
+  "tag": "sd-oncall-release-0-5-12",
+  "observed_at": "2026-11-13T14:03:36Z",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-12",
+  "head": "1ab915f6efdfe3398c8d7645fe56e46e123299b6",
+  "base": "37fd6d2446588971e8c611b826461d01eb192a0d",
+  "product_custody": "READY",
+  "released_source": {
+    "tag": "v0.5.11",
+    "tag_object": "20c636ce167fb7439b55c1cd13d380ebfbd35b40",
+    "source_commit": "457a0a194a0dc97f653cdc12224cae27b6f1a79f"
+  },
+  "product_push": {
+    "exit_code": 0,
+    "attempts": 1,
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-oncall-release-0-5-12"
+  },
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "1ab915f6efdfe3398c8d7645fe56e46e123299b6",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43435925256",
+    "id": 43435925256,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "pr": null,
+  "version_before": "0.5.11",
+  "version_after": "0.5.12",
+  "rer_pin_before": "0.2.108",
+  "rer_pin_after": "0.2.108",
+  "metadata_paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "package_lock_present": false,
+  "pnpm_lock_changed": false,
+  "clause_counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_status_changes": [],
+  "tests_added": 0,
+  "tests_removed": 0,
+  "tests_modified": 0,
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit_code": 0,
+      "log": "dependency-install.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit_code": 0,
+      "log": "metadata-check.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0,
+      "receipt": "source-lock-write.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "receipt": "source-lock-check.json"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "inspectSource(process.cwd(), HEAD) from pinned rer/modules/release/source.mjs",
+      "exit_code": 0,
+      "receipt": "committed-source-check.json"
+    },
+    {
+      "command": "changelog/release notes, JSON version, no migration and unchanged pin consistency assertions",
+      "exit_code": 0
+    },
+    {
+      "command": "git log origin/main..HEAD identity and trailer review, including side parents",
+      "exit_code": 0,
+      "receipt": "candidate-identities.txt"
+    }
+  ],
+  "publication_scan": "Deferred to fleet guarded lander per cloud assignment; not executed in cloud.",
+  "tags_created": [],
+  "github_release_created": false,
+  "deployed": false,
+  "local_full_suite_run": false,
+  "local_build_run": false,
+  "browser_proof_required": false,
+  "blocking_issues": []
+}

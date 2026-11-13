@@ -1,0 +1,7 @@
+CHANGELOG.md
+README.md
+RELEASE.json
+RELEASE.md
+package.json
+seed.json
+sources.lock.json
