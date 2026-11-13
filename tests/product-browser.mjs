@@ -855,7 +855,7 @@ async function eventsSourceBrowser(page,context) {
  for(const sample of [source,await create('signed')]){
   await page.goto(origin+sample.path);
   assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the existing source link names its source plainly');
-  const details=page.locator('.ingress-example');if(await details.getAttribute('open')===null)await details.locator('summary').click();
+  const details=page.locator('.ingress-example');if(await details.getAttribute('open')===null)await details.locator(':scope > summary').click();
   assert.equal(await page.getByLabel('Ingress URL',{exact:true}).inputValue(),sample.url,'existing ingress address is unchanged');
   const example=await page.getByLabel('Sample request',{exact:true}).inputValue();
   const body=JSON.parse(example.match(/'({\n[\s\S]*\n})'/)[1].replaceAll("'\\''","'"));

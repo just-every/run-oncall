@@ -6680,7 +6680,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "4c87e01384cf0a6abec7b23da0256a85174f0b46fe4cdb9b0b758b268ceb4f91",
+      "sha256": "774d31276a2ac5e601f11bcdfb22f828d62bdce3276c0d97b47d19ce94e756f1",
       "executable": false
     },
     "tests/readable-names-browser.mjs": {
