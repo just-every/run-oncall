@@ -1027,6 +1027,44 @@ export async function triageFiltersBrowser(page,context,{setTime=async()=>{},pro
 export async function triageBulkBrowser(page,context,width){
  const origin=new URL(page.url()).origin,directory=process.env.ONCALL_BROWSER_EVIDENCE??'evidence/browser';await mkdir(directory,{recursive:true});
  const call=async(path,data,status=200)=>{const response=data===undefined?await context.request.get(origin+path):await context.request.post(origin+path,{headers:{origin},data});assert.equal(response.status(),status,path);return response.json();};
+ // A changed and an already-acknowledged item leave a usable selection. The
+ // chosen selected target stays out of the sources sent to the unchanged door.
+ const selectionService=(await call('/api/state')).services.find(service=>service.name==='Checkout');
+ const selected=[];
+ for(const suffix of ['source','target'])selected.push(await call('/api/command',{type:'declare',service:selectionService.id,severity:'warning',title:'Synthetic retained bulk '+suffix,summary:'Investigate a shared dependency'}));
+ await call('/api/command',{type:'transition',incident:selected[1].id,revision:selected[1].revision,state:'acknowledged',summary:'Already investigating'});
+ await page.goto(origin+'/incidents');await page.getByLabel('Search incidents',{exact:true}).fill('Synthetic retained bulk');await page.getByText('2 matching incidents',{exact:true}).waitFor();
+ for(const incident of selected)await page.getByLabel('Select '+incident.title,{exact:true}).check();
+ let retainedBulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});
+ await retainedBulk.getByLabel('Bulk action',{exact:true}).selectOption('merge');
+ for(const incident of selected)await expect(retainedBulk.getByLabel('Merge target',{exact:true}).locator(`option[value="${incident.id}"]`)).toHaveCount(1);
+ assert.deepEqual(new Set(await retainedBulk.getByLabel('Merge target',{exact:true}).locator('option').evaluateAll(options=>options.filter(option=>option.value).map(option=>option.value))).intersection(new Set(selected.map(incident=>incident.id))),new Set(selected.map(incident=>incident.id)),'selected incidents can be kept as the merge target');
+ // Proof captures the changed form once per width; behaviour runs at 1440.
+ for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await retainedBulk.screenshot({path:`${directory}/OC-079-selected-target-${proofWidth}.png`});}
+ await page.setViewportSize({width,height:1000});
+ await retainedBulk.getByLabel('Bulk action',{exact:true}).selectOption('acknowledge');
+ await retainedBulk.getByLabel('Bulk action reason',{exact:true}).fill('Investigate the shared dependency');
+ await retainedBulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();
+ await expect(retainedBulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="succeeded"]')).toHaveCount(1);
+ await expect(retainedBulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="skipped"]')).toHaveCount(1);
+ await expect(retainedBulk.getByRole('button',{name:'Apply to 2 incidents',exact:true})).toBeEnabled();
+ const acknowledged=(await call('/api/state')).incidents.find(incident=>incident.id===selected[0].id);
+ const mergeReply=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/triage/bulk'&&response.request().method()==='POST');
+ await retainedBulk.getByLabel('Bulk action',{exact:true}).selectOption('merge');
+ await retainedBulk.getByLabel('Merge target',{exact:true}).selectOption(selected[1].id);
+ await retainedBulk.getByLabel('Bulk action reason',{exact:true}).fill('Combine the dependency investigation');
+ await retainedBulk.getByRole('button',{name:'Apply to 1 incidents',exact:true}).click();
+ const mergeResponse=await mergeReply,mergeBody=mergeResponse.request().postDataJSON();assert.equal(mergeResponse.status(),200);
+ assert.deepEqual(mergeBody.items.map(item=>({id:item.id,revision:item.revision})),[{id:selected[0].id,revision:acknowledged.revision}],'retained source uses its committed acknowledgment revision without reload');
+ assert.equal(mergeBody.confirmedCount,1);assert.equal(mergeBody.target,selected[1].id);
+ const merged=await mergeResponse.json();assert.equal(merged.results.length,1);assert.equal(merged.results[0].ok,true);
+ await expect(retainedBulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="succeeded"]')).toHaveCount(1);
+ const afterMerge=await call('/api/state');assert.equal(afterMerge.incidents.find(incident=>incident.id===selected[0].id).mergedInto.target,selected[1].id);
+ assert.ok(afterMerge.incidents.find(incident=>incident.id===selected[1].id).mergedSources.includes(selected[0].id));
+ await expect(page.locator('.triage-check input:checked')).toHaveCount(0);
+ for(const proofWidth of [1440,390]){await page.setViewportSize({width:proofWidth,height:1000});await retainedBulk.screenshot({path:`${directory}/OC-079-retained-merge-${proofWidth}.png`});}
+ await page.setViewportSize({width,height:1000});await retainedBulk.getByRole('button',{name:'Dismiss results',exact:true}).click();
+ console.log('PROBE OC-079 retained bulk selection: acknowledge one changed and one skipped, choose a selected target, merge the committed source revision with no reload, preserve the target and clear merged selection; form and results at 1440/390');
  // Extend the existing bulk journey: all matching retains labels beyond page one.
  const stormService=(await call('/api/state')).services.find(s=>s.name==='Checkout');
  const branchService=await call('/api/command',{type:'service',name:'Checkout east branch',environment:'production',owner:(await call('/api/session')).member.id,runbook:[],pager:''});
@@ -1112,7 +1150,7 @@ export async function triageBulkBrowser(page,context,width){
   if(refreshing){await refreshing;assert.equal(await page.getByLabel('Select '+a.title,{exact:true}).isDisabled(),true,'post-save triage refresh keeps stale row revisions unselectable');}
  }finally{releaseRefresh();await Promise.all(heldRefreshes);if(width===1440)await page.unroute('**/api/triage?*',holdRefresh);}
  await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();await selectSources();bulk=page.getByRole('region',{name:'Bulk incident actions',exact:true});await bulk.getByLabel('Bulk action',{exact:true}).selectOption('merge');await bulk.getByLabel('Merge target',{exact:true}).selectOption(target.id);await bulk.getByLabel('Bulk action reason',{exact:true}).fill('One response owns the common failure');await bulk.getByRole('button',{name:'Apply to 2 incidents',exact:true}).click();await page.getByText('2 changed; 0 refused',{exact:true}).waitFor();await expect(bulk.getByRole('list',{name:'Bulk operation results'}).locator('[data-bulk-outcome="succeeded"]')).toHaveCount(2);
- await bulk.screenshot({path:`${directory}/OC-079-merge-${width}.png`});await bulk.getByRole('button',{name:'Clear selection',exact:true}).click();
+ await bulk.screenshot({path:`${directory}/OC-079-merge-${width}.png`});await bulk.getByRole('button',{name:'Dismiss results',exact:true}).click();
  const source='synthetic-oncall-'+(6600+width),key=randomBytes(32).toString('hex');await call('/api/sources',{id:source,key,scopes:[service.id]});
  for(let n=0;n<2;n++){
   const signal={source,eventId:'synthetic-oncall-'+(width*10+n),service:service.id,environment:service.environment,key:'synthetic-oncall-'+(width*10+n),generation:'synthetic-oncall-'+(width*10+n),intent:'trigger',severity:'warning',title:prefix+' alert '+n,observedAt:new Date().toISOString(),evidence:''};
