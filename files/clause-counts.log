@@ -1,0 +1,9 @@
+$ node --input-type=module -e import fs from 'node:fs'; import {parseContract} from './src/base/seed-contract.mjs'; const c=parseContract(fs.readFileSync('CONTRACT.md','utf8')).clauses; console.log(JSON.stringify({total:c.length,done:c.filter(x=>x.status==='done').length,partial:c.filter(x=>x.status==='partial').length,missing:c.filter(x=>x.status==='missing').length},null,2))
+{
+  "total": 101,
+  "done": 26,
+  "partial": 41,
+  "missing": 34
+}
+
+exit=0

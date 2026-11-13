@@ -1,0 +1,5 @@
+$ node src/base/contract-docs.mjs check
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+
+exit=0

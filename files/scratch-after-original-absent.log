@@ -1,0 +1,3 @@
+$ git cat-file -e ab49afbe8bfc3f196b29aa1c82edc7647d8b743a
+
+exit=1

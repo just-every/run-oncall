@@ -1,0 +1,4 @@
+$ node src/base/contract-docs.mjs anchor --old ab49afbe8bfc3f196b29aa1c82edc7647d8b743a
+Recorded docs/contract/ANCHOR.json for ab49afbe8bfc3f196b29aa1c82edc7647d8b743a.
+
+exit=0

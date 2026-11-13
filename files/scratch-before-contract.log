@@ -1,0 +1,6 @@
+$ node src/base/contract-docs.mjs check
+docs/contract/ANCHOR.json: contract_anchor_missing: original ab49afbe8bfc3f196b29aa1c82edc7647d8b743a is unavailable; record it with anchor --old <ref> in a checkout with history. Command failed: git rev-parse --verify --end-of-options ab49afbe8bfc3f196b29aa1c82edc7647d8b743a^{commit}
+fatal: Needed a single revision
+
+
+exit=1

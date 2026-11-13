@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "commit": "ab49afbe8bfc3f196b29aa1c82edc7647d8b743a",
+  "objects": [
+    {
+      "id": "ab49afbe8bfc3f196b29aa1c82edc7647d8b743a",
+      "type": "commit",
+      "bytes": 393
+    },
+    {
+      "id": "27fd52e2b8bc86517dcefc591f598e21581e7c53",
+      "type": "tree",
+      "bytes": 1980
+    },
+    {
+      "id": "29c8a71c74f86fe335197719f4c89595ce4d798c",
+      "type": "blob",
+      "bytes": 264368
+    },
+    {
+      "id": "e5158346ab82a4fb7d02cd7cf1f40e2689bcab65",
+      "type": "blob",
+      "bytes": 131943
+    },
+    {
+      "id": "b83f261ea12acd8c7df22699ea84c123318471e9",
+      "type": "tree",
+      "bytes": 763
+    }
+  ],
+  "anchor_bytes": 533175,
+  "anchor_sha256": "2a0472bfd9fb5c8ac6d67a68cdeb48affac50c727137bc0ef63385eb260f7f1e",
+  "injected_value_matches": 0
+}

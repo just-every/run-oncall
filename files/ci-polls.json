@@ -1,0 +1,34 @@
+[
+  {
+    "conclusion": null,
+    "head_sha": "f563821f4f85b005ee1ced7675b34a358606e621",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43439350354",
+    "status": "in_progress",
+    "id": 43439350354,
+    "observed_utc": "2026-11-13T14:10:09Z"
+  },
+  {
+    "conclusion": null,
+    "head_sha": "f563821f4f85b005ee1ced7675b34a358606e621",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43439350354",
+    "status": "in_progress",
+    "id": 43439350354,
+    "observed_utc": "2026-11-13T14:15:11Z"
+  },
+  {
+    "conclusion": null,
+    "head_sha": "f563821f4f85b005ee1ced7675b34a358606e621",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43439350354",
+    "status": "in_progress",
+    "id": 43439350354,
+    "observed_utc": "2026-11-13T14:20:13Z"
+  },
+  {
+    "conclusion": "success",
+    "head_sha": "f563821f4f85b005ee1ced7675b34a358606e621",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43439350354",
+    "status": "completed",
+    "id": 43439350354,
+    "observed_utc": "2026-11-13T14:25:14Z"
+  }
+]

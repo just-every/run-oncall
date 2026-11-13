@@ -1,0 +1,162 @@
+[
+  {
+    "label": "base-head",
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/run-oncall",
+    "started_utc": "2026-11-13T14:02:08Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "base-head.log"
+  },
+  {
+    "label": "scratch-before-history",
+    "command": [
+      "git",
+      "rev-list",
+      "--all",
+      "--count"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/scratch-before",
+    "started_utc": "2026-11-13T14:02:10Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "scratch-before-history.log"
+  },
+  {
+    "label": "scratch-before-remotes",
+    "command": [
+      "git",
+      "remote"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/scratch-before",
+    "started_utc": "2026-11-13T14:02:10Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "scratch-before-remotes.log"
+  },
+  {
+    "label": "scratch-before-contract",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "check"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/scratch-before",
+    "started_utc": "2026-11-13T14:02:10Z",
+    "exit": 1,
+    "expected_exit": 1,
+    "log": "scratch-before-contract.log"
+  },
+  {
+    "label": "full-before-contract",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "check"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/run-oncall",
+    "started_utc": "2026-11-13T14:02:10Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "full-before-contract.log"
+  },
+  {
+    "label": "anchor-generate",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "anchor",
+      "--old",
+      "ab49afbe8bfc3f196b29aa1c82edc7647d8b743a"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/run-oncall",
+    "started_utc": "2026-11-13T14:02:10Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "anchor-generate.log"
+  },
+  {
+    "label": "scratch-after-history",
+    "command": [
+      "git",
+      "rev-list",
+      "--all",
+      "--count"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/scratch-after",
+    "started_utc": "2026-11-13T14:02:11Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "scratch-after-history.log"
+  },
+  {
+    "label": "scratch-after-remotes",
+    "command": [
+      "git",
+      "remote"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/scratch-after",
+    "started_utc": "2026-11-13T14:02:11Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "scratch-after-remotes.log"
+  },
+  {
+    "label": "scratch-after-original-absent",
+    "command": [
+      "git",
+      "cat-file",
+      "-e",
+      "ab49afbe8bfc3f196b29aa1c82edc7647d8b743a"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/scratch-after",
+    "started_utc": "2026-11-13T14:02:11Z",
+    "exit": 1,
+    "expected_exit": 1,
+    "log": "scratch-after-original-absent.log"
+  },
+  {
+    "label": "scratch-after-contract",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "check"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/scratch-after",
+    "started_utc": "2026-11-13T14:02:11Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "scratch-after-contract.log"
+  },
+  {
+    "label": "full-after-contract",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "check"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/run-oncall",
+    "started_utc": "2026-11-13T14:02:12Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "full-after-contract.log"
+  },
+  {
+    "label": "clause-counts",
+    "command": [
+      "node",
+      "--input-type=module",
+      "-e",
+      "import fs from 'node:fs'; import {parseContract} from './src/base/seed-contract.mjs'; const c=parseContract(fs.readFileSync('CONTRACT.md','utf8')).clauses; console.log(JSON.stringify({total:c.length,done:c.filter(x=>x.status==='done').length,partial:c.filter(x=>x.status==='partial').length,missing:c.filter(x=>x.status==='missing').length},null,2))"
+    ],
+    "cwd": "/home/agent/rer-consolidation/work/sd-oncall-contract-anchor-2/run-oncall",
+    "started_utc": "2026-11-13T14:02:12Z",
+    "exit": 0,
+    "expected_exit": 0,
+    "log": "clause-counts.log"
+  }
+]

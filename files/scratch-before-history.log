@@ -1,0 +1,4 @@
+$ git rev-list --all --count
+2
+
+exit=0

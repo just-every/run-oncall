@@ -1,0 +1,46 @@
+{
+  "recorded_utc": "2026-11-13T14:05:50Z",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-contract-anchor-2",
+  "head": "f563821f4f85b005ee1ced7675b34a358606e621",
+  "base": "37fd6d2446588971e8c611b826461d01eb192a0d",
+  "product_tree": "8d5aa0e30c08e9d9a9c1084cb2c40a2e200b8872",
+  "scratch_after_tree": "8d5aa0e30c08e9d9a9c1084cb2c40a2e200b8872",
+  "scratch_after_commits": 2,
+  "scratch_after_remotes": [],
+  "typecheck_exit": 0,
+  "scratch_typecheck_exit": 0,
+  "scratch_declared_check_exit": 0,
+  "lock_generate_exit": 0,
+  "lock_check_exit": 0,
+  "changed_files": [
+    "docs/contract/ANCHOR.json",
+    "sources.lock.json"
+  ],
+  "before": {
+    "total": 101,
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "after": {
+    "total": 101,
+    "done": 26,
+    "partial": 41,
+    "missing": 34
+  },
+  "clause_status_changes": [],
+  "claims": [],
+  "product_push": "success",
+  "publication_scan": "NOT RUN: fleet Mac runs the publication scan; cloud cannot run it",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "f563821f4f85b005ee1ced7675b34a358606e621",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43439350354",
+    "status": "completed",
+    "id": 43439350354,
+    "observed_utc": "2026-11-13T14:25:14Z"
+  },
+  "github_calls": 6,
+  "terminal_product_status": "READY"
+}

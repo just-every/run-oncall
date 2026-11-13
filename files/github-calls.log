@@ -1,0 +1,6 @@
+2026-11-13T14:01:06Z gh api repos/just-every/run-lamp/contents/docs/contract/ANCHOR.json --jq .content
+2026-11-13T14:05:08Z gh api repos/just-every/run-oncall/actions/runs?head_sha=f563821f4f85b005ee1ced7675b34a358606e621&per_page=100
+2026-11-13T14:10:09Z gh api repos/just-every/run-oncall/actions/runs/43439350354 --jq {status,conclusion,head_sha,html_url}
+2026-11-13T14:15:10Z gh api repos/just-every/run-oncall/actions/runs/43439350354 --jq {status,conclusion,head_sha,html_url}
+2026-11-13T14:20:12Z gh api repos/just-every/run-oncall/actions/runs/43439350354 --jq {status,conclusion,head_sha,html_url}
+2026-11-13T14:25:14Z gh api repos/just-every/run-oncall/actions/runs/43439350354 --jq {status,conclusion,head_sha,html_url}
