@@ -16,7 +16,7 @@ export function RoutedKeyCreate({ state, busy, run, defaultOpen = false, onCreat
       if(!scope.length){setError('Choose at least one service.');return false;}setError('');
       const id = newIdentity('routed'), key = privateKey();
       const result = await run('/api/routing/keys', { id, name, provider, scope, owner, key, ...(team?{team}:{}), revision: 0, rules: [], catchAll: null, ...(provider === 'native' ? { authentication } : {}) }, 'Routed key created');
-      if (result) { const service = state.services.find(s => s.id === scope[0]); setCreated(key); if (service) setSender({ id, name, provider, service, ...(provider === 'native' ? { authentication } : {}) }); onCreated?.(id); }
+      if (result) { const service = state.services.find(s => s.id === scope[0]); setCreated(key); if (service) setSender({ id, name, provider, service, services: state.services.filter(s => scope.includes(s.id)), ...(provider === 'native' ? { authentication } : {}) }); onCreated?.(id); }
       return false;
     }}>
       {error&&<p role="alert">{error}</p>}<label className="field">Name<input aria-label="Name" autoFocus={defaultOpen} required maxLength={200} value={name} onChange={e => setName(e.target.value)} /></label>

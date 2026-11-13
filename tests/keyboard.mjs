@@ -16,7 +16,11 @@ export async function routingBrowser(page,context,width) {
  const createdKey=await create.getByLabel('Private key',{exact:true}).inputValue();assert.ok(createdKey);
  // A newcomer can configure the sender from this confirmation alone: the key ID, the ingress address and a sample that runs as copied.
  const setup=create.getByRole('region',{name:'Sender setup for this key',exact:true}),shots=process.env.ONCALL_BROWSER_EVIDENCE??'../evidence/browser';
+ assert.equal(await setup.getByLabel('Key ID',{exact:true}).isVisible(),false,'internal identity stays in deliberate details');
+ assert.ok((await setup.innerText()).includes(source.name),'sender setup uses the named key');
+ await key.activate(setup.getByText('Key details',{exact:true}));
  assert.equal(await setup.getByLabel('Key ID',{exact:true}).inputValue(),source.id);
+ await key.activate(setup.getByText('Key details',{exact:true}));
  const url=await setup.getByLabel('Ingress URL',{exact:true}).inputValue();assert.equal(url,origin+'/api/ingress/'+encodeURIComponent('intake:'+source.id));
  const sample=await setup.getByLabel('Sample request',{exact:true}).inputValue();assert.ok(!sample.includes(createdKey),'sample never embeds the secret');assert.ok(sample.includes(JSON.stringify('intake:'+source.id).slice(1,-1)),'sample names the key as its source');
  await context.grantPermissions(['clipboard-read','clipboard-write']);await setup.getByRole('button',{name:'Copy sample request',exact:true}).click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),sample);
