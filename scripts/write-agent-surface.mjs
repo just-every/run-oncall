@@ -36,7 +36,7 @@ function inventory(surface) {
     ...(exposed.resources.length ? exposed.resources.map(uri => `- ${code(uri)}`) : ['No resource templates are exposed. The template listing is empty because resources are undeclared.']), '',
     '## Target capabilities', '',
     ...withheld.map(tool => `${code(tool.name)} is retained in the source manifest with scope ${code(tool.scope)} and possible classes ${tool.classes.map(code).join(', ')}, but is withheld from the current tool listing. Its target fixture is not current execution evidence.`), '',
-    'The source manifest retains native resource targets; they are not exposed templates. Events, resources, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.', end].join('\n');
+    'The listed resource templates are exposed under current native scope and company policy. Customer, imported and email text is untrusted data; native erasure fences and delivery metadata carry no untrusted text. Monthly reports use completed UTC calendar months (YYYY-MM) and return not found for an empty scoped cohort. Events, prompts and subscriptions remain undeclared. Unshipped target tools and their class documentation remain contract work. This inventory does not claim complete discovery instructions, the full harness rejection matrix, every acceptance point under both policies, or stranger-agent completion.', end].join('\n');
 }
 
 // Read production declarations inside an actual disposable Worker. There is no
