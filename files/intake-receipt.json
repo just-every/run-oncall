@@ -1,0 +1,40 @@
+[
+  {
+    "name": "runtime-machines",
+    "command": [
+      "node",
+      "tests/runtime.mjs"
+    ],
+    "environment": {
+      "ONCALL_RUNTIME_PART": "machines"
+    },
+    "started_at": "2026-11-13T04:01:11.061694+00:00",
+    "ended_at": "2026-11-13T04:08:41.114901+00:00",
+    "exit_code": 0,
+    "log": "runtime-machines.log"
+  },
+  {
+    "name": "intake",
+    "command": [
+      "node",
+      "tests/intake.mjs"
+    ],
+    "environment": {},
+    "started_at": "2026-11-13T04:08:41.118112+00:00",
+    "ended_at": "2026-11-13T04:09:51.073674+00:00",
+    "exit_code": 0,
+    "log": "intake.log"
+  },
+  {
+    "name": "routing",
+    "command": [
+      "node",
+      "tests/routing.mjs"
+    ],
+    "environment": {},
+    "started_at": "2026-11-13T04:09:51.074089+00:00",
+    "ended_at": "2026-11-13T04:11:50.142708+00:00",
+    "exit_code": 0,
+    "log": "routing.log"
+  }
+]

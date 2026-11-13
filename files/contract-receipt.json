@@ -1,0 +1,41 @@
+{
+  "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "contract_files": [
+    {
+      "file": "CONTRACT.md",
+      "sha256": "c04517abc904f1e5618a858e191fd0a9ae1dc54484b6fb993a56c794a9193cac",
+      "byte_identical_to_origin_main": true
+    },
+    {
+      "file": "ACCEPTANCE.md",
+      "sha256": "875e11f85ca8473511fe5defbbdd5d6457f248e48fcbbe6796d86194701c62c3",
+      "byte_identical_to_origin_main": true
+    },
+    {
+      "file": "docs/CLAIMS.md",
+      "sha256": "8c57d53cb2bd436176cc5b556bd1a4ca786848e4ee2d310bed277fe8faf7d440",
+      "byte_identical_to_origin_main": true
+    }
+  ],
+  "clause_status_changes": [],
+  "claims": {
+    "OC-001": "PARTIAL points=none",
+    "OC-041": "PARTIAL points=none",
+    "OC-054": "PARTIAL points=none"
+  },
+  "contract_summary_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "contract_summary_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "scheduled_journey_entries_before": 16,
+  "scheduled_journey_entries_after": 16,
+  "new_registrations": 0
+}

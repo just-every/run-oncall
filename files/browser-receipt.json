@@ -1,0 +1,88 @@
+{
+  "assertion_width": 1440,
+  "chromium": "/usr/bin/chromium",
+  "runtime": "emitted production Worker with local D1",
+  "screenshots": [
+    {
+      "file": "browser/events-empty-source-1440.png",
+      "width": 1440,
+      "height": 1427,
+      "visually_reviewed": true
+    },
+    {
+      "file": "browser/events-empty-source-390.png",
+      "width": 390,
+      "height": 1545,
+      "visually_reviewed": true
+    },
+    {
+      "file": "browser/events-readable-bearer-source-1440.png",
+      "width": 1440,
+      "height": 1599,
+      "visually_reviewed": false
+    },
+    {
+      "file": "browser/events-readable-bearer-source-390.png",
+      "width": 390,
+      "height": 1717,
+      "visually_reviewed": false
+    },
+    {
+      "file": "browser/events-readable-signed-source-1440.png",
+      "width": 1440,
+      "height": 1463,
+      "visually_reviewed": false
+    },
+    {
+      "file": "browser/events-readable-signed-source-390.png",
+      "width": 390,
+      "height": 1581,
+      "visually_reviewed": false
+    },
+    {
+      "file": "browser/readable-names-routed-created-1440.png",
+      "width": 1440,
+      "height": 2969,
+      "visually_reviewed": true
+    },
+    {
+      "file": "browser/readable-names-routed-created-390.png",
+      "width": 390,
+      "height": 3264,
+      "visually_reviewed": true
+    },
+    {
+      "file": "browser/readable-names-audit-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "visually_reviewed": true
+    },
+    {
+      "file": "browser/readable-names-audit-390.png",
+      "width": 390,
+      "height": 1442,
+      "visually_reviewed": true
+    },
+    {
+      "file": "browser/readable-names-readiness-1440.png",
+      "width": 1440,
+      "height": 7689,
+      "visually_reviewed": true
+    },
+    {
+      "file": "browser/readable-names-readiness-390.png",
+      "width": 390,
+      "height": 15651,
+      "visually_reviewed": true
+    }
+  ],
+  "checks": {
+    "native_setup": "pass",
+    "routed_setup": "pass",
+    "configuration_audit": "pass",
+    "readiness_release": "pass",
+    "copied_bearer_and_signed_requests": "pass",
+    "raw_audit_unchanged": "pass"
+  },
+  "private_key_screenshots": "masked by the original journey"
+}

@@ -1,0 +1,21 @@
+{
+  "original_head": "21c7b435b0a9b821ba803d7fdef6d9bc6dc71a74",
+  "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "carried_files": [
+    "src/archive/ConfigurationAudit.tsx",
+    "src/integrations/RequestExample.tsx",
+    "src/readiness/ReadinessPage.tsx",
+    "src/routing/RoutedKeyCreate.tsx",
+    "src/routing/RoutedSenderSetup.tsx",
+    "src/routing/RoutingWorkspace.tsx",
+    "tests/keyboard.mjs",
+    "tests/product-browser.mjs",
+    "tests/readable-names-browser.mjs"
+  ],
+  "carried_file_differences_from_original_head": [],
+  "conflicts": [],
+  "additional_product_fixes": [],
+  "contract_files_unchanged": true,
+  "local_diff_credential_shape_check": "pass",
+  "full_publication_scan": "Deferred to fleet Mac lander as instructed; unavailable in this cloud"
+}

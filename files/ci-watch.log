@@ -1,0 +1,9 @@
+{"at": "2026-11-13T04:12:52.281043+00:00", "conclusion": null, "head_sha": "92a9c25ac24f71c287cd4267dccd6c73196400a1", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43364025209", "id": 43364025209, "name": "Verify", "status": "in_progress"}
+Next CI read in 299 seconds
+CI API read failed exit=1
+Next permitted CI read in 208 seconds
+{"at": "2026-11-13T04:22:52.411774+00:00", "conclusion": null, "head_sha": "92a9c25ac24f71c287cd4267dccd6c73196400a1", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43364025209", "id": 43364025209, "status": "in_progress"}
+Next permitted CI read in 300 seconds
+{"at": "2026-11-13T04:27:52.540070+00:00", "conclusion": null, "head_sha": "92a9c25ac24f71c287cd4267dccd6c73196400a1", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43364025209", "id": 43364025209, "status": "in_progress"}
+Next permitted CI read in 299 seconds
+{"at": "2026-11-13T04:32:52.669418+00:00", "conclusion": "success", "head_sha": "92a9c25ac24f71c287cd4267dccd6c73196400a1", "html_url": "https://github.com/just-every/run-oncall/actions/runs/43364025209", "id": 43364025209, "status": "completed"}

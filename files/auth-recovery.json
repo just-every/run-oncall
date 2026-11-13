@@ -1,0 +1,15 @@
+{
+  "failure": "gh api repos/just-every/run-oncall/actions/runs/43364025209",
+  "observed_http": 401,
+  "diagnostic": "gh: Bad credentials (HTTP 401)",
+  "refresh_at": "2026-11-13T04:18:48.837343+00:00",
+  "refresh_completed": true,
+  "fleet_git_setup_repeated": true,
+  "credential_source": "launcher-decrypted bundle only",
+  "next_run_read_not_before": "2026-11-13T04:22:52.310691+00:00",
+  "refreshed_bundle_token_sha256_16": "8addacf6ac95b0bc",
+  "initial_push_bundle_token_sha256_16": "8addacf6ac95b0bc",
+  "same_bundle_token_after_refresh": true,
+  "recovered_at": "2026-11-13T04:22:52.411774+00:00",
+  "recovery_outcome": "Next exact-SHA run read succeeded; Verify still in progress"
+}

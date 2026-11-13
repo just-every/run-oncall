@@ -1,0 +1,13 @@
+{
+  "head": "92a9c25ac24f71c287cd4267dccd6c73196400a1",
+  "branch": "cloud/main-oncall-readable-names-1-c1",
+  "parent": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "commit_count": 1,
+  "all_candidate_author_and_committer_identities": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "all_candidate_trailers": "none",
+  "tree_matches_local_tested_tree": true,
+  "contract_files_unchanged": true,
+  "remote_advertised_head": "92a9c25ac24f71c287cd4267dccd6c73196400a1",
+  "exact_sha_verify_run_id": 43364025209,
+  "exact_sha_verify_conclusion": "success"
+}

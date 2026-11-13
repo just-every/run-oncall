@@ -1,0 +1,26 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PASS plain coordination CAS: 200 then 409, first owner/reason/version retained; accepted audit entries +1, workspace revisions +1
+PASS ct email field no-op: address bytes/version equal, workspace revision unchanged, all state equal, one accepted email.name.no-change ledger row; field door has no request-id contract
+PROBE OC-041 routing publication: protected publish and targeted audit failure -> unchanged rule versions and custody, then attributed publication with one committed revision-bound audit fact
+PASS OC-043 later observation after expiry routes the existing group without rewriting its original event
+PASS OC-043 admission maintenance: stale/unauthorized shape and owner validation, atomic audit rollback, routed error/Datadog/Prometheus suppression, owner queue, exact expiry without timers, immutable originals, read-only replay and restart
+Native routed public journey: bearer/HMAC, immutable retries, scope, per-service recovery, unrouted/readmission, zero-write replay, stale publication, audit rollback, rotation/revocation and secret-free checkpoint passed
+PASS OC-084 per-record rolling allowances: default 121st event, other-key isolation, duplicate request boundary, rotation, exact-window recovery, owner notices, pre-grouping and incomplete refusal, checkpoint policy custody
+PASS per-key 429 across PagerDuty v1/v2, Opsgenie action/status, Splunk, Alertmanager, Grafana, Datadog and ordinary native doors; grouped custody unchanged, viewer refusal and policy audit rollback
+PASS OC-043 correlation: Datadog/Prometheus/error labels, routed-first versions, immutable originals, exact event-time boundary, dependency/environment isolation, audit rollback, ordered zero-write replay, restart, flapping and explicit next-admission release
+PASS OC-043 routed severity/priority transformation: OC-072 routing version then selected service version, original event, label action and zero-write replay table counts
+PASS team routed key: outside scope 400/revision unchanged; own scope 201; rotate 200/read team retained; event 202 to payments; later team change 400/revision unchanged
+PASS team routed key export/restore retains team ownership
+OC-070 modes and rules map email onto derived generations. Routed intake: scoped fixed/dynamic rules, per-service generations, suppression ordering, replay/no writes, stale publish, readmission, authority, rollback, rotation and inactive archive/restart
+PASS native custody partition: restore carries exact prefixes, 70 KB custody beyond the authored profile, other keys and humans unaffected, 10,000 boundary and separate rate refusal
+OC-058 service policy: off by default, bounded versioned acknowledgment timeout, stale publication refused and explicit off retained
+PASS OC-014 service routing preview isolation: retained and proposed decisions preserve all durable rows, synthetic receipts, jobs, deadlines and outbound work; zero outbound network requests
+PASS OC-043 urgency transformation: versioned explained lowering at new admission, unchanged severity and open high urgency, ordered correlation and both urgency decisions with zero durable/audit writes
+PASS OC-043 severity/priority transformations: versioned reasoned lowering, open-alert floors, original fields, raising, duplicate identity, authority, stale/invalid zero writes, ordered replay table counts, audit rollback and restart
+PASS OC-043 effective response classification: transformed severity selects response rule and declaration, original retained; recovery stops only the alert obligation and preserves human incident state
+PASS OC-043 declared priority field: severity/priority raises from source priority and original classification; malformed priority stays in OC-059 high incomplete custody without transformation or declaration
+PASS OC-043 ordered future replay: prior hypothetical raises protect the same generation with zero durable or permanent-audit writes
+PASS OC-057 urgency rules, previews and human changes hold; support-start raising is labelled not automatic
+Urgency public Worker journey passed: immutable admission, severity raises, human edits and authority, DST/holiday previews, strict atomic archives, held records and restart

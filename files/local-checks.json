@@ -1,0 +1,49 @@
+{
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit_code": 0,
+      "log": "Private setup log retained outside packet because it can carry owner entry material"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit_code": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source ONCALL_CHROMIUM_PATH=/usr/bin/chromium cloud_run node tests/product-browser.mjs",
+      "exit_code": 0,
+      "log": "events-source.log"
+    },
+    {
+      "command": "cloud_run node ../routing-browser-runner.mjs (calls existing tests/keyboard.mjs#routingBrowser at 1440)",
+      "exit_code": 0,
+      "log": "routing-browser.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "log": "source-lock.log"
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "log": "installed-source-check.log"
+    }
+  ],
+  "toolchain": {
+    "node": "v24.19.0",
+    "pnpm": "10.12.4",
+    "chromium": "/usr/bin/chromium"
+  }
+}

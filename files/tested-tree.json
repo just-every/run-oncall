@@ -1,0 +1,45 @@
+{
+  "tree": "4e42bab26e00f59729fefdf1fdf3d0ff7f506873",
+  "files": [
+    {
+      "path": "sources.lock.json",
+      "sha256": "9dc2b4439efaf7e8d12853a58e0054d78c85daad5a560be4a5bc3d9061f61a64"
+    },
+    {
+      "path": "src/archive/ConfigurationAudit.tsx",
+      "sha256": "a5fa180cc10c5369ac2274a3c8790129a58a3454e746e096727ba43172144dc9"
+    },
+    {
+      "path": "src/integrations/RequestExample.tsx",
+      "sha256": "8e0511de3004591a18fdda28d11fd6cfb9c1947a965dcc3a545f401be4523a75"
+    },
+    {
+      "path": "src/readiness/ReadinessPage.tsx",
+      "sha256": "59305cf5c3cb951667fd1d0c1361bb3e7e9d289348d4f1c11255e9c7d550f64e"
+    },
+    {
+      "path": "src/routing/RoutedKeyCreate.tsx",
+      "sha256": "d1c517c817e0203c7349fa397db7cbe4513909bab2b71dba5786a381c7453c95"
+    },
+    {
+      "path": "src/routing/RoutedSenderSetup.tsx",
+      "sha256": "0aeb89759cc8d57c6095766f0d67570b719f07fc98d11a116c38c419ff235370"
+    },
+    {
+      "path": "src/routing/RoutingWorkspace.tsx",
+      "sha256": "9a8a05b9eb3dbc4bad3bc2cedb6fe0f593cdc0c5bc408a65d9d5d3b1ee1f51e5"
+    },
+    {
+      "path": "tests/keyboard.mjs",
+      "sha256": "e134038c4c1029af341dd517080c5a390d92dc159c0948334e5ac87365c161ac"
+    },
+    {
+      "path": "tests/product-browser.mjs",
+      "sha256": "ec96a584d9e7cb5e8ffec8463c1da42ee46aabd76649b7421023e46077dcad2e"
+    },
+    {
+      "path": "tests/readable-names-browser.mjs",
+      "sha256": "619304fdac52d9a318248a5e2afb0d6e33b36b6ccab9196d69e5d830aa702c9e"
+    }
+  ]
+}
