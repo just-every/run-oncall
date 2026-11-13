@@ -892,7 +892,6 @@ async function eventsSourceBrowser(page,context) {
   await page.goto(origin+sample.path);assert.equal(await page.getByRole('region',{name:'Integration source',exact:true}).getByRole('heading',{level:2}).innerText(),sample.name,'the original page URL still works after sending');
  }
 
- await readableNamesBrowser(page,context,{source,service,serviceName});
  // The same form diagnoses a valid key's event allowance, including rotation.
  await page.goto(origin+source.path);await page.getByText('Send a test event',{exact:true}).click();
  let limited=await request('/api/state');await request('/api/intake/allowances',{id:'source:'+source.source,requests:600,events:1,revision:limited.revision});
@@ -916,6 +915,7 @@ async function eventsSourceBrowser(page,context) {
  assert.doesNotMatch(await page.locator('.failure-line').innerText(),/allowance/i);
  await writeFile(`${directory}/test-event-receipt.json`,JSON.stringify({journey:'eventsSourceBrowser',width:1440,compatible:{sameMountedFormRecovered:true,returnedFormRecovered:true,activeAlerts:compatibleAlerts.filter(a=>a.state==='active').length,generations:compatibleAlerts.length,keyVisible:true,keyRetainedBetweenSends:true,keyNotPersistedAcrossNavigation:true},allowance:{status:429,reason:allowanceFailure,rotatedReason:rotatedFailure,unchangedAlertsAndEvents:true},authentication:{compatibleStatus:400,nativeStatus:401,reason:keyFailure},screenshots:[1440,390]},null,2)+'\n');
  console.log('PASS test-event results: compatible same-form and returned-form recoveries leave zero active alerts, explicit outage key and in-memory private key retained; native allowance and rotated key refusals explain retry or allowance settings, wrong keys explain authentication, refused requests preserve events and alerts; changed screens captured at 1440/390.');
+ await readableNamesBrowser(page,context,{source:{...source,key:rotatedKey},service,serviceName});
  console.log('PASS OC-001 Events source recovery: Critical Trigger -> navigate Alerts -> Warning Recover with retained key/generation; one recovered alert, active 1 to 0, nav/list/detail agree, declared incident stays open. Detail-page readable source samples copied and executed for bearer and signed, alerts visible, legacy ID retries deduplicated and mismatched identities refused; changed screens captured once at 1440/390.');
  assert.deepEqual(sourceErrors,[],'source recovery has no browser application errors');
  } finally {await sourceContext.close();}
