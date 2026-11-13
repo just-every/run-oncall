@@ -7,7 +7,8 @@ const code=answer=>answer.result?._meta?.['com.runeditrun/error']?.code??answer.
 
 /** Search, scope, policy and read isolation through emitted Worker MCP and D1. */
 export async function triageReads(){
- const runtime=await agentRuntime({clock:Date.UTC(2026,10,12,12)});
+ // SQLite checks session expiry against real time, so freeze a current hour.
+ const runtime=await agentRuntime({clock:Math.floor(Date.now()/3600000)*3600000});
  try{
   const fixture=await triageFixture(runtime),{http,tool,mcp}=runtime;
   const json=async(path,input,status=200)=>{const response=await http(path,input);assert.equal(response.status,status,await response.clone().text());return response.json()};
