@@ -1,0 +1,20 @@
+{
+  "calls": 10,
+  "last_call_at": 1794538961.624516,
+  "runs": [
+    {
+      "id": 43354027409,
+      "name": "Verify",
+      "status": "pending",
+      "conclusion": null,
+      "head_sha": "21c7b435b0a9b821ba803d7fdef6d9bc6dc71a74",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409"
+    }
+  ],
+  "latest": {
+    "conclusion": "failure",
+    "head_sha": "21c7b435b0a9b821ba803d7fdef6d9bc6dc71a74",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409",
+    "status": "completed"
+  }
+}

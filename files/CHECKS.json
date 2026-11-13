@@ -1,0 +1,137 @@
+{
+  "product_branch": "cloud/main-oncall-readable-names-1",
+  "head": "21c7b435b0a9b821ba803d7fdef6d9bc6dc71a74",
+  "base": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "result": "passed",
+      "method": "cloud_run",
+      "note": "ephemeral local owner only; no provider operation"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "result": "passed",
+      "log": "BUILD.txt",
+      "method": "cloud_run"
+    },
+    {
+      "command": "pnpm exec tsc --noEmit",
+      "result": "passed",
+      "exit_code": 0,
+      "log": "TYPECHECK.txt",
+      "method": "cloud_run"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
+      "result": "passed",
+      "exit_code": 0,
+      "log": "EVENTS-SOURCE.txt",
+      "method": "cloud_run; Chromium /usr/bin/chromium --no-sandbox"
+    },
+    {
+      "command": "node .rer/routing-sender.mjs (calls tests/keyboard.mjs#routingBrowser)",
+      "result": "passed",
+      "exit_code": 0,
+      "log": "ROUTING-SENDER.txt",
+      "method": "cloud_run; emitted Worker plus ordinary browser/HTTP doors"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "result": "passed",
+      "log": "SOURCE-LOCK.txt",
+      "note": "regenerated after adding helper to the index; helper digest independently checked"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    },
+    {
+      "command": "git fetch origin main; git rebase origin/main",
+      "result": "already up to date with main; no replay or conflicts"
+    },
+    {
+      "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+      "result": "fleet author and committer; no trailers; all side parents included",
+      "log": "IDENTITY.txt"
+    },
+    {
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-oncall-readable-names-1",
+      "result": "PUSH_OK",
+      "log": "PUSH.txt"
+    },
+    {
+      "command": "ONCALL_PRODUCT_JOURNEY=events-source node tests/product-browser.mjs",
+      "result": "passed",
+      "exit_code": 0,
+      "log": "EVENTS-SOURCE-FINAL.txt",
+      "note": "final helper explicitly establishes its request window before the asserted refusal; product source unchanged"
+    },
+    {
+      "command": "git fetch origin main; git merge origin/main",
+      "result": "passed; already up to date after published save"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "result": "passed",
+      "exit_code": 0,
+      "log": "SOURCE-LOCK-FINAL.txt"
+    },
+    {
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-oncall-readable-names-1",
+      "result": "PUSH_OK",
+      "log": "PUSH.txt",
+      "head": "21c7b435b0a9b821ba803d7fdef6d9bc6dc71a74"
+    }
+  ],
+  "counts": {
+    "brief_findings_before": 4,
+    "brief_findings_after": 0,
+    "new_test_registrations": 0,
+    "removed_test_registrations": 0,
+    "contract_status_changes": 0,
+    "contract_before": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    },
+    "contract_after": {
+      "done": 26,
+      "partial": 41,
+      "missing": 34,
+      "total": 101
+    }
+  },
+  "proof": {
+    "assertion_width": 1440,
+    "visual_widths": [
+      1440,
+      390
+    ],
+    "screens": [
+      "native source setup",
+      "routed key sender setup",
+      "Configuration audit",
+      "Readiness"
+    ],
+    "retained_audit_unchanged": true,
+    "bearer_and_signed_sample_commands_accepted": true,
+    "raw_key_details_explicit": true
+  },
+  "ci": {
+    "run_id": 43354027409,
+    "head_sha": "21c7b435b0a9b821ba803d7fdef6d9bc6dc71a74",
+    "status": "completed",
+    "last_observation_file": "CI-STATUS-7.json",
+    "github_api_calls_used": 10,
+    "conclusion": "failure",
+    "blocker": "Known pre-existing analyticsFixture expired-session failure at tests/oncall-agent-fixtures.mjs:284, 401 !== 200; intake Run this shard failed and verify Require the selected coverage and its proof failed consequentially.",
+    "browser_shard": "success",
+    "result_receipt": "CI-RESULT.json"
+  },
+  "publication_scan": "Mac fleet gate; not available in cloud; not claimed",
+  "contract_observation": "No whole clause acceptance point newly established. Narrow UI regression proof only; no DONE or status claim.",
+  "previous_head": "8bf6337c1901ee547adddabb14ad87448a1666bb",
+  "previous_run_id": 43353157662
+}

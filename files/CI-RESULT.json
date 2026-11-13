@@ -1,0 +1,111 @@
+{
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/main-oncall-readable-names-1",
+  "head": "21c7b435b0a9b821ba803d7fdef6d9bc6dc71a74",
+  "run_id": 43354027409,
+  "conclusion": "failure",
+  "head_sha": "21c7b435b0a9b821ba803d7fdef6d9bc6dc71a74",
+  "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409",
+  "status": "completed",
+  "github_api_calls": 10,
+  "jobs": [
+    {
+      "id": 131651777687,
+      "name": "plan",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131651777687"
+    },
+    {
+      "id": 131651854237,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131651854237"
+    },
+    {
+      "id": 131651856799,
+      "name": "light",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131651856799"
+    },
+    {
+      "id": 131652786555,
+      "name": "shards (intake)",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131652786555"
+    },
+    {
+      "id": 131652786569,
+      "name": "shards (transfer)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131652786569"
+    },
+    {
+      "id": 131652786603,
+      "name": "shards (triage)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131652786603"
+    },
+    {
+      "id": 131652786604,
+      "name": "shards (browser)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131652786604"
+    },
+    {
+      "id": 131652786620,
+      "name": "shards (runtime)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131652786620"
+    },
+    {
+      "id": 131652786719,
+      "name": "shards (hosted)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131652786719"
+    },
+    {
+      "id": 131652786778,
+      "name": "shards (changes)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131652786778"
+    },
+    {
+      "id": 131657467438,
+      "name": "verify",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131657467438"
+    },
+    {
+      "id": 131657468086,
+      "name": "nightly-proof",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131657468086"
+    },
+    {
+      "id": 131657468549,
+      "name": "full-push-proof",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354027409/job/131657468549"
+    }
+  ],
+  "blocker": "Known pre-existing analyticsFixture expired-session failure at tests/oncall-agent-fixtures.mjs:284, 401 !== 200; intake Run this shard failed and verify Require the selected coverage and its proof failed consequentially.",
+  "failed_job_logs_read_once": [
+    131652786555,
+    131657467438
+  ],
+  "reruns": 0,
+  "terminal": "BLOCKED prerequisite=\"Successful exact-SHA Verify\""
+}

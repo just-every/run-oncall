@@ -1,0 +1,20 @@
+{
+  "native": {
+    "prose": [
+      "Keep the private key in your sender’s environment, then run this request.",
+      "The service value is Harbour checkout’s internal ID, copied from Services. The source ID in the URL was assigned when this source was created.",
+      ""
+    ],
+    "sampleService": "synthetic-oncall-501"
+  },
+  "routed": {
+    "prose": [
+      "Keep the private key in your sender’s environment, then run this request.",
+      "The source value is this key’s ID, intake:routed-b4714a6e14aa, the same text as the end of the URL. The service value is only a hint: this key’s published routing rules choose the allowed service, so you can keep Harbour checkout’s internal ID from Services or use another allowed service’s.",
+      ""
+    ],
+    "keyId": "routed-b4714a6e14aa"
+  },
+  "audit": "Configuration audit\n\nNov 13, 2026, 02:28 AM UTC (GMT+0) · intake throttled · Integration owner Synthetic oncall owner: key Checkout signed monitor-3476b0f5ac82 throttled at 2 requests in the rolling minute; 1 requested; coordination notice recorded; paging remains OFF\n\nNov 13, 2026, 02:28 AM UTC (GMT+0) · event · Received Checkout latency: No matching policy; visible unowned alert\n\nNov 13, 2026, 02:28 AM UTC (GMT+0) · alert urgency · Alert Checkout latency: New → Low · Service default: By severity: warning → low\n\nNov 13, 2026, 02:28 AM UTC (GMT+0) · key allowance · Configured allowance for source:Checkout signed monitor-3476b0f5ac82: 1 requests and 1 new events per rolling minute\n\nNov 13, 2026, 02:28 AM UTC (GMT+0) · routing key · Configured routed native key Harbour monitoring router; revision 1; rule version 1\n\nShow all (6)",
+  "release": "@just-every/oncall · 0.5.10"
+}

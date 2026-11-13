@@ -1,0 +1,110 @@
+shards (intake)	Run this shard	﻿2026-11-13T02:48:11.2965074Z ##[group]Run node scripts/verify-oncall.mjs "$SHARD"
+shards (intake)	Run this shard	2026-11-13T02:48:11.2965445Z [36;1mnode scripts/verify-oncall.mjs "$SHARD"[0m
+shards (intake)	Run this shard	2026-11-13T02:48:11.2981201Z shell: /usr/bin/bash -e {0}
+shards (intake)	Run this shard	2026-11-13T02:48:11.2981426Z env:
+shards (intake)	Run this shard	2026-11-13T02:48:11.2981592Z   CI: true
+shards (intake)	Run this shard	2026-11-13T02:48:11.2981773Z   WRANGLER_SEND_METRICS: false
+shards (intake)	Run this shard	2026-11-13T02:48:11.2982008Z   PLAYWRIGHT_SKIP_BROWSER_GC: 1
+shards (intake)	Run this shard	2026-11-13T02:48:11.2982302Z   PLAYWRIGHT_BROWSERS_PATH: /home/runner/work/_temp/ms-playwright
+shards (intake)	Run this shard	2026-11-13T02:48:11.2982598Z   SHARD: intake
+shards (intake)	Run this shard	2026-11-13T02:48:11.2982882Z   ONCALL_BROWSER_EVIDENCE: /home/runner/work/_temp/oncall-browser-evidence
+shards (intake)	Run this shard	2026-11-13T02:48:11.2983194Z ##[endgroup]
+shards (intake)	Run this shard	2026-11-13T02:48:11.3287349Z > pnpm run verify:app
+shards (intake)	Run this shard	2026-11-13T02:48:11.5274501Z 
+shards (intake)	Run this shard	2026-11-13T02:48:11.5275229Z > @just-every/oncall@0.5.10 verify:app /home/runner/work/run-oncall/run-oncall
+shards (intake)	Run this shard	2026-11-13T02:48:11.5275650Z > node tests/verify.mjs
+shards (intake)	Run this shard	2026-11-13T02:48:11.5275791Z 
+shards (intake)	Run this shard	2026-11-13T02:48:12.2715672Z (node:2517) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (intake)	Run this shard	2026-11-13T02:48:12.2716625Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (intake)	Run this shard	2026-11-13T02:48:12.7173855Z Owned runtime processes [["2517","2505","node"],["2528","2517","workerd"],["2533","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:48:13.9472082Z PROBE OC-052 denied-AI: emitted Worker native lifecycle -> resolved with attributed note; outbound attempts=0
+shards (intake)	Run this shard	2026-11-13T02:48:14.0874131Z PROBE OC-052 public-embed: anonymous incident and foreign-origin embed GET -> no incident disclosure; owner embed=404
+shards (intake)	Run this shard	2026-11-13T02:48:14.8718741Z PROBE OC-052 arbitrary-upload: anonymous multipart POST refused and owner POST=404; all non-audit durable tables unchanged; outbound attempts=0
+shards (intake)	Run this shard	2026-11-13T02:48:16.2234335Z {"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+shards (intake)	Run this shard	2026-11-13T02:48:16.2609002Z {"witness":"automation-erasure-fence","path":"/api/recovery/restore","status":409,"labelReturned":false}
+shards (intake)	Run this shard	2026-11-13T02:48:16.2805371Z {"witness":"automation-erasure-fence","path":"/api/restore","status":409,"labelReturned":false}
+shards (intake)	Run this shard	2026-11-13T02:48:16.3921472Z PASS OC-053 erasure fence: legacy journal and native custody refuse stale archive/checkpoints atomically; current checkpoint restores and retains custody
+shards (intake)	Run this shard	2026-11-13T02:48:16.9651547Z PASS OC-040 member recipient custody: local access revoked, queued work removed, named deletion open item and zero outbound calls without consent
+shards (intake)	Run this shard	2026-11-13T02:48:17.2176414Z oncall request failure Error
+shards (intake)	Run this shard	2026-11-13T02:48:17.7405587Z Owned runtime processes [["2517","2505","node"],["2535","2517","workerd"],["2540","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:48:18.6984371Z oncall request failure Error
+shards (intake)	Run this shard	2026-11-13T02:48:19.2370008Z Owned runtime processes [["2517","2505","node"],["2541","2517","workerd"],["2546","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:48:20.1649025Z PASS OC-040 expired-lease clearance: live refusal, admin approval/revision, expired and uncertain leases, atomic audit rollback, clear/clear and clear/erase 200/409, restart before committed erasure and zero external calls
+shards (intake)	Run this shard	2026-11-13T02:48:20.6957075Z Owned runtime processes [["2517","2505","node"],["2547","2517","workerd"],["2552","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:48:25.0221291Z PASS OC-053 management denial: anonymous/token-only 401, viewer/responder 403 across read, create, rotate, revoke, dispatch and replay; token has no session/export/audit door
+shards (intake)	Run this shard	2026-11-13T02:48:26.2946749Z PASS OC-053 permanent named responder: service-account acknowledgment names A; reassignment and new commander B and resolution preserve timeline and pseudonymous audit attribution
+shards (intake)	Run this shard	2026-11-13T02:48:28.1362479Z Owned runtime processes [["2517","2505","node"],["2554","2517","workerd"],["2559","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:48:33.5903122Z Owned runtime processes [["2517","2505","node"],["2561","2517","workerd"],["2566","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:48:35.7059461Z Owned runtime processes [["2517","2505","node"],["2567","2517","workerd"],["2572","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:49:09.7916665Z Owned runtime processes [["2517","2505","node"],["2580","2517","workerd"],["2585","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:49:11.4567166Z Owned runtime processes [["2517","2505","node"],["2586","2517","workerd"],["2591","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:49:12.8062843Z Owned runtime processes [["2517","2505","node"],["2592","2517","workerd"],["2597","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:49:13.9091400Z Owned runtime processes [["2517","2505","node"],["2598","2517","workerd"],["2603","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:49:15.2406913Z Owned runtime processes [["2517","2505","node"],["2604","2517","workerd"],["2609","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:49:16.3815460Z Owned runtime processes [["2517","2505","node"],["2610","2517","workerd"],["2616","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:49:16.4997072Z PASS OC-053 creator demotion/removal: next read/write and origin/endpoint/receiver dispatch refused, no authority transfer, restart, inactive responder acknowledgment refused
+shards (intake)	Run this shard	2026-11-13T02:49:17.6513893Z PASS OC-053 named-responder erasure: timeline association scrubbed, permanent pseudonymous audit fact unchanged, no reassigned label
+shards (intake)	Run this shard	2026-11-13T02:49:17.9762410Z PROBE OC-042 acceptance-1: protected setup and emitted Worker dispatch -> 25 POST requests only to https://8.8.8.8/events; all three redirect targets receive zero requests; authority refusals add zero requests; exact frozen seven-field payloads and archive credential exclusion pass
+shards (intake)	Run this shard	2026-11-13T02:49:18.4561718Z Owned runtime processes [["2517","2505","node"],["2610","2517","workerd"],["2618","2517","workerd"],["2623","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:49:20.0925229Z PASS OC-053 lifetime API receipts: full history refuses new machine mutation, identical authorized retry retains receipt, human coordination continues
+shards (intake)	Run this shard	2026-11-13T02:49:20.1090913Z PASS OC-053 scoped API, atomic signed outbox, receipt uncertainty, replay, revocation and inactive native restore
+shards (intake)	Run this shard	2026-11-13T02:49:20.5478728Z Owned runtime processes [["2517","2505","node"],["2624","2517","workerd"],["2629","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:49:22.7277427Z {"witness":"human-capacity","request":"/api/command","type":"assign-role","status":200,"before":{"incidentRevision":1,"events":1001},"after":{"incidentRevision":2,"events":1002,"acceptedAuditFacts":1,"outcome":"queued","reason":"domain-commit"}}
+shards (intake)	Run this shard	2026-11-13T02:50:54.9702418Z {"witness":"human-capacity","request":"/api/command","type":"transition","status":200,"before":{"incidentRevision":1002,"events":2002},"after":{"incidentRevision":1003,"events":2003,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-13T02:50:55.6431757Z {"witness":"human-capacity","request":"/api/command","type":"reassign","status":200,"before":{"incidentRevision":1003,"events":2003},"after":{"incidentRevision":1004,"events":2004,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-13T02:50:56.1934917Z {"witness":"human-capacity","request":"/api/command","type":"assign-role","status":200,"before":{"incidentRevision":1004,"events":2004},"after":{"incidentRevision":1005,"events":2005,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-13T02:50:56.6839428Z {"witness":"human-capacity","request":"/api/command","type":"action","status":200,"before":{"incidentRevision":1005,"events":2005},"after":{"incidentRevision":1006,"events":2006,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-13T02:50:57.2051838Z {"witness":"human-capacity","request":"/api/command","type":"complete","status":200,"before":{"incidentRevision":1006,"events":2006},"after":{"incidentRevision":1007,"events":2007,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-13T02:50:57.7849281Z {"witness":"human-capacity","request":"/api/command","type":"accept-action","status":200,"before":{"incidentRevision":1007,"events":2007},"after":{"incidentRevision":1008,"events":2008,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-13T02:50:58.4461765Z {"witness":"human-capacity","request":"/api/command","type":"transition","status":200,"before":{"incidentRevision":1009,"events":2008},"after":{"incidentRevision":1010,"events":2009,"acceptedAuditFacts":1,"outcome":"terminal","reason":"capacity-not-scheduled"}}
+shards (intake)	Run this shard	2026-11-13T02:51:00.2404442Z oncall request failure Error
+shards (intake)	Run this shard	2026-11-13T02:51:01.1458224Z Owned runtime processes [["2517","2505","node"],["2677","2517","workerd"],["2683","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:51:02.5329474Z Owned runtime processes [["2517","2505","node"],["2677","2517","workerd"],["2684","2517","workerd"],["2689","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:51:04.5706629Z PASS OC-053 human capacity: retained history >1000, full unfinished backlog, all human event paths, multi-recipient boundary, storage rollback, restart, stable replay and inactive checkpoint restore
+shards (intake)	Run this shard	2026-11-13T02:51:05.0194783Z Owned runtime processes [["2517","2505","node"],["2692","2517","workerd"],["2697","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:51:06.3999694Z OC-068 API manual page: explicit incident-write scope, real policy override, repeated-key single incident, conflicting/cross-scope/read-only refusals and recorded-only obligation
+shards (intake)	Run this shard	2026-11-13T02:51:26.9479510Z OC-058 scheduled snooze: absolute replacement, never-early boundary, restart and concurrent/double sweep produce one deterministic re-trigger obligation with paging OFF
+shards (intake)	Run this shard	2026-11-13T02:51:27.0464555Z OC-058 timeout: each new acknowledgment starts a new versioned deadline and current level-one coverage is resolved only when it fires
+shards (intake)	Run this shard	2026-11-13T02:51:27.1460833Z OC-058 snooze handoff: departed assignee is replaced by current on-call at the captured level, with no invented level or delivery
+shards (intake)	Run this shard	2026-11-13T02:51:27.2266713Z OC-058 checkpoint receiving duty: pending snooze restored held and scheduled work never resumes it
+shards (intake)	Run this shard	2026-11-13T02:51:27.4047699Z OC-058 OC-053 API incident door: scoped snooze and repeated idempotency key retain one pending absolute deadline
+shards (intake)	Run this shard	2026-11-13T02:51:27.6077093Z OC-058 cancellation and gaps: resolution and explicit cancellation stop deadlines; missing current on-call is a retained operator-visible failure, never silence
+shards (intake)	Run this shard	2026-11-13T02:51:27.6962715Z OC-058 scheduled source recovery: a source recovered mid-snooze remains acknowledged after the deadline with no re-trigger obligation
+shards (intake)	Run this shard	2026-11-13T02:51:27.8441203Z OC-058 atomic deadline custody: failed permanent audit rolls back snooze and scheduled expiry together; the durable pending item remains visible and a later sweep commits exactly once
+shards (intake)	Run this shard	2026-11-13T02:51:28.3120809Z Owned runtime processes [["2517","2505","node"],["3096","2517","workerd"],["3101","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:51:29.6354363Z oncall request failure Error
+shards (intake)	Run this shard	2026-11-13T02:51:31.3097187Z PASS OC-040 integration erasure: queued send prevented, in-flight public erasure 409, completion only after outcome, audit rollback, per-table credentials/outbox counts, concurrent 200/409, client unlink and native restore fence
+shards (intake)	Run this shard	2026-11-13T02:51:31.7919402Z Owned runtime processes [["2517","2505","node"],["3103","2517","workerd"],["3108","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:51:34.3070525Z PROBE SURFACE-001 1 autonomous: MCP oncall.alerts.list -> six scoped alerts across three stable pages with native, compatible and monitoring observations and retained routing versions; recovered low filter, sensitive policy parity, truncation without bytes, foreign and unrouted non-disclosure, permission refusal, unchanged native records and permanent audit, zero outbound requests; tools/list and served guide include the row
+shards (intake)	Run this shard	2026-11-13T02:51:35.7033886Z PROBE SURFACE-001 1 held: MCP oncall.alerts.list -> six scoped alerts across three stable pages with native, compatible and monitoring observations and retained routing versions; recovered low filter, sensitive policy parity, truncation without bytes, foreign and unrouted non-disclosure, permission refusal, unchanged native records and permanent audit, zero outbound requests; tools/list and served guide include the row
+shards (intake)	Run this shard	2026-11-13T02:51:35.9059652Z PASS scoped alerts and retained observations: both company policies, native D1 admissions, stable bounded pages, filters, class computation, denied and revoked credentials, zero native effects and zero outbound requests
+shards (intake)	Run this shard	2026-11-13T02:51:36.3843179Z Owned runtime processes [["2517","2505","node"],["3109","2517","workerd"],["3114","2517","ps"]]
+shards (intake)	Run this shard	2026-11-13T02:51:37.9925145Z Worker diagnostics (test failure):
+shards (intake)	Run this shard	2026-11-13T02:51:37.9927128Z [stdout] Using secrets defined in ../../../../../tmp/oncall-flow-txfXJ4/local.env
+shards (intake)	Run this shard	2026-11-13T02:51:37.9927946Z [stderr] (node:3081) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (intake)	Run this shard	2026-11-13T02:51:37.9929004Z [stderr] (Use `node --trace-warnings ...` to show where the warning was created)
+shards (intake)	Run this shard	2026-11-13T02:51:37.9929651Z [stderr] oncall request failure Error
+shards (intake)	Run this shard	2026-11-13T02:51:37.9929907Z 
+shards (intake)	Run this shard	2026-11-13T02:51:37.9937927Z node:internal/modules/run_main:123
+shards (intake)	Run this shard	2026-11-13T02:51:37.9938356Z     triggerUncaughtException(
+shards (intake)	Run this shard	2026-11-13T02:51:37.9938657Z     ^
+shards (intake)	Run this shard	2026-11-13T02:51:37.9938798Z 
+shards (intake)	Run this shard	2026-11-13T02:51:37.9939157Z AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+shards (intake)	Run this shard	2026-11-13T02:51:37.9939545Z 
+shards (intake)	Run this shard	2026-11-13T02:51:37.9939701Z 401 !== 200
+shards (intake)	Run this shard	2026-11-13T02:51:37.9939854Z 
+shards (intake)	Run this shard	2026-11-13T02:51:37.9940365Z     at analyticsFixture (file:///home/runner/work/run-oncall/run-oncall/tests/oncall-agent-fixtures.mjs:284:11)
+shards (intake)	Run this shard	2026-11-13T02:51:37.9941243Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+shards (intake)	Run this shard	2026-11-13T02:51:37.9942200Z     at async Module.analyticsReads (file:///home/runner/work/run-oncall/run-oncall/tests/oncall-agent-analytics.mjs:12:17)
+shards (intake)	Run this shard	2026-11-13T02:51:37.9943142Z     at async file:///home/runner/work/run-oncall/run-oncall/tests/oncall-agent-flow.mjs:672:1 {
+shards (intake)	Run this shard	2026-11-13T02:51:37.9943550Z   generatedMessage: true,
+shards (intake)	Run this shard	2026-11-13T02:51:37.9943770Z   code: 'ERR_ASSERTION',
+shards (intake)	Run this shard	2026-11-13T02:51:37.9943983Z   actual: 401,
+shards (intake)	Run this shard	2026-11-13T02:51:37.9944170Z   expected: 200,
+shards (intake)	Run this shard	2026-11-13T02:51:37.9944437Z   operator: 'strictEqual',
+shards (intake)	Run this shard	2026-11-13T02:51:37.9944776Z   diff: 'simple'
+shards (intake)	Run this shard	2026-11-13T02:51:37.9944964Z }
+shards (intake)	Run this shard	2026-11-13T02:51:37.9945050Z 
+shards (intake)	Run this shard	2026-11-13T02:51:37.9945136Z Node.js v22.20.0
+shards (intake)	Run this shard	2026-11-13T02:51:38.0495669Z  ELIFECYCLE  Command failed with exit code 1.
+shards (intake)	Run this shard	2026-11-13T02:51:38.0694434Z ##[error]Process completed with exit code 1.
