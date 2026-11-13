@@ -1,0 +1,17 @@
+{
+  "head": "e13e2e8004504869919918f433bd8c1a2a86dac1",
+  "remote_ref": "refs/heads/cloud/sd-oncall-release-0-5-11",
+  "advertised_head": "e13e2e8004504869919918f433bd8c1a2a86dac1",
+  "clean_worktree": true,
+  "excluded_scope_unchanged": true,
+  "source_lock_changed_paths": [
+    "/files/CHANGELOG.md/sha256",
+    "/files/RELEASE.md/sha256",
+    "/files/package.json/sha256",
+    "/files/RELEASE.json/sha256",
+    "/files/seed.json/sha256",
+    "/files/README.md/sha256"
+  ],
+  "own_diff_credential_shape_findings": 0,
+  "full_publication_scan": "deferred to guarded Mac lander per brief"
+}

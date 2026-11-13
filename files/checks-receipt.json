@@ -1,0 +1,81 @@
+{
+  "recorded_at": "2026-11-13T03:56:44.828941+00:00",
+  "repository": "just-every/run-oncall",
+  "branch": "cloud/sd-oncall-release-0-5-11",
+  "head": "e13e2e8004504869919918f433bd8c1a2a86dac1",
+  "base": "cc64205ca532de3ac8022838ecdd07cfa5bfae73",
+  "version_before": "0.5.10",
+  "version_after": "0.5.11",
+  "checks": [
+    {
+      "command": "pnpm exec rer check",
+      "exit": 0,
+      "log": "metadata-check.txt"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.txt"
+    },
+    {
+      "command": "release metadata consistency inspection",
+      "exit": 0,
+      "log": "metadata-consistency.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock-write.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-lock-check.json"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "local_node": "24.19.0",
+  "declared_node": "22.20.0",
+  "pnpm": "10.12.4",
+  "rer_pin": "0.2.108",
+  "counts_before": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "counts_after": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "clause_status_changes": [],
+  "tests_added": 0,
+  "tests_modified": 0,
+  "tests_removed": 0,
+  "migrations_added": 0,
+  "files": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RELEASE.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "product_push_log": "product-push.txt",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "e13e2e8004504869919918f433bd8c1a2a86dac1",
+    "html_url": "https://github.com/just-every/run-oncall/actions/runs/43362037584",
+    "status": "completed",
+    "run_id": 43362037584,
+    "observed_at": "2026-11-13T04:14:55.280138+00:00"
+  },
+  "terminal_status": "READY",
+  "api_calls_used": 10
+}

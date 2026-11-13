@@ -1,0 +1,9 @@
+# Release metadata plan — sd-oncall-release-0-5-11
+
+1. Configure fleet Git identity, refresh the launcher, install bundle-only authentication, push guard and commit cleanup hooks. Read launcher and seed instructions.
+2. Clone only just-every/run-oncall shallow and filtered. Confirm exact main Verify and Run site, the latest public release, absent v0.5.11 tag/version, and no competing release branch/open PR.
+3. Compare actual v0.5.10 with main. Update only version metadata and existing release references. Describe the net analytics change, its service grants and limits, with no acceptance promotion. Preserve rer 0.2.108, old release notes and upgrade history. Do not create a nonexistent package-lock.json or modify the pnpm dependency lock when dependencies have not changed.
+4. Install frozen dependencies, run metadata consistency and typecheck only. No new tests, local full suite, build, app setup or browser proof for metadata work. Regenerate sources.lock.json last and run its documented check.
+5. Fetch and rebase main before the first commit/push. Recheck absent v0.5.11 and scope, ensure hooks remain active, commit with explicit fleet author/committer. Inspect all candidate identities, trailers and messages, then push only cloud/sd-oncall-release-0-5-11 through the guard. No tag, release publication, main push, signing or landing.
+6. Discover/poll exact-SHA Verify through REST within ten API calls, one watcher and at least 300 seconds between calls for each run. Report exact result and source-lock checks. Full publication scan belongs to the guarded Mac lander.
+7. Save complete non-secret report and receipts here, publish explicitly selected files to evidence/sd-oncall-release-0-5-11, verify remote product custody, delete the pushed scratch clone and dependencies, and return evidence plus lane POST and READY/PUSHED provenance.

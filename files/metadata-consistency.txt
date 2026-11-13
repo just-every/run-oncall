@@ -1,0 +1,4 @@
+PASS: package.json, seed.json and RELEASE.json agree on 0.5.11.
+PASS: previousVersion 0.5.10, date 2026-11-13, CHANGELOG section equals publicReleaseNotes.
+PASS: prior changelog and upgrade history preserved, dependencies unchanged at rer 0.2.108.
+PASS: no migration, contract, generated-view, product, tests or dependency-lock changes.

@@ -1,0 +1,10 @@
+{"time": "2026-11-13T03:50:46.212192+00:00", "args": ["api", "repos/just-every/run-oncall/actions/runs?head_sha=cc64205ca532de3ac8022838ecdd07cfa5bfae73&per_page=100", "--jq", "{runs:[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]}"]}
+{"time": "2026-11-13T03:51:15.437275+00:00", "args": ["api", "repos/just-every/run-oncall/git/matching-refs/tags/v0.5.1", "--jq", "[.[]|{ref,sha:.object.sha}]"]}
+{"time": "2026-11-13T03:51:15.986345+00:00", "args": ["api", "repos/just-every/run-oncall/branches?per_page=100", "--jq", "[.[]|{name,sha:.commit.sha}]"]}
+{"time": "2026-11-13T03:51:30.463377+00:00", "args": ["api", "repos/just-every/run-oncall/pulls?state=open&per_page=100", "--jq", "[.[]|{number,title,head:.head.ref,updated_at,html_url}]"]}
+{"time": "2026-11-13T03:51:31.301818+00:00", "args": ["api", "repos/just-every/run-oncall/releases/latest", "--jq", "{tag_name,name,published_at,html_url}"]}
+{"time": "2026-11-13T03:54:44.254383+00:00", "args": ["api", "repos/just-every/run-oncall/actions/runs?head_sha=e13e2e8004504869919918f433bd8c1a2a86dac1&per_page=100", "--jq", "{runs:[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]}"]}
+{"time": "2026-11-13T03:59:54.550353+00:00", "args": ["api", "repos/just-every/run-oncall/actions/runs/43362037584", "--jq", "{status,conclusion,head_sha,html_url}"]}
+{"time": "2026-11-13T04:04:54.632058+00:00", "args": ["api", "repos/just-every/run-oncall/actions/runs/43362037584", "--jq", "{status,conclusion,head_sha,html_url}"]}
+{"time": "2026-11-13T04:09:54.708277+00:00", "args": ["api", "repos/just-every/run-oncall/actions/runs/43362037584", "--jq", "{status,conclusion,head_sha,html_url}"]}
+{"time": "2026-11-13T04:14:54.780662+00:00", "args": ["api", "repos/just-every/run-oncall/actions/runs/43362037584", "--jq", "{status,conclusion,head_sha,html_url}"]}

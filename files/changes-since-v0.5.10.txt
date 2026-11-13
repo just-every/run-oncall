@@ -1,0 +1,22 @@
+cc64205 Keep agent read fixture clocks current for session expiry
+809d67a Merge current main preserving readable and routed source samples
+1083b1a Merge remote-tracking branch 'origin/main' into cloud/sd-oncall-c-f243
+960b3d8 Document response analytics and readiness grant boundaries
+0c0619c Add scoped agent response and readiness analytics [skip ci]
+5c3fcda Document readable source aliases and verify copied detail-page samples
+3e696d8 Use readable Events API source samples [skip ci]
+
+ CONTRACT.md                       |   2 +-
+ agent-surface.json                |  23 ++++++-
+ docs/agents.md                    |  10 ++-
+ sources.lock.json                 |  28 ++++++---
+ src/agent-door/analytics-tools.ts |  53 ++++++++++++++++
+ src/agent-door/read-tools.ts      |  12 ++--
+ src/agent-door/resources.ts       |   2 +-
+ src/readiness/api.ts              |  19 +++---
+ tests/oncall-agent-alerts.mjs     |   8 ++-
+ tests/oncall-agent-analytics.mjs  | 126 ++++++++++++++++++++++++++++++++++++++
+ tests/oncall-agent-fixtures.mjs   |  55 +++++++++++++++++
+ tests/oncall-agent-flow.mjs       |   1 +
+ tests/oncall-agent-triage.mjs     |   3 +-
+ 13 files changed, 308 insertions(+), 34 deletions(-)
