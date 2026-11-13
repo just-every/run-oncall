@@ -2696,7 +2696,7 @@
       "executable": false
     },
     "src/integrations/key-refusals.ts": {
-      "sha256": "7927eab7ad9701d342705c104518e588b66b114251b871d470012ceac8db96d9",
+      "sha256": "81374b7c22419d95a4228ff5ce98c7ca5a77c5b928634f44189e76bb9a0382d1",
       "executable": false
     },
     "src/integrations/native-name.ts": {
@@ -2712,11 +2712,11 @@
       "executable": false
     },
     "src/integrations/SourcePage.tsx": {
-      "sha256": "4b8539d4a81033394b7269053061ab7ba2b74b0de7074b37e1be385cb912de25",
+      "sha256": "b716c62d59fcdbf7ec936955e3cdefb31c2d61f90e96560c9a3b9912853955ad",
       "executable": false
     },
     "src/integrations/SourceTest.tsx": {
-      "sha256": "0cd3c2401cd671ef37f1104b379eb86a2123142e2689e9138453c175f5ef2403",
+      "sha256": "8da67fc9b7c68c0652931342c749c0a313fbe3de70a0b1f941e97eb4b32c02a6",
       "executable": false
     },
     "src/integrations/useVersionDraft.ts": {
@@ -6672,7 +6672,7 @@
       "executable": false
     },
     "tests/product-browser.mjs": {
-      "sha256": "418ee03e522d28fc845741bf0682f2f418cce1998149c2b12a6d0fdc229d405b",
+      "sha256": "ef8695488be0ac5f98d7afa0776fb291bc1a331dc7054074cdee168380b7df4c",
       "executable": false
     },
     "tests/readiness.mjs": {
