@@ -1,7 +1,7 @@
 {
-  "conclusion": null,
+  "conclusion": "failure",
   "head_sha": "b9e47fa70881e514b14d3ffed5a224bc7d1c6b5f",
   "html_url": "https://github.com/just-every/run-oncall/actions/runs/43354439663",
   "id": 43354439663,
-  "status": "in_progress"
+  "status": "completed"
 }

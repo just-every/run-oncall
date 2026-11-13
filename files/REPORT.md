@@ -60,4 +60,15 @@ The product diff was checked for credential-shaped literals. The fleet Mac owns 
 
 ## CI and terminal result
 
-Exact-SHA Verify run 43354439663 is in progress on b9e47fa70881e514b14d3ffed5a224bc7d1c6b5f: https://github.com/just-every/run-oncall/actions/runs/43354439663. Polling respects the ten-call budget and 300-second interval. The initial discovery accidentally used a wrong abbreviated SHA and returned no runs; no result from it is treated as candidate evidence, and the next discovery is delayed 300 seconds and uses the full candidate SHA. Final exact-SHA status and any blocker will be appended here with actual run/job receipts.
+Exact-SHA Verify run 43354439663 completed with failure on b9e47fa70881e514b14d3ffed5a224bc7d1c6b5f:
+https://github.com/just-every/run-oncall/actions/runs/43354439663
+
+Plan and build succeeded. Six of seven shard jobs succeeded, including the full browser shard (job 131654069928). Runtime, hosted, transfer, changes and triage also succeeded. Intake (job 131654070119) failed in Run this shard at the exact known analyticsFixture assertion: tests/oncall-agent-fixtures.mjs:284, 401 !== 200. The aggregate verify job 131658591711 then failed Require the selected coverage and its proof because its selected shards were not all successful. The failed-job archives were each read once after the run completed, using the requested gh run view --job --log-failed commands. Actual assertion/stack and commands are in ci-failures.txt; job/step outcomes are in ci-jobs.json. No environment dump or log archive is selected for evidence publication.
+
+This is the pre-existing frozen-clock session expiry named in the brief. That fixture is explicitly outside this round and is being handled by main-oncall-session-clock-1. It was neither edited nor rerun. No other candidate check failed. Exact-SHA Verify remains the landing prerequisite, so this run makes no READY claim despite completed, pushed product work and the green browser shard.
+
+Eight GitHub calls were used, within the ten-call budget. Status discovery/polling used a single watcher at 300-second intervals. The initial discovery mistakenly used a wrong abbreviated SHA and returned no runs; it supplied no candidate evidence. All subsequent discovery/status checks used and verified the full candidate SHA. Two final bounded diagnostic reads fetched the failed-job archives after completion; no blob redirects or retries were attempted.
+
+The final evidence publication updates the report-only branch with the complete selected report, receipts, CI outcomes and masked browser proof. Product HEAD and index remain unchanged by evidence transport. The product clone is removed after successful final evidence publication as the brief requires; the packet remains outside it.
+
+BLOCKED branch=cloud/main-oncall-test-event-results-1 head=b9e47fa70881e514b14d3ffed5a224bc7d1c6b5f prerequisite="Successful exact-SHA Verify"

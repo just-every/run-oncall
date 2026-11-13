@@ -23,5 +23,58 @@
       "--jq",
       "{id,status,conclusion,head_sha,html_url}"
     ]
+  },
+  {
+    "at": 1794538880.3583608,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43354439663",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": 1794539180.3567584,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43354439663",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "at": 1794539195.732136,
+    "args": [
+      "api",
+      "repos/just-every/run-oncall/actions/runs/43354439663/jobs?per_page=100",
+      "--jq",
+      "{total_count,jobs:[.jobs[]|{id,name,status,conclusion,html_url,steps:[.steps[]|{name,conclusion}]}]}"
+    ]
+  },
+  {
+    "at": 1794539210.114943,
+    "args": [
+      "run",
+      "view",
+      "43354439663",
+      "--repo",
+      "just-every/run-oncall",
+      "--job",
+      "131654070119",
+      "--log-failed"
+    ]
+  },
+  {
+    "at": 1794539250.016545,
+    "args": [
+      "run",
+      "view",
+      "43354439663",
+      "--repo",
+      "just-every/run-oncall",
+      "--job",
+      "131658591711",
+      "--log-failed"
+    ]
   }
 ]

@@ -1,0 +1,37 @@
+Run: 43354439663
+Head: b9e47fa70881e514b14d3ffed5a224bc7d1c6b5f
+
+Failed job: shards (intake), 131654070119
+Failed step: Run this shard
+Command read once after completion:
+gh run view 43354439663 --repo just-every/run-oncall --job 131654070119 --log-failed
+Exit: 0
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+shards (intake)	Run this shard	2026-11-13T02:53:52.5182862Z 
+shards (intake)	Run this shard	2026-11-13T02:53:52.5185727Z 401 !== 200
+shards (intake)	Run this shard	2026-11-13T02:53:52.5186096Z 
+shards (intake)	Run this shard	2026-11-13T02:53:52.5187147Z     at analyticsFixture (file:///home/runner/work/run-oncall/run-oncall/tests/oncall-agent-fixtures.mjs:284:11)
+shards (intake)	Run this shard	2026-11-13T02:53:52.5188340Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+shards (intake)	Run this shard	2026-11-13T02:53:52.5189355Z     at async Module.analyticsReads (file:///home/runner/work/run-oncall/run-oncall/tests/oncall-agent-analytics.mjs:12:17)
+shards (intake)	Run this shard	2026-11-13T02:53:52.5190339Z     at async file:///home/runner/work/run-oncall/run-oncall/tests/oncall-agent-flow.mjs:672:1 {
+shards (intake)	Run this shard	2026-11-13T02:53:52.5190984Z   generatedMessage: true,
+shards (intake)	Run this shard	2026-11-13T02:53:52.5191556Z   code: 'ERR_ASSERTION',
+shards (intake)	Run this shard	2026-11-13T02:53:52.5192124Z   actual: 401,
+shards (intake)	Run this shard	2026-11-13T02:53:52.5192513Z   expected: 200,
+shards (intake)	Run this shard	2026-11-13T02:53:52.5192897Z   operator: 'strictEqual',
+shards (intake)	Run this shard	2026-11-13T02:53:52.5193319Z   diff: 'simple'
+shards (intake)	Run this shard	2026-11-13T02:53:52.5193657Z }
+shards (intake)	Run this shard	2026-11-13T02:53:52.5193834Z 
+shards (intake)	Run this shard	2026-11-13T02:53:52.5193980Z Node.js v22.20.0
+shards (intake)	Run this shard	2026-11-13T02:53:52.5802778Z  ELIFECYCLE  Command failed with exit code 1.
+shards (intake)	Run this shard	2026-11-13T02:53:52.6014528Z ##[error]Process completed with exit code 1.
+
+Aggregate job: verify, 131658591711
+Failed step: Require the selected coverage and its proof
+Command read once after completion:
+gh run view 43354439663 --repo just-every/run-oncall --job 131658591711 --log-failed
+Exit: 0
+Observed aggregate result: build success; selected shards failure; aggregate exits 1.
+
+This matches the brief's known analyticsFixture frozen-clock session expiration. No rerun or fixture edit was made, as explicitly instructed.
