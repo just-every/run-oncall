@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "f5d1378bd3df3a1d6d5ea916c81bcff27d0d467b",
+      "bytes": 6331,
+      "path": "REPORT.md",
+      "sha256": "1ffda04b613e71b04ca716d823dff133847b7d7d37402d51ec8dca8abe8bce30"
+    },
+    {
+      "blob": "5484c235023bc7cae6eeeca58b9fd601fd04e61f",
+      "bytes": 1576,
+      "path": "ci-runs.json",
+      "sha256": "1fbc11cf4c04d3325ba043a7aaa5b32b383ed6cec1609ea74a2aa32d232e8500"
+    },
+    {
+      "blob": "b032229ea52fc09e915b2c9bfcabf09ca4c8ad32",
+      "bytes": 2939,
+      "path": "dependency-receipt.json",
+      "sha256": "a1366938b6b98032959d0ac2f9617d33e672f9042445beccc8a847ef19f7c34e"
+    },
+    {
+      "blob": "ec1b5c2e8cece1cdf6b9825eb777c9292ff2463f",
+      "bytes": 723,
+      "path": "result.json",
+      "sha256": "f6fe8cdbdd5882d075921f3de2f4479f5344da38780b53cb3de3ffab86f7bfee"
+    },
+    {
+      "blob": "81cc26cc0ec73b1c23560f650d873894ca9bb515",
+      "bytes": 4093,
+      "path": "verify-dependencies.mjs",
+      "sha256": "7c97fb859c9dc3279689581da9d1710309664adeb5d7f48b58aae9e43666277c"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-oncall-dep-1",
+  "product_head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "ref": "refs/heads/evidence/gr-mt-oncall-dep-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "gr-mt-oncall-dep-1"
+}

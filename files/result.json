@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "summary": "Current fetched main already fixes GHSA-qx66-fv34-fjm8: react-start is 1.168.60 and all start-server-core resolutions are 1.169.39; existing security fix d009af8859f38727c619df281f93920ca9afd5ed is an ancestor.",
+  "tests": "PASS advisory-range audit of parsed package.json and pnpm-lock.yaml, manifest/importer agreement, every affected package/snapshot/transitive reference, existing-fix ancestry, HEAD equals fetched origin/main, clean checkout. Exact-SHA Verify 43487199874 and 43482317147 success; Nightly journeys 43489531232 success. Local install/build/typecheck not run because no product change.",
+  "security": true
+}

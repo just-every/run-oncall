@@ -1,0 +1,67 @@
+{
+  "tag": "gr-mt-oncall-dep-1",
+  "repository": "just-every/run-oncall",
+  "status": "no-change",
+  "advisory": "GHSA-qx66-fv34-fjm8",
+  "head": "8adae6c836f2fabda29e8a091b052450410c8ca5",
+  "branch": "cloud/gr-mt-oncall-dep-1",
+  "fixAlreadyOnMain": "d009af8859f38727c619df281f93920ca9afd5ed",
+  "manifestDirect": "1.168.60",
+  "importer": {
+    "specifier": "1.168.60",
+    "version": "1.168.60(esbuild@0.28.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.8)(vite@8.2.2(@types/node@22.18.6)(esbuild@0.28.1)(jiti@2.7.0))"
+  },
+  "packageManager": "pnpm@10.12.4",
+  "sha256": {
+    "package.json": "a4891ef460a4875111b418e9cb69c43ad3d22ca88e2cfa4e1241bd670560af96",
+    "pnpm-lock.yaml": "56c71b2d01757fb67537f09c4595b510b14672cfac32cb1dc4cceb24469b5868"
+  },
+  "checks": [
+    {
+      "name": "@tanstack/react-start",
+      "vulnerableRange": ">=1.143.12 <1.168.60",
+      "patched": "1.168.60",
+      "packages": [
+        "@tanstack/react-start@1.168.60"
+      ],
+      "snapshots": [
+        "@tanstack/react-start@1.168.60(esbuild@0.28.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.8)(vite@8.2.2(@types/node@22.18.6)(esbuild@0.28.1)(jiti@2.7.0))"
+      ],
+      "references": []
+    },
+    {
+      "name": "@tanstack/start-server-core",
+      "vulnerableRange": ">=1.143.12 <1.169.39",
+      "patched": "1.169.39",
+      "packages": [
+        "@tanstack/start-server-core@1.169.39"
+      ],
+      "snapshots": [
+        "@tanstack/start-server-core@1.169.39"
+      ],
+      "references": [
+        {
+          "parent": "@tanstack/react-start-server@1.167.46(react-dom@19.2.8(react@19.2.8))(react@19.2.8)",
+          "field": "dependencies",
+          "version": "1.169.39"
+        },
+        {
+          "parent": "@tanstack/react-start@1.168.60(esbuild@0.28.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.8)(vite@8.2.2(@types/node@22.18.6)(esbuild@0.28.1)(jiti@2.7.0))",
+          "field": "dependencies",
+          "version": "1.169.39"
+        },
+        {
+          "parent": "@tanstack/start-plugin-core@1.171.49(@tanstack/react-router@1.170.41(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(esbuild@0.28.1)(rolldown@1.2.8)(vite@8.2.2(@types/node@22.18.6)(esbuild@0.28.1)(jiti@2.7.0))",
+          "field": "dependencies",
+          "version": "1.169.39"
+        }
+      ]
+    }
+  ],
+  "vulnerableResolvedPackagesBefore": 0,
+  "vulnerableResolvedPackagesAfter": 0,
+  "productFilesChanged": 0,
+  "newProductCommits": 0,
+  "assertions": "PASS: manifest/importer agreement; all affected package and snapshot versions patched; all affected transitive references patched and backed by snapshots; existing fix is an ancestor of fetched main; HEAD equals fetched main; clean checkout",
+  "localInstallBuildTypecheck": "NOT RUN: no-change investigation; no application code or dependency files changed; exact-SHA successful Verify and Nightly journeys observed separately in ci-runs.json"
+}
