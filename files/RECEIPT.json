@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "tag": "sd-oncall-c-f224-ci-fix-1",
+  "repository": "just-every/run-oncall",
+  "recorded_utc": "2026-11-13T01:44:24Z",
+  "candidate_head": "271f824fb0805400beda94a572792f3bb27f8635",
+  "main_head": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "product_changes": [],
+  "product_commits_created": 0,
+  "product_pushed": false,
+  "pr": null,
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit_code": 0
+  },
+  "local_toolchain": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "node_pin": "22.20.0",
+    "rer": "0.2.108"
+  },
+  "candidate_build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit_code": 0,
+    "log": "candidate-build.log"
+  },
+  "candidate_reproduction": {
+    "command": "ONCALL_RUNTIME_PART=machines cloud_run node tests/runtime.mjs",
+    "exit_code": 1,
+    "log": "candidate-intake.log",
+    "assertion": {
+      "file": "tests/oncall-agent-fixtures.mjs",
+      "line": 284,
+      "actual": 401,
+      "expected": 200
+    },
+    "stack": [
+      "tests/oncall-agent-fixtures.mjs:284:11",
+      "tests/oncall-agent-analytics.mjs:12:17",
+      "tests/oncall-agent-flow.mjs:672:1"
+    ]
+  },
+  "original_ci": {
+    "run_id": 43342360159,
+    "job_id": 131614286294,
+    "head_sha": "271f824fb0805400beda94a572792f3bb27f8635",
+    "status": "completed",
+    "conclusion": "failure",
+    "url": "https://github.com/just-every/run-oncall/actions/runs/43342360159",
+    "log": "original-ci-failed-job.log",
+    "node": "22.20.0"
+  },
+  "main_reproduction": {
+    "command": "ONCALL_RUNTIME_PART=machines cloud_run node tests/runtime.mjs",
+    "exit_code": 1,
+    "log": "main-intake.log",
+    "assertion": {
+      "file": "tests/oncall-agent-fixtures.mjs",
+      "line": 284,
+      "actual": 401,
+      "expected": 200
+    },
+    "stack": [
+      "tests/oncall-agent-fixtures.mjs:284:11",
+      "tests/oncall-agent-analytics.mjs:12:17",
+      "tests/oncall-agent-flow.mjs:672:1"
+    ],
+    "started_utc": "2026-11-13T01:40:27Z",
+    "completed_utc": "2026-11-13T01:43:44Z"
+  },
+  "github_calls_used": 2,
+  "github_call_budget": 10,
+  "main_build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit_code": 0,
+    "log": "main-build.log"
+  },
+  "outcome": "BLOCKED: current main reproduces the identical analytics assertion; brief requires no edit",
+  "claim": "none",
+  "typecheck": "NOT RUN: no product edits; stop condition met",
+  "source_lock": "NOT REGENERATED: no product edits; stop condition met",
+  "new_candidate_ci": "NOT RUN: no product commit or push under the stop condition",
+  "test_changes": {
+    "added": 0,
+    "removed": 0,
+    "modified": 0
+  },
+  "clause_changes": [],
+  "candidate_clause_counts_before_after": {
+    "done": [
+      27,
+      27
+    ],
+    "partial": [
+      40,
+      40
+    ],
+    "missing": [
+      34,
+      34
+    ],
+    "total": [
+      101,
+      101
+    ]
+  },
+  "main_clause_counts": {
+    "done": 26,
+    "partial": 41,
+    "missing": 34,
+    "total": 101
+  },
+  "worktree_clean": true
+}

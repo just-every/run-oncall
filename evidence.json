@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "blob": "16325c841699cd25cab4d7adb76caee40deeb82b",
+      "bytes": 1805,
+      "path": "PLAN.md",
+      "sha256": "550f5a4e01ee0f3846fd216126b80584d0f583c2441a97243bcda171cb9763f1"
+    },
+    {
+      "blob": "bbaa06c8caaf5e15ff30eb9eca6eeb2745ab6997",
+      "bytes": 3092,
+      "path": "RECEIPT.json",
+      "sha256": "467d2c3917da1d760279a4105715b7b37658103508f69115cbcca2b0eafac138"
+    },
+    {
+      "blob": "dea6e3a480a769c1db0ed65097b86ca1114729dd",
+      "bytes": 7119,
+      "path": "REPORT.md",
+      "sha256": "0f9885719e859b72030faacc288003666cf246d3b17fb06626c8b42e52023ffa"
+    },
+    {
+      "blob": "3d91405375f988e1b2d88ce9128154370e7ad468",
+      "bytes": 16471,
+      "path": "candidate-build.log",
+      "sha256": "c6ce366aa7fd4b3059d09c9c7233ecadd2cf7fd84eb7d3e07ae486d1385b2bea"
+    },
+    {
+      "blob": "535fde49722ce02f5905a832c6013c6b0ca1e2b3",
+      "bytes": 11336,
+      "path": "candidate-intake.log",
+      "sha256": "194b8ddaa1810341d90919e34b9e3e8017a186c4a89b18cbebc0eb9ca3a21d14"
+    },
+    {
+      "blob": "42fb5e0c40085088b93c26a6fd871765d40a15fb",
+      "bytes": 19601,
+      "path": "github-calls.jsonl",
+      "sha256": "1aecd45f636194f910222641bc6ed9ecbadf5ec37b9638dcb58768f0d28b6cc9"
+    },
+    {
+      "blob": "0ca7b1b1053f3f32d62054da1bd9bc428188a68e",
+      "bytes": 16471,
+      "path": "main-build.log",
+      "sha256": "21471f13f884593dcacf0702492853cfe6fa532d9862139ea4511d8fc7b7547c"
+    },
+    {
+      "blob": "d1a8dcb904f6f281d438eb9956ae822b67e4857a",
+      "bytes": 11336,
+      "path": "main-intake.log",
+      "sha256": "2eb0b2ddef6d156bc859eb1b9e913c992f97eb861e9499dcd643fe7d96d85a7e"
+    },
+    {
+      "blob": "6c14e605791310d47c55d4825e2ee13f0b29e503",
+      "bytes": 17897,
+      "path": "original-ci-failed-job.log",
+      "sha256": "ac76b928c932f9ef90cdc985ede5c2c9d7a48e9d56cf5df317c2210ba7bcbe8b"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "product-identity-check.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "85e8866d2eac0dd9bff30e7218b0dfb783abc610",
+      "bytes": 2252,
+      "path": "source-comparison.json",
+      "sha256": "b63b2e9ff7826184e6be558d03c0fd43108c419ca1986010c030c5c413dc3331"
+    }
+  ],
+  "product_branch": "cloud/sd-oncall-c-f224-ci-fix-1",
+  "product_head": "271f824fb0805400beda94a572792f3bb27f8635",
+  "ref": "refs/heads/evidence/sd-oncall-c-f224-ci-fix-1",
+  "repository": "just-every/run-oncall",
+  "schema": 1,
+  "tag": "sd-oncall-c-f224-ci-fix-1"
+}

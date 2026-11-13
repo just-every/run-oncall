@@ -1,0 +1,55 @@
+{
+  "utc": "2026-11-13T01:40:02Z",
+  "candidate": "271f824fb0805400beda94a572792f3bb27f8635",
+  "main": "809d67a8fbf255ee13e8531e4246a1ffbddf2fa4",
+  "files": [
+    {
+      "path": "tests/runtime.mjs",
+      "candidate_sha256": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3",
+      "main_sha256": "f433f08cf2b464b2afa2d89393a1692c123662799bccb9d24012c6e3d02edec3",
+      "identical": true
+    },
+    {
+      "path": "tests/oncall-agent-flow.mjs",
+      "candidate_sha256": "7167cdc1c2c19f230690baaa75ff8e61983a3cf48704217c0f434e40f4cf5c76",
+      "main_sha256": "7167cdc1c2c19f230690baaa75ff8e61983a3cf48704217c0f434e40f4cf5c76",
+      "identical": true
+    },
+    {
+      "path": "tests/oncall-agent-analytics.mjs",
+      "candidate_sha256": "5ab66f6aafaaf6a8395f4c3c8aa26f6681d9a55fa1cefa21ad48562b79ac2f40",
+      "main_sha256": "5ab66f6aafaaf6a8395f4c3c8aa26f6681d9a55fa1cefa21ad48562b79ac2f40",
+      "identical": true
+    },
+    {
+      "path": "tests/oncall-agent-fixtures.mjs",
+      "candidate_sha256": "561819b1197797ae6bfea9ecdcd1cef0789a5b20ca60dd0be589b14e0e896005",
+      "main_sha256": "561819b1197797ae6bfea9ecdcd1cef0789a5b20ca60dd0be589b14e0e896005",
+      "identical": true
+    },
+    {
+      "path": "tests/agent-door-runtime.mjs",
+      "candidate_sha256": "274de0a19119047b8603d09d92a5e19c91b713f70138610aebdf4a451b434cd1",
+      "main_sha256": "274de0a19119047b8603d09d92a5e19c91b713f70138610aebdf4a451b434cd1",
+      "identical": true
+    },
+    {
+      "path": "tests/worker.mjs",
+      "candidate_sha256": "35232262cbaeda53598b6e4d35b5145a1e38740503d08bdf4ebe7e5f58ca6c7e",
+      "main_sha256": "35232262cbaeda53598b6e4d35b5145a1e38740503d08bdf4ebe7e5f58ca6c7e",
+      "identical": true
+    },
+    {
+      "path": "src/api.ts",
+      "candidate_sha256": "8dc537c49b65222603c19638963dfde6be3da337bbdbb10a41ef7bf5c996fc44",
+      "main_sha256": "8dc537c49b65222603c19638963dfde6be3da337bbdbb10a41ef7bf5c996fc44",
+      "identical": true
+    },
+    {
+      "path": "src/session-cookie.ts",
+      "candidate_sha256": "0668a5cbd7a419c0240e88dffb7d8de23665ba436ba0ef091ec333f592dd3538",
+      "main_sha256": "0668a5cbd7a419c0240e88dffb7d8de23665ba436ba0ef091ec333f592dd3538",
+      "identical": true
+    }
+  ]
+}
